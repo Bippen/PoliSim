@@ -11490,3 +11490,6817 @@ morning report, and `SEND_PACKAGE_2026-08-28.md`. ⚠ **A report is not a second
 Deleted under this rule: `VISUAL_REVIEW_BACKLOG.md` (2026-08-02), `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`
 (2026-08-26), the three scoping packages and the derivation reports (2026-08-26, `COMPLETED.md` §§21/22).
 
+
+
+## 182. `LAW_BROWSER_BOARD_RULINGS.md` — RETIRED 2026-09-02, migrated verbatim (115 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## Law browser board — Design rulings (§7)
+
+Drawn 2026-08-25 as **Screen 1i** in `PoliSim v2 Screens.dc.html`
+(`data-screen-label="1i Law browser board"`). The board is the spec; this file
+is its written form so the build has a target that is not a chat message.
+
+Drawn against the populated state of `run_85g_bill_laws.png` — 8 in force,
+2 pending, 38 total, one populated category (the state on 2026-08-25; the catalog is
+100 laws in two categories at HEAD, 2026-08-27 — the counts below are the board's, not the game's).
+
+> **2026-08-26 — one dated pointer; everything below is unchanged as delivered.** Design's
+> Screen 1j ("Law browser at 50", their §7.1 answer) OVERLAYS the AVAILABLE-row spec below:
+> AVAILABLE renders as four magnitude bands, available rows drop to three cells, and the
+> category cell retires until a second category ships. **The three rulings stand; 1j changes
+> AVAILABLE only.** For AVAILABLE rows the build target is the 1j board — see CLAUDE.md
+> "Board 1j implemented" (2026-08-26).
+
+### The three open questions, answered
+
+**Row weight.** Four cells, not five: status glyph · name · category ·
+magnitude · cost (the glyph is a gutter, not a column). Name carries full
+weight at 14px bold. Magnitude and cost are mono, secondary. Category is a
+dimmed 9.5px mono token and earns its column only once a second category
+populates. The six-dial delta breakdown, the real-world citation and the live
+estimate are **detail-pane only**.
+
+**Status.** Grouping, not a column. IN FORCE — 8 / BEFORE THE HOUSE — 2 /
+AVAILABLE — 28, in force first. Sorting in force to the top makes a status
+column redundant, which is why the row lost a cell, and it answers the
+capture-evidenced failure structurally rather than by adding a control: what
+is in force is the first thing on the board.
+
+**Magnitude.** A four-step stepped rule in plain ink (`#2b2620` filled,
+`#cec0a2` empty) beside its mono label. No new hue: status and category
+already spend the colour budget, and the weight class is ordinal, so length
+reads faster than a tag. MINOR 1 · MODERATE 2 · MAJOR 3 · SWEEPING 4.
+
+### Board mechanics
+
+- **Category chips carry counts.** `All · 38`, `Crime & Justice · 38`, then
+  five hatched chips at `· 0`. This makes an inert filter read as empty
+  content rather than a broken control. **It is a legibility fix, not the bug
+  fix** — the underlying filter still needs fixing and its cause reporting.
+  *(Closed by content, 2026-08-26: the second `LawCategory` shipped and the
+  filter genuinely narrows; 1i's five drawn categories never entered the enum,
+  so no hatched `· 0` chips render — CLAUDE.md "The second law category ships".)*
+- **Sticky column header inside the scroller** (`position:sticky;top:0`), so
+  the header grid and the row grids resolve against the same scrollbar-reduced
+  width. A header sibling above the scroller misaligns by the scrollbar width.
+- **One scroll.** The list scrolls; the detail pane does not. ~27 rows per
+  screen against the capture's 1.3 cards.
+- **Bottom bar on 1c's convention** (`flex:1` spacer + bar): approval on hand,
+  next sitting date, and the affordability line that makes the cost column a
+  budget rather than a label.
+- **Citation pane is new UI content** — the CONFIRMED / DIRECTIONAL /
+  GENRE-IDIOM label and source exist only in code comments today. Flagged on
+  the board as `NEW UI CONTENT — §7`.
+- **Live estimate before a bill exists** — the Tax/Welfare per-row shape moved
+  earlier, not the bill-gated `DrawBillLiveEstimate`.
+- **No new sprites.** Desk chrome, ledger rows, existing stamps.
+
+### The stepped rule — exact spec
+
+The one element with no precedent in the chrome set, so it is pinned here in
+full. All values are design px at @1× on the 1920×1080 board.
+
+**No new sprite.** Each step is `ui_pixel` (4×4 white-on-alpha, "rules,
+spines, keylines — tint anything") stretched to the step rectangle and tinted.
+Empty steps are the same sprite at the empty ink. This is why the pack ships
+zero new art.
+
+**Inks.** Filled `#2b2620` (inkText) · empty `#cec0a2`. Never recoloured per
+level: the scale is ordinal, and length carries it. A per-level hue would
+re-spend the colour budget that status and category already hold.
+
+**Levels.** MINOR 1/4 (±3–6) · MODERATE 2/4 (±7–14) · MAJOR 3/4 (±15–22) ·
+SWEEPING 4/4 (±23–30). Filled steps count from the left.
+
+| context | step | gap | run | label |
+|---|---|---|---|---|
+| ledger row | 7 × 12 px | 2 px | 34 px | Courier Prime 9 px, tracking 0.1em, `#5d564a`, fixed 56 px box, 7 px before the steps |
+| detail pane | 11 × 16 px | 3 px | 53 px | serif 14 px bold, tracking 0.06em, `#2b2620`, preceded by a mono 9.5 px MAGNITUDE label at 12 px gaps |
+
+The row's magnitude cell is 132 px wide (56 label + 7 gap + 34 run leaves
+35 px of air before the approval column — deliberate, so the run never abuts
+a right-aligned numeral).
+
+**Ledger grid, for reference.** `26px minmax(0,1fr) 128px 132px 74px`, 12 px
+gaps, 14 px side padding — declared identically on the sticky header and every
+row. `minmax(0,1fr)` not `1fr`: a plain `1fr` cannot shrink below the name
+cell's min-content and the ledger overflows horizontally. The scroller carries
+`scrollbar-gutter:stable`, so header and rows resolve against the same width.
+
+### Open on the engineering side — both CLOSED (recorded 2026-08-27)
+
+- **The citation record.** The board drew Portugal, Law 30/2000 / CONFIRMED as
+  a placeholder for the slot. Discharged: the pane reads each law's recorded
+  `RealWorldCitation` from `LawCatalog` (`LawDefinition.cs`), never the board's
+  sample — the slot was Design's; the record is the catalog's.
+- Row content for "the five unpopulated categories" — there are not six
+  categories: `LawCategory` has two members (CrimeJustice, LaborMarket), both
+  populated at 50, and the 1j rebuild rendered both. The eye review of the
+  `board1jc*` capture sets is the one thing still open, and it is
+  `MISSING_PREREQUISITES.md` §V's, not this file's.
+
+**2026-08-28 —** the `board1jc*` sets are two generations superseded (`pt3usa*` after the
+playtest-3 cut, then `omni_final_*` after the omnibus pitch and containment fixes); the open eye
+review is `MISSING_PREREQUISITES.md` §V's current law-browser row, not these sets. The built
+AVAILABLE row is two-line at 66 px against this board's 32 px one-line pitch (~27 rows per screen; the
+figure per `a7d877d`'s derivation — the ~27 px that stood here was the omnibus report's misreading,
+corrected 2026-08-28) — convergence is an open
+internal call (A4); if ruled, the one-line type builds to the grid pinned above. *(✅ Ruled and built
+2026-08-28 — R-C1 of the continuation kickoff: one-line rows at the board's proportion, density on
+film 5 → 8 laws per viewport at 1600×900, 3 → 5 at 1280, 7 → 11 at 2560; the current sets are
+`cont_p1b_<size>_06f_policylaws_laws*`.)*
+
+
+## 183. `ELECTIONS_ARCHITECTURE.md` — RETIRED 2026-09-02, migrated verbatim (119 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## Elections architecture — E-0 (overnight 2026-08-28→29; spec-blind halves only)
+
+**Status — COMPLETED 2026-08-29 against the spec**, which arrived on Day-1's second attempt and
+passed Phase 0's content check (44 sections, §42 the causal chain, §44 the last) and is installed
+verbatim at root. The stubs this document carried while the spec was missing are now either built
+or classified in `ELECTIONS_GAP_TABLE.md`. This document deliberately did not read the stranded branch
+(R-EL5 cites the surviving verification DOC, not the branch), which was the right discipline while the
+branch was an open obligation.
+
+⚠ **Re-derived 2026-08-31 (C-0.2).** This section said the stranded branch (`stranded/politics-elections`,
+`ca6c510`) *"remains UNINSPECTED per D0 — its work is proposals to verify at item 10"*. It was inspected
+once and **DISPOSED at C-0.3**: the ref is kept, the obligation retired, its C# superseded by
+`Assets/Scripts/Elections/` and W-G1, and the four pieces of its roadmap doc that were NOT superseded
+migrated to `COMPLETED.md` as history.
+
+### R-EL1 — the PoliSim idiom mapping (at the queue's own level)
+
+- **Catalogs, not ScriptableObjects:** static C# tables in code (the `FederalReserveSystem.
+  CandidatePool` / `WorldFactory` seed idiom) for anything the game ships; the night's sourced
+  data stages in `ElectionsData/` (out of tree for Unity, in tree for git) until item 10 wires
+  real catalogs.
+- **Deterministic seeded streams:** every random draw through `SimulationRandom.For(stream)` —
+  never `new System.Random()`, never `UnityEngine.Random` (the A0 lesson recorded in
+  `SimulationRandom`'s own doc).
+- **Pure functions + editor harnesses:** the mechanics chain as static, side-effect-free
+  functions over plain data, each with a batch `-executeMethod` harness in `Assets/Editor/`
+  (the `*Check` idiom, `CheckExit.Finish` exit codes), runnable with `-nographics`.
+- **InvariantCulture at every format/parse site** (B3; `UiFormat`'s pinning is the precedent).
+
+### Election state vs config
+
+- **Config (immutable per campaign):** electoral rules (system, tiers, thresholds, allocation
+  method, district structure and magnitudes), party list, positions, the calendar date. Sourced
+  or seed-derived; never mutated by play.
+- **State (evolves):** preferences/loyalty, momentum, polling history, the returns as counted.
+  Everything state lives in plain serialisable types so a save can carry it when item 10 wires
+  saves — NOT tonight (R-N2: no save hook).
+- STUB (spec): the exact state objects, §7's types, §8's preference damping, §§20–22 polling
+  objects — blocked-on-the-spec, billed.
+
+### The seed-stream policy
+
+Election noise gets its OWN named stream appended to `SimulationRandom.Stream` (append-only
+enum, per its own doc: never reorder). Tonight the enum is NOT touched (R-N2: not one byte of
+the existing model moves); the name is reserved here instead: `ElectionNoise` as the next
+member, taken at item 10's wiring pass. Until then the pure functions take a `System.Random`
+(or a seed int) as an explicit parameter — deterministic under the harness, wireable to the
+stream later without changing a formula.
+
+### Where the system will EVENTUALLY wire (documented, not done — R-N2)
+
+1. `SimulationManager`'s turn boundary: the campaign clock (replaces `ElectionSystem.
+   IsElectionTurn`'s fixed cycle for countries under the new regime).
+2. `GameController`'s politics screens + Canvas screen 1h (election night) — item 10's UI, none
+   tonight.
+3. `SaveGame` — new state objects join the save the way `FedChairCandidates` did.
+4. The D0 collision map EXECUTED at item 10 (W-G1, `a289e1e`, 2026-08-30) - it is history, not a plan: the four archetypes were retired, `TotalSeats
+   = 200` yields to real chamber sizes, `ElectionSystem`'s approval threshold yields to the
+   vote model; `PublicationSystem` stays as the polling substrate; seat drift, bill scoring and
+   the renderers stay.
+
+⚠ **Point 4 EXECUTED on 2026-08-30 (W-G1, `a289e1e`), and one clause of it did not survive contact
+(re-derived 2026-08-31, C-0.2).** `PartyArchetype` retired for 53 real parties; `TotalSeats = 200` yielded
+to six real chamber sizes; `PublicationSystem` stayed; the renderers stayed; bill scoring stayed but was
+**re-expressed** over the measured chamber rather than left alone. **Seat drift did NOT stay — it retired
+too**, because a parliament's composition does not drift week by week with the government's approval, and
+the per-archetype sensitivity figures it drifted on are published for no real party by anyone.
+**`ElectionSystem`'s approval threshold did NOT yield** — it was left exactly as it was, because the game
+assigned the player no party identity for the vote model to award a fate to; that question was ruled
+2026-08-30 as R-CL1 and the replacement is register row C-R4 in `POLISIM_BACKLOG.md`.
+
+### What existed on main before the wiring (R-EL6, measured — the inventory the gap table built on)
+
+*(filled by the overnight inventory — see the morning report's Part 2 section for the measured
+line numbers; summary:)* `ElectionSystem` (fixed cycle + approval threshold + transient
+result), the four archetypes, the hardcoded 200-seat chamber, seat drift, the hemicycle/
+compass/map renderers, `PublicationSystem` (the polling substrate), five `mark_party_*` sprites
+drawn by nothing, `FedChair` election-eve pause. ⚠ **This is a 2026-08-29 inventory kept as the gap
+table's EXISTS column, not a description of HEAD** — four of its entries no longer exist and the sprites
+are drawn now. What is on main today is `COMPLETED.md` §§79–84.
+
+### The spec's own architecture (§40) vs this one — a ruled divergence, stated plainly
+
+Spec §40 asks for **ScriptableObjects** and a thirteen-manager **MonoBehaviour** tree
+(`ElectionManager` over `CampaignManager`, `PollingManager`, `VoterSimulation`, …). Two standing
+rulings cut across it, and both win:
+
+- **R-EL1 — the PoliSim idiom wins: catalogs in code, not ScriptableObjects.** The game's own
+  precedent (`FederalReserveSystem.CandidatePool`, `WorldFactory`, `LawCatalog`) is static tables
+  a diff can review and a batch harness can read without a scene. `ElectionTypes.cs` follows §41's
+  field lists closely — `PartyData` → `PartyProfile`, `VoterGroupData` → `VoterGroupProfile`,
+  `RegionData` → `RegionProfile`, `CandidateData` → `CandidateProfile` — as plain value types.
+- **R-N2 — nothing is wired.** A MonoBehaviour tree IS wiring. Every unit is instead a pure static
+  class in `PoliSim.Elections`, callable from an editor harness and from nothing else.
+
+**What is kept from §40 is its actual point: modularity.** One concern per file, no god-object —
+`Compatibility`, `PreferenceModel`, `TurnoutModel`, `RegionalAggregation`, `SeatAllocation`,
+`Rosatellum`, `ElectoralCollege`. When wiring is ruled, those managers become thin drivers over
+these functions rather than containers of the logic. The gap table records §40 as N/A-by-ruling.
+
+**§42 is binding on everything above these layers.** No campaign action may ever be a flat vote
+delta; it must travel the chain (reach → salience → exposure → relevance → credibility →
+persuasion/enthusiasm → preference → turnout → regional vote → electoral system → seats). The
+units built so far occupy the second half of that chain, which is why the first half (§12's
+actions) cannot be shortcut later — the join is already the right shape.
+
+### Built as of 2026-08-29 (all pure, all unwired)
+
+`ElectionTypes.cs` (§41/§4/§5/§6 shapes) · `Compatibility.cs` (§7, five weighted terms) ·
+`PreferenceModel.cs` (§8 loyalty damping) · `TurnoutModel.cs` (§26's five-factor product) ·
+`RegionalAggregation.cs` (§27, with noise on its named stream) · `SeatAllocation.cs` /
+`Rosatellum.cs` / `ElectoralCollege.cs` (§28 — five real chambers reproduced exactly).
+
+### Still NEW, in the order the measurements say to build them
+
+§39's remaining terms — base support, candidate appeal (§16), campaign effects (§12), media
+(§13/§14), momentum (§22), tactical voting (§23) — then §24's regional objects, §20/§21's polling,
+and the campaign layer proper (§9–§12, §15, §17, §32–§33). The gap table carries the full
+classification and the reasons; the Day-1 report carries the sizing.
+
+
+## 184. `ELECTIONS_GAP_TABLE.md` — RETIRED 2026-09-02, migrated verbatim (109 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## The elections gap table — all 44 spec sections against what PoliSim holds (2026-08-29)
+
+**Method (R-EL6, existing-systems-first):** every section of `ELECTIONS_CAMPAIGN_SPEC.md` is
+classified **EXISTS** (the game already does this — where), **EXTENDS** (a real system is here and
+grows to meet it — what), **NEW** (nothing corresponds), or **N/A** (R-EL7: inapplicable content
+is dropped with a one-line reason, not parked and not built). Verified against the spec installed
+at root the same day: 44 sections, §42 the causal chain, §44 the last.
+
+**R-EL7 is live in this table.** Nine sections are N/A. Six of those are design principles or
+illustrations rather than buildable units — dropping them is not a refusal to build, it is a
+refusal to pretend a philosophy is a work item. The other three are genuine conflicts with
+standing rulings, each named.
+
+| § | Section | Class | Where / What / Why |
+|---|---|---|---|
+| 1 | Core Design Goal | **N/A** | A goal statement, not a unit. Its content becomes the acceptance test for §39 and §42. |
+| 2 | Election Structure | **EXTENDS** | `ElectionSystem` holds a fixed cycle and `IsElectionTurn`; the spec's fields (dates, campaign duration, seats, system, districts, parties, candidates, voter groups, turnout) are the shape it grows into. Electoral-system rules already EXIST and are proven — see §28. Election *types*: national parliamentary is the built case; presidential is `ElectoralCollege`; referendum and party-leadership are NEW. |
+| 3 | Campaign Calendar | **NEW — BUILT 2026-08-29 (W-B1, `81a736b`)** | ⚠ Re-derived 2026-08-31 (C-0.2): this row read "No campaign phase exists" until W-B1 built `CampaignClock` — five phases as a computation over the game's own day clock, legality gated through `CampaignLegality`, a snap election expressible as data with no code change. |
+| 4 | Political Parties | **EXTENDS — DONE 2026-08-30 (W-G1, `a289e1e`)** | ⚠ Re-derived 2026-08-31 (C-0.2): the row read "the data exists and the party object does not". It does now — `PartyArchetype` is RETIRED and `PoliticalParty` carries 53 real parties with `LrEcon` and `Galtan` from CHES 2024 (GPS 2019 for the USA), `NaN` where unmeasured so absence is never read as centre. ⚠ §4 axis coverage: ✅ **`eu_position` reached the party record at C-B3 (2026-08-31) as the openness axis R-CL2 ruled in for the Trade bill** — 31 sourced values, the USA excepted because GPS 2019 has no EU item. Four axes remain UNDEFINED and deliberately NOT centred (register row S-4). |
+| 5 | Voter Groups | **NEW** | ⚠ **The premise of this row was FALSIFIED at W-F4 (2026-08-30) and is corrected here, not edited forward.** It said groups are DERIVED-first "from the demographic seeds the model already holds"; a grep across all of `Assets/Scripts/` returns exactly ONE hit and it is a display string, and the game's "regions" are countries. §5 is not a derivation — it needs **sourced SCB per-valkrets marginals**. The electorate stays ONE group with 12 call sites intact. Register row C-D1: source it, or bill it precisely and close as billed. Still the last genuinely-unbuilt NEW section that blocks anything. |
+| 6 | Voter Issue Priorities | **EXTENDS** | Salience is **sourced** (EB105 Spring 2026 per country, Gallup for the USA) and already drives the Phase-4 instrument's axis weights. Per-group issue weights are NEW. |
+| 7 | Party-Voter Compatibility | **NEW → BUILT 2026-08-29** | `Elections/Compatibility.cs` — the five-term sum (policy match, ideological match, reputation, leader appeal, campaign effectiveness) normalised 0–100, with a synthetic-vector harness. |
+| 8 | Voter Loyalty | **NEW → BUILT 2026-08-29** | `Elections/PreferenceModel.cs` — loyalty damping of compatibility toward a group's prior attachment. **This was the layer both Phase-4 deviation signatures implicated**, which is why it is the first chain unit built. |
+| 9 | Campaign Resources | **NEW — STAFF + FULL COST PLAN BUILT 2026-08-30 (W-B5, W-B12)** | Money/time/staff/volunteers. Distinct from the government budget the game simulates — a campaign purse is not a fiscal line. **W-B5: `CampaignStaff.cs` — the five roster roles at a salary a day, a multiplier on the actions the role touches, the campaign manager's budget plan (television set aside from the day's release); the payroll on the AI campaign's ledger and on the HQ screen's ORGANISATION ledger. Money, time and volunteers were W-B2 / W-B11; §9's other four roles wait with §37.** **W-B12: the plan now covers EVERY fixed cost — `DailyFixedCost` (payroll + every office's maintenance and operation, set each morning) and `CommittedToOrganisation(daysLeft)`, so the pace releases against money MINUS the organisation's bill to polling day. Four of five managed parties reach zero unpaid staff-days (S 10→0, M 6→0); SD keeps 6 of 38, a stated residual on capital commitments the daily bill deliberately excludes. Unmanaged parties stay at 12 — the plan IS the manager's effect.** |
+| 10 | Campaign Offices | **NEW — BUILT 2026-08-30 (W-B4)** | Regional organisation; depends on §24 existing first. **W-B4: `CampaignOffices.cs` — §10's five attributes and five provisions; organisation as local reach (a visit draws a quarter of a full office's), volunteers recruited to capacity, a daily operation into W-B11's ground game, maintenance paid or the office starves; concentration against spread measured (the crossover at 4 M kr). The AI campaign runs a staged office plan per personality; siting (W-B5, W-C2), staff (W-B5) and the screens (W-E1, W-E5) remain.** |
+| 11 | Campaign Strategy | **NEW → BUILT W-B6 (2026-08-29)** | The five strategies are modifiers over §12's action set. `CampaignStrategy.cs`: the five as modifiers over the whole chain, each bullet a shape (loyal/swing, focus/other, opponent share); no dominant strategy in a 30-electorate sweep. |
+| 12 | Campaign Actions | **NEW — BUILT 2026-08-29 (W-B3, `51f8d72`)** | The player-facing verbs, BUILT as `CampaignActions` — eight of them, each resolved through §42's chain so no action is ever a flat vote delta, and W-E3 gave every option its own propagated band. |
+| 13 | Media System | **EXTENDS → BUILT W-B9 (2026-08-29)** | `PublicationSystem` is a real publication/lag/revision layer (preliminary → revised figures) — the substrate for coverage, but coverage itself is NEW. `MediaSystem.cs`: coverage as a decaying, saturating stock (cannot spiral), media INTEREST as availability (bookings by the outlets, a ledger fair over time), coverage → momentum bounded, own channels reach a party's following and the press in proportion to interest. |
+| 14 | Media Bias / Audience | **NEW → BUILT W-B9 (2026-08-29)** | Outlet-audience segmentation. Outlets with reach ceilings and audience compositions over voter groups; the same message resolved per group through the outlet (climate ×1.9 through the young-urban outlet, crime ×2.0 through the older-rural one); the roster is archetypes, real reach billed. |
+| 15 | Debates | **NEW → BUILT W-B7 (model) + W-E5 (screen)** | The decision-modal idiom exists (`DrawCabinetDecisionModal`, the Fed-chair picker) and is the UI pattern it would reuse — when wiring is allowed. **W-E5 (2026-08-30) built the debate SCREEN** — three states (preparation, on the floor, the verdict) filmed at four widths, the verdict reporting only what §15 permits (performance, margin, and the two shocks) and an unrun exchange drawn as an em dash rather than a zero. **W-B7 (2026-08-29): `Debates.cs` — exchanges as skill × prepared × ownership × clash + one seeded draw on the appended `Debate` stream; the result a coverage and momentum shock with no share member; the AI campaign holds two.** |
+| 16 | Candidate Attributes | **EXTENDS** | `CabinetMinister` (philosophy + `CompetenceBias`) and `FedChair` (philosophy) are the established attribute idiom, and 25 portraits are delivered. The spec's eleven-attribute candidate is a wider version of a thing that exists. **W-B7 (2026-08-29): `CandidateProfile`'s attributes drive the debate's move blends; unnamed `[AUTHORED-DRAFT]` candidates per personality (W-F6 labels real leaders).**  **W-F6 2026-08-30: the NAMES are SOURCED** (`party_leaders_2022.md` - the eight leaders at 2022-09-11, each cited to that party's OWN website via a dated Internet Archive capture). **The nine attributes stay [AUTHORED-DRAFT] and the debate screen still says so**: sourcing a real person's name does not license inventing their character. Leader RELATIONS stay deferred and asserted ABSENT by reflection. FINDING: MP has TWO sprakror and the model has room for one - billed, not silently halved. |
+| 17 | Scandals | **EXTENDS — BUILT 2026-08-29 (W-B8, `1662a48`)** | `EventSystem` already fires authored events with real effects through a seeded stream; a scandal is an event kind with a response set. |
+| 18 | Political Events | **EXISTS** | `EventSystem` with its authored pool, effects and seeded draw. What it does NOT do is move **issue salience** — that hook is the EXTENDS half. |
+| 19 | Government Performance | **EXISTS** | This is the entire macro simulation (GDP, unemployment, inflation, real wages, crime, debt, services) plus the approval ledger. **The spec's actual-vs-perceived split already exists too**, as `PublicationSystem`'s preliminary/revised figures — the game's most under-used asset for this system. |
+| 20 | Polling System | **EXTENDS** | Same substrate as §19's perception layer; the poll object (sample, MoE, field date, breakdowns) is NEW. |
+| 21 | Internal Polling | **NEW — BUILT 2026-08-29 (W-B10, `2e61834`)** | The paid-information economy, BUILT — `PollingSystem` with sample, MoE, field date and house effects; W-E4's screen prices precision against kronor from the same `MarginOfErrorPp` a conducted poll reports with. |
+| 22 | Polling Momentum | **NEW — BUILT 2026-08-29 (W-B10, `2e61834`)** | BUILT — momentum as a moving average with decay; a poll can move before anything real has, and momentum never touches the preference underneath. |
+| 23 | Tactical Voting | **NEW — BUILT (threshold form) 2026-08-29 (W-A4)** | Requires §20 (what voters believe) and §28 (what the system rewards) to exist first. **W-A4: `TacticalVoting.cs` — the belief from the PUBLISHED poll widened by a belief-sigma, the bloc lending where the race is in play and a party's own voters abandoning it where hopeless; no threshold â the identity. SCB's May PSU sourced (`sweden/psu_2018_2022.md`); 2022 reproduced better than the poll alone. Other forms (FPTP districts, runoffs) and the wiring between the final tracker and the count (W-G1) remain.** |
+| 24 | Regional Politics | **EXTENDS** | ⚠ The game's "regions" are countries; sub-national regions do not exist as model objects. But the **data does**: 29 valkretsar, 41 okręgi with magnitudes, 16 Länder, 13 régions, 8+ regioni, 51 US jurisdictions — all sourced with results. Building §24 is modelling, not research. **W-E2 (2026-08-29): the 29 valkretsar drawn as a cartogram of support AS POLLED (`SwingRegions.cs`, `GameController.CampaignMap.cs`); per-valkrets demographics and priorities remain W-F4's.** |
+| 25 | Swing Regions | **NEW — BUILT 2026-08-29 (W-E2, `1ba51ca`)** | Pure derivation from §24 + §20; the spec's "do not hand the player the answer" rule makes it an intelligence product, not a readout. **W-E2 (2026-08-29): the index `100 × max(0, 1 − gap/20)` DERIVED from a poll of the valkrets, too-close-to-call when the lead is inside its own ±, and §36's gate as ABSENCE — an unbought valkrets carries no reading.** |
+| 26 | Get-Out-The-Vote | **NEW → BUILT 2026-08-29** | `Elections/TurnoutModel.cs` — the spec's five-factor product (base × engagement × mobilisation × enthusiasm × salience), clamped, with the GOTV actions left as the NEW half. **W-B11 (2026-08-29): `GotvModel.cs` — the mobilization INPUT as volunteer-bound contacts per region and per party on §35's curve; worked valkretsar rise, the other 26 stay at exactly base, the nation within 2002–2022's range.** |
+| 27 | Election-Day Simulation | **NEW → BUILT 2026-08-29** | `Elections/RegionalAggregation.cs` — per region, per group: population × eligible × turnout × preference, aggregated, plus `Final Vote = Expected + Election Noise` on its own named seeded stream. **W-D1 (2026-08-29): `ElectionDay.cs` — every valkrets counted from W-B11's `RegionVotes`, noise on `ElectionNoise` at the declared 1.2 pp, national σ 0.259 pp against 0.260 predicted by 1/√N_eff on the real 29; seed-exact.**  **W-F1 2026-08-30: the electorate is now SOURCED per valkrets** (`valkrets_votes_2022.csv` column 11, Valmyndigheten's antalRostberattigade). The DERIVED "2018 valid / a national turnout" is retired: it read 7,429,141 against the published 7,775,390, 4.5 % low, because one national turnout was applied to constituencies whose real turnout ran 77.22 % to 87.56 %. |
+| 28 | Vote-to-Seat Conversion | **EXISTS — DONE AND PROVEN** | `SeatAllocation` (d'Hondt, Sainte-Laguë, modified Sainte-Laguë, per-district sum), `Rosatellum` (floored Hare ×2), `ElectoralCollege` (WTA + ME/NE district method). ⚠ **Scoped 2026-08-31 (C-A4).** This row read *"Five of six real chambers reproduce EXACTLY from official counts"* — the broadest claim in the repo, and one of the five was a stage rather than a chamber. What is measured: **FOUR chambers reproduce end to end, each for ONE named election** — Sweden 2022 (total absolute seat deviation **0**), Germany 2025 on `kerg2.csv`'s exact counts (**0**), Poland 2023 through the real 41-district d'Hondt (**0**; the national-d'Hondt run's **70** is a deliberate signature of the wrong system), and the USA's 2024 Electoral College (312/226, exact). **Italy 2022 reproduces its NATIONAL PROPORTIONAL STAGE exactly — 245 seats of the Camera's 400 — and its sub-national stages are NOT RUN**, which the backtest states in its own output. France is uncovered. ⚠ **And "exactly" is per election, never in general: Sweden 2014 does NOT reproduce through the same allocator** (6 seats absolute error, register row S-6). The spec's PR / FPTP / mixed-member triad is covered; France's two-round SMD is the one uncovered family. **W-D2 (2026-08-29): `SeatConversion.cs` — vallagen 14 kap. on the live path (fixed seats per valkrets by the 310th-part rule, totalfördelning, återföring, adjustment); 2022 seat-for-seat from an `ElectionDay.Result`; the 12 % and return branches made to fire.**  **W-F1 2026-08-30: the seat-for-seat claim now rests on the REAL 29-constituency counts, not on 2022 national totals spread by 2018's shape.** It still reproduces 8 of 8 exactly - but the fixed/adjustment split moved for four parties (KD fixed 10 -> 13, S 105 -> 104, V 17 -> 16, MP 11 -> 10) and Stockholms lan 39 -> 40 fixed. The totals were right by construction; the account of HOW Sweden produces them was not. |
+| 29 | Coalition Formation | **NEW → BUILT W-D3 (model) + W-E8 (screen), 2026-08-30** | Sourced coalition structures exist for Italy and Poland; the negotiation model does not. **W-E8 draws it: the arithmetic and pivotality, the 120 arithmetic majorities a red line refused, and DECLARED lines stated flatly against DERIVED ones shown as a distance — §36's line, since a measured gap is not a refusal anyone uttered. Three outcome states, all falling out of the model.** **W-D3: `CoalitionFormation.cs` — compatibility DERIVED from CHES positions, negotiating power DERIVED as Banzhaf pivotality from the seats, red lines in two KINDS (derived distance / declared-and-cited) and two STRENGTHS (will-not-sit / will-not-depend), and a basis mandatory on every one. The mechanism is the chamber's own investiture rule (negative parliamentarism, with abstention), plus two derived rules: support is a comparison (no party left out suits me better) and a government must be one nobody walks out of (office share × agreement). Sweden 2022 returns the Tidö arrangement seat for seat — M+KD+L in cabinet, SD carrying it, 176 of 349 — and refuses S+SD's 180 on a red line. §29's leader compatibility and personal relationships DEFERRED for want of a source, asserted absent; government collapse in the enum and never produced (no governing phase yet).** |
+| 30 | Election Results Screen | **NEW → BUILT W-E6 + W-E7 (2026-08-30)** | UI. **W-E6 built board 1h (election night) as a Canvas screen — the last unbuilt board of §A.14 — filmed in four states; W-E7 built the results-and-attribution sheet (`GameController.CampaignResults.cs`): totals, seats, turnout, the regional table, gains and losses against a NAMED prior election, and W-D4's ledger as the "why". Both harness-only under R-N2. §30's demographic block is drawn ABSENT, not invented — the electorate is one group until W-F4 and §0.4 forbids inventing demographics. Turnout and the electorate are the PUBLISHED figures, not this model's own ratio.** |
+| 31 | Post-Election Analysis | **EXTENDS → BUILT W-D4 (2026-08-30)** | ⚠ **The game already has exactly this idiom**: the approval attribution ledger decomposes a number into named contributions the boundary audit proves. §31's "why you won" table is that ledger pointed at a vote share. **W-D4: `VoteAttribution.cs` — ten sources (the party's own eight §12 actions, the attacks aimed at it, every other party's campaigning as one bloc), contributions RECORDED where they land and decomposed by SHAPLEY, so `Σ lines == close − baseline` is an IDENTITY (largest residual 1.77e-16 of a share, tolerance 1e-12) rather than a tolerance, and order-independent. No line can be authored prose: the instrument carries no string field or property at all, asserted by reflection. Momentum, debates and scandals deliberately have NO line (they move the poll, not the preference — their effect is inside the action lines); turnout and tactical voting are a later stage and need a second instrument.** |
+| 32 | Campaign AI | **NEW → BUILT W-C1 (2026-08-29), EXTENDED W-C2 (2026-08-30)** | Personalities over §12's action set. `CampaignAi.cs`: the five as parameters over §33's terms; chaotic and populist measurably distinct, the rational three collapse onto the free interview — PENDING W-B9 / W-B4-B11, recorded not forced. **W-C2: every personality gets a `Reactivity` (professional 1.0, establishment 0.7, grassroots 0.6, populist 0.5, chaotic 0.0) and reacts in its own idiom - the rule sends it, its affinities choose the act, so the populist rallies where the establishment holds a town hall. Measured against a scripted player working one valkrets: the professional 8 of its 9 local acts there, the chaotic party 0 of 598. Its cost: reactivity moves the broadcast party onto the ground and 2a-iv (est/grass) falls back to PEND at 0.291, waiting on W-F5's unequal money.** |
+| 33 | AI Decision-Making | **NEW → BUILT W-C1 (2026-08-29), EXTENDED W-C2 (2026-08-30)** | Expected-value scoring; needs §12 and §20. Built in ONE unit (compatibility points): §42's band on MEASURED inputs × affinity × probability of success − money at the action's own §35 efficiency, per hour, × risk on the band's relative width; no kronor-to-votes exchange rate authored; the attack verb of the spec's example left to W-B8. **W-C2: §33 cannot see a threatened region (a party holds no regional standing in its own books, and a small valkrets's audience is a fraction of an office region's), so reallocation is a RULE beside the scoring, as the manager's plan is - `CampaignAi.Reactions`: the rule decides WHERE and WHETHER (a push past the personality's threshold into a region it has no office in; the attacks aimed at it), the personality decides WHAT (the local act and the message its own affinities prefer among those the day's pace can carry, on the issue its own measurement makes most salient, never the world's). Paid from the same reserve, resolved through the same seams, simply first.** |
+| 34 | Campaign Mistakes | **N/A** | A property the action set must have (recoverable, non-dominant), not a separate unit. Becomes an acceptance test for §12. |
+| 35 | Diminishing Returns | **N/A** | A curve shape every spend path must obey, not a unit. Enforced inside §9/§12; noted as a rule so it cannot be forgotten. |
+| 36 | Hidden Variables | **N/A** | An information-architecture principle governing §20/§21/§25 — implemented as *what the UI is not allowed to show*, which is a rule about other sections. |
+| 37 | Campaign Staff Progression | **NEW — DEFERRED 2026-08-30 (W-B5)** | Between-election progression. **W-B5 records the deferral in the type: `CampaignStaffMember` is a role and a salary with no experience, level, speciality or growth member (asserted by reflection). A later item.** |
+| 38 | Long-Term Political Capital | **NEW** | Cross-election persistence. **RULED BUILT 2026-08-30 (R-CL3)** — register row C-D4: party reputation and organisational strength persisted on `Country` beside `ElectionHistory`, `SaveVersion` 2 → 3, and ⚠ donor and grassroots networks specified ABSENT rather than invented, no `Donor` concept existing anywhere. It rides on top of register row S-1: the electorate does not yet move, so two elections still return the same chamber. |
+| 39 | Core Simulation Formula | **EXTENDS — PARTIALLY BUILT 2026-08-29** | Of the thirteen layers: compatibility ✔, ideological match ✔, loyalty/preference ✔, turnout ✔, regional ✔, noise ✔ (built today); government performance EXISTS (§19) and needs only a read; base support, candidate appeal, campaign effects, media, momentum and tactical voting remain NEW. |
+| 40 | Unity Architecture | **N/A as written — CONFLICT WITH A STANDING RULING** | The spec asks for ScriptableObjects and a 13-manager MonoBehaviour tree. **R-EL1 rules the PoliSim idiom wins: catalogs in code, not ScriptableObjects**, and ⚠ **R-N2 forbade wiring anything into the live game until it retired at W-G1 (2026-08-30); the ruling that survives is R-EL1, and it is what still makes this row N/A**. The spec's *modularity* is honoured — every unit built today is a separate pure static class in `PoliSim.Elections` — but its Unity-object prescriptions are dropped by ruling, not by preference. Revisit only if Elias strikes R-EL1. |
+| 41 | Recommended Data Model | **EXTENDS** | The field lists are adopted as the SHAPE of the types (`ElectionTypes.cs` follows PartyData/VoterGroupData/RegionData/CandidateData closely) — as plain C# structs and static tables rather than ScriptableObjects, per R-EL1 as above. |
+| 42 | Important Design Principle | **N/A as a unit — BINDING AS A RULE** | The causal chain (action → reach → salience → exposure → relevance → credibility → persuasion → preference → turnout → regional vote → electoral system → seats) is the acceptance criterion every §12 action must satisfy. Nothing to build; everything to obey. |
+| 43 | Example Campaign Scenario | **N/A** | An illustration. ⚠ R-N4 standing: **not one of its numbers ships as data** (+4.1 %, 31.0 → 31.8 %, the party shares) — they are narrative, not seeds. |
+| 44 | Design Philosophy | **N/A** | Philosophy. Its loop is the shape the finished system should have, and its question ("where can I actually gain votes?") is what §25 and §31 exist to make answerable. |
+
+### Tally
+
+**EXISTS 3** (§18, §19, §28 — one of them, the seat rung, already proven exact against five real
+chambers) · **EXTENDS 10** (§2, §4, §6, §13, §16, §17, §20, §24, §31, §39, §41 — counting §39 and
+§41 as extends) · **NEW 22** · **N/A 9** (§1, §34, §35, §36, §40, §42, §43, §44 — eight principle
+or illustration sections — plus §40's ruling conflict counted among them).
+
+**Built on the day this table was written, from NEW to done: four** — §7 compatibility, §8 loyalty,
+§26 turnout, §27 election-day aggregation with noise. Together they are the spine of §39.
+
+⚠ **The honest count, re-derived 2026-08-31 (C-0.2).** The class column above was written on 2026-08-29
+and five rows kept saying NEW after the thing was built (§3 at W-B1, §12 at W-B3, §17 at W-B8, §21 and
+§22 at W-B10; §25's prose said built while its class did not). Corrected in place, each citing its commit.
+**Against the tally's 22 NEW sections, exactly two are genuinely unbuilt at HEAD: §5** (voter groups —
+its DERIVED-first premise was falsified at W-F4; it needs sourced SCB marginals, register row C-D1) **and
+§37** (staff progression, deferred by name at W-B5). §38 is ruled built (R-CL3, row C-D4). Reading this
+table's class column without this paragraph would overstate what is left by an order of magnitude.
+
+**Day-2 update (2026-08-29).** §24's structural half is now built too (`RegionalVoteModel.cs`:
+per-region electorate weights and per-region party availability, sourced for Germany) — the row
+moves from EXTENDS-with-data-only to **EXTENDS, partially discharged**; what remains of §24 is
+per-region voter-group composition and per-region priors. §8 and §27 were **measured against
+reality** rather than merely built: both correct the deviations they were named for, but a uniform
+loyalty constant regresses Italy, so R-EL13's wiring gate FAILED and nothing was wired. The next
+unit the measurements name is **deriving loyalty per country (or per group, as §5/§8 specify)
+rather than assuming one constant** — see the Day-2 report (retired at C-G1, 2026-08-31; R-EL13's FAIL is carried in the elections log and the gap table).
+
+### D0 reconciled — what this system replaces
+
+`MISSING_PREREQUISITES.md` §D0 (item 10, "REALISTIC POLITICS AND ELECTIONS", gated on Sweden's
+13 September 2026 vote) is the *same work* this spec describes, scoped before the spec existed.
+The reconciliation is exact: **this spec IS item 10's political model**, and D0's collision map is
+its migration plan. ⚠ **The migration RAN on 2026-08-30 (W-G1, `a289e1e`); the account below is
+re-derived 2026-08-31 (C-0.2) because it described the collision as pending.** What retired:
+`PartyArchetype`'s four archetypes (53 real parties replaced them — §4), the hardcoded
+`TotalSeats = 200` (six real chamber sizes — §2/§28), and **seat drift with them** — a parliament's
+composition does not drift week by week with the government's approval, it changes at an election. What
+survived: bill scoring (re-expressed over the measured chamber rather than left alone), every renderer,
+and `PublicationSystem`, promoted rather than replaced — §19's perception layer and §20's polling
+substrate. ⚠ `ElectionSystem`'s approval-threshold win condition was **left exactly as it was**: W-G1
+could not replace it because the game assigned the player no party identity, so the vote model ran beside
+it. That question was **ruled 2026-08-30 as R-CL1** and the replacement is register row C-R4.
+
+**What still gates:** the 13 September re-seeding (register row K-1, a calendar item) — and nothing else.
+R-N2 retired with the wiring it governed, so "every unit built today is reachable from no gameplay path"
+is no longer true: for the two countries whose law is modelled, the units run in the live game.
+**Genuinely unbuilt in this table: §5** (voter groups, blocked on sourced marginals — row C-D1) **and
+§37** (staff progression, deferred by name). §38 is ruled built at row C-D4; every other NEW section has
+shipped.
+
+
+## 185. `ELECTIONS_PROTOTYPE_LOG.md` — RETIRED 2026-09-02, migrated verbatim (2823 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## Elections prototype — the running log (worklist the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `ELECTIONS_PROTOTYPE_LOG.md`) — Elias's kickoff of 2026-08-29 13:02, installed at root verbatim 2026-08-29 evening; until then it lived only in the session transcript)
+
+**Purpose (W-H3):** every `[AUTHORED-DRAFT]` value and every reversible decision, one strikeable
+line each, in one place. Items are recorded as they are consumed, in execution order.
+
+---
+
+### Standing rulings recorded into their owning documents
+
+- **Non-circularity is an INVARIANT, not a convention** (2026-08-29) — loyalty always derives from
+  the two elections *preceding* the one modelled. Written into `LoyaltyModel`'s own class doc so a
+  future session cannot regress it: modelling the next election uses the two most recent results;
+  backtesting 2022 uses 2013 and 2018, never 2018 and 2022. W-A3 runs in the backtest direction.
+- **LOW CONFIDENCE reaches the gate, not just the log** (2026-08-29) — each country's name-join
+  coverage prints beside its MAD in the gate table, and a MAD change in a low-coverage country is
+  stated as weaker evidence. A gate passing on the high-coverage countries while a low-coverage one
+  stays noisy is reported as **a real pass with a stated scope**, never as four equal countries.
+  Recorded in `GateReRun`'s doc and in the verdict text itself.
+- **USA and France carry NO loyalty value at all** (2026-08-29) — one election on disk means
+  volatility is uncomputable, and an absent value the model refuses to run on is honest where a
+  silent default would reinstate the very constant W-A1 removed. `LoyaltyModel.CanDerive` states
+  it in code. Billed: the USA's second election as a data line; France stays out of scope (R-EL10).
+
+---
+
+### W-A1 — loyalty derived from volatility · DONE (`10d76fc`)
+
+- **[call]** Formula: `loyalty = 100 × (1 − |v(T−1) − v(T−2)| / max(v(T−1), v(T−2)))`. Relative,
+  not absolute, so a 5-point move means the right thing to a 40 % party and a 6 % one; the larger
+  of the two as denominator so doubling and halving are symmetric (both 50). **Zero authored
+  constants** — the only inputs are two sourced elections.
+- **[call]** A party absent at T−2 scores loyalty **0** — the correct statement of newness (nobody
+  had a habit of voting for it), not a fallback.
+- **Result:** Sweden's size-weighted mean loyalty 89.3, Italy's 48.4; Italy's FdI **16.7** and M5S
+  **47.2** against Day-2's global 60 — the constant that crushed FdI in Day-2's gate.
+- **Coverage constraint discovered and recorded:** name-join continuity covers ~99 % of the vote in
+  Sweden, ~95 % Germany, **~53 % Italy, ~38 % Poland**. Below ~80 % the input is contaminated by
+  organisational reshuffling. Independently supports Sweden as the prototype target (0.1).
+- **Shortfall against the done-when's "all six":** USA and France not computable — billed.
+
+### W-A2 — per-region priors, §27+§8 composition · DONE
+
+- **[call]** Region **electorate weights come from the PRIOR election**, not the target — stricter
+  than Day-2, which used the target's own weights. The target's turnout therefore cannot leak in.
+- **[call]** Party **availability** comes from the target election's ballot access, which is known
+  before any vote is cast and so is not a prediction.
+- **[call]** "No worse" is judged at a **declared tolerance of 0.01 pp**, with the raw delta printed
+  at four decimals so the tolerance can never hide a regression. Needed because where regions are
+  homogeneous in availability (Sweden: all eight parties in all 29 valkretsar) §27 is correctly a
+  **no-op**, and the only residual is whether damping is applied per region then summed, or once
+  nationally — Jensen-type aggregation order, not model quality.
+- **Result:** Germany **5.17 vs 5.85** §8-only (−0.68 pp, the composition fixed); Sweden delta
+  **+0.0037 pp** inside tolerance. Proven on two countries, as the done-when requires.
+
+### W-A3 — the gate re-run · DONE
+
+**No parameter was re-fitted.** Spatial electorates are Day-1's; loyalties are computed from
+sourced returns; the run uses the **backtest direction** throughout.
+
+| country | coverage | Day-1 | Day-2 | Day-3 | verdict |
+|---|---|---|---|---|---|
+| SWEDEN | 99 % | 3.25 | 1.75 | **1.46** | IMPROVED |
+| GERMANY-8 | 95 % | 5.78 | 4.66 | **5.36** | IMPROVED |
+| POLAND | 38 % | 6.99 | 3.84 | **3.15** | IMPROVED · LOW CONFIDENCE |
+| ITALY | 53 % | 5.61 | 6.69 | **7.14** | REGRESSED · LOW CONFIDENCE |
+
+**VERDICT: PASS WITH STATED SCOPE** — both high-coverage countries improved on Day-1. Italy still
+regresses, and its loyalty input is known to be contaminated, so that is weak evidence against the
+model rather than a model failure. The pass is real; its scope is the two countries whose data
+supports the claim.
+
+**Three findings reported rather than smoothed:**
+
+1. **Germany's Day-3 (5.36) is WORSE than its Day-2 (4.66).** Derived loyalty beat Day-1 but lost
+   to the uniform 60 for Germany specifically. The gate's rule is improvement on Day-1, which is
+   met — but the honest reading is that Germany's 2017→2021 volatility is not a good predictor of
+   2021→2025 behaviour, and saying so is worth more than the passing number.
+2. **§27's value is concentrated in regionally-confined parties.** In W-A2's nine-party set (with
+   SSW) both-layers beat §8-alone; in W-A3's eight-party like-for-like set (SSW excluded, per
+   Day-1's basis) it does not (5.80 vs 5.36). SSW is the party §27 exists to fix — remove it and
+   the layer has little left to correct in Germany.
+3. **Italy's FdI is not a loyalty problem.** Even at its derived loyalty of 45.1 it is under-
+   predicted by 19 pp, because FdI went 4.35 → 29.27 % on a surge no pre-2022 data contains. That
+   is a **missing-mechanism** finding (leadership, opposition positioning, a collapsed government),
+   not a calibration one, and no loyalty value will fix it.
+
+### Billed to Track F as a consequence
+
+- **USA second election** (2020 + 2016 House national shares) — would make the USA's loyalty
+  computable; the only country of the two where it would pay for itself.
+- **Successor maps for Italy and Poland** — sourced bookkeeping lifting the name-join: the PD
+  lineage, Lega's transformation, PiS/United Right composition, KO's assembly. **Build only if
+  either becomes a playable target**; until then their gate rows stay LOW CONFIDENCE by design.
+
+### W-A5 — perceived vs actual performance (§19) · DONE
+
+The gap table called §19 an EXISTS row, and it was right: `PublicationSystem` already writes
+`Country.Published` on the real release calendar with a noisy preliminary print and a later
+revision, while `Country.State` holds the truth. **The vote model now reads `Published` and never
+`State`** — `PerceivedPerformance.Actual()` exists only so the divergence can be reported, and
+nothing feeding a vote share may call it.
+
+- **[AUTHORED-DRAFT]** `UnemploymentNeutral = 6.0 %`, span 6.0 — 6 % reads neutral, 0 % reads 100.
+- **[AUTHORED-DRAFT]** `InflationNeutral = 2.0 %`, span 6.0 — and **deviation either way is
+  punished**: deflation is not a bonus, which a naive lower-is-better mapping would wrongly imply.
+- **[AUTHORED-DRAFT]** `GrowthNeutral = 2.0 %`, span 6.0.
+- **[AUTHORED-DRAFT]** `IncumbentSwingSpan = 0.15` — ±15 % on the incumbent's preference at the
+  extremes. Deliberately modest: §39 forbids any single variable dominating, and a government that
+  could win on published statistics alone would make the campaign layer pointless.
+- **[call]** A stat that has **never been published** drops out of the average rather than being
+  filled from `State` — the electorate has no figure to react to, and leaking the truth in would
+  defeat the whole mechanism.
+
+**Proven on a real six-year run** (Sweden, the release calendar producing the lag rather than any
+injection): 36 of 36 samples show the published figure differing from the live one; **36 of 36
+match an earlier true value more closely than the current one**, i.e. perception tracks the
+publication rather than being merely noisy; the incumbent's modelled share differs at every sample
+depending on which series drives it; and the divergence prints as a signed §31-style attribution
+line, every term derived.
+
+**Finding, recorded rather than dressed up:** in a *calm* economy the effect is small — the largest
+published-vs-true gap over six years was **0.052 pp** of unemployment and the largest incumbent
+effect **0.111 pp** of its own share. The mechanism is real, correctly wired to perception, and
+currently quiet; it is a **shock** (a recession scenario, a sharp inflation turn) that would
+exercise it properly, because that is when preliminary prints and revisions diverge most. Worth
+re-measuring under `Italy Debt Crisis` or a comparable scenario before judging the magnitude.
+
+### W-B1 — the campaign clock and calendar (§3) · DONE
+
+`CampaignClock.cs` (pure, unwired) lays §3's phases on the game's existing day clock:
+**Dormant → PreCampaign → Campaign → ElectionDay → Concluded**. Nothing advances anything; the
+type answers "what phase is this date" and "what is legal in it", and the turn loop is untouched.
+
+- **[AUTHORED-DRAFT]** `DefaultCampaignWeeks = 8` — the worklist's figure for Sweden's window.
+- **[AUTHORED-DRAFT]** `DefaultPreCampaignWeeks = 26` — long enough for §3's preparation verbs to
+  matter, short enough that the game is not a spreadsheet for half a year. Strikeable.
+- **[call]** Phases **gate legality**, and a verb outside its window is *unavailable*, not merely
+  weaker — a rally in the pre-campaign is not a thing. That is what makes the pre-campaign a
+  different game rather than a slower version of the same one.
+- **[call]** Which verbs continue into the campaign: fundraising, hiring, polling, opening an
+  office and changing strategy do (§11 says strategy may change during); **candidate training,
+  ad preparation and policy development do not** — by the campaign they are what you already have.
+- **[call]** Election day leaves only the ground game (§26): GOTV and door-knocking. Persuasion is
+  over; turnout is not.
+
+**Proven** by walking all 279 days from before the pre-campaign to after polling day: five
+transitions, each on its computed date (pre-campaign 2026-01-18, campaign 2026-07-19, election
+2026-09-13, concluded 2026-09-14), the sequence monotonic with no phase revisited; legality flips
+at the boundaries; **a snap election works as pure data** (3-week campaign, 1-week run-up, no code
+change). Legal-action counts by phase: Dormant 0 · PreCampaign 8 · Campaign 13 · ElectionDay 2 ·
+Concluded 0.
+
+**One self-inflicted test error, caught and recorded:** assertion 5's own date arithmetic was off
+by a day (it asserted the campaign was open on 2027-02-27 when the campaign opens on the 28th).
+The code was right; the test was wrong, and it was the test that changed.
+
+### W-B2 — resources and §35's diminishing returns · DONE
+
+`CampaignResources.cs` (pure, unwired). Three resources because they constrain differently:
+**money** (raisable, spends on everything, obeys §35), **time** (a fixed hours budget per campaign
+day that cannot be saved, borrowed or bought — the resource that makes a campaign a series of
+choices rather than a shopping list), and **volunteers** (§26's ground-game stock).
+
+**§35 as a DECLARED CURVE, not a table of magic numbers:**
+`effectiveness(spend) = 1 − exp(−spend / scale)`. Smooth, bounded, with marginal return strictly
+decreasing everywhere — so the first krona beats the millionth *by construction*, and there is no
+threshold a player can game by spending just over it.
+
+- **[AUTHORED-DRAFT]** `MoneyScale = 500 000` SEK — chosen so §35's four prose bands fall out of
+  ONE formula: 18.1 % of the effect at 100k, 63.2 % at 500k, 98.2 % at 2m, ~100 % at 10m.
+  ⚠ Re-derive from real party spending when W-F5 sources it.
+- **[AUTHORED-DRAFT]** `HoursPerCampaignDay = 12` — long enough to be a real day, short enough that
+  §9's action costs (rally 4, interview 2, debate prep 6, tour 8) force daily trade-offs.
+- **[AUTHORED-DRAFT]** `VolunteerHoursPerDay = 3`.
+- **[call]** An unaffordable spend is **REFUSED, not clamped** — a clamp would let an over-budget
+  campaign act at a silent discount, which is how a resource system becomes decorative.
+- **[call, threshold]** The done-when's "first krona ≫ millionth" is asserted at **>5×** and comes
+  out at **7.4×**, not the 100× a first draft assumed. The reason is a real trade-off, not a
+  weakened test: at a 500k scale the millionth krona is only two scale-lengths out. A smaller scale
+  would make the ratio look far more impressive (200k → ~150×) **and would be the wrong curve**,
+  because it flattens the 500k→2m band that §35 explicitly calls "moderate impact" into nothing.
+  The scale reproduces the spec's bands; the ratio is a consequence. The dramatic figure is
+  reported alongside: the five-millionth krona is worth **22 026×** less than the first.
+
+**Proven:** the curve strictly increasing and strictly concave over a 0–5m sweep (201 samples);
+return per krona falling monotonically across all four bands (1.81E-6 → 2.29E-9); an unaffordable
+spend refused with the pool untouched; a negative pool impossible to construct; hours resetting
+daily while money and volunteers carry; and a worked campaign day where the fourth action is
+correctly refused for want of hours.
+
+---
+
+### Standing rulings from the W-A / W-B1–2 review (2026-08-29)
+
+- **Germany's Day-3 regression stands as reported, not chased.** Derived loyalty beat Day-1 and
+  lost to the uniform 60 on that one pair (5.36 vs 4.66). A principled method occasionally worse
+  than a lucky constant is still the better method — that constant was right for Germany by
+  accident and catastrophically wrong for Italy, which is how it failed Day-2's gate. Recorded in
+  `LoyaltyModel`'s doc as **a known limit of two-election volatility**: if a playable Germany ever
+  needs it closed, the fix is **a longer election window**, never a re-introduced constant.
+- **§27's regional value is correctly concentrated in regionally-confined parties.** That is the
+  layer working, not a shortfall: a regional layer that also moved nationally-uniform parties would
+  be adding noise dressed as signal. The scope is now written into `RegionalVoteModel`'s doc with
+  an explicit instruction not to "generalise" it, and the `ElectorateOverride` hook is reserved for
+  a **non-circular** source of regional variation and no other.
+- **Italy's FdI is the standing MISSING-MECHANISM TEST CASE.** ~19 pp under-predicted at any
+  loyalty, because 4.35 → 29.27 % is a surge no pre-2022 data contains. Registered as an **open
+  test against §13 media, §18 event salience and §22 momentum**: when W-B9, W-B10 and event
+  salience land, re-run Italy 2022 and report whether the surge becomes reachable. **Reachable =
+  the strongest validation this model can get; unreachable = a named ceiling, recorded as such.**
+  Do not tune toward it — the value of the test is destroyed the moment anything is fitted to pass it.
+  ✅ **CLOSED 2026-08-31 (C-A1): UNREACHABLE, and the ceiling is named — PER-GROUP LOYALTY.**
+  Measured on both paths that exist: the blended path predicts **10.31 %** (dev −18.96 pp, derived
+  loyalty 45.1) and the spatial layer alone **17.82 %** (dev −11.44 pp); the gate's Italy MAD is
+  **7.14 pp**, still REGRESSED at 53 % coverage. ⚠ **Two of the three systems the test named cannot
+  move a vote at all, by construction** — `MomentumTracker.Apply` has exactly two call sites and both
+  are the argument to `PollingSystem.Conduct`, so media → coverage → momentum terminates in the POLL
+  and election day counts `truePreference`. Salience is the one that does reach persuasion. ⚠ **And
+  the shortfall it would have to close is SOLVED, not estimated: FdI needs a persuaded share of
+  58.58 % against the 17.82 % the model produces — ×3.29** — while λ = 0.451 anchors that fraction of
+  its result to its own 2018 prior by construction. Closing it is per-group loyalty (§5/§8), i.e.
+  register row C-D1, not a constant. **Nothing was tuned.** `ItalySurgeCeilingDiagnostic`;
+  `COMPLETED.md` §87.
+
+### W-B3 — §12's eight actions through §42's chain · DONE
+
+`CampaignActions.cs` (pure, unwired). **The item's bar is met architecturally, not by convention:**
+`ChainTrace` has no share, preference or party member, so an action has **nowhere to put a vote
+delta**. Its only outputs are persuasion and enthusiasm *pressures*; `CampaignPressure` converts
+persuasion into a **compatibility bonus**, and the preference is then recomputed by the same
+`PreferenceModel` that runs with no campaign at all. The campaign moves the inputs; the output is
+always derived.
+
+The chain multiplies at every stage — reach × attention → exposure; salience × issue-match →
+relevance; × credibility × weight → persuasion — which is what makes "it travelled the chain"
+checkable rather than asserted.
+
+**Proven three ways** (one would have been too easy):
+- **structural** — reflection over `ChainTrace` finds no member that could hold a share;
+- **behavioural** — for all eight actions, zeroing any ONE of audience / salience / issue-match /
+  credibility drives persuasion to exactly zero (8 × 4 = 32 cases, 0 failures). A direct `+2 %`
+  would survive all four;
+- **end to end** — a week of campaigning moves party 0 from 36.550 % to 36.741 %, shares still sum
+  to 1, and **the decisive test**: the identical campaign with the chain severed (zero audience)
+  moves *nothing*.
+
+**[AUTHORED-DRAFT]** the eight actions' costs, hours and weights (hours follow §9's own figures
+where it gives them: rally 4, interview 2, policy announcement 3); `PersuasionPerCompatibilityPoint
+= 40 000`; `EnthusiasmPerTurnoutPoint = 60 000`.
+
+**Two calibration findings, recorded not smoothed:**
+1. **The magnitude is probably too small to be playable yet.** A hard week — three rallies, two
+   town halls, a national TV buy, daily door-knocking — moves the party **+0.19 pp**. Over a full
+   8-week campaign that compounds to roughly a point and a half. The mechanism is right and the
+   *scale* is a play-calibration question owned by `PersuasionPerCompatibilityPoint`; it should be
+   set once there is a full campaign loop to feel, **not** guessed at now.
+2. **Free actions get full reach, which makes the interview dominant per hour** (2 268 persuasion
+   for 2 hours and no money, against a TV buy's 1 124 for 500 k). Defensible — an interview's cost
+   is time and access, not money — but it means a player who only does interviews is currently
+   optimal, which §34 says the design should not reward. The fix is an availability/fatigue limit
+   on earned media (a §13 concern), noted for W-B9 rather than patched here.
+
+### W-B10 — polling and momentum (§20–§22) · DONE
+
+`Polling.cs` (pure, unwired). **The structural rule: the UI never sees the truth.** A `Poll` carries
+sampled shares, sample size, MoE, field date and house — and no reference to the true preference
+vector, proven by reflection. `Conduct` is the only function that touches truth, and it can only
+return a `Poll`.
+
+**Three error sources kept separate because they behave differently:** sampling error (random,
+shrinks with √n, and is what the MoE describes), **house effect** (systematic, per-house,
+per-party, and does NOT shrink with sample size), and turnout error (deliberately absent — it is
+§26's at election time, named so the omission is visible).
+
+**Measured, over 2 000 replays of an unbiased pollster:**
+- **coverage 94.63 %** against a nominal 95 % — the margin of error is *honest*, which is the only
+  test of a MoE that means anything;
+- **0 of 2 000** polls equalled the truth exactly;
+- a house's lean **survives a 10× larger sample** (2.34 pp at n=1000, 2.35 pp at n=10 000) while
+  sampling precision improves by **exactly √10** (±2.92 → ±0.92, ratio 3.16);
+- §21's purchase is real: ±3.67 pp for 40 000 kr against ±1.42 pp for 350 000 kr.
+
+**[AUTHORED-DRAFT]** the house roster and their leans; `MomentumHalfLifeDays = 7.0`.
+
+**Finding — §22's own worked example is internally inconsistent.** Its three points for a +2.0
+shock (~1.4 after several days, ~0.4 after two weeks, ~0.0 after a month) imply half-lives of
+~9.7, ~6.0 and ~5.3 days respectively: the spec describes decay that *accelerates*. Rather than
+invent a bespoke curve to hit three mutually contradictory numbers, this keeps a plain exponential
+at the best-compromise 7 days (+2.0 → 1.22 → 0.50 → 0.10) and the harness asserts **the shape the
+spec actually requires** — monotone, materially reduced within a fortnight, substantially gone
+within a month. If play shows the tail is too fat, the honest upgrade is a **named second
+mechanism** (a news-cycle half-life distinct from a reputation one, §38), not a fudged exponent.
+
+---
+
+### Standing rulings from the W-B3 / W-B10 review (2026-08-29)
+
+- **Campaign magnitude stays untouched until there is a loop to feel.** +0.19 pp for a hard week
+  (~1.5 points over eight weeks) is roughly right for a real campaign and probably wrong for a
+  game — but feel cannot be calibrated against a loop that does not exist.
+  `CampaignPressure.PersuasionPerCompatibilityPoint` is left alone through W-E1/E3/E4, after which
+  a **play-calibration list** opens in the records with this constant as its first entry. It will
+  not be the last thing that needs a human's hands.
+- **Interview dominance is W-B9's, as a MECHANISM, not a nerf.** Earned media is free because
+  *someone else decides whether to book you*, so the scarce resource is **media interest**.
+  Implement it in §13 as availability driven by newsworthiness (coverage, momentum, recent events)
+  — never as a flat cost or cap bolted onto the action. This also hands §13's coverage loop a real
+  input: **a party nobody covers cannot buy its way onto the air.**
+- **§22's arithmetic contradiction stands recorded, not fitted.** The compromise 7-day half-life
+  with the inconsistency documented in the constant's own doc is correct. If play later wants
+  accelerating decay, that is a **deliberate design choice with its own reason** — never a
+  reconstruction of §22's inconsistent illustrative example.
+
+### The screen class (Track E, from W-E1 on)
+
+These are the first screens of a new class, not re-skins. Each is its own item: filmed at
+1280/1600/1920/2560, guards silent, `ScreenEdgeCheck` clean, any new label-clipping instance
+treated as the known class. Built structurally in the v3 idiom — rail, one full-bleed sheet,
+ledger rows, instruments, existing sprites; **no sprite is invented**, and a gap becomes a line
+for the Track H Design ask. Every figure is derived; the v3 stage's text budget applies.
+**R-N2 holds: the screens read the model through harness-staged state and are reachable from no
+gameplay path** — the `DrawInstrumentLadder` precedent, where a private field only the screenshot
+driver sets swaps the frame for one capture at a time.
+
+---
+
+### W-E1 — Campaign HQ (2026-08-29)
+
+The first screen of the Track E class. Files: `Assets/Scripts/UI/GameController.Campaign.cs` (the
+screen), `Assets/Scripts/Elections/CampaignSnapshot.cs` (what it is handed),
+`IconLibrary.GetPartyMark` (the five delivered marks' first call site), and the driver's
+`-shotcampaign` pass.
+
+**How R-N2 is held.** The screen draws only when `_campaignScreen` has a value, and the only setter
+is `internal void SetCampaignScreen(CampaignSnapshot?)`, called by the screenshot driver. The branch
+sits beside `_onDesk` inside the frame's content column, so the rail is the real rail and the sheet
+is composed in the frame it will ship in — but there is no rail cell, no tab, no save hook and no
+gameplay path. Wiring at W-G1 is *adding the rail cell*, and nothing else.
+
+**What is derived, stated rather than blurred.** The poll is a real `PollingSystem.Conduct` draw
+against Sweden's SOURCED 2022 vector (`ElectionsData/sweden/returns_2022.md`; Valmyndigheten's final
+count); the ± comes out of that draw; momentum is a real `MomentumTracker` shock decayed on §22's
+half-life; every queued action's cost is read from `CampaignActions.Spec`; the legality list is
+`CampaignLegality.LegalActions`, never restated; the perceived-economy index is
+`PerceivedPerformance.Perceived` read off the LIVE warmed-up country. The war chest, volunteer
+counts and office upkeep are **[AUTHORED-DRAFT] staging** and the pass logs them as such (W-F5 will
+source real party finances). No spec illustration ships as data.
+
+#### Decisions taken and logged (R-N1)
+
+- **~~A mark key is a suffix~~ → a mark key is the FULL file stem.** `IconLibrary.GetPartyMark`
+  takes `"mark_party_se_s"`, not `"se_s"`, so it is the literal one-line wrapper over the
+  `Resources.Load` call `PartyMarkCoverageCheck` already makes and compares against file names.
+  A second naming convention beside the check's would have been the worse outcome; when the party
+  system's seeds land on `main`, their mark names feed both without translation.
+- **Staff rows carry no personal names.** Inventing people is inventing data. The ledger shows the
+  post, whether it is filled, and the draft bonus. Names belong to W-B5 with their own sourcing.
+- **The race bars scale to the leader's band, not to 100 %.** Eight parties none of which clears a
+  third would otherwise read as eight stubs. The axis is NAMED in the methodology line, because an
+  unlabelled rescaled bar is a lie by omission.
+- **The ± band is drawn under the point estimate, not printed beside it.** W-B10's rule that the UI
+  never sees the truth is carried into the view by the type it is handed (a `Poll`, which cannot
+  express a truth); showing the interval as the bar's own width makes the uncertainty part of the
+  reading rather than a footnote to it.
+- **The masthead chips are drawn `disabled`.** Nothing is wired, and a chip that looked live while
+  doing nothing would be the worse lie.
+- **An over-committed queue is shown as over-committed.** `ResourcePool.TrySpend` refuses rather
+  than clamping (W-B2), so a queue genuinely can be unaffordable; the screen says so in the caution
+  ink instead of showing a plausible total.
+
+#### A note on the film harness
+
+`-shotcampaign` demands `-shotcountry=Sweden` and fails the run otherwise: the staged returns are
+sourced *as Swedish*, and filming them under another country's frame would put real Valmyndigheten
+figures beside the wrong flag — exactly the quiet wrongness the data classes exist to prevent.
+
+---
+
+### W-E3 — the action screen (2026-08-29)
+
+Files: `Assets/Scripts/UI/GameController.CampaignAction.cs` (the screen),
+`Assets/Scripts/Elections/ActionScreenSnapshot.cs` (what it is handed),
+`CampaignActions.ChainBand` + `ResolveBand` (the model half),
+`Assets/Editor/ChainBandHarness.cs` (the proof).
+
+**The estimate's range is a propagated measurement.** The band spans §42's chain evaluated at the
+ends of the player's own polling error on salience and issue-match; audience is structural,
+credibility is the party's own record, spend is exact. `ChainBandHarness` sweeps 41×41 points per
+action across all eight (13 448 interior points) to prove the two-corner shortcut really bounds the
+box, and `ResolveBand`'s doc states that a future non-monotone stage forces it to become a sweep.
+
+#### Findings carried forward
+
+- **Enthusiasm carries NO measurement uncertainty.** §42 derives it from exposure and credibility,
+  neither of which is polled, so its band is a point. Possibly wrong about the world — it is odd
+  that caring more about an issue changes persuasion but not motivation to turn out — but a change
+  here is a MODEL change with its own reason and harness, never a width invented at the drawing
+  layer. Recorded, not fixed.
+- **Interview dominance is now visible on a screen**, not just in a harness log: 0 kr, 2 h, one of
+  the longest bands on the sheet. This is the input W-B9's ruling asks for — media INTEREST as the
+  scarce resource (§13 availability driven by newsworthiness), never a flat cost or cap on the
+  action.
+- **Five defects on this item passed every guard.** All five fitted their rects; all five were wrong.
+  The screen class's four-width film and a human reading it are what caught them — recorded because
+  it is the standing argument for the cost of that film.
+- **The dead-space class recurs on both Track E screens**, worse before the per-option bands were
+  added. Stays a ruling and a Track H Design line, not a fix.
+
+#### Next
+
+The play-calibration list opens after W-E4, per the W-B3/W-B10 review ruling, with
+`CampaignPressure.PersuasionPerCompatibilityPoint` as its first entry.
+
+---
+
+### W-E4 — the polling screen (2026-08-29)
+
+Files: `Assets/Scripts/UI/GameController.CampaignPolling.cs`,
+`Assets/Scripts/Elections/PollingScreenSnapshot.cs`.
+
+**§21's decision made arithmetic.** Kronor against percentage points of precision, every ± DERIVED
+from the offer's sample size by `PollingSystem.MarginOfErrorPp` — the same function a conducted poll
+reports with, so the price list cannot promise an accuracy the polls fail to deliver. Sample sizes
+and prices are `[AUTHORED-DRAFT]`; the ladder's SHAPE (each point costing more than the last) is √n
+and is not authored at all.
+
+#### Calls logged (R-N1)
+
+- **Regional / demographic / turnout depth is NOT folded into the cost-per-point figure.** They are
+  different KINDS of answer, not narrower ones; averaging a capability into a precision score would
+  hide the trade §21 exists to pose. Named on the row, excluded from the price, and the footnote
+  says why.
+- **The ± is quoted at a NAMED party's NAMED share**, because a poll's margin depends on the
+  proportion measured — one number for a whole poll would be wrong.
+- **§20's other error sources are printed on the screen that sells precision** — late swings,
+  turnout, undecided voters, tactical voting, house lean — because a price list that sold precision
+  without naming what it does not cover would be selling a false promise.
+
+#### A durable layout fact (now three instances)
+
+**Pagella and the mono document face do not share a line box.** At 1920 an 11 px mono caption is
+21.2 px tall against a 13 px body's 20.1, and `DeskPx`'s integer rounding makes the crossover
+width-dependent. A row that measures its height from one face and draws a label in the other is a
+latent clip. **Rule: such a row takes `Mathf.Max` of both measured heights.** W-E1's momentum
+caption, W-E3's options ledger and W-E4's offer head all now do.
+
+**Both genuine overflow classes today appeared at exactly ONE of the four widths** — the mono/body
+mismatch only at 1920, the over-long caption only at 1280. That is the concrete argument for the
+screen class's four-width film.
+
+#### The list is open
+
+`ELECTIONS_PLAY_CALIBRATION.md` created on the completion of W-E1/E3/E4, per the W-B3/W-B10 ruling.
+Six entries; `PersuasionPerCompatibilityPoint` first; the enthusiasm-vs-salience model question and
+earned-media dominance both carried there with their rulings attached.
+
+---
+
+### W-C1 — AI parties (§32) and expected-value decisions (§33) (2026-08-29)
+
+Files: `Assets/Scripts/Elections/CampaignAi.cs` (the personalities, the view, the scoring),
+`Assets/Scripts/Elections/CampaignRun.cs` (the AI-only campaign — the one place the truth lives),
+`Assets/Editor/CampaignAiHarness.cs` (the proof); `SimulationRandom.Stream.CampaignAi = 8`
+APPENDED (the ElectionNoise precedent; nothing live draws from it).
+
+**The done-when, clause by clause.** (1) *An AI-only campaign completes deterministically* — MET:
+seed 777 twice gives digest `d7670f735d1b8864` and bit-identical final shares, 56 of 56 campaign
+days, no money negative. (2) *The five personalities produce measurably different action mixes* —
+**MET for what the environment can distinguish, PENDING for the rest**: the chaotic and populist
+mixes differ from every other's (min L1 0.604 / 0.504), the grassroots party buys the least
+broadcast, the establishment party is the only one that saves up for the 500 000 kr television buy
+(3 of them), the professional buys the most polling (8) and never acts blind, the populist ends the
+campaign with 0 kr while the professional keeps 1.44 m, the chaotic mix varies most seed to seed
+(0.161 against ≤ 0.039). **Professional, establishment and grassroots are indistinguishable (L1
+0.013–0.024): all three interview all day.** That is the environment's fact, not the AI's — see the
+findings — and the harness prints it as `PEND`, with its measurement, never as a pass. (3) *No AI
+accesses hidden state the player cannot buy* — MET structurally (reflection over `AiView` finds no
+truth-shaped member; `Evaluate` takes the view, the personality, a pool and the reserve and
+nothing else) and behaviourally (no poll → every candidate estimate is BLIND; the never-polling
+chaotic party's 284 decisions were all blind).
+
+#### Decisions taken and logged (R-N1)
+
+- **§33's score is in ONE unit — the model's own compatibility points — and there is no authored
+  kronor-to-votes exchange rate.** The first draft priced money as a fraction of a daily budget
+  against a normalised gain, and that made every money action unaffordable in score terms (a
+  500 000 kr buy against a 120 000 kr day never scored). Replaced: money is priced at the action's
+  OWN efficiency at its smallest outlay (§35 is concave, so a bigger outlay is always less
+  efficient, and `CostWeight` says how much less the personality tolerates); money is otherwise a
+  CONSTRAINT — a reserve the party's `SpendPace` releases over the days left, so a television buy is
+  saved for rather than priced against one day; hours are the binding daily resource, so candidates
+  rank by value per hour.
+- **The horse-race poll is on the view and NOT in the score.** "Targets swing voters" needs §25's
+  swing index (W-E2) and "reacts quickly to events" needs §18's events; neither is invented, so the
+  professional's personality today is polling discipline, risk aversion and pacing.
+- **No attack verb.** §33's worked example scores "Attack Opponent"; §12's eight have none and §11's
+  negative campaign is W-B8's. Not invented.
+- **A personality that will not act blind waits.** `ActsBlind` false (the professional) means no
+  estimate → no action, so it idles until its reserve affords the first poll (day 3 at even pacing)
+  — a visible, correct behaviour rather than a guess dressed as a decision.
+- **Blind means a flat prior, not a wide estimate:** salience and match at 0.5 ± 0.5, so the band
+  runs from nothing to everything and optimism / risk aversion decide whether to act on it.
+- **Public tracker every 7 days, free to every party; the commissioned poll measures issues too.**
+  `CampaignIntelligence.MeasureIssues` is the only new function that touches a truth and returns
+  measurements with the ± their sample size buys — the `PollingSystem.Conduct` idiom.
+- **Candidate bounds:** local actions evaluated in the 4 largest regions by public audience; the
+  general message plus the 2 most salient measured issues; the populist the top issue only.
+- **The staging's data classes, stated:** SOURCED — Sweden 2022 prior and 2018 shares
+  (Valmyndigheten), loyalty derived from them (W-A1), the 29 valkretsar's 2018 valid votes as
+  audiences, EB105 Spring 2026 salience (climate .26, crime .18, defence .17, education .16 — the
+  "% naming among the two most important" read as salience on 0–1; *"threats to democracy"* has no
+  §6 slot and is billed); DERIVED — compatibility at the fixed point where `PersuadedShares == prior`
+  (`c_i = 70 × (prior_i / max)^(1/3)`, so an idle campaign reproduces the 2022 result exactly —
+  asserted); `[AUTHORED-DRAFT]` — issue-match 0.5 flat (W-F2), credibility 0.6 flat (W-F6), war
+  chest 2 400 000 kr each and EQUAL by design so the mixes differ by personality alone (W-F5).
+- **The rational three's collapse is recorded as PENDING, not forced.** An affinity large enough
+  to make the grassroots party knock doors in this environment would be a number chosen to make a
+  test pass — the exact thing the calibration list forbids.
+- **Pre-campaign days are not simulated** (§3's preparation verbs have no price yet); **momentum
+  takes no shock** (nothing that shocks it exists yet) — the view shows zeros honestly.
+
+#### [AUTHORED-DRAFT] values, one line each (all strikeable; the play-calibration list carries the block)
+
+- `PersonalityCatalog` — affinities in `TheEight`'s order (rally, town hall, door, TV, digital,
+  social, interview, policy) · temperature · risk aversion · optimism · cost weight · spend pace ·
+  enthusiasm value · poll every N days · focus on top salience · acts blind · spend multipliers:
+  - Professional: all 1.0 · 0 · 1.0 · 0.35 · 1.0 · 1.0 · 0.5 · 7 · no · **no** · {0.5, 1, 2}
+  - Populist: 1.8/0.8/0.8/0.9/1.1/1.8/1.2/0.6 · 0.15 · 0.3 · 0.7 · 0.4 · 1.6 · 1.0 · 14 · **yes** · yes · {1, 2, 3}
+  - Establishment: 0.8/1.0/0.6/1.8/1.0/0.6/1.6/1.4 · 0.05 · 1.2 · 0.5 · 0.7 · 1.0 · 0.4 · 14 · no · yes · {0.5, 1, 2}
+  - Grassroots: 1.0/1.5/2.2/0.2/0.5/1.2/1.0/0.8 · 0.10 · 0.8 · 0.5 · 1.0 · 0.7 · 1.6 · 21 · no · yes · {0.5, 1}
+  - Chaotic: all 1.0 · 1.0 · **−0.6** · 1.0 · 0.2 · 2.5 · 0.8 · **never** · no · yes · {0.5, 1, 3}
+- `CampaignAi.RiskScale = 0.25` · `PollingHours = 1` · `LocalCandidateRegions = 4` · `IssueCandidates = 2`.
+- Harness staging: `FlatIssueMatch 0.5` · `FlatCredibility 0.6` · `WarChest 2 400 000` ·
+  `CompatibilityCeiling 70` (the derived fixed point's level; its SHAPE is not authored).
+
+#### Findings carried forward
+
+1. **The chain saturates at the real national audience.** Every rational party delivers +197 to
+   +225 compatibility points over the campaign (`persuasion / 40 000`), and `ElectionScales` clamps
+   every party at 100 — so the final-share column is the clamp's arithmetic, not the campaign's
+   difference. W-B3 measured +0.19 pp for a hard week at a 100 000 audience; at 6.5 million the same
+   chain is 65× that, because reach is linear in audience AND in repetition (the same electorate
+   "reached" six times a day). **A mechanism question before a calibration one** — bounded reach,
+   repeated-exposure decay, W-B9's media interest — and the play-calibration list's entry 1 gains
+   this measurement, not a new value.
+2. **Local reach is W-B3's placeholder, and it shows.** Door-to-door reaches 2 % of a REGION per
+   five hours (16 000 doors in Stockholms län), yet against a national channel's whole electorate no
+   local action is ever worth its hours. The right model is an ABSOLUTE count — volunteer-hours ×
+   doors per hour, §10's offices — which is **W-B4/B11's**; a rider on their done-when: the
+   harness's `PEND 2b/2c` flip to assertions and pass.
+3. **Interview dominance, measured a third way.** 99–100 % of every rational personality's actions.
+   Stays W-B9's as a MECHANISM (the standing ruling); rider on W-B9's done-when: `PEND 2a-iii/2e`
+   flip to assertions and pass.
+4. **"Threats to democracy"** — Sweden's joint-top EB105 issue has no §6 slot. Billed, not mapped.
+
+#### Riders placed on later items (recorded here so they are not lost)
+
+- **W-B9** — done-when gains: `CampaignAiHarness` lines `2a-iii` (professional / establishment /
+  grassroots separate) and `2e` (establishment leads television + interview) become assertions
+  and pass with no affinity changed.
+- **W-B4 / W-B11** — done-when gains: lines `2b` (populist rallies) and `2c` (grassroots door-knocking)
+  become assertions and pass; door-to-door reach re-modelled as an absolute count.
+- **W-E2** — the professional's "targets swing voters" reads §25's swing index into the score.
+- **W-B8** — the attack verb, if §11's negative campaign brings one, is scored by the same §33 terms.
+
+**R-N2 held at this boundary:** `traj_wc1_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0 (`check_*_wc1.log`); harness `campaignai_wc1d_20260829.log`.
+
+---
+
+### W-B6 — campaign strategy (§11): the five as modifiers over the whole chain (2026-08-29)
+
+Files: `Assets/Scripts/Elections/CampaignStrategy.cs` (`CampaignStrategy`, `StrategyModifiers`,
+`CampaignStrategyModel`), `CampaignPressure.AddAgainst` (in `CampaignActions.cs`),
+`Assets/Editor/CampaignStrategyHarness.cs`; the AI (W-C1) given a strategy per personality and
+its run applying the modifiers on both sides of the seam.
+
+**Done-when.** Each strategy's stated trade-off shown (7 of 7 assertions on the same rally for a
+loyal group at 85 and a swing group at 20, on and off the focus issue) and **no strategy dominates
+a 30-electorate sweep** (loyal share 0.1–0.9 × focused/diffuse issues × opponent 0.4/1.0/1.6):
+Base Mobilization wins 21, Broad Appeal 6, Populist 3, **Swing Voter and Negative Campaign win
+nowhere** — recorded below, not tuned.
+
+#### Decisions taken and logged (R-N1)
+
+- **A strategy is multipliers on §42's stages, never an action and never a vote delta.** Reach and
+  credibility multiply the chain's INPUTS (so a zero anywhere still annihilates the effect);
+  persuasion, enthusiasm and salience-shift multiply its outputs; the result is the same
+  `ChainTrace` every consumer reads. `None` is the identity — every earlier measurement stands
+  (asserted).
+- **Every multiplier depends on WHO the group is** — loyalty (0–100, `swing = 1 − loyalty/100`)
+  and whether the group prioritises the message's focus issue (`Prioritises`: the issue's weight at
+  or above the group's mean weight). That is what makes each strategy a trade-off: the same
+  strategy lifts one group and lowers another.
+- **The negative campaign's only route to an opponent is `CampaignPressure.AddAgainst`** — a
+  negative pressure on the opponent's compatibility, recomputed by `PreferenceModel` like every
+  other pressure. Backlash is an expected cost (credibility ×0.9), not a seeded event — the event
+  is §17/§18's (W-B8). Media attention ×1.5 is CARRIED on the modifiers for W-B9 and read by nothing
+  yet.
+- **The AI runs strategies now** (`PersonalityProfile.Strategy`): professional → Swing Voter,
+  populist → Populist, establishment → Broad Appeal, grassroots → Base Mobilization, chaotic →
+  Negative Campaign (its target the leading OTHER party in the latest poll it has seen — chosen
+  from a `Poll`, never the truth). The modifiers apply to the AI's own estimate (`Points`) exactly
+  as to the world's response (`CampaignRun`), so a party cannot mis-price its own strategy. The
+  electorate is ONE group at W-A1's size-weighted mean loyalty (`Setup.ElectorateLoyalty`, 89.7 for
+  Sweden — a public derivation) until W-F4's voter groups give the strategies per-group targets;
+  "prioritised" for a one-group electorate means the message is on its most salient issue.
+  W-C1's digest moves accordingly (`d7670f73…` → `463560d1…`); every C1 assertion still passes.
+- **The sweep's outcome metric is the model's own unit conversion** — own persuasion / 40 000 +
+  enthusiasm / 60 000, minus the opponent's, with negative pressure counted through
+  `CampaignPressure`. A different weighting of turnout against persuasion would move the table;
+  this one is the model's, not the harness's.
+
+#### [AUTHORED-DRAFT] magnitudes, one line each (the shapes are the spec's; strikeable)
+
+Broad: reach ×1.15, persuasion ×0.85, polarisation ×0.5 · Base: enthusiasm ×(1 + 0.6·loyalty),
+persuasion ×(1 − 0.5·swing) · Swing: persuasion ×(0.7 + 0.8·swing), enthusiasm ×(1 − 0.3·loyalty) ·
+Negative: opponent share 0.6, own persuasion ×0.8, credibility ×0.9, media ×1.5, polarisation ×1.5 ·
+Populist: focus persuasion ×1.5 and enthusiasm ×1.3, other persuasion ×0.6.
+
+#### Findings carried forward
+
+1. **Swing Voter and Negative Campaign win no electorate in the sweep.** Swing's loyal-group cost
+   (enthusiasm ×0.745 at loyalty 85) outweighs its swing-group gain at every loyal share; Negative's
+   60 % against the opponent is worth less than its own 20 % persuasion cut plus the credibility
+   cost when the opponent runs an identical week. Both are the model's statement at these
+   magnitudes and this metric — a play-calibration line (entry 8), never tuned to make the table
+   prettier. §32's professional runs Swing Voter regardless, because "targets swing voters" is what
+   the spec says it does; whether that is a losing choice is now a measured question.
+2. **Base Mobilization's 21 of 30 is the enthusiasm conversion.** One enthusiasm point costs 60 000
+   pressure against 40 000 for persuasion, and Base lifts enthusiasm by up to 60 %; at a loyal
+   share above 0.5 nothing beats that. Entry 8 carries it beside finding 1.
+3. **Media attention is a multiplier nothing reads yet.** It is on the modifiers so W-B9 has its
+   input the day it lands.
+
+#### Riders
+
+- **W-B9** — read `StrategyModifiers.MediaAttentionMultiplier` into media interest.
+- **W-B8** — the backlash as a seeded event on its own stream, replacing the expected-cost
+  credibility multiplier or standing beside it (a design choice with its own reason).
+- **W-F4** — the strategies target VOTER GROUPS; the one-group electorate retires when the groups
+  exist, and `CampaignRun` should then apply modifiers per group.
+
+**R-N2 held at this boundary:** `traj_wb6_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `strategy_wb6b_20260829.log` and `campaignai_wb6_20260829.log`.
+
+---
+
+### W-B9 — the media system (§13) and audience segmentation (§14): media interest as availability (2026-08-29)
+
+Files: `Assets/Scripts/Elections/MediaSystem.cs` (`MediaOutlet`, `MediaSystem`, `MediaCoverage`,
+`MediaInterest` + its `BookingLedger`, `MediaCatalog`), `Assets/Editor/MediaHarness.cs`; the AI
+campaign (`CampaignRun`, `CampaignAi`, `CampaignAiHarness`) now runs under the media.
+
+**Done-when.** *A coverage spike decays on the measured curve* — a saturated spike of 1.0 follows
+the declared 3-day half-life to 1.7e-16 over 30 days and is at 0.10 % after a month. *The same
+message performs differently by outlet audience* — one climate television message: ×1.90 per
+person reached through the young-urban outlet against the older-rural one; a crime message ×2.00
+the other way; through the general-population outlet the two are identical. Both met; 14 of 14
+assertions.
+
+**The standing ruling (W-B3 / W-B10 review), executed here and nowhere else.** Media INTEREST is
+availability: each day the outlets allocate their interview slots by how newsworthy each party is
+(coverage, |momentum|, the PUBLISHED race, §18's events when they exist), one bounded figure
+`1 − exp(−Σ weights)`. A party at 4 % with no coverage is booked by no outlet whatever it would
+pay; the same party after a policy announcement and a rally is booked seven times; a bigger party
+is booked more on a quiet day. **The interview's spec is untouched — 0 kr, no cap, no fee**
+(asserted). Coverage is a stock that decays on the news cycle and grows only through a saturating
+gain, so it cannot spiral (§13's requirement): a year of maximal news peaks at exactly the stated
+ceiling 4.85, and interest stays under 1. Coverage creates momentum (§13's chain) as a shock of
+1.5 pp per unit of the day's GAIN — bounded because the gain is.
+
+#### Decisions taken and logged (R-N1)
+
+- **Bookings are a LEDGER, not a daily draw and not a daily rounding.** The first allocation gave
+  each outlet's slots to its most interesting parties one per round, and with four outlets each
+  restarting at the top the two most newsworthy parties took every slot in the country. The second
+  (largest-remainder per day) starved the fourth: a party at 19 % went eight weeks without an
+  interview. The ledger carries each party's fractional entitlement per outlet from day to day
+  (asserted: at steady interest 0.99/0.99/0.70/0.45/… the four eligible parties are booked 82/82/57/38
+  of 270 slots over a month; the two under every threshold never).
+- **Own channels reach a party's following, the press reaches in proportion to interest, paid
+  channels reach their platform's ceiling** (`MediaSystem.NationalAudience`): television = the
+  television outlets' combined reach (0.80); a digital ad = `PlatformReach` 0.55; a social post =
+  polled share × `FollowingRatio` 0.30 (a party nobody follows posts to nobody); a policy
+  announcement = the press's interest in the party. W-B3's placeholder had every national action
+  address the whole electorate; the AI's compatibility bonuses fell from +197…+225 (everyone
+  clamped at 100) to +7…+37. **This is the mechanism half of the C1 saturation finding**, and the
+  constant `PersuasionPerCompatibilityPoint` was not touched.
+- **A television buy runs across the television outlets** (`IsTelevision`), not through one — the
+  first draft ceilinged it at the largest outlet and television was strictly dominated by digital.
+- **Outlets are ARCHETYPES** (public broadcaster, commercial television, tabloid, broadsheet) with
+  authored reach, slots, thresholds and two-group compositions; no real outlet name carries an
+  authored number. Real Swedish reach (Kantar / Orvesto) and follower counts are billed.
+- **Social newsworthiness 0.03, not 0.08:** a post is not news unless it travels; virality is a §13
+  hook, not modelled. Set during this item's design, before any measurement was fitted.
+- **`StrategyModifiers.MediaAttentionMultiplier` is read** (W-B6's rider discharged): the negative
+  campaign makes 1.5× the news of the same action.
+- **The AI under the media (W-C1 extended):** the view carries the party's bookings (the outlet
+  reach of each), the per-kind national audiences (public facts or its own), the poll's price; an
+  interview is a candidate only with a booking; the poll's price is kept back once a poll is due
+  (the first B9 run had every party spend its reserve daily and never poll again); money is priced
+  on the INCREMENT above the smallest outlay (the first draft priced the whole spend, so at
+  `CostWeight` 1.0 every money action scored exactly zero and floating-point noise decided a whole
+  campaign). **No saving rule** — two were tried and both were worse than none (idling; a week of
+  social posts to afford one buy); a big-ticket buy needs a BUDGET PLAN, which is W-B5's campaign
+  manager's, recorded there.
+
+#### [AUTHORED-DRAFT] values, one line each (the play-calibration list's entry 9)
+
+`CoverageHalfLifeDays 3` · `CoverageScale 1` · `MomentumPpPerCoverage 1.5` · interest weights
+coverage 1 / |momentum| 0.15 per pp / polled share 0.8 / events 1 · newsworthiness policy .25,
+interview .20, rally .15, television .10, town hall .05, digital .05, social .03, door .01 ·
+`PlatformReach .55` · `FollowingRatio .30` · the archetypes: public broadcaster .45 / 3 / .15 (all
+groups), commercial television .35 / 2 / .25 (30/70), tabloid .30 / 2 / .10 (75/25), broadsheet
+.15 / 2 / .30 (65/35) · in the AI: `CheapSpendFraction` and `SavingRatio` removed with the rule.
+
+#### What the C1 harness says now (digest `5152fe7bc2b41c0c`, 20 assertions, 7 PEND)
+
+Every party is booked 50–81 times; the mixes: professional — posts, interviews, announcements;
+populist — interviews and posts, chest spent by day 34; establishment — posts, interviews,
+announcements, town halls; grassroots — **doors (26–33), interviews, announcements**; chaotic —
+town halls, doors, posts, interviews, blind throughout. **Asserted:** chaotic distinct from all
+(0.477), grassroots distinct from both media personalities (0.71 / 0.61 — the W-B9 rider, half
+discharged), professional polls most and never blind, populist front-loads (80 % spent by day 34
+against the professional's 44), chaotic the most inconsistent day to day (1.035 against ≤ 0.888).
+**PEND, blockers named:** professional ≈ establishment (0.101) and populist vs the rest (0.292)
+— both large parties' days are the media's bookings; separation waits on a budget plan for
+television (**W-B5**) and rallies with real local reach (**W-B4**); the advertising claims (nobody
+advertises but the unbooked; no party can afford a 500 000 kr buy on the day under even pacing) —
+**W-B5**; door-to-door "largest share" — **W-B4/B11** (holds early: 12 % against the chaotic's 19 %).
+
+#### Findings carried forward
+
+1. **A budget plan is the missing campaign-manager mechanism.** Even pacing plus greedy daily
+   choice cannot produce a television buy, and every saving heuristic tried produced a worse
+   pathology than none. §9's staff (W-B5) is where a plan — a share of the chest per channel —
+   belongs. Rider on W-B5's done-when: the `PEND 2d / 2e / 2e-ii / 2a-iii` lines.
+2. **Fair bookings equalise the rational personalities.** Once every party gets its proportional
+   airtime and no one can advertise, the professional and the establishment do the same things;
+   affinities of 1.4–1.8 do not overcome what the environment makes available. Not tuned.
+3. **Seed-to-seed variability collapsed** (professional 0.652 → 0.029) once the knife-edge zero-
+   score money actions were repriced — the earlier cross-seed instability was the scoring bug,
+   not the polls.
+4. **The saturation finding is mostly audiences.** With reach bounded by the media landscape, the
+   bonuses are +7…+37 — calibration entry 1 is re-read accordingly.
+
+#### Riders
+
+- **W-B5** — a budget plan per channel; the four `PEND` lines above flip there.
+- **W-B4 / W-B11** — local reach as an absolute count; `PEND 2b / 2c / 2a-ii`.
+- **W-B8 / W-B7 / §18** — `MediaCoverage.AddShock` is their input (a debate, a scandal, an event).
+- **W-F5 / W-F6** — real outlet reach and follower counts replace the archetypes' figures.
+- **W-E2 / W-E3** — the action screen gains the booking diary and the per-kind audiences; the
+  interview row reads "no booking today" rather than a price.
+
+**R-N2 held at this boundary:** `traj_wb9_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `media_wb9b_20260829.log`, `campaignai_wb9b_20260829.log`.
+
+---
+
+### W-B11 — Get-Out-The-Vote (§26): mobilization as volunteer-bound contacts, per region and per party (2026-08-29)
+
+Files: `Assets/Scripts/Elections/GotvModel.cs` (`GotvOperation`, `GotvSpec`, `GotvModel`,
+`RegionalMobilization`), `Assets/Editor/GotvHarness.cs`, `ElectionsData/sweden/turnout_history.md`
+(SOURCED, PROVISIONAL); door-to-door in the AI campaign rewired to real contacts.
+
+**Done-when.** *Mobilisation spending measurably moves turnout in targeted regions only* — S
+door-knocks three valkretsar (80 000 doors each): Stockholms län 84.21 → 85.03 %, Skåne läns södra
+→ 86.41 %, Gotlands län → 89.07 %; the other 26 at exactly base turnout bit for bit; the other
+seven parties' supporters' turnout unchanged in all 29; S's vote share in Stockholm 30.80 → 31.47 %
+with SD's votes unchanged to the vote. *National turnout inside historically plausible bounds* —
+every party's whole chest and 60 000 volunteer-hours on the doors nationwide: 85.26 %, within
+2002–2022's [80.11, 87.18] widened by two points; unlimited lifts for everyone everywhere: 100 %
+and not a vote more (stated, not hidden). 10 of 10.
+
+#### Decisions taken and logged (R-N1)
+
+- **Mobilization is per REGION and per PARTY, and it is contacts.** `mobilization = 50 + 50 ×
+  (1 − exp(−(weighted contacts / eligible) / 0.5))`: 50 is `TurnoutModel`'s neutral, so an
+  unworked region is at base by construction, and the curve is §35's, so no budget passes 100.
+  `TurnoutModel` keeps no party term (its doc's rule stands); GOTV is party-specific through the
+  mobilization INPUT — a party's supporters turn out at its own mobilization, everyone else's at
+  50 — and a region's turnout is the preference-weighted mean.
+- **Contacts cost money AND volunteer-hours, and volunteers bind:** 1 m kr with 0 hours knocks 0
+  doors (asserted). §10's offices (W-B4) are what grow them.
+- **Base turnout is SOURCED and uniform across valkretsar** (2022: 84.21 %); eligible per valkrets
+  is DERIVED as 2018 valid votes ÷ 87.18 % (7 429 141 against the true 7 775 390) because
+  per-valkrets eligible counts are not on disk — billed in `turnout_history.md` (val.se's
+  `Röstberättigade` per valdistrikt). Engagement, enthusiasm and salience at the neutral 50 in the
+  harness so GOTV is the only thing moving.
+- **The historical series** (2002 80.11 · 2006 81.99 · 2010 84.63 · 2014 85.81 · 2018 87.18 · 2022
+  84.21) is filed `[SOURCED] [PROVISIONAL]`: 2014/2018/2022 agree with the two files already on
+  disk; 2002–2010 are the recorder's knowledge of val.se's series, to be read back (R-K9).
+- **Door-to-door in the AI campaign now reaches the doors the volunteers can knock**
+  (`GotvModel.Contacts(DoorKnocking, spend, volunteer-hours left today)`), for the world's response
+  and the AI's estimate alike; each party's `Volunteers` (staging 800 each, equal by design)
+  supplies 2 400 volunteer-hours a day. W-B3's 2 %-of-a-region placeholder no longer applies to
+  door-to-door (rallies and town halls still draw on the region — W-B4's).
+- **GOTV on election day itself is W-D1's:** `RegionalMobilization` is the state a campaign builds
+  up to polling day; the AI run stops the day before, so its GOTV verbs (`GetOutTheVote`, legal
+  only on election day) are not exercised there yet.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 10)
+
+Per contact — phone banking 3 kr / 0.10 h / weight 0.5 · door knocking 5 kr / 0.25 h / 1.0 ·
+transport 60 kr / 0.50 h / 3.0 · election-day reminders 1 kr / 0.02 h / 0.25 · `MobilizationScale
+0.5` · staging volunteers 800 per party.
+
+#### C1's PEND lines — the clearance report the list asked for
+
+W-B11 was named on `PEND 2c` (door-to-door's largest share) beside W-B4, and on `2a-iii/2a-iv`'s
+grassroots half. **Cleared: none. Changed: one, honestly for the worse.** With doors counted as
+volunteers can knock them, a door-to-door action reaches ~3 000 doors, and at W-B3's per-contact
+persuasion weight (0.55) that is not worth five hours against a post to the party's whole
+following — so no rational personality knocks doors (chaotic 20 %, the rest 0 %), and the
+grassroots separation W-B9 produced (0.71 / 0.61, asserted as `2a-iv`) is gone (0.20 / 0.17).
+**`2a-iv` goes back to PEND** with its true blockers: the ground game's SCALE (W-B4: offices grow
+volunteers — 800 is a guess) and the persuasion a personal contact is worth (calibration entry 10;
+the canvassing literature says far more per contact than a broadcast impression — billed). `2c`
+stays PEND on the same two. Nothing was raised to keep the line green.
+
+#### Findings carried forward
+
+1. **The grassroots separation was the placeholder's.** 16 000 doors an afternoon made
+   door-knocking look worth it; 3 000 do not. The honest reach exposed that the model's persuasion
+   per personal contact is the open question, not the count.
+2. **One party's whole ground game moves the nation by a third of a point** (+0.32 pp; its own
+   supporters +1.05) and a worked small valkrets by nearly five — the regional lever §10 promises
+   exists, at these magnitudes.
+3. **The eligible-per-valkrets gap** understates the electorate by 4.5 % (7.43 m derived against
+   7.78 m actual); a data line, not a model line.
+
+#### Riders
+
+- **W-D1** — election day runs `RegionalMobilization.RegionVotes` per valkrets with the campaign's
+  accumulated contacts; the GOTV verbs become the AI's election-day plan.
+- **W-B4** — offices grow volunteers; `PEND 2a-iv / 2c` re-measured there.
+- **W-F4** — per-valkrets eligible counts and, with voter groups, per-group base turnout.
+- **W-B3's weights** — the persuasion per personal contact, calibration entry 10.
+
+**R-N2 held at this boundary:** `traj_wb11_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `gotv_wb11_20260829.log`, `campaignai_wb11_20260829.log`.
+
+---
+
+### W-D1 — election day (§27): every valkrets counted, noise on the `ElectionNoise` stream, 1/√n proven on the real 29 (2026-08-29)
+
+Files: `Assets/Scripts/Elections/ElectionDay.cs`, `Assets/Editor/ElectionDayHarness.cs`;
+`CampaignRun` now accumulates the campaign's door-knocking into a `RegionalMobilization` that its
+`Result` exposes (`Gotv`, `RegionNames`) — the W-B11 rider, discharged.
+
+**Done-when.** *The same seed reproduces a result exactly* — seed 777 on `ElectionNoise` twice:
+digest `7b7ce512348e9941` both times, every regional vote count identical; seed 778 differs.
+*400 replays show the noise matching its declared σ* — regional share σ 1.167 pp against the
+declared 1.2 (re-normalisation's shrink, 0.97 of it); national σ **0.259 pp against 0.260
+predicted** by σ/√N_eff, N_eff = 20.15 of the 29 valkretsar by eligible weight — the 1/√n
+behaviour Day-1 measured on eight equal regions, now on the real, unequal ones, to a third of a
+percent. 10 of 10.
+
+#### Decisions taken and logged (R-N1)
+
+- **§27 per region is W-B11's `RegionVotes`:** eligible × preference × each party's supporters'
+  turnout — the ground game lands exactly here and nowhere else; with σ = 0 the count IS the
+  expected result to the vote, region by region (asserted).
+- **Noise on the SHARES, votes from the shares** (`ApplyNoise` at Day-1's declared 1.2 pp, then
+  × the region's votes cast, rounded to whole votes). National shares are the vote-weighted sum
+  of regions, never a mean of regional shares — the trap the chain harness already guards.
+- **`EffectiveRegions = 1 / Σ w²`** is the number the national σ divides by; stated in code so a
+  future re-districting is a measurement, not a surprise.
+- **One preference vector per region** (the 2022 vector repeated) until W-A2's per-region priors
+  and W-F4's groups make them differ — the caller hands `ElectionDay.Count` a per-region array
+  already, so that change is data.
+- **Rounding to whole votes** makes a region's party votes sum to its votes cast only to ±4
+  votes (one per party); asserted at that tolerance and printed (6 272 372 of 6 272 383).
+- **Seats are W-D2's** — `SeatAllocation` is exact and waits for this result; nothing allocated here.
+
+#### Findings carried forward
+
+1. **National uncertainty is a quarter of a point.** At the declared regional σ the nation moves
+   ±0.26 pp per party per replay — inside the "good strategy matters, cannot be perfectly
+   predicted" band §27 asks for, at these magnitudes; whether a quarter-point is *felt* as
+   uncertainty is a play question (a calibration line under entry 1's neighbourhood, not a new
+   entry: `RegionalNoiseSigmaPp` is Day-1's declared constant).
+2. **The turnout the count reports (84.43 %) is W-B11's exactly** — the three worked valkretsar
+   lift the nation 0.22 pp above base.
+
+#### Riders
+
+- **W-D2** — `SeatAllocation` on `ElectionDay.Result` through the LIVE path (per-valkrets fixed
+  seats, the adjustment seats, the thresholds), Sweden 2022 still seat-for-seat — that one election, 8 of 8 (C-A4).
+- **W-E6** — election night draws `Result.Regions` arriving in a seeded order.
+- **W-A2 / W-F4** — per-region preference vectors replace the repeated national one.
+
+**R-N2 held at this boundary:** `traj_wd1_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `electionday_wd1_20260829.log`, `campaignai_wd1_20260829.log`.
+
+---
+
+### W-D2 — vote-to-seat on the live path (§28): Sweden's own procedure, 2022 seat-for-seat (2026-08-29)
+
+⚠ **SCOPED 2026-08-31 (C-A4).** Every "seat-for-seat" in this section was written before W-F1 and means
+exactly this: **Sweden's 2022 Riksdag, 8 parties of 8, through `SeatConversion.Sweden`.** It is not a
+claim about the allocator in general, and two later measurements say why it must not be read as one.
+**W-F1** found this claim had been measured on a SYNTHETIC chamber — 2022's national counts spread over
+29 valkretsar by 2018's distribution, so the totals were right by construction — and re-ran it on the
+REAL per-constituency counts: **the seat table held, 8 of 8, but the fixed/adjustment split moved for
+four parties** (KD's fixed seats 10 → 13, S 105 → 104, V 17 → 16, MP 11 → 10). *The seat table was right;
+the account of how Sweden produces it was not.* And the **Sweden 2014** control (`COMPLETED.md` §86,
+register row S-6) does NOT reproduce through the same allocator — 6 seats of absolute error — so
+"reproduces exactly" is a statement about **one election**, never about the procedure in general.
+
+Files: `Assets/Scripts/Elections/SeatConversion.cs`, `Assets/Editor/SeatConversionHarness.cs`.
+`SeatAllocation` (the divisor arithmetic, exact for five chambers since the overnight) is what it
+calls; this file is the Swedish PROCEDURE around it — vallagen 14 kap. — which the backtest never
+needed because a national totalfördelning gives the same party totals as the full procedure
+whenever no seat is returned.
+
+**Done-when.** *Sweden's 2022 returns reproduce seat-for-seat through the live path* — the exact
+2022 national counts regionalised over the 29 valkretsar (by the 2018 per-valkrets distribution;
+national sums exact to the vote), fed as an `ElectionDay.Result` into `SeatConversion.Sweden`:
+**107 / 73 / 68 / 24 / 24 / 19 / 18 / 16**, fixed 105 / 69 / 67 / 17 / 23 / 10 / 11 / 8 (= 310) +
+adjustment 2 / 4 / 1 / 7 / 1 / 9 / 7 / 8 (= 39), no seat returned. 12 of 12 (the 12 % rule, the
+återföring branch firing, determinism, W-D1's counted election converting to 349).
+
+#### The procedure, as built (R-N1 calls inside it)
+
+1. **Eligibility** — 4 % nationally, or 12 % in a valkrets for that valkrets's fixed seats only.
+2. **310 fixed seats per valkrets** — the statute's "one seat per 310th part of the national
+   eligible electorate, the remainder by largest surplus" (`FixedSeatsPerRegion`: Stockholms län
+   39, Gotlands län 2), then the modified odd-number method (1.2, 3, 5, …) within each valkrets
+   among the parties eligible there.
+3. **Totalfördelning** — 349 over the nationally-eligible parties as one valkrets, the same
+   divisors, seats held by 12 %-only parties deducted first.
+4. **Återföring** — a party over its total gives back its lowest-comparison-number fixed seats
+   first; each returned seat is re-allocated within its valkrets to the next comparison number
+   among parties still under their totals (the 2018 reform's rule). ⚠ **The first synthetic for
+   this exercised nothing:** fixed seats follow ELIGIBLE voters, so a party concentrated in one
+   valkrets stays under its total (KD all in Stockholm: 12 fixed of 19). What makes fixed seats
+   exceed a total is a valkrets where few OTHER votes are cast relative to its electorate — every
+   other party's Stockholm vote cut by 70 % and KD's whole vote there: 24 fixed against 21
+   entitled, **3 returned**, every party at its total, Stockholm still at its 39.
+5. **39 adjustment seats** — each party's total minus its fixed seats, placed valkrets by valkrets
+   where its next comparison number is highest.
+
+- **The 12 % rule, exercised:** L at 35 % of Gotland and nothing elsewhere (0.25 % nationally)
+  takes 1 of Gotland's 2 fixed seats and nothing else, no adjustment seat, 349 in all.
+- **DERIVED and billed:** eligible per valkrets (2018 valid ÷ 87.18 %) and therefore the fixed seats
+  per valkrets are `[DERIVED] [PROVISIONAL]`; the real 2022 per-valkrets seat table and val.se's
+  per-valkrets eligible counts are billed for verification. The party TOTALS do not depend on
+  either unless a seat is returned — which is why the live path is exact from a derived
+  regionalisation.
+- **Personal votes (§ 93's candidate ordering) are not modelled** — seats, not names.
+
+#### Findings carried forward
+
+1. **The adjustment tier does real work for the small parties:** KD 9 of its 19 seats, L 8 of 16,
+   MP 7 of 18, V 7 of 24 come from the 39 — the fixed tier under-represents them by the divisor's
+   1.2 first step, exactly as designed.
+2. **W-D1's counted election (seed 777, noise on) converts to S 108 / SD 73 / M 67 / V 24 / C 25 /
+   KD 18 / MP 18 / L 16** — a quarter-point of noise moves three seats; §27's "cannot be perfectly
+   predicted" is now visible in seats, not shares.
+
+#### Riders
+
+- **W-E6 / W-E7** — election night draws `RegionSeats` filling per valkrets; the results screen
+  reads `Seats`, `FixedSeatsWon`, `AdjustmentSeats`.
+- **W-D3** — coalition arithmetic reads `Seats` (175 the majority line).
+- **W-F1** — the real 2022 per-valkrets counts and seat table replace the derived regionalisation
+  and verify the per-valkrets seat table.
+
+**R-N2 held at this boundary:** `traj_wd2_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the eight checks exit 0; harnesses `seats_wd2_20260829.log`, `campaignai_wd2_20260829.log`.
+
+---
+
+### W-E2 — the campaign map: 29 valkretsar as polled, the swing index, and §36's gate drawn as absence (2026-08-29)
+
+Files: `Assets/Scripts/Elections/SwingRegions.cs` (`SwingRegions`, `MapRegionReading`, `MapTile`,
+`CampaignMapSnapshot`, `SwedenCartogram`), `Assets/Scripts/UI/GameController.CampaignMap.cs` (the
+screen), the OnGUI branch in `GameController.cs`, the driver's `CaptureCampaignMap` +
+`ReadValkretsVectors` pass; films `we2_campaign_<w>_e2_campaign_map_{unbought,regional,full}` at
+1280 / 1600 / 1920 / 2560.
+
+**Done-when.** *The map renders 29 constituencies* — the 5 × 10 cartogram carries all 29
+valkretsar (the driver errors if the file gives any other count). *Uncertainty is visually
+distinct from data* — an unbought valkrets is a hatched tile figured "?" with nothing behind it
+(no shares, no leader, no index — `MapRegionReading.Measured` false), a bought one is shaded by
+the player's polled share with its ± and framed by what the poll can say. *Buying polling visibly
+sharpens it* — the same day filmed three times: nothing bought (29 hatched, the ledger empty and
+the gate text naming the two offers and what each buys, ±10 / ±6 on the player's share by
+`MarginOfErrorPp`); the regional breakdown (n = 2 400 / 29 = 82 per valkrets: 29 read, 11 swing
+regions, **19 too close to call** — the lead inside its own ±); the full programme (n = 206 per
+valkrets: 12 swing, **13 too close to call**). Six of the nineteen dashed frames become solid; the
+figures' ± halve.
+
+#### Decisions taken and logged (R-N1)
+
+- **The gate is ABSENCE, not blur.** §36 says the map must not tell the player where the race is
+  close until they pay to find out. An averaged or rounded regional reading would be telling them
+  anyway; an unbought valkrets therefore carries no reading at all, and the tile says "?" over the
+  draft hatch — the established idiom for "not real yet" (`ui_hatch_draft`, the ledger rows' draft
+  band), not a new sprite.
+- **A reading is a Poll of the valkrets, or nothing** — `SwingRegions.FromPoll` derives leader,
+  runner-up, gap, the gap's own error (the two ± combined in quadrature) and §25's index from the
+  polled shares and nothing else; `TooCloseToCall` is `gap ≤ gapError`, so a 40.5 / 39.8 on a
+  small sample is drawn as what it is — undecidable — with a dashed frame in the caution ink.
+- **§25's index:** `100 × max(0, 1 − gap / 20)` — 100 at a tie, 0 at a 20-point lead.
+  `[AUTHORED-DRAFT] FullScaleGapPp = 20` (the lead at which a valkrets stops being worth
+  contesting); `[AUTHORED-DRAFT] CampaignMapSwingFrameIndex = 60` (the index at which a tile is
+  framed bold). Both strikeable; the key on the sheet names them.
+- **The per-valkrets sample is the national sample over 29.** A "regional breakdown" of n = 2 400
+  affords 82 respondents per valkrets, and the honest ± at that size is ±10 on a 30 % share — which
+  is why nineteen of twenty-nine leads are inside their error at that price. The screen does not
+  pretend the breakdown buys more than it does; that IS the §21 trade.
+- **The cartogram is a reading aid, not geography** — `SwedenCartogram.Layout`, hand-laid, north at
+  the top, no borders, `[AUTHORED-DRAFT]`. A drawn map is a Track H Design line.
+- **The truth polled is SOURCED per valkrets:** 2018's absolute counts for all eight parties
+  (`valkrets_votes_2018.csv`) as each valkrets's preference vector — the only eight-party
+  per-valkrets vector on disk (the 2022 table carries five; W-F1 bills the rest). Shares are of the
+  eight-party vote; weights are each valkrets's share of the national valid vote.
+- **The shade is the player's own polled share**, scaled to its strongest valkrets, so the darkest
+  tile is where the party is strongest; the frames are about the RACE (the index), not the party.
+  A leader-coloured choropleth would need eight party inks the palette does not have
+  (`PoliSimTheme.Party` keys four archetypes) — a Design line, not an invention here.
+- **The horse-race poll on the AI's view now has a regional companion it could read** — the
+  professional's "targets swing voters" rider (W-C1) is NOT discharged here: local actions are
+  worthless in the placeholder environment (W-B4), so wiring the index into the AI's importance
+  would change nothing measurable. It waits for W-B4 with the rest.
+
+#### Fix-forward found by this film
+
+**P-A1's "1280" campaign film was not at 1280.** `pa_campaign_1280_*` measures 1918 × 953 — the
+first GUI launch after a killed Editor kept the previous session's window size (the environment
+quirk on record), while the sweep and the three other widths were at their stated sizes. The true
+1280 run came with this item's film and found what the 1918 one could not: P-A1's rewritten
+caption *HOW A MESSAGE BECOMES VOTES — EVERY STAGE MULTIPLIES* is 1.1 px too wide for the action
+screen's 250-board-px plate at the 8 px floor (249.4 in 248.3). Fixed here — *HOW A MESSAGE BECOMES
+VOTES — EACH STAGE MULTIPLIES* — and the 1280 campaign family re-filmed on the fixed code
+(`we2_campaign_1280_*`, 16 frames, 0 overflows). §61's film line is corrected to say so.
+
+#### Riders
+
+- **W-B4** — the AI's local targeting reads `SwingIndex` once local actions can matter.
+- **W-E6 / W-E7** — the same cartogram draws results arriving and the final count.
+- **W-F1** — the 2022 eight-party per-valkrets counts replace 2018 as the map's truth.
+- **W-H4** — a drawn valkrets map and eight party inks are Design lines.
+
+**R-N2 held at this boundary:** `traj_we2_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0 (`MetaTextCheck` clean with the map screen); `campaignai_we2_20260829.log`.
+
+---
+
+### W-B7 — debates (§15): exchanges from attributes, preparation, ownership, the clash and one seeded draw; the result a coverage and momentum shock, never a share (2026-08-29)
+
+Files: `Assets/Scripts/Elections/Debates.cs` (`DebateMove`, `DebatePreparation`, `DebateExchange`,
+`DebateResult`, `Debates`), `Assets/Editor/DebateHarness.cs`, `SimulationRandom.Stream.Debate = 9`
+APPENDED; the AI campaign holds two debates (`CampaignRun`: `DebateDays`, `DebatePlanFor`, a
+`Candidate` per party).
+
+**Done-when.** *The same seed and choices reproduce a debate exactly* — seed 777 on the `Debate`
+stream twice: six exchanges bit-identical (points, events, topics); seed 778 differs; the same
+seed with a different plan differs. *Performance moves media coverage and momentum rather than
+vote share directly* — structurally (`DebateResult` has no share / vote / preference / party
+member, by reflection) and behaviourally: applied to `MediaCoverage` and `MomentumTracker` the
+result moves both (+0.66 coverage, ±2.17 pp momentum), and **the preference recomputed after the
+debate is bit-identical** — a debate has no route to a vote share; the polls move because
+momentum shifts where the race APPEARS to be. 14 of 14.
+
+#### Decisions taken and logged (R-N1)
+
+- **A debate is a sequence of exchanges**, each a pair of §15's seven moves resolved as
+  `skill × prepared × ownership × clash + event`: the move's §16 attribute blend, §35's curve on
+  preparation hours between a 0.7 floor and 1, the topic's ownership between 0.8 and 1.2, the
+  move-pair table, and one Gaussian draw at σ 4 index points. The performance index is the mean;
+  **the margin is the difference and both shocks scale with it** — a close debate makes little news
+  and moves nothing, a rout does both, bounded by the index's range.
+- **The clash table is §15's verbs as consequences:** an attack into `IgnoreAttack` is wasted
+  (×0.6), into a `Counterattack` dangerous (×0.8 against ×1.25), into `DefendPolicy` blunted (×0.9,
+  the defence ×1.15); a counterattack with nothing to counter is empty (×0.7); `ChangeSubject`
+  hands the next topic to the changer and lands against statistics (×1.1).
+- **§22's worked example is the momentum rate's anchor:** `MomentumPpPerMarginPoint = 0.20`, so a
+  10-point rout is +2.0 pp — the spec's "strong debate" — decaying to 0.5 pp after two weeks on the
+  tracker's own half-life. `CoveragePerMarginPoint = 0.10`: a 10-point rout is a full news day.
+- **The AI campaign holds two debates** (days 20 and 41) between the two parties leading the
+  PUBLISHED poll — chosen from the tracker, never the truth — each on its personality's plan
+  (populist: appeal, attack, change the subject; professional: statistics, defend, counter;
+  establishment: defend, statistics, ignore; grassroots: appeal, defend, statistics; chaotic:
+  attack, counter, change) on its own ground (its most salient contested issue) with a fixed 8
+  hours' preparation (the AI does not plan hours — W-B5's staff would). Seed 777: day 20 S v M,
+  margin −2.8 (M), coverage +0.28, ±0.55 pp; day 41 S v SD, margin −9.5 (SD), +0.95, ±1.89 pp. The
+  C1 harness asserts the two were held and shocked both; its digest moves; every C1 line holds.
+- **Candidates are `[AUTHORED-DRAFT]` per personality, unnamed** (§16's attributes as the
+  personality's emphasis — the orator populist, the wonk establishment — game fiction; W-F6 labels
+  real leaders). The harness's two are the spec's own example shape: charisma 90 / knowledge 45
+  against knowledge 92 / charisma 45.
+- **Ownership is the party's true issue-match on the topic** (the run is the world); a player's
+  debate would price it through the same polled measurement the action screen uses.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 11)
+
+`PreparationScale 12 h` · `PreparationFloor 0.7` · `OwnershipFloor 0.8 / OwnershipSpan 0.4` ·
+`EventSigma 4` · `CoveragePerMarginPoint 0.10` · `MomentumPpPerMarginPoint 0.20` · the seven
+attribute blends · the clash table · `DebateExchanges 6` · `DebatePreparationHours 8` · the five
+plans · the five candidate profiles.
+
+#### Findings carried forward
+
+1. **The orator wins the emotional debate 400 of 400** against the wonk and the prepared twin
+   beats the unprepared 400 of 400 — at σ 4 the event term is small against a 20-point skill gap;
+   whether upsets should be possible is a play question (entry 11).
+2. **`ChangeSubject` at 100.0 twice** in the seed-777 debate — the orator changing the subject on
+   home ground hits the index ceiling; the clamp at 100 hides how far over it went. A ceiling that
+   never binds would be honest; recorded, not tuned.
+3. **A test that measured nothing, caught:** the first ownership test gave the twin a different
+   topic list, which made the exchanges alternate between both grounds and the pair exactly
+   symmetric (199 of 400). The corrected test holds the topic and varies only ownership (400 of 400).
+
+#### Riders
+
+- **W-E5** — the debate screen draws `DebateExchange[]` as the running state and `DebateResult`
+  as the verdict; the pre-debate choices are `DebatePreparation`.
+- **W-B8** — a scandal is a `MediaCoverage.AddShock` with a credibility cost, the same seam.
+- **W-B5** — preparation hours become a staff decision.
+- **W-C2** — the AI's plan reacts to the opponent's last move (today it is a fixed cycle).
+
+**R-N2 held at this boundary:** `traj_wb7_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `debate_wb7_20260829.log`, `campaignai_wb7_20260829.log`.
+
+---
+
+### W-B8 — scandals (§17): a lifecycle, seven responses with distinct outcome distributions, damage on two stocks at two speeds, nothing scripted as game over (2026-08-29)
+
+Files: `Assets/Scripts/Elections/Scandals.cs` (`ScandalKind`, `ScandalSeverity`, `ScandalResponse`,
+`Scandal`, `ScandalOutcome`, `Scandals`), `Assets/Editor/ScandalHarness.cs`,
+`SimulationRandom.Stream.Scandal = 10` APPENDED; the AI campaign carries a live credibility per party
+and answers a staged scandal by personality (`CampaignRun`: `Setup.Scandals`,
+`ScandalResponseFor`).
+
+**Done-when.** *The lifecycle runs deterministically under a seed* — seed 777, a MAJOR corruption
+scandal at evidence 0.5, `Deny`: every day's coverage, the momentum shock and the credibility cost
+identical twice; across 200 seeds 75 denials are caught out and 125 survive (the evidence surfaces
+on some seeds, not all). *Each response has a measured DISTINCT outcome distribution* — over 400
+seeds per response the seven differ pairwise in mean or spread by at least 0.90 (the closest pair
+Explain / SacrificeStaffMember); §17's two sentences hold as measurements. *Nothing scripted as
+game over* — `ScandalOutcome` has no member that could end anything (by reflection), a
+resignation replaces the candidate and the campaign goes on, and a catastrophic scandal on the
+worst response with certain evidence costs at most 45 % of credibility — a large cost, not an
+ending. 15 of 15.
+
+**The table, measured (a MAJOR corruption scandal, evidence 0.5, 400 seeds; damage = 100 ×
+credibility cost − momentum pp):** Deny 11.5 ± 9.0 (152 of 400 caught out) · Apologize 9.9 ± 0 ·
+Explain 10.8 ± 0 · AttackSource 12.3 ± 4.0 (181 caught) · Ignore 13.2 ± 0 · Resign 7.2 ± 0 ·
+SacrificeStaffMember 11.7 ± 0. The apology: the largest momentum decline of the responses that keep
+the candidate (−3.9 pp) and among the smallest lasting costs (0.060) — *"a transparent apology may
+reduce long-term damage but cause a short-term polling decline."* The denial: the smallest immediate
+cost (−1.07 pp) and the widest spread (9.0); against STRONG evidence (0.95) the worst response on
+average (16.0 against the next worst 14.4), against WEAK (0.05) the best (5.3 against 7.2) — *"a
+denial can work if evidence is weak but become catastrophic if evidence later appears."*
+
+#### Decisions taken and logged (R-N1)
+
+- **Damage lands on two stocks at two speeds and on nothing else.** A momentum shock (§22 — the
+  short-term polling decline, decays on its own half-life), a coverage shock per day of the story
+  (§13 — the media system decays it on the news cycle), and a CREDIBILITY cost — the lasting one,
+  on the stock §42's chain multiplies by. Applied, the preference recomputed from the same
+  compatibility is bit-identical; the same rally then persuades less in exact proportion to the
+  credibility lost (382 → 350, 91.6 %). A scandal reaches the vote only through the chain.
+- **The evidence is a hidden variable (§36):** the party responds on `EvidenceAsSeen` — the truth
+  plus a uniform ± 0.25 — never on the truth. The AI's rule: deny when the evidence LOOKS weak
+  (below 0.3 as seen), otherwise by personality (the professional explains, the establishment and
+  the grassroots party apologise, the populist attacks the source, the chaotic denies).
+- **Escalation is the catch-out:** `Deny` and `AttackSource` are exposed; each aftermath day the
+  evidence surfaces with probability `evidence × 0.15`; caught, the credibility cost multiplies
+  (×6 for the denial, ×2 for the attack), the momentum cost ×1.5, and the story restarts.
+  ⚠ The first table had the denial's escalation at ×3, and a caught denial was then no worse than
+  simply ignoring the story — §17's "catastrophic" not realised. Set to ×6 at design time so a
+  caught denial is the worst outcome on the table; recorded as the shape the spec's own sentence
+  demands, not as a tuning against play.
+- **A staff sacrifice for a scandal no staff member could carry reads as cynical** (×1.6 on the
+  lasting cost): an offensive statement 0.096 against a finance violation's 0.060.
+- **The AI campaign stages one scandal** (day 30, the leading party, MAJOR corruption at evidence
+  0.5); S (professional) sees 0.59 and explains; −2.4 pp momentum, six days of coverage, credibility
+  0.600 → 0.550 on its live figure and nowhere else; the campaign runs to the end. Dynamic generation
+  — a probability per day from §36's hidden variables — is a later item (the gap table's §17 row
+  says so); today the harness stages them.
+- **Distinct distributions, not distinct means:** a denial and a resignation can average alike (a
+  gamble and a certainty) and still be different things to choose between; the assertion compares
+  mean OR spread.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 12)
+
+Base by severity (momentum pp / credibility / days / coverage): Minor 0.5 / 0.02 / 2 / 0.15 ·
+Moderate 1.5 / 0.06 / 4 / 0.40 · Major 3.0 / 0.12 / 7 / 0.80 · Catastrophic 5.0 / 0.25 / 12 / 1.50 ·
+the response table (momentum × / credibility × / days × / exposed / escalation / coverage ×): Deny
+0.3 / 0.3 / 1.0 / yes / 6 / 1.0 · Apologize 1.3 / 0.5 / 0.6 / no / – / 0.8 · Explain 0.8 / 0.7 / 0.9
+/ no / – / 0.9 · AttackSource 0.5 / 0.6 / 1.3 / yes / 2 / 1.5 · Ignore 0.8 / 0.9 / 1.5 / no / – / 1.1
+· Resign 1.6 / 0.2 / 0.7 / no / – / 1.4 · SacrificeStaffMember 0.7 / 0.5 / 0.8 / no / – / 1.0 ·
+`SurfaceRatePerDay 0.15` · `EvidenceEstimateError 0.25` · `CynicalSacrificeMultiplier 1.6` · the
+AI's deny-threshold 0.3 and its responses by personality · the staged scandal.
+
+#### Findings carried forward
+
+1. **Ignoring is never right at these numbers** (13.2, the worst mean of the seven): a story left
+   alone runs half again as long. Whether a quiet week should sometimes be the right call is a
+   play question (entry 12).
+2. **The resignation is cheapest and no one takes it** — the AI never resigns; W-C2's reactivity
+   and a candidate the player cares about (W-F6) are what would make it a real choice.
+
+#### Riders
+
+- **W-C2** — the AI weighs the evidence it sees against the response table rather than following a
+  personality rule.
+- **W-E5 / W-E1** — the scandal's day on the screens: the story, the seven responses, the evidence
+  as seen (a range, never a figure).
+- **§36 / W-B5** — dynamic generation with a scandal-resistance draw per candidate (§16's
+  attribute is on the profile and unread).
+- **W-B7** — the same shock seam; a debate the day after a scandal is where `ScandalResistance`
+  and `Integrity` should bite.
+
+**R-N2 held at this boundary:** `traj_wb8_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `scandal_wb8_20260829.log`, `campaignai_wb8_20260829.log`.
+
+---
+
+### W-A4 — tactical voting, threshold form (§23): the belief from the published poll, lending where the race is in play, abandonment where it is hopeless (2026-08-29)
+
+Files: `Assets/Scripts/Elections/TacticalVoting.cs` (`TacticalSpec`, `TacticalFlow`,
+`TacticalResult`, `TacticalVoting.Apply/ApplyToRegions/NormalCdf`), `Assets/Editor/TacticalVotingHarness.cs`,
+`ElectionsData/sweden/psu_2018_2022.md` (SOURCED, new). Pure and unwired (R-N2); no stream
+appended.
+
+**Done-when.** *A party polling 3.5–4.5 % shows measurable support inflow* — on the 2022
+staging with L set to 3.5 / 3.75 / 4.0 / 4.25 / 4.5 % it gains +1.18 / +1.18 / +1.00 / +0.72 /
++0.43 pp net from its bloc; at 6 % nothing moves; at 1.5 % (§23's own example, no realistic
+chance) it LOSES 0.62 pp net to its bloc (0.72 out, 0.09 in). *The effect vanishes in the absence
+of a threshold* — threshold 0 returns the input to the bit with no flows; so does awareness 0;
+a party outside any bloc (SD in 2018) neither lends nor receives; mass is conserved to 1e-15;
+29 regions reading the one national poll shift exactly as the nation does. *2022's near-threshold
+behaviour reproduced no worse than without the layer* — SCB's May 2022 PSU as the poll and as the
+preference, Valmyndigheten's September count as the answer: the near-threshold error (KD, MP, L)
+falls 3.12 → 1.00 pp and the whole-vector L1 error 13.27 → 10.08 pp; L 3.47 → 4.63 (count 4.68),
+MP 3.37 → 4.46 (count 5.16); KD, polling clear, needs nothing and only lends (0.15 pp). 12 of 12.
+
+**The data.** `psu_2018_2022.md`: Statistics Sweden's Partisympatiundersökningen via the PxWeb
+API (`Vid10` "val idag" with ± at 95 %, and `Rostningssympati170`, vote intention against
+"best party") for May 2018 and May 2022 — the only official probability-sample pre-election
+figure. In each election year the party polling below 4 % in May finished above it in
+September (KD 2018 3.0 → 6.32; MP and L 2022 3.3 → 5.08 and 3.4 → 4.61), each time with the
+bloc's largest partner falling. The May cross-tab shows the lending still small then (M → L
+0.7 % of M's sympathisers, inside its own margin) — a lower bound on the final week's, which
+no PSU observes; a final-week poll of record is billed.
+
+#### Decisions taken and logged (R-N1)
+
+- **The voter's belief is the poll, widened.** P(clear) = Φ((polled − T) / σ) with
+  σ² = (MoE / 1.96)² + `BeliefSigmaPp`² — §20's rule that polls miss by more than their
+  margin, so no sample size removes the doubt. `BeliefSigmaPp` = 1.0 pp was fixed BEFORE the
+  2022 run from the worklist's own window (3.5–4.5 % must show inflow, so the doubt spans at
+  least ±0.5 pp); it is [AUTHORED-DRAFT] and strikeable (calibration entry 13).
+- **Two behaviours, one variable.** Where the outcome is in play the bloc LENDS: each partner's
+  aware, willing voters (awareness × `MaxLendFraction` 0.15 × affinity) move to the threatened
+  party, up to what it NEEDS to stand one belief-sigma clear, weighted by 4P(1 − P) — the
+  pivotality of a vote. Where it is hopeless the party's OWN aware voters ABANDON it for the
+  bloc, weighted by ((1 − P)(1 − 2P))² below even odds and by nothing above. A party polling
+  clear needs nothing and loses nothing. The two forms were chosen with the PSU figures on the
+  table; the constants were not moved after the first run, and the record says so — the 2022
+  test is in-sample for the FORM (a 2026 May PSU against the 2026 count would be the first
+  out-of-sample test).
+- **Voter ideology as affinity:** 1 − |Δlrgen| / 10 within the bloc (CHES 2024, SOURCED), 0
+  outside — M lends to L more readily (0.92) than SD does (0.82); C to MP least on the left
+  (0.68).
+- **Blocs are the harness's staging, not a catalog:** 2022's two sides (M/KD/L/SD; S/V/C/MP)
+  and 2018's (the Alliance M/C/KD/L; S/V/MP; SD outside). A bloc catalog belongs to W-D4
+  (coalitions) or the Track H ask.
+- **Threshold form only.** §23's other forms — a district's two-horse race under FPTP, a
+  runoff — are not this item; the layer is the identity without a national threshold, asserted.
+- **Wiring:** the layer takes the last PUBLISHED poll (`Poll` shares and ±) and never the truth;
+  the seam is the count (`ElectionDay.Count` takes the shifted regional vectors). Not wired
+  (R-N2); W-G1 wires it between the final tracker and the count.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 13)
+
+`BeliefSigmaPp` 1.0 pp · `MaxLendFraction` 0.15 · awareness 0.5 (the harness's staging; W-F4's
+groups would carry it per group) · the weights 4P(1 − P) and ((1 − P)(1 − 2P))² · the need
+target T + one belief-sigma · the blocs as staged.
+
+#### Findings carried forward
+
+1. **The lending overshoots at even odds:** L at 4.0 % goes to 5.0 % (the full need at full
+   pivotality) — more than L at 3.75 % ends with. Whether a bloc lends to the target or to the
+   threshold is a play question; the target is strikeable.
+2. **2018's KD case is a quarter reproduced** (3.09 → 3.84 against 6.42): four months of
+   campaign and a May poll far from the day; the layer is not the whole of KD's 2018.
+3. **The lenders pay where the count says they gained:** SD 2022 lent 0.48 pp and finished
+   +3.5 pp above its May poll — the error on SD grows (3.51 → 3.94) even as the vector's
+   improves. The layer is not a forecast of the campaign; it is the last week's switch.
+
+#### Riders
+
+- **W-G1** — wire between the final published tracker and the count; the AI's blind parties
+  see nothing (no poll → no belief → the layer must not run on truth).
+- **W-E1 / W-E5** — a "stödröst" reading on the polling screen: which partner is in danger,
+  as a range, never the layer's figure.
+- **W-F4** — awareness per voter group.
+- **Track H / DATA_BILL** — a final-week poll of record for 2018 and 2022 (the newspapers'
+  commissioned polls or the SVT/Valu exit poll) so the last week's switch can be measured
+  rather than bounded from May.
+
+**R-N2 held at this boundary:** `traj_wa4_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harness `tactical_wa4b_20260829.log` (12 of 12 — the bar's first run failed one mis-specified assertion, 3d, which asserted KD "receives nothing" when L's leavers bring it 0.02 pp; the assertion was corrected to what the design says and the harness re-run).
+
+---
+
+### W-B4 — campaign offices (§10): organisation as local reach, volunteers recruited not bought, a daily operation into the ground game, maintenance paid or starved (2026-08-30)
+
+Files: `Assets/Scripts/Elections/CampaignOffices.cs` (`CampaignOffices`, `CampaignOffice`,
+`OfficeNetwork`), `Assets/Editor/CampaignOfficesHarness.cs`; the AI campaign carries one network
+per party (`CampaignRun`: `PartySetup.Offices/OfficeOperationsPerDay`, the offices' day, local
+audience by influence, office hours on the door-to-door ceiling, `PartyLedger.Office*`,
+`Result.Offices`); `RegionAudience.VolunteerHours` (`CampaignAi`); the C1 harness stages an office
+plan per personality and asserts the offices ran (1h). No stream appended.
+
+**Done-when.** *Offices measurably change regional door-to-door reach* — the office region has
+450 volunteer-hours a day a region without has none of; the same 50 000 kr door-to-door action
+knocks 2 400 doors on headquarters' 200 volunteers and 4 200 with the office's hours; the office's
+own daily operation knocks 81 900 doors over 60 days in its region and none anywhere else; a
+rally's local audience with a full office is four times a visit's (934 883 against 233 721 of
+Stockholms län). *And GOTV* — the office region's mobilisation ends at 58.0 against the untouched
+50 everywhere else; the party's turnout there 87.18 → 89.98 %, +7 859 votes. *Concentration in
+few regions beats spreading thin in a measured scenario* — the same money, three offices in the
+three largest valkretsar against ten spread thin: at 0.9 / 1.5 / 2.4 M kr three offices mobilise
+4 740 / 14 248 / 22 534 votes against 0 / 0 / 4 087; asserted at the prototype's ground budget
+(1.5 M of a 2.4 M war chest). **Measured, not asserted: spreading first wins at 4 M kr** (31 536
+against 22 534) — the fixed costs against §35's concavity. The economics: a second office the party
+cannot afford is not opened and nothing is paid; when the money runs out the office starves (six
+starved days of ten, influence 0.00, 0 kr left of 111 000, nothing spent that was not there). 11 of
+11.
+
+**In the AI campaign** (seed 777, every C1 line holds; 1h added): every party opened its staged
+offices, paid for them day by day and recruited them to capacity — S 3 offices 910 000 kr 59 200
+doors; SD 4 / 1 125 000 / 70 200; M 2 / 636 600 / 42 520; V 6 / 1 665 000 / 103 000; C 1 /
+278 300 / 17 260; MP 6 / 1 665 000 / 103 000; L 3 / 910 000 / 59 200.
+
+#### C1's PEND lines, re-measured with offices (reported per the standing order)
+
+- **2a-iv CLEARED** — the grassroots personality's mix differs from both media personalities'
+  (prof/grass 0.490, est/grass 0.450 ≥ 0.30). Honestly stated: it separates by its RALLIES —
+  six offices make six full regions its local audience — not by door-knocking; the doors are
+  knocked by the offices' own operations, outside the action mix the line measures. Converted
+  from PEND to an assertion.
+- **2a-ii still PEND** (populist min 0.274): its four staged offices give its rallies four full
+  regions, the grassroots party's six give more. Blocker re-labelled W-B5/W-C2 — where a party
+  sites its offices is the staged plan's.
+- **2b still PEND** (rally + social: pop 50 %, grass 78 %, est 57 %) — the same cause; re-labelled
+  W-B5/W-C2.
+- **2c still PEND** (door-to-door share: grass 0 %, chaos 19 %) — a door-to-door ACTION at 15 000 kr
+  for 3 000 doors is still not worth its hours to any rational personality; the ground game's doors
+  are the offices'. Re-labelled calibration entry 10.
+- 2a-iii, 2d, 2e, 2e-ii unchanged (W-B5's budget plan). **8 → 7 PEND.**
+
+#### Decisions taken and logged (R-N1)
+
+- **Organisation is what local reach was pretending to be.** W-B3's placeholder gave every rally
+  the whole region wherever it was held — an office everywhere at full strength. Now the local
+  audience is the electorate × (`VisitFraction` 0.25 + 0.75 × influence): a visit with no
+  organisation draws a quarter of a full office's. Where there is no office, local reach FELL.
+- **Influence is recruited, not bought:** volunteers over capacity, +5 a day to 150 — half at 15
+  days, full at 30; an office opened late is worth less; a starved office loses 0.10 a day.
+- **§10's five provisions land as:** local organisation = influence; volunteer recruitment = the
+  recruit rate; door-to-door = the office's hours on the region's ceiling AND its own daily
+  operation (`GotvOperation.DoorKnocking`, funded by `OperationsPerDay`); election-day turnout =
+  those contacts in `RegionalMobilization` (W-B11 → W-D1); local polling = an office region
+  counts as polled at `LocalPollSampleSize` 300 — a RIDER to W-E2's snapshot, not wired here.
+- **§10's five attributes:** `OpenCost` 100 000 kr, `StaffCapacity` 3 (W-B5 fills it),
+  `VolunteerCapacity` 150, influence, `MaintenancePerDay` 2 000 — paid every day or the office
+  starves; nothing is spent the party does not have.
+- **The office plan is STAGED per personality** ([AUTHORED-DRAFT], §32's ground-game descriptions:
+  grassroots 6, populist 4, professional 3, establishment 2, chaotic 1, each in the largest
+  valkretsar; operations 2 000 kr a day each). Siting by swing (W-E2's index) is W-B5's plan and
+  W-C2's reactivity; the harness says so.
+- **Concentration is an economics, not a rule:** fixed costs per office against §35's concave
+  mobilisation; the harness measures the crossover (4 M kr) rather than asserting a side.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 14)
+
+`OpenCost` 100 000 · `MaintenancePerDay` 2 000 · `StaffCapacity` 3 · `VolunteerCapacity` 150 ·
+`RecruitPerDay` 5 · `VisitFraction` 0.25 · `StarvationPerDay` 0.10 · `LocalPollSampleSize` 300 ·
+the staged plan (6/4/3/2/1) and 2 000 kr a day of operations · the harness's 200 headquarters
+volunteers and 1.5 M ground budget.
+
+#### Findings carried forward
+
+1. **A concentrated network saturates on its volunteers:** three offices plateau at 22 534 votes
+   from 2.4 M kr up — 450 h a day is 1 800 doors an office, and money past that is unspent. The
+   volunteer capacity, not the money, is the ceiling of a small network (entry 14).
+2. **Ten offices thin at a prototype budget mobilise nothing:** 10 × 220 000 kr of fixed cost
+   exceeds 1.5 M — the opening alone starves the operations. §10's "concentrate in a few swing
+   regions" is what the economics say at this scale.
+3. **The AI's door-to-door action is still dead** (2c): with offices knocking 400 doors a day each
+   on their own, the ACTION's price (15 000 kr for 3 000 doors, 5 hours) buys nothing a rally
+   does not — calibration entry 10's question, sharpened.
+
+#### Riders
+
+- **W-B5** — staff fill `StaffCapacity`; the field organiser raises an office's recruit rate or
+  capacity; the budget plan sites offices.
+- **W-C2** — the AI opens and closes offices on the published swing index, not on day 0.
+- **W-E2** — an office region as a bought reading at `LocalPollSampleSize`.
+- **W-E1 / W-E5** — the office as a screen object: cost, capacity, influence as a range.
+- **W-D1** — election day reads the offices' contacts already (through `Result.Gotv`).
+
+**R-N2 held at this boundary:** `traj_wb4_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `offices_wb4b_20260830.log` (11 of 11), `campaignai_wb4b_20260830.log` (all assertions pass, 1h added, 2a-iv cleared, 7 PEND).
+
+---
+
+### W-B5 — staff (§9, prototype depth): five roles, a salary a day on the ledger, a bonus on the action the role touches, the manager's budget plan; §37 deferred (2026-08-30)
+
+Files: `Assets/Scripts/Elections/CampaignStaff.cs` (`StaffRole`, `CampaignStaffMember`, `BudgetPlan`,
+`CampaignStaff`, `StaffRoster`), `Assets/Editor/CampaignStaffHarness.cs`; the AI campaign carries one
+roster per party (`CampaignRun`: `PartySetup.Staff/TelevisionBuys`, payday before the actions, the
+plan's saving from the day's release, the advisor's and strategist's multipliers on the audiences
+the AI is handed, the pollster's larger sample, the fund paying a television buy first,
+`PartyLedger.Staff*`, `Result.Staff`); `AiView.TelevisionFund` (spendable on television and on
+nothing else); `OfficeNetwork.Day(... scale)` for the field organizer; the Campaign HQ screen's
+ORGANISATION ledger draws a PAYROLL row (`CampaignSnapshot.StaffMember.SalaryPerDay`, the driver's
+staging salaried). No stream appended.
+
+**Done-when.** *Hiring changes the relevant action's effectiveness* — the media advisor: an
+interview persuades 9 720 → 11 664 (×1.20), a rally to the bit the same; the digital strategist: a
+post reaches 75 854 → 94 818, an interview the same; the pollster: the party's own poll 1 200 →
+1 800 respondents at the same 120 000 kr, ± 2.59 → 2.12 pp at 30 %; the field organizer: an office
+holds 225 volunteers not 150; the campaign manager: the plan holds the 500 000 kr television money
+on day 24 of an even 40 000 kr-a-day release, which a party without a manager never has (no plan,
+no fund); the buy is paid from the fund first. With all five hired, the actions no role touches
+(rally, town hall, door-to-door, television) reach exactly what they did. *The payroll appears in
+the resource ledger* — five on the roster is 9 000 kr a day, paid from the party's money to the
+krona; a party that cannot pay everyone pays whom it can and the unpaid give nothing that day;
+`PartyLedger.StaffMoney` carries it in the AI campaign; the HQ screen's ORGANISATION ledger carries
+a PAYROLL row, filmed at four widths. *§37's progression is deferred and the deferral recorded* —
+`CampaignStaffMember` has no experience, level, speciality or growth member (by reflection). 10 of
+10.
+
+**In the AI campaign** (seed 777, every C1 line holds; 1i added): the staged hires stand and the
+payroll is on the ledger to the krona with the unpaid days counted — S 2 hired 183 600 kr (10
+unpaid staff-days), TV 1 of 1 planned; SD 133 200 (38 unpaid), 1 of 1; M 190 800 (6), 2 of 2; V 1
+hired 79 200 (12); C none; KD as M; MP as V; L as S.
+
+#### C1's PEND lines, re-measured with staff (reported per the standing order)
+
+- **2a-ii CLEARED** — the populist's mix differs from every other's (min 0.419): its digital
+  strategist and its manager's one television buy.
+- **2d CLEARED** — the grassroots party's advertising 0 % of spend against the professional's
+  30 % and the establishment's 40 %: the others' managers plan television, the grassroots party
+  plans none.
+- **2e-ii CLEARED** — the establishment buys the most television (2 against 1, 1, 0, 0): its
+  manager's plan holds two buys and it makes them. Honestly stated: the count is the STAGED plan's
+  — that is what a budget plan is (calibration entry 15).
+- **2a-iii still PEND** (prof/est 0.061): two rational planners on equal money converge on the
+  same schedule; re-labelled W-C2 / W-F5.
+- **2e still PEND** (television + interview: pop 54 %, est 32 %): television is bought by plan
+  now, but the interview half is the media's — they book the newsworthy and the populist makes
+  more news; re-labelled W-B9's interest → W-C2 / W-F5.
+- 2b, 2c unchanged. **7 → 4 PEND.**
+
+#### Decisions taken and logged (R-N1)
+
+- **A hire is a multiplier on the actions its role touches, a salary a day, and nothing else** —
+  except the manager, whose effect is a DECISION RULE (the plan), because that is what a manager
+  is. W-B9's finding stands verbatim in `CampaignAi.Evaluate`: no greedy saving rule; the plan is
+  the manager's.
+- **The plan is television only, at the prototype's depth:** `ManagerFundShare` 0.5 of each day's
+  release set aside while a planned buy is short; the fund is spendable on television and on
+  nothing else (`AiView.TelevisionFund`); the fund pays first. A plan over every fixed cost
+  (offices, payroll) is the fuller job — finding 2.
+- **An unpaid member gives nothing that day and is not dismissed;** the ledger counts the unpaid
+  days rather than hiding them.
+- **Five roles, not nine:** the worklist's roster; §9's policy advisor, fundraiser, press
+  secretary and volunteer coordinator wait with §37, recorded in the enum's doc.
+- **The staging** ([AUTHORED-DRAFT], §32): the professional a manager and a pollster (1 buy); the
+  populist a manager and a digital strategist (1); the establishment a manager and a media advisor
+  (2); the grassroots party a field organizer; the chaotic nobody.
+- **The HQ ledger's payroll row** is the sum of the staged salaries (the driver's three filled posts
+  at `SalaryPerDay`, the vacant pollster at 0); the screen's staff rows and office rows are as
+  they were; filmed at 1280 / 1600 / 1920 / 2560, edge-checked.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 15)
+
+`SalaryPerDay` 1 800 · `MediaAdvisorReach` 1.20 · `DigitalReach` 1.25 · `PollsterSample` 1.5 ·
+`FieldOrganizerScale` 1.5 · `ManagerFundShare` 0.5 · the staged hires and buys per personality.
+
+#### Findings carried forward
+
+1. **The field organizer is capacity, not speed:** ×1.5 on the recruit rate and ×1.5 on the
+   capacity nearly cancel — full strength on day 29 instead of 30, but at 225 volunteers. If the
+   role should make an office FAST, the two multipliers must differ.
+2. **The parties go broke before polling day:** offices, their operations and the payroll are
+   fixed daily costs the pace does not see; the front-loaded populist leaves 38 of 120 staff-days
+   unpaid, the even-paced professional 10 of 120. The manager's plan covers television only; a
+   plan over ALL fixed costs — pay the organisation first, release the rest — is what §9's
+   "campaign manager" means in full (W-C2).
+3. **Equal money with a plan makes the two rational personalities the same campaign** (0.061
+   apart): what separates a professional from an establishment party is money and reaction (W-F5,
+   W-C2), not an affinity table.
+
+#### Riders
+
+- **W-C2** — the manager's plan over every fixed cost, reacting to the published race; the AI
+  hires and dismisses.
+- **W-E1** — the staff rows show the role's bonus and its salary (the payroll row lands today);
+  hiring as a player action.
+- **§37 / a later item** — progression between elections; the four deferred roles.
+- **W-F5** — unequal war chests.
+
+**R-N2 held at this boundary:** `traj_wb5_*` ≡ `traj_run_*` 6/6 by SHA-256, zero ATTRIB; the nine checks exit 0; harnesses `staff_wb5b_20260830.log` (10 of 10), `campaignai_wb5c_20260830.log` (all assertions pass, 1i added, 2a-ii / 2d / 2e-ii cleared, 4 PEND); the HQ film `wb5_hq_{1280,1600,1920,2560}_e1_campaign_hq_*.png`, `ScreenEdgeCheck` 64 captures 0 clipped (`edge_wb5.log`).
+
+### W-C2 — opponent reactivity (§32/§33 on §36's terms): a contested region defended, an attack answered, and the personality deciding what a reaction is made of (2026-08-30)
+
+**What it is.** `CampaignReactivity.cs` — `PublicActivity`, the public record of what every party can
+SEE of every other: counts of visible local acts per region (a rally 1, a town hall or a canvassing
+day 0.5 — the press was there; never the doors knocked) and of attacks, by attacker on target,
+decayed on a `HalfLifeDays` 7 news half-life. **It can express no truth**: the harness asserts by
+reflection that no public member's name carries *truth / actual / preference / share / vote* — the
+same bar `AiView` is held to. A party reads three things off it: a region's PRESSURE (every other
+party's activity there), its PUSH (the largest single opponent's concentration there — one party
+working a region is a threat in a way that eight parties passing through is not), and the attacks
+aimed at itself, by attacker.
+
+**The rule decides WHERE and WHETHER; the personality decides WHAT.** §33's expected value cannot
+see a threatened region (a party holds no regional standing in its own books, and a small valkrets's
+audience is a fraction of an office region's), so reallocation is a RULE, as the manager's plan is
+(`CampaignAi.Reactions`). A party whose `Reactivity` is above 0 and that sees a PUSH past its
+threshold (`DefenceThreshold` 1.0 ÷ reactivity) into a region it has **no office in** defends it: an
+office there if it can afford to keep one (`OfficeUpkeepDaysReserved` 10 days of maintenance and
+operations), and meanwhile the local act **its own affinities prefer among those its pace can carry
+today**. A party attacked past its threshold answers with **the message its own affinities prefer**,
+on **the issue its own measurement makes most salient** — never the world's salience, which no party
+can see (§36). §32's reactivities: professional 1.0, establishment 0.7, grassroots 0.6, populist 0.5,
+chaotic 0.0 — the chaotic party never looks.
+
+**The done-when, asserted (`CampaignReactivityHarness`, 9 of 9).** The scenario: W-C1's eight-party
+Swedish staging with **L replaced by a scripted party** — the player's stand-in — which from day 5 to
+45 works **Blekinge län** every day (a town hall and a canvassing day) and announces policy against S
+every day; Blekinge is the region no AI would otherwise choose, so anything an AI does there is a
+reaction. The same ten seeds (777–786) run without the script are the control.
+
+- *The professional reallocates and the chaotic party does not:* over ten seeds S puts **8 of its 9
+  local acts** into Blekinge with the script and **0 of 8** without (0.0 % → 88.9 % pooled); C is
+  **0 of 598** against 0 of 595, on a campaign of hundreds. M (0.7) is 4 of 8 against 0 of 7.
+- *The reallocation is real money:* seed 777, S **opens an office in Blekinge** with the script and
+  never without, C opens none either way (S 1 office in reaction / 1 defence / 7 answers; M 1 / 1 / 0;
+  C 0 / 0 / 0). S acts in Blekinge in **8 of 10 seeds**, first act a mean **2.0 days** after the
+  script begins — the tempo, measured and not asserted.
+- *The attack is answered by the party that looks and never by the party that does not:* S answers at
+  its tempo in both arms (6.9 → 7.0); **C, reactivity 0, answers not once** in either.
+- *The reaction is on the public record and reproduces:* the scripted run's digest is
+  `9ca2e429d9d641e4` twice; the record carries pressure 3.18 on Blekinge as S sees it, 14.95 attacks
+  on S, L's own 3.17 there; the scripted party played its 120 actions and 3 600 000 kr through the
+  same seams as any AI's (paid, resolved, seen, logged).
+
+#### Findings carried forward
+
+1. **The rational personalities scarcely campaign locally at all** — S makes **0.9 local acts a
+   campaign**, M 0.8, against C's 59.8. §33's expected value buys a national audience with the same
+   hours, so a professional party goes to a region only when a rule sends it: **the reaction is 8 of
+   S's 9 local acts over ten campaigns.** A percentage of that denominator is not a figure the
+   scenario can carry, so 2a counts acts and prints the denominator; the mean of per-seed shares is
+   reported beside the pooled one so the two can be read against each other.
+2. **Answers are tempo-bound, not attack-bound.** One answer a week is a ceiling near 8 in a 60-day
+   campaign, and the chaotic party's negative campaign already presses S against it in the CONTROL.
+   What an attack changes is **whom** a party answers, not how often — so the harness asserts the
+   reaction (S answers at its tempo, C never answers) rather than a rise that the ceiling forbids.
+3. **The establishment never crosses its own answer threshold in the C1 staging** (0.4 → 0.0
+   answers): negative campaigning is aimed at the POLLED LEADER, and M is not it.
+4. **A per-attacker cooldown makes five personalities into one.** The first form of the rule let a
+   party answer each attacker separately; with eight parties attacking, S made **15 answers in a
+   60-day campaign** and three C1 lines failed (2a-ii, 2a-iv, 2f). The fix is structural, not a moved
+   constant: **one answer at a time** on the party's own weekly cooldown, and **the reaction paid
+   from the day's pace** rather than out of the war chest. 2a-ii and 2f came back; 2a-iv did not.
+
+#### C1's lines, re-measured with reactivity (the standing order)
+
+- **1h re-derived, not weakened:** the staged plan is no longer the whole network — a defence opens
+  an office, `PartyLedger.OfficesOpenedInReaction` counts it, and the assertion is now staged +
+  reacted, with the volunteers **bounded** rather than equated (an office opened late has not
+  recruited to capacity by polling day).
+- **⚠ 2a-iv: CLEARED at W-B4, back to PENDING at W-C2 — est/grass 0.291 against the 0.300 line**
+  (prof/grass 0.347). Reactivity puts the ESTABLISHMENT on the ground: a broadcast party that sees a
+  push into a region it has no office in defends it with a town hall, which it otherwise almost never
+  holds, and its mix moves toward the grassroots party's. **Nine thousandths, and not to be recovered
+  by moving a threshold, a cooldown or an affinity** — that is the whole point of the line. What
+  separates two parties that both react is what they can afford to react WITH: **W-F5** (unequal war
+  chests and unequal paces). Held as a PEND with its measurement, per this harness's own precedent
+  when W-B11 knocked the same line out.
+- Every other line holds. **PEND 4 → 5**; the harness's summary now names W-F5 and calibration entry
+  10 as what remains.
+
+#### Decisions taken and logged (R-N1)
+
+- **The rule decides where and whether; the personality decides what.** A rule that answered every
+  attack with the same act would make every reactive personality the same campaign, which is what §32
+  exists to prevent. The populist rallies and posts, the establishment holds a town hall and
+  announces, the grassroots party knocks doors.
+- **A reaction is priority, not extra money:** the act is chosen among those **the day's pace** can
+  carry and is paid from the same reserve as anything else, and it simply goes first. The OFFICE is
+  capital and is not pace-bound, as the staged offices are not.
+- **One answer at a time**, on the party's own cooldown (`AnswerCooldownDays` 7), however many
+  parties are attacking.
+- **Ties in affinity go to §12's order** — the professional's affinities are flat, so it takes the
+  list as written (`DefenceActs` rally → town hall → door-to-door; `AnswerActs` announcement →
+  digital ad → social post). *Strikeable: a professional could instead break its ties on cost, which
+  is what "allocates money efficiently" might mean.*
+- **The answer's issue is the party's OWN most salient measurement**, and a party that has measured
+  nothing makes a general message — never `TrueSalience`, which no party can see.
+- **An office opened in reaction ends the defence cooldown for that region:** the office IS the
+  defence from then on, and the AI's own weighing now sees a full region there.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 16)
+
+`HalfLifeDays` 7 · a rally on the record 1.0, a town hall or a canvassing day 0.5 ·
+`DefenceThreshold` 1.0 and `AnswerThreshold` 1.0, each ÷ reactivity · `OfficeUpkeepDaysReserved` 10 ·
+`DefenceCooldownDays` 3 · `AnswerCooldownDays` 7 · `PressuredRegions` 2 · reactivity
+1.0 / 0.7 / 0.6 / 0.5 / 0.0 by §32 personality.
+
+#### Riders
+
+- **W-F5** — unequal war chests and unequal paces: what separates two parties that both react
+  (2a-iii and 2a-iv both wait there now).
+- **W-E1 / W-E5** — the player's own reading of `PublicActivity`: what its opponents are visibly
+  doing, which is the same public record and no more.
+- **NOT built here, and re-homed:** W-B5's finding 2 — *the campaign manager's plan over EVERY fixed
+  cost (offices, operations, payroll), so a party stops going broke before polling day* — was
+  written down against W-C2. W-C2's done-when is opponent reactivity and that is what shipped; the
+  budget plan still covers television only. It belongs with **W-F5** (money) or an item of its own,
+  and is recorded in `MISSING_PREREQUISITES.md` rather than left implied.
+
+### W-D3 — coalition formation (§29): compatibility and negotiating power derived, red lines derived AND declared, and the chamber's own investiture rule doing the work (2026-08-30)
+
+**What it is.** `CoalitionFormation.cs` — §29's seven inputs, each from data or from a stated
+derivation, and **no authored coalition score anywhere**:
+
+- **Compatibility** (`CoalitionCompatibility`) — DERIVED from CHES 2024: ideological from `lrgen`,
+  policy from `lrecon` / `galtan` / `eu_position` (the 1–7 EU scale rescaled to 0–10 so a gap means
+  the same on every axis). An axis either party leaves NaN is SKIPPED, never centred — `Compatibility`'s
+  own rule for §7, for the same reason.
+- **Seat strength and negotiating power** (`CoalitionMath`) — DERIVED from the seat distribution
+  alone: a party's share of the chamber, and its **Banzhaf pivotality** — the share of subsets of
+  the others it turns from losing to winning.
+- **Red lines** (`RedLine`) — in TWO kinds and TWO strengths. Kinds: DERIVED (a position distance)
+  and DECLARED (a party's own dated public commitment, with its citation). Strengths: *will not sit
+  in cabinet with you* and *will not sit in or support a government that depends on you*. **A red
+  line cannot be constructed without a basis** — the constructor refuses an empty one, which is
+  what keeps §29 off an authored score.
+- **Leader compatibility and personal relationships** — **DEFERRED, with the reason recorded:**
+  there is no source, candidate attributes are already [AUTHORED-DRAFT] game fiction (W-B7), and
+  inventing a leaders'-relations matrix is exactly the authored score §29 must not have. The
+  harness asserts by reflection that no member carries them, so they cannot be filled in by accident.
+
+**The mechanism is the chamber's own rule, not a preference of ours.** Sweden runs NEGATIVE
+PARLIAMENTARISM: a prime-ministerial candidate is elected unless an absolute majority votes
+against. So a minority cabinet governs on the votes it does not provoke — which is why Swedish
+minority government is the norm rather than a branch the model has to arrange. Parties that neither
+support nor oppose ABSTAIN; without abstention the negative rule would be arithmetic in disguise.
+
+**Two further rules, both derived, both needed.** *Support is negotiated, not assumed:* absence of
+a red line is not support, or every party in a Western chamber would prop up every government. A
+party supports a cabinet only if that cabinet suits it at least as well as any party left out of it
+does — a comparison, so no constant is chosen and none can be tuned — and where two would-be
+supporters red-line each other, the one with the greater **negotiating power** stays. *And a
+government must be one nobody walks out of:* a party's payoff is its share of the cabinet's seats
+(portfolios follow seat share — Gamson's law, an empirical regularity) scaled by the cabinet's own
+agreement, zero for a party outside the cabinet; any government some member or supporter would beat
+elsewhere is struck, iterated to a fixed point.
+
+#### The done-when, asserted (`CoalitionHarness`, 16 of 16)
+
+- **THE SECOND CLAUSE, which carries the item: a red line blocks a coalition seat arithmetic alone
+  would permit.** S 107 + SD 73 = **180 of 349**, a comfortable absolute majority, and the
+  formation refuses it — `DERIVED: CHES lrgen gap 4.79 > 4.50`. **120** such arithmetic majorities
+  are refused in total, each printed with the line that refused it and that line's basis. And the
+  counterfactual makes it a demonstration rather than an assertion: **remove the red lines, change
+  nothing else, and S+SD becomes a viable majority cabinet in the same chamber.**
+- **The 2022 distribution produces a plausible government set — the one that actually formed.**
+  Cabinet **M+KD+L, 103 seats, carried from outside by SD's 73 = 176 of 349**, cohesion 88.9:
+  the Tidö arrangement of 14 October 2022, seat for seat, as `ConfidenceAndSupply`. Nothing about
+  it is stored; it falls out of sourced positions, sourced seats, sourced declarations and the
+  investiture rule.
+- **The deadlock is reproduced, not stored:** adding C to that cabinet COSTS SD's support (C will
+  not be in a government SD carries), so the larger cabinet cannot govern at all — the 2022
+  impasse in one line.
+- **A new election is REACHABLE and not designed out.** A test chamber of 150/100/99 in which every
+  pair refuses every other returns `NewElection` with zero viable options; **the same seats with
+  the red lines removed form a government** (7 viable options). It is a consequence of refusals and
+  arithmetic, never a branch taken for its own sake.
+
+#### Findings carried forward
+
+1. **Negotiating power is not seat count.** Banzhaf pivotality for 2022: S 34.5 %, **SD 23.6 % and
+   M 23.6 % — identical**, though SD holds 73 seats and M 68; and V, C, KD, MP and L are **3.6 %
+   each**, though they range from 16 to 24 seats. Five parties spanning a 50 % seat difference are
+   interchangeable in majority arithmetic, and SD's five extra seats over M buy no extra leverage.
+   This is the measure working, not failing — but it is worth knowing before any UI shows a player
+   "negotiating power" next to a seat count and invites them to read one off the other.
+2. **The sourced positions really do carry Sweden's cordon — on ONE axis, with slack.** A single
+   `lrgen` threshold anywhere in **[1.79, 2.58)** — a window **0.79 wide** — separates exactly the
+   four parties that refused the Sweden Democrats (C, S, MP, V) from exactly the three that governed
+   with them (L, M, KD). The shipped two-axis thresholds are still a fit chosen knowing the answer,
+   and the harness says so; the window is what can be measured without circularity.
+3. **Only one of the two declarations is load-bearing, and the harness measures which.** Dropped one
+   at a time: **C ↔ SD is CORROBORATED, not load-bearing** — the derived galtan rule already
+   separates C from SD (6.05 > 5.00) and the outcome is unchanged. **M, KD, L ↔ SD (no SD ministers)
+   is LOAD-BEARING** — drop it and SD becomes admissible in cabinet and the outcome is a five-party
+   grand coalition, the Tidö shape gone. A declaration that changes nothing here still earns its
+   place: it is the only mechanism that can express the Liberals' reversal between 2018 and 2022,
+   which **no position distance moved**.
+4. **Without the defection rule the formation returns arithmetic, not politics.** Its first form
+   ranked on cohesion, seats and pivotality and returned **S+M+C+KD+L, 234 seats** — a five-party
+   bloc spanning left and right that no one proposed. Seats dominate any such ranking; what removes
+   it is that M does far better in a 103-seat cabinet it leads (payoff 0.588) than as one of five
+   in a 234-seat one (0.235), and walks.
+
+#### Decisions taken and logged (R-N1)
+
+- **A red line has two KINDS and two STRENGTHS.** Kinds because a derived line generalises to any
+  country with sourced positions while a declared one is a dated fact that can be withdrawn;
+  strengths because Sweden 2022 turns on the difference between "I will not sit with you" and "I
+  will not depend on you". *Strikeable: a single strength would be simpler and would lose the Tidö
+  arrangement entirely.*
+- **Support is a comparison, not a threshold** — a party supports a cabinet if none of the parties
+  left out of it suits it better. No constant, so nothing here can be tuned to make a government
+  form.
+- **Supporter conflicts resolve by negotiating power** (§29's own term), which keeps SD and drops C
+  in 2022 from the arithmetic rather than from a stored answer. *Strikeable: resolving by seats
+  instead gives the same result here and a different one in a chamber where pivotality and size
+  diverge — which, per finding 1, is most chambers.*
+- **A party's payoff is office share × cabinet agreement, and zero outside the cabinet.** Portfolios
+  following seat share is Gamson's law, an empirical regularity rather than our preference; the
+  zero is what makes being IN a government beat propping one up, and is why the small right parties
+  sit and SD — which has no admissible cabinet of its own to hold out for — does not.
+- **`DefectionMargin` 0.01 [AUTHORED-DRAFT]:** below it two governments are the same offer and
+  nobody moves.
+- **The deferred §29 terms are asserted absent**, not merely left out.
+
+#### [AUTHORED-DRAFT] values, one line each (calibration entry 17)
+
+`WeightIdeological` 0.55 / `WeightPolicy` 0.45 · `DerivedRedLines.IdeologicalGap` 4.5 (lrgen) ·
+`SocialGap` 5.0 (galtan) · `WeightCohesion` 0.5 / `WeightSeatStrength` 0.3 / `WeightPower` 0.2 ·
+`DefectionMargin` 0.01. **The two gaps were chosen knowing Sweden 2022's answer and are a
+calibration, not a prediction — finding 2 states the slack that can be measured without
+circularity.**
+
+#### Riders
+
+- **W-D4** — post-election attribution reads this: which coalitions were arithmetically open and
+  which a red line closed is half of "why you are not in government".
+- **A later screen (Track E)** — the formation's ranking, its refusals and their bases are already
+  a list a screen can draw; §36's gate applies, since a player should see the DECLARED lines (they
+  are public) and not the model's derived distances.
+- **W-F5 / W-F6** — the declared lines are Sweden-specific data; a second playable country needs
+  its own, and the derived rule is what carries the rest.
+- **Not built, and named:** government COLLAPSE (§29's fifth outcome) is defined in the enum and
+  never produced — nothing in the prototype yet advances time inside a mandate for a government to
+  fall. It belongs with a governing-phase item, not here.
+
+### W-D4 — post-election attribution (§31): the approval ledger pointed at vote share, and an identity rather than a tolerance (2026-08-30)
+
+**What it is.** `VoteAttribution.cs` — §31's "why you won / why you lost" as a LEDGER, built in the
+`ApprovalAttribution` idiom: contributions **recorded where they land, never recomputed**, and lines
+that sum to the movement they explain. `VoteAttributionSource` names the ten sources a party's share
+can be moved by — its own eight §12 actions, the attacks aimed at it, and everything every other
+party did as one bloc. `CampaignRun` records them at the write sites (`PartyLedger.PersuasionByAction`
+per action kind, `PersuasionAgainstMe`, `Result.PersuasionPerParty`).
+
+**The identity is exact, and that is the design.** The share a party ends with is NOT linear in the
+pressures — compatibility is, but `PreferenceModel` normalises across parties — so leaving one
+source out at a time would not sum to the total and would need a residual line to hide the gap. The
+decomposition is therefore **Shapley over the ten sources**: its efficiency axiom makes
+`Σ lines == close − baseline` an identity, and its symmetry axiom means the order sources are
+considered in cannot change the answer, which a sequential decomposition cannot say. The cost is
+2^10 = 1 024 preference evaluations per party, which is why the opponents are one bloc rather than
+sixty-four separate sources — an aggregation that is honest about what it does not know ("your
+rivals' campaigning moved your share by this much") instead of pretending to name which rally did it.
+
+#### The done-when, asserted (`VoteAttributionHarness`, 8 of 8)
+
+- **THE FIRST CLAUSE — the lines sum to the deviation from baseline.** Largest residual across all
+  eight parties: **1.77 × 10⁻¹⁶** of a share, against a stated tolerance of 1 × 10⁻¹². That is
+  floating-point noise, not modelling slack, and the harness prints the worst case rather than
+  asserting a bound nobody can check.
+- **The ledger opens and closes on the campaign's own numbers**, not on figures of its own: largest
+  difference from `Result.BaselineShares` and `Result.FinalShares` 5.55 × 10⁻¹⁷.
+- **THE SECOND CLAUSE — no line is authored prose.** Asserted structurally: the instrument carries
+  **no string field or property at all** (by reflection), so a label can only be a
+  `VoteAttributionSource` enum name — a mechanism the model applies. Every declared source is swept,
+  so no line can read zero merely because it was forgotten.
+- **A source the party never used contributes exactly nothing.** SD never held a rally, a town hall,
+  a door-to-door day, a digital ad or a policy announcement, and all five lines are exactly 0 — the
+  ledger cannot attribute movement to something that did not happen.
+- **It is a reading of the run, not of the reader:** the same seed returns the same lines.
+
+#### The ledger, printed (seed 777, the C1 staging)
+
+```
+SD  (largest gain)  20.86 % -> 22.31 %  (+1.45 pp)
+    Interview            +2.744 pp
+    OpponentCampaigns    -1.425 pp
+    SocialPost           +0.086 pp
+    TelevisionAd         +0.041 pp
+    TOTAL                +1.446 pp   (residual 1.77e-16)
+
+S   (largest loss)  30.80 % -> 29.91 %  (-0.90 pp)
+    OpponentCampaigns    -1.342 pp
+    Interview            +0.627 pp
+    AttacksReceived      -0.288 pp
+    PolicyAnnouncement   +0.077 pp
+    SocialPost           +0.019 pp
+    TelevisionAd         +0.009 pp
+    TOTAL                -0.899 pp   (residual 6.94e-18)
+```
+
+#### Findings carried forward
+
+1. **The free interview dominates the ledger, in a third instrument.** SD's interviews are +2.744 pp
+   of a **+1.45 pp** net movement — the single largest line either party has, and larger than the
+   result itself. W-B3 and W-E3 recorded this as a mechanism question (bounded reach,
+   repeated-exposure decay) and C1's PEND lines rest on it; §31's ledger now says the same thing
+   from the other end, and a player reading this screen would conclude that campaigning is
+   interviews. Recorded, not adjusted.
+2. **The attribution corroborates the standing design question** opened against W-B4/W-B11 from
+   W-C2: SD's ledger has **five of its eight action lines at exactly zero**, all of them the local
+   and paid ones. That is the second independent measurement of the same thing, and it belongs in
+   evidence when that question is answered — the ruling of 2026-08-30 stands: measure which of the
+   two causes it is before adjusting either.
+3. **A party's own campaigning is not the biggest thing that happens to it.** `OpponentCampaigns` is
+   the largest line in S's ledger (−1.342 pp) and the second largest in SD's. §31's example gives
+   the player only their own doings; the model says the rivals' campaign is comparable in size, and
+   a screen that hides it would be misattributing the result to the player.
+
+#### Decisions taken and logged (R-N1)
+
+- **Shapley, not leave-one-out or a sequential pass.** Leave-one-out does not sum and would need a
+  residual line; a sequential pass sums but is order-dependent and would quietly privilege whichever
+  source was applied first. *Strikeable: Shapley costs 2^n, which is what caps the source list at
+  ten.*
+- **The opponents are ONE source.** Sixty-four separate sources would be exact and unaffordable
+  (2^72); naming them individually without the sweep would be a guess. *Strikeable: a second
+  aggregate — "the party I was attacked by most" — would cost one more bit.*
+- **Momentum, coverage, debates and scandals have NO line, and that is correct here.** The true
+  preference is moved only by persuasion pressure; debates and scandals move coverage and momentum,
+  which move the POLL and hence what the campaign chose to do. Their effect is already inside the
+  action lines, and giving them a line of their own would double-count. Recorded because it is the
+  first thing a reader will ask.
+- **Turnout and tactical voting are a later stage and have no line here** — this ledger explains the
+  PREFERENCE share. W-D1's election day applies turnout and W-A4's tactical layer on top of it;
+  attributing the seat result rather than the share is a second instrument, named as a rider.
+
+#### Riders
+
+- **A Track E screen** draws this ledger directly — the rows are already computed, signed and
+  ordered, and §36 does not bite (a party's own campaign and the published aggregate of others' are
+  both things it may know).
+- **A second ledger for the SEAT result** — turnout (W-B11), tactical voting (W-A4) and the seat
+  allocation stand between share and seats, and each is a stage this instrument does not cross.
+- **W-F4's voter groups** will make each line decomposable per group, which is what §31's "young
+  voters / urban voters" lines actually ask for; today's electorate is one group (W-F4 retires it).
+
+### W-E5 — the debate screen (§15 on §36's terms): three states, the model's own ceiling drawn, and an exchange that has not happened drawn as absent (2026-08-30)
+
+**What it is.** `DebateScreenSnapshot.cs` (the screen's read model, pure data) and
+`GameController.CampaignDebate.cs` (the drawing) — the fifth of the Track E class, on the same
+1156 × 680 board, the same 440 / 250 / 440 columns and the same primitives as Campaign HQ, the
+action screen, the polling screen and the map. ⚠ **HARNESS ONLY — R-N2 holds until W-G1.**
+
+- **Left, THE PODIUMS:** each candidate's §16 attributes, side by side — the five a debate move
+  actually draws on. The note says attributes are game fiction and that the blend is the model's,
+  not an average the screen takes.
+- **Middle, PREPARATION:** hours, topics, and **§35's curve quoted as the multiplier it is**
+  (`×0.93` against `×0.85` in the filmed staging) — a player who buys hours should see what the
+  hours bought, not a bar with no units.
+- **Right, THE FLOOR and THE VERDICT:** every exchange with its topic, the two moves and the two
+  point figures; then the performance indices, the margin, and **the two shocks**.
+
+**The screen's ceiling is the model's ceiling.** `DebateResult` carries no share, no preference and
+no party standing (asserted by reflection since W-B7), so the verdict column reports the indices,
+the margin, the coverage shock and the momentum shock — and stops, saying in as many words that a
+debate moves coverage and momentum and no vote share directly. A screen that ended "+1.2 % in the
+polls" would invent the one number §15 refuses to produce and teach the player to read a debate as
+votes.
+
+**An exchange that has not happened is an em dash, never a zero** (the Desk's Year-0 convention,
+1m-r2): mid-debate the remaining rows are absent rather than scored, because a zero claims the
+candidates said nothing and that is a different statement. For the same reason the mid-debate figure
+is the **running mean, labelled with how many exchanges it is over** — the performance index is a
+mean over ALL exchanges, so quoting it early would quote a number the debate has not produced.
+
+#### The done-when, filmed
+
+Three states, **filmed at 1280 / 1600 / 1920 / 2560**, twelve captures
+(`we5_debate_{width}_e5_campaign_debate_{prep,midway,verdict}.png`):
+
+- **prep** — nothing has been said: the floor reads "THE DEBATE HAS NOT BEGUN", and margin,
+  coverage shock and momentum shock each read "— NOT YET".
+- **midway** — a genuine PREFIX of the finished debate (3 of 6 exchanges), not a separately invented
+  picture: the debate is RUN once through `Debates.Resolve` on the `Debate` stream at `FilmSeed` 777
+  and the midway film is its first half, so the two states cannot disagree.
+- **verdict** — 6 exchanges, performance **65.3 / 52.9**, margin **12.4 pts** to Andersson, coverage
+  shock **1.24**, momentum shock **2.49 pp**.
+
+**Guards silent, and they were not silent TWICE over.** The first film exited 1 with **12 text
+overflows** — the three footnotes were drawn with `PoliSimWidgets.MeasuredLabel`, a SINGLE-LINE
+widget that shrinks to fit and trips the guard when it cannot; the wrapped-note idiom the sibling
+screens use is `GUI.Label` with the height measured by `CalcHeight` for the width, plus a
+`UiContainmentGuard.Check`. Converted to it, all four widths exit 0 with **0 text overflows and 0
+containment escapes**, and `ScreenEdgeCheck -edgepattern=we5_debate_*.png` exits 0 over **76
+captures**. The guard catching this is the guard working; it is recorded rather than quietly fixed.
+
+#### Decisions taken and logged (R-N1)
+
+- **The debate is RUN, not mocked, for the film.** One `Debates.Resolve` at a fixed seed produces
+  all three states, so the midway film is provably the verdict's own prefix. *Strikeable: staging
+  three unrelated pictures would film faster and could disagree with itself.*
+- **The two candidates are deliberately UNEQUAL** (14 h against 6 h of preparation, different
+  ownership) so the verdict has a margin worth reading rather than a draw that shows nothing.
+  Attributes are `[AUTHORED-DRAFT]`, W-F6's to source; the names are placeholders, not real leaders.
+- **The middle column quotes the preparation MULTIPLIER, not the hours alone** — §35's curve is the
+  thing the player is buying, and an hours figure without it is a price with no product.
+
+#### Riders
+
+- **W-E5 is a modal on the sheet in the worklist's words; it is drawn as a full stage here**, the
+  same as its four siblings, because the campaign screens are stages and a modal would need a
+  scrim, a dismiss affordance and a return target that no other Track E screen has yet. If Design
+  wants it as a modal, that is a re-skin of the same board (the R-E2 precedent).
+- **The exchange rows have no ownership or clash column** — both are in the model and neither is on
+  the screen, because eight columns do not fit at 1280 and the point figures already carry them.
+  A later pass may add a per-exchange detail line.
+- **W-F6** sources the real party leaders' names; the attributes stay game fiction and labelled.
+
+#### And a second guard fired, on the same screen (W-E5, recorded 2026-08-30)
+
+**`MetaTextCheck` — P-A1's ninth check — exited 1 on the finished screen:** the podium column's
+ledger head read `"THE PODIUMS — SECTION 16 ATTRIBUTES"`, and an internal spec reference on a player
+surface is exactly the class P-A1 censused and armed a guard against. One hit, named with its file
+and line.
+
+Fixed, and the same class fixed where the token list does NOT reach: `"ATTRIBUTES ARE GAME FICTION
+AND LABELLED SO — A MOVE'S BLEND OF THEM IS THE MODEL'S…"` addresses a builder, not a player, and so
+does `"…AND THIS SCREEN WILL NOT CLAIM IT."` Both were rewritten into player language ("THESE
+RATINGS ARE THE GAME'S OWN INVENTION, NOT A MEASUREMENT OF ANYONE"; "WHATEVER THE POLLS DO IN THE
+DAYS AFTER IS THE MOMENTUM'S DOING"). The guard is the floor, not the ceiling — it catches the
+tokens it knows, and the intent behind it is what the other two violated.
+
+**Re-run after the fix: `MetaTextCheck` exit 0, all four widths exit 0 (0 overflows, 0 containment
+escapes), `ScreenEdgeCheck` exit 0 over 76 captures.** Two guards fired on this screen and both were
+right; that is a better outcome than a screen that passed first time, because it is evidence the
+guards bind on new work rather than only on the work they were written for.
+
+### W-E6 — election night (board 1h, §30): the count arriving by constituency, a gate that makes a premature result impossible, and calls that cannot be contradicted (2026-08-30)
+
+**What it is.** `ElectionNight.cs` (the model), `ElectionNightScreen.cs` (**board 1h — the last
+unbuilt board of §A.14, the Canvas slot reserved for it since v2**), `ElectionNightFilm.cs` (the
+staging both the harness and the film read, so the two count ONE election),
+`ElectionNightHarness.cs` (**11 of 11**), and `SimulationRandom.Stream.ElectionNight = 11`
+(APPENDED, never inserted — the ElectionNoise and CampaignAi precedent, re-proven byte-identical).
+
+**Two rules govern the item, and both are STRUCTURAL rather than conventions to be remembered.**
+
+**1 — No result exists before its constituency declares.** The running tally is not a number
+revealed gradually; it is COMPUTED, at every instant, from the declared constituencies and nothing
+else. An undeclared constituency carries `null` votes and no valid count, so a screen cannot draw a
+figure that has not happened — not because the screen is careful but because the number does not
+exist. *Asserted by independent re-derivation:* the harness sums the declared set itself and
+compares vote for vote, over **392 states across 8 seeds — 0 early appearances, absence never zero,
+every tally agreeing**. A scripted reveal would pass a screenshot review and fail this.
+
+**2 — A call, once made, cannot be contradicted.** Not "is unlikely to be" — cannot. Each
+undeclared constituency is bounded by its own ELIGIBLE electorate (published before the night, and a
+hard cap since turnout cannot exceed 100 %), and a call is made only when the claim holds at BOTH
+extremes: every outstanding vote to the claim's enemy, and none of them anywhere. The seats at those
+extremes come from **`SeatAllocation` — the allocation the backtest reproduces Sweden 2022 with
+seat-for-seat for SWEDEN 2022** — so the call cannot rest on arithmetic the final tally does not use. *Asserted:*
+**1 849 call-instants across 8 seeds, 0 contradicted.** And the harness re-proves the allocation on
+the same page: S 107/107, SD 73/73, M 68/68, V 24/24, C 24/24, KD 19/19, MP 18/18, L 16/16.
+
+#### The night the model produces (seed 777, Sweden 2022's own returns)
+
+| state | minute | declared | counted | calls safe |
+|---|---|---|---|---|
+| early | 30 | 4 of 29 | 515 869 | 0 |
+| partial | 59 | 16 of 29 | 2 510 364 | 3 |
+| called | 151 | 28 of 29 | 5 583 801 | 7 |
+| final | 240 | 29 of 29 | 6 377 718 | 11 |
+
+When each call becomes safe, over the seeds: **S from 6 of 29**, SD from 8, M from 11, C from 23,
+V from 25, KD from 27, MP from 28 — and **L's clearance, the largest party and the bloc majority
+only at 29 of 29.** That is the 2022 chamber telling the truth about itself: a 176–173 result turning
+on L's 4.61 % cannot be called until L is in.
+
+**Filmed in four states at 1280 / 1600 / 1920 / 2560** — sixteen captures,
+`we6_night_{width}_e6_election_night_{early,partial,called,final}.png`; all four widths exit 0 with
+**0 text overflows and 0 containment escapes**, `MetaTextCheck` exit 0, and `ScreenEdgeCheck
+-edgepattern=we6_night_*.png` exit 0 over **32 captures**. The four states are four instants of ONE
+seeded night, so they cannot disagree with each other.
+
+#### Findings carried forward
+
+1. **A guarantee calls later than a projection would, and that is the trade the item bought.** A
+   network calls on a model and is sometimes wrong; this calls on a bound and is never wrong. The
+   cost is visible above: the marquee calls land with the last constituency. **Tightening it would
+   need a SOURCED turnout ceiling** ("no Swedish valkrets has exceeded X % since 2002") — which is
+   empirical, not certain, and would weaken "cannot" to "has never". Recorded as a rider, not taken.
+2. **The threshold calls carry the drama instead, and they carry it well.** Seven of eleven calls
+   land before the end, spread from 6 of 29 to 28 of 29, so the night has a shape without any of it
+   being scripted: each one is a bound crossing a line, at the minute the arithmetic crosses it.
+3. **The chip's spec wording did not survive contact with the system.** §A.14 specifies a
+   "348 OF 350 SEATS DECLARED" chip; seats in this system are allocated NATIONALLY and are not
+   declared one at a time, so the chip reads **constituencies** declared. The mock-up's wording
+   implied a different electoral system than the one the game models.
+
+#### Decisions taken and logged (R-N1)
+
+- **Its own random stream.** The night is a separate act from the count: an election already counted
+  must be re-playable as a night, in a different declaration order, without moving a single vote.
+  Borrowing `ElectionNoise` would make the arrival order and the result share one draw sequence, so
+  restaging the night would silently change who won.
+- **The schedule is monotone in the electorate plus a seeded jitter** — small constituencies count
+  faster, which is a fact about counting rather than a dramatic choice — and the LAST arrival is
+  pinned to the final minute so "final" is a state the night reaches rather than approaches.
+- **The four filmed states are chosen by DECLARED COUNT, not by clock time**, because that is what
+  the screen is about. *Strikeable: fixed minutes would be simpler and would film a different night
+  under a different seed.*
+- **The bound concentrates the whole outstanding electorate on ONE party** (the strongest opponent
+  for a worst case, the strongest member for a best case). Concentrating it is what makes the bound
+  extreme, and an extreme bound is what makes the call safe.
+
+#### Declared deviations from §A.14's board (V-N series)
+
+- **V-N1** — flat paper and a single dark plate for the shadow: the CSS gradient and double shadow
+  have no delivered sprite (1g's V-S1, the same absence, and the absence guard is honoured).
+- **V-N2** — the declaration-wave, count-up and stamp-thunk BEATS are not animated. The board is
+  filmed in four states, and an animation no capture can check is a claim no reviewer can test; the
+  states are the honest subset and the beats stay in the spec for the wiring item.
+- **V-N3** — the swing column is OMITTED: a swing needs the previous election's per-constituency
+  result beside this one's, and the night's model carries one election. Named rather than faked.
+
+#### Riders
+
+- **W-E7** draws §30's full breakdown and W-D4's ledger; this board is the arrival, not the analysis.
+- **A sourced turnout ceiling** would tighten the bound and let the marquee calls land earlier —
+  finding 1, and a Track F data item if it is wanted.
+- **The beats (V-N2)** belong to the wiring item, where a clock exists to play them against.
+
+### W-E7 — results and attribution (§30 + W-D4's ledger): every figure counted, derived or published, and the one §30 asks for that this screen refuses to invent (2026-08-30)
+
+**What it is.** `ResultsScreenSnapshot.cs` (the read model) and
+`GameController.CampaignResults.cs` (the drawing) — the sixth Track E screen and the last IMGUI one,
+on the same 1156×680 board and the same 440 / 250 / 440 columns as its five siblings. ⚠ **HARNESS
+ONLY — R-N2 holds until W-G1.**
+
+- **Left, THE COUNT:** every party's votes, share, seats, and the movement against a NAMED prior
+  election — `+2.10 pp / +7` for S, `−0.89 pp / −4` for L.
+- **Middle, THE CONSTITUENCIES:** §30's regional results, largest first, each with its leader.
+- **Right, WHY:** W-D4's ledger unaltered — every line a mechanism, the labels enum names, and the
+  lines summing to the movement as an identity. The screen adds no interpretation; if it did, the
+  sum would stop being a proof and become a story.
+
+#### The done-when: every figure traces, and the three classes are kept apart
+
+- **COUNTED** — the votes, the seats (`SeatAllocation`, the allocation that reproduces 2022
+  reproduces SWEDEN 2022, 8 of 8 — one election; C-A4), the regional table.
+- **DERIVED, and proven against a sourced answer** — 2018's seats are computed by that same
+  allocation rather than typed in, and the comparison column validates itself: **S shows +7 (100 →
+  107) and L shows −4 (20 → 16), which are the real 2018→2022 changes.** A second arithmetic that
+  merely agreed would have been worth much less.
+- **PUBLISHED** — turnout **84.21 %** of **7 775 390** eligible, Valmyndigheten's own basis.
+
+⚠ **Two figures were wrong on the first film and are recorded rather than quietly fixed.** The
+screen read turnout **85.88 %** — the eight parties' votes over a *derived* electorate — and
+labelled 6 377 718 as "VALID VOTES" when the official valid total is 6 477 970 (the difference is
+minor parties this model does not carry). Neither error touched a seat, but **a results screen is
+precisely where a derived figure gets mistaken for a published one**, so turnout now quotes the
+source and the total says what it is: *the votes these parties took*, with the footer stating that
+shares are of that total and not of all ballots cast.
+
+#### §30's demographic block is drawn ABSENT, and that is the item's most deliberate line
+
+§30 asks for young / older / urban / rural / income voters. **The electorate is ONE GROUP** —
+`ElectionDay.cs:28`, `CampaignRun.cs:91`, `TacticalVoting.cs:19` and four more sites all name W-F4
+as where that retires. Five plausible rows split out of one group would be invented demographics,
+which §0.4 forbids outright. So the five rows are drawn as em dashes under a stated reason, the
+same convention as W-E6's V-N3 and W-E2's §36 gate: absence is a fact, and a zero is a different
+claim.
+
+#### Filmed
+
+Two states — **`largest`** (the player as S, the largest party) and **`lost_ground`** (the player as
+L, which lost four seats) — **at 1280 / 1600 / 1920 / 2560**, eight captures. *A results screen only
+ever seen on a win is one where nobody has checked the signs.* All four widths exit 0 with **0 text
+overflows and 0 containment escapes**, `MetaTextCheck` exit 0, and `ScreenEdgeCheck
+-edgepattern=we7_results_*.png` exit 0 over **84 captures**. The W-E5 lesson carried: wrapped notes
+use `GUI.Label` with `CalcHeight`, never the single-line `MeasuredLabel`, and the guards were silent
+first time.
+
+#### Decisions taken and logged (R-N1)
+
+- **The comparison election is carried WHOLE, not as pre-computed deltas**, so the screen names what
+  it compares against instead of showing a bare arrow. *Strikeable: deltas alone would be smaller
+  and would let a reader assume the wrong baseline.*
+- **2018's seats are DERIVED by the same allocation**, never typed from the record — so the column
+  cannot silently disagree with the one beside it, and when it matches the real distribution that is
+  evidence rather than coincidence.
+- **Turnout and the electorate are the PUBLISHED figures**, not this model's own ratio.
+- **Two filmed states, one of them a loss.**
+
+#### [AUTHORED-DRAFT] values
+
+**None.** Every figure on this screen is counted, derived from a sourced input, or published — which
+is the whole of its done-when.
+
+#### Riders
+
+- **W-F4** fills the voter-group block; the five em-dash rows are its acceptance test.
+- **W-F1** replaces the regional table's 2018-distributed counts with the real 2022 per-valkrets
+  returns, and the shares stop being of the eight-party subtotal.
+- **W-E8** takes the coalition that forms from these seats.
+
+### W-E8 — the coalition screen (§29 on §36's terms): the arithmetic, what it would have allowed, and the difference between a refusal someone uttered and a distance this model measured (2026-08-30)
+
+**What it is.** `CoalitionScreenSnapshot.cs` (the read model), `GameController.CampaignCoalition.cs`
+(the drawing) and `CoalitionFilm.cs` (the staging the screen and the HARNESS now share) — **the
+seventh and last Track E screen**. ⚠ **HARNESS ONLY — R-N2 holds until W-G1.**
+
+- **Left, THE ARITHMETIC:** every party's seats, its Banzhaf pivotality, and its role in the
+  government that formed — in cabinet, supporting, or neither.
+- **Middle, MAJORITIES THE SEATS ALLOWED:** the combinations the arithmetic would have carried and
+  the line that refused each, smallest first.
+- **Right, RED LINES:** declared and measured, kept apart.
+
+#### The screen's one real decision, and §36 decides it
+
+**A DECLARED line is public.** A party said it, the citation is on disk, and the screen states it
+flatly and names who holds it. **A DERIVED line is this model reading a gap** between two parties —
+nobody in the world has uttered it — so it is drawn as the DISTANCE it is, with the axis and the
+figure, under a heading that says so: *"MEASURED — A DISTANCE, NOT A REFUSAL ANYONE UTTERED"*.
+Showing a measured gap as a refusal would put words in a party's mouth and hand the player a
+certainty that does not exist. The two kinds sit in the same column, separated by a rule, because
+the difference between them is the thing worth teaching.
+
+**The middle column is the item's other argument.** A coalition screen that showed only what CAN
+form teaches the player that the arithmetic is the whole story. This one shows the **120 arithmetic
+majorities a red line refused** on Sweden 2022, each with the pair that refused it and whether that
+was declared or measured — which is what makes a red line legible as politics rather than as a
+missing option.
+
+#### The done-when: three outcome states, and all three fall out of the model
+
+Nothing is staged; each is `CoalitionFormation.Form` on real inputs.
+
+| state | outcome | cabinet | viable | refused |
+|---|---|---|---|---|
+| `confidence_and_supply` | ConfidenceAndSupply | **M+KD+L, 103 seats, carried by SD** | 1 | 120 |
+| `new_election` | **NewElection** | — | 0 | 4 |
+| `majority` | MajorityCoalition | S+M+C+KD+L, 234 seats | 14 | 119 |
+
+The first is Sweden 2022 as it happened. The second is the 150/100/99 chamber where every pair
+refuses every other — the harness's own reachability proof, drawn. The third is **the same 2022
+seats with the DECLARED lines dropped**, which is the counterfactual that shows what those
+declarations are actually doing: without them SD is admissible in cabinet and the result is a
+five-party bloc nobody proposed. That agrees exactly with W-D3's own measurement.
+
+**Filmed at 1280 / 1600 / 1920 / 2560** — twelve captures — all four widths exit 0 with **0 text
+overflows and 0 containment escapes**, `MetaTextCheck` exit 0, and `ScreenEdgeCheck
+-edgepattern=we8_coalition_*.png` exit 0.
+
+#### Decisions taken and logged (R-N1)
+
+- **The harness and the screen were pulled onto ONE staging** (`CoalitionFilm`): the same
+  compatibility matrix and the same red lines. Two surfaces disagreeing about which coalitions are
+  possible would be worse than either being wrong alone — the `ElectionNightFilm` precedent from
+  W-E6. All 16 coalition assertions still hold on the shared path.
+- **Declared and measured lines are drawn differently, and the screen says which is which.**
+  *Strikeable: one undifferentiated list would be shorter and would quietly promote a measurement
+  into a quotation.*
+- **The refused majorities are shown smallest first**, because the tightest refusals are the ones a
+  reader can hold in mind — a 234-seat refusal teaches less than a two-party one.
+
+#### [AUTHORED-DRAFT] values
+
+**None.** Every figure is the formation's own: seats counted, pivotality derived from the seats,
+compatibility derived from sourced CHES positions, red lines derived-or-cited.
+
+#### Riders
+
+- **W-E7** hands this screen its seats; **W-D3** is the model it draws.
+- **W-H4** — the coalition screen invents no sprite; if Design wants party marks in the arithmetic
+  column, that is a line in the ask, not art invented here.
+
+### W-B12 — the campaign manager's full cost plan (§9): pay the organisation first, release the rest (2026-08-30)
+
+**What it is.** W-B5 built the manager's `BudgetPlan` over television alone and measured what that
+left out: **every party in the AI campaign went broke before polling day** — of 120 staff-days,
+SD 38 unpaid, V 12, S 10, M 6. The cause was structural, not a shortage: **the spending pace
+released money for ACTIONS against the whole war chest, while the payroll and the offices were
+charged from the same chest afterwards, so the two claims on the money never met until the money
+ran out.**
+
+`BudgetPlan` now carries `DailyFixedCost` — the payroll (`StaffRoster.DailySalaryBill`) plus every
+office's maintenance and daily operation (`OfficeNetwork.DailyCost`) — set each morning, because a
+party that hires or opens an office today has a different bill tomorrow. `CommittedToOrganisation
+(daysLeft)` is what must still be kept back to reach polling day, and the pace's release is capped
+by `money − committed` instead of by `money`. **A party without a manager has no plan and no such
+discipline, which is exactly the difference §9 says a campaign manager makes.**
+
+#### Measured, on the staging that found the defect (seed 777, 60 days, 120 staff-days each)
+
+| party | manager? | unpaid staff-days BEFORE | AFTER |
+|---|---|---|---|
+| S (professional) | yes | 10 | **0** |
+| M (establishment) | yes | 6 | **0** |
+| KD (establishment) | yes | — | **0** |
+| L (professional) | yes | — | **0** |
+| SD (populist) | yes | 38 | **6** |
+| V (grassroots) | **no** | 12 | 12 |
+| MP (grassroots) | **no** | — | 12 |
+| C (chaotic) | no staff | 0 | 0 |
+
+**Four of the five managed parties now pay their organisation in full to polling day.** The two
+unmanaged parties are unchanged at 12, which is the intended shape: the plan is the manager's
+effect, and a party that hired no manager gets no discipline.
+
+⚠ **The done-when is not fully met, and this is stated rather than rounded up.** SD retains **6
+unpaid staff-days**. It is **not** a reaction office — the 1h line shows SD at *4 staged + 0 in
+reaction*, so W-C2 is not the cause. What is left is the populist's pace: `spendPace` 1.6 is the
+most front-loaded of the five, and its 4 offices at 100 000 kr of opening capital plus a planned
+television buy leave the tightest margin of any managed party. The remaining six days are a
+**residual to be measured, not a constant to be moved** — the plan protects against the bill it can
+see each morning, and capital commitments (an office opened, a buy planned) are not in that bill.
+
+#### C1's PEND lines, re-measured (the standing order, and the 2026-08-30 ruling)
+
+- **⚠ `prof/est` CROSSED 0.30 FOR THE FIRST TIME: 0.061 → 0.306.** W-B5 recorded the two rational
+  planners converging on the same schedule with equal money; the ruling sent that to W-C2/W-F5.
+  **What actually separated them was the manager's plan** — a planner and a non-planner spend
+  differently even on equal money, which is a better answer than "unequal war chests would separate
+  them" and was not the one predicted.
+- **2a-iii still PENDs**, because it needs all three pairs and `est/grass` is 0.269.
+- **⚠ `est/grass` moved AWAY from the line: 0.291 → 0.269.** The ruling of 2026-08-30 anticipated
+  exactly this shape — *"if W-F5 lands and it still reads 0.291, that is a finding about the model"*
+  — and here it was W-B12, not W-F5, that moved it, and in the wrong direction. **Nothing was tuned.**
+  The line stays a PEND with its measurement, and the finding is that giving the establishment
+  budget discipline moved its action mix TOWARD the grassroots party's rather than away.
+- The harness reads **ALL ASSERTIONS PASS; 5 PENDING**.
+
+#### Decisions taken and logged (R-N1)
+
+- **The cap is on the RESERVE, not on the actions.** The pace still decides how fast money is
+  released; the plan only decides how much there is to release. *Strikeable: capping each action
+  instead would make the manager a censor rather than a treasurer.*
+- **`DailyFixedCost` is set every morning**, not once, because offices and hires change it.
+- **Capital is deliberately NOT in the daily bill** — an office's 100 000 kr opening and a planned
+  television buy are one-off commitments, and folding them into a per-day figure would misstate both.
+  That choice is what SD's residual six days sit on, and it is named here rather than hidden.
+
+#### [AUTHORED-DRAFT] values
+
+**None.** `DailyFixedCost` is summed from figures that already exist (`SalaryPerDay`,
+`MaintenancePerDay`, the staged operations rate); the item introduces no new constant.
+
+#### Riders
+
+- **SD's six days** — measure whether capital commitments belong in the plan's horizon.
+- **W-F5** — unequal war chests; `est/grass` and 2a-iii still wait there.
+
+### W-F1 — Sweden's 2022 returns by constituency: the election the model counts is now the election that happened (2026-08-30)
+
+**What was wrong.** `ElectionsData/sweden/returns_2022.md` carried all 29 valkretsar but only **five
+party columns, and only as shares**. The only per-constituency ABSOLUTE counts on disk for all eight
+parties were **2018's**, and **nine code paths read that 2018 file as if it were the electorate** —
+the seat conversion, election day, GOTV, the offices, the AI campaign's region audiences, election
+night, and the campaign map on screen. Two more read it as a PRIOR, which is correct and was left
+alone (below).
+
+**What was fetched.** Valmyndigheten's own per-constituency backend,
+`https://resultat.val.se/data/resultat/val2022/RD_{NN}_S.json` for NN = 01…29, final count
+(`rakningstillfalle: "slutlig"`), 29 files. **Code 30 returns 404 — that is the completeness check**:
+Sweden has exactly 29 riksdagsvalkretsar and the source agrees.
+
+**How it was checked, and this is the strongest part.** The 29 per-constituency files and the
+national `RD_S.json` are **independent downloads**. Aggregating the 29 and comparing against the
+national file and against `returns_2022.md` gives **eleven column sums, all eleven exact**: valid
+6 477 970 · eligible 7 775 390 · cast 6 547 801 · S 1 964 474 · M 1 237 428 · SD 1 330 325 ·
+C 434 945 · V 437 050 · KD 345 712 · L 298 542 · MP 329 242. One pass validates the parse, the
+aggregation and the file's completeness together.
+
+#### The headline: W-D2's claim got much stronger, and its internals were wrong
+
+W-D2 asserts *"Sweden 2022 reproduces seat-for-seat through the live path"*. Until today it did that
+on a **synthetic** chamber — the 2022 NATIONAL counts spread over 29 constituencies by 2018's
+distribution. The totals were right **by construction**: the national counts were exact, so the
+national totalfördelning could hardly miss. **The 29-constituency procedure — the fixed seats, the
+12 % rule, where the 39 adjustment seats land — was being asked a smoothed question.**
+
+On the real counts it **still reproduces 107/73/68/24/24/19/18/16, 8 of 8 exact**. But the fixed /
+adjustment split moved for four parties:
+
+| party | fixed before → after | adjustment before → after |
+|---|---|---|
+| **KD** | 10 → **13** | 9 → **6** |
+| **S** | 105 → **104** | 2 → **3** |
+| **V** | 17 → **16** | 7 → **8** |
+| **MP** | 11 → **10** | 7 → **8** |
+| SD / M / C / L | unchanged | unchanged |
+
+**KD's fixed seats were understated by three.** And Stockholms län's fixed seats went **39 → 40**,
+because the constituency's seat entitlement is computed from ELIGIBLE voters and eligible was
+derived, not sourced. The seat table was right; the account of HOW Sweden produces it was not.
+
+#### The second retirement: eligible voters
+
+Per-valkrets eligible counts were **DERIVED as 2018 valid votes ÷ a national turnout**. That put the
+national electorate at **7 429 141 against the published 7 775 390 — 346 249 voters, 4.5 % low** —
+because one national turnout was applied uniformly to constituencies whose real turnout ran from
+**77.22 % (Malmö kommun) to 87.56 % (Västra Götalands läns västra), a 10.3 pp spread**, so the error
+did not cancel. Column 11 is now Valmyndigheten's own `antalRostberattigade`. `Turnout2018` is
+retired as an eligible-derivation at all four sites that used it, and `DATA_BILL.md`'s bill in
+`turnout_history.md` is marked **PAID**.
+
+#### ⚠ Two of the "ten consumers" were reading 2018 CORRECTLY, and were NOT repointed
+
+`CompositionHarness` and `GateReRun` read the 2018 file as **the PRIOR for a backtest of 2022** —
+exactly as Germany's 2021 Land votes are the prior for its 2025 case. **Repointing them would have
+let the model see the answer it is scored against**, and the MAD it reports would have stopped
+meaning anything. Both keep the 2018 file, with a comment at each site saying why. Verified after
+the change: SWEDEN 2022's MAD is unmoved (both-layers 1.47 pp, §8-only 1.47 pp), which is the proof
+the backtest was not contaminated.
+
+#### Everything that moved on a player-facing screen, reported (risk 4 of the plan)
+
+- **The campaign map** (W-E2) now reads **13 swing constituencies at the regional buy and 16 at the
+  full programme** (was 11 and 12), and **20 / 18 too close to call** (was 19 / 13). Sweden's real
+  2022 regional variation is **more contested** than 2018's pattern implied.
+- **Election night** calls S's threshold clearance from **8 of 29** (was 6) and C's from **25**
+  (was 23) — the real distribution is less smooth than the synthesis, so the guarantee is slightly
+  slower. 0 of 1834 call-instants contradicted, unchanged.
+- **Election day** counts **6 564 111 of 7 775 390** (was 6 272 383 of 7 429 141); turnout 84.42 %
+  either way, because the derivation was self-consistent even while being wrong.
+- **The offices**: a full office's local audience in Stockholms län is **1 006 456** (was 934 883).
+- **The AI campaign**: national audience 6 477 970 (was 6 476 725); every decision digest changed
+  (`0c98e88d…` → `817143c1…`) as the inputs did.
+- ⚠ **C1's PEND lines did NOT move**: prof/est 0.306, est/grass 0.269, identical to W-B12's reading.
+  **That is worth stating** — it rules out the data vintage as the explanation and leaves the
+  separation question exactly where the standing ruling put it, on W-F5 and on behaviour.
+
+#### Decisions taken and logged (R-N1)
+
+- **The 2022 file keeps the 2018 file's ROW ORDER**, not the JSON backend's (which puts Stockholms
+  kommun first). Every consumer keys regions by index, so this makes the repoint change the NUMBERS
+  and nothing else. *Strikeable: adopting the source's order would have silently reordered 29
+  regions and made every moved figure unattributable.*
+- **Columns 1–10 are the 2018 file's shape exactly**, so a consumer repoints by changing a filename;
+  eligible and cast are appended as 11 and 12. The shared `ReadCsv` takes a MINIMUM column count, so
+  appending is safe.
+- **Capital-C `valid` is `rosterPaverkaMandat`** — the count the seat allocation actually runs on —
+  not ballots cast. The file's header says so, and says the party columns do not sum to it.
+
+#### [AUTHORED-DRAFT] values
+
+**None.** W-F1 retires a derivation and introduces no authored figure.
+
+### W-F6 — the party leaders: the names are sourced, the characters are not (2026-08-30)
+
+**What was on disk.** Nothing. Two placeholder surnames lived in the screenshot driver
+(`"Andersson"`, `"Kristersson"`) with a comment saying W-F6 would source them.
+
+**What was fetched, and why this source and not an encyclopaedia.** Each of the eight leaders is
+taken from **that party's own website as it stood within days of the election**, retrieved through
+the Internet Archive so every citation carries an exact capture timestamp. **A party is the
+authority on who leads it**, and an archived capture is the only way to ask that question of
+September 2022 rather than of today — five of the eight have changed leader since.
+
+| party | leader at 2022-09-11 | the party's own words |
+|---|---|---|
+| S | Magdalena Andersson | *"partiordförande och Sveriges statsminister"* (capture 2022-08-10) |
+| SD | Jimmie Åkesson | the page's own title: *…sverigedemokraternas-partiledare* (2022-09-30) |
+| M | Ulf Kristersson | named five times on the front page, election night (2022-09-12) |
+| V | Nooshi Dadgostar | *"är Vänsterpartiets partiledare sedan den 31 oktober 2020"* (2022-09-05) |
+| C | Annie Lööf | named five times on the front page, election night (2022-09-12) |
+| KD | Ebba Busch | ⚠ **the weakest citation, stated as such** (below) |
+| L | Johan Pehrson | named three times on the front page, election night (2022-09-11) |
+| MP | Märta Stenevi **and** Per Bolund | *"Språkrör och riksdagsledamot"* (2022-09-11) |
+
+⚠ **KD's citation is weaker than the other seven and this is written down rather than smoothed
+over.** KD's own site is JavaScript-rendered, so its archived captures carry **no static role text**
+at all. What the party's own site does give is a representatives page at
+`/om-oss/foretradare/ebba/` and a news archive publishing her speeches as the party's voice in the
+Riksdag. The **office** is carried instead by the **Tidö agreement** — a primary document already
+SOURCED on disk (`coalition_declarations_2022.md`) and signed by the four party leaders. Seven
+citations are the party saying it in its own words; one is an inference from two primary documents,
+and the file says which is which.
+
+#### The line this item does NOT cross
+
+**What is sourced is the NAME and the OFFICE. Nothing else.** The nine `CandidateProfile` attributes
+beside each name — charisma, competence, authenticity and the rest — **remain `[AUTHORED-DRAFT]`
+game fiction and the debate screen keeps saying so.** Sourcing a real person's *name* does not
+license inventing their *character*, and §0.4's ban on invented data is not suspended because a
+public figure is famous. The comment at the staging site now says exactly that, so the next reader
+cannot mistake a sourced label for a sourced number.
+
+⚠ **Leader RELATIONS stay deferred and stay asserted ABSENT.** `CoalitionHarness.cs` proves by
+reflection that no leader-relationship field exists anywhere in the coalition instrument. W-F6 does
+not weaken that assertion — it was tempting to add a relations matrix now that the names are real,
+and that is precisely the temptation §36 exists to refuse: a relationship nobody has measured is not
+data.
+
+#### ⚠ The finding: MP has two leaders and the model has room for one
+
+Miljöpartiet is led by **two språkrör** and has been since 1984. `CandidateProfile` is one person;
+§15's debate seats one candidate; §29's leader compatibility compares one to one. **Taking "the
+first one" would silently drop Per Bolund and print something false about a real party.** The file
+names both, says the model carries one, and the gap is billed in `MISSING_PREREQUISITES.md` as a
+design question for §15/§29 rather than resolved by a data item whose done-when is to source names.
+
+#### Decisions taken and logged (R-N1)
+
+- **The vintage is 2022-09-11, not today.** Five leaders have changed since. A "current leaders"
+  file is a different item; this one exists to name the people who fought the election the model
+  replays. *Strikeable: a current file would be wrong for every screen in this prototype.*
+- **The debate staging keeps its deliberately UNEQUAL attributes**, so the verdict has a margin
+  worth reading. Only the labels changed.
+
+#### [AUTHORED-DRAFT] values
+
+**None added.** The nine attributes per candidate were already `[AUTHORED-DRAFT]` and remain so;
+W-F6 changes two labels from placeholder surnames to sourced full names.
+
+### W-G1 — the wiring: real parties, real chambers, a real election, and the one question that stopped the rail cell (2026-08-30)
+
+**R-N2 ends here.** Everything before this item was pure and unwired, and the trajectories were
+byte-identical six of six through every commit since. This is the item that retires that invariant,
+and it does so in one isolated commit whose hash is the revert handle.
+
+#### What went
+
+**`PartyArchetype` is retired** — four generic fictional archetypes (ProgressiveAlliance,
+ConservativeUnion, CentristCoalition, NationalistFront) shared identically by all six countries,
+because when they were written no party data was on disk. **53 real parties** replace them, each
+carrying the position CHES 2024 (or GPS 2019 for the USA) publishes for it and the seats its own
+country's most recent election gave it.
+
+**`ParliamentConstants.TotalSeats = 200`** — its own comment called it "an arbitrary round number
+for a clean visualization" — is replaced by six real chamber sizes: **Sweden 349, Germany 630,
+France 577, Italy 400, Poland 460, USA 435.** Every one reconciles to its seat total exactly.
+
+⚠ **Italy took two extra units to reconcile, and they were not invented.** The per-list totals summed
+to 398 of 400. The missing two are named in the returns file itself and sit outside the Area Italia
+basis every other row uses: one MAIE deputy in the overseas constituency and one Union Valdotaine
+deputy in the Valle d'Aosta college. **Rounding 398 up by inflating a party would have been
+inventing seats to make a total come out.**
+
+#### The three replacements that were not mechanical
+
+**1. Seats no longer drift with approval — they change at elections.** `ParliamentSystem.UpdateSeats`
+recomputed every country's chamber EVERY TURN from `ApprovalRating`, with a per-archetype
+`ApprovalSensitivity` (+0.35 establishment, −0.90 protest) plus a bounded step and jitter. **No such
+figure is published for a real party by CHES, by GPS or by anyone**, and inventing 53 of them is what
+§0.4 forbids. It was also simply wrong: **a parliament's composition does not drift week by week
+with the government's approval.** `MaxSeatsChangePerTurn`, `MaxSeatJitter` and `MinTargetShare`
+retire with it.
+
+**2. `GetSeatWeightedAlignment` was re-expressed, not left alone** — the plan flagged that "bill
+scoring stays" is not a no-op, and it was right. It summed four hand-set fiscal stances over a
+fictional 200-seat denominator. It now sums each party's stance DERIVED from published CHES
+`lrecon` as `(5 − lrecon) / 5`, over that country's real chamber. ⚠ **A unit with no published
+position contributes nothing AND is left out of the denominator**, so the alignment is over the
+MEASURED part of the chamber — and a new `MeasuredSeatShare` says how much that is, so a screen can
+state coverage instead of implying the whole house was weighed. The Laws screen draws such a party
+**UNMEASURED**, never UNALIGNED: the two look alike and mean opposite things.
+
+**3. Party inks: the hue is sourced, the saturation and value are the desk's.** Valmyndigheten
+publishes a `fargkod` per party in the same JSON backend W-F1 took the counts from (S #FF0000,
+MP #008000, and six more). Those are screen primaries and would tear a hole in a paper sheet whose
+palette sits at S 0.23–0.58, V 0.35–0.49 — measured off the four inks being replaced. **So the hue
+is kept exactly and the saturation and value are re-seated into the desk's range**: a party stays
+recognisably itself while the sheet stays one object. ⚠ **The other five countries get NO ink and
+`HasPartyInk` returns false** — picking 30 colours by eye for real organisations would be both
+invention and probably wrong. A line for the W-H4 Design ask.
+#### The two traps the plan flagged, both closed
+
+⚠ **Trap 1 — the macro model's time base hung off the election cycle.** `MacroSystem.YearsPerTurn`
+read `4f / ElectionSystem.ElectionCycle`, at the exact moment item 10 replaces the election system.
+Had that constant moved carelessly, **every macro trajectory in every country would have moved for a
+reason with nothing to do with elections**, and W-G2's job of explaining each difference by layer
+would have been unanswerable. It is now `SimulationManager.DaysPerTurn / 365f` — the project's OTHER
+statement of turn length, the one every daily constant already uses — giving exactly the same 1.0.
+**`Phase4YearsPerTurnDiagnostic`: 9 of 9 passed**, including its own `DaysPerTurn/365 ==
+YearsPerTurn` assertion and its `ElectionCycle == 4`.
+
+⚠ **Trap 2 — `SaveLoadRoundTripDiagnostic` has never proven the layer W-G3 was told to follow.** Its
+own header records that "Layer 3 (UI drafts) is structurally out of reach (no OnGUI in batch)", so
+the `FedChairCandidates` precedent has itself never been machine-proven. **`ElectionRecord`
+therefore went onto `Country`, inside `World`** — a layer the diagnostic already round-trips field by
+field across 6 countries and 2 seeds. Putting the record where the harness can see it was worth more
+than matching a precedent the harness cannot.
+
+**R3's verification obligation is discharged.** `PartyMarkCoverageCheck` flipped from
+*"PARTY SYSTEM NOT PRESENT — VERIFIED NOTHING"* to real accounting: **53 seeded parties, 1 with a
+resolving mark, 52 without, 0 errors.** ⚠ `MarkName` is deliberately NOT derived from the
+abbreviation — a derived name would claim a mark for all 53, and the check treats a claimed-but-
+unresolvable mark as an ERROR. The 52 blanks are the Design ask's real size.
+
+**`SaveVersion` bumped 1 → 2**, exactly the "model SWAP that re-keys persisted state" that
+`SaveGameService`'s own comment named in advance. Older saves are refused plainly; no migration.
+
+#### Elections: two of six run, and the other four say why not
+
+⚠ **Running all six through a national PR allocator would have produced chambers their law does not
+produce.** Sweden and Germany have their real methods built (Sweden's proven seat-for-seat at
+W-D2 / W-F1). The others do not, so the record carries the reason in plain English and **the chamber
+is left untouched**:
+
+- **Poland** allocates dHondt separately in **41 districts with no national compensatory tier**
+  (Kodeks wyborczy art. 232 §1). A national allocation shares a divisor with Poland's system and is
+  not Poland's system — it would systematically under-reward the large parties district magnitude
+  favours.
+- **France** elects 577 single-member seats in **two rounds**; this model holds no second round and
+  no candidate-level contest to hold one in.
+- **Italy** is **mixed** (147 uninominal colleges, 245 proportional, 8 overseas) and its per-party
+  seat totals on disk are `[UNCONFIRMED]`.
+- **USA**: 435 **single-member FPTP districts**; a proportional allocation of the national House vote
+  is famously not what that produces.
+
+This is §36's absence rule applied to a *system* rather than a figure.
+#### ⚠ THE FINDING THAT STOPPED THE RAIL CELL — and it is ONE question, not two
+
+**The player has no party identity, and two separate pieces of W-G1 turn out to be blocked on that
+single fact.**
+
+`ElectionSystem`'s own class comment has said so all along: *"this game never assigns the player's
+own government a party identity."* The player is a government with an approval rating.
+
+1. **The election cannot decide whether the player won.** There is no party for the vote model to
+   award the player's fate to. So the approval threshold stays **exactly as it was, unchanged**, and
+   the vote model runs beside it producing a real chamber. It was tempting to say "the player is the
+   largest party" or "the player is party X" — both are inventions with large consequences.
+2. **The rail cell cannot be added.** `CampaignSnapshot` requires a player **party**, a war chest, a
+   poll with the player's index in it, staff, offices and a day's queue. **None of that exists in
+   the live game**, and a rail cell opening a screen with an invented party and an invented war chest
+   would put fiction on a surface whose entire discipline is that its figures are real.
+
+**Both are the same question: WHO IS THE PLAYER, IN PARTY TERMS?** It is a design question, it is
+Elias's to answer, and W-G1 is not entitled to answer it by picking something plausible. The eight
+Track E screens stay harness-reachable until it is answered — which is exactly where they already
+were, with the reason now named precisely instead of deferred vaguely.
+
+#### Decisions taken and logged (R-N1)
+
+- **`ElectionRecord` on `Country`, not `UiDraftState`** — trap 2 above. *Strikeable: the
+  `FedChairCandidates` precedent is the alternative, and it is unproven by the very harness W-G3
+  names.*
+- **The election's vote input is the fitted backtest electorate per country**, moved from
+  `GateReRun`'s cases into `PartySystems.TryElectorate`. These are the project's own fitted numbers
+  with a reported fit (Sweden MAD 1.47 pp over eight parties), not new ones. Only the four backtested
+  countries have one; France and the USA never had a fit because neither is proportional.
+- **The two out-of-basis Italian seats are carried rather than absorbed** (see above).
+- ⚠ **The electorate does not yet move with the simulation**, so two elections in one game return the
+  same chamber. §8 couples it to the economy and nothing does that yet. **Named rather than papered
+  over with a jitter that would look like change without being it.**
+
+#### [AUTHORED-DRAFT] values
+
+**None.** Every seat count, chamber size, position and colour hue is sourced; the fiscal stance and
+the ink's saturation and value are stated derivations over sourced inputs.
+#### ⚠ The defect this item found in ITSELF, and the finding that came out of fixing it
+
+**The first wiring seated parliaments from the vote model's BARE national layer, and the chambers
+were not fit to show anyone.** `CompositionHarness` had already measured that layer at **MAD 3.25 pp**
+on Sweden 2022 against **1.47 pp** with the loyalty layer over a prior — and at a seat cliff a
+3 pp error is not a rounding matter. It produced **BSW at 97 Bundestag seats having really won none**
+and Sweden's M at 33 of its real 68.
+
+Fixed by running the live path through `PreferenceModel.Preference` over the last election as the
+prior, with per-party loyalty derived from the two elections before it — the exact arrangement the
+backtest reports 1.47 pp for. The two-election history is SOURCED per country and its Germany 2021
+half was re-derived from the per-Land counts on disk and checked against them to 0.01 pp.
+
+**Sweden now lands close enough to be believable:** S 106 (real 107), SD 72 (73), M 66 (68), V 24
+(24), C 22 (24), KD 23 (19), MP 19 (18), L 17 (16).
+
+⚠ **GERMANY DOES NOT, AND THE REASON IS WORTH RECORDING RATHER THAN TUNING AWAY.** The model seats
+**BSW at 91 and FDP at 47 — both really won ZERO** — while CDU takes 131 against a real 164.
+**Germany 2025 is close to the worst possible case for a share model**, because BSW missed the 5 %
+threshold by **0.02 pp** (4.98 %) and the FDP by **0.7 pp** (4.3 %). A model with a ~1.5 pp
+mean error, asked a question with a cliff edge inside its own error bar, will put those parties over
+it about as often as under, and each wrong side of that cliff is worth ninety seats. Sweden has no
+comparable case — its nearest party to the 4 % line was L at 4.61 %, and the model seats L at 17
+against a real 16.
+
+**Nothing was tuned to fix this**, and it must not be: the honest reading is that **a threshold is
+where this model is weakest, and Germany 2025 is where that weakness is largest.** It also sharpens
+the standing gap below — an electorate that moved with the simulation would at least make the German
+chamber wrong in a way that changes, rather than wrong identically at every election.
+### W-G2 — new baselines, explained: six of six IDENTICAL, and why that is NOT a clean bill of health (2026-08-30)
+
+`traj_wired_*` captured after W-G1 (`a289e1e`), `traj_run_*` kept. **All six files are byte-identical
+by SHA-256** — both seeds, all three horizons. The stop condition (an UNEXPLAINED difference) is not
+reached because there is no difference at all.
+
+**That result needs explaining rather than celebrating, and the explanation has four layers.**
+
+**1. The time base did not move, by construction.** This was trap 1, and it was the likeliest source
+of an unexplained difference in the whole item: `MacroSystem.YearsPerTurn` read
+`4f / ElectionSystem.ElectionCycle`. Re-expressed as `DaysPerTurn / 365f` it is still exactly 1.0,
+and `Phase4YearsPerTurnDiagnostic` proves it 9 of 9 — including its own
+`DaysPerTurn/365 == YearsPerTurn` assertion. **Had this moved, all six files would have moved and
+every country would have needed a per-layer explanation for something with nothing to do with
+elections.**
+
+**2. The macro core was not touched at all.** No production function, no reversion rate, no dial.
+
+**3. ⚠ THE RNG RESULT, WHICH IS THE ONE GENUINELY LOAD-BEARING THING THIS RUN PROVES.** The old
+`ParliamentSystem.UpdateSeats` drew jitter from `SimulationRandom.Stream.Parliament` **once per party
+per country per turn** — roughly 24 draws a turn across the six countries, for a thousand turns. The
+new one **draws nothing at all**. Those two runs producing byte-identical macro trajectories is a
+real proof that **the streams are genuinely independent**: had `Parliament` shared a generator with
+any other stream, or advanced a common cursor, removing 24,000 draws would have shifted every
+downstream value in every country. It did not move a single byte.
+
+**4. ⚠ AND THE HONEST LIMIT: the harness does not exercise the layer W-G1 changed.**
+`TrajectoryBaselineDump`'s own header states its idiom — *"AdvanceTurn with all-None decisions, no
+player country, no bills - a pure simulation"*. **The only path from a parliament to the macro model
+is bill scoring**, and this run passes no bills. So the identity above says the macro core and the
+time base are untouched; **it is not evidence that the parliament change is safe**, and reading it
+that way would be exactly the "0 anomalies" fallacy this repo's own front page spends a page warning
+about.
+
+**What DOES cover the changed layer, and did:** `SwfDrawdownBooksDiagnostic` (a bill scored and
+passed against a real 349-seat chamber pinned to V, Sweden's most expansionary party by published
+`lrecon`), `ScenarioCandidateMeasurementDiagnostic` (seat-weighted alignment across a full scenario
+run), `SeatConversionHarness` (**Sweden 2022 still reproduces seat-for-seat, 8 of 8, through the
+entire refactor**), and `ElectionDayReachDiagnostic` (all six countries reach an election turn from
+a new world with no exception). Those are the evidence for W-G1; this run is the evidence that
+nothing ELSE moved.
+
+**Kept:** `traj_run_*` stays on disk as the pre-wiring reference. `traj_wired_*` is the new family.
+Since they are identical, either can serve as the baseline for the next item — stated so a later
+reader does not assume a divergence exists that does not.
+### W-G3 — saves: the version gate, and the weak assertion W-G1 turned into a load-bearing one (2026-08-30)
+
+**`SaveVersion` is 2.** W-G1 re-keyed `Country.ParliamentSeats` from `PartyArchetype` to real party
+abbreviations, which is exactly the "model SWAP that re-keys persisted state" `SaveGameService`'s
+own comment names as the bumping case. The loader refuses an older save plainly; there is no
+migration machinery pre-release and none was added. The diagnostic's tamper probe exercises the
+gate and it refuses as ruled.
+
+⚠ **The gap the plan named was real, and it was NOT the one in the plan's own words.** The plan
+warned that `SaveLoadRoundTripDiagnostic` cannot reach `UiDraftState`, so the `FedChairCandidates`
+precedent W-G3 was told to follow has never been machine-proven. **W-G1 sidestepped that by putting
+`ElectionRecord` on `Country` inside `World`.** But checking the diagnostic's own country snapshot
+turned up a second, quieter problem: it recorded **`ParliamentSeats.Count` and nothing else**.
+
+**A count is not a chamber.** A load that restored the right NUMBER of parties with **all-zero
+seats** passed that assertion happily — and it mattered far less when the value was four fictional
+archetypes than it does now that it is a real 349-seat Riksdag whose composition decides whether
+bills pass.
+
+**Closed, not stated.** The snapshot now carries **every party's actual seat count BY NAME**, plus
+the sum, plus the election history's depth and its last record's turn, method, seat sum and share
+count. A re-keyed, truncated or zeroed chamber now fails by the party that broke it.
+
+**And the diagnostic now HOLDS AN ELECTION before saving**, so the new state crosses the save with
+something in it rather than round-tripping an empty list and proving nothing. Both branches are
+covered across the twelve scenarios: the two countries with a live path save a chamber set from a
+RESULT, and the four without save a record carrying a reason and an untouched chamber.
+
+**Result: `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip clean`** — 8 continuation
+turns identical, restore-point snapshots identical, saves string-equal, for every country.
+### W-F5 — party funding: the answer to the 2026-08-30 ruling, and why the gate it opens must not be banked (2026-08-30)
+
+**The standing ruling** (Elias, 2026-08-30) held C1's 2a-iv at 0.291 and sent it here: *"It waits on
+W-F5's unequal war chests… If W-F5 lands and it still reads 0.291, that is a finding about the
+model, not a rounding problem."*
+
+**It did not still read 0.291. It cleared — and the clearing is not real.**
+
+#### What was tried
+
+⚠ **The SHAPE was better than authored.** Sweden's public party funding is allocated **by mandate in
+law** — the *mandatbidrag* of lag (1972:625) is paid per seat — so a seat-proportional chest is how
+the largest component of a Swedish party's money actually arrives, not a modelling convenience.
+The pool was held at 8 × 2 400 000 kr so the campaign's TOTAL money was unchanged and anything that
+moved was attributable to inequality alone. The spread: **S 5.89 M against L 0.88 M, 6.7 to 1.**
+
+#### What it measured
+
+| C1 line | equal chests | unequal chests |
+|---|---|---|
+| 2a-iii `prof/est` | 0.306 | **0.430** |
+| 2a-iii `prof/grass` | 0.573 | **1.133** |
+| 2a-iv `est/grass` | **0.269** | **1.405** |
+
+**Both PEND lines clear the 0.30 line, one of them by five times.** Taken alone that is exactly the
+result the ruling predicted.
+
+#### ⚠ Why it is NOT taken, and this is the finding
+
+**The same run puts four other assertions into FAIL, and the ledger says why.**
+
+| party | unpaid staff-days, equal → unequal | planned television buys made |
+|---|---|---|
+| **KD** | **0 → 16** | **2 of 2 → 0 of 2** |
+| **L** | **0 → 36** | 1 of 1 → **0 of 1** |
+| MP | 12 → 40 | — |
+| V | 12 → 33 | — |
+
+The grassroots party's day-to-day mix change falls to **0.000** — it stops acting at all. And the
+harness's own annotation on the two cleared lines reads **`[holds early]`**.
+
+**The personalities separate because the small parties go BANKRUPT, not because they choose
+differently.** Banking that would clear a gate by destroying W-B12, whose entire result was four of
+five managed parties paying their organisation to polling day. **A separation produced by starvation
+is not evidence that the model distinguishes strategies.**
+
+#### What the finding actually is — and it is about the POOL, not the split
+
+**2 400 000 kr was calibrated as what ONE party needs**, and W-B12 measured that it barely covers a
+managed campaign — SD still ended with 6 unpaid staff-days at that figure. **So any distribution
+that gives a party LESS than 2.4 M cannot fund a campaign at all**, and a realistic Swedish
+distribution gives five of eight parties less.
+
+**The obvious fix is forbidden.** Raising the pool until the split survives would be inventing a
+larger authored number to turn assertions green — precisely the "never tune a constant to open a
+gate" rule. So **W-F5 stops and reports**, as W-F4 did, and the chests stay equal with the reason
+recorded at the code site.
+
+#### The bill, better specified than "nothing on disk"
+
+⚠ **Kammarkollegiet's register of declared party income EXISTS and is public** —
+`kammarkollegiet.se/vara-tjanster/insyn-i-partiers-finansiering`, with a comparison tool over
+filings from 2018 onward. Its figures are served by
+`api.kammarkollegiet.se/PartiinsynPublicService.svc`, **which does not answer an ordinary request**;
+the page is a JavaScript client. That is the obstacle — not absence of data, and a session with a
+browser-capable fetch would likely close it.
+
+**A second route needs no fetch at all:** a DERIVED floor from the model's own
+`BudgetPlan.CommittedToOrganisation` — the minimum a party must hold to pay the organisation it has
+— which would let the split be tested against a pool that is sized rather than guessed.
+
+#### [AUTHORED-DRAFT] values
+
+**None added; none changed.** The war chest stays at the existing `[AUTHORED-DRAFT]` 2 400 000 kr
+per party, and its bill in `DATA_BILL.md` stands.
+### W-H5 — the honest status line for 13 September 2026 (written 2026-08-30, 14 days out)
+
+**Sweden votes on 13 September 2026. This is what the game will and will not do that day, written
+from the finished state rather than predicted from a plan.**
+
+#### What is playable
+
+**A new game seats a real parliament.** Sweden's Riksdag is 349 seats held by S, SD, M, V, C, KD,
+MP and L in their real 2022 proportions; Germany's Bundestag is 630, France's Assemblée 577,
+Italy's Camera 400, Poland's Sejm 460, the US House 435. Every chamber is sourced and reconciles
+exactly. Bills are scored against the real parties' published economic positions.
+
+**Sweden and Germany hold a real election** on their own electoral law, and a Swedish game's first
+election returns **S 106 / SD 72 / M 66 / V 24 / C 22 / KD 23 / MP 19 / L 17** against a real
+107/73/68/24/24/19/18/16 — within a seat or two everywhere. The result is recorded and persists
+across a save.
+
+**The seat conversion is exact.** Sweden 2022 reproduces **seat-for-seat, 8 of 8**, through the full
+two-tier procedure — 310 fixed constituency seats plus 39 adjustment seats, the 4 % threshold and
+the 12 % constituency rule — on the REAL per-constituency counts fetched at W-F1.
+
+#### What is provisional, and how
+
+**Germany's first election is visibly wrong and the reason is known.** It seats BSW at 91 and the
+FDP at 47; **both really won zero**, having missed the 5 % threshold by 0.02 pp and 0.7 pp. A share
+model carrying ~1.5 pp of error cannot resolve a cliff inside its own error bar. **A threshold is
+where this model is weakest.** Sweden has no party that close to its line.
+
+**The same chamber every time.** The electorate does not yet move with the simulation (§8 couples it
+to the economy; nothing does that yet), so a second election in one game returns the first election's
+result. This is the single largest gap between "an election happens" and "an election is played".
+
+**Four countries hold no election at all** — Poland (d'Hondt in 41 districts with no national tier),
+France (two rounds), Italy (mixed, with unconfirmed per-party totals), the USA (435 FPTP districts).
+Their chambers stay as seeded and the game says why in plain English. **This is deliberate: running
+them through a proportional allocator would produce chambers their law does not produce.**
+
+#### ⚠ What is NOT built, and it is the thing a player would notice first
+
+**The campaign is not reachable.** Eight campaign screens exist — HQ, the action ladder, polling, the
+map, the debate, election night, results, the coalition sheet — all built, all filmed at four widths
+with the guards silent. **None of them can be opened from the running game**, and no rail cell was
+added at W-G1.
+
+**One question blocks it, and the same question blocks the election deciding whether the player
+won:** the game **has never assigned the player's government a party identity**
+(`ElectionSystem`'s own comment has said so since long before this track began). `CampaignSnapshot`
+needs a player party, a war chest, a poll carrying the player's index, staff, offices and a day's
+queue. **A rail cell opening a screen with an invented party and an invented war chest would put
+fiction on the one surface whose whole discipline is that its figures are real.** So the approval
+threshold still decides elections for the player, unchanged, with the vote model running beside it.
+
+**This is the decision that most changes what 13 September looks like, and it is Elias's.**
+
+#### What each figure rests on
+
+- **SOURCED**: every seat count, chamber size, vote total, eligible count, party position, party
+  leader name, and Sweden's party colours. Sweden's 2022 returns are Valmyndigheten's own
+  per-constituency backend, verified eleven column sums against an independent national file.
+- **DERIVED, with the derivation stated**: fiscal stance from CHES `lrecon`; party ink saturation
+  and value from the desk palette; loyalty from the previous two elections.
+- **`[AUTHORED-DRAFT]`, logged one line each**: the campaign's war chest and pace, the debate
+  candidates' nine attributes, election night's clock, and the campaign calendar.
+
+#### Deferred, named rather than implied by silence
+
+- **W-F4 — voter groups.** Its premise was FALSE: the demographic marginals it was to derive from do
+  not exist in the model, and the game's "regions" are countries. Needs sourced SCB per-valkrets
+  marginals. The electorate stays ONE GROUP, with 12 call sites waiting.
+- **W-F5 — party funding.** Unequal war chests were built and measured: they clear both standing
+  gates and **do it by bankrupting the small parties**, so they were not adopted. Kammarkollegiet's
+  register exists but is behind an unresponsive API.
+- **§30's demographic block** on the results screen — drawn ABSENT with the reason, blocked on W-F4.
+- **Leader relationships** — asserted absent by reflection, and that assertion still stands.
+- **52 of 53 party marks undrawn**, and five countries have no party colours. Design ask D8.
+
+#### The one-sentence version
+
+**On 13 September the game will simulate Sweden's election accurately and will not let you campaign
+in it** — the model is done and honest, the campaign is built and unreachable, and one design
+decision about who the player is stands between the two.
+
+
+## 186. `POLISIM_UI_V3_DIRECTION.md` — RETIRED 2026-09-02, migrated verbatim (178 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## PoliSim UI v3.0 — Direction (founding document, 2026-08-28)
+
+**Elias's brief, verbatim in substance:** fold-in for the side tabs; a full main screen with
+oversight; the main page loses unnecessary text and goes graphics-and-simplicity.
+
+**The thesis, ruled (V3-R1):** v3.0 is **the desk with fewer words, not a different desk.** Two
+altitudes, one idiom: the landing surface becomes an instrument stage — full-bleed, graphical,
+nearly wordless — while the deep screens (Budget, laws, statistics ledgers) remain the documents
+they are. Same paper, inks, fonts, sprites, stamps; the entire v2 chrome, the 96-sprite pack, the
+capture corpus and every guard carry over. *The struck alternative — a new visual idiom — would
+orphan the asset pipeline and Design's eleven boards sixteen days before the election build; it is
+one line to un-strike if the instrument stage disappoints on film.*
+
+### The three pillars
+
+#### 1. The fold (V3-R2)
+
+The mechanism already exists half-built: **Budget full-screen hides the left column outright**
+(spec §A.5's declared deviation). v3 promotes that from one screen's special case to a first-class,
+player-controlled shell state, everywhere:
+
+- **OPEN** — today's frame exactly: chrome column at `LeftColumnWidthFraction`, tab tongues,
+  content column. Nothing moves; v2 screens are already correct in this state.
+- **FOLDED** — chrome column and tab tongues collapse to **one icon rail** (~56 px class): the
+  area icons carry navigation (they exist, coverage 14/14, promoted in the omnibus — this is the
+  rail they were waiting for), a collapsed calendar chip (month + day numeral, the pad's own
+  materials), the status dot (HELD glow / RUNNING green — B8's carrier survives folding), and the
+  fold toggle. Everything else yields to the stage.
+- **State rules:** the flip is **instant** (the calendar's own ruling — this desk does not tween);
+  the state persists per save; per-screen defaults by the table below; every screen must be *legal*
+  in every state a player can reach (guards run in each; locking a state — R-A1's Budget precedent
+  — is a legitimate way to make it unreachable, recorded per screen: **R-SP2, ratified
+  2026-08-28**, amending "in both states"), but only defaults are canonical on film (V3-R4).
+- **The fold-default table, ruled (R-PC2, Phase C, 2026-08-28) — the single source; the code's
+  `GameController.DefaultShellFold` / `ShellFoldLocked` follow it:** a screen defaults FOLDED
+  **only if its content is designed for the full-width stage.** Today that is exactly two screens,
+  both locked (the reachable-state principle). Everything else defaults OPEN — which reverted
+  **Statistics › Domestic** to OPEN the day the Desk took the landing duty it had stood in for
+  since Phase A. Filmed at 1280 and 2560 in the state each changed default now opens in
+  (`v3c_<size>_02a_statistics_domestic`, with `_folded` as its pair).
+
+  | screen | default | locked? |
+  |---|---|---|
+  | **ONE FRAME — every screen (Screen 0 and the six documents; the Canvas screens keep the seam's own layering)** | FOLDED | yes (R-E1, v3.1, 2026-08-28) |
+
+  **The table collapsed to one row on 2026-08-28 (v3.1 R-E1, the OPEN state retired — gated on the
+  duty audit, Annex A of the ninth request: no orphan).** The row it replaced — Screen 0 and Budget
+  FOLDED and locked, every document OPEN, Statistics › Domestic reverted 2026-08-28 (R-PC2), the
+  Canvas screens as the seam's own (R-PC2a), the entry rule (R-PC2b) — stood for one evening and is
+  in git history; the entry rule survives in its new form: a new screen enters the frame, there is
+  no other. The player's flip and the per-save override are unreachable (the enum and the persisted
+  overrides stay one pass for the harness's historical states; v3.1 Phase B deletes them).
+- Minimum width stays 1280×720; the fold is what makes the floor generous instead of tight.
+
+#### 2. The Desk — the oversight screen (V3-R3)
+
+A new landing surface, **Screen 0, "The Desk"**: the full-bleed stage the fold exists for, composed
+from instruments the project has already earned — the world map, the compass, the approval face
+with its nine-term attribution, the sparkline strip at 1l's weights, the calendar sheet, the
+event/alert stamps, the stepped rules. **It is the legibility program's graphical culmination:**
+everything on it is derived, attributed, and drawn — nothing is authored prose.
+
+**The text budget, absolute:** captions at mono 9.5 and instrument labels only; no sentences, no
+paragraphs, no restatements. Numbers appear as instruments (a dial, a bar, a rule, a sparkline)
+with the numeral as the instrument's label, never as a text row. The playtest-3 taxonomy extends:
+class (b) restatements may return **only as instruments**; class (c) never returns.
+
+**Design draws it before we build it.** The board-is-the-spec convention holds: The Desk and the
+rail are boards first (the Phase A request), built second. Design draws against our census and
+instrument inventory, the way 1i was drawn against a real capture — at **1280×720 first**, because
+the floor is where graphics-first pays or fails.
+
+**Ratified standing 2026-08-28 (R-PC1, Phase C) — three of the build's calls (`COMPLETED.md` §41):**
+
+- **R-B2, the ways home.** The boards name no way back to the Desk; the rail's calendar chip (the
+  sheet collapsed, so its click opens the sheet's home) and the open document's own rail icon
+  clicked again return to Screen 0. The Desk's rail shows no spine (board 1m, D2).
+- **R-B3, the lock.** Screen 0 locks FOLDED — its three columns take the whole window and the
+  chrome column's contents (the sheet, the cluster, the hold banner) live on the stage; OPEN is
+  unreachable there (R-SP2's form), the toggle rendered on its disabled face.
+- **R-B4, the eight.** The effects card draws C22's eight figures — the preview's own. Board 1m's
+  two further rows, **debt-to-GDP and currency, are refused because the model does not estimate
+  them**; the refusal is the model's honesty, not a layout choice. *Recorded line:* if those two
+  estimates are ever wanted they are a **simulation feature with its own measurement pass**
+  (candidate slot: after item 10), never a UI patch that prints a number the preview does not
+  compute.
+
+Design's side already holds the same three: the live screens file's board 1m gained a `BUILT
+2026-08-28 (631a9d4, v3desk_*)` block the same day — *"pointer, not an edit. Standing corrections
+from the build, accepted: the effects card draws C22's eight rows (this board's debt-to-GDP /
+currency rows were not estimates the game holds — a board error, theirs the right fix, R-B4); ways
+home = calendar chip / active icon again (R-B2, the board named none); Screen 0 locks FOLDED
+(R-B3)."* Read back through the Design MCP at the Phase C kickoff; the file is otherwise unchanged
+since the Phase B read.
+
+#### 3. The cut (the main page's text)
+
+Phase A takes a film-based census of the current landing screen's every text element, classified
+by the playtest-3 taxonomy — (a) load-bearing / (b) restating / (c) decoration — with counts.
+Pure (c) dies immediately (that cut needs no board). (b) waits for the board to return as
+instruments or not at all. (a) is the board's required content list. The census, not taste, is
+what Design designs against.
+
+### What v3.0 is NOT
+
+No new fonts, inks, or hue-budget changes; no Canvas rewrite (the shell is IMGUI like the frame it
+folds); no simulation change of any kind; no per-element redesign of deep screens (screen
+granularity stands); no new sprites assumed — the rail and the stage are composed from delivered
+art and primitives until a board proves a gap, and any gap becomes a request, never an inline
+invention.
+
+### Sequence, against 13 September
+
+- **Phase A (now, one session):** census · shell + rail built and guarded in both states · the
+  instrument inventory with measured minimum sizes · the Design request written as the request
+  doc's next ask. *The shell builds before the board because it is structure, not aesthetics — it
+  gets re-skinned, not re-architected, when the board lands.*
+- **Send (Elias, one gesture):** the request doc now carries §E5 + the v3 ask — hold the pending
+  request-doc send until Phase A lands so one send carries both; the courtesy note can go any
+  time.
+- **Phase B (on Design's boards):** The Desk built against the board; the (b)-class returns
+  resolved; capture family `v3desk_*`. **Built 2026-08-28, the day boards 1m and 1n landed on the
+  live screens file** — Screen 0 (`GameController.Desk.cs`) and the rail's re-skin, against the
+  boards as read into `POLISIM_V2_SCREEN_SPEC.md` §A.17; the build's own reversible calls are
+  R-B1…R-B14 (`COMPLETED.md` §41).
+- **Phase C:** per-screen fold defaults tuned on film; §P's density verdict re-read on the folded
+  stage.
+- **Item 10 lands inside v3:** election night is born on the v3 shell — the Desk folded, the map
+  as the stage. **Fallback, stated:** if Design's board has not landed by the gate, election night
+  builds in the OPEN state (pure v2, fully supported) and moves to the stage later; the shell
+  ships either way, so nothing converts twice.
+
+### Validation continuity (V3-R4)
+
+Every existing capture state stays canonical in its screen's default fold state; the shell adds
+one folded/unfolded pair per column-layout class (standard, Budget full-screen, Canvas), not ×2
+across the corpus. Guards, edge checks, and the containment assert run in both states in the
+harness even where film shows one. The label-clipping class stays closed — a folded-state clip is
+a new instance of the old class and is treated as such.
+
+**Amended 2026-08-28 (R-SP2, the stage-prep micro-pass — ratified):** "legal in both states" reads
+*legal in every state a player can reach*. Locking a state (the Budget ledger's FOLDED lock, R-A1)
+is a legitimate way to make a state unreachable; each lock is recorded per screen, and the harness
+sweeps and films only the states that remain reachable.
+
+### UI v3.1 — one frame, denser, instruments (opened 2026-08-28, from the first live sitting)
+
+**The sitting's verdict (Elias, 2026-08-28, two screenshots — §V's first sitting rows):** the
+Desk's frame wins; the OPEN "half screen" dies; density, instruments, icons and contrast go to
+Design as v3.1 (`DESIGN_REQUEST_V3_1.md`, archived out of tree at `../PoliSim-captures/inbox/`,
+installed as the request doc's ninth ask).
+
+- **D1 — one frame everywhere (R-E1, a ruling GATED on the duty audit):** the OPEN state retires
+  and every screen lives in the Desk's frame — the rail, one full-bleed sheet. The gate: the audit
+  enumerates every duty the OPEN column and the tongues uniquely carried and names each duty's new
+  home (Annex A of the request doc); an orphan STOPS the retirement. If covered, every screen
+  defaults FOLDED and locks, and the fold-default table above collapses to one row: ONE FRAME.
+- **D2 — the rail, revision 2 (board 1n-r2):** an obvious home cell (a structural interim ships
+  now — R-E2 — Design re-skins its face) and icon legibility at the real cells, Design's call.
+- **D3 — the Desk, revision 2 (board 1m-r2):** density and the Year-0 empty states designed.
+- **D4 — global density tokens:** a revised token table against the measured current values.
+- **D5 — Statistics as instruments (board 2a):** the fitting form per dataset, against the census.
+- **D6 — the contrast pass:** new values for the faint-ink tokens, against the measured pairs.
+
+**Phase A (engineering, 2026-08-28):** the audit, the retirement if covered, the structural home
+(R-E2), the annexes measured (R-E3), the request installed, the paste regenerated. **R-E4:** Phase
+A touches no density value, type size, Statistics form, icon face or ink value — those are
+Design's; the one structural exception is the home cell. **Phase B:** built on the boards and the
+token tables as they land, the way v3.0 Phase B was.
+
+**Phase B (engineering, 2026-08-28 — Design answered the same day, in full):** the five answers
+(1n-r2, 1m-r2, 2a, the D4 and D6 tables) read into the spec as §A.18 and built in order — the §E5
+close, D6, D4, 1n-r2, 1m-r2, 2a — one unit one commit against the `v31b_*` matrix, then the OPEN
+state's residue deleted whole (unit 7; the final `v31bf_*` matrix on that code); the two re-measures
+the tables ask for (Annex F after D6, the dead-space share after D4) filed back as numbers — and the
+second says the reclaim has nowhere to go on content-short screens until they are re-composed the way
+2a re-composed Domestic. Redrawn rail glyphs stay a costed follow-up (1n-r2's refusal); the hatch
+pair's bar is Elias's ruling (§E5). The record is `COMPLETED.md` §45.
+
+
+## 187. `POLISIM_V2_SCREEN_SPEC.md` — RETIRED 2026-09-02, migrated verbatim (787 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## PoliSim v2.0 — Screen Specification
+
+*Extracted 2026-08-10 from Claude Design project `b3dec27b`, file `PoliSim v2 Screens.dc.html`
+(treatment A, "ministry fresh print" — the eight boards of pass 3 at 1920×1080; Screens 1i and 1j, the
+law browser, followed on 2026-08-25/26 and are specified in `LAW_BROWSER_BOARD_RULINGS.md`). **Revised
+to pass 3, 2026-08-10; consolidated 2026-08-27.***
+
+⚠ **This is a specification, not source to port.** The delivered artifact is HTML/CSS; PoliSim renders
+in IMGUI and Canvas. Every number below is design intent restated in terms this project can implement.
+Nothing here was translated from markup — the markup was measured and discarded.
+
+**Status at 2026-08-27 (the third consolidation).** This file is the v2.0 visual REFERENCE — the
+conventions the code cites by section (`LedgerRow.cs` §A.9, `GameController.cs` §A.9/§A.11/§A.12) and
+the spec of **1h election night** (whether it is built is `git log`'s to answer, not this file's; `MISSING_PREREQUISITES.md`
+§D)**. Its history — the nine pass-3 dispositions, the seven re-review findings (every one closed) and
+the "what is buildable" list (every item built) — is `COMPLETED.md` §24 ("The screen spec's finished
+sections"); those sections are removed here rather than left reading as open work. Where the build
+deviated from a number below, the deviation is stamped in place; where a clause is still unbuilt, it is
+marked **UNBUILT — roadmap item 4** and lives on `POLISIM_FEATURE_LIST.md`. Every standing rule in
+§A governs any new screen regardless.
+
+---
+
+### ⚠ EVERY NUMBER IN THIS DOCUMENT IS SUSPECT UNTIL DERIVED OR CONFIRMED
+
+**Read this before copying any measurement below.** Two instances in one day, in the same file, the
+second written a method away from the warning about the first:
+
+| # | number | copied as | actually was |
+|---|---|---|---|
+| 9 | ledger row height `36px` | a row height | a height at 1080p — two 13px lines overflow it at 1440p |
+| 10 | column widths `250 / 150 / 88` | fixed widths, font-scaled | widths against board 1b's ~1100px panel — they overflow this screen's ~745px column |
+
+**A number on a design board is a measurement taken against that board's conditions — its resolution,
+its font size, AND its container width.** Every one of those varies here. Deriving against one axis
+while copying another still ships the bug, which is exactly how #10 happened immediately after #9 was
+written down.
+
+**So: paddings, insets, tick sizes, the `14px` scrollbar track, the `6px` inset, the `40px` minimum
+thumb, the `11px` shrink floor, the `44/26/22px` panel paddings, the `2px` standing tick, the `15px`
+track height — none of them is a constant until someone decides it is.**
+
+✅ **"This one is genuinely fixed" is a real answer, not a dodge.** A hairline rule should not scale; a
+1px separator at 1440p is still 1px. The requirement is that it be a *decision taken*, recorded where
+the number is used — not a number that survived because nobody questioned it. The tell in both
+instances so far: the number arrived with no unit of comparison attached, so it read as a constant
+purely because the board had nothing else in view to measure it against.
+
+---
+
+### A. THE EXTRACTED SPEC
+
+#### A.0 What the boards cover — the eight of pass 3 (2026-08-10); 1i/1j followed (the law browser, 2026-08-25/26)
+
+| board | screen | side | shows |
+|---|---|---|---|
+| 1a | Persistent chrome + Statistics : Domestic | IMGUI | left column, tab strip, time-**held** state |
+| 1b | Budget, full-screen (left column hidden) | IMGUI | the density case: ledger + bill rail |
+| 1c | Politics : Parliament | IMGUI | time-**running** state, legend↔chart ink |
+| 1d | Decisions | IMGUI | dossier cards + the dual-siting rule, both variants |
+| 1e | The hand-off envelope | swap | 5-panel storyboard + timeline |
+| 1f | Country selector | Canvas | six folder cards, hover state |
+| 1g | Bill vote → budget signing | Canvas | the consequential document |
+| 1h | Election night returns | Canvas | the returns bulletin — **BUILT W-E6 (2026-08-30), harness-only under R-N2**; deviations V-N1–V-N3 |
+| 1i / 1j | Law browser; law browser at 50 | IMGUI | `LAW_BROWSER_BOARD_RULINGS.md`; both built |
+
+Mockups run mid-game (Turn 9, May 2026) so drafts, deltas and a time-hold are all visible at once.
+Chart marks inside plates are the procedural renderers' output, shown for context — **not deliverables**
+(standing rule 10).
+
+#### A.1 Surfaces — the exact ladder
+
+The design commits to a strict five-step surface ladder. Depth is carried by *value*, never by hue.
+
+| step | role | value | notes |
+|---|---|---|---|
+| 0 | desk (deep) | `#14100B` | Canvas takeover ground only |
+| 0 | desk | `linear 155° #2E2318 → #241B10 @50% → #1C150C` | every IMGUI screen's ground |
+| 1 | closed folder stock | `#B9A886` (hover `#C4B28E`) | inactive tab tongues only |
+| 2 | paper (panel) | `linear 178° #F1E8D9 → #ECE2CF @62% → #E7DCC6` | every outer panel |
+| 3 | plate (inner panel) | `#F4ECDC` | panels *inside* a paper panel |
+| 3 | tile | `#EDE2CB` | stat tiles, dossier bodies |
+| 4 | plate (control) | `#E7DCC4` | inactive buttons, sub-tabs |
+
+Desk grain: `repeating-linear 93° rgba(255,235,200,0.018) 0→2px, transparent 2→9px`.
+Desk vignette: `radial 130% 100% at 50% 20%, transparent 50% → rgba(0,0,0,0.4) 100%`.
+Canvas ground uses a coarser 45°/16px grain and a tighter `at 50% 45%` vignette to `rgba(0,0,0,0.55)`.
+
+**Both are baked into `ui_grain_tile` / `ui_scrim_takeover`; neither is a runtime effect** (§3.2).
+
+#### A.2 Inks and rules
+
+| token | value | use |
+|---|---|---|
+| `inkText` | `#2B2620` | all primary type; the 2px heading rule |
+| `inkFaint` | `#5D564A` | labels, secondary body, caption type |
+| `rule` | `#B7A98C` | light separators, header underlines |
+| `ruleHeavy` | `#8A7A5C` | section rules (1.5px), plate borders |
+| `ruleRow` | `#D5C8AB` | ledger row separators (1px) |
+| `borderPaper` | `#CBBC9D` | paper panel edge |
+| `borderPlate` | `#C9BA9B` | plate / tile edge |
+| `textOnDesk` | `#E8DDC4` — **ships `#F0E7D8`** (`PoliSimTheme.TextOnDesk`, a declared deviation, 2026-08-27) | type on the dark banner |
+| `mutedInk` | `#9A917D` | disabled row ink and disabled button text |
+| `deskCaption` | `#8D7D5F` | mono annotations on desk ground |
+
+Brass: `#B3985E → #9C8148` gradient, border `#6F5A30`, text `#F4ECDC`.
+
+⚠ *2026-08-27: three of the ten tokens have no constant anywhere in the repo — `ruleRow` (`#D5C8AB`,
+the row-separator weight) among them; re-derive the list against `PoliSimTheme.cs` before building.*
+**UNBUILT — roadmap item 4.**
+
+**Rule weights are semantic and consistent across all eight boards:**
+`2px #2B2620` = screen/section heading rule · `1.5px #8A7A5C` = panel section rule ·
+`1px #B7A98C` = column-header rule · `1px #D5C8AB` = row separator ·
+`3px double #8A7A5C` inset 8–14px = the ornate frame (`ui_frame_double`).
+
+#### A.3 The eleven hues — three tints, all delivered; two wired
+
+Columns 1 and 2 are wired (`UiPalette`'s area inks, `PoliSimTheme.AreaAccentsOnDesk`); the boards use
+them unchanged. **The third column — the inactive tab-swatch tint — is delivered and NOT wired** (the
+tab swatch draws the area ink at HEAD; `polisim_palette.json` is Design's file, not one in this repo).
+**UNBUILT — roadmap item 4** (2026-08-27).
+
+| area | ink (on paper) | lifted (on desk) | tab swatch (on stock) |
+|---|---|---|---|
+| Neutral | `#6D7480` | `#9AA1AD` | — |
+| Fiscal | `#35619E` | `#7C9CC9` | `#3D6494` |
+| Trade | `#23867B` | `#5FA89E` | — |
+| Political | `#A8842E` | `#C9A855` | `#96762A` |
+| Welfare | `#A84E7B` | `#C27E9F` | — |
+| Labor | `#B5622F` | `#C98A5E` | `#A2653E` |
+| CrimeJustice | `#9C4238` | `#BC7168` | `#8E4A40` |
+| Sectors | `#62579F` | `#9288C2` | `#5B5187` |
+| Infrastructure | `#3E7480` | `#7BA3AE` | — |
+| SovereignWealth | `#85643A` | `#B0925F` | — |
+| Global | `#5C87A8` | `#8FAEC7` | `#4E7291` |
+
+The third column is the **inactive tab swatch tint**, delivered in full by pass 3 as `tabTint.*`. Its
+derivation, for anything that needs to generate one: **ink at oklch chroma ×0.78, lightness ×0.97**,
+snapped to hex. The table above carries the snapped values, so the rule is documentation rather than
+something to compute at runtime.
+
+**Semantic:** draft `#BE8A00` (lifted `#D4A72C`) · good `#3E8A5F` (lifted `#6FB08A`) ·
+bad `#9C4238` (lifted `#BC7168`) · caution = draft.
+
+#### A.3a Party inks — their own set, not the area inks
+
+Pass 3, D5. Cut deliberately in hue space the eleven areas do not occupy (wine / petrol / drab khaki /
+sage), and keyed, WHEN THIS WAS WRITTEN, to the four archetype members that have since been retired (see the note below). **A party may never print in an area accent
+or in semantic good/bad.** Hemicycle arcs, legend swatches and swing figures all key this set, and the
+legend swatch is the arc's own ink (B9).
+
+⚠ **Re-derived 2026-08-31 (C-0.2): `PartyArchetype` is RETIRED** (W-G1, `a289e1e`). The four archetype
+inks tabled below are this spec's history, not the live keying. **The rule they express is unchanged and
+still binding** — a party never prints in an area accent or in semantic good/bad — but the live source of
+a party's ink is `PoliSimTheme`: Sweden's eight parties take Valmyndigheten's published `fargkod` at the
+desk's own saturation (0.52) and value (0.46), and the other five countries have **no ink at all**
+(`HasPartyInk` returns false), because picking 30 colours by eye for real organisations would be
+invention. The colour ruling for those five is row D-8.2 in `POLISIM_BACKLOG.md`.
+
+| archetype (RETIRED — this table is history) | ink | lifted |
+|---|---|---|
+| ProgressiveAlliance | `#7E3557` | `#A2607F` |
+| ConservativeUnion | `#2F4E63` | `#6B87A0` |
+| CentristCoalition | `#77714A` | `#9E9873` |
+| NationalistFront | `#4E5A45` | `#7E8A73` |
+
+Verified against the wired tables: none of the four collides with any of the eleven area inks, either
+tint, or `good` / `bad` / `draftAmber`.
+
+#### A.3b Categorical series — eight, and a hard cap
+
+Pass 3, D4. Replaces `UiPalette.GetCategoricalColor`'s golden-angle HSV walk. Assign **in series order**:
+
+`#9C5233` · `#8A7A2C` · `#5C7434` · `#2F7458` · `#2E6E7E` · `#46608F` · `#745394` · `#95517A`
+
+⚠ **Eight is a hard cap, not a palette that repeats.** A series longer than eight **must not be
+hue-keyed at all** — it changes chart form to a **ranked single-ink bar ledger in the owning area's
+ink**. Verified against the actual series lengths:
+
+| series | length | treatment |
+|---|---|---|
+| `SectorType` (employment pie) | **8** | at the cap — stays hue-keyed |
+| `TaxType` (revenue pie) | 13 | converts to ranked bar ledger, Fiscal ink |
+| `SpendingCategory` (spending pie) | 29 at pass 3 — **46 at HEAD**, same treatment | converts to ranked bar ledger, Fiscal ink |
+| ~~`PartyArchetype`~~ → real parties (hemicycle) | 4 → **53 seeded, 8 in a Swedish chamber** | keys `parties.*`, never this set. ⚠ Re-derived 2026-08-31: the enum retired at W-G1; the cap question is now real (a 349-seat chamber draws 8 arcs, a 630-seat one draws more) |
+
+The ranked bar ledger satisfies B9 trivially — one ink, and every row carries its own inline label, so
+there is no legend to disagree with the chart. The implementation consequence (the palette must FAIL
+past eight, never wrap) shipped as a throw in `UiPalette.GetCategoricalColor` (`a7bd40d`).
+
+#### A.4 Typography — role assignments
+
+TeX Gyre Pagella throughout; Courier Prime is reserved and its reservation is *narrow*.
+
+| role | size | weight / tracking |
+|---|---|---|
+| wordmark (selector) | 54 | bold, ls `.04em` |
+| screen title (Canvas doc) | 30–32 | bold |
+| panel title | 16–17 | bold, ls `.03–.04em` |
+| **section head** | 10–12 | bold, ls `.13–.20em`, usually `inkFaint`, always CAPS |
+| body | 12.5–15 | regular |
+| ledger name | 13 | bold |
+| ledger value | 12.5–13 | regular, right-aligned |
+| ledger total | 16 | bold |
+| tile label | 8.5–9.5 | bold, ls `.12–.13em`, CAPS, `inkFaint` |
+| tile value | 19 (left col) / 24 (main) | bold, lh 1.15 |
+| tile delta | 10–11 | bold, good/bad ink |
+| hero figure | 26–32 | bold |
+
+**The letterspaced CAPS section head is the single strongest carrier of the idiom.** It appears on every
+panel on every board. It is what makes a data panel read as a government form rather than a dashboard.
+
+**Courier Prime is permitted only for:** document identifiers (`H.R. 2027-1`, `Division No. 215`), dates
+and timestamps, reference-period notes, margin/footnote annotations, and the `annualized` / `live` status
+words. **Never for a figure the player reads as data** — those are Pagella, for B10 (lining figures).
+
+#### A.5 Screen frame and the two column layouts
+
+Screen padding `20px / 24px / 18px`. Column gap `22px`.
+
+- **Standard tabs:** grid `430px | 1fr` — chrome left, content right.
+- **Budget full-screen:** grid `1fr | 430px` — ledger left, bill rail right, **left column hidden**.
+  The 430px measure is held constant so the eye does not have to re-acquire it.
+
+⚠ **Declared deviation (2026-08-27):** the build ships a FRACTION, not a fixed measure —
+`GameController.LeftColumnWidthFraction = 0.45f` of the content area (≈ 691 px at 1600×900, ≈ 1106 px
+at 2560×1440), and the Budget full-screen hides the column outright. The "held constant" intent is
+served by the fraction being one constant; nothing re-derives 430px.
+
+⚠ **UI v3.0 (2026-08-28, `POLISIM_UI_V3_DIRECTION.md` V3-R2): the two column layouts are the two
+states of ONE shell fold.** OPEN is the standard grid above, exactly; FOLDED collapses the chrome column
+and the tab tongues to one icon rail (`GameController.DrawFoldedRail`: the six nav/area icons as
+navigation — active in area ink behind a spine, inactive in the tab-swatch tint — then, pinned at the
+bottom, the calendar chip from the pad's own materials, the status dot carrying B8's two states with the
+HELD glow, and the fold toggle; nothing else) and the content column takes the rest. Budget full-screen is
+no longer its own mechanism: it is the Budget ledger's FOLDED default, so "left column hidden" now reads
+"the rail" — a cell of the icons' own 24-unit grid plus 10 units of air each side (`icon × 44/24`: 55 px
+at 1080p, 39 px at 720p, 64 px at 1440p, plus the sheet's padding). **ONE FRAME since v3.1 R-E1
+(2026-08-28):** every screen is the folded frame, locked — the rail and one full-bleed sheet; the OPEN
+state (the chrome column, the tongues) retired the day the first live sitting judged it, its duties
+audited into their homes (the ninth request's Annex A). The R-PC2 table that stood for one evening
+(the Desk and Budget locked FOLDED, every document OPEN) is in git history. The flip is unreachable;
+the player's earlier choice persists per screen and per save without effect
+⚠ **CORRECTED 2026-09-01:** this sentence named a `UiDraftState` fold-override field, and **that field no longer exists** — retired with the OPEN state at v3.1 R-E1 and deleted in Phase B (`COMPLETED.md` §45). A save that still carries the key is read without it; there is no state to restore and no field to name. ⚠ **The claim survived for days because the only occurrence of that name in the codebase is the `SaveGame` comment recording its own removal** — the seventh sweep found it the moment the ninth stopped a comment from validating a document. Every screen is legal in every reachable state (R-SP2, 2026-08-28 —
+the guards run in each; a locked state is unreachable and recorded per screen: the Budget ledger, R-A1),
+the folded frame's interrupt banner carrying the HELD reasons above the sheet; only defaults are canonical
+on film (V3-R4).
+
+#### A.6 The left column (persistent chrome)
+
+⚠ **As built (2026-08-27):** items 1 and 3 moved by a recorded decision — the **Calendar Panel**
+(`a13dd7b`, 2026-08-24) replaced the country header + headline tile grid in this slot, the tiles
+relocated via `DrawHeadlineTiles`; items 4 and 6 are live in this slot. The order below is the pass-3
+board, kept as the reference the Calendar Panel board request (`CLAUDE_DESIGN_ASSET_REQUEST.md` §2)
+iterates against.
+
+Vertical flex, gap `12px`, in fixed order — item 5 is a `flex:1` spacer that pins 6 to the bottom.
+
+1. **Country header** — paper panel, padding `14/18`, flex gap 14. Flag `52×34`. Name `21 bold ls .02em`;
+   beneath it `11.5 inkFaint` "Turn 9 · the President's desk". Right rail, mono `10 #8A7A5C`, three lines:
+   `REPUBLIC / STANDARD / FORM 1-A`.
+2. **Event / game-over banner** — paper panel, **border-left `6px` in the event's area ink**, padding
+   `10/14`. Kicker `10 bold ls .16em` in that same ink (`EVENT — LABOR`); mono `10 #8A7A5C` right
+   (`3 turns remain`). Title `14.5 bold`. Body `11.5 inkFaint`.
+3. **Stat tiles** — 3 columns, gap `8`. Tile: `#EDE2CB`, `1px #C9BA9B`, **top `3px` in area ink**,
+   shadow `0 3px 7px rgba(0,0,0,.3)`, padding `7/10/8`.
+4. **Policy preview** — paper panel, padding `14/16`. Head row: `THIS TURN'S POLICY` (`11 bold ls .18em`)
+   / `✎ 3 DRAFTS OPEN` (`10 bold ls .08em` draft amber), rule `1.5px #8A7A5C`. Then `ESTIMATED EFFECTS`
+   (`10 bold ls .14em`), the **four horizon buttons in a 2×2 grid**, gap 6 — active brass, rest plate.
+   Effect rows `12.5` with `1px #D5C8AB` separators, value in good/bad ink with a ▲/▼ prefix.
+   Footnote, mono `9.5 #8A7A5C`: the ±5–10% margin-of-error text.
+5. spacer.
+6. **Calendar + status + speed** — paper panel, padding `12/16`, flex gap 16.
+   - Calendar pad, `64px` wide, `#F4ECDC` on `1px #C9BA9B`, shadow `0 2px 5px`: month `8.5 bold ls .2em`
+     in `#9C4238` over a `1px #D5C8AB` rule; day `26 bold`; mono `9 inkFaint` `2026 · T9`.
+   - Status line — **two states, and this is B8's carrier:**
+     - **HELD:** `#241B10` on `1px #0E0A06`, padding `6/10`. Dot `8px #D4A72C`, glow
+       `0 0 6px rgba(212,167,44,.7)`. Text `10.5 #E8DDC4`, **the resolving screen named in `#D4A72C`**.
+     - **RUNNING:** `#EDE2CB` on `1px #C9BA9B`. Dot `8px #3E8A5F`, no glow. Text `10.5 #3D372E`.
+       **UNBUILT — roadmap item 4** (only the HELD half is dressed, `DrawHoldBannerLabel`; the running
+       branch is a bare label).
+   - Four speed buttons, gap 6, equal flex. Active brass; inactive plate; **when time is held all four
+     non-Pause buttons render `#DDD2B8` / `1px #C9BA9B` / text `#9A917D` — rendered, never omitted (B5).**
+     **UNBUILT — roadmap item 4** (`DrawSpeedButton` keys on `selected` only; `ui_btn_disabled` has no
+     loader).
+
+#### A.7 The tab strip
+
+Gap `6`, padding `0 14px`, aligned to bottom, tongues overlapping the panel by `−1px`.
+
+| | active | inactive |
+|---|---|---|
+| background | `linear 180° #F2EADB → #EFE5D4` | `#B9A886` |
+| border | `1px #CBBC9D`, none at bottom | `1px #8A7A5C`, none at bottom |
+| top edge | **`3px` area ink** | **`3px` area lifted** |
+| radius | `5 5 0 0` | `5 5 0 0` |
+| padding | `10 / 22 / 13` | `8 / 18 / 9` |
+| type | `15 bold` inkText | `14` `#45392A` |
+| swatch | `11×11` area ink | `11×11` area *tab-swatch* tint |
+| depth | `z 2`, shadow `0 −3px 10px rgba(0,0,0,.25)` | none |
+
+The active tongue is physically larger, not merely lighter — it is a folder pulled forward. Count badge:
+`#9C4238` fill, `#F4ECDC` text, `10 bold`, radius `9`, padding `0 6`.
+
+#### A.8 The content panel and sub-tabs
+
+Content panel: paper gradient, `1px #CBBC9D`, shadow `0 16px 34px rgba(0,0,0,.55)`, padding `22/28/24`.
+
+Sub-tab row sits directly under, closed by a `2px #2B2620` rule with `10px` of clearance:
+- **active:** `#E7DCC4`, `1px #8A7A5C`, **bottom `3px` area ink**, `13.5 bold`, padding `5/18`
+- **inactive:** transparent, **bottom `1px #B7A98C`**, `13.5 inkFaint`, padding `5/18`
+- **right-aligned screen caption**, `11 bold ls .18em inkFaint` — e.g.
+  `DOMESTIC BULLETIN — DESK READINGS, LIVE`, `THE NATIONAL ASSEMBLY — 350 SEATS`.
+  This caption is B6's live/published carrier at screen level. **UNBUILT — roadmap item 4** (nothing
+  draws it at HEAD, 2026-08-27; §A.8a's "live desk reading" state is defined as sitting under it).
+
+Inner plates: `#F4ECDC`, `1px #C9BA9B`, shadow `0 3px 8px rgba(0,0,0,.2)`, padding `14/18`.
+Plate head: `11 bold ls .16em` over a `1.5px #8A7A5C` rule with `6px` clearance; optional mono `10
+##8A7A5C` right-aligned status word.
+
+#### A.8a Published vs live — B6, corrected
+
+⚠ **The §1C.2 sentence is STRUCK.** It read *"published = printed bulletin (solid frame + ref period +
+date + badge chip); live = desk reading (dashed rule, unbadged)"*, which conflated two independent
+things and disagreed with every board. `DIRECTION.md`'s B6 row now carries the corrected rule; this is
+that rule, so the two documents agree rather than contradict.
+
+**Two orthogonal channels, and that is the whole point:**
+
+| channel | keys | values |
+|---|---|---|
+| **badge chip + reference period + publication date** | **published-ness** | present = published · absent = live |
+| **frame style** | **revision status** | dashed = preliminary/provisional · solid = final |
+
+So a *preliminary published* figure is **badged, dated, and dashed** — which is exactly what board 1a
+draws, and what the old sentence made impossible to express. A **live desk reading** is unbadged,
+undated, and sits on a solid plate under the screen-level `— DESK READINGS, LIVE` caption.
+
+The correction matters because the two states the old rule collapsed are the two a player most needs
+told apart: *"this number is provisional"* and *"this number is not a publication at all."*
+
+#### A.9 The ledger row — the Budget screen's atom
+
+**Redrawn in pass 3** against the screen as actually built — one `BudgetProcessCategory` at a time, all
+29 spending programs (46 at HEAD; the count is pass 3's), both density levers taken. **Built `9705205`;
+the measures live in `LedgerRow.cs` as measurements, and the row height is DERIVED from the font metric
+— the 36px below is the value at 1080p (`COMPLETED.md` §24).**
+
+Row height **`36px`** (was 44), separator `1px #D5C8AB`, grid **`250px | 1fr | 150px | 88px`**, gap `10`,
+right padding `26px` to clear the scrollbar. The per-row `VOTES` column is **deleted** — no
+per-instrument legislative support exists — and its width is what pays for the 250px name column.
+Column header band: `8.5 bold ls .13em inkFaint`, closed by `1px #B7A98C`, padding `7/26/5/0`.
+Totals: `1.5px #8A7A5C` above, label `10 bold ls .14em inkFaint`, value `16 bold`.
+
+29 rows × 36px = 1044px (pass 3's arithmetic) against a viewport of roughly 22 rows, so **it scrolls,
+and that is intended**.
+
+##### A.9b The read-only row, and the figure with no denominator — ADDED 2026-08-11
+
+Every read-only row this spec described was a **proportion**: a condition index out of 100, a share of
+GDP, a seat share. `LedgerRow.DrawReadOnly` was written assuming one, and the Statistics conversion found
+figures that are not — **GDP per capita is currency per person, with no ceiling to be a fraction of** —
+and any figure not yet computed has no value at all.
+
+⚠ **An empty track is NOT neutral. It reads as a gauge sitting at zero**, which is a confident wrong
+number: worse than drawing nothing, and exactly the failure class this project keeps finding.
+
+✅ **A NEGATIVE FILL MEANS "NO GAUGE" — draw nothing in the track lane.** It covers both cases, because
+in both the honest statement is *there is no proportion here*, never *the proportion is zero*.
+
+**This EXTENDS an existing convention rather than adding a second one.** `LedgerRow.Draw`'s `barFraction`
+has meant "no bar" at negative since the Budget conversion. One idiom, two methods, one sign rule.
+
+##### A.9c Where Parliament's row spec actually lives — CORRECTED 2026-08-11
+
+⚠ **§A.10 is BUTTONS.** It has been cited as Parliament's reference and does not resolve there.
+Parliament's legend rows are governed by **board 1c** and by the **D2 disposition** in the pass-3 table
+below (*"verdict + seat-weighted lean bar; per-row `VOTES` deleted"*).
+
+**Trailing column ruled 2026-08-11: the seat PERCENTAGE, with the seat count as the figure** — the same
+split the Statistics sector rows take. D2 having deleted the per-row `VOTES` column is precisely what
+leaves that column free for it.
+
+⚠ **The legend's colour is load-bearing and survives the conversion by moving, not by staying.** It keys
+each row to its own arc in the chart above; an emblem drawn *instead* of the swatch broke that once
+already. `DrawReadOnly` draws its gauge in `barInk`, so the party hue now colours a bar that is also
+proportional to the seat share — one mark carrying two readings where a solid swatch carried one.
+
+**Scroll view treatment — every scroll view, not just this one** (applied globally on `GUI.skin`,
+`GameController.StyleScrollbars`, so the per-view count is beside the point):
+`ui_scrollbar_track_v` recessed *into* the paper (baked inner shadow), **`14px` wide, inset `6px` from
+the paper's right edge**, full ledger height. `ui_scrollbar_thumb_v` brass, proportional, **minimum
+length `40px`**, inset `1px` within the track. Arrow buttons per pass 2: `ui_scrollbar_button_none`
+**and** `fixedWidth = fixedHeight = 0` with zero margins — both, or IMGUI still reserves the space.
+
+**The in-row slider is the design's best single idea and it is B1's primary carrier:**
+
+- Track `15px` tall, ticks as `repeating-linear 90° #B7A98C 0→1px, transparent 1→10%` (every 10%),
+  closed by a `1.5px #8A7A5C` baseline.
+- **Standing tick:** `2px × 21px` bar in `#2B2620`, at the enacted value, offset `−3px` above the track.
+- **Draft band:** the span between standing tick and knob, filled with `ui_hatch_draft` tinted `#BE8A00`
+  — 45° hatch, `rgba(190,138,0,.8)` 0→3px / `rgba(190,138,0,.28)` 3→6px. **Drawn in both directions**, so
+  a cut and a rise are equally legible.
+- **Knob:** `14×23`, radius 2, brass gradient, `1px #6F5A30`, shadow `0 1px 3px rgba(0,0,0,.35)`.
+- **Locked row:** knob `#C9BDA3 → #B3A789` on `1px #9A917D`; the entire row's ink drops to `#9A917D`.
+  The row is still drawn, still measured, still occupies its full row height (B5) — *44px was the
+  pre-pass-3 value; the height is derived, see §A.9's opening note.*
+
+Draft values appear inline as `standing ✎ draft`, the draft half in `#BE8A00` bold — on rows, on
+subtotals, and on the bill rail.
+
+⚠ **The pencil is GEOMETRY, never a font glyph.** Pass 3 settled this: no shipped font carries `U+270F`,
+so the mark is `icon_pencil_draft` tinted `#BE8A00`, drawn inline immediately before the draft figure,
+`11px` at body size (`12px` on totals, `9px` in column headers), rotated `−30°` as authored. The same
+geometry is baked into `ui_stamp_draft` and the `✎ DRAFT` chip. Two riders that travel with it:
+
+- **`▲` / `▼` are Pagella-only.** Present there, absent from Courier Prime — never set a delta arrow in
+  the document face.
+- **`⚠` becomes a printed `N.B.`** in shipped copy. It is absent from all three fonts.
+
+#### A.9a Names never clip — the resort ladder
+
+Pass 3, D7. Agreed that nothing may clip, but **not by uniform auto-shrink**: a ledger column where
+every row prints at a different size reads as an error rather than as a fit. Order of resort:
+
+1. **Widen the fixed column** — 250px, paid for by the deleted `VOTES` column.
+2. **Wrap generated names to two lines** — minister names, anything authored at runtime.
+3. **Curated abbreviation table for enum names** — `Veterans Benefits Mandatory` → `Veterans Benefits —
+   Mand.`. A table, so the abbreviation is chosen once and is stable between frames.
+4. **Best-fit shrink, floor `11px`** — last resort only.
+
+**The numeric variant — extended 2026-08-10 per `§C.2`.** Design's ladder is a *name* ladder, and two of
+its four steps cannot apply to a figure: a number must not wrap (a money value broken across two lines
+is unreadable, and worse, is briefly readable as a different number), and a number has no abbreviation
+table (`MoneyUnit` tiering has already done that job by the time the string exists). So for every cell
+that holds a figure the ladder is two steps, not four:
+
+1. **Widen the fixed column.**
+2. **Best-fit shrink, floor `11px`.** Never a wrap, never a table, and never a clip.
+
+**This applies wherever a number appears, not only in ledger rows** — B4 is a class-level rule and its
+original defect was numeric. The cells it governs:
+
+| site | measure | holds |
+|---|---|---|
+| ledger `STANDING ✎ DRAFT` | `150px` | two money figures + the pencil sprite |
+| ledger `SHARE` | `88px` | `6.5% GDP` |
+| ledger totals | right-aligned, panel-width | `$4.73T ✎ $4.74T` |
+| stat tile value / delta | ~`133px` tile (3-up in 430px) | hero figure + signed delta |
+| legend seats / delta (1c) | `70px` / `56px` / `52px` | seat counts and swings |
+| legend seats / delta (1h) | `60px` / `56px` | as above |
+| country card figure strip (1f) | 3-up in card width | population · GDP · debt-to-GDP |
+| calendar pad day | `64px` | day number |
+
+None of these is demonstrably broken today — `MoneyUnit` tiering bounds a money figure to about six
+characters, so `150px` is comfortable. The point is that it is comfortable **by assumption** rather than
+by construction, and that assumption is exactly the one B4 exists because someone already made.
+
+#### A.10 Buttons
+
+| | fill | border | text |
+|---|---|---|---|
+| brass (primary) | `linear 180° #B3985E → #9C8148` | `1px #6F5A30` | `#F4ECDC` bold |
+| paper (secondary) | `#E7DCC4` | `1px #8A7A5C` | `#45392A` |
+| disabled | `#DDD2B8` | `1px #C9BA9B` | `#9A917D` |
+
+Radius `2px` throughout. Primary carries `0 2–3px 6–9px rgba(0,0,0,.3–.4)`; secondary carries none.
+Primary is given `flex 1.4–1.6` against secondary's `1` — the hierarchy is width as well as value.
+
+⚠ *2026-08-27: brass and paper are built and called (`UiPalette.BuildButtonStyle`); the DISABLED face
+is not — `ui_btn_disabled.png` is on disk with zero references, and `GUI.enabled` dimming over
+brass/paper stands in for it (the 2026-08-12 "served by current treatment, revivable" ruling). The one
+place the spec names it as required — the held-state speed buttons, B5 — is* **UNBUILT — roadmap
+item 4.**
+
+#### A.11 The dossier card (Decisions)
+
+Body `linear 180° #EDE2C6 → #E6D9BC`, `1px #B7A98C`, **border-left `6px` area ink**, shadow
+`0 4px 10px rgba(0,0,0,.28)`, padding `12–14 / 18 / 14–16`.
+
+**Tab shoulder** — absolute, `top −1px left 16px`, `#DCCBA6` on `1px #B7A98C` with no top edge,
+`8.5 bold ls .14em #6B6250`, padding `2/8`, reading `DOSSIER · <AREA>`.
+
+Urgency chip: `9.5 bold ls .08em`, `1.5px` border in its own ink, padding `1/7`, **rotated `−2°`**.
+`HOLDS TIME` in `#9C4238`; `CAN WAIT` in `#8A7A5C` on `1.5px #B7A98C`.
+
+**Generic stamp treatment** (used for `HOLDS TIME`, `CARRIED`, `REJECTED`, `DRAFT — NOT ENACTED`,
+`GOVERNMENT DEFEATED`): a `2–3px` rectangular border in the ink, same-ink text, `bold ls .14em`,
+padding `3/9`, rotated `−2°` to `−6°`. Rotation magnitude scales with consequence.
+
+⚠ *2026-08-27: the card body, the area spine and the DOSSIER shoulder are built (`fc16304`); the urgency
+chip ships as a plain `DrawColoredLabel` — no `1.5px` border, no rotation — and the generic stamp is
+unbuilt (`CARRIED`/`REJECTED` are the `ui_stamp_*` sprites on the Division Records panel).* **UNBUILT —
+roadmap item 4.**
+
+#### A.12 Dual-siting — the answer, restated as a build rule
+
+Both variants appear on 1d, drawn side by side, and the rule is unambiguous:
+
+| | standalone (`drawOwnFrame = true`) | embedded (`drawOwnFrame = false`) |
+|---|---|---|
+| plate | own `#F4ECDC` plate | **none** — host dossier is the surface |
+| frame | `ui_frame_ornate`, inset `6px` | **none** |
+| title band | `OFFICE OF THE PRESIDENT` + subject, centred, over a `1.5px #8A7A5C` rule | **none** |
+| outer shadow | `0 4px 10px rgba(0,0,0,.25)` | **none** |
+| portraits | oval, hero size (`58×72`+) | rect, roster size (`44×54`) |
+| entrance | full 1e envelope | **none** — it is already on screen |
+
+**Asset consequence:** plate, frame and title band are separate sprites from the interior furniture, so
+the embedded path simply skips three draw calls. Applies identically to Fed chair, cabinet decisions and
+foreign policy meetings.
+
+⚠ *2026-08-27: the EMBEDDED column is built and called (`drawOwnFrame:false` at both Decisions sites).
+The STANDALONE column is superseded, not pending — `ui_frame_ornate` is Canvas-path by ruling
+(2026-08-12) and the framed IMGUI modal dies with the Canvas rebuild; its `drawOwnFrame:true` branch is a
+plain box today, by design.*
+
+#### A.13 The hand-off envelope
+
+Runs **from the IMGUI side**, per the render-order spike. One envelope for every consequential moment.
+
+| t (ms) | action | side |
+|---|---|---|
+| 0 | input locks; sim clock holds | IMGUI |
+| 0–180 | `ui_scrim_takeover` fades 0→100%, **opacity only**, ease-out quad | IMGUI |
+| 180–240 | hold at 85%; IMGUI suppressed, Canvas enabled behind the wash | swap |
+| 240–500 | document rises 24px, settles `−0.6° → 0°`, ease-out cubic; shadow deepens | Canvas |
+| 580–700 | stamp/seal thunk: scale `1.15 → 1.0` over 120ms | Canvas |
+| 700+ | controls fade in last | Canvas |
+
+Exit, reversed and faster: controls lock → document drops 16px + fades 200ms → Canvas disabled → IMGUI
+redraws beneath the scrim → scrim lifts 240ms. **Round trip ≤ 1.2s.**
+
+The 60ms hold at step 3 is load-bearing: **it is what hides the swap.** Without it the layer change is
+visible, and the screen-granularity architecture becomes apparent to the player.
+
+⚠ *2026-08-27: the IMGUI half — the scrim, opacity-only, the hold, the swap — is built and called on four
+paths (`14cbad6`, the takeover seam; one declared deviation, the scrim covers 100% rather than holding at
+85%). Two of the six rows have no implementation; re-derive which against `GameController`'s seam
+before building.* **UNBUILT — roadmap item 4.**
+
+#### A.14 Canvas screens
+
+*Status 2026-08-27: **1f BUILT** (`14cbad6`, `CountrySelectorScreen.cs`; on screen in every live session)
+and **1g BUILT** (`5f64554`, `SigningScreen.cs`; its seal/button branch defect was playtest 1's own
+finding) — both with declared deviations recorded in CLAUDE.md; **1h NOT BUILT**, item-10-gated
+(`MISSING_PREREQUISITES.md` §D — the paragraph below is the spec that build will start from).*
+
+**Country selector (1f).** Padding `56/120`. Title block: kicker `15 bold ls .5em #9C8148`, wordmark
+`54 #E8DDC4 ls .04em`, then a centred rule pair (`140×1px #6B5F4A`) flanking `14 ls .24em #B7A98C`.
+Grid `3×2`, gap `26/30`, margin-top `40`.
+
+Folder card: `linear 180° #E9DDC0 → #E0D1AF`, `1px #B7A98C`, **top `5px` country ink**, shadow
+`0 8px 18px rgba(0,0,0,.5)`, padding `20/24`. Tab shoulder `top −15px left 20px`, radius `4 4 0 0`,
+padding `3/14`, `10 bold ls .16em #45392A`. Flag `86×56` (full-colour exemption). Name `24 bold`;
+under it `HUE: <AREA>` at `12 bold ls .1em` **in that country's ink**. A three-up figure strip
+(population / GDP / debt-to-GDP) over a `1px #C9BA9B` rule, labels `9 bold ls .12em`, values `16 bold`.
+
+States: normal · **hover** (lift `−8px`, 60ms, shadow → `0 16px 32px rgba(0,0,0,.65)`, body lightens to
+`#EDE2C6 → #E4D6B6`, button promotes to brass) · pressed (scale `0.985`, 40ms) · selected (folder opens,
+brief slides in, 320ms) · disabled (`#B9A886`, no lift).
+
+Country → hue: **USA Political · Sweden Trade · Germany Welfare · France Labor · Italy Sectors ·
+Poland SovereignWealth.**
+
+**Signing (1g).** Document `820px` wide, centred, paper `linear 178° #F2EADB → #EDE3D0 @60% → #E8DEC9`,
+`1px #CBBC9D`, shadow `0 34px 70px rgba(0,0,0,.8), 0 6px 16px rgba(0,0,0,.5)`, padding `46/58/40`,
+ornate inset `14px`. Seal `56×56` centred above a `12 ls .34em` institution line, title `30 bold`, mono
+`12` provenance line, closed by the `2px #2B2620` rule. Two-column figure grid, gap `0 40px`. Division
+block on a `#F4ECDC` plate with a `1.5px #8A7A5C` border. Signature rule `1.5px #2B2620`, `44px` tall,
+under a mono `11` presentation clause and over `11 bold ls .16em` office line. Seal landing zone
+`104×104`. Beats: SIGN → pen scratch 400ms → `ui_seal_official` drops `1.3 → 1.0` over 140ms with a 6px
+settle shake → document slides up, scrim lifts.
+
+**Election night (1h).** Same envelope; document `1240px`, padding `38/52/34`, ornate inset `13px`.
+Masthead splits: institution + title left, timestamp + a `348 OF 350 SEATS DECLARED` chip
+(`#5D564A` fill, `#F4ECDC` text, `11 bold ls .1em`) right. Body grid `1.25fr | 1fr`, gap `36`.
+Beats: bulletin lands → seats fill by declaration wave 1200ms in party-ink order → swing figures count
+up 600ms → verdict stamp thunks last.
+
+#### A.15 Component inventory as the design realises it
+
+`stat tile` · `ledger row (+ in-row slider)` · `standing/draft inline pair` · `draft hatch band` ·
+`dossier card (+ tab shoulder)` · `stamp` · `urgency chip` · `plate` · `section head + rule` ·
+`tab tongue` · `sub-tab` · `brass/paper/disabled button` · `status line (held / running)` ·
+`calendar pad` · `division bar` · `legend row (swatch + emblem + name + figure + delta)` ·
+`figure strip` · `folder card (Canvas)` · `document masthead (Canvas)`.
+
+*2026-08-27: seventeen of the nineteen resolve to a build site; the `screen caption` (§A.8) does not,
+and one more row has no site — re-derive which before relying on this list. The two are roadmap item 4.*
+
+#### A.16 Boards 1k and 1l — the calendar sheet and the graph-weight ruling (answered 2026-08-27; NOT BUILT)
+
+*Design's answers to the seventh request's §2 and §3, read from the live `PoliSim v2 Screens.dc.html`
+(`data-screen-label="1k Calendar panel board"`, `"1l Graph weight ruling"`). Both are pixel rules for the
+existing procedural code — no sprite was asked for or delivered. Roadmap live items 8–9; not started by
+Elias's ruling (§V first). Every number below is a board value under the banner at the top of this file.*
+
+**1k — the left-column calendar panel as ONE almanac sheet** (drawn against the request's FIXED data
+contract, at 691px = 43.2% of 1600, reproducing `couple2s1600_02` and the `capfold_83a` density case):
+
+1. **The X-mark retires; the strike replaces it.** A spent day is the numeral crossed with ONE diagonal
+   ink stroke — the almanac cross-off. Pixel rule: 1.5px at 1600 / 2px at 2560, ink at 55%, angle ≈ −24°,
+   inset 2px into the numeral box. The literal " X" suffix goes (it was doing an almanac's job with a
+   typewriter's tool; the strike frees four characters of cell width at every size).
+2. **The dots-vs-ledger split STANDS.** Grid dots say *that* and *whose area*; the ledger says *what*.
+   Four dots reads as busy, not noise, once **the ledger row carries the same 5px dot** — the two
+   instruments cross-reference instead of restating each other.
+3. **The flip stays INSTANT.** The month is regenerated, not turned; zero staleness IS the honest desk.
+4. **The saturated day earns the heavy-day rule.** At the 4-dot cap the cell gains a **2px ink underline
+   beneath the dot row** — the almanac's red-letter mark in this desk's own ink. The cap stays hard; the
+   merged sentence lives in the ledger.
+5. **One instrument.** Header, grid and ledger are ONE paper sheet — one card, sections separated by
+   rules, one scroll. Three stacked cards would make the column read as a pile; a sheet reads as a place.
+
+Measurements stay measurements (day-cell height via `CalcHeight`; the date column against the widest
+date; the column 43.2% of the window); chrome stays procedural (`RoundedCard`/`Rule`/`Pill`);
+`ui_calendar_pad` untouched; locale honesty untouched (MÅN…SÖN, JANUARI, `FirstDayOfWeek`).
+
+**1l — the graph-weight ruling, SPECIFICATION ONLY** (lands in `BuildSparklinePixels` under the existing
+336-combination tests). The finding restated: the WEIGHT ORDER was flat — history, projection and
+threshold all landed within a device pixel of each other at 2560, so the recorded data could not
+outrank its own reference marker. A series line is mostly horizontal, so its read weight is its VERTICAL
+thickness, which the 300×90 buffer's stretch never multiplies at 2560 (×1.0 V) — the rule therefore
+speaks in buffer px once, with no per-resolution branch (≈ ×0.74 V at 1600, antialiased by the bilinear
+stretch: 3 buffer px ≈ 2.2 device px there, 3 at 2560).
+
+- **R-G1 History: 3 buffer px** (from 2), solid, full ink.
+- **R-G2 Projection: stays 2 buffer px**, lighter alpha, most-recent page only; **dash cadence re-cut
+  from "skip every 3rd step" to 3 on / 2 off** so the gaps stay visible beside a heavier history. It
+  must read "estimate", never "second series".
+- **R-G3 Threshold: stays 1 buffer px**, warm amber, riding label — a reference IS a hairline by design;
+  differentiation comes from the weight order 3 / 2 / 1.
+- **R-G4 Sparklines** (native-resolution buffers, same Bresenham): thickness = `max(2, round(rectHeight
+  / 34))` device px — 2 at small rects, 3 at a 90px 2560 rect.
+- **R-G5 The 300×90 buffer may stand.** Raising it to display resolution is invited, not required; if
+  raised, restate the rule in device px (3 / 2 / 1) and nothing else changes.
+
+**What moves with the weight and what must not:** release-point markers scale to weight + 2 buffer px
+(a 5px square at the new history weight) so they stay proud of the line; the green/red direction deltas
+(header ink), the PRELIMINARY badge + lag dating (text channel) and the **1px dashed revision FRAME do
+NOT move** — the frame is chrome, a separate channel from the projection dashing, and its fine cadence is
+exactly what keeps the two dash meanings apart. The full-width neutral-rate graph (`item5sweden_07d`)
+takes the same 3/2/1 order with its no-judgment ink untouched. **Acceptance, in engineering's own
+harness:** one constant and one cadence change under the 336-combination set; the eye's check is four
+stacked graphs at 2560 where history plainly outranks the amber reference — the inverse of
+`couple2s2560_02a`.
+
+---
+
+
+#### A.17 Screen 0 — The Desk, and the rail re-skinned (boards 1m and 1n, read 2026-08-28; built the same day, UI v3.0 Phase B)
+
+**The boards are the spec.** Board 1m ("Screen 0 — The Desk, folded", v3.0 board one, drawn 2026-08-28 against Annex A's census and Annex B's measured minimums at 1280×720) and board 1n ("the rail", v3.0 board two, a re-skin of the built rail — "the derivation untouched, only the air moved"), both on the live screens file. What they rule, restated here so the code can cite a line:
+
+**1m — the split (D1).** The chrome census folds with the chrome, so every chrome (a) lands on the stage or the rail: C6 the masthead · C7–C12 the calendar sheet · C16–C22 the effects card · C23–C25 the rail chip · C27 the HELD banner (above the masthead) · C28 the speed cluster (on the masthead, D5). The content rows (S-) keep their document — Statistics stands one rail cell away, unchanged — and the stage restates only its ten headlines, as the chip strip. *Strike the split and the stage is the old screen again: the census's 44 (a) do not fit 1149×691 at their minimums.*
+
+**1m — the placement at 1280×720** (the sheet's inner area 1118×660; every size scales these by the inner area's ratio): the masthead 26 tall — the flag and `{COUNTRY} · YEAR {N}` left, `DESK READINGS · LIVE` and the cluster (PAUSE 1× 2× 3× SAVES) right; three columns 420 / 240 / 425 with 16 px gaps — the map plate 420×290 over the approval ledger 420×222; the compass 240×240 over the effects card 240×272; the calendar sheet 425×380 over the event card's reservation 425×136; a rule; the chip strip 10 × ~104 × 56. Instruments at or above Annex B's minimums: map 420×290 (min 360×216 with names), compass 240 (its floor), ledger 420 at 13 px (min 360/13), sheet 425 (min 420), chip line 42×16 (≥ 36×10), diverging bars 64×9 (height traded, declared), rail chip 39 (min 32).
+
+**1m — the seven declared deviations**, accepted as built: D1 the split · D2 no active spine on Screen 0 (the Desk sits above the six documents) · D3 the compass's axis captions inside its rect (the renderer's own footprint since R-SP4 does exactly this) · D4 C20's methodology sentence as a mono caption · D5 the speed cluster and Saves on the masthead · D6 approval as a hero numeral over the nine-term ledger — no face exists, none invented · D7 trend lines and chip deltas in neutral ink.
+
+**1m — the (b) resolutions on this surface:** C3 → the event card's three bars · C10/C13 dropped (the 1k precedent) · C18 → the horizon control carries it · C26 → the lamp · S1's labels → the rail's icons. Every other (b) stays with its document.
+
+**1m — the conditionals:** the event card draws only while an event is live (the BREAKING chip, the name, the description as its only text, the three bars; the empty state is the reservation, undrawn); HELD rides above the masthead with the lamp amber and the speed faces disabled (B5, rendered never omitted); GAME OVER is §A.11's stamp over the dimmed stage with the reason as one caption.
+
+**1m — the text budget audit, the board's own line:** every string ≤ a mono 9.5 caption or an instrument's label/numeral · zero sentences · marks inside plates are the renderers' output · glyphs are the delivered sprites · the tab→ink mapping is re-read from §A.3/the code, never from a board.
+
+**1n — the rail.** The derivation untouched: cell = the icons' 24-unit grid + 10 units of air each side (39 / 46 / 55 / 64 px at the four sizes). The air: the nav block top-anchored under the sheet's cap, the utility block (chip · lamp · toggle) bottom-anchored, one breathing gap between — never equal distribution. Active: a 3 px spine at the cell's left edge, full cell height, in the area ink; the icon in the same ink; a 12 % area-ink wash behind the cell. Inactive: the tab-swatch tint (§A.3's third column), no wash, no plate. Hover: the stock hover face, tint unchanged. Contents exactly V3-R2's four — six icons, the chip (the pad's mono month over its numeral day, a hairline rule between), the lamp (RUNNING green, no glow; HELD `#D4A72C` with `0 0 6px rgba(212,167,44,.7)`), the toggle on the stockOff plate ("›" folded, "‹" on the open strip). The flip is instant. On Screen 0 no spine draws (1m, D2). Deviations none; gaps none.
+
+**Gaps costed by the boards: none asked.** Two optional notes carried, not asks: an approval dial face would be a NEW instrument (one further board first; procedural arc and needle, no sprite); the chip sparklines' weight is R-G4's already.
+
+**Built (Phase B, 2026-08-28):** `GameController.Desk.cs` (Screen 0), the rail's active convention and the chip's rule in `GameController.DrawRailNavCell` / `DrawRailCalendarChip`, the ledger accessor `StatTracePanel.BuildApprovalDeskTerms`, the harness's `01c_desk` · `01d_desk_held` · `01e_desk_event` · `01f_desk_gameover`. The build's own reversible calls are R-B1…R-B14 (`COMPLETED.md` §41).
+
+**Margin — read vs built, ratified standing 2026-08-28 (R-PC1, Phase C):** where this section records the boards, three of the build's calls now stand as rulings, not as reversible defaults — **R-B2** the two ways home (the calendar chip; the open document's icon clicked again — the boards drew no way back); **R-B3** Screen 0 locked FOLDED (OPEN unreachable there); **R-B4** the effects card's eight are the preview's own, and board 1m's debt-to-GDP and currency rows are refused because the model does not estimate them — if ever wanted, a simulation feature with its own measurement pass (candidate slot: after item 10), never a UI patch. Design's live screens file carries the same three under board 1m as *"standing corrections from the build, accepted"* (its `BUILT 2026-08-28` block, read back the same day: *"a board error, theirs the right fix, R-B4"*). Everything else §A.17 records as drawn was built as drawn.
+
+#### A.18 UI v3.1 — the five answers to the ninth request: boards 1n-r2, 1m-r2, 2a and the D4 / D6 tables (read 2026-08-28; built the same day, UI v3.1 Phase B)
+
+**The boards are the spec.** Design answered the ninth request (`CLAUDE_DESIGN_ASSET_REQUEST.md` §1, D1–D6 with Annexes A–F) in full on the live screens file, which now leads with the five sections `1m-r2`, `1n-r2`, `2a`, `d4`, `d6`; D1 (ONE FRAME) needed no board and was acknowledged. Placeholders on the boards are declared as such by the request's own rule and the build draws from its own data. What they rule, restated here so the code can cite a line:
+
+**1n-r2 — the rail, revision 2.** *Width UNCHANGED* — the cell is still the icons' grid plus the air (39 / 46 / 55 / 64), the derivation stands. Every cell **grows down** to carry a caption: the glyph *bare on the sheet* (the plate borders dropped, the plate's air returned to the icon — 22 / 26 / 31 / 36 px), a 2-unit gap, a **mono caption** at 7.5 / 9 / 10.5 / 12 in TextSecondary — *the area ink and bold when active* — with padding above and below; cell heights ≈ 47 / 56 / 66 / 77. Captions **DESK · STATS · DOCKET · PEOPLE · BUDGET · LAWS · POLITICS** ("rename freely; the fit rule is ≤ 8 characters"). Home = the flag (24×16 at the 39 cell, 3:2) over `DESK`, the rule beneath; on the Desk a brass wash `rgba(156,129,72,0.16)` and a 3 px brass spine. Active nav cells keep 1n's 12 % wash + 3 px spine. The chip, the lamp and PAUSE/RUN unchanged (RUN brass while paused). **Redrawn glyphs refused** as a costed follow-up. Hover unspecified on the board → a faint stock wash (a build call, one literal).
+
+**1m-r2 — the Desk, revision 2** (D4's tokens applied; the Year-0 empty states designed; drawn at *Sweden, Year 0* — the sitting's own frame). The frame at 1280×720: the rail 55×704 at (15, 8); the sheet at left 85, 1180×704, padding 12 → an inner area of **1156×680**; the masthead 28 (flag 26×17; `{COUNTRY} · YEAR {N}` mono 10.5 bold; `DESK READINGS · LIVE` 10; the cluster's chips mono 9 with padding 3/8, the selected one TextPrimary bold on brass); three columns **440 / 250 / 440** with a 13 gap and an 8 top margin — the map 440×320 over the ledger 440×244; the compass 250 over the effects card 250×314; the calendar 440×420 over the event reservation 440×144; the strip **integrated into the sheet** — a rule (`#8A7A5C`) at +8, padding 6, ten cells with hairline dividers and no plates (caption 7.5 `#665E4F`, numeral 17 bold, sparkline 46×10). The density moves, the board's own line: *frame margin 2 % → 1.2 % · stage padding 16 → 12 · column/plate gaps 16 → 12/13 · the strip integrated · captions 7.5–8 → 8.5–10 · ledger names 13 → 14 · chip numerals 15 → 17 · hero 30 → 34 · map 420×290 → 440×320 · compass 240 → 250*; expected dead space ≈ 30 % at turn 0 and ≈ 28 % held by Annex C's method (re-measured on film after the build). Type at 1280: plate captions 8.5; the ledger's hero 34 with `APPROVAL RATING · LIVE` at 9, names 14, figures mono 12, a 17 pitch; compass names 9; the effects header 8.5 with 7.5 chips, rows 26 (label 12, bar 66×9, value mono 10.5); the calendar's month 18, weekday 8.5, rows 44, ledger 22 (date 10, label 12.5); the reservation's captions 8.5 / 8.
+**The Year-0 empty states:** the ledger draws its term rows *with em-dash figures* (`#665E4F`) under the hero before the first period closes, plus a promise chip **`FIRST ATTRIBUTION — {date}`** (8.5, `#8F6900` ink and border) — the board's `JAN 31` is a placeholder, the build prints the model's own first boundary; the effects card draws its zero rows on *bare centre-lined tracks* (zeros in `#5F6672`, "zero is a reading, not an absence") and a dashed-frame caption **`NO DRAFT PENDING — ESTIMATES MOVE WHEN A BILL OR A DIAL IS DRAFTED · ±5–10% MARGIN · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE`** in place of the two footer captions while nothing is drafted; a chip without a history draws a *dotted baseline ending in today's solid dot*; the event reservation is **drawn** as a dashed frame carrying `EVENT CARD — DRAWS ONLY WHILE AN EVENT IS LIVE` and `YEAR 0 OPENS QUIET — THE RESERVATION HOLDS ITS GROUND / AND THE CALENDAR ABOVE SAYS WHAT IS COMING INSTEAD`. The board's ledger rows (`{term}` ×4, misery split in two) are placeholders — the rows are the panel's own (R-B7 stands); R-B2 / R-B3 / R-B4 and the seven declared deviations stand.
+
+**2a — Statistics drawn (D5).** *Sub-tabs kept.* Domestic, top to bottom: the ten headline readings as **compact plates in a 5-column grid** (caption 7.5, numeral 19 bold, the GDP delta mono 8; ≈ 40 tall at 1280, no keyline); **`FISCAL POSITION — SHARES OF GDP, ONE AXIS`** — tax burden, spending, the deficit and the primary balance as bars on *one* 0–30 %-of-GDP axis (label 12 at 120 wide, bar 11 tall in the Fiscal ink, deficits in the Bad ink, value mono 10 at 44 wide; an axis caption row `0 · 10% · 20% · 30% OF GDP` beneath), with GDP per capita folded in as a bare LEVEL row (§A.9b, E2 absorbed) — *the 30 % axis is the USA placeholder; the build's axis is the group's maximum rounded up to the next 10 %, printed*; **`SECTOR SHARES OF GDP — THE ONE TRUE DISTRIBUTION`** — one **stacked bar** 22 tall in the categorical eight over a 2-column legend (7 px swatch, name 11, share mono 9.5) replacing eight gauge rows; the **six live graphs in a 3-column grid** at D4's taller clamp (title 12 bold, the signed change mono 10 bold, the footer `< OLDER · LAST 50 YEARS · min · mid · max` 7.5); **`SOCIETY — INDICES AND LEVELS GAIN THEIR KEPT HISTORIES`** — a 2-column grid of 22 px rows (name 12 at 170 wide · a 70×8 gauge for shares (youth unemployment, Gini, homeownership) *or* a 44×13 row-end sparkline for the indices and levels that keep a history (real wages, house prices, productivity) *or* nothing (life expectancy) · value mono 10.5 · unit caption 7.5 upper-case) — the USA's overburden row **absent by ruling, drawn as absent, not zero**; **`AS PUBLISHED`** — the E19 sentence retired for a **KEY on the band's rule** (`[PRELIMINARY] = FIRST ESTIMATE · [dashed] = REVISED LATER · [FINAL] = SETTLED · LAG SHOWN PER GRAPH`, 8 px), the three published graphs in a 3-column grid with their badges, frames, lag and pager as built, the poverty bulletin (E18) under the third; **E24 (the turn log) dropped** from International, which otherwise *inherits D4's tokens, the key and E22's pass-through label unchanged*. Instrument labels on 2a are drawn at the board's px (12 / 10.5 / 7.5 at 1280) — the Desk's law (R-B10), not the body clamp.
+
+**D4 — the density token table** ("one number per token; apply mechanically; the law-browser pitch stands by the request's own rule; the Desk's set is board 1m-r2's"), verbatim:
+
+| token | today (Annex C) | D4 |
+|---|---|---|
+| screen margin (`ScreenMarginFraction`) | 2 % (26×14 @1280) | **1.2 %** (15×8) |
+| rail→sheet gap (`ColumnSpacingFraction`) | 2 % (25) | **1.2 %** (15) |
+| section spacing (`SectionSpacingFraction`) | 3 % (20) | **2 %** (13) |
+| the skin box (`_boxStyle`, per nesting level) | 28 px fixed | **16 px** — "the biggest single reclaim" |
+| area card padding (`StyleBoxAsPaper`) | 14/14/12/14 | **10/10/8/10** (9-slice insets unchanged) |
+| dossier card padding | 18+8/18/32/20 | **14+8/14/22/14** |
+| stat tile pads (padX/padY/label/value gap/delta) | 17/16/20/9/18 ·s | **12/11/16/6/14 ·s** (height ≈ 98s → ≈ 80s) |
+| tile grid gap | 8s | **6s** |
+| ledger two-line lane | 12s+line, +6s | **8s+line, +4s** (≈ 44 → ≈ 38 @16px) |
+| ledger one-line pitch | line+6s | **line+4s** (≈ 24 → ≈ 22) |
+| law-browser row pitch (R-C1) | — | **STANDS** — ruled, untouched |
+| graph display height | clamp(0.075h, 50, 90) | **clamp(0.085h, 56, 110)** — the reclaim goes to the plot |
+| calendar sheet (1k) | cell gap 3s | **2s**; dots, strike, rules STAND by ruling |
+| radii (panel/card/inset/chip/control) | 19/16/14/12/11 | **16/13/11/10/9** |
+| TYPE · body/label | clamp(0.022h, 16, 28) | **clamp(0.024h, 17, 30)** — grows into the reclaim |
+| TYPE · mono meta floor · tile label · Desk caption floor | max(9,·) · 10s · 8 | **max(10,·) · 11s · 9** |
+
+Headers, banner and tab-derived icon sizes: unchanged. Expected at 1280 by Annex C's method: Demographics and Domestic drop ~10–14 pts of dead share from spacing alone; the box-nesting cut returns 24 px of width to every doubly-nested panel — *"re-run `deadspace.ps1` after applying; the re-measure is the fact."* **Read vs built:** the table's "skin box" and "area card padding" rows name ONE style (`_boxStyle` is the skin's box dressed by `StyleBoxAsPaper`); the explicit 10/10/8/10 was applied, so a nesting level costs 20 px, not 16 — recorded at the site. The one-line pitch token's only callers were the law browser's four sites, whose pitch STANDS — the token moved (`LedgerRow.OneLineHeight`, +4s) and the browser held (`LawBrowserRowHeight`, frozen at R-C1's +6s).
+
+**D6 — the contrast pass** ("new values for existing tokens vs Annex F; derivation: the failing ink at oklch L −0.07, chroma and hue held, snapped to hex; re-measure Annex F after applying — your measurement is the fact"), verbatim:
+
+| token | today (ratio) | D6 | target at its real use |
+|---|---|---|---|
+| TextMuted | `#7A7263` (3.9 / 3.7) | **`#665E4F`** | ≥ 5.0 — it carries 7–8 px labels (tile label, C20) |
+| Caution (text uses) | `#BE8A00` (2.5) | **`#8F6900`** | ≥ 4.5 @ 9–10 px — BREAKING chip, threshold labels; the draftAmber FILLS stay `#BE8A00` / `#D4A72C` — "the split the palette note promised" |
+| Good | `#3E8A5F` (3.4) | **`#2E7048`** | ≥ 4.8 — matches Bad's 5.3 weight |
+| Neutral (text uses) | `#6D7480` (3.8) | **`#5F6672`** | ≥ 4.5 @ 10–12 px zero-deltas |
+| Global ink | `#5C87A8` (3.1) | **`#47708E`** | ≥ 4.0 @ 16 px ledger labels — identity held, value darkened |
+| Political ink | `#A8842E` (2.9) | **`#8A6B21`** | ≥ 4.0 @ 16 px calendar/section uses |
+| selected-chip caption | `#F4ECDC` on brass (3.2) | **`#2B2620`** | an ASSIGNMENT flip, not a value: "TextPrimary on brass = 5.5"; brass unchanged everywhere |
+
+Untouched, deliberately: TextPrimary, TextSecondary, Bad, TextOnDesk, the desk-register lifted inks, every rule/hairline, the tab-tint column (icons, not text — 1n-r2 adds captions in TextSecondary instead of touching the tints), and the eight other area inks. The two principles: where a token carries TEXT below 4.5 at its real size its VALUE darkens; where only one ASSIGNMENT fails, the assignment flips and the token stands. No new tokens, no new hues. **Re-measured after applying (Annex F, re-filed 2026-08-28):** TextMuted 5.22 / 4.98 · Good 4.86 · Neutral 4.72 · Global 4.31 · Political 4.07 — met; **Caution 4.09 / 3.90** (short of D6's 4.5) and **TextPrimary on brass 4.03** (not the table's 5.5; up from 3.17) — filed back as numbers, not asks.
+
+**Built (Phase B, 2026-08-28):** in order — the §E5 close (the hatch pair's third cut measured, the bar question filed), D6, D4, 1n-r2, 1m-r2, 2a — one unit one commit, then the OPEN state's residue deleted whole (unit 7, §44's promise); the full matrix at four sizes twice (`v31b_*` on the boards, `v31bf_*` on the final code); Annex F and the dead-space share re-measured and filed back (the request doc's Annexes F and C). The build's own reversible calls are R-F1…R-F16 (`COMPLETED.md` §45). **§A.5 / §A.7 note:** the OPEN frame, the chrome column and the folder tongues §A.5 and §A.7 describe are history from this build on — the paper sheet and the rail are the frame; the tongue faces (`ui_tab_folder_*`) stay delivered and unwired.
+
+### C. PASS 3 — DISPOSITIONS AND THE RE-REVIEW FINDINGS — MIGRATED (2026-08-27)
+
+*The nine §1D dispositions (D1–D9 + the locale and banner items) and the seven re-review findings
+(C.1 the division-record blocker, C.2 the numeric ladder, C.3 the 36px/type-rescale collision, C.4 the
+categorical cap as a throw, C.5 `emblem_state_seal` → `ui_seal_state`, C.6 the `canvas_*` namespace, C.7
+SVG-only delivery and the manifest the coverage check gained) were ALL closed by the build and are
+recorded in `COMPLETED.md` §24 ("The screen spec's finished sections"). Git history holds the original
+text (the spec at `d29406f`).*
+
+---
+
+### D. THE TWO ARCHITECTURAL CONSTRAINTS — both respected
+
+**1. Hybrid at screen granularity. ✅ Respected — and pass 3 closed the one clause that weakened it.**
+
+Every board is wholly one side: 1a–1d IMGUI, 1f–1h Canvas. No board interleaves an IMGUI element into a
+Canvas screen or the reverse. 1e makes the swap explicit and gives it a 60ms hold at 85% scrim precisely
+so the changeover is invisible.
+
+The clause raised as §1D.4 — `§1C.3`'s *"survives the whole sequence"*, which read as IMGUI drawing over
+a live Canvas screen — **was accepted verbatim and is now struck.** Pass 3's replacement rule ("every
+Canvas takeover redraws the hold banner itself; both sides draw it") **was never implemented, and the
+build settled it differently (corrected 2026-08-27):** takeovers stop the clock by construction
+(`COMPLETED.md` §27 — a Canvas screen is a held state), so no hold banner is owed while one is up; the
+IMGUI layer is suppressed except for the scrim, which fades over the active Canvas precisely because
+IMGUI is topmost. Any future Canvas screen that does NOT hold time must revisit this; 1h holds it.
+
+The boards carry the banner on **1a, 1b, 1d, 1g and 1h** as drawn; `CANVAS_SPEC.md` §0/§3 were
+corrected in pass 3 to match. The previous phrasing was the one sentence in the whole pack that,
+implemented literally, would have broken screen granularity.
+
+**2. Transitions run from the IMGUI side. ✅ Respected explicitly and correctly.**
+
+1e panel 2 states the measured constraint in the design's own words: *"ui_scrim_takeover fades in, drawn
+BY IMGUI — no Canvas mode draws above OnGUI."* The scrim is one 256×256 radial-vignette sprite stretched
+full-screen, animated by opacity alone — inside IMGUI's two legal runtime knobs (tint and opacity), so
+the fade needs no baked frames. The design also draws the correct conclusion downstream: *"a document
+sliding halfway over the ledger is impossible by measurement, and nothing in this system pretends
+otherwise."*
+
+---
+
+### E. WHAT REMAINS (rewritten 2026-08-27; the 2026-08-10 "what is buildable" list was built item by item)
+
+The chrome-wiring gate this section once carried is discharged: Elias has run three live Editor sessions
+on the shipped v2 UI (playtest 1's scoping session 2026-08-18, playtest 2 on 2026-08-25, and the
+2026-08-26 gates session — CLAUDE.md), which is exactly the setting the gate asked for. What this spec
+still governs:
+
+- **1h ELECTION NIGHT (§A.14)** — ⚠ **this file states no build status; `ElectionNightScreen` and the commit log carry it** (`MISSING_PREREQUISITES.md`
+  §D). Its §D.1 banner instance and party-ink swing usage go with it; it holds time, so §D.1's corrected
+  rule applies as written.
+- **The unbuilt clauses marked UNBUILT — roadmap item 4 above** (§A.2's three tokens, §A.3's tab-swatch
+  tints, §A.6's RUNNING state and held-state buttons, §A.8's screen caption, §A.10's disabled face,
+  §A.11's urgency chip and generic stamp, §A.13's two envelope rows, §A.15's two unresolved rows) —
+  small, ungated, listed once on `POLISIM_FEATURE_LIST.md` and nowhere else.
+- **Every standing rule in §A governs any new screen regardless** — the surface ladder, the inks, the
+  eleven hues and the categorical cap, the typography roles, the resort ladder in both variants, the
+  negative-fill sign rule, the dual-siting asset consequence, screen granularity and the IMGUI-side
+  transition. The banner at the top of this file — every number is suspect until derived or confirmed
+  — binds them all.
+
+
+## 188. `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` — RETIRED 2026-09-02, migrated verbatim (1430 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## PoliSim — Real-World Seed Data: Macro Data & Release Calendar Overhaul
+
+**Why this file exists:** every real-world figure the Round-4 macro stats and the release calendar
+were seeded from, with its source, basis, retrieval date and confidence — so a seed can be audited and
+re-sourced rather than trusted. The project's standing discipline is "ground new mechanics in real
+data, label anything stylized honestly" (rule 5); `[GAP]` figures are Elias's to source, never to invent.
+*(The original "Claude Code has no web search" rationale is history — this file's own 2026-08-02 API
+sessions pulled most of the figures live; what it remains is the seed authority `ReleaseCalendar.cs` and
+`PublishedData.cs` cite by name. Corrected 2026-08-27.)*
+
+**How to read the confidence markers (seven kinds in use at HEAD, 2026-08-27):**
+- `[VERIFIED]` — sourced directly, use as-is
+- `[ESTIMATED]` — rung 3 of Part 4's fallback ladder: a stated method with a band, replaced the moment a
+  same-basis figure exists (`MISSING_PREREQUISITES.md` §B)
+- `[GAP]` — not yet sourced, must NOT be invented; flag to Elias for sourcing before that stat ships
+- `[PARTIAL]` — a set with some members sourced and some not (no live data entry carries it today; it
+  survives in audit prose)
+- `[PROVISIONAL]` — the source's own provisional flag (Eurostat `p`), carried into the seed comment
+- `[BOUNDED]` — a range rather than a value; a bound is not a value and must not be seeded as one
+- `[DERIVE]` — should be computed from existing tracked state, not seeded as an independent variable
+
+---
+
+### PART 0 — THE BASIS: what unit every money seed in this document is in (C-C6, 2026-08-31)
+
+**Every money seed in this file, and in `WorldFactory`, is in USD BILLIONS — for all six countries,
+including the five that do not use dollars.** Measured from the seed itself rather than inferred: USA
+29 000 · Germany 4 700 · France 3 200 · Italy 2 300 · Poland 840 · **Sweden 620**, against
+`WorldFactory`'s own comment *"Sweden's real GDP (~$620B)"*. Sweden's real GDP is ~6 500 **billion SEK**,
+so the stored 620 is dollars — Playtest-1's finding 6 (*"the Desk shows Sweden's GDP as $620B"*) was
+reading the basis correctly.
+
+**⚠ The model does not care what the unit is, and a re-basing is still a seed change. Both are true and
+`MoneyBasisDiagnostic` measures both.**
+
+| scale | turns | worst ratio difference | worst level difference |
+|---|---:|---|---|
+| ×2 | 1 | **0.000E+000** | **0.000E+000** |
+| ×2 | 12 | **0.000E+000** | **0.000E+000** |
+| ×10 | 1 | 4.165E−005 | 1.567E−004 |
+| ×10 | 12 | 9.212E−001 | 1.975E+000 |
+
+**(a) Unit-agnostic.** At ×2 — exactly representable in binary floating point — every ratio and every
+level is invariant to **zero** at both horizons. **No constant anywhere on the macro path carries an
+absolute money scale**, so the stored unit is a *convention*, not a modelling choice.
+
+**(b) But a real re-basing is not a power of two.** SEK/USD is ~10.5, and at ×10 the float path diverges —
+small after one turn, order-unity after twelve. **That is rounding, not economics** — but it means a
+re-based seed set *would* produce different trajectories.
+
+**So the ruling's cheap branch is not available.** Re-basing to national units is a **seed change under
+the full sim-math bar with per-country diffs explained**, and the honest explanation of those diffs is
+**float-path divergence, not a change in what the model believes.** ⚠ *"The model is unit-agnostic, so
+re-basing is free"* would be true about the model and false about the build.
+
+**Billed, not invented:** re-basing needs a **sourced, vintage-dated FX rate per country** (the ruling's
+own words). ~~None is on disk. No rate is authored here.~~
+
+⚠ **FETCHED 2026-09-01 — the rates are REACHABLE, and taking them is still not correct yet.** The ECB's
+own daily reference file (`ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml`, HTTP 200) carries, at
+**vintage 2026-08-31**: **EUR/USD 1.1596 · EUR/SEK 11.1100 · EUR/PLN 4.3280**. One fetch, one publisher,
+one date. The three pairs the six countries need follow by a single stated derivation — cross through the
+euro, `USD/X = (EUR/X) ÷ (EUR/USD)`:
+
+| pair | derivation | value |
+|---|---|---|
+| **USD/SEK** | 11.1100 ÷ 1.1596 | **9.58089** |
+| **USD/PLN** | 4.3280 ÷ 1.1596 | **3.73232** |
+| **USD/EUR** | 1 ÷ 1.1596 | **0.862366** (Germany, France, Italy) |
+
+⚠ **AND THE VINTAGE IS THE PROBLEM, WHICH IS WHY NOTHING IS SEEDED ON THEM.** A 2026-08-31 rate applied
+to seed levels published at **2024 and 2025 vintages** is exactly the **basis-mixing the cross-check gate
+forbids** — the same rule that kept the 2022 party-leader set from being half-refreshed. So the bill is
+**not discharged; it is SHARPENED.** What it needs is not "an FX rate" but *the rate at each seed's own
+vintage* — and the ECB publishes that too (`eurofxref-hist.xml`), so it is obtainable the day this file's
+vintages are settled as a set. **No rate is authored here, and none is seeded.**
+
+⚠ **A SECOND CURRENCY IS ALREADY IN THE GAME WITH NO CONVERSION.** The campaign layer prices in
+**kronor** — the war chest is 2 400 000 kr, a television buy 500 000, a social post 5 000 — while the
+macro layer is in **USD billions**. The two never meet today, because a campaign is staged rather than
+funded from the state's budget, so nothing converts and nothing is wrong yet. **The day a campaign is
+paid for out of anything the macro model holds, one of the two is wrong by a factor of ~10 500 000 000.**
+Recorded because it is invisible until it is expensive.
+
+---
+
+### PART 1 — Release schedules (rule-based, implement as rules, not fixed dates)
+
+#### United States [VERIFIED]
+| Stat | Rule |
+|---|---|
+| Unemployment / jobs | First Friday of each month (BLS Employment Situation), 8:30 AM ET |
+| Inflation (CPI) | Mid-month, ~12th (BLS) |
+| GDP — advance estimate | ~30 days after quarter end (BEA) |
+| GDP — second estimate | ~t+60 after quarter end |
+| GDP — third estimate | ~t+90 after quarter end |
+
+#### EU — Germany, France, Italy, Poland, Sweden [VERIFIED]
+| Stat | Rule |
+|---|---|
+| Inflation — flash estimate | Last working day of the reference month (Eurostat HICP flash) |
+| Inflation — full figures | 15–18 days after reference month end (~17th) |
+| GDP — preliminary flash | 30 days after quarter end |
+| GDP — t+45 flash | 45 days after quarter end |
+| GDP — regular estimates | ~t+65 and ~t+110 |
+
+#### Already established elsewhere in this project (do not re-derive)
+- Fiscal year start: USA October 1; all five European countries January 1.
+- Central bank rate decisions: ~8 scheduled meetings per year (Fed/ECB pattern).
+- Annual-cadence stats (poverty, population, demographics, crime, infrastructure): publish once per year.
+
+**The revision mechanic (Elias confirmed IN SCOPE):** real agencies publish a preliminary figure that is later revised (BEA advance→second→third; Eurostat flash→final). The player should sometimes act on a figure that later turns out to have been wrong. Model preliminary and revised values as distinct published entries for the same reference period.
+
+---
+
+### PART 2 — Seed data for the seven new tracked stats
+
+#### 1. Housing — homeownership rate (% of HOUSEHOLDS owning, OECD Affordable Housing Database basis)
+
+**Use this basis only.** The previous version of this row mixed three incompatible bases and was not a usable set — see the warning below.
+
+| Country | Value | Confidence |
+|---|---|---|
+| USA | 65.3 | [VERIFIED] OECD AHD HM1.3 — ACS 2023 (25.98 outright + 39.32 mortgage = 65.31) |
+| France | 58.6 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (34.63 + 23.94 = 58.56; the 58.5 that stood here was this figure rounded down) |
+| Germany | 41.0 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (24.25 + 16.71 = 40.96) — lowest among major economies, a genuine structural outlier |
+| Poland | 84.7 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (74.09 + 10.66 = 84.74); *was `[ESTIMATED]` 86.8, band 78.4–95.2 — inside the band* |
+| Italy | 75.2 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (65.17 + 10.03 = 75.20); *was `[ESTIMATED]` 74.4, band 66.8–82.1 — inside the band* |
+| Sweden | 58.2 | [VERIFIED] OECD AHD HM1.3 — EU-SILC 2024 (17.79 + 40.40 = 58.19); *was `[ESTIMATED]` 62.1, band 54.9–69.4 — inside the band* |
+
+**✅ RE-SOURCED 2026-08-28 (R-C5 of the continuation kickoff) — all six from ONE file on ONE basis.** The
+Affordable Housing Database's HM1.3 workbook is reachable on the OECD's file host (the www host serves
+a bot-check page; the `webfs` host serves the file): `https://webfs.oecd.org/Els-com/Affordable_Housing_Database/HM1-3-Housing-tenures.xlsx`
+(OECD 2025 edition, 862,240 bytes, SHA-256 prefix `04aaa3407d55ee09`; the PDF beside it). Sheet
+`HM1.3.1` "Share of households in different tenure types, in percent, 2024 or latest year available";
+owner = *own outright* + *owner with mortgage*; the vintage note on the sheet: 2024 (EU-SILC 2024) except
+Korea, Switzerland and the United States 2023, Canada/Chile/Mexico/UK 2022, Australia 2021, Türkiye and
+Iceland 2020; Hungary withheld under revision. **The basis is confirmed to the digit against the anchors
+that already stood here:** Switzerland 38.20 (2023 column), Slovak Republic 93.45, OECD 70.07, Canada 68.67,
+Australia 62.66 — so the four bridge anchors' vintage, the debt this file flagged, is: this edition's
+2024 values (Switzerland 2023). The by-year annex (sheet `HM1.3.A1`) carries 2010–2024 per country:
+Sweden 58.27 / 58.28 / 58.19 (2022 / 2023 / 2024), Italy 73.10 / 73.95 / 75.20, Poland 84.14 / 84.72 / 84.74,
+France 60.47 / 60.17 / 58.56, Germany 40.74 / 41.25 / 40.96. A seed change on four countries (three
+estimates and France's rounding) — the sim-math bar ran on it (the continuation's Phase 4 record).
+
+##### 📐 THE ESTIMATE that stood here 2026-08-02 → 2026-08-28 — a four-point regression from the Eurostat population basis (superseded; kept as the method's record)
+
+**Rung 3 of the fallback ladder.** The OECD Affordable Housing Database is absent from SDMX; its HM1.3
+note is reachable and confirms the basis exactly (*"share of households in different tenure types, in
+percent, 2024 or latest year available"*), but the values live in charts and a companion worksheet that
+do not parse.
+
+**Four countries have a value on BOTH bases, so the bridge is FITTED rather than assumed** — and that is
+the deliberate fix for C5's known weakness, whose France-only bridge missed Germany by 5.6% and Italy by
+6.7% exactly where its stated limitation predicted:
+
+| | Eurostat (population) | OECD AHD (households) | fit | residual |
+|---|---|---|---|---|
+| Switzerland | 42.0 | 38.2 | 36.91 | +1.29 |
+| Germany | 47.2 | 41.0 | 42.67 | −1.67 |
+| France | 61.2 | 58.5 | 58.16 | +0.34 |
+| Slovakia | 93.1 | 93.5 | 93.46 | +0.04 |
+
+```
+household = 1.1065 × population − 9.5604      R² = 0.9977, residual sd 1.51 pp, df = 2
+```
+
+**All seven Eurostat inputs re-verified against the API 2026-08-02** (`ilc_lvho02`, `tenure=OWN`,
+`hhcomp=TOTAL`, `rskpovth=TOTAL`, `unit=PC`, 2024, no status flags) — FR 61.2, DE 47.2, CH 42.0, SK 93.1,
+IT 75.9, SE 64.8, PL 87.1, every one exact. The OECD side of the bridge could not be re-verified; the AHD
+is not queryable.
+
+**The relationship has a mechanism, which is why it is trusted at all:** owner households are larger than
+renter households, so a population base overstates ownership relative to a household base — and the two
+converge as ownership approaches universal. Slovakia's gap is +0.4pp; Germany's is −6.2pp. A fit with a
+physical story behind it is worth more than a high R² without one.
+
+🔴 **LEAD WITH THE 95% BAND, NOT THE 68% ONE.** Four calibration points leave two degrees of freedom, so
+the formal prediction interval is ±7pp however tight R² looks. **C5's ±3% band was falsified for two of
+five countries; quoting ±2.5pp here would repeat that mistake with better arithmetic behind it.**
+
+**No directional correction applied to Sweden, and that is a decision.** The tempting move is to shade
+Sweden down by Germany's residual, since Sweden is structurally Germany-like (high-renting, mortgage-heavy).
+The evidence does not support it: the two low-ownership countries sit on **opposite** sides of the fit
+(Switzerland +1.29, Germany −1.67), so the residuals show no structural pattern to correct for.
+
+⚠ **The real residual risk is VINTAGE, not fit.** The four AHD anchors come from this file and **their year
+is not recorded**, while the Eurostat side is 2024. Homeownership moves slowly so the effect is small — but
+it is unquantified, and an unrecorded vintage is precisely what produced the 90.86 problem. **Whoever finds
+the AHD vintage should record it here.** *(✅ Found 2026-08-28: the anchors are the HM1.3 workbook's 2024
+column — Switzerland its 2023 — see the re-sourcing note above; the estimate's residual against the real
+figures: Poland −2.1, Italy +0.8, Sweden −3.9 pp, all inside the 95% bands it quoted.)*
+
+⚠ **The old indicative ranges (Italy ~72–73, Sweden ~63–65) were deliberately NOT used**, not even as a
+sanity check, per this file's own instruction that they sit on unknown bases. That the estimates land near
+them is noted and **must not be treated as corroboration** — agreement between a fitted value and an
+unknown-basis one is coincidence until the basis is known.
+
+**Sanity checks that WERE used:** OECD average 70.1 — Italy and Poland above, Sweden below, correct for
+these countries. Poland 86.8 below Slovakia's 93.5, consistent with "top 10 globally but not the top".
+Sweden below Canada 68.6 and above Switzerland 38.2, consistent with a high-renting Nordic market.
+
+Anchors on the same basis [VERIFIED]: OECD average 70.1, Slovakia highest at 93.5, Canada 68.6, Australia 62.7, Switzerland lowest at 38.2. OECD-wide, 71% of households owned outright or with a mortgage in 2022 versus 24% renting.
+
+**⚠ THREE-WAY BASIS SPREAD — this is why the earlier set was unusable.** Germany appears in sources as:
+- **41.0%** — OECD, share of *households* owning
+- **~46.7%** — a 2022 dwelling-based figure
+- **52.3%** — Eurostat, *nationals only*
+
+An 11.3-point spread across three definitions of "the German homeownership rate," every one correct for its own source. A set mixing these would encode differences that are measurement artifacts rather than real. Eurostat additionally measures share of *population* in owner-occupied dwellings (68.4% EU 2024), a fourth basis again.
+
+USA and France above independently match figures already recorded as OECD-sourced, confirming the basis is coherent — Germany was simply captured from a different one.
+
+##### ⚠ EUROSTAT TENURE FIGURES — A SEPARATE SET ON A DIFFERENT BASIS. DO NOT MERGE INTO THE TABLE ABOVE.
+
+Sourced from the Eurostat API 2026-08-02 **because they were reachable, not because they close C1's gaps
+— they do not.** These are the *fourth basis* the warning above names: **share of POPULATION in
+owner-occupied dwellings**, not share of HOUSEHOLDS owning. Italy, Sweden and Poland remain `[GAP]` on
+C1's OECD household basis.
+
+| Country | Owner | of which: with mortgage | outright | Tenant |
+|---|---|---|---|---|
+| Italy | **75.9** | 12.7 | 63.2 | 24.1 |
+| Sweden | **64.8** | 49.6 | 15.2 | 35.2 |
+| Poland | **87.1** | 11.7 | 75.4 | 12.9 |
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ilc_lvho02
+    ?lang=EN&rskpovth=TOTAL&hhcomp=TOTAL&unit=PC&tenure=OWN&tenure=OWN_L&tenure=OWN_NL&tenure=RENT
+    &geo=IT&geo=SE&geo=PL&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `rskpovth` | `TOTAL` | Total |
+| `hhcomp` | `TOTAL` | Total |
+| `tenure` | `OWN` / `OWN_L` / `OWN_NL` / `RENT` | Owner / with mortgage or loan / no outstanding mortgage / Tenant |
+| `unit` | `PC` | Percentage |
+
+**No status flags.** Dataset updated 2026-06-11.
+
+**Gated on internal arithmetic, since no Eurostat tenure anchor exists in this file.** With no known value
+to reproduce, the decode was proven structurally instead: `OWN_L + OWN_NL = OWN` and `OWN + RENT = 100`
+both hold exactly for all three countries. A mis-decoded position would break those identities. *This is
+the substitute gate when the anchor gate is unavailable — a weaker check than an anchor, and recorded as
+such.*
+
+**Poland 87.1 sits directly beside the file's existing `[PARTIAL]` note** that Poland is "confirmed in the
+global top 10" with "87.9 (nationals)" — 87.1 is the whole-population figure against 87.9 for nationals
+only, which is a coherent pair rather than a contradiction, and confirms the top-10 claim.
+
+**Sweden's split is the interesting one and worth preserving:** 64.8% own, but 49.6 of that carries a
+mortgage against only 15.2 outright — the inverse of Italy (12.7 mortgaged, 63.2 outright) and Poland
+(11.7 / 75.4). Same headline ownership rate, completely different household balance sheets, which is a
+real difference a fiscal model could plausibly care about.
+
+**🔴 `ilc_lvho02` IS WHERE THE "TWO ADULTS" VARIANT ACTUALLY LIVES.** Its `hhcomp` dimension carries 17
+household compositions including `A2="Two adults"`. The overburden correction above was right that
+`ilc_lvho07a` has no such dimension — this is the dataset that does. Anyone chasing that old note now has
+somewhere real to look.
+
+**Poland caution:** the ~87.9% figure elsewhere in this file is a Eurostat *nationals* line, not the OECD household basis. Directionally right (Poland genuinely is among the highest globally) but not a same-basis value.
+
+**House Price Index:** ✅ CLOSED BY CONVENTION (R4-2/R4-3, 2026-08-16/17 — `WorldFactory.cs`
+`HousePriceIndex = 100f`, "the R4-2 index convention, third member"): all six seed at an index value
+of 100 at game start and divergence emerges from simulation; no per-country level figures were ever
+needed, so this was never a `[GAP]` to source. *(The recommendation that stood here was adopted verbatim;
+the marker was corrected 2026-08-27.)*
+
+#### 2. Inequality — Gini coefficient
+| Country | Value | Confidence |
+|---|---|---|
+| Italy | 32.2 | [VERIFIED] Eurostat 2024, equivalised disposable income |
+| France | 30.0 | [VERIFIED] Eurostat 2024 |
+| Germany | 29.5 | [VERIFIED] Eurostat 2024 |
+| Sweden | 27.6 | [VERIFIED] Eurostat 2024 |
+| Poland | **26.0** | [VERIFIED] Eurostat API 2026-08-02 — **replaces a [PARTIAL] Statista ~29, which was 3 points too high** |
+| USA | **39.5** | ⚠ **[ESTIMATED]** — OECD IDD, disposable income (post-tax post-transfer), **reference year 2019** carried forward. Band 38.5–41.0 |
+
+**METHODOLOGY WARNING:** the Eurostat figures are equivalised disposable income on a 0–100 scale. US figures commonly appear on a 0–1 scale and from a different source (OECD/World Bank) with different methodology. Normalize to one scale and document which, or the US will look artificially different for measurement reasons rather than real ones.
+
+**✅ THE SCALE HALF OF THAT WARNING IS CLOSED (2026-08-02).** 39.5 is already on Eurostat's 0–100 scale
+(OECD IDD publishes 0.395), so **the seed needs no conversion step** — which removes the most likely place
+for a factor-of-100 error. It confirms rather than replaces the old "~0.39–0.40".
+
+⚠ **`[ESTIMATED]`, not `[VERIFIED]`, for two separate reasons — neither is fixable by finding a better number:**
+
+1. **Reference year 2019**, carried forward to the seed year. Rung 2 of the fallback ladder was the newest
+   reachable; the carry-forward is what makes it rung 3.
+2. **🔴 THE EQUIVALENCE SCALES DIFFER AND CANNOT BE RECONCILED.** OECD IDD uses the **square-root** scale;
+   Eurostat EU-SILC uses the **modified-OECD** scale. The two produce different Ginis *from identical
+   data*. The US figure is therefore comparable **in spirit** to the five Eurostat figures, not identical
+   in construction. Under a point of difference, but a real one, and it must be documented rather than
+   assumed away — this is exactly the "correct figures, incoherent set" trap this file keeps finding.
+
+**What survives the caveat:** USA ~39.5 against Italy 32.2, France 30.0, Germany 29.5, Sweden 27.6, Poland
+26.0, EU average 29.4. **The US gap is far larger than any equivalence-scale artefact**, so the qualitative
+claim the game needs — the US is a distinct outlier on inequality — is safe even though the exact number
+is not.
+
+EU average: 29.4; Euro area: 29.9 (2024) [VERIFIED] — useful sanity anchors.
+
+**✅ POLAND CLOSED, AND ALL FOUR EXISTING FIGURES CONFIRMED (2026-08-02).**
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ilc_di12
+    ?lang=EN&age=TOTAL&statinfo=GINI_HND&geo=PL&geo=IT&geo=FR&geo=DE&geo=SE&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `age` | `TOTAL` | Total |
+| `statinfo` | `GINI_HND` | **Gini coefficient (scale from 0 to 100)** — the scale question answered by the source itself |
+| `time` | `2024` | 2024 |
+
+**No status flags.** Dataset updated 2026-06-08. **Germany 29.5, France 30.0, Italy 32.2 and Sweden 27.6
+all reproduced exactly** — four anchors in the one query, which both confirms those figures against the
+primary source and proves the index decode for Poland's position.
+
+⚠ **The Statista figure was 3 points too high, and the error had a direction.** ~29 placed Poland *at* the
+EU average (29.4); the true 26.0 places it **well below** — and below Sweden's 27.6, making Poland the
+most equal of the five European countries in this set rather than a middling one. That is a different
+country to model. **The file's own instruction to "prefer a Eurostat figure if one can be obtained" was
+right, and the reason it was right is now measurable.**
+
+**Note the scale trap is closed at source:** `statinfo=GINI_HND` returns the label *"Gini coefficient
+(scale from 0 to 100)"*, so the 0–100 vs 0–1 confusion the methodology warning describes is settled by the
+API rather than by convention. The USA figure remains on a different source and basis — the warning below
+still applies to it.
+
+#### 3. Youth unemployment rate (%, under 25, share of labour force)
+
+**AUDITED AND RE-SOURCED FROM THE API 2026-08-02. This is the REVISION case, not the error case** — see
+the audit note below, and rule 5f-bis on why the two get opposite treatment.
+
+| Country | Jun 2025 | Feb 2026 | Confidence |
+|---|---|---|---|
+| Italy | **20.0** | 17.7 | [VERIFIED] Eurostat API — *was recorded 20.1; revised* |
+| France | **19.0** | 21.1 | [VERIFIED] Eurostat API — *was recorded 18.7; revised* |
+| Germany | **6.9** | 7.3 | [VERIFIED] Eurostat API — closes a `[GAP]` |
+| Poland | **12.2** | 11.9 | [VERIFIED] Eurostat API — closes a `[GAP]` |
+| Sweden | 23.5 | **22.5** | [VERIFIED] Eurostat API — *was recorded 22.2 for Feb 2026; revised* |
+| USA | **10.0** | **9.5** | [VERIFIED] BLS CPS `LNS14024887` via FRED, 2026-08-02 — **16–24, see below** |
+
+**✅ C3's last gap closed 2026-08-02.** BLS Current Population Survey, series `LNS14024887`, both reference
+periods. Rate (% of labour force) ✅ and seasonally adjusted ✅ — matching the five Eurostat figures on
+both axes that matter most.
+
+⚠ **The age bracket differs and must NOT be "corrected" later: US is 16–24, Eurostat is 15–24.** This is
+not a variant error. US labour-force statistics do not cover under-16s at all, so 16–24 *is* the
+OECD-harmonised US equivalent — there is no 15–24 US figure to find. **Record the bracket beside the
+value**; a future session that spots the mismatch and "fixes" it will be manufacturing a number.
+
+⚠ **October 2025 is missing at source** (federal shutdown gap), not a broken pull. Worth knowing before
+anyone re-pulls the series and concludes something is wrong.
+
+**Sanity:** USA 10.0 sits just below the file's OECD-wide anchor of 11.2% (Jul 2025), far below Sweden
+23.5 / Italy 20.0 / France 19.0, above Germany 6.9. Coherent across all six.
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/une_rt_m
+    ?lang=EN&age=Y_LT25&unit=PC_ACT&sex=T&s_adj=SA&geo=DE&geo=PL&geo=IT&geo=FR&time=2025-06&time=2026-02
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `age` | `Y_LT25` | Less than 25 years |
+| `unit` | `PC_ACT` | **Percentage of population in the labour force** — i.e. the RATE |
+| `sex` | `T` | Total |
+| `s_adj` | `SA` | Seasonally adjusted data, not calendar adjusted data |
+
+**No status flags on any value.** Dataset updated 2026-07-31.
+
+**🔴 The rate/ratio trap is now closed by construction, not by care.** `unit=PC_ACT` *is* Eurostat's rate
+definition — percentage of the labour force, not of the population. The file previously warned that
+Germany 3.6 and Poland 3.5 encountered during sourcing were **ratios**; the API returns **6.9 and 12.2**
+for those countries on the rate basis, roughly double, exactly as the warning predicted. Stating `unit`
+explicitly makes the wrong measure unreachable rather than merely discouraged.
+
+⚠ **`s_adj` was the undeclared dimension, and it matters more than expected.** The old entries recorded
+neither adjustment nor a query. For Italy in June 2025 the two variants read **SA 20.0 vs NSA 21.9** — a
+1.9-point spread, larger than any revision, and either could have been written down as "the" figure. SA is
+the correct choice (it is what Eurostat headlines and what the old figures were closest to) but that was
+established by testing both against the anchors, not assumed.
+
+##### Audit result: REVISION, not error — and why that verdict differs from life expectancy
+
+Neither Italy 20.1 nor France 18.7 nor Sweden 22.2 reproduces exactly. All three are nevertheless treated
+as *originally sound and since revised*, on this evidence:
+
+- **They sit 0.1–0.3 from the current values at the exact months claimed** (IT 20.1→20.0, FR 18.7→19.0,
+  SE 22.2→22.5). Life expectancy's 84.1 was 0.4 off and matched **nothing anywhere**.
+- **The variant is right.** They align with SA, not NSA — a 1.9-point difference for Italy — so whoever
+  sourced them pulled the correct series.
+- **Every qualitative claim survives** *on the Jun 2025 cross-section these anchors belong to*: Sweden
+  genuinely high (22–25 across the year), Italy around 20, France around 19, Germany strikingly low.
+  ⚠ **The Italy-above-France ordering is specific to Jun 2025 and reverses by Feb 2026** — see the ruling
+  above. Sweden-highest and Germany-lowest hold on both.
+
+**Monthly unemployment is a revisable series, so a value without a vintage is incomplete.** Both retrieval
+date and reference period are now recorded above; the earlier entries had a period but no retrieval date,
+which is why nobody could tell revision from error until the primary source was reachable.
+
+#### ✅ RULED (Elias, 2026-08-02): **SEED FEBRUARY 2026.** One period, all six.
+
+| Germany | USA | Poland | Italy | France | Sweden |
+|---|---|---|---|---|---|
+| 7.3 | **9.5** | 11.9 | 17.7 | 21.1 | 22.5 |
+
+USA is `[VERIFIED]` on this period — BLS CPS `LNS14024887`, 16–24, rate, seasonally adjusted.
+⚠ Feb 2026 is the less settled vintage; **record the retrieval date (2026-08-02)**, per the restated-series
+rule.
+
+🔴 **TWO NARRATIVE CLAIMS IN THIS FILE ARE NOW STALE AND WOULD CONTRADICT THE SEEDS.** On the Feb 2026
+cross-section **France (21.1) is ABOVE Italy (17.7)** — the reverse of Jun 2025, where Italy 20.0 led
+France 19.0. Any prose describing "Italy around 20, France around 19" is describing the *other*
+cross-section and must be rewritten with the seeds rather than left to disagree with them.
+
+**What survives unchanged:** Sweden remains highest and Germany lowest, so the counterintuitive Nordic
+finding this file wanted preserved — a strong overall labour market alongside one of Europe's worst youth
+rates — holds on this period too.
+
+EU average 14.8%, euro area 14.4% (Sept 2025) [VERIFIED] — *not re-checked; a different series to the
+per-country figures above.*
+
+*(⚠ The two paragraphs below are the 2026-08-01 pre-audit reading, kept as history; the 2026-08-02
+Eurostat API audit revised the seeds — Sweden 22.5, Italy 20.0, France 19.0 — and the audit table above
+is what `WorldFactory.cs` carries. Corrected 2026-08-27, not silently.)*
+
+**Sweden: 22.2%** (Feb 2026, Eurostat, 15–24 rate) [VERIFIED] — genuinely high, confirming the "Nordic mixed picture" note; Sweden has averaged 16.95% since 1983, with an all-time high of 29.9% (July 2020). This is a real and counterintuitive feature worth preserving: a strong overall labour market alongside one of Europe's worst youth unemployment rates.
+
+**✅ RE-CHECKED AND CONFIRMED (2026-08-01):** Italy 20.1 and France 18.7 are genuine RATES on the 15–24 basis, not ratios. Independently confirmed for June 2025 against an EU average of 14.8%. Eurostat's own definition, worth quoting: *the youth unemployment rate is the number of people aged 15 to 24 unemployed as a percentage of the labour force of the same age, and should not be interpreted as the share of jobless people in the overall youth population.* These seeds are sound.
+
+Additional 15–24 rate anchors from the same June 2025 dataset [VERIFIED]: Estonia 26.9 (highest), Spain 24.0, Italy 20.1, Portugal 18.9, Greece 18.8, Malta 6.2 (lowest).
+
+**⚠ SECOND VARIANT AXIS FOUND — AGE BRACKET.** The existing rate-vs-ratio warning below is necessary but NOT sufficient. Eurostat publishes both 15–24 and 15–29 series, giving a 2×2 matrix of four variants:
+
+| Variant | EU 2025 value |
+|---|---|
+| 15–24 rate (standard) | 14.8% |
+| 15–29 rate | 11.7% |
+| 15–29 ratio | 6.3% |
+| 15–24 ratio | (lower still) |
+
+Sweden sits directly on this fault line: **22.2% is the 15–24 rate; 12.2% is the 15–29 ratio.** Both are real Eurostat figures, both correctly attributed, measuring different things, differing by nearly 2x. Any youth unemployment figure must record BOTH its age bracket AND rate-vs-ratio, or it is meaningless.
+
+**CRITICAL METHODOLOGY WARNING (rate vs ratio):** youth unemployment *rate* (% of the youth labour force) and youth unemployment *ratio* (% of the youth population) are different measures and are frequently confused in published tables. Germany 3.6 and Poland 3.5 figures encountered during sourcing are **ratios, not rates** — do not mix them with the rate figures above. Use the 15–24 rate consistently.
+
+Related useful figure [VERIFIED, 2025]: the 15–29 ratio ranged from 2.9% (Bulgaria, Czechia) to 12.2% (Sweden) across the EU.
+
+---
+
+### BONUS: additional stats found during sourcing (not requested, but genuinely useful)
+
+These weren't part of the seven, but came up with real per-country data and are worth considering — especially the first, which is a strong candidate for the housing stat itself:
+
+**Housing cost overburden rate (%, share of population in households spending >40% of disposable income on housing) [VERIFIED, Eurostat 2024, indicator ilc_lvho07a]:**
+
+| Country | Whole-population rate | Confidence |
+|---|---|---|
+| Germany | 12.0 | [VERIFIED] |
+| Sweden | 10.6 | [VERIFIED] |
+| Italy | 5.1 | [VERIFIED] — Eurostat API, 2026-08-02 |
+| France | 7.0 | [VERIFIED] — Eurostat API, 2026-08-02 |
+| Poland | 5.2 | [VERIFIED] — Eurostat API, 2026-08-02 |
+| USA | **absent BY RULING** — option 3 below taken 2026-08-17 (`WorldFactory.cs` `usa.TracksHousingOverburden = false`); homeownership 65.3 carries the USA housing slot | ruled, not a gap |
+
+**✅ THE THREE [BOUNDED] GAPS ARE CLOSED (2026-08-02), pulled directly from the Eurostat API.**
+
+Query, identical for all three apart from `geo` — **every dimension stated explicitly**, which is what
+makes the result unambiguous rather than merely correct:
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/ilc_lvho07a
+    ?lang=EN&unit=PC&rskpovth=TOTAL&age=TOTAL&sex=T&geo=IT&geo=FR&geo=PL&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `unit` | `PC` | Percentage |
+| `rskpovth` | `TOTAL` | Total |
+| `age` | `TOTAL` | Total |
+| `sex` | `T` | Total |
+| `time` | `2024` | 2024 |
+
+**Status flags: none on any of the three.** Dataset last updated 2026-06-08.
+
+**Two controls ran before these were trusted**, and both are why they read `[VERIFIED]` and not `[PARTIAL]`:
+
+1. **Cross-check gate.** The same query shape reproduced Germany at exactly **12.0** — already
+   `[VERIFIED]` here — *before* any new value was pulled. A query that cannot reproduce a known value is
+   a broken query, and everything from it is of unknown basis.
+2. **Decode test.** The trio came from a MULTI-geo query, where values arrive as a flat array and must be
+   mapped back through the returned index — a step the single-country gate never exercised. The query was
+   re-run with Germany and Sweden included: both landed on **12.0** and **10.6** at their own positions,
+   proving the decode instead of assuming it. *A correct value in the wrong position is indistinguishable
+   from a correct answer.*
+
+#### ✅ THE [BOUNDED] DERIVATION METHOD HELD — all three landed inside 4.0–9.0
+
+**The original derivation:** Eurostat's 2024 article named exactly five countries above 9.0% (Greece 28.9,
+Denmark 14.6, Germany 12.0, Sweden 10.6, Czechia 9.2) and three below 4.0% (Cyprus 2.4, Croatia 3.7,
+Slovenia 3.8). Italy, France and Poland appeared in neither list, so each had to sit between them.
+
+**France 7.0, Poland 5.2, Italy 5.1 — every one inside the bound.** This matters well beyond three
+numbers. The derivation rested on an assumption it could not check: that the article's extremes lists were
+COMPLETE. A single result outside 4.0–9.0 would have invalidated that reasoning everywhere it was used,
+not merely this bound. It holds. **Bounding from published extremes is a sound technique for this file**,
+now confirmed against ground truth rather than trusted — and it was testable precisely because the bound
+was honest about being a range instead of being written down as a point estimate.
+
+EU average 8.2%. Range anchors: Greece highest at 28.9%, then Denmark 14.6%, Germany 12.0, Sweden 10.6, Czechia 9.2; lowest are Cyprus 2.4, Croatia 3.7, Slovenia 3.8.
+
+**⚠ CORRECTION — an earlier version of this file recorded the WRONG VARIANT.** The figures previously listed here (Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9) are a different cut of the indicator, not the headline whole-population one. The difference is large: Sweden 5.1 versus **10.6** whole-population — more than 2x. Germany 9.7 versus 12.0. **Use the whole-population figures above.** Same trap this file already flagged for youth unemployment rate-vs-ratio, walked into anyway.
+
+**⚠⚠ CORRECTION TO THE CORRECTION (2026-08-02, from the API's own structure).** The paragraph above used
+to attribute those wrong figures to a **"two adults" household-type subset of `ilc_lvho07a`**. That
+explanation is wrong, and wrong in a way that wastes the time of anyone acting on it: **`ilc_lvho07a` has
+no household-type dimension at all.** Its real structure, read from the API:
+
+> **`ilc_lvho07a` — "Housing cost overburden rate by age, sex and poverty status"**
+> Dimensions: `freq` · `unit` · **`rskpovth`** · **`age`** · **`sex`** · `geo` · `time`
+> For Germany 2024 alone this is **153 values** — 3 poverty thresholds × 17 age brackets × 3 sexes.
+
+So the 9.7 figure came from a **different dataset code**, not a different filter on this one. The
+correction's conclusion stands (12.0 right, 9.7 wrong); only its stated mechanism was invented. Someone
+following the old note would go looking for a household-type dimension that does not exist, conclude the
+warning was stale, and trust the wrong number.
+
+**🔴 `rskpovth=B_60` IS THE MOST DANGEROUS VARIANT, and it was not previously named.** The poverty-threshold
+dimension splits into `TOTAL`, `A_60` (above 60% of median income) and `B_60` (below it). Overburden among
+the below-60% population runs FAR above the whole-population rate — it is the same indicator restricted to
+those least able to afford housing. A `B_60` figure is a real Eurostat number, correctly attributed, and
+several times too high. **It would read as entirely plausible in this table**, which is exactly what makes
+it worse than an obviously broken value.
+
+The full age dimension, for reference, since several of these are the variants the old note gestured at:
+`TOTAL`, `Y_LT6`, `Y6-11`, `Y12-17`, `Y15-19`, `Y15-24`, `Y15-29`, `Y16-19`, `Y16-24`, `Y16-29`, `Y_LT18`,
+`Y18-24`, `Y18-64`, `Y20-24`, `Y20-29`, `Y25-29`, `Y_GE65`.
+
+**This indicator is unusually variant-prone — treat any figure for it as suspect until the variant is confirmed.** Beyond `ilc_lvho07a`'s own 153-cell grid, Eurostat publishes further cuts under the same NAME in other datasets: by household type, by tenure status (tenant at market price, tenant at reduced price, owner with mortgage, owner without), by degree of urbanisation (cities, towns, rural), and by income quintile. Sweden alone reads 5.1 / 10.6 / 10.8 / 17.9 depending which you pull.
+
+Secondary sources compound this. Visual Capitalist, explicitly citing Eurostat 2024, publishes Denmark at 22.7% and Norway at 21.0% — against Eurostat's own 14.6% for Denmark. A reputable outlet, correct attribution, different variant, no label.
+
+**Practical rule: record WHICH variant alongside every value, never just the number.** A bare figure for this indicator carries no meaning.
+
+**USA methodology warning (this is a DECISION, not a lookup):** Eurostat measures >40% of disposable income; US sources conventionally measure >30% ("cost-burdened") or >50% ("severely cost-burdened"). No US figure is directly comparable. Three options, none free — **✅ DECIDED 2026-08-17 (R4-3, `9f12c96`): option 3; the USA does not track overburden and homeownership carries its housing slot** (`COMPLETED.md` §11 C1a/C1b; corrected here 2026-08-27):
+1. Import a US figure with the bias documented (same approach the file already takes for Gini)
+2. Mark USA `[GAP]` and seed only the five EU countries
+3. Use homeownership rate for USA instead, where a genuinely comparable figure exists (65.3%) — **taken**
+
+**Related affordability indicator [VERIFIED, Eurostat 2024]:** average share of disposable income spent on housing — EU 19%, Greece 36%, Denmark 26%, Sweden and Germany both 25%, Cyprus 11% (lowest). A softer, more complete measure than the overburden threshold, and available for more countries.
+
+**Homeownership, EU-wide [VERIFIED, Eurostat 2024]:** 68.4% of people in the EU live in owner-occupied dwellings (44.2% outright, 24.3% with a mortgage), 31.6% rent. Poland nationals 87.9%.
+
+**Long-term unemployment rate (%, of active population 15–74) [VERIFIED, Eurostat 2024]:** Greece 5.4, Spain 3.8, Italy 3.3, Portugal 2.4, Sweden 1.7, Austria 1.1, Poland 0.8, Denmark 0.8. A useful complement to headline unemployment — Italy's structural problem looks very different from Poland's.
+
+#### 4. Life expectancy at birth (years)
+
+🔴 **THE TWO PREVIOUS `[VERIFIED]` FIGURES HERE WERE WRONG. Corrected 2026-08-02 from the primary source.**
+See the verification-integrity entry below the table — this is the single most important thing on this page.
+
+| Country | Value | Confidence |
+|---|---|---|
+| USA | **79.0** (2024; up from 78.4 in 2023) | ✅ [VERIFIED] **CDC/NCHS FINAL data** — re-checked 2026-08-02 |
+| Italy | **83.7** | [VERIFIED] Eurostat API 2026-08-02 — *replaces an incorrect 84.1* |
+| Sweden | **83.8** | [VERIFIED] Eurostat API 2026-08-02 — *replaces an incorrect 84.1* |
+| France | **83.0** | ⚠ **[PROVISIONAL]** — status flag `p`. Not `[VERIFIED]` |
+| Germany | **81.2** | [VERIFIED] Eurostat API 2026-08-02 — no status flag |
+| Poland | **78.5** | ⚠ **[PROVISIONAL]** — status flag `ep` (estimated, provisional). Not `[VERIFIED]` |
+
+```
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/demo_mlexpec
+    ?lang=EN&unit=YR&sex=T&age=Y_LT1&geo=FR&geo=DE&geo=PL&geo=IT&geo=SE&time=2024
+```
+
+| Dimension | Code | Returned label |
+|---|---|---|
+| `unit` | `YR` | Year |
+| `sex` | `T` | Total |
+| `age` | `Y_LT1` | Less than 1 year *(= at birth)* |
+| `time` | `2024` | 2024 |
+
+**France and Poland are NOT `[VERIFIED]`, per the status-flag rule.** `p` and `ep` mean provisional and
+estimated-provisional; both will move. They are good enough to seed a game and must not be quoted as
+settled figures.
+
+##### 🔴 VERIFICATION-INTEGRITY INSTANCE — a `[VERIFIED]` figure that was simply wrong
+
+**Claim:** *"Italy 84.1, Sweden 84.1, [VERIFIED] Eurostat 2024, joint highest in EU."*
+**Reality:** Italy 83.7, Sweden 83.8, and neither leads the EU — **Spain does, at 84.0** (Liechtenstein and
+Switzerland read 84.2 but are EFTA, not EU).
+
+Every part of that entry was wrong: both values, the claim they were equal, and the claim either was
+highest. Three independent checks, and the third is what made the verdict safe:
+
+1. **84.1 appears in no year** for either country — Italy 2021→24 runs 82.6, 82.8, 83.3, 83.7.
+2. **84.1 appears nowhere in the entire 2024 cross-section**, for any country in the dataset.
+3. **The structural claim failed on its own terms** — Italy 83.7 ≠ Sweden 83.8, so "joint" was false
+   independently of what the right numbers were.
+
+**Root cause: sourced from a summary article rather than the primary database**, then marked `[VERIFIED]`.
+Same class as the `ilc_lvho07a` household-type error recorded above — a plausible structural claim written
+alongside a number, where the claim was never checked against the source and the number was quietly wrong.
+**A secondary source can be accurate about a number and still invent the frame around it.**
+
+**What makes this catchable now and not before:** the API. A summary article gives one number with no way
+to interrogate it; the database gives the whole cross-section, which is how "nowhere in any year, for any
+country" became a checkable statement rather than a suspicion.
+
+##### ✅ USA 79.0 RE-CHECKED AND CONFIRMED (2026-08-02) — the guilt by association is discharged
+
+**CDC/NCHS, *Mortality in the United States, 2024*, NCHS Data Brief No. 548 — FINAL mortality data, not
+provisional.** 79.0 years, total population, up 0.6 from 78.4 in 2023, which this file also records
+correctly. Female 81.4, male 76.5. Source: National Vital Statistics System.
+
+It was flagged only because it came from the sourcing session that produced the 84.1 error. **It is exactly
+right, on the right basis, from the right agency** — which is itself evidence that the 84.1 failure was a
+single bad secondary source rather than a session-wide problem.
+
+🔴 **AND IT IS THE STRONGEST FIGURE IN THIS ROW, which the file should say plainly.** France 83.0 carries
+`p` and Poland 78.5 carries `ep` — both provisional, both expected to move. **The USA is the only fully
+final figure here.** The habitual assumption that the US number is the shaky one because it comes from
+outside Eurostat is, in this row, backwards.
+
+⚠ **ONE CLAIM REMOVED, NOT CONFIRMED: "highest-ever".** The brief states the 0.6-year rise from 2023 and
+says nothing about a record. It has been dropped rather than left standing — **an unchecked structural
+claim written alongside a correct number is precisely the shape of the 84.1 failure**, and repeating that
+pattern in the very entry that corrects it would be indefensible. Re-add it only with a source.
+
+EU average: 81.7 (2024) [VERIFIED] — *not re-checked against the API; it was not one of the disputed
+values.* The US sitting ~3 years below comparable countries is real and worth preserving.
+
+#### 5. Real wage growth (%, 2024)
+| Country | Value | Confidence |
+|---|---|---|
+| Poland | 9.0 | [VERIFIED] EU DG EMPL — among the EU's biggest increases, alongside Romania (10.2) and Hungary (8.7); driven by strong nominal growth (12.3%) plus rapidly falling inflation |
+| Italy | 2.7 | [VERIFIED] OECD Taxing Wages 2025 — highest among Europe's five largest economies |
+| Germany | 2.2 | [VERIFIED] OECD Taxing Wages 2025 |
+| France | 0.7 | [VERIFIED] OECD Taxing Wages 2025 — lowest among the major economies |
+| Sweden | **1.3** | ⚠ **[ESTIMATED]** — nominal 4.1% (Medlingsinstitutet, whole economy, full-year 2024) minus 2.84% KPI annual average. The nominal figure is sourced, the deflator is secondary, **the subtraction is derived** |
+| USA | **1.0** | [VERIFIED] BLS Real Earnings (released 2025-01-15) — real average hourly earnings, all employees, Dec 2023→Dec 2024, SA, CPI-U deflated |
+
+**✅ THE SAME-BASIS SET, RECORDED 2026-08-28 (R-C5 of the continuation kickoff) — derived from two OECD
+SDMX series, nothing seeded from it (R4-2 stands: the index opens at 100).** One basis for all six: the
+Taxing Wages single worker at 100% of the average wage, gross earnings before taxes (GEBT) and net income
+after taxes (NIAT), national currency (XDC), from `OECD.CTP.TPS,DSD_TAX_WAGES_COMP@DF_TW_COMP,2.1`
+(`…/USA+SWE+DEU+FRA+ITA+POL.GEBT+NIAT.XDC.S_C0.AW100._Z.A?startPeriod=2022`; seven key dimensions, all
+stated; every observation status A; retrieved 2026-08-28), deflated by the national CPI's annual-average
+growth from `OECD.SDD.TPS,DSD_PRICES@DF_PRICES_ALL,1.0` (`…/USA+SWE+DEU+FRA+ITA+POL.A.N.CPI.PA._T.N.GY`;
+eight key dimensions, all stated; status A). real = (1 + nominal) / (1 + CPI) − 1.
+
+| Country | GEBT nominal 2024 | NIAT nominal 2024 | CPI 2024 | **real gross 2024** | **real net 2024** |
+|---|---|---|---|---|---|
+| USA | 4.38 | 4.28 | 2.95 | 1.39 | 1.29 |
+| Sweden | 4.53 | 5.70 | 2.84 | 1.65 | 2.78 |
+| Germany | 5.13 | 4.81 | 2.26 | 2.81 | 2.50 |
+| France | 3.93 | 3.48 | 2.00 | 1.89 | 1.45 |
+| Italy | 3.12 | 0.32 | 0.98 | 2.12 | −0.66 |
+| Poland | 12.16 | 11.43 | 3.65 | 8.21 | 7.51 |
+
+**Basis (the variant-axis rule):** earnings = Taxing Wages' modelled average worker (S_C0, AW100), NOT
+economy-wide earnings; net = after income tax and employee social contributions, cash transfers included;
+deflator = national CPI, annual average over annual average (Sweden's KPI is interest-inclusive — the
+factor-of-two note below applies); year 2024 over 2023 (the dataflow also carries 2025). **The set does NOT
+reproduce the press-cited Taxing Wages figures the table above carries for Italy, Germany and France
+(2.7 / 2.2 / 0.7)** — the report computes its real change with its own deflator vintage and, for Italy, the
+2024 net figure moves only 0.32% nominal (the 2024 cuneo-fiscale reshaping is in the modelled net), so the
+press figure's basis is not this one; the derived set is recorded as a coherent set and adopted for
+nothing. Tag: components `[VERIFIED]` (status A, SDMX, queries stated), the subtraction ours — the same
+class as Sweden's row below, now for all six on one basis.
+
+#### 🟡 THE THREE-BASES MIX: BLOCKER → CONVENTION, BY RULING (Elias, 2026-08-16, R4-2)
+
+**The row below must still never be seeded as levels** — that half stands unchanged. What the ruling
+resolves is that it no longer needs to be: **the real wage stat seeds as an INDEX, base 100 at epoch
+per country** (the HPI convention, applied for the HPI reason). The simulation consumes **growth**
+(nominal minus inflation), which the three bases agree on directionally; the level series is display
+furniture, and cross-country level comparison is explicitly not claimed. The figures below therefore
+serve as **directional validation anchors** for the growth model, never as seeds. If a future build
+finds the model genuinely needs a level, that is a RULINGS NEEDED stop naming the specific need —
+the OECD Taxing Wages re-sourcing recommendation below remains the path to a coherent level set if
+one is ever actually required.
+
+#### The original finding (kept verbatim — the incoherence is real, only its consequence changed)
+
+Every figure is correct; the **set** is incoherent — the same class of defect as the housing-overburden
+variant error, and worth as much attention:
+
+| Countries | Source | What it actually measures |
+|---|---|---|
+| Italy 2.7, Germany 2.2, France 0.7 | OECD Taxing Wages 2025 | real **net (after-tax)** wage, single worker at average earnings |
+| Poland 9.0 | EU DG EMPL | economy-wide real wage |
+| USA 1.0, Sweden 1.3 | BLS / Medlingsinstitutet | economy-wide real **gross** average earnings |
+
+**These are not interchangeable: a tax change moves the first and not the third.** Recommendation:
+re-source all six from **OECD Taxing Wages 2025**, which covers every OECD country on one basis. Its
+country notes are `robots.txt`-blocked, but the underlying data is in SDMX — reachable from a session with
+OECD access, which is the same unlock C5's anchor needs.
+
+⚠ **Sweden's deflator choice is a factor-of-two decision, and it is sourced.** Medlingsinstitutet's own
+15-month figure for the same agreement period reads **3.8% excluding housing interest costs vs 1.9%
+including them**. Sweden's KPI includes mortgage interest where most countries' headline indices do not,
+and 2023–24 is exactly when Swedish mortgage rates moved hardest. **The 1.3% above is the KPI
+(interest-inclusive) basis; a KPIF basis would be materially higher.** Record which, or the number means
+nothing. *Cross-check: Medlingsinstitutet reports real wages +3.2% for December 2024 alone against a
+December KPI of 0.8% — the full-year figure is lower because inflation fell through the year, which is the
+expected shape rather than a discrepancy.*
+
+**USA note:** real average **weekly** earnings rose 0.7% against hourly's 1.0%, the gap being a 0.3% fall
+in the average workweek — a real effect, not a conflict between two sources.
+
+Useful anchors: OECD average real household income per capita growth 1.8% in 2024 [VERIFIED]. Note Germany and Italy both saw *declining* real household income in 2024 even while real wages rose — wages and household income are different measures; don't conflate them.
+
+#### 6. Productivity — GDP per hour worked (USD, PPP)
+
+✅ **ALL SIX SOURCED EXACTLY FROM OECD SDMX, 2026-08-02. One year, one basis, one vintage.**
+
+| Country | **2022** | Confidence |
+|---|---|---|
+| Germany | **94.54** | ✅ `[VERIFIED]` |
+| USA | **90.83** | ✅ `[VERIFIED]` |
+| Sweden | **89.95** | ✅ `[VERIFIED]` |
+| France | **86.32** | ✅ `[VERIFIED]` |
+| Italy | **78.20** | ✅ `[VERIFIED]` |
+| Poland | **54.09** | ✅ `[VERIFIED]` |
+
+**Basis, in full — this must never be a bare number again:** `OECD DSD_PDB` · `MEASURE=GDPHRS` ·
+`ACTIVITY=_T` · `UNIT_MEASURE=USD_PPP_H` · `PRICE_BASE=V` (current prices) · `FREQ=A` · reference year
+**2022** · **live vintage retrieved 2026-08-02**.
+
+🔴 **RECORD THE RETRIEVAL DATE, NOT JUST THE REFERENCE YEAR.** This series restates wholesale — see the
+verification-integrity instance below. A value without a retrieval date cannot be distinguished from an
+error by any test in this file.
+
+```
+https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0/
+    DEU+SWE+USA+ITA+POL+FRA.A.GDPHRS._T.USD_PPP_H.V.N._Z.PPP?startPeriod=2022&endPeriod=2022
+```
+
+**All NINE key dimensions specified**, read from the DSD: `REF_AREA · FREQ=A · MEASURE=GDPHRS ·
+ACTIVITY=_T · UNIT_MEASURE=USD_PPP_H · PRICE_BASE=V · TRANSFORMATION=N · ASSET_CODE=_Z ·
+CONVERSION_TYPE=PPP`. Labels returned as intended: *"GDP per hour worked"*, *"US dollars per hour, PPP
+converted"*, *"Current prices"*, *"Total - all activities"*.
+
+**Seed 2022, not 2024.** It is the newest year with a complete same-basis cross-section for all six —
+rung 2 of the fallback ladder. Only France and the USA have 2024 values; mixing them with 2022 figures
+for the other four would fabricate a cross-section that never existed on any single date, which is the
+rule this file already states for youth unemployment.
+
+##### 🟢 THE ANCHOR WAS FOUND, AND 90.86 WAS RIGHT ALL ALONG (2026-08-02, session 4)
+
+**`[PRIMARY-UNANCHORED]` is retired for these six.** Rule 5f-bis condition 2 is satisfied: **both**
+original seeds reproduce exactly against an independent archive of the same key.
+
+| Seed in this file | Archived OECD series | |
+|---|---|---|
+| France **90.86** (2024) | France 2024 = **90.8595608458969** | ✅ exact to 2dp |
+| USA **~97** | USA 2023 = **97.0466946503153** | ✅ |
+
+**Everything about the original sourcing now makes sense, including the bit that looked like
+carelessness.** The seed carried a year label for France and none for the USA **because the USA series
+ends at 2023 in that vintage while France runs to 2024.** Whoever sourced these pulled one coherent
+cross-section and labelled it honestly.
+
+**The route — record it, it is the only working path found in four sessions.** `db.nomics.world`
+(CEPREMAP) mirrors OECD SDMX with its own ingestion pipeline and dimension mapping, serves plain HTML that
+parses, and is reachable where `sdmx.oecd.org` is not. Append `?tab=table` to a series URL for every
+observation at full precision. ⚠ `api.db.nomics.world` is `robots.txt`-blocked; `db.nomics.world` is not.
+
+```
+https://db.nomics.world/OECD/DSD_PDB@DF_PDB_LV/FRA.A.GDPHRS._T.USD_PPP_H.V._Z._Z._Z?tab=table
+   snapshot retrieved by DBnomics 2026-04-07
+```
+
+**Why the live query could not find it: the live series is the SAME series, restated.** Live 2026-08-02
+against the 2026-04-07 archive, at 2022 — systematic, one-directional for five of six, USA alone revised
+down. That is a national-accounts and PPP-benchmark revision, not a basis difference:
+
+| | live | archive | Δ |
+|---|---|---|---|
+| Germany | 94.54 | 92.4008 | **+2.32%** |
+| Italy | 78.20 | 76.8155 | +1.80% |
+| France | 86.32 | 84.8632 | +1.72% |
+| Poland | 54.09 | 53.2791 | +1.52% |
+| Sweden | 89.95 | 89.0469 | +1.01% |
+| USA | 90.83 | 92.2214 | **−1.51%** |
+
+**Confirmed structurally, not just numerically:** the archive reproduces France's idiosyncratic 2021 dip
+(83.96 → 82.53 → 84.86) that the live pull described independently, and **old years are revision-stable
+as predicted** — live France 2010 reads **56.7042** against the archive's 56.71, a gap of **0.01%** where
+2022 differs by 1.72%. *(Queried live 2026-08-02. Not bit-exact, so this corroborates the key rather than
+formally gating it — but a different series or basis would differ by percent, not by a hundredth.)*
+
+**France 90.86 and USA ~97 are SUPERSEDED, NOT CORRECTED.** They were right on their vintage. **Do not log
+them as errors** — the error path triggers a re-check of every sibling figure from that sourcing session,
+and there is now positive evidence that session was working correctly.
+
+###### The archived vintage, kept as the audit trail
+
+| | 2022 | 2023 | 2024 |
+|---|---|---|---|
+| Germany | 92.4008 | 93.7210 | 98.3940 |
+| USA | 92.2214 | **97.0467** | — *(series ends 2023)* |
+| Sweden | 89.0469 | 89.5980 | 95.4554 |
+| France | 84.8632 | 87.2951 | **90.8596** |
+| Italy | 76.8155 | 77.0889 | 79.3402 |
+| Poland | 53.2791 | 54.1595 | 59.2708 |
+
+⚠ **The OECD average "~$67.5/hour (2022)" is still not an anchor** — live gives 72.59 on current prices.
+Likely explanation, untested: **67.5 is an unweighted mean across members where the SDMX aggregate is
+GDP-weighted.** With Ireland ~151 and Mexico ~25 in the set, the two diverge by about that much. If so it
+is not an anchor for the aggregate series at all and should be relabelled rather than re-hunted.
+
+**Sanity checks pass:** all six above the OECD 2022 average of 72.59 except Poland and — narrowly — Italy
+at 78.20; ordering Germany > USA > Sweden > France > Italy > Poland is consistent with the qualitative
+claims already recorded here (Italian stagnation 2012–2022, Polish catch-up from a low base).
+
+*(⚠ SUPERSEDED 2026-08-02 — the six were re-sourced from OECD SDMX on one basis, one year, one vintage
+(the table at the head of §6; `WorldFactory.cs` carries them with the full basis in each comment). The
+warning below described the pre-audit mixed set and is kept as history; corrected 2026-08-27.)*
+**SOURCE-CONFLICT WARNING on Sweden/Poland:** those two figures come from a different source (Statista) than the USA/France figures (OECD PPP) and are almost certainly NOT PPP-adjusted on the same basis — Poland at $24.5 is implausibly low against an OECD PPP average of $67.5. Do not mix them into one table as-is. Either source all six from OECD PPP consistently, or treat these two as placeholders needing replacement.
+
+##### ⚠ OECD API ATTEMPTED 2026-08-02 — GATE FAILED, NOTHING RECORDED
+
+**`sdmx.oecd.org` IS reachable** (HTTP 200 with `Accept: application/vnd.sdmx.structure+json`), and the
+right dataset exists: `OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0`, measure `GDPHRS` *("GDP per hour worked")*, unit
+`USD_PPP_H` *("US dollars per hour, PPP converted")*. So C5 is **technically** self-serviceable. It is not
+yet **actually** self-serviceable, because the gate did not pass:
+
+| | France | USA |
+|---|---|---|
+| Seed | 90.86 | ~97 |
+| `PRICE_BASE=V` (current prices) | 92.74 | 100.12 |
+| `PRICE_BASE=LR` | 81.56 | 84.11 |
+
+`V` is close but reproduces neither. **Not recorded** — per rule 5f, a query that cannot reproduce a known
+value is of unknown basis, and "close" is exactly the state in which a wrong variant is most convincing.
+
+**🔴 I WALKED INTO THIS FILE'S OWN RULE 5b, WHICH IS WORTH RECORDING.** The DSD has **nine** key
+dimensions; I specified five and left `PRICE_BASE`, `TRANSFORMATION`, `ASSET_CODE` and `CONVERSION_TYPE`
+blank. The response came back with multiple variants per country — including a stray USA reading of
+**2.24** from some other asset/conversion combination — and **not one label was wrong**, because none of
+them was wrong. They were all real OECD figures for combinations I had failed to exclude. This is exactly
+the prevention-vs-detection distinction in rule 5c, demonstrated against the person who wrote it down an
+hour earlier. **OECD's DSDs are wider than Eurostat's; the dimension count must be read from the DSD, not
+assumed from the Eurostat pattern.**
+
+##### FULL SPECIFICATION DONE 2026-08-02. THE GATE STILL FAILS — and the reason is instructive.
+
+The nine-dimension key was read from the DSD and every dimension specified. There are exactly **two**
+`USD_PPP_H` series for France, and both were enumerated:
+
+```
+https://sdmx.oecd.org/public/rest/data/OECD.SDD.TPS,DSD_PDB@DF_PDB,2.0/
+    FRA.A.GDPHRS._T.USD_PPP_H.V.N._Z.PPP        <- current prices, PPP converted
+    FRA.A.GDPHRS._T.USD_PPP_H.LR.N._Z.PPP       <- chain linked volume (rebased)
+```
+
+| | 2022 | 2023 | 2024 |
+|---|---|---|---|
+| `V` current prices | 86.32 | **91.18** | **92.74** |
+| `LR` chain linked volume | 81.54 | 81.54 | 81.56 |
+
+**The seed's 90.86 appears NOWHERE**: not in France's full `V` series 2010–2024 (56.70 → 92.74,
+monotonic apart from 2021), and not in any of the **41 countries** in the 2024 cross-section.
+
+⚠ **NOT RECORDED AS AN ERROR — the revision-vs-error test cannot be completed.** Rule 5f-bis needs both
+conditions; condition 1 holds exhaustively, condition 2 fails because **no OECD anchor has ever
+reproduced**. See rule 5f-bis's own note on the bootstrapping problem: a first contact with a source
+cannot declare an error, by design.
+
+##### 🔴 THE 90.86 PROVENANCE QUESTION — the France story is WEAKENED, Germany is the stronger candidate
+
+**The "pre-revision France 2023" hypothesis had the DIRECTION WRONG.** A secondary OECD-derived series on
+an older vintage reads France 2022 = 87.7 and 2023 = 92.8, against SDMX's 86.32 and 91.18 — so the older
+vintage runs **above** the current one. A pre-revision France 2023 would therefore be ~92.8, **not**
+90.86. Two vintages of France 2023 are now visible, 92.8 and 91.18, and 90.86 is neither.
+
+**Stronger candidate: 90.86 is GERMANY 2022 on the old vintage.** That same secondary series reads
+Germany 2022 = **90.9**, which is exactly what 90.86 rounds to at one decimal — country, year and vintage
+lining up at once, where the France story needs a value appearing in no known vintage. The adjacent row
+in this table was Germany's `[GAP]`, which is precisely where a transcription slip lands.
+
+**Tested 2026-08-02, and the test neither confirms nor refutes it.** Current-vintage Germany 2022 is
+**94.54** — so Germany was revised UP ~4% where France was revised DOWN ~1.6%. That is consistent with the
+hypothesis (revisions are country-specific, as PPP benchmark updates are) but cannot verify it, **because
+the old vintage is not queryable from SDMX.** It would need the OECD Compendium edition the figure
+originally came from.
+
+**Status: unresolved, and now unresolvable from the API alone.** Logged here rather than as a
+verification-integrity instance, because attributing a `[VERIFIED]` figure to the wrong country is a
+serious claim and the evidence is a one-decimal secondary source.
+
+##### The `[ESTIMATED]` C5 set was superseded within hours — and the exercise still paid for itself
+
+Under the fallback ladder (Part 4 rule 4), a session without OECD access built a rung-3 `[ESTIMATED]` set
+from a secondary aggregator, bridged to the SDMX vintage by a France-calibrated factor of 0.98426 with a
+stated ±3% band. A later session with SDMX access replaced all of it with rung-1b figures. **The
+estimates are gone; two findings from them are not:**
+
+| | `[ESTIMATED]` | Actual | Error |
+|---|---|---|---|
+| Poland | 53.5 | 54.09 | +1.1% ✅ |
+| USA | 90.1 | 90.83 | +0.8% ✅ |
+| Sweden | 88.8 | 89.95 | +1.3% ✅ |
+| **Germany** | 89.5 | **94.54** | **+5.6% ❌** |
+| **Italy** | 73.3 | **78.20** | **+6.7% ❌** |
+
+1. **Three of five landed inside the ±3% band; two did not.** The method was sound and the band was too
+   narrow — and it failed **precisely where its author said it would**. The estimate's stated weakness was
+   that the vintage bridge was calibrated on one country while *"PPP benchmark revisions are
+   country-specific"*. Germany's revision (+4%) and France's (−1.6%) differ in sign, so a France-derived
+   factor could not describe Germany. **A correctly-labelled limitation predicted the exact failure**,
+   which is the strongest argument in this file for stating uncertainty rather than hiding it.
+2. **The Sweden/Poland source-conflict warning is now quantified.** Statista's ~70 and ~24.5 against
+   OECD's 89.95 and 54.09 — Poland off by more than **2×**. The `[PARTIAL]` markers were right, and the
+   scale of the error justifies the file's refusal to mix sources.
+
+**Rung-3 estimates earn their place when access is unavailable, and they are cheap to discard when it
+returns.** The failure mode to avoid was never "estimating" — it was estimating *silently*.
+
+**Separately: OECD homeownership on the household basis (C1) does NOT appear to be in SDMX at all.** The
+full dataflow list was searched for housing and tenure; it returns regional housing, housing transactions
+and *job* tenure, but no Affordable Housing Database equivalent. **C1's OECD-basis gaps for Italy, Sweden
+and Poland are therefore NOT closed by API access** and remain Elias's, unless the AHD is published
+somewhere outside SDMX.
+
+OECD average: ~$67.5/hour (2022) — *not an anchor: the live SDMX series gives 72.59 on the current
+basis (this file's own note above); the marker that stood here was wrong and is withdrawn, 2026-08-27.*
+Ireland tops the ranking at ~$151 but is heavily distorted by multinational accounting — a good example of why raw cross-country comparison misleads.
+
+**METHODOLOGY WARNING:** the OECD explicitly cautions against comparing GDP per hour worked across countries at face value, since there is still no uniform measurement method; it considers longitudinal comparison (a country against its own past) the valid use. For this game that's actually convenient — seed each country's own level, then let the player watch their own trajectory rather than treating cross-country rank as meaningful.
+
+Also relevant: euro-area labour productivity *fell* 0.9% in 2023, the steepest drop since 2009, against a modest +0.6% OECD average — a real and widening euro-area/US divergence worth preserving in how these seeds trend.
+
+#### 7. Credit rating — [DERIVE, do not seed as an independent variable]
+A sovereign credit rating is a *judgment about fiscal position*, not an independent economic variable. Agencies derive it from debt-to-GDP, deficit trajectory, and growth — all already tracked in this project. Implement as a derived function of existing state (mapping to a standard AAA/AA+/AA/… ladder), NOT as a mean-reverting variable with its own seed. This makes it cheaper to build and impossible to desync from the fiscal reality it describes.
+
+Real-world anchors [VERIFIED], which form a natural calibration curve for that mapping:
+
+| Country | Debt-to-GDP (this game's seed) | Real rating |
+|---|---|---|
+| Sweden | ~35% | AAA |
+| Germany | ~63% | AAA |
+| France | ~116% | AA−/Negative (S&P, mid-2025) |
+| USA | ~124% | AA+ (S&P since 2011; Fitch downgraded 2023; Moody's held AAA longest) |
+| Italy | ~138% | BBB+/Stable (S&P, mid-2025) |
+| Poland | ~59% | **A− (S&P) · A2 (Moody's) · A− (Fitch)** — [VERIFIED] 2026-08-02 |
+
+**✅ THE C4 CALIBRATION ANCHOR IS CLOSED (2026-08-02).** Poland sits in the A range, as expected. Outlooks
+deteriorated through 2025 — Moody's to negative (2025-09-19), Fitch to negative (Sept 2025), S&P affirming
+A− stable (Nov 2025). **Treat the outlooks as far more perishable than the ratings**; the level is the
+calibration input, the outlook is a signal with a shelf life.
+
+**KEY INSIGHT for the mapping:** the curve is nearly monotonic in debt-to-GDP — *except the USA*, which carries HIGHER debt than France yet rates BETTER. That's the reserve-currency premium. This project already models exactly that effect (`BaseDebtInterestRateOverride` = 3.3% and reduced `RiskPremiumSensitivity` for USA). The rating derivation should reuse that SAME reserve-currency factor rather than introducing a second, parallel notion of it.
+
+#### 🔴 POLAND BREAKS THE MONOTONICITY TOO — in the OPPOSITE direction, and C4 will over-rate it
+
+This anchor is worth more than "one more calibration point". **Poland carries LOWER debt than Germany
+(~59% vs ~63%) and rates FOUR NOTCHES WORSE (A− against AAA).** The USA exception is a country rating
+*better* than its debt implies; Poland is a country rating *worse*. One factor cannot produce both.
+
+**What this means for the implemented `CreditRatingSystem`:** its curve reads debt-to-GDP through
+`RiskPremiumSensitivity`, which is the reserve-currency term — the USA's 0.05 discounts debt above the
+reference. **There is no term that penalises**, so a low-debt country cannot rate below the curve, and
+Poland will come out near AAA. The missing factor is some combination of currency status (Poland is
+outside the euro and borrows partly in it), institutional quality, and an EU-periphery risk premium.
+
+⚠ **Run the 5-anchor calibration as a SIX-anchor calibration and expect it to fail on Poland first.**
+✅ **ACTED ON — `733ac8c` 2026-08-02, "Six-anchor calibration: Poland fails by four notches, on
+purpose":** the sixth anchor is in the check, Poland fails as predicted, and that expected failure is
+the standing tripwire (5 of 6). *The sentence that stood here — "currently passes 5 of 5" — was false
+from the day it was written; corrected 2026-08-27.* A check that passes because the hard case was never
+in it is the kind of confirmation this project has learned to distrust.
+
+*(This is a finding about the model, not about the data. Logged here because the anchor is what surfaced
+it; the work belongs to Step C4's closure.)*
+
+Also worth modeling: France carries a *negative outlook* while southern European sovereigns are stable — outlook is a real signal distinct from the rating itself, and a cheap way to telegraph a downgrade before it lands.
+
+#### 8. Sector regulation and the welfare portfolio — the §F seed spread (sourced 2026-08-28 under R-K9; mapping and caveats CONFIRMED by Elias 2026-08-28, R-C4)
+
+**Status:** every figure `[PROVISIONAL - session-sourced 2026-08-28; mapping confirmed by Elias 2026-08-28]`.
+Not `[VERIFIED]`: that upgrade is the §B database session's (a second retrieval from a session with
+database access, the rule every other row of this file follows). Seeded in `WorldFactory.cs`
+(`SeedSectorRegulation` / `SeedWelfarePrograms`, `915c800`) in the ANCHORED form (`6df94de`;
+`CLAUDE.md` "Playtest 3, the rulings" §1; confirmed R-C3): the seeds move what a country IS — its dial
+positions, the programs on its tabs, its place on the compass — never the no-policy trajectory
+(byte-identical 6 of 6 through the sourcing). The session's working record: `phase4_sourcing` in the
+omnibus report; the queries below are reproducible as written.
+
+##### 8a. Regulation — OECD Product Market Regulation, 2023-24 vintage on the 2023 methodology
+
+- **Source A, economy-wide:** the OECD's own workbook `PMR-Indicator_Econwide_2023-24-and-2018_02.02.2026.xlsx`
+  (`https://www.oecd.org/content/dam/oecd/en/topics/policy-sub-issues/product-market-regulation/`…, retrieved
+  2026-08-28, 116,589 bytes, SHA-256 prefix `D0EBCFC71A2103B5`); sheet `PMR_Econwide_2023-24`, column E
+  "PMR (2023 methodology)", row 64 "OECD average" = 1.3464008.
+- **Source B, the cross-check and the sector series:** SDMX dataflow `OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3`,
+  `https://sdmx.oecd.org/public/rest/data/OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3/all?startPeriod=2018&format=csvfilewithlabels`
+  (5,264 rows, years 2018 and 2023). Economy-wide identical to the workbook to seven decimals for all six
+  (USA 1.5785896, SWE 0.8063377, DEU 1.2080490, FRA 1.2296512, ITA 1.2310206, POL 1.0663764). The API carries
+  no OECD-aggregate row; the published average reproduces as the 38-member simple mean to 0.0004, so the
+  simple mean is the sector denominator: ENERGY 1.3134 (n=38), ECOMM 1.3056 (n=38), RETAIL_TRADE 1.0409 (n=38).
+- **Basis (the variant-axis rule):** indicator = the composite PMR on the **2023 methodology** — NOT
+  comparable with the 2018-methodology series the OECD also publishes (the workbook's 2018 column is the
+  2018 vintage recomputed on the 2023 methodology: USA 1.5851, SWE 0.8673, DEU 1.4316, FRA 1.2554, ITA 1.2859,
+  POL 1.2797); scale 0–6, lower = less regulated; economy-wide = the composite; sectors: ENERGY (the OECD's
+  composite of electricity and natural gas), ECOMM (fixed and mobile), RETAIL_TRADE (general retail — the
+  medicines indicator is NOT folded in); reference year 2023 (in force 2023-01-01 for five, 2024-01-01 the
+  USA).
+- **Mapping (§F's own proposal, followed as written):** level = 50 × PMR / average, clamped 10–90, so 50
+  keeps its meaning (OECD-average stringency); the five sectors without a PMR series take the country-wide
+  level.
+
+| country | PMR 2023 | level | ENERGY → Energy | ECOMM → Telecommunications | RETAIL_TRADE → Retail |
+|---|---|---|---|---|---|
+| USA | 1.5786 | 58.6 | 0.9855 → 37.5 | 1.4606 → 55.9 | 1.5714 → 75.5 |
+| Sweden | 0.8063 | 29.9 | 1.0959 → 41.7 | 1.5459 → 59.2 | 0.5714 → 27.4 |
+| Germany | 1.2080 | 44.9 | 0.4543 → 17.3 | 1.3928 → 53.3 | 0.8929 → 42.9 |
+| France | 1.2297 | 45.7 | 0.8027 → 30.6 | 1.3188 → 50.5 | 3.0000 → 90 (144.1, clamped) |
+| Italy | 1.2310 | 45.7 | 0.7207 → 27.4 | 0.7426 → 28.4 | 1.9286 → 90 (92.6, clamped) |
+| Poland | 1.0664 | 39.6 | 1.3779 → 52.5 | 0.9784 → 37.5 | 1.0612 → 51.0 |
+
+- **Basis note (caveat 6, confirmed):** France's RETAIL_TRADE jumped 1.99 → 3.00 between the 2018 and 2023
+  vintages and clamps at 90; Italy's 1.93 clamps too. The clamp is the mapping's, not the data's: both are
+  seeded at the ceiling and a future retail move is measured from 90.
+
+##### 8b. Welfare — OECD SOCX public social expenditure by policy area, % of GDP, 2021
+
+- **Source:** SDMX dataflow `OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0`,
+  `https://sdmx.oecd.org/public/rest/data/OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0/USA+SWE+DEU+FRA+ITA+POL.A.SOCX.PT_B1GQ.ES10..._Z?startPeriod=2015&format=csvfilewithlabels`
+  (3,120 rows; retrieved 2026-08-28; every observation status A). The DSD's arity was read from the API
+  first (Part 4 §5 d-bis): eight key dimensions, the price base `_Z` included.
+- **Basis (the variant-axis rule):** PUBLIC expenditure only (EXPEND_SOURCE ES10 — mandatory-private and
+  voluntary-private excluded); UNIT_MEASURE PT_B1GQ = percentage of GDP; policy-area codes TP41 Health,
+  TP51/K Family services and in-kind, TP82 Housing, TP91 Other social policy areas; reference year 2021 =
+  the latest year all six report the programme breakdown (the USA runs to 2023, France to 2022, the other
+  four to 2021).
+- **The FACT half (which programs a country really runs), §F's proposal confirmed:** universal statutory
+  health coverage — the five, not the USA (Medicare/Medicaid are not universal coverage; that public spending
+  stays in the sourced Healthcare budget line); a national means-tested cash social-assistance scheme, a
+  national housing allowance and a public childcare/ECEC entitlement — all six; UBI and a negative income
+  tax — none.
+- **The FIGURE half:** generosity = clamp(spend / CostShareOfGdp × 100, 0, 100) with the cost shares the
+  budget already books (`WelfareProgramCostShares`: healthcare 10, means-tested 6, housing 1.5, childcare 1).
+
+| country | TP41 Health → healthcare | TP51/K Family in-kind → childcare | TP82 Housing → housing | TP91 Other → means-tested |
+|---|---|---|---|---|
+| USA | 9.496 — not implemented (stays in the Healthcare budget line) | 0.568 → 56.8 | 0.236 → 15.7 | 0.900 → 15.0 |
+| Sweden | 6.954 → 69.5 | 2.049 → 100 (204.9, clamped) | 0.378 → 25.2 | 0.529 → 8.8 |
+| Germany | 9.994 → 99.9 | 1.436 → 100 (143.6, clamped) | 0.528 → 35.2 | 0.156 → 2.6 |
+| France | 9.654 → 96.5 | 1.353 → 100 (135.3, clamped) | 0.632 → 42.1 | 1.216 → 20.3 |
+| Italy | 6.880 → 68.8 | 0.588 → 58.8 | 0.041 → 2.7 | 1.559 → 26.0 |
+| Poland | 4.613 → 46.1 | 0.808 → 80.8 | 0.024 → 1.6 | 0.127 → 2.1 |
+
+**Basis notes — the six caveats of the confirmation (R-C4, 2026-08-28; each a one-literal change if it
+were ever struck):**
+1. **Means-tested = the TP91 total.** §F's "cash social-assistance component of income support" was read as
+   TP91's cash half (TP911 income maintenance + TP912), which the TP91 total already contains — nothing is
+   counted twice. (The USA's SNAP sits in TP922, in kind, 0.52 of its 0.900; TANF in TP911.)
+2. **Germany's minimum income (Bürgergeld / ALG II) is booked under Unemployment (TP71) in SOCX,** not
+   under TP91, so Germany's 2.6 understates the real scheme, and the aggregate dataflow cannot separate the
+   social-assistance part of TP711; Poland's 2.1 is the same class, smaller.
+3. **Childcare follows TP51/K (family services and in-kind),** which includes home help and other in-kind
+   family services; ECEC alone (TP521) would give USA 31.5, SWE 100 (149), DEU 81.0, FRA 100 (124), ITA 49.4,
+   POL 67.8 — three countries clamp at 100 under either reading (see the standing note below).
+4. **2021 is a pandemic-affected year** (the USA's health line 9.496 in 2021 against 8.956 in 2023); §F's
+   "latest common year" rule was followed as written (see the re-source trigger below).
+5. **Poland's housing line is TP822 "other benefits in kind"** (SOCX carries no TP821 housing-assistance entry
+   for Poland); the fact half's ✓ is kept at the figure.
+6. The regulation clamp — 8a's basis note.
+
+**Two standing notes (R-C4):**
+- **Re-source trigger:** the day SOCX publishes a post-pandemic year common to all six (2022 needs Sweden,
+  Germany, Italy and Poland to report the breakdown; 2023 needs those and France), re-pull the four lines on
+  the same basis (ES10, PT_B1GQ, the same policy-area codes) and re-derive the tuples — one literal per
+  slot, the no-policy trajectories unaffected by construction (the anchored form).
+- **The childcare-clamp compression, known and accepted:** three countries' real family in-kind spend
+  (Sweden 2.05, Germany 1.44, France 1.35 % of GDP) exceeds the booked full-generosity cost
+  (`WelfareProgramCostShares` childcare = 1.0 % of GDP), so the clamp at 100 compresses the real spread
+  between them and Poland (0.81) / Italy (0.59) / the USA (0.57). Recorded as known; revisited ONLY if the
+  Welfare tab reads wrong or a mechanic needs childcare differentiation — because the constant is what the
+  budget books, and moving it to fit a seed would be tuning the model to the data (R-K2's shape).
+
+---
+
+### PART 3 — Tier 0 derived stats — RETIRED 2026-08-27
+
+A design conclusion, not a figure, so it does not belong in a seed reference: Tier 0 stats (GDP per
+capita, tax/spend/deficit as % of GDP, real GDP growth, sector shares) are display-time derivations,
+never state — shipped as `DerivedStats` and on screen since 2026-08-02. Record: `COMPLETED.md` §9.
+The heading stays so Parts 4 and 5 keep their numbers.
+
+---
+
+### PART 4 — Standing warnings for whoever implements this
+
+1. **The StatTile large-number bug precedent.** GDP once displayed as "9,3" instead of ~29000 after a purely visual change. Any number formatting/abbreviation work must be verified against real values at multiple magnitudes. A display change must never alter what a number means.
+
+2. **Don't let published values leak into the simulation.** The player-facing UI reads the published (lagged, possibly-revised) series. Internal systems — Okun's Law, the Phillips Curve, the Fiscal Reaction Function — must keep reading live values. Verify this explicitly; it is the main correctness risk of the whole release-calendar change.
+
+3. **Every new stat that nudges an existing tracked variable must fold into that variable's existing combined ceiling**, audited first, per standing rule 11. `PotentialGrowthRate` and `LaborForceParticipationRate` are both already heavily stacked.
+
+4. **Gaps are gaps.** Every `[GAP]` above must be sourced by Elias (or another web-search-capable session) before the stat it belongs to ships. Do not fill them with plausible-looking invented numbers — that would violate this project's core data-honesty rule and would be very hard to detect later.
+
+   🔴 **AMENDED 2026-08-02 (Elias) — THE FALLBACK LADDER, which overrides the above FOR SEEDING ONLY.**
+
+   > **If data cannot be found for recent years, take the newest available. If still unavailable, estimate.**
+
+   This does **not** override the honesty discipline underneath rule 4; it changes what a gap licenses.
+   A game cannot ship a blank, and a blank is not more honest than a labelled approximation. What keeps
+   the rule safe is that each rung carries its own marker:
+
+   | Rung | Means | Marker |
+   |---|---|---|
+   | 1 | Sourced, current year, gate passed | `[VERIFIED]` |
+   | 1b | Sourced exactly from the primary database, **but no anchor reproduced in-session** | `[PRIMARY-UNANCHORED]` — see below |
+   | 2 | Sourced, but an **older year** than wanted | `[VERIFIED]` *with the year stated* |
+   | 3 | **Not sourced** — derived by a stated, reproducible method from stated inputs, with an uncertainty band | `[ESTIMATED]` |
+
+   **`[ESTIMATED]` is never `[VERIFIED]` and is never silently promoted.** It is a placeholder that plays
+   correctly, not a fact, and it is replaced the moment a real figure exists.
+
+   **Climb the ladder in order, and record which rung each value came from.** A value on rung 3 that could
+   have come from rung 2 is a failure of the rule, not an application of it. *Demonstrated the same day:
+   an `[ESTIMATED]` C5 set built on rung 3 was superseded within hours by rung-1b figures once a session
+   with SDMX access ran the query — see section 6.*
+
+5. 🔴 **API REACHABILITY IS A PROPERTY OF THE SESSION, NOT OF THE PROJECT.** A previous entry in this file
+   read *"the access problem is solved"*. It was true of the session that wrote it and false as a general
+   claim: the very next session had **no route to OECD data at all** — `curl` egress proxied to an
+   allowlist (`CONNECT tunnel failed, 403`), `WebFetch` returning SDMX as unreadable binary, OECD web
+   pages JS-rendered and empty, Compendium PDFs blocked by `robots.txt`, no browser connected.
+
+   **Record which route worked, from where, on what date** — the same discipline this file already applies
+   to values. And note the consequence for rule 5f-bis condition 2: a session that cannot run the method
+   does not merely fail that condition, **it cannot test it**. Finding an anchor and reproducing it must
+   happen in ONE session with live access; splitting that work across sessions cannot close the gate.
+
+   **Routes observed as of 2026-08-02 — a starting point, not a guarantee:**
+
+   | Route | Status | Note |
+   |---|---|---|
+   | `ec.europa.eu/eurostat/api/...` | ✅ **Works via both `curl` and `WebFetch`** | Returns JSON-stat, which parses cleanly as text |
+   | `fred.stlouisfed.org/data/<SERIES>.txt` | ✅ Works | Plain text, full series — the reliable US route |
+   | `bls.gov` news releases | ✅ Works | |
+   | `webfs.oecd.org` AHD notes | ✅ Works | Basis/definition text only, **not the data** |
+   | `sdmx.oecd.org` | ⚠ **Session-dependent** | Worked via `curl` in one session, blocked by proxy allowlist (`CONNECT tunnel failed, 403`) in two others. **`WebFetch` cannot read it at all** — SDMX returns compressed binary |
+   | `oecd.org` publication PDFs | ❌ Blocked | `robots.txt`, including the Taxing Wages country notes |
+   | `oecd.org` data pages | ❌ Empty | JS-rendered; navigation and metadata only |
+
+   **The generalisable point: JSON-stat survives a text-only fetch and SDMX does not.** Where a provider
+   offers both, prefer the JSON-stat endpoint — it is readable from strictly more sessions.
+
+---
+
+#### 5. 🔴 API SOURCING RULES (added 2026-08-02, when the Eurostat API turned out to be reachable)
+
+**The variant problem is WORSE through an API than through an article, not better.** An article tells you
+what it describes — "housing cost overburden, whole population, 2024" — in words that can contradict a
+misreading. An API returns whatever dimensions you filtered on, as a bare number, with no prose to argue
+with. Every safeguard below exists because the usual signal that something is wrong has been removed.
+
+**a. Confirm the dataset's real structure before pulling from it. Never pattern-match a plausible code.**
+`ilc_lvho07a` was assumed for a year to have a household-type dimension. It does not — it is
+`rskpovth` × `age` × `sex`. A code that looks right and returns a number is the failure mode here.
+
+**b. State EVERY dimension explicitly in every query.** Not just the ones you care about.
+
+**c. PREVENTION AND DETECTION ARE DIFFERENT CONTROLS, and only one of them scales.**
+- *Verifying returned labels* is **detection**: the response echoes each dimension's code and its label,
+  so a query that asked for the wrong thing can be caught by reading what came back.
+- *Stating every dimension* is **prevention**: it makes the query unambiguous in the first place.
+- **Detection does not cover an omitted dimension.** Leave `rskpovth` out and the API returns three
+  values — one per threshold — each correctly labelled. Nothing is *wrong* to catch. You simply pick one,
+  and if you pick `B_60` you have recorded a real, correctly-attributed, several-times-too-high number.
+  **The label check cannot save you, because no label is incorrect.** Only stating the dimension can.
+
+**d. Record the full query URL alongside the value**, plus every dimension code AND its returned label.
+A value without its query is unreproducible, and this file's whole method is reproducibility.
+
+**d-bis. 🔴 READ THE DIMENSION COUNT FROM THE DSD. NEVER CARRY IT OVER FROM ANOTHER API.**
+
+##### VERIFICATION-INTEGRITY INSTANCE — the rule was right, understood, and written down an hour earlier
+
+Rule 5c (prevention vs detection) was recorded at roughly 17:00 on 2026-08-02. The OECD productivity query
+failed for exactly the reason 5c describes at roughly 17:45, **written by the same session that had just
+written the rule.**
+
+**What happened.** `DSD_PDB` has **nine** key dimensions —
+`REF_AREA · FREQ · MEASURE · ACTIVITY · UNIT_MEASURE · PRICE_BASE · TRANSFORMATION · ASSET_CODE ·
+CONVERSION_TYPE`. Five were specified. The response returned several variants per country, and **not one
+label was wrong, because none of them was wrong**: every row was a genuine OECD figure for a combination
+that had simply not been excluded. Detection had nothing to detect.
+
+**The tell was a stray USA reading of `2.24`** against an expected ~97 — three orders of magnitude off,
+perfectly labelled, sitting in the same response as plausible values. **That is what an unfiltered
+dimension looks like**: not an error message, not a bad label, just an extra row that belongs to a
+question nobody asked.
+
+**Why knowing the rule did not prevent the mistake.** The rule was learned on Eurostat, whose datasets run
+4–7 dimensions and whose omissions were caught by anchors. **OECD's DSDs are wider.** The habit that
+transferred was "state the dimensions I know about" — which is not the rule. The rule is "state every
+dimension the DSD declares", and the DSD is the only thing that knows how many that is.
+
+**Knowing a rule and applying it under a different API's shape are different skills.** The standing form:
+
+> **Fetch the DSD, count its key dimensions, and specify all of them — every time, per dataset, per API.
+> A dimension count is a property of the dataset, never of the provider and never of habit.**
+
+A cheap mechanical check: SDMX rejects a key with the wrong arity outright — *"Not enough key values in
+query, expecting 9 got 8"* — so **deliberately sending one too few is a free way to make the API state
+its own arity** before building the real query.
+
+**e. 🔴 STATUS FLAGS ARE DATA, NOT DECORATION — and a flagged figure is NEVER silently `[VERIFIED]`.**
+JSON-stat responses carry a per-observation `status`. The very first test query returned **`bep`** —
+*"break in time series, estimated, provisional"*. A figure with a break flag is **not on the same basis as
+the figure before it**, which is precisely the class of divergence this file's `[PARTIAL]` markers exist
+to record. Record the flag next to the value; let it downgrade the confidence marker. `e` (estimated),
+`p` (provisional), `b` (break), `d` (definition differs), `u` (low reliability) and their combinations all
+mean the number needs a caveat, not a promotion.
+
+**f. Cross-check against a known-verified value BEFORE sourcing anything new, and treat it as a GATE.**
+If a query cannot reproduce a figure this file already verified, **the query is wrong — not the file** —
+and everything from it is of unknown basis. Stop and report rather than proceeding. This ran for real on
+2026-08-02: Germany's 12.0 was reproduced exactly before the Italy/France/Poland values were pulled.
+
+**f-bis. THE ONE CONDITION UNDER WHICH THE FILE LOSES (Elias, 2026-08-02).** "The query is wrong, not the
+file" is the right DEFAULT and must stay the default — it is what stops a bad query rewriting good data.
+It is overturned only when **both** hold:
+
+1. **The disputed value appears NOWHERE in the dataset** — not in any year, not for any country, not
+   under any variant. *A wrong variant still surfaces its number somewhere; that is exactly what makes
+   variant errors detectable. A value absent from the entire source is not a variant mismatch.*
+2. **The method has already reproduced other anchors in the same session**, so the technique is known
+   good rather than assumed good.
+
+   ⚠ **This condition CANNOT be met on first contact with a new source, by design.** Anchors reproduced
+   against one API prove nothing about queries built against another — the OECD attempt below satisfied
+   condition 1 exhaustively and still could not declare an error, because no OECD figure had ever been
+   reproduced. **A new source therefore starts unable to overturn anything**, and must earn that standing
+   by reproducing one known value first. Conservative on purpose: the alternative is letting an unproven
+   query rewrite verified data on its first outing.
+
+Both held for the life expectancy 84.1 error below, and corroboration arrived from a third direction (its
+"joint highest in EU" claim failed independently). **Neither condition alone is sufficient.**
+
+**f-ter. 🔴 THE REVISION-vs-ERROR TEST (Elias, 2026-08-02). Run this on EVERY mismatch.** A figure that
+fails to reproduce is one of two completely different things, and they get opposite treatment:
+
+| | **REVISION** — the seed was right, the source moved | **ERROR** — the seed was never right |
+|---|---|---|
+| Value vs current | Close, at the **exact period claimed** | Matches nothing |
+| Variant | Correct — it aligns with a real series | Often correct too; irrelevant |
+| **Elsewhere in the dataset** | n/a | **Appears in NO year and NO cross-section** |
+| Qualitative claims | Still hold | Fail independently |
+| Treatment | Update the value, keep the vintage, keep confidence | Replace, log as verification-integrity, re-check its siblings |
+
+**🔴 MAGNITUDE ALONE DOES NOT DISTINGUISH THEM, and this is the whole point of the rule.** The evidence
+from the day both were found:
+
+- **Youth unemployment: 0.1–0.3 off → REVISION.** Italy 20.1→20.0, France 18.7→19.0, Sweden 22.2→22.5.
+- **Life expectancy: 0.4 off → ERROR.** Italy 84.1→83.7 — a *larger* gap, and the wrong one.
+
+**The bigger discrepancy was the honest figure.** Anyone triaging by "how far off is it" would have
+reached the wrong verdict on both. The discriminator is not distance, it is **whether the number exists
+anywhere in the source at all** — a revision leaves the old value in the historical record or adjacent
+periods; an error leaves no trace because there was never anything to leave.
+
+**The failure modes are asymmetric, which is why the test must be run rather than guessed:**
+- *Revision misread as error* → good data churned, sourcing effort repeated, confidence markers lowered on
+  figures that deserved them.
+- *Error misread as revision* → the fiction is preserved, updated to a new wrong value, and its
+  `[VERIFIED]` marker renewed. **This is the worse one, because it launders a mistake into fresh
+  confidence.**
+
+##### 🔴 CORRECTION 2026-08-02 — THE "APPEARS NOWHERE" DISCRIMINATOR IS FALSE FOR RESTATED LEVEL SERIES
+
+The test above rests on *"a revision leaves the old value in the historical record or adjacent periods;
+an error leaves no trace."* **That holds only if the source preserves vintages. It does not for a level
+series that gets restated.**
+
+When OECD revises GDP-per-hour it **overwrites every year at once**. The pre-revision value vanishes from
+the live API completely — every year, every cross-section. **A correct-but-superseded figure therefore
+produces exactly the fingerprint this rule assigns to an ERROR, and the more exhaustively you search the
+live API the more confident you become of the wrong verdict.**
+
+That is not hypothetical. France's 90.86 was searched across its full 2010–2024 series *and* a 41-country
+cross-section, found nowhere, and judged absent. **Every observation was right; the conclusion was wrong.**
+The figure was correct on its own vintage all along.
+
+**What saved it was NOT this test — the test pointed at ERROR. It was the GATE.** Condition 2 could not be
+met on first contact with OECD, so the default held and the file won. **The conservative rule that felt
+like an obstruction is the only reason a correct `[VERIFIED]` figure was not overwritten.**
+
+> **STANDING FORM: "appears nowhere in the source" distinguishes error from revision ONLY where the source
+> preserves vintages. For a restated level series it distinguishes nothing. Check a third-party archive
+> with per-snapshot retrieval dates — DBnomics — BEFORE concluding a value never existed.**
+
+**Two hypotheses built on the bad verdict, both dead, both recorded so they are not revived:**
+- *"Pre-revision France 2023 ≈ 92.8, so 90.86 is on the wrong side."* The vintage used to reason about
+  direction was a **secondary aggregator's** unstated vintage, not OECD's. Against the real archived OECD
+  vintage the direction reverses. **A secondary source's vintage cannot calibrate a primary source's
+  revision.**
+- *"90.86 may be Germany 2022, pre-revision."* Dead — archived Germany 2022 is 92.4008. The 90.9 that made
+  it attractive was a one-decimal coincidence in an aggregator, the exact "close but wrong" state rule 5f
+  warns about. **Declining to log it as a verification-integrity instance on that evidence was correct.**
+
+**g. 🔴 WHEN THE QUERY SHAPE CHANGES, RE-RUN THE GATE IN THE NEW SHAPE.** A gate that passed in one shape
+says nothing whatever about another. Each of these is a shape change and each needs its own anchored
+re-check:
+
+| From | To | The step that is newly unexercised |
+|---|---|---|
+| single-geo | multi-geo | values arrive as a flat array, mapped back through the returned index |
+| single-period | time series | the same, along the `time` axis |
+| one dimension filtered | several | interaction of filters, and which dimension varies in the array |
+
+**Why this is a rule and not a nicety.** The single-country gate reproduced Germany's 12.0 perfectly and
+proved the *variant* was right — but it never touched index decoding, because with one country there is
+only position 0. The trio then arrived through a multi-geo query whose mapping step nothing had tested.
+**A correct value in the wrong position is invisible to every other control in this process**: the
+dimension labels are all correct, the status flags are all clean, the numbers are all real Eurostat
+figures. Only an anchor landing on its own known value can catch it.
+
+**Cheapest form: carry the anchor inside the real query.** Add a known-value country to the same call
+rather than running a separate verification pass — the position check then rides along for free, on
+exactly the query whose results you intend to keep, instead of on a proxy for it.
+
+---
+
+### PART 5 — ELECTORAL SEED DATA: findings that constrain any future design (2026-08-11)
+
+*(This part is task-shaped, not a figure reference: it waits on the politics/elections stream — item
+10, `MISSING_PREREQUISITES.md` §D0, which points here. Kept in this file because the constraints are
+properties of real electoral systems; nothing in it is independently confirmed.)*
+
+⚠ **Findings only, extracted onto `main` deliberately.** The electoral code that produced them lives on
+`stranded/politics-elections`, a branch marked *preserved, not endorsed* — uninspected, unvalidated, and
+possibly never merged. **These constraints hold regardless of whether that code ever lands**, because
+they are properties of the real electoral systems rather than of one implementation. Leaving them on a
+branch nobody is required to read would mean rediscovering them at seed-design time.
+
+⚠ **Re-derived 2026-08-31 (C-0.3): the branch was inspected once and DISPOSED, and this paragraph's
+judgement was vindicated on both halves.** Its code never landed and never will — superseded by
+`Assets/Scripts/Elections/` and W-G1 — while the constraints extracted from it here **did** hold, and
+three of the four have since been re-derived independently on `main` by code that owes the branch
+nothing. Row-by-row status in the provenance table below; full disposal record in `COMPLETED.md` §86.
+
+All were produced by porting the allocator to a standalone script and running it against real published
+results **before** the engine was depended on — no Unity, no compile. Two of three countries disagreed
+with the plan, and both disagreements surfaced in minutes.
+
+⚠⚠ **PROVENANCE — READ BEFORE RELYING ON ANY ROW ABOVE. The four results are NOT equally supported, and
+this section originally read as though they were.** Audited 2026-08-11 by reading
+`seat_allocation_check.py` (385 lines) in full:
+
+| Claim | Backing artifact | Status |
+|---|---|---|
+| Sweden 2022 exact | `seat_allocation_check.py` — on `stranded/politics-elections` only (NOT on `main`; `git ls-tree` confirms, 2026-08-27), readable | ✅ **SUPERSEDED — independently re-derived on `main`, 2026-08-31 (C-0.3).** `SeatConversionHarness` reproduces Sweden 2022 **8 of 8** through the full two-tier procedure on the REAL per-constituency counts fetched at W-F1. The branch claim was right; it is no longer what the repo rests on |
+| Sweden 2014, 6 seats of error | same script | ⚠ **STILL NOT re-derived on `main` (2026-08-31, C-0.3), and it is the most useful thing the branch said.** Sweden 2014 does NOT reproduce through the same allocator — 6 seats absolute error, byte-identical at divisor 1.4 and 1.2 — which narrows every "reproduces exactly" claim to *2022*. Resolving it needs all 29 constituencies 2014 data, never fetched. Register row S-6 |
+| Germany 2025, off by 1 | **none — throwaway script, discarded** | ✅ **SUPERSEDED — `SeatAllocationBacktest` on `main` runs Germany 2025 at 630 seats, Sainte-Laguë/Schepers, 5 % with the SSW exemption, and reports the expected off-by-~1 at share precision.** The branch finding (seed data must carry exact vote COUNTS, never published percentages) was correct and is now the standing rule |
+| Poland 2023, off by 70 | **none — throwaway script, discarded** | ✅ **SUPERSEDED — `SeatAllocationBacktest` on `main` carries the deliberate national-Poland signature at exactly 70** and also runs the real system, d Hondt in 41 districts, with the 5 %/8 % party-vs-coalition bar computed at the CALLER and MN exempt. The branch finding (national d Hondt is a different system) was correct |
+
+**`seat_allocation_check.py` does not test Germany or Poland**, and says so in its own *"WHAT IT DOES NOT
+TEST"* section. It covers Sweden plus three synthetic cases — including one built so the first divisor is
+decisive, because neither real Swedish election exercises it.
+
+⚠ **AND NONE OF IT HAS BEEN RUN HERE. Python is not installed on this machine.** So even the two Sweden
+rows amount to *"a script says so"* — the script has been read and its logic is sound and unusually
+honest about its own limits, but no output has been reproduced. **Nothing in this section is
+independently confirmed.**
+
+**Kept rather than retired** because the constraints are probably right, cheap to honour, and expensive
+to rediscover at seed-design time. **Not treated as established** because three separate defects this
+week came from a green result whose environment did not contain the claim, and *"a script reported this
+once, on a machine that can no longer run it"* is that shape exactly.
+
+**Before any of it is relied on:** port `seat_allocation_check.py` to C# and reproduce its numbers
+exactly — the treatment `screenshot_edge_check.py` received — and **re-derive Germany and Poland from
+scratch**, since no artifact for them exists to port.
+
+⚠ **One code defect the script found, which is not a seed-data question and is recorded here only
+because nothing on `main` records it at all:** `ThresholdRule.CoalitionShare` exists on the struct
+(Poland 8%, Italy 10%) and **`SeatAllocation.ApplyNationalThreshold` never reads it, for any country (⚠ named `ApplyThreshold` here until 2026-09-01; no such method has ever existed, and the seventh sweep found it).** Coalition
+thresholds are unenforced. On the branch, so it blocks nothing today.
+
+#### The four results
+
+| Country | Method | Outcome |
+|---|---|---|
+| **Sweden 2022** | National modified Sainte-Laguë, first divisor 1.2, 349 seats | **EXACT** — all eight parties, 0 seats of error |
+| **Sweden 2014** | Same pipeline, pre-2018 law (first divisor 1.4) | **6 seats of absolute error** (S −1, M +1, SD −2, FP +1, KD +1) |
+| **Germany 2025** | National Sainte-Laguë/Schepers, 630 seats | Off by **1**: CDU 165, SPD 119 |
+| **Poland 2023** | National D'Hondt, 460 seats | Off by **70**: PiS 169 (−25), Konfederacja 34 (+16) |
+
+#### What each one constrains
+
+**⚠ SEEDS MUST CARRY VOTE COUNTS, NEVER PUBLISHED PERCENTAGES.** Germany is an input-precision problem,
+not an algorithm problem — confirmed rather than assumed by re-running across the ±0.05 band that
+one-decimal published shares permit, where the exact real result is reachable at CDU 22.55–22.58%. **A
+rounded share is enough to move a Bundestag seat**, and it would have looked like an allocator bug
+forever. This is the single most load-bearing constraint here and it applies to every country.
+
+**⚠ POLAND AND ITALY REQUIRE CONSTITUENCY-LEVEL MODELLING.** National D'Hondt is **not** an approximation
+of D'Hondt run 41 times — it is a different and far more proportional system. The real Sejm is much more
+disproportionate than a national calculation suggests, because each of the 41 constituencies rounds in
+the large parties' favour independently. That means per-constituency seed data (41 × ~5 parties) or an
+explicitly modelled and explicitly labelled disproportionality correction. **Italy's 28 Camera
+constituencies and 20 Senato regions are the same open question and must be measured the same way before
+its allocator is trusted.**
+
+**⚠ "A NATIONAL ALLOCATION REPRODUCES THE REAL CHAMBER" IS CONFIRMED FOR SWEDEN 2022 ONLY.** The other
+session recorded this narrowing against its own earlier claim, which is why it is trustworthy: Sweden
+2014 does not reproduce, and the error is byte-identical whether the divisor is 1.4 (historically correct
+for 2014) or 1.2. Votes and real seats were each cross-checked against three independent sources before
+the discrepancy was trusted over the code. The leading explanation is not an allocator bug — the same
+code reproduced 2022 exactly — but the same national-vs-constituency gap Poland shows.
+
+**Sweden 2022 is the one solid anchor**, and it is solid for a structural reason: the Riksdag's 39
+levelling seats exist precisely to make the national result proportional, so a national allocation
+reproduces it exactly. Sweden needs no constituency model; that property does not generalise.
+
+#### Also recorded: B3 recurring in the politics code
+
+The branch's election display prints `46,77% of the vote`, `44,6%`, `55,4%` — **decimal commas on a
+sv-SE machine**, beside money that goes through `UiFormat`'s InvariantCulture pinning. This is B3's exact
+defect in new code written after `UiFormat.Number` existed. Logged here so it is known before that stream
+resumes rather than found in a capture later.
+
+
+## 189. `ELECTIONS_PLAY_CALIBRATION.md` — RETIRED 2026-09-02, migrated verbatim (523 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## PoliSim — the play-calibration list
+
+**Opened 2026-08-29, on the completion of W-E1, W-E3 and W-E4**, per the standing ruling from the
+W-B3 / W-B10 review: *"Leave the named constant alone through W-E1/E3/E4, then open a
+play-calibration list in the records — this constant is its first entry, and it will not be the last
+thing that needs a human's hands."*
+
+### What this list is for
+
+Everything here is a decision that **cannot be made from a spreadsheet, a backtest or a spec
+reading**, because the question it answers is *how the game feels to play* — and there is not yet a
+playable loop to feel. Each entry names the thing, states what is known about it, states what would
+settle it, and says explicitly what must NOT be done in the meantime.
+
+**The rule that governs the whole list: nothing here is tuned to make a gate pass.** Every entry
+exists because measurement has taken it as far as measurement can go. Changing one of these numbers
+without a loop to judge it against would be substituting confidence for evidence.
+
+---
+
+### 1. `CampaignPressure.PersuasionPerCompatibilityPoint` = 40 000
+
+**The entry the ruling named.** The scale on which §42's persuasion pressure converts into a
+compatibility bonus, and therefore the magnitude of everything a campaign does.
+
+**What is measured.** A hard week of campaigning — three rallies, two town halls, a television buy
+and daily door-knocking — moves the campaigning party **+0.19 pp**, compounding to roughly **1.5
+points over a full eight-week campaign** (W-B3's end-to-end run; shares still sum to 1, and the same
+campaign with the chain severed moves nothing).
+
+**The judgement.** That is roughly right for a *real* campaign and probably wrong for a *game*. Real
+campaigns move a point or two; a game in which eight weeks of play moves a point and a half may feel
+inert. But feel cannot be calibrated against a loop that does not exist.
+
+**What would settle it.** A playable campaign loop (Track G's wiring, then a human playing it).
+
+**What must NOT happen first.** The constant must not be raised to make a screen look more
+responsive, nor to make a backtest fit better. It is one named constant precisely so that when a
+human does set it, they change one number and know exactly what moved.
+
+---
+
+### 2. §42 derives enthusiasm without reference to salience
+
+**Found by W-E3's film**, and a MODEL question rather than a constant.
+
+**What is measured.** `CampaignActions.Resolve` computes `enthusiasm = exposure × credibility ×
+weight`. Neither exposure nor credibility is a polled quantity, so enthusiasm carries **no
+measurement uncertainty at all** — its estimate band is a point where persuasion's is a range. The
+action screen prints it as a point with that reason stated.
+
+**The question.** It is odd that how much an electorate *cares* about an issue changes how persuaded
+they are but not how motivated they are to turn out. §26's turnout model has its own enthusiasm
+input; whether campaign enthusiasm should share salience's dependence is a design decision.
+
+**What would settle it.** Play, plus a look at whether §26's turnout response makes the current
+split behave sensibly at election time (Track D).
+
+**What must NOT happen.** A width invented at the drawing layer to make the two estimates look
+alike. If enthusiasm should depend on salience, that is a change to `Resolve` with its own reason
+and its own harness assertion.
+
+---
+
+### 3. Earned media is free, and therefore dominant
+
+**Recorded at W-B3, ruled to W-B9, and made VISIBLE by W-E3's action screen.**
+
+**What is measured.** `Interview` costs **0 kr and 2 hours** and produces 2 268 persuasion against a
+500 000 kr television buy's 1 124 — and on the action screen it draws one of the longest estimate
+bands on the sheet. An interviews-only player is currently optimal, which §34 says the design should
+not reward.
+
+**The ruling already made** (carried here so it is not re-discovered as a calibration problem):
+interview dominance is **W-B9's, as a mechanism, not a nerf**. Earned media is free because *someone
+else decides whether to book you*, so the scarce resource is **media interest** — implemented in §13
+as availability driven by newsworthiness (coverage, momentum, recent events), never as a flat cost
+or cap bolted onto the action. This also gives §13's coverage loop a real input: a party nobody
+covers cannot buy its way onto the air.
+
+**What must NOT happen.** A cost added to `Interview`'s spec, or a cap on how many can be run.
+
+---
+
+### 4. §21's polling prices and sample sizes are [AUTHORED-DRAFT]
+
+**What is measured.** Nothing yet — the four offers on W-E4's screen (600 / 1 200 / 2 400 / 6 000 at
+40 000 / 120 000 / 260 000 / 620 000 kr) are authored. **Their precision is not authored**: every ±
+is derived from the sample size by `PollingSystem.MarginOfErrorPp`, so the ladder's *shape* — each
+point of precision costing more than the last — is real arithmetic and not a design choice.
+
+**What would settle it.** W-F5, sourcing real party campaign finances, plus real Swedish polling
+prices if they can be sourced at all.
+
+**The calibration question that survives sourcing.** Even with true prices, whether the player finds
+the trade interesting is a play question: if the cheapest poll is always right enough, the ladder is
+decoration.
+
+---
+
+### 5. `CampaignCalendar.DefaultPreCampaignWeeks` = 26
+
+> ⚠ **THIS ENTRY WAS CORRECT ALL ALONG, AND A "CORRECTION" BROKE IT FOR ONE COMMIT.** On 2026-09-01 the
+> shelf's §9.4 pass reported the owner as missing and rewrote it to `CampaignClock`. **That was wrong.**
+> `CampaignCalendar` is a real type — `public readonly struct CampaignCalendar` — which happens to live in
+> the FILE `CampaignClock.cs`. The instrument at fault was the probe, not the entry: it matched TYPE names
+> against FILE names, so a type sharing a file with another type read as absent.
+>
+> ⚠ **The seventh sweep caught it within the hour** (`DocumentClaimCheck`, `COMPLETED.md` §155), which is a
+> better argument for that check than anything its own doc could say: the pass that went looking for false
+> claims in documents made one, and the guard built in the same session found it. The constant is real and
+> unchanged at 26 (`Assets/Scripts/Elections/CampaignClock.cs:75`).
+game becoming a spreadsheet for half a year" — a stated guess about attention span.
+
+**What would settle it.** Play. Specifically, whether §3's preparation verbs are interesting for six
+months or for six weeks.
+
+---
+
+### 6. `CampaignEconomy.MoneyScale` = 500 000
+
+**What is known.** Chosen so §35's four prose bands fall out of one declared curve (~18 % of the
+effect at 100k, ~63 % at 500k, ~98 % at 2m, ~100 % at 10m). The curve's *shape* is the spec's; the
+scale is the free parameter.
+
+**What would settle it.** W-F5's real party spending, then play. W-B2 already recorded that a
+smaller scale would make the "first krona ≫ millionth" ratio look more impressive **and** would be
+the wrong curve — flattening the 500k–2m band the spec explicitly calls moderate.
+
+---
+
+### How to use this list
+
+When the loop exists, take these in order 1, 3, 2, then the rest — magnitude first because
+everything else is judged against it, then the dominance mechanism because it changes what a player
+does with their hours, then the model question.
+
+Each entry is a **one-line change with a named owner in the code**. That is the point of having
+resisted tuning them: the day a human sits down to feel the game, they are not untangling six
+interacting fudges.
+
+---
+
+### Addendum to 1 (W-C1, 2026-08-29): the same constant, measured at the real audience
+
+**What is measured.** `CampaignAiHarness` runs an AI-only campaign over Sweden's real electorate
+(6.48 million valid votes 2018 as the national audience). Every rational personality delivers
+**+197 to +225 compatibility points** over the 56 days (persuasion / 40 000) — and `ElectionScales`
+clamps at 100, so every party saturates and the final shares are the clamp's arithmetic. W-B3's
++0.19 pp for a hard week was measured at a 100 000 audience; the chain is linear in audience and in
+repetition, so at 6.5 million the same week is 65× that.
+
+**What it means for this entry.** The constant's right value depends on how reach is BOUNDED —
+whether the same electorate can be "reached" six times a day by six interviews, whether a channel's
+audience is a viewership or the whole country. Those are mechanism questions (W-B9's media
+interest; a repeated-exposure decay; W-B4/B11's absolute ground-game reach), and this constant must
+not be raised or lowered to paper over them. Entry 1 therefore waits on those items as well as on
+play. **Still not tuned.**
+
+### 7. The campaign AI's personality parameters (W-C1)
+
+**What is known.** `PersonalityCatalog`'s five rows — affinities per action, temperature, risk
+aversion, optimism, cost weight, spend pace, enthusiasm value, polling cadence, focus, acts-blind,
+spend multipliers — are readings of §32's bullet lists as numbers (the full table is in
+`ELECTIONS_PROTOTYPE_LOG.md`, W-C1). `RiskScale = 0.25`, `PollingHours = 1`, the candidate bounds
+(4 regions, 2 issues) sit beside them. Every one is [AUTHORED-DRAFT].
+
+**What is measured.** In W-B3's placeholder environment the chaotic and populist mixes differ from
+every other's (L1 ≥ 0.50); the professional, establishment and grassroots mixes do NOT (L1 ≤ 0.024)
+because a free national interview dominates every other action for any expected-value chooser.
+That collapse is the environment's, and the harness records it as PENDING on W-B9 and W-B4/B11.
+
+**What would settle it.** Those two mechanisms first — then play, against opponents that feel
+different (§32's own bar: "genuinely different"). Whether a populist that spends its whole chest by
+week five is fun to beat or merely dead is a play question.
+
+**What must NOT happen.** An affinity raised so the grassroots party knocks doors in an environment
+where door-knocking is worthless — that is a number chosen to make a test pass. The `PEND` lines
+in `CampaignAiHarness` exist so nobody is tempted: they flip to assertions when the mechanism lands,
+with the affinities untouched.
+
+### 8. §11's strategy magnitudes (W-B6)
+
+**What is known.** The five strategies' SHAPES are the spec's own bullets (a loyal group's turnout
+lifts under Base Mobilization, a swing group's persuasion under Swing Voter, a focus group's under
+Populist, an opponent's standing falls under Negative, Broad reaches more and persuades less per
+head); the MAGNITUDES — ×1.15 / ×0.85 / ×0.5, 0.6 and 0.5 per loyalty and swing, 0.7 + 0.8·swing
+and 0.3·loyalty, 0.6 / ×0.8 / ×0.9 / ×1.5 / ×1.5, ×1.5 / ×1.3 / ×0.6 — are [AUTHORED-DRAFT].
+
+**What is measured.** In a 30-electorate sweep (W-B3's week under each strategy, the outcome in
+the model's own units) Base Mobilization wins 21, Broad Appeal 6, Populist 3, **Swing Voter and
+Negative Campaign 0**. Base's lead is the enthusiasm conversion (60 000 per turnout point against
+40 000 per compatibility point) as much as its own multipliers; Swing's loyal-group cost outweighs
+its swing gain at every loyal share; Negative against a symmetric opponent loses to its own cut.
+
+**What would settle it.** §26/W-D1 deciding how turnout weighs against persuasion at election
+time (that conversion is the sweep's metric), W-F4's voter groups (the strategies target groups;
+today the electorate is one), then play — is a Swing Voter campaign ever the right call, and does
+going negative feel like a gamble or a mistake?
+
+**What must NOT happen.** A Swing or Negative multiplier raised so the sweep table looks balanced.
+The done-when asked for no DOMINANT strategy, and there is none; a strategy that never wins is a
+measured statement to carry to play, not a bug to tune away.
+
+### 9. The media system's constants (W-B9)
+
+**What is known.** All [AUTHORED-DRAFT]: the news-cycle half-life 3 days (distinct from momentum's
+7 by design), `CoverageScale` 1, `MomentumPpPerCoverage` 1.5, the interest weights (coverage 1,
+|momentum| 0.15 per pp, polled share 0.8, events 1), the newsworthiness per action (policy
+announcement .25, interview .20, rally .15, television .10, town hall .05, digital .05, social .03,
+door-to-door .01), `PlatformReach` .55, `FollowingRatio` .30, and the outlet ARCHETYPES (public
+broadcaster .45 / 3 slots / threshold .15, commercial television .35 / 2 / .25, tabloid .30 / 2 /
+.10, broadsheet .15 / 2 / .30) with their two-group compositions. Real Swedish outlets' reach
+(Kantar / Orvesto) and real follower counts are billed as data lines.
+
+**What is measured.** Coverage decays on its curve and cannot spiral (ceiling 4.85); the same
+message performs ×1.9–2.0 differently by outlet audience; bookings are availability (a party at
+4 % with no coverage is booked nowhere, the same party after a day of news is booked seven times);
+over the AI campaign every party is booked 50–81 times in 56 days under the ledger. The compat-
+ibility bonuses fell from +197…+225 (everything national, everyone saturated) to +7…+37 once
+television, the platforms, a party's following and the press's interest bounded what a national
+action can reach — entry 1's saturation finding is now mostly W-B3's placeholder audiences, not
+the constant.
+
+**What would settle it.** Sourced reach and follower figures first; then play — does the media
+feel like an independent force (does making news get you booked, does a quiet week cost you air)?
+
+**What must NOT happen.** A slot count or threshold moved so a particular personality gets
+interviewed; a newsworthiness figure moved so the establishment "feels" like traditional media.
+The `PEND` lines in `CampaignAiHarness` name what those claims actually wait on (W-B4/B11, W-B5).
+
+### 10. The ground game's scale and worth (W-B11)
+
+**What is known.** GOTV's operations are [AUTHORED-DRAFT] per contact (a call 3 kr / 0.10 h /
+weight 0.5, a door 5 kr / 0.25 h / 1.0, a lift 60 kr / 0.50 h / 3.0, a reminder 1 kr / 0.02 h /
+0.25) and `MobilizationScale` 0.5 weighted contacts per eligible voter; the staging gives every
+party 800 volunteers (2 400 volunteer-hours a day). W-B3's door-to-door persuasion weight is 0.55
+(a town hall's is 1.0, a rally's 0.30).
+
+**What is measured.** With doors counted as the volunteers can knock them (W-B11), a door-to-door
+action reaches ~3 000 doors, and at 0.55 per contact it is not worth its five hours against a
+post to a party's whole following — so no rational personality knocks doors and the grassroots
+party's separation from the media personalities (asserted at W-B9 on the 2 %-of-a-region
+placeholder, 16 000 doors an afternoon) is gone: L1 0.20 / 0.17. On election-day GOTV the same
+volunteers move a worked valkrets +0.8 to +4.9 points of turnout and the nation +0.32.
+
+**What would settle it.** W-B4's offices (volunteers grow with organisation — 800 is a guess) and
+a sourced or played answer to how much a personal contact persuades relative to a broadcast
+impression; the literature says a great deal more per contact (Gerber & Green's field experiments
+on canvassing are the obvious source — billed, not typed).
+
+**What must NOT happen.** The door-to-door persuasion weight raised so the grassroots party
+knocks doors and `CampaignAiHarness` 2a-iv / 2c pass.
+
+### 11. The debate's magnitudes (W-B7)
+
+**What is known.** All [AUTHORED-DRAFT]: `PreparationScale` 12 h, `PreparationFloor` 0.7,
+ownership 0.8–1.2, `EventSigma` 4 index points, `CoveragePerMarginPoint` 0.10,
+`MomentumPpPerMarginPoint` 0.20 (anchored on §22's "strong debate ≈ +2 pp"), the seven attribute
+blends, the clash table, six exchanges, a fixed 8 hours' preparation for every AI, the five plans,
+the five unnamed candidates.
+
+**What is measured.** With a 20-point skill gap the stronger debater wins 400 of 400 seeds; the
+prepared twin beats the unprepared 400 of 400; the home-ground twin 400 of 400. `ChangeSubject` on
+home ground hits the index ceiling of 100.
+
+**What would settle it.** Play: should a weaker debater ever win a debate (a larger `EventSigma`,
+or an event term that scales with the stakes), and does a +2 pp swing from one evening feel like
+a debate or like a lottery? W-E5's screen is where it will be felt.
+
+**What must NOT happen.** `EventSigma` raised so the harness's 400-of-400 lines look "more
+realistic" — a debate's randomness is a design decision with its own reason, to be made against a
+screen and a played loop, not against a table.
+
+### 12. The scandal table (W-B8)
+
+**What is known.** All [AUTHORED-DRAFT]: the four severities' base damage (Minor 0.5 pp / 0.02
+credibility / 2 days / 0.15 coverage; Moderate 1.5 / 0.06 / 4 / 0.40; Major 3.0 / 0.12 / 7 /
+0.80; Catastrophic 5.0 / 0.25 / 12 / 1.50), the seven responses' multipliers (momentum /
+credibility / duration / coverage: Deny 0.3 / 0.3 / 1.0 / 1.0, Apologize 1.3 / 0.5 / 0.6 / 0.8,
+Explain 0.8 / 0.7 / 0.9 / 0.9, AttackSource 0.5 / 0.6 / 1.3 / 1.5, Ignore 0.8 / 0.9 / 1.5 / 1.1,
+Resign 1.6 / 0.2 / 0.7 / 1.4, SacrificeStaffMember 0.7 / 0.5 / 0.8 / 1.0), the escalations (a
+caught denial ×6 on the lasting cost, a caught attack ×2, momentum ×1.5 for both),
+`SurfaceRatePerDay` 0.15, `EvidenceEstimateError` ±0.25, `CynicalSacrificeMultiplier` 1.6, the
+AI's deny-threshold (0.3 as seen) and its responses by personality.
+
+**What is measured.** Over 400 seeds on a MAJOR corruption scandal at evidence 0.5 (damage =
+100 × credibility cost − momentum pp): Deny 11.5 ± 9.0 (152 caught out), Apologize 9.9, Explain
+10.8, AttackSource 12.3 ± 4.0, Ignore 13.2, Resign 7.2, SacrificeStaffMember 11.7. Against strong
+evidence (0.95) the denial averages 16.0, the next worst 14.4; against weak (0.05) 5.3 against
+7.2. The worst case (catastrophic, denied, certain evidence, caught) costs 45 % of credibility.
+
+**What would settle it.** Play: is ignoring a story ever the right call (at these numbers never
+— the worst mean of the seven); is a resignation ever taken (the AI never resigns; W-C2's
+reactivity and W-F6's candidate are what would make it a choice); does a caught denial FEEL
+catastrophic on W-E5's screen, or merely expensive. The one change already made — the caught
+denial's escalation ×3 → ×6 — was made because at ×3 a caught denial was no worse than ignoring,
+which contradicts §17's sentence; it is recorded as the shape the spec demands, not as a fit.
+
+**What must NOT happen.** Any multiplier moved so `ScandalHarness` 2a's pairwise distinctness or
+2c's "denial widest" line passes, or so the C1 harness's staged scandal costs a rounder number.
+
+### 13. The tactical layer's doubt and the bloc's willingness (W-A4)
+
+**What is known.** [AUTHORED-DRAFT]: `BeliefSigmaPp` 1.0 pp (fixed from the worklist's own
+window before the 2022 run), `MaxLendFraction` 0.15, awareness 0.5 (staging), the need target
+T + one belief-sigma, the weights 4P(1 − P) for lending and ((1 − P)(1 − 2P))² for abandonment,
+the blocs as staged. SOURCED: the PSU May figures and ± (SCB), CHES `lrgen` for affinity.
+
+**What is measured.** On the 2022 staging L gains +1.18 pp at 3.5 %, +1.00 at 4.0 %, +0.43 at
+4.5 %, nothing at 6 %, loses 0.62 pp at 1.5 %. May 2022 → the count: near-threshold error
+3.12 → 1.00 pp, the whole vector 13.27 → 10.08. May 2018 → the count: KD 3.09 → 3.84 against
+6.42 (a quarter of the rise). The PSU's May cross-tab: M → L 0.7 ± 0.6 % of M's sympathisers,
+M → KD 1.0 ± 0.7 % — the lending before the final weeks.
+
+**What would settle it.** A final-week poll of record for 2018 and 2022 (billed) — the size of
+the last week's switch, which is what the layer models; the 2026 May PSU against the 2026 count
+as the first out-of-sample test of the form; play on W-E1's screen: does a bloc voter FEEL the
+threshold, and is lending to 5.0 % (the overshoot at even odds) what a player would do.
+
+**What must NOT happen.** `BeliefSigmaPp` or `MaxLendFraction` moved so 2018's KD reproduces
+better — the May → September Δ mixes tactical lending with four months of genuine movement, and
+fitting it would put the campaign inside the layer. The form was chosen with the 2022 figures on
+the table; the honest next test is one the model has not seen.
+
+### 14. The office's five attributes and the staged plan (W-B4)
+
+**What is known.** All [AUTHORED-DRAFT]: `OpenCost` 100 000 kr, `MaintenancePerDay` 2 000,
+`StaffCapacity` 3, `VolunteerCapacity` 150, `RecruitPerDay` 5, `VisitFraction` 0.25,
+`StarvationPerDay` 0.10, `LocalPollSampleSize` 300; the C1 staging's plan (grassroots 6, populist
+4, professional 3, establishment 2, chaotic 1, in the largest valkretsar) at 2 000 kr a day of
+operations each; the harness's 200 headquarters volunteers and 1.5 M kr ground budget.
+
+**What is measured.** An office at capacity: 450 volunteer-hours a day, 1 800 doors a day at
+most, 81 900 doors over 60 days on a 10 000 kr operation; mobilisation 58.0 in Stockholms län,
++7 859 votes. Three offices against ten on the same money: 14 248 votes against 0 at 1.5 M kr,
+22 534 against 4 087 at 2.4 M, 22 534 against 31 536 at 4 M — the crossover. In the AI campaign
+the six-office parties spend 1.67 M of a 2.4 M war chest on offices; the one-office party
+278 300.
+
+**What would settle it.** Play: does opening an office feel like a decision (100 000 kr and a
+month to full strength against 500 000 for one television buy)? Is 150 volunteers an office or a
+committee? Does the crossover at 4 M kr sit where a player with a real budget meets it? The
+door-to-door ACTION (entry 10) against the office's own operation: the same door knocked at two
+prices — 5 kr and 0.25 h on the office, 15 000 kr and 5 h for 3 000 on the action — is a seam a
+player will find.
+
+**What must NOT happen.** `VisitFraction` or `VolunteerCapacity` moved so C1's 2a-ii / 2b lines
+(the populist's rallies) pass — they pend on WHERE the offices are sited (W-B5/W-C2), not on how
+much an office is worth; `OpenCost` or `MaintenancePerDay` moved so the crossover lands on a
+rounder budget.
+
+### 15. The staff's salaries and bonuses, and the manager's plan (W-B5)
+
+**What is known.** All [AUTHORED-DRAFT]: `SalaryPerDay` 1 800 kr (every role alike at the
+prototype's depth), `MediaAdvisorReach` 1.20, `DigitalReach` 1.25, `PollsterSample` 1.5,
+`FieldOrganizerScale` 1.5 (on the recruit rate AND the capacity), `ManagerFundShare` 0.5; the C1
+staging's hires and television buys per personality (professional manager + pollster, 1 buy;
+populist manager + digital strategist, 1; establishment manager + media advisor, 2; grassroots
+field organizer; chaotic nobody).
+
+**What is measured.** An interview 9 720 → 11 664 persuasion with the advisor; a post 75 854 →
+94 818 reach with the strategist; the party's poll ± 2.59 → 2.12 pp with the pollster; an office
+150 → 225 volunteers, full on day 29 not 30, with the organizer; the fund 500 000 kr on day 24 of
+an even 40 000 kr-a-day release. In the AI campaign the payroll costs a two-hire party 183 600–
+190 800 kr over 60 days and every party with fixed costs runs out of money before polling day
+(SD 38 of 120 staff-days unpaid; S 10; M 6; V 12).
+
+**What would settle it.** Play on W-E1's screen: is 1 800 kr a day a hire a player weighs against
+a 100 000 kr office or a 500 000 kr television buy? Does the establishment's second buy FEEL like
+a strategy or like a staged number (the count is the plan's; the plan is staged)? Should the
+manager's plan cover the organisation's fixed costs first (finding 2) — and if it does, does the
+populist still go broke, which §32 might want? Should the field organizer make an office FAST
+(rate ≫ capacity) or LARGE (capacity ≫ rate)?
+
+**What must NOT happen.** A multiplier or the fund share moved so C1's 2a-iii (professional /
+establishment) or 2e (television + interview) passes — the first pends on equal money and a plan
+that does not react, the second on the media's own interest; neither is a staff bonus. The
+staged buys moved so 2e-ii looks less staged than it is.
+
+### 16. Reactivity's thresholds, tempo and weights (W-C2)
+
+**What is known.** All [AUTHORED-DRAFT]: `PublicActivity.HalfLifeDays` 7 (half a visible act's
+memory gone in a week); the record's weights — a rally 1.0, a town hall or a canvassing day 0.5;
+`DefenceThreshold` 1.0 and `AnswerThreshold` 1.0, each divided by the personality's reactivity, so a
+less reactive party needs proportionally more before it moves and reactivity 0 never moves;
+`OfficeUpkeepDaysReserved` 10 (a party opens an office in a contested region only if it can also keep
+it ten days); `DefenceCooldownDays` 3; `AnswerCooldownDays` 7; `PressuredRegions` 2 (how many
+contested regions enter the AI's own candidate list); and §32's reactivities — professional 1.0,
+establishment 0.7, grassroots 0.6, populist 0.5, chaotic 0.0.
+
+**What is measured.** Against a scripted player working one small valkrets for forty days: the
+professional puts 8 of its 9 local acts there (0 of 8 in the control) and opens an office there in
+seed 777; the establishment 4 of 8; the chaotic party 0 of 598. First act a mean 2.0 days after the
+script begins, in 8 of 10 seeds. Answers: the professional 6.9 → 7.0 a campaign — **at the weekly
+cooldown's ceiling in both arms**, so the count is tempo-bound and what the attack changes is whom it
+answers; the chaotic party 0.0 in both; the establishment never crosses its own threshold (0.4 → 0.0)
+because the negative campaign is aimed at the polled leader. Local acts a campaign: professional 0.9,
+establishment 0.8, chaotic 59.8.
+
+**What would settle it.** Play. Does a three-day defence cooldown feel like an opponent noticing you,
+or like an opponent shadowing you? Is a week the right silence before a party answers an attack —
+and should the answer be visible to the player as an answer, or only as a message? Is 10 days of
+upkeep the right caution before an AI plants an office in a region you are working, or should it
+need to believe it can hold the region to polling day? Should a *professional* break its flat-affinity
+tie on cost (the cheapest defence) rather than on §12's order (a rally)?
+
+**What must NOT happen.** A threshold, a cooldown, a reactivity or an affinity moved so C1's 2a-iv
+(est/grass 0.291) crosses 0.300 — the line pends on **unequal money and unequal paces (W-F5)**, which
+is what separates two parties that both react, and moving any of these to clear it would be tuning a
+constant to open a gate. **RULED 2026-08-30 (Elias): the line stays at 0.291. Nine thousandths is
+precisely the distance at which a threshold move stops being calibration and becomes making the
+test pass. If W-F5 lands and it still reads 0.291, that is a FINDING ABOUT THE MODEL to report and
+explain, not a rounding problem to close.** The half-life or the act weights moved so a particular party reacts in a
+particular scenario. The public record given anything a party could not see — a share, a preference,
+a true salience, or the doors an office knocked.
+
+### 17. Coalition compatibility, the red-line gaps, and what a party is holding out for (W-D3)
+
+**What is known.** All [AUTHORED-DRAFT]: `CoalitionCompatibility.WeightIdeological` 0.55 /
+`WeightPolicy` 0.45; `DerivedRedLines.IdeologicalGap` 4.5 on CHES `lrgen` and `SocialGap` 5.0 on
+`galtan`; the formation's ranking weights `WeightCohesion` 0.5 / `WeightSeatStrength` 0.3 /
+`WeightPower` 0.2; `DefectionMargin` 0.01. **The two gaps were chosen knowing Sweden 2022's answer.
+They are a calibration on that case, not a prediction of it, and the log says so.**
+
+**What is measured.** The 2022 chamber returns the government that actually formed: cabinet M+KD+L
+(103), carried from outside by SD (73) = 176 of 349, cohesion 88.9, as confidence-and-supply. 120
+arithmetic majorities are refused by red lines, S+SD (180) among them. Banzhaf pivotality: S 34.5 %,
+SD 23.6 %, M 23.6 %, and V/C/KD/MP/L 3.6 % each. A single `lrgen` threshold in **[1.79, 2.58)** —
+window 0.79 — separates the four parties that refused SD from the three that governed with it.
+Dropped one at a time, the C ↔ SD declaration changes nothing (the galtan rule already reaches C at
+6.05 > 5.00) and the no-SD-ministers declaration changes everything.
+
+**What would settle it.** Play, and a second country. Does a coalition negotiation the player
+watches feel like arithmetic or like politics — and does the player understand WHY a government they
+wanted was refused? Is 0.55/0.45 the right split between "where a party stands" and "what it wants
+this year", or should policy lead in a campaign and ideology between them? Should the ranking weigh
+cohesion at all once defection has removed the unstable governments, or is defection doing the whole
+job? And the real test of the derived gaps: **do 4.5 / 5.0 produce sane refusals in Germany, Italy or
+Poland**, whose CHES rows are already on disk — because a gap fitted on Sweden and applied unchanged
+elsewhere is the first place this will break.
+
+**What must NOT happen.** Either gap moved so a particular coalition forms or fails in Sweden —
+that is fitting a known answer twice over. A per-pair compatibility table, or any number attached to
+a pair of parties by hand: §29's whole discipline is that compatibility, red lines and negotiating
+power come from party data, and a hand-set pair value is the authored coalition score the item
+exists to avoid. Leader compatibility or personal relationships filled in with game fiction to
+"complete" §29 — they are deferred for want of a source, and the harness asserts the absence.
+
+### 18. The organisation's bill, and what a plan is allowed to hold back (W-B12)
+
+**What a player will feel.** Hire a manager and the campaign stops running out of money in the last
+fortnight. That is the whole felt difference, and it is deliberately the ONLY difference — the
+manager does not spend better, does not pick better actions and does not raise more. **The manager
+keeps the organisation's bill back before the pace is allowed to release anything.** A party without
+one still goes broke, and should.
+
+**The numbers, and what each rests on.**
+
+| figure | value | class | why this and not another |
+|---|---|---|---|
+| `DailyFixedCost` | payroll + every office's maintenance and operation | **DERIVED** | Summed from `SalaryPerDay` and `MaintenancePerDay`, which W-B4/W-B5 already set and logged. **W-B12 introduces no new constant** — deliberately, so it could not be accused of buying its own done-when. |
+| recomputed | **every morning** | DERIVED | A party that hires today has a different bill tomorrow. Setting it once would let a mid-campaign hire go unfunded, which is precisely the defect being fixed. |
+| horizon | `daysLeft` to polling day | DERIVED | §9's plan is a plan to an end date. Any shorter horizon reintroduces the bug at the tail; any longer is money the campaign will never need. |
+| capital | **NOT in the daily bill** | ⚠ a judgement, logged | An office's 100 000 kr opening and a planned television buy are one-off commitments. Folding them into a per-day figure would misstate both — and **this is the choice SD's residual six days sit on.** Named here so it can be reversed knowingly. |
+
+**What to feel for, and the honest doubt.** Play the populist. SD is the one managed party that
+still ends with unpaid staff-days (6, from 38), because `spendPace` 1.6 is the most front-loaded of
+the five and four offices' opening capital lands early. **The question for the seat is whether that
+feels like a populist overreaching — which is characterful — or like the game failing to warn you.**
+If it is the second, the fix is a *warning*, not a bigger reserve: a manager who silently prevents
+every mistake removes the decision §9 exists to pose.
+
+**And one number moved that nobody predicted.** C1's `prof/est` separation went **0.061 → 0.306**,
+crossing 0.30 for the first time, on an item that touched no affinity and no weight. W-B5 had sent
+that convergence to W-F5 expecting *unequal money* to separate the two rational planners. It was not
+money — **it was the plan itself**, a planner and a non-planner spending differently on equal chests.
+Meanwhile `est/grass` moved the WRONG way, 0.291 → 0.269. Both are reported, neither is tuned.
+
+### 19. Election night's clock, and the two thresholds a call rests on (W-E6, backfilled)
+
+**What a player will feel.** The results arrive over four hours, constituency by constituency, and
+the calls come when they are safe rather than when they are exciting. **They will feel late.** That
+is the design, and this entry exists so that when it feels wrong, the numbers to argue with are
+here.
+
+| figure | value | class | why this and not another |
+|---|---|---|---|
+| `NightMinutes` | 240 | ⚠ **[AUTHORED-DRAFT]** | Four hours from first declaration to last. Sweden's real count runs longer and the preliminary result lands sooner; four hours is a PLAYABLE evening, not a measured one. |
+| `FirstDeclarationMinute` | the schedule's floor | DERIVED | Monotone in electorate — small constituencies declare first, which is what actually happens and needs no constant. |
+| `ScheduleJitterMinutes` | seeded, bounded | ⚠ **[AUTHORED-DRAFT]** | So two nights on two seeds do not arrive in identical order. Bounded so the monotonicity above survives it. |
+| the call rule | safe at BOTH extremes of the outstanding eligible bound | DERIVED, **structural** | **Not tunable.** A call is made only when it holds whichever way every uncounted vote falls. 1834 call-instants over 8 seeds, **0 contradicted**. |
+
+**What to feel for.** The guarantee calls **L (the smallest party over the line) and the bloc
+majority only at 29 of 29** — the last constituency. If that reads as broken rather than careful,
+the fix is a SOURCED turnout ceiling that would narrow the outstanding bound, not a softer rule. That
+rider was deliberately not taken.
+
+### 20. The chamber, the election, and what changed for a player at W-G1 (backfilled)
+
+**What a player will feel.** Three things, and the third is the one to watch.
+
+1. **The parliament is real.** Sweden's Riksdag is 349 seats held by S, SD, M, V, C, KD, MP and L —
+   not 200 seats held by four invented parties. Every other country likewise.
+2. **The chamber stops twitching.** It used to drift a few seats every turn off the government's
+   approval. It now changes **only at an election**, which is what parliaments do.
+3. ⚠ **And therefore: between elections, nothing about the chamber moves at all.** If that reads as
+   dead rather than stable, the answer is by-elections, defections and splits — §29 territory — not
+   a return to drift.
+
+| figure | value | class | why |
+|---|---|---|---|
+| chamber sizes | 349 / 630 / 577 / 400 / 460 / 435 | **SOURCED** | Each country's own returns file; each reconciles exactly. |
+| seats at seed | that country's last real election | **SOURCED** | A new game starts in the chamber the country actually has. |
+| fiscal stance | `(5 − lrecon) / 5` | **DERIVED** | Replaces four hand-set placeholders. Linear and stated so it can be checked in one step. |
+| party ink | published hue, desk saturation 0.52 / value 0.46 | **hue SOURCED, S/V a stated derivation** | Measured off the four inks it replaces (0.23–0.58, 0.35–0.49). |
+
+⚠ **The one number to distrust.** A German game's first election seats **BSW at 91 and the FDP at
+47 — both really won zero.** Both missed the 5 % threshold by under a point (BSW by 0.02 pp), and the
+model carries ~1.5 pp of error, so it lands on the wrong side of that cliff about as often as the
+right one. **A threshold is where this model is weakest.** Sweden has no party that close to its 4 %
+line and lands within a seat or two everywhere. Nothing was tuned; this is the finding, not a bug to
+fix by moving a number.
+
+
+## 190. `POLISIM_REVIEW_2026-09-01.md` — RETIRED 2026-09-02, migrated verbatim (656 lines)
+
+⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this document cannot open a top-level section of the record; no other byte of its content was changed. Anything it recorded as OPEN is carried by `POLISIM_FEATURE_LIST.md` or its appendix; anything it recorded as a ruling or a finding stands here as the record.
+
+---
+
+## PoliSim — Review: detach the documents, speed the process (2026-09-01)
+
+**A review, not a build.** F2 was not started. No check was written (R-N5). No document was rewritten
+ahead of its ruling. The surgical changes actually made are in §C, each with why it is safe.
+
+⚠ **Every count here was measured in the run that reports it, and says how.** Where a figure could not be
+measured, it says so rather than estimating. Two premises in the brief were checked before use; one is
+wrong (§A.0).
+
+⚠ **R-T2 was respected for four findings and BROKEN for a fifth, which has been retracted** — see the
+retraction at the head of §A.1. A shell probe carried a finding alone, the probe was malformed, and the
+finding was false. **The retraction is left standing rather than deleted**, because a review auditing
+stale claims may not quietly drop its own.
+
+⚠ **This review's own process failed once, in the class it audits.** Writing this file by shell heredoc
+died on `unexpected EOF while looking for matching quote`. It was rewritten as a single self-contained
+file write and succeeded. That is the §B.4 rule earning itself inside the review that proposes it.
+
+---
+
+### §A.0 — Two premises in the brief, measured before use
+
+| the brief says | measured | verdict |
+|---|---|---|
+| "the current 25 checks" | `CheckSuite.Suite` holds **25**; `CheckSuite.Simulation` holds **9** | ✅ **correct** |
+| "three instances now, four Unity runs lost" | the records support **at least nine** Unity runs lost to invocation errors, plus two capture families re-filmed | ⚠ **understated ~3×** (§B.3) |
+
+*How the check counts were measured:* the `Suite` array (`CheckSuite.cs:153–242`) and the `Simulation`
+array (`:320–359`), counted by name. ⚠ **The obvious one-liner undercounts `Suite` to 24**, because
+`ChromeV2CoverageCheck` contains a digit and `[A-Za-z]*` drops it; the four `*Diagnostic` members of the
+simulation group are missed the same way. **A count is the easiest thing in this project to get wrong,
+which is the review's whole subject.**
+
+#### The first finding is in the code, not the documents
+
+`Assets/Editor/CheckSuite.cs:131` — the comment whose declared job is to enumerate that list — opens:
+
+> *"the checks named in `Suite` (**TWENTY-ONE** since the NINTH sweep …)"*
+
+**`Suite` holds 25.** ⚠ **No existing check can catch this, and per R-N5 none should be written for it.**
+`PhantomGuardCheck` and `CommentClaimCheck` verify that a *name* in a comment resolves; every name here
+resolves. **The stale thing is the number, and nothing in this project counts.**
+
+This inverts the brief's framing usefully. The brief assumes documents go stale against code. Here the
+**code comment** went stale while `POLISIM_FEATURE_LIST.md`'s "25 checks … and the 9 simulation checks" is
+**correct**. **Coupling is not a property of markdown. It is a property of transcribed numbers, wherever
+they live** — and that is why the convention in §A.5 binds comments as well as documents.
+
+---
+
+### §A.1 — Five demonstrated stalenesses, each confirmed against the code
+
+> ⚠ **RETRACTION, 2026-09-01, same session.** This section originally carried a SIXTH finding — that
+> `ERRANDS.md` E-3's *"the working copy is LF"* was false and the tree was CRLF. **It was the review that
+> was wrong, and the document that was right.** The probe behind it, `grep -c $'\r' <file>`, returned a
+> count equal to the file's TOTAL line count for **every** file tested — the signature of an empty pattern
+> matching every line, not of carriage returns. Re-measured with `tr -cd '\r' | wc -c` and `od -c`, **every
+> file in the tree is LF**, and `CLAUDE_DESIGN_BOARD_1I_NOTE.md` hashes to the exact digest
+> `SEND_PACKAGE.md` publishes for it — which is the independent confirmation the retracted finding never
+> had.
+>
+> ⚠ **The corroborating fact was real and the inference from it was not.** `core.autocrlf=true` is
+> genuinely set; it governs what a FRESH CHECKOUT would produce, not what this working copy contains.
+>
+> **This is R-T2 being proved by breaking it** — *a shell probe is the weakest evidence and may not carry a
+> finding alone* — inside the review that quotes R-T2 as its own standard. The retraction is left in place
+> rather than deleted, because a review that audits stale claims may not quietly drop its own.
+
+| # | where | the claim | what is true | how confirmed |
+|---|---|---|---|---|
+| 1 | `Assets/Editor/CheckSuite.cs:131` | "TWENTY-ONE" checks | **25** | counted the `Suite` array |
+| 2 | `POLISIM_BACKLOG.md:1031` | `MomentumTracker.Apply` at "`CampaignRun.cs:341` and `:451`" | lines **377** and **487** | `grep -n "momentum.Apply" Assets/Scripts/Elections/CampaignRun.cs` |
+| 3 | `POLISIM_BACKLOG.md:1020` | "254 `.cs` files under `Assets/`" | **293** | `find Assets -name "*.cs" \| wc -l` |
+| 4 | `POLISIM_MASTER_ROADMAP.md:495` | "`ls *.md` matches this table exactly: TWENTY files … no orphans" | root holds **21**; the orphan is **`POLISIM_FEATURE_LIST.md`**, which appears **0 times** in that document | `ls *.md \| wc -l`; `grep -c FEATURE_LIST` → 0 |
+| 5 | `POLISIM_V2_SCREEN_SPEC.md:14`, `:776` | "the one screen not yet built, **1h election night**" | built — `Assets/Scripts/UI/ElectionNightScreen.cs` exists; HEAD `94c0b9c` is *"F1 COMPLETE: board 1h filmed from the MODEL"* | `ls` + `git log -1` |
+| ~~6~~ | ~~`ERRANDS.md:18`~~ | ~~*"hash it AS LF"*~~ | ⚠ **RETRACTED — the document was correct; every file is LF** | `tr -cd '\r' \| wc -c` → 0 on every file; the published digest reproduces |
+
+#### Finding 4 is the most structurally revealing
+
+The roadmap's document-set table exists *specifically* to prove nothing dangles. It is now **behind the
+root it enumerates, and the file it is missing is the file that now governs the project.** The mechanism
+is plain: `POLISIM_FEATURE_LIST.md` was created by `1340738`; the roadmap has not been touched since
+`1985842`, which is earlier. **A completeness proof is worthless the moment it is not regenerated, and it
+fails silently** — nothing went red.
+
+#### What the retracted finding 6 still teaches, and it is not what it claimed
+
+The claim was wrong. **The class it pointed at is real, and the review demonstrated it by falling into it.**
+
+E-3 is an **outward-facing errand**: Elias pastes a package and hashes the readback. Its line-ending
+sentence has been rewritten by hand at least once already — `MISSING_PREREQUISITES.md:18` records the
+earlier inversion (*"that warning would have made a CORRECT readback look wrong"*) and repaired it **by
+flipping the assertion rather than deriving it.** ⚠ **The instruction is currently TRUE. Nothing in it
+computes anything, so nothing keeps it true**, and the next person to reason about `core.autocrlf` — as
+this review did — can flip a correct instruction into a wrong one with an argument that sounds right.
+
+⚠ **An assertion about the environment that is not computed from the environment is the defect, whether it
+currently reads true or false.** That is the whole finding, and it survives the retraction intact.
+
+---
+
+### §A.2 — The claim census: three counts per document
+
+**Instrument:** `Tools/claim_census.sh`, added by this review. ⚠ **It is not a check** — it never fails,
+never gates a bar, R-N5 does not apply. It reports. Re-run and every figure below is re-derived:
+
+```
+bash Tools/claim_census.sh              # the table
+bash Tools/claim_census.sh --per-marker # the marker breakdown
+```
+
+**LIVE = every root `*.md` except `COMPLETED.md`, `CLAUDE.md`, `ELECTIONS_PROTOTYPE_LOG.md`** — the same
+ruling `DocumentClaimCheck.cs` makes in its `Historical` set, adopted rather than reinvented.
+
+**UNIT, stated because it governs every number here:** the *claim-line* — a non-blank line outside a
+fenced code block that is not a pure separator. ⚠ **A line may carry more than one class, so the three
+columns are NOT a partition and deliberately sum to more than the total.** Honest about the instrument
+rather than tidy.
+
+| document | claim-lines | DERIVED | TRACKING | INSTR | DERIVED-only |
+|---|---|---|---|---|---|
+| CLAUDE_DESIGN_ASSET_REQUEST.md | 677 | 126 | 102 | 46 | 69 |
+| CLAUDE_DESIGN_BOARD_1I_NOTE.md | 134 | 18 | 8 | 6 | 17 |
+| ELECTIONS_ARCHITECTURE.md | 97 | **31** | 15 | 8 | 22 |
+| ELECTIONS_CAMPAIGN_SPEC.md | 584 | **0** | **0** | 79 | 0 |
+| ELECTIONS_GAP_TABLE.md | 97 | **62** | 43 | 15 | 26 |
+| ELECTIONS_PLAY_CALIBRATION.md | 397 | 55 | 53 | 35 | 48 |
+| ERRANDS.md | 54 | 4 | 15 | 11 | 1 |
+| LAW_BROWSER_BOARD_RULINGS.md | 94 | 12 | 5 | 5 | 11 |
+| MISSING_PREREQUISITES.md | 368 | 120 | 134 | 41 | 55 |
+| POLISIM_BACKLOG.md | 964 | **214** | **362** | 139 | 62 |
+| POLISIM_COHORT_SPECLET.md | 133 | 17 | 23 | 14 | 14 |
+| POLISIM_FEATURE_LIST.md | 150 | 26 | 42 | 20 | 18 |
+| POLISIM_MASTER_ROADMAP.md | 495 | **137** | 124 | 60 | 64 |
+| POLISIM_SEED_DATA_MACRO_OVERHAUL.md | 1038 | 83 | 56 | 71 | 71 |
+| POLISIM_TAX_SPECLET.md | 101 | 10 | 15 | 9 | 9 |
+| POLISIM_UI_V3_DIRECTION.md | 148 | 11 | 31 | 9 | 8 |
+| POLISIM_V2_SCREEN_SPEC.md | 590 | 68 | 38 | 40 | 49 |
+| SEND_PACKAGE.md | 88 | 15 | 7 | 7 | 13 |
+| **ALL LIVE** | **6209** | **1009** | **1073** | **615** | **557** |
+
+#### The answer to question 1, as a number
+
+**1,009 claim-lines across 18 live documents assert a fact about the code — 16% of live document prose.
+557 of them assert *only* that**: they rule nothing and track nothing. **That 557 is the coupling** — the
+part of the corpus that can go wrong without anybody being wrong about the work.
+
+#### The two extremes are the whole argument
+
+- **`ELECTIONS_CAMPAIGN_SPEC.md`: 584 claim-lines, DERIVED = 0, INSTRUCTION = 79.** Zero backticked
+  members, zero `.cs` paths, zero hashes, zero code counts. **It cannot go stale.** It is also the one
+  document nobody may edit — installed verbatim, cited by § number. **The target state already exists in
+  this repo as a worked example.**
+- **`ELECTIONS_GAP_TABLE.md`: 62 DERIVED of 97 claim-lines — 64%, the highest density.** Every row states
+  what the code currently holds. ⚠ **Its rows have already been hand-patched twice** (*"Re-derived
+  2026-08-31 (C-0.2): the row read …"*) — staleness repaired by the same operation that produced it.
+
+⚠ **`ELECTIONS_ARCHITECTURE.md` shows the pattern at its purest.** Of its own inventory it says: *"This is
+a 2026-08-29 inventory kept as the gap table's EXISTS column, **not a description of HEAD** — four of its
+entries no longer exist."* **The document knows it is stale and manages the staleness with prose instead
+of cutting the link.** That sentence is a permanent tax on every future reader.
+
+---
+
+### §A.3 — Where each document's DERIVED claims should live
+
+Three destinations, per claim class rather than per claim.
+
+#### The "Generated" mechanism already exists — and has never been pointed at a document
+
+The brief cites `ValkretsMandateColumnDiagnostic` as the precedent. **Measured: it only calls
+`Debug.Log`. It writes nothing.** The figure is re-derivable, but the last mile — getting it *into* a
+document — is a human retyping it, which is exactly where staleness enters.
+
+**The real precedent is `ElectionsDataCatalogGenerator` + `GeneratedCatalogCheck`**, and it is complete:
+
+- the generator writes the file and stamps it `// GENERATED by … DO NOT EDIT BY HAND.` plus a `SHA-256:`
+  of its **source** (`ElectionsDataCatalogGenerator.cs:192–208`);
+- the check re-derives that digest every run and fails on drift, comparing **the digest, not a re-parse** —
+  *"a second parser would be a second thing to keep true"*.
+
+⚠ **Measured: no live document contains a generated-block marker of any kind.** The word "regenerated"
+appears in six live documents and in every case means *a human rebuilt it by hand*. **The mechanism the
+project needs is already built, proven, and pointed only at C#.**
+
+#### Per document
+
+| document | DERIVED | destination for the bulk of it | why |
+|---|---|---|---|
+| `ELECTIONS_GAP_TABLE.md` | 62 (64%) | **GENERATED** | It is a status table over 44 spec sections. Its EXISTS/BUILT column is a query, not a judgement. The Class and rationale columns stay authored. |
+| `ELECTIONS_ARCHITECTURE.md` | 31 (32%) | **REFERENCED**, then mostly **DELETED** | Its inventory section already admits it does not describe HEAD. An architecture document should state the *rulings* (R-EL1, R-N2, the §40 divergence) — all INSTRUCTION, all timeless — and point at the code for what exists. |
+| `POLISIM_BACKLOG.md` | 214 | **REFERENCED** for names, **DELETED** for counts, **GENERATED** for closure state | Its own rule already says *"the repo outranks this file… the log wins and the row is corrected"*. Findings 2 and 3 are both here and both are decoration inside a row whose point survives without them. |
+| `POLISIM_MASTER_ROADMAP.md` | 137 | **GENERATED** (the document-set table) / **DELETED** (the rest) | Finding 4 lives here. The table is a `ls *.md` result typed by hand. Everything else is superseded status — see the ruling below. |
+| `MISSING_PREREQUISITES.md` | 120 | **REFERENCED** | 38 commit hashes, the most of any document. A hash pins *history* and belongs in the historical records; a live tracker needs the row's state, not its provenance. |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 126 | **GENERATED** | ⚠ Already 90% there by hand: it **pastes `PartyMarkCoverageCheck`'s literal output** (*"=== Party marks: 53 seeded part(ies), 1 with a resolving mark…"*). Make the paste a generated block and the coupling is gone. |
+| `POLISIM_V2_SCREEN_SPEC.md` | 68 | **KEEP, with vintages** | Its measured px figures are *design intent at a stated resolution*, not readings of the code — and §24 already rules *"every number in this document is suspect until derived or confirmed"*. Finding 5 is a status claim, not a measurement, and should be **deleted**. |
+| `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | 83 | **KEEP** | ⚠ **Its DERIVED claims are about the world, not the code** — sourced figures with source, vintage and basis. No demonstrable staleness was found in it. **It is already correct practice.** |
+| `ELECTIONS_CAMPAIGN_SPEC.md` | 0 | **KEEP, never edit** | The model. |
+| `ERRANDS.md` | 4 | **REFERENCED — urgently** | Only 4 DERIVED claims, and E-3's uncomputed line-ending sentence is one of them. Smallest coupling, highest cost per claim. |
+
+#### The one ruling this review asks for first
+
+⚠ **`POLISIM_MASTER_ROADMAP.md` is the document to rule on, and the brief mis-states its status.**
+Commit `1340738` retired **`POLISIM_MASTER_LIST.md`** (verified: absent from root) — **not the roadmap.**
+The roadmap survives, has demoted itself twice (*"The live list is no longer kept here"*), carries **137
+DERIVED claims and 495 claim-lines**, and **is provably unaware of the file that governs the project.**
+
+**It is the largest single block of coupling with the least remaining authority.** The recommendation is
+to **retire it the way the master list was retired** — its standing constraints migrated to
+`POLISIM_FEATURE_LIST.md`, its history to `COMPLETED.md`. That single ruling removes **137 of the 1,009
+DERIVED claims — 14% of the whole coupling — without writing a line of code.** ⚠ **Recommendation only.**
+
+---
+
+### §A.4 — What decoupling would retire
+
+**Measured: of the 25 checks in `Suite`, exactly three read live markdown at runtime** (as opposed to
+merely naming a `.md` file in a comment):
+
+| check | binds on | if DERIVED claims move out |
+|---|---|---|
+| `DocumentClaimCheck` | all live `*.md`, two clauses (MEMBER GONE, WRONG OWNER), both ratcheted at **0** | **SHRINKS, does not retire.** Its subject is the *Referenced* destination — a document naming `BuildParties()` still needs that name to resolve. Under the convention it gets *more* valuable and cheaper, because the count-and-line-number claims it cannot see would be gone. |
+| `PreWiringPremiseCheck` | `POLISIM_BACKLOG.md` + records | **SHRINKS.** Written because a done-when was a grep. Generated blocks remove the premise it re-checks. |
+| `DesignNotificationCheck` | `CLAUDE_DESIGN_ASSET_REQUEST.md` | **STAYS WHOLE.** Its subject is an *outward-facing ask going stale against a decision* (S-39) — a TRACKING failure, not a DERIVED one. **Decoupling does not touch it.** |
+
+#### The plain answer the brief asked for
+
+⚠ **Not one of the 25 checks can be retired by decoupling, and this must be said plainly.** Two shrink;
+one is untouched; the remaining 22 read code, assets or artifacts and never had a document coupling to
+cut.
+
+**And the sharper finding: not one of the five stalenesses in §A.1 was catchable by any existing check.**
+
+- Findings 1, 3, 4 are **counts**. Nothing in the project counts.
+- Finding 2 is a **line number**. Nothing resolves line numbers.
+- Finding 5 is a **status claim** ("not yet built"). Nothing checks status against `git`.
+- The retracted sixth would have been an **environment fact**. Nothing reads git config — and nothing checked the REVIEW's probe either.
+
+`DocumentClaimCheck` is green on all six, correctly — its two clauses are deliberately narrow, and the
+narrowness is well-argued in its own doc comment (a wider scan yields *"~580 candidates, most of them BCL
+and Unity names this repo has no standing to judge"*).
+
+**So the coupling cannot be closed by checking. The 25 checks are already at the sensible limit of what
+scanning prose can prove.** ⚠ **The only move left is to stop writing the claims** — which is why this
+review's recommendation is a convention rather than an instrument, and why R-N5 is exactly right.
+
+---
+
+### §A.5 — The proposed convention (one page)
+
+> ### The test
+> **The code can change freely and no document becomes wrong** — only *incomplete*, and only where
+> TRACKING has genuinely moved.
+
+**1. A live document may say:**
+- what is **ruled**, **owed**, **forbidden**, or **conventional** (INSTRUCTION — timeless);
+- what is **open**, **whose** it is, and **what it unblocks** (TRACKING);
+- **where a fact lives**: *"the party count is whatever `BuildParties()` seeds"*.
+
+**2. A live document may not say — outside a generated block:**
+- a **count of code things** ("53 parties", "254 `.cs` files", "TWENTY files", "twenty-one checks");
+- a **line number** (`CampaignRun.cs:341`);
+- a **measured figure** presented as current;
+- a **build status** a `git log` could answer ("the one screen not yet built");
+- an **environment fact** (`core.autocrlf`, an install path, a byte size).
+
+⚠ **This binds code comments too.** Finding 1 is in `CheckSuite.cs`, and `POLISIM_FEATURE_LIST.md` — a
+document — got the same number right.
+
+**3. Where generated blocks go.** Follow the existing, proven mechanism, unchanged in shape:
+
+```
+<!-- GENERATED by <Tool>. DO NOT EDIT BY HAND. source-digest: <sha256> -->
+… emitted lines …
+<!-- END GENERATED -->
+```
+
+Same three properties as `ElectionsDataCatalogGenerator`: a **DO NOT EDIT** stamp, a **digest of the
+source**, and **drift detected by comparing the digest, never by re-parsing** — a second parser is a
+second thing to keep true.
+
+**4. How a session updates records without transcribing a fact.**
+- Move a row's **state**; never restate the evidence. `✅ CLOSED at <hash>` is a pointer.
+- Never **edit a board forward** — re-derive it, which is already rule 9. **Finding 4 is a board that was
+  neither re-derived nor edited: it was simply left.**
+- When a figure is genuinely wanted in prose, **name the command that produces it** instead of its result.
+- ⚠ **Never repair a stale fact by flipping it.** E-3's line-ending sentence has been flipped by hand before, and this review nearly flipped it again. **Derive it or delete it.**
+
+**5. The three historical records are exempt and stay exempt.** `COMPLETED.md`, `CLAUDE.md` and
+`ELECTIONS_PROTOTYPE_LOG.md` exist to say what *was* true. Naming a since-deleted member is them working
+correctly — already `DocumentClaimCheck`'s ruling, and it should govern the convention too.
+
+---
+
+## PART B — Where the time goes
+
+### §B.1 — What is measurable, and what is not
+
+⚠ **The headline is an absence, and it is the most important finding in Part B.**
+
+**No wall-clock duration is recorded anywhere for a capture bar, the check bar, the four-width matrix, or
+a film run.** The records log capture counts, overflow counts and byte-identity to four decimals, and not
+one figure for how long the bar that produced them took. `COMPLETED.md:7906` describes the closing gate in
+full — *"81 captured, 0 failed"*, *"exit 0 over all four sets (324 captures)"*, *"6 of 6 byte-identical"* —
+**with no duration at all.**
+
+**Unity run cost has never been measured and cannot be recovered retrospectively.** Per the brief, this is
+stated rather than guessed.
+
+Every duration figure that exists in the repo came from **diagnosing a failure**, not from measuring a
+success:
+
+| figure | what it measures | source |
+|---|---|---|
+| **~40 s** | warm-up per Unity launch — the only per-launch cost figure in the repo | `COMPLETED.md:3496` |
+| **67 s** | a full capture pass, once invoked correctly | `CLAUDE.md:5999` |
+| **over an hour** | the six-country trajectory suite | `POLISIM_BACKLOG.md:871` |
+| **51 min** | a capture pass wedged under `-batchmode -nographics` | `CLAUDE.md:5983` |
+| **24 min** | one trajectory diff wedged on `Start-Process -Wait` | `CLAUDE.md:8904` |
+| **20+ min**, ≥3 recurrences | the post-simulation re-indexing hang | `CLAUDE.md:2755`, `:2763` |
+| **~36 h** | the only aggregate effort figure in the repo | `CLAUDE.md:9328` |
+
+#### The three largest costs, with figures
+
+**1. Hangs and lost Unity runs — the largest measurable sink.** Summing only the durations actually
+recorded: **51 + 24 + 20 = 95 minutes** in three incidents, against a class the records say recurred
+*"5+ occurrences"* and which was expensive enough to change project policy — `CLAUDE.md:5830` grants
+blanket permission to force-kill `Unity.exe`, *"which cost significant time across 5+ occurrences"*.
+⚠ **This is a floor, not a total**, because most instances carry no duration.
+
+**2. Records maintenance — and it has demonstrably displaced validation.** The single clearest measurement
+in the repo, `POLISIM_BACKLOG.md:871`:
+
+> *"The explanation needs the **trajectory suite** … and **the budget that remains cannot carry both it
+> and the records of the work already done.** Nothing is landed."*
+
+**An hour-long validation run was skipped so the write-up could be finished.** Corroborating shape: of the
+34 commits in the 2026-09-01 run, roughly **thirteen are residue-bookkeeping commits** each moving one
+integer (`a0f4593` *"M-S6 closed at c631505 - residue 17 -> 16"*, and twelve of that form). **Two of those
+closure rows landed in the wrong place and each cost a corrective commit** (`b3357d9`, `cc07f15`).
+
+**3. Session start-up — measurable in size, not in minutes.** The four records total **29,908 lines**.
+`CLAUDE.md` opens with a `⚠ READ FIRST` block plus a **7-row era table** stating which recorded numbers
+are comparable across which recalibrations — *"When quoting a number from this file, check which era it
+belongs to."* ⚠ **Every figure read out of a 14,552-line file must first be checked against that table.**
+The discipline compounds this deliberately: rule 9 requires boards be **re-derived, never edited forward**,
+so a session re-derives state it cannot trust. `CLAUDE.md:14314` records a session **re-counting its own
+root documents**.
+
+⚠ **How long that takes is not recorded and I will not estimate it.**
+
+---
+
+### §B.2 — A measured constraint the brief did not know about
+
+**The check bar cannot run while the Unity Editor is open.** Measured this session, not assumed:
+
+```
+Aborting batchmode due to fatal error:
+It looks like another Unity instance is running with this project open.
+… Application will terminate with return code 1
+```
+
+⚠ **This has a direct consequence for the review's own deliverable** — see §C. It also means every "one
+green bar per commit" costs a session either an Editor close/reopen or a wait, **and that cost has never
+been measured either.**
+
+⚠ **Incidental finding, recorded because it wasted a run here:** `CLAUDE.md` names the editor at
+`G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe` in **14 places**. That path **does not exist**; the
+installed editor is **6000.5.6f1**, matching `ProjectSettings/ProjectVersion.txt`. All 14 are in
+`CLAUDE.md`, which is historical and therefore *correct to be stale* — ⚠ **but a session reading it for an
+invocation path gets a failed run.** **No live document carries the stale path** (verified), so the
+convention is already working; this is an argument for **§B.4's start-up command emitting the path** rather
+than for editing history.
+
+---
+
+### §B.3 — The self-inflicted class, re-measured
+
+**The brief's "three instances, four Unity runs lost" is understated roughly threefold, and two of its
+three categories are the same incident.**
+
+| # | what failed | Unity runs lost | source |
+|---|---|---|---|
+| 1 | Capture run with `-batchmode -nographics`, which the tool's own doc **forbids in bold**; `WaitForEndOfFrame` never fires. *"reproduced identically three times running"* | **3 wedged + 1 re-run** | `CLAUDE.md:5990`, `:5997` |
+| 2 | **The same mistake again** weeks later on the `cc1b` film, then `-shotwidth` omitted so 1280 silently filmed at the 1600 default | **2** | `COMPLETED.md:5871–5876` |
+| 3 | PowerShell parameter named `$args`, shadowed by the automatic variable → Unity launched with `-logFile` alone and **every bar step "passed" in seconds** | **1 whole bar** | `CLAUDE.md:13400` |
+| 4 | `cleanup && capture` — `rm` hit a file lock, `&&` short-circuited, **the Unity run never happened while reporting exit 0** | **1** | `CLAUDE.md:5800` |
+| 5 | Unity output piped to `/dev/null`, hiding `Unity.dll failed to load` — *"through two wasted attempts"* | **2** | `CLAUDE.md:5729` |
+| 6 | `-shotheight=800` instead of 720 → **13 spurious overflows**, needing a revert-and-refilm bisect | **≥2 re-films** | `COMPLETED.md:6583` |
+| 7 | The "1280" campaign film actually shot at 1918×953 — the evidence was void | **1 family re-filmed** | `CLAUDE.md:14486` |
+| 8 | S-20: films exited 0 with 8 captures and **every frame was the desk** | **1 family re-filmed** | `COMPLETED.md:7746` |
+| 9 | Committing on a **red bar**, twice in one session | 0 Unity; 2 bar re-runs | `COMPLETED.md:10987` |
+| 10 | A placement script's walk-back never matched and **ran to the top of the file**, splicing the row to line 1 | 0 Unity | `cc07f15` |
+| 11 | Same class: a closed row appended past a moved landmark, landing under the wrong heading | 0 Unity | `b3357d9` |
+
+**At least nine Unity runs lost to invocation errors, plus two capture families re-filmed.**
+
+#### Three corrections to the brief's accounting
+
+- ⚠ **"Red-bar commits" and "the line-1 splice" are one class, not two.** `cc07f15`'s own message says
+  *"the previous commit was made on a red bar"* — **the splice caused one of the two red-bar commits.**
+- ⚠ **The lost-variable incident is not the splice.** The splice was a *regex that never matched*
+  (`cc07f15`). The genuine lost-variable failure is `$args` shadowing, and it cost **a whole bar**.
+- ⚠ **"Broken string quoting, twice" was understated and still live.** Measured in the working tree at the
+  start of this review: **24 occurrences of SQL-style `''` escaping leaked into prose across 4 files** —
+  `COMPLETED.md` (9), `POLISIM_BACKLOG.md` (7), `ERRANDS.md` (6), `CLAUDE_DESIGN_ASSET_REQUEST.md` (2) —
+  every one a doubled possessive (`Elias''s`, `era''s`, `4''s`). Introduced by at least four commits, all
+  2026-09-01. **Repaired in §C.** *(And a 25th instance occurred inside this very review — see §C.)*
+
+#### The pattern the numbers actually show
+
+**The dominant failure is not carelessness. It is that a wrong invocation and a right one look identical
+in their output.** Incident 3 *"passed in seconds"*. Incident 4 *"reported exit code 0"*. Incident 8
+*"exited 0 with 8 captures"* of the wrong screen. The project has already named this —
+`POLISIM_BACKLOG.md:1119`: *"Three shell probes were wrong on 2026-09-01 and **every one of them looked
+right in its output**."*
+
+⚠ **And the single most expensive pattern is a repeat: `-batchmode -nographics` passed to a capture tool
+whose own class comment forbids it in bold — twice, weeks apart, five runs between them.** The knowledge
+was written down, in the right place, and did not survive contact. **That is an argument for a mechanical
+rule, not a better-written warning.**
+
+---
+
+### §B.4 — Proposals
+
+#### P1 · No shell state across tool calls; every file edit is one self-contained operation
+
+**The brief's candidate rule, and the measurement supports it — including from inside this review.**
+
+> **No shell state may cross a tool call.** Every invocation is complete in itself: no variable set in one
+> call and read in another, no `cd` relied on, no `&&` chaining a cleanup to a run.
+> **Every file edit is one self-contained operation, matched on TEXT, never on a line number or a walked
+> position.**
+> **Prefer a direct file write to a shell heredoc for any content containing prose.**
+
+Each clause is bought by a measured incident: `$args` shadowing (3), `cleanup && capture` (4), the
+walk-back splice (10, 11), the `''` corruption (24 instances), **and this review's own heredoc failure.**
+
+**Cost: zero — it is a written rule.** ⚠ **It is also the only proposal here that addresses the class
+which has cost the most Unity runs.**
+
+#### P2 · One green bar per commit — with the precondition stated
+
+Already ruled in `POLISIM_FEATURE_LIST.md`. **What is missing is the precondition**, measured in §B.2:
+**the bar cannot run while the Editor is open.** The rule should read *"green for the tree being
+committed, from a run made with the Editor closed"* — otherwise it is unsatisfiable and gets skipped,
+which is how red-bar commits happen. **Cost: one sentence.**
+
+#### P3 · The start-up command
+
+Replace *"read to find out where we are"* with **one command that prints the state**: HEAD and subject ·
+the working tree · the top of `POLISIM_FEATURE_LIST.md` · the open `ERRANDS.md` rows · the claim census
+totals · **the editor path from `ProjectVersion.txt`** (§B.2) · **whether the Editor is open** (P2's
+precondition).
+
+⚠ **Every one of those is a `git`/filesystem query.** No transcription — which makes it §A.5 clause 4 in
+executable form. **Cost: ~1–2 hours.** ⚠ **The saving cannot be quantified** because start-up time was
+never measured; it is proposed on the strength of the 29,908-line corpus and the era table, and **that
+weaker basis is stated rather than hidden.**
+
+#### P4 · Generated blocks, starting with the two documents that already paste output by hand
+
+`CLAUDE_DESIGN_ASSET_REQUEST.md` already pastes `PartyMarkCoverageCheck`'s literal output;
+`ELECTIONS_GAP_TABLE.md` is a status table over the code. **Both are hand-generation waiting to be
+mechanised**, and the generator+digest+drift-check pattern already exists. **Cost: ~half a session for the
+first block.** Do **one** and judge it before doing more.
+
+#### P5 · Records generated from git
+
+Roughly thirteen of one run's 34 commits were closure rows moving one integer, and **two of them landed in
+the wrong place**. A closure row is `git log --grep` plus a template. ⚠ **But the residue counter those
+rows served is retired with the audit era**, so much of this cost has already gone. **Propose only: emit
+the `COMPLETED.md` section skeleton from the commit range** — never the prose.
+
+#### P6 · Unity batch incrementality
+
+⚠ **This proposal cannot be ranked, and that is the honest answer.** The brief asks what is safely
+incremental; the ranking criterion is time returned per hour spent — and **the run costs are unmeasured
+(§B.1)**. Making the trajectory suite per-country might save 50 minutes between gates or 5; **nothing in
+the record distinguishes those.**
+
+**Therefore the first move is not incrementality, it is instrumentation:** have the bar print elapsed
+wall-clock per step. ⚠ **This is not a check** — it prints, it never fails, R-N5 does not apply.
+**Cost: minutes. It is the precondition for every other Unity-cost decision**, and its absence is why the
+brief's own "over an hour" is the only figure available.
+
+**Stated for the record:** coverage at a gate is not to be reduced. The four-width matrix at a track close
+and the trajectory suite at a BASELINE family stay whole. **Only between-gate runs are candidates**, and
+only once the numbers exist.
+
+---
+
+### §B.5 — Ranked, with the declines
+
+| rank | proposal | cost | returned | why |
+|---|---|---|---|---|
+| **1** | **P1** the mechanical rule | ~0 | the largest measured class — ≥9 lost Unity runs, 2 red-bar commits, 24 corruptions | **A written rule against the failure mode that has cost the most. Nothing else has this ratio.** |
+| **2** | **P6a** time the bar | minutes | unlocks every Unity-cost decision | Cannot rank P6 without it. Cheapest unblock in the review. |
+| **3** | **P2** the bar's precondition | one sentence | the red-bar class | Makes an existing rule satisfiable. |
+| **4** | **A.3's ruling** retire the roadmap | one ruling + a migration | **137 of 1,009 DERIVED claims — 14% of the coupling** | Largest coupling reduction available, and no code. |
+| **5** | **P3** the start-up command | 1–2 h | unquantified | ⚠ Ranked on a weaker basis than the four above, and said so. |
+| **6** | **P4** generated blocks | ~half a session each | ~60–120 DERIVED claims per document | Real, but slower than the ruling above it. Do one, judge, then decide. |
+
+#### Declined
+
+- ⚠ **P6b — making the trajectory suite incremental now.** **Declined until timed.** It may be the biggest
+  win in the project or nearly nothing; committing engineering to it before P6a is guessing.
+- ⚠ **P5 in full — generating closure rows.** **Declined.** The residue counter they served is retired,
+  so this now builds a tool for a workflow that just ended. **A proposal that saves five minutes a session
+  and costs a session to build is a proposal to decline** — this is one.
+- ⚠ **Any new check for the five stalenesses in §A.1.** **Declined under R-N5.** The retracted sixth is not at
+  two instances after all, and a check written on a probe this review got wrong would have been the worst possible use of R-N5.
+- ⚠ **Rewriting the documents in this pass.** **Declined by the brief**, and correctly: the convention
+  should be ruled before 1,009 claims are touched.
+
+---
+
+### §C — The surgical changes made
+
+⚠ **CRITICAL: none of these is committed, and the reason is the project's own rule.**
+
+**"One green bar per commit, no exceptions."** The bar **cannot run** — the Unity Editor is open and
+refuses a second instance (§B.2, measured). **So the changes sit in the working tree, unstaged, for Elias
+to commit behind a green bar.** ⚠ **This is the rule working, not the review failing.** Committing these
+without a bar would be exactly the defect `COMPLETED.md:10987` records twice.
+
+**Verify with `git diff`; revert with `git checkout --`.**
+
+#### Change 1 — the `''` corruption repaired (4 files, 24 occurrences)
+
+Every doubled possessive left by PowerShell `''` escaping leaking into prose. Repaired by a single
+text-matched substitution; **verified to zero** (`grep -c "''" *.md` → no matches). ⚠ **Line endings were
+checked before and after: the files are LF and stayed LF, and the edit is content-only** — `git diff --stat`
+shows **25 insertions, 27 deletions**, not a whole-file rewrite.
+
+*Safe because:* no code touched, no claim altered, purely the repair of a mechanical corruption.
+
+#### Change 2 — an orphan fragment removed from `ERRANDS.md`
+
+Two lines duplicating the tail of the preceding bullet — residue of an edit that spliced rather than
+replaced, the same class as findings 10/11 in §B.3. Removed by **matching on text, not line number**,
+which is P1's rule applied to its own evidence.
+
+*Safe because:* the complete sentence survives intact one line above; the fragment carried nothing unique.
+
+#### Change 3 — `Tools/claim_census.sh` added
+
+The instrument behind every figure in §A.2. ⚠ **Not a check**: it never fails, never gates, R-N5 does not
+apply. It exists so this report's counts are **re-derivable rather than transcribed** — the report
+practising the convention it proposes.
+
+#### Deliberately NOT done
+
+- ⚠ **E-3's line-ending instruction is NOT flipped.** The review's claim that it was wrong has been
+  **retracted** — it reads true. **Flipping a correct instruction on a bad probe is exactly the defect
+  this review exists to end**, and it came within one edit of doing so. What it needs is to be *computed*
+  rather than asserted, and that is a ruling.
+- ⚠ **Findings 1–5 are not corrected.** Each sits in a document whose convention is not yet ruled, and the
+  brief forbids rewriting ahead of the ruling. **Correcting them by hand now would be the transcription
+  this review exists to stop.**
+
+---
+
+### What Elias is asked to rule
+
+1. **The §A.5 convention** — adopt, amend, or reject. Everything else waits on it.
+2. **`POLISIM_MASTER_ROADMAP.md`** — retire it as `POLISIM_MASTER_LIST.md` was retired? **14% of the
+   coupling, one ruling, no code.**
+3. **E-3's line-ending sentence** — make it COMPUTE the line ending and the digest, or say nothing about
+   line endings. ⚠ **Not because it is wrong — it is right — but because nothing keeps it right**, and
+   this review nearly flipped a correct instruction on a malformed probe.
+4. **P1**, and **P2**'s precondition — both cost nothing and address the largest measured class.
+5. **P6a** — time the bar, so P6 can be ranked at all.
+6. **§C's three changes** — commit behind a green bar, or revert.
+
+---
+
+## §D — Absorbed from the retired `POLISIM_REVIEW_ADDENDUM.md` (2026-09-01)
+
+⚠ **The addendum is deleted and this section is what survived it.** Two of its claims did not: its
+finding 6 is **retracted** (see the retraction at the head of §A.1), and its bar figures — 349.9 s cold,
+`ArtifactIdentityCheck` at 243.6 s / 75 % — are **superseded** by `Logs/bar_timing.tsv`, which is produced
+by `BarTiming` on every run and therefore re-derivable rather than transcribed. **A one-off stopwatch
+reading in a document is exactly what the claim convention forbids; an appended log is what replaces it.**
+
+Everything below was **re-measured in this run** before being carried over.
+
+### D.1 — Two corrections to Part B, both accepted
+
+⚠ **"Cannot be recovered retrospectively" is not "cannot be measured", and §B.1 treated them as one.**
+The record genuinely holds no duration for any successful run — that headline stands. But the cost of a bar
+was always available to anyone willing to spend one bar finding out. **A measurement that has not been
+taken is not an unmeasurable quantity**, and this project applies that distinction to everything else.
+§B.2's decline of P6 rested on the conflation and is withdrawn in D.3.
+
+⚠ **§B.2's Unity constraint was real but mis-attributed.** The refusal —
+*"another Unity instance is running with this project open"* — fires on **any** concurrent Unity process
+against the project, not specifically on an open Editor. This review's own attempt collided with a batch
+bar left running in the background, and the report generalised the message into *"the bar cannot run while
+the Editor is open"*, then declined to commit on that basis. **The honest rule is narrower and more
+useful: one Unity process against the project at a time, Editor or batch — so Unity work cannot be
+parallelised across agents or background tasks.**
+
+### D.2 — What `ArtifactIdentityCheck` is actually doing
+
+Re-measured this run: **876 `traj_*.csv` artifacts, 3.7 GB**, re-read and re-identified **on every bar**.
+
+⚠ **This is not an argument for weakening the check.** Those artifacts are the evidence base for the
+trajectory gate and their identity is exactly what must not drift. It is an argument about **when** the
+question is asked.
+
+### D.3 — P6, now rankable, and it outranks everything
+
+| proposal | measured basis | time returned |
+|---|---|---|
+| **P6a — `ArtifactIdentityCheck` incremental between gates, full sweep at gates** | ~92 % of the cheap suite, from `Logs/bar_timing.tsv` | **the bar falls to roughly a tenth of its cost on every commit** |
+| P6b — per-country trajectories | still unmeasured; the suite was not run | **still unrankable** |
+
+⚠ **Coverage at a gate is untouched**, which the brief forbids reducing. The reduction is **between**
+gates, which the brief asks for: the artifact set is append-only historical evidence, so between gates
+*"is this the same file"* is answerable from digests, and at a gate the full sweep runs as it does now.
+
+**On the brief's own test — time returned per hour spent — P6a is the highest-value item in the review and
+ranks above P1.** P1 is still right and still costs nothing; P6a returns minutes per commit for an
+afternoon.
+
+#### The cost it removes, measured
+
+`D-17` rules that a closure record is its own commit, because a commit cannot contain its own hash. Over
+this session's window that produced **fourteen record-or-fix commits, twelve of them changing one to three
+lines** — **each requiring a full green bar**, whose ~92 % is re-identifying 3.7 GB of CSVs that no
+document edit can touch.
+
+⚠ **D-17 is not the fault and should not be struck** — the citation must be true, and the two-commit shape
+is the only one where it is. **The fault is that the bar has one price regardless of what changed.**
+
+### D.4 — Where the session's output went
+
+Re-measured this run over the audit-era and F1 window (`git diff --numstat 12a4833^..88d8899`, split by
+path):
+
+| | lines added |
+|---|---|
+| **Editor tooling** (checks, diagnostics, generators) | **1 627** |
+| **`Assets/Scripts`** — the game | **619** |
+| markdown (records, register, feature list) | 1 976 |
+
+⚠ **72.4 % of the C# written was instrumentation.** ⚠ **The markdown grew more than the game and the
+tooling combined.**
+
+**This is the strongest argument in the review for R-N5 and for the audit era ending when it did**, and it
+is a measurement rather than an impression. It is **not** an argument that the instrumentation was wasted —
+several checks caught defects the day they were built. **It is an argument that the ratio cannot persist**,
+which is what the feature list exists to change.
+
+Retired 2026-09-02 under this rule, each migrated verbatim into its numbered section, §§182–190: the law-browser board rulings, the elections architecture note, the gap table, the prototype log, the UI v3 direction, the v2 screen spec, the seed-data overhaul (its nine `[GAP]` figures now an appendix line, Elias's), the play-calibration list, and the 2026-09-01 review.

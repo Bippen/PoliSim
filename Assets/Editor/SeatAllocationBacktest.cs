@@ -12,7 +12,7 @@ namespace PoliSim.EditorTools
     /// free parameters (every input below is a cited figure from `ElectionsData/`). A deviation
     /// is a FINDING, not a failure: the run exits 0 whenever the harness itself ran; the tables
     /// are the result. This run IS the "port to C# and reproduce, re-derive from scratch" that
-    /// `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` Part 5 requires before the allocator claims are
+    /// `COMPLETED.md §188` Part 5 requires before the allocator claims are
     /// relied on.
     ///
     /// WHAT RUNS, and what deliberately does NOT (the morning report's scope calls):

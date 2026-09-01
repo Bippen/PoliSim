@@ -12,7 +12,7 @@ git history.*
 
 ## Screen 1i — built as delivered (2026-08-25)
 
-**Against `LAW_BROWSER_BOARD_RULINGS.md` as delivered — the three drawn answers intact, none
+**Against `COMPLETED.md` §182 as delivered — the three drawn answers intact, none
 re-litigated:** four cells with the glyph as gutter, the six-dial breakdown / citation / live
 estimate detail-pane only, exactly as ruled; status by GROUPING, not a column — IN FORCE first,
 so what is enacted is the first thing on the board (the §7 capture's own failure, solved

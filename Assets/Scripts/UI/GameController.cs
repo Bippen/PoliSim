@@ -524,7 +524,7 @@ namespace PoliSim.UI
         /// <summary>Code-review pass (2026-08-25): the detail pane's own scroll position. The pane is
         /// bounded to the list's own height so a law with several dial deltas and a long Citation
         /// cannot push the tab past the height DrawPolicyLawsTab reserves for it - a deliberate,
-        /// narrow departure from LAW_BROWSER_BOARD_RULINGS.md's "the detail pane does not scroll":
+        /// narrow departure from COMPLETED.md §182's "the detail pane does not scroll":
         /// the scrollbar only appears when content genuinely overflows, so the common case looks
         /// identical to the ruling's intent, and the uncommon case degrades to a scroll instead of a
         /// layout-budget overrun.</summary>
@@ -1081,7 +1081,7 @@ namespace PoliSim.UI
         }
 
         // ------------------------------------------------------------------------------------------
-        // UI v3.0 — the shell fold (V3-R2, POLISIM_UI_V3_DIRECTION.md, 2026-08-28)
+        // UI v3.0 — the shell fold (V3-R2, COMPLETED.md §186, 2026-08-28)
         // ------------------------------------------------------------------------------------------
 
         private static void CopyDrafts<TKey>(Dictionary<TKey, float> source, Dictionary<TKey, float> target)
@@ -6365,7 +6365,7 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Law system MVP slice, REBUILT 2026-08-25 twice: first against §7's own scale argument,
-        /// then against Design's own board 1i ruling (LAW_BROWSER_BOARD_RULINGS.md, delivered as
+        /// then against Design's own board 1i ruling (COMPLETED.md §182, delivered as
         /// Progress4) - four real cells (name/category/magnitude/cost) plus a status GUTTER rather
         /// than a status column, status carried instead by GROUPING with counts (IN FORCE first,
         /// the marathon's own capture-evidenced fix, structural rather than an added control), a
@@ -9444,7 +9444,7 @@ namespace PoliSim.UI
 
             DrawTaxProgramBillVerdict(taxLine, pendingBill, verdictRect);
 
-            // v2.0 (POLISIM_V2_SCREEN_SPEC.md §A.9): the three stacked labels this row used to draw -
+            // v2.0 (COMPLETED.md §187 §A.9): the three stacked labels this row used to draw -
             // "Standing:", "Draft rate:", and a bare slider - collapse into ONE ledger row where the
             // standing value is a tick on the track, the draft is the knob, and the span between them
             // is hatched in draft amber. Behaviour 1 stops being a colour on a label and becomes a
@@ -9856,7 +9856,7 @@ namespace PoliSim.UI
 
             SovereignWealthFund standingDefaults = fund ?? new SovereignWealthFund();
 
-            // v2.0 (POLISIM_V2_SCREEN_SPEC.md §A.9): six ledger rows. SWF exercises the mapping harder
+            // v2.0 (COMPLETED.md §187 §A.9): six ledger rows. SWF exercises the mapping harder
             // than any other sub-screen, and both of its awkward cases turned out to fit the shape the
             // other four already use rather than needing a new one.
             //

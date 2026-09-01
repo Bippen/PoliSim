@@ -52,7 +52,7 @@ namespace PoliSim.EditorTools
             "rejected", "was not built", "never built",
 
             // ⚠ ADDED 2026-09-01, found by PreWiringPremiseCheck borrowing this list. The list had
-            // "replaced by" and `ELECTIONS_GAP_TABLE.md` says "53 real parties REPLACED THEM" - the same
+            // "replaced by" and `COMPLETED.md §184` says "53 real parties REPLACED THEM" - the same
             // history in the active voice, missed by one preposition. **A named-set rule fails at the
             // edges of its own list**, which is stated on both consumers; this is one such edge, found by
             // a second consumer reading the same lines for a different reason.

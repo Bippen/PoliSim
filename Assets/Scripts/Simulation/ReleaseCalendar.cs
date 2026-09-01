@@ -6,7 +6,7 @@ namespace PoliSim.Simulation
     /// Master Sequence step 9, Step A: when each statistic is published, per country.
     ///
     /// Implemented as RULES rather than a table of dates, per the directive - the schedules come from
-    /// `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` Part 1, all marked [VERIFIED]:
+    /// `COMPLETED.md §188` Part 1, all marked [VERIFIED]:
     ///
     /// USA        unemployment first Friday monthly; CPI ~12th monthly;
     ///            GDP advance t+30 / second t+60 / third t+90 after quarter end.

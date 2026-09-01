@@ -407,7 +407,7 @@ so it is recorded here rather than implied.
 **Where it went. RULED 2026-08-30 (Elias): its own item, `W-B12`, NOT a rider on W-F5** — because
 it is a **playability requirement and must not inherit W-F5's data dependency**: it needs no sourced
 funding figures, only a rule over costs the model already charges. Slotted after W-E8 and before
-Track F in the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `ELECTIONS_PROTOTYPE_LOG.md`), where its done-when lives. This section stays as the
+Track F in the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `COMPLETED.md` §185), where its done-when lives. This section stays as the
 finding's provenance.
 
 **What it would change.** A managed party would stop starving its own staff; the pace would release

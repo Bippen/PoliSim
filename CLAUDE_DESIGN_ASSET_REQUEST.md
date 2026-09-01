@@ -67,7 +67,7 @@ rule exists to catch at least four times.
 
 ## 1. The ninth request — UI v3.1: one frame, denser, instruments (2026-08-28) — ANSWERED IN FULL THE SAME EVENING; BUILT AS v3.1 PHASE B THE SAME NIGHT
 
-*The request as Elias delivered it with the v3.1 Phase A kickoff (archived verbatim at `../PoliSim-captures/inbox/DESIGN_REQUEST_V3_1.md`); only the heading levels are changed to sit inside this document. The six annexes it names follow, engineering-measured (R-E3). **Answered 2026-08-28:** 1n-r2, 1m-r2, 2a, D4, D6 on the live screens file — read into `POLISIM_V2_SCREEN_SPEC.md` §A.18 verbatim and built (`COMPLETED.md` §45). Kept here, not migrated, because the annexes are the measured base the answer was computed against and the next request starts from their corrections (the status line above).*
+*The request as Elias delivered it with the v3.1 Phase A kickoff (archived verbatim at `../PoliSim-captures/inbox/DESIGN_REQUEST_V3_1.md`); only the heading levels are changed to sit inside this document. The six annexes it names follow, engineering-measured (R-E3). **Answered 2026-08-28:** 1n-r2, 1m-r2, 2a, D4, D6 on the live screens file — read into `COMPLETED.md` §187 §A.18 verbatim and built (`COMPLETED.md` §45). Kept here, not migrated, because the annexes are the measured base the answer was computed against and the next request starts from their corrections (the status line above).*
 
 
 **From Elias's first live sitting on the v3.0 build (two findings-screenshots attached as Annex D).
@@ -485,7 +485,7 @@ the record.
 
 ## 4. Costed, NOT requestable yet — the next ask starts here (not sent)
 
-Derived from the screens that exist and the one that does not (`POLISIM_V2_SCREEN_SPEC.md` §A.14;
+Derived from the screens that exist and the one that does not (`COMPLETED.md` §187 §A.14;
 `MISSING_PREREQUISITES.md` §D/§E):
 
 - **Election night, Canvas screen 1h (item-10-gated, 13 Sept 2026).** Against the delivered set: paper,
@@ -542,7 +542,7 @@ asked for no art.
 **Tintable art — the default, and still binding.** PNG 256×256, 8-bit RGBA, transparent background,
 **authored pure white** with all shape information in the alpha channel; tinted at draw time via
 `UiPalette.DrawTintedIcon`; **no pre-coloured variants** — colours live in `UiPalette`/`PoliSimTheme` and
-must stay there. The inks are the v2.0 aged set in `PoliSimTheme.cs` and `POLISIM_V2_SCREEN_SPEC.md`
+must stay there. The inks are the v2.0 aged set in `PoliSimTheme.cs` and `COMPLETED.md` §187
 §A.3; re-read them from the code, never from a table in this document.
 
 ⚠ **THREE CATEGORIES ARE EXEMPT, and this is not a lapse in the convention.** **Country flags**,

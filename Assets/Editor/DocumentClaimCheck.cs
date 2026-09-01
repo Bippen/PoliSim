@@ -13,7 +13,7 @@ namespace PoliSim.EditorTools
     /// The coherence audit's **SEVENTH sweep — a written claim about the code, checked against the code.**
     ///
     /// <para><b>The instance that opened it, and the correction that followed.</b> A shelf pass reported
-    /// `ELECTIONS_PLAY_CALIBRATION.md`'s entry 5 — `CampaignCalendar.DefaultPreCampaignWeeks` — as naming
+    /// `COMPLETED.md §189`'s entry 5 — `CampaignCalendar.DefaultPreCampaignWeeks` — as naming
     /// a type that does not exist, and rewrote it. ⚠ **The entry was right and the pass was wrong**:
     /// `CampaignCalendar` is a real `public readonly struct` that happens to live in the FILE
     /// `CampaignClock.cs`. The instrument at fault matched TYPE names against FILE names, so a type
@@ -81,7 +81,7 @@ namespace PoliSim.EditorTools
         /// since been deleted is them working correctly. This check binds on the LIVE documents.</summary>
         private static readonly HashSet<string> Historical = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
-            "COMPLETED.md", "CLAUDE.md", "ELECTIONS_PROTOTYPE_LOG.md",
+            "COMPLETED.md", "CLAUDE.md",
         };
 
         private static readonly HashSet<string> FileExtensions = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
@@ -124,7 +124,7 @@ namespace PoliSim.EditorTools
             foreach (string path in Directory.GetFiles(root, "*.md", SearchOption.TopDirectoryOnly))
             {
                 // ⚠ THE HISTORICAL RECORDS ARE EXCLUDED, AND THIS IS A RULING RATHER THAN A CONVENIENCE.
-                // `COMPLETED.md`, `CLAUDE.md` and `ELECTIONS_PROTOTYPE_LOG.md` exist to say what WAS done;
+                // `COMPLETED.md`, `CLAUDE.md` and `COMPLETED.md §185` exist to say what WAS done;
                 // naming a member that has since been deleted is them working correctly, not failing.
                 // The first run reported `GraphRenderer.DrawPublished` against three documents - and that
                 // member was deliberately deleted at RIDE-1, with the deletion recorded in two of them.

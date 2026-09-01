@@ -5,7 +5,7 @@ namespace PoliSim.UI
     /// <summary>
     /// One row of the v2.0 Budget ledger: name, an in-track slider carrying the standing/draft pair,
     /// the inline figures, and a trailing column. **The Budget screen's atom** - see
-    /// POLISIM_V2_SCREEN_SPEC.md §A.9.
+    /// COMPLETED.md §187 §A.9.
     ///
     /// Its own file rather than another method on <see cref="PoliSimWidgets"/> for the same reason
     /// <see cref="RankedBarLedgerRenderer"/> has one: this is a composite with its own geometry rules,

@@ -66,11 +66,7 @@ namespace PoliSim.EditorTools
         /// the project forget its own history.</summary>
         private static readonly (string File, string Reason)[] HistoricalDocuments =
         {
-            ("COMPLETED.md", "the record of finished work - every entry is a statement about a past state"),
-            ("ELECTIONS_PROTOTYPE_LOG.md", "a LOG. Its entries are dated observations of what was true when "
-             + "they were written, which is the same contract COMPLETED.md has; failing it would be asking "
-             + "the project to go back and edit its own notebook."),
-        };
+            ("COMPLETED.md", "the record of finished work - every entry is a statement about a past state"),        };
 
         /// <summary>Whether every occurrence of <paramref name="term"/> on this line sits inside double
         /// quotes. ⚠ ALL of them, not any: a line that quotes the phrase once and asserts it once is
@@ -202,7 +198,7 @@ namespace PoliSim.EditorTools
                             continue;
                         }
 
-                        // ⚠ PROSE WRAPS, AND A SENTENCE IS NOT A LINE. `ELECTIONS_GAP_TABLE.md` opens a
+                        // ⚠ PROSE WRAPS, AND A SENTENCE IS NOT A LINE. `COMPLETED.md §184` opens a
                         // paragraph "the migration RAN on 2026-08-30 ... What retired:" and the terms land
                         // on the NEXT line. Judging strictly per line would have demanded that a document
                         // repeat its own tense marker on every wrapped line - which is not writing, it is

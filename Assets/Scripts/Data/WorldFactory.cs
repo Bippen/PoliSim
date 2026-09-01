@@ -598,7 +598,7 @@ namespace PoliSim.Data
             //
             // [PROVISIONAL - session-sourced 2026-08-28; mapping confirmed by Elias 2026-08-28 (R-C4);
             // [VERIFIED] waits on the §B database session] (R-K9 of the omnibus; the §F mapping followed
-            // as written; basis notes: POLISIM_SEED_DATA_MACRO_OVERHAUL.md §8). FACT half - which programs a
+            // as written; basis notes: COMPLETED.md §188 §8). FACT half - which programs a
             // country really runs: universal statutory health coverage, the five and not the USA
             // (Medicare/Medicaid are not universal coverage; that public spending stays in the sourced
             // Healthcare budget line); a national means-tested cash social-assistance scheme, a
@@ -611,7 +611,7 @@ namespace PoliSim.Data
             // income-maintenance component, nothing is added twice) -> means-tested. generosity =
             // clamp(spend / CostShareOfGdp x 100, 0, 100) with the cost shares the budget already
             // books (WelfareProgramCostShares: healthcare 10, means-tested 6, housing 1.5,
-            // childcare 1). Caveats confirmed 2026-08-28 (R-C4; POLISIM_SEED_DATA_MACRO_OVERHAUL.md §8): Germany's minimum
+            // childcare 1). Caveats confirmed 2026-08-28 (R-C4; COMPLETED.md §188 §8): Germany's minimum
             // income (Bürgergeld) is booked under Unemployment in SOCX, so its means-tested figure
             // understates; childcare clamps at 100 for three countries because real family in-kind
             // spending exceeds the model's 1%-of-GDP full-generosity cost; 2021 is a pandemic year.
@@ -749,7 +749,7 @@ namespace PoliSim.Data
             //
             // [PROVISIONAL - session-sourced 2026-08-28; mapping confirmed by Elias 2026-08-28 (R-C4);
             // [VERIFIED] waits on the §B database session] (R-K9 of the omnibus; the §F mapping followed
-            // as written; basis notes: POLISIM_SEED_DATA_MACRO_OVERHAUL.md §8). OECD Product Market Regulation
+            // as written; basis notes: COMPLETED.md §188 §8). OECD Product Market Regulation
             // indicators, 2023-24 vintage on the 2023 methodology (0-6, lower = less regulated):
             // economy-wide from the OECD's own workbook PMR-Indicator_Econwide_2023-24-and-2018_
             // 02.02.2026.xlsx (oecd.org, retrieved 2026-08-28, SHA-256 D0EBCFC7...; its published

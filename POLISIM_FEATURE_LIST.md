@@ -3,7 +3,7 @@
 # THE CLAIM CONVENTION — ruled 2026-09-01, governs every document AND every source comment
 
 ⚠ **This is the head of the governing document because it outranks everything below it.** It was ruled on
-the measurement in `POLISIM_REVIEW_2026-09-01.md`: **1,009 of 6,209 live claim-lines asserted a fact about
+the measurement in `COMPLETED.md` §190: **1,009 of 6,209 live claim-lines asserted a fact about
 the code, and 557 asserted nothing else.** Six of those were demonstrably false at the moment they were
 measured, and **not one was catchable by any of the checks in the bar.**
 
@@ -74,11 +74,12 @@ detected by comparing the digest, never by re-parsing** — a second parser is a
 - When a figure is genuinely wanted in prose, **name the command that produces it** instead of its result.
 - ⚠ **Never repair a stale fact by flipping it.** Derive it or delete it.
 
-## The three historical records are exempt, permanently
+## The two historical records are exempt, permanently
 
-`COMPLETED.md`, `CLAUDE.md` and `ELECTIONS_PROTOTYPE_LOG.md` exist to say what **was** true. Naming a
-since-deleted member is them working correctly. This is already `DocumentClaimCheck`'s ruling and it now
-governs the convention too.
+`COMPLETED.md` and `CLAUDE.md` exist to say what **was** true. Naming a since-deleted member is them
+working correctly. This is already `DocumentClaimCheck`'s ruling and it now governs the convention too.
+⚠ There were three until 2026-09-02: the elections prototype log was retired into `COMPLETED.md` §185, so
+it is exempt by being *inside* an exempt record rather than by being named beside one.
 
 ## What this does NOT license
 
@@ -281,12 +282,22 @@ In order of what a player would notice first:
 
 ## CODE
 
+- **The review's unexecuted proposals** (`COMPLETED.md` §190, its §B.4): **P3** the session start-up
+  command · **P4** generated blocks, starting with the two documents that paste tool output by hand ·
+  **P5** records generated from git · **P6b** per-country trajectories (P6a, the artifact check made
+  incremental, is DONE and cut the bar to ~26 s). Each is a proposal awaiting a ruling; none outranks
+  F2–F6.
 - **`D-16` — the sourced tax-base table for five countries**, `CollectionEfficiency` re-solved and
   re-documented as a coverage bridge, the >1 values named as coverage rather than efficiency. **BASELINE**;
   ruled and TAKEN, execution logged STOPPED with its five-step order in `POLISIM_BACKLOG.md` §D. Rides F4.
 
 ## Elias's, unchanged
 
+- **The nine `[GAP]` seed figures** in `COMPLETED.md` §188 (the seed-data overhaul, retired 2026-09-02) —
+  each named there with what would source it. **Elias's to source, never to invent**; a `[GAP]` stays a
+  gap until a citation lands beside it.
+- **The 20 play-calibration entries** — the list is `COMPLETED.md` §189 (retired 2026-09-02 as a record);
+  every entry is a number awaiting a loop to judge it against, which is F6's done-when.
 - **`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves. ⚠ **Blocks F3's
   per-group loyalty**, which is otherwise complete.
 - **`ERRANDS.md` E-3** — the one paste: the GO on the seven marks, the derived mandate column, **the two
@@ -371,7 +382,7 @@ there rather than restating it. Numbered references to *"rule N"* across the rec
 ## The process rules — ruled standing 2026-09-01
 
 ⚠ **These are not carelessness to be fixed by care.** Each was bought by measured, repeated loss, and the
-measurement is `POLISIM_REVIEW_2026-09-01.md` §B.3.
+measurement is `COMPLETED.md` §190 §B.3.
 
 - ⚠ **NO SHELL STATE ACROSS TOOL CALLS.** Every invocation is complete in itself: no variable set in one
   call and read in another, no reliance on a working directory, no chaining a cleanup to a run where a
@@ -407,7 +418,7 @@ measurement is `POLISIM_REVIEW_2026-09-01.md` §B.3.
   Canvas render mode draws above it; a screen is either Canvas or IMGUI, **never both interleaved.** Any
   request that violates this silently **is a request to migrate that screen wholesale to Canvas**, and
   should be recognised as such rather than hacked around.
-- **Spec references:** anything row-shaped cites `POLISIM_V2_SCREEN_SPEC.md` by section. ⚠ **Every number
+- **Spec references:** anything row-shaped cites `COMPLETED.md` §187 by section. ⚠ **Every number
   that spec supplies is suspect until derived or explicitly confirmed** — its own banner says so.
   **Declare deviations from the boards rather than diverging silently.**
 - **One row type per capture for NEW row types, never batched** — a re-capture of an already-shipped row

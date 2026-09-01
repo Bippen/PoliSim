@@ -8,7 +8,7 @@ namespace PoliSim.Elections
     /// piece) — PURE FUNCTIONS, WIRED TO NOTHING (R-N2: no gameplay path, no UI, no turn-loop
     /// or save hook reaches this namespace; the only caller is the editor backtest harness).
     ///
-    /// This file is the C# port-and-reproduce that `POLISIM_SEED_DATA_MACRO_OVERHAUL.md`
+    /// This file is the C# port-and-reproduce that `COMPLETED.md §188`
     /// Part 5 demands before any allocator claim is relied on ("port seat_allocation_check.py
     /// to C# and reproduce its numbers; re-derive Germany and Poland from scratch"). The
     /// methods implemented are exactly the SOURCED ones (`ElectionsData/<country>/returns_*.md`
@@ -26,7 +26,7 @@ namespace PoliSim.Elections
     /// and no sourced dataset in tonight's harness produces a tie. A future wiring pass
     /// replaces the tie branch with the statute's rule per country and a seeded stream draw
     /// where the statute says lots (`SimulationRandom.Stream.ElectionNoise`, reserved, not
-    /// taken — ELECTIONS_ARCHITECTURE.md).
+    /// taken — COMPLETED.md §183).
     ///
     /// All arithmetic is double quotients over long votes; no parsing, no formatting — the
     /// B3 decimal-comma class cannot reach a function with no string in its signature.

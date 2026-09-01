@@ -6,7 +6,7 @@ namespace PoliSim.Data
     /// Master Sequence step 9, Step A: which statistic a published figure describes.
     ///
     /// Deliberately NOT every field on <see cref="EconomyState"/>. Only stats with a REAL release rule in
-    /// `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` appear here - inventing a publication cadence for something
+    /// `COMPLETED.md §188` appear here - inventing a publication cadence for something
     /// like ConsumerConfidence would be the same fabrication the seed file's own `[GAP]` discipline
     /// forbids. Everything else keeps reading live in the UI until a real schedule is sourced.
     /// </summary>
