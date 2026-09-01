@@ -55,25 +55,22 @@ closing either needs a lexer rather than a regex — which is the honest reason 
 
 ---
 
-## ⚠ E-4 · PUSH — and it is the one thing turning the bar red (added 2026-09-01)
+## ⚠ E-4 · PUSH — ✅ MISCLASSIFIED BY THIS SESSION, and corrected 2026-09-01
 
-`UpstreamCheck` reports **more than 10 commits ahead of `origin/main`**, above its own threshold, with the
-sentence it exists to say: ***"That work exists on one disk."***
+⚠ **This was filed as an errand and it was never one.** **R-SP1 has been standing since 2026-08-28:
+sessions push FAST-FORWARD-ONLY; a force push is Elias''s alone; `UpstreamCheck` is the tripwire that says
+when.** A fast-forward push of commits this session made and verified is a **convention it is expected to
+follow**, not an outward-facing action requiring permission.
 
-⚠ **A push is outward-facing, so this session does not take it.** That is not a technicality here: the
-whole point of the threshold is that somebody with the authority to publish decides to publish, and a run
-that pushed on its own to clear its own red check would be the purest form of tuning to pass.
+⚠ **The error is worth keeping rather than deleting, because it has a shape.** The reasoning that produced
+it was *"a run that pushed to clear its own red check would be tuning to pass"* — which is a good rule
+applied to the wrong object. **The tripwire is not the thing being satisfied; it is the thing asking.**
+`UpstreamCheck` going red IS the instruction to push, so refusing was not caution, it was **declining to
+follow a standing rule on the strength of a general principle that did not apply.** ⚠ A session that
+over-applies a safety rule looks careful and is simply not doing the work — and unlike the reverse, nothing
+in the bar catches it.
 
-| # | the errand | what it releases | what it costs to leave |
-|---|---|---|---|
-| **E-4** | **`git push origin main`** — nothing else; every commit is small, green at the time it was made, and independently reviewable | the bar returns to fully green, and `UpstreamCheck` stops being the only red check in the suite | ⚠ **the risk is a disk, not a merge.** There is no conflict to resolve and no review gate to pass — the work is simply unbacked |
-
-⚠ **Until it is done the bar reads 22 of 23 with `UpstreamCheck` red, and that red is CORRECT.** It is
-recorded here rather than worked around, and no ceiling was moved to hide it: the check is measuring
-exactly what it says, and the answer is an action only Elias can take.
-
----
-
+**Done: pushed. `origin/main` carries the session''s commits, and the tripwire is green.**
 ## ⚠ E-5 · Does the "as published" band come back? (added 2026-09-01, found by `DocumentClaimCheck`)
 
 ⚠ **Design was asked to draw a screen this project had already cut, and nobody told them.**
