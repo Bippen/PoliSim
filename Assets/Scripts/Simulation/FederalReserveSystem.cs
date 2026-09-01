@@ -54,7 +54,7 @@ namespace PoliSim.Simulation
                 1.5f),
             new FedChair(
                 "Ines Kowalski", FedChairPhilosophy.Hawkish,
-                "A former bank supervisor who believes the Fed waited too long to act last cycle and wants a wider margin against renewed price pressure.",
+                "A former bank supervisor who believes {bank} waited too long to act last cycle and wants a wider margin against renewed price pressure.",
                 1.25f),
             new FedChair(
                 "Theodore Voss", FedChairPhilosophy.Moderate,
@@ -62,7 +62,7 @@ namespace PoliSim.Simulation
                 0f),
             new FedChair(
                 "Priya Anand", FedChairPhilosophy.Moderate,
-                "Balances the inflation and employment mandates evenly, wary of letting either drift too far from target.",
+                "Weighs price stability against the labour market evenly, wary of letting either drift too far from where {bank} wants it.",
                 0.25f),
             new FedChair(
                 "Roland Kade", FedChairPhilosophy.Moderate,
@@ -80,10 +80,16 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// Draws 2-3 candidates from CandidatePool with distinct philosophies (never all the same
-        /// lean), for the player to choose USA's next Fed chair from at a presidential election
-        /// boundary - see GameController's Federal Reserve panel.
+        /// lean), for the player to choose the country's next central-bank head from at an election
+        /// boundary - see GameController's central-bank panel.
+        ///
+        /// <para>⚠ S-15 (2026-09-02): the pool's prose is written against a `{bank}` placeholder and
+        /// resolved HERE, per country, into a fresh <see cref="FedChair"/>. Until this the pool said
+        /// "the Fed" verbatim, so a Swedish player was offered Riksbank governors who talked about the
+        /// Federal Reserve. The pool entries are shared templates and are never mutated; a save carries
+        /// the resolved text, so a candidate drawn for Sweden still reads as Sweden's after a load.</para>
         /// </summary>
-        public static List<FedChair> GenerateCandidates()
+        public static List<FedChair> GenerateCandidates(CountryId country)
         {
             var philosophies = new List<FedChairPhilosophy>
             {
@@ -92,14 +98,31 @@ namespace PoliSim.Simulation
             Shuffle(philosophies);
 
             int count = RandomSource.Next(MinCandidateCount, MaxCandidateCount + 1);
+            string bank = BankShortName(country);
             var candidates = new List<FedChair>(count);
             for (int i = 0; i < count; i++)
             {
                 List<FedChair> withPhilosophy = CandidatePool.FindAll(c => c.Philosophy == philosophies[i]);
-                candidates.Add(withPhilosophy[RandomSource.Next(withPhilosophy.Count)]);
+                FedChair template = withPhilosophy[RandomSource.Next(withPhilosophy.Count)];
+                candidates.Add(new FedChair(template.Name, template.Philosophy,
+                    template.Description.Replace("{bank}", bank), template.RateBias));
             }
 
             return candidates;
+        }
+
+        /// <summary>How the institution is referred to inside a sentence, per country. Only the countries
+        /// that appoint their own chair have a named entry; the euro members appoint nobody, and the
+        /// fallback names no institution rather than the wrong one.</summary>
+        public static string BankShortName(CountryId country)
+        {
+            switch (country)
+            {
+                case CountryId.USA: return "the Fed";
+                case CountryId.Sweden: return "the Riksbank";
+                case CountryId.Poland: return "the NBP";
+                default: return "the central bank";
+            }
         }
 
         private static void Shuffle<T>(List<T> list)

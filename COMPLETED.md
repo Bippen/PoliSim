@@ -18338,3 +18338,26 @@ not create one.
 "over an hour" — that figure was a stale transcription and it has been shaping session planning; and a
 one-country constant change reaches two other countries through the currency step and none through
 trade, which is a fact about the model worth knowing before F2 lands its six-country family.
+
+
+## 192. S-15 CLOSED — the candidate pool stops telling Swedish players about the Fed (2026-09-02)
+
+`FederalReserveSystem.CandidatePool`'s authored descriptions named the institution — *"believes **the
+Fed** waited too long to act last cycle"* — and one leaned on the Fed's dual mandate — *"balances the
+inflation and employment mandates"*. Since C-C7 opened the pool to every country with its own chair, a
+Swedish player was offered Riksbank governors who talked about the Federal Reserve, and a Polish one NBP
+presidents with a mandate the NBP does not have.
+
+**The fix is at generation, not at display.** The pool holds templates written against a `{bank}`
+placeholder; `GenerateCandidates(CountryId)` resolves it into a **fresh** `FedChair` per draw — *the
+Fed* · *the Riksbank* · *the NBP*, and *the central bank* for anyone else — so the shared pool is never
+mutated and a save carries the resolved text. The dual-mandate sentence is reworded to be true of a
+single-mandate bank: *weighs price stability against the labour market … where `{bank}` wants it*.
+
+⚠ **What this is and is not.** The register billed S-15 as a CONTENT item — per-country fictional
+biographies — and said so must not be improvised inside another item. This is narrower and it is the
+whole of the *defect*: no sentence a candidate says is now false of the institution the player is
+appointing to. **Richer per-country biographies remain a content choice, not a correction**, and they
+are not written here; the appendix carries them as Elias's if he wants them.
+
+**Bar 25 of 25.**

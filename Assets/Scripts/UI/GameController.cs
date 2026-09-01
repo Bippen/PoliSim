@@ -3068,7 +3068,7 @@ namespace PoliSim.UI
 
             if (_fedChairCandidatesForTurn != upcomingTurn)
             {
-                _fedChairCandidates = FederalReserveSystem.GenerateCandidates();
+                _fedChairCandidates = FederalReserveSystem.GenerateCandidates(_playerCountry.Id);
                 _fedChairCandidatesForTurn = upcomingTurn;
             }
 
