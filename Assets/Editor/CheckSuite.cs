@@ -128,9 +128,14 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (TWENTY-ONE since the NINTH sweep - a guard a COMMENT can switch off, a MUTATION PROBE rather than a scan - and the generated-catalog drift check, both 2026-09-01; nineteen since the EIGHTH sweep - a ratchet whose ceiling has stopped discriminating - 2026-09-01, registered LAST because it reads what the others reported to `RatchetLedger` in the same process; eighteen since the SEVENTH sweep - a written claim about the code, checked against the code - and S-32's player-reachability check, both 2026-09-01; sixteen since the SIXTH sweep - evidence that would pass regardless - the same day; fifteen since its fifth; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
-    /// `AreaIconCoverageCheck` joined 2026-08-28), each
-    /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> — <b>the array
+    /// IS the enumeration, and this sentence deliberately does not count it.</b> ⚠ It used to, and it was
+    /// WRONG: it read "TWENTY-ONE" while the array held twenty-five, and no check in the bar could see it
+    /// because every NAME it mentioned resolved — only the NUMBER was stale. The run prints the count and
+    /// the names before it starts, which is the generated form of the same fact; the sweep-by-sweep history
+    /// of how the list grew is in `COMPLETED.md`. **Per the claim convention (2026-09-01), a count is
+    /// referenced or generated, never transcribed — in a comment exactly as in a document.** Each check
+    /// carries its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
     /// seeded world rather than a project scan, and it does NOT run
     /// <see cref="ScreenEdgeCheck"/> — see below.</para>
@@ -379,6 +384,7 @@ namespace PoliSim.EditorTools
             // Which table is running is not inferable from the ledger's contents - an empty group and a
             // group whose checks all failed early look identical - so it is STATED by the caller.
             RatchetResidency.ActiveGroup = RatchetResidency.Group.Simulation;
+            BarTiming.Begin("simulation");
             var simulation = Simulation;
 
             var names = new string[simulation.Length];
@@ -391,7 +397,8 @@ namespace PoliSim.EditorTools
             {
                 try
                 {
-                    int code = CheckExit.Collect(run);
+                    Action stage = run;
+                    int code = BarTiming.Measure(name, () => CheckExit.Collect(stage));
                     if (code != 0) { failed.Add(name); }
                     if (code > worstCode) { worstCode = code; }
                 }
@@ -407,6 +414,7 @@ namespace PoliSim.EditorTools
                 ? $"CHECKS: {simulation.Length} of {simulation.Length} simulation checks clean."
                 : $"CHECKS: {failed.Count} of {simulation.Length} FAILED — {string.Join(", ", failed)}.");
 
+            BarTiming.End(worstCode);
             return worstCode;
         }
 
@@ -454,6 +462,7 @@ namespace PoliSim.EditorTools
         private static int RunAll(bool announceClean)
         {
             RatchetResidency.ActiveGroup = RatchetResidency.Group.Cheap;
+            BarTiming.Begin("cheap");
 
             var failed = new List<string>();
             int worst = 0;
@@ -463,7 +472,8 @@ namespace PoliSim.EditorTools
                 int code;
                 try
                 {
-                    code = CheckExit.Collect(run);
+                    Action stage = run;
+                    code = BarTiming.Measure(name, () => CheckExit.Collect(stage));
                 }
                 catch (Exception e)
                 {
@@ -493,6 +503,7 @@ namespace PoliSim.EditorTools
                 Debug.Log($"CHECKS: {Suite.Length} of {Suite.Length} clean.");
             }
 
+            BarTiming.End(worst);
             return worst;
         }
     }
