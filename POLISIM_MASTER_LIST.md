@@ -97,7 +97,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 
 | ID | what | done-when | OWNER | CLASS | BLOCKS-ON | size |
 |---|---|---|---|---|---|---|
-| **M-S2** | R-T3's **owed enumeration**: identify what "the width assertion" was and enumerate its consumers, or record that no such single instrument exists | the retrofit table's NOT-DONE row is either completed or retired with its reason | CODE | RECORDS | — | S |
 | **M-S3** | **`S-29`** — the party-ink **draw-site** check: party ink is never drawn adjacent to an area accent, and a party swatch forced into chrome draws in the neutral status ink | a check enumerates the party-ink call sites and fails when one sits in a chrome surface; proved both directions | CODE | SAFE | — | M |
 | **M-S4** | **`S-26`** — the dial midpoint `50` is stated in four places | one statement, or four with a recorded reason | CODE | SAFE | — | S |
 | **M-S5** | **`C-0.3`** — the stranded branch disposed: migrate its four unsuperseded pieces, retire the obligation, keep the ref | ⚠ `stranded/politics-elections` still exists locally and on origin. Done when the four pieces are in `COMPLETED.md` and the branch is a recorded ref only | CODE | RECORDS | — | M |
@@ -206,3 +205,4 @@ measure willingness to move rows rather than work done.
 | ID | what | done-when | OWNER | CLASS | closed at | size |
 |---|---|---|---|---|---|---|
 | **M-S1** | ⚠ **`C-0.4` was DONE and the register said open.** `CheckSuite.RunAllBatch` exists and every bar run uses it | the register's row cites the commit and reads closed — **it does** | CODE | RECORDS | `12a4833` (the correction); the work itself at `9489d97` | XS |
+| **M-S2** | R-T3's owed enumeration: what "the width assertion" was, and every consumer of it | ⚠ **the phrase DID resolve uniquely — trap 2 — and the enumeration is where the unguarded half was hiding: HEIGHT, unchecked for a month.** `GameViewChromeHeight` named and dated; both directions proved on real film runs | CODE | RECORDS | `2777f18` | S |

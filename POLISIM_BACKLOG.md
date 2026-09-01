@@ -775,6 +775,30 @@ hat; (c) throws away a stat to avoid writing one honest sentence.
 
 ---
 
+---
+
+### D-17 · A closed row must cite the commit that closed it — and that hash cannot exist inside the commit it names ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+`InstructionResidueCheck` requires every row under the CLOSED heading to produce a commit hash, so that
+section cannot become the place a row goes to stop being counted. ⚠ **But a citation is a claim about a
+commit, and a commit cannot contain its own hash** — so an item's work and its closure record cannot be
+the same commit without the citation being false or absent.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. The closure record is its own commit, citing the work commit** | two commits per item instead of one | nothing; the residue lags the work by one commit, which is visible and true |
+| b. Cite the *previous* commit, or a branch name | none | ⚠ the citation stops pointing at the work, which is the only thing it is for |
+| c. Amend the work commit to add the row after the fact | none | ⚠ the amended commit's hash changes, so the citation is stale the moment it is written — the defect in its purest form |
+| d. Drop the citation requirement | none | ⚠ refused: it is the clause that makes CLOSED mean something, proved both directions this session |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (a).** Basis: it is the only shape in which the
+citation is *true*. ⚠ **The "one commit per item" rule is about not batching items together, not about
+forbidding a record** — and the record commit is cheap, small, and independently reviewable. The visible
+consequence is stated rather than hidden: **between an item's two commits the residue is one higher than
+the work warrants**, which is the honest direction for it to be wrong in.
+
+> **To strike it, write:** `D-17 STRUCK: (b)` *(or c / d)* — the mechanism is three lines of the check.
+
 ### D-16 · How F-B's five-country landing survives F-A's double count ✅ **RULED (a) BY ELIAS 2026-09-01** — execution still STOPPED for budget, order written
 
 > ⚠ **SEQUENCING FOR THE NEXT BLOCK (Elias, 2026-09-01).** D-16 and D-15 stage 3 both need a session with
