@@ -204,6 +204,7 @@ measure willingness to move rows rather than work done.
 | **M-S1** | ⚠ **`C-0.4` was DONE and the register said open.** `CheckSuite.RunAllBatch` exists and every bar run uses it | the register's row cites the commit and reads closed — **it does** | CODE | RECORDS | `12a4833` (the correction); the work itself at `9489d97` | XS |
 | **M-S2** | R-T3's owed enumeration: what "the width assertion" was, and every consumer of it | ⚠ **the phrase DID resolve uniquely — trap 2 — and the enumeration is where the unguarded half was hiding: HEIGHT, unchecked for a month.** `GameViewChromeHeight` named and dated; both directions proved on real film runs | CODE | RECORDS | `2777f18` | S |
 | **M-S4** | **`S-26`** — the dial midpoint `50` stated in four places | ⚠ **it was FIVE.** One statement now; the other four reference it. Closed by `SharedMidpointCheck`, not by the cleanup — each of the four already carried a comment saying the others existed | CODE | SAFE | `ab279d7` | S |
+| **M-S16** | ⚠ **`G-1`'s guard was armed for a human who remembers** — `ScreenEdgeCheck` in neither batch, firing only if invoked after a capture pass | the capture driver runs it over its own label before exiting, and the hook can only make the exit code worse; proved with 81/0 exiting **2** when the guard verified nothing | CODE | SAFE | `e8a9bb1` | M |
 
 ---
 
@@ -221,4 +222,3 @@ registered in a batch.** A watch nobody runs is not a watch; it is a row in a qu
 |---|---|---|---|---|---|---|
 | **M-S12** | **`G-2`** meta text — a standing guard, re-verified each cycle | `MetaTextCheck`, registered in the cheap suite | CODE | RECORDS | every bar run | — |
 | **M-S13** | the stripper enrolment and the ledger enrolment | `CommentImmunityCheck` and `RatchetSlackCheck` — both read 0 unenrolled / 0 unreported | CODE | SAFE | every bar run | — |
-| **M-S16** | ⚠ **`G-1`'s guard was armed for a human who remembers** — `ScreenEdgeCheck` in neither batch, firing only if invoked after a capture pass | the capture driver runs it over its own label before exiting, and the hook can only make the exit code worse; proved with 81/0 exiting **2** when the guard verified nothing | CODE | SAFE | `e8a9bb1` | M |

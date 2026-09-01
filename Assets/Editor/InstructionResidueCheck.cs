@@ -378,8 +378,8 @@ namespace PoliSim.EditorTools
             {
                 Debug.LogError("RESIDUE: " + string.Join(" | ", failures.ToArray())
                                + ". ⚠ An exclusion that names a CODE row, a ratchet with no row, a CLOSED row citing "
-                               + "no commit, or a residue that GREW are the four ways this number stops meaning what "
-                               + "it says.");
+                               + "no commit, a WATCH row backed by no registered check, or a residue that GREW are "
+                               + "the five ways this number stops meaning what it says.");
                 Debug.LogError(sb.ToString());
                 CheckExit.Finish(1);
                 return;
