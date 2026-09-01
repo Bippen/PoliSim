@@ -116,8 +116,15 @@ namespace PoliSim.Simulation
         /// separable, and the choice can therefore be revisited at any time at no cost. Second, and
         /// against the intuition that sourcing it European would improve the model: <b>every lower value
         /// moves the tax multiplier FURTHER from Romer &amp; Romer's -2 to -3</b>, which the model already
-        /// undershoots by a factor of three. The weak channel is the tax channel, and lowering the MPC
-        /// makes it weaker.</para>
+        /// undershoots. The weak channel is the tax channel, and lowering the MPC makes it weaker.</para>
+        ///
+        /// <para>⚠ <b>CORRECTED 2026-09-01 (R-D8): "a factor of three" understated it.</b> Romer &amp; Romer
+        /// normalise on an *exogenous* tax change of 1 % of GDP; the audit harness divided by the
+        /// **realised** change in the budget balance, which nets off the revenue the output move itself
+        /// produced. On the statutory basis the model reads **0.335 / 0.471 / 0.525**, so the gap is a
+        /// factor of **four to six**, not three. Nothing here moves on that: the direction of every
+        /// sentence above is unchanged and the correction makes the case for holding 0.67 stronger, not
+        /// weaker. See `ResponsivenessAuditHarness`'s tax table and the register's R-D8.</para>
         ///
         /// <para><b>Held at 0.67 (D-8, decided and logged, strikeable).</b> The peer-reviewed source is
         /// preferred over the preprint on evidentiary weight; the value sits 0.01 above the Swedish

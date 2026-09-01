@@ -178,7 +178,36 @@ not merely tidier. The model half of R-CL1 is already done: the party exists, pe
 
 ---
 
-### D-6 · The aging step's rate sources ⚠ DECIDED AND TAKEN (R-N1), strikeable
+### ⚠ THE SELF-RULED SHEETS, RE-READ AGAINST THE REPO — 2026-09-01
+
+**Why this exists.** D-6 through D-12 were decided and logged strikeable during an unattended run. ⚠ **A
+self-ruled decision nobody ever re-reads is an unreviewed decision**, so each was re-read against the repo
+as it now stands — not re-litigated. Verdicts: **HOLDS** (still reads right on the evidence) ·
+**RECONSIDER** (something has changed; what) · **NEEDS ELIAS**.
+
+| sheet | verdict | why, against the repo of 2026-09-01 |
+|---|---|---|
+| **D-6** · aging-step rate sources, (a) uniform cohort-change ratios | ✅ **HOLDS** | Its premise was *no US components of change by age exist*, and §142 did not disturb it: what §142 found is a **projection** file (`np2023_d1_mid.csv`, stock by single year of age for future years), not `q(x)` and not migration by age. ⚠ **A projected stock separates mortality from migration no better than an observed one**, so (a)'s stated cost — `Survival` is deaths and net migration together — is unchanged, and so is its reversibility |
+| **D-7** · immigration age profile, (a) DHS LPR as a named US proxy | ⚠ **RECONSIDER — the decision holds, its STATUS does not** | The 21 US numbers and the EU five's `agedef=REACH` profiles are still right and still sourced. But §141 reverted the step they were re-pointed into: `CohortStepRateTable` is now **UNWIRED ENTIRE** in `UnwiredSubsystemCheck` (2 entry points uncalled, named in 0 game files). ⚠ **The sheet reads as though the lever has somewhere to go, and it does not** — it is a precondition of the stage-3 rebuild, not a description of live code |
+| **D-8** · MPC held at 0.67 | ⚠ **RECONSIDER — for a reason D-13 created after it** | Its own basis is intact: the spending multiplier is invariant to the constant, and every lower value moves the tax multiplier further from Romer & Romer. ⚠ **But D-13 has just shown the enforced denominator is not the quoted band's quantity on the spending side, and the tax side has the same shape**: Romer & Romer's −2 to −3 is per **exogenous** tax change of 1 % of GDP, while our tax impulse is the **realised** revenue change, net of the endogenous response. **The comparison D-8 rests on has not been checked the way D-13 checked the spending one.** Sized as a rider below, not re-decided here |
+| **D-9** · per-country tax base shares | ✅ **RULED BY ELIAS 2026-09-01 (a)** | See the sheet above; no longer self-ruled |
+| **D-10** · wire `TacticalVoting`, (a) | ✅ **HOLDS, and is now the loudest row in a check** | `UnwiredSubsystemCheck` reports `TacticalVoting.cs` **UNWIRED ENTIRE** in every run. Nothing since has given coverage or momentum a route to the ballot, and no cheaper bridge appeared |
+| **D-11** · give door-to-door a job, (c) | ✅ **HOLDS — and §134 strengthened it** | (a)'s premise was *"the office operation is the ground game"*. §134 then scaled office plans to what a party can keep and **dropped six offices, landing on V, MP and L**. ⚠ **So for exactly the small parties, (a) would retire the verb and leave nothing behind it.** The measured defect is unchanged: three local actions hold the largest hour costs against the smallest reaches while §33 scores per hour |
+| **D-12** · stage 3's time base and the two inseparable rates | ⚠ **RECONSIDER — both halves now govern code that does not exist** | §141 reverted the step, and `BaselineDeathRate` — the seeded split (2a) rested on — is **gone from the tree** (`grep`: no occurrences). The reasoning is untouched and both halves should bind the rebuild, but ⚠ **the sheet is written in the present tense about a step with no caller**, which is how a decision quietly becomes a claim |
+
+⚠ **The pattern across the three RECONSIDERs is one pattern, not three:** D-7, D-8 and D-12 are all sheets
+whose *decision* survives and whose *world* moved underneath them — twice by §141's revert and once by
+D-13's finding. **None is re-decided here.** Re-deciding a sheet because its subject was reverted would
+be re-litigating; restating what it now binds is the review's whole job.
+
+**Rider opened by this review (§11):** **R-D8** — apply D-13's test to the tax side. Romer & Romer
+normalise on the exogenous tax change; the harness divides by the realised balance change. Cheap: the same
+runs already hold both quantities. ⚠ **It is a measurement, not a re-decision of D-8**, and it must not
+move a constant.
+
+---
+
+### D-6 · The aging step's rate sources ⚠ DECIDED AND TAKEN (R-N1), strikeable · ✅ **HOLDS** (re-read 2026-09-01)
 
 **The question.** Eurostat publishes life tables, fertility and migration by age for the EU five and
 **nothing for the USA** — so does the aging step take the best data for five countries and something else
@@ -215,7 +244,7 @@ have no such test available for the USA.
 
 ---
 
-### D-7 · The immigration lever's age profile ⚠ DECIDED AND TAKEN (R-N1), strikeable
+### D-7 · The immigration lever's age profile ⚠ DECIDED AND TAKEN (R-N1), strikeable · ⚠ **RECONSIDER: its status, not its decision** (re-read 2026-09-01)
 
 **The question.** D-6 made the survival ratio deaths and net migration *together*, so the immigration
 lever has nothing inside the step to scale and must add people **on top** of it — across which age bands?
@@ -250,7 +279,7 @@ proven able to fire**: set to ×1.0 it goes red in every country.
 
 ---
 
-### D-8 · The MPC, after sourcing it ⚠ DECIDED AND TAKEN (R-N1), strikeable
+### D-8 · The MPC, after sourcing it ⚠ DECIDED AND TAKEN (R-N1), strikeable · ⚠ **RECONSIDER: the tax side is untested for D-13's defect** (re-read 2026-09-01)
 
 **The question.** D-2 (b) ruled *"source the MPC"* on the grounds that it is the one foreign number in
 C-N4's term. It has been sourced. **Does the model move to the European figure?**
@@ -277,7 +306,7 @@ comparison: national-accounts consumption includes durables. ⚠ It is a **prepr
 | option | cost | what it forecloses |
 |---|---|---|
 | **a. Hold 0.67, record the bracket** | none | nothing — the choice is measurably free and revisitable |
-| **b. Move to 0.60** | one edit | ⚠ widens the tax-multiplier gap to Romer & Romer, which the model already undershoots threefold |
+| **b. Move to 0.60** | one edit | ⚠ widens the tax-multiplier gap to Romer & Romer, which the model already undershoots (⚠ by four to six, corrected at R-D8 — not the threefold read off the enforced denominator) |
 | **c. Move to 0.54** | one edit | idem, more so |
 
 **Recommendation, TAKEN: (a).** Basis, all measured: **the spending multiplier is invariant to this
@@ -294,7 +323,7 @@ C-C11's standing ruling for that case is *report the range*, which is now what t
 
 ---
 
-### D-9 · Per-country tax base shares ⚠ BUILT, MEASURED, AND REJECTED BY THE HARD CONSTRAINT
+### D-9 · Per-country tax base shares ⚠ BUILT, MEASURED, AND REJECTED BY THE HARD CONSTRAINT · ✅ **RULED (a) BY ELIAS 2026-09-01**
 
 **The question.** D-2 (c) ruled *"per-country base share"* to fix C-N4's finding that **a +10-point tax
 rise moves consumption by −2.68 % of GDP in all six countries identically**. It was built and sourced.
@@ -453,7 +482,7 @@ columns.** Neither moves a constant, neither changes an exit code, and both are 
 
 ---
 
-### D-10 · C-N1, the media system's route to the ballot ⚠ DECIDED AND TAKEN (R-N1), strikeable
+### D-10 · C-N1, the media system's route to the ballot ⚠ DECIDED AND TAKEN (R-N1), strikeable · ✅ **HOLDS** (re-read 2026-09-01)
 
 **The question.** C-N1 asked whether perception-only media is **the design** or **an omission**. Measured
 2026-09-01, the answer is **neither of its two exits**, and the third one is better than both.
@@ -490,7 +519,7 @@ this item.
 
 ---
 
-### D-11 · C-N2, what the door-to-door action is FOR ⚠ DECIDED AND TAKEN (R-N1), strikeable
+### D-11 · C-N2, what the door-to-door action is FOR ⚠ DECIDED AND TAKEN (R-N1), strikeable · ✅ **HOLDS, strengthened by §134** (re-read 2026-09-01)
 
 **The question.** C-A2 measured that optimising personalities knock **zero** doors and hold **zero**
 rallies, while the grassroots profile carries the roster's strongest pro-local thumb. The defect is
@@ -516,7 +545,7 @@ what it costs.** ⚠ Sized, not built: it is a §12 verb-set change and needs it
 
 ---
 
-### D-12 · P-I2 stage 3's time base and the two inseparable rates ⚠ DECIDED AND TAKEN (R-N1), strikeable
+### D-12 · P-I2 stage 3's time base and the two inseparable rates ⚠ DECIDED AND TAKEN (R-N1), strikeable · ⚠ **RECONSIDER: both halves govern reverted code** (re-read 2026-09-01)
 
 **Two questions the retirement cannot avoid**, both measured before deciding.
 
@@ -835,6 +864,7 @@ for the intended one.
 
 | ID | what | rides | ruled |
 |---|---|---|---|
+| **R-D8** | ⚠ **Apply D-13's test to the TAX side.** D-13 found the enforced spending denominator is not the quantity Ramey's band covers. **Romer & Romer's −2 to −3 is per EXOGENOUS tax change of 1 % of GDP; the harness divides by the REALISED change in the budget balance**, which nets off the endogenous response — the same defect, unexamined, on the channel the model already undershoots threefold. Cheap: the same runs hold both quantities, and the statutory change is `baseGDP × Δrate × BaseShareOfGdp`. ⚠ **A measurement, not a re-decision of D-8, and it must not move a constant** | ✅ **DISCHARGED the same day, inside the §D re-read's own commit** — the file was already open | 2026-09-01, opened and closed by the §D re-read (R-N1) |
 | **RIDE-1** | ✅ **DISCHARGED at C-C9, 2026-08-31 (`COMPLETED.md` §105) — rode the wiring commit, no separate commit, as ruled.** `DrawPublished` and its eight exclusive helpers deleted (`GraphRenderer.cs` 1188 → 837 lines); `ReleaseMarkerColor` kept because C-C4's enactment markers are live on it; the published-series *model* untouched. ~~**Delete `GraphRenderer.DrawPublished`.** ⚠ **It has NO CALLERS** — P-A2's cut of the "as published" graph block (2026-08-29) removed the last one and left the method behind, so **the published-graph path is NOT live and must not be treated as such.** Anything reasoning about how the game draws a published series should read `Draw` and `DrawPublished`'s own overlay helpers instead. Found at C-C4 | the next item that touches `GraphRenderer.cs` | 2026-08-31 (Elias): rides the next item, **no separate commit** |
 | S-14 | ✅ **RULED 2026-08-31: campaign money is a SEPARATE PURSE in national units, and the two never transact unless Elias rules otherwise. DO NOT BUILD THE JOIN.** ⚠ **The game already holds TWO currencies with no conversion.** The campaign layer prices in **kronor** (war chest 2 400 000 kr, a television buy 500 000, a social post 5 000); the macro layer is in **USD billions**. They never meet today because a campaign is staged rather than funded from the state's budget — **the day a campaign is paid for out of anything the macro model holds, one of the two is wrong by a factor of ~10 500 000 000**. Invisible until it is expensive | CODE | `COMPLETED.md` §98 |
 | S-15 | ⚠ **The central-bank candidate pool's prose is USA-specific and is now shown to every country.** `FederalReserveSystem.CandidatePool`'s authored descriptions name the institution — *"believes **the Fed** waited too long to act last cycle"* — so since C-C7 a Swedish player is offered Riksbank governors who talk about the Fed. Fixing it means authoring per-country fictional descriptions for the whole pool: a CONTENT item, not a display fix, and not to be improvised. The three structural strings (banner, lean row, appointment sentence) were fixed at C-C7 | CODE (content) | `COMPLETED.md` §100 |

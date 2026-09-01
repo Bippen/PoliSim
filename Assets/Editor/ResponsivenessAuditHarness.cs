@@ -50,6 +50,13 @@ namespace PoliSim.EditorTools
     /// because a gate rejected a change is moving the bar to pass.** The other two are printed, never
     /// enforced, and the rule question is Elias's — register D-13.</para>
     ///
+    /// <para>⚠ <b>AND THE SAME DEFECT ON THE TAX SIDE (R-D8, 2026-09-01).</b> Romer &amp; Romer normalise on
+    /// an *"exogenous tax increase of 1 percent of GDP"* — the **statutory** change — which the quoted
+    /// sentence in <see cref="Literature"/> has said all along; no column had ever been matched to it. On
+    /// the statutory basis the model reads **0.335 / 0.471 / 0.525** against 0.485 / 0.682 / 0.760
+    /// enforced. **The tax channel therefore undershoots the −2 to −3 band by a factor of four to six,
+    /// not the three this record has been carrying.** Reported, not enforced, like the others.</para>
+    ///
     /// <para>⚠ <b>The sourced values in <see cref="Literature"/> carry their citation and their vintage,
     /// and where a figure could not be read out of the source document it is marked as such rather than
     /// quoted.</b> The standing rule is that no figure is invented; a range nobody can check is an
@@ -91,6 +98,10 @@ namespace PoliSim.EditorTools
             "    an exogenous tax increase of 1% of GDP lowers real GDP by roughly 2 to 3 percent,",
             "    i.e. a tax multiplier of about -2 to -3 (their headline finding; 'much larger' than",
             "    estimates from broader tax measures).",
+            "    ⚠ R-D8 (2026-09-01): the denominator was in this quoted sentence all along - 'an EXOGENOUS",
+            "    tax increase of 1% of GDP' - and no column had ever been matched to it. On the statutory",
+            "    basis the model reads 0.335 / 0.471 / 0.525, so the tax channel undershoots by a factor of",
+            "    FOUR TO SIX rather than the three the record has been carrying.",
             "CRISIS-PERIOD SPENDING - Blanchard & Leigh, AER P&P 103(3), May 2013 / IMF WP 13/1:",
             "    multipliers were SUBSTANTIALLY HIGHER than the ~0.5 forecasters had assumed. ⚠ The often-",
             "    quoted 0.9-1.7 range could NOT be read out of the source document from here, so it is NOT",
@@ -121,6 +132,49 @@ namespace PoliSim.EditorTools
                 new Dial { Name = "Spending   -10%", Kind = Kind.Spending, Step = -10f }
             };
 
+            // R-D8 (2026-09-01): the subject's SEEDED rates and per-type base shares, read once off a
+            // throwaway world so the statutory tax change below is derived from the model's own seed
+            // rather than from a number written here. ⚠ Also PROVES the no-clamp assumption the
+            // statutory figure rests on: Build() writes Max(0, rate + step), so if any seeded rate plus
+            // its step went negative the applied change would not equal the step and the column would be
+            // quietly wrong.
+            var seededRate = new Dictionary<TaxType, float>();
+            var baseShare = new Dictionary<TaxType, float>();
+            {
+                var probeGo = new GameObject("C-C11 SEED PROBE");
+                try
+                {
+                    World probeWorld = WorldFactory.CreateDefault();
+                    foreach (TaxLine line in probeWorld.GetCountry(Subject).TaxLines)
+                    {
+                        if (!line.IsImplemented) { continue; }
+                        seededRate[line.Type] = line.Rate;
+                        baseShare[line.Type] = line.BaseShareOfGdp;
+                    }
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(probeGo);
+                }
+            }
+
+            foreach (Dial d in dials)
+            {
+                if (d.Kind != Kind.Tax) { continue; }
+                if (!seededRate.TryGetValue(d.Tax, out float seeded))
+                {
+                    Debug.LogError($"C-C11 (R-D8): tax dial '{d.Name}' names {d.Tax}, which the subject does not implement, "
+                                   + "so no statutory tax change can be formed for it.");
+                    continue;
+                }
+
+                if (seeded + d.Step < 0f)
+                {
+                    Debug.LogError($"C-C11 (R-D8): tax dial '{d.Name}' would clamp at zero ({seeded} + {d.Step}), so the "
+                                   + "APPLIED rate change is not the step and the statutory column would misstate it.");
+                }
+            }
+
             float[] baseGdp = new float[Years + 1];
             float[] baseBudget = new float[Years + 1];
             float[] baseUnemployment = new float[Years + 1];
@@ -140,6 +194,8 @@ namespace PoliSim.EditorTools
             int deadDials = 0;
             var ramey = new StringBuilder();
             int rameyRows = 0;
+            var statutoryTable = new StringBuilder();
+            int statutoryRows = 0;
             foreach (Dial dial in dials)
             {
                 float[] gdp = new float[Years + 1];
@@ -223,6 +279,24 @@ namespace PoliSim.EditorTools
                     }
                 }
 
+                // R-D8 (2026-09-01), the same test D-13 applied to the spending side, applied to the tax
+                // side. Romer & Romer's -2 to -3 is the output response to an EXOGENOUS tax increase of
+                // 1% of GDP; the enforced impulse is the REALISED change in the budget balance, which
+                // nets off the revenue the output change itself produced. The statutory change is the
+                // mechanical one on unchanged output: baseGDP(L) x Δrate x BaseShareOfGdp, signed the way
+                // this harness signs everything - a tax RISE is a negative impulse.
+                if (dial.Kind == Kind.Tax && baseShare.TryGetValue(dial.Tax, out float share))
+                {
+                    float statutory = -(baseGdp[landing] * (dial.Step / 100f) * share);
+                    if (Mathf.Abs(statutory) > 1e-3f)
+                    {
+                        statutoryRows++;
+                        statutoryTable.Append(F("    {0,-18} {1,10:F3} {2,10:F3} | {3,7:F3} {4,7:F3} {5,7:F3}\n",
+                            dial.Name, impulse, statutory,
+                            d1 / statutory, d2 / statutory, d5 / statutory));
+                    }
+                }
+
                 // The implied OKUN coefficient: the unemployment move per one percent of output, at the
                 // longest horizon - directly comparable with Ball, Leigh & Loungani's country estimates
                 // quoted below, and computed here rather than by hand off the table.
@@ -254,6 +328,19 @@ namespace PoliSim.EditorTools
             sb.Append("    NOTHING IS ENFORCED ON THE NEW COLUMNS. Swapping a denominator because a gate rejected a change\n");
             sb.Append("    would be moving the bar to pass; measuring it and printing it beside the one in force is evidence.\n");
             sb.Append("    WHICH BASIS THE CONSTRAINT IS ENFORCED ON IS A CHANGE TO THE RULE, AND THE RULE IS ELIAS'S.\n");
+
+            sb.Append("\n    THE TAX DIALS ON ROMER & ROMER'S DENOMINATOR (R-D8; REPORTED, NOT ENFORCED)\n");
+            sb.Append("    --------------------------------------------------------------------------\n");
+            sb.Append("    dial               impulse(bal) statutory |  mult L   L+1     L+4\n");
+            sb.Append(statutoryTable);
+            sb.Append(F("    Tax dials expressed on both bases: {0} of {1}.\n", statutoryRows, 6));
+            sb.Append("    statutory = baseGDP(L) x d(rate) x BaseShareOfGdp - the mechanical revenue change on unchanged\n");
+            sb.Append("                output, which is the EXOGENOUS change Romer & Romer normalise on. The enforced\n");
+            sb.Append("                impulse is the REALISED balance change, net of the revenue the output move produced.\n");
+            sb.Append("    Point ratios, not cumulative: Romer & Romer report the output LEVEL response to a permanent\n");
+            sb.Append("    change, which is what a point ratio at a horizon is - the cumulative form is the spending side's.\n");
+            sb.Append("    NOTHING IS ENFORCED ON THIS COLUMN EITHER. It exists because D-13 found the spending band and\n");
+            sb.Append("    the spending column were different quantities, and the tax side had never been checked.\n");
 
             sb.Append("\n    THE SOURCED COMPARISON\n    ----------------------\n");
             foreach (string line in Literature) { sb.Append("    ").Append(line).Append('\n'); }

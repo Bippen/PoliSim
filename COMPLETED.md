@@ -8542,7 +8542,7 @@ brackets the parameter rather than replacing it.
 ⚠ **Two things the measurement settled.** The **spending multiplier is invariant to this constant**, so
 the hard constraint is not in play, the channels are separable, and the choice is free to revisit. And
 **against the intuition that a European figure would improve the model, every lower value moves the tax
-multiplier further from Romer & Romer**, which the model already undershoots threefold. **Held at 0.67
+multiplier further from Romer & Romer**, which the model already undershoots threefold ⚠ [CORRECTED 2026-09-01 at R-D8: FOUR TO SIX, not three - the threefold was read off the enforced denominator rather than Romer & Romer's exogenous one; see §145]. **Held at 0.67
 (D-8), with the bracket now on the record so the next session argues with a range rather than
 re-deriving a number.** The Swedish paper itself cites JPS's two-thirds and calls its own estimates *"on
 the lower end compared to the literature on tax rebates"* — the disagreement is methodological, and
@@ -9266,3 +9266,61 @@ recommended and (a) in force until Elias rules.
 `SpendingImpulseBasisDiagnostic` was written, used to take the first reading, and **deleted** once the
 harness carried the columns — §140's fifth sweep is precisely the lesson that a proven thing nothing calls
 is a hole, and a second copy of a measurement is a second thing to keep true.
+
+## 145. THE SELF-RULED SHEETS, RE-READ — three RECONSIDERs, one pattern, and a headline corrected (2026-09-01)
+
+D-6 through D-12 were decided and logged strikeable during an unattended run. ⚠ **A self-ruled decision
+nobody ever re-reads is an unreviewed decision**, so each was re-read against the repo as it now stands.
+The verdicts and their reasons live in the register's §D; what follows is what the exercise produced.
+
+### Four HOLD, three RECONSIDER — and the three are one pattern
+
+| sheet | verdict | the load-bearing reason |
+|---|---|---|
+| **D-6** (uniform cohort-change ratios) | ✅ HOLDS | §142's US find is a **projection** of stock by single year of age, not `q(x)` and not migration by age. ⚠ **A projected stock separates deaths from migration no better than an observed one**, so (a)'s stated cost is untouched |
+| **D-7** (DHS LPR as the US profile) | ⚠ RECONSIDER | The data is still right; §141's revert left `CohortStepRateTable` **UNWIRED ENTIRE** in `UnwiredSubsystemCheck`. The sheet reads as though the lever has somewhere to go |
+| **D-8** (MPC held at 0.67) | ⚠ RECONSIDER | Its own basis is intact, but D-13's defect had never been checked on the tax side. **Measured below** |
+| **D-10** (wire `TacticalVoting`) | ✅ HOLDS | Now the loudest row in a standing check; no cheaper bridge appeared |
+| **D-11** (give door-to-door a job) | ✅ HOLDS, strengthened | (a)'s premise was *"the office operation is the ground game"* — and §134 then **dropped six offices, landing on V, MP and L**. ⚠ For exactly the small parties, (a) would retire the verb and leave nothing behind it |
+| **D-12** (time base; the two inseparable rates) | ⚠ RECONSIDER | Both halves govern reverted code, and `BaselineDeathRate` — the seeded split (2a) rested on — is **gone from the tree** |
+
+⚠ **The three RECONSIDERs are one pattern:** sheets whose *decision* survives and whose *world* moved
+underneath them — twice by §141's revert, once by D-13's finding. **None was re-decided.** Re-deciding a
+sheet because its subject was reverted would be re-litigating; restating what it now binds is the job.
+
+### R-D8 — D-13's test on the tax side, opened and discharged the same day
+
+D-13 found the spending band and the spending column were different quantities. The tax side had never
+been checked, and ⚠ **the denominator was sitting in the harness's own quoted sentence all along**:
+Romer & Romer's −2 to −3 is per *"an **exogenous** tax increase of 1 percent of GDP"*, while the enforced
+impulse is the **realised** change in the budget balance, net of the revenue the output move produced.
+
+The statutory change is the mechanical one on unchanged output — `baseGDP(L) × Δrate × BaseShareOfGdp` —
+and it is derived from the model's own seed, read off a throwaway world rather than written down.
+⚠ **The no-clamp assumption it rests on is PROVEN rather than assumed**: `Build` writes
+`Max(0, rate + step)`, so the harness now raises an error if any seeded rate plus its step would go
+negative, which would silently make the applied change differ from the step.
+
+| dial | impulse (balance) | statutory | enforced L / L+1 / L+4 | **statutory L / L+1 / L+4** |
+|---|---|---|---|---|
+| Income tax +1pt | −1.730 | −2.505 | 0.485 / 0.682 / 0.760 | **0.335 / 0.471 / 0.525** |
+| Income tax +5pt | −8.626 | −12.523 | 0.485 / 0.680 / 0.757 | 0.334 / 0.469 / 0.521 |
+| Income tax −5pt | 8.692 | 12.523 | 0.485 / 0.685 / 0.766 | 0.337 / 0.476 / 0.531 |
+| VAT +1pt | −2.163 | −3.131 | 0.485 / 0.682 / 0.760 | 0.335 / 0.471 / 0.525 |
+| VAT +5pt | −10.772 | −15.654 | 0.485 / 0.680 / 0.756 | 0.334 / 0.468 / 0.520 |
+| Corporate +5pt | −3.721 | −4.696 | 0.000 | 0.000 — the dead channel D-2 already names |
+
+### ⚠ A HEADLINE CORRECTED: the tax channel undershoots by FOUR TO SIX, not three
+
+*"Which the model already undershoots by a factor of three"* has been carried by `MacroSystem`'s D-8
+comment, the register's D-2 sheet and `COMPLETED.md` §133. Against Romer & Romer's own normalisation it is
+**0.525 at L+4 against a −2 to −3 band — a factor of four to six.** All three sites are corrected in place,
+and §133's line carries the correction inline rather than being rewritten.
+
+⚠ **Nothing moves on it.** Every sentence the old figure supported pointed the same way and points there
+still — the correction makes the case for **holding** the MPC at 0.67 stronger, because the channel a lower
+value weakens is weaker than the record said. **A number that only ever made an argument more true is
+still a number that was wrong**, and the direction it happens to point is not a reason to leave it.
+
+**Reported, never enforced**, exactly as D-13's columns are. No constant moved; the harness has no code
+path that could move one.
