@@ -11168,3 +11168,307 @@ write-only classifier found the dismissal I had not written (§168, built the sa
 paying for itself looks like** — and it is the evidence R-N5 asks for before a check is written at all.
 
 **Bar 25 of 25, 9 of 9 simulation.**
+---
+
+## 181. `POLISIM_MASTER_ROADMAP.md` RETIRED — the second document to go the way of the master list (2026-09-01)
+
+⚠ **Ruled by Elias 2026-09-01, on the review's measurement** (`POLISIM_REVIEW_2026-09-01.md` §A.3). The
+roadmap carried **137 DERIVED claims across 495 claim-lines — 14% of the entire live-document coupling —
+and the least remaining authority of any live document.** It had demoted itself twice (*"The live list is
+no longer kept here"*), and the review demonstrated it was **provably unaware of the file that now governs
+the project**: its document-set table asserted *"`ls *.md` matches this table exactly: TWENTY files … no
+orphans"* while the root held twenty-one, the orphan being `POLISIM_FEATURE_LIST.md` itself, which appeared
+in the roadmap zero times.
+
+**Where its content went, per the retirement rule (repoint first, migrate, grep afterwards):**
+
+- **INSTRUCTION** — Working Discipline v2, the standing constraints, the three-way test and the rules
+  learned from consolidating three times → **`POLISIM_FEATURE_LIST.md`**, which now carries them as the
+  single governing document.
+- **TRACKING** — ⚠ **nothing needed migrating.** The trigger shelf was **already duplicated in
+  `POLISIM_BACKLOG.md` §5 (T-1…T-7)** and the label-clipping watch item in **§7 (G-1)**. The roadmap's own
+  rule — *"Do not duplicate a live list into the blocked register — or the blocked register into this
+  file"* — was being broken by its own trigger shelf, so **deleting it removed the duplicate rather than
+  losing a row.** Verified row by row before deletion.
+- **DERIVED** — deleted, not carried forward. The document-set table, the call-site counts, the file
+  counts and the commit hashes are exactly what the convention now forbids.
+- **HISTORY** — preserved verbatim below, as C-G1's precedent requires.
+
+⚠ **The eras below are reproduced EXACTLY as the roadmap held them**, extracted mechanically rather than
+retyped, so the record carries no transcription error introduced by its own migration. Their DERIVED
+claims are correct *as history* — that is what this file is for, and it is why `DocumentClaimCheck`
+exempts it.
+
+---
+
+### 181a. The two eras and the board, verbatim from `POLISIM_MASTER_ROADMAP.md` at retirement
+
+## UI v3.0 — the era (opened 2026-08-28; founding document `POLISIM_UI_V3_DIRECTION.md`)
+
+**The direction is `POLISIM_UI_V3_DIRECTION.md` at the repo root** (installed 2026-08-28, Phase A's first
+commit): the thesis ruled as V3-R1 — *the desk with fewer words, not a different desk* — the three pillars
+(the fold V3-R2, The Desk V3-R3, the cut), what v3.0 is NOT, and validation continuity V3-R4. Its rulings
+bind every v3 pass; the struck alternative (a new visual idiom) is one line to un-strike there, never here.
+The sequence, as written there:
+
+- **Phase A (now, one session):** census · shell + rail built and guarded in both states · the instrument
+  inventory with measured minimum sizes · the Design request written as the request doc's next ask. *The
+  shell builds before the board because it is structure, not aesthetics — it gets re-skinned, not
+  re-architected, when the board lands.*
+- **Send (Elias, one gesture):** the request doc now carries §E5 + the v3 ask — hold the pending
+  request-doc send until Phase A lands so one send carries both; the courtesy note can go any time.
+- **Phase B (on Design's boards):** The Desk built against the board; the (b)-class returns resolved;
+  capture family `v3desk_*`. **BUILT 2026-08-28**, the day boards 1m and 1n landed (`COMPLETED.md` §41).
+- **Phase C:** per-screen fold defaults tuned on film; §P's density verdict re-read on the folded stage.
+  **CLOSED 2026-08-28** — the defaults ruled as a table (R-PC2), the note to 1i–1n, one current paste
+  (`COMPLETED.md` §42); §P is now yours, recommended after this pass so the density verdict is read on
+  the real stage.
+- **Item 10 lands inside v3:** election night is born on the v3 shell — the Desk folded, the map as the
+  stage. **Fallback, stated:** if Design's board has not landed by the gate, election night builds in the
+  OPEN state (pure v2, fully supported) and moves to the stage later; the shell ships either way, so
+  nothing converts twice.
+
+**Phase A CLOSED 2026-08-28** (the kickoff `KICKOFF_V3_PHASE_A_2026-08-28.md`, delivered with the direction
+in `Direction.zip`, both archived out of tree at `../PoliSim-captures/inbox/`): the census taken and its
+pure decoration cut; the shell and the rail built and guarded in both states at four sizes with the
+trajectories byte-identical; the instrument inventory measured on the ladder films; the eighth request
+written as the request doc's §1 with its three annexes; the send package regenerated. Record:
+`COMPLETED.md` §39, `CLAUDE.md` "UI v3.0 Phase A (2026-08-28)". **Phase B BUILT 2026-08-28** — Design's
+two boards (1m "Screen 0 — The Desk, folded", 1n "the rail") landed on the live screens file the same
+day and Screen 0 was built against them (`GameController.Desk.cs`; the boards as read into the spec's
+§A.17; the build's fourteen reversible calls R-B1…R-B14 in `COMPLETED.md` §41; the `v3desk_*` family on
+film at four sizes). **Phase C CLOSED 2026-08-28** — the fold-default table ruled (a screen defaults
+FOLDED only if its content is designed for the full-width stage: the Desk and Budget, both locked;
+Statistics › Domestic reverted to OPEN and filmed at 1280 and 2560), R-B2/R-B3/R-B4 ratified standing,
+the courtesy note rewritten 1i–1n-aware, the send package regenerated as one current paste
+(`COMPLETED.md` §42). **v3.0 Phases A–C are closed.**
+
+**UI v3.1 opened and its Phase A CLOSED the same evening (2026-08-28, `COMPLETED.md` §44)** — from Elias's
+first live sitting on the v3.0 build: the OPEN state retired on the duty audit (ONE FRAME: the rail and one
+full-bleed sheet on every screen — the direction doc's v3.1 section, its table one row), the rail's HOME
+cell (the flag, the structural interim), the PAUSE/RUN chip in the fold toggle's freed cell, the game-over
+reason on the banner everywhere, six annexes measured (the audit, the icons at the real cells, the paddings
+and dead-space shares, the sitting's findings, the Statistics census, the ink-pair contrast table), the
+ninth request installed and the paste regenerated. **v3.1 Phase B CLOSED the same night (2026-08-28,
+`COMPLETED.md` §45)** — Design answered the ninth request in full the evening it was sent, and the five
+answers were built in order against the `v31b_*` matrix: the §E5 close (the hatch's third cut measured at
+7.42 %, the residual rasterizer edge coverage — the bar question was Elias's, ruled the same night:
+"diagonal-tile, viewed not counted", executed in `COMPLETED.md` §46), D6's inks with Annex F
+re-measured, D4's tokens mechanically (and the paper sprite's shadow moved outside the box rect — a v2.0
+defect the first film exposed), 1n-r2's captioned rail, 1m-r2's Desk with its Year-0 empty states, 2a's
+Statistics as instruments; then the OPEN state's residue deleted whole (§44's promise). The dead-space
+share re-measured after D4 says the reclaim has nowhere to go on content-short screens until they are
+re-composed the way 2a re-composed Domestic — filed for Design's next look in the request doc's Annex C.
+**The era's live edge:** ONE ask is out for installing — the tenth request (D7, board 2b, "the Policy
+Web, drawn to be read"; the sitting's third finding, its scale half already built and live as the
+Policy Web micro-pass, `COMPLETED.md` §48) — riding the §S paste (`SEND_PACKAGE.md`,
+regenerated late night, rows n of N); §P (the three felt verdicts) is Elias's (the hatch pair's bar
+ruling landed 2026-08-28 — "diagonal-tile, viewed not counted", executed, `COMPLETED.md` §46);
+13 September (item 10, election night born on the v3 shell). Beyond the paste, nothing of v3.x is
+startable by a session today; the elections track runs UNWIRED under its own rules — see the era
+below.
+
+---
+
+## The ELECTIONS era (opened overnight 2026-08-28→29; Day-1 2026-08-29)
+
+⚠ **R-N2 IS RETIRED (W-G1, `a289e1e`, 2026-08-30).** The invariant that governed this era — *the
+election system is UNWIRED, reachable from no gameplay path, and every part ends with the trajectory
+suite byte-identical* — did its whole job and was retired in one isolated commit that is its own
+revert handle. It held at **every** boundary it was asked to hold at, the six baselines identical by
+SHA-256 each time. **Trajectory changes are now possible**, which is why the standing term that
+replaces it is stricter: every one must be **explained per country against a named baseline family**,
+never merely observed. The era's text below is kept for its reasoning; where it describes the
+unwired state as current, read `POLISIM_BACKLOG.md` and `COMPLETED.md` §§79–84 instead.
+
+**The spec arrived on the third attempt (2026-08-29) and is installed verbatim at root** —
+`ELECTIONS_CAMPAIGN_SPEC.md`, 44 sections, verified by content (§42 the causal chain, §44 the
+last) before anything was built on it. The era's former blocker is closed; `ELECTIONS_GAP_TABLE.md`
+classifies all 44 sections (EXISTS 3 · EXTENDS 10 · NEW 22 · N/A 9, each N/A with its reason per
+R-EL7) and reconciles D0: **this spec IS item 10's political model.**
+
+**What is BUILT and PROVEN (E-1 through E-3's first rung):**
+
+- **The sourced spine** — `ElectionsData/`, out of tree for Unity, in tree for git: official
+  returns and statute-cited rules for all six countries, CHES 2024 positions, EB105/Gallup
+  salience, every file with its source register and vintage, everything `[PROVISIONAL]` until
+  re-verified. `DATA_BILL.md` names what is still owed (France's 577 × 2 constituency results;
+  Italy's per-circoscrizione *cifre*; the US positions' pre-2020 vintage; Nebraska's LB3 status).
+- **The seat rung — FOUR CHAMBERS EXACT, ONE STAGE EXACT, ONE UNCOVERED** (⚠ scoped 2026-08-31,
+  C-A4; this read "FIVE OF SIX EXACT", which counted a stage as a chamber). Each figure is for **one
+  named election**, measured by `SeatAllocationBacktest` as total absolute seat deviation: Sweden 2022
+  by modified Sainte-Laguë 1.2 — **0**; Germany 2025 by Sainte-Laguë/Schepers on `kerg2.csv`'s exact
+  counts — **0**; Poland 2023 by d'Hondt in each of the 41 okręgi, the real system — **0** (the
+  national-d'Hondt run's **70** is a deliberate signature of the wrong system, not an error); the USA's
+  2024 Electoral College with Maine's and Nebraska's district method, R-EL8 — **exact, 312/226**.
+  ⚠ **Italy 2022 (Rosatellum's floored Hare ×2, R-EL9) reproduces its NATIONAL PROPORTIONAL STAGE —
+  245 seats of the Camera's 400 — and its sub-national stages are NOT RUN.** **France is structurally
+  out**, not missing: a two-round system in 577 single-member constituencies has no national allocation
+  to implement. The overhaul doc's Part 5 port-and-reproduce obligation is discharged in full.
+  ⚠ **"Exact" is per election and never general — Sweden 2014 does NOT reproduce through the same
+  allocator** (6 seats absolute error; register row S-6).
+- **Named future item (R-EL10, 2026-08-29): "France constituency model" — UNSIZED, UNSTARTED.**
+  Modelling French seats needs all 577 constituencies across two rounds with runoff behaviour
+  (qualification at 12.5 % of registered voters, withdrawals, second-round transfers). It serves
+  one country, nothing before 13 September needs it, and it is named here so it reads as a
+  decision rather than an oversight. **No placeholder and no approximation is to be built** —
+  France appears in every table as structurally out of scope, with its reason.
+- **The vote rung — opened at 3–7 pp** with an explicitly declared placeholder instrument (four
+  parameters, no party-specific constants), and its errors named their own fixes.
+- **The spec's chain, first half built the same day** (all pure, all unwired): §7 compatibility
+  (`Compatibility.cs`, 9/9 assertions), §8 loyalty damping (`PreferenceModel.cs`), §26 turnout
+  (`TurnoutModel.cs`), §27 election-day aggregation with noise on the appended `ElectionNoise`
+  stream (`RegionalAggregation.cs`) — 20/20 assertions, and **§8 demonstrably reverses both
+  Phase-4 deviation signatures** (the empty-quadrant newcomer 60.2 % → 12.3 %, the incumbent
+  25.2 % → 53.9 %).
+
+**The E-phase plan is CLOSED (2026-08-30).** Day-2's re-sizing and its "the gate failed and nothing
+wired" conclusion are Day-2's state and have moved, in full and with their reasoning, to
+`COMPLETED.md` §85 — they are not quoted from here. What replaced them: the prototype ran its own
+worklist (the elections work list (retired at C-G1, 2026-08-31; its 46 rows are closed and its record is `ELECTIONS_PROTOTYPE_LOG.md`), 46 items) end to end. Loyalty IS derived rather than
+assumed (W-A1), per-region priors ARE fetched so §27 and §8 compose (W-A2), the gate re-ran and
+**passed with its scope stated** (W-A3 — the two high-coverage countries improved; Italy's regression
+stands, its cause named and its constant deliberately not re-fitted). E-4 and E-5 were not the next
+phases in the end: the whole campaign layer, all eight screens, opponents, election night, results
+and coalition formation were built, and **W-G1 wired the lot**. §19 still needs no building.
+
+**The 13 September minimum, re-derived from the finished state (2026-08-30).** The one-sentence
+version, and the only one to quote: **on 13 September the game will simulate Sweden's election
+accurately and will not let you campaign in it.** In full:
+
+- **Playable.** A new game seats a real parliament in all six countries — Sweden's 349, Germany's
+  630, France's 577, Italy's 400, Poland's 460, the US House's 435, each sourced and reconciling
+  exactly — and bills are scored against the real parties' published economic positions. **Sweden
+  and Germany hold a real election on their own electoral law**; a Swedish game's first election
+  returns S 106 / SD 72 / M 66 / V 24 / C 22 / KD 23 / MP 19 / L 17 against a real
+  107/73/68/24/24/19/18/16. The result is recorded and persists across a save.
+- **Provisional, and how.** ⚠ Germany's first election seats BSW at 91 and the FDP at 47 and **both
+  really won zero** — they missed the 5 % threshold by 0.02 and 0.7 pp, and a share model carrying
+  ~1.5 pp of error cannot resolve a cliff inside its own error bar. ⚠ **The same chamber every
+  time**: the electorate does not yet move with the simulation, so a second election in one game
+  returns the first's result — the single largest gap between *an election happens* and *an election
+  is played*. ⚠ **Four countries hold no election at all** and the game says why in plain English;
+  running them through a proportional allocator would produce chambers their own law does not.
+- **The calendar item itself.** The seed refresh from Sweden's real result is a **scheduled** item,
+  not a blocked one — register row K-1 in `POLISIM_BACKLOG.md`.
+
+The full status line, written from the finished state rather than predicted from a plan, is W-H5 in
+`ELECTIONS_PROTOTYPE_LOG.md`. Records: `COMPLETED.md` §§79–84.
+
+---
+
+## Where things stand — re-derived 2026-08-28 (the omnibus, its continuation and the clear-out; HEAD `076273a` + the closing commits)
+
+**This document holds only live work.** Everything finished is in `COMPLETED.md`; everything waiting on a
+named party is in `MISSING_PREREQUISITES.md`; the split is the standing pattern at the bottom of this
+file. **A task is live here only if someone could start it today.** Built-but-unconfirmed and
+built-but-uncalled are neither finished nor live — they wait on Elias's eyes and sit in
+`MISSING_PREREQUISITES.md` §V.
+
+| Document | Holds |
+|---|---|
+| `COMPLETED.md` | Finished work and lasting decisions. This file shrinks into it, never grows |
+| `MISSING_PREREQUISITES.md` | Work waiting on a named party — Elias's send, decision, eyes or playtest; Design's delivery; item 10 |
+| `CLAUDE.md` | The detailed technical record for both. **Never superseded** |
+
+**The board, stated once (verified at HEAD `076273a`, 2026-08-28 — the clear-out's Phase 4, the remote holding the tree through Phase 1; re-derive it, do not edit it
+forward):**
+
+- **DONE** — Master Sequence I (items 1–9) and Master Sequence II Steps 1, 2, 3 and 5; Round 4; the
+  fiscal-engine arc; the law system at 100 of 100 in two categories; the ruled build order (five passes)
+  and the shelf's first item, tariff costs (pass 6); **the omnibus pass of 2026-08-28** — every live item
+  of the 2026-08-27 board: the causal graph on the Policy Web (item 1), the two remaining scenarios
+  measured and dropped (item 2, the §22 precedent), all four budget decompositions (item 3), the chrome
+  and UI residues (item 4), the delivered art placed or held knowingly (item 5), the rasterization diff
+  (item 7), boards 1k and 1l (items 8–9), the seed spread sourced (§F; confirmed 2026-08-28). Records:
+  `COMPLETED.md` §§27–31, 34, 36. **The continuation of 2026-08-28** — the ruling queue drained (R-C1…R-C4,
+  R-C7), the one-line law row (R-C1), the raster check's two damage-class budgets (R-C2), the seven film-gap
+  captures (R-C6), the three seed quality debts settled (R-C5). Records: `COMPLETED.md` §37. **The
+  clear-out of 2026-08-28** — the two riders (R-D3), the Reset click draft-only (R-D2), the push (R-D1),
+  the send package, the §V index (R-D5), the three playtest saves (R-D4), the prereqs file live-only.
+  Records: `COMPLETED.md` §38. **UI v3.0 Phase A (2026-08-28)** — the direction installed, the landing
+  screen's text census with its (c) cut, the fold shell and the icon rail (V3-R2; Budget locked FOLDED,
+  R-A1), the instrument inventory with measured minimums, the eighth request (two boards) and the
+  regenerated send package. Records: `COMPLETED.md` §39. **The stage-prep micro-pass (2026-08-28)** —
+  R-SP1 (sessions push, fast-forward only) and R-SP2 (legal in every reachable state) recorded; R-SP3
+  verified on film (one sparkline renderer, R-G4's floor already on it — Annex B corrected); R-SP4 the
+  compass's honest footprint, containment-asserted; R-SP5 the map's names on §A.9a's ladder with the
+  harness's 4 px separation assert. Records: `COMPLETED.md` §40.
+- **WAITING, NOT LIVE** — `MISSING_PREREQUISITES.md`, live-only since the clear-out: **§S** one paste
+  (`SEND_PACKAGE.md`); **§A** the coupling queue Q6–Q10 at their triggers — nothing else;
+  **§D** item 10 and everything riding its gate — 13 Sept 2026, Sweden votes — including election night,
+  ⚠ **re-derived 2026-08-31: item 10's core SHIPPED at `a289e1e`** — Step 6 is re-gated at C-B5, Riksbank-B is merged into C-C7, the stranded branch is disposed at C-0.3, the party marks are D-8.1, and the political-model fact is historical (no expansionary
+  bill passes on any drift path before the re-seeding); **§E** Design: §E6's boards LANDED and were built
+  2026-08-28 (the row retires at the next re-derivation), §E5 CLOSED end-to-end 2026-08-28 (the hatch
+  cut three times, 7.42 % after the third; Elias ruled it "diagonal-tile, viewed not counted" the same
+  night — executed, `COMPLETED.md` §46; the row retires with the next re-derivation), and §E2/§E4; **§V**
+  every surface on film — the `v3a_*` family and the ladder films included — one sitting through
+  `../PoliSim-captures/sv_index.html`; **§P** the three felt
+  verdicts, each a staged save — load, play, judge — read in the no-expansionary-passage context (R-C7).
+  Every tombstone the file carried is migrated to `COMPLETED.md` §38a; what a database session still
+  owes is seed §8's `[PROVISIONAL]` → `[VERIFIED]` upgrade.
+- **LIVE** — the list below.
+
+---
+
+
+---
+
+### 181b. The document-set table as it stood at retirement — a SNAPSHOT, not a rule
+
+⚠ **Kept as history only.** Its completeness assertion was the reviews finding 4 and is the reason the
+document was retired. Nothing may cite this table as current.
+
+## Document set and the consolidation rule
+
+**Established 2026-08-02 in the first consolidation pass; run again 2026-08-26 and 2026-08-27. This is
+the standing pattern — run it whenever the live documents start describing finished work.**
+~~Eleven files at the repo root (re-derived 2026-08-28: `ls *.md`), each with one job.~~
+**⚠ RE-DERIVED 2026-08-31 AT C-G1, and the old table was badly wrong: it listed ELEVEN files against a
+root holding TWENTY-FOUR, and charted NONE of the elections-era documents.** Five were retired in the same
+pass — each migrated to `COMPLETED.md` §122 first, every reference repointed, and grep run afterwards to
+prove nothing dangles, source comments included. ⚠ **`ls *.md` matches this table exactly: TWENTY files**
+since `ERRANDS.md` joined 2026-09-01 (re-derived at the shelf's §S.6 the same day; nineteen before it), no orphans.
+
+| Document | Holds | Grows or shrinks |
+|---|---|---|
+| `POLISIM_BACKLOG.md` | ⚠ **THE single ordered register of open work** (built 2026-08-31 at C-0.1). A source document may DESCRIBE an item; it may not also QUEUE it | Shrinks as rows close |
+| `POLISIM_MASTER_ROADMAP.md` | **Live work only** — plus the trigger shelf, the standing constraints and this table | Shrinks |
+| `MISSING_PREREQUISITES.md` | Blocked work by supplier, including §V's built-but-unseen rows | Shrinks |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | The single standing asset request — **one live ask, D9** | Appended, then emptied on delivery |
+| `SEND_PACKAGE.md` | The current paste-and-glance package. ⚠ **Undated on purpose**: the dated `…_2026-08-28.md` went stale in place and its own readback glance would have failed | Regenerated, never accumulated |
+| `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | The macro seed figures and release schedules | Grows slowly |
+| `ERRANDS.md` | ⚠ **NEW (2026-09-01)** — every OUTWARD-FACING action waiting on Elias, one line each with what it unblocks. **A session never registers an account, sends, or pastes**; those go here instead of into the tail of a report nobody re-reads | Shrinks as errands are done or withdrawn |
+| `COMPLETED.md` | Finished work, lasting decisions, lessons | Grows |
+| `CLAUDE.md` | The detailed technical record. **Never superseded** | Grows |
+
+**Scoped documents — kept while load-bearing:**
+
+| Document | Job | Retires when |
+|---|---|---|
+| `POLISIM_V2_SCREEN_SPEC.md` | the v2.0 visual conventions the code cites by section | the code stops citing it |
+| `POLISIM_UI_V3_DIRECTION.md` | the v3.0 founding document | v3 lands in full |
+| `LAW_BROWSER_BOARD_RULINGS.md` | Design's Screen 1i rulings | the `board1jc*` eye review closes and the two `GameController.cs` comments repoint |
+| `CLAUDE_DESIGN_BOARD_1I_NOTE.md` | the outbound courtesy note | the package is sent |
+| `POLISIM_TAX_SPECLET.md` | ⚠ **NEW (C-C12)** — the tax instruments and the sourcing bill | Elias rules it and P-H2 builds |
+| `POLISIM_COHORT_SPECLET.md` | ⚠ **NEW (C-C13)** — 5-year cohorts, the collision map, "one demography, two consumers" | Elias rules it and P-I2 builds |
+
+**The elections era's documents, charted for the first time:**
+
+| Document | Job | Retires when |
+|---|---|---|
+| `ELECTIONS_ARCHITECTURE.md` | the era's charter | the era closes |
+| `ELECTIONS_CAMPAIGN_SPEC.md` | ⚠ **44 sections that every elections item cites by § number** — it was uncharted while being load-bearing | the spec is fully built or superseded |
+| `ELECTIONS_PROTOTYPE_LOG.md` | the era's detailed record, CLAUDE.md's sibling | never |
+| `ELECTIONS_GAP_TABLE.md` | the gap register, class column re-derived at C-0.2 | its 3 genuinely-unbuilt rows are built or deferred |
+| `ELECTIONS_PLAY_CALIBRATION.md` | ⚠ **Elias's instrument, not a backlog** — all 20 entries open by construction | there is a loop to feel and he has felt it |
+
+**Retired at C-G1 (2026-08-31), migrated to `COMPLETED.md` §122 first:** the elections work list (46 rows,
+all closed; W-F4/W-F5 re-homed as C-D1/C-D2 **before** deletion), the Playtest-1 work list (17 rows, each
+pointing at its section; the two unclosed are register rows), the Day-1 and Day-2 reports, the overnight
+morning report, and `SEND_PACKAGE_2026-08-28.md`. ⚠ **A report is not a second home for a finding.**
+
+
+Deleted under this rule: `VISUAL_REVIEW_BACKLOG.md` (2026-08-02), `POLISIM_MACRO_OVERHAUL_DIRECTIVE.md`
+(2026-08-26), the three scoping packages and the derivation reports (2026-08-26, `COMPLETED.md` §§21/22).
+

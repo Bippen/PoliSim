@@ -8,7 +8,7 @@ built-but-unconfirmed work gained its own section (§V) — the home `VISUAL_REV
 before it emptied and was deleted.
 
 **What this is not:** a backlog of work someone could pick up. Nothing here is startable. Work that is
-merely *unbuilt* stays in `POLISIM_MASTER_ROADMAP.md`; work that is *waiting* lives here. "Hard",
+merely *unbuilt* stays in `POLISIM_FEATURE_LIST.md`; work that is *waiting* lives here. "Hard",
 "large" and "not scoped yet" are not blockers.
 
 **The register, complete:**

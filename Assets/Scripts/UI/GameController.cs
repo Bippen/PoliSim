@@ -9334,8 +9334,8 @@ namespace PoliSim.UI
         /// exclusively via DrawBudgetProcessTab.
         ///
         /// STABLE CONTROL LAYOUT PATTERN (mandatory for every gated tab, not just this one - see
-        /// "Background/timed state mutation vs. active UI interaction" in POLISIM_MASTER_ROADMAP.md's
-        /// working-discipline failure patterns): once a background system can resolve on ANY simulated
+        /// "Background/timed state mutation vs. active UI interaction" among the working-discipline
+        /// failure patterns, retired as standing text and preserved in COMPLETED.md section 35): once a background system can resolve on ANY simulated
         /// day - a bill passing/failing, and every one of the seven remaining tabs will gain this the
         /// moment Master Sequence step 5 lands - it can mutate the exact standing value a slider on
         /// this tab is reading, on a day the player has an active multi-frame drag in progress on that

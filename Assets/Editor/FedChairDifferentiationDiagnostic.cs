@@ -42,7 +42,7 @@ namespace PoliSim.EditorTools
         private static void RunFromMenu() => Run();
 
         /// <summary>200 turns so the spread is judged inside the ruled 100-200 calibration window
-        /// (POLISIM_MASTER_ROADMAP "calibration stays at turns 100–200"), with t50 as the early read.
+        /// (POLISIM_FEATURE_LIST.md, the standing constraints: "calibration stays at turns 100-200"), with t50 as the early read.
         /// Turns 1-4 carry the deterministic seed-convergence transient in unemployment (CLAUDE.md,
         /// the amended turn-1 note) - judge from t5.</summary>
         private const int Turns = 200;
