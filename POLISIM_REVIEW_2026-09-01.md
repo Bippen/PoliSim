@@ -574,3 +574,83 @@ practising the convention it proposes.
 4. **P1**, and **P2**'s precondition — both cost nothing and address the largest measured class.
 5. **P6a** — time the bar, so P6 can be ranked at all.
 6. **§C's three changes** — commit behind a green bar, or revert.
+
+---
+
+# §D — Absorbed from the retired `POLISIM_REVIEW_ADDENDUM.md` (2026-09-01)
+
+⚠ **The addendum is deleted and this section is what survived it.** Two of its claims did not: its
+finding 6 is **retracted** (see the retraction at the head of §A.1), and its bar figures — 349.9 s cold,
+`ArtifactIdentityCheck` at 243.6 s / 75 % — are **superseded** by `Logs/bar_timing.tsv`, which is produced
+by `BarTiming` on every run and therefore re-derivable rather than transcribed. **A one-off stopwatch
+reading in a document is exactly what the claim convention forbids; an appended log is what replaces it.**
+
+Everything below was **re-measured in this run** before being carried over.
+
+## D.1 — Two corrections to Part B, both accepted
+
+⚠ **"Cannot be recovered retrospectively" is not "cannot be measured", and §B.1 treated them as one.**
+The record genuinely holds no duration for any successful run — that headline stands. But the cost of a bar
+was always available to anyone willing to spend one bar finding out. **A measurement that has not been
+taken is not an unmeasurable quantity**, and this project applies that distinction to everything else.
+§B.2's decline of P6 rested on the conflation and is withdrawn in D.3.
+
+⚠ **§B.2's Unity constraint was real but mis-attributed.** The refusal —
+*"another Unity instance is running with this project open"* — fires on **any** concurrent Unity process
+against the project, not specifically on an open Editor. This review's own attempt collided with a batch
+bar left running in the background, and the report generalised the message into *"the bar cannot run while
+the Editor is open"*, then declined to commit on that basis. **The honest rule is narrower and more
+useful: one Unity process against the project at a time, Editor or batch — so Unity work cannot be
+parallelised across agents or background tasks.**
+
+## D.2 — What `ArtifactIdentityCheck` is actually doing
+
+Re-measured this run: **876 `traj_*.csv` artifacts, 3.7 GB**, re-read and re-identified **on every bar**.
+
+⚠ **This is not an argument for weakening the check.** Those artifacts are the evidence base for the
+trajectory gate and their identity is exactly what must not drift. It is an argument about **when** the
+question is asked.
+
+## D.3 — P6, now rankable, and it outranks everything
+
+| proposal | measured basis | time returned |
+|---|---|---|
+| **P6a — `ArtifactIdentityCheck` incremental between gates, full sweep at gates** | ~92 % of the cheap suite, from `Logs/bar_timing.tsv` | **the bar falls to roughly a tenth of its cost on every commit** |
+| P6b — per-country trajectories | still unmeasured; the suite was not run | **still unrankable** |
+
+⚠ **Coverage at a gate is untouched**, which the brief forbids reducing. The reduction is **between**
+gates, which the brief asks for: the artifact set is append-only historical evidence, so between gates
+*"is this the same file"* is answerable from digests, and at a gate the full sweep runs as it does now.
+
+**On the brief's own test — time returned per hour spent — P6a is the highest-value item in the review and
+ranks above P1.** P1 is still right and still costs nothing; P6a returns minutes per commit for an
+afternoon.
+
+### The cost it removes, measured
+
+`D-17` rules that a closure record is its own commit, because a commit cannot contain its own hash. Over
+this session's window that produced **fourteen record-or-fix commits, twelve of them changing one to three
+lines** — **each requiring a full green bar**, whose ~92 % is re-identifying 3.7 GB of CSVs that no
+document edit can touch.
+
+⚠ **D-17 is not the fault and should not be struck** — the citation must be true, and the two-commit shape
+is the only one where it is. **The fault is that the bar has one price regardless of what changed.**
+
+## D.4 — Where the session's output went
+
+Re-measured this run over the audit-era and F1 window (`git diff --numstat 12a4833^..88d8899`, split by
+path):
+
+| | lines added |
+|---|---|
+| **Editor tooling** (checks, diagnostics, generators) | **1 627** |
+| **`Assets/Scripts`** — the game | **619** |
+| markdown (records, register, feature list) | 1 976 |
+
+⚠ **72.4 % of the C# written was instrumentation.** ⚠ **The markdown grew more than the game and the
+tooling combined.**
+
+**This is the strongest argument in the review for R-N5 and for the audit era ending when it did**, and it
+is a measurement rather than an impression. It is **not** an argument that the instrumentation was wasted —
+several checks caught defects the day they were built. **It is an argument that the ratio cannot persist**,
+which is what the feature list exists to change.

@@ -11201,6 +11201,24 @@ exempts it.
 
 ---
 
+
+### 181-note. ⚠ A pushed commit message asserts a finding that was retracted the same day
+
+**Commit `88d8899`'s message states that `ERRANDS.md`'s E-3 was wrong to instruct hashing "AS LF", on the
+grounds that `core.autocrlf=true`. That assertion is FALSE.** The working copy is LF — `tr -cd '\r' | wc -c`
+returns zero for every file in the tree, and `CLAUDE_DESIGN_BOARD_1I_NOTE.md` hashes to exactly the digest
+`SEND_PACKAGE.md` publishes for it. `core.autocrlf=true` is real and governs a **fresh checkout**, not this
+working copy. The probe behind the finding, `grep -c $'\r'`, returned a count equal to each file's TOTAL
+line count — an empty pattern matching every line.
+
+⚠ **The commit is pushed and its message is not rewritten.** A log says what was believed when it was
+written, and falsifying one to look correct in hindsight is a worse defect than the error it would hide.
+**The correction lives in the tree instead:** the retraction, the probe failure and the re-measurement are
+at the head of `POLISIM_REVIEW_2026-09-01.md` §A.1, and `POLISIM_REVIEW_ADDENDUM.md` — which repeated the
+same claim and carried a superseded one-off bar figure — is **deleted**, its surviving content absorbed
+into that review as §D.
+
+**Anyone reading `88d8899`'s message should read `POLISIM_REVIEW_2026-09-01.md` §A.1 beside it.**
 ### 181a. The two eras and the board, verbatim from `POLISIM_MASTER_ROADMAP.md` at retirement
 
 ## UI v3.0 — the era (opened 2026-08-28; founding document `POLISIM_UI_V3_DIRECTION.md`)
