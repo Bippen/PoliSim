@@ -62,7 +62,18 @@ namespace PoliSim.EditorTools
 
         public static void Run()
         {
-            string pattern = Arg("-edgepattern=", "clipfix2_*.png");
+            RunOver(Arg("-edgepattern=", "clipfix2_*.png"));
+        }
+
+        /// <summary>The check over an EXPLICIT pattern, so the capture path can run it on the films it
+        /// has just written. ⚠ **M-S16 (2026-09-01): until now this guard fired only when somebody
+        /// remembered to invoke it after a capture pass.** It is registered in neither batch, because it
+        /// correctly refuses to run without film — and a guard that depends on being remembered is the
+        /// failure mode `C-N3` fixed for the simulation group. It was sitting inside a master-list row
+        /// that called it a standing guard. **The capture driver now calls it before it exits, over its
+        /// own label**, so the guard fires at the one moment its input is guaranteed to exist.</summary>
+        public static void RunOver(string pattern)
+        {
             // Same `-shotdir=` argument and same out-of-tree default as the capture side, so the
             // check reads where the driver writes without a second path to drift (2026-08-16, the
             // repository-weight pass — captures no longer live inside the repo).

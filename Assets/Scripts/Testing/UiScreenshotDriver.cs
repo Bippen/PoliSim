@@ -48,6 +48,16 @@ namespace PoliSim.Testing
 
         public string OutputDirectory = DefaultOutputDirectory;
         public string Label = "run";
+
+        /// <summary>Run just before the process exits, given the exit code the run wants, returning the
+        /// code it should actually use. ⚠ **M-S16 (2026-09-01): this exists so a guard over the films
+        /// cannot be forgotten.** `ScreenEdgeCheck` refuses to run without film - correctly - and was
+        /// therefore in neither batch, firing only when somebody remembered it after a capture pass. That
+        /// is the failure mode `C-N3` fixed for the simulation group. This driver lives in the runtime
+        /// assembly and cannot reference Editor code, so the Editor side installs the hook and this side
+        /// only promises to call it. **The returned code is the WORSE of the two**: a clean capture whose
+        /// films are clipped is not a clean run.</summary>
+        public System.Func<int, int> BeforeExit;
         /// <summary>Which country to play as, set from `-shotcountry=` (default USA — the only country any set contained before 2026-08-12). Parsed against CountryId in Start and FAILS the run on a bad name: a typo must not silently capture the default country under the requested country's label.</summary>
         public string Country = "USA";
 
@@ -1207,6 +1217,20 @@ namespace PoliSim.Testing
         private void Finish(int exitCode)
         {
             _finishCalled = true;
+
+            // ⚠ The hook runs BEFORE the exit and can only make the code worse, never better. A hook that
+            // throws must not swallow the run's own verdict, so it is caught and counted as a failure -
+            // an exception in a guard is not a pass, which is this suite's standing rule for checks.
+            if (BeforeExit != null)
+            {
+                try { exitCode = System.Math.Max(exitCode, BeforeExit(exitCode)); }
+                catch (System.Exception e)
+                {
+                    Debug.LogError("SHOT: the before-exit guard threw and is counted as a FAILURE - " + e.Message);
+                    exitCode = System.Math.Max(exitCode, 1);
+                }
+            }
+
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.Exit(exitCode);
 #endif

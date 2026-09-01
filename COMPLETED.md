@@ -10452,3 +10452,46 @@ rejected — three unrelated constants would fire today, and a guard that cries 
 how a ratchet stops discriminating.
 
 **Bar: 23 checks green, 9 simulation green, residue 29 of 29.**
+
+## 164. THE STANDING-WATCH BOUNDARY — and it caught a guard armed for a human (2026-09-01)
+
+Two master-list rows are **re-verified each cycle** rather than done. ⚠ **Counting them makes zero
+unreachable by construction** — the termination condition would read false for a reason with nothing to do
+with the work — so they get a third boundary, beside "not startable because the owner is not a session"
+and "not startable because done".
+
+⚠ **It is the easiest of the three to abuse.** Nothing about a watch ever completes, and *"it is a standing
+watch"* is exactly what someone would say about a row they did not want to do. **So it is policed harder
+than the other two: a row here must NAME a check that EXISTS and is REGISTERED in a batch.** A watch nobody
+runs is not a watch; it is a row in a quieter place. Proved both directions — a watch naming an
+unregistered check fails, and a watch naming no check fails.
+
+### ⚠ The clause fired on its first use, and the row it broke was not a bookkeeping error
+
+`M-S12` claimed **G-1**'s label-clipping class and **G-2**'s meta text were both standing guards.
+`MetaTextCheck` is in the cheap suite. ⚠ **`ScreenEdgeCheck` is in NEITHER batch.** It refuses to run
+without film — *"no captures matched … this verified NOTHING rather than finding nothing"*, which is
+correct of it — and so it fired **only when somebody remembered to run it after a capture pass.**
+
+**That is precisely the failure mode `C-N3` fixed for the simulation group** — a guard armed for a human
+who remembers to click it — and it was hiding inside a row whose own words called it standing. The row did
+not split because of a policy; it split because the policy made it say something checkable and it turned
+out to be false.
+
+### M-S16: the guard, armed where its input is created
+
+`ScreenEdgeCheck` gains `RunOver(pattern)`, and the capture driver gains a `BeforeExit` hook the Editor
+side installs — the driver is in the runtime assembly and cannot reference Editor code, so it only promises
+to call what it is handed. **The capture pass now runs the edge guard over its OWN label** (`<label>_*.png`),
+so the pattern cannot drift from the pass it judges, and the guard fires at the one moment its input is
+guaranteed to exist.
+
+⚠ **The hook can only make the exit code WORSE, never better** — a clean capture whose films are clipped is
+not a clean run — and a hook that throws is counted as a failure rather than swallowed, this suite's
+standing rule for checks applied to a guard on a guard.
+
+**Proved both directions on real capture runs**: with the true pattern, 81 captured / 0 failed / guard
+green / **exit 0**; with a pattern matching nothing, the identical 81 captured / 0 failed still **exits 2**,
+because a guard that verified nothing must not certify a run.
+
+**Bar: 23 checks green, 9 simulation green, residue 27 → 26.**

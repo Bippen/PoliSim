@@ -195,6 +195,16 @@ namespace PoliSim.EditorTools
             // command in them says 950. Width has no such chrome and matches exactly, so the naive
             // assertion worked on one axis and would have been false on the other for a stable reason.
             driver.ExpectedHeight = Mathf.RoundToInt(ViewHeight) - GameViewChromeHeight;
+
+            // M-S16 (2026-09-01): the label-clipping guard, armed where its input is created rather than
+            // where somebody remembers it. ⚠ It reads the films THIS run just wrote, by this run's own
+            // label, so the pattern cannot drift from the pass it is meant to judge.
+            string edgePattern = label + "_*.png";
+            driver.BeforeExit = code =>
+            {
+                Debug.Log("SHOT: running the edge guard over '" + edgePattern + "' before exit (M-S16).");
+                return CheckExit.Collect(() => ScreenEdgeCheck.RunOver(edgePattern));
+            };
             Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 
