@@ -97,7 +97,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 
 | ID | what | done-when | OWNER | CLASS | BLOCKS-ON | size |
 |---|---|---|---|---|---|---|
-| **M-S5** | **`C-0.3`** — the stranded branch disposed: migrate its four unsuperseded pieces, retire the obligation, keep the ref | ⚠ `stranded/politics-elections` still exists locally and on origin. Done when the four pieces are in `COMPLETED.md` and the branch is a recorded ref only | CODE | RECORDS | — | M |
 | **M-S6** | **`C-0.2`** — the post-wiring re-derivation: no live document asserts a pre-wiring premise | `DocumentClaimCheck` covers the identifier half; this is the PROSE half, and ⚠ it is S-22's class — sized as a read, not a scan | CODE | RECORDS | — | L |
 | **M-S7** | **`S-32`** — board 1h gets a route from the running game | `PlayerReachabilityCheck` reports 0 and the route shows a real count | CODE | SAFE | **M-B5** | M |
 | **M-R1** | ratchet: `UnwiredSubsystemCheck.UNWIRED` = **7** | each of the seven is wired, deleted, or parked with a trigger; ceiling lowered | CODE | SAFE | — | L |
@@ -217,6 +216,7 @@ measure willingness to move rows rather than work done.
 | **M-S3** | **`S-29`** — the party-ink **draw-site** check | ⚠ **the surface is ONE file** — `HemicycleRenderer` — so clause 1 is an allow-list with arguments, clause 2 takes the FILE as the unit of adjacency and says so, and clause 3 is subsumed by construction. Four failure paths proved | CODE | SAFE | `a77c243` | M |
 | **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | ⚠ **both guarded, and the finding reproduced itself in the closing**: 1280×800 films 8 text overflows where 1280×720 films 0, on identical code. The four geometries also gave `GameViewChromeHeight` four corroborations | CODE | SAFE | `7ae67e0` | S |
 | **M-S8** | **`S-23`** — `DeadStateCheck` still cannot distinguish a read from a write | ⚠ **it did not need "more than a regex" — it needed a regex AND a classifier.** Built; its first run found **six dead fields**, all deleted, ceiling untouched, plus one false positive that would have had somebody delete a live loop bound | CODE | SAFE | `8daa676` | M |
+| **M-S5** | **`C-0.3`** — the stranded branch disposed | ⚠ **"four unsuperseded pieces" was never derived.** Measured: **13 of 15 superseded**, three by something stronger; **two unsuperseded and neither is code** — `ChamberRenewal` (staggering, absent from main entirely) and per-election-type turnout. Recorded as preserved ideas; the branch is a ref | CODE | RECORDS | `5f3e9dd` | M |
 
 ---
 
