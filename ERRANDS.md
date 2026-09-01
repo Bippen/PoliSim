@@ -52,3 +52,22 @@ every shelf cycle rather than assumed:
 
 **Neither soft spot is a hole to be lived with quietly**: each is written where the check declares it, and
 closing either needs a lexer rather than a regex — which is the honest reason they are named instead.
+
+---
+
+## ⚠ E-4 · PUSH — and it is the one thing turning the bar red (added 2026-09-01)
+
+`UpstreamCheck` reports **more than 10 commits ahead of `origin/main`**, above its own threshold, with the
+sentence it exists to say: ***"That work exists on one disk."***
+
+⚠ **A push is outward-facing, so this session does not take it.** That is not a technicality here: the
+whole point of the threshold is that somebody with the authority to publish decides to publish, and a run
+that pushed on its own to clear its own red check would be the purest form of tuning to pass.
+
+| # | the errand | what it releases | what it costs to leave |
+|---|---|---|---|
+| **E-4** | **`git push origin main`** — nothing else; every commit is small, green at the time it was made, and independently reviewable | the bar returns to fully green, and `UpstreamCheck` stops being the only red check in the suite | ⚠ **the risk is a disk, not a merge.** There is no conflict to resolve and no review gate to pass — the work is simply unbacked |
+
+⚠ **Until it is done the bar reads 22 of 23 with `UpstreamCheck` red, and that red is CORRECT.** It is
+recorded here rather than worked around, and no ceiling was moved to hide it: the check is measuring
+exactly what it says, and the answer is an action only Elias can take.

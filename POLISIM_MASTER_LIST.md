@@ -111,7 +111,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour, in a comment or a document | ⚠ the honest done-when may be *"recorded as undecidable"*; it is the larger half of what a comment asserts | CODE | SAFE | — | M |
 | **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | a film run cannot silently use the wrong geometry or pattern | CODE | SAFE | — | S |
 | **M-S11** | **`S-13`** — the Policy Web's ~40 incoming edges converge on one point at a focused stat node | DESIGN ruled it a comprehension judgement (board 2b); this row is the code half once ruled | CODE | SAFE | — | S |
-| **M-S14** | **`S-3`** — W-B12's residual: SD keeps 6 of 38 unpaid staff-days | the residual is explained or the plan changes | CODE | SAFE | — | S |
 | **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED and not centred; `FlatIssueMatch = 0.5` stands in | the axes are defined from a source, or the stand-in is ruled permanent | CODE | DATA | — | M |
 
 ## SECTION 2 — BASELINE, OWNER CODE. One at a time, each with its per-country explanation.
@@ -205,6 +204,7 @@ measure willingness to move rows rather than work done.
 | **M-S2** | R-T3's owed enumeration: what "the width assertion" was, and every consumer of it | ⚠ **the phrase DID resolve uniquely — trap 2 — and the enumeration is where the unguarded half was hiding: HEIGHT, unchecked for a month.** `GameViewChromeHeight` named and dated; both directions proved on real film runs | CODE | RECORDS | `2777f18` | S |
 | **M-S4** | **`S-26`** — the dial midpoint `50` stated in four places | ⚠ **it was FIVE.** One statement now; the other four reference it. Closed by `SharedMidpointCheck`, not by the cleanup — each of the four already carried a comment saying the others existed | CODE | SAFE | `ab279d7` | S |
 | **M-S16** | ⚠ **`G-1`'s guard was armed for a human who remembers** — `ScreenEdgeCheck` in neither batch, firing only if invoked after a capture pass | the capture driver runs it over its own label before exiting, and the hook can only make the exit code worse; proved with 81/0 exiting **2** when the guard verified nothing | CODE | SAFE | `e8a9bb1` | M |
+| **M-S14** | **`S-3`** — W-B12's residual: SD keeps 6 of 38 unpaid staff-days | ⚠ **stale in both halves** — it is SD 6, V 12, MP 12, and the two parties that hired FEWEST have the WORST record. Arithmetic closes to the krona; assertion **1j** now separates poverty from a bug | CODE | SAFE | `d31dec3` | S |
 
 ---
 
