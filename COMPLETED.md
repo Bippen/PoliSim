@@ -18304,3 +18304,37 @@ several checks caught defects the day they were built. **It is an argument that 
 which is what the feature list exists to change.
 
 Retired 2026-09-02 under this rule, each migrated verbatim into its numbered section, §§182–190: the law-browser board rulings, the elections architecture note, the gap table, the prototype log, the UI v3 direction, the v2 screen spec, the seed-data overhaul (its nine `[GAP]` figures now an appendix line, Elias's), the play-calibration list, and the 2026-09-01 review.
+
+
+## 191. S-24 CLOSED — Poland's inflation target is 2.5, and the family is explained by experiment (2026-09-02)
+
+`TaylorRule.InflationTarget` was one constant, 2, for six countries. **The NBP targets 2.5 % with a symmetric
+±1 pp band** (verified 2026-09-01 at the NBP's own guidelines), so 2 sat inside Poland's tolerance and was not
+its target. The constant is now `InflationTarget(CountryId)`: **2.5 for Poland**, 2 for the ECB trio, the
+Fed and the Riksbank — every value the institution's own published number, no authored entry. R-T3: every
+consumer moved — `TaylorRule.GetSuggestedInterestRate`, `MacroSystem.ApplyPovertyRate`,
+`ApplyApprovalRating` and `RecordApprovalAttribution`; the `Country` doc comment repointed.
+
+### ⚠ It is a BASELINE change, so it lands with its family explained per country — and the explanation is a controlled experiment, not a reading
+
+Two trajectory dumps on the SAME tree, three minutes each: `s24` with the fix, `pre_s24` with Poland's
+target held at 2. ⚠ **`pre_s24` is byte-identical to `st3g`, the previous reference, in all six files** —
+which proves both that the reference was clean and that every difference below is S-24's and nothing else.
+
+| country | fields moved | enters at | how |
+|---|---|---|---|
+| **Poland** | 28 | **t1**: `Taylor.SuggestedRate` **−0.25** (the 0.5 pp gap change × the 0.5 weight, exactly), `Zone.InterestRate` −0.0375, `ApprovalRating` −0.20, `PovertyRate` +0.022 | the target itself — through the rate, the approval penalty gap and the poverty gap |
+| **Sweden** | 28 | t1: `CurrencyStrength` +0.0094 | ⚠ **spillover through the currency, not through trade volumes**: `CurrencySystem` sets strength from *own zone rate − average partner rate* × 5, and Poland is a partner whose rate fell |
+| **USA** | 24 | t1: `CurrencyStrength` +0.0070 | the same channel — the USA is Poland's partner too |
+| **Germany · France · Italy** | **0** | — | ⚠ **`CurrencyStrength` is pinned at exactly 100 for all three at every turn in BOTH runs** — the currency step does not move euro members — so the one channel the change spills through is closed to them by construction. Germany is Poland's trading partner and still does not move, which is how that was found |
+
+Magnitudes over 1 000 turns: Poland's `ApprovalRating` diverges by up to **3.9 points**, its `Inflation` by
+0.015; Sweden's `Inflation` by 0.002 and its `GDP` by 24 model units; the USA's `Inflation` by 6e-5. Poland's
+`GDP`/`Budget`/`HousePriceIndex` show enormous *absolute* deltas late in the run because those series are
+already on the runaway path the register records elsewhere — the diff amplifies a known divergence, it does
+not create one.
+
+⚠ **Two things this measured that the record had wrong:** the trajectory suite takes **three minutes**, not
+"over an hour" — that figure was a stale transcription and it has been shaping session planning; and a
+one-country constant change reaches two other countries through the currency step and none through
+trade, which is a fact about the model worth knowing before F2 lands its six-country family.

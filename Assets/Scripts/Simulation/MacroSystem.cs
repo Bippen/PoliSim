@@ -594,7 +594,7 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
-            float inflationGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget);
+            float inflationGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country.Id));
             float baseline = country.BaselinePovertyRate
                 + PovertyUnemploymentSensitivity * unemploymentGap
                 + PovertyInflationSensitivity * inflationGap;
@@ -2298,7 +2298,7 @@ namespace PoliSim.Simulation
             float growthEffect = GrowthApprovalSensitivity * growthGap;
 
             float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
-            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget);
+            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country.Id));
             float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
             float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
             float miseryPenalty = UnemploymentApprovalSensitivity * unemploymentPenaltyGap
@@ -2379,7 +2379,7 @@ namespace PoliSim.Simulation
             float growthEffect = GrowthApprovalSensitivity * growthGap;
 
             float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
-            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget);
+            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country.Id));
             float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
             float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
 

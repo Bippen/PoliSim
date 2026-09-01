@@ -31,13 +31,16 @@ namespace PoliSim.Simulation
     /// </summary>
     public static class TaylorRule
     {
-        /// <summary>Central bank inflation target, in percent.</summary>
-        /// <remarks>SOURCED as a real policy target rather than a modelling choice - 2% is the announced
-        /// inflation target of the ECB, the Federal Reserve and the Riksbank. ⚠ It is NOT Poland's: the NBP
-        /// targets **2.5% with a symmetric +-1 percentage point band** (verified 2026-09-01 at the NBP's
-        /// own monetary-policy guidelines), so 2 falls inside its tolerance band but is not its target.
-        /// One target for six countries is a simplification, and the country it simplifies is named.</remarks>
-        public const float InflationTarget = 2f;
+        /// <summary>The central bank's announced inflation target for this country, in percent.</summary>
+        /// <remarks>SOURCED as real policy targets rather than a modelling choice. 2% is the announced
+        /// target of the ECB (Germany, France, Italy), the Federal Reserve (USA) and the Riksbank (Sweden,
+        /// on CPIF). ⚠ **Poland is 2.5%**: the NBP targets 2.5% with a symmetric +-1 percentage point band
+        /// (verified 2026-09-01 at the NBP's own monetary-policy guidelines). Until 2026-09-02 this was one
+        /// constant of 2 for all six, which sat INSIDE Poland's tolerance band and was not its target - S-24.
+        /// A per-country figure is the fix; a per-country table with one authored entry would not be, so
+        /// every value here is the institution's own published number.</remarks>
+        public static float InflationTarget(CountryId country) =>
+            country == CountryId.Poland ? 2.5f : 2f;
 
         /// <summary>Assumed neutral real interest rate, in percent.</summary>
         /// <remarks>[AUTHORED-DRAFT], and this one deserves the mark most: the neutral real rate (r*) is UNOBSERVABLE and actively contested - published estimates for these economies have ranged from below zero to above two in the last decade. 2% is the classic Taylor (1993) assumption, kept for that reason and not because anything measures it now.</remarks>
@@ -101,7 +104,7 @@ namespace PoliSim.Simulation
         public static float GetSuggestedInterestRate(Country country)
         {
             EconomyState state = country.State;
-            float inflationGap = state.Inflation - InflationTarget;
+            float inflationGap = state.Inflation - InflationTarget(country.Id);
 
             float suggested = NeutralRealRate + state.Inflation + InflationGapWeight * inflationGap + GetGapTermPercentagePoints(country);
             return Mathf.Max(0f, suggested);

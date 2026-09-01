@@ -265,7 +265,7 @@ namespace PoliSim.Data
         /// <summary>
         /// This country's structural "steady-state" poverty rate - the PovertyRate MacroSystem.
         /// ApplyPovertyRate's baseline computes toward when Unemployment sits at NaturalUnemploymentRate
-        /// and Inflation sits at TaylorRule.InflationTarget (i.e. the gaps that otherwise move the
+        /// and Inflation sits at TaylorRule.InflationTarget(Id) (i.e. the gaps that otherwise move the
         /// baseline are both zero). Seeded per country from real OECD relative-poverty-rate data (see
         /// WorldFactory) - the same figure EconomyState.PovertyRate is seeded to, so a new game opens
         /// with PovertyRate already at (or very near) its own baseline rather than an artificial
