@@ -483,22 +483,27 @@ namespace PoliSim.Simulation
 
         /// <summary>Sane bounds for a country's own tariff policy (see PolicyDecision.TariffRateChange).</summary>
         private const float MinBaseTariffRate = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxBaseTariffRate = 50f;
 
         /// <summary>Bounds for a WelfareProgram's GenerosityLevel - uniform across every WelfareProgramType (unlike TaxLine's per-type MinRate/MaxRate), since the task specifies a single 0-100% range for all six.</summary>
         private const float MinGenerosityLevel = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxGenerosityLevel = 100f;
 
         /// <summary>Bounds for Country.MinimumWagePercentOfMedian (a Kaitz-index-style percent of median wage) - a gameplay ceiling above any real-world minimum wage's Kaitz index, not a researched maximum.</summary>
         private const float MinMinimumWagePercent = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxMinimumWagePercent = 100f;
 
         /// <summary>Bounds for Country.PoliceFundingLevel/SentencingSeverity - both share one uniform 0-100 range (unlike TaxLine's per-type ranges), since there's no per-country real-world figure to bound them against.</summary>
         private const float MinPolicyDialLevel = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxPolicyDialLevel = 100f;
 
         /// <summary>Bounds for Sector.SubsidyLevel/RegulationLevel - reuses the same [0,100] range as the crime/justice dials, since there's likewise no per-sector real-world figure to bound them against.</summary>
         private const float MinSectorDialLevel = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxSectorDialLevel = 100f;
 
         /// <summary>
@@ -511,18 +516,22 @@ namespace PoliSim.Simulation
         /// recession-triggered drawdown, so no separate, narrower cap was invented for this pass.
         /// </summary>
         private const float MinSwfContributionRate = -10f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxSwfContributionRate = 10f;
 
         /// <summary>Bounds for SovereignWealthFund's DomesticAllocationPercent and four asset-class weights - shares the same [0,100] range idiom as the other uniform policy dials in this session's work.</summary>
         private const float MinSwfDialLevel = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxSwfDialLevel = 100f;
 
         /// <summary>Bounds for Country.PaidFamilyLeaveWeeks - a gameplay ceiling (104 weeks = 2 years, comfortably above Sweden's real ~69-week benchmark), not a researched maximum.</summary>
         private const float MinPaidFamilyLeaveWeeks = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxPaidFamilyLeaveWeeks = 104f;
 
         /// <summary>Bounds for Country.OvertimeRegulationLevel/RetrainingProgramLevel - shares the same [0,100] uniform-dial idiom as PoliceFundingLevel/SentencingSeverity.</summary>
         private const float MinLaborDialLevel = 0f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxLaborDialLevel = 100f;
 
         /// <summary>
@@ -559,6 +568,7 @@ namespace PoliSim.Simulation
         /// average still transmits the LEVEL of a very large fund into the budget and damps only its
         /// variance — and because this is the rule the real instrument actually uses.
         /// </summary>
+        /// <remarks>SOURCED - 3% is Norway's own structural draw figure for the Government Pension Fund Global (handlingsregelen), as the paragraph above records. Chosen because it is the rule the real instrument uses, not because it fits.</remarks>
         private const float SwfStructuralDrawPercentPerYear = 3f;
 
         /// <summary>The annual structural draw expressed per TURN. A turn is <see cref="DaysPerTurn"/> days, so a year is 365/121 turns - derived rather than hardcoded, because the continuous-time migration will change the turn length and a baked-in constant would silently become a different policy.</summary>
@@ -591,6 +601,7 @@ namespace PoliSim.Simulation
         /// entitlement reform (Social Security, Medicare, Medicaid, etc. aren't cut or expanded as
         /// freely, in one turn, as a Discretionary line).
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] - the paragraph above gives the reasoning (entitlement reform is politically harder than discretionary change, so the range is narrower); how much narrower is a game figure.</remarks>
         private const float MandatoryPercentChangeRange = 15f;
 
         /// <summary>
@@ -614,6 +625,7 @@ namespace PoliSim.Simulation
         /// first place.
         /// </summary>
         private const float MinSpendingLineAmountRatio = 0.2f;
+        /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxSpendingLineAmountRatio = 3.0f;
 
         private static float ClampToSeedRange(SpendingLine line, float amount)
@@ -1517,6 +1529,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private void RecomputeCrimeJusticeDialsFromEnactedLaws(Country country)
         {
+        /// <remarks>CONVENTION - the same dial midpoint the couplings table states, used here as a local starting value for the six crime and justice dials.</remarks>
             const float baseline = 50f;
             float police = baseline, sentencing = baseline, bail = baseline;
             float drug = baseline, judicial = baseline, border = baseline;
