@@ -10495,3 +10495,38 @@ green / **exit 0**; with a pattern matching nothing, the identical 81 captured /
 because a guard that verified nothing must not certify a run.
 
 **Bar: 23 checks green, 9 simulation green, residue 27 → 26.**
+
+## 165. S-3 CLOSED — the residual explained, and the explanation turned into an assertion (2026-09-01)
+
+⚠ **The row was stale in both halves.** It read *"W-B12's residual: SD keeps 6 of 38 unpaid staff-days"*.
+Measured today: **SD 6, V 12, MP 12 — thirty member-days across three parties**, not six across one.
+
+### The arithmetic closes to the krona, from two constants read out of source
+
+An 8-week campaign is **56 days** (`CampaignClock.DefaultCampaignWeeks`), a staff member costs
+**1 800 kr/day** (`CampaignStaff.SalaryPerDay`). S, M, KD and L each hired two and paid
+2 × 56 × 1 800 = **201 600 kr** with zero unpaid. SD paid 190 800 = 201 600 − 6 × 1 800. V and MP each
+hired one and paid 79 200 = 44 × 1 800, so 44 paid + 12 unpaid = 56. **Every figure closes exactly**, and
+neither constant was inferred from the differences — both were opened and read.
+
+### ⚠ And the residual points the opposite way to how the row reads
+
+**The two parties that hired FEWEST have the WORST payment record.** V and MP hired one member each and
+went unpaid **12 of 56 days — 21 %**; SD hired two and missed **6 of 112 — 5 %**. *"SD keeps 6 unpaid
+days"* reads as SD being the outlier; SD is in fact the best of the three. **Unpaid days track income, not
+headcount**, and hiring less did not protect the parties that did it.
+
+### The assertion the finding was actually asking for
+
+Assertion **1i** already conserved the payroll — paid kr equals `(hires × days − unpaid) × salary`, to the
+krona — so the residual was never unaccounted money. ⚠ **What nothing checked was whether an unpaid day is
+POVERTY or a BUG.** A party that ends holding more than a day's salary and yet went unpaid is not poor: it
+is being charged in the wrong order, or paid out of the wrong pot. **That defect would sit inside a green
+conservation identity indefinitely, because the books balance either way** — a ledger that adds up is not
+the same as a ledger that is right.
+
+**Assertion 1j**: every party with unpaid days must finish below one day's salary. Measured: SD **0 kr**,
+V and MP **1 500 kr** — genuinely one day short of 1 800. ⚠ The bound is one day's salary rather than
+zero, because finishing with 1 799 kr and an unpaid day *is* poverty and demanding an empty chest would be
+tuning the assertion to this run. **Proved to discriminate at the real margin**: moved to 1 000, V and MP
+read `SOLVENT AND UNPAID` and the harness fails.

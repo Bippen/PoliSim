@@ -299,6 +299,37 @@ namespace PoliSim.EditorTools
                 }
 
                 failures += Assert(sb, "1i. W-B5: every party's hires stand, the payroll is on the ledger to the krona (unpaid days counted, not hidden), and the managed parties bought the television their plans were made for", payrollHolds, payroll.ToString());
+
+                // ⚠ S-3 CLOSED HERE, 2026-09-01, and this is the assertion the finding was actually asking
+                // for. Assertion 1i already CONSERVES the payroll - paid kr equals (hires x days - unpaid)
+                // x salary, to the krona - so the residual was never unaccounted money. What nothing
+                // checked was whether an unpaid day is POVERTY or a BUG.
+                //
+                // A party that ends the campaign holding more than a day's salary and yet went unpaid is
+                // not poor: it is being charged in the wrong order, or paid out of the wrong pot. That is a
+                // defect and it would sit inside a green conservation identity indefinitely, because the
+                // books balance either way. **A ledger that adds up is not the same as a ledger that is
+                // right**, which is this project's own recurring lesson stated in money.
+                //
+                // ⚠ The bound is one day's salary, not zero: finishing with 1,799 kr and an unpaid day IS
+                // poverty, and demanding an empty chest would be tuning the assertion to the run.
+                bool povertyNotBug = true;
+                var solvency = new StringBuilder();
+                for (int p = 0; p < first.Parties.Length; p++)
+                {
+                    CampaignRun.PartyLedger l = first.Parties[p];
+                    if (l.UnpaidStaffDays <= 0) { continue; }
+
+                    bool ok = l.MoneyLeft < CampaignStaff.SalaryPerDay;
+                    povertyNotBug &= ok;
+                    solvency.Append(string.Format(CultureInfo.InvariantCulture,
+                        "{0} {1} unpaid day(s) with {2:N0} kr left{3}; ",
+                        l.Name, l.UnpaidStaffDays, l.MoneyLeft, ok ? "" : " <- SOLVENT AND UNPAID"));
+                }
+
+                if (solvency.Length == 0) { solvency.Append("no party went unpaid this run; "); }
+
+                failures += Assert(sb, "1j. S-3: every unpaid staff-day is POVERTY, not a bug - a party that went unpaid must have finished below one day's salary, because a ledger that balances can still be charging in the wrong order", povertyNotBug, solvency.ToString());
             }
 
             // ---------- 2. five personalities, measurably different ----------
