@@ -1,4 +1,3 @@
-| **M-S6** | **`C-0.2`** — the post-wiring re-derivation, PROSE half | ⚠ **its done-when was a GREP, which means it was a CHECK NOBODY HAD WRITTEN** — and it was sized as a READ. `PreWiringPremiseCheck` armed and its ratchet `PreWiringPremiseCheck.ASSERTED` taken **14 → 0 in the same session**, by four principled rules and fourteen document corrections | CODE | RECORDS | `c631505` | L |
 # PoliSim — THE MASTER WORK LIST
 
 **Derived 2026-09-01 by sweeping the repo, not by reading a list.** Every row below was found by
@@ -220,6 +219,7 @@ measure willingness to move rows rather than work done.
 | **M-R3** | ratchet: `DocumentClaimCheck.MEMBER_GONE` = **2 → 0** | ⚠ **they were not both history.** One was a live DESIGN ask for a screen cut at P-A2 — corrected, with **E-5** raised. And the first fix **fell into S-36's trap**, quoting the dead name while explaining it was dead | CODE | RECORDS | `4b8716b` | S |
 | **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour | ⚠ **recorded UNDECIDABLE with the boundary MEASURED**: the most promising decidable slice is **seven claims** repo-wide, two already covered. The instance's real cause was reachability, which is guarded. **S-38** shrinks the undecidable half by convention | CODE | SAFE | `86edd75` | M |
 | **M-R4** | ratchet: `PartyMarkCoverageCheck.UNCONSUMED` = **1 → 0** | ⚠ **it was not waiting, it CANNOT be claimed**: the USA is seeded by seats and REP 220 + DEM 215 = 435, the whole House. A ratchet that cannot reach zero teaches readers to stop expecting it to. Separated, with a policed exemption carrying the arithmetic | CODE | SAFE | `1d57e7c` | S |
+| **M-S6** | **`C-0.2`** — the post-wiring re-derivation, PROSE half | ⚠ **its done-when was a GREP, which means it was a CHECK NOBODY HAD WRITTEN** — and it was sized as a READ. `PreWiringPremiseCheck` armed and its ratchet `PreWiringPremiseCheck.ASSERTED` taken **14 → 0 in the same session**, by four principled rules and fourteen document corrections | CODE | RECORDS | `c631505` | L |
 
 ---
 
