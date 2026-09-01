@@ -651,6 +651,19 @@ base of the thing this model taxes, and no amount of re-solving CE fixes that.**
 income, payroll — for one stated year. OECD Revenue Statistics publishes a sub-sector split; ⚠ **two API
 shapes were tried from here and returned 422 and 404, so the series is NAMED rather than quoted.** Until it
 is on disk the USA has **no** sourced base and must keep the uniform stand-in whatever the other five do —
+
+⚠ **THE COST, MEASURED 2026-09-01 from the repo's own figures rather than from the missing series**
+(`COMPLETED.md` §159). `FiscalRecalDiagnostic`: the USA's **spending** seed is federal too — `spendRate 17.0 %`,
+discretionary 6.04 %, mandatory 13.83 %, real federal dollars. **The perimeter is consistent today, on both
+sides**, so a sourced US tax base breaks it one of exactly two ways:
+
+| | what it costs |
+|---|---|
+| **A — keep the USA federal** | the sourced table lands for **five countries and not the sixth**; C-N4's *"identical across six"* becomes *"identical across one"*, and the USA's tax response stays uncalibrated while five neighbours are not |
+| **B — move the USA to general government** | its **spending** seed must be re-based to the state-and-local layer the model does not have. ⚠ **B breaks the perimeter on the side the model has more of** — 20 % of GDP in spending lines against one tax table. **A seed programme, not a calibration** |
+
+⚠ **A third fetch attempt (CBO's budget data page) returned 403.** Three attempts, three failures; per **R-T2**
+nothing about the series is inferred from a probe, and it stays NAMED rather than quoted.
 which is itself an argument against landing the table for five countries and not the sixth.
 
 ---

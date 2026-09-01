@@ -10170,3 +10170,50 @@ pipeline is evidence nobody re-runs**, so its errors get no second chance to be 
 load-bearing becomes an armed check or is re-derived by one.
 
 **Bar: 20 checks green, 8 simulation checks green, eight ratchets all tight.**
+
+## 159. F-B's COST, MEASURED FROM THE MODEL'S OWN NUMBERS — and stage 3 sized, not started (2026-09-01)
+
+### What a consistent perimeter costs — and it needs no new source to say
+
+§153 measured the mismatch: the USA's sourced base is **general government (24.70 % of GDP)** against a
+**federal** target (**18.00 %**), ×1.372. What item 2 adds is the *cost*, and ⚠ **the repo's own figures
+answer it without the series that returned 422 and 404.**
+
+`FiscalRecalDiagnostic`: the USA's **spending** seed is federal too — `spendRate 17.0 %`, discretionary
+lines 6.04 %, mandatory lines 13.83 %, all real federal dollars (`SeedUsaSpendingLines`). **The perimeter is
+consistent today, on both sides.** So the cost of a sourced US tax base is the cost of breaking that, and
+there are exactly two ways:
+
+| | what it costs |
+|---|---|
+| **A — keep the USA federal** | The sourced table lands for **five countries and not the sixth**, because federal-only bases by tax type are not on disk. ⚠ C-N4's *"identical across six"* finding becomes *"identical across one"*, which is a smaller defect wearing the same shape, and the USA's tax response stays uncalibrated while five neighbours are not |
+| **B — move the USA to general government** | Its revenue target rises off 18.0 — and ⚠ **its SPENDING seed is federal**, so the perimeter breaks on the other side. Making it consistent means re-basing the whole US spending seed to general government: the state and local layer the model does not have. **That is a seed programme, not a calibration** |
+
+⚠ **B breaks the perimeter on the side the model has more of** — 20 % of GDP in mandatory transfers and
+discretionary lines against one tax table — which is why A is the cheaper wrong answer and B is the
+expensive right one. **Neither is taken; D-14 (a) holds and the revert stands.**
+
+**The bill, unchanged and precise:** FEDERAL-ONLY revenue by tax type as a share of GDP — individual
+income, corporate income, payroll — for one stated year. ⚠ **Three fetch attempts have now failed** (two
+OECD SDMX shapes, 422 and 404; CBO's data page, 403). **The series is named, not quoted**, and per R-T2
+nothing about it is inferred from a probe.
+
+### D-15's stage 3 — sized and STOPPED at the boundary, with its order
+
+The ruling is taken: **(c), scale the whole pyramid toward the sourced projection.** It is not built, and
+the reason is size rather than doubt: it is a **BASELINE change to the demographic path in all six
+countries**, and it needs, in this order —
+
+1. the two sourced projections **fetched and generated into a catalog** (the mechanism now exists and is
+   proven; §158) — Eurostat `proj_23np` baseline for the EU five, US Census `np2023_d1_mid.csv` by single
+   year of age;
+2. `ApplyCohortStep` rebuilt with a per-band pull toward the projected pyramid;
+3. the **hindcast** against the publisher's own intermediate years — ⚠ the assertion that caught stage 2's
+   50 % double count, and the reason (c) was chosen over (a) and (b);
+4. the trajectory suite with per-country before/after, and the ratchet at two **lowered, not removed**.
+
+**F-7 stays blocked behind step 2**, and its trigger is restated in the register: not *"F-6 exists"* but
+*"a bracket schedule has more than one income to apply itself to."*
+
+⚠ **Logged STOPPED rather than started, because starting it inside a clearance pass would land a BASELINE
+family without its explanation** — the thing D-9 (d) was refused for and D-14 (a) reaffirmed the same day.
