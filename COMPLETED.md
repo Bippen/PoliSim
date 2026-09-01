@@ -8967,3 +8967,61 @@ Re-pricing until §33 chooses the action is tuning a magnitude to force an outco
 rule forbids; retiring the verb is defensible and cheaper but discards the thing real campaigns spend most
 of their volunteer hours on. **(c) is the only option that answers the question C-N2 asked rather than
 adjusting what the action costs.** Sized, not built: a §12 verb-set change with its own item.
+
+## 140. THE COHERENCE AUDIT'S FIFTH SWEEP — a subsystem the game does not call (2026-09-01)
+
+S-27 found `TacticalVoting` built, harness-proven and wired to nothing **while all four coherence checks
+were green**. This closes that hole: sweep **(e)**, and the suite goes **fourteen → fifteen**.
+
+### What it asks
+
+Every `.cs` file under `Assets/Scripts` declaring a `public static` method — **451 declarations across 88
+files**. A file is UNWIRED when **not one** of its public entry points is named outside `Assets/Editor`
+and `Assets/Scripts/Testing`, i.e. when only harnesses and capture drivers reach any part of it.
+
+### ⚠ TWO CORRECTIONS MADE INSIDE THE BUILD, both from measuring rather than reasoning
+
+**Cut per METHOD, the first run reported 58 findings — and most were not findings.** They were **public
+helpers inside wired subsystems**: `SeatAllocation.DHondtDivisor` is exposed so a harness can test the
+divisor directly while the game calls the outer allocator. That is a legitimate and common pattern, and
+**a check reporting 58 of them is a check somebody turns off in a week**. Re-cut at the FILE, it reports
+**7**.
+
+**Then the 7 split into two classes that are not the same finding**, so the output names which is which:
+
+| file | entry points uncalled | type named in game code | class |
+|---|---|---|---|
+| `CohortStepRateTable.cs` | 2 | **0** | **UNWIRED ENTIRE** |
+| `CohortVoterGroups.cs` | 2 | **0** | **UNWIRED ENTIRE** |
+| `Rosatellum.cs` | 2 | **0** | **UNWIRED ENTIRE** |
+| `TacticalVoting.cs` | 2 | **0** | **UNWIRED ENTIRE** |
+| `CampaignRun.cs` | 3 | 4 | wired type, uncalled entry point |
+| `TaxLine.cs` | 3 | 20 | wired type, uncalled entry point |
+| `WelfareProgram.cs` | 1 | 14 | wired type, uncalled entry point |
+
+Without that column, `TaxLine` — whose statics are reached through properties in its own file and whose
+type 20 game files use — would have read exactly like `TacticalVoting`, which nothing reaches at all.
+
+### ⚠ Every one of the seven has an answer, and the check is right to ask
+
+- **`TacticalVoting`** — D-10 (a): wire it, its own baseline item.
+- **`Rosatellum`** — Italy returns `NotImplemented`; **C-R1 already records that only Sweden and Germany
+  have a modelled election.** The check surfaces a known, deliberate gap rather than a new one.
+- **`CohortStepRateTable` / `CohortVoterGroups`** — built today, awaiting P-I2's retirement stage and the
+  election path respectively. **Waiting for their item, exactly as intended.**
+- **`CampaignRun`** — C-R4b. `Simulate` is never invoked; the campaign is harness-only.
+- **`TaxLine` / `WelfareProgram`** — benign, and the column says so.
+
+**UNWIRED IS NOT DEAD.** A dead method has no callers and should be deleted; an unwired subsystem has a
+harness proving it works and a game that never asks. R-N2 built the whole elections model that way on
+purpose, so each GAP is **a question, not a verdict**: is it waiting for its item, or did its item land
+without it?
+
+⚠ **Proven in both directions.** A throwaway `UnwiredProbeSubsystem` with one uncalled entry point raised
+the count to **8**, tripped the ratchet, and was named in the output as UNWIRED ENTIRE. Deleted.
+
+⚠ **What it cannot see, stated rather than discovered later**: reflection, Unity serialization, scene-asset
+wiring, and calls built from strings. Names inside string literals **are** counted, precisely so a
+reflected call still registers.
+
+**Bar:** fifteen checks green, eight simulation checks green, both older ratchets holding at **0**.

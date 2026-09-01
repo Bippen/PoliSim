@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (FOURTEEN since the coherence audit's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (FIFTEEN since the coherence audit gained its fifth sweep 2026-09-01; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
     /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
@@ -170,6 +170,13 @@ namespace PoliSim.EditorTools
             ("DeadStateCheck", DeadStateCheck.Run),                       // (b) state and code nothing reaches - a ratchet at 39
             ("ArtifactIdentityCheck", ArtifactIdentityCheck.Run),         // (c) an artifact contains what its name claims
             ("ConstantProvenanceCheck", ConstantProvenanceCheck.Run),     // (d) a simulation constant says where it came from - a ratchet at 212
+
+            // The coherence audit's FIFTH sweep (2026-09-01): a subsystem the game does not call.
+            // ⚠ It exists because the other four were green while `TacticalVoting` sat built,
+            // harness-proven and wired to nothing - `DeadStateCheck` scans PRIVATE declarations and
+            // could not see it. Judged at the FILE, not the method: cut per method the first run
+            // reported 58 findings, nearly all public helpers inside wired subsystems.
+            ("UnwiredSubsystemCheck", UnwiredSubsystemCheck.Run),
         };
 
         [InitializeOnLoadMethod]
