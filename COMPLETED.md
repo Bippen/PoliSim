@@ -10767,3 +10767,32 @@ what code does cannot be checked against the code by any instrument this project
 prover.** What is now bounded is how far that ignorance reaches — the population is seven, the adjacent
 reachability guards cover the one instance that produced the finding, and new claims have a form that puts
 them in the decidable half.
+
+## 172. M-R4 CLOSED — the unconsumed mark is ARITHMETIC, and the ratchet could never have reached zero (2026-09-01)
+
+`PartyMarkCoverageCheck.UNCONSUMED` stood at **1**: `mark_party_us_lib`, a delivered mark no seeded party
+claims. The check's own note said the file *"waits until the USA's seed has a reason to include one"*, and
+the master-list row added that it **must not get a party invented for it**. Both correct, and both leave a
+ratchet sitting at one forever.
+
+⚠ **Measured, it is not waiting. It cannot be claimed.** `PartySystem` seeds the USA **by SEATS in the
+House**, whose sourced size the same file states as **435** — and it seeds **REP 220 + DEM 215 = 435, the
+whole chamber.** There is no seat for a third party to hold. A Libertarian party could only be seeded by
+taking a seat from one of the two that hold them, **which would be inventing a result** — precisely what
+the row forbids.
+
+⚠ **So the number was never going to move, and a ratchet that cannot reach zero teaches its readers to
+stop expecting it to.** That is the same erosion `RatchetSlackCheck` exists to prevent, arriving from the
+other direction: not a ceiling above its measurement, but a measurement that cannot fall.
+
+**Art that is WAITING and art that CANNOT BE CLAIMED are now separate.** The ratchet keeps only the first
+and is lowered **1 → 0**; the second is a stated exemption carrying its arithmetic.
+
+⚠ **The exemption is policed, because *"no party can claim it"* is exactly the sentence that would retire
+an inconvenient mark.** An entry naming a mark a seeded party DOES claim fails; an entry naming a mark not
+on disk fails. **Both proved.**
+
+**The file is kept rather than retired.** It is delivered art, and the day this model gains the vote-share
+dimension the USA's third parties live in, it is already drawn.
+
+**Bar 23 of 24, residue 18.**

@@ -56,7 +56,25 @@ namespace PoliSim.EditorTools
         /// landed, and nothing re-read it. **They are claimed now. Lower this ceiling as each remaining
         /// one is claimed; never raise it.**</para>
         /// </summary>
-        private const int UnconsumedCeiling = 1;
+        private const int UnconsumedCeiling = 0;
+
+        /// <summary>⚠ **Marks that NO SEED CAN EVER CLAIM, each with the arithmetic for why.** Distinct
+        /// from the ratchet above, which is for art WAITING on a seed: a row here is art whose party has
+        /// no place in the model as the model is defined, so waiting is not what it is doing.
+        ///
+        /// <para>⚠ **It is policed**, because "no party can claim it" is the sentence that would retire an
+        /// inconvenient mark: an entry naming a file that is not on disk fails, and an entry naming a mark
+        /// that a seeded party DOES claim fails.</para></summary>
+        private static readonly (string Mark, string Reason)[] NoSeedCanClaim =
+        {
+            ("mark_party_us_lib",
+             "⚠ ARITHMETIC, not an omission. `PartySystem` seeds the USA by SEATS in the House, whose "
+             + "SOURCED size is 435 - and it seeds REP 220 + DEM 215 = 435, the WHOLE chamber. There is no "
+             + "seat for a third party to hold, so a Libertarian party cannot be seeded without taking a "
+             + "seat from one of the two that hold them, which would be inventing a result. The file is "
+             + "kept rather than retired: it is delivered art, and the day this model gains a vote-share "
+             + "dimension the USA's third parties live in, it is already drawn.")
+        };
 
         private const string EmblemFolder = "Assets/Resources/Art/UI/Emblems";
         private const string MarkResourcePath = "Art/UI/Emblems/";
@@ -174,6 +192,29 @@ namespace PoliSim.EditorTools
             // Orphans are still REPORTED with their reason — a batch really can precede its seeds — but
             // they are RATCHETED now, so an orphan that COULD be claimed cannot wait forever.
             var orphans = new List<string>(OrphanMarks(claimed.Keys));
+
+            // ⚠ Separate the art that is WAITING from the art that CANNOT be claimed. Both were counted as
+            // one number, so a permanent absence sat on a ratchet that could never reach zero - and a
+            // ratchet that cannot reach zero teaches its readers to stop expecting it to.
+            var permanent = new List<string>();
+            var deadExemptions = new List<string>();
+            foreach (var x in NoSeedCanClaim)
+            {
+                if (claimed.ContainsKey(x.Mark)) { deadExemptions.Add(x.Mark + " (a seeded party DOES claim it)"); continue; }
+                if (!orphans.Contains(x.Mark)) { deadExemptions.Add(x.Mark + " (no such delivered mark)"); continue; }
+
+                orphans.Remove(x.Mark);
+                permanent.Add(x.Mark);
+                Debug.Log("  permanent " + x.Mark + " - " + x.Reason);
+            }
+
+            foreach (string d in deadExemptions)
+            {
+                errors++;
+                Debug.LogError("  DEAD EXEMPTION " + d + ". ⚠ An exemption that excuses nothing reads as coverage and "
+                               + "outlives what it named. Delete it or fix what it names.");
+            }
+
             foreach (string orphan in orphans)
             {
                 Debug.Log($"  awaiting  {orphan} - delivered, and no seeded party claims it.");
