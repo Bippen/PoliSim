@@ -757,6 +757,36 @@ hat; (c) throws away a stat to avoid writing one honest sentence.
 
 > **To strike either half, write:** `D-12 STRUCK: (1b)` or `D-12 STRUCK: (2c)` *(etc.)*
 
+---
+
+### D-15 · P-I2 stage 3's anchor: which shape converges toward the sourced projection ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**The question.** §141 reverted stage 3 because the cohort step applies one observed year's rates forever
+and has no reversion of any kind — Germany and the USA reach `MaxPopulation`, Italy, Poland and Sweden
+reach `MinPopulation`. §142 then confirmed a **sourced target trajectory for all six** (Eurostat
+`proj_23np` baseline; US Census `np2023_d1_mid.csv` by single year of age). **What converges toward it?**
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Converge the SURVIVAL array** toward the projection's implied survivorship | one item; the step keeps its shape and only its rates move | ⚠ survival is deaths **and net migration together** (D-6 (a)), so this converges a composite and cannot be read as mortality improving |
+| **b. Converge the FERTILITY rate** toward the projection's implied births | one item | ⚠ fertility alone cannot fix a pyramid that is wrong at the top; Germany's overshoot is not a birth problem |
+| **c. Scale the WHOLE PYRAMID toward the projected one**, band by band, at a rate the projection itself implies | one item, and the arithmetic is a per-band ratio rather than a new model | ⚠ the step stops being purely generative — the pyramid is pulled toward a published shape, and that must be said at the call site |
+| **d. Leave stage 3 reverted; keep the ratchet at two** | nothing — today's state | ⚠ the substrate stays a table rather than a model, and F-7 stays blocked behind it indefinitely |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (c).** Basis, and it is the same argument §141's revert
+made: **the defect is that nothing anchors the LEVEL**, and (a) and (b) both anchor a rate while leaving
+the level free — they would slow the divergence without stopping it, which is the failure that is hardest
+to see because it looks like an improvement. ⚠ **(c) is also the only option whose honesty is checkable**:
+a per-band ratio toward a published pyramid can be hindcast against the publisher's own intermediate
+years, the way stage 2's step was, and that assertion is what caught stage 2's 50 % double count.
+
+⚠ **Its cost is real and goes at the call site**: the population is no longer purely generated — it is
+generated and then **pulled toward a published projection**, which is a different claim about what the
+model knows. **That sentence is the price, and it must be written where the code is, not here.**
+
+> **To strike it, write:** `D-15 STRUCK: (a)` *(or b / c / d)* — nothing is built on it yet, so a strike
+> costs one decision and no code.
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.
@@ -945,7 +975,7 @@ that reads as open work.
 | F-3 | France's constituency model (R-EL10) | a decision that France must be PLAYABLE, not merely simulated. ⚠ **UNSIZED, UNSTARTED, and no placeholder or approximation is to be built** — two-round SMD needs a 577-constituency model with runoff behaviour, a large sourced build serving one country. The data (the Ministry's data.gouv family) is where it always was | `POLISIM_MASTER_ROADMAP.md`; `ElectionsData/DATA_BILL.md` carries the *data* bill, which is a different thing from this *build* deferral |
 | F-4 | Italy's sub-national stages | **Italy becoming playable** — explicitly *before playable, not before trusted*: the proportional stage already reproduces exactly, so the model is trustworthy without them. Needs the per-*circoscrizione* and per-*collegio cifre elettorali* plus the art. 84 cascade | `ElectionsData/DATA_BILL.md` (the data), `italy/rosatellum_allocation.md` (the statute) |
 | F-5 | The gap table's nine N/A sections | nothing — ⚠ **these are principle and illustration sections, not work.** They are listed here so that a future reader counting "unbuilt sections" does not mistake them for a backlog | `ELECTIONS_GAP_TABLE.md` |
-| F-6 | P-I2 — the cohort substrate build | **`POLISIM_COHORT_SPECLET.md` being RULED by Elias.** Sized there at ~11–13 sessions. ⚠ It now also gates **C-D1**: voter groups must be a view over this substrate, so sourcing per-valkrets marginals before it exists would build the second population the spec-let forbids | `POLISIM_COHORT_SPECLET.md` |
+| ~~F-6~~ | ✅ **PROMOTED OUT OF DEFERRED 2026-09-01.** Its trigger — *"`POLISIM_COHORT_SPECLET.md` being RULED by Elias"* — **FIRED at D-4 (a), `COMPLETED.md` §130, and this row outlived it by two days.** It is now **P-I2 stage 3**, live work whose remaining question is a SHAPE (D-15), not a deferral. Stages 1 and 2 are built; stage 3 was built and reverted on its own measurement (§141) and its anchor is sourced for all six (§142). ⚠ Its second clause was stale too: *"it now also gates C-D1"* — **C-D1 was built at §136** | ~~the spec-let being ruled~~ **fired** | `COMPLETED.md` §§130, 141, 142, 156 |
 | F-7 | The tax instruments build (C-C12's §S1–S7) | **`POLISIM_TAX_SPECLET.md` being RULED**, ⚠ **and it is downstream of F-6** — a bracket schedule applied to a single average income is arithmetically a flat rate — **and of C-N4**, since detailed instruments behind a lever with a zero output channel are detail without consequence | `POLISIM_TAX_SPECLET.md` |
 
 *§38 has LEFT this list — R-CL3 ruled it built, and it was, at C-D4 (`COMPLETED.md` §115).*
@@ -979,6 +1009,55 @@ F-7's fired twice without anyone noticing the conjunction had shrunk. **Neither 
 verdicts are the deliverable, and F-6 leaves the deferred list at the next item that touches the cohort
 chain rather than being re-homed inside a re-read.
 
+
+### ⚠ F-6 PROMOTED OUT OF DEFERRED, F-7 SIZED, AND EVERY TRIGGER RE-READ **LITERALLY** — 2026-09-01
+
+**The literal test, and why it is stated before the table.** The Compass Y precedent: *"a play happened"*
+is not *"the first play that reads the compass"*. A trigger is a sentence, and it fires only when the
+sentence is true **as written** — not when something adjacent to it has happened.
+
+#### F-6 — PROMOTED. It is no longer deferred and has not been for two days.
+
+**Its trigger, verbatim:** *"`POLISIM_COHORT_SPECLET.md` being RULED by Elias."* ⚠ **Elias ruled it —
+D-4 (a), `COMPLETED.md` §130 — and stages 1 and 2 were built the same day.** The sentence is true as
+written. **F-6 leaves §6.**
+
+**What it is now, precisely:** P-I2 **stage 3**, the retirement of the scalar demographics onto the cohort
+substrate. Stages 1 and 2 stand; stage 3 was built and **reverted on its own measurement** (§141) because
+the step had no steady-state anchor — Germany and the USA reach `MaxPopulation`, Italy, Poland and Sweden
+reach `MinPopulation`, and the finding is carried as a ratchet at two.
+
+⚠ **Its blocker is no longer "no anchor exists".** §142 probed and confirmed one for all six: Eurostat
+`proj_23np` (`projection=BSL`) for the EU five, and the US Census 2023 National Population Projections
+`np2023_d1_mid.csv` **by single year of age**. **What remains is a SHAPE, not a figure** — and that is a
+decision, so it is written as one: **D-15**.
+
+#### F-7 — the last third, stated precisely
+
+**Its trigger is a conjunction of three**, and two have fired: `POLISIM_TAX_SPECLET.md` ruled (D-3 (b),
+§133) and C-N4 built (§126). ⚠ **The third, read literally, is not "F-6 exists" but "a bracket schedule
+has more than one income to apply itself to"** — the spec-let's own words are that *a bracket schedule
+applied to a single average income is arithmetically a flat rate*. **That needs the cohort substrate
+WIRED**, which is stage 3, which is F-6's remaining work. **NOT FIRED, and it cannot fire before F-6 does.**
+
+⚠ **This is sharper than "downstream of F-6"**: it is downstream of stage 3 specifically, and stages 1 and
+2 landing does nothing for it. The row said F-6; the truth is narrower.
+
+#### Every remaining trigger, re-read as a sentence
+
+| row | its trigger, verbatim | literally true today? |
+|---|---|---|
+| **F-1** | *"a campaign the player actually runs"* | ⚠ **NO.** `CampaignRun.Simulate` is never invoked (C-R4b); the campaign layer is harness-only. Not *"a campaign was simulated"* — **a campaign the PLAYER RUNS** |
+| **F-2** | *"a ruling that the game is about more than a parliamentary term"* | ⚠ **NO — and the near-miss is worth naming.** R-CL1 gave the player a party and D-5 (a) made losing office survivable. That is a *bigger parliamentary term*, not a ruling that the game is about more than one |
+| **F-3** | *"a decision that France must be PLAYABLE, not merely simulated"* | **NO.** No such decision. ⚠ The row's own words already carry the literal test — *playable, not merely simulated* |
+| **F-4** | *"Italy becoming playable — explicitly before playable, not before trusted"* | **NO.** `Rosatellum` returns `NotImplemented` and is counted UNREACHABLE. ⚠ The trigger anticipates its own misreading and refuses it |
+| **F-5** | *"nothing"* | **N/A by construction.** It is a note against miscounting. ⚠ Its literal test still passes: it is still not work |
+
+⚠ **The pattern the literal re-read exposes: three of the five triggers are written to survive exactly the
+misreading that would fire them early** — *playable not simulated*, *before playable not before trusted*,
+*a campaign the player runs*. **Whoever wrote them had already been burned once**, and F-6's fired without
+anyone noticing because its trigger was the one sentence with no defence in it: a single condition that
+came true on a day nobody was re-reading the register.
 ## 7. WATCH — standing guards, never tasks
 
 | ID | what | state |
@@ -1053,6 +1132,9 @@ The repo outranks the document. These are recorded, not re-worked.
 | **S-30** | ⚠ **A one-way ask has no receipt unless somebody reads the far side.** P-F2 concluded from the absence of a readback that the D7 paste was never made — correct for D7, and quietly generalised to D9, which **had** been pasted and answered in full three days earlier. The Design project's own `uploads/` listing carries each pasted artifact **with its digest in the filename**, so a receipt was always one `list_files` away. **Standing habit, not a task:** before recording an ask as unsent, list the far side | CODE (a habit) | `COMPLETED.md` §146 |
 | **S-31** | ⚠ **R-N2 WAS RETIRED AT W-G1 AND THE BACKLOG ITS LICENCE CREATED WAS NEVER RE-HOMED.** R-N2 authorised building the elections model as pure functions wired to nothing; `a289e1e` retired it. **Five files still say *"PURE FUNCTIONS, WIRED TO NOTHING (R-N2)"* in their own headers and cite a rule that no longer exists.** `UnwiredSubsystemCheck`'s new UNREACHABLE class counts them (ceiling 5) so the backlog cannot drift, and each has a disposition at `COMPLETED.md` §148 — but the standing point is the pattern: **when a licence is withdrawn, the things it licensed are a list, and that list was never made.** ⚠ Check for others whenever a standing rule is retired | CODE (a habit) | `COMPLETED.md` §148 |
 | **S-32** | ⚠ **ELECTION NIGHT HAS NO DOOR.** `ElectionNightScreen` — board 1h, built, filmed at four widths, recorded as delivered — is named by **nothing except `UiScreenshotDriver`**, appears in no scene and no prefab, and **the running game cannot open it.** ⚠ **This is S-20's class in a new form**: S-20 found a capture can photograph the wrong thing; this finds a capture can photograph a thing *the game has no route to at all*, with every guard green throughout — containment and text-fitting check what was DRAWN, never whether a player could get there. Sized as its own SAFE row (a screen opening, no trajectory) | CODE | `COMPLETED.md` §148 |
+| **S-33** | ⚠ **THE THREE UNWIRED ELECTIONS SYSTEMS ARE ONE MISSING INPUT, AND TWO OF THEM ARE EACH OTHER'S ANSWER.** Measured 2026-09-01. `ElectionNightScreen` needs a **per-constituency count**; `NationalElection.Run` takes national shares and allocates a chamber, so the live election produces no regional count at all. **`RegionalVoteModel` is the thing that would produce it** — and is itself unreachable. `TacticalVoting` needs **polled shares**, and the campaign layer that produces polls is harness-only (C-R4b). ⚠ **Underneath all three: the sourced elections data lives in `ElectionsData/` at the repo ROOT, outside `Assets/`** — editor-side code only, and a built player would not have it. The project's own pattern is to TRANSCRIBE sourced data into C# (`PartySystem`, `DeclaredRedLines`), so each of these needs its seed data transcribed and reconciled first. **The order, and it is a programme rather than three loose ends:** regional seed data → `RegionalVoteModel` → a regional count at the live election → board 1h has something true to draw | CODE | `COMPLETED.md` §154 |
+| **S-34** | ⚠ **`PlayerReachabilityCheck` armed at a ratchet of 1, and the ratchet is a DEBT that must not be paid cheaply.** The one gap is `ElectionNightScreen`. **Naming the type in `GameController` without a path would satisfy the scan and fail the rule** — and giving board 1h a one-constituency "night", or the sourced 2022 count under an election simulated with different shares, would make the check green and the screen a lie. That is the S-20 class this sweep descends from. **Lower the ceiling to 0 only when the screen has a real route with a real count** | CODE | `COMPLETED.md` §154 |
+| **S-35** | ⚠ **A TYPE IS NOT ITS FILE, AND A PROBE THAT ASSUMES SO WILL "CORRECT" A CORRECT REFERENCE.** The §9.4 pass reported `CampaignCalendar.DefaultPreCampaignWeeks` as naming a missing type and rewrote the entry; **the entry was right** — `CampaignCalendar` is a `public readonly struct` living in the FILE `CampaignClock.cs`. The probe matched TYPE names against FILE names, so any type sharing a file with another read as absent. ⚠ **The sweep built the same session caught it within the hour** (`DocumentClaimCheck`, §155), which is why the check indexes DECLARATIONS rather than filenames. **Standing habit:** when a scan says a name is missing, confirm against the declaration before editing the document — a wrong correction is worse than the drift it was aimed at, because it carries the authority of having been checked | CODE (a habit) | `COMPLETED.md` §155 |
 
 ---
 

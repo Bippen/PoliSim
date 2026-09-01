@@ -98,12 +98,18 @@ decoration.
 
 ---
 
-## 5. `CampaignClock.DefaultPreCampaignWeeks` = 26
+## 5. `CampaignCalendar.DefaultPreCampaignWeeks` = 26
 
-> ⚠ **OWNER CORRECTED 2026-09-01 (shelf §9.4).** This entry said `CampaignCalendar.DefaultPreCampaignWeeks` and **there is no `CampaignCalendar`** — the constant is real, unchanged at 26, and lives on `CampaignClock` (`Assets/Scripts/Elections/CampaignClock.cs:75`). ⚠ **The list's whole premise is that each entry is a one-line change with a NAMED OWNER in the code**, so an owner that does not exist is the one defect that makes an entry unusable at the moment somebody acts on it. `PhantomGuardCheck` and `CommentClaimCheck` scan CODE COMMENTS and could not see this: **nothing in the suite checks a markdown claim against the code.**
-
-**What is known.** The 8-week campaign proper is Sweden's real window and is not a calibration
-question. The 26-week pre-campaign is authored so the player has a meaningful build-up "without the
+> ⚠ **THIS ENTRY WAS CORRECT ALL ALONG, AND A "CORRECTION" BROKE IT FOR ONE COMMIT.** On 2026-09-01 the
+> shelf's §9.4 pass reported the owner as missing and rewrote it to `CampaignClock`. **That was wrong.**
+> `CampaignCalendar` is a real type — `public readonly struct CampaignCalendar` — which happens to live in
+> the FILE `CampaignClock.cs`. The instrument at fault was the probe, not the entry: it matched TYPE names
+> against FILE names, so a type sharing a file with another type read as absent.
+>
+> ⚠ **The seventh sweep caught it within the hour** (`DocumentClaimCheck`, `COMPLETED.md` §155), which is a
+> better argument for that check than anything its own doc could say: the pass that went looking for false
+> claims in documents made one, and the guard built in the same session found it. The constant is real and
+> unchanged at 26 (`Assets/Scripts/Elections/CampaignClock.cs:75`).
 game becoming a spreadsheet for half a year" — a stated guess about attention span.
 
 **What would settle it.** Play. Specifically, whether §3's preparation verbs are interesting for six

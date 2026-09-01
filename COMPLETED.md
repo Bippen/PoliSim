@@ -9826,3 +9826,175 @@ Three exits are stated in the register and **none is taken**: re-solve CE and re
 bases at the theoretical level (⚠ may have no source, since OECD publishes realised revenue); or leave the
 uniform bases with the identical-across-six response and its cause named. **The measurement exists so that
 choice is made against numbers rather than against a recollection of why the first attempt failed.**
+
+## 154. S-31 — the check armed, and the three "unwired" systems turn out to be one dependency (2026-09-01)
+
+The instruction was to wire `ElectionNightScreen`, `TacticalVoting` and `RegionalVoteModel` into real
+paths, park the other two, and arm the standing check. ⚠ **The check is armed and proved both ways. The
+three are NOT wired, and the reason is worth more than the wiring would have been: they are not three
+missing wires, they are one missing input, and two of them are each other's answer.**
+
+### The check — a delivered screen the player cannot reach is a FAILURE
+
+`PlayerReachabilityCheck` enumerates every `.cs` under `Assets/Scripts` calling
+`CanvasChrome.EnsureHost` — the one call that mounts a Canvas **takeover**. **Three exist, and the set is
+exactly right**: the country selector, the signing ceremony, election night. The rule: a takeover's type
+must be **named in `GameController.cs`, the only place a player path can begin.** One named only by the
+capture driver is *filmable and unplayable*.
+
+**1 of 3 unreachable — `ElectionNightScreen` — ratchet 1.** ⚠ **Proved both directions**: a throwaway
+takeover named nowhere raised it to 2 of 4, exit 1, named in the output; deleted.
+
+⚠ **The ratchet's own comment forbids the cheap fix**: naming the type in `GameController` without a path
+would satisfy the scan and fail the rule, which is the failure mode this audit exists for.
+
+### ⚠ Why the three are not wired — measured, not assumed
+
+| system | what it needs | why it is not there |
+|---|---|---|
+| **`ElectionNightScreen`** | a **per-constituency count** — `NightState.At` takes votes, valid, eligible and arrival order per constituency | `NationalElection.Run` takes **national shares** and allocates a chamber. The live election produces no regional count at all. The sourced per-valkrets file is staged only by `ElectionNightFilm`, which lives in `Assets/Scripts/Testing` — a harness |
+| **`RegionalVoteModel`** | per-region electorates and the parties actually standing in each | ⚠ **It is the thing that would produce the count board 1h needs.** The two unwired systems are each other's answer |
+| **`TacticalVoting`** | **polled shares and their margins of error** | `ElectionDay` never mentions a poll, and the campaign layer that produces polls is harness-only (C-R4b: `CampaignRun.Simulate` is never invoked) |
+
+⚠ **And underneath all three, one mechanical fact.** The sourced elections data lives in `ElectionsData/`
+at the **repo root, outside `Assets/`** — only editor-side code can read it, and a built player would not
+have it. **The project's own pattern for sourced data that the game needs is to TRANSCRIBE it into C#**
+(`PartySystem`'s 53 parties, `DeclaredRedLines`' Swedish declarations, both citing the file as provenance).
+So none of these three is one wire away: each needs its seed data transcribed into game code first, with
+the reconciliation that transcription demands.
+
+**That is a sized programme with an order, not three loose ends:** regional seed data → `RegionalVoteModel`
+→ a regional count at the live election → board 1h has something true to draw. `TacticalVoting` needs a
+live poll, which is the campaign layer's own unreachability (C-R4b) and a separate chain.
+
+⚠ **Nothing was wired to make a count go down.** Giving board 1h a one-constituency "night", or feeding it
+the sourced 2022 count under an election the model just simulated with different shares, would have made
+the check green and the screen a lie — **a film of the wrong thing, which is the S-20 class this whole
+sweep descends from.** The ratchet holds the debt instead.
+
+### The two parked, with their triggers
+
+- **`ElectoralCollege`** — statute-sourced, harness-proven, and the game models **chambers, not
+  presidencies**. ⚠ Nothing can reach it until a US presidential election is a thing the model has. Parked,
+  not dead: deleting a statute-derived implementation to tidy a count is the trade this project refuses.
+- **`Rosatellum`** — Italy returns `NotImplemented`; C-R1 records that only Sweden and Germany have a
+  modelled election. Parked on Italy becoming playable (F-4's own trigger, re-read and NOT FIRED).
+
+## 155. THE SEVENTH SWEEP — and it caught the pass that opened it (2026-09-01)
+
+`PhantomGuardCheck` and `CommentClaimCheck` scan **code comments**. Nothing checked a **markdown** claim,
+and ⚠ **this project's documents make far more claims about the code than its comments do.** This is the
+documentation half of the dominant failure mode, armed as `DocumentClaimCheck`. **The suite goes 16 → 18**
+with S-32's reachability check.
+
+### ⚠ THE FIRST THING IT FOUND WAS YESTERDAY'S FIX
+
+The §9.4 shelf pass reported `ELECTIONS_PLAY_CALIBRATION.md`'s entry 5 —
+`CampaignCalendar.DefaultPreCampaignWeeks` — as naming a type that does not exist, and rewrote it to
+`CampaignClock`. **The entry was right and the pass was wrong.** `CampaignCalendar` is a real
+`public readonly struct` that happens to live in the FILE `CampaignClock.cs`. ⚠ **The instrument at fault
+matched TYPE names against FILE names**, so a type sharing a file with another type read as absent.
+
+**The entry is restored, with what happened written beside it rather than quietly reverted.** A pass that
+went hunting false claims in documents made one; the guard built in the same session found it within the
+hour. **That is a better argument for this check than its own description.**
+
+### The two clauses, and the two things the first run forced
+
+- **MEMBER GONE** — the type is declared exactly once under `Assets/` and the member is not in that file.
+- **WRONG OWNER** — the type is neither declared **nor used** anywhere under `Assets/`, and the member is
+  declared there exactly once on another type.
+
+⚠ **Both narrowings were forced by measurement, not chosen in advance.** A naive scan of the root
+documents yields **782** candidate references and reported **11 + 11** findings, most of them noise:
+
+1. **The historical records must be excluded, and that is a ruling rather than a convenience.**
+   `COMPLETED.md`, `CLAUDE.md` and `ELECTIONS_PROTOTYPE_LOG.md` exist to say what *was* done. The first run
+   flagged `GraphRenderer.DrawPublished` against three documents — **a member deliberately deleted at
+   RIDE-1, with the deletion recorded in two of them.** ⚠ **A check that made history wrong for describing
+   history would be turned off in a week.** It binds on the LIVE documents: the ones that tell you what to
+   do now.
+2. **The wrong-owner clause needed a USE test.** It reported `Mathf.Max`, `GUILayout.Height` and
+   `Resources.Load` — Unity types whose member names collide with ours. ⚠ **A hand-written exclusion list
+   would have been an authored judgement about which names are foreign**; asking whether our own code
+   *uses* the name is mechanical and says the same thing.
+
+**After both: 17 live documents, 91 distinct references, 17 ambiguous (a type declared more than once is
+skipped rather than guessed), 12 foreign, and 2 findings.**
+
+### The backlog, ratcheted — and one fixed on the way
+
+- ⚠ **`SeatAllocation.ApplyThreshold` in the seed doc — no such method has ever existed.** The real names
+  are `ApplyNationalThreshold` and `AllocateWithThreshold`. **Corrected**, with the correction visible.
+- `GraphRenderer.DrawPublished` in `POLISIM_BACKLOG.md` and `CLAUDE_DESIGN_ASSET_REQUEST.md` — both inside
+  struck-through text describing the deletion. **Ratchet 2**, not rewritten: history inside a live document
+  is still history.
+
+**Proved in both directions, both clauses.** Two false claims planted in a live document — one member that
+its own type does not have, one type that exists nowhere — made the check report **3 and 1** against
+ceilings of 2 and 0 and exit **1**, naming each. Removed.
+
+⚠ **What it cannot see, said here rather than discovered later:** a **prose** claim about behaviour, which
+is the larger half of what a document asserts and is S-22's standing finding. **It reads identifiers, not
+sentences.**
+
+## 156. F-6 PROMOTED, THE TRIGGERS RE-READ LITERALLY, AND THE SITTING GAINS ITS UNREACHABLE SCREEN (2026-09-01)
+
+### F-6 is not deferred and has not been for two days
+
+**Its trigger, verbatim:** *"`POLISIM_COHORT_SPECLET.md` being RULED by Elias."* ⚠ **Elias ruled it at
+D-4 (a) (§130) and stages 1 and 2 were built the same day.** The sentence is true as written. **F-6 leaves
+the deferral register.**
+
+What it is now: **P-I2 stage 3**, live work. Stages 1 and 2 stand; stage 3 was built and reverted on its
+own measurement (§141). ⚠ **Its blocker is no longer "no anchor exists"** — §142 confirmed one for all six.
+**What remains is a SHAPE**, so it is written as a decision: **D-15**, and taken.
+
+**D-15, taken as a strikeable R-N1 call: (c) — scale the whole pyramid toward the projected one, band by
+band.** Basis, and it is §141's own argument: **the defect is that nothing anchors the LEVEL**, and
+converging the survival array (a) or the fertility rate (b) anchors a *rate* while leaving the level free —
+they would slow the divergence without stopping it, ⚠ **which is the failure that is hardest to see because
+it looks like an improvement.** (c) is also the only option whose honesty is checkable: a per-band ratio
+toward a published pyramid can be hindcast against the publisher's own intermediate years, the way stage 2
+was — and that assertion is what caught stage 2's 50 % double count.
+
+⚠ **Its cost goes at the call site, not here:** the population stops being purely generated and is **pulled
+toward a published projection**, which is a different claim about what the model knows.
+
+### F-7's last third, read literally
+
+Two of its three conditions have fired. ⚠ **The third, read as a sentence, is not "F-6 exists" but "a
+bracket schedule has more than one income to apply itself to"** — the spec-let's own words are that *a
+bracket schedule applied to a single average income is arithmetically a flat rate*. **That needs the
+substrate WIRED, which is stage 3.** Stages 1 and 2 landing did nothing for it. **NOT FIRED, and it cannot
+fire before F-6 does.**
+
+### ⚠ The literal re-read's own finding
+
+| row | its trigger, verbatim | true today? |
+|---|---|---|
+| F-1 | *"a campaign the player actually runs"* | **NO** — `CampaignRun.Simulate` is never invoked. Not *"a campaign was simulated"* |
+| F-2 | *"a ruling that the game is about more than a parliamentary term"* | **NO.** R-CL1 and D-5 (a) made a *bigger parliamentary term*, not a ruling that the game is about more than one |
+| F-3 | *"a decision that France must be PLAYABLE, not merely simulated"* | **NO** |
+| F-4 | *"Italy becoming playable — explicitly before playable, not before trusted"* | **NO** |
+| F-5 | *"nothing"* | **N/A by construction**; its literal test still passes |
+
+⚠ **Three of the five triggers are written to survive exactly the misreading that would fire them early** —
+*playable not simulated*, *before playable not before trusted*, *a campaign the player runs*. **Whoever
+wrote them had already been burned once.** F-6's fired unnoticed because its trigger was the one sentence
+with no defence in it: a single condition that came true on a day nobody was re-reading the register.
+
+### The sitting gains the screen it could never have shown
+
+`sv_index.html` regenerated: **54 checklist rows, 3 audit rows, 43 without a stated question.** Two rows
+added, and **both carry questions** — which is the point of adding them rather than filing them as findings:
+
+- ⚠ **Board 1h, filmed and unreachable.** The films are real and the screen is not: `GameController` has
+  no route to it. **The question put to Elias is not "is it right?" but "does it earn the chain that would
+  make it reachable?"** — a per-constituency count, which needs `RegionalVoteModel` wired, which needs
+  regional seed data in game code.
+- ⚠ **The two other systems built and connected to nothing**, both still citing **R-N2, a rule that no
+  longer exists.** The question: does either land before the next sitting, knowing each is a BASELINE
+  change with its own before/after per country?
+
+**The 43 rows with no question stay empty**, as ruled. **Bar: 18 checks green, 8 simulation checks green.**

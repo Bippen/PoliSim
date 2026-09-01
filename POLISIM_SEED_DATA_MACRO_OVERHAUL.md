@@ -1383,7 +1383,7 @@ scratch**, since no artifact for them exists to port.
 
 ⚠ **One code defect the script found, which is not a seed-data question and is recorded here only
 because nothing on `main` records it at all:** `ThresholdRule.CoalitionShare` exists on the struct
-(Poland 8%, Italy 10%) and **`SeatAllocation.ApplyThreshold` never reads it, for any country.** Coalition
+(Poland 8%, Italy 10%) and **`SeatAllocation.ApplyNationalThreshold` never reads it, for any country (⚠ named `ApplyThreshold` here until 2026-09-01; no such method has ever existed, and the seventh sweep found it).** Coalition
 thresholds are unenforced. On the branch, so it blocks nothing today.
 
 ### The four results

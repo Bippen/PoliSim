@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (SIXTEEN since the coherence audit gained its SIXTH sweep - evidence that would pass regardless - 2026-09-01; fifteen since its fifth the same day; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (EIGHTEEN since the SEVENTH sweep - a written claim about the code, checked against the code - and S-32's player-reachability check, both 2026-09-01; sixteen since the SIXTH sweep - evidence that would pass regardless - the same day; fifteen since its fifth; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
     /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
@@ -185,6 +185,20 @@ namespace PoliSim.EditorTools
             // CONSTRUCTION and every run of the bar had counted it. Cheap — it reads text and builds no
             // World — so it belongs with the others here.
             ("EvidenceDiscriminationCheck", EvidenceDiscriminationCheck.Run),
+
+            // S-32 (2026-09-01): a delivered screen the player cannot reach is a FAILURE, not a
+            // curiosity. ⚠ `ElectionNightScreen` — board 1h — was built, filmed at four widths and
+            // recorded as delivered while the only thing naming it was the capture driver. Every guard
+            // stayed green throughout: they check what was DRAWN, never whether a player could have got
+            // there.
+            ("PlayerReachabilityCheck", PlayerReachabilityCheck.Run),
+
+            // The coherence audit's SEVENTH sweep (2026-09-01): a written claim about the code, checked
+            // against the code. ⚠ `PhantomGuardCheck` and `CommentClaimCheck` scan CODE COMMENTS; nothing
+            // checked a markdown claim, and this project's documents make far more claims about the code
+            // than its comments do. Binds on the LIVE documents only - the historical records are correct
+            // to name members that have since been deleted.
+            ("DocumentClaimCheck", DocumentClaimCheck.Run),
         };
 
         [InitializeOnLoadMethod]
