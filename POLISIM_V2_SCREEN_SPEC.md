@@ -242,7 +242,7 @@ state (the chrome column, the tongues) retired the day the first live sitting ju
 audited into their homes (the ninth request's Annex A). The R-PC2 table that stood for one evening
 (the Desk and Budget locked FOLDED, every document OPEN) is in git history. The flip is unreachable;
 the player's earlier choice persists per screen and per save without effect
-(`UiDraftState.ShellFoldOverrides`). Every screen is legal in every reachable state (R-SP2, 2026-08-28 —
+⚠ **CORRECTED 2026-09-01:** this sentence named a `UiDraftState` fold-override field, and **that field no longer exists** — retired with the OPEN state at v3.1 R-E1 and deleted in Phase B (`COMPLETED.md` §45). A save that still carries the key is read without it; there is no state to restore and no field to name. ⚠ **The claim survived for days because the only occurrence of that name in the codebase is the `SaveGame` comment recording its own removal** — the seventh sweep found it the moment the ninth stopped a comment from validating a document. Every screen is legal in every reachable state (R-SP2, 2026-08-28 —
 the guards run in each; a locked state is unreachable and recorded per screen: the Budget ledger, R-A1),
 the folded frame's interrupt banner carrying the HELD reasons above the sheet; only defaults are canonical
 on film (V3-R4).

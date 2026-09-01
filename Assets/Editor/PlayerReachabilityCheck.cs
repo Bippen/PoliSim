@@ -71,7 +71,7 @@ namespace PoliSim.EditorTools
                 return;
             }
 
-            string controllerText = File.ReadAllText(controller);
+            string controllerText = SourceText.WithoutComments(File.ReadAllText(controller));   // a comment naming a takeover is not a route
             var takeovers = new List<string>();
             var unreachable = new List<string>();
 

@@ -114,7 +114,7 @@ namespace PoliSim.EditorTools
             foreach (string path in Directory.GetFiles(assets, "*.cs", SearchOption.AllDirectories))
             {
                 string text = File.ReadAllText(path);
-                fileText[path] = text;
+                fileText[path] = SourceText.WithoutComments(text);
                 foreach (Match m in TypeDeclaration.Matches(text)) { Add(typeFiles, m.Groups[1].Value, path); }
                 foreach (Match m in MemberDeclaration.Matches(text)) { Add(memberFiles, m.Groups[1].Value, path); }
                 foreach (Match m in Identifier.Matches(text)) { usedNames.Add(m.Value); }

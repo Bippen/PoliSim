@@ -10217,3 +10217,48 @@ countries**, and it needs, in this order —
 
 ⚠ **Logged STOPPED rather than started, because starting it inside a clearance pass would land a BASELINE
 family without its explanation** — the thing D-9 (d) was refused for and D-14 (a) reaffirmed the same day.
+
+## 160. THE NINTH SWEEP — a guard a COMMENT can switch off, and it was four guards (2026-09-01)
+
+§158 found `UnwiredSubsystemCheck` silenced by a prose mention and fixed it there. ⚠ **The sweep that
+followed asked the obvious next question — *which other checks read raw text?* — and the answer was all of
+them.**
+
+| check | what a comment could do |
+|---|---|
+| `UnwiredSubsystemCheck` | the instance: a prose mention made a subsystem look reachable |
+| `PlayerReachabilityCheck` | ⚠ **a comment in `GameController` naming a takeover would have made it "reachable"** — which is exactly what that check's own ratchet doc warns somebody not to do, and which the check could not tell apart from a real route |
+| `EvidenceDiscriminationCheck` | ⚠ **a COMMENTED-OUT `Debug.LogError` counted as a failure path** — the sixth sweep, whose entire subject is evidence that cannot discriminate, defeated by a comment |
+| `DocumentClaimCheck` | a member named only in a comment counted as present, so a document claim about a deleted member passed |
+
+**One stripper now, shared: `SourceText.WithoutComments`.** String literals still survive, deliberately —
+**a reflected call is built from one and a comment can never call anything.**
+
+### The ninth sweep is a MUTATION PROBE, and that is the thing that was billed twice
+
+`CommentImmunityCheck` does not scan the repo and report a backlog. **It hands the stripper inputs whose
+right answer is known and requires the answer** — eight cases, both directions: a line comment, a doc
+comment, a block comment, a multi-line block, ⚠ a **string literal** that must survive, real code, a URL
+inside a literal that the `//` rule must not eat, and **a commented-out `Debug.LogError` that must not
+count as a failure path.** The subject is the mechanism rather than the codebase, which is why it can be
+exhaustive where a scan can only be a ratchet.
+
+⚠ **Proved both directions by neutering the stripper for one run**: three cases went WRONG and the check
+exited 1, naming each — including the sixth sweep's own exposure. Restored.
+
+It also carries a **census** of the four checks that must route through the shared stripper, and ⚠ **says
+plainly that a check added later which reads raw text is invisible to it** — the same hole
+`RatchetSlackCheck` has, named for the same reason.
+
+### ⚠ AND THE FIX IMMEDIATELY FOUND A FIFTH THING
+
+With comments stripped, `DocumentClaimCheck` went from 2 findings to **3**:
+`POLISIM_V2_SCREEN_SPEC.md` names `UiDraftState.ShellFoldOverrides`, and **that field does not exist** — it
+was retired with the OPEN state at v3.1 R-E1 and deleted in Phase B (§45).
+
+⚠ **The claim had survived because the only occurrence of the name in the whole codebase is the `SaveGame`
+comment recording its own removal.** A document was being validated by the note that said the thing was
+gone. **Corrected in the document**, and the count returns to 2 — ⚠ **the ceiling was not touched**, which
+is the difference between fixing a finding and absorbing one.
+
+**The suite goes twenty → twenty-one.**

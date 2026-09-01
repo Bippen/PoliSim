@@ -337,17 +337,9 @@ namespace PoliSim.EditorTools
         /// </summary>
         private static string StripComments(string text)
         {
-            text = Regex.Replace(text, @"/\*.*?\*/", " ", RegexOptions.Singleline);
-
-            var sb = new StringBuilder(text.Length);
-            foreach (string line in text.Split('\n'))
-            {
-                int slash = line.IndexOf("//", StringComparison.Ordinal);
-                if (slash >= 0 && line.IndexOf('"') < 0) { sb.Append(line, 0, slash).Append('\n'); }
-                else { sb.Append(line).Append('\n'); }
-            }
-
-            return sb.ToString();
+            // ⚠ ONE stripper for the whole audit, shared since the sweep that followed this fix found
+            // the same exposure in three more checks. See `SourceText` for the incident and the rule.
+            return SourceText.WithoutComments(text);
         }
 
         private static int CountWord(string text, string word)

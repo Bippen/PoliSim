@@ -118,7 +118,7 @@ namespace PoliSim.EditorTools
             {
                 string path = Path.Combine(editor, type + ".cs");
                 if (!File.Exists(path)) { missingFile.Add(type); continue; }
-                if (!FailurePath.IsMatch(File.ReadAllText(path))) { withoutFailure.Add(type); }
+                if (!FailurePath.IsMatch(SourceText.WithoutComments(File.ReadAllText(path)))) { withoutFailure.Add(type); }
             }
 
             // CLAUSE B: the census over every editor tool with a Run, reported and not enforced.
@@ -130,7 +130,7 @@ namespace PoliSim.EditorTools
                 if (!HasRun.IsMatch(text)) { continue; }
 
                 tools++;
-                if (!FailurePath.IsMatch(text)) { census.Add(Path.GetFileNameWithoutExtension(path)); }
+                if (!FailurePath.IsMatch(SourceText.WithoutComments(text))) { census.Add(Path.GetFileNameWithoutExtension(path)); }
             }
 
             census.Sort(StringComparer.Ordinal);

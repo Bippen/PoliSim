@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (NINETEEN since the EIGHTH sweep - a ratchet whose ceiling has stopped discriminating - 2026-09-01, registered LAST because it reads what the others reported to `RatchetLedger` in the same process; eighteen since the SEVENTH sweep - a written claim about the code, checked against the code - and S-32's player-reachability check, both 2026-09-01; sixteen since the SIXTH sweep - evidence that would pass regardless - the same day; fifteen since its fifth; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (TWENTY-ONE since the NINTH sweep - a guard a COMMENT can switch off, a MUTATION PROBE rather than a scan - and the generated-catalog drift check, both 2026-09-01; nineteen since the EIGHTH sweep - a ratchet whose ceiling has stopped discriminating - 2026-09-01, registered LAST because it reads what the others reported to `RatchetLedger` in the same process; eighteen since the SEVENTH sweep - a written claim about the code, checked against the code - and S-32's player-reachability check, both 2026-09-01; sixteen since the SIXTH sweep - evidence that would pass regardless - the same day; fifteen since its fifth; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
     /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
@@ -200,6 +200,13 @@ namespace PoliSim.EditorTools
             // to name members that have since been deleted.
             ("DocumentClaimCheck", DocumentClaimCheck.Run),
             ("GeneratedCatalogCheck", GeneratedCatalogCheck.Run),
+
+            // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. ⚠ A prose
+            // mention used to count as a reference in FOUR name-scanning checks - a commented-out
+            // Debug.LogError even counted as a failure path, defeating the sixth sweep with a comment.
+            // It is a MUTATION PROBE rather than a scan: the subject is the shared stripper, whose right
+            // answers are known, which is why it can be exhaustive where a scan can only be a ratchet.
+            ("CommentImmunityCheck", CommentImmunityCheck.Run),
 
             // S-33's root, guarded (2026-09-01): `ElectionsData/` sits outside `Assets/`, so runtime code
             // cannot read it — which is why board 1h, `RegionalVoteModel` and `TacticalVoting` are all
