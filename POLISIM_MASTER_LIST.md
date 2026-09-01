@@ -107,7 +107,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-R5** | ratchet: `CohortAgingStepDiagnostic.RUNAWAY` = **2** | Italy and Poland stop hitting `MinPopulation` at the 100-year horizon | CODE | SAFE | **M-B2** | — |
 | **M-R6** | ratchet: `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` = **1** | board 1h has a route | CODE | SAFE | **M-S7** | — |
 | **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour, in a comment or a document | ⚠ the honest done-when may be *"recorded as undecidable"*; it is the larger half of what a comment asserts | CODE | SAFE | — | M |
-| **M-S11** | **`S-13`** — the Policy Web's ~40 incoming edges converge on one point at a focused stat node | DESIGN ruled it a comprehension judgement (board 2b); this row is the code half once ruled | CODE | SAFE | — | S |
 | **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED and not centred; `FlatIssueMatch = 0.5` stands in | the axes are defined from a source, or the stand-in is ruled permanent | CODE | DATA | — | M |
 
 ## SECTION 2 — BASELINE, OWNER CODE. One at a time, each with its per-country explanation.
@@ -163,6 +162,19 @@ D-7 board 2b · D-8.1 the seven Swedish marks then the batch of forty-five · D-
 countries · D-8.3 the valkrets map (⚠ **waiting on E-3's mandate column**) · D-8.4 election night's paper
 · D-8.5 the verdict stamp · D-8.6 modal-or-stage · D-E4 the two Society icons.
 ⚠ **All eleven D9 rows are ANSWERED**; what remains is the batch, and the batch waits on E-3.
+
+⚠ **`M-S11` (`S-13`) moved here 2026-09-01 — a RECLASSIFICATION, and no work was done.** It sat in the
+startable CODE column with its done-when reading *"this row is the code half **once ruled**"*. **Board 2b
+is not ruled** — `CLAUDE_DESIGN_ASSET_REQUEST.md` marks only D8 answered — so the precondition its own
+row states has never held, and its BLOCKS-ON column read `—`.
+
+⚠ **This is worth being uncomfortable about**, because reclassifying a row is how a residue gets lowered
+without work. The argument, stated so it can be disagreed with: on a focused STAT node ~40 incoming edges
+converge and their arrowheads stack. Every code option — suppress them, fan them, thin them — **is the
+comprehension judgement itself**, and the finding already says direction is honest there and suppressing it
+would be deciding the diagram reads better without the model's own direction. **There is no code half to
+start until somebody rules what it should look like.** A row blocked on a CODE row (`M-S7` on `M-B5`)
+stays in the column; a row blocked on an unanswered DESIGN board cannot be started by a session at all.
 
 ## OWNER = CALENDAR — 1
 
