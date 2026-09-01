@@ -38,9 +38,20 @@ transcribed numbers, not of markdown.** The fix for such a comment is a **refere
 never writing today's number in place of yesterday's.**
 
 ⚠ **An assertion about the environment that is not computed from the environment is forbidden outright.**
-It is the class this convention exists to end. `ERRANDS.md`'s glance instruction asserted *"the working
-copy is LF"* when it was CRLF, having already been flipped by hand once in the opposite direction. **Derive
-it at the moment it is used, or say nothing about it.**
+It is the class this convention exists to end — and ⚠ **the worked example is this paragraph, which asserted
+one and was wrong.**
+
+It read: *"`ERRANDS.md`'s glance instruction asserted the working copy is LF when it was CRLF."* **The
+working copy is LF.** Measured `tr -cd '\r' | wc -c` per file: **zero carriage returns, everywhere.** The
+review that produced the claim had probed with `grep -c $'\r'`, an empty pattern that matches every line,
+and read a count equal to the file's line count as evidence of CRLF. `core.autocrlf=true` is real but
+governs a **fresh checkout**, not this tree.
+
+⚠ **So the instruction was RIGHT and the review was wrong, and the correction came within one edit of
+flipping a correct statement — which is the exact failure the last line of this section forbids.** The
+fault was never the value: it is that **a line ending was written down at all instead of being computed
+where it is used.** A true transcription and a false one fail identically the day the environment moves.
+**Derive it at the moment it is used, or say nothing about it.**
 
 ## Where generated blocks go
 
