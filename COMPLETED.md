@@ -9086,3 +9086,33 @@ projection (Eurostat `proj_23np` was not checked and is the obvious first place 
 
 ⚠ **D-12 (1a) is confirmed and (2a) is untested** — the time base held; the death/migration split never got
 far enough to be judged.
+
+## 142. THE ANCHOR STAGE 3 NEEDS IS SOURCEABLE FOR ALL SIX — probed and confirmed (2026-09-01)
+
+§141 left stage 3 blocked on an anchor whose *"convergence speed nothing sources yet."* **That is no
+longer true, and the correction took two requests.**
+
+| what | source | probed |
+|---|---|---|
+| **EU five** — population by age, sex and projection type | **Eurostat `proj_23np`**, *"Population on 1st January by age, sex and type of projection"*, `projection=BSL` (baseline) | ✅ **HTTP 200 for SE, DE, FR, IT, PL.** Sweden 2050 returns **12 130 240** against 10 551 707 in 2024 |
+| **USA** — population by SINGLE YEAR OF AGE, projected | **US Census Bureau, 2023 National Population Projections**, `np2023_d1_mid.csv` (main series) | ✅ **HTTP 200, 2.87 MB**, columns `TOTAL_POP` and `POP_0`…`POP_100` per year |
+
+⚠ **The US file is better than the EU one for this purpose**, which is the opposite of the asymmetry every
+other sourcing item in this pass has hit: it gives the projected pyramid **by single year of age**, so a
+convergence target exists band by band rather than only in total.
+
+### What this changes
+
+Stage 3's anchor no longer needs an authored convergence speed. **A sourced target trajectory exists for
+every one of the six**, so the step can converge its rates toward a published projection rather than
+repeating 2023–24 forever — which is what the retired scalars did with `SteadyStateGrowthRate`, and what
+the cohort spec-let's §4.2 asked for in the first place.
+
+⚠ **The remaining choice is a shape, not a figure**: whether to converge the survival array, the fertility
+rate, or scale the whole pyramid toward the projected one. **That is a modelling decision with a sourced
+target on the other side of it** — a far smaller question than the one §141 recorded, and the reason this
+probe was worth two requests before closing.
+
+⚠ **Nothing is built on this.** Both endpoints were probed for reachability and Sweden's 2050 figure read
+back; the series were not fetched, folded or seeded. **A dataset confirmed reachable is not a dataset
+used**, and the distinction is the same one C-D1 drew about PxWeb.

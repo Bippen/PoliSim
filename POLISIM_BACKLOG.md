@@ -715,6 +715,8 @@ The repo outranks the document. These are recorded, not re-worked.
 
 | **S-27** | ⚠ **`TacticalVoting` is built, harness-proven, and has NO caller in the model.** It appears in exactly one file outside its own — `TacticalVotingHarness` — and `ElectionDay` never mentions a poll, so the chain **media → coverage → momentum → poll → ballot** terminates one step before the mechanism written to receive it. Found 2026-09-01 while answering C-N1; ruled at **D-10 (a)**: wire it, as its own baseline item. ⚠ **The coherence audit could not see this either** — `DeadStateCheck` scans PRIVATE declarations, and `TacticalVoting.Apply` is public. **Public API with no production caller is a third blind spot**, alongside S-22's prose claims and S-23's write-only fields | CODE | `COMPLETED.md` §139 |
 
+| **S-28** | ⚠ **P-I2 stage 3's anchor is SOURCEABLE for all six — probed 2026-09-01.** §141 left the retirement blocked on *"a convergence speed nothing sources"*; two requests corrected that. **Eurostat `proj_23np`** (`projection=BSL`) answers for all five EU countries — Sweden 2050 reads **12 130 240** against 10 551 707 in 2024 — and the **US Census 2023 National Population Projections** file `np2023_d1_mid.csv` (2.87 MB) gives the projected pyramid **by single year of age**, which is better than the EU series for this purpose. **The remaining choice is a SHAPE, not a figure**: converge the survival array, the fertility rate, or scale the whole pyramid toward the projection. ⚠ **Nothing is built on it** — both were probed for reachability only, and a dataset confirmed reachable is not a dataset used | CODE | `COMPLETED.md` §142 |
+
 ---
 
 ## 11. Riders — work that rides the next item touching its file
