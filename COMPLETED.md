@@ -10262,3 +10262,74 @@ gone. **Corrected in the document**, and the count returns to 2 — ⚠ **the ce
 is the difference between fixing a finding and absorbing one.
 
 **The suite goes twenty → twenty-one.**
+
+## 161. THE TWO NAMED HOLES CLOSED BY ENROLMENT — and the census caught its own author (2026-09-01)
+
+Two checks ended by **saying** what they could not see: `CommentImmunityCheck` (a check added later that
+reads raw source is invisible to it) and `RatchetSlackCheck` (a ratchet that does not report is invisible
+to it). ⚠ **A named hole is still a hole, and two instances make a class.** Both are converted from
+invisible to **failing**.
+
+### Enrolment 1 — every source-reading check is enrolled or exempt-with-a-reason
+
+**11 checks read C# source.** Five must strip; four are exempt with their reason written down
+(`CommentClaimCheck` and `PhantomGuardCheck` — their subject *is* the comment; `ConstantProvenanceCheck` —
+its provenance mark lives in one; `MetaTextCheck` — it scans string literals only). **One in neither list
+fails the suite.**
+
+⚠ **Its first run found `DeadStateCheck` unenrolled** — a check that counts occurrences of a private
+declaration's name, so **a comment mentioning a dead field made it look read.** A fifth instance of the
+class, found the first time the census ran.
+
+⚠ **And it caught its own author.** `CommentImmunityCheck` and `RatchetSlackCheck` both read source for
+their censuses and were in neither list. Enrolled — and ⚠ **the routing test itself now strips comments,
+because a comment saying `SourceText.WithoutComments` would have made a check look enrolled.**
+
+### ⚠ The fifth instance was hiding two dead methods
+
+With comments stripped, `DeadStateCheck` went from **0 to 2** against a ceiling of 0:
+
+- **`WorldFactory.SeedGenericSpendingLines`** — ⚠ **the codebase already said so**: *"has no caller left"*.
+  **The comment recording its death was the thing hiding it.**
+- **`GameController.DrawCabinetPendingDecisionsContent`** — the Decisions half of the old Cabinet tab,
+  reachable only from its own doc comment and one sibling's.
+
+**Both deleted, and the surviving references repointed** — the ceiling was not touched. ⚠ **That is the
+rule: a finding surfaced by an instrument fix is FIXED, not absorbed.**
+
+### Enrolment 2 — every ratchet reports to the ledger
+
+**9 check files declare a ceiling or ratchet constant.** ⚠ **Three never reported**:
+`CohortAgingStepDiagnostic` (runaway countries), `EvidenceDiscriminationCheck` (checks that cannot fail)
+and `PublicationCadenceCheck` (reachable preliminary). **Three ratchets sitting outside the audit whose
+entire job is to compare a bound with its measurement.** All three report now.
+
+⚠ **And one of them is a FLOOR, which nearly went in inverted.** `PublicationCadenceCheck`'s bound is a
+minimum — the driver's warm-up breaks when the count goes *down*. Reported as a ceiling it would have read
+"tight" while meaning the opposite, so **the ledger carries the direction** rather than implying it.
+
+**Proved both directions** with one throwaway check that read source, declared a ratchet, and did neither
+required thing: **both enrolments failed and named it.** Deleted.
+
+### R-T3 — the unasked question, made a rule
+
+§158 fixed one instrument and closed the item. ⚠ **The question *"what else shares this instrument?"* went
+unasked, and the answer was four checks — then five, then two more found by the census itself.**
+
+**The rule:** an instrument fix is finished when **every other consumer has been enumerated and each is
+fixed or exempted with a stated reason**, and **the enumeration is named in the fix's own record.**
+⚠ **The enumeration is the deliverable, not the fix** — a fix with no enumeration beside it is a claim
+about one call site dressed as a claim about a class.
+
+**Retrofitted to this week's instrument fixes** (full table in the register): the comment-blind scanner
+(5 must-strip, 4 exempt, 2 self-caught, 2 dead methods); `RatchetLedger` (3 unreported); the
+capture-identity token (✅ complete, no finding); the type-is-its-file assumption (⚠ one finding — a
+registered check whose file is not named after its type was **silently skipped**, so clause A verified
+nothing about it while the summary read clean; it fails now).
+
+⚠ **One row of the retrofit is marked NOT DONE**: the instruction named "the width assertion" and the
+week's record does not identify one uniquely. The candidates are listed and the enumeration is **owed**.
+**An enumeration that cannot be completed is reported as incomplete** — which is the rule working on
+itself, because its whole point is that a reader can tell coverage from assumption.
+
+**Bar: 21 checks green, 8 simulation checks green, ratchets tight, 0 unenrolled, 0 unreported.**

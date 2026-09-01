@@ -772,6 +772,52 @@ hat; (c) throws away a stat to avoid writing one honest sentence.
 
 ---
 
+
+---
+
+### D-16 · How F-B's five-country landing survives F-A's double count ⚠ DECIDED AND TAKEN (R-N1), strikeable — and the EXECUTION is logged STOPPED
+
+**F-B RULED by Elias, 2026-09-01: keep the federal perimeter.** *"Consistency inside a country outranks
+uniformity across the set, and breaking the perimeter on the side the model has more of is the worse
+trade."* **Option B is not to be built.** The sourced tax-base table lands for **five** countries; the USA
+keeps the uniform stand-in with its reason stated. The CBO series stays named-not-quoted with its 403.
+
+⚠ **But F-A is unresolved, and landing the table for five re-introduces exactly what §147 measured**:
+those five need `CollectionEfficiency` **above 1** to hit their targets (SE 1.0065, DE 1.1508, FR 1.1822,
+IT 1.2366, PL 1.3117), because the sourced base already contains the collection loss CE exists to apply.
+**Landing F-B on its own would knock the primary-balance anchor off in five countries** — the regression
+D-14 (a) refused to absorb. So F-B's ruling needs one more decision, and this is it.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Re-solve CE for the five and RE-DOCUMENT it** as the coverage bridge between four modelled instruments and a whole tax system | one item; ⚠ the anchored quantity is preserved **exactly**, so only the RESPONSE family moves and the level family does not | a constant named "efficiency" stops meaning efficiency; it is read by a Cabinet decision channel and the preview clone |
+| b. Land the table and accept the revenue drop | none up front | ⚠ the primary balance moves 3–17 points of GDP in five countries — the thing the recalibration anchored |
+| c. Land it in the transmission term only | one item | ⚠ **refused independently by Elias** at D-9 route (a): a revenue-derived table applied everywhere except revenue is incoherent |
+| d. Do not land until F-A is ruled | none | ⚠ F-B is ruled and would sit unexecuted behind a second ruling nobody has been asked for |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (a).** Basis: it is the only option that honours F-B's
+ruling **and** keeps the anchored quantity fixed, so exactly **one** family moves and can be explained per
+country — the project's own rule. ⚠ **And the explanation is cheap in this shape**: with CE re-solved, the
+no-policy path is algebraically unchanged, so the expected diff is **float-path divergence only**, which
+C-C6 already established as an explainable class. (b) breaks the anchor, (c) is refused, (d) stalls a ruling.
+
+#### ⚠ THE EXECUTION IS LOGGED **STOPPED**, WITH ITS REASON AND ITS ORDER
+
+The landing is a **BASELINE change** and this project's rule is that the new family lands **with** its
+per-country explanation or it does not land. The explanation needs the **trajectory suite** — a six-country
+dump that has historically run over an hour — and the budget that remains cannot carry both it and the
+records of the work already done. **Nothing is landed. The order, for the item that takes it:**
+
+1. per-country base table for **the five only**, USA excluded with its reason at the call site;
+2. `CollectionEfficiency` **re-solved** for the five from `FiscalRecalDiagnostic`'s own implied figures,
+   the constant re-documented, and ⚠ **the >1 values named as coverage rather than efficiency**;
+3. `FiscalRecalDiagnostic` re-run — **each of the five must land back on its recalibrated target**, which
+   is the proof that the level family did not move;
+4. `TaxTransmissionDiagnostic` — the per-country response must differ, which is the point of the item;
+5. the trajectory suite, with the diff **explained as float-path divergence per country** or not landed.
+
+> **To strike it, write:** `D-16 STRUCK: (b)` *(or c / d)* — nothing is built on it, so a strike costs one
+> decision and no code.
 ### D-15 · P-I2 stage 3's anchor: which shape converges toward the sourced projection ⚠ DECIDED AND TAKEN (R-N1), strikeable
 
 **The question.** §141 reverted stage 3 because the cohort step applies one observed year's rates forever
@@ -1012,6 +1058,34 @@ claim that closes an item, a count that sets a ratchet — becomes an armed chec
 before it is written down.** The reason is not that pipelines are more error-prone than C#; it is that
 **a pipeline is evidence nobody re-runs**, so its errors have no second chance to be found.
 
+
+#### R-T3 · After an instrument fix, ENUMERATE every other consumer before the item closes
+
+**The evidence.** §158 fixed one instrument — the name scanner that a comment could silence — and closed
+the item there. ⚠ **The question *"what else shares this instrument?"* went unasked**, and when §160
+finally asked it the answer was **four checks**, not one. The enrolment built the same day then found a
+**fifth** (`DeadStateCheck`), and that fifth was hiding **two genuinely dead methods**.
+
+**The rule.** An instrument fix is not finished when the instrument works. It is finished when **every
+other consumer of that instrument has been enumerated and each is either fixed or exempted with a stated
+reason** — and **the enumeration is named in the fix's own record**, so the next reader can see what was
+covered rather than assuming it was all of it.
+
+⚠ **The enumeration is the deliverable, not the fix.** A fix with no enumeration beside it is a claim
+about one call site dressed as a claim about a class.
+
+**RETROFITTED to this week's instrument fixes:**
+
+| instrument fixed | consumers enumerated | what the retrofit found |
+|---|---|---|
+| **the comment-blind name scanner** (§158) | 11 source-reading checks | ⚠ **five** must strip (one, `DeadStateCheck`, found only by the enrolment — and it was masking **two dead methods**); four exempt with reasons; two more (`CommentImmunityCheck`, `RatchetSlackCheck`) found unenrolled **by their own census** |
+| **`RatchetLedger`** (§157) | 9 check files declaring a ceiling or ratchet | ⚠ **three unreported** — `CohortAgingStepDiagnostic`, `EvidenceDiscriminationCheck`, `PublicationCadenceCheck`. Three ratchets sat outside the audit that exists to compare a bound with its measurement |
+| **the capture-identity token** (S-20) | 3 Canvas takeovers, all stamping; driver default `imgui` | ✅ **complete — no finding.** The set that stamps is exactly the set `PlayerReachabilityCheck` enumerates |
+| **the type-is-its-file assumption** (S-35) | `DocumentClaimCheck` (fixed at S-35), `EvidenceDiscriminationCheck` | ⚠ **one finding**: a registered check whose file is not named after its type was reported and then **silently skipped**, so clause A verified nothing about it while the summary read clean. It fails now |
+| **the four-width film matrix** | the capture driver, `ScreenEdgeCheck`'s `-edgepattern`, `FilmDiffCheck`'s roster | ⚠ **NOT ENUMERATED — and said so rather than claimed.** The instruction named "the width assertion" and the record does not identify one uniquely this week; the nearest candidates are listed and the enumeration is **owed**, not done |
+
+⚠ **The last row is the rule working on itself**: an enumeration that cannot be completed is reported as
+incomplete, because the whole point of R-T3 is that a reader can tell coverage from assumption.
 | ID | what | trigger or reason |
 |---|---|---|
 **C-D6 (2026-08-31) gave every row a TRIGGER rather than a date.** A deferral with a date says when

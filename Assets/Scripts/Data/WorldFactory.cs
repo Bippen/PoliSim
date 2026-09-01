@@ -863,7 +863,7 @@ namespace PoliSim.Data
 
             // Country-selection task, Part 2: generic spending decomposition for the other five
             // countries - a PURE decomposition of each country's existing GovernmentSpendingRate-
-            // derived total into 5 broad categories, not a recalibration (see SeedGenericSpendingLines
+            // derived total into 5 broad categories, not a recalibration (see the retired generic spending seeder
             // for how the exact-sum guarantee works, and its own doc comment for why these percentage
             // splits are honestly illustrative, not individually researched). Directionally-informed
             // splits, not researched figures: Social Programs is the largest bucket everywhere
@@ -881,7 +881,7 @@ namespace PoliSim.Data
             // decomposition to its real utgiftsomrade structure - see SeedSwedenSpendingLines.
             // Omnibus 2026-08-28 (R-K7): the four graduate to their real budget structures - Germany's
             // Einzelplaene, France's missions, Italy's missioni, Poland's dzialy - see the four
-            // Seed<Country>SpendingLines methods; SeedGenericSpendingLines has no caller left and is
+            // Seed<Country>SpendingLines methods; the retired generic spending seeder has no caller left and is
             // kept as the documented shape the five started from.
             SeedSwedenSpendingLines(sweden);
             SeedGermanySpendingLines(germany);
@@ -1220,7 +1220,7 @@ namespace PoliSim.Data
         /// Playtest-2 item 4 (ruled 2026-08-25): Sweden's REAL budget structure - the 27
         /// utgiftsomraden of the state budget, consolidated to 24 lines at USA's granularity - as a
         /// PURE DECOMPOSITION of the country's existing GDP x GovernmentSpendingRate total
-        /// (SeedGenericSpendingLines' exact-sum invariant kept: every line is the game total times
+        /// (the retired generic spending seeder' exact-sum invariant kept: every line is the game total times
         /// the area's share of the sourced SEK sum, and the largest line, MunicipalGrants, is the
         /// REMAINDER, so the set sums to exactly the old total and the trajectory bar holds
         /// byte-identically).
@@ -1348,7 +1348,7 @@ namespace PoliSim.Data
         /// method): Germany's REAL budget structure - the Einzelplaene of the Bundeshaushalt 2026
         /// (the Haushaltsgesetz 2026 as passed by the Bundestag on 2025-11-28) - as a PURE
         /// DECOMPOSITION of the country's existing GDP x GovernmentSpendingRate total, with
-        /// SeedGenericSpendingLines' exact-sum invariant kept: every line is the game total times
+        /// the retired generic spending seeder' exact-sum invariant kept: every line is the game total times
         /// the area's share of the sourced EUR sum, and the last line (FinancialAdministration =
         /// Einzelplan 60's core) is the REMAINDER, so the set sums to exactly the old total.
         ///
@@ -1745,43 +1745,6 @@ namespace PoliSim.Data
             france.SpendingLines.Add(new SpendingLine(SpendingCategory.Education, total - allocated, isMandatory: false));
         }
 
-        /// <summary>
-        /// Country-selection task, Part 2: a SMALL, generic 5-category spending decomposition for a
-        /// country that (unlike USA) keeps the legacy GovernmentSpendingRate mechanic as its source of
-        /// truth - mirrors USA's own original Phase 1 broad-categories stage, not the later detailed
-        /// work. CRITICAL invariant: this is a PURE decomposition, not a recalibration - the five
-        /// lines' Amounts are computed directly from the country's OWN CURRENT GDP *
-        /// GovernmentSpendingRate (read live at seed time, never a separately-hardcoded duplicate
-        /// figure that could drift out of sync), and Administration is deliberately the REMAINDER
-        /// (total minus the other four), not its own independently-rounded percentage - this
-        /// guarantees the five lines sum to EXACTLY the country's existing total regardless of
-        /// floating-point rounding in the other four percentages, not just approximately. All five
-        /// lines are Discretionary (feed G, like USA's own Discretionary lines) - no Mandatory/
-        /// Discretionary split was introduced for this small decomposition (see this method's call
-        /// site in CreateDefault for why). Only Defense and InfrastructureAndDevelopment feed an
-        /// existing economic effect (see SimulationManager.BuildEffectiveDecisionForDetailedSpending) -
-        /// SocialPrograms/PublicServices/Administration get zero effect for now, an accurate,
-        /// adjustable dollar amount only, deliberately mirroring how 15 of USA's own 19 Discretionary
-        /// categories still have no effect either.
-        /// </summary>
-        private static void SeedGenericSpendingLines(Country country, float socialPercent, float defensePercent, float infrastructurePercent, float publicServicesPercent)
-        {
-            float total = country.State.GDP * (country.GovernmentSpendingRate / 100f);
-            float social = total * socialPercent / 100f;
-            float defense = total * defensePercent / 100f;
-            float infrastructure = total * infrastructurePercent / 100f;
-            float publicServices = total * publicServicesPercent / 100f;
-            float administration = total - social - defense - infrastructure - publicServices;
-
-            country.SpendingLines.AddRange(new[]
-            {
-                new SpendingLine(SpendingCategory.SocialPrograms, social, isMandatory: false),
-                new SpendingLine(SpendingCategory.Defense, defense, isMandatory: false),
-                new SpendingLine(SpendingCategory.InfrastructureAndDevelopment, infrastructure, isMandatory: false),
-                new SpendingLine(SpendingCategory.PublicServices, publicServices, isMandatory: false),
-                new SpendingLine(SpendingCategory.Administration, administration, isMandatory: false),
-            });
-        }
 
         /// <summary>
         /// RECALIBRATION (build-order item 1, terminal rulings 2026-08-26): the two-line mandatory

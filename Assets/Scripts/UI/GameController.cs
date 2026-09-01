@@ -7936,25 +7936,7 @@ namespace PoliSim.UI
         /// the dashboard's own "BREAKING" event banner (see DrawTopBanner) per the Master Roadmap's own
         /// spec - reusing _eventBannerStyle rather than inventing a separate modal style.
         /// </summary>
-        /// <summary>
-        /// Master Sequence step 5e, Phase A: the old standalone Cabinet tab SPLIT across two new
-        /// destinations, per Elias's own confirmed mapping (the original 5e scope text names Cabinet
-        /// under both "Decisions" and "Politics") - this content-only piece is the Decisions half
-        /// (pending-decision modals only), called from DrawDecisionsTab. See
-        /// DrawCabinetManagementContent for the Politics half (portfolio panels). No outer box/
-        /// scrollview here, matching this codebase's own established "*Content" convention (e.g.
-        /// DrawTaxPolicyContent) - the caller owns the chrome.
-        /// </summary>
-        private void DrawCabinetPendingDecisionsContent()
-        {
-            foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in _simulationManager.GetPendingCabinetDecisions(PlayerCountryId))
-            {
-                DrawCabinetDecisionModal(portfolio, decision);
-                GUILayout.Space(8f);
-            }
-        }
-
-        /// <summary>Politics half of the old Cabinet tab - see DrawCabinetPendingDecisionsContent's own doc comment for the split reasoning. Called from DrawPoliticsTab.</summary>
+        /// <summary>Politics half of the old Cabinet tab (Master Sequence step 5e, Phase A: the standalone Cabinet tab was split across two destinations). Called from DrawPoliticsTab. ⚠ The Decisions half was DELETED 2026-09-01 — it had no caller and was masked from `DeadStateCheck` by comments naming it, which is what the ninth sweep's comment-stripping exposed.</summary>
         private void DrawCabinetManagementContent()
         {
             DrawColoredLabel("Cabinet", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));

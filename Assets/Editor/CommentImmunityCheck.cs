@@ -34,12 +34,29 @@ namespace PoliSim.EditorTools
     public static class CommentImmunityCheck
     {
         /// <summary>The checks that count a NAME in source text, and must therefore strip comments first.
-        /// ⚠ `CommentClaimCheck` and `PhantomGuardCheck` are deliberately absent: their subject IS the
-        /// comment, and stripping it would leave them reading nothing.</summary>
+        /// ⚠ **`DeadStateCheck` joined on 2026-09-01, found by the ENROLMENT census below** — it counts
+        /// occurrences of a private declaration's name, so a comment mentioning a dead field made it look
+        /// read. That is a fifth instance of the class, and the census found it the first time it ran.</summary>
         private static readonly string[] MustStrip =
         {
-            "UnwiredSubsystemCheck", "PlayerReachabilityCheck", "EvidenceDiscriminationCheck", "DocumentClaimCheck",
+            "UnwiredSubsystemCheck", "PlayerReachabilityCheck", "EvidenceDiscriminationCheck",
+            "DocumentClaimCheck", "DeadStateCheck", "CommentImmunityCheck", "RatchetSlackCheck",
         };
+
+        /// <summary>
+        /// ⚠ **Source-reading checks EXEMPT from stripping, each with its reason.** An exemption is a
+        /// claim and is written down as one; a check in neither list fails the suite.
+        /// </summary>
+        private static readonly (string Name, string Reason)[] Exempt =
+        {
+            ("CommentClaimCheck", "its SUBJECT is the comment - stripping would leave it reading nothing"),
+            ("PhantomGuardCheck", "its SUBJECT is the comment - it exists to check what comments claim"),
+            ("ConstantProvenanceCheck", "the provenance MARK it looks for lives in a comment by design"),
+            ("MetaTextCheck", "it scans STRING LITERALS only, so a comment cannot reach its verdict"),
+        };
+
+        /// <summary>A check that reads C# source: it reads files and names the `*.cs` pattern.</summary>
+        private static readonly Regex ReadsSource = new Regex(@"File\.ReadAll(Text|Lines)");
 
         public static void Run()
         {
@@ -92,14 +109,54 @@ namespace PoliSim.EditorTools
                     continue;
                 }
 
-                bool routes = Regex.IsMatch(File.ReadAllText(path), @"SourceText\.WithoutComments|StripComments");
+                bool routes = Regex.IsMatch(SourceText.WithoutComments(File.ReadAllText(path)), @"SourceText\.WithoutComments|StripComments");
                 if (!routes) { failures.Add(name + " does not route through the shared stripper"); }
                 sb.Append(routes ? "    ok       " : "    ⚠ RAW     ").Append(name).Append('\n');
             }
 
-            sb.Append("\n    ⚠ WHAT THIS CANNOT SEE: a check added later that reads raw text is invisible until somebody\n");
-            sb.Append("    adds it to the list above. That is the same hole RatchetSlackCheck has, named for the same\n");
-            sb.Append("    reason - a census is honest about its coverage or it is worse than none.\n");
+            // ⚠ THE HOLE, CLOSED BY ENROLMENT (2026-09-01). This check used to END at the census above and
+            // say plainly that a check added later reading raw text would be invisible to it. **A named
+            // hole is still a hole**, and it was the second instance of that shape, so it is converted
+            // from invisible to FAILING: every check that reads source is either in MustStrip or in
+            // Exempt-with-a-reason, and one in neither fails the suite rather than passing silently.
+            //
+            // ⚠ Its first run found `DeadStateCheck` unenrolled - a check that counts occurrences of a
+            // private declaration's name, where a comment mentioning a dead field made it look read.
+            var unenrolled = new List<string>();
+            int sourceReaders = 0;
+            foreach (string path in Directory.GetFiles(editor, "*.cs", SearchOption.TopDirectoryOnly))
+            {
+                string text = SourceText.WithoutComments(File.ReadAllText(path));   // a commented-out reader is not a reader
+                if (!text.Contains("public static void Run")) { continue; }
+                if (!ReadsSource.IsMatch(text) || !text.Contains("\"*.cs\"")) { continue; }
+
+                sourceReaders++;
+                string name = Path.GetFileNameWithoutExtension(path);
+                if (Array.IndexOf(MustStrip, name) >= 0) { continue; }
+
+                bool exempt = false;
+                foreach (var e in Exempt) { if (e.Name == name) { exempt = true; break; } }
+                if (!exempt) { unenrolled.Add(name); }
+            }
+
+            sb.Append(F("\n    THE ENROLMENT: {0} check(s) read C# source. {1} must strip, {2} exempt with a stated reason,\n"
+                        + "    {3} UNENROLLED.\n", sourceReaders, MustStrip.Length, Exempt.Length, unenrolled.Count));
+            foreach (var e in Exempt) { sb.Append("    exempt   ").Append(e.Name).Append(" - ").Append(e.Reason).Append('\n'); }
+            foreach (string u in unenrolled)
+            {
+                failures.Add(u + " reads source and is enrolled in neither list");
+                sb.Append("    ⚠ UNENROLLED  ").Append(u).Append('\n');
+            }
+
+            if (sourceReaders == 0)
+            {
+                failures.Add("no source-reading check was found at all, so the enrolment verified nothing");
+            }
+
+            sb.Append("\n    ⚠ WHAT THIS STILL CANNOT SEE: a check that reads source WITHOUT naming the `*.cs` pattern -\n");
+            sb.Append("    the enrolment recognises a source reader by that pattern, so an unusual one escapes. Smaller\n");
+            sb.Append("    than the hole it replaces, and named for the same reason: a census is honest about its\n");
+            sb.Append("    coverage or it is worse than none.\n");
             sb.Append("    ⚠ AND THE STRIPPER IS AN APPROXIMATION: a real line comment following a string literal on the\n");
             sb.Append("    same line survives. That residue can only cause the SAME class of miss, smaller, and closing it\n");
             sb.Append("    needs a C# lexer rather than a regex.\n");

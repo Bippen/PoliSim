@@ -74,7 +74,10 @@ namespace PoliSim.EditorTools
             // One pass to read every file, one to count - the codebase is small enough that the whole
             // corpus fits in memory, and a per-name file walk would be quadratic.
             var contents = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (string file in files) { contents[file] = File.ReadAllText(file); }
+            // ⚠ COMMENTS STRIPPED (2026-09-01, found by the ninth sweep's ENROLMENT census): this check
+            // counts OCCURRENCES of a private declaration's name, so a comment merely MENTIONING a dead
+            // field made it look read. A fifth instance of the class, found the first time the census ran.
+            foreach (string file in files) { contents[file] = SourceText.WithoutComments(File.ReadAllText(file)); }
 
             var declarations = new List<(string Kind, string Name, string Where)>();
             foreach (string file in files)

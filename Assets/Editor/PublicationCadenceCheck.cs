@@ -145,6 +145,10 @@ namespace PoliSim.EditorTools
             // which is S-20's family exactly. Measured 2026-09-01: exactly ONE stat qualifies (GDP, at
             // day 119), so the ratchet is 1. Raise it when another series gains a revision stage; a fall
             // below it is the strategy breaking, and it fails here rather than in a film nobody re-reads.
+            // ⚠ A FLOOR ratchet: the measurement must not fall BELOW the bound, because the driver's
+            // warm-up breaks when this goes DOWN. The direction is CARRIED rather than implied - reporting
+            // a floor as if it were a ceiling would make "tight" mean the opposite of what it says.
+            RatchetLedger.Report("PublicationCadenceCheck.REACHABLE_PRELIMINARY", reachablePreliminary, ReachablePreliminaryRatchet, isFloor: true);
             if (reachablePreliminary < ReachablePreliminaryRatchet)
             {
                 failures++;

@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -43,6 +45,12 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class RatchetSlackCheck
     {
+        /// <summary>An `int` constant whose name ends in Ceiling or Ratchet — this repo's own naming for
+        /// a backlog bound. ⚠ It is a NAMING convention doing structural work, which is stated because it
+        /// is the enrolment's one soft spot: a bound called something else escapes.</summary>
+        private static readonly Regex DeclaresRatchet = new Regex(
+            @"const\s+int\s+[A-Za-z0-9_]*(Ceiling|Ratchet)\b");
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -60,6 +68,27 @@ namespace PoliSim.EditorTools
                 return;
             }
 
+            // ⚠ THE HOLE, CLOSED BY ENROLMENT (2026-09-01). This check used to end by SAYING that a
+            // ratchet which does not report is invisible to it. **A named hole is still a hole**, and the
+            // ninth sweep had the same shape - two instances make a class. So: every check file declaring
+            // a ceiling or ratchet constant must call `RatchetLedger.Report`, and one that does not FAILS
+            // rather than sitting outside the audit in silence.
+            var unreported = new List<string>();
+            int ratchetFiles = 0;
+            string editorDir = Path.Combine(Directory.GetCurrentDirectory(), "Assets", "Editor");
+            if (Directory.Exists(editorDir))
+            {
+                foreach (string path in Directory.GetFiles(editorDir, "*.cs", SearchOption.TopDirectoryOnly))
+                {
+                    string text = SourceText.WithoutComments(File.ReadAllText(path));
+                    if (!text.Contains("public static void Run")) { continue; }
+                    if (!DeclaresRatchet.IsMatch(text)) { continue; }
+
+                    ratchetFiles++;
+                    if (!text.Contains("RatchetLedger.Report")) { unreported.Add(Path.GetFileNameWithoutExtension(path)); }
+                }
+            }
+
             var slack = new List<string>();
             var sb = new StringBuilder();
             sb.Append("=== The coherence audit (h): a ratchet whose ceiling has stopped discriminating ===\n");
@@ -70,31 +99,56 @@ namespace PoliSim.EditorTools
 
             foreach (RatchetLedger.Entry e in entries)
             {
+                // ⚠ A FLOOR ratchet is the mirror: its measurement must not fall BELOW the bound, so slack
+                // is the measurement standing ABOVE it. Carrying the direction is what stops "tight"
+                // meaning the opposite of what it says on half the ledger.
+                int over = e.IsFloor ? e.Ceiling - e.Measured : e.Measured - e.Ceiling;
+                int gap = e.IsFloor ? e.Measured - e.Ceiling : e.Ceiling - e.Measured;
+
                 string verdict;
-                if (e.Measured > e.Ceiling)
+                if (over > 0)
                 {
                     // Not this check's business: the owning check has already failed for it.
                     verdict = "OVER - its own check fails";
                 }
-                else if (e.Measured < e.Ceiling)
+                else if (gap > 0)
                 {
-                    verdict = "⚠ SLACK by " + (e.Ceiling - e.Measured);
-                    slack.Add(F("{0}: measured {1}, ceiling {2} - slack by {3}", e.Name, e.Measured, e.Ceiling, e.Ceiling - e.Measured));
+                    verdict = "⚠ SLACK by " + gap;
+                    slack.Add(F("{0}: measured {1}, bound {2}{3} - slack by {4}",
+                        e.Name, e.Measured, e.Ceiling, e.IsFloor ? " (floor)" : string.Empty, gap));
                 }
                 else
                 {
                     verdict = "tight";
                 }
 
-                sb.Append(F("    {0,-46} {1,8} {2,9}   {3}\n", e.Name, e.Measured, e.Ceiling, verdict));
+                sb.Append(F("    {0,-46} {1,8} {2,9}{3}   {4}\n",
+                    e.Name, e.Measured, e.Ceiling, e.IsFloor ? " floor" : "      ", verdict));
             }
 
             sb.Append("\n    ⚠ SLACK IS NOT A COSMETIC FAULT. A ceiling above its measurement lets the thing it guards get\n");
             sb.Append("    worse by the size of the gap while the check keeps printing green - a guard whose evidence has\n");
             sb.Append("    stopped discriminating, which is the class this sweep exists for. Every ratchet's own doc already\n");
             sb.Append("    says to lower it as the backlog clears; until now nothing but memory enforced that.\n");
+            sb.Append(F("\n    THE ENROLMENT: {0} check file(s) declare a ceiling or ratchet constant; {1} do not report to the\n"
+                        + "    ledger. ⚠ An unreported ratchet used to be an invisible hole and is a FAILING one now.\n",
+                ratchetFiles, unreported.Count));
+            foreach (string u in unreported) { sb.Append("    ⚠ UNREPORTED  ").Append(u).Append('\n'); }
+
             sb.Append("    THE FIX IS ALWAYS THE SAME: lower the ceiling to what was measured. NEVER raise a measurement to\n");
             sb.Append("    meet a ceiling, and never widen a ceiling to silence this.\n");
+
+            if (unreported.Count > 0)
+            {
+                Debug.LogError("SLACK: " + unreported.Count + " check(s) declare a ratchet and never report it - "
+                               + string.Join(", ", unreported.ToArray())
+                               + ". ⚠ A ratchet outside the ledger is outside the audit: nothing compares its ceiling to "
+                               + "its measurement, which is the exact condition this sweep exists to make impossible. Add "
+                               + "a `RatchetLedger.Report` call beside the comparison the check already makes.");
+                Debug.LogError(sb.ToString());
+                CheckExit.Finish(1);
+                return;
+            }
 
             if (slack.Count > 0)
             {

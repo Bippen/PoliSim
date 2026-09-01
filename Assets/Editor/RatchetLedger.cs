@@ -26,24 +26,31 @@ namespace PoliSim.EditorTools
             public string Name;
             public int Measured;
             public int Ceiling;
+
+            /// <summary>⚠ **A FLOOR ratchet, where the measurement must not fall BELOW the bound** — the
+            /// mirror of the usual case. `PublicationCadenceCheck`'s reachable-preliminary count is one:
+            /// the driver's warm-up breaks when it goes DOWN. Reporting a floor as if it were a ceiling
+            /// would have made "tight" mean the opposite of what it says, which is precisely the kind of
+            /// inverted label this audit exists to catch — so the direction is carried, not implied.</summary>
+            public bool IsFloor;
         }
 
         private static readonly List<Entry> Reported = new List<Entry>();
 
         /// <summary>Report one ratchet. Call it once, next to the ceiling comparison it already makes —
         /// the point is that the measurement and the ceiling are the check's OWN, not re-derived here.</summary>
-        public static void Report(string name, int measured, int ceiling)
+        public static void Report(string name, int measured, int ceiling, bool isFloor = false)
         {
             for (int i = 0; i < Reported.Count; i++)
             {
                 if (Reported[i].Name == name)
                 {
-                    Reported[i] = new Entry { Name = name, Measured = measured, Ceiling = ceiling };
+                    Reported[i] = new Entry { Name = name, Measured = measured, Ceiling = ceiling, IsFloor = isFloor };
                     return;
                 }
             }
 
-            Reported.Add(new Entry { Name = name, Measured = measured, Ceiling = ceiling });
+            Reported.Add(new Entry { Name = name, Measured = measured, Ceiling = ceiling, IsFloor = isFloor });
         }
 
         public static IReadOnlyList<Entry> Entries => Reported;

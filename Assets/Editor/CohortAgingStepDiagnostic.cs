@@ -268,6 +268,7 @@ namespace PoliSim.EditorTools
             sb.Append(string.Format(CultureInfo.InvariantCulture, "\n    ⚠ RUNAWAY BACKLOG: {0} country/countries move by more than a factor of two over {1} years\n",
                 runaways.Count, LongRunYears));
             sb.Append(string.Format(CultureInfo.InvariantCulture, "    (ceiling {0}). ", RunawayCeiling));
+            RatchetLedger.Report("CohortAgingStepDiagnostic.RUNAWAY", runaways.Count, RunawayCeiling);
             foreach (string r in runaways) { sb.Append(r).Append("  "); }
             sb.Append("\n    The step has NO reversion: one observed year's rates applied forever COMPOUND, which the cohort\n");
             sb.Append("    spec-let's §4.2 predicted in writing as 'the single most likely silent breakage'. P-I2 stage 3 was\n");

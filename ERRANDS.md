@@ -35,3 +35,20 @@ when it is done. If a row cannot say what unblocks, it is not an errand; it is a
 | # | the errand | answered | what it released |
 |---|---|---|---|
 | **E-2** | **Say GO on the seven Swedish party marks**, and the forty-five-mark batch after them, on board 3a's ruled vocabulary — five silhouettes × four cuts × two fills | ✅ **GO — Elias, 2026-09-01** | ⚠ **The asking is folded into E-3** so one paste carries the GO, the mandate column and the icon files. **Nothing on our side waits on it**: every call site, coverage check and fallback path is built, so the marks are consumed when they land rather than queued. The hairline *"no published colour"* swatch stays as the honest fallback until they arrive |
+
+---
+
+## The shelf's standing re-verification (added 2026-09-01)
+
+⚠ **Enrolment can rot, and both enrolments are censuses rather than proofs.** Two things get re-verified
+every shelf cycle rather than assumed:
+
+- **the stripper's enrolment** — the checks that read C# source are enrolled or exempt-with-a-reason.
+  `CommentImmunityCheck` fails the suite on an unenrolled one, so the re-verification is *reading the
+  count in its output*, not re-deriving it. ⚠ Its one soft spot is a source reader that does not name the
+  `*.cs` pattern.
+- **the ledger's enrolment** — every ceiling or ratchet constant reports. `RatchetSlackCheck` fails on an
+  unreported one. ⚠ Its soft spot is a bound whose NAME ends in neither *Ceiling* nor *Ratchet*.
+
+**Neither soft spot is a hole to be lived with quietly**: each is written where the check declares it, and
+closing either needs a lexer rather than a regex — which is the honest reason they are named instead.

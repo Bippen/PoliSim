@@ -160,6 +160,24 @@ namespace PoliSim.EditorTools
             sb.Append("    done BY HAND for every guard it has armed. Automating it is the seventh sweep, and saying so here\n");
             sb.Append("    is the honest version of not having built it.\n");
 
+            // ⚠ A REGISTERED CHECK WHOSE FILE CANNOT BE FOUND IS A SILENT SKIP, AND IT IS THE SAME
+            // TYPE-IS-ITS-FILE ASSUMPTION S-35 BURNED US ON (found by R-T3's retrofit, 2026-09-01). This
+            // check maps a registered type name to `<Name>.cs`; a check declared in a differently-named
+            // file was reported and then passed over, so clause A verified nothing about it while the
+            // summary read clean. It fails now: an unreadable subject is not a passing subject.
+            if (missingFile.Count > 0)
+            {
+                Debug.LogError("EVIDENCE: " + missingFile.Count + " registered check(s) have no <Name>.cs beside "
+                               + "CheckSuite - " + string.Join(", ", missingFile.ToArray())
+                               + ". Clause A verified NOTHING about them. ⚠ This check assumes a type lives in the file "
+                               + "named after it, which is exactly the assumption that 'corrected' a correct document "
+                               + "reference at S-35; the assumption stays, and the silent skip does not.");
+                Debug.LogError(sb.ToString());
+                CheckExit.Finish(1);
+                return;
+            }
+
+            RatchetLedger.Report("EvidenceDiscriminationCheck.NO_FAILURE_PATH", withoutFailure.Count, RegisteredWithoutFailurePathCeiling);
             if (withoutFailure.Count > RegisteredWithoutFailurePathCeiling)
             {
                 Debug.LogError($"EVIDENCE: {withoutFailure.Count} REGISTERED check(s) contain no failure path - "
