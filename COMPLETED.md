@@ -9771,3 +9771,58 @@ and it belongs beside the mutation probe rather than inside a shelf pass.
 no such type exists"*. **That is the guard working exactly as designed** — on the file whose entire subject
 is evidence that cannot tell truth from fiction. The example is described rather than spelled now, and the
 incident is recorded at the fix, because it argues for the guard better than the guard's own doc does.
+
+## 153. D-14 RULED (a) — and the one country that "fits" fits for the wrong reason (2026-09-01)
+
+**Elias:** *"No second BASELINE family beside the first — that is the move D-9 (d) was refused for and it
+does not become acceptable because a different item wants it."* **D-2 (c) stays reverted**, and the two
+defects it surfaced are split out as their own measured items, unattached to the reverted change.
+
+⚠ **One tool for two findings, on purpose.** A second diagnostic would have reprinted the first's
+arithmetic to add one ratio, and a tool that mostly restates another tool is a second thing to keep true.
+`CollectionEfficiencyBasisDiagnostic` measures both, applies nothing, and has no code path that could.
+
+### F-A — the double count, measured
+
+| country | implied (UNIFORM) | implied (SOURCED) | target | CE today | **CE needed (SOURCED)** |
+|---|---|---|---|---|---|
+| USA | 29.37 | 24.70 | 18.0 | 0.6119 | 0.7287 |
+| Sweden | 53.45 | 41.93 | 42.2 | 0.7865 | **1.0065** |
+| Germany | 48.73 | 35.54 | 40.9 | 0.8375 | **1.1508** |
+| France | 60.45 | 38.32 | 45.3 | 0.7480 | **1.1822** |
+| Italy | 45.10 | 34.37 | 42.5 | 0.9422 | **1.2366** |
+| Poland | 42.10 | 28.67 | 37.6 | 0.8910 | **1.3117** |
+
+On the uniform basis the implied figure is deliberately larger than reality and CE marks it down — which
+is what *efficiency* means, and why every CE today is below 1. ⚠ **On the sourced basis `rate × base` IS
+the realised revenue**, so marking it down again applies one correction twice. **Five of six would need CE
+above 1** against a field documented `0.0-1.0`; where it exceeds 1, the four modelled instruments
+**under-cover** that country's tax system and the constant is measuring coverage, not efficiency.
+
+### ⚠ F-B — and the one country that looks fine is fine for the wrong reason
+
+**The USA is the only country not needing CE above 1 — 0.7287 — and that is not a pass, it is F-B.**
+
+| | |
+|---|---|
+| USA implied revenue on the SOURCED (general-government) bases | **24.70 % of GDP** |
+| USA calibration target, FEDERAL receipts (CBO FY2025, on disk) | **18.00 % of GDP** |
+| ⚠ the mismatch | **×1.372** |
+
+⚠ **Both figures are sourced and neither is ours**; they are simply about **different governments**.
+`WorldFactory`'s organizing principle is the perimeter rule, and the USA sits on the federal side of it
+because the state and local layer is not modelled. **The USA's row of the D-2 (c) table is not the base of
+the thing this model taxes, and no re-solving of CE fixes a perimeter error.**
+
+**The bill, precise:** FEDERAL-ONLY revenue by tax type as a share of GDP — individual income, corporate
+income, payroll — for one stated year. OECD publishes a sub-sector split; ⚠ **two API shapes were tried
+from here and returned 422 and 404, so the series is NAMED rather than quoted.** Until it is on disk the
+USA has no sourced base and keeps the uniform stand-in — **which is itself an argument against landing the
+table for five countries and not the sixth.**
+
+### What this leaves
+
+Three exits are stated in the register and **none is taken**: re-solve CE and re-document it; re-derive the
+bases at the theoretical level (⚠ may have no source, since OECD publishes realised revenue); or leave the
+uniform bases with the identical-across-six response and its cause named. **The measurement exists so that
+choice is made against numbers rather than against a recollection of why the first attempt failed.**

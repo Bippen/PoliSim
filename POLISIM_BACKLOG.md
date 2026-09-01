@@ -561,7 +561,7 @@ this run confirms it from the other side, since the incoherence is exactly what 
 
 ---
 
-### D-14 · How a sourced tax base is reconciled with `CollectionEfficiency` and the perimeter rule
+### D-14 · How a sourced tax base is reconciled with `CollectionEfficiency` and the perimeter rule ✅ **RULED (a) BY ELIAS 2026-09-01 — the revert stands; F-A and F-B split out as their own measured items**
 
 **The question.** The sourced per-country bases already contain the collection loss that
 `CollectionEfficiency` exists to apply, and the USA's row is on a different fiscal perimeter from the
@@ -586,7 +586,72 @@ a perimeter no figure on disk covers. Taking it inside a run whose job was to re
 second BASELINE family beside the first, which is the one thing D-9's own option table refuses.
 **Logged strikeable: if Elias says nothing, the next fiscal item takes (a).**
 
-> **To rule it, write:** `D-14 RULED: (a)` *(or b / c / d)*
+> ~~**To rule it, write:** `D-14 RULED: (a)` *(or b / c / d)*~~
+
+### ✅ **D-14 RULED (a) — Elias, 2026-09-01. The revert stands; the findings underneath become their own items.**
+
+> *"No second BASELINE family beside the first — that is the move D-9 (d) was refused for and it does not
+> become acceptable because a different item wants it."*
+
+**D-2 (c) stays reverted.** The two defects it surfaced are split out, unattached to the reverted change,
+as **F-A** and **F-B** below. Both are measured by `CollectionEfficiencyBasisDiagnostic` — ⚠ **one tool for
+two findings on purpose**: a second file would have reprinted the first's arithmetic to add one ratio, and
+a tool that mostly restates another tool is a second thing to keep true.
+
+---
+
+### F-A · `CollectionEfficiency` double-counts the collection loss — MEASURED, nothing applied
+
+`CollectionEfficiency` is solved as `Target / Implied`, `Implied = Σ(rate × base)`. Under the **uniform**
+stand-ins that figure is deliberately larger than reality and CE marks it down — which is what the word
+*efficiency* means, and why every CE today is below 1. ⚠ **The sourced base is `(realised revenue % of
+GDP) / (seeded rate %)`, so `rate × base` IS the realised revenue.** Marking it down again applies one
+correction twice.
+
+| country | implied (UNIFORM) | implied (SOURCED) | target | CE today | CE needed (SOURCED) |
+|---|---|---|---|---|---|
+| USA | 29.37 | 24.70 | 18.0 | 0.6119 | 0.7287 |
+| Sweden | 53.45 | 41.93 | 42.2 | 0.7865 | **1.0065** |
+| Germany | 48.73 | 35.54 | 40.9 | 0.8375 | **1.1508** |
+| France | 60.45 | 38.32 | 45.3 | 0.7480 | **1.1822** |
+| Italy | 45.10 | 34.37 | 42.5 | 0.9422 | **1.2366** |
+| Poland | 42.10 | 28.67 | 37.6 | 0.8910 | **1.3117** |
+
+⚠ **Five of six would need CE above 1** against a field whose own doc says *"how much of the theoretical
+tax base is actually collected (0.0-1.0)"*. Where it exceeds 1 the four modelled instruments **under-cover**
+that country's tax system, and the constant would be measuring **coverage**, not efficiency.
+
+⚠ **AND THE ONE COUNTRY THAT LOOKS FINE IS FINE FOR THE WRONG REASON.** The USA needs only 0.7287 —
+because its target is FEDERAL while its sourced base is GENERAL GOVERNMENT. **Its apparent fit is F-B.**
+
+**Proposed, not applied.** A sourced base and a solved efficiency cannot both be right about the same
+quantity. Three exits, and only the first keeps the anchored primary balance fixed: **(1)** re-solve CE and
+re-document it as the coverage bridge it would then be; **(2)** re-derive the bases at the *theoretical*
+level so CE keeps its meaning — ⚠ OECD publishes realised revenue, not theoretical bases, so this may have
+no source; **(3)** leave the uniform bases and keep the identical-across-six response with its cause named.
+**Today D-14 (a) holds and nothing is applied.**
+
+---
+
+### F-B · The USA's perimeter mismatch — MEASURED, and it is not a scaling error
+
+| | |
+|---|---|
+| USA implied revenue on the SOURCED (general-government) bases | **24.70 % of GDP** |
+| USA calibration target, FEDERAL receipts (CBO FY2025, on disk) | **18.00 % of GDP** |
+| ⚠ **the mismatch** | **×1.372** |
+
+⚠ **Both figures are sourced and neither is ours** — the first is OECD general-government revenue divided
+by the game's own seeded rates, the second CBO federal receipts. They are about **different governments**.
+`WorldFactory`'s stated organizing principle is the perimeter rule, and the USA sits on the federal side of
+it because the state and local layer is not modelled. **So the USA's row of the D-2 (c) table is not the
+base of the thing this model taxes, and no amount of re-solving CE fixes that.**
+
+**The bill, precise:** FEDERAL-ONLY revenue by tax type as a share of GDP — individual income, corporate
+income, payroll — for one stated year. OECD Revenue Statistics publishes a sub-sector split; ⚠ **two API
+shapes were tried from here and returned 422 and 404, so the series is NAMED rather than quoted.** Until it
+is on disk the USA has **no** sourced base and must keep the uniform stand-in whatever the other five do —
+which is itself an argument against landing the table for five countries and not the sixth.
 
 ---
 
