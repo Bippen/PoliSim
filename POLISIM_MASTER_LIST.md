@@ -111,8 +111,7 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour, in a comment or a document | ⚠ the honest done-when may be *"recorded as undecidable"*; it is the larger half of what a comment asserts | CODE | SAFE | — | M |
 | **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | a film run cannot silently use the wrong geometry or pattern | CODE | SAFE | — | S |
 | **M-S11** | **`S-13`** — the Policy Web's ~40 incoming edges converge on one point at a focused stat node | DESIGN ruled it a comprehension judgement (board 2b); this row is the code half once ruled | CODE | SAFE | — | S |
-| **M-S12** | **`G-1`** the label-clipping class and **`G-2`** `MetaTextCheck` — standing guards, re-verified each cycle | they are WATCH rows, never tasks; listed so nobody re-opens them as work | CODE | RECORDS | — | — |
-| **M-S13** | the stripper enrolment and the ledger enrolment, re-verified each shelf cycle | both censuses read zero in the bar's output | CODE | SAFE | — | XS |
+| **M-S16** | ⚠ **`G-1`'s guard is armed for a human who remembers.** `ScreenEdgeCheck` is registered in NEITHER batch — it refuses to run without film (*"no captures matched ... this verified NOTHING"*, correctly) and so fires only if somebody runs it after a capture pass. **That is the exact failure mode `C-N3` fixed for the simulation group**, and it was hiding inside a row that called G-1 a standing guard | the label-clipping class is verified by something that cannot be forgotten — the capture path runs it, or a bar-time check fails when the newest film has not been edge-checked | CODE | SAFE | — | M |
 | **M-S14** | **`S-3`** — W-B12's residual: SD keeps 6 of 38 unpaid staff-days | the residual is explained or the plan changes | CODE | SAFE | — | S |
 | **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED and not centred; `FlatIssueMatch = 0.5` stands in | the axes are defined from a source, or the stand-in is ruled permanent | CODE | DATA | — | M |
 
@@ -206,3 +205,20 @@ measure willingness to move rows rather than work done.
 | **M-S1** | ⚠ **`C-0.4` was DONE and the register said open.** `CheckSuite.RunAllBatch` exists and every bar run uses it | the register's row cites the commit and reads closed — **it does** | CODE | RECORDS | `12a4833` (the correction); the work itself at `9489d97` | XS |
 | **M-S2** | R-T3's owed enumeration: what "the width assertion" was, and every consumer of it | ⚠ **the phrase DID resolve uniquely — trap 2 — and the enumeration is where the unguarded half was hiding: HEIGHT, unchecked for a month.** `GameViewChromeHeight` named and dated; both directions proved on real film runs | CODE | RECORDS | `2777f18` | S |
 | **M-S4** | **`S-26`** — the dial midpoint `50` stated in four places | ⚠ **it was FIVE.** One statement now; the other four reference it. Closed by `SharedMidpointCheck`, not by the cleanup — each of the four already carried a comment saying the others existed | CODE | SAFE | `ab279d7` | S |
+
+---
+
+# ⚠ STANDING WATCH — NEVER STARTABLE, NEVER DONE
+
+⚠ **A third boundary, and the easiest of the three to abuse.** A row whose content is *"re-verified each
+cycle"* has no completed state, so counting it makes zero **unreachable by construction** — the
+termination condition would read false for a reason that has nothing to do with the work. But "it is a
+standing watch" is also exactly what someone would say about a row they did not want to do.
+
+⚠ **So it is policed harder than the other two: every row here must NAME a check that exists AND is
+registered in a batch.** A watch nobody runs is not a watch; it is a row in a quieter place.
+
+| ID | what | the check that performs it | OWNER | CLASS | verified | size |
+|---|---|---|---|---|---|---|
+| **M-S12** | **`G-2`** meta text — a standing guard, re-verified each cycle | `MetaTextCheck`, registered in the cheap suite | CODE | RECORDS | every bar run | — |
+| **M-S13** | the stripper enrolment and the ledger enrolment | `CommentImmunityCheck` and `RatchetSlackCheck` — both read 0 unenrolled / 0 unreported | CODE | SAFE | every bar run | — |

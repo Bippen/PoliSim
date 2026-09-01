@@ -66,7 +66,7 @@ namespace PoliSim.EditorTools
         /// <summary>⚠ The residue's ceiling, measured on the first run. **Lower it as rows close; never
         /// raise it.** A rising residue is work being added faster than it is finished, which is a fact
         /// worth failing over rather than absorbing.</summary>
-        private const int ResidueCeiling = 28;
+        private const int ResidueCeiling = 27;
 
         private const string ListRelative = "POLISIM_MASTER_LIST.md";
 
@@ -80,6 +80,21 @@ namespace PoliSim.EditorTools
         /// something false about every row beneath it, and a heading that lies is how this repo has lost
         /// five things to a comment.</summary>
         private const string ClosedHeading = "CLOSED — NOT STARTABLE BECAUSE DONE";
+
+        /// <summary>The THIRD boundary: rows that are **never startable and never done** — standing
+        /// verifications that a check performs on every bar run.
+        ///
+        /// <para>⚠ <b>Why they cannot be counted.</b> A row whose content is *"re-verified each cycle"*
+        /// has no completed state, so counting it makes zero **unreachable by construction** — the
+        /// termination condition would be false for a reason that has nothing to do with the work. ⚠ And
+        /// this is the most dangerous of the three boundaries, because "it is a standing watch" is exactly
+        /// what someone would say to move a row they did not want to do. **So it is policed harder than the
+        /// others**: a WATCH row must NAME a check file that exists, and that check must be REGISTERED in a
+        /// batch — a watch nobody runs is not a watch, it is a row in a quieter place.</para></summary>
+        private const string WatchHeading = "STANDING WATCH — NEVER STARTABLE, NEVER DONE";
+
+        /// <summary>A backticked identifier ending in Check or Diagnostic: what a WATCH row must name.</summary>
+        private static readonly Regex NamesACheck = new Regex(@"`([A-Za-z0-9_]+(?:Check|Diagnostic))`");
 
         /// <summary>A commit hash, which is what a CLOSED row has to produce. ⚠ Without this the closed
         /// section would be a place to put a row to make the number go down, and the number would measure
@@ -131,8 +146,11 @@ namespace PoliSim.EditorTools
             var codeRows = new List<string>();
             var codeRowText = new List<string>();
             var uncited = new List<string>();
+            var unwatched = new List<string>();
             bool inClosed = false;
+            bool inWatch = false;
             int closedRows = 0;
+            int watchRows = 0;
             var ownerById = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             bool startable = true;
             int tableRows = 0;
@@ -141,7 +159,8 @@ namespace PoliSim.EditorTools
             {
                 string line = raw.Trim();
                 if (line.Contains(NotStartableHeading)) { startable = false; }
-                if (line.Contains(ClosedHeading)) { startable = false; inClosed = true; }
+                if (line.Contains(ClosedHeading)) { startable = false; inClosed = true; inWatch = false; }
+                if (line.Contains(WatchHeading)) { startable = false; inWatch = true; inClosed = false; }
                 if (!line.StartsWith("|", StringComparison.Ordinal)) { continue; }
 
                 string[] cells = line.Split('|');
@@ -160,6 +179,38 @@ namespace PoliSim.EditorTools
                 {
                     closedRows++;
                     if (!CommitCitation.IsMatch(line)) { uncited.Add(id); }
+                    continue;
+                }
+
+                // ⚠ A WATCH row must name a check that EXISTS and is REGISTERED. Otherwise "standing watch"
+                // is simply a quieter place to put a row, and this boundary is the easiest of the three to
+                // abuse precisely because nothing about it ever completes.
+                if (inWatch)
+                {
+                    watchRows++;
+                    var named = new List<string>();
+                    foreach (Match m in NamesACheck.Matches(line)) { named.Add(m.Groups[1].Value); }
+
+                    if (named.Count == 0) { unwatched.Add(id + " (names no check)"); continue; }
+
+                    foreach (string check in named)
+                    {
+                        if (!File.Exists(Path.Combine(root, "Assets", "Editor", check + ".cs")))
+                        {
+                            unwatched.Add(id + " -> " + check + " (no such check file)");
+                            continue;
+                        }
+
+                        bool registered = false;
+                        foreach (string n in CheckSuite.CheapGroup) { if (n == check) { registered = true; break; } }
+                        if (!registered)
+                        {
+                            foreach (string n in CheckSuite.SimulationGroup) { if (n == check) { registered = true; break; } }
+                        }
+
+                        if (!registered) { unwatched.Add(id + " -> " + check + " (registered in no batch)"); }
+                    }
+
                     continue;
                 }
                 if (startable && string.Equals(owner, "CODE", StringComparison.Ordinal))
@@ -303,6 +354,13 @@ namespace PoliSim.EditorTools
                         + "    to stop being counted, and this number measures willingness to move rows.\n",
                 closedRows, uncited.Count));
             foreach (string u in uncited) { sb.Append("      ⚠ UNCITED   ").Append(u).Append('\n'); }
+
+            sb.Append(F("\n    STANDING WATCH: {0} row(s) that are never startable and never done, {1} of them not\n"
+                        + "    backed by a registered check. ⚠ This boundary is the easiest of the three to abuse -\n"
+                        + "    nothing about a watch ever completes - so a row here must NAME a check that exists AND\n"
+                        + "    is registered in a batch. A watch nobody runs is a row in a quieter place.\n",
+                watchRows, unwatched.Count));
+            foreach (string u in unwatched) { sb.Append("      ⚠ UNWATCHED  ").Append(u).Append('\n'); }
             foreach (string u in unlisted) { sb.Append("      ⚠ UNLISTED  ").Append(u).Append('\n'); }
 
             sb.Append("\n    ⚠ WHAT A ZERO MEANS: no CODE row is startable. It does NOT mean the project is finished - two\n");
@@ -313,6 +371,7 @@ namespace PoliSim.EditorTools
             if (swallowed.Count > 0) { failures.AddRange(swallowed); }
             if (unlisted.Count > 0) { failures.Add(unlisted.Count + " non-zero ratchet(s) own no row in the list"); }
             if (uncited.Count > 0) { failures.Add(uncited.Count + " CLOSED row(s) cite no commit"); }
+            if (unwatched.Count > 0) { failures.Add(unwatched.Count + " WATCH row(s) name no registered check"); }
             if (residue > ResidueCeiling) { failures.Add("residue " + residue + " is above the ceiling of " + ResidueCeiling); }
 
             if (failures.Count > 0)
