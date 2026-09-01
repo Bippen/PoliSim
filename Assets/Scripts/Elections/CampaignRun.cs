@@ -173,6 +173,8 @@ namespace PoliSim.Elections
             public double[] PersuasionByAction = new double[CampaignActions.TheEight.Length];
             /// <summary>W-D4: persuasion pressure aimed AGAINST this party by others' negative campaigning, as a positive magnitude.</summary>
             public double PersuasionAgainstMe;
+            /// <summary>C-N1: persuasion the day's earned coverage carried (§39's Media Effects layer) - not any action's, so not in <see cref="PersuasionByAction"/>; included in <see cref="PersuasionDelivered"/>.</summary>
+            public double PersuasionFromCoverage;
             /// <summary>W-C2: the party's reactions - offices opened in contested regions, town halls held there, announcements answering attacks.</summary>
             public int OfficesOpenedInReaction;
             public int Defences;
@@ -683,8 +685,9 @@ namespace PoliSim.Elections
                     }
                 }
 
-                // The day closes: the true preference is RECOMPUTED from the moved inputs, never patched.
-                truePreference = CurrentPreference(setup, prior, pressure);
+                // The day closes: the true preference is RECOMPUTED from the moved inputs, never patched -
+                // at the very end of the day, after the coverage close below (C-N1), so the last day's
+                // coverage is in the count. The attribution ledger asserts the close matches (W-D4 1c).
 
                 // W-B8: a staged scandal breaks for its party; the party responds by personality on the
                 // evidence AS IT SEES IT (§36); the story's days queue into coverage, the momentum shock
@@ -748,6 +751,24 @@ namespace PoliSim.Elections
                 activity.Decay();   // W-C2: the public record fades on its half-life
                 double[] gains = coverage.CloseDay();
                 for (int p = 0; p < partyCount; p++) { momentum.AddShock(p, MediaSystem.MomentumPpPerCoverage * gains[p]); }
+                // C-N1 -> §39's Media Effects layer: the same day's coverage gain is ALSO a message
+                // the press carried, resolved through §42's chain into persuasion (see
+                // MediaSystem.CoverageSpec). Momentum still reaches only the poll; this reaches the
+                // vote. The NONE strategy's modifiers: the party's strategy already scaled the raw
+                // newsworthiness this gain came from, and is not applied twice.
+                StrategyModifiers coverageModifiers = CampaignStrategyModel.Modifiers(CampaignStrategy.None, setup.ElectorateLoyalty, false);
+                for (int p = 0; p < partyCount; p++)
+                {
+                    if (gains[p] <= 0.0) { continue; }
+                    TrueMessage(setup, p, null, out double reportedSalience, out double reportedMatch);
+                    CampaignActions.ChainTrace carried = MediaSystem.ResolveCoverage(gains[p], setup.NationalAudience, setup.Outlets,
+                        reportedSalience, reportedMatch, credibility[p], coverageModifiers);
+                    pressure.Add(p, carried);
+                    ledgers[p].PersuasionFromCoverage += carried.Persuasion;   // W-D4: recorded where it lands - its own attribution line
+                    ledgers[p].PersuasionDelivered += carried.Persuasion;
+                    ledgers[p].EnthusiasmDelivered += carried.Enthusiasm;
+                }
+                truePreference = CurrentPreference(setup, prior, pressure);
                 momentum.Advance(1.0);
                 for (int p = 0; p < partyCount; p++) { momentumPp[p] = momentum.MomentumPp(p); }
             }

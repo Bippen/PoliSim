@@ -22,6 +22,8 @@ namespace PoliSim.Elections
         AttacksReceived = 8,
         /// <summary>Everything every OTHER party did, as one source - a party's own share moves when its rivals campaign, and that is not its own doing.</summary>
         OpponentCampaigns = 9,
+        /// <summary>C-N1: §39's Media Effects layer — the persuasion the party's own earned coverage carried, the press's account rather than any action's.</summary>
+        EarnedCoverage = 10,
     }
 
     /// <summary>
@@ -40,9 +42,10 @@ namespace PoliSim.Elections
     /// sources are considered in cannot change the answer — which a sequential decomposition, the
     /// obvious alternative, cannot say.
     ///
-    /// The cost is 2^n evaluations for n sources, which is why the sources are the ten above and
-    /// not seventy-two: a party's own eight actions, the attacks aimed at it, and **everything
-    /// every other party did as ONE source**. That aggregation is honest — it says "your rivals'
+    /// The cost is 2^n evaluations for n sources, which is why the sources are the eleven above and
+    /// not seventy-two: a party's own eight actions, the attacks aimed at it, the persuasion its
+    /// own earned coverage carried (C-N1, §39's Media Effects layer), and **everything every
+    /// other party did as ONE source**. That aggregation is honest — it says "your rivals'
     /// campaigning moved your share by this much" without pretending to know which of their rallies
     /// did it — and it keeps the sweep at 1 024 evaluations.
     /// </summary>
@@ -54,6 +57,7 @@ namespace PoliSim.Elections
             VoteAttributionSource.TelevisionAd, VoteAttributionSource.DigitalAd, VoteAttributionSource.SocialPost,
             VoteAttributionSource.Interview, VoteAttributionSource.PolicyAnnouncement,
             VoteAttributionSource.AttacksReceived, VoteAttributionSource.OpponentCampaigns,
+            VoteAttributionSource.EarnedCoverage,
         };
 
         /// <summary>What the campaign actually delivered, as recorded at the write sites - never recomputed.</summary>
@@ -63,6 +67,8 @@ namespace PoliSim.Elections
             public double[] OwnPersuasionByAction;
             /// <summary>Persuasion pressure aimed against this party by others (a positive magnitude; it lowers the party).</summary>
             public double AttacksReceived;
+            /// <summary>C-N1: the party's own persuasion carried by its earned coverage (`PartyLedger.PersuasionFromCoverage`).</summary>
+            public double OwnPersuasionFromCoverage;
             /// <summary>Every party's total persuasion, so the opponents' bloc can be applied or withheld.</summary>
             public double[] TotalPersuasionPerParty;
             /// <summary>The compatibility the electorate would have felt with no campaign at all.</summary>
@@ -108,6 +114,10 @@ namespace PoliSim.Elections
             if ((subset & (1 << (int)VoteAttributionSource.AttacksReceived)) != 0)
             {
                 persuasion[party] -= input.AttacksReceived;
+            }
+            if ((subset & (1 << (int)VoteAttributionSource.EarnedCoverage)) != 0)
+            {
+                persuasion[party] += input.OwnPersuasionFromCoverage;
             }
 
             if ((subset & (1 << (int)VoteAttributionSource.OpponentCampaigns)) != 0)

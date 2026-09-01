@@ -18416,3 +18416,72 @@ enthusiasm weight. The free interview's dominance stands as W-B9's own item. **R
 that consume the door spec or the scorer all run green after the change.
 
 **Bar 25 of 25.**
+
+## 194. C-N1 RULED (b) AND BUILT — earned coverage reaches the vote through §42's chain, and the ledger gained its eleventh line (2026-09-02)
+
+**The question the row existed to answer** was whether a media system whose only route to a result runs
+through a poll — coverage → momentum → `PollingSystem.Conduct`, and nothing else — was the design or an
+omission. **The spec answers it itself.** §39's formula lists **Media Effects** and **Momentum** as two
+separate layers of the final vote share. A system in which media reaches only momentum has one of those
+layers and not the other; that is an omission, and the register's exit (b) — *coverage should reach
+persuasion, a §42 chain change with its own explained family* — is the one taken. Momentum is unchanged:
+`MomentumTracker.Apply` still has exactly two call sites and both are still the argument to a poll.
+
+### What was built, and with which figures — none typed
+Each campaign day already closes with `MediaCoverage.CloseDay()`, which returns the day's saturated
+coverage **gain** per party: the share of a day's total national attention the party earned, bounded
+because the gain saturates (`CoverageScale` = 1 is a day of all of it). That gain is now ALSO resolved
+through §42's chain, as the press's account of the party:
+- **audience** = the electorate × the share of it the press can reach at all (the roster's reach summed,
+  capped at 1 — the same cap a television buy uses) × the gain;
+- **the message** is the party as the press reports it, not any one action: its platform on average
+  (`TrueMessage` with no issue — the mean true salience and issue-match);
+- **the chain** is the interview's `ActionSpec` **verbatim** — the roster's earned-media action, and the
+  only earned-media figures on record; its money cost is 0 so §35's curve returns 1, as for an interview;
+- **credibility** is the party's live figure, so a scandal's cost prices the coverage too;
+- **strategy**: the NONE strategy's identity modifiers, because the party's strategy already scaled the
+  raw newsworthiness that became the gain (`MediaAttentionMultiplier`) and must not apply twice;
+- the trace lands in `CampaignPressure.Add` beside the actions' persuasion — the one route into the vote
+  model — and is recorded on the ledger as `PersuasionFromCoverage` (W-D4: where it lands, its own line).
+
+### ⚠ The first build was wrong, and the instrument that caught it is the one W-D4 built for this
+The first build overrode the interview's channel reach to 1.0 on the argument that a share of national
+attention is already attention. `VoteAttributionHarness` measured the result: **EarnedCoverage +3.95 pp**
+for the party with the campaign's largest gain against **Interview +0.65 pp** — the largest single line of
+the ledger, four to six times the strongest action, and `OpponentCampaigns` doubled because every rival's
+coverage now counted. §39 says *"do not make any single variable overwhelmingly powerful"*, and the override
+was the one authored figure in the build. It is gone; the spec is taken as it stands.
+
+The same harness caught a second defect: **1c failed by 1.7e-4** — the ledger's close did not match the
+run's `FinalShares`. The true preference was recomputed at *"the day closes"* BEFORE the coverage close
+further down the loop, so the last day's coverage persuasion was in the pressure the ledger read and not in
+the shares the run reported. The recompute now runs at the very end of the day, after the coverage close.
+Nothing reads `truePreference` between the old site and the new (`grep -n truePreference` names every use).
+
+### The attribution ledger: eleven sources, identity intact
+`VoteAttributionSource.EarnedCoverage = 10`; `Inputs.OwnPersuasionFromCoverage`; the Shapley sweep is
+2 048 coalitions instead of 1 024. **1a holds** — every party's lines sum to its deviation to within
+1e-12 (largest residual 1.8e-16); 1b and 1c hold; 2a–2c hold.
+
+### Measured (`CampaignAiHarness` setup, seed 777) — before → after
+| | before | after |
+|---|---|---|
+| SD (largest gain) | +1.661 pp: Interview +2.973, OpponentCampaigns −1.409 | +1.620 pp: Interview +2.836, OpponentCampaigns −2.113, **EarnedCoverage +0.802** |
+| S (largest loss) | −0.892 pp: OpponentCampaigns −1.352, Interview +0.679 | −0.991 pp: OpponentCampaigns −1.788, Interview +0.646, **EarnedCoverage +0.375** |
+| persuasion delivered, S / SD / M | 477 034 / 1 193 551 / 773 286 | 722 591 / 1 526 582 / 1 069 176 |
+
+The coverage line is a PEER of the interview's — about a quarter to a half of it — and the action mix
+of every personality is within a few decisions of before (grassroots' doors 24/27 → 23/26; the Chaotic's
+announcements 5 → 11 the largest move). `OpponentCampaigns` grew for everyone because everyone's coverage
+now counts against everyone else — the layer landing, not a defect. **The AI does not yet value earned
+coverage when it scores** — it values the action's own chain and (C-N2) turnout; the coverage a rally
+begets is invisible to it, exactly as turnout was. Logged as its own row, not fixed here.
+
+### R-T3
+All eleven harnesses that consume `CampaignRun`, the media system or the attribution ledger run green:
+VoteAttributionHarness, CampaignAiHarness, CampaignStrategyHarness, CampaignReactivityHarness,
+CampaignPoolSizingDiagnostic, CampaignStaffHarness, ScandalHarness, MediaHarness,
+ItalySurgeCeilingDiagnostic (its "media cannot move a vote" prose corrected, and its stale line-number
+citation replaced by the grep that finds the sites), ChainBandHarness, CampaignActionHarness.
+
+**Bar 25 of 25.**

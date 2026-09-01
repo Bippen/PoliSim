@@ -157,12 +157,14 @@ namespace PoliSim.EditorTools
             }
 
             sb.Append("\n--- What each system can and cannot do about it ---\n");
-            sb.Append("    ⚠ MOMENTUM AND MEDIA CANNOT MOVE A VOTE, BY CONSTRUCTION. MomentumTracker.Apply\n");
-            sb.Append("      has exactly two call sites (CampaignRun.cs:341, :451) and BOTH are the argument\n");
+            sb.Append("    ⚠ MOMENTUM CANNOT MOVE A VOTE, BY CONSTRUCTION. MomentumTracker.Apply has exactly\n");
+            sb.Append("      two call sites (grep -n momentum.Apply CampaignRun.cs) and BOTH are the argument\n");
             sb.Append("      to PollingSystem.Conduct. Election day counts truePreference, which the blend\n");
-            sb.Append("      above produces. Media feeds coverage, coverage feeds momentum, momentum feeds\n");
-            sb.Append("      the POLL - the chain terminates before the ballot. Momentum's own doc says so:\n");
-            sb.Append("      \"shifts where a race APPEARS to be without changing the underlying preference\".\n");
+            sb.Append("      above produces. Momentum's own doc says so: \"shifts where a race APPEARS to be\n");
+            sb.Append("      without changing the underlying preference\". Since C-N1 (2026-09-02) MEDIA CAN:\n");
+            sb.Append("      the day's coverage gain is also resolved through the chain into persuasion\n");
+            sb.Append("      (MediaSystem.ResolveCoverage) - section 39's Media Effects layer, one line of the\n");
+            sb.Append("      attribution ledger, and bounded because the gain is.\n");
             sb.Append("    SALIENCE is the one credited system that does enter the chain: it reaches\n");
             sb.Append("      persuasion through CampaignActions and so moves the persuaded share above.\n");
             sb.Append("    ⚠ AND IT MOVES IT FOR ONE ELECTORATE. W-F4 stopped: there are no voter groups,\n");

@@ -54,6 +54,7 @@ namespace PoliSim.EditorTools
             {
                 OwnPersuasionByAction = run.Parties[party].PersuasionByAction,
                 AttacksReceived = run.Parties[party].PersuasionAgainstMe,
+                OwnPersuasionFromCoverage = run.Parties[party].PersuasionFromCoverage,
                 TotalPersuasionPerParty = run.PersuasionPerParty,
                 BaseCompatibility = setup.Compatibility,
                 PriorShares = setup.PriorShares,

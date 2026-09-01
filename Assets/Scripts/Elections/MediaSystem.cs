@@ -175,6 +175,52 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
+        /// C-N1 (2026-09-02) — §39's "Media Effects" layer: the day's earned coverage, resolved
+        /// through §42's chain as a message of its own. Until this, coverage reached only §22's
+        /// momentum, and momentum reaches only the poll (`MomentumTracker.Apply`'s call sites are
+        /// all the argument to `PollingSystem.Conduct`), so no amount of coverage could change a
+        /// vote — the media system was perception-only, which §39 does not say: it lists Media
+        /// Effects and Momentum as two layers of the vote, not one.
+        ///
+        /// What is resolved, and with which figures — none new: the coverage GAIN is the share of a
+        /// day's total national attention the party earned (`CoverageScale` = 1 is a day of all of
+        /// it), so the people the news about the party reaches are that share of the audience the
+        /// press can reach at all — the roster's reach summed and capped at the electorate, as a
+        /// television buy's is. The message is the party as the press reports it, not any one of
+        /// its actions: the party's platform on average (the caller's `TrueMessage` with no issue).
+        /// The chain is the earned-media action's own spec, VERBATIM — the interview's channel
+        /// reach, attention, persuasion and enthusiasm weights — because an interview IS the
+        /// roster's earned-media action and no other earned-media figure is on record. Nothing is
+        /// typed here. ⚠ The first build overrode the channel reach to 1.0 ("a day of attention is
+        /// attention") and measured coverage as the largest single line of the attribution ledger,
+        /// four to six times the interview's own — §39 forbids one variable overwhelming the rest,
+        /// and the override was the one authored figure; with the spec verbatim the line is a peer
+        /// of the interview's. Coverage costs nothing (`spend` = 0 through a spec whose money cost
+        /// is 0, so §35's curve returns 1, as it does for the interview); the trace's salience shift
+        /// is not applied (§18's channel stays the actions'). The strategy's media-attention
+        /// multiplier already scaled the raw newsworthiness that became this gain; the caller
+        /// passes the NONE strategy's modifiers so no strategy is applied twice.
+        /// </summary>
+        public static CampaignActions.ActionSpec CoverageSpec => CampaignActions.Spec(CampaignActionKind.Interview);
+
+        /// <summary>The share of the electorate the press can reach at all: the roster's reach summed, capped at 1 (the same cap as <see cref="MediaOutlet.TelevisionReach"/>).</summary>
+        public static double PressReach(MediaOutlet[] outlets)
+        {
+            double sum = 0.0;
+            foreach (MediaOutlet o in outlets) { sum += o.Reach; }
+            return sum > 1.0 ? 1.0 : sum;
+        }
+
+        /// <summary>See <see cref="CoverageSpec"/>. `gain` is one day's saturated coverage gain for one party (0–1).</summary>
+        public static CampaignActions.ChainTrace ResolveCoverage(double gain, double electorate, MediaOutlet[] outlets,
+            double salience, double match, double credibility, StrategyModifiers modifiers)
+        {
+            if (gain <= 0.0) { return new CampaignActions.ChainTrace(CampaignActionKind.Interview, 0, 0, 0, 0, 0, 0, 0, 0); }
+            double audience = electorate * PressReach(outlets) * Math.Min(1.0, gain);
+            return CampaignStrategyModel.Resolve(CoverageSpec, audience, salience, match, credibility, 0.0, modifiers);
+        }
+
+        /// <summary>
         /// §13's inputs folded into one bounded figure: how interesting a party is to the media
         /// today, 0–1. Concave and saturating, so nothing can push it past 1 and every input has
         /// diminishing effect. `polledShare` is the party's share in the latest PUBLISHED poll
