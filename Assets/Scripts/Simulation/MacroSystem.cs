@@ -2456,12 +2456,14 @@ namespace PoliSim.Simulation
 
         /// <summary>Confidence bounds around the neutral 1.0 - repeated healthcare/education spending shouldn't be able to push Consumer/BusinessConfidence (which multiply Consumption/Investment) arbitrarily far, since that would eventually destabilize GDP.</summary>
         private const float MinConfidence = 0.7f;
+        /// <remarks>CONVENTION - bounds around the neutral 1.0, there so repeated spending cannot push a confidence index arbitrarily far. A clamp on the model's own arithmetic.</remarks>
         private const float MaxConfidence = 1.3f;
 
         /// <summary>Q2 (R-Q2b): percent of Consumption per percentage-point the realized real wage
         /// growth runs from its trend term - the consumer-sentiment force. 0.5 per the ruling
         /// (band 0.25-0.75). 0 is the wired-but-inert negative control the build bar ran first
         /// (2026-08-18: all 6 dumps byte-identical at 0 - the plumbing proven before the force).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the band it was chosen from; the number itself is a game figure.</remarks>
         private const float WageSentimentSensitivity = 0.5f;
 
         /// <summary>
@@ -2554,9 +2556,11 @@ namespace PoliSim.Simulation
         // --- Welfare program side-effects: small, separable per-program profiles, mirroring the category spending effects above ---
 
         /// <summary>ConsumerConfidence gained per 100% GenerosityLevel of UBI - "modest Consumption/GDP boost" per the task's own framing, modeled as consumer confidence the same way Healthcare spending already is.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the band it was chosen from; the number itself is a game figure.</remarks>
         internal const float UbiConsumerConfidenceSensitivity = 0.03f;
 
         /// <summary>BusinessConfidence gained per 100% GenerosityLevel of UniversalHealthcare - reduced employer healthcare-cost burden, modeled as business confidence the same way Education spending already is.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, the band it was chosen from; the number itself is a game figure.</remarks>
         internal const float UniversalHealthcareBusinessConfidenceSensitivity = 0.03f;
 
         /// <summary>

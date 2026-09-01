@@ -399,9 +399,11 @@ namespace PoliSim.Simulation
         private const float RiskFreeDebtToGdpPercent = 60f;
 
         /// <summary>Extra interest-rate points charged per point of debt-to-GDP above the risk-free threshold.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - that borrowing above a risk-free threshold costs more is uncontroversial; the points per point is a game figure.</remarks>
         private const float DebtRiskPremiumRate = 0.02f;
 
         /// <summary>Caps the risk premium - otherwise it scales with Debt/GDP while also multiplying Debt, making InterestOnDebt quadratic in Debt and able to diverge to infinity within a handful of turns.</summary>
+        /// <remarks>CONVENTION - a cap with a stated structural reason: uncapped, the premium scales with debt-to-GDP while also multiplying debt, making interest quadratic in debt. A bound on the arithmetic, not on the world.</remarks>
         private const float MaxDebtRiskPremium = 5f;
 
         /// <summary>Hard ceiling on debt-to-GDP - a sustained structural deficit with no policy response (e.g. this turn's GovernmentSpendingRate exceeding TaxRate) shouldn't be able to grow without bound.</summary>
@@ -426,8 +428,11 @@ namespace PoliSim.Simulation
         // SetFiscalReactionPairForSweep below, and always restores the defaults. The doc comments
         // above and below carry the original calibration story unchanged - including that it was
         // fitted in the harness whose four-significant-figure stability claim real Unity refuted.
+        /// <remarks>[AUTHORED-DRAFT], FITTED - the comment above carries the original calibration story unchanged, including that it was fitted in a harness whose four-significant-figure stability claim real Unity later refuted. Fitted is not sourced, and the mark says which it is.</remarks>
         internal const float DefaultFiscalReactionSensitivity = 1.5f;
+        /// <remarks>[AUTHORED-DRAFT], FITTED - the comment above carries the original calibration story unchanged, including that it was fitted in a harness whose four-significant-figure stability claim real Unity later refuted. Fitted is not sourced, and the mark says which it is.</remarks>
         internal const float DefaultMinFiscalReactionMultiplier = 0.5f;
+        /// <remarks>[AUTHORED-DRAFT], FITTED - the comment above carries the original calibration story unchanged, including that it was fitted in a harness whose four-significant-figure stability claim real Unity later refuted. Fitted is not sourced, and the mark says which it is.</remarks>
         internal const float DefaultMaxFiscalReactionMultiplier = 1.5f;
         private static float FiscalReactionSensitivity = DefaultFiscalReactionSensitivity;
         private static float MinFiscalReactionMultiplier = DefaultMinFiscalReactionMultiplier;

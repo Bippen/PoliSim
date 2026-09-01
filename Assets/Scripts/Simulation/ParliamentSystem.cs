@@ -36,6 +36,7 @@ namespace PoliSim.Simulation
     public static class ParliamentSystem
     {
         /// <summary>Real in-game days a bill spends "in Parliament" before resolving - stands in for the roadmap's introduction/committee/debate stages without modeling them separately, a deliberately simple first pass. A placeholder like Phase 0's own GameSpeed pacing, not tuned against playtesting.</summary>
+        /// <remarks>[AUTHORED-DRAFT] pacing figure - real in-game days a bill spends in Parliament, standing in for the introduction, committee and debate stages the roadmap describes. A tempo choice, not a measurement of any real legislature's timetable.</remarks>
         public const int BillDurationDays = 21;
 
         // W-G1 RETIRED: MaxSeatsChangePerTurn, MaxSeatJitter and MinTargetShare governed the
@@ -44,6 +45,7 @@ namespace PoliSim.Simulation
         // left to govern. The Parliament random stream is untouched and stays declared.
 
         /// <summary>Flat ApprovalRating cost when a bill fails - a smaller, "not really the player's fault" magnitude than Cabinet's own 2-point ReshuffleApprovalCost, since failure here is Parliament's decision, not a player misstep.</summary>
+        /// <remarks>[AUTHORED-DRAFT]: its magnitude class is borrowed rather than invented - deliberately smaller than Cabinet's own 2-point ReshuffleApprovalCost, because a failed bill is less the player's fault than a reshuffle. Nothing measures what a failed bill costs a real government.</remarks>
         public const float BillFailedApprovalCost = 1.5f;
 
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Parliament);
@@ -568,6 +570,7 @@ namespace PoliSim.Simulation
         /// whose direction term must be SKIPPED for a country with no statutory minimum wage,
         /// exactly as GetLaborBillDirection skips the bill's own MinimumWage term. Index-locked to
         /// LawDefinition.DialDeltas' documented order.</summary>
+        /// <remarks>CONVENTION - an index into a documented order, not a quantity. Index-locked to LawDefinition.DialDeltas as its own summary states.</remarks>
         private const int MinimumWageDeltaIndex = 6;
 
         public static float GetLawBillDirection(Country country, LawBill bill)
