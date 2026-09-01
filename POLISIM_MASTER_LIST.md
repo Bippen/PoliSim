@@ -28,8 +28,11 @@ every run, because **the number travels further than the file it came from.**
 
 | | |
 |---|---|
-| **open items, all owners** | **73** |
-| **OWNER = CODE** | **31** |
+| **open items, all owners** | **59** ⚠ *(was 73)* |
+| **OWNER = CODE, STARTABLE** | **17** ⚠ *(was 31; the CHECK's number, not a hand count — R-T2)* |
+| closed this session, each citing its commit | 12 |
+| standing watch — never startable, never done | 3 |
+| moved to DESIGN as not startable by a session | 1 (`M-S11`) |
 | OWNER = ELIAS | 26 |
 | OWNER = DESIGN | 8 |
 | OWNER = CALENDAR | 1 |
