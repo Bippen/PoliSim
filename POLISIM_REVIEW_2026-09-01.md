@@ -7,8 +7,10 @@ ahead of its ruling. The surgical changes actually made are in §C, each with wh
 measured, it says so rather than estimating. Two premises in the brief were checked before use; one is
 wrong (§A.0).
 
-⚠ **R-T2 respected throughout**: no finding rests on a shell probe alone. Every staleness in §A.1 was
-confirmed twice — once by a scan, once by opening the code it claims about.
+⚠ **R-T2 was respected for four findings and BROKEN for a fifth, which has been retracted** — see the
+retraction at the head of §A.1. A shell probe carried a finding alone, the probe was malformed, and the
+finding was false. **The retraction is left standing rather than deleted**, because a review auditing
+stale claims may not quietly drop its own.
 
 ⚠ **This review's own process failed once, in the class it audits.** Writing this file by shell heredoc
 died on `unexpected EOF while looking for matching quote`. It was rewritten as a single self-contained
@@ -46,7 +48,23 @@ they live** — and that is why the convention in §A.5 binds comments as well a
 
 ---
 
-## §A.1 — Six demonstrated stalenesses, each confirmed against the code
+## §A.1 — Five demonstrated stalenesses, each confirmed against the code
+
+> ⚠ **RETRACTION, 2026-09-01, same session.** This section originally carried a SIXTH finding — that
+> `ERRANDS.md` E-3's *"the working copy is LF"* was false and the tree was CRLF. **It was the review that
+> was wrong, and the document that was right.** The probe behind it, `grep -c $'\r' <file>`, returned a
+> count equal to the file's TOTAL line count for **every** file tested — the signature of an empty pattern
+> matching every line, not of carriage returns. Re-measured with `tr -cd '\r' | wc -c` and `od -c`, **every
+> file in the tree is LF**, and `CLAUDE_DESIGN_BOARD_1I_NOTE.md` hashes to the exact digest
+> `SEND_PACKAGE.md` publishes for it — which is the independent confirmation the retracted finding never
+> had.
+>
+> ⚠ **The corroborating fact was real and the inference from it was not.** `core.autocrlf=true` is
+> genuinely set; it governs what a FRESH CHECKOUT would produce, not what this working copy contains.
+>
+> **This is R-T2 being proved by breaking it** — *a shell probe is the weakest evidence and may not carry a
+> finding alone* — inside the review that quotes R-T2 as its own standard. The retraction is left in place
+> rather than deleted, because a review that audits stale claims may not quietly drop its own.
 
 | # | where | the claim | what is true | how confirmed |
 |---|---|---|---|---|
@@ -55,7 +73,7 @@ they live** — and that is why the convention in §A.5 binds comments as well a
 | 3 | `POLISIM_BACKLOG.md:1020` | "254 `.cs` files under `Assets/`" | **293** | `find Assets -name "*.cs" \| wc -l` |
 | 4 | `POLISIM_MASTER_ROADMAP.md:495` | "`ls *.md` matches this table exactly: TWENTY files … no orphans" | root holds **21**; the orphan is **`POLISIM_FEATURE_LIST.md`**, which appears **0 times** in that document | `ls *.md \| wc -l`; `grep -c FEATURE_LIST` → 0 |
 | 5 | `POLISIM_V2_SCREEN_SPEC.md:14`, `:776` | "the one screen not yet built, **1h election night**" | built — `Assets/Scripts/UI/ElectionNightScreen.cs` exists; HEAD `94c0b9c` is *"F1 COMPLETE: board 1h filmed from the MODEL"* | `ls` + `git log -1` |
-| 6 | `ERRANDS.md:18` (**E-3**) | *"hash it **AS LF** — the working copy is LF"* | the working copy is **CRLF**; `core.autocrlf=true` | every line carries `\r`; `git config --get core.autocrlf` → `true` |
+| ~~6~~ | ~~`ERRANDS.md:18`~~ | ~~*"hash it AS LF"*~~ | ⚠ **RETRACTED — the document was correct; every file is LF** | `tr -cd '\r' \| wc -c` → 0 on every file; the published digest reproduces |
 
 ### Finding 4 is the most structurally revealing
 
@@ -65,18 +83,19 @@ is plain: `POLISIM_FEATURE_LIST.md` was created by `1340738`; the roadmap has no
 `1985842`, which is earlier. **A completeness proof is worthless the moment it is not regenerated, and it
 fails silently** — nothing went red.
 
-### Finding 6 is the most expensive
+### What the retracted finding 6 still teaches, and it is not what it claimed
 
-E-3 is an **outward-facing errand**: Elias pastes a package and hashes the readback. The instruction says
-hash as LF; on-disk is CRLF — so a **correct** paste reads back as a **failed** one, and Elias is the one
-who pays. ⚠ **This exact instruction has now been wrong in both directions.**
-`MISSING_PREREQUISITES.md:18` records the previous inversion (*"that warning would have made a CORRECT
-readback look wrong"*) and repaired it **by flipping the assertion rather than deriving it**. **A fact
-flipped by hand is a fact that will flip again**, and it has.
+The claim was wrong. **The class it pointed at is real, and the review demonstrated it by falling into it.**
 
-Under R-N5 this is the **second** instance of a class — the condition that would earn an instrument.
-**Recorded, not built:** arming a guard is Elias's ruling. **This is the review's single most urgent
-item, because it is the only staleness that reaches outside the repo.**
+E-3 is an **outward-facing errand**: Elias pastes a package and hashes the readback. Its line-ending
+sentence has been rewritten by hand at least once already — `MISSING_PREREQUISITES.md:18` records the
+earlier inversion (*"that warning would have made a CORRECT readback look wrong"*) and repaired it **by
+flipping the assertion rather than deriving it.** ⚠ **The instruction is currently TRUE. Nothing in it
+computes anything, so nothing keeps it true**, and the next person to reason about `core.autocrlf` — as
+this review did — can flip a correct instruction into a wrong one with an argument that sounds right.
+
+⚠ **An assertion about the environment that is not computed from the environment is the defect, whether it
+currently reads true or false.** That is the whole finding, and it survives the retraction intact.
 
 ---
 
@@ -177,7 +196,7 @@ project needs is already built, proven, and pointed only at C#.**
 | `POLISIM_V2_SCREEN_SPEC.md` | 68 | **KEEP, with vintages** | Its measured px figures are *design intent at a stated resolution*, not readings of the code — and §24 already rules *"every number in this document is suspect until derived or confirmed"*. Finding 5 is a status claim, not a measurement, and should be **deleted**. |
 | `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | 83 | **KEEP** | ⚠ **Its DERIVED claims are about the world, not the code** — sourced figures with source, vintage and basis. No demonstrable staleness was found in it. **It is already correct practice.** |
 | `ELECTIONS_CAMPAIGN_SPEC.md` | 0 | **KEEP, never edit** | The model. |
-| `ERRANDS.md` | 4 | **REFERENCED — urgently** | Only 4 DERIVED claims, and **finding 6 is one of them**. Smallest coupling, highest cost per claim. |
+| `ERRANDS.md` | 4 | **REFERENCED — urgently** | Only 4 DERIVED claims, and E-3's uncomputed line-ending sentence is one of them. Smallest coupling, highest cost per claim. |
 
 ### The one ruling this review asks for first
 
@@ -210,12 +229,12 @@ merely naming a `.md` file in a comment):
 one is untouched; the remaining 22 read code, assets or artifacts and never had a document coupling to
 cut.
 
-**And the sharper finding: not one of the six stalenesses in §A.1 was catchable by any existing check.**
+**And the sharper finding: not one of the five stalenesses in §A.1 was catchable by any existing check.**
 
 - Findings 1, 3, 4 are **counts**. Nothing in the project counts.
 - Finding 2 is a **line number**. Nothing resolves line numbers.
 - Finding 5 is a **status claim** ("not yet built"). Nothing checks status against `git`.
-- Finding 6 is an **environment fact** (`core.autocrlf`). Nothing reads git config.
+- The retracted sixth would have been an **environment fact**. Nothing reads git config — and nothing checked the REVIEW's probe either.
 
 `DocumentClaimCheck` is green on all six, correctly — its two clauses are deliberately narrow, and the
 narrowness is well-argued in its own doc comment (a wider scan yields *"~580 candidates, most of them BCL
@@ -265,7 +284,7 @@ second thing to keep true.
 - Never **edit a board forward** — re-derive it, which is already rule 9. **Finding 4 is a board that was
   neither re-derived nor edited: it was simply left.**
 - When a figure is genuinely wanted in prose, **name the command that produces it** instead of its result.
-- ⚠ **Never repair a stale fact by flipping it.** Finding 6 flipped twice. **Derive it or delete it.**
+- ⚠ **Never repair a stale fact by flipping it.** E-3's line-ending sentence has been flipped by hand before, and this review nearly flipped it again. **Derive it or delete it.**
 
 **5. The three historical records are exempt and stay exempt.** `COMPLETED.md`, `CLAUDE.md` and
 `ELECTIONS_PROTOTYPE_LOG.md` exist to say what *was* true. Naming a since-deleted member is them working
@@ -491,8 +510,8 @@ only once the numbers exist.
 - ⚠ **P5 in full — generating closure rows.** **Declined.** The residue counter they served is retired,
   so this now builds a tool for a workflow that just ended. **A proposal that saves five minutes a session
   and costs a session to build is a proposal to decline** — this is one.
-- ⚠ **Any new check for the six stalenesses in §A.1.** **Declined under R-N5**, though finding 6 is now at
-  two instances and is the one that would earn an instrument if Elias rules for it.
+- ⚠ **Any new check for the five stalenesses in §A.1.** **Declined under R-N5.** The retracted sixth is not at
+  two instances after all, and a check written on a probe this review got wrong would have been the worst possible use of R-N5.
 - ⚠ **Rewriting the documents in this pass.** **Declined by the brief**, and correctly: the convention
   should be ruled before 1,009 claims are touched.
 
@@ -513,7 +532,7 @@ without a bar would be exactly the defect `COMPLETED.md:10987` records twice.
 
 Every doubled possessive left by PowerShell `''` escaping leaking into prose. Repaired by a single
 text-matched substitution; **verified to zero** (`grep -c "''" *.md` → no matches). ⚠ **Line endings were
-checked before and after: the files were already CRLF, and the edit is content-only** — `git diff --stat`
+checked before and after: the files are LF and stayed LF, and the edit is content-only** — `git diff --stat`
 shows **25 insertions, 27 deletions**, not a whole-file rewrite.
 
 *Safe because:* no code touched, no claim altered, purely the repair of a mechanical corruption.
@@ -534,9 +553,10 @@ practising the convention it proposes.
 
 ### Deliberately NOT done
 
-- ⚠ **Finding 6 (`ERRANDS.md` E-3's LF/CRLF instruction) is NOT corrected**, though it is the most costly
-  staleness found. **It has already been flipped by hand twice, and flipping it a third time is the
-  defect, not the fix** (§A.5 clause 4). It needs deriving or deleting, and that is a ruling.
+- ⚠ **E-3's line-ending instruction is NOT flipped.** The review's claim that it was wrong has been
+  **retracted** — it reads true. **Flipping a correct instruction on a bad probe is exactly the defect
+  this review exists to end**, and it came within one edit of doing so. What it needs is to be *computed*
+  rather than asserted, and that is a ruling.
 - ⚠ **Findings 1–5 are not corrected.** Each sits in a document whose convention is not yet ruled, and the
   brief forbids rewriting ahead of the ruling. **Correcting them by hand now would be the transcription
   this review exists to stop.**
@@ -548,8 +568,9 @@ practising the convention it proposes.
 1. **The §A.5 convention** — adopt, amend, or reject. Everything else waits on it.
 2. **`POLISIM_MASTER_ROADMAP.md`** — retire it as `POLISIM_MASTER_LIST.md` was retired? **14% of the
    coupling, one ruling, no code.**
-3. **Finding 6** — derive the LF/CRLF fact or delete the instruction. ⚠ **It reaches outside the repo and
-   is at two instances.**
+3. **E-3's line-ending sentence** — make it COMPUTE the line ending and the digest, or say nothing about
+   line endings. ⚠ **Not because it is wrong — it is right — but because nothing keeps it right**, and
+   this review nearly flipped a correct instruction on a malformed probe.
 4. **P1**, and **P2**'s precondition — both cost nothing and address the largest measured class.
 5. **P6a** — time the bar, so P6 can be ranked at all.
 6. **§C's three changes** — commit behind a green bar, or revert.

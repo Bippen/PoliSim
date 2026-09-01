@@ -6,12 +6,15 @@ all eleven rows, on `PoliSim v2 Screens.dc.html`. Verified 2026-09-01 rather tha
 the package's own glance, passed; `uploads/CLAUDE_DESIGN_BOARD_1I_NOTE-948fd2a6.md` is present at its
 digest. **Both rows accounted for.**
 
-⚠ **THE OLD PACKAGE'S GLANCE INSTRUCTION WAS WRONG AND IS FIXED HERE.** It called the digest *"as on
-disk, CRLF"* and warned that *"an LF-normalized readback hashes differently"*. **The file on disk is LF**
-— `sha256sum` on it gives `347e3be8…`, and so does the LF form of the readback; the CRLF form gives
-`05ae6eb4…`. The old wording would have made a **correct** readback look like a failed paste, which is
-the same class of defect as the stale digest it replaced: an instruction that fails the thing it exists
-to prove.
+⚠ **THIS INSTRUCTION HAS BEEN WRONG BEFORE, IN BOTH DIRECTIONS, AND IS NOW COMPUTED RATHER THAN CLAIMED.**
+An older package called the digest *"as on disk, CRLF"* and warned that *"an LF-normalized readback hashes
+differently"* — which would have made a **correct** readback look like a failed paste. It was repaired by
+**flipping the assertion**, and a later review, reasoning from `core.autocrlf=true` on a malformed probe,
+came within one edit of flipping it back while it was right.
+
+**Both failures share one cause: a sentence about the environment that nothing computes.** The glance
+below therefore states no line ending and no digest as prose — **it runs a command that prints what it
+finds.** See "The glance, after the paste".
 
 ⚠ **P-F2 stands, narrowed.** There is still no receipt for the **D7-era** paste — `85690abf…` appears
 nowhere in `uploads/`. That paste was never made. **D9's was**, and the repo said otherwise for a day.
@@ -94,9 +97,27 @@ the board; what waits is only the go-ahead.
 
 ## The glance, after the paste
 
-Read each artifact back (`get_file`) and hash the readback **as LF** — `sha256sum` in Git Bash on these
-files gives the LF digest, because the working copy is LF. ⚠ **Do not CRLF-normalize the readback**; that
-was the old package's error. **Every row accounted for = the paste was whole.**
+Read each artifact back (`get_file`) and hash it. **Every row accounted for = the paste was whole.**
+
+⚠ **THIS PACKAGE ASSERTS NOTHING ABOUT LINE ENDINGS — IT COMPUTES THEM (ruled 2026-09-01).** The
+instruction here has been wrong in one direction before and a later review came within one edit of
+flipping it wrong in the other, on a malformed probe, while it was correct. **An assertion about the
+environment that is not computed from the environment is the class this project is ending.** So do not
+read a claim; run this, which reports what it found and needs no claim to be true:
+
+```bash
+# In the repo root, Git Bash. Prints the line ending it FOUND, then the digest that matches it.
+for f in CLAUDE_DESIGN_ASSET_REQUEST.md CLAUDE_DESIGN_BOARD_1I_NOTE.md; do
+  if [ "$(tr -cd '\r' < "$f" | wc -c)" -eq 0 ]; then ending=LF; else ending=CRLF; fi
+  printf '%-34s on disk: %-4s  sha256(on disk): %s\n' "$f" "$ending" "$(sha256sum "$f" | cut -d' ' -f1)"
+  printf '%-34s %s  sha256(LF-normalised): %s\n' "" "                 " \
+         "$(sed 's/\r$//' "$f" | sha256sum | cut -d' ' -f1)"
+done
+```
+
+⚠ **Compare the readback against whichever of the two lines matches the readback's own form.** If the two
+digests are identical, the file is LF and the question does not arise — which is the case today, and the
+command says so rather than this sentence promising it.
 
 ⚠ **`get_file` caps at 256 KiB**, so a PNG larger than ~192 KB cannot be hash-verified through it at all —
 only its leading bytes. Both icons above are far under the cap and verify whole.

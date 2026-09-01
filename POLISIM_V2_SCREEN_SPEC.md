@@ -11,12 +11,12 @@ Nothing here was translated from markup — the markup was measured and discarde
 
 **Status at 2026-08-27 (the third consolidation).** This file is the v2.0 visual REFERENCE — the
 conventions the code cites by section (`LedgerRow.cs` §A.9, `GameController.cs` §A.9/§A.11/§A.12) and
-the spec of the one screen not yet built, **1h election night (item-10-gated, `MISSING_PREREQUISITES.md`
+the spec of **1h election night** (whether it is built is `git log`'s to answer, not this file's; `MISSING_PREREQUISITES.md`
 §D)**. Its history — the nine pass-3 dispositions, the seven re-review findings (every one closed) and
 the "what is buildable" list (every item built) — is `COMPLETED.md` §24 ("The screen spec's finished
 sections"); those sections are removed here rather than left reading as open work. Where the build
 deviated from a number below, the deviation is stamped in place; where a clause is still unbuilt, it is
-marked **UNBUILT — roadmap item 4** and lives on `POLISIM_MASTER_ROADMAP.md`. Every standing rule in
+marked **UNBUILT — roadmap item 4** and lives on `POLISIM_FEATURE_LIST.md`. Every standing rule in
 §A governs any new screen regardless.
 
 ---
@@ -773,13 +773,13 @@ on the shipped v2 UI (playtest 1's scoping session 2026-08-18, playtest 2 on 202
 2026-08-26 gates session — CLAUDE.md), which is exactly the setting the gate asked for. What this spec
 still governs:
 
-- **The one unbuilt screen — 1h ELECTION NIGHT (§A.14), item-10-gated** (`MISSING_PREREQUISITES.md`
+- **1h ELECTION NIGHT (§A.14)** — ⚠ **this file states no build status; `ElectionNightScreen` and the commit log carry it** (`MISSING_PREREQUISITES.md`
   §D). Its §D.1 banner instance and party-ink swing usage go with it; it holds time, so §D.1's corrected
   rule applies as written.
 - **The unbuilt clauses marked UNBUILT — roadmap item 4 above** (§A.2's three tokens, §A.3's tab-swatch
   tints, §A.6's RUNNING state and held-state buttons, §A.8's screen caption, §A.10's disabled face,
   §A.11's urgency chip and generic stamp, §A.13's two envelope rows, §A.15's two unresolved rows) —
-  small, ungated, listed once on `POLISIM_MASTER_ROADMAP.md` and nowhere else.
+  small, ungated, listed once on `POLISIM_FEATURE_LIST.md` and nowhere else.
 - **Every standing rule in §A governs any new screen regardless** — the surface ladder, the inks, the
   eleven hues and the categorical cap, the typography roles, the resort ladder in both variants, the
   negative-fill sign rule, the dual-siting asset consequence, screen granularity and the IMGUI-side
