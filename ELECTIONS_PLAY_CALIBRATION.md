@@ -98,7 +98,9 @@ decoration.
 
 ---
 
-## 5. `CampaignCalendar.DefaultPreCampaignWeeks` = 26
+## 5. `CampaignClock.DefaultPreCampaignWeeks` = 26
+
+> ⚠ **OWNER CORRECTED 2026-09-01 (shelf §9.4).** This entry said `CampaignCalendar.DefaultPreCampaignWeeks` and **there is no `CampaignCalendar`** — the constant is real, unchanged at 26, and lives on `CampaignClock` (`Assets/Scripts/Elections/CampaignClock.cs:75`). ⚠ **The list's whole premise is that each entry is a one-line change with a NAMED OWNER in the code**, so an owner that does not exist is the one defect that makes an entry unusable at the moment somebody acts on it. `PhantomGuardCheck` and `CommentClaimCheck` scan CODE COMMENTS and could not see this: **nothing in the suite checks a markdown claim against the code.**
 
 **What is known.** The 8-week campaign proper is Sweden's real window and is not a calibration
 question. The 26-week pre-campaign is authored so the player has a meaningful build-up "without the

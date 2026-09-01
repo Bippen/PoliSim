@@ -9646,3 +9646,128 @@ only the grouping was silently wrong, and nothing in the output could have told 
 fifth instance of the class §9.2 names** — evidence that would pass regardless — found *inside the tool
 built to present the evidence, on the same day the class was named.* Fixed with `@()`, and the reason is
 written at the fix so the next person reads it before repeating it.
+
+## 151. THE SIXTH SWEEP — evidence that would pass regardless, and a "check" that could not fail (2026-09-01)
+
+The shelf's §9.2 named this class and gave it **five instances**, with the instruction that five is not a
+class but *the dominant failure mode of this project*, and that its check should get the most care of
+anything on the shelf. The five: **C-C2's trajectory diff** (it enumerated the no-policy trajectory only,
+and would have been byte-identical either way) · **S-20's void films** (8 captured, 0 failed, exit 0, and
+every frame was the desk) · **assertion 4 reporting itself untested** · **the Ramey basis** (a published
+band quoted beside a column that is not the band's quantity) · **the CRLF glance instruction** (the mirror
+image — it would have made a *correct* readback read as a failed paste).
+
+⚠ **A sixth arrived while this was being built**: `sv_index.ps1`'s first run misfiled 17 rows because
+PowerShell unrolls a one-element array, **and the page rendered perfectly throughout** (§150).
+
+### The property, and what is actually decidable about it
+
+The common property is one sentence: **the outcome of the test does not depend on the thing the test
+claims to be about.** ⚠ **Nothing decides that in general**, and a check that pretended to would be the
+class committing the class. So the sweep enforces the narrowest thing that is decidable and that would
+have caught the sharpest instance:
+
+**CLAUSE A — a REGISTERED check must be able to fail.** Every tool `CheckSuite` registers must contain a
+failure path: a `Debug.LogError`, or an exit with anything but a literal zero. **24 registered, ceiling 0
+— and this one is not a ratchet**, because unlike a backlog of real findings it is always fixable in the
+file that has it: give the check an assertion, or take it out of the suite and call it the diagnostic it is.
+
+**CLAUSE B — the census, reported and NOT enforced.** 113 tools under `Assets/Editor` declare a `Run`;
+**16 contain no failure path at all**, and they are named. ⚠ **Most are legitimate: a measurement is not a
+test**, and a diagnostic whose job is to print a number should not invent a threshold to fail against.
+The census exists so a tool that drifts from measuring to checking is noticed.
+
+### ⚠ THE FIRST RUN FOUND ONE, AND IT WAS IN THE BAR
+
+**`PublicationCadenceCheck` — one of the eight simulation checks — had exactly one exit: `Finish(0)`.**
+Its own doc calls it a measurement. ⚠ ***"8 of 8 simulation checks clean"* has been counting, every run,
+a tool that could not say anything else.**
+
+**It was given the assertion its own documentation already named, rather than being quietly renamed.** The
+doc asks whether a series ever reaches a preliminary state inside a reachable horizon, *"because if it
+needs four thousand days, 'wait for it' stops being a strategy and the driver has to force a publication
+state instead."* Measured: **exactly one stat qualifies — GDP, first preliminary at day 119** — and every
+other series is FINAL on first release with no revision stage at all. So the check now asserts:
+
+- the enumeration rule — a run that examined **no** stat has verified nothing;
+- **at least `1` stat reaches PRELIMINARY inside the capture driver's 1825-day ceiling**, a RATCHET at the
+  measured value. ⚠ **The driver waits for `AnyPreliminary`; with none reachable that wait silently becomes
+  a spin to the ceiling that films the wrong publication state and reports success** — S-20's family
+  exactly, which is why this belongs in a check and not in a comment;
+- no stat reports a release count and a first-release day that contradict each other.
+
+⚠ **Nothing here is a threshold invented to give the check something to fail against: the ratchet is the
+measurement.**
+
+### Proven in both directions, both halves
+
+- A throwaway `ProbeCannotFailCheck` — registered, with `Finish(0)` as its only exit — made the sweep
+  report **1 CANNOT FAIL** and exit **1**, naming it. Deleted, and its registration with it.
+- `PublicationCadenceCheck`'s ratchet raised to 2 for one run: exit **1**, *"1 stat(s) reach PRELIMINARY
+  … below the recorded 2"*. Restored to the measured 1.
+
+**The suite goes fifteen → sixteen.**
+
+### ⚠ What this sweep cannot do, said here rather than discovered later
+
+It is a **text scan**. It proves a failure path *exists*; it does not prove that path is reachable, that
+its condition can ever be true, or that it has ever fired. **The stronger form is a mutation probe** —
+break the subject, require the check to go red — which this project has done **by hand** for every guard
+it has armed, including twice today. **Automating that is the seventh sweep**, and naming it here is the
+honest version of not having built it.
+
+## 152. THE SHELF — the deferral register re-read, and a calibration entry pointing at a type that does not exist (2026-09-01)
+
+### §9.1 — ratchet maintenance
+
+Both older ratchets hold at **0** (39 dead declarations cleared, 212 unmarked constants cleared), UNWIRED
+holds at **7 of 88** against its ceiling of 7, and the new UNREACHABLE class sits at **5 of 155** against
+the ceiling measured today. **No growth to report** — which is the whole content of this shelf item when
+it is doing its job.
+
+### §9.3 — the deferral register, re-read against the repo
+
+Every trigger checked against the repo as it now stands. Full verdicts in the register; the two that
+matter:
+
+⚠ **F-6's trigger had FIRED and the row still read as deferred.** Its trigger was *"`POLISIM_COHORT_SPECLET.md`
+being RULED by Elias"* — **Elias ruled it (D-4 (a), §130) and stages 1 and 2 were built the same day.**
+Its second clause was stale too: *"it now also gates C-D1"*, and **C-D1 was built at §136**. The row had
+been describing a world two days old.
+
+⚠ **F-7's trigger is a conjunction and two of its three conditions have fired** — `POLISIM_TAX_SPECLET.md`
+ruled at D-3 (§133) and C-N4 built (§126). What remains is narrower than the row says: the cohort
+substrate is not *wired* (stage 3 reverted, §141), so a bracket schedule still has one average income to
+apply itself to.
+
+**F-1, F-3, F-4 NOT FIRED** with their triggers unchanged; **F-5 not fired by construction** — it is a note
+against miscounting, and its own literal test still passes. F-2 has not fired either, ⚠ **but its distance
+has changed**: R-CL1 gave the player a party and D-5 (a) made losing office survivable, so a leadership
+contest now has an actor and a stake it did not have.
+
+⚠ **The pattern is why this is a standing shelf item and not a one-off:** a deferral's trigger is written
+when the work is furthest from happening, and nothing re-reads it when the world moves.
+
+### §9.4 — the play-calibration list, and the one thing that makes an entry unusable
+
+The list's premise is stated in its own words: *"Each entry is a one-line change with a named owner in the
+code."* ⚠ **So the one defect that makes an entry unusable is a named owner that does not exist**, and it
+is checkable. Every `Type.Member` the list names was resolved against `Assets/Scripts`:
+
+**Seven of eight resolve. One did not.** Entry 5 named **`CampaignCalendar.DefaultPreCampaignWeeks`** —
+**there is no `CampaignCalendar`.** The constant is real and unchanged at 26, and it lives on
+`CampaignClock` (`Assets/Scripts/Elections/CampaignClock.cs:75`). Corrected in place, with the correction
+left visible rather than silently applied.
+
+⚠ **Neither `PhantomGuardCheck` nor `CommentClaimCheck` could have seen it: both scan CODE COMMENTS.**
+**Nothing in the suite checks a markdown claim against the code** — and this project's documents make more
+claims about the code than its comments do. **Named, not built**: it is the sibling of the seventh sweep,
+and it belongs beside the mutation probe rather than inside a shelf pass.
+
+### ⚠ And the sixth sweep's own file tripped an older guard within the hour
+
+`EvidenceDiscriminationCheck`'s doc comment carried a worked example of a registration line with a
+**made-up type name** in it. `PhantomGuardCheck` failed the suite on it: *"a comment names this guard and
+no such type exists"*. **That is the guard working exactly as designed** — on the file whose entire subject
+is evidence that cannot tell truth from fiction. The example is described rather than spelled now, and the
+incident is recorded at the fix, because it argues for the guard better than the guard's own doc does.

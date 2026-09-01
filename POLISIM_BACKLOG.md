@@ -891,6 +891,29 @@ three are scheduled *migrate → delete* at C-G1, and editing a row out of a fil
 deleted is work done twice. **C-G1's grep is what proves the "exactly one home" rule holds**, and this
 row is the note that it must.
 
+### ⚠ THE DEFERRAL REGISTER, RE-READ AGAINST THE REPO — 2026-09-01
+
+**The §9.3 shelf item, and it found what the Compass Y entry's literal test found once before: a trigger
+that had FIRED while its row still read as deferred.** Every row's trigger checked against the repo as it
+now stands, not against the day it was written.
+
+| row | verdict | against the repo of 2026-09-01 |
+|---|---|---|
+| **F-1** staff progression | **NOT FIRED** | The trigger is *"a campaign the player actually runs"*. `CampaignRun` is still UNWIRED — `UnwiredSubsystemCheck` names it as a wired type with an uncalled entry point, and C-R4b holds it. **The trigger is unchanged and correct.** |
+| **F-2** other election types | **NOT FIRED — but its distance has changed** | The trigger is *"a ruling that the game is about more than a parliamentary term"*. Not given. ⚠ **What HAS changed: R-CL1 gave the player a party and D-5 (a) made losing office survivable** — a leadership contest now has an actor and a stake it did not have. Restated, not started |
+| **F-3** France's constituency model | **NOT FIRED** | *"a decision that France must be PLAYABLE"*. Nothing since. **UNSIZED, UNSTARTED, and no approximation is to be built** — unchanged |
+| **F-4** Italy's sub-national stages | **NOT FIRED** | *"Italy becoming playable"*. Nothing since. ⚠ **What changed is visibility**: `Rosatellum` is now counted by `UnwiredSubsystemCheck`'s UNREACHABLE class under a ceiling, so the deferral is guarded by a number rather than by memory |
+| **F-5** the gap table's nine N/A sections | **NOT FIRED, by construction** | Its trigger is *"nothing"* — it is a note against miscounting, not work. ⚠ **Its own literal test passes: it is still not work**, and the row still earns its place by stopping a future reader counting it as backlog |
+| **F-6** P-I2, the cohort substrate | ⚠ **FIRED — AND THE ROW WAS STILL SAYING DEFERRED** | The trigger was *"`POLISIM_COHORT_SPECLET.md` being RULED by Elias"*. **Elias ruled it — D-4 (a), `COMPLETED.md` §130 — and stages 1 and 2 were BUILT the same day** (§§130–131), stage 3 built and reverted on its own measurement (§141). ⚠ **And its second clause is stale too**: *"it now also gates C-D1"* — **C-D1 was built at §136.** This row has been describing a world two days old |
+| **F-7** the tax instruments build | ⚠ **TWO OF ITS THREE CONDITIONS HAVE FIRED** | Its trigger is a conjunction: `POLISIM_TAX_SPECLET.md` ruled, downstream of F-6, downstream of C-N4. **D-3 was RULED (b) at §133**; **C-N4 was BUILT at §126**; **F-6's spec-let is ruled and its substrate part-built.** ⚠ What actually remains is narrower than the row says and should be stated as such: *the cohort substrate is not WIRED* (stage 3 reverted, §141), so a bracket schedule still has one average income to apply itself to |
+
+⚠ **The pattern, and it is the reason this re-read is a standing shelf item rather than a one-off:** a
+deferral's trigger is written when the work is furthest from happening, and nothing re-reads it when the
+world moves. **F-6's trigger fired on the day it was written down and the row outlived it by two days**;
+F-7's fired twice without anyone noticing the conjunction had shrunk. **Neither is re-planned here** — the
+verdicts are the deliverable, and F-6 leaves the deferred list at the next item that touches the cohort
+chain rather than being re-homed inside a re-read.
+
 ## 7. WATCH — standing guards, never tasks
 
 | ID | what | state |

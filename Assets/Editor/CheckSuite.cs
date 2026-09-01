@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (FIFTEEN since the coherence audit gained its fifth sweep 2026-09-01; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (SIXTEEN since the coherence audit gained its SIXTH sweep - evidence that would pass regardless - 2026-09-01; fifteen since its fifth the same day; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
     /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
@@ -177,6 +177,14 @@ namespace PoliSim.EditorTools
             // could not see it. Judged at the FILE, not the method: cut per method the first run
             // reported 58 findings, nearly all public helpers inside wired subsystems.
             ("UnwiredSubsystemCheck", UnwiredSubsystemCheck.Run),
+
+            // The coherence audit's SIXTH sweep (2026-09-01): evidence that would pass regardless — the
+            // class with FIVE recorded instances, which makes it this project's dominant failure mode
+            // rather than a coincidence. ⚠ Its first run found `PublicationCadenceCheck`, registered in
+            // the simulation group below, whose only exit was `Finish(0)`: it reported clean BY
+            // CONSTRUCTION and every run of the bar had counted it. Cheap — it reads text and builds no
+            // World — so it belongs with the others here.
+            ("EvidenceDiscriminationCheck", EvidenceDiscriminationCheck.Run),
         };
 
         [InitializeOnLoadMethod]
