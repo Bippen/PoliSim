@@ -237,10 +237,6 @@ namespace PoliSim.EditorTools
             // reported to `RatchetLedger` in THIS process, so it must run after them. Run alone it finds an
             // empty ledger and FAILS, because a slack audit that audited nothing looks exactly like one
             // that found no slack.
-            // THE TERMINATION CONDITION (2026-09-01): the residue, counted rather than asserted. Registered
-            // second-to-last so the ledger already holds every ratchet it enrols, and before RatchetSlackCheck
-            // so its own residue ratchet is in the ledger when the slack audit reads it.
-            ("InstructionResidueCheck", InstructionResidueCheck.Run),
 
             ("RatchetSlackCheck", RatchetSlackCheck.Run),
         };

@@ -26,12 +26,14 @@ namespace PoliSim.EditorTools
     /// neither group would sit in it looking registered. Asking the arrays makes "registered in no group"
     /// a state that can be reported rather than one that hides.</para>
     ///
-    /// <para><b>R-T3 — every consumer, enumerated.</b> This instrument has exactly two:
-    /// <see cref="RatchetSlackCheck"/> (fails a declaring check that is in the running group and absent
-    /// from the ledger, and names the deferred ones instead of omitting them) and
-    /// <see cref="InstructionResidueCheck"/> (requires an `M-R` row for a deferred ratchet as well as a
-    /// reported one, so a master-list row cannot go unverified by living in the other batch). Both are
-    /// named here, and adding a third means adding it to this sentence.</para>
+    /// <para><b>R-T3 — every consumer, enumerated.</b> This instrument now has exactly ONE:
+    /// <see cref="RatchetSlackCheck"/>, which fails a declaring check that is in the running group and
+    /// absent from the ledger, and names the deferred ones instead of omitting them.
+    ///
+    /// <para>⚠ **It had two until 2026-09-01**, when the audit era closed and the residue check was retired
+    /// with the list it read. **R-T3 runs in this direction as well**: an enumeration is a claim about a
+    /// SET, and a set that loses a member is as wrong as one that gains an unlisted one. The count in this
+    /// sentence is part of the claim, which is why it is written as a number rather than left implied.</para></para>
     /// </summary>
     public static class RatchetResidency
     {

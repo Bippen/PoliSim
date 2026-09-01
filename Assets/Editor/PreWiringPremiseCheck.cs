@@ -104,9 +104,8 @@ namespace PoliSim.EditorTools
 
         /// <summary>⚠ **Lines that CONTAIN the premises because they are ABOUT them.** Two, and both are
         /// self-reference: this check's subject list and the register row that defines it. ⚠ It is the same
-        /// exclusion `MetaTextCheck` needs for its banned-pattern table and `InstructionResidueCheck` for
-        /// its own marker regex — **a check that scans for words cannot be blind to the place those words
-        /// have to be written down.**
+        /// exclusion `MetaTextCheck` needs for its banned-pattern table — **a check that scans for words
+        /// cannot be blind to the place those words have to be written down.**
         ///
         /// <para>⚠ **Policed**: an entry naming a file:line that no longer carries a premise term fails, so
         /// this cannot become a place to put an inconvenient line.</para></summary>

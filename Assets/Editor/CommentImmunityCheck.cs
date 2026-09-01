@@ -61,7 +61,6 @@ namespace PoliSim.EditorTools
             ("PhantomGuardCheck", "its SUBJECT is the comment - it exists to check what comments claim"),
             ("ConstantProvenanceCheck", "the provenance MARK it looks for lives in a comment by design"),
             ("MetaTextCheck", "it scans STRING LITERALS only, so a comment cannot reach its verdict"),
-            ("InstructionResidueCheck", "its SUBJECT is the comment - an unfinished-work marker is unfinished work PRECISELY as a comment, so stripping would blind it to the very markers it counts"),
         };
 
         /// <summary>A check that reads C# source: it reads files and names the `*.cs` pattern.</summary>

@@ -10959,3 +10959,59 @@ fails, and it fails **by name** — the per-name matching built for M-S8 doing e
 on a ratchet that did not exist when it was written. `M-S6` now names it and carries it.
 
 **Bar: 26 of 26. Residue 17.**
+
+## 177. THE AUDIT ERA CLOSED — the master list retired into this record (2026-09-01)
+
+**Ruled by Elias: the audit era is over.** `POLISIM_FEATURE_LIST.md` is the governing objective;
+`POLISIM_MASTER_LIST.md` is deleted and `InstructionResidueCheck` is retired with it, because **the residue
+number was the era''s goal and the era has ended.** The 25 remaining checks stay in the bar and keep
+failing when they should.
+
+⚠ **The list is retired having done its job and having been WRONG about its own size twice** — it opened at
+31 startable CODE rows on a hand count the check later put at a different number, and it carried *"four
+unsuperseded pieces"* and *"positions that exist for no party anywhere"*, both of which turned out to be
+claims nobody had measured. **A list is a document like any other and this project''s standing lesson
+applies to it: a number written once is read as measured by everyone who comes after.**
+
+### R-N5, recorded with the closure
+
+> **A new check is written only after a defect has cost something TWICE.**
+
+⚠ It is a reversal of how the preceding week worked. Instrument work becomes a **consequence of a real
+failure, never a prophylactic**. One instance is a fix; two is a class; only a class earns a check. **A
+guard written for a defect that has not happened twice is a guess about the future wearing the costume of
+rigour**, and it costs a suite slot, a session, and a reader''s attention for as long as the project lives.
+
+### The two process findings the era leaves behind
+
+- ⚠ **Committing on a red bar happened TWICE in one session.** Both were caught by the next run and fixed;
+  both were avoidable by reading the exit code before typing the commit. **One green bar per commit, no
+  exceptions** — green for the tree being committed, not "green when I last looked".
+- ⚠ **A safety rule over-applied looks careful while doing nothing, and nothing in the bar catches it.**
+  R-SP1 has said since 2026-08-28 that sessions push fast-forward-only; it was filed as an errand needing
+  permission on the reasoning that pushing to clear a red check would be tuning to pass. **The tripwire is
+  not the thing being satisfied; it is the thing asking.** ⚠ The failure mode is invisible from inside:
+  **refusing to act reads as prudence in every log line it produces.**
+
+### The rows the list closed, migrated here in full
+| **M-S1** | ⚠ **`C-0.4` was DONE and the register said open.** `CheckSuite.RunAllBatch` exists and every bar run uses it | the register's row cites the commit and reads closed — **it does** | CODE | RECORDS | `12a4833` (the correction); the work itself at `9489d97` | XS |
+| **M-S2** | R-T3's owed enumeration: what "the width assertion" was, and every consumer of it | ⚠ **the phrase DID resolve uniquely — trap 2 — and the enumeration is where the unguarded half was hiding: HEIGHT, unchecked for a month.** `GameViewChromeHeight` named and dated; both directions proved on real film runs | CODE | RECORDS | `2777f18` | S |
+| **M-S4** | **`S-26`** — the dial midpoint `50` stated in four places | ⚠ **it was FIVE.** One statement now; the other four reference it. Closed by `SharedMidpointCheck`, not by the cleanup — each of the four already carried a comment saying the others existed | CODE | SAFE | `ab279d7` | S |
+| **M-S16** | ⚠ **`G-1`'s guard was armed for a human who remembers** — `ScreenEdgeCheck` in neither batch, firing only if invoked after a capture pass | the capture driver runs it over its own label before exiting, and the hook can only make the exit code worse; proved with 81/0 exiting **2** when the guard verified nothing | CODE | SAFE | `e8a9bb1` | M |
+| **M-S14** | **`S-3`** — W-B12's residual: SD keeps 6 of 38 unpaid staff-days | ⚠ **stale in both halves** — it is SD 6, V 12, MP 12, and the two parties that hired FEWEST have the WORST record. Arithmetic closes to the krona; assertion **1j** now separates poverty from a bug | CODE | SAFE | `d31dec3` | S |
+| **M-S3** | **`S-29`** — the party-ink **draw-site** check | ⚠ **the surface is ONE file** — `HemicycleRenderer` — so clause 1 is an allow-list with arguments, clause 2 takes the FILE as the unit of adjacency and says so, and clause 3 is subsumed by construction. Four failure paths proved | CODE | SAFE | `a77c243` | M |
+| **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | ⚠ **both guarded, and the finding reproduced itself in the closing**: 1280×800 films 8 text overflows where 1280×720 films 0, on identical code. The four geometries also gave `GameViewChromeHeight` four corroborations | CODE | SAFE | `7ae67e0` | S |
+| **M-S8** | **`S-23`** — `DeadStateCheck` still cannot distinguish a read from a write | ⚠ **it did not need "more than a regex" — it needed a regex AND a classifier.** Built; its first run found **six dead fields**, all deleted, ceiling untouched, plus one false positive that would have had somebody delete a live loop bound | CODE | SAFE | `8daa676` | M |
+| **M-S5** | **`C-0.3`** — the stranded branch disposed | ⚠ **"four unsuperseded pieces" was never derived.** Measured: **13 of 15 superseded**, three by something stronger; **two unsuperseded and neither is code** — `ChamberRenewal` (staggering, absent from main entirely) and per-election-type turnout. Recorded as preserved ideas; the branch is a ref | CODE | RECORDS | `5f3e9dd` | M |
+| **M-R3** | ratchet: `DocumentClaimCheck.MEMBER_GONE` = **2 → 0** | ⚠ **they were not both history.** One was a live DESIGN ask for a screen cut at P-A2 — corrected, with **E-5** raised. And the first fix **fell into S-36's trap**, quoting the dead name while explaining it was dead | CODE | RECORDS | `4b8716b` | S |
+| **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour | ⚠ **recorded UNDECIDABLE with the boundary MEASURED**: the most promising decidable slice is **seven claims** repo-wide, two already covered. The instance's real cause was reachability, which is guarded. **S-38** shrinks the undecidable half by convention | CODE | SAFE | `86edd75` | M |
+| **M-R4** | ratchet: `PartyMarkCoverageCheck.UNCONSUMED` = **1 → 0** | ⚠ **it was not waiting, it CANNOT be claimed**: the USA is seeded by seats and REP 220 + DEM 215 = 435, the whole House. A ratchet that cannot reach zero teaches readers to stop expecting it to. Separated, with a policed exemption carrying the arithmetic | CODE | SAFE | `1d57e7c` | S |
+| **M-S6** | **`C-0.2`** — the post-wiring re-derivation, PROSE half | ⚠ **its done-when was a GREP, which means it was a CHECK NOBODY HAD WRITTEN** — and it was sized as a READ. `PreWiringPremiseCheck` armed and its ratchet `PreWiringPremiseCheck.ASSERTED` taken **14 → 0 in the same session**, by four principled rules and fourteen document corrections | CODE | RECORDS | `c631505` | L |
+
+### The standing-watch rows — never startable, never done, and still true
+
+| **M-S12** | **`G-2`** meta text — a standing guard, re-verified each cycle | `MetaTextCheck`, registered in the cheap suite | CODE | RECORDS | every bar run | — |
+| **M-S13** | the stripper enrolment and the ledger enrolment | `CommentImmunityCheck` and `RatchetSlackCheck` — both read 0 unenrolled / 0 unreported | CODE | SAFE | every bar run | — |
+| **M-R7** | ratchet: `DeadStateCheck.WRITE_ONLY` = **0** — ⚠ a MEASURED zero, not an aspirational one: its first run found six, all **deleted** rather than absorbed, and the ceiling was never touched | `DeadStateCheck`, in the cheap suite | CODE | SAFE | every bar run | — |
+
+**Everything still OPEN is carried by POLISIM_FEATURE_LIST.md — F1 takes the elections chain, F2 the cohorts, F3 the voter groups, F4 the tax instruments, F5 the CHES axes, F6 the campaign — with the short tail in its appendix.**
