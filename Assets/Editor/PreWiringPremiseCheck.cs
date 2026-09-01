@@ -102,16 +102,27 @@ namespace PoliSim.EditorTools
             }
         }
 
-        /// <summary>⚠ **Lines that CONTAIN the premises because they are ABOUT them.** Two, and both are
-        /// self-reference: this check's subject list and the register row that defines it. ⚠ It is the same
-        /// exclusion `MetaTextCheck` needs for its banned-pattern table — **a check that scans for words
-        /// cannot be blind to the place those words have to be written down.**
+        /// <summary>
+        /// ⚠ **Lines that CONTAIN the premises because they are ABOUT them** — self-reference: the register
+        /// row whose done-when IS the grep. It is the same exclusion `MetaTextCheck` needs for its
+        /// banned-pattern table: **a check that scans for words cannot be blind to the place those words
+        /// have to be written down.** Keyed by a stable ANCHOR in the line itself, and policed.
         ///
-        /// <para>⚠ **Policed**: an entry naming a file:line that no longer carries a premise term fails, so
-        /// this cannot become a place to put an inconvenient line.</para></summary>
-        private static readonly (string File, int Line, string Reason)[] AboutTheTerms =
+        /// <para>⚠ <b>This list used to hold a LINE NUMBER, and it broke the first time a document was
+        /// edited above it (2026-09-01).</b> The entry read <c>("POLISIM_BACKLOG.md", 947, …)</c>; a
+        /// decision sheet was inserted forty-one lines higher, the row moved to 988, the exemption stopped
+        /// matching and this check failed the bar on a row nobody had touched. **The check was carrying a
+        /// transcribed fact about a document — the exact coupling the claim convention forbids, inside an
+        /// instrument.**</para>
+        ///
+        /// <para><b>The anchor is the row's own id</b>, which is stable under every edit that does not
+        /// rewrite the row. ⚠ **An anchor that matches nothing is a FAILURE, not a silent pass** — a stale
+        /// exemption must announce itself rather than quietly stop exempting, which is the failure mode a
+        /// line number had.</para>
+        /// </summary>
+        private static readonly (string File, string Anchor, string Reason)[] AboutTheTerms =
         {
-            ("POLISIM_BACKLOG.md", 947, "C-0.2's own row, whose done-when IS the grep - it has to spell the terms"),
+            ("POLISIM_BACKLOG.md", "| C-0.2 |", "C-0.2's own row, whose done-when IS the grep - it has to spell the terms"),
         };
 
         public static void Run()
@@ -167,7 +178,12 @@ namespace PoliSim.EditorTools
                         bool aboutTheTerms = false;
                         foreach (var a in AboutTheTerms)
                         {
-                            if (a.File == name && a.Line == i + 1) { aboutTheTerms = true; aboutHits.Add(a.File + ":" + a.Line); break; }
+                            if (a.File == name && lines[i].IndexOf(a.Anchor, StringComparison.Ordinal) >= 0)
+                            {
+                                aboutTheTerms = true;
+                                aboutHits.Add(a.File + " " + a.Anchor + " (line " + (i + 1) + ")");
+                                break;
+                            }
                         }
 
                         if (aboutTheTerms) { history.Add(where + "  (about the terms, not asserting them)"); continue; }
@@ -225,10 +241,20 @@ namespace PoliSim.EditorTools
             // ⚠ THE EXCLUSION LIST, POLICED. An entry that matches nothing reads as coverage while covering
             // nothing, and outlives the line it named - the same clause SharedMidpointCheck and
             // PartyMarkCoverageCheck both carry, for the same reason.
+            // ⚠ The key is now the ANCHOR, not a line number. The comment above was already right about
+            // why — "a line number moves whenever the file above it is edited" — and the list used one
+            // anyway until it broke on 2026-09-01. Policing it is still necessary: an anchor can go stale
+            // too, by the row being renamed, and it must say so rather than quietly stop exempting.
             var deadExclusions = new List<string>();
             foreach (var a in AboutTheTerms)
             {
-                if (!aboutHits.Contains(a.File + ":" + a.Line)) { deadExclusions.Add(a.File + ":" + a.Line); }
+                bool hit = false;
+                foreach (string h in aboutHits)
+                {
+                    if (h.StartsWith(a.File + " " + a.Anchor, StringComparison.Ordinal)) { hit = true; break; }
+                }
+
+                if (!hit) { deadExclusions.Add(a.File + " " + a.Anchor); }
             }
 
             foreach (string d in deadExclusions) { sb.Append("    ⚠ DEAD EXCLUSION  ").Append(d).Append('\n'); }
@@ -237,7 +263,7 @@ namespace PoliSim.EditorTools
             {
                 Debug.LogError("PREWIRING: " + deadExclusions.Count + " exclusion(s) name a line that carries no "
                                + "premise term - " + string.Join(", ", deadExclusions.ToArray())
-                               + ". A line number moves whenever the file above it is edited, so a stale exclusion "
+                               + ". A stale exclusion "
                                + "here is not a small fault: it silently stops covering the line it was written for "
                                + "AND starts excusing whatever moved into its place. Re-point it or delete it.");
                 Debug.LogError(sb.ToString());
