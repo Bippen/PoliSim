@@ -167,16 +167,131 @@ namespace PoliSim.Data
         {
             if (rates == null) { return; }
 
+            Counts = Generate(Counts, rates, fertilityMultiplier, netMigrationMillions, immigrationProfile);
+        }
+
+        /// <summary>
+        /// **P-I2 stage 3 — the same step, ANCHORED to a published projection (D-15 (c), D-19 (b)).**
+        ///
+        /// <para><b>Why this exists.</b> Stage 3 was built once without an anchor and reverted on its own
+        /// measurement: the step applies one observed year's rates forever, so over the horizon the model
+        /// actually runs, two countries reached the population ceiling and three reached the floor. The
+        /// retired scalars had an anchor — they mean-reverted toward a steady-state growth rate — and the
+        /// spec-let's §4.2 said in advance that a substrate without an equivalent one would compound.</para>
+        ///
+        /// <para>⚠ <b>AND THE ANCHOR HAS NO CONVERGENCE SPEED, WHICH IS THE POINT.</b> §141 named the
+        /// danger precisely: *"that convergence has a speed, and a speed nothing sources is an authored
+        /// figure in the most load-bearing place in the model."* So there is no speed here and no blend
+        /// weight to tune. The pyramid is placed **on** the published trajectory each year and displaced
+        /// from it only by what the levers actually did:</para>
+        ///
+        /// <code>
+        /// stepped   = Generate(Counts,          rates, the levers as set)
+        /// neutral   = Generate(targetThisYear,  rates, no levers at all)
+        /// Counts[b] = targetNextYear[b] * (stepped[b] / neutral[b])
+        /// </code>
+        ///
+        /// <para><b>Read the ratio as "what the levers did to this band".</b> With the levers neutral and
+        /// the pyramid already on the target, <c>stepped</c> and <c>neutral</c> are the same array, the
+        /// ratio is exactly 1, and the model follows the publisher exactly — **asserted by the hindcast,
+        /// not asserted here**. Move a lever and the band is displaced by the size of that lever's effect,
+        /// and it stays displaced while the lever is held. ⚠ **It cannot run away**, because next year's
+        /// base is read from the publisher again rather than from this year's result — which is precisely
+        /// the anchor semantics `NaturalBirthRate` has always had, carried across to the substrate as
+        /// §4.2 demanded.</para>
+        ///
+        /// <para>⚠ <b>THE PRICE, AND IT IS STATED HERE BECAUSE THIS IS WHERE IT IS PAID.</b> The
+        /// population is no longer purely generated. It is generated **and then placed on a published
+        /// projection**, which is a different claim about what the model knows: between gates the model is
+        /// not forecasting the population, it is tracking a forecast and modelling the deviation from it.
+        /// D-15 recorded that this sentence is the cost of option (c), and that it must be written where
+        /// the code is rather than in the register.</para>
+        ///
+        /// <para>⚠ <b>Both targets must be REBASED</b> — see <see cref="RebasedTarget"/>. Passing a raw
+        /// projection would step the pyramid onto the publisher's base year instead of its own seeded one
+        /// and put a discontinuity in year zero (D-19).</para>
+        /// </summary>
+        /// <param name="targetThisYear">The rebased target pyramid for the year being stepped FROM.</param>
+        /// <param name="targetNextYear">The rebased target pyramid for the year being stepped TO.</param>
+        public void StepOneYearAnchored(CohortStepRates rates, float[] targetThisYear, float[] targetNextYear,
+            float fertilityMultiplier = 1f, float netMigrationMillions = 0f, float[] immigrationProfile = null)
+        {
+            if (rates == null) { return; }
+
+            // ⚠ No anchor available is not a reason to silently do something else: fall back to the
+            // unanchored step, which is stage 2's measured behaviour, rather than inventing a target.
+            if (targetThisYear == null || targetNextYear == null)
+            {
+                StepOneYear(rates, fertilityMultiplier, netMigrationMillions, immigrationProfile);
+                return;
+            }
+
+            float[] stepped = Generate(Counts, rates, fertilityMultiplier, netMigrationMillions, immigrationProfile);
+            float[] neutral = Generate(targetThisYear, rates, 1f, 0f, null);
+
+            var next = new float[CohortCount];
+            for (int k = 0; k < CohortCount; k++)
+            {
+                // ⚠ A neutral band of zero would make the ratio undefined. No band of any of the six is
+                // zero at any published year - but a division that produces a silent infinity in the open
+                // band is exactly the kind of thing that is discovered a thousand turns later, so the
+                // guard is written rather than argued away. No anchor for this band means no displacement.
+                float ratio = neutral[k] > 0f ? stepped[k] / neutral[k] : 1f;
+                next[k] = Mathf.Max(0f, targetNextYear[k] * ratio);
+            }
+
+            Counts = next;
+        }
+
+        /// <summary>
+        /// **D-19 (b): the projection's TRAJECTORY, rebased onto the seeded pyramid's own base year.**
+        ///
+        /// <para>⚠ <b>The two publishers disagree about the present, and neither is wrong.</b> The
+        /// substrate is seeded from an OBSERVED stock; a projection's base year is PROJECTED, computed
+        /// before that observation existed. For Sweden 2024 the gap is 0.84 % on the total and larger in
+        /// the young bands. Converging on the projection's LEVELS would therefore jerk the model off its
+        /// own sourced seed at turn zero and quietly invalidate the reconciliation
+        /// `CohortSubstrateDiagnostic` exists to assert.</para>
+        ///
+        /// <para><b>So only the ratio is taken.</b> <c>seeded[b] * projectionYear[b] / projectionBase[b]</c>
+        /// — the target equals the seeded pyramid exactly in the base year, by construction, and thereafter
+        /// carries the publisher's own band-by-band change. **A projection's forecast is its trajectory;
+        /// its base year is the one year it is worst at.**</para>
+        /// </summary>
+        public static float[] RebasedTarget(float[] seeded, float[] projectionBase, float[] projectionYear)
+        {
+            if (seeded == null || projectionBase == null || projectionYear == null) { return null; }
+
+            var target = new float[CohortCount];
+            for (int k = 0; k < CohortCount; k++)
+            {
+                // A zero base band would make the rebasing undefined; hold the seeded value rather than
+                // emitting an infinity. Same reasoning as the anchored step's own guard.
+                target[k] = projectionBase[k] > 0f
+                    ? seeded[k] * projectionYear[k] / projectionBase[k]
+                    : seeded[k];
+            }
+
+            return target;
+        }
+
+        /// <summary>The generative step, on any pyramid rather than only on this one. ⚠ Extracted at stage
+        /// 3 because the anchor needs to run the SAME arithmetic on the target to find out what the levers
+        /// did — running a second, similar implementation there would have been two things to keep true,
+        /// and the first disagreement between them would have been resolved by whichever was edited last.</summary>
+        private static float[] Generate(float[] counts, CohortStepRates rates, float fertilityMultiplier,
+            float netMigrationMillions, float[] immigrationProfile)
+        {
             // Births first, from the population as it stands BEFORE the survivors move - a child born
             // this year is born to the women who were here at its start, not to the survivors of the
             // step. Computed now, added last.
-            float childbearing = InAgeRange(15, 49) * rates.FemaleShareOfChildbearingAge;
+            float childbearing = InAgeRange(counts, 15, 49) * rates.FemaleShareOfChildbearingAge;
             float births = childbearing * rates.GeneralFertilityRate * fertilityMultiplier;
 
             var next = new float[CohortCount];
             for (int k = 0; k < CohortCount; k++)
             {
-                float survivors = Counts[k] * rates.Survival[k];
+                float survivors = counts[k] * rates.Survival[k];
                 if (k == OpenBandIndex)
                 {
                     // Nothing above 100+, so its survivors stay where they are and are joined by the
@@ -203,7 +318,17 @@ namespace PoliSim.Data
                 }
             }
 
-            Counts = next;
+            return next;
+        }
+
+        /// <summary>The instance <see cref="InAgeRange(int,int)"/>'s arithmetic, over any pyramid.</summary>
+        private static float InAgeRange(float[] counts, int fromAge, int toAge)
+        {
+            int first = Math.Max(0, fromAge / CohortWidth);
+            int last = toAge >= OpenBandIndex * CohortWidth ? OpenBandIndex : Math.Min(OpenBandIndex, toAge / CohortWidth);
+            float sum = 0f;
+            for (int i = first; i <= last; i++) { sum += counts[i]; }
+            return sum;
         }
 
         /// <summary>The band's human label, so a screen or a log never prints a bare index.</summary>
