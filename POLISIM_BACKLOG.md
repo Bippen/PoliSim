@@ -820,6 +820,21 @@ records of the work already done. **Nothing is landed. The order, for the item t
 > decision and no code.
 ### D-15 · P-I2 stage 3's anchor: which shape converges toward the sourced projection ⚠ DECIDED AND TAKEN (R-N1), strikeable
 
+> ⚠ **STEP 1 ADVANCED 2026-09-01, and then the probe was DELETED rather than left in the tree.** Two things
+> the next session does not have to rediscover:
+>
+> - **The Eurostat query shape that works.** The statistics API refuses the TSV form (400) and answers the
+>   JSON one: `.../statistics/1.0/data/proj_23np?format=JSON&geo=SE&projection=BSL&sex=T&time=2050`.
+>   **Sweden 2050 reads 12 130 240 — exactly the figure §142 recorded**, so the query returns the intended
+>   series and not a neighbouring one. Downloadable straight to disk with `Invoke-WebRequest -OutFile`.
+> - ⚠ **A trap that would have produced a wrong catalog silently.** The `age` dimension holds **110**
+>   categories and MIXES single years with aggregates — `TOTAL` and the broad bands sit beside `Y1`, `Y2`,
+>   and so on. A naive sum over the dimension gives **44.8 million** for a country of 12.1 million. **A band
+>   build must FILTER to the single-year categories, never sum the dimension.**
+>
+> Nothing was seeded and nothing kept: a dataset confirmed reachable is not a dataset used, and an
+> unconsumed download in the tree is the thing §158 refused.
+
 **The question.** §141 reverted stage 3 because the cohort step applies one observed year's rates forever
 and has no reversion of any kind — Germany and the USA reach `MaxPopulation`, Italy, Poland and Sweden
 reach `MinPopulation`. §142 then confirmed a **sourced target trajectory for all six** (Eurostat
