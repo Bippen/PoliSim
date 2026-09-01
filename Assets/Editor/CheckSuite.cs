@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (EIGHTEEN since the SEVENTH sweep - a written claim about the code, checked against the code - and S-32's player-reachability check, both 2026-09-01; sixteen since the SIXTH sweep - evidence that would pass regardless - the same day; fifteen since its fifth; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> (NINETEEN since the EIGHTH sweep - a ratchet whose ceiling has stopped discriminating - 2026-09-01, registered LAST because it reads what the others reported to `RatchetLedger` in the same process; eighteen since the SEVENTH sweep - a written claim about the code, checked against the code - and S-32's player-reachability check, both 2026-09-01; sixteen since the SIXTH sweep - evidence that would pass regardless - the same day; fifteen since its fifth; fourteen since's four sweeps joined 2026-08-31 — comment claims, dead state, artifact identity and constant provenance; ten since `PhantomGuardCheck`; nine since `MetaTextCheck` joined 2026-08-29; eight since
     /// `AreaIconCoverageCheck` joined 2026-08-28), each
     /// with its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
@@ -199,6 +199,13 @@ namespace PoliSim.EditorTools
             // than its comments do. Binds on the LIVE documents only - the historical records are correct
             // to name members that have since been deleted.
             ("DocumentClaimCheck", DocumentClaimCheck.Run),
+
+            // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped
+            // discriminating. ⚠ REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above
+            // reported to `RatchetLedger` in THIS process, so it must run after them. Run alone it finds an
+            // empty ledger and FAILS, because a slack audit that audited nothing looks exactly like one
+            // that found no slack.
+            ("RatchetSlackCheck", RatchetSlackCheck.Run),
         };
 
         [InitializeOnLoadMethod]

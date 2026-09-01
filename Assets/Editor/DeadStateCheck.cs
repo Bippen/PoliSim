@@ -122,6 +122,7 @@ namespace PoliSim.EditorTools
             sb.Append(F("    declaration - {0} distinct name(s). Occurrences counted across the whole corpus INCLUDING\n", seen.Count));
             sb.Append("    string literals, because this project's harnesses reach private state by reflection.\n");
             sb.Append(F("\n    {0} reached · {1} UNREACHED (ceiling {2}).\n", seen.Count - unreached.Count, unreached.Count, UnreachedCeiling));
+            RatchetLedger.Report("DeadStateCheck.UNREACHED", unreached.Count, UnreachedCeiling);
 
             foreach (string line in unreached) { sb.Append("    GAP  ").Append(line).Append('\n'); }
 

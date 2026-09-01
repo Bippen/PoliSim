@@ -242,6 +242,7 @@ namespace PoliSim.EditorTools
             sb.Append("    occurrence. A FILE is UNWIRED when NOT ONE of its public entry points is named outside\n");
             sb.Append("    Assets/Editor and Assets/Scripts/Testing.\n\n");
             sb.Append(F("    {0} of {1} file(s) UNWIRED (ceiling {2}).\n", unwired.Count, declaringFiles.Count, UnwiredCeiling));
+            RatchetLedger.Report("UnwiredSubsystemCheck.UNWIRED", unwired.Count, UnwiredCeiling);
             foreach (string line in unwired) { sb.Append("    GAP  ").Append(line).Append('\n'); }
 
             sb.Append("\n    THE SECOND CLASS: UNREACHABLE FILES (added 2026-09-01, this check's own blind spot)\n");
@@ -251,6 +252,7 @@ namespace PoliSim.EditorTools
             sb.Append("    when NOT ONE of the public types it declares is named anywhere else in game code - so nothing\n");
             sb.Append("    can construct it, inherit from it or call it, WITH OR WITHOUT a public static method.\n");
             sb.Append(F("    {0} of {1} file(s) UNREACHABLE (ceiling {2}).\n", unreachable.Count, declaredTypes.Count, UnreachableCeiling));
+            RatchetLedger.Report("UnwiredSubsystemCheck.UNREACHABLE", unreachable.Count, UnreachableCeiling);
             foreach (string line in unreachable) { sb.Append("    GAP  ").Append(line).Append('\n'); }
             sb.Append("    ⚠ Judged at the FILE, not the type: cut per TYPE this reports 36 and most are companion types\n");
             sb.Append("    used only inside their own file. The fifth sweep learned that at 58 findings; this is the same\n");

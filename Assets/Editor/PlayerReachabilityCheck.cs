@@ -122,6 +122,7 @@ namespace PoliSim.EditorTools
             sb.Append(F("    {0} of {1} UNREACHABLE from any player path (ceiling {2}).\n",
                 unreachable.Count, takeovers.Count, UnreachableTakeoverCeiling));
             foreach (string t in unreachable) { sb.Append("    GAP  ").Append(t).Append('\n'); }
+            RatchetLedger.Report("PlayerReachabilityCheck.UNREACHABLE_TAKEOVER", unreachable.Count, UnreachableTakeoverCeiling);
 
             sb.Append("\n    ⚠ WHAT THIS CANNOT SEE: a type named in GameController but on a branch no state can enter would\n");
             sb.Append("    pass. A text scan proves a mention, not a reachable path - the sixth sweep's own limit, named here\n");

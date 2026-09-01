@@ -9998,3 +9998,85 @@ added, and **both carry questions** — which is the point of adding them rather
   change with its own before/after per country?
 
 **The 43 rows with no question stay empty**, as ruled. **Bar: 18 checks green, 8 simulation checks green.**
+
+## 157. THE EIGHTH SWEEP — a ratchet whose ceiling has stopped discriminating (2026-09-01)
+
+The shelf gave this class **six instances** and said six is not a class, it is the project's signature
+defect, and that its check should get more care than anything else on the shelf. The sixth sweep took the
+narrowest decidable slice — *a registered check must be able to fail at all.* ⚠ **This one takes the next:
+a check that CAN fail, but not until things get much worse than they are.**
+
+### The rule, and why it is the right next slice
+
+Every ratchet here carries the same instruction in its own doc — *lower it as the backlog clears, never
+raise it.* ⚠ **A ceiling standing above its own measurement is SLACK: the check prints green while the
+thing it guards can get worse by the size of the gap before anything fires.** That is a guard whose
+evidence has stopped discriminating — and until now the instruction was enforced by **nothing but memory**,
+which this project has already recorded twice as a failing mechanism.
+
+### How it knows, and what it refuses to do
+
+`RatchetLedger`: each ratchet reports **its own** measured count beside **its own** ceiling, next to the
+comparison it already makes. ⚠ **Nothing is re-derived** — a second measurement of the same thing would be
+a second thing to keep true, and a sweep that did it would be committing the class it audits.
+
+**Seven ratchets report, and all seven are tight:**
+
+| ratchet | measured | ceiling |
+|---|---|---|
+| `DeadStateCheck.UNREACHED` | 0 | 0 |
+| `ConstantProvenanceCheck.UNMARKED` | 0 | 0 |
+| `UnwiredSubsystemCheck.UNWIRED` | 7 | 7 |
+| `UnwiredSubsystemCheck.UNREACHABLE` | 5 | 5 |
+| `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` | 1 | 1 |
+| `DocumentClaimCheck.MEMBER_GONE` | 2 | 2 |
+| `DocumentClaimCheck.WRONG_OWNER` | 0 | 0 |
+
+### ⚠ It is order-dependent, and that is load-bearing rather than a wart
+
+It is registered **last**, and it reads what the checks above reported **in the same process**. **Run it
+alone and the ledger is empty — which it treats as a FAILURE**, because a slack audit that audited nothing
+looks exactly like one that found no slack. That is the enumeration rule applied to a check whose input is
+other checks.
+
+### Proved in both directions, both failure modes
+
+- **Run alone:** exit **1** — *"the ratchet ledger is EMPTY … this run audited NOTHING, which is not the
+  same as finding no slack."*
+- **One ceiling widened** from 2 to 5 for a single run: exit **1**, `1 of 19 FAILED — RatchetSlackCheck`,
+  naming *"DocumentClaimCheck.MEMBER_GONE: measured 2, ceiling 5 — slack by 3."* Restored.
+
+**The suite goes eighteen → nineteen.**
+
+### ⚠ What it cannot see, and there is no way to make it self-detecting
+
+**A ratchet that does not report is invisible to it**, so the coverage is printed rather than implied: the
+ledger names what it holds and anything absent is unguarded. ⚠ **A ratchet added without a `Report` call is
+exactly the hole this check would have caught in someone else's code** — and short of the mutation probe
+the sixth sweep already billed, nothing closes that.
+
+### And the shelf's other rows, this cycle
+
+**§S.1 — ratchets:** all seven tight, no growth. Which is now *asserted* rather than observed.
+
+**§S.6 — the document set:** `ls *.md` returns **twenty**; the table charted nineteen and did not include
+`ERRANDS.md`. **Added**, with the count re-derived in the table's own sentence. No orphans.
+
+**§S.4 — the play-calibration list.** The seventh sweep now guarantees its named OWNERS resolve. ⚠ **What
+nothing checks is the VALUES**, and a calibration entry quoting a figure that has since moved is the same
+class. Three of the twenty entries state a value in their heading, and **all three are correct**:
+`PersuasionPerCompatibilityPoint` 40 000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500 000. The other
+seventeen carry their figures in tables inside the entry, which a heading scan cannot reach — so a value
+clause is **named, not built**: it wants the entries to adopt one shape first, and reshaping twenty entries
+to suit a check is the tail wagging the dog.
+
+⚠ **And the third thing the shelf asked for — *"the one thing to look for in play"* — is NOT written**, for
+the same reason the sitting's 43 questions were left empty. **Authoring twenty of them would have Elias
+answering this session's questions instead of the ones the work raised.** What a session can honestly do
+is guarantee the entries are true and actionable; what they ASK is his.
+
+⚠ **A note on instruments, three times over.** Today's ad-hoc shell probes were wrong three separate times
+— the era-grouping unroll, the type-versus-file match that "corrected" a correct entry, and a value scan
+that read a comment and reported `40` for `40_000.0`. **Every one of them looked right in its output.**
+The checks written the same day caught two of the three, which is the argument for putting a measurement
+into an armed check rather than a shell pipeline: **a pipeline is evidence nobody re-runs.**

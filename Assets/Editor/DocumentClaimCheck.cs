@@ -211,10 +211,12 @@ namespace PoliSim.EditorTools
                 docs.Count, candidates, ambiguous, foreign));
             sb.Append(F("\n    MEMBER GONE: {0} (ceiling {1}) - the type is ours and the member is not in it.\n",
                 memberGone.Count, MemberGoneCeiling));
+            RatchetLedger.Report("DocumentClaimCheck.MEMBER_GONE", memberGone.Count, MemberGoneCeiling);
             foreach (string g in memberGone) { sb.Append("    GAP  ").Append(g).Append('\n'); }
             sb.Append(F("\n    WRONG OWNER: {0} (ceiling {1}) - no such type, and the member lives on another one.\n",
                 wrongOwner.Count, WrongOwnerCeiling));
             foreach (string g in wrongOwner) { sb.Append("    GAP  ").Append(g).Append('\n'); }
+            RatchetLedger.Report("DocumentClaimCheck.WRONG_OWNER", wrongOwner.Count, WrongOwnerCeiling);
             sb.Append("\n    ⚠ WHAT THIS CANNOT SEE: a PROSE claim about behaviour - which is the larger half of what a\n");
             sb.Append("    document asserts, and S-22's standing finding. It reads identifiers, not sentences.\n");
 

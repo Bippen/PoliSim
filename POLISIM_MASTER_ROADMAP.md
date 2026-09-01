@@ -492,8 +492,8 @@ the standing pattern — run it whenever the live documents start describing fin
 **⚠ RE-DERIVED 2026-08-31 AT C-G1, and the old table was badly wrong: it listed ELEVEN files against a
 root holding TWENTY-FOUR, and charted NONE of the elections-era documents.** Five were retired in the same
 pass — each migrated to `COMPLETED.md` §122 first, every reference repointed, and grep run afterwards to
-prove nothing dangles, source comments included. **`ls *.md` now matches this table exactly: nineteen
-files, no orphans.**
+prove nothing dangles, source comments included. ⚠ **`ls *.md` matches this table exactly: TWENTY files**
+since `ERRANDS.md` joined 2026-09-01 (re-derived at the shelf's §S.6 the same day; nineteen before it), no orphans.
 
 | Document | Holds | Grows or shrinks |
 |---|---|---|
@@ -503,6 +503,7 @@ files, no orphans.**
 | `CLAUDE_DESIGN_ASSET_REQUEST.md` | The single standing asset request — **one live ask, D9** | Appended, then emptied on delivery |
 | `SEND_PACKAGE.md` | The current paste-and-glance package. ⚠ **Undated on purpose**: the dated `…_2026-08-28.md` went stale in place and its own readback glance would have failed | Regenerated, never accumulated |
 | `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` | The macro seed figures and release schedules | Grows slowly |
+| `ERRANDS.md` | ⚠ **NEW (2026-09-01)** — every OUTWARD-FACING action waiting on Elias, one line each with what it unblocks. **A session never registers an account, sends, or pastes**; those go here instead of into the tail of a report nobody re-reads | Shrinks as errands are done or withdrawn |
 | `COMPLETED.md` | Finished work, lasting decisions, lessons | Grows |
 | `CLAUDE.md` | The detailed technical record. **Never superseded** | Grows |
 

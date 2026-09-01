@@ -116,6 +116,7 @@ namespace PoliSim.EditorTools
             foreach (string mark in marks) { sb.Append(F("    {0,-24} {1,4}\n", mark, byMark[mark])); }
 
             sb.Append(F("\n    {0} marked · {1} UNMARKED (ceiling {2}).\n", total - unmarked.Count, unmarked.Count, UnmarkedCeiling));
+            RatchetLedger.Report("ConstantProvenanceCheck.UNMARKED", unmarked.Count, UnmarkedCeiling);
 
             foreach (string line in unmarked) { sb.Append("    GAP  ").Append(line).Append('\n'); }
 
