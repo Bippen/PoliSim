@@ -2187,7 +2187,9 @@ namespace PoliSim.Simulation
         internal const float JusticeApprovalMultiplier = 1.0f;
         /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement (healthcare and education above infrastructure, defence below it); the multipliers are the game figures that express it, and no polling series fixes them.</remarks>
         internal const float HomelandSecurityApprovalMultiplier = 0.7f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement; the multiplier is the figure that expresses it, and no polling series fixes it.</remarks>
         internal const float EnergyApprovalMultiplier = 1.0f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement; the multiplier is the figure that expresses it, and no polling series fixes it.</remarks>
         internal const float HousingApprovalMultiplier = 1.3f;
 
         /// <summary>
@@ -2197,20 +2199,29 @@ namespace PoliSim.Simulation
         /// change to Mandatory spending moves approval by roughly double the strongest Discretionary
         /// multiplier, in either direction (a cut hurts more, but an increase also helps more).
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
         internal const float MandatorySpendingApprovalMultiplier = 3.0f;
 
         /// <summary>Debt-to-GDP above this (the same "safe" benchmark SimulationManager's risk premium uses) starts discounting the approval benefit of new spending - fiscal-strain awareness.</summary>
+        /// <remarks>DERIVED - the same "safe" debt-to-GDP benchmark SimulationManager's risk premium uses, so one threshold is stated once rather than twice.</remarks>
         private const float DeficitAwarenessDebtToGdpThreshold = 60f;
 
         /// <summary>Fraction of the spending-approval benefit removed per point of debt-to-GDP above the threshold.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
         private const float DeficitAwarenessDampeningPerPoint = 0.01f;
 
         /// <summary>Approval points per 100% GenerosityLevel for each WelfareProgramType, an ongoing STOCK effect (based on the program's CURRENT GenerosityLevel every turn, same idiom as TaxLine.Rate affecting revenue every turn) rather than a one-time "this-turn change" shock like TaxHikeApprovalSensitivity/spending's own weighted term. UBI/UniversalHealthcare are the strongest (universal, highly visible programs); MeansTestedWelfare/HousingAssistance/ChildcareSubsidies are more modest, per the task's own framing (targeted spending is politically less visible than universal programs of similar poverty-reduction power).</summary>
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
         private const float UbiApprovalSensitivity = 3.0f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
         private const float NegativeIncomeTaxApprovalSensitivity = 2.0f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
         private const float MeansTestedWelfareApprovalSensitivity = 1.5f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
         private const float UniversalHealthcareApprovalSensitivity = 3.0f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
         private const float HousingAssistanceApprovalSensitivity = 1.5f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the summary above states the design ordering these figures express; the points themselves are game figures no study fixes.</remarks>
         private const float ChildcareSubsidiesApprovalSensitivity = 1.5f;
 
         internal static float GetWelfareApprovalSensitivity(WelfareProgramType type)
@@ -2413,9 +2424,11 @@ namespace PoliSim.Simulation
         internal const float InfrastructureGrowthSensitivity = 0.01f;
 
         /// <summary>ConsumerConfidence gained per percentage-point-of-GDP spent on healthcare - "long-run productivity/wellbeing" modeled as consumer confidence.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
         internal const float HealthcareConfidenceSensitivity = 0.002f;
 
         /// <summary>BusinessConfidence gained per percentage-point-of-GDP spent on education - a better-skilled workforce modeled as business confidence.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
         internal const float EducationConfidenceSensitivity = 0.002f;
 
         /// <summary>
@@ -2427,12 +2440,15 @@ namespace PoliSim.Simulation
         /// percentage-point-of-GDP spent on justice - court/prosecution capacity genuinely affects
         /// case backlogs and enforcement outcomes.
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
         internal const float JusticeCrimeIndexSensitivity = 0.02f;
 
         /// <summary>BusinessConfidence gained per percentage-point-of-GDP spent on energy - lower/stabler energy costs for businesses, distinct from Education's own BusinessConfidence nudge.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
         internal const float EnergyConfidenceSensitivity = 0.0015f;
 
         /// <summary>PovertyRate baseline points reduced (permanently, off Country.BaselinePovertyRate) per percentage-point-of-GDP spent on housing - HUD-style baseline federal housing support, smaller than the dedicated player-adjustable WelfareProgramType.HousingAssistance's own sensitivity since this is a much narrower, less-targeted budget line.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
         internal const float HousingPovertyReductionSensitivity = 0.015f;
 
         /// <summary>Ceiling on PotentialGrowthRate - repeated infrastructure spending over many turns shouldn't be able to push trend growth past a sane bound.</summary>
