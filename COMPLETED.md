@@ -10919,3 +10919,43 @@ and never mentioned → fails naming it.
 **And the notice itself is written**, with the part that matters to the reader: nothing they drew is
 wasted, the mechanism is untouched, and B6's honesty channels **moved to the main graphs rather than being
 lost** — carried in more places now than the band would have carried them.
+
+## 176. C-0.2''s DONE-WHEN WAS A GREP — which means it was a check nobody had written (2026-09-01)
+
+`C-0.2` read *"correct every document that still asserts a pre-wiring premise"*, done when *"no live
+document asserts a pre-wiring premise"* — and then, in brackets, **it gave the grep**: `PartyArchetype`,
+`TotalSeats = 200`, "not wired", "unreachable from any gameplay path", "VERIFIED NOTHING", "no party seeds
+exist on main", "UNINSPECTED".
+
+⚠ **A done-when that IS a grep is a check nobody wrote.** The master list sized this row **L — "sized as a
+read, not a scan"** and it was the largest remaining SAFE item. It was large because a grep becomes a read
+the moment a person has to run it. ⚠ **And a read decays the instant it finishes**: somebody scans every
+document, finds nothing, closes the row, and the next document written reintroduces the premise with
+nothing watching. **The one-off read cannot be the closure. It can only be the check's first run.**
+
+### The first run: 37 → 14, and every reduction is a rule, not an excuse
+
+| refinement | why it is honest | left |
+|---|---|---|
+| first measurement | — | **37** |
+| **history reads as history** — the past-tense rule **BORROWED** from `CommentClaimCheck`, not restated | the same judgement written twice is two things to keep true | |
+| ⚠ **and borrowing it found a gap in it**: the list had *"replaced by"* and `ELECTIONS_GAP_TABLE.md` says *"53 real parties **replaced them**"* — the same history in the active voice, **missed by one preposition**. Fixed for BOTH consumers | a named-set rule fails at the edges of its own list, and a **second consumer reading the same lines for a different reason** is what found this edge | |
+| **mention is not use** — a term inside double quotes is being talked ABOUT | `CLAUDE.md` documents `"VERIFIED NOTHING"` as a check's output string and quotes *"built but not wired"* inside a standing rule. **Failing those would ask the project to stop being able to name its own defects** | **20** |
+| **a line anchored to a COMMIT HASH is a record of that commit** | `CLAUDE.md` is part standing rules and part running log. Rewriting *"`6c1483a` — … every `PartyArchetype` emblem …"* would be **falsifying a log**, a worse fault than the stale reference it removes | |
+| **the log is a log** — `ELECTIONS_PROTOTYPE_LOG.md` joins `COMPLETED.md` as a record | its entries are dated observations of what was true when written | |
+| **the row that DEFINES the grep** — `POLISIM_BACKLOG.md:947` — excluded by line, and the exclusion is **policed** | the same blindness `MetaTextCheck` needs for its banned-pattern table: **a check that scans for words cannot be blind to the place those words have to be written down** | **14** |
+
+### ⚠ Armed as a RATCHET at 14, and arming it at 0 would have been choosing a number for how it looks
+
+**`PreWiringPremiseCheck.ASSERTED = 14`, tight.** Fourteen live-document lines still assert a stale premise,
+**each printed by name every run**, each one a sentence somebody has to read and correct or re-tense.
+
+⚠ **The alternative was to sweep them into the exclusion list to reach zero — and an exclusion list used
+that way is the thing every other exclusion list in this repo is policed against.** The backlog is
+measured, named, and can only fall.
+
+⚠ **And the residue check caught the new ratchet within one run**: a non-zero ratchet owning no `M-R` row
+fails, and it fails **by name** — the per-name matching built for M-S8 doing exactly what it was built for,
+on a ratchet that did not exist when it was written. `M-S6` now names it and carries it.
+
+**Bar: 26 of 26. Residue 17.**

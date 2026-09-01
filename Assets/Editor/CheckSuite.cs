@@ -214,6 +214,10 @@ namespace PoliSim.EditorTools
             // while the generated file does not. ⚠ It compares the DIGEST of the input, not a re-parse of
             // it — a second parser would be a second thing to keep true.
 
+            // C-0.2 (2026-09-01): its done-when WAS a grep, which means it was a check nobody had
+            // written - and it was sized as a READ. A read decays the moment it finishes.
+            ("PreWiringPremiseCheck", PreWiringPremiseCheck.Run),
+
             // S-39 (2026-09-01): a screen we CUT must be told to the person drawing it. ⚠ This project
             // has a great deal of machinery keeping its documents true to its code and NONE keeping an
             // outward-facing ask true to a decision made after it was sent.

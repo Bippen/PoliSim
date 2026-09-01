@@ -50,6 +50,15 @@ namespace PoliSim.EditorTools
             // says the widget WAS REJECTED (COMPLETED.md §29) while keeping the one idea taken from it.
             // That is history being kept on purpose, which is the thing this check must not punish.
             "rejected", "was not built", "never built",
+
+            // ⚠ ADDED 2026-09-01, found by PreWiringPremiseCheck borrowing this list. The list had
+            // "replaced by" and `ELECTIONS_GAP_TABLE.md` says "53 real parties REPLACED THEM" - the same
+            // history in the active voice, missed by one preposition. **A named-set rule fails at the
+            // edges of its own list**, which is stated on both consumers; this is one such edge, found by
+            // a second consumer reading the same lines for a different reason.
+            // R-T3 - every consumer of this list: CommentClaimCheck (its own claims) and
+            // PreWiringPremiseCheck (C-0.2's premises). Both benefit; neither is re-stated.
+            "replaced them", "replaced with", "no longer exists", "since deleted", "discharged",
         };
 
         /// <summary>⚠ Types whose members this check cannot see and must not fail on, each with its
@@ -204,6 +213,13 @@ namespace PoliSim.EditorTools
 
             return false;
         }
+
+        /// <summary>Whether a line RECORDS that something was once so, rather than asserting it now.
+        /// ⚠ **Exposed 2026-09-01 so <see cref="PreWiringPremiseCheck"/> can BORROW this judgement instead
+        /// of restating it.** The same rule written twice is two things to keep true, and a second copy
+        /// would drift the first time somebody added a marker to one list and not the other — which is the
+        /// defect this repo has catalogued more often than any other. **One list, one test, two callers.**</summary>
+        public static bool ReadsAsHistory(string text) => LooksHistorical(text);
 
         private static bool LooksHistorical(string text)
         {
