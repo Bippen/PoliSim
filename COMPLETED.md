@@ -8907,3 +8907,63 @@ and a border-line lookup. Removed and re-placed.
 
 **Bar:** fourteen checks green, eight simulation checks green, trajectories 6 of 6 byte-identical through
 every batch, films 81/0/0 with 81 capture-identity proofs, the rule-15 diff 78/0/3.
+
+## 139. C-N1 AND C-N2 ANSWERED — and C-N1's answer is neither of the two exits it offered (2026-09-01)
+
+Both were owner-ELIAS design questions. Both are now decided and logged as strikeable R-N1 calls, with
+the measurement that decides them on the record.
+
+### ⚠ C-N1: the persuasion chain is deliberate. The bridge it depends on is UNWIRED.
+
+C-N1 offered two exits — *(a) perception-only media is intended*, or *(b) it is an omission in the media
+chain*. **Measured, it is neither.**
+
+The split is coherent and on purpose:
+
+- **Campaign ACTIONS persuade.** `pressure.Add` → `ToCompatibilityBonus()` → compatibility →
+  `PreferenceModel.Preference` → `truePreference` → the ballot. Media actions are inside that set.
+- **Coverage and momentum do not**, exactly as `MomentumTracker`'s own doc says — they shift *where a race
+  appears to be*.
+
+⚠ **That is only a complete design if perceived viability can reach the ballot, and the mechanism written
+to carry it is BUILT, HARNESS-PROVEN, AND HAS NO CALLER.** `TacticalVoting.Apply` /
+`ApplyToRegions` take a preference vector and **polled shares** and return a tactically-adjusted vector.
+They appear in exactly one file outside their own — `TacticalVotingHarness` — and **`ElectionDay` never
+mentions a poll**.
+
+So: **momentum → poll → *nothing*.** The chain stops one step short of the thing built to receive it.
+
+**Ruled D-10 (a): wire it, as its own baseline item.** Giving coverage a second persuasion term (C-N1's
+exit (b)) would invent a route while the intended one sits unused; declaring perception-only media
+*intended* (exit (a)) would write down as deliberate something one wire short of deliberate.
+
+⚠ **Sized, and its blocker is the familiar one.** Wiring needs, per country: a **threshold** (Sweden's 4 %
+is already sourced in the model), an **awareness share** (`[AUTHORED-DRAFT]` 0.5 today), **positions** (now
+available — `LrGen` landed at D-5), and **bloc membership**. Bloc membership is a *declared political
+fact*, and it exists for **Sweden 2022 only**, in the harness fixture — the same shape as the declared red
+lines D-5 met, and the same honest limit. **It changes election results, so it carries its own before and
+after per country**, and C-A1's recorded FdI figures are among the numbers it moves. That is exactly why
+it does not ride this item.
+
+### ⚠ A THIRD BLIND SPOT IN THE COHERENCE AUDIT
+
+`DeadStateCheck` scans **private** declarations. `TacticalVoting.Apply` is **public**, so a whole proven
+subsystem with no production caller was invisible to it. That is the third gap the audit has shown in two
+days, alongside **prose behaviour claims** (S-22 — `CommentClaimCheck` reads backticked `Type.Member`
+references and nothing else) and **write-only fields** (S-23). ⚠ **All three were found by doing the work
+the checks were meant to make unnecessary**, which is the argument for keeping ratchets pointed at
+backlogs rather than trusting a green result.
+
+### C-N2: the question was *what is the action for*, and the answer must not be a price
+
+C-A2 measured optimising personalities knocking **zero** doors and holding **zero** rallies, while the
+grassroots profile carries the roster's strongest pro-local thumb. The three local actions hold the
+largest hour costs against the smallest reaches while §33 scores per hour — and ⚠ **door-to-door is
+largely redundant with a mechanism that already runs free**: offices knock doors through their daily
+operation, outside the eight actions and outside the AI's choice.
+
+**Ruled D-11 (c): give the verb a job — target a region's swing voters — and do NOT re-price.**
+Re-pricing until §33 chooses the action is tuning a magnitude to force an outcome, which the standing
+rule forbids; retiring the verb is defensible and cheaper but discards the thing real campaigns spend most
+of their volunteer hours on. **(c) is the only option that answers the question C-N2 asked rather than
+adjusting what the action costs.** Sized, not built: a §12 verb-set change with its own item.

@@ -343,6 +343,69 @@ That is his, and the run continued past it rather than waiting.
 
 > **To rule it, write:** `D-9 RULED: (a)` *(or b / c / d)*
 
+---
+
+### D-10 · C-N1, the media system's route to the ballot ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**The question.** C-N1 asked whether perception-only media is **the design** or **an omission**. Measured
+2026-09-01, the answer is **neither of its two exits**, and the third one is better than both.
+
+**What the measurement found.** The persuasion chain is coherent and deliberate:
+
+- **Campaign ACTIONS persuade.** `pressure.Add` → `ToCompatibilityBonus()` → compatibility →
+  `PreferenceModel.Preference` → `truePreference` → the ballot. Media actions are in that set.
+- **Coverage and momentum do NOT persuade**, exactly as `MomentumTracker`'s own doc says: they shift
+  *where a race appears to be*.
+
+⚠ **That split only closes if perceived viability can reach the ballot — and the mechanism that would
+carry it is BUILT, PROVEN AND UNWIRED.** `TacticalVoting.Apply` and `ApplyToRegions` take a preference
+vector and **polled shares** and return a tactically-adjusted vector. They appear in exactly one file
+outside their own: `TacticalVotingHarness`. **`ElectionDay` never mentions a poll.**
+
+So the design is right and incomplete in one specific place: **momentum → poll → *nothing*.**
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Wire `TacticalVoting` into the vote model** | one BASELINE item on the election path | nothing — it is the bridge the design already assumes, already written and already proven |
+| b. Declare perception-only media intended and close | nothing | ⚠ it would record as INTENDED a chain that terminates one step short of the mechanism built to receive it |
+| c. Give coverage its own persuasion term | a §42 chain change with a new explained family | ⚠ invents a second persuasion route while the first one's bridge sits unused |
+| d. Delete `TacticalVoting` as dead | small | ⚠ deletes a proven, sourced-behaviour model to make a gap tidy |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (a), sized as its own item and NOT built inside this
+one.** Basis: (c) is the expensive answer to a question (a) answers with code that already exists and has
+a harness; (b) would write down as deliberate something that is one wire short of deliberate. ⚠ **The
+wiring changes election results, so it is a baseline item with its own before/after per country** — and
+C-A1's recorded FdI figures are among the numbers it would move, which is precisely why it does not ride
+this item.
+
+> **To strike it, write:** `D-10 STRUCK: (b)` *(or c / d)*
+
+---
+
+### D-11 · C-N2, what the door-to-door action is FOR ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**The question.** C-A2 measured that optimising personalities knock **zero** doors and hold **zero**
+rallies, while the grassroots profile carries the roster's strongest pro-local thumb. The defect is
+mechanical, not a weighting: the three local actions hold the largest hour costs (4/3/5 h) against the
+smallest reaches (0.06/0.02/0.01) while §33 scores **per hour**. ⚠ **And door-to-door is largely
+redundant with a mechanism that already runs for free** — W-B4's offices knock doors through their daily
+operation, outside the eight actions and outside the AI's choice.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Retire the door-to-door ACTION; the office operation is the ground game** | one item; §12's verb set shrinks by one | ⚠ a player loses an explicit verb — but it is a verb whose effect they already get by opening an office |
+| b. Re-price the local actions until §33 chooses them | small | ⚠ tuning a magnitude to force a choice, against the standing rule; and it leaves the redundancy |
+| c. Make door-to-door do something the office cannot (target a region's swing voters) | one design item plus a build | nothing; it is the answer that keeps the verb by giving it a job |
+| d. Leave it; record that local action is a bad bet by construction | nothing | ⚠ §34's "no single dominant approach" bar stays unmet, on the record |
+
+**Recommendation, TAKEN: (c) — give the verb a job, and do NOT re-price.** Basis: (b) is tuning to force
+an outcome, which this project forbids by rule; (a) is defensible and cheaper but throws away a verb that
+real campaigns spend most of their volunteer hours on; (d) leaves a measured bar unmet. **(c) is the only
+option that answers the question C-N2 actually asked — *what is the action FOR* — rather than adjusting
+what it costs.** ⚠ Sized, not built: it is a §12 verb-set change and needs its own item.
+
+> **To strike it, write:** `D-11 STRUCK: (a)` *(or b / d)*
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.
@@ -608,6 +671,8 @@ The repo outranks the document. These are recorded, not re-worked.
 | **S-24** | ⚠ **`TaylorRule.InflationTarget = 2` is not Poland's target.** The NBP targets **2.5 % with a symmetric ±1 pp band** (verified 2026-09-01 at the NBP's own guidelines), so 2 sits inside its tolerance and is not its target. One target for six countries, and the one country it misstates is now named at the constant. ⚠ Related: **`NeutralRealRate = 2` is Taylor's 1993 assumption for a quantity that is unobservable and actively contested** — published r* estimates for these economies have run from below zero to above two within a decade | CODE | `COMPLETED.md` §138 |
 | **S-25** | ⚠ **`BaseConsumptionRate` and `BaseInvestmentRate` are in the real range and UNIFORM ACROSS SIX COUNTRIES.** Household consumption really is around 50–70 % of GDP and investment near a fifth — but the six differ from each other and one value does not distinguish them. The same shape as D-9's rejected per-country tax base shares, on the other side of the identity | CODE | `COMPLETED.md` §138 |
 | **S-26** | **The dial midpoint 50 is now stated FOUR times** — `CrimeJusticeCouplings.NeutralDialLevel`, `MacroSystem.NeutralPolicyDialLevel`, `PolicyWebRenderer`'s local, and a local `baseline` in `RecomputeCrimeJusticeDialsFromEnactedLaws`. The couplings pass deliberately deferred unifying three of them; the fourth was found by the provenance sweep. **Recorded, not fixed** | CODE | `COMPLETED.md` §138 |
+
+| **S-27** | ⚠ **`TacticalVoting` is built, harness-proven, and has NO caller in the model.** It appears in exactly one file outside its own — `TacticalVotingHarness` — and `ElectionDay` never mentions a poll, so the chain **media → coverage → momentum → poll → ballot** terminates one step before the mechanism written to receive it. Found 2026-09-01 while answering C-N1; ruled at **D-10 (a)**: wire it, as its own baseline item. ⚠ **The coherence audit could not see this either** — `DeadStateCheck` scans PRIVATE declarations, and `TacticalVoting.Apply` is public. **Public API with no production caller is a third blind spot**, alongside S-22's prose claims and S-23's write-only fields | CODE | `COMPLETED.md` §139 |
 
 ---
 
