@@ -54,7 +54,7 @@ stream later without changing a formula.
 2. `GameController`'s politics screens + Canvas screen 1h (election night) — item 10's UI, none
    tonight.
 3. `SaveGame` — new state objects join the save the way `FedChairCandidates` did.
-4. The D0 collision map executes at item 10, not before: `PartyArchetype` retires, `TotalSeats
+4. The D0 collision map EXECUTED at item 10 (W-G1, `a289e1e`, 2026-08-30) - it is history, not a plan: the four archetypes were retired, `TotalSeats
    = 200` yields to real chamber sizes, `ElectionSystem`'s approval threshold yields to the
    vote model; `PublicationSystem` stays as the polling substrate; seat drift, bill scoring and
    the renderers stay.
@@ -73,7 +73,7 @@ assigned the player no party identity for the vote model to award a fate to; tha
 
 *(filled by the overnight inventory — see the morning report's Part 2 section for the measured
 line numbers; summary:)* `ElectionSystem` (fixed cycle + approval threshold + transient
-result), `PartyArchetype` (four archetypes), `TotalSeats = 200`, seat drift, the hemicycle/
+result), the four archetypes, the hardcoded 200-seat chamber, seat drift, the hemicycle/
 compass/map renderers, `PublicationSystem` (the polling substrate), five `mark_party_*` sprites
 drawn by nothing, `FedChair` election-eve pause. ⚠ **This is a 2026-08-29 inventory kept as the gap
 table's EXISTS column, not a description of HEAD** — four of its entries no longer exist and the sprites

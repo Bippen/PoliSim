@@ -4977,7 +4977,7 @@ the pass/fail formula) surfaces against a single well-understood lever shape, no
 different lever shapes simultaneously. Confirmed with Elias before starting. Full rollout to the other
 seven tabs is step 5, not attempted here.
 
-- **Parties** (`PartyArchetype`, `PartyArchetypeData` - `Assets/Scripts/Data/PartyArchetype.cs`): four
+- **Parties** (the archetype types, since RETIRED at W-G1 and replaced by `PartySystem`'s 53 real seeded parties - `Assets/Scripts/Data/PartySystem.cs`): four
   original, generic, clearly-fictional archetypes (Progressive Alliance, Conservative Union, Centrist
   Coalition, Nationalist Front), per the roadmap's own "never a real party name" instruction. A SHARED
   taxonomy applied identically across all six countries (mirroring `CabinetMinisterPhilosophy`'s own
@@ -5372,7 +5372,7 @@ than inventing a new one, per the roadmap's own explicit instruction.
   bug above). A follow-up question from that same session - "welfare bills keep failing and tax bills
   keep passing, is that a bug?" - led to a live investigation that resolved with NO code change needed:
   Elias's Parliament tab showed Progressive Alliance and Conservative Union tied at EXACTLY 32% each
-  (their identical `PartyArchetypeData.ProgressiveBaseSupportShare`/`ConservativeBaseSupportShare`,
+  (their identical base-support shares, in the archetype data that has since been replaced,
   meaning `ApprovalRating` was sitting right around 50, so neither party had picked up any
   approval-driven bonus yet). At an exact tie, their opposite-sign `FiscalStance` (+0.7 vs -0.7) cancels
   perfectly; `CentristCoalition`'s neutral stance (0.0) contributes nothing either way; that leaves
@@ -5385,7 +5385,7 @@ than inventing a new one, per the roadmap's own explicit instruction.
   Elias's own reported percentages (0.32*0.7 + 0.24*0.0 + 0.12*(-0.3) + 0.32*(-0.7) = -0.036) before
   reporting back that this is real, working-as-designed behavior, not a scoring bug. Worth keeping on
   record: it's a genuine, non-obvious emergent property of the archetype design (see
-  `PartyArchetypeData`'s own doc comment on why Progressive/Conservative are built as mirror-image
+  the retired archetype data's own doc comment on why Progressive/Conservative were built as mirror-image
   establishment parties) that will keep surfacing as "why did my bill fail" questions in ordinary play,
   not just this once.
 
@@ -8395,7 +8395,7 @@ recommendation.
 - **Additive model changes cost nothing by construction**: new fields default, removed fields are
   ignored, new RNG streams start fresh (the append-only enum rule already models this).
 - **Item-10-class swaps are SAVE-BREAKING BY DECLARATION, not migrated.** `ParliamentSeats` is
-  keyed by `PartyArchetype`, which item 10 retires; `ElectionSystem` is replaced wholesale. The
+  keyed by the archetype enum, which item 10 retired; `ElectionSystem` was replaced wholesale. The
   loader refuses a save whose `SaveVersion` predates the break, with a message that says so
   plainly — pre-release, migration machinery is work item 10 would immediately invalidate.
   **Item 10's collision map gains one line: bump `SaveVersion`.** Revisit migration at the first

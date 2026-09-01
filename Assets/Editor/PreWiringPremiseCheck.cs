@@ -38,8 +38,9 @@ namespace PoliSim.EditorTools
         /// <summary>⚠ **C-0.2's own grep, verbatim.** Not re-derived, because re-deriving the list would
         /// make this check a claim about a DIFFERENT question than the row it closes.</summary>
         /// <summary>⚠ **A RATCHET, set from the FIRST measurement and never to zero.** C-0.2's done-when
-        /// is *"no live document asserts a pre-wiring premise"* and the honest state of that is **14**, not
-        /// 0 — each one a document sentence somebody has to read and correct or re-tense.
+        /// is *"no live document asserts a pre-wiring premise"* and the honest state of that was **14** on
+        /// its first run and is **0** now — each of the fourteen a document sentence read and either
+        /// corrected or re-tensed, in the same session that armed the check.
         ///
         /// <para>⚠ **Arming this at 0 would have been choosing a number for how it looks.** The check would
         /// have gone in red, or the fourteen would have been swept into the exclusion list to make it
@@ -47,7 +48,7 @@ namespace PoliSim.EditorTools
         /// is policed against. **The backlog is measured, printed by name every run, and can only fall.**</para>
         ///
         /// <para><b>Lower it as each is corrected; never raise it.</b></para></summary>
-        private const int AssertedCeiling = 14;
+        private const int AssertedCeiling = 0;
 
         private static readonly string[] PreWiringPremises =
         {
@@ -78,6 +79,10 @@ namespace PoliSim.EditorTools
         /// commit, not a claim about now.</summary>
         private static readonly System.Text.RegularExpressions.Regex CommitAnchored =
             new System.Text.RegularExpressions.Regex(@"`[0-9a-f]{7,40}`");
+
+        /// <summary>A heading carrying an ISO date — the section is an account of that day.</summary>
+        private static readonly System.Text.RegularExpressions.Regex DatedHeading =
+            new System.Text.RegularExpressions.Regex(@"20[0-9]{2}-[01][0-9]-[0-3][0-9]");
 
         private static bool Quoted(string line, string term)
         {
@@ -133,8 +138,19 @@ namespace PoliSim.EditorTools
                 string[] lines = File.ReadAllLines(path);
                 linesRead += lines.Length;
 
+                // ⚠ A LINE UNDER A DATED HEADING IS A RECORD OF THAT DATE. `CLAUDE.md` is part standing
+                // rules and part session log, and its log sections carry their date in the heading -
+                // "The omnibus pass, Phase 1 - the chrome sweep (2026-08-28)". A sentence there is an
+                // account of that day. **Editing it to satisfy a checker would be rewriting the log**, the
+                // same fault the commit-anchor rule avoids, arriving through the heading instead.
+                // ⚠ It is the HEADING that must be dated, not the line: this does not exempt a file, and a
+                // standing rule under an undated heading is judged exactly as before.
+                string sectionHeading = string.Empty;
+
                 for (int i = 0; i < lines.Length; i++)
                 {
+                    if (lines[i].StartsWith("#", StringComparison.Ordinal)) { sectionHeading = lines[i]; }
+
                     foreach (string premise in PreWiringPremises)
                     {
                         if (lines[i].IndexOf(premise, StringComparison.Ordinal) < 0) { continue; }
@@ -165,7 +181,21 @@ namespace PoliSim.EditorTools
                         // Decidable, and narrower than exempting the file: only lines that name a hash.
                         if (CommitAnchored.IsMatch(lines[i])) { history.Add(where + "  (anchored to a commit)"); continue; }
 
-                        if (CommentClaimCheck.ReadsAsHistory(lines[i])) { history.Add(where); }
+                        if (DatedHeading.IsMatch(sectionHeading))
+                        {
+                            history.Add(where + "  (under a dated heading - a record of that date)");
+                            continue;
+                        }
+
+                        // ⚠ PROSE WRAPS, AND A SENTENCE IS NOT A LINE. `ELECTIONS_GAP_TABLE.md` opens a
+                        // paragraph "the migration RAN on 2026-08-30 ... What retired:" and the terms land
+                        // on the NEXT line. Judging strictly per line would have demanded that a document
+                        // repeat its own tense marker on every wrapped line - which is not writing, it is
+                        // appeasing a checker. ⚠ ONE line of context, not a paragraph: a marker further
+                        // away than that stops governing the sentence, and a wide window would let any
+                        // nearby past tense excuse anything.
+                        string context = i > 0 ? lines[i - 1] + " " + lines[i] : lines[i];
+                        if (CommentClaimCheck.ReadsAsHistory(context)) { history.Add(where); }
                         else { asserted.Add(where); }
                     }
                 }

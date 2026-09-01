@@ -146,7 +146,7 @@ bad `#9C4238` (lifted `#BC7168`) · caution = draft.
 ### A.3a Party inks — their own set, not the area inks
 
 Pass 3, D5. Cut deliberately in hue space the eleven areas do not occupy (wine / petrol / drab khaki /
-sage), and keyed to the **real** `PartyArchetype` members. **A party may never print in an area accent
+sage), and keyed, WHEN THIS WAS WRITTEN, to the four archetype members that have since been retired (see the note below). **A party may never print in an area accent
 or in semantic good/bad.** Hemicycle arcs, legend swatches and swing figures all key this set, and the
 legend swatch is the arc's own ink (B9).
 
@@ -158,7 +158,7 @@ desk's own saturation (0.52) and value (0.46), and the other five countries have
 (`HasPartyInk` returns false), because picking 30 colours by eye for real organisations would be
 invention. The colour ruling for those five is row D-8.2 in `POLISIM_BACKLOG.md`.
 
-| `PartyArchetype` | ink | lifted |
+| archetype (RETIRED — this table is history) | ink | lifted |
 |---|---|---|
 | ProgressiveAlliance | `#7E3557` | `#A2607F` |
 | ConservativeUnion | `#2F4E63` | `#6B87A0` |
