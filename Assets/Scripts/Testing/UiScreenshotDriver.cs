@@ -72,6 +72,16 @@ namespace PoliSim.Testing
         /// and reported 77 captured, 0 failed).</summary>
         public int ExpectedWidth;
 
+        /// <summary>The HEIGHT the caller asked for. ⚠ **Added 2026-09-01 by R-T3, and it was missing for
+        /// a month.** Trap 2 was armed for width alone; `-shotheight=` is set on the SAME line of
+        /// `UiScreenshotCapture`, from the SAME ruling, with its own silent default of 950 — and nothing
+        /// ever compared it with what came back. **A capture silently the wrong height is wrong in exactly
+        /// the way the run that cost this project a week was wrong**, and the only reason width was
+        /// guarded and height was not is that the failure happened to arrive on the width axis.
+        /// R-T3's whole point is that a fix to one consumer is a claim about one call site until the
+        /// others are enumerated. Zero means no size was requested and nothing is claimed.</summary>
+        public int ExpectedHeight;
+
         /// <summary>Frames to let IMGUI settle before a capture. IMGUI lays out on the frame it draws, so a screen switched to on frame N is not fully measured until N+1; four is cheap insurance rather than a measured minimum.</summary>
         private const int SettleFrames = 4;
 
@@ -1090,6 +1100,25 @@ namespace PoliSim.Testing
                 // mismatched capture made every later shot in the run inherit the same claim and fail with
                 // it - a cascade that hides which capture was actually wrong.
                 CaptureIdentity.Expected = "imgui";
+                yield break;
+            }
+
+            // ⚠ Height is checked FIRST and separately, so a run wrong on both axes says so on both
+            // rather than reporting the width and leaving the reader to assume the height was fine.
+            if (ExpectedHeight > 0 && shot.height != ExpectedHeight)
+            {
+                Debug.LogError($"SHOT: HEIGHT MISMATCH on {name} - expected a {ExpectedHeight}px frame, captured "
+                               + $"{shot.height}. ⚠ TWO CAUSES, AND THEY NEED DIFFERENT FIXES: either -shotheight= was "
+                               + "missing or ignored and this film is not evidence for the geometry it is named after, "
+                               + "OR UiScreenshotCapture.GameViewChromeHeight has gone stale because Unity changed the "
+                               + "Game View toolbar. ⚠ If it is the second, RE-MEASURE AND CHANGE THE CONSTANT - do not "
+                               + "widen this guard, which would be moving a bar to pass. This fires on the FIRST capture "
+                               + "of a run precisely so a stale number cannot film a whole set at the wrong size. "
+                               + "Fold position is a function of height, and this project has already recorded a finding "
+                               + "that turned on where the fold fell: a silently-short capture does not merely mislabel a "
+                               + "film, it moves the thing the film was taken to look at.");
+                _failed++;
+                Destroy(shot);
                 yield break;
             }
 

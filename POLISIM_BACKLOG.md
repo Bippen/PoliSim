@@ -1107,11 +1107,12 @@ about one call site dressed as a claim about a class.
 | **`RatchetLedger`** (§157) | 9 check files declaring a ceiling or ratchet | ⚠ **three unreported** — `CohortAgingStepDiagnostic`, `EvidenceDiscriminationCheck`, `PublicationCadenceCheck`. Three ratchets sat outside the audit that exists to compare a bound with its measurement |
 | **the capture-identity token** (S-20) | 3 Canvas takeovers, all stamping; driver default `imgui` | ✅ **complete — no finding.** The set that stamps is exactly the set `PlayerReachabilityCheck` enumerates |
 | **the type-is-its-file assumption** (S-35) | `DocumentClaimCheck` (fixed at S-35), `EvidenceDiscriminationCheck` | ⚠ **one finding**: a registered check whose file is not named after its type was reported and then **silently skipped**, so clause A verified nothing about it while the summary read clean. It fails now |
-| **the four-width film matrix** | the capture driver, `ScreenEdgeCheck`'s `-edgepattern`, `FilmDiffCheck`'s roster | ⚠ **NOT ENUMERATED — and said so rather than claimed.** The instruction named "the width assertion" and the record does not identify one uniquely this week; the nearest candidates are listed and the enumeration is **owed**, not done |
+| **the width assertion** (trap 2, `UiScreenshotDriver`) | the geometry argument PAIR — `-shotwidth=` and `-shotheight=`, set on one line of `UiScreenshotCapture` from one ruling | ✅ **ENUMERATED 2026-09-01, and it found the other half unguarded for a month.** ⚠ The phrase resolves uniquely after all: trap 2 is the only assertion in the repo comparing a requested size with a captured one, and its own comment reads *"THE WIDTH ASKED FOR MUST BE THE WIDTH CAPTURED."* R-T3's question — *what else shares this instrument?* — has exactly one answer, **HEIGHT**, and nothing had ever checked it. ⚠ **And the reason it was missed is the finding**: `view.position` is a WINDOW rect, the Game View carries a 21 px toolbar, so a run asking for 950 has always captured **929** — this project's own records say `1600×929` while every command in them says 950. Width has no side chrome and matched exactly, so the naive assertion was true on one axis and would have been false on the other **for a stable reason**, which is why symmetry was never suspected. Armed with `GameViewChromeHeight` named, dated and carrying its defence clause; proved both directions |
 
-⚠ **The last row is the rule working on itself**: an enumeration that cannot be completed is reported as
-incomplete, because the whole point of R-T3 is that a reader can tell coverage from assumption.
-| ID | what | trigger or reason |
+⚠ **The last row was carried NOT-DONE for a week and is now closed** — the rule working on itself in both
+directions: an enumeration that cannot be completed is reported as incomplete, and one that later CAN be is
+completed rather than left standing as a permanent apology. ⚠ **It was worth completing**: the owed
+enumeration is where the unguarded half was hiding.
 |---|---|---|
 **C-D6 (2026-08-31) gave every row a TRIGGER rather than a date.** A deferral with a date says when
 somebody stopped; a deferral with a trigger says what would make it start, and only the second is

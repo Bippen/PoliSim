@@ -55,6 +55,18 @@ namespace PoliSim.EditorTools
         private static float ViewWidth => ArgFloat("-shotwidth=", 1600f);
         private static float ViewHeight => ArgFloat("-shotheight=", 950f);
 
+        /// <summary>The Game View window's toolbar, in pixels: the difference between the WINDOW height
+        /// `view.position` takes and the FRAME height a capture gets back. **Measured 2026-09-01 at Unity
+        /// 6000.5.6f1: a request of 950 captured 929.** [AUTHORED-DRAFT]
+        ///
+        /// <para>⚠ <b>Its defence clause (R-T1).</b> This is a number about Unity's chrome, not about this
+        /// project, so it can go stale without anything here changing. **The guard it feeds fails on the
+        /// FIRST capture of a run, not silently across all of them**, and its message says outright that a
+        /// mismatch means either the argument was ignored OR this constant has gone stale — and that the
+        /// answer is to re-measure and change the number, never to widen the guard. A run cannot proceed on
+        /// a stale value: it stops at capture one.</para></summary>
+        private const int GameViewChromeHeight = 21;
+
         private static float ArgFloat(string prefix, float fallback)
         {
             string raw = Arg(prefix, null);
@@ -176,6 +188,13 @@ namespace PoliSim.EditorTools
             driver.Locale = Arg("-shotlocale=", "");
             // Trap 2: hand the driver the width we asked for so every capture can assert it got it.
             driver.ExpectedWidth = Mathf.RoundToInt(ViewWidth);
+            // R-T3 (2026-09-01): the other half of the same argument pair, unguarded for a month.
+            // ⚠ AND IT IS NOT SYMMETRIC, WHICH IS WHY IT WAS NEVER NOTICED. `view.position` is a WINDOW
+            // rect and the Game View window carries a toolbar, so a run asking for 950 has always captured
+            // 929 - measured today, and this project's own records say "1600x929" while every capture
+            // command in them says 950. Width has no such chrome and matches exactly, so the naive
+            // assertion worked on one axis and would have been false on the other for a stable reason.
+            driver.ExpectedHeight = Mathf.RoundToInt(ViewHeight) - GameViewChromeHeight;
             Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 
