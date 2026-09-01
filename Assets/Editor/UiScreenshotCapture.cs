@@ -57,7 +57,10 @@ namespace PoliSim.EditorTools
 
         /// <summary>The Game View window's toolbar, in pixels: the difference between the WINDOW height
         /// `view.position` takes and the FRAME height a capture gets back. **Measured 2026-09-01 at Unity
-        /// 6000.5.6f1: a request of 950 captured 929.** [AUTHORED-DRAFT]
+        /// 6000.5.6f1: a request of 950 captured 929.** [AUTHORED-DRAFT] ⚠ **And FOUR independent corroborations
+        /// arrived from S-17's record** — its filmed view heights 699/929/1059/1419 sit exactly 21 below
+        /// requests of 720/950/1080/1440, written down weeks earlier by somebody not looking for it. A
+        /// fifth was taken 2026-09-01: a 1280x720 run filmed at 1280x699. See <see cref="StandardGeometries"/>.
         ///
         /// <para>⚠ <b>Its defence clause (R-T1).</b> This is a number about Unity's chrome, not about this
         /// project, so it can go stale without anything here changing. **The guard it feeds fails on the
@@ -66,6 +69,29 @@ namespace PoliSim.EditorTools
         /// answer is to re-measure and change the number, never to widen the guard. A run cannot proceed on
         /// a stale value: it stops at capture one.</para></summary>
         private const int GameViewChromeHeight = 21;
+
+        /// <summary>**S-17's four geometries**, read off the project's own filmed record at the Track C
+        /// close rather than assumed. ⚠ **An off-standard height is a DIFFERENT TEST whose verdict is not
+        /// comparable**: a 1280 film at `-shotheight=800` reports **13 text overflows** on a tree that
+        /// films **0** at the standard 720, reproduced on clean `HEAD` — so it is the aspect ratio and not
+        /// any change to the code.
+        ///
+        /// <para>⚠ <b>And these four independently confirm <see cref="GameViewChromeHeight"/>.</b> The
+        /// record's filmed view heights are 699 / 929 / 1059 / 1419 against requests of 720 / 950 / 1080 /
+        /// 1440 — **exactly 21 below, four times over**, written down weeks before the constant was
+        /// measured for M-S2 and by somebody not looking for it. That is four corroborations of a number
+        /// this file otherwise states on one measurement.</para></summary>
+        private static readonly (int Width, int Height)[] StandardGeometries =
+        {
+            (1280, 720), (1600, 950), (1920, 1080), (2560, 1440),
+        };
+
+        /// <summary>Opt out of the geometry guard, loudly. ⚠ It exists because refusing outright would
+        /// make a legitimate experiment impossible, and a guard that blocks legitimate work gets deleted.
+        /// **It does not silence anything** — the run announces itself as off-standard and not comparable,
+        /// which is the whole content of the finding.</summary>
+        private static bool OffStandardAllowed =>
+            Environment.GetCommandLineArgs().Contains("-shotoffstandard");
 
         private static float ArgFloat(string prefix, float fallback)
         {
@@ -109,6 +135,43 @@ namespace PoliSim.EditorTools
                                + "PoliSim.EditorTools.UiScreenshotCapture.Run -shotlabel=<label> -shotwidth=<w> -shotheight=<h>");
                 EditorApplication.Exit(2);
                 return;
+            }
+
+            // ⚠ S-17, ARMED 2026-09-01. THE GEOMETRY MUST BE ONE THE RECORD CAN BE COMPARED WITH.
+            // A 1280 film at -shotheight=800 reports 13 text overflows on a tree that films 0 at the
+            // standard 720 - reproduced on clean HEAD, so it is the aspect ratio and nothing else. An
+            // off-standard film is not a worse film, it is a DIFFERENT TEST, and its verdict read beside
+            // the record's is a comparison of two things that were never the same measurement.
+            //
+            // Trap 2 (and its height half) guard "the size asked for is the size captured". This guards
+            // the question before it: "is the size asked for a size anything can be compared against".
+            int reqW = Mathf.RoundToInt(ViewWidth);
+            int reqH = Mathf.RoundToInt(ViewHeight);
+            bool standard = false;
+            var known = new System.Text.StringBuilder();
+            foreach ((int w, int h) in StandardGeometries)
+            {
+                known.Append(w).Append('x').Append(h).Append(' ');
+                if (reqW == w && reqH == h) { standard = true; }
+            }
+
+            if (!standard && !OffStandardAllowed)
+            {
+                Debug.LogError($"SHOT: REFUSING a non-standard geometry {reqW}x{reqH}. S-17's four are: {known}"
+                               + "- read off this project's own filmed record, not chosen. ⚠ An off-standard height is "
+                               + "a DIFFERENT TEST whose verdict is NOT comparable with the record: a 1280 film at "
+                               + "height 800 reports 13 text overflows where the standard 720 reports 0, on identical "
+                               + "code. If that is what you want, pass -shotoffstandard and the run will say so in "
+                               + "every line it writes - but do not read the result beside a standard film.");
+                EditorApplication.Exit(2);
+                return;
+            }
+
+            if (!standard)
+            {
+                Debug.LogWarning($"SHOT: OFF-STANDARD GEOMETRY {reqW}x{reqH}, allowed by -shotoffstandard. ⚠ This film "
+                                 + "is a DIFFERENT TEST from the record's four and its verdict is not comparable with "
+                                 + "them. Nothing here is wrong; it is simply not the same measurement.");
             }
 
             EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");

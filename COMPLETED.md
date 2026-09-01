@@ -10570,3 +10570,42 @@ which is not the same as finding nothing."*
 
 **Bar: 23 of 24 green; `UpstreamCheck` is red at 11 commits ahead and that red is CORRECT — it is E-4, an
 outward-facing action this session does not take.**
+
+## 167. S-17 CLOSED — both silent defaults guarded, and the finding reproduced itself in the closing (2026-09-01)
+
+The capture command had **two silent defaults**, and the film geometry is load-bearing.
+
+- **`-shotheight`** was unchecked until M-S2 (§162 follow-on) armed trap 2's height half. Trap 2 guards
+  *"the size asked for is the size captured."*
+- **The GEOMETRY ITSELF** was unchecked until now — the question *before* trap 2's: **is the size asked for
+  a size anything can be compared against?**
+
+`UiScreenshotCapture` now refuses any pair outside S-17's four — **1280×720 · 1600×950 · 1920×1080 ·
+2560×1440**, read off this project's own filmed record rather than chosen — naming all four in the
+refusal. ⚠ **`-shotoffstandard` is a loud opt-out, not a silencer**: it exists because a guard that blocks
+legitimate experiment gets deleted, and the run then announces itself as a different test whose verdict is
+not comparable. That announcement is the entire content of the finding.
+
+### ⚠ The finding reproduced itself while being closed
+
+Identical code, identical width, eighty pixels of height:
+
+| geometry | text overflows |
+|---|---|
+| `1280×720` (standard) | **0** |
+| `1280×800` (off-standard) | **8** |
+
+⚠ **The record says thirteen and today's tree gives eight. The count moved and the phenomenon did not** —
+which is the honest way to carry a measurement forward rather than either repeating a stale number or
+pretending the change undermines the finding.
+
+### ⚠ And the four geometries confirm a constant measured for a different item
+
+`GameViewChromeHeight = 21` was measured once for M-S2, from a single observation (a request of 950
+capturing 929). S-17's record lists the filmed view heights of all four geometries: **699 / 929 / 1059 /
+1419**, against requests of 720 / 950 / 1080 / 1440. **Exactly 21 below, four times over** — written down
+weeks earlier, by somebody not looking for it, for an unrelated purpose. A one-observation constant now has
+four independent corroborations, and a fifth was taken today: the `1280×720` proof run filmed at
+**1280×699**.
+
+**Bar: 23 of 24; `UpstreamCheck` red at E-4, correctly.**
