@@ -104,7 +104,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-R4** | ratchet: `PartyMarkCoverageCheck.UNCONSUMED` = **1** | ⚠ `mark_party_us_lib` has no seeded party and **must not get one invented**; closes when a Libertarian party exists for a reason of its own, or the file is retired | CODE | SAFE | — | S |
 | **M-R5** | ratchet: `CohortAgingStepDiagnostic.RUNAWAY` = **2** | Italy and Poland stop hitting `MinPopulation` at the 100-year horizon | CODE | SAFE | **M-B2** | — |
 | **M-R6** | ratchet: `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` = **1** | board 1h has a route | CODE | SAFE | **M-S7** | — |
-| **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour, in a comment or a document | ⚠ the honest done-when may be *"recorded as undecidable"*; it is the larger half of what a comment asserts | CODE | SAFE | — | M |
 | **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED and not centred; `FlatIssueMatch = 0.5` stands in | the axes are defined from a source, or the stand-in is ruled permanent | CODE | DATA | — | M |
 
 ## SECTION 2 — BASELINE, OWNER CODE. One at a time, each with its per-country explanation.
@@ -217,6 +216,7 @@ measure willingness to move rows rather than work done.
 | **M-S8** | **`S-23`** — `DeadStateCheck` still cannot distinguish a read from a write | ⚠ **it did not need "more than a regex" — it needed a regex AND a classifier.** Built; its first run found **six dead fields**, all deleted, ceiling untouched, plus one false positive that would have had somebody delete a live loop bound | CODE | SAFE | `8daa676` | M |
 | **M-S5** | **`C-0.3`** — the stranded branch disposed | ⚠ **"four unsuperseded pieces" was never derived.** Measured: **13 of 15 superseded**, three by something stronger; **two unsuperseded and neither is code** — `ChamberRenewal` (staggering, absent from main entirely) and per-election-type turnout. Recorded as preserved ideas; the branch is a ref | CODE | RECORDS | `5f3e9dd` | M |
 | **M-R3** | ratchet: `DocumentClaimCheck.MEMBER_GONE` = **2 → 0** | ⚠ **they were not both history.** One was a live DESIGN ask for a screen cut at P-A2 — corrected, with **E-5** raised. And the first fix **fell into S-36's trap**, quoting the dead name while explaining it was dead | CODE | RECORDS | `4b8716b` | S |
+| **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour | ⚠ **recorded UNDECIDABLE with the boundary MEASURED**: the most promising decidable slice is **seven claims** repo-wide, two already covered. The instance's real cause was reachability, which is guarded. **S-38** shrinks the undecidable half by convention | CODE | SAFE | `86edd75` | M |
 
 ---
 
