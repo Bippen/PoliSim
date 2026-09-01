@@ -66,7 +66,7 @@ namespace PoliSim.EditorTools
         /// <summary>⚠ The residue's ceiling, measured on the first run. **Lower it as rows close; never
         /// raise it.** A rising residue is work being added faster than it is finished, which is a fact
         /// worth failing over rather than absorbing.</summary>
-        private const int ResidueCeiling = 17;
+        private const int ResidueCeiling = 16;
 
         private const string ListRelative = "POLISIM_MASTER_LIST.md";
 

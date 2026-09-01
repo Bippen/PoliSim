@@ -1,3 +1,4 @@
+| **M-S6** | **`C-0.2`** — the post-wiring re-derivation, PROSE half | ⚠ **its done-when was a GREP, which means it was a CHECK NOBODY HAD WRITTEN** — and it was sized as a READ. `PreWiringPremiseCheck` armed and its ratchet `PreWiringPremiseCheck.ASSERTED` taken **14 → 0 in the same session**, by four principled rules and fourteen document corrections | CODE | RECORDS | `c631505` | L |
 # PoliSim — THE MASTER WORK LIST
 
 **Derived 2026-09-01 by sweeping the repo, not by reading a list.** Every row below was found by
@@ -100,7 +101,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 
 | ID | what | done-when | OWNER | CLASS | BLOCKS-ON | size |
 |---|---|---|---|---|---|---|
-| **M-S6** | **`C-0.2`** — the post-wiring re-derivation, PROSE half | ⚠ **it was sized as a READ because its done-when was a GREP — which means it was a CHECK NOBODY HAD WRITTEN.** Now `PreWiringPremiseCheck`, ratcheted at its first measurement: ratchet **`PreWiringPremiseCheck.ASSERTED` = 14**, each line printed by name every run. ⚠ **Arming it at 0 would have been choosing a number for how it looks.** Done when the ratchet reaches 0 | CODE | RECORDS | — | M |
 | **M-S7** | **`S-32`** — board 1h gets a route from the running game | `PlayerReachabilityCheck` reports 0 and the route shows a real count | CODE | SAFE | **M-B5** | M |
 | **M-R1** | ratchet: `UnwiredSubsystemCheck.UNWIRED` = **7 → 5** | ⚠ **two were never unwired** — `TaxLine` and `WelfareProgram` are asked for every turn, one hop away through a same-file facade the check did not follow. Ceiling lowered on the correction. **The five that remain are the real class** and wait on `M-D1` / the `M-B4`–`M-B5` chain | CODE | SAFE | **M-D1** | L |
 | **M-R2** | ratchet: `UnwiredSubsystemCheck.UNREACHABLE` = **6** | as above | CODE | SAFE | M-B4 | L |
