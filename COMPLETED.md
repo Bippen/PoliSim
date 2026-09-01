@@ -10829,3 +10829,51 @@ invokes `Simulate`) and four elections-track subsystems named nowhere in game co
 `M-B4`/`M-B5` chain, which is where the master list already puts them.**
 
 **Bar 23 of 24, residue 17.**
+
+## 174. S-4's PREMISE WAS FALSE — the five "undefined" axes were in the file all along (2026-09-01)
+
+`S-4` stood as *"five of §4's eight axes are UNDEFINED and are NOT centred; `FlatIssueMatch = 0.5` stands
+in for per-issue positions **that exist for no party anywhere**"*, and it was carried as **W-F2's bill** —
+work waiting on a source that had not been found.
+
+⚠ **The source had already been found, parsed, and cited by this project.** All five axes are published
+variables in **`CHES_2024_final_v2.csv`** — the same file `party_positions.md`'s four sourced columns were
+read from on 2026-08-28. **Nobody looked past the four that were taken.**
+
+| §4 axis | CHES 2024 variable | populated |
+|---|---|---|
+| `EnvironmentalIndustrial` | `environment` | ✅ |
+| `CentralizationDecentralization` | `regions` | ✅ |
+| `TaxHighLow` | `spendvtax` | ✅ |
+| `ImmigrationRestrictiveLiberal` | `immigrate_policy` | ✅ |
+| `PublicPrivate` | `deregulation` | ✅ |
+
+**44 parties across Sweden, Germany, France, Italy and Poland, every cell populated**, read from the
+dataset itself rather than from a summary of it. Banked in `ElectionsData/positions/party_positions.md`
+with its provenance.
+
+⚠ **This is the sharpest instance yet of the defect this repo keeps finding: a documented absence read as
+evidence of a presence.** *"Positions that exist for no party anywhere"* is a strong claim about the world,
+it was written down once, and every reader afterwards — including the master list, which sized the row as
+DATA-waiting-on-a-source — took it as measured. **It was never measured.** Four columns were taken from a
+fifty-two-column file and the other forty-eight became "nowhere".
+
+### ⚠ And it is NOT wired, which is not caution for its own sake
+
+The codebook's scale endpoints **could not be quoted**. `CHES.2024.Codebook.pdf` was fetched and its
+streams inflated — the party-list pages come out readable and **the variable-definition pages are in
+subsetted-font cipher encodings**.
+
+**S-37 is exactly this case: a bound is a direction as well as a number.** An axis wired the wrong way
+round does not fail loudly; it silently reverses every compatibility comparison that reads it, and the
+model goes on looking like it works. So **the numbers are banked and the axes stay `NaN`** — which §4
+skips rather than treating as a centre, the behaviour it was built with.
+
+**The empirical direction check is recorded as corroboration and never as the source**: every green party
+in the set sits at the bottom of `environment` — Sweden MP **0.10**, Italy EV **0.14**, Germany Grünen
+**0.90** — against Sweden SD and Germany AfD at **9.00**. It reads as *0 = supports environmental
+protection*, it agrees with the obvious reading, and **agreeing with the obvious reading is not a
+quotation.**
+
+**Logged as D-18, strikeable. The remaining step is one readable codebook page — S-4 has stopped being a
+bill and become an afternoon.**

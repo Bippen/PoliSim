@@ -121,3 +121,89 @@ issue layer cannot yet separate two parties that differ on a single issue.
 **Candidate sources**, none yet fetched: CHES 2024's policy-specific items (the same caution as
 above applies), the Manifesto Project (CMP/MARPOR) coded manifesto categories, and each party's own
 2022/2025 manifesto. The first is cheap and questionable; the third is expensive and authoritative.
+
+
+---
+
+## THE FIVE AXES §4 CALLS UNDEFINED — SOURCED 2026-09-01, and ⚠ NOT YET WIRED
+
+⚠ **S-4 said these were *"per-issue positions that exist for no party anywhere."* That premise is FALSE.**
+All five are published variables in **`CHES_2024_final_v2.csv` — the same file this document''s four sourced
+columns were read from.** Nobody looked past the four that were taken.
+
+| §4 axis | CHES 2024 variable |
+|---|---|
+| `EnvironmentalIndustrial` | `environment` |
+| `CentralizationDecentralization` | `regions` |
+| `TaxHighLow` | `spendvtax` |
+| `ImmigrationRestrictiveLiberal` | `immigrate_policy` |
+| `PublicPrivate` | `deregulation` |
+
+**Read 2026-09-01 from `https://github.com/chesdata/chesdata.github.io/releases/download/ches-europe/CHES_2024_final_v2.csv`**
+(279 parties, 609 experts, fieldwork 2024) — the dataset itself, not a summary of it. **44 parties across
+the five EU countries, every cell populated.**
+
+### ⚠ WHY THIS IS NOT WIRED YET, AND IT IS NOT CAUTION FOR ITS OWN SAKE
+
+**The codebook''s scale endpoints could not be quoted.** `CHES.2024.Codebook.pdf` was fetched and its
+streams inflated; the party-list pages are readable and **the variable-definition pages are in
+subsetted-font cipher encodings**, so the wording of *"0 means X, 10 means Y"* is not in hand.
+
+⚠ **S-37 is exactly this case: a bound is a direction as well as a number.** An axis wired with its
+direction inverted does not fail loudly — it silently reverses every compatibility comparison that reads
+it, and the model would look like it was working. **So the numbers are banked and the axes stay `NaN`
+until the direction is QUOTED, not inferred.**
+
+**The empirical direction check, recorded as CORROBORATION and not as the source:** every green party in
+the set sits at the bottom of `environment` — Sweden MP **0.10**, Italy EV **0.14**, Germany Grünen
+**0.90** — against Sweden SD **9.00** and Germany AfD **9.00**. That reads as *0 = supports environmental
+protection*. ⚠ **It is inference from known positions, it agrees with the obvious reading, and it is still
+not a quotation.** The remaining step is one codebook page.
+
+### The table
+
+| country | party | environment | regions | spendvtax | immigrate_policy | deregulation |
+|---|---|---|---|---|---|---|| France | FI | 3.33 | 5.00 | 1.00 | 1.55 | 0.67 |
+| France | Horizons | 6.33 | 5.50 | 7.00 | 6.00 | 7.43 |
+| France | LE/EELV | 2.00 | 2.33 | 1.33 | 1.60 | 1.29 |
+| France | LR | 7.33 | 6.33 | 7.33 | 8.36 | 7.29 |
+| France | MoDem | 5.67 | 4.75 | 5.33 | 4.67 | 6.71 |
+| France | PCF | 4.33 | 4.67 | 1.00 | 3.09 | 1.29 |
+| France | PS | 3.33 | 4.50 | 1.67 | 3.18 | 3.43 |
+| France | RE | 5.67 | 5.00 | 6.50 | 5.73 | 7.00 |
+| France | REC | 7.83 | 9.50 | 8.50 | 9.67 | 5.80 |
+| France | RN | 8.00 | 5.00 | 4.33 | 9.55 | 4.00 |
+| Germany | AfD | 9.00 | 4.25 | 7.10 | 9.95 | 6.60 |
+| Germany | BSW | 7.22 | 5.67 | 2.20 | 8.63 | 2.17 |
+| Germany | CDU | 5.80 | 3.67 | 6.25 | 7.21 | 6.17 |
+| Germany | CSU | 6.43 | 2.83 | 5.88 | 7.54 | 6.67 |
+| Germany | DL | 2.11 | 7.00 | 1.17 | 2.56 | 1.50 |
+| Germany | FDP | 6.70 | 4.33 | 8.83 | 6.06 | 8.00 |
+| Germany | FW | 7.50 | 1.75 | 6.00 | 7.40 | 7.00 |
+| Germany | Grunen | 0.90 | 5.67 | 2.17 | 2.47 | 3.50 |
+| Germany | SPD | 3.40 | 6.33 | 2.33 | 5.00 | 3.33 |
+| Italy | +E | 3.25 | 5.60 | 4.25 | 2.43 | 5.89 |
+| Italy | A | 4.14 | 4.50 | 4.33 | 3.77 | 5.90 |
+| Italy | EV | 0.14 | 6.50 | 0.33 | 1.31 | 2.11 |
+| Italy | FDI | 7.00 | 5.38 | 6.00 | 9.47 | 5.40 |
+| Italy | FI | 7.00 | 5.08 | 8.50 | 6.47 | 7.80 |
+| Italy | Lega | 8.25 | 2.92 | 7.25 | 9.87 | 5.90 |
+| Italy | MS5 | 1.50 | 6.45 | 2.00 | 4.87 | 3.40 |
+| Italy | PD | 1.88 | 5.85 | 2.00 | 2.20 | 3.20 |
+| Italy | SI | 1.00 | 6.08 | 0.25 | 0.77 | 1.44 |
+| Italy | SVP | 4.00 | 1.77 | 4.00 | 5.50 | 4.43 |
+| Poland | Konfederacja | 8.86 | 7.78 | 9.38 | 9.81 | 8.46 |
+| Poland | Nowa Lewica | 1.86 | 3.00 | 1.92 | 3.15 | 3.38 |
+| Poland | PiS | 7.71 | 7.93 | 3.69 | 8.75 | 3.71 |
+| Poland | PO | 3.57 | 3.57 | 5.46 | 7.00 | 6.71 |
+| Poland | Polska 2050 | 3.64 | 3.42 | 5.92 | 5.67 | 6.15 |
+| Poland | PSL | 5.50 | 4.14 | 5.17 | 7.30 | 3.69 |
+| Poland | Razem | 1.43 | 2.92 | 0.50 | 1.81 | 2.08 |
+| Sweden | C | 2.50 | 4.29 | 7.50 | 3.42 | 8.53 |
+| Sweden | KD | 7.40 | 5.86 | 6.50 | 8.26 | 6.80 |
+| Sweden | L | 6.20 | 4.71 | 6.75 | 6.79 | 7.33 |
+| Sweden | M | 7.60 | 5.71 | 8.00 | 8.47 | 8.27 |
+| Sweden | MP | 0.10 | 4.43 | 2.75 | 2.16 | 3.47 |
+| Sweden | SAP | 3.70 | 5.29 | 2.50 | 6.95 | 3.67 |
+| Sweden | SD | 9.00 | 5.29 | 5.50 | 9.95 | 4.57 |
+| Sweden | V | 1.40 | 5.00 | 0.50 | 3.05 | 0.87 |

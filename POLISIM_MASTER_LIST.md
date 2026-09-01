@@ -103,7 +103,7 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-R2** | ratchet: `UnwiredSubsystemCheck.UNREACHABLE` = **6** | as above | CODE | SAFE | M-B4 | L |
 | **M-R5** | ratchet: `CohortAgingStepDiagnostic.RUNAWAY` = **2** | Italy and Poland stop hitting `MinPopulation` at the 100-year horizon | CODE | SAFE | **M-B2** | — |
 | **M-R6** | ratchet: `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` = **1** | board 1h has a route | CODE | SAFE | **M-S7** | — |
-| **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED and not centred; `FlatIssueMatch = 0.5` stands in | the axes are defined from a source, or the stand-in is ruled permanent | CODE | DATA | — | M |
+| **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED; `FlatIssueMatch = 0.5` stands in | ⚠ **the premise was FALSE and is corrected (D-18): all five are in `CHES_2024_final_v2.csv`, the file this project already parsed, 44 parties fully populated** — banked, ⚠ **not wired**: the codebook's endpoints are behind subsetted-font ciphers and S-37 forbids guessing a direction. **Remaining: one readable codebook page** | CODE | DATA | — | S |
 
 ## SECTION 2 — BASELINE, OWNER CODE. One at a time, each with its per-country explanation.
 

@@ -777,6 +777,35 @@ hat; (c) throws away a stat to avoid writing one honest sentence.
 
 ---
 
+---
+
+### D-18 · The five axes are SOURCED and the codebook''s endpoints are not ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+`S-4` said §4''s five undefined axes stood for *"per-issue positions that exist for no party anywhere."*
+⚠ **That premise is false.** All five are published variables in `CHES_2024_final_v2.csv` — **the same file
+this project''s four sourced columns were already read from** — and 44 parties across the five EU countries
+have every cell populated. `environment` · `regions` · `spendvtax` · `immigrate_policy` · `deregulation`.
+
+⚠ **But the codebook''s scale endpoints could not be quoted.** The PDF was fetched and inflated; its
+party-list pages are readable and its variable-definition pages are in subsetted-font cipher encodings.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Bank the numbers, leave the axes `NaN` until the direction is QUOTED** | the axes stay undefined one more session; the data is in hand and the remaining step is one codebook page | nothing — every later route stays open |
+| b. Wire them now, taking the direction from the empirical anchor (every green party at the bottom of `environment`) | none up front | ⚠ **an inverted axis does not fail loudly.** It silently reverses every compatibility comparison that reads it, and the model goes on looking like it works — S-37''s defect with a plausible cover story |
+| c. Leave the data unbanked until the codebook is decoded | none | ⚠ the finding that S-4''s premise was FALSE would sit undocumented, and the next session would re-derive it |
+| d. Decode the font cipher this session | a long detour through ToUnicode CMaps | ⚠ spends a session''s remaining budget on a step that one readable copy of the codebook makes unnecessary |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (a).** Basis: **S-37 is precisely this case — a bound is
+a direction as well as a number** — and an axis wired the wrong way round is the failure this project has
+already catalogued as the worst kind, one that reads as working. The numbers are banked with their
+provenance so the finding cannot be lost; the axes stay `NaN` because `NaN` is skipped by every comparison
+rather than treated as a centre, which is the behaviour §4 was built with. ⚠ **The empirical anchor is
+recorded as CORROBORATION, never as the source**: every green party at the bottom of `environment` agrees
+with the obvious reading, and agreeing with the obvious reading is not a quotation.
+
+> **To strike it, write:** `D-18 STRUCK: (b)` — the data is on disk and wiring it is an afternoon.
+
 ### D-17 · A closed row must cite the commit that closed it — and that hash cannot exist inside the commit it names ⚠ DECIDED AND TAKEN (R-N1), strikeable
 
 `InstructionResidueCheck` requires every row under the CLOSED heading to produce a commit hash, so that
@@ -1251,7 +1280,7 @@ Named so they are not rediscovered as surprises.
 | S-1 | **The electorate does not move with the simulation.** §8 couples it to the economy; nothing does that yet, so two elections in one game return the same chamber | C-D4's carry-over rides on top of it; C-D5's swing column will show no swing from the model's own play |
 | S-2 | Germany 2025 sits on a threshold cliff — BSW missed 5 % by 0.02 pp — so a model with ~1.5 pp of error lands on the wrong side and ninety seats move | reported, never tuned. The weakest point in the seat model |
 | S-3 | ✅ **CLOSED 2026-09-01 (`COMPLETED.md` §165) — and the row was stale in both halves.** It is not *"SD keeps 6 of 38"*: measured today it is **SD 6, V 12, MP 12 — 30 member-days across three parties**. ⚠ **And the two parties that hired FEWEST have the WORST record** (V and MP hired one each and went unpaid 12 of 56 days, 21 %; SD hired two and missed 6 of 112, 5 %) — **unpaid days track INCOME, not headcount**, which is the opposite of what "keeps N unpaid days" reads as. The arithmetic closes to the krona from two constants read out of source: an 8-week (56-day) campaign at `CampaignStaff.SalaryPerDay = 1 800`. Assertion **1i** already conserved the payroll; ⚠ **what nothing checked was whether an unpaid day is POVERTY or a BUG**, since the books balance either way. New assertion **1j**: a party that went unpaid must finish below one day's salary. Measured SD 0 kr, V and MP 1 500 kr — genuinely one day short. Proved to discriminate at the real margin | CODE | `COMPLETED.md` §165 |
-| S-4 | Five of §4's eight axes are UNDEFINED and are NOT centred; `FlatIssueMatch = 0.5` stands in for per-issue positions that exist for no party anywhere | W-F2's bill |
+| S-4 | ⚠ **THE PREMISE IS FALSE, measured 2026-09-01 (D-18, `COMPLETED.md` §174).** It read *"positions that exist for no party anywhere"*. All five are published variables in `CHES_2024_final_v2.csv` — **the very file this project's four sourced columns were read from** — and **44 parties across the five EU countries have every cell populated**: `environment`, `regions`, `spendvtax`, `immigrate_policy`, `deregulation`. Banked in `ElectionsData/positions/party_positions.md`. ⚠ **NOT WIRED**: the codebook's endpoints could not be quoted (its definition pages are subsetted-font ciphers), and **S-37 says a bound is a direction as well as a number** — an inverted axis silently reverses every comparison and goes on looking like it works. The axes stay `NaN`, which §4 skips rather than centring. **Remaining step: one readable codebook page** | W-F2's bill — ⚠ **and it is no longer a bill, it is an afternoon** |
 | S-5 | Sweden's TOP issue (EB105: "threats to democracy", 26 %) is not representable in §6; the harness's four issues are Sweden's second through fifth | W-F3's bill |
 | S-6 | Sweden 2014 does NOT reproduce through the same allocator (6 seats absolute error) — the reason every "reproduces" claim is scoped to 2022 | C-A4's rule; migrated from the stranded branch at C-0.3 |
 
