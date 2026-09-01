@@ -119,7 +119,16 @@ namespace PoliSim.Elections
                 case CampaignActionKind.TownHall:
                     return new ActionSpec(kind,              25_000,  3.0,  0.01,  0.95,  1.00,  0.55,  0.01,  true);
                 case CampaignActionKind.DoorToDoor:
-                    return new ActionSpec(kind,              15_000,  5.0,  0.02,  0.90,  0.55,  0.90,  0.00,  true);
+                    // ⚠ C-N2, RULED 2026-09-02: reach is 1.00 here BY DEFINITION, not by tuning. Door-to-door
+                    // is the one action whose audience is an ABSOLUTE COUNT - W-B11 made it "the doors the
+                    // volunteers can actually knock in the hours they have" and said in the same sentence
+                    // that W-B3's placeholder reach fraction "no longer applies to it". The fraction survived
+                    // in this table anyway, so Resolve() went on multiplying the knocked doors by 0.02: a
+                    // canvass of 3 000 doors persuaded 60 people, and no rational personality would spend
+                    // five hours on it. A knocked door is a reached door. Nothing else in this row moves -
+                    // not the price, the hours, the attention or the weights - and the §34 bar is re-measured
+                    // on the harness rather than assumed.
+                    return new ActionSpec(kind,              15_000,  5.0,  1.00,  0.90,  0.55,  0.90,  0.00,  true);
                 case CampaignActionKind.TelevisionAd:
                     return new ActionSpec(kind,             500_000,  1.0,  0.55,  0.35,  0.22,  0.15,  0.03,  false);
                 case CampaignActionKind.DigitalAd:

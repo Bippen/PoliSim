@@ -691,6 +691,34 @@ namespace PoliSim.Elections
             Band(spec, audience, view.OwnCredibility, spend, measured, salience, salienceError, match, matchError,
                 profile, m, out double expectedPts, out double spanPts, out double lowPts, out double highPts);
 
+            // ⚠ C-N2, RULED 2026-09-02 (its second half). Door-to-door's payoff in the WORLD is turnout: the
+            // run books every knocked door through `gotv.Operate`, which raises the party's regional
+            // MOBILIZATION attribute (§26), and election day multiplies turnout by it. The scorer valued
+            // only the §42 chain trace - persuasion and enthusiasm - so the one thing §12 says the action
+            // is FOR ("strong turnout bonus") was invisible to every rational personality, and 3 000
+            // contacts lost to a social post's million on persuasion points alone, as they should.
+            //
+            // The term is DERIVED from the model's own constants, not authored: the contacts' first-order
+            // lift on the mobilisation attribute (GotvModel.Mobilization from zero effort - an upper
+            // bound, which the personality's optimism already shades), scaled by what a mobilisation
+            // attribute point is worth in turnout beside an enthusiasm point (the two spans' ratio), and
+            // by the region's share of the national electorate, because a regional attribute point moves
+            // one region's turnout and not the country's. It lands in the same "turnout points" unit
+            // Points() already gives enthusiasm, weighted by the same EnthusiasmValue. The offices' own
+            // daily knocking is NOT counted here - it happens with or without this action.
+            if (spec.Kind == CampaignActionKind.DoorToDoor && regionIndex >= 0 && view.NationalAudience > 0.0)
+            {
+                double eligible = view.Regions[regionIndex].Audience;
+                double weighted = audience * GotvModel.Spec(GotvOperation.DoorKnocking).Weight;
+                double attributeLift = GotvModel.Mobilization(weighted, eligible) - GotvModel.Mobilization(0.0, eligible);
+                double turnoutPts = profile.EnthusiasmValue * attributeLift
+                    * (TurnoutModel.MobilizationSpan / TurnoutModel.EnthusiasmSpan)
+                    * (eligible / view.NationalAudience);
+                expectedPts += turnoutPts;
+                lowPts += turnoutPts;
+                highPts += turnoutPts;
+            }
+
             double importance = profile.Affinity(spec.Kind) * (measured ? Math.Max(0.0, salience) / topSalience : 0.5);
             double probabilityOfSuccess = highPts > 0 ? 0.5 + 0.5 * (lowPts / highPts) : 0.5;
             double value = expectedPts * importance * probabilityOfSuccess;

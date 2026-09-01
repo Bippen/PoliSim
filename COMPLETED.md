@@ -18361,3 +18361,58 @@ appointing to. **Richer per-country biographies remain a content choice, not a c
 are not written here; the appendix carries them as Elias's if he wants them.
 
 **Bar 25 of 25.**
+
+
+## 193. C-N2 RULED AND FIXED — door-to-door was blind in two places, and no magnitude moved (2026-09-02)
+
+**The finding (C-A2):** the grassroots profile carries the strongest pro-local weighting in the roster —
+door-to-door affinity 2.2, `EnthusiasmValue` 1.6 — and knocked **zero** doors; every rational personality
+did. The register sized it as a §12 verb-set question — *what is the door-to-door ACTION for, given the
+offices already knock?* — and forbade touching any affinity, hour cost, reach or price, because tuning
+one would bury the finding. **It was a mechanism, and it was two mechanisms.**
+
+### 1 — The action persuaded 2 % of the people it talked to
+
+`Resolve()` computes `reach = audience × spec.ChannelReach`. W-B11 made door-to-door's audience **an
+absolute count** — the doors the volunteers can knock in the hours they have — and said in the same
+sentence that W-B3's placeholder reach fraction *"no longer applies to it"*. ⚠ **The fraction survived in
+the spec table anyway.** A canvass of 3 000 doors was resolving as 60 people reached. `ChannelReach` is
+now **1.00 for door-to-door BY DEFINITION** — a knocked door is a reached door — and the row is otherwise
+untouched. Measured: doors **0 % → 1 %** for the professional and grassroots personalities. Real, and not
+enough.
+
+### 2 — The scorer could not see the one thing §12 says the action is for
+
+§12: *"strong turnout bonus · moderate persuasion · primarily local."* In the world, every knocked door
+goes through `gotv.Operate` and raises the party's regional **mobilisation attribute**, which election day
+multiplies turnout by (§26). ⚠ **The AI's expected value scored only the §42 chain trace — persuasion and
+enthusiasm.** Turnout was invisible to it, so 3 000 contacts lost to a social post's million on persuasion
+points alone — *as they should have*, on that measure.
+
+The scorer now values the door candidate's turnout in the unit `Points()` already gives enthusiasm, and
+**every factor is one of the model's own constants**: the contacts' first-order lift on the mobilisation
+attribute (`GotvModel.Mobilization` from zero effort — an upper bound the personality's optimism already
+shades) × the ratio of the two turnout spans (`MobilizationSpan / EnthusiasmSpan`, what a mobilisation
+point is worth beside an enthusiasm point) × the region's share of the national electorate (a regional
+attribute point moves one region's turnout, not the country's) × `EnthusiasmValue`. The offices' own daily
+knocking is not counted — it happens with or without the action.
+
+### Measured on `CampaignAiHarness`
+
+| | prof | pop | est | grass | chaos |
+|---|---|---|---|---|---|
+| door-to-door share, before | 0 % | 0 % | 0 % | **0 %** | 19 % |
+| after fix 1 (reach) | 1 % | 0 % | 0 % | 1 % | 23 % |
+| **after fix 2 (turnout valued)** | 1 % | 0 % | 0 % | **20 %** | 22 % |
+
+**Grassroots now holds the largest door share of any optimising personality**, which is §32's own
+description of it. Its rally-and-social share fell 74 % → 40 % — the mix diversified rather than swapping
+one dominance for another. Separation moved: est/grass **0.269 → 0.461** (clears §32's 0.30 line),
+prof/grass 0.573 → 0.379 (still clear), prof/est 0.306 → 0.220 (two rational planners on equal money
+converge, the pending finding the harness already carries).
+
+⚠ **What did not move**: no affinity, no `EnthusiasmValue`, no hour cost, no price, no persuasion or
+enthusiasm weight. The free interview's dominance stands as W-B9's own item. **R-T3**: the nine harnesses
+that consume the door spec or the scorer all run green after the change.
+
+**Bar 25 of 25.**
