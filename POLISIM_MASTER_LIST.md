@@ -108,7 +108,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-R6** | ratchet: `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` = **1** | board 1h has a route | CODE | SAFE | **M-S7** | — |
 | **M-S8** | **`S-23`** — `DeadStateCheck` still cannot distinguish a read from a write | either the detector separates them or the doc stops claiming it does | CODE | SAFE | — | M |
 | **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour, in a comment or a document | ⚠ the honest done-when may be *"recorded as undecidable"*; it is the larger half of what a comment asserts | CODE | SAFE | — | M |
-| **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | a film run cannot silently use the wrong geometry or pattern | CODE | SAFE | — | S |
 | **M-S11** | **`S-13`** — the Policy Web's ~40 incoming edges converge on one point at a focused stat node | DESIGN ruled it a comprehension judgement (board 2b); this row is the code half once ruled | CODE | SAFE | — | S |
 | **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED and not centred; `FlatIssueMatch = 0.5` stands in | the axes are defined from a source, or the stand-in is ruled permanent | CODE | DATA | — | M |
 
@@ -205,6 +204,7 @@ measure willingness to move rows rather than work done.
 | **M-S16** | ⚠ **`G-1`'s guard was armed for a human who remembers** — `ScreenEdgeCheck` in neither batch, firing only if invoked after a capture pass | the capture driver runs it over its own label before exiting, and the hook can only make the exit code worse; proved with 81/0 exiting **2** when the guard verified nothing | CODE | SAFE | `e8a9bb1` | M |
 | **M-S14** | **`S-3`** — W-B12's residual: SD keeps 6 of 38 unpaid staff-days | ⚠ **stale in both halves** — it is SD 6, V 12, MP 12, and the two parties that hired FEWEST have the WORST record. Arithmetic closes to the krona; assertion **1j** now separates poverty from a bug | CODE | SAFE | `d31dec3` | S |
 | **M-S3** | **`S-29`** — the party-ink **draw-site** check | ⚠ **the surface is ONE file** — `HemicycleRenderer` — so clause 1 is an allow-list with arguments, clause 2 takes the FILE as the unit of adjacency and says so, and clause 3 is subsumed by construction. Four failure paths proved | CODE | SAFE | `a77c243` | M |
+| **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | ⚠ **both guarded, and the finding reproduced itself in the closing**: 1280×800 films 8 text overflows where 1280×720 films 0, on identical code. The four geometries also gave `GameViewChromeHeight` four corroborations | CODE | SAFE | `7ae67e0` | S |
 
 ---
 
