@@ -10530,3 +10530,43 @@ V and MP **1 500 kr** — genuinely one day short of 1 800. ⚠ The bound is one
 zero, because finishing with 1 799 kr and an unpaid day *is* poverty and demanding an empty chest would be
 tuning the assertion to this run. **Proved to discriminate at the real margin**: moved to 1 000, V and MP
 read `SOLVENT AND UNPAID` and the harness fails.
+
+## 166. S-29 CLOSED — the party-ink rule made structural, and the surface is one file (2026-09-01)
+
+D9 row 5 ruled the derived 8.7° hue floor **the wrong constraint** — it keeps two AREA accents apart, and
+party inks never sit in that company — so `PartyInkHarness`'s six PENDs were **answered, not fixed**. Their
+measurements remain true and remain printed; they were simply never evidence for the thing anyone cared
+about. ⚠ **What binds is WHERE a colour is drawn, and no measurement of a colour can see that.**
+
+### ⚠ The surface is one file, which is the finding that made the check easy
+
+Exactly **one runtime file** draws `PoliSimTheme.Party(` — `HemicycleRenderer`, at three sites. The
+ruling's *"where"* constraint is therefore **fully enumerable** rather than approximate, and the check can
+be an allow-list instead of a heuristic.
+
+- **Clause 1 — an ALLOW-list of files, each with its argument.** ⚠ A deny-list is silent about the file
+  nobody thought of, and the entire finding is that party ink turns up where nobody considered it.
+  `HemicycleRenderer` is on it because the chamber and its legend are the one surface where a party's
+  *identity* is the subject rather than the decoration — and behaviour 9 requires arc and legend swatch to
+  come from the **same call**, which is why both live in one file rather than agreeing across two.
+- **Clause 2 — no file draws both a party ink and an area accent.** ⚠ *Adjacent* is **not decidable from
+  source** — two draws in one method may be a metre apart on screen — so the containing FILE is the unit,
+  and the check says so rather than implying a precision it does not have. **Coarser than the ruling and
+  strictly stronger**: a file that never draws both cannot draw them adjacent.
+- **Clause 3 needs no clause of its own.** *"A party swatch forced into chrome draws the neutral status
+  ink"* is subsumed: chrome lives in `GameController`, which is off the list, so a party ink in a status dot
+  fails clause 1 **by construction** — and that is exactly how it was proved, by putting one there.
+  Measured today, the one rail status dot draws `PoliSimTheme.Good`. **A second clause restating the first
+  would be a second thing to keep true.**
+
+Both accent weights are listed, because a file drawing the desk-weight variant beside a party ink is the
+same finding as one drawing the paper-weight variant, and a check knowing only one reads clean on half the
+cases. Scope is runtime only: `PartyInkHarness` reads the ink to MEASURE it and draws nothing, and
+including the Editor tree would make the check fire on its own instrument.
+
+**Four failure paths proved**: an off-site draw (the status dot), a file drawing both, a permission naming
+a file that does not exist, and the accessor renamed so nothing is found — *"this run verified NOTHING,
+which is not the same as finding nothing."*
+
+**Bar: 23 of 24 green; `UpstreamCheck` is red at 11 commits ahead and that red is CORRECT — it is E-4, an
+outward-facing action this session does not take.**

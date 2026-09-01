@@ -214,6 +214,10 @@ namespace PoliSim.EditorTools
             // while the generated file does not. ⚠ It compares the DIGEST of the input, not a re-parse of
             // it — a second parser would be a second thing to keep true.
 
+            // S-29 (2026-09-01): the party-ink constraint as a DRAW-SITE rule. ⚠ A hue harness cannot
+            // see it - both clauses are about WHERE a colour is drawn, not what it is.
+            ("PartyInkDrawSiteCheck", PartyInkDrawSiteCheck.Run),
+
             // S-26's defence clause (2026-09-01): the dial midpoint stated ONCE. ⚠ Registered as a normal
             // check rather than a ratchet, because its right answer is ZERO and it is AT zero - a ratchet
             // would be a licence for a fifth statement to sit there being counted.
