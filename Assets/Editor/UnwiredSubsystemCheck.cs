@@ -61,8 +61,17 @@ namespace PoliSim.EditorTools
         /// authorised building ahead of wiring is gone and the backlog it left was never re-homed.</para>
         ///
         /// <para>Lower it when a subsystem is wired or deleted; never raise it.</para>
+        ///
+        /// <para>⚠ <b>CORRECTED 5 → 6 ON 2026-09-01, AND THE DISTINCTION MATTERS MORE THAN THE NUMBER.
+        /// This is not a raised ratchet; it is the first honest measurement.</b> The 5 was taken with a
+        /// broken ruler: mention-counting read COMMENTS, so a subsystem named in any prose sentence under
+        /// `Assets/` stopped being reported. `CohortVoterGroups` was masked exactly that way and had been
+        /// since the class was armed. **The instrument was fixed first, the number re-measured after, and
+        /// the backlog turned out to have always been six.** ⚠ The rule this must not become: a ceiling
+        /// may rise when the INSTRUMENT is corrected and the correction is written down — never because
+        /// the backlog grew, and never to make a run pass.</para>
         /// </summary>
-        private const int UnreachableCeiling = 5;
+        private const int UnreachableCeiling = 6;
 
         /// <summary>A `public static` method declaration. Instance methods are excluded: they need an
         /// object, and tracing who constructs it is beyond what a name scan can honestly claim.</summary>
@@ -97,11 +106,24 @@ namespace PoliSim.EditorTools
                 return;
             }
 
+            // ⚠ COMMENTS ARE STRIPPED BEFORE ANY MENTION IS COUNTED, and this correction was forced by
+            // the check reporting a false negative on 2026-09-01. A generated data catalog landed under
+            // `Assets/Scripts` carrying a header comment that explained *why* it existed - and named
+            // `RegionalVoteModel` and `TacticalVoting` in the sentence. **Both immediately stopped being
+            // reported as unreachable**, because a prose mention counted as a reference. A check that a
+            // COMMENT can silence has stopped discriminating, which is the sixth sweep's own class turned
+            // on the fifth sweep's tool.
+            //
+            // ⚠ STRING LITERALS ARE STILL COUNTED, deliberately and unchanged: a reflected call is built
+            // from a string and must register. A comment can never call anything, which is the whole
+            // difference. The stripper is line-based and leaves a `//` alone when the line already holds a
+            // quote, so a URL inside a literal survives - stated because it is an approximation, not a
+            // parser.
             var contents = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (string file in Directory.GetFiles(scripts, "*.cs", SearchOption.AllDirectories)) { contents[file] = File.ReadAllText(file); }
+            foreach (string file in Directory.GetFiles(scripts, "*.cs", SearchOption.AllDirectories)) { contents[file] = StripComments(File.ReadAllText(file)); }
             if (Directory.Exists(editor))
             {
-                foreach (string file in Directory.GetFiles(editor, "*.cs", SearchOption.AllDirectories)) { contents[file] = File.ReadAllText(file); }
+                foreach (string file in Directory.GetFiles(editor, "*.cs", SearchOption.AllDirectories)) { contents[file] = StripComments(File.ReadAllText(file)); }
             }
 
             var gameCalls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -302,6 +324,30 @@ namespace PoliSim.EditorTools
             if (!path.StartsWith(scriptsRoot, StringComparison.OrdinalIgnoreCase)) { return true; }
             return path.IndexOf(Path.DirectorySeparatorChar + "Testing" + Path.DirectorySeparatorChar,
                 StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// <summary>
+        /// Remove `/* … */` blocks and `//` line comments so a PROSE mention cannot make a subsystem look
+        /// reachable. ⚠ String literals survive on purpose — a reflected call is built from one.
+        ///
+        /// <para>⚠ **It is an approximation and says so**: the line rule leaves a `//` alone when the line
+        /// already contains a quote, so a URL inside a literal is not eaten. A file that puts a real line
+        /// comment after a string literal on the same line keeps that comment, which can only ever cause a
+        /// FALSE NEGATIVE of the same kind this fixes — a smaller one, and named rather than hidden.</para>
+        /// </summary>
+        private static string StripComments(string text)
+        {
+            text = Regex.Replace(text, @"/\*.*?\*/", " ", RegexOptions.Singleline);
+
+            var sb = new StringBuilder(text.Length);
+            foreach (string line in text.Split('\n'))
+            {
+                int slash = line.IndexOf("//", StringComparison.Ordinal);
+                if (slash >= 0 && line.IndexOf('"') < 0) { sb.Append(line, 0, slash).Append('\n'); }
+                else { sb.Append(line).Append('\n'); }
+            }
+
+            return sb.ToString();
         }
 
         private static int CountWord(string text, string word)

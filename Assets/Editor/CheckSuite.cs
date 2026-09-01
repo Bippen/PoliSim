@@ -199,6 +199,13 @@ namespace PoliSim.EditorTools
             // than its comments do. Binds on the LIVE documents only - the historical records are correct
             // to name members that have since been deleted.
             ("DocumentClaimCheck", DocumentClaimCheck.Run),
+            ("GeneratedCatalogCheck", GeneratedCatalogCheck.Run),
+
+            // S-33's root, guarded (2026-09-01): `ElectionsData/` sits outside `Assets/`, so runtime code
+            // cannot read it — which is why board 1h, `RegionalVoteModel` and `TacticalVoting` are all
+            // unreachable. The answer is a GENERATED catalog, and its one risk is drift: the source moving
+            // while the generated file does not. ⚠ It compares the DIGEST of the input, not a re-parse of
+            // it — a second parser would be a second thing to keep true.
 
             // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped
             // discriminating. ⚠ REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above

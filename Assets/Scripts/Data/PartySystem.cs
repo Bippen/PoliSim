@@ -272,7 +272,7 @@ namespace PoliSim.Data
                 leaders: One("Jimmie Akesson", "partiledare")),
             new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, euPosition: 5.74f, lrGen: 7.58f,
                 leaders: One("Ulf Kristersson", "partiledare")),
-            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, euPosition: 3.32f, lrGen: 1.58f,
+            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, "mark_party_se_v", euPosition: 3.32f, lrGen: 1.58f,
                 leaders: One("Nooshi Dadgostar", "partiledare")),
             new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, euPosition: 6.11f, lrGen: 5.95f,
                 leaders: One("Annie Loof", "partiledare")),
@@ -375,8 +375,8 @@ namespace PoliSim.Data
         // named there and named again here so it cannot be read as CHES by a later reader.
         private static readonly PoliticalParty[] UsaParties =
         {
-            new PoliticalParty("REP", "Republican Party", 8.23f, 8.30f, 220),
-            new PoliticalParty("DEM", "Democratic Party", 3.73f, 2.41f, 215),
+            new PoliticalParty("REP", "Republican Party", 8.23f, 8.30f, 220, "mark_party_us_rep"),
+            new PoliticalParty("DEM", "Democratic Party", 3.73f, 2.41f, 215, "mark_party_us_dem"),
         };
 
         /// <summary>

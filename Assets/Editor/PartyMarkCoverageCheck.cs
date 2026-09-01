@@ -42,6 +42,22 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class PartyMarkCoverageCheck
     {
+        /// <summary>
+        /// ⚠ **DELIVERED MARKS THAT NO SEEDED PARTY CLAIMS — a ratchet at 1, measured 2026-09-01.**
+        ///
+        /// <para>The one is **`mark_party_us_lib`**: the file is real and **no Libertarian party is
+        /// seeded**, so nothing can claim it. ⚠ **It is not "fixed" by inventing a party to consume a
+        /// file** — that is the tail wagging the dog, and the file waits until the USA's seed has a reason
+        /// to include one.</para>
+        ///
+        /// <para>The other three — `mark_party_se_v`, `mark_party_us_rep`, `mark_party_us_dem` — **were
+        /// orphans for days after W-G1 seeded their parties**, under an output line that called orphans
+        /// *"not a defect: art precedes the seed by design"*. True when written, wrong once the seeds
+        /// landed, and nothing re-read it. **They are claimed now. Lower this ceiling as each remaining
+        /// one is claimed; never raise it.**</para>
+        /// </summary>
+        private const int UnconsumedCeiling = 1;
+
         private const string EmblemFolder = "Assets/Resources/Art/UI/Emblems";
         private const string MarkResourcePath = "Art/UI/Emblems/";
 
@@ -148,14 +164,36 @@ namespace PoliSim.EditorTools
             // forty precisely so a batch would not be drawn ahead of the screens that use it. Reported so
             // "delivered" and "used" do not silently diverge, and worded so it is not re-triaged as a gap
             // on every future run.
-            foreach (string orphan in OrphanMarks(claimed.Keys))
+            // ⚠ THE LINE ABOVE WAS TRUE WHEN IT WAS WRITTEN AND WENT WRONG WHEN THE SEEDS LANDED
+            // (corrected 2026-09-01). "Orphan by sequencing, not a defect" was right while Sweden had no
+            // seeded parties. W-G1 then seeded 53 real ones — and `mark_party_se_v`, `mark_party_us_rep`
+            // and `mark_party_us_dem` went on sitting on disk, delivered and claimed by nobody, for days.
+            // **Delivered art that no seed consumes is S-32's class inside the asset pipeline**: the file
+            // is real, every check is green, and nothing draws it.
+            //
+            // Orphans are still REPORTED with their reason — a batch really can precede its seeds — but
+            // they are RATCHETED now, so an orphan that COULD be claimed cannot wait forever.
+            var orphans = new List<string>(OrphanMarks(claimed.Keys));
+            foreach (string orphan in orphans)
             {
-                Debug.Log($"  awaiting  {orphan} - delivered, no seeded party yet. Orphan by SEQUENCING, " +
-                          $"not a defect: art precedes the seed by design.");
+                Debug.Log($"  awaiting  {orphan} - delivered, and no seeded party claims it.");
+            }
+
+            RatchetLedger.Report("PartyMarkCoverageCheck.UNCONSUMED", orphans.Count, UnconsumedCeiling);
+
+            if (orphans.Count > UnconsumedCeiling)
+            {
+                errors++;
+                Debug.LogError($"  UNCONSUMED {orphans.Count} delivered mark(s) that no seeded party claims, above the "
+                               + $"recorded ceiling of {UnconsumedCeiling}: {string.Join(", ", orphans.ToArray())}. "
+                               + "⚠ Claim it on the party it was drawn for, or record why no party can — delivered art "
+                               + "nothing consumes is queued art, and queued art is indistinguishable from art that was "
+                               + "never delivered. LOWER the ceiling as each is claimed; never raise it.");
             }
 
             Debug.Log($"=== Party marks: {parties.Count} seeded part(ies), {claimed.Count} with a resolving mark, " +
-                      $"{gaps} without one, {errors} error(s) ===");
+                      $"{gaps} without one, {orphans.Count} delivered-but-unconsumed (ceiling {UnconsumedCeiling}), " +
+                      $"{errors} error(s) ===");
             CheckExit.Finish(errors == 0 ? 0 : 1);
         }
 

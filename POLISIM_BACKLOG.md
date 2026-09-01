@@ -959,6 +959,46 @@ and C-B4 disposes of it.
 
 ## 6. DEFERRED — recorded, deliberately not built
 
+### ⚠ TWO STANDING RULES, ADDED 2026-09-01
+
+#### R-T1 · Every trigger carries its own DEFENCE CLAUSE
+
+**The evidence.** Of the five deferral triggers re-read on 2026-09-01, **three were written to survive the
+misreading that would fire them early** — *"PLAYABLE, not merely simulated"* (F-3), *"before playable, not
+before trusted"* (F-4), *"a campaign the player actually RUNS"* (F-1). ⚠ **F-6's was the one sentence with
+no defence in it**, a single condition with nothing saying what would *not* satisfy it — and it fired
+unnoticed on the day it was written down, leaving its row two days out of date.
+
+**The rule, from now on.** A trigger is written in two parts:
+
+1. **the literal condition** — the sentence that must be true, as written;
+2. **the defence clause** — *what does not count as satisfying it*, naming the nearest plausible
+   misreading.
+
+⚠ **A trigger with no defence clause is not finished**, and the reviewer's job at every re-read is to test
+the sentence literally rather than the intent behind it. **Retrofitted below where it was missing.**
+
+#### R-T2 · An ad-hoc shell probe is the weakest evidence in this project
+
+**The evidence, one day's worth.** Three shell probes were wrong on 2026-09-01 and **every one of them
+looked right in its output**:
+
+- a `head -1` that matched a doc comment and reported the constant `PersuasionPerCompatibilityPoint` as
+  **40** when it is **40 000**;
+- a type-versus-FILE-name match that reported `CampaignCalendar` as missing and **"corrected" a correct
+  document reference into a wrong one** — the type is real and simply shares a file with another;
+- a PowerShell one-element array unrolling on return, so `$tokens[0]` was a **character**, filing 17 sitting
+  rows under the wrong era while the page rendered perfectly.
+
+**The checks written the same day caught two of the three.** The third was caught by a fourth check within
+the hour of being armed.
+
+**The rule.** ⚠ **A shell or PowerShell probe may not carry a finding on its own.** It is fine for
+orientation and for deciding where to look. **Anything load-bearing — a number that enters a document, a
+claim that closes an item, a count that sets a ratchet — becomes an armed check, or is re-derived by one
+before it is written down.** The reason is not that pipelines are more error-prone than C#; it is that
+**a pipeline is evidence nobody re-runs**, so its errors have no second chance to be found.
+
 | ID | what | trigger or reason |
 |---|---|---|
 **C-D6 (2026-08-31) gave every row a TRIGGER rather than a date.** A deferral with a date says when
@@ -970,8 +1010,8 @@ that reads as open work.
 
 | ID | what | ⚠ the TRIGGER that would start it | described (not queued) in |
 |---|---|---|---|
-| F-1 | §37 staff progression — staff who get better at the job | a campaign the player actually runs, so a staffer's improvement is something they can feel. Today the campaign layer is harness-only, and progression over a run nobody plays is invisible by construction | `ELECTIONS_CAMPAIGN_SPEC.md` §37; the gap table |
-| F-2 | §2's other election types — referendum, leadership contests | a ruling that the game is about more than a parliamentary term. Both are real mechanics with real Swedish precedent, and neither is reachable from the loop the game has | spec §2; the gap table |
+| F-1 | §37 staff progression — staff who get better at the job | a campaign the player actually runs, so a staffer's improvement is something they can feel. ⚠ **DEFENCE (R-T1):** a campaign SIMULATED by a harness does not count, nor does `CampaignRun.Simulate` gaining a caller in editor code. The literal condition is a player, in a running game, spending a campaign. Today the campaign layer is harness-only, and progression over a run nobody plays is invisible by construction | `ELECTIONS_CAMPAIGN_SPEC.md` §37; the gap table |
+| F-2 | §2's other election types — referendum, leadership contests | a ruling that the game is about more than a parliamentary term. ⚠ **DEFENCE (R-T1):** a BIGGER parliamentary term does not count. R-CL1 gave the player a party and D-5 (a) made losing office survivable; both enlarge the term and neither rules that the game is about anything else. Both are real mechanics with real Swedish precedent, and neither is reachable from the loop the game has | spec §2; the gap table |
 | F-3 | France's constituency model (R-EL10) | a decision that France must be PLAYABLE, not merely simulated. ⚠ **UNSIZED, UNSTARTED, and no placeholder or approximation is to be built** — two-round SMD needs a 577-constituency model with runoff behaviour, a large sourced build serving one country. The data (the Ministry's data.gouv family) is where it always was | `POLISIM_MASTER_ROADMAP.md`; `ElectionsData/DATA_BILL.md` carries the *data* bill, which is a different thing from this *build* deferral |
 | F-4 | Italy's sub-national stages | **Italy becoming playable** — explicitly *before playable, not before trusted*: the proportional stage already reproduces exactly, so the model is trustworthy without them. Needs the per-*circoscrizione* and per-*collegio cifre elettorali* plus the art. 84 cascade | `ElectionsData/DATA_BILL.md` (the data), `italy/rosatellum_allocation.md` (the statute) |
 | F-5 | The gap table's nine N/A sections | nothing — ⚠ **these are principle and illustration sections, not work.** They are listed here so that a future reader counting "unbuilt sections" does not mistake them for a backlog | `ELECTIONS_GAP_TABLE.md` |

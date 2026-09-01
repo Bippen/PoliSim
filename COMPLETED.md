@@ -10080,3 +10080,93 @@ is guarantee the entries are true and actionable; what they ASK is his.
 that read a comment and reported `40` for `40_000.0`. **Every one of them looked right in its output.**
 The checks written the same day caught two of the three, which is the argument for putting a measurement
 into an armed check rather than a shell pipeline: **a pipeline is evidence nobody re-runs.**
+
+## 158. THE GO CONSUMED, THE DATA LAYER CHOSEN — and a comment that switched a check off (2026-09-01)
+
+### E-2 answered GO, and nothing on our side waits on the word
+
+**Elias, 2026-09-01: GO** on the seven Swedish party marks and the forty-five-mark batch after them, on
+board 3a's ruled vocabulary. The asking is folded into **E-3** so one paste carries the GO, the mandate
+column and the icon files; `ERRANDS.md` gains a **DONE** section and the row moves there.
+
+⚠ **And the instruction was to build so the marks are CONSUMED when they land, not queued. The first thing
+that measurement found was four already queued.** Five `mark_party_*` files sit in `Assets/Resources`;
+`PartyMarkCoverageCheck` reported **one** resolving. **Sweden's V and the USA's REP and DEM had a delivered
+mark each and claimed none of them** — since W-G1 seeded their parties, days ago.
+
+**All three are claimed.** The check now reports **4 of 53 with a resolving mark**, and the legend draws
+them: filmed at 1280, `marks_07a_politics_parliament.png`, 81 captured / 0 failed.
+
+⚠ **The output line that hid it is corrected too.** It read *"orphan by SEQUENCING, not a defect: art
+precedes the seed by design"* — **true when written, wrong once W-G1 seeded 53 parties, and nothing
+re-read it.** Orphans are still reported with their reason, but they are **ratcheted** now
+(`UNCONSUMED`, ceiling **1**): the one remaining is `mark_party_us_lib`, and ⚠ **no Libertarian party is
+seeded, so nothing can claim it — which is not fixed by inventing a party to consume a file.** Proved both
+directions: un-claiming one mark took it to 2 and the check failed, naming both.
+
+⚠ **A finding the film hands over, not fixed here:** the delivered marks are **consumed but barely legible
+at legend size** — ~12 px against Design's ruled 18. The vocabulary batch is drawn for 16 px and this is
+its problem to answer, not a size to change under it.
+
+### S-33's root: the data-access fork, measured and chosen
+
+`ElectionsData/` is **197 KB across 24 files, of which the CSVs are 29 KB** — small enough that the fork
+resolves on grounds other than size:
+
+| option | verdict |
+|---|---|
+| `Resources/` | works, but adds a runtime CSV parser **and a second copy that can drift with nothing watching** |
+| `StreamingAssets/` | loose files; platform quirks (Android, WebGL) bought for no benefit at 29 KB |
+| **a GENERATED catalog** | ✅ **chosen** — no runtime parsing, no second format, no platform question, and its one risk is drift, which this project already knows how to kill |
+| hand transcription | the same result, done unrepeatably. ⚠ It is the project's **existing** pattern, and the generator is that pattern made mechanical rather than a departure from it |
+
+**Built and proven:** `ElectionsDataCatalogGenerator` asserts the **header** (a re-ordered source would
+relabel every party and still compile), asserts **29 valkretsar**, and reconciles. `GeneratedCatalogCheck`
+re-derives the source's SHA-256 every run — ⚠ **comparing the INPUT, not a re-parse of it, because a second
+parser would be a second thing to keep true.** Proved both directions: one appended comment line in the
+source made it exit 1 naming both digests.
+
+⚠ **THE FIRST RECONCILIATION ASSERTION WAS WRONG AND THE GENERATOR REFUSED TO EMIT.** It required the eight
+party columns to sum exactly to `valid`; all 29 rows failed by 1.3–3 %. **The file is right**: `valid`
+counts every valid ballot including the småpartier below the 4 % threshold, which the source does not
+itemise. Replaced with three identities that hold by definition and need no invented tolerance —
+**parties ≤ valid ≤ cast ≤ eligible** — and the remainder is reported rather than absorbed: **the eight
+itemised parties are 98.45 % of valid votes; the other 1.55 % is distributed nowhere.**
+
+⚠ **The catalog emits to `Assets/Editor/Generated/`, not `Assets/Scripts/` — and that is the repo's own
+guard talking.** In the runtime assembly with no consumer it is a delivered artifact nothing reads;
+`UnwiredSubsystemCheck` caught it on the first run and **a ceiling may not be raised to admit it**. **A data
+layer that lands before anything consumes it is queued art in another costume.** The mechanism is chosen,
+built and proven; the one remaining step — moving the emitted file into `Assets/Scripts` — belongs to the
+item that wires `RegionalVoteModel`, because that is when runtime readability is *exercised* rather than
+asserted.
+
+### ⚠ AND A COMMENT SWITCHED A CHECK OFF
+
+The generated catalog's header explained why it existed — and **named two subsystems in the sentence**.
+They are under `Assets/Scripts`, so the mention counted as a reference: **`RegionalVoteModel` and
+`TacticalVoting` immediately stopped being reported as unreachable.** A check a **comment** can silence has
+stopped discriminating — the sixth sweep's own class, turned on the fifth sweep's tool.
+
+**Fixed: comments are stripped before any mention is counted. String literals are still counted**,
+deliberately and unchanged, because a reflected call is built from one and a comment can never call
+anything.
+
+⚠ **AND THE CORRECTION MOVED THE NUMBER: 5 → 6, which is not a raised ratchet but the first honest
+measurement.** `CohortVoterGroups` had been masked by a prose mention since the class was armed. **The
+instrument was fixed first and the number re-measured after.** The rule this must not become: a ceiling may
+rise **when the instrument is corrected and the correction is written down** — never because the backlog
+grew, and never to make a run pass.
+
+### Two standing rules
+
+**R-T1 — every trigger carries a DEFENCE CLAUSE**: the literal condition, and *what does not count as
+satisfying it*. Three of five deferral triggers already had one; **F-6's did not, and it fired unnoticed.**
+Retrofitted onto F-1 and F-2.
+
+**R-T2 — an ad-hoc shell probe may not carry a finding on its own.** Three were wrong in one day and every
+one looked right in its output. ⚠ **Not because pipelines are more error-prone than C#, but because a
+pipeline is evidence nobody re-runs**, so its errors get no second chance to be found. Anything
+load-bearing becomes an armed check or is re-derived by one.
+
+**Bar: 20 checks green, 8 simulation checks green, eight ratchets all tight.**
