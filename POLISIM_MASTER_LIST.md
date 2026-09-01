@@ -11,6 +11,19 @@ order. **Where they disagree, the register's detail wins on facts and this file 
 
 ---
 
+## ⚠ READ THIS BEFORE READING THE NUMBER
+
+**A zero on `InstructionResidueCheck` means NO CODE ROW IS STARTABLE. It does NOT mean the work is
+finished.** ⚠ **Two of the three dependency chains below terminate in an owner no session can be** —
+`M-D3` needs Elias to register an ITANES account, and the `M-B4`/`M-B5` chain waits behind `M-D1`. The
+**reachable** CODE column therefore empties well before the **project's** open work does.
+
+Anyone reading a zero as completion has read a statement about *reachability* as a statement about
+*scope*. That is this repo's signature defect — a claim whose evidence does not reach as far as the claim
+— wearing the one number built to be trustworthy. The check prints the same sentence in its own output
+every run, because **the number travels further than the file it came from.**
+
+---
 ## THE COUNT AND THE SHAPE
 
 | | |
@@ -84,7 +97,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 
 | ID | what | done-when | OWNER | CLASS | BLOCKS-ON | size |
 |---|---|---|---|---|---|---|
-| **M-S1** | ⚠ **`C-0.4` is DONE and the register says open.** `CheckSuite.RunAllBatch` exists and every bar run uses it | the register's row cites the commit and reads closed | CODE | RECORDS | — | XS |
 | **M-S2** | R-T3's **owed enumeration**: identify what "the width assertion" was and enumerate its consumers, or record that no such single instrument exists | the retrofit table's NOT-DONE row is either completed or retired with its reason | CODE | RECORDS | — | S |
 | **M-S3** | **`S-29`** — the party-ink **draw-site** check: party ink is never drawn adjacent to an area accent, and a party swatch forced into chrome draws in the neutral status ink | a check enumerates the party-ink call sites and fails when one sits in a chrome surface; proved both directions | CODE | SAFE | — | M |
 | **M-S4** | **`S-26`** — the dial midpoint `50` is stated in four places | one statement, or four with a recorded reason | CODE | SAFE | — | S |
@@ -178,3 +190,19 @@ is a fact the next relevant item must not contradict.
 `InstructionResidueCheck` counts what is left, mechanically, and the run ends when it reports zero.
 **Opening number and its composition are in the check's own output** — this file does not restate it,
 because a hand-copied count is the thing the check exists to replace.
+
+---
+
+# ⚠ CLOSED — NOT STARTABLE BECAUSE DONE
+
+⚠ **A second boundary, and it is deliberately NOT the same heading as `OWNER ≠ CODE`.** Filing a closed
+CODE row under that one would make it assert something false about every row beneath it, and a heading
+that lies is how this repo has lost five things to a comment (S-36).
+
+⚠ **Every row here must PRODUCE ITS COMMIT, and `InstructionResidueCheck` fails if one does not.**
+Without that, this section is simply where a row goes to stop being counted, and the residue would
+measure willingness to move rows rather than work done.
+
+| ID | what | done-when | OWNER | CLASS | closed at | size |
+|---|---|---|---|---|---|---|
+| **M-S1** | ⚠ **`C-0.4` was DONE and the register said open.** `CheckSuite.RunAllBatch` exists and every bar run uses it | the register's row cites the commit and reads closed — **it does** | CODE | RECORDS | `12a4833` (the correction); the work itself at `9489d97` | XS |

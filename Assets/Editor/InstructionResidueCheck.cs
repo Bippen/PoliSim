@@ -14,6 +14,16 @@ namespace PoliSim.EditorTools
     ///
     /// <para><i>"No further instructions remain"</i> is unfalsifiable as prose, so this counts what is
     /// left. ⚠ **The run ends when this reports zero, and not on anyone's say-so** — including mine.</para>
+
+    /// <para>⚠ <b>WHAT A ZERO MEANS, AND IT IS NOT WHAT IT LOOKS LIKE.</b> A zero here means <b>no CODE
+    /// row is STARTABLE</b>. It does <b>not</b> mean the project's work is finished. ⚠ <b>Two of the three
+    /// dependency chains in the master list terminate in an OWNER NO SESSION CAN BE</b> — `M-D3` needs
+    /// Elias to register an ITANES account, and the `M-B4`/`M-B5` chain waits behind `M-D1` — so the
+    /// REACHABLE column empties well before the project's open work does. **A reader who takes this zero
+    /// for completion has read a statement about reachability as a statement about scope**, which is this
+    /// repo's signature defect wearing the one number built to be trustworthy. The check prints this
+    /// sentence in its own output every run for the same reason it is written here: the number travels
+    /// further than the file, and a bound with no direction attached is half a claim (S-37).</para>
     ///
     /// <para><b>WHAT COUNTS AS RESIDUE.</b> Two structured sources, both unambiguous, neither requiring a
     /// sentence to be interpreted:</para>
@@ -56,13 +66,25 @@ namespace PoliSim.EditorTools
         /// <summary>⚠ The residue's ceiling, measured on the first run. **Lower it as rows close; never
         /// raise it.** A rising residue is work being added faster than it is finished, which is a fact
         /// worth failing over rather than absorbing.</summary>
-        private const int ResidueCeiling = 31;
+        private const int ResidueCeiling = 30;
 
         private const string ListRelative = "POLISIM_MASTER_LIST.md";
 
         /// <summary>The heading that ends the startable part of the list. Everything after it is
         /// OWNER≠CODE by construction and is not residue.</summary>
         private const string NotStartableHeading = "OWNER ≠ CODE";
+
+        /// <summary>The SECOND boundary past which rows are not startable — because they are DONE rather
+        /// than because their owner is not a session. ⚠ Two headings, two reasons, and they are kept apart
+        /// deliberately: filing a closed CODE row under "OWNER ≠ CODE" would make that heading assert
+        /// something false about every row beneath it, and a heading that lies is how this repo has lost
+        /// five things to a comment.</summary>
+        private const string ClosedHeading = "CLOSED — NOT STARTABLE BECAUSE DONE";
+
+        /// <summary>A commit hash, which is what a CLOSED row has to produce. ⚠ Without this the closed
+        /// section would be a place to put a row to make the number go down, and the number would measure
+        /// willingness to move rows. Closure is a claim about the repo and it is checked against the repo.</summary>
+        private static readonly Regex CommitCitation = new Regex(@"`[0-9a-f]{7,40}`");
 
         /// <summary>Open-work markers that are unambiguous — each says "unfinished", not "authored".</summary>
         private static readonly Regex OpenWorkMarker = new Regex(@"\b(TODO|HACK|WIP|STUB)\b|\[PLACEHOLDER\]");
@@ -108,6 +130,9 @@ namespace PoliSim.EditorTools
             // --- 1. The master list's startable rows.
             var codeRows = new List<string>();
             var codeRowText = new List<string>();
+            var uncited = new List<string>();
+            bool inClosed = false;
+            int closedRows = 0;
             var ownerById = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             bool startable = true;
             int tableRows = 0;
@@ -116,6 +141,7 @@ namespace PoliSim.EditorTools
             {
                 string line = raw.Trim();
                 if (line.Contains(NotStartableHeading)) { startable = false; }
+                if (line.Contains(ClosedHeading)) { startable = false; inClosed = true; }
                 if (!line.StartsWith("|", StringComparison.Ordinal)) { continue; }
 
                 string[] cells = line.Split('|');
@@ -127,6 +153,15 @@ namespace PoliSim.EditorTools
 
                 tableRows++;
                 ownerById[id] = owner;
+
+                // ⚠ A closed row must PRODUCE THE COMMIT. Otherwise this section is simply where a row goes
+                // to stop being counted, and the residue measures how willing someone was to move it.
+                if (inClosed)
+                {
+                    closedRows++;
+                    if (!CommitCitation.IsMatch(line)) { uncited.Add(id); }
+                    continue;
+                }
                 if (startable && string.Equals(owner, "CODE", StringComparison.Ordinal))
                 {
                     codeRows.Add(id);
@@ -262,6 +297,12 @@ namespace PoliSim.EditorTools
                         + "    here; their rows are checked against the names their own Report calls pass:\n",
                 nonZeroRatchets, unlisted.Count, deferredRatchets.Count));
             foreach (string d in deferredRatchets) { sb.Append("      deferred    ").Append(d).Append('\n'); }
+
+            sb.Append(F("\n    CLOSED THIS RUN AND SINCE: {0} row(s) under the closed heading, {1} of them citing no\n"
+                        + "    commit. ⚠ A closed row must PRODUCE THE COMMIT - otherwise that section is where a row goes\n"
+                        + "    to stop being counted, and this number measures willingness to move rows.\n",
+                closedRows, uncited.Count));
+            foreach (string u in uncited) { sb.Append("      ⚠ UNCITED   ").Append(u).Append('\n'); }
             foreach (string u in unlisted) { sb.Append("      ⚠ UNLISTED  ").Append(u).Append('\n'); }
 
             sb.Append("\n    ⚠ WHAT A ZERO MEANS: no CODE row is startable. It does NOT mean the project is finished - two\n");
@@ -271,13 +312,15 @@ namespace PoliSim.EditorTools
             var failures = new List<string>();
             if (swallowed.Count > 0) { failures.AddRange(swallowed); }
             if (unlisted.Count > 0) { failures.Add(unlisted.Count + " non-zero ratchet(s) own no row in the list"); }
+            if (uncited.Count > 0) { failures.Add(uncited.Count + " CLOSED row(s) cite no commit"); }
             if (residue > ResidueCeiling) { failures.Add("residue " + residue + " is above the ceiling of " + ResidueCeiling); }
 
             if (failures.Count > 0)
             {
                 Debug.LogError("RESIDUE: " + string.Join(" | ", failures.ToArray())
-                               + ". ⚠ An exclusion that names a CODE row, a ratchet with no row, or a residue that GREW "
-                               + "are the three ways this number stops meaning what it says.");
+                               + ". ⚠ An exclusion that names a CODE row, a ratchet with no row, a CLOSED row citing "
+                               + "no commit, or a residue that GREW are the four ways this number stops meaning what "
+                               + "it says.");
                 Debug.LogError(sb.ToString());
                 CheckExit.Finish(1);
                 return;
