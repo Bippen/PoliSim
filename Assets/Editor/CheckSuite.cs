@@ -214,6 +214,11 @@ namespace PoliSim.EditorTools
             // while the generated file does not. ⚠ It compares the DIGEST of the input, not a re-parse of
             // it — a second parser would be a second thing to keep true.
 
+            // S-39 (2026-09-01): a screen we CUT must be told to the person drawing it. ⚠ This project
+            // has a great deal of machinery keeping its documents true to its code and NONE keeping an
+            // outward-facing ask true to a decision made after it was sent.
+            ("DesignNotificationCheck", DesignNotificationCheck.Run),
+
             // S-29 (2026-09-01): the party-ink constraint as a DRAW-SITE rule. ⚠ A hue harness cannot
             // see it - both clauses are about WHERE a colour is drawn, not what it is.
             ("PartyInkDrawSiteCheck", PartyInkDrawSiteCheck.Run),

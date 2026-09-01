@@ -71,18 +71,15 @@ over-applies a safety rule looks careful and is simply not doing the work — an
 in the bar catches it.
 
 **Done: pushed. `origin/main` carries the session''s commits, and the tripwire is green.**
-## ⚠ E-5 · Does the "as published" band come back? (added 2026-09-01, found by `DocumentClaimCheck`)
+## E-5 · Does the "as published" band come back? — ✅ **RULED by Elias, 2026-09-01: NO**
 
-⚠ **Design was asked to draw a screen this project had already cut, and nobody told them.**
-`CLAUDE_DESIGN_ASSET_REQUEST.md` row **E17** named a renderer deleted at RIDE-1 and described the
-*"as published"* graph block — the date axis, release markers, the PRELIMINARY/FINAL badge, the dashed
-revision frame, the 1yr/5yr/All pager. **P-A2 (2026-08-29) removed that whole band from Statistics ›
-Domestic as a DISPLAY cut.** The row has been corrected to say so; **what has NOT been decided is whether
-the band should return.**
+> *"The 'as published' band does not come back — P-A2''s cut stands, `PublicationSystem` stays
+> load-bearing, the honesty conventions stay on the main graphs."*
 
-| # | the question | why it is Elias's | what is true either way |
-|---|---|---|---|
-| **E-5** | Should the *"as published"* band come back to Statistics › Domestic — and therefore be drawn — or is P-A2's cut permanent? | It is a **display** judgement about how much of the publication mechanism the player should see, and the cut was made on a playtest finding. Nobody but Elias can say whether the playtest still rules | ⚠ **The MECHANISM is untouched and stays untouched.** `PublicationSystem` publishes; the election model's section-19 reading takes Published and never State (`PerceivedPerformanceHarness` asserts it); the PRELIMINARY and revision conventions live on the main graphs. **B6's honesty channels survived the cut — they moved, they were not lost** |
+**Executed:** E17''s row records the cut as permanent and asks Design for nothing. Nothing in the mechanism
+moves — `PublicationSystem` publishes, the election model''s section-19 reading takes Published and never
+State, and B6''s honesty channels stay where P-A2 moved them.
 
-⚠ **Until it is answered E17 asks Design for nothing**, and that is now what the row says rather than what
-a reader had to infer.
+⚠ **And the ruling names the real defect, which was never the band.** *"The real defect is that Design was
+drawing a cut screen without being told."* Recorded as **S-39** — a finding of its own, not a footnote to
+this errand, because the band was one instance and the gap is the class.

@@ -18,6 +18,24 @@ the `uploads/` copy, which does not change.
 
 ---
 
+## ⚠ TO DESIGN, WITH THE NEXT RETURN — one screen you were asked to draw has been CUT
+
+**Row `E17`, the *"as published"* band on Statistics › Domestic — GDP / unemployment / inflation as
+published, with the date axis, release markers, the PRELIMINARY/FINAL badge, the dashed revision frame and
+the 1yr/5yr/All pager. It is not being built. Please do not draw it.**
+
+It was removed on **2026-08-29** as a display cut after a playtest, and **Elias ruled the cut permanent on
+2026-09-01**. E17''s row now says so. ⚠ **You were not told at the time, and the row went on asking for
+three days.** That is our failure, not a change of mind late in the day — and it is recorded as a finding
+of its own (`S-39`) rather than as a note on the row, because the row was one instance of it.
+
+**Nothing you have drawn is wasted and nothing else in §E moves.** The publication MECHANISM is
+load-bearing and untouched: the model still publishes lagged, revisable figures, the election model reads
+the published series rather than the true state, and **B6''s honesty conventions — the badge, the revision
+frame — are alive on the main graphs.** They moved; they were not lost. If anything, the honesty channel
+you drew for is now carried in more places than the band would have carried it.
+
+---
 **Status — ~~ONE LIVE ASK~~ ANSWERED (2026-08-30): the ELEVENTH request — D8, "the elections track, drawn" (§3 below): 52 party marks of 53 undrawn (the seven remaining SWEDISH ones are what 13 September needs), a ruling on party colours for five countries with no published table, a drawn valkrets map, election night's paper, the verdict stamp, and one design question (modal or stage for the debate). NOTHING IN IT BLOCKS A SCREEN — all eight elections screens are built, filmed at four widths with the guards silent, and every gap degrades gracefully and says so on the sheet. The TENTH request — D7, board 2b, "the
 Policy Web, drawn to be read" (§2 below, drawn against Annex G's measurements; it reaches you
 with the next §S paste).** The ninth request — UI v3.1, "one frame, denser, instruments" — was
@@ -271,7 +289,7 @@ Shapes: **level** (one number now) · **share** (a part of a stated whole) · **
 | E14 | real wages · house prices | index (100 = start of term) ×2 | LIVE | ledger rows, no gauge (unbounded index) | the honest comparison is the country's own past — a series form would fit if a history were kept (`RealWageIndex`/`HousePriceIndex` are in `StatHistory`) |
 | E15 | productivity | level ($ per hour, PPP) | LIVE | ledger row, no gauge | history kept (`Productivity`) |
 | E16 | housing overburden (EU five only) · homeownership | share ×2 (of households) | LIVE | ledger rows with gauge; the USA's overburden row is ABSENT by ruling, not zero | |
-| E17 | GDP as published · unemployment as published · inflation as published | series, PUBLISHED (lagged, revisable; monthly cadence) | PUBLISHED | ⚠ **CORRECTED 2026-09-01 — this row named a renderer that no longer exists AND a screen block that was CUT.** It named a `GraphRenderer` method and listed *"the date axis, release markers, the PRELIMINARY/FINAL badge, the dashed revision frame, the 1yr/5yr/All pager"* — the method was deleted at RIDE-1 (`COMPLETED.md` §105) and the whole *"as published"* band was removed from Statistics › Domestic at **P-A2, 2026-08-29, as a DISPLAY cut**. ⚠ **The MECHANISM is untouched** — `PublicationSystem` still publishes, and the election model's section-19 reading takes Published and never State — and the PRELIMINARY/revision conventions live on the main graphs, which carry them. **So there is currently no screen for Design to draw here**, and whether the band should return is Elias's (E-5) | the honesty channels (B6) survive — they moved to the main graphs rather than being lost |
+| E17 | GDP as published · unemployment as published · inflation as published | series, PUBLISHED (lagged, revisable; monthly cadence) | ⚠ **[CUT]** — NOT DRAWN, and the cut is RULED PERMANENT (Elias, 2026-09-01) | ⚠ **NOTHING IS ASKED FOR HERE.** This row used to name a `GraphRenderer` method and list the date axis, release markers, the PRELIMINARY/FINAL badge, the dashed revision frame and the 1yr/5yr/All pager. **The method was deleted at RIDE-1 and the whole *"as published"* band was removed from Statistics › Domestic at P-A2 (2026-08-29) as a display cut.** P-A2 stands and the band does not come back | ⚠ **The MECHANISM is load-bearing and untouched**: `PublicationSystem` publishes, the election model's section-19 reading takes Published and never State (`PerceivedPerformanceHarness` asserts it), and **B6's honesty conventions live on the main graphs — they MOVED, they were not lost** |
 | E18 | poverty rate as published | level, PUBLISHED (annual cadence) | PUBLISHED | a bulletin (`PublishedFigure`): badge · figure · the reference period and release date | annual = a bulletin, not a graph (eleven points beside a daily series read as broken) |
 | E19 | the sentence "What the public sees: lagged, and revised as later estimates arrive." | — (a (b) restatement of the badge and the frame) | — | one label | waits for the board to return as an instrument or not at all |
 | E20 | the world map — six countries as GDP-sized nodes at fixed illustrative positions, trade-volume lines, fading event dots | relation | LIVE (`Country.State.GDP`, `TradePartners`, the event markers) | `MapRenderer` plate, names on §A.9a's ladder (R-SP5); hover readout; click pins a detail panel below | not geography — no polygons, no coastlines |

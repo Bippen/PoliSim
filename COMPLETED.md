@@ -10877,3 +10877,45 @@ quotation.**
 
 **Logged as D-18, strikeable. The remaining step is one readable codebook page — S-4 has stopped being a
 bill and become an afternoon.**
+
+## 175. S-39 — WE CUT A SCREEN DESIGN WAS DRAWING AND DID NOT TELL THEM (2026-09-01)
+
+**E-5 ruled by Elias: the *"as published"* band does not come back.** P-A2's cut stands, `PublicationSystem`
+stays load-bearing, the honesty conventions stay on the main graphs. E17's row records the cut as permanent
+and asks for nothing.
+
+⚠ **And the ruling names the real defect, which was never the band:** *"Design was drawing a cut screen
+without being told."*
+
+### The gap, and why it is a class rather than a slip
+
+P-A2 removed the band on **2026-08-29**. Row `E17` went on asking for it for **three days**. ⚠ **It
+surfaced only because that row happened to name a DELETED MEMBER and `DocumentClaimCheck` resolves
+identifiers — an accident of how the row was written.** A row phrased in pure prose would be asking still.
+
+**This project has a great deal of machinery for keeping its own documents true to its own code — and none
+at all for keeping an OUTWARD-FACING ask true to a decision made after it was sent.** A cut is a decision
+we make; the ask lives in a document somebody else reads; **nothing connected the two but somebody
+remembering**, which is the mechanism this repo has recorded as failing more often than any other. The
+asymmetry is worth naming: an internal claim that goes stale gets caught by a check within the hour, and an
+external one goes stale silently and costs somebody else their time.
+
+### `DesignNotificationCheck`
+
+A row tagged **`[CUT]`** in `CLAUDE_DESIGN_ASSET_REQUEST.md` must be **named in that document's *"TO
+DESIGN, WITH THE NEXT RETURN"* notice** — backticked, so a row cannot be "named" by coincidence.
+**You cannot mark something cut without the document also telling the person drawing it, because it will
+not pass.**
+
+⚠ **What it deliberately does not do:** judge whether a row's PROSE still matches the build. That is
+S-22's undecidable class, and pretending otherwise would put an unfalsifiable claim inside a green check.
+⚠ **What it cannot see:** a screen cut and never tagged. The tag is the enrolment — which is exactly why it
+sits on the **STATUS column** that whoever records a cut is already editing, rather than in a register they
+would have to remember separately.
+
+**Both directions proved:** the notice stops naming `E17` → fails naming `E17`; a second row tagged `[CUT]`
+and never mentioned → fails naming it.
+
+**And the notice itself is written**, with the part that matters to the reader: nothing they drew is
+wasted, the mechanism is untouched, and B6's honesty channels **moved to the main graphs rather than being
+lost** — carried in more places now than the band would have carried them.
