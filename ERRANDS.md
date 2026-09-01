@@ -24,7 +24,7 @@ when it is done. If a row cannot say what unblocks, it is not an errand; it is a
 - **The §V sitting** is not an errand — it is a review, and it has its own package
   (`PoliSim-captures/sv_index.html`). An errand is an action with a named unblock; a sitting is a
   judgement.
-- **The open decision sheets** in `POLISIM_BACKLOG.md` §D are not errands: they cost nothing outward-facing, and each carries a recommendation a session has already taken as strikeable so that nothing waits on them. ⚠ **D-14 is NOT one of them and this line used to say it was.** It was explicitly *not* self-taken — **Elias RULED it (a)**: the D-2 (c) revert stands and F-A and F-B are split out as their own measured items, which is executed (`COMPLETED.md` §153).
+- **The open decision sheets** in `COMPLETED.md` §197 §D are not errands: they cost nothing outward-facing, and each carries a recommendation a session has already taken as strikeable so that nothing waits on them. ⚠ **D-14 is NOT one of them and this line used to say it was.** It was explicitly *not* self-taken — **Elias RULED it (a)**: the D-2 (c) revert stands and F-A and F-B are split out as their own measured items, which is executed (`COMPLETED.md` §153).
 
 ---
 

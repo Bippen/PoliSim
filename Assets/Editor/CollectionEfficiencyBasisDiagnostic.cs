@@ -31,7 +31,7 @@ namespace PoliSim.EditorTools
     public static class CollectionEfficiencyBasisDiagnostic
     {
         /// <summary>
-        /// The sourced per-country bases, copied from `POLISIM_BACKLOG.md`'s D-9 sheet where they were
+        /// The sourced per-country bases, copied from `COMPLETED.md §197`'s D-9 sheet where they were
         /// recorded when they were fetched. ⚠ **Local to this diagnostic on purpose**: D-2 (c) is
         /// reverted and stays reverted, so nothing the game runs may read this table. Provenance: OECD
         /// Revenue Statistics `DSD_REV_COMP_OECD`, general government, % of GDP, 2022 — income `T_1110`,

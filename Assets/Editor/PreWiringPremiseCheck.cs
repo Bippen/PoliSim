@@ -105,7 +105,7 @@ namespace PoliSim.EditorTools
         /// have to be written down.** Keyed by a stable ANCHOR in the line itself, and policed.
         ///
         /// <para>⚠ <b>This list used to hold a LINE NUMBER, and it broke the first time a document was
-        /// edited above it (2026-09-01).</b> The entry read <c>("POLISIM_BACKLOG.md", 947, …)</c>; a
+        /// edited above it (2026-09-01).</b> The entry read <c>("COMPLETED.md §197", 947, …)</c>; a
         /// decision sheet was inserted forty-one lines higher, the row moved to 988, the exemption stopped
         /// matching and this check failed the bar on a row nobody had touched. **The check was carrying a
         /// transcribed fact about a document — the exact coupling the claim convention forbids, inside an
@@ -118,7 +118,6 @@ namespace PoliSim.EditorTools
         /// </summary>
         private static readonly (string File, string Anchor, string Reason)[] AboutTheTerms =
         {
-            ("POLISIM_BACKLOG.md", "| C-0.2 |", "C-0.2's own row, whose done-when IS the grep - it has to spell the terms"),
         };
 
         public static void Run()

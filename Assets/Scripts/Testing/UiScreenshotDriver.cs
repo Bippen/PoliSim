@@ -68,7 +68,7 @@ namespace PoliSim.Testing
         public bool PinStates;
 
         /// <summary>Set by `-shotsaves` (R-D4, the clear-out kickoff of 2026-08-28): instead of the sweep, stage the
-        /// playtest saves - one per felt verdict in MISSING_PREREQUISITES.md §P - through the REAL save service
+        /// playtest saves - one per felt verdict in COMPLETED.md §198 §P - through the REAL save service
         /// into the real saves directory, each state filmed once as proof, so §P is load-play-judge rather than
         /// set-up-first. USA stages the Trade-bill and dense-mid-game saves; Sweden the Riksbank-B one.</summary>
         public bool StageSaves;
@@ -663,7 +663,7 @@ namespace PoliSim.Testing
         ///     (the draft rides UiDraftState.InterestRateChangeInput), so the load opens on the surface the
         ///     felt verdict is about - option C's naming of the player-set rate. NOT a pending appointment:
         ///     on main no chair is seeded for Sweden (Riksbank-B's appointment machinery ships with item 10,
-        ///     MISSING_PREREQUISITES.md §D0), so the first cut of this save - named for a pending selection
+        ///     COMPLETED.md §198 §D0), so the first cut of this save - named for a pending selection
         ///     and asserted on one - correctly refused to write.
         /// (3) `playtest_3_dense_midgame` (USA): the budget-process pause, pending cabinet decisions and
         ///     a foreign-policy meeting reached by the bounded searches, then one bill of every type and

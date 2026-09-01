@@ -486,7 +486,7 @@ the record.
 ## 4. Costed, NOT requestable yet — the next ask starts here (not sent)
 
 Derived from the screens that exist and the one that does not (`COMPLETED.md` §187 §A.14;
-`MISSING_PREREQUISITES.md` §D/§E):
+`COMPLETED.md` §198 §D/§E):
 
 - **Election night, Canvas screen 1h (item-10-gated, 13 Sept 2026).** Against the delivered set: paper,
   the ornate frame, the masthead, the `SEATS DECLARED` chip (`ui_chip`) and the party-ink swing figures
@@ -496,7 +496,7 @@ Derived from the screens that exist and the one that does not (`COMPLETED.md` §
   §A.11's generic procedural treatment unless Design asks for baked art at the 1h board. The R5 hex
   exchange (an ink-safe LP `DisplayColor`, Sweden's set) travels with the same gate.
 - **Two `StatNodeId` icons** — youth unemployment and life expectancy — when those Society rows are
-  promoted to nodes (`MISSING_PREREQUISITES.md` §E4); the promotion is ours and comes first.
+  promoted to nodes (`COMPLETED.md` §198 §E4); the promotion is ours and comes first.
 - **A portrait for the sitting turn-0 Fed chair** (Harriet Ellsworth) only if the roadmap's
   sitting-chair-row question resolves toward one — the same envelope as the batch (512×640 @2×, the
   Portraits class, `portrait_fedchair_harriet_ellsworth`).

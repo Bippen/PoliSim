@@ -98,9 +98,11 @@ one report at the end of budget.
 `InstructionResidueCheck` is retired with it — the residue number was the audit era's goal and the era is
 over. ⚠ **`POLISIM_MASTER_ROADMAP.md` is deleted too, ruled 2026-09-01** — its working discipline and
 standing constraints are migrated to the foot of this file, its history to `COMPLETED.md` §181, and its
-trigger shelf needed no migration because `POLISIM_BACKLOG.md` §5 and §7 already carried it.
-`POLISIM_BACKLOG.md` remains the detailed register of findings and rulings; **where they disagree,
-the register wins on facts and this file wins on ORDER.**
+trigger shelf needed no migration because `COMPLETED.md` §197 §5 and §7 already carried it.
+⚠ **The register is retired (2026-09-02).** `POLISIM_BACKLOG.md` was migrated verbatim into `COMPLETED.md`
+§197 and `MISSING_PREREQUISITES.md` into §198; their open rows are indexed by pointer in this file's
+appendix. **This file is now the only live list.** A row's evidence and ruling are read in the record;
+where a pointer here and the row disagree, the row wins on facts and this file wins on ORDER.
 
 ## The era's one inheritance
 
@@ -145,7 +147,7 @@ instance was produced by somebody trying to be careful. **Care is not the missin
 - **P1 — no shell state across tool calls, and every file edit is ONE self-contained operation.** A
   variable set in one call is gone by the next: this spliced a block to line 1 of a document because
   `$idx` was `$null` and `$null+1` is `1`. And an edit assembled by shell quoting carries the shell's
-  escapes into the file — **24 `''` sequences reached `COMPLETED.md` and `POLISIM_BACKLOG.md` this way,
+  escapes into the file — **24 `''` sequences reached `COMPLETED.md` and `COMPLETED.md` §197 this way,
   with no compile error, no red bar and no exit code to catch them.** ⚠ **That is the worst member of the
   class precisely because nothing failed.**
 - **P2 — one green bar per commit, and the bar is for the tree being committed.** Not "green when I last
@@ -295,7 +297,7 @@ In order of what a player would notice first:
   F2–F6.
 - **`D-16` — the sourced tax-base table for five countries**, `CollectionEfficiency` re-solved and
   re-documented as a coverage bridge, the >1 values named as coverage rather than efficiency. **BASELINE**;
-  ruled and TAKEN, execution logged STOPPED with its five-step order in `POLISIM_BACKLOG.md` §D. Rides F4.
+  ruled and TAKEN, execution logged STOPPED with its five-step order in `COMPLETED.md` §197 §D. Rides F4.
 
 ## Elias's, unchanged
 
@@ -337,6 +339,113 @@ fact the next relevant item must not contradict.
 
 ---
 
+
+## The register's open rows — RETIRED INTO `COMPLETED.md` §197 on 2026-09-02; this is the pointer index
+
+⚠ **Pointers, not a register.** Each line is an id and a hook; the evidence, the done-when, the owner and
+the ruling live in the row itself, verbatim, in `COMPLETED.md` §197 (`grep -n "| **ID** |"`). A row is
+listed here because it carried no ✅ when the register was retired — which includes shelves, triggers and
+Design's asks, not only startable work; the row says which. Move a row's state by adding a line to
+the record and striking it here. Derived mechanically by `Tools/migrate_docs_batch2.sh`; the shape is
+the generated-block idiom without a digest, because the source no longer exists to digest.
+
+- `R-CL1` — The player has a party. The player picks one of the country's real seeded parties at country selection; personal approval and party appro…
+- `R-CL2` — `eu_position` is ruled in as the openness axis for the Trade bill's vote, recorded as a named ruling with its stretch stated — EU integ…
+- `R-CL3` — §38 carry-over is BUILT, `SaveVersion` 2 → 3, with the standing electorate gap stated rather than papered over.
+- `R-CL4` — The two `StatNodeId` members go in now, and a missing icon becomes a reported GAP rather than a check failure, on `PartyMarkCoverageCheck…
+- `C-C8` — If the model holds no fact about a pair, the page shows the absence explicitly and the gap becomes a C-F1 line. Trade volume comes from t…
+- `C-C9` — Compute incrementally at the turn boundary, same seed, player-independent events shared. ⚠ If the per-turn cost exceeds a stated budget…
+- `C-C10` — If the divergence cannot be attributed to enacted changes within tolerance, report the residual as a named finding rather than forcing th…
+- `C-C11` — No constant moves. Where the literature disagrees, report the range. Where the model sits outside every sourced estimate, say so plainly …
+- `C-C14` — Remove the authored ±5–10 %; do not re-roll, do not stabilise. The point with its scope stated, matching C-C1.
+- `C-D1` — Source SCB per-valkrets marginals if reachable under the cross-check gate; otherwise bill the exact series and close as billed. Never der…
+- `C-D2` — Measure the pool a playable eight-party field needs; propose, do not apply.
+- `C-D3` — ⚠ RULED: the model carries BOTH språkrör. The debate seats the one the party's own statutes or its published campaign materials put f…
+- `C-D4` — Build the §38 carry-over if the persisted `ElectionRecord` supports it cheaply; otherwise defer by name with its trigger.
+- `C-D5` — Implement the swing column now that a record persists.
+- `C-C5` — Stays blocked on its bill. If ECB reference rates are reachable under the cross-check gate, take them — one vintage, one stated derivat…
+- `S-14` — ⚠ RULED, ruling-first row: campaign money is a SEPARATE PURSE in national units, and the two never transact unless Elias rules otherwis…
+- `S-15` — Content item, filed; not improvised inside another item.
+- `C-0.1` — This file: the single ordered register
+- `C-0.2` — The post-wiring re-derivation — correct every document that still asserts a pre-wiring premise
+- `C-C5` — P-C1 — national currency display
+- `C-D1b` — Per-group loyalty — the FdI ceiling's last link
+- `C-R4b` — The campaign wired to the game loop
+- `C-N7` — ⏹ MEASURED AND NOT LANDED 2026-09-02 (`COMPLETED.md` §196) — the build exposed C-N1's magnitude, and that is D-20. Built exactly as …
+- `E-1` — One paste — C-F1's regenerated package to Design, then mark §S SENT with the date
+- `E-2` — The sitting — §V, 52 rows, `../PoliSim-captures/sv_index.html`
+- `E-3` — Felt verdict 1 — decision density
+- `E-4` — Felt verdict 3 — the Trade bill's costs
+- `E-25` — C-C6's basis ruling — executes as written unless struck
+- `E-26` — C-C11's recalibration recommendations — strike or bless, per line
+- `E-27` — C-C12 and C-C13's spec-lets — ruled before any code
+- `E-28` — C-D2's pool resolution
+- `E-29` — C-D3's språkrör answer, if he wants the call rather than mine
+- `D-7` — Board 2b, the Policy Web drawn to be read (the tenth request, Annex G)
+- `D-8.1` — Party identity marks — 52 of 53 undrawn; the seven remaining Swedish ones are what 13 September needs
+- `D-8.2` — Party colours for five countries — a ruling, not art
+- `D-8.3` — A drawn valkrets map
+- `D-8.4` — Election night's paper (V-N1) — a 9-sliced sprite, or a ruling that flat is correct
+- `D-8.5` — The verdict stamp (W-E5)
+- `D-8.6` — Modal or stage for the debate (V-N2) — a question, not an asset
+- `D-E4` — The two Society-row icons (youth unemployment, life expectancy)
+- `K-1` — The seed refresh from Sweden's real result
+- `T-1` — Per-scenario term accumulation
+- `T-2` — Investment deepening (R-Q5e)
+- `T-3` — The identity's government-consumption block
+- `T-4` — Trade volumes indexed to GDP
+- `T-5` — Retaliation against a base-dial hike
+- `T-6` — Retaliation memory / lag
+- `T-7` — The coupling queue Q6–Q10
+- `F-1` — §37 staff progression — staff who get better at the job
+- `F-2` — §2's other election types — referendum, leadership contests
+- `F-3` — France's constituency model (R-EL10)
+- `F-4` — Italy's sub-national stages
+- `F-5` — The gap table's nine N/A sections
+- `F-7` — The tax instruments build (C-C12's §S1–S7)
+- `F-1` — *"a campaign the player actually runs"*
+- `F-2` — *"a ruling that the game is about more than a parliamentary term"*
+- `F-3` — *"a decision that France must be PLAYABLE, not merely simulated"*
+- `F-4` — *"Italy becoming playable — explicitly before playable, not before trusted"*
+- `F-5` — *"nothing"*
+- `G-1` — The label-clipping class (P4)
+- `G-2` — `MetaTextCheck`
+- `S-1` — The electorate does not move with the simulation. §8 couples it to the economy; nothing does that yet, so two elections in one game retu…
+- `S-2` — Germany 2025 sits on a threshold cliff — BSW missed 5 % by 0.02 pp — so a model with ~1.5 pp of error lands on the wrong side and nin…
+- `S-4` — ⚠ THE PREMISE IS FALSE, measured 2026-09-01 (D-18, `COMPLETED.md` §174). It read *"positions that exist for no party anywhere"*. All f…
+- `S-5` — Sweden's TOP issue (EB105: "threats to democracy", 26 %) is not representable in §6; the harness's four issues are Sweden's second throu…
+- `S-6` — Sweden 2014 does NOT reproduce through the same allocator (6 seats absolute error) — the reason every "reproduces" claim is scoped to 2022
+- `S-7` — `#753838` is drawn for two parties — Sweden's S and V. Their published `fargkod` values differ only in darkness and the desk seating ke…
+- `S-8` — Six of Sweden's eight party inks sit inside the derived legibility floor — closer to an area accent (8.7°, Political/SovereignWealth) …
+- `S-9` — ⚠ SIZED AS ITS OWN ITEM 2026-08-31 — see register row C-N2. Local campaigning is a bad bet by construction — the three local action…
+- `S-10` — ⚠ SIZED AS ITS OWN ITEM 2026-08-31 — see register row C-N1. The media system cannot move a vote. `MomentumTracker.Apply`'s only call …
+- `S-11` — ⚠ SIZED AS ITS OWN ITEM 2026-08-31 — see register row C-E3. A doc comment can name a guard that does not exist. Twice in one pass: `P…
+- `S-13` — On a focused STAT node the Policy Web's ~40 incoming edges converge on one point and their arrowheads stack at that node's rim. Direction…
+- `S-18` — ⚠ CORRECTED 2026-08-31 at C-N3, and the correction is the more interesting fact. ~~The player's interest-rate lever is DEAD in every co…
+- `S-20` — ⚠ A CAPTURE THAT WRITES IS NOT A CAPTURE OF WHAT YOU MEANT — and nothing in the film bar checks the difference. Found at C-D5: every …
+- `S-22` — ⚠ `DrawTimeRangeRow`'s doc asserts a behaviour that does not exist — and the coherence audit could not see it. Its summary said *"bou…
+- `S-25` — ⚠ `BaseConsumptionRate` and `BaseInvestmentRate` are in the real range and UNIFORM ACROSS SIX COUNTRIES. Household consumption really i…
+- `S-27` — ⚠ `TacticalVoting` is built, harness-proven, and has NO caller in the model. It appears in exactly one file outside its own — `Tactic…
+- `S-28` — ⚠ P-I2 stage 3's anchor is SOURCEABLE for all six — probed 2026-09-01. §141 left the retirement blocked on *"a convergence speed not…
+- `S-30` — ⚠ A one-way ask has no receipt unless somebody reads the far side. P-F2 concluded from the absence of a readback that the D7 paste was …
+- `S-31` — ⚠ R-N2 WAS RETIRED AT W-G1 AND THE BACKLOG ITS LICENCE CREATED WAS NEVER RE-HOMED. R-N2 authorised building the elections model as pure…
+- `S-32` — ⚠ ELECTION NIGHT HAS NO DOOR. `ElectionNightScreen` — board 1h, built, filmed at four widths, recorded as delivered — is named by n…
+- `S-33` — ⚠ THE THREE UNWIRED ELECTIONS SYSTEMS ARE ONE MISSING INPUT, AND TWO OF THEM ARE EACH OTHER'S ANSWER. Measured 2026-09-01. `ElectionNig…
+- `S-34` — ⚠ `PlayerReachabilityCheck` armed at a ratchet of 1, and the ratchet is a DEBT that must not be paid cheaply. The one gap is `ElectionN…
+- `S-35` — ⚠ A TYPE IS NOT ITS FILE, AND A PROBE THAT ASSUMES SO WILL "CORRECT" A CORRECT REFERENCE. The §9.4 pass reported `CampaignCalendar.Def…
+- `S-36` — ⚠ DOCUMENTATION OF AN ABSENCE FUNCTIONS AS EVIDENCE OF A PRESENCE — the sharpest form of this project's signature defect, and it happ…
+- `S-37` — ⚠ A BOUND WHOSE DIRECTION IS NOT CARRIED CAN SILENTLY INVERT. `PublicationCadenceCheck`'s reachable-preliminary bound is a floor — th…
+- `S-38` — ⚠ A PROSE CLAIM ABOUT BEHAVIOUR SHOULD NAME THE INSTRUMENT THAT CHECKS IT. S-22 recorded the general class undecidable — no instrumen…
+- `S-39` — ⚠ WE CUT A SCREEN DESIGN WAS DRAWING AND DID NOT TELL THEM — and the finding is the missing CHANNEL, not the screen. Row `E17` asked …
+- `R-N5` — ⚠ A NEW CHECK IS WRITTEN ONLY AFTER A DEFECT HAS COST SOMETHING TWICE. Ruled by Elias 2026-09-01 with the close of the audit era, and i…
+
+## The prerequisites document's queues — RETIRED INTO `COMPLETED.md` §198 on 2026-09-02
+
+Its sections are queues by owner and they read the same in the record: **§S** the send (one paste, Elias's),
+**§A** decisions waiting on Elias, **§D** waiting on another task, **§E** waiting on Claude Design, **§V** the
+visual review (built, not seen), **§P** the playtest and its felt verdicts. `grep -n "^### [SADEVP]\." COMPLETED.md`
+past the §198 heading finds them. Nothing in them is startable by a session; every one is Elias's or Design's.
+
 # THE WORKING DISCIPLINE — migrated from `POLISIM_MASTER_ROADMAP.md` at its retirement (2026-09-01)
 
 ⚠ **This is INSTRUCTION and it is why the roadmap could be deleted.** The rules below bound every pass
@@ -360,7 +469,7 @@ there rather than restating it. Numbered references to *"rule N"* across the rec
    `[VERIFIED]`/`[PROVISIONAL]`/`[ESTIMATED]`/`[PLACEHOLDER]` tags stay in force; the API cross-check gate
    applies to anything sourced.
 3. **Visual work is built-not-confirmed until Elias sees it.** Everything visual lands in
-   `MISSING_PREREQUISITES.md` §V with its capture named. ⚠ **A capture is a harness film, not Elias's
+   `COMPLETED.md` §198 §V with its capture named. ⚠ **A capture is a harness film, not Elias's
    eyes** — closing a visual item on film alone is the conflation this rule exists to catch.
 4. **Forks.** Pre-ruled forks in a kickoff are binding. A new reversible fork → make the call, log one
    line. Stop mid-pass ONLY for an irreversible or expensive fork, or a blocking validation failure.
@@ -439,7 +548,7 @@ measurement is `COMPLETED.md` §190 §B.3.
 ## The three-way test every task gets
 
 1. **Finished?** → `COMPLETED.md`, then delete from source.
-2. **Waiting on a named party?** → `MISSING_PREREQUISITES.md`, then delete from source.
+2. **Waiting on a named party?** → `COMPLETED.md` §198, then delete from source.
 3. **Neither?** → it stays live.
 
 ⚠ **"Built but unconfirmed" and "built but uncalled" are case 3, not case 1** — or case 2 when the only
@@ -458,7 +567,7 @@ here; the evidence is there.*
 - **If removing finished items empties a document, delete it.** An empty shell drifts back into use.
 - ⚠ **Do not duplicate a live list into another document.** Two copies of one list is the drift these
   passes exist to undo — and the roadmap was retired partly because its trigger shelf duplicated
-  `POLISIM_BACKLOG.md` §5.
+  `COMPLETED.md` §197 §5.
 - **Repoint references before deleting a file, and grep afterwards to prove nothing dangles** — source
   comments included.
 - ⚠ **A document can assert two states of one task at once.** When a live document is edited, search it
