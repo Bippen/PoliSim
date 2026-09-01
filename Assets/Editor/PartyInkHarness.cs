@@ -83,7 +83,16 @@ namespace PoliSim.EditorTools
                 greyAreas.Count > 0 ? string.Join(", ", greyAreas) : "none"));
 
             int failures = 0;
+
+            // ⚠ RECONCILED 2026-09-01. One counter called `pending` was adding up THREE unlike things —
+            // hue-floor breaches, near-grey saturation proximity, and two parties rendering to one ink —
+            // and the summary line then described the total as inks "inside the floor". It printed 7
+            // while the per-row marks showed 6, and §138, the register and Design's own board all say
+            // six. **The disagreement was the LABEL, not the measurement**, and the fix is to stop
+            // conflating them: counted apart, the printed number and the printed rows check each other.
             int pending = 0;
+            int floorBreaches = 0;
+            int nearGrey = 0;
             var byInk = new Dictionary<string, List<string>>();
             int inked = 0, uninked = 0;
             var uninkedByCountry = new Dictionary<CountryId, int>();
@@ -135,7 +144,7 @@ namespace PoliSim.EditorTools
                     // forced into chrome draws in the neutral status ink. That is a DRAW-SITE assertion,
                     // sized as its own row rather than smuggled in here as a hue test.
                     bool ok = nearest >= floorDeg;
-                    if (!ok) { pending++; }
+                    if (!ok) { floorBreaches++; }
 
                     // ⚠ TWO PARTIES, ONE INK. The seating keeps HUE and replaces saturation and value,
                     // so two published colours that differ only in how dark or vivid they are collapse
@@ -168,7 +177,7 @@ namespace PoliSim.EditorTools
                         if (a.S >= GreyThreshold) { continue; }
                         if (Math.Abs(ps - a.S) < 0.10f)
                         {
-                            pending++;
+                            nearGrey++;
                             sb.Append(F("      ⚠ {0}'s ink sits at saturation {1:F2}, within 0.10 of near-grey accent {2} ({3:F2}).\n",
                                 p.Abbrev, ps, a.Name, a.S));
                         }
@@ -217,8 +226,12 @@ namespace PoliSim.EditorTools
 
             if (failures == 0)
             {
-                sb.Append(F("\n=== PartyInkHarness: ALL ASSERTIONS PASS ({0} inked, {1} uninked by design); {2} measured inside the derived {3:F1} deg floor - ANSWERED, NOT OUTSTANDING ===\n",
-                    inked, uninked, pending, floorDeg));
+                sb.Append(F("\n=== PartyInkHarness: ALL ASSERTIONS PASS ({0} inked, {1} uninked by design) ===\n", inked, uninked));
+                sb.Append(F("    THREE COUNTS, KEPT APART (reconciled 2026-09-01 - one number used to add all three together):\n"
+                            + "      {0} of {1} inks sit inside the derived {2:F1} deg hue floor  -> matches the ** TOO CLOSE ** rows above\n"
+                            + "      {3} ink(s) sit within 0.10 saturation of a near-grey accent\n"
+                            + "      {4} hex(es) are drawn for more than one party\n",
+                    floorBreaches, inked, floorDeg, nearGrey, pending));
                 sb.Append("    ⚠ D9 row 5 (Design, read 2026-09-01): the floor keeps two AREA accents apart, and party inks\n");
                 sb.Append("    never sit in that company - so it binds WITHIN a channel, not across them. The figures above\n");
                 sb.Append("    are still true and are still printed; they are no longer a debt, and they were NEVER closed by\n");

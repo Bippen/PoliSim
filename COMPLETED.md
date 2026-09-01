@@ -9416,3 +9416,78 @@ wording around it — so the disagreement is **pre-existing and older than the r
 rather than adjusted: a count nobody has reconciled is not made true by rewriting the sentence beside it,
 and the likely candidate (C at exactly the floor, where `>=` decides it) is a guess until somebody reads
 the per-row output. **Opened as a finding, not fixed in an item that was not about it.**
+
+## 147. D-13 RULED (b) AND EXECUTED — and D-2 (c) held the re-test, then failed on something else (2026-09-01)
+
+### D-13 (b): enforcement moves to the quantity the band is a band on
+
+**Elias:** *"That is the quantity Ramey defines the band over; enforcing on a basis no published family
+recognises is a bar that cannot be checked against anything."* Executed the same day.
+`ResponsivenessAuditHarness` asserts on the **cumulative** column and nothing else. L+1 (0.607) and L+4
+(0.702) must sit inside 0.6–1.0. **Impact, 0.507, is carried as a RATCHET** — a floor rather than a
+ceiling, because the finding is a number that is too *small*: the run fails if it slips further, and the
+ratchet is **retired if it ever reaches 0.6, never moved down**.
+
+⚠ **Proven in both directions before it was trusted.** Band ceiling temporarily 0.65 and ratchet 0.600 →
+exit **1**, six named breaches (three `L+4 = 0.702`, three `IMPACT = 0.507 … it got WORSE`). Restored →
+exit 0, `3 of 3` dials checked, `0 of 3` impact horizons inside the band. **All three columns stay printed
+permanently**, per the ruling: the divergence between them is itself information.
+
+### D-2 (c), reopened: it PASSES the stated test, by being exactly neutral
+
+Rebuilt from this repo's own recorded provenance and wired through every call site, then measured:
+
+| | balance impulse | QUASI | **CUMULATIVE** |
+|---|---|---|---|
+| before | 2.267 | 0.507 / 0.715 / 0.807 | **0.507 / 0.607 / 0.702** |
+| with the table | **2.303** | 0.507 / 0.715 / 0.807 | **0.507 / 0.607 / 0.702** |
+
+⚠ **Identical to the digit on both of Ramey's quantities.** Only the balance-basis denominator moved,
+reproducing the original rejection's 2.27 → 2.30 exactly. **The constraint that rejected D-2 (c) never had
+anything to say about it.**
+
+And the thing it exists for works. A +10-point income-tax rise, dC as a share of each country's own GDP,
+was **−2.68 % identically for all six**; with the table it is **USA −2.06 · Sweden −1.34 · Germany −1.55 ·
+France −1.44 · Italy −1.67 · Poland −0.94**.
+
+### ⚠ AND IT STILL DOES NOT LAND — for a defect the first rejection stopped the build before reaching
+
+`FiscalRecalDiagnostic` with the table in: **every country's revenue-to-GDP falls off its calibrated
+target.** USA 18.0 → 15.12 · Sweden 42.2 → 32.98 · Germany 40.9 → 29.77 · France 45.3 → 28.66 · Italy
+42.5 → 32.38 · Poland 37.6 → 25.54. The recalibration's anchored quantity is the primary balance, and this
+moves it in all six by 3–17 points of GDP.
+
+**The cause is structural.** `CollectionEfficiency` is *solved* as `Target / Implied`. The sourced base is
+`(realised revenue % of GDP) / (seeded rate %)` — ⚠ **it already contains the collection loss**, so the
+model would mark realised revenue down twice. Re-solving CE to compensate needs **CE > 1 in five of six**
+(SE 1.006, DE 1.151, FR 1.182, IT 1.237, PL 1.311) against a field whose own doc says *"how much of the
+theoretical tax base is actually collected (0.0-1.0)"*.
+
+⚠ **A second, independent defect: the USA row is on the wrong fiscal perimeter.** The sourced bases are
+general government for all six; `WorldFactory`'s stated organizing principle puts the USA's whole
+calibration on the **federal** perimeter because the state and local layer is not modelled.
+
+**Reverted, with the measurement kept and the code not.** ⚠ **This is a better rejection than the first
+one**: the first said a number moved off a band, and the band turned out to be the wrong band. This one
+says the table double-counts a correction and half of it is measured on the wrong perimeter — and neither
+sentence depends on which denominator anybody enforces. **Route (a) stays refused independently**, and
+this run confirms it from the other side: the incoherence Elias named *is* the double-count.
+
+Opened as **D-14** with (a) recommended — re-solve CE, permit >1, and re-document the constant as the
+coverage bridge it would then be — ⚠ **and not self-taken, for a rule rather than a stall**: it changes
+what a documented, serialized, cross-system constant *means* in six countries, and taking it here would
+land a second BASELINE family beside the first, which is the exact move D-9's option (d) was refused for.
+**Logged strikeable: absent a ruling, the next fiscal item takes (a).**
+
+### The party-ink count, reconciled — and it was a LABEL, not a measurement
+
+`PartyInkHarness` printed **7** inks "inside the derived floor" while §138, the register and Design's own
+board all said **six**, and the harness's own per-row marks showed six. ⚠ **One counter was adding three
+unlike things** — hue-floor breaches, near-grey saturation proximity, and two parties rendering to one
+ink — and the summary line described the total as one of them. **Six is right.** Counted apart and printed
+apart now: **6 of 8 inside the 8.7° floor · 0 near-grey · 1 hex drawn for more than one party**, and the
+printed rows now check the printed number.
+
+⚠ Recorded at `PoliSimTheme` with the other half of the story: **the floor itself is retired as the wrong
+constraint** (D9 row 5), the six measurements stay because they are true, and what binds instead is
+structural and lives at **S-29**, where a hue harness cannot reach it.

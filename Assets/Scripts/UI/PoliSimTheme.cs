@@ -213,6 +213,17 @@ namespace PoliSim.UI
         /// colours differing only in darkness while the seating keeps hue and replaces saturation and
         /// value. Reported as PEND, not fixed: any fix stops using the authority own hue or picks a
         /// replacement by eye, and that ruling is Design (asset request D8-2).
+        ///
+        /// ⚠ **RECONCILED AND ANSWERED 2026-09-01.** *Six* is the right number: the harness's summary
+        /// briefly printed **7** because one counter was adding hue-floor breaches, near-grey saturation
+        /// proximity and the S/V collision into a single total while the label called it "inside the
+        /// floor". The three are counted and printed apart now, and the printed rows check the printed
+        /// number. ⚠ **And the FLOOR ITSELF IS RETIRED as the wrong constraint** — D9 row 5 (Design):
+        /// it separates two AREA accents, chrome semantics that sit side by side in one rail, and party
+        /// inks never appear in that company, so it binds *within* a channel and not across them. The
+        /// six measurements stay printed because they are true; they are no longer a debt. What binds
+        /// instead is structural — party ink is never drawn adjacent to an area accent — and lives at
+        /// **S-29**, where a hue harness cannot reach it.
         /// </summary>
         private static readonly Dictionary<string, Color> PartyHues = new Dictionary<string, Color>
         {

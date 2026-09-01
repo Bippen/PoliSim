@@ -46,9 +46,14 @@ namespace PoliSim.EditorTools
     /// CUMULATIVE 0.507 / 0.607 / 0.702.</b> ⚠ On the comparable column the model is **below the band at
     /// impact and inside it from L+1**, and that is true today with nothing pending.</para>
     ///
-    /// <para>The constraint stays enforced on the basis it was pre-committed on: **swapping a denominator
-    /// because a gate rejected a change is moving the bar to pass.** The other two are printed, never
-    /// enforced, and the rule question is Elias's — register D-13.</para>
+    /// <para>✅ <b>D-13 RULED (b), Elias, 2026-09-01: enforcement is on the CUMULATIVE column.</b> It is the
+    /// quantity Ramey defines the band over, and *"enforcing on a basis no published family recognises is
+    /// a bar that cannot be checked against anything"*. **All three columns stay printed forever — the
+    /// divergence between them is itself information.** ⚠ Stated plainly rather than smoothed: the model
+    /// reads **below the band at impact (0.507) and inside it from L+1**, and the impact horizon is
+    /// carried as a **ratchet at its measured value** — the same shape `PartyMarkCoverageCheck` and P-I2
+    /// stage 3 use for a real finding with no fix in hand. It fails if it worsens and is retired, never
+    /// lowered, if it ever reaches 0.6.</para>
     ///
     /// <para>⚠ <b>AND THE SAME DEFECT ON THE TAX SIDE (R-D8, 2026-09-01).</b> Romer &amp; Romer normalise on
     /// an *"exogenous tax increase of 1 percent of GDP"* — the **statutory** change — which the quoted
@@ -67,6 +72,34 @@ namespace PoliSim.EditorTools
         private const int Seed = 777;
         private const int Years = 6;
         private static readonly CountryId Subject = CountryId.Sweden;
+
+        /// <summary>Ramey's band, read at the paper: *"a surprisingly narrow range of 0.6 to 1"* for
+        /// multipliers on general government purchases. ⚠ **D-13 (b) enforces on the CUMULATIVE column
+        /// against these two numbers and on nothing else.**</summary>
+        private const float SpendingBandFloor = 0.6f;
+
+        private const float SpendingBandCeiling = 1.0f;
+
+        /// <summary>
+        /// ⚠ **A RATCHET, and a FLOOR rather than a ceiling** — the finding is a number that is too
+        /// small, so "never lower it" is the rule that keeps it honest.
+        ///
+        /// <para>Measured 2026-09-01 on the comparable basis: the cumulative multiplier at IMPACT is
+        /// <b>0.507</b>, outside Ramey's 0.6–1.0, with nothing pending and no fix in hand. L+1 (0.607) and
+        /// L+4 (0.702) are inside. Under D-13 (b) that would make the suite permanently red on a finding
+        /// nobody can close today, so it takes the shape this project already uses for exactly that
+        /// case — `PartyMarkCoverageCheck`'s precedent and P-I2 stage 3's: **the backlog is reported in
+        /// every run with its reason attached, and the run FAILS if it gets worse.**</para>
+        ///
+        /// <para>⚠ **Retired, never raised.** If the impact multiplier ever reaches 0.6 the finding is
+        /// resolved and this constant goes; moving it DOWN to accommodate a regression is the move the
+        /// whole D-9/D-13 sequence exists to refuse.</para>
+        /// </summary>
+        private const float ImpactRatchet = 0.507f;
+
+        /// <summary>Float slack for the ratchet comparison — the measurement is printed at three decimals
+        /// and re-runs land on the same digits, so this only absorbs the last bit.</summary>
+        private const float RatchetTolerance = 0.0005f;
 
         private enum Kind { Tax, Spending }
 
@@ -196,6 +229,9 @@ namespace PoliSim.EditorTools
             int rameyRows = 0;
             var statutoryTable = new StringBuilder();
             int statutoryRows = 0;
+            var bandBreaches = new List<string>();
+            int bandChecked = 0;
+            int impactInsideBand = 0;
             foreach (Dial dial in dials)
             {
                 float[] gdp = new float[Years + 1];
@@ -270,6 +306,31 @@ namespace PoliSim.EditorTools
                             dial.Name, impulse, purchaseImpulse,
                             d1 / purchaseImpulse, d2 / purchaseImpulse, d5 / purchaseImpulse,
                             cum1, cum2, cum5));
+
+                        // D-13 RULED (b), Elias, 2026-09-01: **enforcement moves to the CUMULATIVE
+                        // column.** It is the quantity Ramey defines the band over, and enforcing on a
+                        // basis no published family recognises is a bar that cannot be checked against
+                        // anything. All three columns stay printed forever — the divergence between them
+                        // is itself information.
+                        bandChecked++;
+                        if (cum2 < SpendingBandFloor || cum2 > SpendingBandCeiling) { bandBreaches.Add(F("{0} at L+1 = {1:F3}", dial.Name, cum2)); }
+                        if (cum5 < SpendingBandFloor || cum5 > SpendingBandCeiling) { bandBreaches.Add(F("{0} at L+4 = {1:F3}", dial.Name, cum5)); }
+
+                        // ⚠ THE IMPACT HORIZON IS OUTSIDE THE BAND AND IS A RATCHET, NOT A PASS.
+                        // 0.507 is what the model reads today on the comparable basis, and no fix for it
+                        // is in hand — the project's own idiom for exactly that is a ratchet
+                        // (PartyMarkCoverageCheck's precedent, and P-I2 stage 3's). It is a FLOOR here
+                        // rather than a ceiling because the finding is a number that is too SMALL: the
+                        // run fails if impact slips further below the band, and the ratchet is retired,
+                        // never raised, if it ever reaches the floor.
+                        if (cum1 < ImpactRatchet - RatchetTolerance)
+                        {
+                            bandBreaches.Add(F("{0} at IMPACT = {1:F3}, below the ratchet {2:F3} - it got WORSE", dial.Name, cum1, ImpactRatchet));
+                        }
+                        else if (cum1 >= SpendingBandFloor)
+                        {
+                            impactInsideBand++;
+                        }
                     }
                     else
                     {
@@ -310,8 +371,8 @@ namespace PoliSim.EditorTools
                     unemployment[h5] - baseUnemployment[h5], inflation[h5] - baseInflation[h5], okun));
             }
 
-            sb.Append("\n    THE SPENDING DIALS ON RAMEY'S OWN QUANTITIES (D-9 route (b) / D-13; REPORTED, NOT ENFORCED)\n");
-            sb.Append("    ------------------------------------------------------------------------------------------\n");
+            sb.Append("\n    THE SPENDING DIALS ON RAMEY'S OWN QUANTITIES - THE CUMULATIVE COLUMN IS THE ENFORCED ONE (D-13 (b))\n");
+            sb.Append("    ---------------------------------------------------------------------------------------------------\n");
             sb.Append("    dial               impulse(bal) impulse(G) |  QUASI L   L+1     L+4 |   CUMULATIVE L   L+1     L+4\n");
             sb.Append(ramey);
             sb.Append(F("    Spending dials expressed on all three bases: {0} of {1}.\n", rameyRows, 3));
@@ -320,14 +381,16 @@ namespace PoliSim.EditorTools
             sb.Append("    CUMULATIVE = sum dGDP / sum dG from the landing year, undiscounted. THIS is what Ramey's band\n");
             sb.Append("                 summarises: 'the present discounted value of the output response over time divided\n");
             sb.Append("                 by the present discounted value of the government spending response over time'.\n");
-            sb.Append("    ⚠ THE FINDING (D-13, opened 2026-09-01 and sourced at the paper itself): the enforced column is\n");
-            sb.Append("    NONE of these three. It divides by the change in the ACTUAL budget balance, which is the spending\n");
-            sb.Append("    change NET of the revenue that spending raised - 2.267 against 2.695 on the +2% dial. Ramey's\n");
-            sb.Append("    0.6-1.0 is stated over 'multipliers on general government PURCHASES', so the band and the column\n");
-            sb.Append("    it is quoted beside are not the same quantity. The comparable column is CUMULATIVE.\n");
-            sb.Append("    NOTHING IS ENFORCED ON THE NEW COLUMNS. Swapping a denominator because a gate rejected a change\n");
-            sb.Append("    would be moving the bar to pass; measuring it and printing it beside the one in force is evidence.\n");
-            sb.Append("    WHICH BASIS THE CONSTRAINT IS ENFORCED ON IS A CHANGE TO THE RULE, AND THE RULE IS ELIAS'S.\n");
+            sb.Append("    ⚠ D-13 RULED (b), Elias, 2026-09-01. Enforcement is on CUMULATIVE and on nothing else. The old\n");
+            sb.Append("    enforced column divided by the change in the ACTUAL budget balance - the spending change NET of the\n");
+            sb.Append("    revenue that spending raised, 2.267 against 2.695 on the +2% dial - and NO PUBLISHED FAMILY uses\n");
+            sb.Append("    that denominator. A bar on a quantity nobody publishes cannot be checked against anything. All\n");
+            sb.Append("    three columns stay printed permanently: the divergence between them is itself information.\n");
+            sb.Append(F("    ⚠ STATED PLAINLY, NOT SMOOTHED: on the comparable basis the model reads BELOW the band at impact\n"
+                        + "    ({0:F3} against a {1:F2} floor) and INSIDE it from L+1 onward. The impact horizon is carried as a\n"
+                        + "    RATCHET at its measured value - reported every run with its reason, failing if it gets worse,\n"
+                        + "    retired if it ever reaches the floor, and never moved down to accommodate a regression.\n",
+                        ImpactRatchet, SpendingBandFloor));
 
             sb.Append("\n    THE TAX DIALS ON ROMER & ROMER'S DENOMINATOR (R-D8; REPORTED, NOT ENFORCED)\n");
             sb.Append("    --------------------------------------------------------------------------\n");
@@ -345,8 +408,42 @@ namespace PoliSim.EditorTools
             sb.Append("\n    THE SOURCED COMPARISON\n    ----------------------\n");
             foreach (string line in Literature) { sb.Append("    ").Append(line).Append('\n'); }
 
+            // D-13 (b)'s verdict, enumerated. ⚠ The enumeration rule: a run that checked NO dial against
+            // the band has enforced nothing, and would read exactly like a run that passed.
+            sb.Append("\n    THE ENFORCED VERDICT (D-13 (b))\n    -------------------------------\n");
+            sb.Append(F("    Spending dials checked against Ramey's {0:F2}-{1:F2} on the CUMULATIVE column: {2} of {3}.\n",
+                SpendingBandFloor, SpendingBandCeiling, bandChecked, 3));
+            sb.Append(F("    Impact horizons that reached the band (ratchet {0:F3}): {1} of {2}.\n",
+                ImpactRatchet, impactInsideBand, bandChecked));
+            if (bandBreaches.Count == 0)
+            {
+                sb.Append("    No breach: L+1 and L+4 inside the band on every dial, impact at or above its ratchet.\n");
+            }
+            else
+            {
+                foreach (string b in bandBreaches) { sb.Append("    ⚠ BREACH: ").Append(b).Append('\n'); }
+            }
+
             sb.Append("\n    ⚠ NO CONSTANT WAS MOVED BY THIS HARNESS, AND IT HAS NO CODE PATH THAT COULD MOVE ONE.\n");
             sb.Append("    The recommendation list lives in COMPLETED.md, each line strikeable, and waits on Elias.\n");
+
+            if (bandChecked == 0)
+            {
+                Debug.LogError("C-C11 / D-13 (b): NOT ONE spending dial reached the band check, so the enforced column "
+                               + "enforced nothing and this run verified nothing about the multiplier.");
+                Debug.LogError(sb.ToString());
+                CheckExit.Finish(1);
+                return;
+            }
+
+            if (bandBreaches.Count > 0)
+            {
+                Debug.LogError("C-C11 / D-13 (b): the CUMULATIVE spending multiplier is outside Ramey's band where the "
+                               + "band binds, or the impact horizon slipped below its ratchet. " + string.Join(" | ", bandBreaches.ToArray()));
+                Debug.LogError(sb.ToString());
+                CheckExit.Finish(1);
+                return;
+            }
 
             if (deadDials > 0) { Debug.LogError(sb.ToString()); CheckExit.Finish(1); return; }
 

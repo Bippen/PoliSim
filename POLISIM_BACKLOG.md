@@ -416,7 +416,7 @@ used to take the measurement, and **deleted** once the harness carried it.
 
 ---
 
-### D-13 · Which denominator the spending constraint is enforced on ⚠ ELIAS'S — the rule is his
+### D-13 · Which denominator the spending constraint is enforced on ✅ **RULED (b) BY ELIAS 2026-09-01 — enforcement is on the CUMULATIVE column**
 
 **The question.** The pre-committed rule rejects any change that moves the spending multiplier outside
 Ramey's 0.6–1.0. **The band and the column it is enforced on are not the same quantity.** Which one is the
@@ -478,7 +478,115 @@ different quantity than he pre-committed it on — the same class as D-9, and th
 not self-rule it. **What WAS taken, as a strikeable R-N1 call: the sourcing, and printing all three
 columns.** Neither moves a constant, neither changes an exit code, and both are reversible in one edit.
 
-> **To rule it, write:** `D-13 RULED: (b)` *(or a / c)*
+> ~~**To rule it, write:** `D-13 RULED: (b)` *(or a / c)*~~
+
+### ✅ **D-13 RULED (b) — Elias, 2026-09-01. Enforcement moves to the CUMULATIVE column.**
+
+> *"That is the quantity Ramey defines the band over; enforcing on a basis no published family recognises
+> is a bar that cannot be checked against anything. Keep all three columns in the harness forever — the
+> divergence between them is itself information — and record that the model reads below the band at impact
+> and inside it from L+1 on the comparable basis, stated plainly rather than smoothed."*
+
+**Executed the same day.** `ResponsivenessAuditHarness` now asserts on the cumulative column and on
+nothing else: L+1 and L+4 must sit inside 0.6–1.0 (they do, 0.607 and 0.702), and **impact is carried as a
+RATCHET at its measured 0.507** — the shape `PartyMarkCoverageCheck` and P-I2 stage 3 already use for a
+real finding with no fix in hand. ⚠ **It is a FLOOR, not a ceiling**: the run fails if impact slips
+further below the band, and the ratchet is *retired* if it ever reaches 0.6, never moved down.
+
+⚠ **Proven in both directions before it was trusted.** With the band ceiling temporarily at 0.65 and the
+ratchet at 0.600, the harness exits **1** and names six breaches — three `L+4 = 0.702` and three
+`IMPACT = 0.507 … it got WORSE`. Restored, it exits 0 with `3 of 3` dials checked and `0 of 3` impact
+horizons inside the band, which is the finding printed rather than hidden.
+
+---
+
+### D-2 (c) · REOPENED by D-13, re-tested, and NOT LANDED — for a defect the first rejection hid
+
+**Elias, 2026-09-01:** *"It was rejected for moving a number off a band that turns out not to be the band.
+Re-test it against the cumulative column: if it holds there, it lands; if it does not, it stays reverted
+for a reason that survives inspection."*
+
+#### ✅ On the stated test it HOLDS — and it holds by being exactly neutral
+
+The per-country base table was rebuilt from this register's own recorded provenance (OECD Revenue
+Statistics `DSD_REV_COMP_OECD`, general government, % of GDP, 2022; Poland from Eurostat `gov_10a_taxag`)
+and wired through every call site, then measured:
+
+| | balance impulse | QUASI L / L+1 / L+4 | **CUMULATIVE L / L+1 / L+4** |
+|---|---|---|---|
+| before | 2.267 | 0.507 / 0.715 / 0.807 | **0.507 / 0.607 / 0.702** |
+| with D-2 (c) | **2.303** | 0.507 / 0.715 / 0.807 | **0.507 / 0.607 / 0.702** |
+
+⚠ **Identical to the digit on both of Ramey's quantities.** Only the balance-basis denominator moved —
+2.267 → 2.303, reproducing the original rejection's 2.27 → 2.30 exactly. **The constraint that rejected
+D-2 (c) never had anything to say about it.** It was rejected by a measurement artifact, which is what
+D-13 predicted and this run measured rather than argued.
+
+#### ⚠ And the thing it was FOR works: the identical-across-six finding is gone
+
+`TaxTransmissionDiagnostic`, a +10-point income-tax rise, dC as % of that country's own GDP:
+
+| | USA | Sweden | Germany | France | Italy | Poland |
+|---|---|---|---|---|---|---|
+| before | −2.68 % | −2.68 % | −2.68 % | −2.68 % | −2.68 % | −2.68 % |
+| with D-2 (c) | **−2.06 %** | **−1.34 %** | **−1.55 %** | **−1.44 %** | **−1.67 %** | **−0.94 %** |
+
+Six economies answer a tax change with six numbers. That is the whole point of the item, delivered.
+
+#### ⚠ IT STILL DOES NOT LAND, and the reason is one nobody had reached
+
+`FiscalRecalDiagnostic`, with the table in: **every country's revenue-to-GDP falls off its calibrated
+target** — USA 18.0 → **15.12**, Sweden 42.2 → **32.98**, Germany 40.9 → **29.77**, France 45.3 →
+**28.66**, Italy 42.5 → **32.38**, Poland 37.6 → **25.54**. The recalibration's ANCHORED quantity is the
+primary balance, and this moves it in all six by 3–17 points of GDP.
+
+**Why, and it is structural rather than arithmetic.** `CollectionEfficiency` is *solved* as
+`Target / Implied`, where `Implied = Σ(rate × base)`. The sourced base is `(realised revenue % of GDP) /
+(seeded rate %)` — ⚠ **it already contains the collection loss.** So the model would mark realised revenue
+down a second time. Re-solving CE to compensate needs **CE > 1 for five of six countries** (Sweden 1.006,
+Germany 1.151, France 1.182, Italy 1.237, Poland 1.311) — and `Country.CollectionEfficiency`'s own doc says
+*"how much of the theoretical tax base is actually collected (0.0-1.0), reflecting enforcement quality, the
+size of the informal economy, and evasion"*. A value above 1 makes that sentence false.
+
+⚠ **A second, independent defect in the same table: the USA row is on the wrong fiscal perimeter.** The
+sourced bases are **general government** for all six, while `WorldFactory`'s stated organizing principle —
+the perimeter rule — puts the USA's whole calibration on the **federal** perimeter, because the state and
+local layer is not modelled. The USA's 0.3077 income base is therefore not the base of the thing the model
+taxes.
+
+**So it stays reverted, for a reason that survives inspection and is not the one it was rejected for.**
+The measurement is kept; the code is not. ⚠ **Route (a) remains refused independently** on Elias's ruling:
+a revenue-derived table applied everywhere except revenue is incoherent whatever the multiplier does — and
+this run confirms it from the other side, since the incoherence is exactly what the CE double-count is.
+
+---
+
+### D-14 · How a sourced tax base is reconciled with `CollectionEfficiency` and the perimeter rule
+
+**The question.** The sourced per-country bases already contain the collection loss that
+`CollectionEfficiency` exists to apply, and the USA's row is on a different fiscal perimeter from the
+USA's calibration — so how does a sourced base land without breaking the primary-balance anchor?
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Re-solve `CollectionEfficiency` per country, permit values above 1, and RE-DOCUMENT the constant** as the coverage bridge between four modelled instruments and a whole tax system | one item; the anchor is preserved exactly, so only ONE family moves — the policy response | ⚠ a constant named "efficiency" stops meaning efficiency, and it is read by a Cabinet decision channel and the preview clone |
+| **b. Re-derive the bases at the THEORETICAL (pre-loss) level** so CE keeps its meaning | ⚠ unknown, and probably unavailable — OECD publishes realised revenue, not theoretical bases | nothing, but it may not exist |
+| **c. Land it with CE re-solved AND re-anchor the revenue targets to the four modelled instruments' own share** | ⚠ two BASELINE families landing together — the exact thing D-9 (d) was refused for | nothing permanently; it is the largest of the three |
+| **d. Leave D-2 (c) reverted; the identical-across-six finding stands with its cause now fully named** | nothing — today's state | ⚠ the model keeps answering a tax change with one number for six economies, and now we know precisely why the fix is not free |
+
+**Recommendation: (a), and the USA row re-derived on the federal perimeter before anything lands.** Basis:
+(a) is the only option that keeps the anchored quantity fixed, so exactly one family moves and can be
+explained per country — the project's own rule. (c) violates that rule by construction. (b) is a sourcing
+job that may have no source. (d) is honest but leaves a known-wrong term standing when its fix is one
+re-documentation away.
+
+⚠ **NOT self-taken, and the reason is a rule rather than a stall.** (a) changes what a documented,
+serialized, cross-system constant *means* in all six countries — and the USA half needs a re-derivation on
+a perimeter no figure on disk covers. Taking it inside a run whose job was to re-test D-2 (c) would land a
+second BASELINE family beside the first, which is the one thing D-9's own option table refuses.
+**Logged strikeable: if Elias says nothing, the next fiscal item takes (a).**
+
+> **To rule it, write:** `D-14 RULED: (a)` *(or b / c / d)*
 
 ---
 
