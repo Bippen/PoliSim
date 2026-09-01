@@ -222,3 +222,4 @@ registered in a batch.** A watch nobody runs is not a watch; it is a row in a qu
 |---|---|---|---|---|---|---|
 | **M-S12** | **`G-2`** meta text — a standing guard, re-verified each cycle | `MetaTextCheck`, registered in the cheap suite | CODE | RECORDS | every bar run | — |
 | **M-S13** | the stripper enrolment and the ledger enrolment | `CommentImmunityCheck` and `RatchetSlackCheck` — both read 0 unenrolled / 0 unreported | CODE | SAFE | every bar run | — |
+| **M-R7** | ratchet: `DeadStateCheck.WRITE_ONLY` = **0** — ⚠ a MEASURED zero, not an aspirational one: its first run found six, all **deleted** rather than absorbed, and the ceiling was never touched | `DeadStateCheck`, in the cheap suite | CODE | SAFE | every bar run | — |

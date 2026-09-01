@@ -346,14 +346,12 @@ namespace PoliSim.UI
         // graph draws or which way UiPalette.GetDeltaColor colors a line. The first three exist for
         // the Phase 2 dashboard graphs' projected-point calculation; all eight are used by Phase 3's
         // policy-preview coloring. Set alongside the formatted text fields in RecomputePolicyPreview.
+        // ⚠ S-23 (2026-09-01): FIVE of the eight were written and never read, and were invisible until
+        // DeadStateCheck learned to tell a read from a write. Their readers were the GetCached*Input
+        // accessors this check DID catch and delete - which left the fields behind, looking alive.
         private float _cachedGdpGrowthPercentRaw;
         private float _cachedUnemploymentChangeRaw;
         private float _cachedApprovalChangeRaw;
-        private float _cachedInflationChangeRaw;
-        private float _cachedPovertyRateChangeRaw;
-        private float _cachedLaborForceParticipationRateChangeRaw;
-        private float _cachedCrimeIndexChangeRaw;
-        private float _cachedNetBudgetImpactRaw;
 
         // C-C1: the Budget draft's own fiscal estimate, cached on the draft's signature and the turn.
         // Two PreviewTurn runs over two clones is not a per-frame cost - see DrawBudgetDraftFiscalImpact.
@@ -704,7 +702,6 @@ namespace PoliSim.UI
         private GUIStyle _implementButtonStyle;
         private GUIStyle _removeButtonStyle;
         private GUIStyle _neutralActionButtonStyle;
-        private GUIStyle _primaryButtonStyle;
 
         private void Start()
         {
@@ -2525,7 +2522,6 @@ namespace PoliSim.UI
             _implementButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Implement);
             _removeButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Remove);
             _neutralActionButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Neutral);
-            _primaryButtonStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
         }
 
         /// <summary>
@@ -3836,11 +3832,6 @@ namespace PoliSim.UI
             _cachedGdpGrowthPercentRaw = preview.GdpGrowthPercent;
             _cachedUnemploymentChangeRaw = preview.UnemploymentChange;
             _cachedApprovalChangeRaw = preview.ApprovalChange;
-            _cachedInflationChangeRaw = preview.InflationChange;
-            _cachedPovertyRateChangeRaw = preview.PovertyRateChange;
-            _cachedLaborForceParticipationRateChangeRaw = preview.LaborForceParticipationRateChange;
-            _cachedCrimeIndexChangeRaw = preview.CrimeIndexChange;
-            _cachedNetBudgetImpactRaw = preview.NetBudgetImpact;
             _cachedSwfReturnsEstimateRaw = preview.SwfReturnsEstimate;
 
             _cachedSwfContributionText = FormatMoneyEstimate(preview.SwfContributionEstimate, MoneyUnit.Billions);

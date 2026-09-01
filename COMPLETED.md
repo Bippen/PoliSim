@@ -10609,3 +10609,46 @@ four independent corroborations, and a fifth was taken today: the `1280×720` pr
 **1280×699**.
 
 **Bar: 23 of 24; `UpstreamCheck` red at E-4, correctly.**
+
+## 168. S-23 CLOSED — the read/write separation built, and its first run found six dead fields (2026-09-01)
+
+`DeadStateCheck` **claimed a class it could not catch**, and the claim survived one correction. Its doc
+first said *"a field written and never read"* was caught; §138 corrected that to say it was not, and that
+telling a read from a write *"needs more than a regex"* — so the limitation was **named rather than
+fixed**, and the check's own ERROR TEXT went on asserting the class for months.
+
+⚠ **It needed a regex and a classifier.** A second pass decides, per OCCURRENCE, whether a name is an
+assignment target; a field with writes and zero reads reports against its own ratchet, `WRITE_ONLY`.
+
+### ⚠ Its first run found six, and the sixth was the check's own fault
+
+| field | verdict |
+|---|---|
+| `_cachedInflationChangeRaw` and four siblings | **real** — and they are **the worked example this doc already named**: their readers were the `GetCached*Input` accessors this check DID catch, so deleting the accessors left the fields behind, looking alive |
+| `_primaryButtonStyle` | **real** — built every layout pass and never drawn |
+| `_attachAttempts` | ⚠ **FALSE POSITIVE** — `if (++x > 600)` consumes the value, and the first rule called every increment a write |
+
+**All six real ones deleted. The ceiling was never touched** — a finding surfaced by an instrument fix is
+fixed, not absorbed, exactly as §161 ruled for the two dead methods.
+
+⚠ **The false positive is the more instructive half.** A false positive here is *not* a harmless
+over-report: it would have had somebody delete the capture driver's live attach-retry bound. The rule now
+asks what FOLLOWS the operator — a statement terminator means the value went nowhere — so `x++;` is a write
+and `++x > 600` is a read.
+
+### The classifier's rules are choices, and are written down as choices
+
+- **A compound assignment counts as a WRITE.** It is semantically both, but a field that only accumulates
+  into itself is not being *consumed*, which is the question being asked.
+- **`out`/`ref` count as WRITES**, because the callee may only assign — counting them as reads would let a
+  field escape scrutiny by being passed somewhere.
+- ⚠ **A DECLARATION is neither.** Getting that wrong made the first version report **zero on a planted
+  write-only field**: `private int x;` has no `=` after the name, so the naive rule counted the declaration
+  itself as a read. **The probe caught it; the check did not** — which is the argument for planting one.
+
+⚠ **And the classifier is right on both sides**: `_cachedGdpGrowthPercentRaw`, which it did NOT flag, has a
+genuine read in `GameController.Statistics.cs`. Three of the eight cached raw values are read; five were
+not.
+
+**Bar: 23 of 24; residue 23. `DeadStateCheck.WRITE_ONLY` is a MEASURED zero, enrolled as a standing watch
+rather than as work, because a ratchet at zero is nothing to start.**
