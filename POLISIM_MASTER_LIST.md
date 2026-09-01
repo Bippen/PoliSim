@@ -101,7 +101,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-S7** | **`S-32`** — board 1h gets a route from the running game | `PlayerReachabilityCheck` reports 0 and the route shows a real count | CODE | SAFE | **M-B5** | M |
 | **M-R1** | ratchet: `UnwiredSubsystemCheck.UNWIRED` = **7** | each of the seven is wired, deleted, or parked with a trigger; ceiling lowered | CODE | SAFE | — | L |
 | **M-R2** | ratchet: `UnwiredSubsystemCheck.UNREACHABLE` = **6** | as above | CODE | SAFE | M-B4 | L |
-| **M-R3** | ratchet: `DocumentClaimCheck.MEMBER_GONE` = **2** | both are struck-through history inside live documents; either re-home the history or accept and record | CODE | RECORDS | — | S |
 | **M-R4** | ratchet: `PartyMarkCoverageCheck.UNCONSUMED` = **1** | ⚠ `mark_party_us_lib` has no seeded party and **must not get one invented**; closes when a Libertarian party exists for a reason of its own, or the file is retired | CODE | SAFE | — | S |
 | **M-R5** | ratchet: `CohortAgingStepDiagnostic.RUNAWAY` = **2** | Italy and Poland stop hitting `MinPopulation` at the 100-year horizon | CODE | SAFE | **M-B2** | — |
 | **M-R6** | ratchet: `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` = **1** | board 1h has a route | CODE | SAFE | **M-S7** | — |
@@ -217,6 +216,7 @@ measure willingness to move rows rather than work done.
 | **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | ⚠ **both guarded, and the finding reproduced itself in the closing**: 1280×800 films 8 text overflows where 1280×720 films 0, on identical code. The four geometries also gave `GameViewChromeHeight` four corroborations | CODE | SAFE | `7ae67e0` | S |
 | **M-S8** | **`S-23`** — `DeadStateCheck` still cannot distinguish a read from a write | ⚠ **it did not need "more than a regex" — it needed a regex AND a classifier.** Built; its first run found **six dead fields**, all deleted, ceiling untouched, plus one false positive that would have had somebody delete a live loop bound | CODE | SAFE | `8daa676` | M |
 | **M-S5** | **`C-0.3`** — the stranded branch disposed | ⚠ **"four unsuperseded pieces" was never derived.** Measured: **13 of 15 superseded**, three by something stronger; **two unsuperseded and neither is code** — `ChamberRenewal` (staggering, absent from main entirely) and per-election-type turnout. Recorded as preserved ideas; the branch is a ref | CODE | RECORDS | `5f3e9dd` | M |
+| **M-R3** | ratchet: `DocumentClaimCheck.MEMBER_GONE` = **2 → 0** | ⚠ **they were not both history.** One was a live DESIGN ask for a screen cut at P-A2 — corrected, with **E-5** raised. And the first fix **fell into S-36's trap**, quoting the dead name while explaining it was dead | CODE | RECORDS | `4b8716b` | S |
 
 ---
 
