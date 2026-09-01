@@ -49,10 +49,32 @@ namespace PoliSim.EditorTools
         /// subsystem is wired or deleted; never raise it.</summary>
         private const int UnwiredCeiling = 7;
 
+        /// <summary>
+        /// ⚠ **THE SECOND CEILING — this check's OWN blind spot, measured 2026-09-01.**
+        ///
+        /// <para>The scan below only ever considers a file that declares a `public static` method. A
+        /// subsystem built out of instance types declares none, so it could never be reported however
+        /// unreachable it was. **Two real ones were sitting in that hole**: `ElectoralCollege` (the US
+        /// elector allocation, implemented from the statutes) and `RegionalVoteModel` (the per-Land vote,
+        /// built because a national model over-predicted the CSU by 7.4 pp). Both headers say *"PURE
+        /// FUNCTIONS, WIRED TO NOTHING (R-N2)"* — ⚠ **and R-N2 was RETIRED at W-G1**, so the licence that
+        /// authorised building ahead of wiring is gone and the backlog it left was never re-homed.</para>
+        ///
+        /// <para>Lower it when a subsystem is wired or deleted; never raise it.</para>
+        /// </summary>
+        private const int UnreachableCeiling = 5;
+
         /// <summary>A `public static` method declaration. Instance methods are excluded: they need an
         /// object, and tracing who constructs it is beyond what a name scan can honestly claim.</summary>
         private static readonly Regex PublicStatic = new Regex(
             @"^\s*public\s+static\s+(?:readonly\s+)?[A-Za-z_][A-Za-z0-9_<>,\.\[\]\?]*\s+([A-Z][A-Za-z0-9_]*)\s*\(");
+
+        /// <summary>A public TYPE declaration — class, struct, interface or enum, with any modifiers
+        /// between `public` and the keyword. ⚠ This is the axis the entry-point scan cannot see: a type
+        /// nothing outside its own file ever NAMES can be neither constructed, inherited from nor called,
+        /// and it does not need a single static method to be unreachable.</summary>
+        private static readonly Regex PublicType = new Regex(
+            @"^\s*public\s+(?:(?:sealed|abstract|static|partial|readonly|unsafe)\s+)*(?:class|struct|interface|enum)\s+([A-Za-z_][A-Za-z0-9_]*)");
 
         /// <summary>⚠ Names too common to trace by occurrence. Each would produce noise rather than a
         /// finding, and a check with that much noise is one somebody turns off.</summary>
@@ -151,6 +173,67 @@ namespace PoliSim.EditorTools
 
             unwired.Sort(StringComparer.Ordinal);
 
+            // ⚠ THE SECOND PASS — the class the first one cannot see. A file is UNREACHABLE when NOT ONE
+            // of the public types it declares is named anywhere else in game code. That needs no static
+            // method, so it catches the instance-built subsystem the entry-point scan is blind to.
+            //
+            // ⚠ JUDGED AT THE FILE, on the fifth sweep's own hard-won lesson. Cut per TYPE this reports
+            // 36, and most are not findings - they are companion types consumed only by the file that
+            // declares them (`Rosatellum.ListEntry`, `RegionalVoteModel.RegionInput`, `CampaignRun.Setup`).
+            // A check reporting 36 of those is one somebody turns off in a week. If ANY type in the file
+            // is named outside it, something reaches the file and the file is not the finding.
+            var declaredTypes = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            int typeDeclarations = 0;
+            foreach (KeyValuePair<string, string> file in contents)
+            {
+                if (!file.Key.StartsWith(scripts, StringComparison.OrdinalIgnoreCase)) { continue; }
+                if (IsHarness(file.Key, scripts)) { continue; }
+
+                foreach (string line in file.Value.Split('\n'))
+                {
+                    Match m = PublicType.Match(line);
+                    if (!m.Success) { continue; }
+
+                    typeDeclarations++;
+                    if (!declaredTypes.TryGetValue(file.Key, out List<string> names))
+                    {
+                        names = new List<string>();
+                        declaredTypes[file.Key] = names;
+                    }
+
+                    if (!names.Contains(m.Groups[1].Value)) { names.Add(m.Groups[1].Value); }
+                }
+            }
+
+            var unreachable = new List<string>();
+            foreach (KeyValuePair<string, List<string>> file in declaredTypes)
+            {
+                bool reached = false;
+                foreach (string name in file.Value)
+                {
+                    foreach (KeyValuePair<string, string> other in contents)
+                    {
+                        if (string.Equals(other.Key, file.Key, StringComparison.OrdinalIgnoreCase)) { continue; }
+                        if (IsHarness(other.Key, scripts)) { continue; }
+                        if (CountWord(other.Value, name) == 0) { continue; }
+
+                        reached = true;
+                        break;
+                    }
+
+                    if (reached) { break; }
+                }
+
+                if (!reached)
+                {
+                    unreachable.Add(string.Format(CultureInfo.InvariantCulture,
+                        "{0,-30} declares {1} public type(s), NONE named anywhere else in game code",
+                        Path.GetFileName(file.Key), file.Value.Count));
+                }
+            }
+
+            unreachable.Sort(StringComparer.Ordinal);
+
             var sb = new StringBuilder();
             sb.Append("=== The coherence audit (e): subsystems the game does not call ===\n");
             sb.Append(F("    THE ENUMERATION: every .cs file under Assets/Scripts declaring a `public static` method -\n"));
@@ -161,10 +244,35 @@ namespace PoliSim.EditorTools
             sb.Append(F("    {0} of {1} file(s) UNWIRED (ceiling {2}).\n", unwired.Count, declaringFiles.Count, UnwiredCeiling));
             foreach (string line in unwired) { sb.Append("    GAP  ").Append(line).Append('\n'); }
 
+            sb.Append("\n    THE SECOND CLASS: UNREACHABLE FILES (added 2026-09-01, this check's own blind spot)\n");
+            sb.Append("    ---------------------------------------------------------------------------------\n");
+            sb.Append(F("    THE ENUMERATION: {0} public type declaration(s) across {1} game file(s). A FILE is UNREACHABLE\n",
+                typeDeclarations, declaredTypes.Count));
+            sb.Append("    when NOT ONE of the public types it declares is named anywhere else in game code - so nothing\n");
+            sb.Append("    can construct it, inherit from it or call it, WITH OR WITHOUT a public static method.\n");
+            sb.Append(F("    {0} of {1} file(s) UNREACHABLE (ceiling {2}).\n", unreachable.Count, declaredTypes.Count, UnreachableCeiling));
+            foreach (string line in unreachable) { sb.Append("    GAP  ").Append(line).Append('\n'); }
+            sb.Append("    ⚠ Judged at the FILE, not the type: cut per TYPE this reports 36 and most are companion types\n");
+            sb.Append("    used only inside their own file. The fifth sweep learned that at 58 findings; this is the same\n");
+            sb.Append("    lesson applied before the mistake rather than after.\n");
+
             sb.Append("\n    ⚠ UNWIRED IS NOT DEAD. A dead method has no callers and should be deleted; an unwired subsystem\n");
             sb.Append("    has a harness proving it works and a game that never asks - usually a plan that stalled. R-N2 built\n");
             sb.Append("    the whole elections model this way on purpose, so each GAP is a QUESTION: is it waiting for its\n");
             sb.Append("    item, or did its item land without it? ⚠ Reflection and scene-asset wiring are invisible here.\n");
+
+            if (unreachable.Count > UnreachableCeiling)
+            {
+                Debug.LogError($"UNREACHABLE: {unreachable.Count} file(s) whose public types are named nowhere else in game "
+                               + $"code, above the recorded ceiling of {UnreachableCeiling}. ⚠ This is the class the ENTRY-POINT "
+                               + "scan above cannot see - it only ever looks at files declaring a `public static` method, so an "
+                               + "instance-built subsystem was invisible to it however unreachable it was. Wire it, delete it, "
+                               + "or record why it waits - and LOWER the ceiling, never raise it.");
+                sb.Append("    ⚠ ABOVE THE UNREACHABLE CEILING - see the error above.\n");
+                Debug.LogError(sb.ToString());
+                CheckExit.Finish(1);
+                return;
+            }
 
             if (unwired.Count > UnwiredCeiling)
             {

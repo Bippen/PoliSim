@@ -9491,3 +9491,116 @@ printed rows now check the printed number.
 ⚠ Recorded at `PoliSimTheme` with the other half of the story: **the floor itself is retired as the wrong
 constraint** (D9 row 5), the six measurements stay because they are true, and what binds instead is
 structural and lives at **S-29**, where a hue harness cannot reach it.
+
+## 148. THE UNWIRED CHECK'S OWN BLIND SPOT — fixed first, then five systems classified (2026-09-01)
+
+§140 armed the fifth sweep against *"a subsystem the game does not call"*. ⚠ **It had a blind spot of its
+own, and the rule of this project is to fix the scan before trusting its number.**
+
+### The blind spot, measured before it was fixed
+
+`UnwiredSubsystemCheck` only ever considers a file that declares a **`public static` method**. A subsystem
+built out of instance types declares none — **so it could never be reported, however unreachable it was.**
+Two real ones were sitting in that hole:
+
+- **`ElectoralCollege`** — the US elector allocation, winner-take-all plus Maine's and Nebraska's district
+  method, implemented from the statutes with citations.
+- **`RegionalVoteModel`** — the per-Land vote, built *because* a national model over-predicted the CSU by
+  7.4 pp, on sourced Zweitstimmen.
+
+⚠ **Both headers say *"PURE FUNCTIONS, WIRED TO NOTHING (R-N2)"* — and R-N2 was RETIRED at W-G1.** The
+licence that authorised building ahead of wiring is gone; the backlog it left was never re-homed. That is
+the finding behind all five rows below, and it is recorded as **S-31**.
+
+### The second class, and the mistake it did NOT repeat
+
+A file is **UNREACHABLE** when *not one* of the public types it declares is named anywhere else in game
+code — so nothing can construct it, inherit from it or call it, with or without a static method.
+**340 public type declarations across 155 game files; 5 unreachable; ceiling 5.**
+
+⚠ **Judged at the FILE, not the type — the fifth sweep's own hard-won lesson, applied before the mistake
+instead of after.** Cut per TYPE it reports **36**, and most are not findings: they are companion types
+consumed only by the file that declares them (`Rosatellum.ListEntry`, `RegionalVoteModel.RegionInput`,
+`CampaignRun.Setup`). §140 learned that at 58 findings and re-cut; this pass paid the lesson forward.
+
+⚠ **Proven in both directions.** A throwaway `UnreachableProbeSubsystem` — a public class with **no static
+method at all**, which the entry-point scan is blind to by construction — raised the count to 6, tripped
+the new ceiling, exited 1 and was named in the output. Deleted.
+
+### ⚠ THE FIND THAT WAS WORTH THE WHOLE ITEM: election night has no door
+
+**`ElectionNightScreen` is UNREACHABLE.** Board 1h is built, filmed at four widths, recorded as delivered
+— and **the only thing in the repo that names it is `UiScreenshotDriver`**, which the check classes as a
+harness. It appears in no scene and no prefab. **The running game cannot open it.**
+
+⚠ That is S-20's class in a new form. S-20 found that *a capture can photograph the wrong thing*; this
+finds that **a capture can photograph a thing the game has no route to at all** — and every guard stayed
+green through it, because containment and text-fitting check *what was drawn*, never *whether a player
+could ever get there*.
+
+### The five, classified — dead-by-design or wired-and-broken
+
+| file | verdict | disposition |
+|---|---|---|
+| **`ElectionNightScreen`** | ⚠ **WIRED-AND-BROKEN** | Give election night a route from the running game. SAFE (a screen opening, no trajectory), and it is the one of the five a player can already feel the absence of. **New row.** |
+| **`TacticalVoting`** | **WIRED-AND-BROKEN** | D-10 (a), already ruled: wire it into the vote model. BASELINE — it moves election results, C-A1's FdI figures included, which is why it does not ride another item |
+| **`RegionalVoteModel`** | **WIRED-AND-BROKEN** | Germany holds a modelled election and this exists to fix a *measured* +7.4 pp CSU error. BASELINE, its own item. ⚠ Related to W-G1's standing finding that Germany seats BSW 91 and FDP 47 which really won zero |
+| **`ElectoralCollege`** | **PARKED, trigger named** | The game models **chambers**, not presidencies; no US presidential election exists or is planned. Not dead — statute-sourced and harness-proven — but nothing can reach it until a presidential election is a thing the model has |
+| **`Rosatellum`** | **PARKED, trigger named** | Italy returns `NotImplemented`; C-R1 already records that only Sweden and Germany have a modelled election |
+
+And the entry-point class's two waiting rows keep their triggers: **`CohortStepRateTable`** waits on P-I2
+stage 3's rebuild (D-7's RECONSIDER), **`CohortVoterGroups`** on the election path consuming voter groups.
+
+⚠ **Nothing was deleted and nothing was wired in this item, deliberately.** Three of the five are BASELINE
+work with their own before/after per country, and a check that both *finds* a gap and *closes* it in the
+same commit leaves nobody able to see what the check found. **The ceiling is what holds them: five now,
+lowered as each lands, never raised.**
+
+## 149. THE FdI CEILING'S BILL, MADE EXACT — the waves exist, are free, and are behind a login (2026-09-01)
+
+§137 left per-group loyalty blocked *"by non-circularity rather than by data"*: `LoyaltyModel`'s invariant
+requires 2013 and 2018 to predict 2022, and **only 2022 was on the open Dataverse**. The instruction was
+to establish precisely *which wave, from which archive, on what access terms* — and to take it if it is
+reachable under the cross-check gate.
+
+### First, the negative was verified rather than inherited
+
+`dataverse.unimi.it/api/search?q=itanes&type=dataset` returns **exactly one dataset**: *Itanes 2022 —
+Italian National Election Study 2022 (Release 01, July 2023)*, `doi:10.13130/RD_UNIMI/JV77WR`, published
+2023. **No 2013 wave, no 2018 wave.** §137's claim holds, now on the archive's own API rather than on a
+browse page.
+
+### The waves are published — on the ITANES portal, and behind a registration gate
+
+`itanes.it`'s Data Portal lists **fourteen waves, 1968 through 2022**, 2013 and 2018 among them, each on
+its own page:
+
+| wave | page | what it offers | gate |
+|---|---|---|---|
+| **2013** (political elections, 24–25 February) | `itanes.it/2024/12/12/itanes-2013-elezioni-politiche-24-25-febbraio-2013/` | questionnaires, sampling description, **complete dataset** | **"Log in / Register to access"** |
+| **2018** (political elections, 4 March) | `itanes.it/2024/12/10/itanes-2018-elezioni-politiche-4-marzo-2018/` | *Questionario pre-elettorale*, *Questionario post-elettorale*, **Dataset completo** | **"Log in / Register to access"** |
+
+⚠ **Read at the 2018 page itself, not from a search summary: no direct download link exists for an
+anonymous visitor, and no file format is stated.** ITANES's own terms are free access for scientific
+research on Italian elections, non-commercial, with citation.
+
+### ⚠ NOT TAKEN, and the reason is not technical
+
+The gate is a **registration**, and registering an account on an external service in Elias's name is an
+outward-facing act this session does not take on its own — the same standing convention that keeps
+*sending* Design packages his (E2). **So the bill is the deliverable**, and it is now a two-line errand
+rather than an open question:
+
+> **THE BILL.** Register at `itanes.it`; download the **complete dataset** from the **2013** and **2018**
+> political-election pages above. What is needed from each is one weighted cross-tab: **vote choice by the
+> same six age bands** (18–24, 25–34, 35–44, 45–54, 55–64, 65+) that §137's 2022 extraction used, with the
+> wave's own weight variable. Nothing else — the substrate, the group view and the sourced 2022 shares are
+> all built.
+
+### The limit stays named, and stays honest
+
+⚠ **The 2022 wave may still not be used to derive loyalty**, and the distinction is worth restating
+because it is the whole reason this is a bill and not a build: **using 2022 to test whether the ceiling is
+real is not circular; using it to derive the loyalty that predicts 2022 would be.** The FdI test therefore
+stands unchanged at **29.27 % target, 10.31 % produced, −18.96 pp** — and the deviation is now attached to
+a login, not to a mystery.
