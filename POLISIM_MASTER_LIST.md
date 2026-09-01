@@ -97,7 +97,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 
 | ID | what | done-when | OWNER | CLASS | BLOCKS-ON | size |
 |---|---|---|---|---|---|---|
-| **M-S3** | **`S-29`** — the party-ink **draw-site** check: party ink is never drawn adjacent to an area accent, and a party swatch forced into chrome draws in the neutral status ink | a check enumerates the party-ink call sites and fails when one sits in a chrome surface; proved both directions | CODE | SAFE | — | M |
 | **M-S5** | **`C-0.3`** — the stranded branch disposed: migrate its four unsuperseded pieces, retire the obligation, keep the ref | ⚠ `stranded/politics-elections` still exists locally and on origin. Done when the four pieces are in `COMPLETED.md` and the branch is a recorded ref only | CODE | RECORDS | — | M |
 | **M-S6** | **`C-0.2`** — the post-wiring re-derivation: no live document asserts a pre-wiring premise | `DocumentClaimCheck` covers the identifier half; this is the PROSE half, and ⚠ it is S-22's class — sized as a read, not a scan | CODE | RECORDS | — | L |
 | **M-S7** | **`S-32`** — board 1h gets a route from the running game | `PlayerReachabilityCheck` reports 0 and the route shows a real count | CODE | SAFE | **M-B5** | M |
@@ -205,6 +204,7 @@ measure willingness to move rows rather than work done.
 | **M-S4** | **`S-26`** — the dial midpoint `50` stated in four places | ⚠ **it was FIVE.** One statement now; the other four reference it. Closed by `SharedMidpointCheck`, not by the cleanup — each of the four already carried a comment saying the others existed | CODE | SAFE | `ab279d7` | S |
 | **M-S16** | ⚠ **`G-1`'s guard was armed for a human who remembers** — `ScreenEdgeCheck` in neither batch, firing only if invoked after a capture pass | the capture driver runs it over its own label before exiting, and the hook can only make the exit code worse; proved with 81/0 exiting **2** when the guard verified nothing | CODE | SAFE | `e8a9bb1` | M |
 | **M-S14** | **`S-3`** — W-B12's residual: SD keeps 6 of 38 unpaid staff-days | ⚠ **stale in both halves** — it is SD 6, V 12, MP 12, and the two parties that hired FEWEST have the WORST record. Arithmetic closes to the krona; assertion **1j** now separates poverty from a bug | CODE | SAFE | `d31dec3` | S |
+| **M-S3** | **`S-29`** — the party-ink **draw-site** check | ⚠ **the surface is ONE file** — `HemicycleRenderer` — so clause 1 is an allow-list with arguments, clause 2 takes the FILE as the unit of adjacency and says so, and clause 3 is subsumed by construction. Four failure paths proved | CODE | SAFE | `a77c243` | M |
 
 ---
 
