@@ -775,7 +775,17 @@ hat; (c) throws away a stat to avoid writing one honest sentence.
 
 ---
 
-### D-16 · How F-B's five-country landing survives F-A's double count ⚠ DECIDED AND TAKEN (R-N1), strikeable — and the EXECUTION is logged STOPPED
+### D-16 · How F-B's five-country landing survives F-A's double count ✅ **RULED (a) BY ELIAS 2026-09-01** — execution still STOPPED for budget, order written
+
+> ⚠ **SEQUENCING FOR THE NEXT BLOCK (Elias, 2026-09-01).** D-16 and D-15 stage 3 both need a session with
+> **the trajectory suite in budget**. **Take them together only if BOTH explanations fit; otherwise D-16
+> first, because its order is fully written.** ⚠ Neither may land half-explained — that rule has now bound
+> three times this week against work somebody wanted to land, which is what makes it a rule rather than a
+> preference: *anchors do not yield to tables.*
+>
+> **Carry into the prompt for stage 3**: the Eurostat `age` dimension holds **110 categories and mixes
+> single years with aggregates**, so a band build must **filter and never sum** — summed, Sweden reads
+> **44.8 million** instead of 12.1.
 
 **F-B RULED by Elias, 2026-09-01: keep the federal perimeter.** *"Consistency inside a country outranks
 uniformity across the set, and breaking the perimeter on the side the model has more of is the worse
@@ -1278,6 +1288,8 @@ The repo outranks the document. These are recorded, not re-worked.
 | **S-34** | ⚠ **`PlayerReachabilityCheck` armed at a ratchet of 1, and the ratchet is a DEBT that must not be paid cheaply.** The one gap is `ElectionNightScreen`. **Naming the type in `GameController` without a path would satisfy the scan and fail the rule** — and giving board 1h a one-constituency "night", or the sourced 2022 count under an election simulated with different shares, would make the check green and the screen a lie. That is the S-20 class this sweep descends from. **Lower the ceiling to 0 only when the screen has a real route with a real count** | CODE | `COMPLETED.md` §154 |
 | **S-35** | ⚠ **A TYPE IS NOT ITS FILE, AND A PROBE THAT ASSUMES SO WILL "CORRECT" A CORRECT REFERENCE.** The §9.4 pass reported `CampaignCalendar.DefaultPreCampaignWeeks` as naming a missing type and rewrote the entry; **the entry was right** — `CampaignCalendar` is a `public readonly struct` living in the FILE `CampaignClock.cs`. The probe matched TYPE names against FILE names, so any type sharing a file with another read as absent. ⚠ **The sweep built the same session caught it within the hour** (`DocumentClaimCheck`, §155), which is why the check indexes DECLARATIONS rather than filenames. **Standing habit:** when a scan says a name is missing, confirm against the declaration before editing the document — a wrong correction is worse than the drift it was aimed at, because it carries the authority of having been checked | CODE (a habit) | `COMPLETED.md` §155 |
 
+| **S-36** | ⚠ **DOCUMENTATION OF AN ABSENCE FUNCTIONS AS EVIDENCE OF A PRESENCE — the sharpest form of this project's signature defect, and it happened TWICE.** The generic spending seeder in `WorldFactory` (deleted 2026-09-01, and deliberately NOT named here — see the habit below) carried the words *"has no caller left"* in prose, **and that prose is what kept `DeadStateCheck` from seeing the corpse**; `POLISIM_V2_SCREEN_SPEC.md`'s fold-override field was validated by the `SaveGame` comment **recording its removal**. In both cases the only occurrence of the name in the codebase was the note saying the thing was gone, and in both cases the note read to a name scanner as a use. ⚠ **Neither was visible until the stripper existed** (§§160–161), which is the second half of the lesson: the class was undetectable by construction, not overlooked. **Standing habit: when a comment says something is dead, that sentence is the LAST place its name should appear — delete the thing in the same commit, or the note becomes its alibi.** ⚠ **This row proved it on itself**: written naming the deleted method, it made `DocumentClaimCheck` go from 2 to 3 within the minute — the sentence recording a deletion committing the very class it describes. Re-worded to name no dead member. | CODE (a habit) | `COMPLETED.md` §§160, 161 |
+| **S-37** | ⚠ **A BOUND WHOSE DIRECTION IS NOT CARRIED CAN SILENTLY INVERT.** `PublicationCadenceCheck`'s reachable-preliminary bound is a **floor** — the capture driver's warm-up breaks when the count goes DOWN — and it was nearly reported to `RatchetLedger` as a ceiling, where "tight" would have meant the opposite of what it says and slack would have been measured in the wrong direction. The ledger carries `IsFloor` now. **Standing point: every bound in this repo is a claim about a direction as well as a number, and a ledger that stores only the number stores half the claim.** | CODE | `COMPLETED.md` §161 |
 ---
 
 ## 11. Riders — work that rides the next item touching its file
