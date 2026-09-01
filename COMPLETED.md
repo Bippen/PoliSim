@@ -9604,3 +9604,45 @@ because it is the whole reason this is a bill and not a build: **using 2022 to t
 real is not circular; using it to derive the loyalty that predicts 2022 would be.** The FdI test therefore
 stands unchanged at **29.27 % target, 10.31 % produced, −18.96 pp** — and the deviation is now attached to
 a login, not to a mystery.
+
+## 150. THE §V SITTING, PREPARED — audit first, era, screen, and the question 43 rows do not ask (2026-09-01)
+
+`Tools/sv_index.ps1` rebuilt. The sitting is ~50 rows across four eras and it was rendering as a flat
+checklist, which asks the reader to work out on every row what they are being asked.
+
+**What the page does now.**
+
+1. **The capture audit opens it**, parsed from §V's own S-20 blockquote, and ⚠ **a VOID verdict sorts
+   FIRST** — a row whose evidence did not exist is the one thing a sitting must not scroll past. The
+   re-films on disk are listed beside it (`*e6_election_night*`).
+2. **Grouped by ERA, derived from the capture token's own prefix** — `omni`/`cont`/`clear` the omnibus
+   pass, `v3a`/`v3desk`/`sitting` UI v3.0, `v31`/`v3c`/`sp4`/`pa_sweep` UI v3.1, `we`/`wf`/`pa_campaign`
+   the elections era. ⚠ **Nothing is authored**: the prefix is the label the film run itself was given.
+   A prefix matching none of them is filed **UNFILED and says so** rather than being guessed into a group.
+   **18 / 11 / 12 / 8, and 3 unfiled** — the three genuinely have no capture token.
+3. **Then by SCREEN**, from the token's own screen-id segment, so one screen's rows sit together across
+   sizes and countries.
+4. **THE QUESTION at the top of every row**, promoted out of the body text.
+
+### ⚠ 43 of 52 rows do not ask a question, and the page says so instead of writing them
+
+The fourth cell *is* the question — where a row has one. **Nine do. Forty-three tell the reader what to
+look at without saying what is being decided**, and those are flagged in red: *"NO QUESTION STATED — this
+row says what to look at, not what it is asking."*
+
+⚠ **They are flagged, never filled.** Writing forty-three questions here would be authoring the review
+rather than preparing it, and the reviewer would then be answering this session's questions instead of
+the ones the work actually raised. The count is printed at the foot of the page as its own finding.
+
+### ⚠ AND THE FIRST RUN OF THE NEW PAGE WAS WRONG WHILE LOOKING RIGHT
+
+The first generation filed **17 rows as UNFILED** — including *"The Compass — the Y axis"*, whose capture
+token plainly starts `omni_final_…`. **PowerShell unrolls a one-element array on return**, so a row that
+expands to a single capture token arrived as a *string*, and `$tokens[0]` was then its first **character**
+— `"o"`, which matches no era prefix.
+
+**The page rendered perfectly throughout.** Every row present, every link live, every preview correct;
+only the grouping was silently wrong, and nothing in the output could have told anyone. ⚠ **That is a
+fifth instance of the class §9.2 names** — evidence that would pass regardless — found *inside the tool
+built to present the evidence, on the same day the class was named.* Fixed with `@()`, and the reason is
+written at the fix so the next person reads it before repeating it.
