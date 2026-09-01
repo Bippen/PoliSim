@@ -924,6 +924,47 @@ model knows. **That sentence is the price, and it must be written where the code
 > **To strike it, write:** `D-15 STRUCK: (a)` *(or b / c / d)* — nothing is built on it yet, so a strike
 > costs one decision and no code.
 
+
+### D-19 · How the projection target meets the seeded pyramid at year zero ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**Opened 2026-09-01 by P-I2 stage 3 step 1, and it is a fork the catalog created rather than one anybody
+anticipated.** Cataloguing the projections put two independently sourced 2024 pyramids side by side for
+the first time, and **they do not agree**:
+
+| Sweden 2024 | total | band 0-4 | band 20 (100+) |
+|---|---|---|---|
+| **seeded** — Eurostat `demo_pjan`, observed 1 January 2024 (stage 1) | 10.551707 M | 0.557673 | 0.002750 |
+| **projected** — Eurostat `proj_23np` baseline, the same date | 10.640372 M | 0.579612 | 0.003231 |
+
+⚠ **Neither is wrong.** `demo_pjan` is the OBSERVED stock; `proj_23np`'s 2024 is a PROJECTED base year
+computed before the observation existed. The gap is **0.84 % on Sweden's total** and larger in the young
+bands, where a projection's fertility assumption bites first.
+
+**The question.** D-15 (c) scales the pyramid toward the projected one band by band. Toward *what*,
+exactly — the projection's levels, or its trajectory?
+
+| option | what happens at turn 0 | what it costs |
+|---|---|---|
+| **a. Converge toward the projection's ABSOLUTE bands** | the model is 0.84 % off target on day one and is pulled toward the publisher immediately | ⚠ a visible discontinuity nobody asked for, and it silently overrides stage 1's observed seed with a projected one. **The substrate would no longer reconcile to `demo_pjan`, which is the assertion `CohortSubstrateDiagnostic` exists to make** |
+| **b. Converge toward the projection's TRAJECTORY, rebased so its base year equals the seeded pyramid** — target(year, band) = seeded(band) × projection(year, band) / projection(2024, band) | the target at turn 0 IS the seeded pyramid, exactly, by construction | the model follows the publisher's *shape of change* rather than its levels — which is the only part of a projection that is actually a forecast |
+| c. Re-seed the substrate from `proj_23np` 2024 so no offset exists | no offset | ⚠ **throws away observed data for projected data**, breaks stage 1's to-the-person reconciliation against `demo_pjan`, and would be the project preferring the number that is easier to use over the number that is true |
+
+**Recommendation, TAKEN as an R-N1 decide-and-log: (b).**
+
+**Basis.** ⚠ **A projection's value is its trajectory, not its base year** — the base year is the thing it
+is worst at, because it is the one year for which a real observation exists. (b) uses each source for what
+it is good for: `demo_pjan` for where the population IS, `proj_23np` for where it is GOING. It also keeps
+stage 1's reconciliation assertion alive rather than quietly invalidating it, and it removes a turn-0
+discontinuity that would have shown up in the BASELINE family as an unexplainable first-year jump — the
+kind of artefact that gets explained away as "the substrate landing" and never revisited.
+
+⚠ **Its cost, and it goes at the call site:** the per-band ratio is undefined where a projected band is
+zero. No band in any of the six is zero at any published year — asserted, not assumed — but the guard is
+written rather than left to a division that would produce a silent infinity in the open band first.
+
+> **To strike it, write:** `D-19 STRUCK: (a)` *(or c)* — the rebasing is one expression at the target
+> lookup, so a strike costs one decision and a few lines.
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.
