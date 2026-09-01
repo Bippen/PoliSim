@@ -8840,3 +8840,70 @@ Unchanged, as it must be: **FdI 29.27 % target, 10.31 % produced, deviation −1
 pass moved it, and nothing should have — per-group loyalty is the link that would, and it is blocked.
 **The chain is complete except for its last link, and that link now has a two-item bill instead of an
 open question.**
+
+## 138. BOTH RATCHETS AT ZERO — 39 dead declarations and 212 unmarked constants, cleared (2026-09-01)
+
+The standing shelf is empty for the first time. **Ratchet (b): 39 → 0. Ratchet (d): 212 → 0.** Both
+ceilings now sit at zero, so a new dead declaration or a new unsourced constant **fails** rather than
+joining a backlog.
+
+### (b) — the dead-state backlog had ONE cause
+
+`PolicyInputsChangedSinceLastPreview` was deliberately narrowed to a single input when the drafts stopped
+reaching the preview and started reaching the simulation only through a passed bill. **The machinery that
+fed the wider check was left standing**: 33 `GetCached*Input` accessors and ~28 fields snapshotted every
+preview. Four batches cleared it, and two dead features went with it:
+
+- **`DrawTurnLog`** — the game maintained a per-turn economic log, capped at ten entries, that no screen
+  drew. Feature deleted entire.
+- ⚠ **`DrawTimeRangeRow`** — worse than dead. Its doc asserts that *"bounded ranges filter on real elapsed
+  time, so a monthly stat and a quarterly one both show the same calendar span"*, and **nothing filters**.
+  `_timeRange` was set and read only inside a selector that was never drawn. The claim survived because
+  `CommentClaimCheck` verifies backticked `Type.Member` references and **cannot read a prose claim about
+  behaviour** — a gap in the coherence audit that this found by accident.
+
+⚠ **The check's own header now names a class it claims and does not catch**: a field written and never
+read occurs twice (declaration plus write) and passes. Deleting the accessors created exactly that, so
+the write-only family was cleared by hand and the limitation is written down rather than half-fixed.
+
+### (d) — 285 constants, every one now saying what it is
+
+Seventeen batches, each read before it was marked. The four marks the check accepts turned out to need
+**more shape than four labels**, and the sweep's real product is the vocabulary it forced:
+
+| what emerged | example |
+|---|---|
+| **SOURCED**, verified at the text | Maastricht's 60 % and 3 % — Protocol No. 12, Article 1, read at EUR-Lex; Norway's 3 % structural draw |
+| **[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION** | the crime, labour and approval couplings — the mechanism is real, the number is chosen |
+| **[AUTHORED-DRAFT] RANKING** | the spending-approval multipliers — the *ordering* is the design claim, not the values |
+| **[AUTHORED-DRAFT] value, SOURCED BRACKET** | `OkunCoefficient`, whose implied −0.498 C-N5 measured inside Ball/Leigh/Loungani's band |
+| ⚠ **[AUTHORED-DRAFT], FITTED** | the fiscal-reaction constants — fitted in a harness whose stability claim Unity later refuted. **Fitted is not sourced** |
+| **DERIVED** | fifteen per-day forms computed through `PerDayReversion`, never typed |
+| **CONVENTION** | reversion speeds, state-space clamps, scale origins, taxonomy cut points |
+
+**Three findings the marking produced that a rubber stamp would have buried:**
+
+⚠ **`InflationTarget = 2` is not Poland's target.** The NBP targets **2.5 % with a symmetric ±1 pp band**
+(verified at the NBP's own guidelines) — 2 sits inside its tolerance but is not its target. One target for
+six countries is a simplification, and the country it simplifies is now named at the constant.
+
+⚠ **`NeutralRealRate = 2` deserves its mark most.** r* is **unobservable and actively contested**;
+published estimates for these economies have run from below zero to above two within a decade. The value
+is Taylor's 1993 assumption, kept for that reason and not because anything measures it now.
+
+⚠ **`BaseConsumptionRate` and `BaseInvestmentRate` are in the real range and UNIFORM ACROSS SIX
+COUNTRIES.** Their actual shares differ; one value does not distinguish them. That sentence is neither
+"sourced" nor "invented", and it is the true one.
+
+### ⚠ Two mistakes made and corrected inside the sweep
+
+**A pattern that walked to the next unmarked summary** rather than to the named constant put marks on six
+`LaborCouplings` constants I had not read — including a class-level doc — while leaving two intended ones
+bare. **That is exactly the rubber-stamping the sweep exists to prevent.** The file was reverted and each
+mark re-inserted directly above its own declaration. Every batch after it **verified placement by printing
+the constant that follows each mark**, which caught the second slip: four pension and healthcare marks
+landed on stale line numbers after an earlier insertion shifted the file, and sat above `FindSpendingLine`
+and a border-line lookup. Removed and re-placed.
+
+**Bar:** fourteen checks green, eight simulation checks green, trajectories 6 of 6 byte-identical through
+every batch, films 81/0/0 with 81 capture-identity proofs, the rule-15 diff 78/0/3.

@@ -57,6 +57,7 @@ namespace PoliSim.Simulation
         /// fiscal axis" - the model's only axis until item 10; recorded as the pass's taste-adjacent
         /// call, one literal to revert.
         /// </summary>
+        /// <remarks>[AUTHORED-DRAFT], and its own summary says so more bluntly than any mark could: the conversion factor is INVENTED, the vote reads only the SIGN, and it is recorded as one literal to revert.</remarks>
         public const float OverrideDirectionWeight = 1f;
 
         /// <summary>

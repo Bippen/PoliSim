@@ -35,8 +35,11 @@ namespace PoliSim.Simulation
         /// model (PotentialGrowthRate, interest rates, etc.) already uses.
         /// </summary>
         private const float EquitiesAverageReturnPercent = 8f;
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED ANCHOR - the paragraph above anchors the equities figure on Norway GPFG's own realised long-run nominal average and sets the rest as a conservative blended mix. The ordering across asset classes is the real one; the individual percentages are chosen, and the paragraph itself calls the figure "the right ballpark here, not a precise target".</remarks>
         private const float BondsAverageReturnPercent = 4f;
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED ANCHOR - the paragraph above anchors the equities figure on Norway GPFG's own realised long-run nominal average and sets the rest as a conservative blended mix. The ordering across asset classes is the real one; the individual percentages are chosen, and the paragraph itself calls the figure "the right ballpark here, not a precise target".</remarks>
         private const float InfrastructureAverageReturnPercent = 7f;
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED ANCHOR - the paragraph above anchors the equities figure on Norway GPFG's own realised long-run nominal average and sets the rest as a conservative blended mix. The ordering across asset classes is the real one; the individual percentages are chosen, and the paragraph itself calls the figure "the right ballpark here, not a precise target".</remarks>
         private const float RealEstateAverageReturnPercent = 7f;
 
         /// <summary>
@@ -49,8 +52,11 @@ namespace PoliSim.Simulation
         /// an artificial ceiling) remains possible, however rare.
         /// </summary>
         private const float EquitiesReturnStdDevPercent = 16f;
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED ORDERING - the paragraph above states the real volatility ordering (equities most, bonds least, infrastructure and real estate between, real estate damped because a sovereign fund's book is unlisted and appraisal-based as GPFG's is). The ordering is real; the percentages are chosen.</remarks>
         private const float BondsReturnStdDevPercent = 6f;
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED ORDERING - the paragraph above states the real volatility ordering (equities most, bonds least, infrastructure and real estate between, real estate damped because a sovereign fund's book is unlisted and appraisal-based as GPFG's is). The ordering is real; the percentages are chosen.</remarks>
         private const float InfrastructureReturnStdDevPercent = 10f;
+        /// <remarks>[AUTHORED-DRAFT] value, SOURCED ORDERING - the paragraph above states the real volatility ordering (equities most, bonds least, infrastructure and real estate between, real estate damped because a sovereign fund's book is unlisted and appraisal-based as GPFG's is). The ordering is real; the percentages are chosen.</remarks>
         private const float RealEstateReturnStdDevPercent = 10f;
 
         /// <summary>The real long-run average return for an asset class - used by SimulationManager.PreviewTurn (deterministic, no RNG, matching PreviewTurn's own documented "side-effect-free" principle) instead of an actual random draw.</summary>

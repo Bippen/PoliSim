@@ -32,9 +32,12 @@ namespace PoliSim.Simulation
     public static class TradeSystem
     {
         /// <summary>Fraction of a currency-strength deviation from neutral that passes through to export competitiveness.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - a weaker currency raising export competitiveness is standard; how much of the deviation passes through is a game figure.</remarks>
         private const float CurrencyStrengthExportSensitivity = 0.5f;
 
+        /// <remarks>CONVENTION - a state-space clamp on the export competitiveness factor, so a currency swing cannot scale exports without limit.</remarks>
         private const float MinExportCurrencyFactor = 0.5f;
+        /// <remarks>CONVENTION - a state-space clamp on the export competitiveness factor, so a currency swing cannot scale exports without limit.</remarks>
         private const float MaxExportCurrencyFactor = 1.5f;
 
         /// <summary>

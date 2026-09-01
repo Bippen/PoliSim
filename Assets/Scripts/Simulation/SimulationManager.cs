@@ -3419,9 +3419,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Fraction of the pension-equivalent line's own current Amount added per point DependencyRatio sits above its own Country.BaselineDependencyRatio, before MaxPensionPressureFraction caps the result.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - an ageing population really does push pension and healthcare spending up; the fraction per point of dependency ratio is a game figure.</remarks>
         private const float PensionPressureSensitivity = 0.0002f;
 
         /// <summary>Cap on ApplyDemographicPensionPressure's per-turn fractional nudge - deliberately small ("small and bounded," the same standard this task set for healthcare cost pressure too), reached once DependencyRatio has drifted roughly 25 points above baseline.</summary>
+        /// <remarks>CONVENTION - a cap on a per-turn fractional nudge, deliberately small and bounded as the summary states. A bound on the arithmetic, not a claim about the world.</remarks>
         private const float MaxPensionPressureFraction = 0.005f;
 
         /// <summary>
@@ -3518,9 +3520,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Fraction of Medicare's own current Amount added per point DependencyRatio sits above its own Country.BaselineDependencyRatio, before MaxHealthcarePressureFraction caps the result.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - an ageing population really does push pension and healthcare spending up; the fraction per point of dependency ratio is a game figure.</remarks>
         private const float HealthcarePressureSensitivity = 0.00015f;
 
         /// <summary>Cap on ApplyDemographicHealthcarePressure's per-turn fractional nudge - small and bounded, per this item's own explicit framing.</summary>
+        /// <remarks>CONVENTION - a cap on a per-turn fractional nudge, deliberately small and bounded as the summary states. A bound on the arithmetic, not a claim about the world.</remarks>
         private const float MaxHealthcarePressureFraction = 0.004f;
 
         /// <summary>

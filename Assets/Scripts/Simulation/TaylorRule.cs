@@ -32,12 +32,19 @@ namespace PoliSim.Simulation
     public static class TaylorRule
     {
         /// <summary>Central bank inflation target, in percent.</summary>
+        /// <remarks>SOURCED as a real policy target rather than a modelling choice - 2% is the announced
+        /// inflation target of the ECB, the Federal Reserve and the Riksbank. ⚠ It is NOT Poland's: the NBP
+        /// targets **2.5% with a symmetric +-1 percentage point band** (verified 2026-09-01 at the NBP's
+        /// own monetary-policy guidelines), so 2 falls inside its tolerance band but is not its target.
+        /// One target for six countries is a simplification, and the country it simplifies is named.</remarks>
         public const float InflationTarget = 2f;
 
         /// <summary>Assumed neutral real interest rate, in percent.</summary>
+        /// <remarks>[AUTHORED-DRAFT], and this one deserves the mark most: the neutral real rate (r*) is UNOBSERVABLE and actively contested - published estimates for these economies have ranged from below zero to above two in the last decade. 2% is the classic Taylor (1993) assumption, kept for that reason and not because anything measures it now.</remarks>
         public const float NeutralRealRate = 2f;
 
         /// <summary>Weight on the inflation gap (actual inflation minus target).</summary>
+        /// <remarks>SOURCED as the canonical specification: Taylor (1993) sets the coefficient on the inflation gap at 0.5 in the original rule. The weight is the rule's own, not a fit to this model.</remarks>
         public const float InflationGapWeight = 0.5f;
 
         /// <summary>
