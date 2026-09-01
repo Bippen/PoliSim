@@ -226,6 +226,24 @@ namespace PoliSim.Data
                 return;
             }
 
+            Counts = AnchoredNext(rates, targetThisYear, targetNextYear, fertilityMultiplier, netMigrationMillions, immigrationProfile);
+        }
+
+        /// <summary>
+        /// The pyramid <see cref="StepOneYearAnchored"/> would step THIS one to, returned rather than
+        /// assigned - F2 step 4's game path reads a year's step every day and commits it once, so the
+        /// arithmetic lives here and the assignment there. Null targets fall back to the unanchored
+        /// generative step, as the assigning form does.
+        /// </summary>
+        public float[] AnchoredNext(CohortStepRates rates, float[] targetThisYear, float[] targetNextYear,
+            float fertilityMultiplier = 1f, float netMigrationMillions = 0f, float[] immigrationProfile = null)
+        {
+            if (rates == null) { return (float[])Counts.Clone(); }
+            if (targetThisYear == null || targetNextYear == null)
+            {
+                return Generate(Counts, rates, fertilityMultiplier, netMigrationMillions, immigrationProfile);
+            }
+
             float[] stepped = Generate(Counts, rates, fertilityMultiplier, netMigrationMillions, immigrationProfile);
             float[] neutral = Generate(targetThisYear, rates, 1f, 0f, null);
 
@@ -239,8 +257,22 @@ namespace PoliSim.Data
                 float ratio = neutral[k] > 0f ? stepped[k] / neutral[k] : 1f;
                 next[k] = Mathf.Max(0f, targetNextYear[k] * ratio);
             }
+            return next;
+        }
 
-            Counts = next;
+        /// <summary>
+        /// F2 step 4: the births a year's step implies, read off its result rather than recomputed -
+        /// the 0–4 band's inflow. Only births and the immigration lever's migrants enter that band
+        /// (the survivors who stay are <c>before[0] × Survival[0] × (1 − Crossing[0])</c>), so the
+        /// inflow net of <paramref name="migrantsIntoBand0"/> is the step's births. Exact for the
+        /// generative step; for the anchored step it is the births the anchor's own trajectory
+        /// implies, which is the quantity a crude birth rate read from the substrate should report.
+        /// </summary>
+        public static float ImpliedBirths(float[] before, float[] after, CohortStepRates rates, float migrantsIntoBand0)
+        {
+            if (before == null || after == null || rates == null) { return 0f; }
+            float stayers = before[0] * rates.Survival[0] * (1f - rates.Crossing[0]);
+            return Mathf.Max(0f, after[0] - stayers - migrantsIntoBand0);
         }
 
         /// <summary>

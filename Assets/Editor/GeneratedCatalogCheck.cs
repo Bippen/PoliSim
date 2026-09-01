@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using PoliSim.Data;
 using PoliSim.Elections.Generated;
-using PoliSim.EditorTools.Generated;
+using PoliSim.Data.Generated;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 

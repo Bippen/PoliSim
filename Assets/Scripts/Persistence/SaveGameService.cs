@@ -49,7 +49,7 @@ namespace PoliSim.Persistence
         // persisted World graph (R-CL1). Same reasoning as the 2 -> 3 bump: an absent party is not a
         // harmless default, it is a DIFFERENT game state - "this save was played without a party" -
         // and selection would silently seat one on load. Older saves refused plainly; no migration.
-        public const int CurrentSaveVersion = 4;
+        public const int CurrentSaveVersion = 5;   // 5: F2 step 4 - the demography is the cohort substrate; a version-4 save carries the 2024 pyramid unwalked and scalar rules that no longer exist
 
         /// <summary>
         /// One settings object, built fresh per call (JsonSerializerSettings is mutable; sharing a

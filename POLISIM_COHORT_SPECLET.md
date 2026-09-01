@@ -104,7 +104,7 @@ The collisions, each of which is a way the build goes wrong:
    explained per country by layer. Expect every country to move.
 4. **The player's two demographic levers reach the rates through TWO hops, and both must be re-pointed.**
    `SimulationManager.ApplyDemographicPolicyChanges` writes `Country.FamilyPolicyLevel` and
-   `Country.ImmigrationPolicyLevel`; `MacroSystem.ApplyDemographicRates` then offsets `BirthRate` and
+   `Country.ImmigrationPolicyLevel`; MacroSystem's ApplyDemographicRates (retired at F2 step 4, 2026-09-02 - the substrate steps the rates now: `CohortDemographics.Apply`) then offsets `BirthRate` and
    `NetMigrationRate` off their natural trajectories by those levels. If the cohort step takes over the
    rates and the second hop is not re-pointed at the cohort step's own inputs, **the player's two
    demographic levers become no-ops the day the substrate lands** — the exact failure C-C11 measured for

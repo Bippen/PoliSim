@@ -21,7 +21,7 @@
 using System.Collections.Generic;
 using PoliSim.Data;
 
-namespace PoliSim.EditorTools.Generated
+namespace PoliSim.Data.Generated
 {
     public static class PopulationProjections
     {

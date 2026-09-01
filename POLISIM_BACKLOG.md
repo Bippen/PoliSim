@@ -1270,7 +1270,11 @@ sentence is true **as written** — not when something adjacent to it has happen
 D-4 (a), `COMPLETED.md` §130 — and stages 1 and 2 were built the same day.** The sentence is true as
 written. **F-6 leaves §6.**
 
-**What it is now, precisely:** P-I2 **stage 3**, the retirement of the scalar demographics onto the cohort
+✅ **STAGE 4 BUILT 2026-09-02 (`COMPLETED.md` §195): the eight scalars are readings of the substrate, both
+levers re-pointed with anchor semantics kept, the family explained per country. What remains of F2 is
+participation by age (billed data — spec-let §6).**
+
+**What it was, precisely:** P-I2 **stage 3**, the retirement of the scalar demographics onto the cohort
 substrate. Stages 1 and 2 stand; stage 3 was built and **reverted on its own measurement** (§141) because
 the step had no steady-state anchor — Germany and the USA reach `MaxPopulation`, Italy, Poland and Sweden
 reach `MinPopulation`, and the finding is carried as a ratchet at two.

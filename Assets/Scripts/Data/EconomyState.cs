@@ -199,97 +199,88 @@ namespace PoliSim.Data
         /// </summary>
         public float CorruptionIndex;
 
+        // ---- THE EIGHT DEMOGRAPHIC SCALARS: READINGS OF THE COHORT SUBSTRATE SINCE F2 STEP 4 (2026-09-02) ----
+        // Every field below is written by CohortDemographics.Apply from the 21-band pyramid on
+        // Country.Cohorts and its anchored yearly step; none is stepped by a rule of its own any more.
+        // The "Round 3 item 5" rules that used to step them (a secular birth-rate decline, three
+        // aging drifts, a growth-rate reversion toward a typed steady-state growth rate (deleted with it), a population
+        // clamp) were deleted with their twelve constants, per the cohort spec-let's collision map
+        // §4.1. The constructor's arguments for these fields are the retired rules' seeds and are
+        // overwritten at world creation (WorldFactory); their per-country distance from the readings
+        // is recorded in COMPLETED.md §195.
+
         /// <summary>
-        /// Round 3 item 5, Part A: this country's total population, in MILLIONS (matching how GDP is
-        /// stored at a human-readable scale rather than raw units) - seeded from real 2024/2025 data
-        /// (USA 341.8, Germany 83.6, France 69.1, Italy 58.9, Poland 37.5, Sweden 10.6 - see
-        /// WorldFactory). Evolves each turn from (BirthRate - DeathRate + NetMigrationRate)/1000 x
-        /// Population - see MacroSystem.ApplyPopulationGrowth. Floored well above zero (MinPopulation)
-        /// so a shrinking population can still recover instead of locking at exactly 0, and hard-capped
-        /// at a generous gameplay safety bound (not a realistic constraint) - see MacroSystem for both.
+        /// This country's total population, in MILLIONS (matching how GDP is stored at a human-
+        /// readable scale). A READING: the pyramid's band total, interpolated day by day between the
+        /// start and the end of the year the substrate is stepping (CohortDemographics.Apply). The
+        /// pyramid is the 2024 published stock walked to the epoch on the publisher's own projection
+        /// and anchored to it thereafter, so the population cannot run away and needs no clamp.
         /// </summary>
         public float Population;
 
         /// <summary>
-        /// Round 3 item 5, Part A: crude birth rate, per 1,000 population per turn - seeded from real
-        /// data (see WorldFactory). Drifts down slowly on its own (a real, well-documented, near-
-        /// universal secular fertility decline across developed nations - see
-        /// MacroSystem.ApplyDemographicRates), floored well above zero at a realistic low-fertility
-        /// bound. No policy lever in Part A - Part B's Family Policy adjusts this, deliberately kept
-        /// modest given real-world evidence on pro-natalist policy's effect on fertility is itself
-        /// small and contested.
+        /// Crude birth rate, per 1,000 population per year. A READING: the year's inflow to the 0–4
+        /// band, net of the immigration lever's migrants into it, over the mid-year population
+        /// (CohortDemographics.Apply). Family policy reaches it as a fertility multiplier on the
+        /// step's births, at the magnitude the retired additive rule had - see NaturalBirthRate.
         /// </summary>
         public float BirthRate;
 
         /// <summary>
-        /// Round 3 item 5, Part A: crude death rate, per 1,000 population per turn - seeded from real
-        /// data (see WorldFactory). Drifts up slowly as DependencyRatio rises above its own baseline (a
-        /// real, well-documented mechanical effect - an aging population structurally raises the crude
-        /// death rate even with no change in age-specific mortality) - see
-        /// MacroSystem.ApplyDemographicRates. Hard-capped at a generous gameplay safety bound.
+        /// Crude death rate, per 1,000 population per year - HELD at its sourced seed (WorldFactory).
+        /// The publisher's projection folds deaths and its own migration assumption into one survival
+        /// ratio (D-6), so the substrate cannot read a death rate out; one of the two must be held to
+        /// read the other, and a crude death rate is the better-observed and slower-moving of the
+        /// two. The aging that would raise it lives inside the survival ratios. Stated in
+        /// CohortDemographics' own doc.
         /// </summary>
         public float DeathRate;
 
         /// <summary>
-        /// Round 3 item 5, Part A: net migration rate, per 1,000 population per turn (positive = net
-        /// inflow) - seeded from real data (see WorldFactory). Drifts up slowly as DependencyRatio rises
-        /// above its own baseline - a real, discussed phenomenon (aging developed economies leaning
-        /// more on immigration to offset a shrinking working-age population), distinct from BirthRate's
-        /// own independent secular-decline drift. No policy lever in Part A - Part B's Immigration
-        /// Policy adjusts this directly, a more responsive real-world lever than BirthRate so it can
-        /// have a comparatively larger (but still bounded) effect. See MacroSystem.ApplyDemographicRates.
+        /// Net migration rate, per 1,000 population per year (positive = net inflow). A READING
+        /// that closes the identity Δpopulation = births − deaths + net migration on the LEVERED
+        /// step (CohortDemographics.Apply), so the immigration lever's people are in it by
+        /// construction; they enter the pyramid over the sourced immigration age profile
+        /// (CohortStepRateTable.ImmigrationProfile), never uniformly.
         /// </summary>
         public float NetMigrationRate;
 
         /// <summary>
-        /// Round 3 item 5, Part B: BirthRate's policy-INDEPENDENT secular trajectory - evolves ONLY
-        /// via BirthRateSecularDeclineRate's own drift (see MacroSystem.ApplyDemographicRates), never
-        /// touched by Country.FamilyPolicyLevel. BirthRate itself is recomputed FRESH each turn as
-        /// Clamp(NaturalBirthRate + this turn's policy offset, ...) rather than accumulating the
-        /// policy offset onto itself turn after turn - necessary because a CONSTANT per-turn additive
-        /// policy term (the first version of this lever) ratchets BirthRate to its hard ceiling within
-        /// single-digit turns and parks it there, reintroducing the exact "no reversion, runs to an
-        /// extreme and stays" failure pattern the Population growth-rate corrections above were written
-        /// to fix - one layer upstream. Keeping FamilyPolicyLevel's effect as a bounded OFFSET from a
-        /// policy-independent trajectory, recomputed fresh rather than compounded, avoids that failure
-        /// mode entirely: holding the slider at any fixed value produces a constant (not ever-growing)
-        /// shift from the natural trend, so BirthRate keeps following its underlying secular decline
-        /// merely offset by the policy, not pinned at MaxBirthRate forever.
+        /// BirthRate's policy-INDEPENDENT trajectory: the crude birth rate of the NEUTRAL anchored
+        /// step this year - the pyramid stepped with no lever, which follows the publisher's
+        /// projection exactly (CohortDemographics.Step). The anchor semantics the retired rule had
+        /// are kept on purpose (spec-let §4.2 named their loss "the single most likely silent
+        /// breakage"): holding Country.FamilyPolicyLevel at any fixed value displaces BirthRate from
+        /// this trajectory by a constant amount, never a compounding one, because next year's base is
+        /// read from the publisher again rather than from this year's levered result.
         /// </summary>
         public float NaturalBirthRate;
 
         /// <summary>
-        /// Round 3 item 5, Part B: NetMigrationRate's policy-INDEPENDENT trajectory (aging-driven drift
-        /// only, never touched by Country.ImmigrationPolicyLevel) - same "fresh offset, not compounded"
-        /// reasoning as NaturalBirthRate above, see MacroSystem.ApplyDemographicRates.
+        /// NetMigrationRate's policy-INDEPENDENT trajectory: the same identity reading taken on the
+        /// NEUTRAL step (CohortDemographics.Apply) - which is exactly the net migration the
+        /// publisher's projection ASSUMES for the year, given the held DeathRate. The retired
+        /// aging-driven drift on this field was an authored rule; this is the publisher's own
+        /// assumption instead. Country.BaselineNetMigrationRate (the sourced 2024 rate) stays the
+        /// anchor the labor-force gap measures against, so a projection that assumes more
+        /// immigration than 2024 had reads as a positive gap - which is what it is.
         /// </summary>
         public float NaturalNetMigrationRate;
 
         /// <summary>
-        /// Round 3 item 5, Part A: old-age dependency ratio (65+ population as a percentage of
-        /// working-age 15-64 population) - the single derived aging/dependency proxy this pass uses,
-        /// deliberately NOT a full age-cohort/population-pyramid model (see Country.
-        /// BaselineDependencyRatio for full sourcing). Rises as the DeathRate-versus-BirthRate gap
-        /// persists (aging accelerates as natural decrease continues) - see
-        /// MacroSystem.ApplyDemographicRates. Hard-clamped to [Country.BaselineDependencyRatio's own
-        /// realistic floor via MinDependencyRatio, MaxDependencyRatio] - can rise, never assumed to
-        /// reverse in this pass (real developed-world aging trends are one-directional over any
-        /// timescale this game's turns plausibly represent).
+        /// Old-age dependency ratio (65+ as a percentage of 15–64). A READING of the pyramid
+        /// (PopulationCohorts.OldAgeDependencyRatio), interpolated day by day between the year's two
+        /// ends - exactly computable now, which is why Country.BaselineDependencyRatio is re-seeded
+        /// from the same pyramid at world creation so every gap-based effect opens at zero. It rises
+        /// or falls as the publisher's projection and the levers say; nothing forces it one way.
         /// </summary>
         public float DependencyRatio;
 
         /// <summary>
-        /// Round 3 item 5, Part A (corrected): this country's net population growth rate, per-1000
-        /// population per turn - the actual quantity Population evolves by (Population *= 1 +
-        /// PopulationGrowthRate/1000, see MacroSystem.ApplyPopulationGrowth). Distinct from the raw
-        /// (BirthRate - DeathRate + NetMigrationRate) figure: that raw figure is only ever a pull on
-        /// this rate, which itself mean-reverts each turn toward Country.SteadyStateGrowthRate - the
-        /// same reversion idiom Unemployment/Inflation/DebtToGdpRatio already use, added because the
-        /// original design let the raw birth/death/migration gap drive Population directly and
-        /// indefinitely, producing implausible aggregate outcomes over a 500-turn horizon despite each
-        /// individual rate staying within its own realistic bound. Seeded at world-creation time equal
-        /// to each country's own turn-1 raw implied rate (avoiding a turn-1 discontinuity, the same
-        /// idiom every other Baseline-anchored variable uses) - see WorldFactory.
+        /// This country's net population growth rate, per 1,000 population per year: the year's
+        /// step's own net result, (end total / start total − 1) × 1000 (CohortDemographics.Apply).
+        /// The typed steady-state growth rate the retired reversion pulled toward was deleted with it and no longer
+        /// enters the demography.
         /// </summary>
         public float PopulationGrowthRate;
 

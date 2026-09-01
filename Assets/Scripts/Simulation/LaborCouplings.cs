@@ -176,7 +176,7 @@ namespace PoliSim.Simulation
         /// itself small and contested (already flagged honestly in EconomyState.BirthRate's own doc
         /// comment when Part A was written). Feeds directly into the same BirthRate the secular-decline
         /// drift already updates - no separate channel, so this lever automatically flows through the
-        /// same (YearsPerTurn-scaled, capped/reverting) ApplyPopulationGrowth pipeline every other
+        /// same (YearsPerTurn-scaled, capped/reverting) CohortDemographics.Apply pipeline every other
         /// BirthRate driver already uses.
         /// </summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the reasoning above is the basis for this coupling's SIGN and ORDER; the number itself is a game figure that no cited study fixes.</remarks>
@@ -191,7 +191,7 @@ namespace PoliSim.Simulation
         /// NetMigrationRate's own doc comment from Part A, which anticipated exactly this. Feeds
         /// directly into the same NetMigrationRate the aging-drift term already updates - no
         /// separate channel, so this lever automatically flows through the same (YearsPerTurn-scaled)
-        /// ApplyPopulationGrowth pipeline AND the existing NetMigrationRate-gap term in
+        /// CohortDemographics.Apply pipeline AND the existing NetMigrationRate-gap term in
         /// ApplyLaborForceParticipationRate's combined ceiling, rather than adding a second, parallel
         /// immigration-to-labor-force channel - avoiding the double-counting risk this item's own
         /// roadmap brief flagged structurally, not just by convention.

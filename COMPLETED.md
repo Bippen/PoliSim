@@ -18485,3 +18485,99 @@ ItalySurgeCeilingDiagnostic (its "media cannot move a vote" prose corrected, and
 citation replaced by the grep that finds the sites), ChainBandHarness, CampaignActionHarness.
 
 **Bar 25 of 25.**
+
+## 195. F2 STEP 4 BUILT — the eight demographic scalars are readings of the cohort substrate, both levers re-pointed, the family explained per country (2026-09-02)
+
+**What landed.** `CohortDemographics` (Simulation) is the demography: each day the year's anchored step
+(`PopulationCohorts.AnchoredNext` — D-15 (c), D-19 (b), rebased on the seeded pyramid) is computed from
+the pyramid at the start of the turn and the levers as they stand, and the eight scalars on `EconomyState`
+are read from it at the day's fraction of the year; the pyramid commits once, first thing in
+`AdvanceTurn`, with the levers as they stood through the year. MacroSystem's ApplyDemographicRates and
+ApplyPopulationGrowth — a secular decline, three aging drifts, a growth-rate reversion, a population
+clamp, twelve constants — are DELETED, not reconciled (spec-let §4.1); Country's SteadyStateGrowthRate
+went with them (dead once nothing reverted toward it); the Phase 4 years-per-turn diagnostic (unregistered,
+its subject gone) is removed. `PopulationProjections` moved from the Editor assembly into
+`Assets/Scripts/Data/Generated` (namespace `PoliSim.Data.Generated`; the generator writes there now)
+because the game reads it. `SaveVersion` 4 → 5. `AggregationEquivalenceCheck` compares the same eight
+fields through the new daily and turn forms — equal by construction, day 365 IS the turn form.
+
+**The substrate's calendar, stated.** The seeded pyramid is the 2024 stock; the game opens 2026-01-01.
+`WorldFactory` walks the seed two neutral years on the publisher's own trajectory
+(`CohortDemographics.WalkToEpoch`) — no figure typed — and the substrate year is the calendar year from
+then on (`CohortDemographics.SubstrateYear` = 2026 + turn). `CohortSubstrateDiagnostic` reconciles the
+SEEDED table against the publisher (the live pyramid is 2026's now); `CohortAgingStepDiagnostic` hindcasts
+on the seeded table for the same reason. Beyond 2100 the last published pyramid is the anchor: the
+population holds its 2100 shape, growth reads 0, and the levers are the only thing that displaces it —
+stated rather than extrapolated.
+
+**Anchor semantics kept (spec-let §4.2, "the single most likely silent breakage").** `NaturalBirthRate` is
+the NEUTRAL step's crude birth rate this year; `BirthRate` the levered step's. A held lever displaces
+the pyramid by a constant amount, never a compounding one, because next year's base is read from the
+publisher again. **Both levers re-pointed in the same pass at their old magnitudes** (§4.4): family
+policy is the fertility multiplier `(natural + 0.03 × (level − 50)) / natural`; immigration policy is
+`0.1 × (level − 50)` per thousand of the start population, entering over the sourced immigration age
+profile. `LeverLivenessCheck`: `FamilyPolicyOverride` LIVE, `ImmigrationPolicyOverride` LIVE.
+
+### ⚠ What is held and what is read — and the first build had it the wrong way round
+The publisher folds deaths and its own migration assumption into one survival ratio (D-6), so the
+substrate cannot tell a death from an emigrant; one must be held to read the other. The first build
+held the seeded migration anchor and read deaths, and read **Sweden's crude death rate as 6.0 against a
+sourced 9.5** — the projection's assumed immigration booked as people not dying (Germany 9.8 vs 12.2,
+Poland 13.3 vs 10.9). A crude death rate is the better-observed and slower-moving of the two, so
+**`DeathRate` is held at its sourced seed and the migration readings close the identity**
+Δpopulation = births − deaths + net migration — `NaturalNetMigrationRate` on the neutral step (the
+net migration the publisher's projection ASSUMES, which is exactly what "policy-independent
+trajectory" has always meant) and `NetMigrationRate` on the levered step. `Country.BaselineNetMigrationRate`
+stays the sourced 2024 anchor for the labour-force gap, so a projection assuming more immigration than
+2024 had reads as a positive gap — which is what it is.
+
+### The family `f2s4` (six files, 3.1 min), against `s24`, seed 777 — explained per country, by layer
+**Layer 1 — the level at the open (t1, seed → reading, millions):** USA 343.55 → 344.53 · Sweden 10.63 →
+10.75 · Germany 83.42 → 83.77 · France 69.19 → 69.18 · Italy 58.73 → 58.81 · **Poland 37.35 → 36.14**.
+Five within 1.1 % — the typed seeds were the same publishers' 2024/25 totals. Poland is −3.2 %: the typed
+37.5 predates Eurostat's post-census revision (36.6 M at 1 January 2024), walked two years of decline.
+
+**Layer 2 — the rates at the open (per thousand, seed → reading):**
+
+| | BirthRate | DeathRate (held) | NetMigrationRate | DependencyRatio |
+|---|---|---|---|---|
+| USA | 10.59 → 10.56 | 9.10 | 3.70 → **2.68** | 28.0 → **30.3** |
+| Sweden | 10.79 → 10.85 | 9.50 | 1.10 → **4.63** | 33.0 → 33.5 |
+| Germany | 8.19 → 8.52 | 12.20 | 1.80 → **4.20** | 35.0 → 37.5 |
+| France | 9.69 → **10.45** | 9.50 | 1.10 → 1.25 | 33.0 → **36.8** |
+| Italy | 6.29 → 6.84 | 10.40 | 1.30 → 2.85 | 40.0 → 40.6 |
+| Poland | 6.69 → **8.43** | 10.90 | 0.20 → **−2.15** | 28.0 → **34.2** |
+
+Births are what the projections' 0–4 inflows imply (Eurostat's BSL assumes fertility recovering toward
+its long-run level, hence Poland and France above their 2024 crude rates). Migration is what the
+projections assume given the held death rate: Sweden's and Germany's BSL migration is far above the
+typed 2024 rates; the USA's Census 2023 middle series assumes less than 2024's 3.7; **Poland's reading is
+negative because Eurostat's survival implies more deaths than the held 10.9 per thousand** (Poland's crude
+death rate was 11.0 in 2023), and the identity books the difference as outflow — a reading, not an
+observation, and the doc says so. The dependency ratio is now the pyramid's own: the typed 28 for
+Poland was the retired rule's seed, the 2026 pyramid says 34.2; France 33 → 36.8; USA 28 → 30.3.
+`BaselineDependencyRatio` is re-seeded from the same pyramid so every gap opens at zero.
+
+**Layer 3 — the aging the projections carry (t37 = 2063, t74 = 2100, dependency ratio):** USA 39.9 / 49.2 ·
+Sweden 44.7 / 55.0 · Germany 49.0 / 56.8 · France 49.8 / 58.9 · Italy 59.4 / 65.5 · Poland 63.0 / 62.2. The
+retired drift moved the ratio by under five points in a century; the publishers double it. This reaches
+pensions through the existing gap term: Poland's budget at t100 is 12 % deeper than before, the USA's
+5 %, Sweden's 10 % — the fiscal cost of real aging, not a new coupling. `LaborForceParticipationRate`
+moves ≤ 1.1 % (the migration gap). GDP, Unemployment, RealWageIndex, YouthUnemployment: unmoved.
+
+**Layer 4 — the long run (t1000, population, millions, old → new):** USA **1 948 → 367.4** · Sweden **34.7 →
+13.2** · Germany (old: to its clamp) → 82.4 · France → 68.3 · Italy → 50.1 · **Poland 0.75 → 28.2**. The
+retired reversion compounded a typed steady-state rate for a thousand years — the USA to two billion,
+Poland to three-quarters of a million, exactly the §141 runaway in slow motion. The anchored substrate
+reaches each publisher's 2100 pyramid at t74 and holds it: growth 0, migration = deaths − births of the
+held shape (Germany 3.90, constant), the dependency ratio at its 2100 value. Stated as a hold, and the
+class doc says a projection past 2100 is not on record.
+
+**Ratchets:** `UnwiredSubsystemCheck.UNWIRED` 5 → 4 (the cohort step is wired). `CohortAgingStepDiagnostic.RUNAWAY`
+is unchanged at 2: it measures the UNANCHORED step held for 25 years and is not this path.
+
+**Open — the done-when's last clause:** participation by age (spec-let §3, §6) is billed data — Eurostat LFS
+for the five, SCB for Sweden, nothing identified for the USA — and is not built here.
+
+**Bars:** simulation 9 of 9 (`AggregationEquivalenceCheck`, `LeverLivenessCheck`, both cohort diagnostics
+among them); cheap bar 25 of 25.

@@ -93,9 +93,10 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// C-C1: the boundary's own revenue and total spending on the previewed clone, for one full
-        /// turn — **and a full turn is a year** (`MacroSystem.YearsPerTurn` is `DaysPerTurn / 365f`
-        /// = 1.0, the identity W-G1's trap-closing re-derived and `Phase4YearsPerTurnDiagnostic`
-        /// proves 9 of 9). So these ARE the annual figures §P's finding 3 asks for; nothing is scaled
+        /// turn — **and a full turn is a year** (`DaysPerTurn` is 365, the identity W-G1's
+        /// trap-closing re-derived; MacroSystem's YearsPerTurn and the Phase 4 years-per-turn
+        /// diagnostic that proved it 9 of 9 were REMOVED at F2 step 4, 2026-09-02, with the scalar
+        /// demography they scaled). So these ARE the annual figures §P's finding 3 asks for; nothing is scaled
         /// to reach them.
         ///
         /// ⚠ **They are LEVELS, not deltas.** A draft's impact is the difference between two of them —
@@ -160,8 +161,9 @@ namespace PoliSim.Simulation
         /// turn charged a full year of spending, revenue and interest every 121 days: 365/121 = 3.017x
         /// too fast, which is what Elias saw as "a full year's deficit every turn".
         ///
-        /// **The same defect was found and fixed once before, in demographics.** See
-        /// `MacroSystem.YearsPerTurn` - its doc comment describes "3x over-compounding via too many
+        /// **The same defect was found and fixed once before, in demographics.** MacroSystem's
+        /// YearsPerTurn (retired with the scalar demography at F2 step 4, 2026-09-02) had a doc
+        /// comment describing "3x over-compounding via too many
         /// applications of an annual-scale rate", diagnosed and fixed there by scaling each turn's growth
         /// to the turn's real-time slice. The fiscal path has the identical defect and was never brought
         /// along. `SwfStructuralDrawPerTurnFraction` was the one flow that got the conversion.
@@ -235,6 +237,9 @@ namespace PoliSim.Simulation
         public bool AdvanceDay()
         {
             CurrentDate = CurrentDate.AddDays(1);
+            // F2 step 4: which day of the turn's year this is (1..DaysPerTurn) - the cohort substrate
+            // reads its year at this fraction. Derived from the same day count the boundary test uses.
+            int dayOfTurn = ((int)(CurrentDate - EpochDate).TotalDays - 1) % DaysPerTurn + 1;
 
             // Master Sequence step 9, Step A: statistics are published on their real release schedules,
             // which are date-driven ("first Friday", "the 12th", "t+30 after quarter end"), so this is
@@ -271,7 +276,7 @@ namespace PoliSim.Simulation
                     MacroSystem.ApplyInfrastructureConditionDaily(country);
 
                     // CONTINUOUS TIME PHASE 4 (2026-08-16): Demographics daily. Rates BEFORE population
-                    // (ApplyPopulationGrowth reads the same-step freshly-updated Birth/Death/Migration,
+                    // (CohortDemographics.Apply reads the same-step freshly-updated Birth/Death/Migration,
                     // the turn form's own documented contract), and BOTH before the Phase 2 block below
                     // (ApplyLaborForceParticipationRateDaily reads DependencyRatio/NetMigrationRate gaps -
                     // it now sees them move daily instead of jumping once per turn, which is the point).
@@ -281,8 +286,12 @@ namespace PoliSim.Simulation
                     // Family/Immigration policy change committed at a boundary reaches the rates from the
                     // NEXT day rather than the same instant - Phase 3's cash-lands-next-period precedent
                     // in miniature.
-                    MacroSystem.ApplyDemographicRatesDaily(country);
-                    MacroSystem.ApplyPopulationGrowthDaily(country);
+                    // F2 step 4 (2026-09-02): the two scalar rules are gone. The cohort substrate's
+                    // year is read at today's fraction of the turn (Population and DependencyRatio
+                    // interpolated between the year's ends, the rates as the year's flows); the
+                    // pyramid itself commits once, in AdvanceTurn. Day DaysPerTurn equals the turn
+                    // form exactly, so the equivalence check still holds by construction.
+                    CohortDemographics.ApplyDaily(country, CohortDemographics.SubstrateYear(CurrentTurn), dayOfTurn);
 
                     // CONTINUOUS TIME PHASE 2: Labor Market and Crime & Justice. The ORDER matters and is
                     // preserved exactly from AdvanceTurn - OrganizedCrime and Corruption run BEFORE
@@ -2151,6 +2160,13 @@ namespace PoliSim.Simulation
         /// </summary>
         public void AdvanceTurn(Dictionary<CountryId, PolicyDecision> decisions)
         {
+            // F2 step 4: the year the days just read is COMMITTED to the pyramid first, with the levers
+            // as they stood through it - before this turn's decisions move them (a lever changed at the
+            // boundary reaches the substrate from the next year's first day, the Phase 4 timing shift).
+            foreach (Country country in _world.Countries)
+            {
+                CohortDemographics.CommitYear(country, CohortDemographics.SubstrateYear(CurrentTurn));
+            }
             CurrencySystem.ApplyInterestRateChanges(_world, decisions);
 
             foreach (Country country in _world.Countries)
@@ -2225,7 +2241,7 @@ namespace PoliSim.Simulation
             ApplySwfPolicyChanges(country, decision);
             ApplyLaborPolicyChanges(country, decision);
             ApplyCrimeJusticeDeeperChanges(country, decision);
-            // Round 3 item 5, Part B: must run BEFORE ApplyDemographicRates, same reasoning as
+            // Round 3 item 5, Part B: must run BEFORE CohortDemographics.Apply, same reasoning as
             // ApplyCrimeJusticeDeeperChanges above.
             ApplyDemographicPolicyChanges(country, decision);
             // CONTINUOUS TIME PHASE 4: the demographic rates and population growth have already been
@@ -2472,8 +2488,7 @@ namespace PoliSim.Simulation
             ApplyLaborPolicyChanges(previewCountry, decision);
             ApplyCrimeJusticeDeeperChanges(previewCountry, decision);
             ApplyDemographicPolicyChanges(previewCountry, decision);
-            MacroSystem.ApplyDemographicRates(previewCountry);
-            MacroSystem.ApplyPopulationGrowth(previewCountry);
+            CohortDemographics.ApplyTurn(previewCountry, CohortDemographics.SubstrateYear(CurrentTurn));   // F2 step 4: the year's readings on the clone's own pyramid; nothing commits
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             // Phase 1: the preview deliberately keeps the TURN-level forms. It models one whole turn on a
@@ -2804,7 +2819,6 @@ namespace PoliSim.Simulation
                 BorderEnforcementLevel = country.BorderEnforcementLevel,
                 BaselineDependencyRatio = country.BaselineDependencyRatio,
                 BaselineNetMigrationRate = country.BaselineNetMigrationRate,
-                SteadyStateGrowthRate = country.SteadyStateGrowthRate,
                 FamilyPolicyLevel = country.FamilyPolicyLevel,
                 ImmigrationPolicyLevel = country.ImmigrationPolicyLevel,
                 BasePotentialGrowthRate = country.BasePotentialGrowthRate,
@@ -3168,7 +3182,7 @@ namespace PoliSim.Simulation
         /// this turn's requested PolicyDecision overrides (each clamped to [MinPolicyDialLevel,
         /// MaxPolicyDialLevel]) - a no-op for either with no request this turn (the -1 sentinel), the
         /// same pattern ApplyCrimeJusticeDeeperChanges already uses. Must run BEFORE
-        /// MacroSystem.ApplyDemographicRates, which reads these same-turn freshly-set levels - the
+        /// CohortDemographics.Apply, which reads these same-turn freshly-set levels - the
         /// same "avoid a one-turn lag" timing requirement every other policy-apply method before it
         /// already follows.
         /// </summary>

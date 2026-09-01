@@ -600,91 +600,53 @@ namespace PoliSim.Data
         public float AppliedBorderEnforcementCost = 0f;
 
         /// <summary>
-        /// Round 3 item 5, Part A: this country's structural "steady-state" old-age dependency ratio
-        /// (65+ population as a percentage of working-age 15-64 population, a real, standard World
-        /// Bank/OECD demographic statistic - NOT the full age-cohort/population-pyramid breakdown,
-        /// deliberately a single scalar per the task's own "not the full theoretical richness"
-        /// discipline). Never mutated after seeding - the fixed anchor MacroSystem.ApplyDemographicRates'
-        /// drift and every gap-based effect (pension pressure, labor force participation) measure
-        /// against, the same "avoid a turn-1 shock" idiom BaselineCrimeIndex/BaselinePovertyRate
-        /// already use. Real/well-documented for Italy (highest of the six, among the highest in the
-        /// world) and the USA/Poland (lowest, both real); Germany's figure is informed by an ESTIMATED
-        /// 65+ population share (~22-23%, full age-cohort breakdown unavailable), honestly not a
-        /// directly-sourced dependency ratio - see WorldFactory's seeding comment.
+        /// This country's old-age dependency ratio at the start of play (65+ as a percentage of
+        /// 15–64), the fixed anchor every gap-based effect (pension pressure, labor force
+        /// participation) measures against - the "avoid a turn-1 shock" idiom BaselineCrimeIndex and
+        /// BaselinePovertyRate use. Since F2 step 4 (2026-09-02) it is RE-SEEDED at world creation
+        /// from the cohort pyramid walked to the epoch (WorldFactory, CohortDemographics.WalkToEpoch),
+        /// so it is exactly the ratio EconomyState.DependencyRatio reads on day one and the gap opens
+        /// at zero. The typed per-country figures in WorldFactory (28–40) were the retired scalar
+        /// demography's seeds, kept there as the record of what they were; the distance between them
+        /// and the pyramid's own ratio is in COMPLETED.md §195.
         /// </summary>
         public float BaselineDependencyRatio = 30f;
 
         /// <summary>
-        /// Round 3 item 5, Part A: this country's real, seeded starting NetMigrationRate (per-1000
-        /// population per turn) - the fixed anchor EconomyState.NetMigrationRate's own aging-driven
-        /// drift (see MacroSystem.ApplyDemographicRates) and its gap-based LaborForceParticipationRate
-        /// effect measure against, the same "avoid a turn-1 shock" idiom every other Baseline field
-        /// uses. Distinct from BirthRate/DeathRate, which have no baseline anchor of their own in this
-        /// pass - BirthRate's decline and DeathRate's rise are absolute drifts, not gap-based effects,
-        /// so no anchor is needed for either.
+        /// This country's sourced starting net migration rate (per 1,000 population per year) - the
+        /// fixed anchor the gap-based LaborForceParticipationRate effect measures against, the same
+        /// idiom every other Baseline field uses. Since F2 step 4 the live NetMigrationRate is a
+        /// reading of the cohort substrate (the net migration the publisher's projection assumes,
+        /// plus the lever), so a projection assuming more immigration than 2024 had reads as a
+        /// positive gap against this sourced anchor - see CohortDemographics.
         /// </summary>
         public float BaselineNetMigrationRate = 1f;
 
         /// <summary>
-        /// Round 3 item 5, Part A (corrected): this country's structural long-run steady-state net
-        /// population growth rate (per-1000 population per turn/year), the fixed target
-        /// EconomyState.PopulationGrowthRate mean-reverts toward every turn (see
-        /// MacroSystem.ApplyPopulationGrowth) - the SAME reversion idiom NaturalUnemploymentRate,
-        /// the inflation target, and each country's ComfortableDebtToGdpPercent already use. Added
-        /// because the original design let BirthRate's secular decline (and the resulting
-        /// birth/death/migration gap) drive Population's growth rate directly and indefinitely, with
-        /// no pull back toward any bounded long-run figure - realistic at the individual-rate level
-        /// but producing implausible AGGREGATE outcomes (near-extinction for Germany/Poland/Italy,
-        /// near-quadrupling for the USA) over this project's 500-turn validation horizon.
-        ///
-        /// Directionally real and well-documented for all six countries (Poland/Italy: severe,
-        /// well-documented sub-replacement decline; Germany: moderate decline; France: near-stable,
-        /// historically the most fertility-resilient large EU economy; Sweden/USA: modest
-        /// immigration-driven growth). Magnitudes were originally calibrated against a WRONG "1 turn
-        /// ~= 1 year" approximation - this project's actual convention (ElectionSystem.ElectionCycle
-        /// = 12 turns per presidential term = 4 years, so 1 turn = 1/3 year) makes the 500-turn
-        /// validation horizon ~167 real years, not 500. Corrected via MacroSystem.YearsPerTurn, which
-        /// scales Population's per-turn update to the real turn-to-year fraction rather than changing
-        /// these per-country figures themselves (they're real, per-1,000-population-PER-YEAR rates,
-        /// same scale as BirthRate/DeathRate/NetMigrationRate - only how often they get APPLIED was
-        /// wrong). Poland's figure is anchored to (but damped from) the annual rate implied by
-        /// Eurostat's own 2025-2100 population projection (-31.6% cumulative over 75 years) via
-        /// (1+r)^75 = 0.684, i.e. r = 0.684^(1/75) - 1 = ~-5.05 per 1000/year - see CLAUDE.md for the
-        /// full derivation and the resulting, correctly-time-converted 167-year validation numbers.
-        /// Same "generous, honestly-labeled bound rather than literal reality" idiom as
-        /// MaxDebtToGdpPercent's 300% ceiling.
-        /// </summary>
-        public float SteadyStateGrowthRate = -1f;
-
-        /// <summary>
-        /// Round 3 item 5, Part B: this country's family/childcare policy support intensity, 0-100
-        /// (0 = minimal support, 100 = maximal pro-natalist support; 50 = neutral, the same uniform-
-        /// dial idiom BorderEnforcementLevel already uses). Persistent, player-adjustable via
-        /// PolicyDecision.FamilyPolicyOverride - see SimulationManager.ApplyDemographicPolicyChanges.
-        /// Nudges EconomyState.BirthRate directly, feeding the SAME already-corrected
-        /// MacroSystem.ApplyPopulationGrowth pipeline (YearsPerTurn-scaled, capped/reverting
-        /// PopulationGrowthRate) every other BirthRate driver already uses - no separate, bypassing
-        /// channel into Population. Deliberately SMALL: real-world evidence on pro-natalist policy's
-        /// effect on fertility is itself small and contested (already flagged honestly in
-        /// EconomyState.BirthRate's own doc comment when Part A was written) - this lever nudges the
-        /// trajectory, it does not reverse a country's underlying demographic direction on its own.
+        /// Family/childcare policy support intensity, 0-100 (0 = minimal support, 100 = maximal
+        /// pro-natalist support; 50 = neutral, the same uniform-dial idiom BorderEnforcementLevel
+        /// uses). Persistent, player-adjustable via PolicyDecision.FamilyPolicyOverride - see
+        /// SimulationManager.ApplyDemographicPolicyChanges. Since F2 step 4 it reaches the cohort
+        /// substrate as a fertility multiplier on the year's births (CohortDemographics.Step), at the
+        /// magnitude the retired additive rule had (LaborCouplings.FamilyPolicyBirthRateSensitivity
+        /// points per thousand on the natural crude birth rate). Deliberately SMALL: real-world
+        /// evidence on pro-natalist policy's effect on fertility is itself small and contested - this
+        /// lever nudges the trajectory, it does not reverse a country's demographic direction alone.
         /// </summary>
         public float FamilyPolicyLevel = 50f;
 
         /// <summary>
-        /// Round 3 item 5, Part B: this country's immigration policy openness, 0-100 (0 = maximally
-        /// restrictive, 100 = maximally open; 50 = neutral). Persistent, player-adjustable via
-        /// PolicyDecision.ImmigrationPolicyOverride - see SimulationManager.ApplyDemographicPolicyChanges.
-        /// Nudges EconomyState.NetMigrationRate directly, feeding the SAME already-corrected
-        /// MacroSystem.ApplyPopulationGrowth pipeline every other NetMigrationRate driver already uses.
-        /// A wider bound than FamilyPolicyLevel's BirthRate nudge - immigration flows are a genuinely
-        /// more responsive real-world lever than fertility (visa/asylum/quota policy can move actual
-        /// migration within a single term, unlike birth rates) - see MacroSystem.ApplyDemographicRates.
-        /// Deliberately reuses the EXISTING NetMigrationRate-gap term already in
-        /// ApplyLaborForceParticipationRate's combined ceiling (added in Part A) for this lever's
-        /// labor-force effect, rather than adding a second, parallel immigration-to-labor-force
-        /// channel - this is exactly the double-counting risk this item's own roadmap brief flagged,
-        /// and it's avoided structurally (one variable, one downstream channel), not by convention.
+        /// Immigration policy openness, 0-100 (0 = maximally restrictive, 100 = maximally open; 50 =
+        /// neutral). Persistent, player-adjustable via PolicyDecision.ImmigrationPolicyOverride - see
+        /// SimulationManager.ApplyDemographicPolicyChanges. Since F2 step 4 it reaches the cohort
+        /// substrate as additive net migration distributed over the sourced immigration age profile
+        /// (CohortDemographics.Step), at the magnitude the retired rule had
+        /// (LaborCouplings.ImmigrationPolicyNetMigrationSensitivity per thousand). A wider bound than
+        /// FamilyPolicyLevel's - immigration is a genuinely more responsive real-world lever than
+        /// fertility (visa/asylum/quota policy can move actual migration within a single term).
+        /// Its labor-force effect deliberately reuses the EXISTING NetMigrationRate-gap term in
+        /// ApplyLaborForceParticipationRate's combined ceiling rather than a second, parallel
+        /// immigration-to-labor-force channel - one variable, one downstream channel, structurally.
         /// </summary>
         public float ImmigrationPolicyLevel = 50f;
 

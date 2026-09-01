@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using PoliSim.Data;
-using PoliSim.EditorTools.Generated;
+using PoliSim.Data.Generated;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -84,6 +84,11 @@ namespace PoliSim.EditorTools
             CheckExit.ArmLogFold();
 
             World world = WorldFactory.CreateDefault();
+            // F2 step 4: the live world's pyramid is walked to the epoch (CohortDemographics.WalkToEpoch)
+            // and is 2026's; this diagnostic is about the STEP's arithmetic on the seeded 2024 stock -
+            // the hindcast compares 2023 stepped once against 2024 published - so it works on the
+            // seeded table, a copy per country, exactly what the world carried before the walk.
+            foreach (Country country in world.Countries) { country.Cohorts = PopulationPyramids.For(country.Id); }
             var sb = new StringBuilder();
             var failures = new List<string>();
             var runaways = new List<string>();

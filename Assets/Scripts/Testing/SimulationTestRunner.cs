@@ -538,7 +538,7 @@ namespace PoliSim.Testing
         /// <summary>
         /// Round 3 item 5, Part B: pushes USA's FamilyPolicyLevel and ImmigrationPolicyLevel both to
         /// their maximum (100) at turn 1, then holds - the worst-case simultaneous push toward MORE
-        /// population growth, stress-testing MacroSystem.ApplyPopulationGrowth's
+        /// population growth, stress-testing CohortDemographics.Apply's
         /// MaxPopulationGrowthRateDeviation cap and ApplyLaborForceParticipationRate's combined ceiling
         /// (ImmigrationPolicyLevel's NetMigrationRate nudge feeds the SAME NetMigrationRate-gap term
         /// laborstress above doesn't touch) at once, under this project's now-corrected
@@ -914,7 +914,6 @@ namespace PoliSim.Testing
             {
                 anomalies.Add($"Turn {turn} {country.Name}: PopulationGrowthRate out of a sane range ({state.PopulationGrowthRate:F3})");
             }
-            CheckFinite(turn, country, "SteadyStateGrowthRate", country.SteadyStateGrowthRate, anomalies);
 
             CheckFinite(turn, country, "FamilyPolicyLevel", country.FamilyPolicyLevel, anomalies);
             if (country.FamilyPolicyLevel < 0f || country.FamilyPolicyLevel > 100f)

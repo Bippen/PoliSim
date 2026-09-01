@@ -67,7 +67,10 @@ namespace PoliSim.EditorTools
                     continue;
                 }
 
-                float sum = country.Cohorts.Total;
+                // F2 step 4: the reconciliation is of the SEEDED table against its publisher - the live
+                // pyramid on the country has been walked to the epoch (CohortDemographics.WalkToEpoch)
+                // and is no longer the 2024 stock. The band checks below stay on the live pyramid.
+                float sum = PopulationPyramids.For(country.Id).Total;
                 float published = PopulationPyramids.PublishedTotal[country.Id];
                 float gap = sum - published;
 

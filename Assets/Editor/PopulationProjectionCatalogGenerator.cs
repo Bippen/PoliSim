@@ -61,7 +61,7 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class PopulationProjectionCatalogGenerator
     {
-        private const string OutputRelative = "Assets/Editor/Generated/PopulationProjections.cs";
+        private const string OutputRelative = "Assets/Scripts/Data/Generated/PopulationProjections.cs";
         private const string EuroRelativeFormat = "ElectionsData/projections/proj_23np_{0}.json";
         private const string UsaRelative = "ElectionsData/projections/np2023_d1_mid.csv";
 
@@ -348,7 +348,7 @@ namespace PoliSim.EditorTools
                 sb.Append("// SHA-256 (").Append(d.Key).Append("): ").Append(d.Value).Append('\n');
             }
 
-            sb.Append("\nusing System.Collections.Generic;\nusing PoliSim.Data;\n\nnamespace PoliSim.EditorTools.Generated\n{\n");
+            sb.Append("\nusing System.Collections.Generic;\nusing PoliSim.Data;\n\nnamespace PoliSim.Data.Generated\n{\n");
             sb.Append("    public static class PopulationProjections\n    {\n");
             sb.Append("        public const int FirstYear = ").Append(FirstYear.ToString(CultureInfo.InvariantCulture)).Append(";\n");
             sb.Append("        public const int LastYear = ").Append(LastYear.ToString(CultureInfo.InvariantCulture)).Append(";\n\n");

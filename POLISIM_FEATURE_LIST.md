@@ -216,6 +216,12 @@ one family at a time with the per-country explanation, or it does not land.
 **Done when:** population, dependency ratio and participation are derived from cohorts, both demographic
 levers measurably move the model, and the family is explained per country.
 
+> **2026-09-02 — step 4 landed (`COMPLETED.md` §195):** population, the crude rates and the dependency
+> ratio are readings of the substrate; the two levers are LIVE (`LeverLivenessCheck`) at their old
+> magnitudes with anchor semantics kept; the `f2s4` family is explained per country. **Open:** participation
+> by age — the one clause of the done-when that needs a dataset nobody has fetched (spec-let §6: Eurostat
+> LFS / SCB, and nothing equivalent identified for the USA). Billed, not built.
+
 *Carries: `M-B2` (D-15 stage 3) · `M-B3` (the substrate wired) · `M-D2` (the two projections) · and
 `CohortAgingStepDiagnostic.RUNAWAY` falls out of the rebuilt step.*
 

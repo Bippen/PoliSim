@@ -323,12 +323,10 @@ namespace PoliSim.EditorTools
                     x.ImmigrationPolicyLevel = 20f;
                 }
 
-                MacroSystem.ApplyDemographicRates(cg);                                  // one turn step
-                MacroSystem.ApplyPopulationGrowth(cg);
+                CohortDemographics.ApplyTurn(cg, CohortDemographics.SubstrateYear(0));                                  // one turn step
                 for (int i = 0; i < SimulationManager.DaysPerTurn; i++)                 // daily steps
                 {
-                    MacroSystem.ApplyDemographicRatesDaily(ch);
-                    MacroSystem.ApplyPopulationGrowthDaily(ch);
+                    CohortDemographics.ApplyDaily(ch, CohortDemographics.SubstrateYear(0), i + 1);
                 }
 
                 total += 8;

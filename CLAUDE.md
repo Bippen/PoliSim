@@ -4308,7 +4308,7 @@ age-cohort/population-pyramid model - one scalar per demographic concept per cou
   Germany's figure (35) is informed by an ESTIMATED 65+ population share (~22-23%, full age-cohort
   breakdown unavailable), honestly not directly sourced the way Italy/USA/Poland's are; Sweden/France
   (33 each) are directional estimates.
-- **Drift, not a static constant repeated 500 turns**: `MacroSystem.ApplyDemographicRates` (must run
+- **Drift, not a static constant repeated 500 turns**: MacroSystem's ApplyDemographicRates (retired at F2 step 4, 2026-09-02 - the substrate steps the rates now: `CohortDemographics.Apply`) (must run
   before `ApplyPopulationGrowth`, which reads its fresh output) evolves all four rate-like quantities
   every turn. `BirthRate` declines on its own independent secular trend (a real, well-documented,
   near-universal fertility decline across developed nations), floored at a realistic low-fertility
@@ -4455,7 +4455,7 @@ horizon.
 - **Fix - the growth RATE mean-reverts, not just Population itself**: added
   `EconomyState.PopulationGrowthRate` (per-1,000/year, the quantity `Population` now actually evolves
   by) and `Country.SteadyStateGrowthRate` (a fixed per-country long-run anchor). Each turn,
-  `MacroSystem.ApplyPopulationGrowth` computes the raw `impliedRate` (`BirthRate - DeathRate +
+  MacroSystem's ApplyPopulationGrowth (retired at F2 step 4 - `CohortDemographics.Apply`) computes the raw `impliedRate` (`BirthRate - DeathRate +
   NetMigrationRate`, same as before), takes its gap versus `SteadyStateGrowthRate`, hard-clamps that
   gap to +/-`MaxPopulationGrowthRateDeviation` (2, per-1,000/year) BEFORE weighting it by
   `PopulationGrowthRateSensitivity` (0.4) to form this turn's reversion target, then reverts

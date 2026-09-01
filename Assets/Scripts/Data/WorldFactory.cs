@@ -1,3 +1,4 @@
+using PoliSim.Simulation;
 using System.Collections.Generic;
 
 namespace PoliSim.Data
@@ -524,7 +525,7 @@ namespace PoliSim.Data
             // 37.5M, Sweden 10.6M population; birth/death/net-migration per-1000 figures per country -
             // see EconomyState's own field-level doc comments for the full per-country figures). The
             // real, standard old-age dependency ratio (65+ population as % of working-age 15-64) is
-            // the anchor MacroSystem.ApplyDemographicRates' drift and every gap-based effect (pension
+            // the anchor CohortDemographics.Apply' drift and every gap-based effect (pension
             // pressure, labor force participation) measure against - real/well-documented for Italy
             // (highest of the six, among the highest in the world - its aging population is one of the
             // most well-known real demographic facts globally) and USA/Poland (lowest, both real and
@@ -552,40 +553,10 @@ namespace PoliSim.Data
             poland.BaselineDependencyRatio = 28f;
             poland.BaselineNetMigrationRate = 0.2f;
 
-            // Round 3 item 5, Part A (corrected): SteadyStateGrowthRate, per-1000 population per
-            // turn/year - the fixed long-run target Country.PopulationGrowthRate mean-reverts toward
-            // (see MacroSystem.ApplyPopulationGrowth), added because letting the raw birth/death/
-            // migration gap drive Population directly and indefinitely produced implausible aggregate
-            // outcomes (near-extinction / near-quadrupling) over this project's 500-turn validation
-            // horizon, despite every individual rate staying within its own realistic bound.
-            //
-            // Directionally real for all six: Poland/Italy are the two most severe, well-documented
-            // sub-replacement-fertility decliners in Europe; Germany is a real but more moderate
-            // decline; France is the most fertility-resilient large EU economy, real and
-            // well-documented, hence near-stable; Sweden/USA are real, modest, immigration-driven
-            // growers among developed nations.
-            //
-            // Magnitudes are HONESTLY DAMPED below a literal extrapolation of current trends. This
-            // project's "1 turn ~= 1 year" convention makes the 500-turn validation horizon a ~500-year
-            // span - roughly 6.7x Eurostat/UN's actual 2025-2100 (75-year) projection window. Poland's
-            // figure is explicitly anchored to Eurostat's own 2025-2100 population projection (-31.6%
-            // cumulative decline) via the implied constant annual rate solving (1+r)^75 = 0.684, i.e.
-            // r = 0.684^(1/75) - 1 ~= -5.05 per 1000/year. Applying that literal real rate for a full
-            // 500 years would ITSELF compound to roughly a 92% decline ((1 - 0.00505)^500 ~= e^-2.53 ~=
-            // 0.0795 of the starting population) - a mechanical consequence of the horizon length, not
-            // evidence the rate is unrealistic. -3.5 is deliberately damped further below that -5.05
-            // figure precisely so the 500-turn outcome reads as a severe-but-plausible trajectory
-            // (comparable in spirit, not in literal cumulative percentage, to Eurostat's 75-year
-            // figure) rather than a literal 500-year compound of a real 75-year rate. The same
-            // "generous, honestly-labeled bound rather than literal reality" idiom as
-            // MaxDebtToGdpPercent's 300% ceiling - see CLAUDE.md for the full derivation and the
-            // resulting 500-turn validation numbers.
-            usa.SteadyStateGrowthRate = 1.8f;
-            sweden.SteadyStateGrowthRate = 1.5f;
-            germany.SteadyStateGrowthRate = -1.5f;
-            france.SteadyStateGrowthRate = -0.3f;
-            italy.SteadyStateGrowthRate = -3.0f;
-            poland.SteadyStateGrowthRate = -3.5f;
+            // SteadyStateGrowthRate - the typed long-run growth target the retired scalar demography reverted
+            // toward - was deleted at F2 step 4 (2026-09-02): the population is the cohort pyramid on the
+            // publisher's own projection now and needs no typed target. Its six figures and their derivation
+            // survive in git history and CLAUDE.md.
 
             // THE WELFARE SEED SLOTS (playtest 3's seed-spread ruling, 2026-08-27 - see CLAUDE.md
             // "Playtest 3, the rulings"): each country's welfare portfolio AS IT REALLY STANDS, per the
@@ -991,6 +962,19 @@ namespace PoliSim.Data
                 // into the static table - the substrate becomes mutable the moment the aging step lands,
                 // and a shared array would age every other game with this one.
                 country.Cohorts = PopulationPyramids.For(country.Id);
+                // F2 step 4 (2026-09-02): the pyramid IS the demography now. The seed is the 2024 stock;
+                // the game opens in 2026, so the seed is walked two neutral years along the publisher's
+                // own trajectory, and the eight demographic scalars the constructor above seeded (the
+                // crude rates, the population, the dependency ratio) are OVERWRITTEN with readings of the
+                // walked pyramid - the constructor's figures were the retired rules' seeds and are kept
+                // there as the record of what they were. BaselineDependencyRatio is re-seeded from the
+                // same pyramid so every gap-based effect (pensions, participation) opens at zero, as it
+                // did; the seed→derived distance per country is in COMPLETED.md §195.
+                CohortDemographics.WalkToEpoch(country);
+                if (country.Cohorts != null && CohortStepRateTable.For(country.Id) != null)
+                {
+                    country.BaselineDependencyRatio = country.State.DependencyRatio;
+                }
 
                 // C-D4 (§38): each party's long-term capital, opened at the seeded election's mandate.
                 // ⚠ The two starting levels are `PartyProfile`'s OWN constructor defaults (reputation 50,
