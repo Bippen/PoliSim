@@ -43,6 +43,27 @@ attention for as long as the project lives.
   because the failure mode is invisible from inside: refusing to act reads as prudence in every log line it
   produces.
 
+## The mechanical process rules — measured, not exhorted (2026-09-01)
+
+⚠ **These are RULES ABOUT MECHANISM, not requests for care.** The class they govern has now cost this
+project at least nine Unity runs and put twenty-four corruptions into committed documents, and every
+instance was produced by somebody trying to be careful. **Care is not the missing input.**
+
+- **P1 — no shell state across tool calls, and every file edit is ONE self-contained operation.** A
+  variable set in one call is gone by the next: this spliced a block to line 1 of a document because
+  `$idx` was `$null` and `$null+1` is `1`. And an edit assembled by shell quoting carries the shell's
+  escapes into the file — **24 `''` sequences reached `COMPLETED.md` and `POLISIM_BACKLOG.md` this way,
+  with no compile error, no red bar and no exit code to catch them.** ⚠ **That is the worst member of the
+  class precisely because nothing failed.**
+- **P2 — one green bar per commit, and the bar is for the tree being committed.** Not "green when I last
+  looked". Broken twice in one session; both caught by the next run, which is luck rather than process.
+  ⚠ **Precondition, measured:** Unity refuses to run against a project another Unity process holds — Editor
+  **or** a background batch. **Unity work cannot be parallelised**, and a bar started in the background
+  blocks the next one.
+- **P3 — the bar costs ~5 min 24 s regardless of what changed**, of which `ArtifactIdentityCheck` is
+  **243 s re-reading 3.7 GB of trajectory CSVs**. Ranked first for time returned: a manifest between gates,
+  the full sweep at gates. See `POLISIM_REVIEW_ADDENDUM.md`.
+
 ---
 
 # F1 — ✅ COMPLETE 2026-09-01 (`COMPLETED.md` §§178–180)

@@ -25,13 +25,13 @@ published, with the date axis, release markers, the PRELIMINARY/FINAL badge, the
 the 1yr/5yr/All pager. It is not being built. Please do not draw it.**
 
 It was removed on **2026-08-29** as a display cut after a playtest, and **Elias ruled the cut permanent on
-2026-09-01**. E17''s row now says so. ⚠ **You were not told at the time, and the row went on asking for
+2026-09-01**. E17's row now says so. ⚠ **You were not told at the time, and the row went on asking for
 three days.** That is our failure, not a change of mind late in the day — and it is recorded as a finding
 of its own (`S-39`) rather than as a note on the row, because the row was one instance of it.
 
 **Nothing you have drawn is wasted and nothing else in §E moves.** The publication MECHANISM is
 load-bearing and untouched: the model still publishes lagged, revisable figures, the election model reads
-the published series rather than the true state, and **B6''s honesty conventions — the badge, the revision
+the published series rather than the true state, and **B6's honesty conventions — the badge, the revision
 frame — are alive on the main graphs.** They moved; they were not lost. If anything, the honesty channel
 you drew for is now carried in more places than the band would have carried it.
 

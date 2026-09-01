@@ -779,22 +779,22 @@ hat; (c) throws away a stat to avoid writing one honest sentence.
 
 ---
 
-### D-18 · The five axes are SOURCED and the codebook''s endpoints are not ⚠ DECIDED AND TAKEN (R-N1), strikeable
+### D-18 · The five axes are SOURCED and the codebook's endpoints are not ⚠ DECIDED AND TAKEN (R-N1), strikeable
 
-`S-4` said §4''s five undefined axes stood for *"per-issue positions that exist for no party anywhere."*
+`S-4` said §4's five undefined axes stood for *"per-issue positions that exist for no party anywhere."*
 ⚠ **That premise is false.** All five are published variables in `CHES_2024_final_v2.csv` — **the same file
-this project''s four sourced columns were already read from** — and 44 parties across the five EU countries
+this project's four sourced columns were already read from** — and 44 parties across the five EU countries
 have every cell populated. `environment` · `regions` · `spendvtax` · `immigrate_policy` · `deregulation`.
 
-⚠ **But the codebook''s scale endpoints could not be quoted.** The PDF was fetched and inflated; its
+⚠ **But the codebook's scale endpoints could not be quoted.** The PDF was fetched and inflated; its
 party-list pages are readable and its variable-definition pages are in subsetted-font cipher encodings.
 
 | option | cost | what it forecloses |
 |---|---|---|
 | **a. Bank the numbers, leave the axes `NaN` until the direction is QUOTED** | the axes stay undefined one more session; the data is in hand and the remaining step is one codebook page | nothing — every later route stays open |
-| b. Wire them now, taking the direction from the empirical anchor (every green party at the bottom of `environment`) | none up front | ⚠ **an inverted axis does not fail loudly.** It silently reverses every compatibility comparison that reads it, and the model goes on looking like it works — S-37''s defect with a plausible cover story |
-| c. Leave the data unbanked until the codebook is decoded | none | ⚠ the finding that S-4''s premise was FALSE would sit undocumented, and the next session would re-derive it |
-| d. Decode the font cipher this session | a long detour through ToUnicode CMaps | ⚠ spends a session''s remaining budget on a step that one readable copy of the codebook makes unnecessary |
+| b. Wire them now, taking the direction from the empirical anchor (every green party at the bottom of `environment`) | none up front | ⚠ **an inverted axis does not fail loudly.** It silently reverses every compatibility comparison that reads it, and the model goes on looking like it works — S-37's defect with a plausible cover story |
+| c. Leave the data unbanked until the codebook is decoded | none | ⚠ the finding that S-4's premise was FALSE would sit undocumented, and the next session would re-derive it |
+| d. Decode the font cipher this session | a long detour through ToUnicode CMaps | ⚠ spends a session's remaining budget on a step that one readable copy of the codebook makes unnecessary |
 
 **Recommendation, TAKEN as an R-N1 decide-and-log: (a).** Basis: **S-37 is precisely this case — a bound is
 a direction as well as a number** — and an axis wired the wrong way round is the failure this project has

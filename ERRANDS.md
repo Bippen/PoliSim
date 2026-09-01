@@ -25,8 +25,6 @@ when it is done. If a row cannot say what unblocks, it is not an errand; it is a
   (`PoliSim-captures/sv_index.html`). An errand is an action with a named unblock; a sitting is a
   judgement.
 - **The open decision sheets** in `POLISIM_BACKLOG.md` §D are not errands: they cost nothing outward-facing, and each carries a recommendation a session has already taken as strikeable so that nothing waits on them. ⚠ **D-14 is NOT one of them and this line used to say it was.** It was explicitly *not* self-taken — **Elias RULED it (a)**: the D-2 (c) revert stands and F-A and F-B are split out as their own measured items, which is executed (`COMPLETED.md` §153).
-  rulings, they cost nothing outward-facing, and each carries a recommendation a session has already
-  taken as strikeable so that nothing waits on them.
 
 ---
 
@@ -58,7 +56,7 @@ closing either needs a lexer rather than a regex — which is the honest reason 
 ## ⚠ E-4 · PUSH — ✅ MISCLASSIFIED BY THIS SESSION, and corrected 2026-09-01
 
 ⚠ **This was filed as an errand and it was never one.** **R-SP1 has been standing since 2026-08-28:
-sessions push FAST-FORWARD-ONLY; a force push is Elias''s alone; `UpstreamCheck` is the tripwire that says
+sessions push FAST-FORWARD-ONLY; a force push is Elias's alone; `UpstreamCheck` is the tripwire that says
 when.** A fast-forward push of commits this session made and verified is a **convention it is expected to
 follow**, not an outward-facing action requiring permission.
 
@@ -70,15 +68,15 @@ follow a standing rule on the strength of a general principle that did not apply
 over-applies a safety rule looks careful and is simply not doing the work — and unlike the reverse, nothing
 in the bar catches it.
 
-**Done: pushed. `origin/main` carries the session''s commits, and the tripwire is green.**
+**Done: pushed. `origin/main` carries the session's commits, and the tripwire is green.**
 ## E-5 · Does the "as published" band come back? — ✅ **RULED by Elias, 2026-09-01: NO**
 
-> *"The 'as published' band does not come back — P-A2''s cut stands, `PublicationSystem` stays
+> *"The 'as published' band does not come back — P-A2's cut stands, `PublicationSystem` stays
 > load-bearing, the honesty conventions stay on the main graphs."*
 
-**Executed:** E17''s row records the cut as permanent and asks Design for nothing. Nothing in the mechanism
-moves — `PublicationSystem` publishes, the election model''s section-19 reading takes Published and never
-State, and B6''s honesty channels stay where P-A2 moved them.
+**Executed:** E17's row records the cut as permanent and asks Design for nothing. Nothing in the mechanism
+moves — `PublicationSystem` publishes, the election model's section-19 reading takes Published and never
+State, and B6's honesty channels stay where P-A2 moved them.
 
 ⚠ **And the ruling names the real defect, which was never the band.** *"The real defect is that Design was
 drawing a cut screen without being told."* Recorded as **S-39** — a finding of its own, not a footnote to

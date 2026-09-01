@@ -10920,7 +10920,7 @@ and never mentioned → fails naming it.
 wasted, the mechanism is untouched, and B6's honesty channels **moved to the main graphs rather than being
 lost** — carried in more places now than the band would have carried them.
 
-## 176. C-0.2''s DONE-WHEN WAS A GREP — which means it was a check nobody had written (2026-09-01)
+## 176. C-0.2's DONE-WHEN WAS A GREP — which means it was a check nobody had written (2026-09-01)
 
 `C-0.2` read *"correct every document that still asserts a pre-wiring premise"*, done when *"no live
 document asserts a pre-wiring premise"* — and then, in brackets, **it gave the grep**: `PartyArchetype`,
@@ -10964,13 +10964,13 @@ on a ratchet that did not exist when it was written. `M-S6` now names it and car
 
 **Ruled by Elias: the audit era is over.** `POLISIM_FEATURE_LIST.md` is the governing objective;
 `POLISIM_MASTER_LIST.md` is deleted and `InstructionResidueCheck` is retired with it, because **the residue
-number was the era''s goal and the era has ended.** The 25 remaining checks stay in the bar and keep
+number was the era's goal and the era has ended.** The 25 remaining checks stay in the bar and keep
 failing when they should.
 
 ⚠ **The list is retired having done its job and having been WRONG about its own size twice** — it opened at
 31 startable CODE rows on a hand count the check later put at a different number, and it carried *"four
 unsuperseded pieces"* and *"positions that exist for no party anywhere"*, both of which turned out to be
-claims nobody had measured. **A list is a document like any other and this project''s standing lesson
+claims nobody had measured. **A list is a document like any other and this project's standing lesson
 applies to it: a number written once is read as measured by everyone who comes after.**
 
 ### R-N5, recorded with the closure
@@ -10980,7 +10980,7 @@ applies to it: a number written once is read as measured by everyone who comes a
 ⚠ It is a reversal of how the preceding week worked. Instrument work becomes a **consequence of a real
 failure, never a prophylactic**. One instance is a fix; two is a class; only a class earns a check. **A
 guard written for a defect that has not happened twice is a guess about the future wearing the costume of
-rigour**, and it costs a suite slot, a session, and a reader''s attention for as long as the project lives.
+rigour**, and it costs a suite slot, a session, and a reader's attention for as long as the project lives.
 
 ### The two process findings the era leaves behind
 
@@ -11125,16 +11125,16 @@ earned it, `RatchetSlackCheck` demanding both.
 1280/2560 with `MetaTextCheck` and the edge guards silent is the last proof, and it is a wall-clock run
 rather than a question.
 
-## 180. F1 COMPLETE — a player can reach election night and watch the model''s own count declare (2026-09-01)
+## 180. F1 COMPLETE — a player can reach election night and watch the model's own count declare (2026-09-01)
 
 **Done when:** *a player can start a Sweden game, reach election night from the game itself, and watch
-constituencies declare from the model''s own count.* **Met.**
+constituencies declare from the model's own count.* **Met.**
 
 ### ⚠ The film needed one more thing than "a film"
 
 Both standard passes came back clean — 81 captured, 0 failed, 0 overflows, 0 clipped, at 1280×720 and
 2560×1440 — and **that would not have proved F1.** The standard pass contains no election-night frame at
-all, and **every election-night film this project has ever taken was of `ElectionNightFilm`''s staged
+all, and **every election-night film this project has ever taken was of `ElectionNightFilm`'s staged
 fixture.**
 
 ⚠ **A fixture exercises the SCREEN and says nothing about the MODEL.** It would render identically if the
@@ -11158,11 +11158,11 @@ fails the run; a fixture standing in for it would not have been noticed.
 2. **`RegionalVoteModel` is on the live path**, and `UnwiredSubsystemCheck.UNREACHABLE` fell for it.
 3. **The count is real and it varies**: SD spans 21.42 points, 10.75 % in inner Stockholm to 32.17 % in
    north-east Skåne, and the regional total reproduces the national shares to **0.0109 %**. ⚠ The map is
-   Sweden''s actual political geography and **nothing was fitted to make it so.**
+   Sweden's actual political geography and **nothing was fitted to make it so.**
 4. **Board 1h has a door.** `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` **1 → 0**, the ratchet written
    for this exact screen reading zero for the first time.
 
-⚠ **Two guards caught defects introduced by this work, hours after being built**: `DeadStateCheck`''s
+⚠ **Two guards caught defects introduced by this work, hours after being built**: `DeadStateCheck`'s
 write-only classifier found the dismissal I had not written (§168, built the same day), and
 `RatchetSlackCheck` demanded three ceilings come down in the runs that earned them. **That is what a guard
 paying for itself looks like** — and it is the evidence R-N5 asks for before a check is written at all.
