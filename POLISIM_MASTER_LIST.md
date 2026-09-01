@@ -99,7 +99,7 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 |---|---|---|---|---|---|---|
 | **M-S6** | **`C-0.2`** — the post-wiring re-derivation: no live document asserts a pre-wiring premise | `DocumentClaimCheck` covers the identifier half; this is the PROSE half, and ⚠ it is S-22's class — sized as a read, not a scan | CODE | RECORDS | — | L |
 | **M-S7** | **`S-32`** — board 1h gets a route from the running game | `PlayerReachabilityCheck` reports 0 and the route shows a real count | CODE | SAFE | **M-B5** | M |
-| **M-R1** | ratchet: `UnwiredSubsystemCheck.UNWIRED` = **7** | each of the seven is wired, deleted, or parked with a trigger; ceiling lowered | CODE | SAFE | — | L |
+| **M-R1** | ratchet: `UnwiredSubsystemCheck.UNWIRED` = **7 → 5** | ⚠ **two were never unwired** — `TaxLine` and `WelfareProgram` are asked for every turn, one hop away through a same-file facade the check did not follow. Ceiling lowered on the correction. **The five that remain are the real class** and wait on `M-D1` / the `M-B4`–`M-B5` chain | CODE | SAFE | **M-D1** | L |
 | **M-R2** | ratchet: `UnwiredSubsystemCheck.UNREACHABLE` = **6** | as above | CODE | SAFE | M-B4 | L |
 | **M-R5** | ratchet: `CohortAgingStepDiagnostic.RUNAWAY` = **2** | Italy and Poland stop hitting `MinPopulation` at the 100-year horizon | CODE | SAFE | **M-B2** | — |
 | **M-R6** | ratchet: `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` = **1** | board 1h has a route | CODE | SAFE | **M-S7** | — |

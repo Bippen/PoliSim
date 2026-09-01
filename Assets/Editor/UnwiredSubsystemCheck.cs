@@ -47,7 +47,7 @@ namespace PoliSim.EditorTools
     {
         /// <summary>⚠ The ceiling, measured when this check was built on 2026-09-01. Lower it when a
         /// subsystem is wired or deleted; never raise it.</summary>
-        private const int UnwiredCeiling = 7;
+        private const int UnwiredCeiling = 5;
 
         /// <summary>
         /// ⚠ **THE SECOND CEILING — this check's OWN blind spot, measured 2026-09-01.**
@@ -75,6 +75,11 @@ namespace PoliSim.EditorTools
 
         /// <summary>A `public static` method declaration. Instance methods are excluded: they need an
         /// object, and tracing who constructs it is beyond what a name scan can honestly claim.</summary>
+        /// <summary>An expression-bodied public member — the facade shape this repo uses for a data
+        /// type's derived values (`public float BaseShareOfGdp => TaxTypeBaseShares.Get...(Type);`).
+        /// ⚠ Group 1 is the member's own name, which is what an outside caller writes.</summary>
+        private static readonly Regex FacadeMember = new Regex(
+            @"public\s+[A-Za-z_][A-Za-z0-9_<>,\.\[\]\?]*\s+([A-Za-z_][A-Za-z0-9_]*)\s*=>[^;]*;");
         private static readonly Regex PublicStatic = new Regex(
             @"^\s*public\s+static\s+(?:readonly\s+)?[A-Za-z_][A-Za-z0-9_<>,\.\[\]\?]*\s+([A-Z][A-Za-z0-9_]*)\s*\(");
 
@@ -167,6 +172,53 @@ namespace PoliSim.EditorTools
                 }
             }
 
+
+            // ⚠ ONE HOP THROUGH A SAME-FILE FACADE, added 2026-09-01. The pass above asks whether an entry
+            // point is named OUTSIDE its file, and reported TaxLine and WelfareProgram as having uncalled
+            // entry points. They do not. `TaxTypeBaseShares.GetBaseShareOfGdp` is called by
+            // `TaxLine.BaseShareOfGdp`, a property in the SAME file - and MacroSystem reads
+            // `line.BaseShareOfGdp` to compute the tax take every turn. **The game asks for it; it asks
+            // one hop away.**
+            //
+            // A static behind a facade property is the ordinary shape of a data type in this repo, not a
+            // stalled plan - and this ratchet exists for stalled plans. Counting the facade shape teaches a
+            // reader that the number includes things nobody should act on, which is how a ratchet stops
+            // being read at all.
+            //
+            // ⚠ ONE hop, and only within the declaring file, because that is what can be decided without a
+            // call graph. A longer chain is NOT claimed and is NOT covered - stated here rather than
+            // discovered later.
+            foreach (KeyValuePair<string, List<string>> file in declaringFiles)
+            {
+                if (gameCalls.Contains(file.Key)) { continue; }
+                if (!contents.TryGetValue(file.Key, out string ownText)) { continue; }
+
+                foreach (string name in file.Value)
+                {
+                    if (CountWord(ownText, name) < 2) { continue; }   // declaration only
+
+                    bool reached = false;
+                    foreach (Match facade in FacadeMember.Matches(ownText))
+                    {
+                        string member = facade.Groups[1].Value;
+                        if (facade.Value.IndexOf(name, StringComparison.Ordinal) < 0) { continue; }
+
+                        foreach (KeyValuePair<string, string> other in contents)
+                        {
+                            if (string.Equals(other.Key, file.Key, StringComparison.OrdinalIgnoreCase)) { continue; }
+                            if (IsHarness(other.Key, scripts)) { continue; }
+                            if (CountWord(other.Value, member) == 0) { continue; }
+
+                            reached = true;
+                            break;
+                        }
+
+                        if (reached) { break; }
+                    }
+
+                    if (reached) { gameCalls.Add(file.Key); break; }
+                }
+            }
             var unwired = new List<string>();
             foreach (KeyValuePair<string, List<string>> file in declaringFiles)
             {

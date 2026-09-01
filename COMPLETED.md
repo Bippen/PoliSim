@@ -10796,3 +10796,36 @@ on disk fails. **Both proved.**
 dimension the USA's third parties live in, it is already drawn.
 
 **Bar 23 of 24, residue 18.**
+
+## 173. THE UNWIRED RATCHET, CORRECTED — two of the seven were never unwired (2026-09-01)
+
+`UnwiredSubsystemCheck.UNWIRED` stood at **7**, and M-R1's disposal was to wire, delete or park each.
+⚠ **Two of them needed none of those, because they were not unwired.**
+
+`TaxLine.cs` and `WelfareProgram.cs` were reported as *"wired type, uncalled entry point"*. The entry
+points are called. `TaxTypeBaseShares.GetBaseShareOfGdp` is called by `TaxLine.BaseShareOfGdp` — a
+property **in the same file** — and `MacroSystem` reads `line.BaseShareOfGdp` to compute the tax take
+**every turn**. ⚠ **The game asks for it. It asks one hop away**, and the check only looked for the name
+outside the file.
+
+**A static behind a facade property is the ordinary shape of a data type in this repo, not a stalled plan
+— and this ratchet exists for stalled plans.** Counting the facade shape teaches a reader that the number
+includes things nobody should act on, which is how a ratchet stops being read at all. That is the same
+erosion M-R4 found from the other side: there, a measurement that could never fall; here, a measurement
+inflated by a shape that is correct.
+
+The check now follows **one hop, within the declaring file only** — a public expression-bodied member whose
+own name is used outside. ⚠ **One hop, and a longer chain is NOT claimed**: that is what can be decided
+without a call graph, and it is stated where the rule lives rather than discovered later.
+
+⚠ **The probe that mattered was not "does the number fall" but "can a facade clear a file that deserves to
+be counted".** A public expression-bodied member was planted in `TacticalVoting` — genuinely unwired,
+nothing outside naming it — and the file **stayed unwired**, because the facade's own name is used nowhere
+either. The rule reaches through a facade the game uses; it does not manufacture one.
+
+**Ceiling lowered 7 → 5.** The five that remain are the real class: `CampaignRun` (the type is used, nothing
+invokes `Simulate`) and four elections-track subsystems named nowhere in game code —
+`CohortStepRateTable`, `CohortVoterGroups`, `Rosatellum`, `TacticalVoting`. **Those wait on `M-D1` and the
+`M-B4`/`M-B5` chain, which is where the master list already puts them.**
+
+**Bar 23 of 24, residue 17.**
