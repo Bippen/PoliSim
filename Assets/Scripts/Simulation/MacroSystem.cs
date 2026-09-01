@@ -2087,6 +2087,7 @@ namespace PoliSim.Simulation
         private const float SectorUnemploymentSensitivity = 0.03f;
 
         /// <summary>Cap on the sector-employment unemployment adjustment.</summary>
+        /// <remarks>CONVENTION - a cap on one component before it is combined with the others, a bound on the model's own arithmetic rather than a claim about the world.</remarks>
         private const float MaxSectorUnemploymentAdjustment = 0.3f;
 
         internal static float GetSectorUnemploymentAdjustment(Country country)
@@ -2103,29 +2104,36 @@ namespace PoliSim.Simulation
         // --- Approval Rating: political-economy feedback, Phillips-curve-adjacent (misery index) ---
 
         /// <summary>Approval mean-reverts toward this absent any other effect - a "neutral" governing position, not an extreme.</summary>
+        /// <remarks>CONVENTION - a scale origin. Approval reverts here absent any other effect: a neutral governing position, chosen so the stat has a middle, not measured from anything.</remarks>
         private const float NeutralApprovalRating = 50f;
 
         /// <summary>Fraction of the gap versus NeutralApprovalRating that closes each turn on its
         /// own. Internal since Step 2: the trace panel derives EQUILIBRIUM framing from it
         /// (sustained term ÷ this = equilibrium shift - the honest unit Q1's magnitude was ruled
         /// in), reading the same constant the formula uses rather than a second copy.</summary>
+        /// <remarks>CONVENTION - a reversion speed toward the neutral rating.</remarks>
         internal const float ApprovalReversionSpeed = 0.05f;
 
         /// <summary>Approval points per percentage-point of growth gap (actual vs. potential) - strong growth is rewarded, weak growth punished.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         private const float GrowthApprovalSensitivity = 0.3f;
 
         /// <summary>Approval points lost per percentage point unemployment sits above NAIRU.</summary>
         // internal (2026-08-28, R-K1): the Policy Web's stat -> stat edges weight the four misery
         // terms by these, relative to each other - read, never restated as literals.
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         internal const float UnemploymentApprovalSensitivity = 0.4f;
 
         /// <summary>Approval points lost per percentage point inflation sits away from the Taylor Rule's inflation target (either direction - deflation hurts too).</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         internal const float InflationApprovalSensitivity = 0.4f;
 
         /// <summary>Approval points lost per point CrimeIndex sits above Country.BaselineCrimeIndex (and gained per point below) - smaller than Unemployment/InflationApprovalSensitivity since CrimeIndex gaps tend to run larger in absolute point terms on its 0-100 scale.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         internal const float CrimeApprovalSensitivity = 0.2f;
 
         /// <summary>Round 3 item 3: Approval points lost per point CorruptionIndex sits above Country.BaselineCorruptionIndex (and gained per point below) - corruption scandals hurt approval, a real and well-documented political effect. Slightly smaller than CrimeApprovalSensitivity, since corruption's political salience varies more by country/culture than crime's does - a stylized judgment call, not a precisely-fitted figure.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         internal const float CorruptionApprovalSensitivity = 0.15f;
 
         // PaidFamilyLeaveApprovalSensitivity moved VERBATIM to LaborCouplings (pass 3's declared
@@ -2151,15 +2159,21 @@ namespace PoliSim.Simulation
         // DrugPolicyApprovalSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25).
 
         /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         internal const float TaxHikeApprovalSensitivity = 1.5f;
 
         /// <summary>Approval points per percentage-point-of-GDP of (multiplier-weighted) net discretionary spending change.</summary>
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         internal const float SpendingApprovalSensitivity = 0.8f;
 
         /// <summary>Healthcare/education are relatively popular spending; defense is relatively less so; infrastructure is the baseline (no special bonus or penalty).</summary>
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement (healthcare and education above infrastructure, defence below it); the multipliers are the game figures that express it, and no polling series fixes them.</remarks>
         internal const float HealthcareApprovalMultiplier = 1.5f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement (healthcare and education above infrastructure, defence below it); the multipliers are the game figures that express it, and no polling series fixes them.</remarks>
         internal const float EducationApprovalMultiplier = 1.5f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement (healthcare and education above infrastructure, defence below it); the multipliers are the game figures that express it, and no polling series fixes them.</remarks>
         internal const float DefenseApprovalMultiplier = 0.5f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement (healthcare and education above infrastructure, defence below it); the multipliers are the game figures that express it, and no polling series fixes them.</remarks>
         internal const float InfrastructureApprovalMultiplier = 1.0f;
 
         /// <summary>
@@ -2171,6 +2185,7 @@ namespace PoliSim.Simulation
         /// gameplay-tuning judgment calls, the same as the original four's own multipliers.
         /// </summary>
         internal const float JusticeApprovalMultiplier = 1.0f;
+        /// <remarks>[AUTHORED-DRAFT] RANKING - the relative popularity of spending categories is the design statement (healthcare and education above infrastructure, defence below it); the multipliers are the game figures that express it, and no polling series fixes them.</remarks>
         internal const float HomelandSecurityApprovalMultiplier = 0.7f;
         internal const float EnergyApprovalMultiplier = 1.0f;
         internal const float HousingApprovalMultiplier = 1.3f;

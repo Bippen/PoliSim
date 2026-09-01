@@ -44,12 +44,12 @@ namespace PoliSim.EditorTools
     {
         /// <summary>
         /// ⚠ **The ceiling, and the only thing that fails.** Set to the count measured when this check was
-        /// built - ⚠ Built at **212 of 285 on 2026-08-31**, reported as a BACKLOG rather than a failure; **lowered in steps to 73 on 2026-09-01** across twelve ratchet batches (212 down to 73).
+        /// built - ⚠ Built at **212 of 285 on 2026-08-31**, reported as a BACKLOG rather than a failure; **lowered in steps to 58 on 2026-09-01** across thirteen ratchet batches (212 down to 58).
         /// A new unmarked constant raises the count above it and fails; marking an old one lowers
         /// the count, and the ceiling should be lowered with it. **It may never be raised** — raising it is
         /// how a ratchet becomes a rubber stamp.
         /// </summary>
-        private const int UnmarkedCeiling = 73;
+        private const int UnmarkedCeiling = 58;
 
         private static readonly Regex Declaration = new Regex(
             @"^\s*(?:public|private|protected|internal)?\s*(?:const|static\s+readonly)\s+(float|double|int)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=");
