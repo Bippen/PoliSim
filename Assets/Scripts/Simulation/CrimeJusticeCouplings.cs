@@ -111,11 +111,16 @@ namespace PoliSim.Simulation
         /// <summary>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION. Approval points gained per point Country.DrugPolicyLevel sits above its neutral 50 (and lost per point below) - a small "tough on crime" political effect, gap versus the shared neutral 50 rather than a country-specific anchor (DrugPolicyLevel has no real per-country seed the way PaidFamilyLeaveWeeks does).</summary>
         public const float DrugPolicyApprovalSensitivity = 0.02f;
 
-        /// <summary>CONVENTION - a dial's midpoint, not a measurement. The shared neutral every sensitivity above measures its gap against - the same
-        /// 50 MacroSystem's own private NeutralPolicyDialLevel and PolicyWebRenderer's local carry
-        /// (three statements of one fact predate this pass; unifying them is a refactor this pass
-        /// deliberately does not do - this public const exists so NEW consumers stop adding a
-        /// fourth).</summary>
+        /// <summary>CONVENTION - a dial's midpoint, not a measurement. **THE single statement of it.**
+        /// The shared neutral every sensitivity above measures its gap against.
+        ///
+        /// <para>⚠ S-26, closed 2026-09-01. This fact used to be stated FOUR times - here, in
+        /// MacroSystem's private NeutralPolicyDialLevel, in a PolicyWebRenderer local and in a
+        /// SimulationManager local - and the note that used to sit here said unifying them was a refactor
+        /// deliberately deferred, which is how a deferral becomes a permanent state with an excuse
+        /// attached. The other three now REFERENCE this one; MacroSystem keeps its name as an alias so
+        /// its readers are not moved. **A fifth restatement is a failing condition, not a style point:**
+        /// see SharedMidpointCheck, which is the defence clause this finding is not closed without.</para></summary>
         public const float NeutralDialLevel = 50f;
 
         /// <summary>

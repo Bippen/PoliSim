@@ -726,8 +726,12 @@ namespace PoliSim.Simulation
         // comments carried verbatim.
 
         /// <summary>Neutral reference point for both policy dials - both start here for every country (a uniform placeholder, unlike CrimeIndex's own per-country baseline), so a gap versus this constant (not a country-specific anchor) is the correct comparison.</summary>
-        /// <remarks>CONVENTION - a dial midpoint, and the summary above already calls it a uniform placeholder. CrimeJusticeCouplings.NeutralDialLevel is the same fact stated elsewhere; unifying the three statements is a refactor the couplings pass deliberately deferred.</remarks>
-        private const float NeutralPolicyDialLevel = 50f;
+        /// <remarks>CONVENTION - a dial midpoint. ⚠ S-26 (2026-09-01): this used to STATE 50f, one of FIVE
+        /// statements of one fact. It is now a local ALIAS for the single statement in CrimeJusticeCouplings,
+        /// so the name stays where its readers expect it and the VALUE exists in exactly one place. The note
+        /// that used to sit here called unifying them a deferred refactor, which is how a deferral becomes a
+        /// permanent state with an excuse attached; SharedMidpointCheck is what replaced the excuse.</remarks>
+        private const float NeutralPolicyDialLevel = CrimeJusticeCouplings.NeutralDialLevel;
 
         /// <remarks>CONVENTION - a gameplay ceiling on a percentage, defence-in-depth against a feedback bug rather than a claim any country could reach it.</remarks>
         private const float MaxCrimeIndexPercent = 100f;

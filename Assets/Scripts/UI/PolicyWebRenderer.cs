@@ -1188,7 +1188,8 @@ namespace PoliSim.UI
         public static List<string> GetCurrentEffectSummary(PolicyNodeId id, Country country)
         {
             var lines = new List<string>();
-            const float neutral = 50f;
+            // S-26 (2026-09-01): was a fourth statement of 50f; now the one statement, referenced.
+            const float neutral = CrimeJusticeCouplings.NeutralDialLevel;
 
             switch (id)
             {

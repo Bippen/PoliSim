@@ -48,7 +48,7 @@ namespace PoliSim.EditorTools
             // enrolled. The gate is gone (2026-09-01). ⚠ `RatchetSlackCheck` came OFF this list in the same
             // commit: it no longer reads source at all, and leaving its name here would have been a list
             // asserting something about it that stopped being true.
-            "RatchetResidency",
+            "RatchetResidency", "SharedMidpointCheck",
         };
 
         /// <summary>

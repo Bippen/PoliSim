@@ -1529,8 +1529,12 @@ namespace PoliSim.Simulation
         /// </summary>
         private void RecomputeCrimeJusticeDialsFromEnactedLaws(Country country)
         {
-        /// <remarks>CONVENTION - the same dial midpoint the couplings table states, used here as a local starting value for the six crime and justice dials.</remarks>
-            const float baseline = 50f;
+            // CONVENTION - a dial midpoint, and not this file's to state.
+            // S-26 (2026-09-01): was the fourth statement of 50f; now the one statement, referenced.
+            // ⚠ The <remarks> doc comment that used to sit here was stranded INSIDE the method body,
+            // after the opening brace, where it documented nothing at all. Removed with the restatement
+            // it explained - a comment whose only subject has gone is the corpse' s alibi (S-36).
+            const float baseline = CrimeJusticeCouplings.NeutralDialLevel;
             float police = baseline, sentencing = baseline, bail = baseline;
             float drug = baseline, judicial = baseline, border = baseline;
 

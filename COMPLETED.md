@@ -10410,3 +10410,45 @@ catching a ratchet the process cannot even measure. All three reverted.
 
 **Bar: 22 checks green, 9 simulation checks green (the slack audit joined that group), ratchets tight,
 0 unenrolled, 0 unreported, 0 unregistered, 0 silent, 0 unlisted. Residue 31 of 31.**
+
+## 163. S-26 CLOSED — the dial midpoint stated once, and the guard found a FIFTH the sweep had missed (2026-09-01)
+
+The dial midpoint `50` was recorded as stated **four** times. It was stated **five**.
+
+`CrimeJusticeCouplings.NeutralDialLevel` is now the one statement. `MacroSystem.NeutralPolicyDialLevel`
+became a local **alias** — the name stays where its readers expect it, the value does not — and the
+`PolicyWebRenderer` and `SimulationManager` locals reference it. ⚠ **One of those locals had a `<remarks>`
+doc comment stranded INSIDE the method body, after the opening brace, documenting nothing**; it went with
+the restatement it explained.
+
+### ⚠ Unifying them was not the fix, and this is the whole point of the item
+
+**Each of the four already carried a comment saying the others existed.** One said outright that unifying
+them was *"a refactor this pass deliberately does not do — this public const exists so NEW consumers stop
+adding a fourth."* ⚠ **A fourth was added anyway, and then a fifth.** The fact was known, written down in
+four places, and grew regardless. **Prose asking people not to do a thing is the mechanism this project has
+catalogued as failing more often than any other**, and a cleanup with no guard behind it is a snapshot.
+
+So the closure is `SharedMidpointCheck`, and the deferral's excuse is deleted rather than re-dated.
+
+### ⚠ Its first run found three things, and two of them were the check's fault
+
+- **`Sector.BaselineRegulationLevel`** — the fifth statement, missed by the sweep.
+- **`Sector.BaselineRegulationLevel` is also NOT the same fact**, which is the interesting half: its own
+  doc says the regulation adjustment is measured *from this value and NOT from the uniform 50*, because
+  sourced output shares already embody real regulatory stringency. **Pointing it at the shared const would
+  make it precisely the thing the ruling that created it decided it must not be.**
+- **`MacroSystem.NeutralApprovalRating`** — approval's midpoint, a different quantity that happens to be 50.
+
+⚠ **Both false positives were answered with an argument, not by narrowing the test until it stopped
+noticing.** The name test stays broad; the exception list carries each case's reasoning, is printed in full
+every run, and is **policed**: an entry that matches nothing in the tree fails (it reads as coverage while
+covering nothing), and an entry naming the owning declaration fails (it would switch the check off from
+inside). Both proved.
+
+⚠ **What it cannot see is stated rather than implied**: a midpoint named `x` escapes it, the same naming
+convention doing structural work that `RatchetResidency` admits to. Flagging every `50f` was measured and
+rejected — three unrelated constants would fire today, and a guard that cries wolf gets widened, which is
+how a ratchet stops discriminating.
+
+**Bar: 23 checks green, 9 simulation green, residue 29 of 29.**
