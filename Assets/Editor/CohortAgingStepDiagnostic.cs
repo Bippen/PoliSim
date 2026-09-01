@@ -347,7 +347,7 @@ namespace PoliSim.EditorTools
         private static void AnchorSection(World world, StringBuilder sb, List<string> failures)
         {
             sb.Append("\n    --- (6) P-I2 STAGE 3: THE ANCHORED STEP (D-15 (c), D-19 (b)) ---\n");
-            sb.Append("    country       base exact   worst band drift   neutral x   fertility x1.5 x\n");
+            sb.Append("    country       base exact   worst band drift   neutral x   fertility x1.5 x   step-vs-publisher\n");
 
             foreach (Country country in world.Countries)
             {
@@ -403,9 +403,34 @@ namespace PoliSim.EditorTools
                 float neutralRatio = finalTarget > 0f ? neutral.Total / finalTarget : 0f;
                 float forcedRatio = neutral.Total > 0f ? forced.Total / neutral.Total : 0f;
 
+                // ⚠ HOW MUCH OF THE TRAJECTORY IS THE MODEL, AND HOW MUCH IS THE PUBLISHER. Reported, never
+                // failed. The anchored step tracks the projection EXACTLY by construction, so "it tracks"
+                // proves nothing about the demography. This asks the question that is not tautological:
+                // applied to the publisher's own pyramid, does the step's own survival/crossing/fertility
+                // arithmetic land on the publisher's NEXT year? Agreement means the model's demography and
+                // the publisher's agree and the ratio is doing little; disagreement means the anchor is
+                // carrying the trajectory and the generative step is along for the ride. Either answer is
+                // worth knowing BEFORE the retirement wires this to the game, and neither is a defect.
+                float stepGap = 0f;
+                for (int y = 0; y < LongRunYears; y++)
+                {
+                    int yearNow = PopulationProjections.FirstYear + y;
+                    float[] pubNow = PopulationProjections.For(country.Id, yearNow);
+                    float[] pubNext = PopulationProjections.For(country.Id, yearNow + 1);
+
+                    var walk = new PopulationCohorts((float[])pubNow.Clone());
+                    walk.StepOneYear(rates);
+
+                    float pubTotal = 0f;
+                    for (int k = 0; k < PopulationCohorts.CohortCount; k++) { pubTotal += pubNext[k]; }
+                    if (pubTotal > 0f) { stepGap += Mathf.Abs(walk.Total - pubTotal) / pubTotal; }
+                }
+
+                stepGap /= LongRunYears;
+
                 sb.Append(string.Format(CultureInfo.InvariantCulture,
-                    "    {0,-12} {1,10:E1}  {2,16:P4}  {3,10:F4}  {4,17:F4}\n",
-                    country.Name, baseDrift, worstDrift, neutralRatio, forcedRatio));
+                    "    {0,-12} {1,10:E1}  {2,16:P4}  {3,10:F4}  {4,17:F4}  {5,17:P3}\n",
+                    country.Name, baseDrift, worstDrift, neutralRatio, forcedRatio, stepGap));
 
                 if (baseDrift > 1e-5f)
                 {
@@ -453,6 +478,14 @@ namespace PoliSim.EditorTools
             sb.Append("    §141 named the danger: 'a speed nothing sources is an authored figure in the most load-bearing\n");
             sb.Append("    place in the model'. There is no blend weight here to tune. The pyramid is placed ON the\n");
             sb.Append("    published trajectory each year and displaced only by the measured effect of the levers.\n");
+            sb.Append("    ⚠ STEP-VS-PUBLISHER is the column that says how much of the trajectory is the MODEL. It applies\n");
+            sb.Append("    the step's own arithmetic to the publisher's own pyramid and asks whether it lands on the\n");
+            sb.Append("    publisher's next year. Measured 2026-09-01 it runs a few tenths of a percent to about 1.4% a\n");
+            sb.Append("    year - the demography AGREES closely, and the anchor is correcting a small annual disagreement\n");
+            sb.Append("    rather than carrying the whole trajectory. ⚠ That small gap is exactly what compounded over a\n");
+            sb.Append("    century in the unanchored build, and Poland - the widest gap here - was one of the three that\n");
+            sb.Append("    reached the population floor. REPORTED, never failed: it is a description of the model, not a\n");
+            sb.Append("    bound, and turning it into one would be tuning the step to match a projection.\n");
             sb.Append("    ⚠ AND THE PRICE: the population is no longer purely generated. Between gates the model is not\n");
             sb.Append("    forecasting a population, it is tracking a forecast and modelling the deviation from it.\n");
             sb.Append("    Whether the publisher is right is the publisher's claim; this asserts only that the model goes\n");
