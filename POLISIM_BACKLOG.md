@@ -336,12 +336,120 @@ first change that trips it is not a rule.
 | **c. Re-state the constraint as "the GDP response must not move"** | one item, plus re-stating the rule | ⚠ a weaker rule than the one that has held this pass three times |
 | **d. Take it and re-anchor the spending channel too** | a BASELINE item on top of a BASELINE item | ⚠ two families landing together cannot be explained apart |
 
-**Recommendation: (a) for now, (c) as the right long-run shape** — but ⚠ **no option is taken here.**
-This is the one item in this run where I have deliberately *not* self-ruled: every other fork was
-reversible and mine to log, and this one asks whether **Elias's own pre-committed constraint** bends.
-That is his, and the run continued past it rather than waiting.
+**Recommendation was (a) for now, (c) as the right long-run shape** — and ⚠ **no option was taken by the
+run.** This was the one fork deliberately not self-ruled: every other was reversible and mine to log, and
+this one asked whether **Elias's own pre-committed constraint** bends.
 
-> **To rule it, write:** `D-9 RULED: (a)` *(or b / c / d)*
+### ✅ **D-9 RULED (a) — Elias, 2026-09-01. The constraint holds at ALL THREE horizons.**
+
+> *"Ramey's 0.6–1.0 is a band on the multiplier as a quantity, not on the horizons where a given change
+> happens to bite. Relaxing it precisely where a proposed fix violates it is moving a bar to pass."*
+
+**D-2 (c) stays reverted.** Option (b) is refused explicitly: narrowing the rule to the two horizons where
+the behaviour did not change is the same move as bending it, spelled differently. The per-country base
+share table stays recorded in full in this sheet and rebuildable in one item.
+
+**The two routes that remain legitimate for the argument D-2 (c) was making**, recorded with the ruling:
+
+| route | what it would have to show | status |
+|---|---|---|
+| **(a) a mechanism that achieves the same end without costing spending transmission** | per-country differentiation of the tax→consumption channel that does not move the revenue path, e.g. the table applied only inside `HouseholdTaxBurdenShare` and not in `GetTotalTaxRevenue` | ⚠ **NOT TAKEN, and the objection is structural, not budgetary.** The table is *derived from revenue* — base = (OECD revenue % of GDP) / (seeded rate %) — so using it everywhere **except** revenue is using a revenue-derived number in the one place it was not derived for, and leaves the same tax with two different bases. It is also **downstream of route (b)**: if the basis question below resolves the other way, this route's premise disappears entirely |
+| **(b) a sourced case that our landing-year figure measures something other than what Ramey measures** | that the harness's denominator is not Ramey's | ✅ **TESTED AND TRUE — and it does not rescue D-2 (c). It opens something larger.** See below |
+
+#### ⚠ Route (b), MEASURED 2026-09-01 — and the finding is the opposite of a rescue
+
+`ResponsivenessAuditHarness` forms `multiplier = ΔGDP / −Δ(budget balance)`. Ramey (JEP 33(2), 2019)
+reviews **ΔY/ΔG** — output per unit of government *purchases*. These are not the same quantity, because
+`−Δbalance = ΔG − ΔRevenue` and the extra output raises revenue. Measured, Sweden, seed 777:
+
+| dial | impulse (balance) | impulse (G) | balance basis L / L+1 / L+4 | **purchases basis L / L+1 / L+4** |
+|---|---|---|---|---|
+| Spending +2 % | 2.267 | 2.695 | 0.603 / 0.850 / 0.959 | **0.507 / 0.715 / 0.807** |
+| Spending +10 % | 11.331 | 13.474 | 0.603 / 0.852 / 0.966 | **0.507 / 0.716 / 0.812** |
+| Spending −10 % | −11.338 | −13.471 | 0.603 / 0.850 / 0.959 | **0.507 / 0.715 / 0.807** |
+
+⚠ **On the purchases denominator the model's impact multiplier is 0.507 — below the 0.6–1.0 band — and
+that is true TODAY, with no per-country base table and nothing pending.** The impact horizon clears 0.6
+only because the denominator is 16 % smaller than the spending change.
+
+So route (b) is *established* and is **no help to D-2 (c) whatsoever**: it does not lift the model over the
+bar, it shows the bar has been measured on a flattering quantity. ⚠ **The ruling above is strengthened, not
+weakened, by its own escape route** — and the honest consequence is not a re-land of D-2 (c) but a new
+question about the rule itself, which is D-13.
+
+**What was done with the finding.** The other bases are now **printed by the audit harness beside its own,
+reported and never enforced** (`ResponsivenessAuditHarness`, second table). Enforcement stays on the basis
+the rule was pre-committed on. ⚠ **A denominator swapped after a gate rejected a change is moving the bar
+to pass; a denominator measured and printed beside the one in force is evidence.** It lives in the
+enforced instrument rather than in a side diagnostic, because §140's fifth sweep is exactly the lesson
+that a proven thing nothing calls is a hole — a standalone `SpendingImpulseBasisDiagnostic` was written,
+used to take the measurement, and **deleted** once the harness carried it.
+
+---
+
+### D-13 · Which denominator the spending constraint is enforced on ⚠ ELIAS'S — the rule is his
+
+**The question.** The pre-committed rule rejects any change that moves the spending multiplier outside
+Ramey's 0.6–1.0. **The band and the column it is enforced on are not the same quantity.** Which one is the
+constraint enforced on?
+
+#### ⚠ (d) was TAKEN FIRST, because it is the half that needs no ruling — and it changes the options
+
+The register's own precedent is that a citation recalled is an invented figure in a technical costume
+(D-2 (b), Riksbank WP 365). **So the paper was opened rather than recalled.** Ramey, *JEP* 33(2), Spring
+2019, `econweb.ucsd.edu/~vramey/research/Ramey_Fiscal_JEP.pdf`, fetched 2026-09-01 (HTTP 200, 808 KB) and
+text-extracted locally — ⚠ **no PDF reader on this machine**, so the streams were inflated directly and
+the sentences below are verbatim from that extraction:
+
+> *"For multipliers on general government **purchases** … The bulk of the estimates across the leading
+> methods of estimation and samples lie in a surprisingly narrow range of 0.6 to 1."*
+
+> *"…the present discounted value of the output response over time divided by the present discounted value
+> of the government spending response over time to the shock. In most applications, different interest
+> rates used for this present discounted value — including the use of a zero discount rate — give nearly
+> identical multipliers."*
+
+> *"…the quantities they calculated were not true dynamic multipliers; instead, Blanchard and Perotti
+> calculated multipliers as the ratio of the output response at a particular horizon, or at its peak, to
+> the impact effect of the shock on government spending."*
+
+⚠ **That is two mismatches, not one.** The band is over (i) government **purchases** as the denominator
+and (ii) a **cumulative** response, and the harness's enforced column is neither — it divides one horizon's
+output response by the change in the **actual budget balance**. Worse, the obvious "fix" — ΔGDP(h)/ΔG(L) —
+is the exact quantity Ramey attributes to Blanchard and Perotti and declines to call a true multiplier.
+
+**All three, now measured and printed by the harness** (Sweden, seed 777):
+
+| basis | L | L+1 | L+4 | comparable to Ramey's band? |
+|---|---|---|---|---|
+| **enforced** — ΔGDP(h) / −Δ(budget balance at L) | 0.603 | 0.850 | 0.966 | ⚠ **no** — no published family divides by the change in the actual balance |
+| quasi — ΔGDP(h) / ΔG(L) | 0.507 | 0.715 | 0.807 | ⚠ no — Ramey names this Blanchard–Perotti's and excludes it |
+| **cumulative** — ΣΔGDP / ΣΔG from L, undiscounted | **0.507** | **0.607** | **0.702** | ✅ **yes** |
+
+⚠ **THE MODEL ON THE COMPARABLE QUANTITY: 0.507 / 0.607 / 0.702 — below the band at impact, inside it from
+L+1 onward.** The zero discount rate is Ramey's own allowance, quoted above, not a convenience.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Nothing changes; all three printed, enforcement stays on the balance basis** | none — **this is what is in force** | ⚠ the model's Ramey-comparable impact multiplier stays **outside** the band it is nominally held to, visible in every run and enforced on nothing |
+| **b. Enforce on the CUMULATIVE column** | ⚠ **the model fails its own constraint at impact on day one** (0.507), and every fiscal item inherits an open failure | nothing permanently — but it converts a passing gate into a standing red, which is a decision about what the suite means |
+| **c. Enforce on the cumulative column at L+1 and L+4, report impact** | one item | ⚠ horizon-narrowing — the exact move D-9 (b) was refused for, one day earlier |
+| ~~**d. Open the paper and find what the band is actually a band on**~~ | ~~a sourcing item~~ | ✅ **DONE, above. It is the reason (b) and (c) now read the way they do.** |
+
+**Recommendation: (b), with (a) in force until Elias rules.** Basis: (d) has removed the ambiguity the
+other options were hedging against — there is now exactly one column comparable to the quoted band, and
+the model is outside it at one horizon of three. ⚠ **The honest consequence of a sourcing correction is
+sometimes a red suite**, and this project has taken that consequence twice already (the 100+ band at
+stage 2, the ratchet at stage 3). (c) is D-9's refused move wearing a new denominator. (a) is defensible
+only as a temporary state, and it is the state in force precisely so that nothing is enforced on a number
+Elias has not ruled on.
+
+⚠ **No enforcement option is taken.** This asks whether Elias's pre-committed rule is enforced on a
+different quantity than he pre-committed it on — the same class as D-9, and the same reason the run does
+not self-rule it. **What WAS taken, as a strikeable R-N1 call: the sourcing, and printing all three
+columns.** Neither moves a constant, neither changes an exit code, and both are reversible in one edit.
+
+> **To rule it, write:** `D-13 RULED: (b)` *(or a / c)*
 
 ---
 

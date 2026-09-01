@@ -9186,3 +9186,83 @@ it could not have filed it — `G:` was absent — but nothing in the process sa
 survived only because the next session was told where to look. **The rule this adds to C-G1's: a report
 is written into the repo or it is not written.** If the tree is unreachable, that is the first line of
 the report, not a detail discovered afterwards.
+
+## 144. D-9 RULED (a) — the constraint holds; and its own escape route opened a bigger hole (2026-09-01)
+
+**Elias, 2026-09-01:** *"Ramey's 0.6–1.0 is a band on the multiplier as a quantity, not on the horizons
+where a given change happens to bite. Relaxing it precisely where a proposed fix violates it is moving a
+bar to pass."* **D-2 (c) — the per-country tax base shares — stays reverted at all three horizons.**
+Option (b), narrowing the rule to L+1 and L+4 where the behaviour did not change, is refused explicitly as
+the same move spelled differently. The sourced table is kept in full in the register's D-9 sheet and is
+rebuildable in one item.
+
+The ruling also named **the two routes that remain legitimate** for the argument D-2 (c) was making, with
+the standing instruction: *if either is cheap to test, test it; do not adopt either without measurement.*
+
+### Route (a) — a mechanism with the same end and no cost to spending transmission: NOT TAKEN
+
+The shape would be the per-country table applied inside `HouseholdTaxBurdenShare` only, leaving
+`GetTotalTaxRevenue` on the uniform authored shares — differentiating the tax→consumption channel without
+moving the revenue path that the constraint's denominator reads. ⚠ **The objection is structural rather
+than budgetary: the table is *derived from revenue*** — base = (OECD revenue % of GDP) / (seeded rate %) —
+so applying it everywhere **except** revenue uses a revenue-derived number in the one place it was not
+derived for, and leaves one tax carrying two different bases. It is also downstream of route (b), whose
+result removes its premise. Recorded, not built.
+
+### Route (b) — is our landing-year figure Ramey's quantity? MEASURED, and it is not a rescue
+
+`ResponsivenessAuditHarness` forms `ΔGDP(h) / −Δ(budget balance at L)`. The budget balance moves by the
+spending change **net of the revenue that spending itself raised**, so the denominator is smaller than the
+spending change — 2.267 against 2.695 on the +2 % dial. ⚠ **On the purchases denominator the impact
+multiplier is 0.507, below Ramey's band, with no table pending and nothing proposed.** So route (b) is
+true and is no help at all: it does not lift the model over the bar, it shows the bar was read off a
+flattering quantity. **The ruling is strengthened by its own escape route.**
+
+### Then the paper was opened, and there were TWO mismatches
+
+D-2 (b) caught this register citing Riksbank WP 365 for an MPC it does not contain. The same discipline
+was applied to our own instrument: Ramey, *JEP* 33(2), Spring 2019, fetched 2026-09-01 (HTTP 200, 808 KB).
+⚠ **There is no PDF reader on this machine** — `pdftoppm` is absent and the fetch tool returned only
+compressed streams — so the PDF's Flate streams were inflated directly and the text reassembled. Verbatim:
+
+- *"For multipliers on general government **purchases** … The bulk of the estimates across the leading
+  methods of estimation and samples lie in a surprisingly narrow range of 0.6 to 1."*
+- *"…the present discounted value of the output response over time divided by the present discounted value
+  of the government spending response over time to the shock. In most applications, different interest
+  rates used for this present discounted value — including the use of a zero discount rate — give nearly
+  identical multipliers."*
+- *"…the quantities they calculated were not true dynamic multipliers; instead, Blanchard and Perotti
+  calculated multipliers as the ratio of the output response at a particular horizon, or at its peak, to
+  the impact effect of the shock on government spending."*
+
+⚠ **So the band is a band on a CUMULATIVE multiplier over government PURCHASES — and the obvious "fix",
+ΔGDP(h)/ΔG(L), is the quantity Ramey attributes to Blanchard and Perotti and declines to call a true
+multiplier.** Both the column in force and the naive correction are the wrong object.
+
+### All three, measured and now printed by the harness (Sweden, seed 777)
+
+| basis | L | L+1 | L+4 | comparable to the quoted band? |
+|---|---|---|---|---|
+| **enforced** — ΔGDP(h) / −Δ(budget balance at L) | 0.603 | 0.850 | 0.966 | ⚠ **no** — no published family divides by the change in the *actual* balance |
+| quasi — ΔGDP(h) / ΔG(L) | 0.507 | 0.715 | 0.807 | ⚠ no — named as Blanchard–Perotti's and excluded |
+| **cumulative** — ΣΔGDP / ΣΔG from L, undiscounted | **0.507** | **0.607** | **0.702** | ✅ **yes** |
+
+⚠ **THE MODEL ON THE COMPARABLE QUANTITY IS 0.507 / 0.607 / 0.702 — below the band at impact, inside it
+from L+1.** The zero discount rate is Ramey's own allowance, quoted above, not a convenience of ours.
+
+### What was taken and what was not
+
+**Taken, as a strikeable R-N1 call:** the sourcing, and printing all three columns in
+`ResponsivenessAuditHarness` beside the one in force, with the two verbatim quotes added to its
+`Literature` block. Neither moves a constant nor changes an exit code, and both revert in one edit.
+
+**Not taken:** enforcement. ⚠ **A denominator swapped after a gate rejected a change is moving the bar to
+pass; a denominator measured and printed beside the one in force is evidence.** Enforcing on the
+cumulative column would make the model **fail its own constraint at impact on day one** — a real decision
+about what the suite means, of exactly the class D-9 was, and the register carries it as **D-13** with (b)
+recommended and (a) in force until Elias rules.
+
+⚠ **The measurement lives in the enforced instrument, not beside it.** A standalone
+`SpendingImpulseBasisDiagnostic` was written, used to take the first reading, and **deleted** once the
+harness carried the columns — §140's fifth sweep is precisely the lesson that a proven thing nothing calls
+is a hole, and a second copy of a measurement is a second thing to keep true.

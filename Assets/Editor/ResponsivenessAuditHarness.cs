@@ -32,6 +32,24 @@ namespace PoliSim.EditorTools
     /// rates untouched. This is the standard "output response per unit of fiscal impulse" and is directly
     /// comparable with the literature quoted beside the table — it is not a bespoke index.</para>
     ///
+    /// <para>⚠ <b>THREE QUANTITIES, ONE ENFORCED (D-9 route (b) → D-13, 2026-09-01).</b> The impulse above
+    /// is <c>−Δ(budget balance)</c>: the spending change **net of the revenue that spending itself
+    /// raised** (2.267 against 2.695 on the +2 % dial). **Ramey's 0.6–1.0 is not a band on that.** Read at
+    /// the paper rather than recalled, it is stated over *"multipliers on general government PURCHASES"*
+    /// and over a **cumulative** quantity — *"the present discounted value of the output response over
+    /// time divided by the present discounted value of the government spending response over time"* —
+    /// while <c>ΔGDP(h)/ΔG(impact)</c> is the one Ramey attributes to Blanchard and Perotti and says
+    /// *"were not true dynamic multipliers"*. The second table therefore prints both of Ramey's
+    /// quantities beside the enforced one:</para>
+    ///
+    /// <para><b>enforced (balance) 0.603 / 0.850 / 0.966 · quasi 0.507 / 0.715 / 0.807 ·
+    /// CUMULATIVE 0.507 / 0.607 / 0.702.</b> ⚠ On the comparable column the model is **below the band at
+    /// impact and inside it from L+1**, and that is true today with nothing pending.</para>
+    ///
+    /// <para>The constraint stays enforced on the basis it was pre-committed on: **swapping a denominator
+    /// because a gate rejected a change is moving the bar to pass.** The other two are printed, never
+    /// enforced, and the rule question is Elias's — register D-13.</para>
+    ///
     /// <para>⚠ <b>The sourced values in <see cref="Literature"/> carry their citation and their vintage,
     /// and where a figure could not be read out of the source document it is marked as such rather than
     /// quoted.</b> The standing rule is that no figure is invented; a range nobody can check is an
@@ -61,6 +79,14 @@ namespace PoliSim.EditorTools
         {
             "SPENDING MULTIPLIER - Ramey, Journal of Economic Perspectives 33(2), Spring 2019, pp. 89-114:",
             "    the bulk of estimates for average spending multipliers lie in a narrow range of 0.6 to 1.0.",
+            "    ⚠ READ AT THE PAPER 2026-09-01, not recalled, and it narrows what the band covers. Verbatim:",
+            "    'For multipliers on general government PURCHASES ... The bulk of the estimates across the",
+            "    leading methods of estimation and samples lie in a surprisingly narrow range of 0.6 to 1.'",
+            "    And the quantity, verbatim: 'the present discounted value of the output response over time",
+            "    divided by the present discounted value of the government spending response over time to",
+            "    the shock', with 'a zero discount rate' giving 'nearly identical multipliers'. Ramey names",
+            "    dGDP(h)/dG(impact) as Blanchard-Perotti's and says those 'were not true dynamic multipliers'.",
+            "    ⚠ SO THE BAND IS A BAND ON THE CUMULATIVE COLUMN, not on the enforced one - see D-13.",
             "TAX - Romer & Romer, American Economic Review 100(3), June 2010, pp. 763-801:",
             "    an exogenous tax increase of 1% of GDP lowers real GDP by roughly 2 to 3 percent,",
             "    i.e. a tax multiplier of about -2 to -3 (their headline finding; 'much larger' than",
@@ -99,7 +125,8 @@ namespace PoliSim.EditorTools
             float[] baseBudget = new float[Years + 1];
             float[] baseUnemployment = new float[Years + 1];
             float[] baseInflation = new float[Years + 1];
-            RunCase(null, baseGdp, baseBudget, baseUnemployment, baseInflation);
+            float[] basePurchases = new float[Years + 1];
+            RunCase(null, baseGdp, baseBudget, baseUnemployment, baseInflation, basePurchases);
 
 
             var sb = new StringBuilder();
@@ -111,13 +138,16 @@ namespace PoliSim.EditorTools
             sb.Append("    ------------------------------------------------------------------------------------------------------------------------------\n");
 
             int deadDials = 0;
+            var ramey = new StringBuilder();
+            int rameyRows = 0;
             foreach (Dial dial in dials)
             {
                 float[] gdp = new float[Years + 1];
                 float[] budget = new float[Years + 1];
                 float[] unemployment = new float[Years + 1];
                 float[] inflation = new float[Years + 1];
-                RunCase(dial, gdp, budget, unemployment, inflation);
+                float[] purchases = new float[Years + 1];
+                RunCase(dial, gdp, budget, unemployment, inflation, purchases);
 
                 // ⚠ THE LANDING YEAR, not year 1. The first run of this harness reported an impulse of
                 // 0.00 for every dial and no multiplier at all - because a decision handed to
@@ -154,6 +184,45 @@ namespace PoliSim.EditorTools
                                    + "unpulled lever in it would be measuring the wrong model.");
                 }
 
+                // D-9 route (b), 2026-09-01. The impulse above is -Δ(budget balance), which is the
+                // spending change NET of every endogenous revenue response the spending change itself
+                // caused. Ramey reviews ΔY/ΔG - output per unit of government PURCHASES - so the two
+                // denominators are not the same quantity, and the gap is not small: measured here at
+                // 2.267 against 2.695 on the +2% dial, because the extra output raises revenue. The
+                // second basis is REPORTED, never enforced: the constraint stays on the basis it was
+                // pre-committed on, and swapping a denominator because a gate rejected a change would be
+                // moving the bar to pass. It is printed so the difference cannot go stale in a side
+                // diagnostic nobody runs - the fifth coherence sweep's own lesson.
+                if (dial.Kind == Kind.Spending)
+                {
+                    float purchaseImpulse = purchases[landing] - basePurchases[landing];
+                    if (Mathf.Abs(purchaseImpulse) > 1e-3f)
+                    {
+                        rameyRows++;
+
+                        // The CUMULATIVE (present-value) multiplier, which is the quantity Ramey's band
+                        // summarises: the discounted sum of the output response divided by the discounted
+                        // sum of the spending response, both taken from the landing year. Undiscounted,
+                        // on Ramey's own note that "different interest rates used for this present
+                        // discounted value - including the use of a zero discount rate - give nearly
+                        // identical multipliers".
+                        float cum1 = Cumulative(gdp, baseGdp, purchases, basePurchases, landing, landing);
+                        float cum2 = Cumulative(gdp, baseGdp, purchases, basePurchases, landing, h2);
+                        float cum5 = Cumulative(gdp, baseGdp, purchases, basePurchases, landing, h5);
+
+                        ramey.Append(F("    {0,-18} {1,10:F3} {2,10:F3} | {3,7:F3} {4,7:F3} {5,7:F3} | {6,7:F3} {7,7:F3} {8,7:F3}\n",
+                            dial.Name, impulse, purchaseImpulse,
+                            d1 / purchaseImpulse, d2 / purchaseImpulse, d5 / purchaseImpulse,
+                            cum1, cum2, cum5));
+                    }
+                    else
+                    {
+                        Debug.LogError($"C-C11: spending dial '{dial.Name}' moved discretionary spending by nothing at the "
+                                       + "landing year, so no purchases-basis multiplier can be formed and that row would "
+                                       + "have verified nothing.");
+                    }
+                }
+
                 // The implied OKUN coefficient: the unemployment move per one percent of output, at the
                 // longest horizon - directly comparable with Ball, Leigh & Loungani's country estimates
                 // quoted below, and computed here rather than by hand off the table.
@@ -166,6 +235,25 @@ namespace PoliSim.EditorTools
                     dial.Name, impulse, d1, d2, d5, m1, m2, m5,
                     unemployment[h5] - baseUnemployment[h5], inflation[h5] - baseInflation[h5], okun));
             }
+
+            sb.Append("\n    THE SPENDING DIALS ON RAMEY'S OWN QUANTITIES (D-9 route (b) / D-13; REPORTED, NOT ENFORCED)\n");
+            sb.Append("    ------------------------------------------------------------------------------------------\n");
+            sb.Append("    dial               impulse(bal) impulse(G) |  QUASI L   L+1     L+4 |   CUMULATIVE L   L+1     L+4\n");
+            sb.Append(ramey);
+            sb.Append(F("    Spending dials expressed on all three bases: {0} of {1}.\n", rameyRows, 3));
+            sb.Append("    QUASI      = dGDP(h) / dG(landing). Ramey names this Blanchard-Perotti's quantity and says the\n");
+            sb.Append("                 quantities they calculated 'were not true dynamic multipliers'.\n");
+            sb.Append("    CUMULATIVE = sum dGDP / sum dG from the landing year, undiscounted. THIS is what Ramey's band\n");
+            sb.Append("                 summarises: 'the present discounted value of the output response over time divided\n");
+            sb.Append("                 by the present discounted value of the government spending response over time'.\n");
+            sb.Append("    ⚠ THE FINDING (D-13, opened 2026-09-01 and sourced at the paper itself): the enforced column is\n");
+            sb.Append("    NONE of these three. It divides by the change in the ACTUAL budget balance, which is the spending\n");
+            sb.Append("    change NET of the revenue that spending raised - 2.267 against 2.695 on the +2% dial. Ramey's\n");
+            sb.Append("    0.6-1.0 is stated over 'multipliers on general government PURCHASES', so the band and the column\n");
+            sb.Append("    it is quoted beside are not the same quantity. The comparable column is CUMULATIVE.\n");
+            sb.Append("    NOTHING IS ENFORCED ON THE NEW COLUMNS. Swapping a denominator because a gate rejected a change\n");
+            sb.Append("    would be moving the bar to pass; measuring it and printing it beside the one in force is evidence.\n");
+            sb.Append("    WHICH BASIS THE CONSTRAINT IS ENFORCED ON IS A CHANGE TO THE RULE, AND THE RULE IS ELIAS'S.\n");
 
             sb.Append("\n    THE SOURCED COMPARISON\n    ----------------------\n");
             foreach (string line in Literature) { sb.Append("    ").Append(line).Append('\n'); }
@@ -182,7 +270,7 @@ namespace PoliSim.EditorTools
         /// <summary>One run of <see cref="Years"/> years with a single dial held, or the untouched
         /// baseline when <paramref name="dial"/> is null. ⚠ Tax targets are read off the country's own
         /// seeded rate and stepped, so no rate here is an authored number.</summary>
-        private static void RunCase(Dial? dial, float[] gdp, float[] budget, float[] unemployment, float[] inflation)
+        private static void RunCase(Dial? dial, float[] gdp, float[] budget, float[] unemployment, float[] inflation, float[] purchases)
         {
             SimulationRandom.Seed(Seed);
             var go = new GameObject("C-C11 CASE");
@@ -219,6 +307,16 @@ namespace PoliSim.EditorTools
                     budget[year] = subject.State.Budget;
                     unemployment[year] = subject.State.Unemployment;
                     inflation[year] = subject.State.Inflation;
+
+                    // G as the national accounts identity spends it: the DISCRETIONARY lines' sum, which
+                    // is what SpendingLine's own doc names as G for a country with a detailed portfolio.
+                    float discretionary = 0f;
+                    foreach (SpendingLine line in subject.SpendingLines)
+                    {
+                        if (!line.IsMandatory) { discretionary += line.Amount; }
+                    }
+
+                    purchases[year] = discretionary;
                 }
             }
             finally
@@ -252,6 +350,23 @@ namespace PoliSim.EditorTools
             }
 
             return decision;
+        }
+
+        /// <summary>The cumulative (present-value, zero-discount) multiplier between the landing year and
+        /// <paramref name="horizon"/> inclusive: the summed output response over the summed spending
+        /// response. Returns 0 when the summed spending response is nothing, which the caller has already
+        /// excluded by testing the landing-year impulse.</summary>
+        private static float Cumulative(float[] gdp, float[] baseGdp, float[] purchases, float[] basePurchases, int landing, int horizon)
+        {
+            float outputSum = 0f;
+            float spendingSum = 0f;
+            for (int y = landing; y <= horizon; y++)
+            {
+                outputSum += gdp[y] - baseGdp[y];
+                spendingSum += purchases[y] - basePurchases[y];
+            }
+
+            return Mathf.Abs(spendingSum) > 1e-6f ? outputSum / spendingSum : 0f;
         }
 
         private static string F(string format, params object[] args)
