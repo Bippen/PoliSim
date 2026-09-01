@@ -10729,3 +10729,41 @@ write about a deletion, and it is the sentence that keeps X alive to every name 
 now describe rather than spell.
 
 **Ceiling lowered 2 → 0. Bar 23 of 24, residue 20.**
+
+## 171. S-22 RECORDED UNDECIDABLE — with the boundary measured rather than asserted (2026-09-01)
+
+`DrawTimeRangeRow`'s doc said *"bounded ranges filter on real elapsed time, so a monthly stat and a
+quarterly one both show the same calendar span."* **Nothing filtered.** The finding was never the dead
+code; it was that **no instrument in this repo can read a PROSE claim about behaviour**, which is the
+larger half of what a comment asserts. `CommentClaimCheck` verifies backticked `Type.Member` references —
+the smaller half.
+
+⚠ **"Undecidable" is the answer a session reaches for when an item is hard, so it is not accepted here
+without a measurement.**
+
+### What was measured before recording it
+
+- **The evidence-claim slice**, which looked most promising: doc comments that name the instrument
+  verifying them (*"`ChainBandHarness` asserts it"*). If that population were large, a check could verify
+  the instrument exists and is registered. ⚠ **It is SEVEN claims across the whole runtime tree**, of which
+  **two** name an instrument in backticked form — and those two are already covered by
+  `CommentClaimCheck`, which resolves backticked references. **There is no unbuilt decidable slice of any
+  size here.**
+- **The S-22 instance's actual cause** was not the prose. `_timeRange` was set and read **inside a selector
+  that was never drawn** — a REACHABILITY fact, and `DeadStateCheck` and `PlayerReachabilityCheck` both own
+  that ground. The false sentence was a symptom of unreachable code, and the unreachable code is guarded.
+
+### ⚠ S-38, the standing habit — because the undecidable half can be made smaller by how we write
+
+**A prose claim about behaviour should name the instrument that checks it.** *"Bounded ranges filter on
+real elapsed time"* is unverifiable by construction; *"bounded ranges filter on real elapsed time —
+`StatHistoryHarness` asserts it"* is verifiable at the level a machine can reach, because
+`CommentClaimCheck` resolves the reference and `EvidenceDiscriminationCheck` requires the named instrument
+to be able to fail.
+
+⚠ **This does not make the claim true — it makes the claim ACCOUNTABLE**, which is the most any convention
+can do about prose. The general class stays undecidable and is recorded as such: **a sentence asserting
+what code does cannot be checked against the code by any instrument this project can build short of a
+prover.** What is now bounded is how far that ignorance reaches — the population is seven, the adjacent
+reachability guards cover the one instance that produced the finding, and new claims have a form that puts
+them in the decidable half.
