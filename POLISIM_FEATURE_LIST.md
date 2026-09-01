@@ -303,6 +303,7 @@ In order of what a player would notice first:
   each named there with what would source it. **Elias's to source, never to invent**; a `[GAP]` stays a
   gap until a citation lands beside it.
 - **The 20 play-calibration entries** — the list is `COMPLETED.md` §189 (retired 2026-09-02 as a record);
+- **A 21st play-calibration entry, from D-20 (2026-09-02)** — until the `Newsworthiness` table is re-authored on its attention-share meaning, cheap newsworthy acts (a social post, a town hall) are a known exploit: their press coverage persuades several times the act itself. The AI does not see it; a player will.
   every entry is a number awaiting a loop to judge it against, which is F6's done-when.
 - **`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves. ⚠ **Blocks F3's
   per-group loyalty**, which is otherwise complete.

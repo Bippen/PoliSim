@@ -18581,3 +18581,38 @@ for the five, SCB for Sweden, nothing identified for the USA — and is not buil
 
 **Bars:** simulation 9 of 9 (`AggregationEquivalenceCheck`, `LeverLivenessCheck`, both cohort diagnostics
 among them); cheap bar 25 of 25.
+
+## 196. C-N7 MEASURED AND NOT LANDED — teaching the AI to value coverage exposed C-N1's magnitude, and that is a ruling (2026-09-02)
+
+**The item.** C-N1 (§194) made earned coverage reach the vote; the AI's expected value still scored only
+the action's own §42 chain and (C-N2) its turnout, so the news an action makes was invisible to it — the
+same shape as C-N2's blind spot. The build was the same shape too: nothing authored. `AiView.PressReach`
+(the roster's reach summed, capped at 1 — a public fact like `BestOutletReach`), and in `Score` this
+action's raw newsworthiness under the party's strategy, through the saturating gain as if it were the
+day's only news (a first-order upper bound the personality's optimism already shades), resolved through
+the very spec the run uses (the interview's, verbatim) on the press's reach with the party's general
+message as measured, in the points `Points()` already gives.
+
+**What it measured.** `CampaignAiHarness` (seed 777): the populist's mix falls from L1 0.411 to **0.241**
+against its nearest personality — assertion 2a-ii (≥ 0.30) FAILS; the grassroots parties' door-to-door
+days go **23 → 4 and 26 → 5**, their social posts 53 → 91 and 42 → 87; every rational personality converges
+on cheap newsworthy acts. `VoteAttributionHarness` still holds its identity; the other nine harnesses
+green. **The AI was right.** Under C-N1's magnitudes the press's account of a cheap action persuades
+several times the action itself — a rally's coverage 5×, a town hall's 3–27× by region size, a social
+post's 3× — because the `[AUTHORED-DRAFT]` `Newsworthiness` table was drafted for momentum (a relative
+scale, harmless while momentum reached only the poll) and C-N1 gave the same figures a second meaning:
+the share of the electorate the press carries the party to. The derivation, kind by kind, is D-20's table.
+
+**Why nothing lands.** A magnitude that makes a harness pass would be a figure invented for that
+purpose; re-authoring the eight newsworthiness figures on their new meaning is Elias's to type or source.
+D-20 is written, (c) taken for the code — C-N7's edits reverted, the coverage layer left as C-N1 built it
+(a peer line at the ledger, because the AIs' actual mix is interview-heavy and an interview's coverage is
+0.4 of itself) — and (a) is the ruling sought, strikeable. ⚠ **Until it is ruled the campaign has a known
+exploit: cheap newsworthy acts.** A human player will find it before the AI does; that sentence goes
+to the play-calibration list.
+
+**Housekeeping.** The row was opened at C-N1 as "C-N3" in the commit message and the record; the register
+already had C-N3 through C-N6, so the row is **C-N7**. The instrument that caught this is the harness
+W-C1 built to keep the personalities distinct — a done-when doing the work of a guard.
+
+**Bar 25 of 25** (documents only; no code changes remain in the tree).
