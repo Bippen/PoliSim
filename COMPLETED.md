@@ -11079,3 +11079,48 @@ national number 29 times passes everything else) and **does it RECONCILE** — a
 `RatchetSlackCheck` demanded the ceiling come down in the same run. **Bar 25 of 25.**
 
 **Step 4 — board 1h reachable from a player path, filmed — is the remainder.**
+
+## 179. F1 STEP 4 — board 1h has a door, and the ratchet written for it reads ZERO (2026-09-01)
+
+`ElectionNightScreen` was built, filmed at four widths, and recorded as delivered **while nothing in the
+game could open it**. `PlayerReachabilityCheck` was written for exactly that and had been reporting it
+since — a ratchet at 1, naming the screen.
+
+⚠ **The screen was never the problem.** Its per-constituency numbers did not exist at runtime, because the
+data they come from lived outside `Assets/`. F1 steps 1–3 produced the numbers; this is the door.
+
+- **`ElectionNightFromModel`** turns the live prediction into a night. ⚠ **The votes are the MODEL's,
+  converted ONCE** — a region's count is its predicted share times its own valid-vote weight — so the
+  night's arithmetic and the headline come from a single computation. **Two independent paths to the same
+  number is how a screen and a result start disagreeing**, which is the failure F1 names by name.
+- ⚠ **`valid` is what was actually cast, not the weight it came from.** Using the weight would make the
+  shares reconcile *by construction* and hide the rounding residue — **a number that agrees because it was
+  told to is not evidence.**
+- ⚠ **Declaration ORDER is a presentation choice and says so.** Real constituencies declare when their
+  count finishes — staffing, geography, postal volume, none of which this model has. *Smaller electorates
+  finish sooner* is the one honest regularity available. **It is not offered as a forecast of timing.**
+- ⚠ **The board opens only where there is a real count.** Sweden has regions wired; the other five do not,
+  and for them the night is **not shown at all rather than shown empty**. An empty election night is a
+  screen saying something false about the model — that it ran and found nothing — and it would look exactly
+  like a working one.
+
+### ⚠ And the write-only classifier caught the half I had not written
+
+`DeadStateCheck` reported `_electionNight` **WRITE-ONLY the moment the field was added**: the board was
+stored and never read, because the dismissal did not exist. **A takeover with no exit is not a reachable
+screen, it is a trap** — so the field being unread was precisely the bug, not a style complaint. The night
+is opened by the election that produced it and closed by the next turn the player takes.
+
+⚠ **That is the S-23 work from §168 paying for itself inside one day**, on a defect introduced after it was
+built — which is the only kind of evidence that a guard was worth having.
+
+**`PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` 1 → 0. `UnwiredSubsystemCheck.UNREACHABLE` 6 → 4 across
+F1** (`RegionalVoteModel` at step 2, `ElectionNightScreen` at step 4), each ceiling lowered in the run that
+earned it, `RatchetSlackCheck` demanding both.
+
+**Bar 25 of 25, 9 of 9 simulation, the regional diagnostic green — SD spread 21.42 %, reconciliation
+0.0109 %.**
+
+⚠ **What remains of F1: the film.** The board is reachable and the count is real; a capture pass at
+1280/2560 with `MetaTextCheck` and the edge guards silent is the last proof, and it is a wall-clock run
+rather than a question.

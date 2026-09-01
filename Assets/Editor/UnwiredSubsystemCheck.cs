@@ -71,7 +71,7 @@ namespace PoliSim.EditorTools
         /// may rise when the INSTRUMENT is corrected and the correction is written down — never because
         /// the backlog grew, and never to make a run pass.</para>
         /// </summary>
-        private const int UnreachableCeiling = 5;
+        private const int UnreachableCeiling = 4;
 
         /// <summary>A `public static` method declaration. Instance methods are excluded: they need an
         /// object, and tracing who constructs it is beyond what a name scan can honestly claim.</summary>

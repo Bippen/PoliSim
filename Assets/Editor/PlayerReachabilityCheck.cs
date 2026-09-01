@@ -39,7 +39,7 @@ namespace PoliSim.EditorTools
     public static class PlayerReachabilityCheck
     {
         /// <summary>
-        /// ⚠ **A RATCHET at 1, measured 2026-09-01: `ElectionNightScreen`.**
+        /// ✅ **A RATCHET at ZERO since 2026-09-01 (F1 step 4).** It stood at 1 for `ElectionNightScreen` — board 1h, built, filmed at four widths and recorded as delivered while nothing in the game could open it. ⚠ **The screen was never the problem**: its per-constituency numbers did not exist at runtime, because the data they come from lived outside `Assets/`. `GameController.ShowElectionNight` is the door, and it opens only when there is a real count to put behind it.
         ///
         /// <para>It is not wired in the commit that armed this check, and the reason is a dependency
         /// rather than a missing wire: **board 1h needs a per-constituency count, and the live election
@@ -52,7 +52,7 @@ namespace PoliSim.EditorTools
         /// naming the type in `GameController` without a path — that would satisfy the scan and not the
         /// rule, which is the failure mode this whole audit exists for.</para>
         /// </summary>
-        private const int UnreachableTakeoverCeiling = 1;
+        private const int UnreachableTakeoverCeiling = 0;
 
         private static readonly Regex PublicType = new Regex(
             @"^\s*public\s+(?:(?:sealed|abstract|static|partial|readonly|unsafe)\s+)*(?:class|struct)\s+([A-Za-z_][A-Za-z0-9_]*)");

@@ -110,6 +110,12 @@ namespace PoliSim.Elections
             return prior;
         }
 
+        /// <summary>A valkrets' eligible electorate — how many people COULD vote there, which is what an
+        /// election night's outstanding-votes figure is measured against. ⚠ Distinct from the weight, which
+        /// is what was actually cast: the difference is turnout, and conflating them would make a night
+        /// report every constituency as fully counted the moment it declared.</summary>
+        public static long EligibleAt(int region) => SwedishValkretsReturns2022.Eligible[region];
+
         /// <summary>Where each requested party sits in the catalog's column order, or -1.</summary>
         private static int[] MapColumns(IReadOnlyList<string> partyKeys)
         {

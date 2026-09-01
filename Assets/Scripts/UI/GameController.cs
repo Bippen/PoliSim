@@ -1285,6 +1285,12 @@ namespace PoliSim.UI
         private bool _canvasSelectorFailed;
         private CountrySelectorScreen _countrySelector;
 
+        /// <summary>Board 1h while it is on screen, or null. ⚠ **F1 step 4 (2026-09-01): this field is
+        /// the player path that did not exist.** The board was built, filmed at four widths and recorded
+        /// as delivered while nothing in the game could open it - `PlayerReachabilityCheck` was written
+        /// for exactly this and has been reporting it since.</summary>
+        private ElectionNightScreen _electionNight;
+
         private const float CanvasCoverSeconds = 0.18f;
         private const float CanvasRevealSeconds = 0.24f;
 
@@ -4874,6 +4880,18 @@ namespace PoliSim.UI
 
         private void AdvanceTurn()
         {
+            // ⚠ F1 step 4: THE NIGHT IS DISMISSED WHEN THE PLAYER MOVES ON. A takeover with no exit is
+            // not a reachable screen, it is a trap - and `DeadStateCheck` said so, reporting the field
+            // that holds it as WRITE-ONLY the moment it was added. The board is shown by the election
+            // that produced it and closed by the next turn the player takes, which is the whole
+            // lifecycle it needs.
+            if (_electionNight != null)
+            {
+                if (_electionNight.Root != null) { Destroy(_electionNight.Root); }
+                _electionNight = null;
+                PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+            }
+
             var decisions = new Dictionary<CountryId, PolicyDecision>();
             foreach (Country country in _world.Countries)
             {
@@ -5098,6 +5116,7 @@ namespace PoliSim.UI
             // beside it rather than pretending to replace it. Named in W-G1's records as the first
             // question for the item after this one.
             RunNationalElection();
+            ShowElectionNight();
         }
 
         /// <summary>
@@ -5108,6 +5127,54 @@ namespace PoliSim.UI
         /// record carries the reason in plain English and **the chamber is left exactly as it was**,
         /// which is the honest outcome rather than a plausible-looking one.
         /// </summary>
+        /// <summary>
+        /// **F1 step 4: board 1h, opened from the running game.**
+        ///
+        /// <para>⚠ It was built, filmed at four widths and recorded as delivered while **nothing in the
+        /// game could reach it** - the defect `PlayerReachabilityCheck` exists for. The reason was never
+        /// the screen: the per-constituency numbers did not exist at runtime, because the data they come
+        /// from lived outside `Assets/`. F1 steps 1-3 fixed that, and this is the door.</para>
+        ///
+        /// <para>⚠ **The board is only opened when there is a real count to put in it.** Sweden has
+        /// regions wired; the other five do not, and for them the night is not shown at all rather than
+        /// shown empty. **An empty election night is a screen saying something false about the model** -
+        /// that it ran and found nothing - and it would look exactly like a working one.</para>
+        ///
+        /// <para>Guarded the way the country selector is, for the reason recorded there: a THROWING screen
+        /// builder is worse than a null one, so any failure of any kind degrades ONCE into no board.</para>
+        /// </summary>
+        private void ShowElectionNight()
+        {
+            if (!ElectionNightFromModel.Available(PlayerCountryId)) { return; }
+
+            IReadOnlyList<PoliticalParty> parties = PartySystems.For(PlayerCountryId);
+            var keys = new List<string>();
+            foreach (PoliticalParty party in parties)
+            {
+                // The same restriction the prediction made: a party with no published position took no
+                // share, so it has no count to declare either. Drawing it at zero would be a claim.
+                if (party.HasPosition) { keys.Add(party.Abbrev); }
+            }
+
+            try
+            {
+                NightState state = ElectionNightFromModel.At(
+                    ElectionNightFromModel.FinalMinute, PlayerCountryId, keys,
+                    _playerCountry.ParliamentSeats.Count > 0 ? 349 : 349, 0.04);
+                if (state == null) { return; }
+
+                PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                _electionNight = ElectionNightScreen.Build(
+                    state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
+                    System.DateTime.Now, 349);
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"CANVAS: election-night build THREW ({e.GetType().Name}: {e.Message}) - the night is not shown.");
+                _electionNight = null;
+            }
+        }
+
         private void RunNationalElection()
         {
             if (!NationalElection.TryPredictShares(PlayerCountryId, out Dictionary<string, double> shareByParty))
