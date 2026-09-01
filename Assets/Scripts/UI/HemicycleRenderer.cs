@@ -122,6 +122,7 @@ namespace PoliSim.UI
             GUI.color = previousColor;
 
             GUILayout.Space(4f);
+            bool anyUnsourced = false;
             for (int i = 0; i < order.Count; i++)
             {
                 PoliticalParty party = order[i];
@@ -164,8 +165,31 @@ namespace PoliSim.UI
                 //
                 // Untinted (the emblems are already coloured) and null-safe: a missing file simply leaves
                 // the swatch, which is what this legend has always drawn.
+                // D9 ROW 3, delivered 2026-08-31 and built 2026-09-01: **a party with no published
+                // colour draws its absence rather than a fill.** `PoliSimTheme.Party` already returns the
+                // neutral register ink for the forty-five parties with no sourced hue, and
+                // `HasPartyInk` already existed to tell a caller which case it is — ⚠ **and had no caller
+                // anywhere in the game**, so the neutral read exactly like a chosen grey. Design's
+                // ruling: *"the legend carries the same honesty chip this game already uses for
+                // PRELIMINARY/FINAL and for withheld swings: the absence is drawn, not filled."*
+                //
+                // Drawn-not-filled = a hairline box in the neutral register ink. It is the cheapest form
+                // of the channel the withheld swing and the unpolled valkrets already use, it costs no
+                // width in a row that has none to give, and it needs no sprite — the mark vocabulary
+                // that will carry identity properly is Design's next batch, not this build.
+                bool inkIsSourced = PoliSimTheme.HasPartyInk(country, party.Abbrev);
+                anyUnsourced |= !inkIsSourced;
+
                 GUI.color = PoliSimTheme.Party(country, party.Abbrev);
-                GUI.DrawTexture(swatchRect, Texture2D.whiteTexture);
+                if (inkIsSourced)
+                {
+                    GUI.DrawTexture(swatchRect, Texture2D.whiteTexture);
+                }
+                else
+                {
+                    DrawHairlineBox(swatchRect);
+                }
+
                 GUI.color = previousColor;
 
                 // W-G1: a real party's MARK, not a fictional archetype's emblem. Null for 52 of the
@@ -206,6 +230,40 @@ namespace PoliSim.UI
                     labelStyle);
                 GUILayout.EndHorizontal();
             }
+
+            // D9 row 3's second half: one caption for the legend, not a chip per row. Design's board
+            // draws the absence once beneath the group ("COLOUR UNSOURCED — MARKS DIFFER, INK DOES NOT"),
+            // and a legend of eight rows has no width for eight chips. ⚠ It says what is missing and does
+            // NOT apologise for the grey: the hairline boxes above are the reading, this names it.
+            if (anyUnsourced)
+            {
+                var caption = new GUIStyle(labelStyle)
+                {
+                    fontSize = Mathf.Max(9, Mathf.RoundToInt(labelStyle.fontSize * 0.72f)),
+                    wordWrap = false
+                };
+                caption.normal.textColor = PoliSimTheme.TextMuted;
+                caption.hover.textColor = PoliSimTheme.TextMuted;
+                caption.active.textColor = PoliSimTheme.TextMuted;
+                caption.focused.textColor = PoliSimTheme.TextMuted;
+                GUILayout.Space(2f);
+                GUILayout.Label("Outlined swatch: no published colour for this party", caption);
+            }
+        }
+
+        /// <summary>
+        /// A one-pixel box in the current `GUI.color`, drawn as four rects — the "drawn, not filled"
+        /// form D9 row 3 rules for a party whose colour is not sourced. ⚠ Deliberately not a `GUIStyle`
+        /// border: this has to sit inside a swatch rect that is `fontSize` square at the smallest window,
+        /// where a 9-slice's own insets would eat the whole mark.
+        /// </summary>
+        private static void DrawHairlineBox(Rect r)
+        {
+            const float t = 1f;
+            GUI.DrawTexture(new Rect(r.x, r.y, r.width, t), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(r.x, r.yMax - t, r.width, t), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(r.x, r.y, t, r.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(r.xMax - t, r.y, t, r.height), Texture2D.whiteTexture);
         }
 
         /// <summary>Point on a half-circle arc above <paramref name="baseline"/> - angleDegrees 180 = far left, 90 = top, 0 = far right. Same cos/sin-around-a-center math PolicyWebRenderer.PointOnCircle uses for its own full-circle node placement, just negated on Y (IMGUI's Y grows downward, so seats need to arc UPWARD from the baseline) and restricted to a 180-degree sweep instead of 360.</summary>

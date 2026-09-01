@@ -9324,3 +9324,95 @@ still a number that was wrong**, and the direction it happens to point is not a 
 
 **Reported, never enforced**, exactly as D-13's columns are. No constant moved; the harness has no code
 path that could move one.
+
+## 146. D9 WAS SENT, AND ANSWERED IN FULL — the repo was wrong about that for a day (2026-09-01)
+
+C-F1 (§121) built the one live Design ask, D9, eleven rows, and recorded of the earlier D7 package:
+*"the honest reading is that the paste was never made."* ⚠ **That was true of D7 and false of D9**, and
+nothing in this repo could tell the difference because nobody had looked at the far side.
+
+### The receipt, verified rather than assumed
+
+| artifact | expected | found in the Design project |
+|---|---|---|
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 77 510 bytes, `347e3be8…` | `uploads/CLAUDE_DESIGN_ASSET_REQUEST-347e3be8.md` — **readback hashes to `347e3be8…` at 77 510 bytes** |
+| `CLAUDE_DESIGN_BOARD_1I_NOTE.md` | 12 077 bytes, `948fd2a6…` | `uploads/CLAUDE_DESIGN_BOARD_1I_NOTE-948fd2a6.md` — present at its digest, read and matching |
+| the D7-era package | `85690abf…` | ⚠ **absent.** P-F2 stands, narrowed to D7 |
+
+⚠ **AND THE PACKAGE'S OWN GLANCE INSTRUCTION WAS WRONG.** It published the digest as *"(as on disk,
+CRLF)"* and warned that *"an LF-normalized readback hashes differently"*. **The working copy is LF**: the
+LF form of the readback hashes to `347e3be8…` and the CRLF form to `05ae6eb4…`. Following the instruction
+would have made a **correct** readback look like a failed paste — the same class of defect as the stale
+digest that instruction replaced. Fixed in the regenerated package.
+
+### All eleven rows are answered — on `PoliSim v2 Screens.dc.html`
+
+Board **2b** (row 1, the Policy Web as a loom), board **3a** (rows 2–5, the mark VOCABULARY plus three
+ink rulings), and an answers card (rows 6–11). ⚠ **Read through `get_file`, which caps at 256 KiB**: the
+board is 266 KB, so the tail — the v2-era boards 1a–1l, drawn 2026-08-10 and long since built — was
+truncated. **Everything new is above the cut and was read in full**; that is stated rather than discovered
+later.
+
+### What was built from it, today
+
+**Row 3 — a party with no published colour draws its absence.** Design: *"the legend carries the same
+honesty chip this game already uses for PRELIMINARY/FINAL and for withheld swings: the absence is drawn,
+not filled."* ⚠ **`PoliSimTheme.HasPartyInk` has existed since W-G1 and had NO CALLER anywhere in the
+game** — the neutral it returns for forty-five parties read exactly like a chosen grey. It has one now:
+`HemicycleRenderer` draws a **hairline box** instead of a fill for an unsourced party and one caption
+beneath the legend naming the absence. Filmed at 1280: `d9r3_07a_politics_parliament.png` — the two US
+parties outlined, the caption legible, 81 captured / 0 failed.
+
+⚠ **Sweden's films cannot move, by construction rather than by hope**: all eight Swedish parties are
+sourced, so the flag is false and every draw call is the one that was there before. The other five
+countries change, which is the point.
+
+**Stated adaptation:** the board's caption is set in caps as *"COLOUR UNSOURCED"*; ours reads *"Outlined
+swatch: no published colour for this party"* in the game's own sentence-case caption idiom. The channel
+is the board's; the voice is the game's.
+
+**Rows 4 and 5 — the hue floor was the WRONG CONSTRAINT, and the PENDs are ANSWERED, not fixed.**
+`PartyInkHarness` (C-B2) found six of eight party inks sitting closer to an area accent than two area
+accents sit to each other, and S and V collapsing onto one ink — reported as PEND against the derived
+8.7° floor. Design: the floor *"was derived to keep two AREA accents apart — chrome semantics that sit
+side by side in one rail, one masthead, one tab strip. Party inks never appear in that company"*, so it
+**binds within a channel, not across them**. ⚠ **The measurements stay printed because they are still
+true; what changed is that they are no longer a debt — and they were never closed by moving the floor.**
+What replaces the floor is structural and the harness cannot see it: party ink is never drawn adjacent to
+an area accent, and a party swatch forced into chrome draws in the neutral status ink. Recorded as
+**S-29**, a draw-site assertion, sized rather than smuggled into a hue test.
+
+### The return, and one correction Design will want
+
+**Row 6 asked for two things and both premises are wrong**, so the return corrects them:
+
+- ⚠ **The mandate column is not in `valkrets_votes_2022.csv`.** The file carries `eligible`; the 310 fixed
+  seats are DERIVED from it by the statute's own rule. `ValkretsMandateColumnDiagnostic` emits the column
+  from `SeatConversion.FixedSeatsPerRegion` — the shipping allocator, not a transcription — and it **sums
+  to exactly 310**, which the diagnostic asserts rather than assumes. Stockholms län 40, Stockholms
+  kommun 29, Göteborg 17, Gotland 2, Jämtland 4.
+- ⚠ **`SwingRegions.cs` holds no cell order and no geometry.** It takes a name and a weight per region
+  from its caller. **There is no built cartogram for a board to disagree with**, so the north-to-south
+  arrangement Design was afraid of contradicting does not exist to contradict. The order the harnesses use
+  is the CSV's row order = Valmyndigheten's numbering 01–29, which is a numbering and not a geography.
+
+**Row 9** asked for *"one crop of any two"* delivered stat icons. Two whole files are sent instead, with
+digests — a crop can mislead about a baseline convention and the files cannot.
+
+⚠ **Nothing was uploaded.** The E2 convention is unchanged and explicit: **sending is Elias's.** The
+package is prepared and waits, as every package here does.
+
+### The lesson
+
+⚠ **A one-way ask has no receipt unless somebody reads the far side**, and this repo had built an entire
+finding — P-F2 — on the absence of one. The finding was correct about D7 and was quietly generalised.
+**The far side was one `list_files` away for three days.**
+
+### ⚠ A discrepancy found while re-running the harness, and NOT resolved here
+
+`PartyInkHarness` prints **7** party inks measured inside the derived 8.7° floor. **§138, the register
+and Design's own board all say SIX of eight.** Nothing in this commit touched the counting — only the
+wording around it — so the disagreement is **pre-existing and older than the ruling**. It is recorded
+rather than adjusted: a count nobody has reconciled is not made true by rewriting the sentence beside it,
+and the likely candidate (C at exactly the floor, where `>=` decides it) is a guess until somebody reads
+the per-row output. **Opened as a finding, not fixed in an item that was not about it.**

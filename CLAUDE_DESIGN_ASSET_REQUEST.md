@@ -1,6 +1,24 @@
 # Claude Design asset request — PoliSim
 
-**Status — ONE LIVE ASK (2026-08-30): the ELEVENTH request — D8, "the elections track, drawn" (§3 below): 52 party marks of 53 undrawn (the seven remaining SWEDISH ones are what 13 September needs), a ruling on party colours for five countries with no published table, a drawn valkrets map, election night's paper, the verdict stamp, and one design question (modal or stage for the debate). NOTHING IN IT BLOCKS A SCREEN — all eight elections screens are built, filmed at four widths with the guards silent, and every gap degrades gracefully and says so on the sheet. The TENTH request — D7, board 2b, "the
+## ✅ STATUS 2026-09-01 — **D9 WAS SENT, AND ANSWERED IN FULL. NO ASK IS LIVE.**
+
+⚠ **Verified, not assumed** (`COMPLETED.md` §146): this document reached Design as
+`uploads/CLAUDE_DESIGN_ASSET_REQUEST-347e3be8.md` and **reads back at 77 510 bytes / `347e3be8…`** — the
+package's own glance, passed. **All eleven D9 rows are answered** on `PoliSim v2 Screens.dc.html`: board
+**2b** (row 1), board **3a** (rows 2–5 — the mark VOCABULARY, five silhouettes × four cuts × two fills,
+plus three ink rulings), and an answers card (**rows 6–11**).
+
+**What that leaves is a RETURN, not an ask** — see `SEND_PACKAGE.md`: the derived mandate column and the
+correction that no built cartogram exists (row 6), two whole stat-icon files instead of a crop (row 9),
+and **Elias's one word on the seven Swedish marks** (row 2). ⚠ **The digest above is this file as it stood
+when it was pasted; this header is appended after, so the file no longer hashes to it.** The receipt is
+the `uploads/` copy, which does not change.
+
+**Everything below is the record of how each row arrived, kept and superseded — nothing withdrawn.**
+
+---
+
+**Status — ~~ONE LIVE ASK~~ ANSWERED (2026-08-30): the ELEVENTH request — D8, "the elections track, drawn" (§3 below): 52 party marks of 53 undrawn (the seven remaining SWEDISH ones are what 13 September needs), a ruling on party colours for five countries with no published table, a drawn valkrets map, election night's paper, the verdict stamp, and one design question (modal or stage for the debate). NOTHING IN IT BLOCKS A SCREEN — all eight elections screens are built, filmed at four widths with the guards silent, and every gap degrades gracefully and says so on the sheet. The TENTH request — D7, board 2b, "the
 Policy Web, drawn to be read" (§2 below, drawn against Annex G's measurements; it reaches you
 with the next §S paste).** The ninth request — UI v3.1, "one frame, denser, instruments" — was
 answered in full the evening it was sent (boards 1n-r2, 1m-r2 and 2a, the D4 density token table

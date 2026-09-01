@@ -123,6 +123,17 @@ namespace PoliSim.EditorTools
                     // replacement by eye, which is the invention D8-2 exists to avoid. So it is a
                     // PEND carrying its measurement, and the ruling is Design's. The harness stays
                     // able to go red for what IS ours: the export disagreeing with the theme.
+                    //
+                    // ⚠ D9 ROW 5, RULED BY DESIGN AND READ 2026-09-01: **the floor was the wrong
+                    // constraint, so these PENDs are ANSWERED rather than fixed.** Design's words: the
+                    // 8.7 deg floor "was derived to keep two AREA accents apart - chrome semantics that
+                    // sit side by side in one rail, one masthead, one tab strip. Party inks never appear
+                    // in that company", so "the floor binds within a channel, not across them". The
+                    // measurement below stays printed because it is TRUE; what changes is that it is no
+                    // longer a debt. What replaces it is structural and this harness cannot see it:
+                    // (1) party ink is never drawn adjacent to an area accent, and (3) a party swatch
+                    // forced into chrome draws in the neutral status ink. That is a DRAW-SITE assertion,
+                    // sized as its own row rather than smuggled in here as a hue test.
                     bool ok = nearest >= floorDeg;
                     if (!ok) { pending++; }
 
@@ -206,8 +217,14 @@ namespace PoliSim.EditorTools
 
             if (failures == 0)
             {
-                sb.Append(F("\n=== PartyInkHarness: ALL ASSERTIONS PASS ({0} inked, {1} uninked by design); {2} PENDING on D8-2's colour ruling, printed with their measurements against the derived {3:F1} deg floor and NEVER closed by moving it ===\n",
+                sb.Append(F("\n=== PartyInkHarness: ALL ASSERTIONS PASS ({0} inked, {1} uninked by design); {2} measured inside the derived {3:F1} deg floor - ANSWERED, NOT OUTSTANDING ===\n",
                     inked, uninked, pending, floorDeg));
+                sb.Append("    ⚠ D9 row 5 (Design, read 2026-09-01): the floor keeps two AREA accents apart, and party inks\n");
+                sb.Append("    never sit in that company - so it binds WITHIN a channel, not across them. The figures above\n");
+                sb.Append("    are still true and are still printed; they are no longer a debt, and they were NEVER closed by\n");
+                sb.Append("    moving the floor. What now binds is structural and this harness cannot see it: party ink is not\n");
+                sb.Append("    drawn adjacent to an area accent, and a party swatch forced into chrome draws in the neutral\n");
+                sb.Append("    status ink. That is a DRAW-SITE assertion and is sized as its own row.\n");
                 Debug.Log(sb.ToString());
                 CheckExit.Finish(0);
             }

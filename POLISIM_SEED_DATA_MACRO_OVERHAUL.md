@@ -54,7 +54,26 @@ the full sim-math bar with per-country diffs explained**, and the honest explana
 re-basing is free"* would be true about the model and false about the build.
 
 **Billed, not invented:** re-basing needs a **sourced, vintage-dated FX rate per country** (the ruling's
-own words). None is on disk. No rate is authored here.
+own words). ~~None is on disk. No rate is authored here.~~
+
+⚠ **FETCHED 2026-09-01 — the rates are REACHABLE, and taking them is still not correct yet.** The ECB's
+own daily reference file (`ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml`, HTTP 200) carries, at
+**vintage 2026-08-31**: **EUR/USD 1.1596 · EUR/SEK 11.1100 · EUR/PLN 4.3280**. One fetch, one publisher,
+one date. The three pairs the six countries need follow by a single stated derivation — cross through the
+euro, `USD/X = (EUR/X) ÷ (EUR/USD)`:
+
+| pair | derivation | value |
+|---|---|---|
+| **USD/SEK** | 11.1100 ÷ 1.1596 | **9.58089** |
+| **USD/PLN** | 4.3280 ÷ 1.1596 | **3.73232** |
+| **USD/EUR** | 1 ÷ 1.1596 | **0.862366** (Germany, France, Italy) |
+
+⚠ **AND THE VINTAGE IS THE PROBLEM, WHICH IS WHY NOTHING IS SEEDED ON THEM.** A 2026-08-31 rate applied
+to seed levels published at **2024 and 2025 vintages** is exactly the **basis-mixing the cross-check gate
+forbids** — the same rule that kept the 2022 party-leader set from being half-refreshed. So the bill is
+**not discharged; it is SHARPENED.** What it needs is not "an FX rate" but *the rate at each seed's own
+vintage* — and the ECB publishes that too (`eurofxref-hist.xml`), so it is obtainable the day this file's
+vintages are settled as a set. **No rate is authored here, and none is seeded.**
 
 ⚠ **A SECOND CURRENCY IS ALREADY IN THE GAME WITH NO CONVERSION.** The campaign layer prices in
 **kronor** — the war chest is 2 400 000 kr, a television buy 500 000, a social post 5 000 — while the
