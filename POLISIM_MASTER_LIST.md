@@ -111,7 +111,6 @@ so the fixes bought no progress and were never going to. **What changed is wheth
 | **M-S9** | **`S-22`** — nothing checks a PROSE claim about behaviour, in a comment or a document | ⚠ the honest done-when may be *"recorded as undecidable"*; it is the larger half of what a comment asserts | CODE | SAFE | — | M |
 | **M-S10** | **`S-17`** — the capture command's two silent defaults (film geometry is load-bearing) | a film run cannot silently use the wrong geometry or pattern | CODE | SAFE | — | S |
 | **M-S11** | **`S-13`** — the Policy Web's ~40 incoming edges converge on one point at a focused stat node | DESIGN ruled it a comprehension judgement (board 2b); this row is the code half once ruled | CODE | SAFE | — | S |
-| **M-S16** | ⚠ **`G-1`'s guard is armed for a human who remembers.** `ScreenEdgeCheck` is registered in NEITHER batch — it refuses to run without film (*"no captures matched ... this verified NOTHING"*, correctly) and so fires only if somebody runs it after a capture pass. **That is the exact failure mode `C-N3` fixed for the simulation group**, and it was hiding inside a row that called G-1 a standing guard | the label-clipping class is verified by something that cannot be forgotten — the capture path runs it, or a bar-time check fails when the newest film has not been edge-checked | CODE | SAFE | — | M |
 | **M-S14** | **`S-3`** — W-B12's residual: SD keeps 6 of 38 unpaid staff-days | the residual is explained or the plan changes | CODE | SAFE | — | S |
 | **M-S15** | **`S-4`** — five of §4's eight axes are UNDEFINED and not centred; `FlatIssueMatch = 0.5` stands in | the axes are defined from a source, or the stand-in is ruled permanent | CODE | DATA | — | M |
 
@@ -222,3 +221,4 @@ registered in a batch.** A watch nobody runs is not a watch; it is a row in a qu
 |---|---|---|---|---|---|---|
 | **M-S12** | **`G-2`** meta text — a standing guard, re-verified each cycle | `MetaTextCheck`, registered in the cheap suite | CODE | RECORDS | every bar run | — |
 | **M-S13** | the stripper enrolment and the ledger enrolment | `CommentImmunityCheck` and `RatchetSlackCheck` — both read 0 unenrolled / 0 unreported | CODE | SAFE | every bar run | — |
+| **M-S16** | ⚠ **`G-1`'s guard was armed for a human who remembers** — `ScreenEdgeCheck` in neither batch, firing only if invoked after a capture pass | the capture driver runs it over its own label before exiting, and the hook can only make the exit code worse; proved with 81/0 exiting **2** when the guard verified nothing | CODE | SAFE | `e8a9bb1` | M |
