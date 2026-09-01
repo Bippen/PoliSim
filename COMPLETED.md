@@ -9025,3 +9025,64 @@ wiring, and calls built from strings. Names inside string literals **are** count
 reflected call still registers.
 
 **Bar:** fifteen checks green, eight simulation checks green, both older ratchets holding at **0**.
+
+## 141. P-I2 STAGE 3 — BUILT, MEASURED, AND REVERTED. The collision map's §4.2 was right (2026-09-01)
+
+The retirement was built end to end and **reverted on its own measurement**. The reason is the one the
+cohort spec-let named as *"the single most likely silent breakage"*, written before any of this existed:
+
+> **§4.2** — *"`NaturalBirthRate` / `NaturalNetMigrationRate` are ANCHORS, not observations… A cohort
+> substrate must keep an equivalent anchor, or every demographic policy effect loses its zero **and starts
+> compounding**."*
+
+### What was built
+
+`MacroSystem.ApplyCohortStep`, replacing `ApplyDemographicRatesDaily` and `ApplyPopulationGrowthDaily`.
+`Population`, `DependencyRatio`, `PopulationGrowthRate` and `BirthRate` became **derived** from the bands;
+`DeathRate` and `NetMigrationRate` became derived reports split on a new seeded `Country.BaselineDeathRate`
+(D-12 (2a): **the total is measured, the split is authored**); both player levers were re-pointed into the
+step. It ran **once per turn on the boundary day** (D-12 (1a)), which kept turn/daily equivalence exact by
+construction — that half of the decision held.
+
+### ⚠ THE MEASUREMENT THAT KILLED IT
+
+`Population`, in millions, old family → stage 3:
+
+| country | t100 | t500 | t1000 |
+|---|---|---|---|
+| Germany | 68.84 → **143.23** | 32.29 → **1537.86** | 12.53 → **10000.00** ⚠ *ceiling* |
+| USA | 451.23 → 665.47 | 971.09 → 6880.40 | 1947.98 → **10000.00** ⚠ *ceiling* |
+| Sweden | 12.72 → 8.34 | 20.17 → 1.46 | 34.75 → **0.17** |
+| Italy | 43.46 → 28.55 | 11.14 → 0.67 | 2.02 → **0.10** ⚠ *floor* |
+| Poland | 25.45 → 9.76 | 5.31 → **0.10** | 0.75 → **0.10** ⚠ *floor* |
+| France | 71.31 → 66.18 | 57.50 → 23.33 | 40.60 → 6.34 |
+
+**Two countries reach `MaxPopulation` and three reach `MinPopulation`.** The step has **no reversion of any
+kind**: the retired scalars mean-reverted toward each country's `SteadyStateGrowthRate`, and the cohort
+step simply applies one observed year's rates forever. §4.2 called this exactly.
+
+⚠ **The stage-2 diagnostic did NOT catch it, and its bound was not wrong — its horizon was.** Its
+sanity clause is a factor of two over **25 years**, which every country passes. The divergence is
+*compounding*, so it needs a horizon long enough to compound: at 100 turns Germany is already +108 %.
+**A bound checked over a quarter of the horizon the model actually runs is not a bound.**
+
+### What this does NOT invalidate
+
+Stages 1 and 2 stand and stay committed. The pyramids reconcile to their publishers, the step reproduces
+its own hindcast year to 0.0002 %, both levers are live, and the voter-group view (C-D1) reads the
+substrate correctly. ⚠ **Nothing in the game calls `StepOneYear`**, which is why reverting stage 3 restored
+the trajectory family **byte-identically, 6 of 6** — verified, not assumed.
+
+### What stage 3 now needs, stated precisely
+
+**An anchor, and it cannot be invented.** The retired system had one: `SteadyStateGrowthRate` per country,
+with `PopulationGrowthRate` mean-reverting toward it. The cohort step needs an equivalent — rates that
+converge toward a country's long-run structural position rather than repeating 2023–24 forever. ⚠ **That
+convergence has a speed, and a speed nothing sources is an authored figure in the most load-bearing place
+in the model.** Options worth measuring before choosing: converge the survival array toward a sourced life
+table (blocked for the USA, per D-6); converge the general fertility rate toward a published long-run
+projection (Eurostat `proj_23np` was not checked and is the obvious first place to look); or reuse
+`SteadyStateGrowthRate` directly as the target the whole pyramid is scaled toward.
+
+⚠ **D-12 (1a) is confirmed and (2a) is untested** — the time base held; the death/migration split never got
+far enough to be judged.

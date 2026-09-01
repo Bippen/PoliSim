@@ -48,8 +48,11 @@ namespace PoliSim.EditorTools
         private const float HindcastTolerance = 0.0005f;
 
         /// <summary>CONVENTION: how many years the long run steps. Long enough that a compounding error
-        /// shows, short enough that derived one-year rates are not being asked to be a forecast.</summary>
-        private const int LongRunYears = 25;
+        /// shows. ⚠ **25 WAS TOO SHORT, and P-I2 stage 3 proved it**: every country passes the factor-of-two bound below at 25 years, while the same step run to the horizon the model actually uses sends Germany and the USA to MaxPopulation and Italy, Poland and Sweden to MinPopulation. The divergence COMPOUNDS, so catching it needs a horizon long enough to compound - a bound checked over a quarter of the real horizon is not a bound.</summary>
+        private const int LongRunYears = 100;
+        /// <summary>⚠ The runaway backlog ceiling, measured 2026-09-01 at TWO (Italy and Poland). A ratchet: the step has no steady-state anchor so it compounds, and until one lands these two are a reported backlog rather than a failure. Lower it when the anchor lands; never raise it.</summary>
+        private const int RunawayCeiling = 2;
+
 
         /// <summary>CONVENTION: the migration lever probe, in millions. Small against every country's
         /// population and large against float noise.</summary>
@@ -71,6 +74,7 @@ namespace PoliSim.EditorTools
             World world = WorldFactory.CreateDefault();
             var sb = new StringBuilder();
             var failures = new List<string>();
+            var runaways = new List<string>();
 
             sb.Append("=== P-I2 stage 2: the aging step ===\n");
             sb.Append("    THE ENUMERATION: all six countries. (1) the one-year HINDCAST - step the 2023 pyramid and\n");
@@ -168,10 +172,20 @@ namespace PoliSim.EditorTools
 
                 if (ratio > 2f || ratio < 0.5f)
                 {
-                    failures.Add($"{country.Name} population x{ratio:F2}");
-                    Debug.LogError($"AGING: {country.Name}'s population moved by a factor of {ratio:F3} over {LongRunYears} years. "
-                                   + "The bound is a CONVENTION, not a demographic claim - it is wide enough that no plausible "
-                                   + "trajectory trips it, so tripping it means a sign error or a runaway.");
+                    // ⚠ A RATCHET, NOT A FAILURE - and the reason is a measured finding, not leniency.
+                    // P-I2 stage 3 was built, run and REVERTED on exactly this: the step has NO
+                    // reversion of any kind, so one observed year's rates applied forever compound, and
+                    // at the horizon the model really uses two countries reach MaxPopulation and three
+                    // reach MinPopulation. The cohort spec-let's §4.2 predicted it in writing - "a cohort
+                    // substrate must keep an equivalent anchor, or every demographic policy effect loses
+                    // its zero AND STARTS COMPOUNDING", called "the single most likely silent breakage".
+                    //
+                    // It cannot be fixed without an anchor, and an anchor has a convergence SPEED that
+                    // nothing sources yet. So the two countries that trip it are a reported BACKLOG and
+                    // what fails is a THIRD joining them - PartyMarkCoverageCheck's precedent, and the
+                    // same shape the other ratchets in this suite use. Lower the ceiling when the anchor
+                    // lands; never raise it.
+                    runaways.Add($"{country.Name} x{ratio:F3}");
                 }
             }
 
@@ -251,6 +265,24 @@ namespace PoliSim.EditorTools
             sb.Append("    bands - so the USA's x1.23 and Germany's near-flat dependency ratio are what holding THAT year\n");
             sb.Append("    fixed produces, not what those countries are expected to do. The column exists to show that the\n");
             sb.Append("    arithmetic neither explodes nor collapses. A projection needs a rate series, which is billed.\n");
+            sb.Append(string.Format(CultureInfo.InvariantCulture, "\n    ⚠ RUNAWAY BACKLOG: {0} country/countries move by more than a factor of two over {1} years\n",
+                runaways.Count, LongRunYears));
+            sb.Append(string.Format(CultureInfo.InvariantCulture, "    (ceiling {0}). ", RunawayCeiling));
+            foreach (string r in runaways) { sb.Append(r).Append("  "); }
+            sb.Append("\n    The step has NO reversion: one observed year's rates applied forever COMPOUND, which the cohort\n");
+            sb.Append("    spec-let's §4.2 predicted in writing as 'the single most likely silent breakage'. P-I2 stage 3 was\n");
+            sb.Append("    built, measured and REVERTED on exactly this. Fixing it needs an ANCHOR, and an anchor has a\n");
+            sb.Append("    convergence speed nothing sources yet - so this is a reported backlog and what FAILS is growth.\n");
+
+            if (runaways.Count > RunawayCeiling)
+            {
+                failures.Add($"{runaways.Count} runaway countries, above the ceiling of {RunawayCeiling}");
+                Debug.LogError($"AGING: {runaways.Count} countries now run away over {LongRunYears} years, above the recorded "
+                               + $"ceiling of {RunawayCeiling}. ⚠ The backlog may only shrink - it shrinks when the step gains "
+                               + "the steady-state anchor §4.2 asked for, and it grows when something makes the compounding "
+                               + "worse. Lower the ceiling with the fix; never raise it.");
+            }
+
             sb.Append("\n    ⚠ NOTHING HERE IS WIRED INTO THE SIMULATION. `StepOneYear` has no caller under Assets/Scripts\n");
             sb.Append("    and the trajectory family is unmoved - proven by the dump, not asserted. Wiring it is the\n");
             sb.Append("    retirement stage, where the eight demographic scalars stop being stepped by their own rules;\n");

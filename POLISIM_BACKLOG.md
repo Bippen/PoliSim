@@ -406,6 +406,47 @@ what it costs.** ⚠ Sized, not built: it is a §12 verb-set change and needs it
 
 > **To strike it, write:** `D-11 STRUCK: (a)` *(or b / d)*
 
+---
+
+### D-12 · P-I2 stage 3's time base and the two inseparable rates ⚠ DECIDED AND TAKEN (R-N1), strikeable
+
+**Two questions the retirement cannot avoid**, both measured before deciding.
+
+**(1) When does the cohort step run?** The substrate ages by a YEAR; the simulation advances by a DAY,
+and `AggregationEquivalenceCheck` requires one turn to equal 365 days.
+
+⚠ **A fractional daily step cannot be made exact.** Survival composes exactly under a power
+(`s^(1/365)`), and so does a retained fraction — but the band transition is a *matrix*, and its 365th
+root does not decompose into per-band constants. Any daily form would agree with the turn form only on
+tolerance, and that is a decision about the model's TIME BASE rather than about demography.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Step once per turn, on the boundary day** | none — the spec-let already says *"at the YEAR boundary, not the day tick"* | ⚠ `Population` and `DependencyRatio` become annual step functions instead of moving daily |
+| b. Fractional daily step accepted on tolerance | one item | ⚠ turn/daily equivalence stops being exact BY CONSTRUCTION and becomes a tolerance the suite must carry forever |
+| c. Keep the scalars daily, run cohorts in parallel | none | ⚠ **two populations** — the exact thing the spec-let's §5 exists to forbid |
+
+**Recommendation, TAKEN: (a).** It is the spec-let's own instruction — *"a day-tick aging step would need
+fractional cohort movement, which is arithmetic nobody can check on screen"* — and it makes turn/daily
+equivalence **exact by construction** rather than by tolerance, which is the property this project has
+protected through every continuous-time phase. The cost is real and visible: **a population that steps
+once a year instead of creeping daily**, which is also the more honest picture of an annual stock.
+
+**(2) `DeathRate` and `NetMigrationRate` cannot both be derived.** D-6 made the survival ratio deaths and
+net migration *together*, so the step measures their SUM and nothing in it separates them.
+
+| option | cost | what it forecloses |
+|---|---|---|
+| **a. Both become DERIVED REPORTS of the step, split by each country's seeded ratio** | none | ⚠ the split is authored; only the total is measured, and the doc must say exactly that |
+| b. Keep both stepped by their own rules | none | ⚠ they would drift independently of the population they no longer drive — **two populations by the back door** |
+| c. Retire `NetMigrationRate` and report only a combined rate | one item | ⚠ deletes a stat the UI shows and the immigration lever names |
+
+**Recommendation, TAKEN: (a).** ⚠ **The total is measured and the split is authored, and that sentence
+goes at the declaration.** (b) is the failure the collision map calls double-stepping wearing a different
+hat; (c) throws away a stat to avoid writing one honest sentence.
+
+> **To strike either half, write:** `D-12 STRUCK: (1b)` or `D-12 STRUCK: (2c)` *(etc.)*
+
 ## 1. The clearance pass — live work (owner CODE unless stated)
 
 Execution order: Phase 0 → A → B → C → D → R → E → F → G, then the Track N fix rows.
