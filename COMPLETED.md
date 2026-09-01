@@ -9116,3 +9116,73 @@ probe was worth two requests before closing.
 ⚠ **Nothing is built on this.** Both endpoints were probed for reachability and Sweden's 2050 figure read
 back; the series were not fetched, folded or seeded. **A dataset confirmed reachable is not a dataset
 used**, and the distinction is the same one C-D1 drew about PxWeb.
+
+## 143. THE 2026-09-01 RUN'S REPORT, MIGRATED — and the temp folder it was stranded in (2026-09-01)
+
+The unattended run of 2026-09-01 ended at `5aec332` with its report written to the terminal and **to a
+session scratchpad under `%TEMP%`, because `G:` was not mounted in the session that wrote it.** It was
+filed into the repo as `SESSION_REPORT_2026-09-01.md`, migrated here, and the file deleted in the same
+commit — C-G1's rule, unchanged: ⚠ **a report is not a second home for a finding, and a temp folder is
+not a home at all.** Every claim below already lives in its own section; this is the run's own account of
+itself, kept because the shape of a run is not recoverable from thirteen sections read separately.
+
+### The run — 34 commits, everything pushed
+
+**1 · SAFE rows needing no ruling.** Already closed. The only two open SAFE rows were blocked on data
+(C-C5) or on a ruling since given (C-R4).
+
+**2 · The Okun item.** Its blocking trigger is the government-consumption block, measured NOT BUILDABLE
+the previous session for four structural reasons (§127). Unchanged. Logged, moved on.
+
+**3 · The five decision sheets, executed as ruled.**
+
+- **D-4 (a)** — the cohort substrate, in three stages. Stage 1 (§130) seeds 21 five-year bands per country
+  from Eurostat `demo_pjan` and US Census PEP; all six reconcile **to the person** against their
+  publishers' own separately-transcribed totals. ⚠ It found the spec-let wrong: `DependencyRatio` is the
+  **old-age** ratio, not the total — building on §3's words would have *doubled every country's ratio
+  silently*.
+- Stage 2 (§131), the aging step. ⚠ **Its hindcast failed first** — the open 100+ band off by 49–54 % in
+  all six while every other band passed at 0.05 %. A double count. After the fix, worst band **0.0002 %**.
+  No plausibility check would have found it.
+- **Stage 3 was built and reverted on its own measurement** (§141). Germany and the USA reach
+  `MaxPopulation`; Italy, Poland and Sweden reach `MinPopulation`. The cohort spec-let's §4.2 called this
+  in advance — *"the single most likely silent breakage"* — and it was right. The 25-year sanity bound
+  wasn't wrong, its **horizon** was; raised to 100, it catches it, now as a ratchet at two.
+- **D-1 (c)** (§134) — the office plan scaled to what a party can keep. ⚠ Two wrong reserves, both caught
+  by measuring: a 10-day reserve dropped **0 of 27** offices, and so did 56 days checked one office at a
+  time. Reserved for the *network*, it drops 6 — landing exactly on V, MP and L, the parties C-D2 named.
+- **D-2 (b)** (§133) — ⚠ **the register's own citation was the wrong paper.** Riksbank WP 365 carries no
+  MPC. The real Swedish evidence brackets it at 0.54–0.66; held at 0.67, because the spending multiplier
+  is **invariant** to it and every lower value moves the tax multiplier *further* from Romer & Romer.
+- **D-2 (c)** (§133) — built, sourced, and ⚠ **rejected by the pre-committed constraint**: the spending
+  multiplier moved to 0.593, below Ramey's 0.6. Reverted. The argument for bending it was stated fairly
+  and left to Elias as **D-9** — the one fork the run did not self-rule. **Ruled 2026-09-01: see §144.**
+- **D-3 (c)**, **D-5 (a)** (§135) — the win/lose rule now asks whether the player's party is in cabinet.
+  ⚠ **Sweden 2022 forms M+KD+L with SD supporting from outside — the government Sweden actually formed**,
+  nothing fitted. Germany forms CDU+AfD+CSU on derived lines alone, and the column says so.
+
+**4 · The chain.** C-C13 → P-I2 → C-D1 (§136: voter groups over the cohorts; ⚠ **Sweden's 2024 shares
+weighted by SCB's 2014 rates reproduce SCB's own 85.8 % to 0.13 points**) → per-group loyalty (§137),
+where ITANES 2022 **confirms** the FdI ceiling (18.22 % at 18–24 vs 32.04 % at 45–54) and the blocker
+turns out to be **non-circularity, not data**: the only open wave is the one wave `LoyaltyModel`'s
+invariant forbids.
+
+**5 · The standing shelf — both ratchets at zero** (§138). 39 dead declarations → 0; 212 unmarked
+constants → 0. Two dead features removed, Maastricht verified at the treaty text, and a **FITTED** class
+the four marks didn't have. ⚠ **Six constants were mis-marked without being read**, reverted, and every
+batch after verified placement by printing the constant that follows — which caught a second slip.
+
+**Beyond the queue.** Three blind spots the audit could not see, one closed by a **fifth sweep** (§140:
+`TacticalVoting` built, proven and wired to nothing). Nine decision sheets, D-6 through D-12, each
+decided, logged and strikeable (§§139, 141, register §D).
+
+**Bar at the close:** 15 checks, 8 simulation checks, 4×81 captures with 0 overflows and 81 identity
+proofs each, edge checks, rule-15 diff 78/0/3, trajectories 6 of 6 byte-identical (§124's pattern).
+
+### The lesson the stranding leaves
+
+⚠ **A report written where the repo is not mounted is a report that does not exist.** The run that wrote
+it could not have filed it — `G:` was absent — but nothing in the process said so at the time, and it
+survived only because the next session was told where to look. **The rule this adds to C-G1's: a report
+is written into the repo or it is not written.** If the tree is unreachable, that is the first line of
+the report, not a detail discovered afterwards.
