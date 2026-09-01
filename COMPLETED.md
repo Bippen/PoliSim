@@ -11015,3 +11015,67 @@ rigour**, and it costs a suite slot, a session, and a reader''s attention for as
 | **M-R7** | ratchet: `DeadStateCheck.WRITE_ONLY` = **0** — ⚠ a MEASURED zero, not an aspirational one: its first run found six, all **deleted** rather than absorbed, and the ceiling was never touched | `DeadStateCheck`, in the cheap suite | CODE | SAFE | every bar run | — |
 
 **Everything still OPEN is carried by POLISIM_FEATURE_LIST.md — F1 takes the elections chain, F2 the cohorts, F3 the voter groups, F4 the tax instruments, F5 the CHES axes, F6 the campaign — with the short tail in its appendix.**
+
+## 178. F1 STEPS 1–3 — the live election runs through the regional layer, and the map is recognisably Sweden (2026-09-01)
+
+**The largest correctness gap: `ElectionsData/` sits outside `Assets/`, so runtime code could not read it —
+which made `RegionalVoteModel` unreachable, which meant the live election had no per-constituency result,
+which meant election night had nothing honest to draw.**
+
+### Step 1 — the catalog moved, on the condition it wrote for itself
+
+`ElectionsDataCatalogGenerator` emitted to `Assets/Editor/Generated/` and said in its own doc that the move
+to `Assets/Scripts/` *"belongs to the item that wires `RegionalVoteModel`, because that is when the
+runtime-readability claim is exercised rather than asserted."* ⚠ **The condition was MET, not waived** —
+`NationalElection.TryPredictShares` reads the catalog now, so the claim is exercised on every predicted
+election. The generator emits to the runtime path and the "for now" paragraph is gone rather than re-dated.
+
+### Steps 2–3 — and the design decision that decides whether the screen is honest
+
+⚠ **Wiring `RegionalVoteModel` naively would have produced a lie that passed every check.** All eight
+Swedish parties stand in all 29 valkrets, so with uniform availability and no per-region position the
+layer returns **exactly the national shares** — and a per-constituency "count" would be the national
+percentage times each region's electorate. **Election night would declare Stockholm and Skåne identical.**
+The layer's own doc says so: with no non-circular source of regional preference variation, the honest
+regional prediction IS the national one.
+
+**The source is each valkrets' 2022 position, used as a PRIOR.** F1 forbids 2022 counts standing in for a
+simulated election, and this is the other thing: 2022 says **where each region started and how many votes
+it casts**; the model supplies the movement.
+
+**`RegionalSharesByUniformSwing` — uniform ADDITIVE swing**, chosen for one property: its vote-weighted
+regional sum **reproduces the national shares exactly**, because every region moves by the same number of
+points. ⚠ **A screen whose constituencies do not add up to the headline is two different claims about one
+election**, and computing the two numbers independently is how that happens. Proportional swing has no such
+guarantee.
+
+⚠ **The one place exactness is lost is reported, not absorbed.** A party would swing negative where it is
+weakest; votes cannot be negative, so it floors at zero and the region renormalises.
+**`LastRegionalWorstAbsError` is measured and handed to the caller: 0.0109 %.**
+
+### ⚠ The validation nobody had to write: the map is recognisably Sweden
+
+| party | national | strongest | weakest | spread |
+|---|---|---|---|---|
+| **S** | 30.47 % | **Norrbotten 41.60 %** | Skåne N/Ö 25.29 % | 16.31 |
+| **SD** | 20.57 % | **Skåne N/Ö 32.17 %** | Stockholms kommun 10.75 % | **21.42** |
+| **M** | 18.83 % | Stockholms län 23.77 % | Norrbotten 13.25 % | 10.52 |
+| **V** | 6.85 % | **Göteborg 13.06 %** | Skåne N/Ö 4.03 % | 9.03 |
+| **C** | 6.29 % | **Gotland 11.29 %** | Blekinge 4.40 % | 6.89 |
+| **KD** | 6.62 % | **Jönköping 10.57 %** | Malmö 4.35 % | 6.21 |
+| **MP** | 5.46 % | Stockholms kommun 10.44 % | Blekinge 3.28 % | 7.16 |
+| **L** | 4.90 % | Stockholms kommun 7.19 % | Norrbotten 2.82 % | 4.37 |
+
+**Every one of those is Sweden's actual political geography** — S in the northern heartland, SD strongest
+in north-east Skåne and weakest in inner Stockholm, V in Göteborg, C on Gotland, KD in the Jönköping bible
+belt, MP and L in the capital. ⚠ **Nothing was fitted to produce that**; it falls out of the prior being a
+real measurement rather than an invention, and it is the check a person can perform by looking.
+
+`RegionalBreakdownDiagnostic` measures the two things that matter — **does it VARY** (a layer returning the
+national number 29 times passes everything else) and **does it RECONCILE** — and fails on either.
+⚠ Per R-N5 it is a **diagnostic, not a suite check**: no defect has cost anything twice here.
+
+**`UnwiredSubsystemCheck.UNREACHABLE` fell 6 → 5** as `RegionalVoteModel` gained its consumer, and
+`RatchetSlackCheck` demanded the ceiling come down in the same run. **Bar 25 of 25.**
+
+**Step 4 — board 1h reachable from a player path, filmed — is the remainder.**

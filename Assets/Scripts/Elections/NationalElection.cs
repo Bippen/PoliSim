@@ -58,6 +58,23 @@ namespace PoliSim.Elections
     /// </summary>
     public static class NationalElection
     {
+        /// <summary>The per-valkrets shares behind the most recent prediction, or null when the player's
+        /// country has no regions wired. ⚠ **Derived from the national shares, never computed beside**
+        /// them - see the swing note in <c>TryPredictShares</c>.</summary>
+        public static double[][] LastRegionalShares { get; private set; }
+
+        /// <summary>The region names, in the same order as <see cref="LastRegionalShares"/>.</summary>
+        public static string[] LastRegionalNames { get; private set; }
+
+        /// <summary>Each region's valid-vote weight - a per-constituency COUNT is share x weight.</summary>
+        public static double[] LastRegionalWeights { get; private set; }
+
+        /// <summary>⚠ **How far the regional breakdown's vote-weighted total sits from the national shares
+        /// it was derived from.** Zero unless the zero-floor bit on a party that would have swung negative
+        /// somewhere. **Reported rather than absorbed**: a caller drawing both numbers is entitled to know
+        /// whether they agree, and a silent reconciliation is how a screen starts lying quietly.</summary>
+        public static double LastRegionalWorstAbsError { get; private set; }
+
         /// <summary>SOURCED: par. 4(2) BWahlG. (The Grundmandatsklausel that survived the BVerfG's 2024 judgment turns on constituency wins, which this national path has no notion of - stated here, not silently ignored.)</summary>
         private const double GermanThreshold = 0.05;
 
@@ -110,6 +127,44 @@ namespace PoliSim.Elections
 
             shares = new Dictionary<string, double>();
             for (int i = 0; i < keys.Count; i++) { shares[keys[i]] = preference[i]; }
+
+            // ⚠ F1 (2026-09-01): THE REGIONAL BREAKDOWN, DERIVED FROM the national result rather than
+            // computed beside it. RegionalSharesByUniformSwing applies one swing to every valkrets' own
+            // 2022 prior, so the vote-weighted regional total REPRODUCES the shares above. A screen whose
+            // constituencies did not add up to the headline is the exact failure F1 forbids, and making
+            // the two independent computations is how that failure happens.
+            //
+            // ⚠ The 2022 file is the PRIOR, never the result: it says where each valkrets started and how
+            // many votes it casts, and the model supplies the movement. Without it every region would
+            // return the national percentages unchanged - all eight parties stand everywhere - and
+            // election night would declare Stockholm and Skane identical, which is false and would look
+            // exactly like a working screen.
+            if (country == CountryId.Sweden)
+            {
+                RegionalVoteModel.RegionInput[] regions = SwedishRegions.Regions(keys);
+                double[][] regionPrior = SwedishRegions.PriorShares(keys);
+                LastRegionalShares = RegionalVoteModel.RegionalSharesByUniformSwing(
+                    preference, regions, regionPrior, out double worstAbsError);
+                LastRegionalNames = new string[regions.Length];
+                LastRegionalWeights = new double[regions.Length];
+                for (int r = 0; r < regions.Length; r++)
+                {
+                    LastRegionalNames[r] = regions[r].Name;
+                    LastRegionalWeights[r] = regions[r].ElectorateWeight;
+                }
+
+                LastRegionalWorstAbsError = worstAbsError;
+            }
+            else
+            {
+                // ⚠ Not "no regions" but "this country has none wired" - a caller deciding whether to
+                // draw an election night at all needs the difference.
+                LastRegionalShares = null;
+                LastRegionalNames = null;
+                LastRegionalWeights = null;
+                LastRegionalWorstAbsError = 0.0;
+            }
+
             return true;
         }
 

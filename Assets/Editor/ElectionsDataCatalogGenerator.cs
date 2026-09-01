@@ -42,20 +42,22 @@ namespace PoliSim.EditorTools
     /// hide a data change inside a compile, and this project's whole discipline is that a data change is
     /// an event somebody explains.</para>
     ///
-    /// <para>⚠ <b>AND THE CATALOG EMITS TO `Assets/Editor/Generated/` FOR NOW, NOT `Assets/Scripts/`.
-    /// That is the repo's own guard talking, and it is right.</b> Emitted into the runtime assembly with
-    /// no consumer, the file is a delivered artifact nothing reads — `UnwiredSubsystemCheck`'s UNREACHABLE
-    /// class caught it on the first run, and a ceiling may not be raised to admit it. **A data layer that
-    /// lands before anything consumes it is queued art in another costume.** The mechanism is chosen,
-    /// built and proven here — header assertion, definitional reconciliation, digest check, both
-    /// directions — and the ONE remaining step, moving the emitted file into `Assets/Scripts`, belongs to
-    /// the item that wires `RegionalVoteModel`, because that is when the runtime-readability claim is
-    /// exercised rather than asserted.</para>
+    /// <para>✅ <b>THE CATALOG NOW EMITS TO `Assets/Scripts/Elections/Generated/` — the runtime assembly —
+    /// and it moved on the day its consumer arrived, 2026-09-01 (F1).</b> It emitted to `Assets/Editor/`
+    /// until then, deliberately: emitted into the runtime assembly with no consumer the file is a
+    /// delivered artifact nothing reads, `UnwiredSubsystemCheck`''s UNREACHABLE class caught exactly that
+    /// on its first run, and a ceiling may not be raised to admit it. **A data layer that lands before
+    /// anything consumes it is queued art in another costume.**
+    ///
+    /// <para>⚠ **The condition this file wrote for itself was met rather than waived**: the move belonged
+    /// to the item that wires `RegionalVoteModel`, *"because that is when the runtime-readability claim is
+    /// exercised rather than asserted."* `NationalElection.TryPredictShares` reads it now, so the claim is
+    /// exercised on every predicted election.</para></para>
     /// </summary>
     public static class ElectionsDataCatalogGenerator
     {
         private const string SourceRelative = "ElectionsData/sweden/valkrets_votes_2022.csv";
-        private const string OutputRelative = "Assets/Editor/Generated/SwedishValkretsReturns2022.cs";
+        private const string OutputRelative = "Assets/Scripts/Elections/Generated/SwedishValkretsReturns2022.cs";
 
         /// <summary>The party columns, in the CSV's own order — read from its header rather than assumed,
         /// and asserted below so a re-ordered file cannot silently re-label every column.</summary>

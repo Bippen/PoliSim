@@ -215,6 +215,95 @@ namespace PoliSim.Elections
         /// previous-election shares (zeros for parties that did not stand there — a real fact, e.g.
         /// the Greens' rejected Saarland list in 2021, not missing data).
         /// </summary>
+        /// <summary>
+        /// **F1 step 3: each region''s shares, given the national result the model already predicted.**
+        /// A UNIFORM ADDITIVE SWING applied to each region''s own prior.
+        ///
+        /// <para>⚠ <b>Why additive and not proportional.</b> Additive swing is the one form whose
+        /// vote-weighted regional sum **reproduces the national shares exactly** — every region moves by
+        /// the same number of points, so the weighted total moves by that number and nothing else. **A
+        /// screen showing constituencies that do not add up to the headline is the exact failure F1 forbids**,
+        /// and proportional swing does not have that property.</para>
+        ///
+        /// <para>⚠ <b>The one place exactness is lost, stated rather than hidden.</b> A party polling below
+        /// the national swing in a region it is weak in would go NEGATIVE. Votes cannot be negative, so it
+        /// is floored at zero and the region renormalised — which moves the weighted total off the national
+        /// number by the size of the floored mass. **The caller is given that error rather than being left
+        /// to assume there is none**; it is reported, not absorbed.</para>
+        ///
+        /// <para><b>What this does NOT claim.</b> Uniform swing says every region moves alike. Real regions
+        /// do not — a party can surge in cities and fall in the countryside within one election. This layer
+        /// has no non-circular source for differential swing, and inventing one by fitting against regional
+        /// results is circular by construction. **Uniform is the honest floor, and the prior is what makes
+        /// the regions differ at all.**</para>
+        /// </summary>
+        public static double[][] RegionalSharesByUniformSwing(double[] nationalShares,
+            RegionInput[] regions, double[][] regionPriorShares, out double worstAbsError)
+        {
+            if (nationalShares == null || nationalShares.Length == 0) { throw new ArgumentException("no national shares"); }
+            if (regions == null || regions.Length == 0) { throw new ArgumentException("no regions"); }
+            if (regionPriorShares == null || regionPriorShares.Length != regions.Length)
+            {
+                throw new ArgumentException("one prior-share vector per region");
+            }
+
+            int n = nationalShares.Length;
+            double totalWeight = 0.0;
+            foreach (RegionInput r in regions) { totalWeight += r.ElectorateWeight; }
+            if (totalWeight <= 0.0) { throw new ArgumentException("regions carry no weight"); }
+
+            // The prior''s OWN national position, vote-weighted the same way the result will be. The swing
+            // is measured against this and not against a remembered figure, so the two are commensurable.
+            var priorNational = new double[n];
+            for (int r = 0; r < regions.Length; r++)
+            {
+                for (int p = 0; p < n; p++)
+                {
+                    priorNational[p] += regionPriorShares[r][p] * regions[r].ElectorateWeight;
+                }
+            }
+
+            for (int p = 0; p < n; p++) { priorNational[p] /= totalWeight; }
+
+            var swing = new double[n];
+            for (int p = 0; p < n; p++) { swing[p] = nationalShares[p] - priorNational[p]; }
+
+            var result = new double[regions.Length][];
+            for (int r = 0; r < regions.Length; r++)
+            {
+                result[r] = new double[n];
+                double sum = 0.0;
+                for (int p = 0; p < n; p++)
+                {
+                    bool stands = regions[r].PartyAvailable == null || regions[r].PartyAvailable[p];
+                    double v = stands ? regionPriorShares[r][p] + swing[p] : 0.0;
+                    if (v < 0.0) { v = 0.0; }
+                    result[r][p] = v;
+                    sum += v;
+                }
+
+                if (sum > 0.0)
+                {
+                    for (int p = 0; p < n; p++) { result[r][p] /= sum; }
+                }
+            }
+
+            // ⚠ The reproduction error, MEASURED and handed back. If the floor never bit this is 0.
+            var rebuilt = new double[n];
+            for (int r = 0; r < regions.Length; r++)
+            {
+                for (int p = 0; p < n; p++) { rebuilt[p] += result[r][p] * regions[r].ElectorateWeight; }
+            }
+
+            worstAbsError = 0.0;
+            for (int p = 0; p < n; p++)
+            {
+                double e = Math.Abs(rebuilt[p] / totalWeight - nationalShares[p]);
+                if (e > worstAbsError) { worstAbsError = e; }
+            }
+
+            return result;
+        }
         public static double[] NationalSharesWithRegionalLoyalty(VoteModel.PartyPoint[] parties,
             RegionInput[] regions, VoteModel.Electorate electorate, double wEcon,
             double[][] regionPriorShares, double[] loyaltyPerParty)
