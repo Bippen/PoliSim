@@ -55,7 +55,7 @@ namespace PoliSim.EditorTools
     public static class DocumentClaimCheck
     {
         /// <summary>⚠ MEMBER-GONE, measured on the first run. Lower it as documents are corrected; never raise it.</summary>
-        private const int MemberGoneCeiling = 2;
+        private const int MemberGoneCeiling = 0;
 
         /// <summary>⚠ WRONG-OWNER, measured on the first run. Lower it as documents are corrected; never raise it.</summary>
         private const int WrongOwnerCeiling = 0;

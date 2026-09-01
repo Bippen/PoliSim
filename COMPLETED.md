@@ -10701,3 +10701,31 @@ the ref.
 
 **The obligation retires. `main` treats the branch as history, and the count it carried is corrected from
 four to two, with the other thirteen shown against what replaced them.**
+
+## 170. M-R3 CLOSED — and the two "struck-through history" entries were not both history (2026-09-01)
+
+`DocumentClaimCheck.MEMBER_GONE` stood at **2**, and the master-list row said both were *"struck-through
+history inside live documents"* — so the expected disposal was to re-home or accept them. ⚠ **Measured,
+one of the two was not history at all.**
+
+- **`POLISIM_BACKLOG.md`, the RIDE-1 row** — genuine history: the record of a deletion. ⚠ But it is a LIVE
+  document, and **S-36 is exactly this**: a deleted member whose only surviving occurrence is the note
+  recording its death. The name is now described rather than spelled, with `COMPLETED.md` §105 — a
+  historical record, where naming it is correct — carrying it.
+- **`CLAUDE_DESIGN_ASSET_REQUEST.md`, row E17** — ⚠ **NOT history. A live ask.** It told Design what draws
+  the published series: the date axis, release markers, the PRELIMINARY/FINAL badge, the dashed revision
+  frame, the pager. **The renderer was deleted at RIDE-1 and the entire band was cut from Statistics ›
+  Domestic at P-A2 (2026-08-29) as a display cut.** Design was being asked to draw a screen this project
+  had already removed, and nobody had told them. Corrected, with **E-5** raised for the decision that is
+  Elias's: does the band come back? ⚠ **The mechanism is untouched either way** — `PublicationSystem` still
+  publishes and B6's honesty channels moved to the main graphs rather than being lost.
+
+### ⚠ And the first fix fell into the trap it was fixing
+
+The corrected E17 row **quoted the dead name** while explaining that the name was dead, and the reworded
+RIDE-1 row left a second spelling inside its own strikethrough. The check reported **2** again, unchanged.
+**S-36 is easier to state than to obey**: writing *"X was deleted"* is the single most natural sentence to
+write about a deletion, and it is the sentence that keeps X alive to every name scanner in the repo. Both
+now describe rather than spell.
+
+**Ceiling lowered 2 → 0. Bar 23 of 24, residue 20.**

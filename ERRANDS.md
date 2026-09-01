@@ -71,3 +71,21 @@ that pushed on its own to clear its own red check would be the purest form of tu
 ⚠ **Until it is done the bar reads 22 of 23 with `UpstreamCheck` red, and that red is CORRECT.** It is
 recorded here rather than worked around, and no ceiling was moved to hide it: the check is measuring
 exactly what it says, and the answer is an action only Elias can take.
+
+---
+
+## ⚠ E-5 · Does the "as published" band come back? (added 2026-09-01, found by `DocumentClaimCheck`)
+
+⚠ **Design was asked to draw a screen this project had already cut, and nobody told them.**
+`CLAUDE_DESIGN_ASSET_REQUEST.md` row **E17** named a renderer deleted at RIDE-1 and described the
+*"as published"* graph block — the date axis, release markers, the PRELIMINARY/FINAL badge, the dashed
+revision frame, the 1yr/5yr/All pager. **P-A2 (2026-08-29) removed that whole band from Statistics ›
+Domestic as a DISPLAY cut.** The row has been corrected to say so; **what has NOT been decided is whether
+the band should return.**
+
+| # | the question | why it is Elias's | what is true either way |
+|---|---|---|---|
+| **E-5** | Should the *"as published"* band come back to Statistics › Domestic — and therefore be drawn — or is P-A2's cut permanent? | It is a **display** judgement about how much of the publication mechanism the player should see, and the cut was made on a playtest finding. Nobody but Elias can say whether the playtest still rules | ⚠ **The MECHANISM is untouched and stays untouched.** `PublicationSystem` publishes; the election model's section-19 reading takes Published and never State (`PerceivedPerformanceHarness` asserts it); the PRELIMINARY and revision conventions live on the main graphs. **B6's honesty channels survived the cut — they moved, they were not lost** |
+
+⚠ **Until it is answered E17 asks Design for nothing**, and that is now what the row says rather than what
+a reader had to infer.
