@@ -82,7 +82,7 @@ namespace PoliSim.UI
         // measurement is the fact, filed back); Neutral (text uses) 3.8 → 4.72 measured. Bad stands
         // (5.3). The draft-amber FILLS keep the old value as `Draft` below — the split the palette
         // note promised: a threshold LINE and a hatch stay #BE8A00, the label beside them is this ink.
-        public static readonly Color Good = Hex(0x2E7048);
+        public static readonly Color Good = Hex(0x2D6D46);   // P2-1.2 (2026-09-02): from 0x2E7048, scaled toward black (hue held) to clear 4.5 on CardInset as body text
         public static readonly Color Caution = Hex(0x8F6900);
         public static readonly Color Bad = Hex(0x9C4238);
         public static readonly Color Neutral = Hex(0x5F6672);

@@ -59,9 +59,12 @@ namespace PoliSim.UI
         // v2.0: the aged inks. Screen green and screen red do not survive being printed on paper, and
         // these still satisfy the behaviour that matters (B2) — a delta is coloured by whether the change
         // is GOOD, never by whether the number rose. See GetDeltaColor.
-        public static readonly Color PositiveChangeColor = PoliSimTheme.Hex(0x3E8A5F);
-        public static readonly Color NegativeChangeColor = PoliSimTheme.Hex(0x9C4238);
-        public static readonly Color NeutralChangeColor = PoliSimTheme.Hex(0x5D564A);
+        // P2-1.2 (2026-09-02): the delta inks ARE the theme's verdict inks. This one was the pre-D6 Good (0x3E8A5F,
+        // 3.4 on the sheet); D6 darkened PoliSimTheme.Good and never reached this copy, which is what every
+        // delta prints in. An assignment, so the two cannot drift again.
+        public static readonly Color PositiveChangeColor = PoliSimTheme.Good;
+        public static readonly Color NegativeChangeColor = PoliSimTheme.Bad;
+        public static readonly Color NeutralChangeColor = PoliSimTheme.TextSecondary;
 
         /// <summary>
         /// The de-emphasised icon tint - white at 60% alpha, for an icon that is present but not the
@@ -114,21 +117,21 @@ namespace PoliSim.UI
             // hemicycle legend, pie wedges, the political compass). Reducing the palette would not
             // simplify anything; it would break a legend. This is the ON-PAPER set; PoliSimTheme carries
             // the same eleven at desk weight for the one surface still on a dark ground.
-            { SystemArea.Neutral, PoliSimTheme.Hex(0x6D7480) },
+            { SystemArea.Neutral, PoliSimTheme.Hex(0x626873) },
             { SystemArea.Fiscal, PoliSimTheme.Hex(0x35619E) },          // blue - tax & spending
-            { SystemArea.Trade, PoliSimTheme.Hex(0x23867B) },           // teal - tariffs & trade partners
+            { SystemArea.Trade, PoliSimTheme.Hex(0x1E746A) },           // teal - tariffs & trade partners
             // D6 (2026-08-28, the v3.1 contrast pass): Political #A8842E → #8A6B21 and Global #5C87A8 →
             // #47708E — the two area inks that carried 16 px ledger labels and calendar markers below
             // 3 : 1 (2.9 / 3.1); oklch L −0.07, hue and chroma held. Measured after: 4.07 / 4.31 on Card.
             // The other nine stand. PoliSimTheme.AreaAccents carries the same two values.
-            { SystemArea.Political, PoliSimTheme.Hex(0x8A6B21) },       // ochre - approval, elections, Federal Reserve
-            { SystemArea.Welfare, PoliSimTheme.Hex(0xA84E7B) },         // magenta - welfare programs
-            { SystemArea.Labor, PoliSimTheme.Hex(0xB5622F) },           // orange - labor market policy
+            { SystemArea.Political, PoliSimTheme.Hex(0x81641F) },       // ochre - approval, elections, Federal Reserve
+            { SystemArea.Welfare, PoliSimTheme.Hex(0xA14B76) },         // magenta - welfare programs
+            { SystemArea.Labor, PoliSimTheme.Hex(0x9D5529) },           // orange - labor market policy
             { SystemArea.CrimeJustice, PoliSimTheme.Hex(0x9C4238) },    // brick - crime & justice
             { SystemArea.Sectors, PoliSimTheme.Hex(0x62579F) },         // indigo - economic sectors
-            { SystemArea.Infrastructure, PoliSimTheme.Hex(0x3E7480) },  // slate - infrastructure
-            { SystemArea.SovereignWealth, PoliSimTheme.Hex(0x85643A) }, // bronze - sovereign wealth fund
-            { SystemArea.Global, PoliSimTheme.Hex(0x47708E) }           // sky blue - world map overview
+            { SystemArea.Infrastructure, PoliSimTheme.Hex(0x3C6F7B) },  // slate - infrastructure
+            { SystemArea.SovereignWealth, PoliSimTheme.Hex(0x826239) }, // bronze - sovereign wealth fund
+            { SystemArea.Global, PoliSimTheme.Hex(0x456C89) }           // sky blue - world map overview
         };
 
         public static Color GetAreaColor(SystemArea area) => AreaColors[area];

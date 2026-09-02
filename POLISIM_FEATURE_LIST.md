@@ -403,7 +403,7 @@ at the close. *Done when:* the edge check reports the sheet flush on all four si
 TextPrimary-on-brass 4.03). Re-measure every ink pair at its real size after P2-1.1, and raise the
 faint inks until every body-text pair clears 4.5 and every caption pair clears 3.5. Token values
 only; if a target cannot be met without a new hue, that pair goes to Design. *Done when:* the
-measured table is in the record with no pair below its floor.
+measured table is in the record with no pair below its floor. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §222: the sheet's two misses are caption uses that clear 3.5; the body-floor failures were eight area inks, Good on the inset and the delta green D6 never reached - all raised hue-held; `InkContrastCheck` derives the table from the tokens every run.**
 
 **P2-1.3 — The Budget sliders.** Longer track, thinner height, finer step; the description texts
 under each slider cut (the (b)/(c) taxonomy applied to Budget). *Done when:* filmed, and a slider

@@ -236,6 +236,7 @@ namespace PoliSim.EditorTools
             // check rather than a ratchet, because its right answer is ZERO and it is AT zero - a ratchet
             // would be a licence for a fifth statement to sit there being counted.
             ("SharedMidpointCheck", SharedMidpointCheck.Run),
+            ("InkContrastCheck", InkContrastCheck.Run),   // P2-1.2 (2026-09-02): every ink pair at its use, WCAG ratio derived from the theme, floors 4.5 body / 3.5 caption
 
             // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped
             // discriminating. ⚠ REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above
