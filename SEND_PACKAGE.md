@@ -1,6 +1,6 @@
-# The send package — regenerated 2026-09-03 for D12 (paste-and-glance; **sending is Elias's**)
+# The send package — regenerated 2026-09-03 (night) for D13 (paste-and-glance; **sending is Elias's**)
 
-⚠ **THIS IS A SEND: D12, seven rows reconciled against D10 and D11.** The ask is `CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D12; D11 (answered, built) and D10 (carried) sit beneath it, so Design reads one ask. The annexes are the close films at 1280 and 2560 (the sweep on the closing tree, `p3close_*`), the ink harness print, the stance diagnostic print and the census (inline). **Binaries are uploaded, not described.** The nine Playtest 3 screenshots join the day they land (ERRANDS E-8).
+⚠ **THIS IS A SEND: D13, the slider row as a family, reconciled against D12.** The ask is `CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D13; D12 (unsent, unanswered) sits beneath it whole, so Design reads two asks in one paste, the newer first. The annexes are the item-1 film pair (`p4a_1280_05a_budget_tax` / `_dragged`, `05b_budget_spending` / `_dragged`), the close films at 1280 and 2560 (`p3close_*`), the ink harness print, the stance diagnostic print and the census (inline under D12). **Binaries are uploaded, not described.** The nine Playtest 3 screenshots (E-8) and the two of this item join the day they land.
 
 ⚠ **The D9 returns still owed travel with this package unchanged** — the derived mandate column, the two stat-icon files, and Elias's GO on the marks.
 
@@ -8,18 +8,23 @@
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 108253 | `257ee237e137c337c4e1b98faa8a160ffb0d16f470300624f742862f802b1e85` |
-| `POLISIM_FEATURE_LIST.md` | 77186 | `39cb86e5946c5b0ade8e668c8cc31d69dc581eb5b95544c18e7787fdc6b21c50` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 113502 | `19e455d4bb2e9266c9e7df5c9552e4a54528ab627b4702fe22c9d306d8a05bf6` |
+| `POLISIM_FEATURE_LIST.md` | 80778 | `022bc639a042d5db3adbc8f809728e707747e09ad17d99cbb8acc1714a95702a` |
+| `p4a_1280.log` | 1121715 | `017c0bd5ace2a74dd8702c34a0c823a9de4a60d0e5f3947b66a969393c7c2f0e` |
 | `p3c6_partyink.log` | 29932 | `a63f54c8a6af63970ea34627786e5585a203d3b6291cfd2aa5ee4d7f67fa56e5` |
 | `bar50_p3a2_RunSimulationBatch.log` | 335398 | `7606ce12f9da2f6d70137b87963880053fbb7ac751e896fe8707b4b9c3ce41d1` |
 | `bar65_p3close_RunAllBatch.log` | 462523 | `37aca5869ccf936c362bf6d820c25ec7577365693beb4004072705bc9ec938a2` |
 | `p3close_1280.log` | 1062104 | `99843586e70ecbded553f8a672acacf1e5c711cf895a8d073105b3b4ef7d351c` |
 | `p3close_2560.log` | 1027268 | `299cfa1ed1c3aa2aa3744546bf3a2c840b8f025ac672e32362d1600dc4b05774` |
 
-### The films — the close sweep at 1280 and 2560 (1600 and 1920 are on disk under the same stem, not carried)
+### The item-1 film pair (P4-1) and the close sweep at 1280 and 2560
 
 | film | bytes | sha256 |
 |---|---|---|
+| `p4a_1280_05a_budget_tax.png` | 660874 | `cce8144887f2d5b6edac88456d2992865db67b31c6b0b44a1833cd06ecdf22de` |
+| `p4a_1280_05a_budget_tax_dragged.png` | 668463 | `15668d81781e74925943c5a346e616615c176c00094bcb66d84b39f153925d25` |
+| `p4a_1280_05b_budget_spending.png` | 689489 | `a3450565339ebea613f1f517e8c3a8d8affebd8b41f325498ceb5feb442c6c5a` |
+| `p4a_1280_05b_budget_spending_dragged.png` | 691685 | `472af2b9f8c43ece12b3c7b35a080a4e28fc91bfd11984d672473bec5fec8157` |
 | `p3close_1280_01_country_selector.png` | 364636 | `dba960105c804da747d3940d1106d437dfd80a511f30f993c1b06f8167f21e93` |
 | `p3close_1280_01a_selector_yielding.png` | 380437 | `d7459eb774e275bfab9561c6814ec973d744f19abbf9ed0b67f2c9d98c24ff98` |
 | `p3close_1280_01b_running_strip.png` | 520864 | `0a3cd2841791b79dff5574f20bb5d6cc021541f8776133b28d7217b5dfabd44e` |

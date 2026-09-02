@@ -22297,3 +22297,15 @@ The five copies are byte-identical to the pack (`cmp`), and the check re-reads t
 - **The harness trigger:** `PoliSim ▸ Audio ▸ Cue Board` (an Editor window, `Assets/Editor/AudioCueBoard.cs`): one button per cue, fired by name through the director, enabled in Play mode; and the driver's `-cuesweep`, which fires every cue in order under the film and asserts each cue with a file loaded its clip.
 
 **The sweep** (`p4b_1280.log`, `-cuesweep`): *8 cue(s) fired by name, 7 resolved to a loaded clip, 1 without a file (recorded)*; 85 captures, 0 overflow, 0 escape, exit 0. **Bar:** `bar69_p4_2_RunAllBatch.log`, 29 of 29 (the two audio checks enrolled in the cheap group), the trajectory enumeration's 900 digests unchanged.
+
+## 262. P4-3 — D13 INSTALLED: the slider row as a family, reconciled against D12, drawn against the item-1 film pair; the package regenerated; E-10 and E-11 recorded (2026-09-03)
+
+**The row:** *"Write it reconciled against D12 (whose row 2 already censused every default-styled slider track and thumb): the slider row as a family - track, thumb, tick marks, the fixed-width rate cell in its rest and draft-amber states, the WOULD PASS badge, the Remove button - one grammar for every dial in the game, drawn against the films from item 1. Annex: the two screenshots verbatim, the item-1 film pair, the census from D12. Binaries uploaded, not described. Regenerate the package; record it in ERRANDS.md."*
+
+**Installed** (`CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D13, above D12; the status line replaced and the D12 status kept beneath as the record). One table, six elements, each with what exists, what is asked, the constraint that binds it and the evidence by film name; the reconciliation at its head says which D12 row it takes (row 2's slider class) and which it leaves (the pagers and fields to D12's ruling, the badge's word to D12 row 5, the ledger row's own composition to §A.9 - not up for re-derivation). The family is asked as ONE grammar for the thirteen dial rows, the two rate sliders and the fund drawdown, at 1280 and 2560.
+
+**The annex, honestly:** the item-1 film pair is on disk and in the package by digest (`p4a_1280_05a_budget_tax` / `_dragged`, and the spending pair); the census is D12's Annex 3, inline; **the two screenshots are not on disk** - the same standing as Playtest 3's nine (E-8) - and join the day they land.
+
+**The package** (`SEND_PACKAGE.md`, regenerated): the request and the feature list by digest; the item-1 film log, the ink harness print, the stance diagnostic print, the closing bar and the two close-film logs by digest; the four item-1 films and every close film at 1280 and 2560 by name, size and digest, computed on disk; the D9 returns and the glance carried unchanged.
+
+**The errands:** E-10 - the sound pack's gaps (the two M4A re-exports, the licence line, the two missing sounds); E-11 - the D13 paste. Both Elias's.

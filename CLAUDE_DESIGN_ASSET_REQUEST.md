@@ -1,5 +1,9 @@
 # Claude Design asset request — PoliSim
 
+## ⭐ STATUS 2026-09-03 (night) — **D13 IS THE LIVE ASK: the slider row as a family, reconciled against D12 (§ ⭐ D13 below; the package `SEND_PACKAGE.md` regenerated). D12 stands beneath it, unsent and unanswered, carried whole. Sending is Elias's.** The status that stood here is kept beneath, verbatim, as the record.
+
+### The D12 status as it stood (2026-09-03)
+
 ## ⭐ STATUS 2026-09-03 — **D12 IS THE LIVE ASK: seven rows from Playtest 3, reconciled against D10 and D11 (§ ⭐ D12 below; the package `SEND_PACKAGE.md` regenerated 2026-09-03). Sending is Elias's.** D11 was pasted, answered and built (§238–§245); the status that stood here is kept beneath, verbatim, as the record.
 
 ### The D11 status as it stood (2026-09-02, late evening)
@@ -815,6 +819,35 @@ The debate screen is drawn as a STAGE inside the content sheet, with the exchang
 ledger. It could equally be a MODAL takeover like election night. **The two read very differently for
 a moment the game treats as a set piece**, and this is a design call we should not make by default.
 Prep / midway / verdict are all filmed at four widths if you want to look before answering.
+---
+
+## ⭐ THE ONE LIVE ASK — D13, the slider row as a family, reconciled against D12 (2026-09-03)
+
+⚠ **D12 (below) stands as sent-ready and unanswered; D13 does not repeat it.** D12 row 2 censused every default-styled control and asked a ruling per class; D13 is the slider class of that census drawn out as ONE grammar, against films that did not exist when D12 was written (P4-1, `COMPLETED.md` §260: the readout cell fixed and the row's geometry proved stable). Where D13 touches a D12 row it says so. **Sending is Elias's.**
+
+**Reconciliation.** D12 row 2 (the census, Annex 3 below D12) listed the slider track and thumb as the one class where a sprite pair touches every dial at once, and the two grey pagers and two text fields beside it; D13 takes the slider class and leaves the pagers and fields to D12's ruling. D12 row 5 (the vote breakdown's grammar) is the source of the WOULD PASS badge's ink and word; D13 asks only where the badge sits on the row. Nothing D11 built is re-asked; the ledger row's own composition (§A.9, the in-track standing/draft pair, the hatch in draft amber, the pencil at the draft end) is the base and is not up for re-derivation.
+
+### The family — one row, every state (1 of 1)
+
+| element | what exists | what is asked | the constraint that binds it | evidence on disk |
+|---|---|---|---|---|
+| **The track** | Unity's skin track (`GUI.skin.horizontalSlider`) under the row's own furniture: the standing tick, the hatch band between standing and draft, the pencil at the draft end. | The track as a drawn thing in the paper idiom - its rest face, its hatched draft span, the standing tick - at the four film sizes. | The track's width is what is left of the row after the fixed columns (P2-1.3: roughly half the row); the row's geometry is IDENTICAL at rest and mid-drag (P4-1's guard). | `p4a_1280_05a_budget_tax` and `_dragged` |
+| **The thumb** | Unity's skin thumb. | A thumb in the idiom (brass or paper), sized so a whole point is reachable (the reach record: worst 0.446 units per pixel on the Budget). | Hit area not smaller than the skin's; one thumb for every dial in the game. | the same pair |
+| **Tick marks** | None drawn; the standing tick is the only mark. | Whether the track carries scale ticks (the trailing text names the ends: "0 nationalized - 100 deregulated"), and if so at what pitch. | A tick is furniture under the slider, never a control; nothing on the track moves with the draft but the thumb and the hatch. | `p4a_1280_06d_policylaws_sectors` |
+| **The fixed-width rate cell** | One readout cell (P4-1): the standing figure in the row's ink at rest; the DRAFT figure in the draft cue (D6's darkened Caution ink) while a draft differs. No second number. | The cell's two faces drawn: rest, and draft-amber - the ink, and whether the cell carries a mark (a pencil, a rule) beside the amber figure. | The cell's width does not change between the two states; the standing value stays readable on the track as the tick. | `p4a_1280_05a_budget_tax` (rest: 52.00 %) and `_dragged` (57.00 % in the draft cue) |
+| **The WOULD PASS badge** | The verdict word in the verdict's ink (green / red) in a column of 11 % of the row, beside the trailing figure. | Where the badge sits in the family - its own cell, or folded into the trailing column - and its form (word, or a mark and a word). | The word is the model's own verdict (§257, the count decides) and is not paraphrased; the column is fixed-width in every state. | `p4a_1280_05a_budget_tax` |
+| **The Remove / Implement button** | The idiom's brass button (`_removeButtonStyle` / `_implementButtonStyle`), in a column sized for its widest label (P4-1: Implement, Remove, Pending (NNd)). | The button's face in the family, and whether the three labels share one width or the family gives the pending state its own form. | The column's width does not change with the label; the button is always drawn (control-count invariant). | `p4a_1280_05a_budget_tax` |
+
+**One grammar for every dial in the game:** the thirteen `DrawDialRow` sites (tax, spending, welfare, the fund, labour, crime, sectors), the two rate sliders and the fund drawdown - one drawing that every dial obeys, at 1280 and at 2560.
+
+### The annex — one set
+
+1. **The two screenshots, verbatim** - ⚠ Elias's two screenshots for this item are not on disk (the same standing as the nine of E-8); they join the package the day they land.
+2. **The item-1 film pair** - `p4a_1280_05a_budget_tax.png` and `p4a_1280_05a_budget_tax_dragged.png` (rest and mid-drag, the geometry identical, the readout in its two faces), and the spending pair `p4a_1280_05b_budget_spending` / `_dragged`.
+3. **The census from D12** - Annex 3 under D12 below (the slider class: thirteen dial rows through `LedgerRow`, the two rate sliders, the fund drawdown).
+
+**Binary artifacts are uploaded, not described.**
+
 ---
 
 ## ⭐ THE ONE LIVE ASK — D12, seven rows reconciled against D10 and D11 (2026-09-03)
