@@ -20838,3 +20838,37 @@ nothing on the game path builds one today); a persisted player campaign (`State`
 bump) advanced by `SimulationManager`'s day loop between `CampaignStart` and polling day; the HQ screen and
 its queue reading that state instead of the driver's staged `CampaignFilmState`; the rail cell; and
 election night reading the run's shares. Each is its own commit; none is half-started here.
+
+## 203. C-R4b STEP 2 — a campaign Setup from the runtime tables, and the harness now stages through it (2026-09-02)
+
+**The gap.** §197's C-R4b measured that no gameplay type could hand `CampaignRun` a `Setup`: the only
+builder was `CampaignAiHarness.BuildSetup` in the Editor assembly, reading its own copies of Sweden's
+2022 and 2018 shares and its own read of the valkrets CSV from the repository folder — a path a built
+game does not have.
+
+**What was built.** `LiveCampaignSetup` (⚠ in the Editor assembly for now — see below): `TryFor(country, scandals, out setup, out
+note)` — Sweden's campaign, or false with the reason for the other five (§3's first case is Sweden; a
+second country is its own staging, not a copy). Every sourced input now comes from the runtime table
+that already held it: the party order and the 2022/2018 shares from `PartySystems.TryHistory`, loyalty
+from `LoyaltyModel` (W-A1), the 29 valkretsar and their valid votes from `SwedishValkretsReturns2022`
+(W-F1), compatibility DERIVED at the fixed point where an idle campaign reproduces 2022, salience
+SOURCED from Eurobarometer 105. The `[AUTHORED-DRAFT]` staging the harness has run since W-C1 — the
+personality cast, the candidates' attributes, the offices, the staff and television buys, the equal
+war chest (D-1 (c)), the volunteers, the flat issue-match and credibility, the tracker's cadence — moved
+with it, labelled field by field; moving changes who can call it, not its provenance.
+
+**One source of truth.** `CampaignAiHarness.BuildSetup` delegates to `LiveCampaignSetup.Sweden` (the
+harness keeps only its own staged scandal); its private copies of the 2018 shares, the personality cast,
+the six staging helpers and the CSV reader are deleted, and the three constants its other probes still
+read (`Assignment`, `Shares2022`, `FlatCredibility`) are properties over the runtime tables.
+
+**Why it is not in the runtime assembly yet.** `UnwiredSubsystemCheck` counts a runtime type with no game-path caller as an unwired subsystem and its ratchet stands at 3, lowered twice today; a ratchet is never raised. The builder therefore moves into the runtime together with its first consumer — step 3 — and not one commit before. Everything it reads is runtime already, so the move is a file move.
+
+**Proven, again on the digest.** `CampaignAiHarness` 1a: **`3c09307528e2dba2`** before the move,
+**`3c09307528e2dba2`** after — the Setup the game will build is, decision for decision, the one the
+harness has measured for a week. Seven consuming harnesses green; bar 25 of 25.
+
+**Next in C-R4b's order:** the persisted player campaign — `CampaignRun.State` on the save, advanced by
+`SimulationManager`'s day loop between `CampaignStart` and polling day, with the player's party
+scripted from a queue; then the HQ screen and its queue on that state; the rail cell; election night on
+the run's shares.

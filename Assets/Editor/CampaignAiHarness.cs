@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using PoliSim.Data;
 using PoliSim.Elections;
 using PoliSim.Simulation;
 using UnityEngine;
@@ -54,24 +55,9 @@ namespace PoliSim.EditorTools
         // Sweden 2022 and 2018 Riksdag shares, Valmyndigheten final counts, in the driver's party
         // order (S, SD, M, V, C, KD, MP, L). 2018 re-ordered from LoyaltyHarness's series.
         private static readonly string[] Parties = { "S", "SD", "M", "V", "C", "KD", "MP", "L" };
-        private static readonly double[] Shares2022 = { 30.33, 20.54, 19.10, 6.75, 6.71, 5.34, 5.08, 4.61 };
-        private static readonly double[] Shares2018 = { 28.26, 17.53, 19.84, 8.00, 8.61, 6.32, 4.41, 5.49 };
-
-        private static readonly AiPersonality[] Assignment =
-        {
-            AiPersonality.Professional,   // S
-            AiPersonality.Populist,       // SD
-            AiPersonality.Establishment,  // M
-            AiPersonality.Grassroots,     // V
-            AiPersonality.Chaotic,        // C
-            AiPersonality.Establishment,  // KD
-            AiPersonality.Grassroots,     // MP
-            AiPersonality.Professional,   // L
-        };
-
-        private const double CompatibilityCeiling = 70.0;   // DERIVED scaling anchor: the largest party's compatibility; the rest follow the fixed point
-        private const double FlatIssueMatch = 0.5;          // [AUTHORED-DRAFT] W-F2 sources per-issue positions
-        private const double FlatCredibility = 0.6;         // [AUTHORED-DRAFT] W-F6
+        private static double[] Shares2022 => PartySystems.TryHistory(CountryId.Sweden, out double[] latest, out _) ? latest : null;   // C-R4b step 2: the runtime table, not a copy
+        private static AiPersonality[] Assignment => LiveCampaignSetup.SwedenPersonalities;   // C-R4b step 2: the runtime cast, not a copy
+        private const double FlatCredibility = LiveCampaignSetup.FlatCredibility;   // C-R4b step 2: the runtime figure
         /// <summary>
         /// W-F5: the campaign's TOTAL money across the eight parties, unchanged from the equal
         /// staging (8 x 2 400 000). ⚠ **[AUTHORED-DRAFT]** — the scale is a playability figure, not
@@ -137,8 +123,6 @@ namespace PoliSim.EditorTools
         internal static readonly int[] Seats2022 = { 107, 73, 68, 24, 24, 19, 18, 16 };
 
         private const double WarChest = 2_400_000.0;        // the equal figure, kept for the blind-view probe below
-        private const int Volunteers = 800;                  // [AUTHORED-DRAFT] W-B11: 800 volunteers x 3 h a day = 2 400 volunteer-hours, equal for all by design (W-B4's offices grow them)
-        private const double OfficeOperationsPerDay = 2_000.0;   // [AUTHORED-DRAFT] W-B4: what each staged office puts into its own daily ground operation (400 doors a day at 5 kr)
 
         public static void Run()
         {
@@ -615,161 +599,11 @@ namespace PoliSim.EditorTools
             return CampaignRun.Simulate(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi), SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
         }
 
-        /// <summary>[AUTHORED-DRAFT] W-B7: a candidate per personality - §16's attributes as the personality's own emphasis, no names (W-F6 labels real leaders). Game fiction, equal in sum by design.</summary>
-        /// <summary>
-        /// [AUTHORED-DRAFT] W-B4: each personality's office plan, as §32 describes its ground game -
-        /// the grassroots party six offices, the populist four (its rallies are local), the
-        /// professional three, the establishment two, the chaotic one - each in the largest
-        /// valkretsar by electorate. Where a party SHOULD site them (its swing regions, W-E2) is
-        /// W-B5's plan and W-C2's reactivity; today the plan is staged, and the harness says so.
-        /// </summary>
-        private static int[] OfficesFor(AiPersonality personality, RegionAudience[] regions)
-        {
-            int count;
-            switch (personality)
-            {
-                case AiPersonality.Grassroots: count = 6; break;
-                case AiPersonality.Populist: count = 4; break;
-                case AiPersonality.Professional: count = 3; break;
-                case AiPersonality.Establishment: count = 2; break;
-                default: count = 1; break;
-            }
-
-            var order = new List<int>();
-            for (int r = 0; r < regions.Length; r++) { order.Add(r); }
-            order.Sort((a, b) => regions[b].Audience.CompareTo(regions[a].Audience));
-            return order.GetRange(0, count).ToArray();
-        }
-
-        private static CandidateProfile CandidateFor(AiPersonality personality, string party)
-        {
-            switch (personality)
-            {
-                //                                        charisma debate comm cred integ knowledge campaign popularity scandal
-                case AiPersonality.Populist: return new CandidateProfile(party, 85, 80, 75, 50, 55, 45, 65, 70, 55);
-                case AiPersonality.Professional: return new CandidateProfile(party, 65, 70, 70, 70, 70, 70, 75, 60, 70);
-                case AiPersonality.Establishment: return new CandidateProfile(party, 55, 65, 65, 80, 75, 80, 60, 60, 75);
-                case AiPersonality.Grassroots: return new CandidateProfile(party, 70, 60, 65, 80, 85, 60, 60, 55, 70);
-                default: return new CandidateProfile(party, 75, 75, 60, 45, 45, 50, 55, 65, 40);
-            }
-        }
-
-        /// <summary>
-        /// [AUTHORED-DRAFT] W-B5: each personality's hires, as §32 describes it - the professional a
-        /// manager and a pollster; the populist a manager and a digital strategist; the establishment
-        /// a manager and a media advisor; the grassroots party a field organizer; the chaotic nobody.
-        /// The manager's plan: television buys the establishment 2, the professional and the populist
-        /// 1 - the "budget plan" W-B9 found a greedy AI cannot improvise.
-        /// </summary>
-        private static StaffRole[] StaffFor(AiPersonality personality)
-        {
-            switch (personality)
-            {
-                case AiPersonality.Professional: return new[] { StaffRole.CampaignManager, StaffRole.Pollster };
-                case AiPersonality.Populist: return new[] { StaffRole.CampaignManager, StaffRole.DigitalStrategist };
-                case AiPersonality.Establishment: return new[] { StaffRole.CampaignManager, StaffRole.MediaAdvisor };
-                case AiPersonality.Grassroots: return new[] { StaffRole.FieldOrganizer };
-                default: return new StaffRole[0];
-            }
-        }
-
-        private static int TelevisionBuysFor(AiPersonality personality)
-        {
-            switch (personality)
-            {
-                case AiPersonality.Establishment: return 2;
-                case AiPersonality.Professional: return 1;
-                case AiPersonality.Populist: return 1;
-                default: return 0;
-            }
-        }
-
+        /// <summary>C-R4b step 2: the staging lives in the runtime `LiveCampaignSetup` now - the game can build the same Setup - and this delegates, so the digest below proves the move byte for byte. The one staged scandal (W-B8) stays the harness's: a MAJOR corruption story breaks for the leading party (S) on day 30 with middling evidence.</summary>
         internal static CampaignRun.Setup BuildSetup(out string note)
         {
-            var sb = new StringBuilder();
-
-            double[] prior = Normalised(Shares2022);
-            double[] loyalty = LoyaltyModel.PartyLoyalties(Shares2022, Shares2018);
-
-            // DERIVED: compatibility at the fixed point where PersuadedShares == prior, so an idle
-            // campaign reproduces the 2022 result exactly. c_i = ceiling * (prior_i / max prior)^(1/Sharpness).
-            double maxPrior = 0.0;
-            foreach (double p in prior) { if (p > maxPrior) { maxPrior = p; } }
-            var compatibility = new double[prior.Length];
-            for (int i = 0; i < prior.Length; i++)
-            {
-                compatibility[i] = CompatibilityCeiling * Math.Pow(prior[i] / maxPrior, 1.0 / PreferenceModel.Sharpness);
-            }
-
-            // SOURCED salience: EB105 Spring 2026, Sweden - the four top-five issues §6 has a slot for.
-            var salience = new double[IssueVector.IssueCount];
-            for (int i = 0; i < salience.Length; i++) { salience[i] = double.NaN; }
-            salience[(int)IssueId.Climate] = 0.26;
-            salience[(int)IssueId.Crime] = 0.18;
-            salience[(int)IssueId.Defense] = 0.17;
-            salience[(int)IssueId.Education] = 0.16;
-
-            // SOURCED regions: the 29 valkretsar's valid votes, 2022 (W-F1).
-            RegionAudience[] regions = ReadValkretsar(out double national);
-
-            var parties = new CampaignRun.PartySetup[Parties.Length];
-            for (int p = 0; p < parties.Length; p++)
-            {
-                var match = new double[IssueVector.IssueCount];
-                for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
-                parties[p] = new CampaignRun.PartySetup(Parties[p], Assignment[p], FlatCredibility, WarChest, match, Volunteers, CandidateFor(Assignment[p], Parties[p]),
-                    OfficesFor(Assignment[p], regions), OfficeOperationsPerDay, StaffFor(Assignment[p]), TelevisionBuysFor(Assignment[p]));
-            }
-
-            var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[Parties.Length]);
-            var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[Parties.Length], isInternal: true);
-
-            sb.Append("\n  staging: 8 parties on Sweden 2022 (SOURCED prior), loyalty derived from 2018->2022 (W-A1):\n    ");
-            for (int p = 0; p < parties.Length; p++)
-            {
-                sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} L{1:F0}/C{2:F1}  ", Parties[p], loyalty[p], compatibility[p]));
-            }
-
-            sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "\n    {0} valkretsar (SOURCED 2022 valid votes, W-F1), national audience {1:N0}; salience EB105 SE: climate .26 crime .18 defence .17 education .16\n" +
-                "    [AUTHORED-DRAFT] issue-match {2:F2} flat, credibility {3:F2} flat, war chest {4:N0} kr each - EQUAL, and W-F5 measured why " +
-                "(a seat-proportional split starves the small parties before it separates the personalities; see WarChestFor); houses from W-E4's ladder\n",
-                regions.Length, national, FlatIssueMatch, FlatCredibility, WarChest));
-
-            note = sb.ToString();
-            // W-B6: the electorate as one group at W-A1's size-weighted mean loyalty (a public
-            // derivation from past returns), until W-F4's voter groups give the strategies their
-            // per-group targets.
-            double electorateLoyalty = LoyaltyModel.WeightedMeanLoyalty(loyalty, prior);
-            sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "    strategies (W-B6): prof SwingVoter, pop Populist, est BroadAppeal, grass BaseMobilization, chaos NegativeCampaign; electorate loyalty {0:F1} (one group, W-A1 weighted mean)\n",
-                electorateLoyalty));
-
-            // W-B8: one staged scandal - a MAJOR corruption story breaks for the leading party (S) on day 30 with
-            // middling evidence; the AI responds by personality on the evidence as it sees it. [AUTHORED-DRAFT] staging.
             var scandals = new[] { (30, 0, new Scandal(ScandalKind.Corruption, ScandalSeverity.Major, 0.5)) };
-
-            return new CampaignRun.Setup(CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
-                national, regions, publicHouse, 7, internalHouse, electorateLoyalty, null, null, scandals);
-        }
-
-        private static RegionAudience[] ReadValkretsar(out double national)
-        {
-            string path = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "ElectionsData", "sweden", "valkrets_votes_2022.csv"));
-            var regions = new List<RegionAudience>();
-            national = 0.0;
-            foreach (string raw in File.ReadAllLines(path))
-            {
-                string line = raw.Trim();
-                if (line.Length == 0 || line.StartsWith("#") || line.StartsWith("valkrets;")) { continue; }
-                string[] cells = line.Split(';');
-                double valid = double.Parse(cells[1], CultureInfo.InvariantCulture);
-                regions.Add(new RegionAudience(cells[0], valid));
-                national += valid;
-            }
-
-            if (regions.Count != 29) { throw new InvalidDataException($"expected 29 valkretsar, read {regions.Count} from {path}"); }
-            return regions.ToArray();
+            return LiveCampaignSetup.Sweden(scandals, out note);
         }
 
         // ---------- helpers ----------

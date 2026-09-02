@@ -296,9 +296,11 @@ In order of what a player would notice first:
 > **2026-09-02 — where F6 stands.** Items 1 and 2 landed (`COMPLETED.md` §194, §193); C-N7's attempt to
 > let the AI value coverage exposed C-N1's magnitude and is held at D-20 (§196). C-R4's ruling half is
 > done (§135); its build half, `C-R4b`, has its first step: `CampaignRun` is a stepper (`Begin` /
-> `StepDay` / `Finish`, §202), digest-identical. **Next, in order:** a `Setup` from the live `World`; a
-> persisted player campaign advanced by the day loop; the HQ screen and its queue on live state; the
-> rail cell; election night on the run's shares.
+> `StepDay` / `Finish`, §202), digest-identical, and its second: `LiveCampaignSetup` builds Sweden's
+> `Setup` from the runtime tables and the harness stages through it (§203), digest-identical again —
+> Editor-side until step 3 gives it a game-path caller (`UnwiredSubsystemCheck`'s ratchet is never raised).
+> **Next, in order:** a persisted player campaign advanced by the day loop; the HQ screen and its queue
+> on live state; the rail cell; election night on the run's shares.
 4. **The play-calibration list**, once the loop is playable — its constants are judged by playing, which is
    Elias's, and the list exists for exactly that sitting.
 
