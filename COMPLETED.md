@@ -21881,3 +21881,21 @@ Each attribute is a float on `CabinetMinister`, 0–100, `[AUTHORED-DRAFT]` per 
 **What the bar taught.** The graph's legend line carried "board 1l" into a player string, and `MetaTextCheck`'s board-ref pattern is exactly for that; the line names the weights without the board now, and the board stays in the comment.
 
 **Bar:** `RunAllBatch` 26 of 26 clean on the four boards together (`bar49_d11_boards_RunAllBatch.log`; the first run, `bar48_…`, failed the three checks named above).
+
+## 243. D11 ANSWERED, ROW 1 — board 5a, Statistics › International: the pair as one page - a mirrored ledger, the pair leading the right column, three absence states drawn as three facts (2026-09-02, evening)
+
+**The board.** A mirrored ledger: the eight readings as one column of labels down the centre, the home side reading right-to-left on the left and the partner left-to-right on the right, so a label is read once and the eye compares across it. Both identities as the masthead; the pair (trade both ways as two arrows, both tariffs, bloc, currency) first at right because it is the only content that belongs to the pair. Absence drawn three ways: no relations state as a dashed collar on every pair page; no trade link as the collar replacing the arrows while the tariffs still read; trade of zero as the arrows at minimum length with the figure 0. A row with one side is not drawn - currency strength against a shared-currency partner - and the footer says why. Partner order the CountryId enum's. The stance plate carries the two `PolicyStanceAxes` blends, not the CHES positions.
+
+**Built** (`DrawCountryPageContent` and its helpers in `GameController.Statistics.cs`; P-E1's two blocks and their prose replaced).
+
+- **The pager** - PREV · the five partners in enum order with the current one in the primary ink · NEXT - and **the masthead**: flag, name as a numeral, role · currency zone · bloc (· the year on the home side); BOTH SIDES · LIVE between them.
+- **The mirrored ledger** (`DrawPairMirrorRow`): GDP, UNEMPLOYMENT, INFLATION, APPROVAL, DEBT-TO-GDP, BUDGET BALANCE (the last closed year's balance from that country's own report as a share of its GDP, a dash before any year has closed), CREDIT RATING (the standing rating, a dash until reviewed), POVERTY RATE; CURRENCY STRENGTH only when both sides set their own currency (`CurrencySystem.SharesCurrencyZoneWithOthers` false for both), otherwise the footer names which side has no independent currency and that the row is not drawn.
+- **The pair plate** (`DrawPairTradePlate`): the link from `TradePartners`; two arrows (`DrawPairTradeArrow`) in the Trade area's ink - HOME → PARTNER on `ExportVolume`, PARTNER → HOME on `ImportVolume`, length relative to the larger of the two, the figure at the head; with a link carrying nothing the arrows draw at their minimum and the caption says TRADE OF ZERO, THIS PERIOD; with no link the collar replaces the arrows and says this is not trade of zero. The tariffs each side charges through `TradeSystem.GetTariffRate`, SHARED BLOC by name or NONE, SHARED CURRENCY as YES with the zone or NO with both zones.
+- **The stance plate** (`DrawPairStancePlate`): FISCAL SIZE and REGULATION / WELFARE, each a centred lane on the code's 0–100 scale with the two markers tagged by ISO two-letter codes, the home side in the primary ink and the partner in the secondary; the footer says these are the blends the compass plotted until P2-3.2, not the CHES positions.
+- **The collar** (`DrawPairCollar`, `DeskDashedFrame`): NO BILATERAL RELATIONS STATE on every pair page, always - no relations score, no alliance or treaty standing, no diplomatic history; nothing reads warm or cool and no score is drawn in its place.
+
+**The film:** `d11b1280_02b_statistics_international` (the map above the fold) and `_deep` (the pair page).
+
+**What the first film taught.** The stance markers' tags were squeezed into half a lane and the overflow guard said so eight times; the tags have a caption row of their own above the track now.
+
+**Bar:** `RunAllBatch` 26 of 26 clean on the four boards together (`bar49_d11_boards_RunAllBatch.log`; the first run, `bar48_…`, failed the three checks named above).

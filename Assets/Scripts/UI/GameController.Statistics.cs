@@ -716,123 +716,322 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// C-C8 (P-E1): **the browsable country page** — each of the other five in relation to the
-        /// player's country, one at a time, prev/next.
+        /// Board 5a (D11 row 1, 2026-09-02): **the pair as ONE PAGE rather than a stack.** P-E1's two
+        /// side-by-side blocks become one instrument with a spine - a mirrored ledger, the eight
+        /// readings as one column of labels down the centre with the home side reading right-to-left
+        /// on the left and the partner left-to-right on the right, so a label is read once and the eye
+        /// compares across it. Both identities are the masthead; the pair (trade both ways as two
+        /// arrows, both tariffs, bloc, currency) leads the right column because it is the only content
+        /// that belongs to the pair - everything else is two countries' own readings.
         ///
-        /// <para>⚠ <b>ONLY WHAT THE MODEL HOLDS, and the absence is drawn as loudly as the presence.</b>
-        /// The pre-ruling is explicit: no relations score, no derived affinity presented as a fact. That
-        /// is not a stylistic preference here — <b>this model holds no bilateral relations state at
-        /// all.</b> `Country` has no relations field; `ForeignPolicyMeeting` is an event with options,
-        /// not a standing relationship. Any "relations: warm/cool" reading on this page would be
-        /// invented whole, and the page says so in its own words instead.</para>
-        ///
-        /// <para>What it CAN say, every line of it derived: both sides' headline readings; the pair's
-        /// trade in both directions from the map's own `TradePartner` links; the tariff each charges the
-        /// other, through the same `GetTariffRate` the simulation charges; whether they share a trade
-        /// bloc and whether they share a currency; and both compass positions as the compass itself
-        /// draws them.</para>
+        /// <para>⚠ <b>ONLY WHAT THE MODEL HOLDS, and absence drawn as its own fact - three states, three
+        /// drawings.</b> This model holds no bilateral relations state at all (`Country` has no relations
+        /// field; a summit is an event, not a bond), so every pair page carries the dashed collar saying
+        /// so and nothing reads warm or cool. <i>No trade link</i> replaces the trade plate's arrows with
+        /// the collar while the tariffs still read (each side's rate is a fact about that side); <i>trade
+        /// of zero</i> draws the arrows at their minimum with the figure 0 - a different fact from "no
+        /// link", never the same pixels. A row with one side is not drawn: currency strength exists only
+        /// for independent-currency countries, so against a euro partner the row is omitted and the footer
+        /// says why. Partner order is the CountryId enum's.</para>
         /// </summary>
+        /// <summary>The pair column's width on the board (380 of the 1280 board's px), scaled with the sheet.</summary>
+        private float PairColumnWidth => StatsUnit(380f);
+
         private void DrawCountryPageContent()
         {
             var others = new List<Country>();
-            foreach (Country c in _world.Countries)
+            foreach (CountryId id in (CountryId[])System.Enum.GetValues(typeof(CountryId)))
             {
-                if (c.Id != PlayerCountryId) { others.Add(c); }
+                if (id == PlayerCountryId) { continue; }
+                Country c = _world.GetCountry(id);
+                if (c != null) { others.Add(c); }
             }
-
             if (others.Count == 0) { return; }
 
             _internationalPageIndex = ((_internationalPageIndex % others.Count) + others.Count) % others.Count;
             Country them = others[_internationalPageIndex];
 
-            DrawStatsSectionCaption($"{_playerCountry.Name.ToUpperInvariant()} AND {them.Name.ToUpperInvariant()} — {_internationalPageIndex + 1} OF {others.Count}");
+            DrawStatsSectionCaption("PAIR PAGE · THE MODEL'S OWN LINKS");
             GUILayout.Space(StatsUnit(4f));
 
+            // The pager: prev · the partners in enum order, the current one in the primary ink · next.
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("< Previous", _buttonStyle, GUILayout.Width(StatsUnit(110f)))) { _internationalPageIndex--; }
+            if (GUILayout.Button("< Prev", _buttonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex--; }
             GUILayout.FlexibleSpace();
-            GUILayout.Label(them.Name, _headerStyle);
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Next >", _buttonStyle, GUILayout.Width(StatsUnit(110f)))) { _internationalPageIndex++; }
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(StatsUnit(6f));
-
-            // Side by side, the player first - every figure each country's own state.
-            DrawPairRow("GDP", UiFormat.Money(_playerCountry.State.GDP, MoneyUnit.Billions), UiFormat.Money(them.State.GDP, MoneyUnit.Billions));
-            DrawPairRow("Unemployment", $"{_playerCountry.State.Unemployment:F2}%", $"{them.State.Unemployment:F2}%");
-            DrawPairRow("Inflation", $"{_playerCountry.State.Inflation:F2}%", $"{them.State.Inflation:F2}%");
-            DrawPairRow("Debt-to-GDP", $"{_playerCountry.State.DebtToGdpRatio:F1}%", $"{them.State.DebtToGdpRatio:F1}%");
-            DrawPairRow("Approval", $"{_playerCountry.State.ApprovalRating:F1}", $"{them.State.ApprovalRating:F1}");
-
-            GUILayout.Space(StatsUnit(6f));
-            GUILayout.Label("Between the two", _headerStyle);
-
-            TradePartner link = _playerCountry.TradePartners.Find(p => p.PartnerId == them.Id);
-            if (link != null)
+            for (int i = 0; i < others.Count; i++)
             {
-                DrawPairRow("Trade (exports / imports)",
-                    $"{UiFormat.Money(link.ExportVolume, MoneyUnit.Billions)} out",
-                    $"{UiFormat.Money(link.ImportVolume, MoneyUnit.Billions)} in");
-                DrawPairRow("Tariff charged",
-                    $"{TradeSystem.GetTariffRate(_playerCountry, them, _world.TradeBlocs):F2}%",
-                    $"{TradeSystem.GetTariffRate(them, _playerCountry, _world.TradeBlocs):F2}%");
+                bool current = i == _internationalPageIndex;
+                GUILayout.Label(others[i].Name.ToUpperInvariant(), DeskCaption(current ? 10f : 8.5f, current ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted, current, TextAnchor.MiddleCenter));
+                if (i < others.Count - 1) { GUILayout.Label("·", DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter)); }
+            }
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Next >", _buttonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex++; }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(StatsUnit(6f));
+
+            // The masthead: both identities, the home side left, the partner right.
+            GUILayout.BeginHorizontal();
+            DrawPairIdentity(_playerCountry, "HOME", left: true);
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("BOTH SIDES · LIVE", DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter));
+            GUILayout.FlexibleSpace();
+            DrawPairIdentity(them, "PARTNER", left: false);
+            GUILayout.EndHorizontal();
+            GUILayout.Space(StatsUnit(8f));
+
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            DrawPairMirroredLedger(them);
+            GUILayout.EndVertical();
+            GUILayout.Space(StatsUnit(16f));
+            GUILayout.BeginVertical(GUILayout.Width(PairColumnWidth));
+            DrawPairTradePlate(them);
+            GUILayout.Space(StatsUnit(8f));
+            DrawPairStancePlate(them);
+            GUILayout.Space(StatsUnit(8f));
+            DrawPairRelationsCollar();
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary>One identity of the masthead: the flag, the name as a numeral, and its role · currency zone · bloc (· the year for the home side).</summary>
+        private void DrawPairIdentity(Country country, string role, bool left)
+        {
+            TextAnchor anchor = left ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
+            string bloc = "NO BLOC";
+            foreach (TradeBloc b in _world.TradeBlocs) { if (b.IsMember(country.Id)) { bloc = b.Name.ToUpperInvariant(); break; } }
+            string line = role + " · " + country.CurrencyZone.Name.ToUpperInvariant() + " · " + bloc
+                + (left ? " · YEAR " + _simulationManager.CurrentDate.Year.ToString(CultureInfo.InvariantCulture) : "");
+            GUILayout.BeginHorizontal();
+            if (left) { DrawPairFlag(country.Id); }
+            GUILayout.BeginVertical();
+            GUILayout.Label(country.Name, DeskNumeral(16f, PoliSimTheme.TextPrimary, left ? TextAnchor.LowerLeft : TextAnchor.LowerRight));
+            GUILayout.Label(line, DeskCaption(8.5f, PoliSimTheme.TextSecondary, false, anchor));
+            GUILayout.EndVertical();
+            if (!left) { DrawPairFlag(country.Id); }
+            GUILayout.EndHorizontal();
+        }
+
+        private void DrawPairFlag(CountryId id)
+        {
+            float w = StatsUnit(30f);
+            float h = Mathf.Round(w * 2f / 3f);
+            Rect r = GUILayoutUtility.GetRect(w, h, GUILayout.Width(w), GUILayout.Height(h));
+            Texture2D flag = IconLibrary.GetFlag(id);
+            if (Event.current.type == EventType.Repaint && flag != null) { GUI.DrawTexture(new Rect(r.x, r.y + (r.height - h) * 0.5f, w, h), flag, ScaleMode.StretchToFill, true); }
+        }
+
+        /// <summary>The mirrored ledger: one label column down the centre, the home figure reading right-to-left on the left, the partner's left-to-right on the right. Eight readings each side; a row with one side is omitted and the footer says why.</summary>
+        private void DrawPairMirroredLedger(Country them)
+        {
+            DrawStatsSectionCaption("EIGHT HEADLINE READINGS · THE SAME EIGHT EACH SIDE");
+            GUILayout.Space(StatsUnit(3f));
+            DrawPairMirrorRow("GDP", UiFormat.Money(_playerCountry.State.GDP, MoneyUnit.Billions), UiFormat.Money(them.State.GDP, MoneyUnit.Billions));
+            DrawPairMirrorRow("UNEMPLOYMENT", UiFormat.Number(_playerCountry.State.Unemployment, 1) + "%", UiFormat.Number(them.State.Unemployment, 1) + "%");
+            DrawPairMirrorRow("INFLATION", UiFormat.Number(_playerCountry.State.Inflation, 1) + "%", UiFormat.Number(them.State.Inflation, 1) + "%");
+            DrawPairMirrorRow("APPROVAL", UiFormat.Number(_playerCountry.State.ApprovalRating, 1), UiFormat.Number(them.State.ApprovalRating, 1));
+            DrawPairMirrorRow("DEBT-TO-GDP", UiFormat.Number(_playerCountry.State.DebtToGdpRatio, 1) + "%", UiFormat.Number(them.State.DebtToGdpRatio, 1) + "%");
+            DrawPairMirrorRow("BUDGET BALANCE", PairBudgetBalance(_playerCountry), PairBudgetBalance(them));
+            DrawPairMirrorRow("CREDIT RATING", PairCreditRating(_playerCountry), PairCreditRating(them));
+            DrawPairMirrorRow("POVERTY RATE", UiFormat.Number(_playerCountry.State.PovertyRate, 1) + "%", UiFormat.Number(them.State.PovertyRate, 1) + "%");
+
+            bool mineIndependent = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
+            bool theirsIndependent = !CurrencySystem.SharesCurrencyZoneWithOthers(them, _world);
+            if (mineIndependent && theirsIndependent)
+            {
+                DrawPairMirrorRow("CURRENCY STRENGTH", UiFormat.Number(_playerCountry.State.CurrencyStrength, 1), UiFormat.Number(them.State.CurrencyStrength, 1));
             }
             else
             {
-                // ⚠ Absence, drawn. Not every pair trades in this model, and a zero would read as
-                // "they trade nothing" rather than "this model holds no link between them".
-                GUILayout.Label("No bilateral trade link exists between these two in this model - which is not the same as trade of zero.", _labelStyle);
+                Country shared = mineIndependent ? them : _playerCountry;
+                GUILayout.Space(StatsUnit(3f));
+                GUILayout.Label("CURRENCY STRENGTH OMITTED: " + shared.Name.ToUpperInvariant() + " HAS NO INDEPENDENT CURRENCY, SO THE ROW HAS ONE SIDE AND IS NOT DRAWN",
+                    DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter));
             }
-
-            bool sameBloc = false;
-            foreach (TradeBloc bloc in _world.TradeBlocs)
-            {
-                if (bloc.IsMember(PlayerCountryId) && bloc.IsMember(them.Id)) { sameBloc = true; }
-            }
-
-            GUILayout.Label(sameBloc ? "Both are members of the same trade bloc." : "They share no trade bloc.", _labelStyle);
-            GUILayout.Label(_playerCountry.CurrencyZone == them.CurrencyZone
-                ? "They share a currency, so neither sets a policy rate against the other."
-                : "They use different currencies.", _labelStyle);
-
-            GUILayout.Space(StatsUnit(6f));
-            DrawPairRow("Policy stance — fiscal size",
-                $"{PolicyStanceAxes.GetFiscalSizeAxisValue(_playerCountry):F1}",
-                $"{PolicyStanceAxes.GetFiscalSizeAxisValue(them):F1}");
-            DrawPairRow("Policy stance — regulation / welfare",
-                $"{PolicyStanceAxes.GetRegulationWelfareAxisValue(_playerCountry):F1}",
-                $"{PolicyStanceAxes.GetRegulationWelfareAxisValue(them):F1}");
-
-            GUILayout.Space(StatsUnit(6f));
-
-            // ⚠ THE ABSENCE BLOCK. Every gap here is a line in the Design ask (C-F1), and stating them
-            // is the point of the page rather than an apology for it: a player who cannot see what the
-            // model does NOT know will read the four facts above as a complete picture of a relationship.
-            GUILayout.Label("What this model does not hold about this pair", _headerStyle);
-            // ⚠ PLAYER-FACING PROSE, and the first cut was not. It named the type - "Country carries no
-            // bilateral relations field" - with the identifier in backticks, which rendered literally on
-            // screen: developer-facing text on a player surface, the exact class P-A1 cut 131 strings of.
-            // The 1280 film is what showed it. This says the same true thing in the player's own terms.
-            GUILayout.Label(
-                "No relations score, no alliance or treaty standing, no diplomatic history, and no record of "
-                + "past dealings between these two countries. This simulation does not model a relationship "
-                + "between governments at all - a summit is a passing event, not a bond that lasts - so a "
-                + "\"warm\" or \"cool\" reading here would be made up rather than measured. What you see above "
-                + "is everything the simulation knows about this pair.",
-                _labelStyle);
         }
 
-        /// <summary>C-C8: one comparison row — the label, the player's figure, then theirs. Deliberately
-        /// plain: neither side is coloured good or bad, because "their unemployment is higher" is not a
-        /// thing this model has an opinion about.</summary>
-        private void DrawPairRow(string label, string mine, string theirs)
+        /// <summary>The last closed year's balance as a share of that country's GDP - the same report the desk strip reads; a dash before any year has closed.</summary>
+        private string PairBudgetBalance(Country country)
         {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(label, _labelStyle, GUILayout.Width(StatsUnit(200f)));
-            GUILayout.Label(mine, _labelStyle, GUILayout.Width(StatsUnit(140f)));
-            GUILayout.Label(theirs, _labelStyle, GUILayout.Width(StatsUnit(140f)));
-            GUILayout.EndHorizontal();
+            FiscalTurnReport last = _simulationManager.GetLastFiscalReport(country.Id);
+            if (last == null || country.State.GDP <= 0f) { return "—"; }
+            return (last.BudgetBalance / country.State.GDP * 100f).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "% GDP";
+        }
+
+        /// <summary>The standing rating (set by scheduled review); a dash until the first review - an unrated sovereign is not a top-rated one.</summary>
+        private static string PairCreditRating(Country country) =>
+            country.Rating != null && country.Rating.HasBeenReviewed ? CreditRatingSystem.Format(country.Rating.Rating) : "—";
+
+        private void DrawPairMirrorRow(string label, string mine, string theirs)
+        {
+            GUIStyle numeral = DeskNumeral(13f, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
+            GUIStyle numeralRight = DeskNumeral(13f, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            GUIStyle caption = DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
+            float height = Mathf.Ceil(numeral.CalcSize(new GUIContent("0")).y) + StatsUnit(4f);
+            Rect row = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            float labelWidth = StatsUnit(150f);
+            float side = Mathf.Max(1f, (row.width - labelWidth) * 0.5f);
+            PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, side, row.height), mine, numeral);
+            PoliSimWidgets.MeasuredLabel(new Rect(row.x + side, row.y, labelWidth, row.height), label, caption);
+            PoliSimWidgets.MeasuredLabel(new Rect(row.x + side + labelWidth, row.y, side, row.height), theirs, numeralRight);
+            PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), PoliSimTheme.RuleRow);
+        }
+
+        /// <summary>The pair plate: trade from the map's own links as two arrows (direction the fact, length relative to the larger), the tariff each charges, shared bloc, shared currency - and the two absence states drawn apart.</summary>
+        private void DrawPairTradePlate(Country them)
+        {
+            DrawStatsSectionCaption("THE PAIR · TRADE FROM THE MAP'S OWN LINKS");
+            GUILayout.Space(StatsUnit(4f));
+            string mine = _playerCountry.Name.ToUpperInvariant();
+            string theirs = them.Name.ToUpperInvariant();
+            TradePartner link = _playerCountry.TradePartners.Find(p => p.PartnerId == them.Id);
+            if (link == null)
+            {
+                DrawPairCollar("NO TRADE LINK", "THE MAP HOLDS NO TradePartner LINK BETWEEN THESE TWO. THIS IS NOT TRADE OF ZERO — NO VOLUME EXISTS TO BE ZERO. TARIFFS STILL READ: EACH SIDE'S RATE IS A FACT ABOUT THAT SIDE.");
+            }
+            else
+            {
+                float max = Mathf.Max(link.ExportVolume, link.ImportVolume);
+                bool zero = max <= 0f;
+                if (zero) { GUILayout.Label("(TRADE OF ZERO, THIS PERIOD) — A LINK EXISTS AND CARRIED NOTHING: THE ARROWS DRAW AT THEIR MINIMUM, THE FIGURE READS 0", DeskCaption(7.5f, PoliSimTheme.TextMuted)); }
+                DrawPairTradeArrow(mine + " → " + theirs, link.ExportVolume, max);
+                DrawPairTradeArrow(theirs + " → " + mine, link.ImportVolume, max);
+            }
+            GUILayout.Space(StatsUnit(4f));
+            DrawPairFactRow("TARIFF " + mine + " CHARGES", UiFormat.Number(TradeSystem.GetTariffRate(_playerCountry, them, _world.TradeBlocs), 1) + "%");
+            DrawPairFactRow("TARIFF " + theirs + " CHARGES", UiFormat.Number(TradeSystem.GetTariffRate(them, _playerCountry, _world.TradeBlocs), 1) + "%");
+            string sharedBloc = null;
+            foreach (TradeBloc bloc in _world.TradeBlocs) { if (bloc.IsMember(PlayerCountryId) && bloc.IsMember(them.Id)) { sharedBloc = bloc.Name.ToUpperInvariant(); break; } }
+            DrawPairFactRow("SHARED BLOC", sharedBloc ?? "NONE");
+            bool sameCurrency = _playerCountry.CurrencyZone == them.CurrencyZone;
+            DrawPairFactRow("SHARED CURRENCY", sameCurrency
+                ? "YES — " + _playerCountry.CurrencyZone.Name.ToUpperInvariant()
+                : "NO — " + _playerCountry.CurrencyZone.Name.ToUpperInvariant() + " / " + them.CurrencyZone.Name.ToUpperInvariant());
+        }
+
+        /// <summary>One trade arrow: the label above, the shaft from the left edge with its length relative to the larger of the pair (a minimum for zero), the head, and the figure at the head - in the Trade area's ink.</summary>
+        private void DrawPairTradeArrow(string label, float volume, float max)
+        {
+            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary);
+            GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            float lane = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y) + StatsUnit(2f);
+            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + lane + StatsUnit(3f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, r.width, captionHeight), label, caption);
+            string text = UiFormat.Money(volume, MoneyUnit.Billions);
+            float figureWidth = figure.CalcSize(new GUIContent(text)).x + StatsUnit(6f);
+            float track = Mathf.Max(1f, r.width - figureWidth);
+            float fraction = max > 0f ? volume / max : 0f;
+            float length = Mathf.Max(track * 0.12f, track * fraction);
+            float y = r.y + captionHeight + lane * 0.5f;
+            float shaft = Mathf.Max(2f, StatsUnit(3f));
+            float head = Mathf.Max(5f, StatsUnit(7f));
+            Color ink = UiPalette.GetAreaColor(UiPalette.SystemArea.Trade);
+            PoliSimTheme.Rule(new Rect(r.x, y - shaft * 0.5f, Mathf.Max(1f, length - head), shaft), ink);
+            Color previous = GUI.color;
+            GUI.color = ink;
+            const int Steps = 5;
+            for (int s = 0; s < Steps; s++)
+            {
+                float t = (s + 0.5f) / Steps;
+                float half = head * 0.8f * (1f - t);
+                GUI.DrawTexture(new Rect(r.x + length - head + head * t - head / Steps * 0.5f, y - half, head / Steps + 0.6f, half * 2f), Texture2D.whiteTexture);
+            }
+            GUI.color = previous;
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x + length + StatsUnit(4f), r.y + captionHeight, figureWidth, lane), text, figure);
+        }
+
+        private void DrawPairFactRow(string label, string value)
+        {
+            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextMuted);
+            GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
+            float height = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y) + StatsUnit(3f);
+            Rect r = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            float valueWidth = figure.CalcSize(new GUIContent(value)).x + StatsUnit(4f);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, Mathf.Max(1f, r.width - valueWidth), r.height), label, caption);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.xMax - valueWidth, r.y, valueWidth, r.height), value, figure);
+            PoliSimTheme.Rule(new Rect(r.x, r.yMax - 1f, r.width, 1f), PoliSimTheme.RuleRow);
+        }
+
+        /// <summary>The stance plate: the two blends both sides sit on (PolicyStanceAxes, the pair the compass plotted until P2-3.2 - not the CHES positions, which are not on this page), each a centred lane with the two markers tagged.</summary>
+        private void DrawPairStancePlate(Country them)
+        {
+            DrawStatsSectionCaption("POLICY STANCE · TWO BLENDS, BOTH SIDES");
+            GUILayout.Space(StatsUnit(4f));
+            DrawPairStanceLane("FISCAL SIZE", PolicyStanceAxes.GetFiscalSizeAxisValue(_playerCountry), PolicyStanceAxes.GetFiscalSizeAxisValue(them), them);
+            DrawPairStanceLane("REGULATION / WELFARE", PolicyStanceAxes.GetRegulationWelfareAxisValue(_playerCountry), PolicyStanceAxes.GetRegulationWelfareAxisValue(them), them);
+            GUILayout.Label("THE BLENDS THE COMPASS PLOTTED UNTIL P2-3.2 — NOT THE CHES POSITIONS, WHICH ARE NOT ON THIS PAGE. 0–100, THE CODE'S OWN SCALE.", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+        }
+
+        private void DrawPairStanceLane(string axis, float mine, float theirs, Country them)
+        {
+            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary);
+            GUIStyle tag = DeskCaption(8f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter);
+            float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            float lane = StatsUnit(18f);
+            float tagHeight = captionHeight;   // the markers' tags get a full caption row above the track (the first film squeezed them into half a lane)
+            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + tagHeight + lane + StatsUnit(4f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, r.width, captionHeight), axis, caption);
+            float trackY = r.y + captionHeight + tagHeight + lane * 0.5f;
+            float tagWidth = StatsUnit(22f);
+            float x0 = r.x + tagWidth * 0.5f;
+            float span = Mathf.Max(1f, r.width - tagWidth);
+            PoliSimTheme.Rule(new Rect(x0, trackY - 0.5f, span, 1f), PoliSimTheme.Hairline);
+            PoliSimTheme.Rule(new Rect(x0 + span * 0.5f, trackY - lane * 0.25f, 1f, lane * 0.5f), PoliSimTheme.HairlineStrong);
+            DrawPairStanceMarker(x0 + span * Mathf.Clamp01(mine / 100f), trackY, PairCountryTag(PlayerCountryId), tagWidth, lane, tag, PoliSimTheme.TextPrimary);
+            DrawPairStanceMarker(x0 + span * Mathf.Clamp01(theirs / 100f), trackY, PairCountryTag(them.Id), tagWidth, lane, tag, PoliSimTheme.TextSecondary);
+        }
+
+        private void DrawPairStanceMarker(float x, float y, string tagText, float tagWidth, float lane, GUIStyle tag, Color ink)
+        {
+            float dot = Mathf.Max(4f, StatsUnit(6f));
+            PoliSimTheme.Rule(new Rect(x - dot * 0.5f, y - dot * 0.5f, dot, dot), ink);
+            GUIStyle inked = new GUIStyle(tag);
+            inked.normal.textColor = ink;
+            float tagHeight = Mathf.Ceil(DeskCaptionHeight(tag));
+            PoliSimWidgets.MeasuredLabel(new Rect(x - tagWidth * 0.5f, y - lane * 0.5f - tagHeight, tagWidth, tagHeight), tagText, inked);
+        }
+
+        /// <summary>Two-letter country tags for a marker (the ISO forms of the six).</summary>
+        private static string PairCountryTag(CountryId id)
+        {
+            switch (id)
+            {
+                case CountryId.Sweden: return "SE";
+                case CountryId.Germany: return "DE";
+                case CountryId.France: return "FR";
+                case CountryId.Italy: return "IT";
+                case CountryId.Poland: return "PL";
+                case CountryId.USA: return "US";
+                default: return id.ToString().Substring(0, 2).ToUpperInvariant();
+            }
+        }
+
+        /// <summary>The collar every pair page carries: the model holds no bilateral relations state, and nothing on the page reads warm or cool - in a dashed frame, always.</summary>
+        private void DrawPairRelationsCollar()
+        {
+            DrawPairCollar("NO BILATERAL RELATIONS STATE", "THE MODEL HOLDS NONE — NO RELATIONS SCORE, NO ALLIANCE OR TREATY STANDING, NO DIPLOMATIC HISTORY. NOTHING ON THIS PAGE READS WARM OR COOL, AND NO SCORE IS DRAWN IN ITS PLACE.");
+        }
+
+        /// <summary>A dashed collar with a title and a sentence - board 5a's drawing of an absence.</summary>
+        private void DrawPairCollar(string title, string sentence)
+        {
+            GUIStyle head = DeskCaption(8.5f, PoliSimTheme.TextSecondary, true);
+            GUIStyle body = DeskCaption(7.5f, PoliSimTheme.TextMuted);
+            body.wordWrap = true;
+            float pad = StatsUnit(6f);
+            float width = PairColumnWidth;   // the pair column's own width - the collar is measured against it, not against a layout probe
+            float headHeight = Mathf.Ceil(DeskCaptionHeight(head));
+            float bodyHeight = Mathf.Ceil(body.CalcHeight(new GUIContent(sentence), Mathf.Max(1f, width - pad * 2f)));
+            Rect r = GUILayoutUtility.GetRect(10f, headHeight + bodyHeight + pad * 2f + StatsUnit(2f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            DeskDashedFrame(r, PoliSimTheme.HairlineStrong, 4f, 3f);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x + pad, r.y + pad, r.width - pad * 2f, headHeight), title, head);
+            GUI.Label(new Rect(r.x + pad, r.y + pad + headHeight + StatsUnit(2f), r.width - pad * 2f, bodyHeight), sentence, body);
         }
     }
 }
