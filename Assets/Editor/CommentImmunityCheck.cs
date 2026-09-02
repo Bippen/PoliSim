@@ -49,6 +49,9 @@ namespace PoliSim.EditorTools
             // commit: it no longer reads source at all, and leaving its name here would have been a list
             // asserting something about it that stopped being true.
             "RatchetResidency", "SharedMidpointCheck", "PartyInkDrawSiteCheck",
+            // P2-0.2 (2026-09-02): the office diagnostic scans Assets/Scripts for the retired threshold's names
+            // with comments stripped - a name surviving in a comment is history, not a path.
+            "OfficeTestDiagnostic",
         };
 
         /// <summary>

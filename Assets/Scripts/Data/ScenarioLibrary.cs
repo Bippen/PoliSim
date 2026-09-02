@@ -197,7 +197,7 @@ namespace PoliSim.Data
         /// term (confirmed by reading the formula before running anything - only
         /// unemployment/inflation/crime/corruption gaps are). Across every tested configuration,
         /// including the harshest (a 6-point VAT hike), turn-30 approval never dropped below 39.9 -
-        /// comfortably clear of `ElectionSystem.LosingThreshold` (35). **A player has real time to
+        /// comfortably clear of the approval threshold the game then had (retired at P2-0.2, 2026-09-02 - office is now the chamber's verdict, `COMPLETED.md` §218). **A player has real time to
         /// govern here**, unlike the inflation-driven collapse that killed Disinflation on its own
         /// terms before any lever could even be judged.</para>
         ///

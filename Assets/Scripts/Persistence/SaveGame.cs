@@ -141,7 +141,11 @@ namespace PoliSim.Persistence
 
         public bool IsGameOver;
         public string GameOverReason;
-        public ElectionResult PendingElectionResult;
+        /// <summary>P2-0.2 (2026-09-02): the office verdict election night is showing, held until its CONTINUE - the
+        /// sentence and whether it ends the game. The night itself is not saved (it is built from the count the
+        /// election made in-process), so a load with a verdict pending applies it at once, on the desk.</summary>
+        public string PendingElectionVerdict;
+        public bool PendingElectionVerdictEndsGame;
         public int PendingElectionTurn;
 
         /// <summary>

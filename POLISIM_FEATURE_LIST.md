@@ -382,7 +382,7 @@ screen carries one basis and a harness asserts it. **→ ✅ CLOSED 2026-09-02, 
 "Re-Elected" path still fires now that C-R4b gives the player a party. If it does, retire it — the
 last D0 clause — so the only election outcome the player ever sees is election night's count and
 C-R4's win/lose rule. *Done when:* one election path exists and a harness proves the old one is
-unreachable.
+unreachable. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §218: it fired on every election and drew OVER election night; retired with `ElectionSystem`'s threshold members, election night is the takeover with C-R4's verdict on its foot, `OfficeTestDiagnostic` proves the old path gone.**
 
 **P2-0.3 — The campaign announces itself.** Campaign start is an interrupt: the clock HELDs, the
 banner names it, and HQ opens (the Fed-chair pause is the template). Election night is entered the

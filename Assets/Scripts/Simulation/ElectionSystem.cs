@@ -1,21 +1,17 @@
-using PoliSim.Data;
-
 namespace PoliSim.Simulation
 {
-    /// <summary>Outcome of one election check for a country - not stored on EconomyState, since only the player's country runs elections for now (see ElectionSystem's class comment).</summary>
-    public class ElectionResult
-    {
-        public bool Won;
-        public float ApprovalAtElection;
-        public float Margin;
-    }
-
     /// <summary>
-    /// Elections: a game-rule heuristic, not economic theory, so it's kept separate from
-    /// MacroSystem. Deliberately country-agnostic - it operates on whichever EconomyState/turn
-    /// number is passed in rather than hardcoding "the player" here. Which country is the player is
-    /// a UI-layer decision (see GameController.PlayerCountryId, already hardcoded there), so that's
-    /// also where the resulting IsGameOver/game-over-reason state belongs, not here.
+    /// The election calendar - which turns are election turns. Country-agnostic: it operates on the
+    /// turn number passed in and nothing else.
+    ///
+    /// ⚠ P2-0.2 (2026-09-02): this class used to carry the game's first election rule as well - an
+    /// approval threshold, "re-elected" above it and "election lost" below - and that rule was the
+    /// last clause of the pre-item-10 politics (D0's map named it as what item 10 replaces). It is
+    /// retired: the only election outcome a player sees is election night's count
+    /// (`GameController.ShowElectionNight`) and the office test C-R4 ruled (`GovernmentFormation.Form`
+    /// - is the player's party in the cabinet the chamber forms). A country whose vote model returns
+    /// NotImplemented holds no election and reaches no verdict; its record says why
+    /// (`NationalElection.NotHeldReason`). `OfficeTestDiagnostic` asserts the threshold is gone.
     /// </summary>
     public static class ElectionSystem
     {
@@ -32,30 +28,10 @@ namespace PoliSim.Simulation
         /// </summary>
         public const int ElectionCycle = 4;
 
-        /// <summary>[AUTHORED-DRAFT]: approval rating below this at an election turn loses the election.
-        /// ⚠ **Narrowed at D-5 (a), 2026-09-01**: this rule now decides only the four countries whose vote
-        /// model returns `NotImplemented`. Where a chamber can be formed, office is decided by whether the
-        /// player's party sits in the cabinet (`GovernmentFormation`), which is a mechanism rather than a
-        /// threshold. Nothing measures "the approval at which a real government falls" - it is not a
-        /// quantity real politics has - so the figure was authored and stays authored.</summary>
-        public const float LosingThreshold = 35f;
-
         /// <summary>True on turn numbers that are a multiple of ElectionCycle (and not turn 0, before any turn has run).</summary>
         public static bool IsElectionTurn(int turnNumber)
         {
             return turnNumber > 0 && turnNumber % ElectionCycle == 0;
-        }
-
-        /// <summary>Checks a country's ApprovalRating against LosingThreshold at an election turn.</summary>
-        public static ElectionResult RunElection(EconomyState state)
-        {
-            float margin = state.ApprovalRating - LosingThreshold;
-            return new ElectionResult
-            {
-                Won = margin >= 0f,
-                ApprovalAtElection = state.ApprovalRating,
-                Margin = margin
-            };
         }
     }
 }

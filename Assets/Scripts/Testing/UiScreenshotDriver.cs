@@ -304,6 +304,12 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            if (Interrupts)
+            {
+                yield return CaptureInterrupts(controller);
+                yield break;
+            }
+
             if (CampaignHq)
             {
                 yield return CaptureCampaignHq(controller);
@@ -2335,52 +2341,38 @@ namespace PoliSim.Testing
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
 
-            // --- F. THE ELECTION REVEAL, BOTH FORMS, AND GAME OVER — through the controller's own
-            // path. The sim never shows a reveal because CheckElection is the CONTROLLER's post-turn
-            // call (the same driver-artifact class as the daily arm calls: the first state pass
-            // recorded "an election resolving leaves no observable UI state", and the truth was that
-            // the DRIVER's turn path never ran the method that shows it). The WIN form first: a win's
-            // dismissal sets no state and returns to the dashboard, so the same run can then search
-            // to the NEXT election and pin the loss chain — reveal in its loss form, then game over
-            // on dismissal. This closes "the WIN form stays unpinned, stated rather than implied".
+            // --- F. ELECTION NIGHT AS THE TAKEOVER, AND GAME OVER - through the controller's own path.
+            // P2-0.2 (2026-09-02): the approval-threshold reveal this block used to force (a WIN and a LOSS
+            // frame by writing approval) is retired with the rule. The election is election night's count
+            // and the office verdict on its foot; a country without a live vote model shows no screen, and
+            // this says so rather than filming the desk under the night's name (S-20).
             if (AdvanceToElectionTurn(sim, noDecisions))
             {
-                // Observed, not raw (2026-08-25): forcing approval to guarantee a WIN capture is a
-                // harness write like the ledger-pin ones above, and leaving it un-recorded is what
-                // tripped the approval self-audit at the next boundary - the 2050-12-26 ATTRIB that
-                // rode every "clean" run before ruling 1's fold would have failed the capture on it.
-                float winForceBefore = player.State.ApprovalRating;
-                player.State.ApprovalRating = 60f;
-                ApprovalLedgerRecorder.RecordEvent(player, sim.CurrentDate, "Harness: forced approval for WIN reveal capture", player.State.ApprovalRating - winForceBefore);
                 InvokeNoArg(controller, "CheckElection");
-                yield return Settle();
-                yield return Capture("88w_election_reveal_win");
+                FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (nightField?.GetValue(controller) != null)
+                {
+                    yield return WaitForCanvasSettle(controller, wantActive: true);
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("88n_election_night_takeover");
+                    RecordCanvasTextAssert("88n_election_night_takeover", controller);
 
-                InvokeNoArg(controller, "DismissElectionResult");
-                yield return Settle();
+                    InvokeNoArg(controller, "DismissElectionNight");
+                    yield return WaitForCanvasSettle(controller, wantActive: false);
+                    yield return Settle();
+                    FieldInfo overAfterNight = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic);
+                    bool over = overAfterNight?.GetValue(controller) is bool o && o;
+                    yield return Capture(over ? "88b_game_over" : "88c_after_election_night");
+                }
+                else
+                {
+                    Debug.LogWarning($"SHOT: {_countryId} showed no election night after CheckElection - the takeover is NOT filmed for it (the controller logs why: ELECTION: / CANVAS: lines); -shotinterrupts is the film that requires one.");
+                }
             }
             else
             {
-                Debug.LogWarning($"SHOT: no election turn within {MaxStateSearchDays} days - the WIN reveal stays unpinned for {_countryId}.");
-            }
-
-            if (AdvanceToElectionTurn(sim, noDecisions))
-            {
-                // Observed, same as the WIN force above - the LOSS reveal's own approval override.
-                float lossForceBefore = player.State.ApprovalRating;
-                player.State.ApprovalRating = 5f;
-                ApprovalLedgerRecorder.RecordEvent(player, sim.CurrentDate, "Harness: forced approval for LOSS reveal capture", player.State.ApprovalRating - lossForceBefore);
-                InvokeNoArg(controller, "CheckElection");
-                yield return Settle();
-                yield return Capture("88a_election_reveal_loss");
-
-                InvokeNoArg(controller, "DismissElectionResult");
-                yield return Settle();
-                yield return Capture("88b_game_over");
-            }
-            else
-            {
-                Debug.LogWarning($"SHOT: no election turn within {MaxStateSearchDays} days - the loss reveal and game-over states stay unpinned for {_countryId}.");
+                Debug.LogWarning($"SHOT: no election turn within {MaxStateSearchDays} days - election night stays unpinned for {_countryId}.");
             }
         }
 
@@ -2477,7 +2469,7 @@ namespace PoliSim.Testing
             object wasOver = overField.GetValue(controller);
             object wasReason = reasonField.GetValue(controller);
             overField.SetValue(controller, true);
-            reasonField.SetValue(controller, $"Lost re-election at year {sim.CurrentTurn} with {country.State.ApprovalRating:F1} approval (needed at least {ElectionSystem.LosingThreshold:F0}).");
+            reasonField.SetValue(controller, $"Out of office at year {sim.CurrentTurn}: the chamber formed a government without {country.PlayerPartyAbbrev ?? "your party"}.");
             yield return Settle();
             yield return Capture("01f_desk_gameover");
             overField.SetValue(controller, wasOver);
@@ -2728,6 +2720,134 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
             Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>P2-0.2 / P2-0.3 (2026-09-02): `-shotinterrupts` plays ONE country's game through the
+        /// controller's own day path to its interrupts and films each with its held clock proven - the
+        /// campaign's opening (P2-0.3) and election night's takeover (P2-0.2). Set from the command line;
+        /// the run ends here.</summary>
+        public bool Interrupts;
+
+        /// <summary>Frames the clock is watched for at VeryFast (0.25 s per day): long enough that a running
+        /// clock moves several days, so "no day passed" is a held clock and not a slow frame.</summary>
+        private const int HeldWatchFrames = 120;
+
+        /// <summary>
+        /// The interrupts, filmed from a played game - never staged. The sim is driven day by day through the
+        /// controller-shaped path (AdvanceDay, the player's AdvanceCountryDayTick, AdvanceTurn on the boundary),
+        /// so the campaign begins, runs and is counted exactly as play makes it; the controller's OWN Update is
+        /// then let run at VeryFast and the date watched: an interrupt is proven by a date that does not move
+        /// with the clock set to run, and its dismissal by a date that moves again. ⚠ A missing interrupt is a
+        /// FAILURE here, not a skipped frame - the done-when is that a Sweden game cannot pass these points.
+        /// </summary>
+        private IEnumerator CaptureInterrupts(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(simField?.GetValue(controller) is SimulationManager sim))
+            {
+                Debug.LogError("SHOT: -shotinterrupts could not reach SimulationManager - nothing filmed.");
+                _failed++;
+                yield break;
+            }
+
+            var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+
+            // 1. To the first election turn, through the controller-shaped day path (the campaign runs inside
+            //    the sim's own day; the boundary is where the controller would call CheckElection).
+            int days = 0;
+            while (days < MaxStateSearchDays)
+            {
+                bool boundary = sim.AdvanceDay();
+                sim.AdvanceCountryDayTick(_countryId);
+                days++;
+                if (boundary)
+                {
+                    sim.AdvanceTurn(noDecisions);
+                    if (ElectionSystem.IsElectionTurn(sim.CurrentTurn)) { break; }
+                }
+            }
+
+            if (!ElectionSystem.IsElectionTurn(sim.CurrentTurn))
+            {
+                Debug.LogError($"SHOT: -shotinterrupts found no election turn within {MaxStateSearchDays} days for {_countryId} - the night is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+
+            Debug.Log($"SHOT: -shotinterrupts reached election turn {sim.CurrentTurn} on {sim.CurrentDate:yyyy-MM-dd} after {days} days; campaign result {(sim.PlayerCampaignResult != null ? "present" : "ABSENT")}.");
+
+            // 2. Election night is entered by the controller's own election call, and it must be a takeover
+            //    the clock cannot pass.
+            InvokeNoArg(controller, "CheckElection");
+            FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (nightField?.GetValue(controller) == null)
+            {
+                Debug.LogError($"SHOT: -shotinterrupts - {_countryId} reached its election and NO election night was shown. The controller logs why (ELECTION: / CANVAS: lines above); a Sweden game must show one.");
+                _failed++;
+                yield break;
+            }
+
+            yield return WaitForCanvasSettle(controller, wantActive: true);
+            yield return Settle();
+            Claim("electionnight");
+            yield return Capture("e7c_election_night_takeover");
+            RecordCanvasTextAssert("e7c_election_night_takeover", controller);
+
+            yield return AssertClockHeld(controller, sim, "election night");
+
+            InvokeNoArg(controller, "DismissElectionNight");
+            yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
+            Claim("imgui");
+            FieldInfo overField = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic);
+            bool over = overField?.GetValue(controller) is bool o && o;
+            yield return Capture(over ? "e7d_after_election_night_gameover" : "e7d_after_election_night");
+            if (!over)
+            {
+                yield return ReportClockAfterDismissal(controller, sim, "election night");
+            }
+
+            Debug.Log($"SHOT: interrupts done, {_captured} captured, {_failed} failed.");
+            Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
+            Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
+            Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>With the clock set to run, the date must not move: that is what an interrupt IS. Restores the speed it found.</summary>
+        private IEnumerator AssertClockHeld(GameController controller, SimulationManager sim, string what)
+        {
+            FieldInfo speedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            object wasSpeed = speedField?.GetValue(controller);
+            SetEnumField(controller, "_gameSpeed", "VeryFast");
+            DateTime before = sim.CurrentDate;
+            for (int i = 0; i < HeldWatchFrames; i++) { yield return null; }
+            DateTime after = sim.CurrentDate;
+            if (after != before)
+            {
+                Debug.LogError($"SHOT: the clock PASSED {what} - {before:yyyy-MM-dd} -> {after:yyyy-MM-dd} over {HeldWatchFrames} frames at VeryFast with the interrupt up. The player can miss it.");
+                _failed++;
+            }
+            else
+            {
+                Debug.Log($"SHOT: the clock is HELD on {what} - {before:yyyy-MM-dd} unchanged over {HeldWatchFrames} frames at VeryFast.");
+            }
+
+            if (wasSpeed != null) { speedField.SetValue(controller, wasSpeed); }
+        }
+
+        /// <summary>After a dismissal the clock should run again unless something else holds it; reported, not asserted, because another interrupt (a cabinet decision, a budget window) can legitimately be waiting behind this one.</summary>
+        private IEnumerator ReportClockAfterDismissal(GameController controller, SimulationManager sim, string what)
+        {
+            FieldInfo speedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            object wasSpeed = speedField?.GetValue(controller);
+            SetEnumField(controller, "_gameSpeed", "VeryFast");
+            DateTime before = sim.CurrentDate;
+            for (int i = 0; i < HeldWatchFrames; i++) { yield return null; }
+            DateTime after = sim.CurrentDate;
+            Debug.Log(after != before
+                ? $"SHOT: after dismissing {what} the clock runs again - {before:yyyy-MM-dd} -> {after:yyyy-MM-dd}."
+                : $"SHOT: after dismissing {what} the clock is still held ({before:yyyy-MM-dd}) - another interrupt is waiting behind it, or the game is over; read the banner in the frame.");
+            if (wasSpeed != null) { speedField.SetValue(controller, wasSpeed); }
         }
 
         private IEnumerator CaptureCampaignHq(GameController controller)

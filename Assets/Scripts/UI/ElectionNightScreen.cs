@@ -50,14 +50,43 @@ namespace PoliSim.UI
     {
         public GameObject Root { get; private set; }
 
+        /// <summary>P2-0.2 (2026-09-02): set by the board's own CONTINUE - the takeover's exit. The seam
+        /// covers out on it and the controller applies the office verdict after the cover; a takeover
+        /// with no exit is the trap DeadStateCheck reported the first time this board was wired.</summary>
+        public bool Dismissed { get; private set; }
+
+        /// <summary>CONTINUE, pressed - by the button or by the controller on the harness's behalf.</summary>
+        public void Dismiss()
+        {
+            Dismissed = true;
+        }
+
+        public void SetVisible(bool visible)
+        {
+            if (Root != null) { Root.SetActive(visible); }
+        }
+
+        public void Destroy()
+        {
+            if (Root != null)
+            {
+                UnityEngine.Object.Destroy(Root);
+                Root = null;
+            }
+        }
+
         /// <summary>[AUTHORED-DRAFT] §A.14's document width for 1h.</summary>
 
         /// <summary>
         /// Build the board for one instant of the night. Returns null (and says so) if the
         /// furniture is missing — the absence guard the two pilots set, never an invented sprite.
         /// </summary>
+        /// <param name="verdict">P2-0.2: the office test's verdict for the player, printed on the board's foot beside
+        /// CONTINUE - the count and the verdict are the only election outcome a player sees. Null when the
+        /// board is filmed without a player (the harness's staged nights).</param>
         public static ElectionNightScreen Build(NightState state, string[] partyNames, string countryName,
-            DateTime pollsClosed, int totalSeats, long[] previousVotes = null, string previousLabel = null)
+            DateTime pollsClosed, int totalSeats, long[] previousVotes = null, string previousLabel = null,
+            string verdict = null)
         {
             Sprite frame = CanvasChrome.Sliced("ui_frame_ornate", 64f, 64f, 64f, 64f);
             Texture2D scrimTexture = IconLibrary.GetChrome("ui_scrim_takeover");
@@ -117,6 +146,7 @@ namespace PoliSim.UI
 
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
             BuildBody(content.transform, state, partyNames, totalSeats, previousVotes, previousLabel);
+            BuildFooter(content.transform, verdict, screen);
 
             // S-20: the board stamps its own capture-identity token, so a film that shows the desk over it
             // fails on the pixels rather than passing on a clean exit code.
@@ -382,6 +412,69 @@ namespace PoliSim.UI
             }
         }
         /// <summary>A minute of the night as a wall clock reading from the close of polls - no format escape, and no DateTime standing in for a duration.</summary>
+        /// <summary>P2-0.2: the board's foot - the office verdict (when a player is on the ballot) and CONTINUE, the
+        /// takeover's one exit. The verdict is the same sentence the desk prints when a game ends on it.</summary>
+        private static void BuildFooter(Transform parent, string verdict, ElectionNightScreen screen)
+        {
+            var foot = new GameObject("Footer");
+            foot.transform.SetParent(parent, false);
+            foot.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 56f);
+            var row = foot.AddComponent<HorizontalLayoutGroup>();
+            row.childControlWidth = true;
+            row.childControlHeight = true;
+            row.childForceExpandWidth = false;
+            row.childAlignment = TextAnchor.MiddleLeft;
+            row.spacing = 24f;
+            foot.AddComponent<LayoutElement>().minHeight = 56f;
+
+            Text line = CanvasChrome.MakeText(foot.transform, "Verdict", string.IsNullOrEmpty(verdict) ? string.Empty : verdict.ToUpperInvariant(),
+                PoliSimTheme.Display, 12, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
+            line.horizontalOverflow = HorizontalWrapMode.Wrap;
+            line.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
+
+            BuildContinueButton(foot.transform, screen.Dismiss);
+        }
+
+        /// <summary>The canvas brass button, the signing screen's own pattern (SigningScreen.BuildSignButton): uGUI Button + SpriteSwap over the delivered per-state strips, a flat brass face when the strips are missing.</summary>
+        private static void BuildContinueButton(Transform parent, Action onContinue)
+        {
+            Sprite normal = CanvasChrome.Sliced("ui_btn_brass_canvas", 24f, 24f, 24f, 24f);
+            Sprite hover = CanvasChrome.Sliced("ui_btn_brass_canvas_hover", 24f, 24f, 24f, 24f);
+            Sprite pressed = CanvasChrome.Sliced("ui_btn_brass_canvas_pressed", 24f, 24f, 24f, 24f);
+
+            var button = new GameObject("ContinueButton");
+            button.transform.SetParent(parent, false);
+            button.AddComponent<RectTransform>().sizeDelta = new Vector2(200f, 48f);
+            LayoutElement size = button.AddComponent<LayoutElement>();
+            size.minWidth = 200f;
+            size.preferredWidth = 200f;
+            size.minHeight = 48f;
+            Image face = button.AddComponent<Image>();
+            if (normal != null)
+            {
+                face.sprite = normal;
+                face.type = Image.Type.Sliced;
+                face.pixelsPerUnitMultiplier = 2f;
+            }
+            else
+            {
+                face.color = PoliSimTheme.Hex(0x8A6B2F);
+            }
+
+            Button control = button.AddComponent<Button>();
+            if (normal != null && hover != null && pressed != null)
+            {
+                control.transition = Selectable.Transition.SpriteSwap;
+                control.spriteState = new SpriteState { highlightedSprite = hover, pressedSprite = pressed };
+            }
+
+            control.onClick.AddListener(() => onContinue());
+
+            Text label = CanvasChrome.MakeText(button.transform, "Label", "CONTINUE", PoliSimTheme.Display, 16,
+                PoliSimTheme.Hex(0xF0E7D8), TextAnchor.MiddleCenter, FontStyle.Bold);
+            Stretch((RectTransform)label.transform);
+        }
+
         private static string Clock(int minute)
         {
             int hour = 20 + minute / 60;

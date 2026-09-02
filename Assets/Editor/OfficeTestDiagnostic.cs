@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using PoliSim.Data;
 using PoliSim.Elections;
+using PoliSim.Simulation;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -145,6 +146,31 @@ namespace PoliSim.EditorTools
                 Debug.LogError("OFFICE: a country with no player party returned a government rather than a reason. ⚠ 'No "
                                + "government could be tested' and 'the player is out of office' are different states, and only "
                                + "one of them should end a game.");
+            }
+
+            // P2-0.2 (2026-09-02): the approval-threshold election rule is RETIRED, and this is the harness that
+            // proves the old path is unreachable - by absence, which is the only proof a deleted path can have.
+            // Reflection asks the type; the source scan asks every file under Assets/Scripts with comments
+            // stripped (a name surviving in a comment is history, not a path).
+            sb.Append("\n--- P2-0.2: the approval-threshold rule is gone ---\n");
+            bool memberGone = typeof(ElectionSystem).GetMember("LosingThreshold").Length == 0
+                              && typeof(ElectionSystem).GetMember("RunElection").Length == 0
+                              && typeof(ElectionSystem).Assembly.GetType("PoliSim.Simulation.ElectionResult") == null;
+            var thresholdSites = new List<string>();
+            string scriptsRoot = System.IO.Path.Combine(System.IO.Directory.GetCurrentDirectory(), "Assets", "Scripts");
+            foreach (string file in System.IO.Directory.GetFiles(scriptsRoot, "*.cs", System.IO.SearchOption.AllDirectories))
+            {
+                string code = SourceText.WithoutComments(System.IO.File.ReadAllText(file));
+                if (code.Contains("LosingThreshold") || code.Contains("RunElection(")) { thresholdSites.Add(System.IO.Path.GetFileName(file)); }
+            }
+            sb.Append(string.Format(CultureInfo.InvariantCulture, "    ElectionSystem declares no threshold member: {0}; code sites naming one: {1}\n",
+                memberGone, thresholdSites.Count == 0 ? "none" : string.Join(", ", thresholdSites)));
+            if (!memberGone || thresholdSites.Count > 0)
+            {
+                failures.Add("the approval-threshold election path is reachable");
+                Debug.LogError("OFFICE: the approval-threshold election rule exists or is named in code under Assets/Scripts. P2-0.2 "
+                               + "retired it (COMPLETED.md section 218): the only election outcome is election night's count and the "
+                               + "office test. Sites: " + string.Join(", ", thresholdSites));
             }
 
             sb.Append("\n    ⚠ DECLARED RED LINES ARE SOURCED FOR SWEDEN ONLY. Everywhere else the government is formed on\n");

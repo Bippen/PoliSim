@@ -707,8 +707,11 @@ constants, no magic numbers):
   turn's rate that affects this turn's trade — separate from (and lower-precedence than, per
   `TradeSystem.GetTariffRate`) any trade-bloc tariff that applies instead.
 - **Elections** (`ElectionSystem`): every `ElectionCycle` turns (12) is an election turn
-  (`IsElectionTurn`). `RunElection` checks a country's `ApprovalRating` against `LosingThreshold`
-  (35) and returns the margin either way. Deliberately country-agnostic — it doesn't know or care
+  (`IsElectionTurn`). ⚠ *Corrected 2026-09-02 (P2-0.2, `COMPLETED.md` §218): the approval-threshold rule this
+  bullet went on to describe - `RunElection` against `LosingThreshold` - is RETIRED; the election outcome is
+  election night's count and the office test (`GovernmentFormation.Form`), and a country without a live vote
+  model holds no election.* What follows is the history: `RunElection` checked a country's `ApprovalRating`
+  against `LosingThreshold` (35) and returned the margin either way. Deliberately country-agnostic — it doesn't know or care
   which country is "the player"; that association (and the resulting simple `IsGameOver`/reason
   state, since there's no full game-over UI yet) is a `GameController` (UI-layer) concern, matching
   how `PlayerCountryId` is already hardcoded there and not in the simulation layer. The same

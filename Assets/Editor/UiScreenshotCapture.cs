@@ -195,6 +195,26 @@ namespace PoliSim.EditorTools
                 EditorWindow view = EditorWindow.GetWindow(gameViewType, false, "Game", true);
                 view.position = new Rect(0f, 0f, ViewWidth, ViewHeight);
                 view.Repaint();
+
+                // P2-0.2 (2026-09-02): a DOCKED Game View ignores the position assignment - its size is the
+                // layout's - and the run then films at the dock's size while claiming the requested one
+                // (every frame reports a HEIGHT MISMATCH, which is the guard working; this is the cure).
+                // When the assignment did not take, the docked view is closed and a fresh one is shown
+                // floating, which honours its position. Said in the log either way.
+                if (Mathf.Abs(view.position.width - ViewWidth) > 2f || Mathf.Abs(view.position.height - ViewHeight) > 2f)
+                {
+                    Rect docked = view.position;
+                    view.Close();
+                    EditorWindow floating = ScriptableObject.CreateInstance(gameViewType) as EditorWindow;
+                    floating.Show();
+                    floating.position = new Rect(0f, 0f, ViewWidth, ViewHeight);
+                    floating.Repaint();
+                    Debug.Log($"SHOT: the docked Game View ignored the resize ({docked.width}x{docked.height}); re-created it floating at {floating.position.width}x{floating.position.height}.");
+                }
+                else
+                {
+                    Debug.Log($"SHOT: Game View resized to {view.position.width}x{view.position.height}.");
+                }
             }
             catch (Exception e)
             {
@@ -241,6 +261,7 @@ namespace PoliSim.EditorTools
             // W-E1 (2026-08-29): film Campaign HQ instead of the sweep. Stages SOURCED Swedish
             // returns, so it demands -shotcountry=Sweden and fails loudly under any other.
             driver.CampaignHq = Environment.GetCommandLineArgs().Contains("-shotcampaign");
+            driver.Interrupts = Environment.GetCommandLineArgs().Contains("-shotinterrupts");
             // W-E6 (2026-08-30): film board 1h, election night, instead of the sweep. Stages the
             // SOURCED Swedish 2022 returns like -shotcampaign, and demands the same country.
             driver.ElectionNightBoard = Environment.GetCommandLineArgs().Contains("-shotelectionnight");

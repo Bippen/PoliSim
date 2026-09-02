@@ -275,7 +275,10 @@ namespace PoliSim.UI
         private readonly Dictionary<CountryId, float> _partnerTariffInputs = new Dictionary<CountryId, float>();
 
         private bool _isGameOver;
-        private ElectionResult _pendingElectionResult;
+        /// <summary>P2-0.2: the office test's verdict, held from the count until election night's CONTINUE (see
+        /// ResolveElectionVerdict / ApplyElectionVerdict). Persisted; a load with one pending lands it at once.</summary>
+        private string _pendingElectionVerdict;
+        private bool _pendingElectionVerdictEndsGame;
         private int _pendingElectionTurn;
         private string _gameOverReason;
 
@@ -777,7 +780,7 @@ namespace PoliSim.UI
                 return;
             }
 
-            if (!_selectedPlayerCountryId.HasValue || _isGameOver || _pendingElectionResult != null)
+            if (!_selectedPlayerCountryId.HasValue || _isGameOver || _electionNight != null)
             {
                 return;
             }
@@ -837,7 +840,7 @@ namespace PoliSim.UI
                 // meeting/budget process (or game over) must stop the clock immediately, not keep
                 // draining _daySpeedTimer toward days/turns that can't happen yet - re-check every gate
                 // before this same frame's loop continues.
-                if (_isGameOver || _pendingElectionResult != null || _signingQueue.Count > 0
+                if (_isGameOver || _electionNight != null || _signingQueue.Count > 0
                     || UpdateFedChairSelectionState()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
@@ -977,7 +980,8 @@ namespace PoliSim.UI
                 ImmigrationPolicyInput = _immigrationPolicyInput,
                 IsGameOver = _isGameOver,
                 GameOverReason = _gameOverReason,
-                PendingElectionResult = _pendingElectionResult,
+                PendingElectionVerdict = _pendingElectionVerdict,
+                PendingElectionVerdictEndsGame = _pendingElectionVerdictEndsGame,
                 PendingElectionTurn = _pendingElectionTurn,
                 Scenario = _scenarioProgress,
                 ScenarioVerdictPending = _scenarioVerdictPending,
@@ -1044,8 +1048,12 @@ namespace PoliSim.UI
             _immigrationPolicyInput = ui?.ImmigrationPolicyInput;
             _isGameOver = ui?.IsGameOver ?? false;
             _gameOverReason = ui?.GameOverReason;
-            _pendingElectionResult = ui?.PendingElectionResult;
+            _pendingElectionVerdict = ui?.PendingElectionVerdict;
+            _pendingElectionVerdictEndsGame = ui?.PendingElectionVerdictEndsGame ?? false;
             _pendingElectionTurn = ui?.PendingElectionTurn ?? 0;
+            // P2-0.2: a save taken while election night held its verdict cannot rebuild the night (the count it
+            // showed is in-process state), so the verdict lands on the desk at once - stated, never lost.
+            if (!string.IsNullOrEmpty(_pendingElectionVerdict)) { ApplyElectionVerdict(); }
 
             // STEP 3: progress is restored from the save; the DEFINITION is looked up by id, and the
             // cadence multiplier re-derived from it rather than persisted (one source of truth for an
@@ -1269,7 +1277,7 @@ namespace PoliSim.UI
         private enum CanvasPhase { None, CoverIn, Reveal, CoverOut, Restore }
 
         /// <summary>Which Canvas screen the takeover currently owns. One screen at a time by design — the seam is a single boundary, not a window manager.</summary>
-        private enum CanvasScreenKind { None, Selector, Signing }
+        private enum CanvasScreenKind { None, Selector, Signing, ElectionNight }
 
         private CanvasScreenKind _canvasScreenKind = CanvasScreenKind.None;
         private SigningScreen _signingScreen;
@@ -1343,7 +1351,7 @@ namespace PoliSim.UI
                 // failure — a dropped ceremony is a silent resolution, which is today's behaviour.
                 case CanvasPhase.None when !_canvasLive && _canvasScreenKind == CanvasScreenKind.None
                     && _signingQueue.Count > 0 && _selectedPlayerCountryId.HasValue
-                    && _pendingElectionResult == null && !_isGameOver:
+                    && _electionNight == null && !_isGameOver:
                     DivisionRecord signing = _signingQueue.Dequeue();
                     try
                     {
@@ -1366,10 +1374,21 @@ namespace PoliSim.UI
                     BeginCanvasPhase(CanvasPhase.CoverIn);
                     break;
 
+                // P2-0.2: ELECTION NIGHT entry - the board CheckElection built waits hidden until the cover is
+                // over the desk, exactly as the signing document does. Never over another takeover, and the
+                // signing entry above yields to it (its condition names _electionNight).
+                case CanvasPhase.None when !_canvasLive && _canvasScreenKind == CanvasScreenKind.None
+                    && _electionNight != null && !_isGameOver:
+                    _canvasScreenKind = CanvasScreenKind.ElectionNight;
+                    _electionNight.SetVisible(false);
+                    BeginCanvasPhase(CanvasPhase.CoverIn);
+                    break;
+
                 case CanvasPhase.CoverIn when elapsed >= CanvasCoverSeconds:
                     _canvasLive = true;
                     _countrySelector?.SetVisible(true);
                     _signingScreen?.SetVisible(true);
+                    _electionNight?.SetVisible(true);
                     BeginCanvasPhase(CanvasPhase.Reveal);
                     break;
 
@@ -1390,11 +1409,25 @@ namespace PoliSim.UI
                     BeginCanvasPhase(CanvasPhase.CoverOut);
                     break;
 
+                case CanvasPhase.None when _canvasLive && _canvasScreenKind == CanvasScreenKind.ElectionNight
+                    && _electionNight != null && _electionNight.Dismissed:
+                    BeginCanvasPhase(CanvasPhase.CoverOut);
+                    break;
+
                 case CanvasPhase.CoverOut when elapsed >= CanvasCoverSeconds:
                     _countrySelector?.Destroy();
                     _countrySelector = null;
                     _signingScreen?.Destroy();
                     _signingScreen = null;
+                    if (_electionNight != null)
+                    {
+                        // P2-0.2: the night ends under the cover; the verdict it showed lands only now, on
+                        // the desk the player is about to see again.
+                        _electionNight.Destroy();
+                        _electionNight = null;
+                        PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+                        ApplyElectionVerdict();
+                    }
                     _canvasScreenKind = CanvasScreenKind.None;
                     _canvasLive = false;
                     BeginCanvasPhase(CanvasPhase.Restore);
@@ -1914,12 +1947,6 @@ namespace PoliSim.UI
                     DrawCanvasRestoreScrim();
                 }
 
-                return;
-            }
-
-            if (_pendingElectionResult != null)
-            {
-                DrawElectionResultsScreen(_pendingElectionResult);
                 return;
             }
 
@@ -4886,17 +4913,6 @@ namespace PoliSim.UI
 
         private void AdvanceTurn()
         {
-            // ⚠ F1 step 4: THE NIGHT IS DISMISSED WHEN THE PLAYER MOVES ON. A takeover with no exit is
-            // not a reachable screen, it is a trap - and `DeadStateCheck` said so, reporting the field
-            // that holds it as WRITE-ONLY the moment it was added. The board is shown by the election
-            // that produced it and closed by the next turn the player takes, which is the whole
-            // lifecycle it needs.
-            if (_electionNight != null)
-            {
-                if (_electionNight.Root != null) { Destroy(_electionNight.Root); }
-                _electionNight = null;
-                PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
-            }
 
             var decisions = new Dictionary<CountryId, PolicyDecision>();
             foreach (Country country in _world.Countries)
@@ -5100,7 +5116,20 @@ namespace PoliSim.UI
             _interestRateChangeInput = 0f;
         }
 
-        /// <summary>Checks the player's country against ElectionSystem on election turns and, if this is one, stores the result for DrawElectionResultsScreen to reveal (see OnGUI's gate) rather than resolving the game-over state silently in the background - the actual game-rule check (ElectionSystem.RunElection) is unchanged, this just gives it a real presentation.</summary>
+        /// <summary>
+        /// The election, on an election turn: the country's own vote (`RunNationalElection`), the office
+        /// test's verdict (`ResolveElectionVerdict`), and election night as the takeover that shows the
+        /// count with the verdict on its foot (`ShowElectionNight`).
+        ///
+        /// <para>⚠ P2-0.2 (2026-09-02): the approval-threshold reveal that used to run beside the vote -
+        /// "RE-ELECTED" above a number, "ELECTION LOST" below it - is retired with its rule. It was the
+        /// last clause of the pre-item-10 politics, and it was ALSO the screen the player saw: IMGUI draws
+        /// above every Canvas, so the legacy reveal painted over election night on every election ever
+        /// played, and the night was dismissed unseen on the next turn. Now the night is a takeover in
+        /// the seam (`CanvasScreenKind.ElectionNight`), the clock holds on it, and CONTINUE is its only
+        /// exit. A country whose vote model returns NotImplemented holds no election and reaches no
+        /// verdict - the record says why - and shows nothing rather than something false.</para>
+        /// </summary>
         private void CheckElection()
         {
             if (!ElectionSystem.IsElectionTurn(_simulationManager.CurrentTurn))
@@ -5108,22 +5137,65 @@ namespace PoliSim.UI
                 return;
             }
 
-            _pendingElectionResult = ElectionSystem.RunElection(_playerCountry.State);
             _pendingElectionTurn = _simulationManager.CurrentTurn;
-
-            // W-G1: the election now also produces a REAL CHAMBER through the country's own
-            // procedure, and records it. What it does NOT yet do is decide whether the player won.
-            //
-            // That is not an oversight, it is a design question this item is not entitled to answer:
-            // ElectionSystem's own class comment records that "this game never assigns the player's
-            // own government a party identity", so there is no party for the vote model to award the
-            // player's fate to. Until the player IS one of these parties, the win/lose rule stays
-            // exactly the approval threshold it has always been, unchanged, and the vote model runs
-            // beside it rather than pretending to replace it. Named in W-G1's records as the first
-            // question for the item after this one.
             RunNationalElection();
+            ResolveElectionVerdict();
             ShowElectionNight();
+            if (_electionNight == null)
+            {
+                // No board (no live vote model, or the board failed to build): nothing holds the verdict
+                // back, so it lands now rather than waiting for a CONTINUE that will never be pressed.
+                ApplyElectionVerdict();
+            }
         }
+
+        /// <summary>
+        /// The office test, C-R4's rule (D-5 (a), RULED 2026-08-31: game over only on leaving office).
+        /// Three states, one of which ends the game: in cabinet, the game continues; out of cabinet,
+        /// office lost; no government formed at all (a hung chamber, or a country whose office test
+        /// cannot run), the game continues and the sentence says so - "nobody could form a government"
+        /// is not "you were thrown out", and ending a game on a modelling gap would be the worst kind of
+        /// invented verdict. The sentence is held in `_pendingElectionVerdict` until election night's
+        /// CONTINUE and printed on the night's foot; `ApplyElectionVerdict` lands it.
+        /// </summary>
+        private void ResolveElectionVerdict()
+        {
+            _pendingElectionVerdict = null;
+            _pendingElectionVerdictEndsGame = false;
+
+            ElectionRecord latest = _playerCountry.ElectionHistory.Count > 0
+                ? _playerCountry.ElectionHistory[_playerCountry.ElectionHistory.Count - 1]
+                : null;
+            if (latest == null || latest.Turn != _simulationManager.CurrentTurn || latest.Method == ElectionMethod.NotImplemented)
+            {
+                // No election was held (the record carries the reason); there is no chamber to test.
+                return;
+            }
+
+            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry);
+            if (!government.HasGovernment)
+            {
+                _pendingElectionVerdict = $"No government could be formed from this chamber - {government.Reason}. You stay in office until one can.";
+                return;
+            }
+
+            string sourcedNote = government.DeclarationsSourced
+                ? string.Empty
+                : " (Formed on DERIVED red lines only - this country's declared refusals are not sourced.)";
+            if (government.PlayerInCabinet)
+            {
+                _pendingElectionVerdict = $"In office: the chamber formed a {government.CabinetDescription} government with {_playerCountry.PlayerPartyAbbrev} in the cabinet.{sourcedNote}";
+                return;
+            }
+
+            string standing = government.PlayerSupports
+                ? "supporting it from outside"      // Tidö's own distinction: support is not office.
+                : "in opposition";
+            _pendingElectionVerdict = $"Out of office at year {_pendingElectionTurn}: the chamber formed a "
+                + $"{government.CabinetDescription} government with {_playerCountry.PlayerPartyAbbrev} {standing}.{sourcedNote}";
+            _pendingElectionVerdictEndsGame = true;
+        }
+
 
         /// <summary>
         /// W-G1: hold the player country's election on its own electoral system, set the chamber
@@ -5151,7 +5223,12 @@ namespace PoliSim.UI
         /// </summary>
         private void ShowElectionNight()
         {
-            if (!ElectionNightFromModel.Available(PlayerCountryId)) { return; }
+            if (!ElectionNightFromModel.Available(PlayerCountryId))
+            {
+                // P2-0.2: a night not shown says why - a silent early return here is how the board stayed unseen.
+                Debug.Log($"ELECTION: no election night for {PlayerCountryId} - the model has no regional count to show (ElectionNightFromModel.Available is false).");
+                return;
+            }
 
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(PlayerCountryId);
             var keys = new List<string>();
@@ -5167,12 +5244,16 @@ namespace PoliSim.UI
                 NightState state = ElectionNightFromModel.At(
                     ElectionNightFromModel.FinalMinute, PlayerCountryId, keys,
                     _playerCountry.ParliamentSeats.Count > 0 ? 349 : 349, 0.04);
-                if (state == null) { return; }
+                if (state == null)
+                {
+                    Debug.Log($"ELECTION: no election night for {PlayerCountryId} - the model produced no night state.");
+                    return;
+                }
 
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 _electionNight = ElectionNightScreen.Build(
                     state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
-                    System.DateTime.Now, 349);
+                    System.DateTime.Now, 349, verdict: _pendingElectionVerdict);
             }
             catch (System.Exception e)
             {
@@ -5223,11 +5304,13 @@ namespace PoliSim.UI
                     Method = ElectionMethod.NotImplemented,
                     NotHeldReason = NationalElection.NotHeldReason(PlayerCountryId),
                 });
+                Debug.Log($"ELECTION: not held for {PlayerCountryId} at turn {_simulationManager.CurrentTurn} - {NationalElection.NotHeldReason(PlayerCountryId)}");
                 return;
             }
 
             ElectionRecord record = NationalElection.Run(PlayerCountryId, _simulationManager.CurrentTurn, shareByParty);
             _playerCountry.ElectionHistory.Add(record);
+            Debug.Log($"ELECTION: held for {PlayerCountryId} at turn {_simulationManager.CurrentTurn} by {record.Method}" + (_simulationManager.PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)"));
             if (record.Method != ElectionMethod.NotImplemented)
             {
                 ParliamentSystem.SetSeatsFromElection(_playerCountry, record.Seats);
@@ -5243,68 +5326,28 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Called when the player dismisses the election reveal screen - only NOW does a loss actually set the game-over state (a win just returns to the dashboard).
-        ///
-        /// <para>⚠ <b>D-5 (a), RULED 2026-08-31: GAME OVER ONLY ON LEAVING OFFICE.</b> R-CL1 ruled it and
-        /// W-G1 recorded why it could not be built — *"there is no party for the vote model to award the
-        /// player's fate to"*. C-R2 gave the player a party; `GovernmentFormation` answers the question.
-        /// The chamber the election produced forms a government, and the game ends only if the player's
-        /// party is **not in its cabinet**.</para>
-        ///
-        /// <para>⚠ <b>Three states, not two, and only one of them ends the game.</b> In cabinet: the game
-        /// continues. Out of cabinet: office lost, game over. **No government could be formed at all**
-        /// (a hung chamber, or a country whose office test cannot run): the game continues and says so —
-        /// "nobody could form a government" is not "you were thrown out", and ending a game on a
-        /// modelling gap would be the worst kind of invented verdict.</para>
-        ///
-        /// <para>⚠ <b>The approval threshold survives, narrowed and named.</b> Four of the six countries
-        /// return `NotImplemented` from the vote model, so no chamber is produced and no office test can
-        /// run; there the old `ElectionSystem.LosingThreshold` rule still decides, exactly as before, and
-        /// the reason text says which rule ended the game. **Replacing it with nothing would make those
-        /// four unlosable**, which is a larger change than this ruling asked for.</para>
-        /// </summary>
-        private void DismissElectionResult()
+        /// <summary>P2-0.2: election night's CONTINUE, and the harness's way of pressing it. Marks the board
+        /// dismissed; the seam covers out on that and `ApplyElectionVerdict` lands the verdict after the cover
+        /// (never under the board - the desk must not change under a screen the player is still reading).</summary>
+        private void DismissElectionNight()
         {
-            if (_pendingElectionResult == null) { return; }
-
-            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry);
-            if (government.HasGovernment)
-            {
-                if (!government.PlayerInCabinet)
-                {
-                    _isGameOver = true;
-                    string standing = government.PlayerSupports
-                        ? "supporting it from outside"      // Tidö's own distinction: support is not office.
-                        : "in opposition";
-                    _gameOverReason = $"Out of office at year {_pendingElectionTurn}: the chamber formed a "
-                        + $"{government.CabinetDescription} government with {_playerCountry.PlayerPartyAbbrev} {standing}."
-                        + (government.DeclarationsSourced
-                            ? string.Empty
-                            : " (Formed on DERIVED red lines only - this country's declared refusals are not sourced.)");
-                }
-
-                _pendingElectionResult = null;
-                return;
-            }
-
-            // No office test was possible. Either no government could be formed from this chamber, or the
-            // country has no live vote model at all - and those are different things from losing office.
-            if (_pendingElectionResult != null && !_pendingElectionResult.Won && !HasLiveVoteModel())
-            {
-                _isGameOver = true;
-                _gameOverReason = $"Lost re-election at year {_pendingElectionTurn} with {_pendingElectionResult.ApprovalAtElection:F1} approval "
-                    + $"(needed at least {ElectionSystem.LosingThreshold:F0}). This country has no modelled vote, "
-                    + "so the approval threshold decided it.";
-            }
-
-            _pendingElectionResult = null;
+            _electionNight?.Dismiss();
         }
 
-        /// <summary>Whether this country's election runs through the vote model rather than returning
-        /// `NotImplemented`. ⚠ Asked of the model rather than hard-coded to two country names, so a third
-        /// country gaining a live path does not leave a stale list behind it.</summary>
-        private bool HasLiveVoteModel() =>
-            NationalElection.TryPredictShares(PlayerCountryId, out _);
+        /// <summary>The held verdict lands: a lost office ends the game with the same sentence the night
+        /// printed; anything else clears. Also the load path's landing when a save carried a verdict and
+        /// the night could not be rebuilt.</summary>
+        private void ApplyElectionVerdict()
+        {
+            if (_pendingElectionVerdictEndsGame && !string.IsNullOrEmpty(_pendingElectionVerdict))
+            {
+                _isGameOver = true;
+                _gameOverReason = _pendingElectionVerdict;
+            }
+
+            _pendingElectionVerdict = null;
+            _pendingElectionVerdictEndsGame = false;
+        }
 
         /// <summary>
         /// STEP 3's VERDICT SCREEN (R-S3c/R-S3d): pass/fail per objective with its MEASURED MARGIN,
@@ -5518,59 +5561,6 @@ namespace PoliSim.UI
             }
 
             return bestName == null ? null : $"{bestName} ({best:+0.00;-0.00})";
-        }
-
-        /// <summary>
-        /// Election reveal screen: a real full-screen presentation of ElectionSystem's own existing
-        /// win/lose logic (unchanged - see CheckElection/ElectionSystem.RunElection), replacing the
-        /// previous silent background check. Mirrors DrawCountrySelector's own full-screen centered
-        /// layout for consistency. The approval bar reuses UiPalette.DrawBar with a threshold marker
-        /// (see UiPalette.DrawBarWithThreshold) rather than inventing a new bar primitive.
-        /// </summary>
-        private void DrawElectionResultsScreen(ElectionResult result)
-        {
-            GUILayout.BeginArea(new Rect(0f, 0f, Screen.width, Screen.height));
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-
-            GUILayout.BeginVertical(GUILayout.Width(Screen.width * 0.4f));
-
-            Color outcomeColor = result.Won ? UiPalette.PositiveChangeColor : UiPalette.NegativeChangeColor;
-            // _gameOverStyle's own base text color is a hardcoded Color.red (see its declaration) -
-            // DrawColoredLabel's GUI.color trick MULTIPLIES against that base color, so tinting it
-            // green for a win would multiply red x green and produce a muddy dark red, not green.
-            // Cloning the style and overriding its text color directly (not multiplicatively) avoids
-            // that, while still reusing _gameOverStyle's own large/bold banner sizing.
-            var electionBannerStyle = new GUIStyle(_gameOverStyle) { };
-            electionBannerStyle.normal.textColor = outcomeColor;
-            GUILayout.Label(result.Won ? "RE-ELECTED" : "ELECTION LOST", electionBannerStyle);
-
-            // ⚠ FIX 2026-08-12 (ruled): this takeover draws on the BARE DESK — the one screen with no
-            // paper under it — and its body printed the paper-ink ramp, near-invisible. Found by the
-            // screen's FIRST capture ever (div2 88a), which is the coverage argument in one line.
-            // Desk ground takes the desk ink, same reasoning as the hold banner.
-            var deskLabelStyle = new GUIStyle(_labelStyle);
-            deskLabelStyle.normal.textColor = PoliSimTheme.TextOnDesk;
-            GUILayout.Label($"Year {_pendingElectionTurn} Election - {_playerCountry.Name}", deskLabelStyle);
-            GUILayout.Space(16f);
-
-            GUILayout.Label($"Approval Rating: {result.ApprovalAtElection:F1} (needed {ElectionSystem.LosingThreshold:F0} to win)", deskLabelStyle);
-            UiPalette.DrawBarWithThreshold(result.ApprovalAtElection / 100f, ElectionSystem.LosingThreshold / 100f, outcomeColor, 24f);
-            GUILayout.Label($"Margin: {result.Margin:+0.0;-0.0}", deskLabelStyle);
-
-            GUILayout.Space(24f);
-            GUIStyle continueStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
-            if (GUILayout.Button("Continue", continueStyle))
-            {
-                DismissElectionResult();
-            }
-
-            GUILayout.EndVertical();
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-            GUILayout.FlexibleSpace();
-            GUILayout.EndArea();
         }
 
         /// <summary>
