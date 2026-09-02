@@ -22054,3 +22054,26 @@ The runs: `p3a2_before_*` on the committed tree with the working changes stashed
 **The film:** the Budget support preview mid-draft (`p3a3_1280_05b_budget_spending`), the Laws detail pane (`06…`), the signing takeover with the staged division (`89e_signing_settled`).
 
 **Bar:** `RunAllBatch` 26 of 26 clean on the tree with A3 and B2's two fixes (`bar54_p3a3_RunAllBatch.log`; the earlier runs `bar52`/`bar53` clean too, before the plate's short form and the legend's width).
+
+## 249. P3-B1 — THE POLICY WEB AGAINST BOARD 2b, VERIFIED: four deviations, every one composition; the build waits for the board's own images, not for a guess (2026-09-03)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P3, Track B): *"Compare the built screen to the board (levers grouped by area on the left, the books on the right with history counts, the causal band, the pinned-node pane with one line per edge). List every deviation; build the missing composition; state any deviation that stays with its reason (R-W2's fence). Done when: the pinned state matches image 8's layout on film and the rest state matches image 7's."* Elias's second message binds the track: *"verify-then-close, never rebuild - compare … deviation by deviation, and report whether each gap is composition, reachability, or the 720 fold before touching anything."*
+
+**What was compared.** The built screen on film at 1280 (`d11b1280_06j_policylaws_policyweb_rest` - image 7's state; `06l_policylaws_policyweb_node_stat` - image 8's, Approval Rating pinned) against the board as the row names its four elements. ⚠ **The board itself could not be read this sitting:** `PoliSim v2 Screens.dc.html` returns through `get_file` truncated at 256 KiB, and its readable head carries boards 5a–5f, 4a and 4d only - board 2b lies past the cap - and images 7 and 8, the board's rest and pinned states, were not attached (ERRANDS E-8). The comparison below is against the row's own words for the board; the layout the images carry is not inferred from them.
+
+**The deviations, each classified.**
+
+| board 2b element (the row's words) | the built screen (on film) | the gap | class |
+|---|---|---|---|
+| levers grouped by area on the left | the levers are the ring's nine wedges - grouped by area, on a circle centred in the plate, the header margin reserved on every side (Annex G.2) | the grouping exists; its placement (a left column) does not | composition |
+| the books on the right with history counts | no books panel; the plate's right half is ground (dead space 87 % on the rest frame, the sweep's emptiest) | absent | composition |
+| the causal band | no band; edges run node to node inside the ring, DERIVED solid and DECLARED dashed, coloured by the target's good/bad framing (Annex G.4) | absent | composition |
+| the pinned-node pane with one line per edge | the pinned state (C-C3's focus mode, §96) draws the node's edges and the readout beneath the web - "Moves:" one line per edge, verbatim in Annex G.5 - reachable by scrolling | the contents match line for line; the pane's placement (beside the web, as a pane) does not | composition |
+
+Reachability: none - the Policy Web is the fourth sub-tab of LAWS on the rail, one click from any screen, and the pinned state is one click on a node. The 720 fold: none of the four is a fold question; the readout sits below the web at every width because the ring is height-bound, which is the same composition gap as the first row.
+
+**What is built here: nothing.** R-W2's fence and the track's rule agree: the four gaps are the board's composition, and a composition built from four noun phrases would be a rebuild on assumption - the exact thing the row forbids. The content the board arranges is all present and derived (the nine wedges, the edges with their two classes and their good/bad ink, the per-edge lines of the readout), so what the images will settle is placement, not substance. The row stays open at "verified, composition, four gaps"; it closes the day images 7 and 8 land (E-8) or the board reads whole, and the build then follows the drawing rather than this table.
+
+**What stays with its reason (R-W2's fence, unchanged by this row):** no edge invented, no valence hue beyond the good/bad convention, no grouping the model does not hold - the nine wedges are the model's own; the DERIVED/DECLARED distinction stays visible.
+
+**Bar:** none owed - the row changes no code.
