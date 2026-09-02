@@ -334,6 +334,7 @@ namespace PoliSim.UI
         // removing a tax bypasses this cache entirely (see DrawTaxLineRow) since that's an immediate
         // action, not a draft value tracked here.
         private bool _hasCachedPreview;
+        private PolicyPreview _cachedPreview;   // P2-3.4: the whole preview, for the Riksbank panel's projected path
         /// <summary>C-C9 (P-G1): the no-policy counterfactual advancing beside the real game.</summary>
         private ShadowBaseline _shadowBaseline;
 
@@ -3153,6 +3154,33 @@ namespace PoliSim.UI
                 DrawDerivedStatRow("Target", -1f, $"{chairTarget:F2}%",
                     $"band {CurrencySystem.MinInterestRate:F0}-{CurrencySystem.MaxInterestRate:F0}%; closes {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the gap per year", politicalInk);
 
+                // P2-3.4 (2026-09-02): more of what the model holds - the rate today, the rule's inputs as readings,
+                // and the projected path: the rule on today's readings for this year's move, the rule on the
+                // preview's year-end readings for next year's, the chair closing its share of the gap each year
+                // (RatePathProjection - the arithmetic FederalReserveSystem runs at a close, on the preview's clone).
+                DrawDerivedStatRow("Policy rate now", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "the rate the economy runs at today", politicalInk);
+                DrawDerivedStatRow("Rule inputs", -1f, $"{_playerCountry.State.Inflation:F1}% · {_playerCountry.State.Unemployment:F1}%",
+                    $"target {TaylorRule.InflationTarget(PlayerCountryId):F1}% · NAIRU {_playerCountry.NaturalUnemploymentRate:F1}% · gap {TaylorRule.GetUnemploymentGapPercent(_playerCountry):+0.0;-0.0} pts · output gap {TaylorRule.GetOutputGapPercent(_playerCountry):+0.0;-0.0}%",
+                    politicalInk);
+                if (!_hasCachedPreview || _simulationManager.CurrentTurn != _cachedPreviewTurn)
+                {
+                    RecomputePolicyPreview();
+                }
+                RatePathProjection.Step[] ratePath = RatePathProjection.Project(_playerCountry, _cachedPreview);
+                if (ratePath != null)
+                {
+                    GUILayout.Space(6f);
+                    DrawColoredLabel("Projected path", _labelStyle, politicalInk);
+                    foreach (RatePathProjection.Step step in ratePath)
+                    {
+                        string when = step.YearsAhead == 0 ? "Now" : step.YearsAhead == 1 ? "After this year" : "After next year";
+                        string note = step.YearsAhead == 0
+                            ? step.Basis
+                            : $"rule {step.RuleReading:F2}% · target {step.Target:F2}% · {(step.YearsAhead == 1 ? "today's readings" : "the preview's readings")}";
+                        DrawDerivedStatRow(when, -1f, $"{step.Rate:F2}%", note, politicalInk);
+                    }
+                    GUILayout.Label($"Scope: next year's readings are the preview's - the current draft applied for one deterministic year, no margin, no events: inflation {_cachedPreview.PreviewInflation:F1}%, unemployment {_cachedPreview.PreviewUnemployment:F1}% against NAIRU {_cachedPreview.PreviewNaturalUnemployment:F1}%. The rule weighs the inflation gap and the unemployment gap, not the output gap; a target is the rule plus the chair's lean, clamped to the band; the chair closes {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the gap to it each year. Nothing beyond the preview's year is forecast.", _labelStyle);
+                }
                 DrawFedChairSelectionModal();
             }
             else
@@ -3754,6 +3782,7 @@ namespace PoliSim.UI
         private void RecomputePolicyPreview()
         {
             PolicyPreview preview = _simulationManager.PreviewTurn(PlayerCountryId, BuildPlayerDecision());
+            _cachedPreview = preview;
 
             // The Raw fields are the full-turn figures the Statistics projections read (the dashed next-year
             // segment); since P2-2.1 the effects panel reads the same full-turn point, as arrows.

@@ -21545,3 +21545,22 @@ The instrument that films the night is the driver's new **`-shotinterrupts`** mo
 **The film:** the Compass tab and the Desk card at 1280 and 2560 (`p2ct1280_07b_politics_compass.png`, `p2ct1280_01c_desk.png`, `p2ct2560_…`). The sweep advances the clock, so the legend on film already counts stored points with their dates; the four-year diagnostic is where the trail's content is proved.
 
 **Bar:** `RunSimulationBatch` and `RunAllBatch` clean on the committed tree (`bar35_p2_3_3_*.log`).
+
+## 230. P2-3.4 — THE RIKSBANK PANEL: the rate today, the rule's inputs as readings, and the projected path as the rule on the preview's projection, asserted (2026-09-02)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P2, Track 3): *"More of what the model holds: the current rate, the reaction function's inputs (the model's inflation and output readings), and the projected rate path from the Taylor rule applied to the preview's projection — derived, with the scope stated. Done when: the projected path equals the rule evaluated on the projection, asserted."*
+
+**What the panel held.** With a sitting chair: the rule's reading today with its inputs in a note, the chair's lean, the chair's target, the appointment modal and the rate's history graph. The rate itself appeared only as the graph's last point; the output gap the model computes was not shown; nothing looked forward.
+
+**Built.**
+
+- **The projection's readings.** `PolicyPreview` now carries the previewed year's end readings the rule reads - inflation, unemployment, the natural rate, the output gap - the rule's reading on them (`PreviewRuleRate`, `TaylorRule.GetSuggestedInterestRate` on the previewed clone at its year's end) and the rate the previewed year ran at. The preview is the one the Budget's effects already come from: the current draft applied for one deterministic year, no margin, no events.
+- **The path.** `RatePathProjection.Project(country, preview)` (Simulation): three steps for a country with a sitting chair - the rate today; after this year's move, the chair closing `FederalReserveSystem.RateAdjustmentSpeed` of the gap to a target that is the rule on today's readings plus the lean, clamped to the band (exactly `ApplyFedChairInterestRate`'s arithmetic); after next year's move toward the same target arithmetic on the preview's reading. Nothing beyond the preview's year is forecast, and the panel says so. Null without a chair (a currency-zone member, or a rate the player sets), so those branches of the panel are unchanged.
+- **The panel.** Above the appointment modal: "Policy rate now"; "Rule inputs" with inflation against the country's target, unemployment against NAIRU with the gap in points, and the output gap as a reading the rule does not weigh (it weighs the unemployment gap - the panel says which); then "Projected path" - three rows, each with its rule reading, target and basis - and a scope sentence carrying the preview's readings and the chair's speed. The controller keeps the whole `PolicyPreview` it already computes for the Budget (`_cachedPreview`), recomputed on the same turn-change rule, so the panel adds no second projection.
+- **The proof.** A clause in `PreviewParityDiagnostic` - which joins the simulation group this pass: it had been a standalone diagnostic no bar ran, the unwired-proof trap R-N5 exists to close (R-N5): for every country with a sitting chair, the preview's rule reading re-derived from the rule's own formula on the preview's readings equals `PreviewRuleRate`; the path's three rates are the target arithmetic and the adjustment speed applied twice from the rate today; the targets are the readings plus the lean, clamped; and the previewed year ran at the target on today's readings. Printed per country on every run.
+
+**The film:** the Riksbank tab at 1280 and 2560 (`p2rb1280_07d_politics_federalreserve.png`, `p2rb2560_…`).
+
+**Bar:** `RunSimulationBatch` - eleven checks now, `PreviewParityDiagnostic` enrolled - and `RunAllBatch` clean on the committed tree (`bar36_p2_3_4_*.log`); the parity log prints the path for the three chambers with a sitting chair (the USA, Sweden, Poland).
+
+**What the film taught.** The derived-stat row's trailing lane is a fixed share of the sheet, and the first notes beside the path's figures ran to twice it at 1280 (twelve overflows across the Riksbank captures); the rows now carry the figures - the rule reading, the target and whose readings they rest on - and the scope sentence beneath carries the sentences.

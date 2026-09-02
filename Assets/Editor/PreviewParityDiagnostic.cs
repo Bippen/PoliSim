@@ -87,6 +87,39 @@ namespace PoliSim.EditorTools
                 }
 
                 int failures = 0;
+                // P2-3.4 (2026-09-02): THE PROJECTED RATE PATH IS THE RULE ON THE PROJECTION. For every country
+                // with a sitting chair: the preview's rule reading re-derived from the rule's own formula on the
+                // preview's year-end readings equals PolicyPreview.PreviewRuleRate; the path's three steps are the
+                // chair's target arithmetic (reading + lean, clamped) and the adjustment speed applied twice, from
+                // the rate today; and the previewed year ran at the target on today's readings.
+                foreach (Country c in world.Countries)
+                {
+                    if (c.CurrentFedChair == null) { continue; }
+                    PolicyPreview p = sim.PreviewTurn(c.Id, PolicyDecision.None());
+                    RatePathProjection.Step[] path = RatePathProjection.Project(c, p);
+                    float ruleOnPreview = Mathf.Max(0f, TaylorRule.NeutralRealRate + p.PreviewInflation
+                        + TaylorRule.InflationGapWeight * (p.PreviewInflation - TaylorRule.InflationTarget(c.Id))
+                        + TaylorRule.UnemploymentGapWeight * (p.PreviewNaturalUnemployment - p.PreviewUnemployment));
+                    float ruleNow = TaylorRule.GetSuggestedInterestRate(c);
+                    float targetNow = Mathf.Clamp(ruleNow + c.CurrentFedChair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                    float targetNext = Mathf.Clamp(ruleOnPreview + c.CurrentFedChair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                    float r0 = c.CurrencyZone.InterestRate;
+                    float r1 = r0 + (targetNow - r0) * FederalReserveSystem.RateAdjustmentSpeed;
+                    float r2 = r1 + (targetNext - r1) * FederalReserveSystem.RateAdjustmentSpeed;
+                    bool ok = path != null && path.Length == 3
+                        && Mathf.Abs(p.PreviewRuleRate - ruleOnPreview) < 1e-4f
+                        && Mathf.Abs(path[2].RuleReading - ruleOnPreview) < 1e-4f
+                        && Mathf.Abs(path[0].Rate - r0) < 1e-5f && Mathf.Abs(path[1].Rate - r1) < 1e-5f && Mathf.Abs(path[2].Rate - r2) < 1e-5f
+                        && Mathf.Abs(path[1].Target - targetNow) < 1e-5f && Mathf.Abs(path[2].Target - targetNext) < 1e-5f
+                        && Mathf.Abs(p.PreviewedInterestRate - targetNow) < 1e-4f;
+                    if (!ok)
+                    {
+                        failures++;
+                        Debug.LogError($"PARITY: {c.Id} rate path does not re-derive: preview rule {p.PreviewRuleRate:F4} vs formula {ruleOnPreview:F4}; path "
+                                       + (path == null ? "null" : $"{path[0].Rate:F4} -> {path[1].Rate:F4} -> {path[2].Rate:F4}") + $" vs {r0:F4} -> {r1:F4} -> {r2:F4}; previewed rate {p.PreviewedInterestRate:F4} vs target {targetNow:F4}.");
+                    }
+                    Debug.Log($"PARITY: {c.Id} rate path {r0:F2}% -> {r1:F2}% -> {r2:F2}% (rule now {ruleNow:F2}%, on the preview {ruleOnPreview:F2}%; preview inflation {p.PreviewInflation:F2}%, unemployment {p.PreviewUnemployment:F2}% vs NAIRU {p.PreviewNaturalUnemployment:F2}%) {(ok ? "ok" : "FAIL")}.");
+                }
                 foreach (Country c in world.Countries)
                 {
                     int daysAfter = c.FiscalLedgerAccruing?.DaysRecorded ?? -1;

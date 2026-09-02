@@ -451,7 +451,7 @@ point derives from cohorts. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §229: t
 **P2-3.4 — The Riksbank panel.** More of what the model holds: the current rate, the reaction
 function's inputs (the model's inflation and output readings), and the **projected rate path** from
 the Taylor rule applied to the preview's projection — derived, with the scope stated. *Done when:*
-the projected path equals the rule evaluated on the projection, asserted.
+the projected path equals the rule evaluated on the projection, asserted. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §230: `PolicyPreview` carries the previewed year's readings and the rule on them, `RatePathProjection` is the chair's own arithmetic on today's and the preview's readings, the panel shows the rate, the inputs and the three-step path with its scope, and `PreviewParityDiagnostic` re-derives every figure.**
 
 ## Track 4 — the Design batch (re-composition; the dead-space paradox says spacing won't fix these)
 

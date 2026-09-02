@@ -106,6 +106,17 @@ namespace PoliSim.Simulation
         /// </summary>
         public float RevenueEstimate;
         public float SpendingEstimate;
+        /// <summary>
+        /// P2-3.4 (2026-09-02): the previewed year's end readings the Taylor rule reads, and the rule's reading on
+        /// them - so the Riksbank panel's projected path is the rule evaluated on this projection and nothing
+        /// else. <see cref="PreviewedInterestRate"/> is the rate the previewed year ran at.
+        /// </summary>
+        public float PreviewInflation;
+        public float PreviewUnemployment;
+        public float PreviewNaturalUnemployment;
+        public float PreviewOutputGapPercent;
+        public float PreviewRuleRate;
+        public float PreviewedInterestRate;
     }
 
     /// <summary>
@@ -2794,7 +2805,13 @@ namespace PoliSim.Simulation
                 LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore,
                 CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
                 SwfContributionEstimate = swfContribution,
-                SwfReturnsEstimate = swfReturns
+                SwfReturnsEstimate = swfReturns,
+                PreviewInflation = state.Inflation,
+                PreviewUnemployment = state.Unemployment,
+                PreviewNaturalUnemployment = previewCountry.NaturalUnemploymentRate,
+                PreviewOutputGapPercent = TaylorRule.GetOutputGapPercent(previewCountry),
+                PreviewRuleRate = TaylorRule.GetSuggestedInterestRate(previewCountry),
+                PreviewedInterestRate = previewedInterestRate,
             };
         }
 

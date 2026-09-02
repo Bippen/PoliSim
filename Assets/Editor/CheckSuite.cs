@@ -354,6 +354,7 @@ namespace PoliSim.EditorTools
                 // which is the strongest form of check this suite has.
                 ("VoterGroupViewDiagnostic", VoterGroupViewDiagnostic.Run),
                 ("DomesticMoneyBasisDiagnostic", DomesticMoneyBasisDiagnostic.Run),   // P2-0.1 (2026-09-02): every Domestic money figure to its basis; the one-time settlements as a share of the deciding country GDP
+                ("PreviewParityDiagnostic", PreviewParityDiagnostic.Run),   // P2-3.4 (2026-09-02): the preview against the real boundary term by term, and the Riksbank path against the rule - a standalone diagnostic no bar ran until now
 
                 // ⚠ REGISTERED LAST HERE TOO, 2026-09-01, and it closes a hole rather than adding cover.
                 // This group owns two ratchets - CohortAgingStepDiagnostic's runaway count and
