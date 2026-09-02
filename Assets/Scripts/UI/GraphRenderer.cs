@@ -340,14 +340,19 @@ namespace PoliSim.UI
             {
                 float first = visibleWindow[0];
                 float last = visibleWindow[visibleWindow.Count - 1];
-                float percentChange = Mathf.Approximately(first, 0f)
-                    ? (Mathf.Approximately(last, 0f) ? 0f : 100f * Mathf.Sign(last))
-                    : (last - first) / Mathf.Abs(first) * 100f;
+                // P3-C4 (2026-09-03): a percentage from a ZERO base is not a percentage - the old form printed ±100 % for any
+                // series that starts at zero (the trade balance from the seed read "−100.0%"). From a zero base the delta is
+                // the absolute change in the series' own unit, marked Δ; the percentage stays where the base is real.
+                bool zeroBase = Mathf.Approximately(first, 0f);
+                float change = zeroBase ? last - first : (last - first) / Mathf.Abs(first) * 100f;
+                string deltaText = zeroBase
+                    ? "Δ " + (_moneyUnit.HasValue ? UiFormat.MoneyDelta(change, _moneyUnit.Value) : (change >= 0f ? "+" : "") + FormatAxisValue(change))
+                    : $"{change:+0.0;-0.0;0}%";
 
                 _changeLabelStyle.normal.textColor = higherIsBetter.HasValue
-                    ? UiPalette.GetDeltaColor(percentChange, higherIsBetter.Value)
+                    ? UiPalette.GetDeltaColor(change, higherIsBetter.Value)
                     : UiPalette.NeutralChangeColor;
-                GUILayout.Label($"{percentChange:+0.0;-0.0;0}%", _changeLabelStyle, GUILayout.ExpandWidth(false));
+                GUILayout.Label(deltaText, _changeLabelStyle, GUILayout.ExpandWidth(false));
             }
 
             GUILayout.EndHorizontal();
