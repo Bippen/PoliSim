@@ -1,0 +1,1572 @@
+
+
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+
+    <meta name="language" content="pl" /> <!-- Dodane -->
+    ﻿
+
+
+
+
+<meta name="robots" content="index, follow" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<meta name="description" content="portal podatki.gov.pl " />
+<meta name="author" content="MF" />
+<title>Serwis o podatkach - Stawki i limity  </title>
+
+
+   
+
+    <script>
+         
+        var cat = localStorage.getItem("matomoConsentChoice:v2");       
+        //console.log("test");
+        //console.log(cat);
+        if(cat==null || cat=="declined" || cat=="customNO"){
+             const cookies = document.cookie.split(";");
+
+             for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i];
+                    const eqPos = cookie.indexOf("=");
+                     const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+                        // Ustawiamy datę wygaśnięcia na 1 sty 1970
+                       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+                        }
+        }
+        else{
+        (function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+        new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+        'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-N2PN2W8');
+        }</script>
+    <noscript>
+        <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-N2PN2W8"
+        height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    
+
+
+    <!-- Favicon-->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <!-- Core theme CSS (includes Bootstrap)-->
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css?v=PI8n5gCcz9cQqQXm3PEtDuPG8qx9oFsFctPg0S5zb8g" />
+    <link rel="stylesheet" href="/bootstrap/css/style.css?v=khFgdss5A2ozHtns9-OGDDcqqzDBerQD-k-FC0ghDFM" />
+    <link rel="stylesheet" href="/bootstrap/css/cookieconsent.min.css?v=psHBeH_tZbqrO3-El-uCgUsKqrC9Mm1KqQMkGfJvlIY" />
+    <link rel="stylesheet" href="/bootstrap/fonts/">
+    <script src="/scripts/mark.js/mark.min.js"></script>
+    <script src="/scripts/zawbi_banner.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/zawbi_banner.css">
+
+    <link rel="stylesheet" href="/bootstrap/bootstrap-icons/font/bootstrap-icons.min.css?v=pdY4ejLKO67E0CM2tbPtq1DJ3VGDVVdqAR6j3ZwdiE4" />
+
+    <script src="/scripts/jquery-3.6.0.min.js"></script>
+
+</head>
+<body>
+
+    
+
+
+<div class="umb-block-grid"
+     data-grid-columns="12;"
+     style="--umb-block-grid--grid-columns: 12;">
+    
+
+
+
+
+
+<header class="masthead">
+	<!-- Pasek nawigacji -->
+
+	<nav class="navbar navbar-expand-lg border-bottom">
+		<div class="container-fluid">
+			<button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#navbarToggleExternalContent" aria-controls="navbarToggleExternalContent" aria-expanded="false" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon color-mobile-icon"></span>
+			</button>
+				<h1>
+					<a class="navbar-brand" href="/">
+						<img src="/media/bymfppfc/herb_polski.svg?width=50&amp;v=1dce4696f639b10" alt="" height="50" class="d-inline-block align-text-center">podatki.gov.pl					</a>
+				</h1>
+
+			<div class="offcanvas">
+				<ul class="navbar-nav justify-content-end">
+					<li class="nav-item p-2">
+						<form class="d-flex" role="search" action="/nowe-wyszukiwanie">
+							<input type="search" class="form-control me-2" placeholder="Wpisz min. 3... znaki" aria-label="Szukaj" id="query" name="query">
+							<button type="submit" class="search-submit-btn">Szukaj</button>
+						</form>
+					</li>
+
+
+					<li class="nav-item p-2">
+						<a class="btn btn-primary" href="https://urzadskarbowy.gov.pl/">Zaloguj się do eUrzędu Skarbowego</a>
+					</li>
+				</ul>
+			</div>
+			<a class="search-link" href="/nowe-wyszukiwanie"><i class="color-mobile-icon fas fa-search"></i></a>
+
+		</div>
+	</nav>
+
+
+	<div class="offcanvas offcanvas-end" tabindex="-1" id="navbarToggleExternalContent" aria-labelledby="offcanvasTopLabel">
+		<div class="offcanvas-header justify-content-between">
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+
+
+		<div class="offcanvas-body">
+			<div class="offcanvas-body">
+				<div class="accordion accordion-flush" id="accordionFlushMobile">
+												<div class="accordion-item">
+													<h2 class="accordion-header mobile-accordion-header" id="flush-headingMobile_osobiste">
+															<button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseMobile_osobiste" aria-expanded="false" aria-controls="flush-collapseMobile_osobiste">
+															Podatki osobiste
+															</button>
+													</h2>
+													<div id="flush-collapseMobile_osobiste" class="accordion-collapse collapse" aria-labelledby="flush-headingMobile_osobiste" data-bs-parent="#accordionFlushMobile">
+														<div class="accordion-body mb-4">
+																	<h3 class="fw-bold mb-4">Od dochodu</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/podatki-osobiste/pit/informacje-podstawowe" title="Informacje podstawowe"><strong>PIT</strong></a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe" title="Informacje podstawowe">Informacje podstawowe</a></p>
+<p><a href="/podatki-osobiste/pit/ulgi-i-odliczenia" title="Ulgi i odliczenia">Ulgi i odliczenia</a></p>
+<p><a href="/podatki-osobiste/pit/stawki-i-limity" title="Stawki i limity">Stawki i limity</a></p>
+<p><a href="/podatki-osobiste/pit/formularze" title="Formularze">Formularze</a></p>
+																</div>
+																	<h4 data-bs-toggle="collapse" href="#collapseMobile_osobiste0" role="button" aria-expanded="false" aria-controls="collapseMobile_osobiste0"><img src="/assets/ICONS/Caretdown.svg"><strong>Wybierz swoją sytuację</strong></h4>
+																	<ul class="list-unstyled collapse mx-4" id="collapseMobile_osobiste0">
+																		<h3><strong>Wybierz swoją sytuację</strong></h3>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-pracy" title="Dochody z pracy">Mam dochody z pracy</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-pracy-wykonywanej-za-granica" title="Dochody z pracy wykonywanej za granicą">Mam dochody z pracy wykonywanej za granicą</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-umowy-zlecenia-lub-o-dzielo" title="Dochody z umowy zlecenia lub o dzieło">Mam dochody z umowy zlecenia lub o dzieło</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-praw-autorskich" title="Dochody z praw autorskich">Mam dochody z praw autorskich</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-najmu" title="Dochody z najmu">Mam dochody z najmu</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-dzialalnosci-nierejestrowanej" title="Dochody z działalności nierejestrowanej">Mam dochody z działalności nierejestrowanej</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-niani" title="Dochody niani">Mam dochody niani</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-emerytury-lub-renty" title="Dochody z emerytury lub renty">Mam dochody z emerytury</a></p>
+<p><a href="/potrzebuje-pelnomocnictwa" title="Potrzebuje pełnomocnictwa">Potrzebuję pełnomocnictwa</a></p>
+																	</ul>
+																	<hr />
+																	<h3 class="fw-bold mb-4">Od maj&#x105;tku</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/podatki-osobiste/sd/informacje-podstawowe" title="Informacje podstawowe">Spadki i darowizny (<strong>SD</strong>)</a></p>
+<p><a href="/podatki-osobiste/pcc/informacje-podstawowe" title="Informacje podstawowe">Czynności cywilnoprawne (<strong>PCC</strong>)</a></p>
+																</div>
+																	<h3 class="fw-bold mb-4">Od zakup&#xF3;w</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/akcyza/informacje-podstawowe" title="Informacje podstawowe">Akcyza</a></p>
+<p><a href="/podatki-firmowe/vat" title="VAT">VAT</a></p>
+																</div>
+																	<h3 class="fw-bold mb-4">Pozosta&#x142;e</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/pozostale/podatek-od-gier/informacje-podstawowe" title="Informacje podstawowe">Podatek od gier</a></p>
+<p><a href="/podatki-lokalne" title="Podatki lokalne">Podatki lokalne</a></p>
+<p><a href="/interpretacje-podatkowe" title="Interpretacje podatkowe">Interpretacje podatkowe</a></p>
+																</div>
+														</div>
+													</div>
+												</div>
+												<div class="accordion-item">
+													<h2 class="accordion-header mobile-accordion-header" id="flush-headingMobile_firmowe">
+															<button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseMobile_firmowe" aria-expanded="false" aria-controls="flush-collapseMobile_firmowe">
+															Podatki dla przedsi&#x119;biorc&#xF3;w
+															</button>
+													</h2>
+													<div id="flush-collapseMobile_firmowe" class="accordion-collapse collapse" aria-labelledby="flush-headingMobile_firmowe" data-bs-parent="#accordionFlushMobile">
+														<div class="accordion-body mb-4">
+																	<h3 class="fw-bold mb-4">Podstawowe podatki dla przedsi&#x119;biorc&#xF3;w</h3>
+																			<ul class="nav nav-tabs" role="tablist">
+																				
+
+
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/pit/informacje-podstawowe" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							PIT
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/cit/informacje-podstawowe" title="CIT">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							CIT
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/vat" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							VAT
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/jednolity-plik-kontrolny/jpk_vat-z-deklaracja" title="JPK">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							<p>JPK</p>
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/akcyza/informacje-podstawowe" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							Akcyza
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+
+
+																			</ul>
+																<div class="fw-bold mb-4">
+																	
+																</div>
+																	<h3 class="fw-bold mb-4">Pozosta&#x142;e podatki</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/podatki-osobiste/pcc/informacje-podstawowe" title="Informacje podstawowe">od czynności cywilnoprawnych (<strong>PCC</strong>)</a></p>
+<p><a href="/podatki-osobiste/sd/informacje-podstawowe" title="Informacje podstawowe">od spadków i darowizn (<strong>SD</strong>)</a></p>
+<p><a href="/pozostale/podatek-tonazowy/informacje-podstawowe" title="Informacje podstawowe">tonażowy</a></p>
+<p><a href="/pozostale/podatek-od-gier/informacje-podstawowe" title="Informacje podstawowe">od gier</a></p>
+<p><a href="/pozostale/podatek-od-sprzedazy-detalicznej/informacje-podstawowe" title="Informacje podstawowe">od sprzedaży detalicznej</a></p>
+<p><a href="/pozostale/podatek-od-wydobycia-niektorych-kopalin/informacje-podstawowe" title="Informacje podstawowe">od wydobycia niektórych kopalin</a></p>
+<p><a href="/pozostale/podatek-od-niektorych-instytucji-finansowych/informacje-podstawowe" title="Informacje podstawowe">od niektórych instytucji finansowych</a></p>
+<p><a href="/pozostale/oplata-od-sprzedazy-alkoholu-w-opak-do-300-ml/informacje-podstawowe" title="Informacje podstawowe">od sprzedaży alkoholu w opakowaniach do 300 ml</a></p>
+<p><a href="/pozostale/oplata-cukrowa/informacje-podstawowe" title="Informacje podstawowe">Opłata cukrowa</a></p>
+<p><a href="/pozostale/klauzula-ogolna-przeciwko-unikaniu-opodatkowania" title="Klauzula ogólna przeciwko unikaniu opodatkowania">Klauzula ogólna przeciwko unikaniu opodatkowania</a></p>
+																</div>
+																	<h3 class="fw-bold mb-4"></h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/podatki-lokalne" title="Podatki lokalne">Podatki lokalne</a></p>
+<p><a href="/pozostale/pelnomocnictwa/informacje-podstawowe-pelnomocnictwa" title="Informacje podstawowe pełnomocnictwa">Pełnomocnictwa</a></p>
+<p><a href="/pozostale/oplata-skarbowa/informacje-podstawowe" title="Informacje podstawowe">Opłata skarbowa</a></p>
+<p><a href="https://www.gov.pl/web/ias-katowice/rejestr-dzialalnosci-na-rzecz-spolek-lub-trustow">Rejestr działalności na rzecz spółek lub trustów</a></p>
+<p><a href="https://www.gov.pl/web/ias-katowice/rejestr-dzialalnosci-w-zakresie-walut-wirtualnych">Rejestr działalności w zakresie walut wirtualnych</a></p>
+<p><a href="/ceny-transferowe" title="Ceny transferowe">Ceny transferowe</a></p>
+<p><a href="/pozostale/program-wspoldzialania-pw" title="Program Współdziałania (PW)">Program współdziałania</a></p>
+<p><a href="/interpretacje-podatkowe" title="Interpretacje podatkowe">Interpretacje podatkowe</a></p>
+<p><a href="/podatkowa-wspolpraca-miedzynarodowa" title="Podatkowa współpraca międzynarodowa">Podatkowa współpraca międzynarodowa</a></p>
+<p><a href="/pozostale/porozumienie-inwestycyjne/informacje-podstawowe" title="Informacje podstawowe">Porozumienie inwestycyjne</a></p>
+<p><a href="/wiazace-informacje-podatkowe-i-celne" title="Wiążące informacje podatkowe i celne">Wiążące informacje podatkowe i celne</a></p>
+																</div>
+																	<h3 class="fw-bold mb-4"></h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/enotariusz" title="eNotariusz">eNotariusz</a></p>
+<p><a href="/e-sprawozdania-finansowe" title="e-Sprawozdania Finansowe">eSprawozdania</a></p>
+<p><a href="/e-urzad-skarbowy/konto-organizacji/zawiadomienie-zaw-nr" title="Zawiadomienie ZAW-NR">Zawiadomienie <strong>ZAW-NR</strong></a></p>
+<p><a href="/pozostale/wht-withholding-tax-podatek-u-zrodla" title="WHT - Withholding Tax (podatek u źródła)"><strong>WHT</strong> - Withholding Tax (podatek u źródła)</a></p>
+<p><a href="/mdr" title="MDR"><strong>MDR</strong> - Raportowanie schematów podatkowych</a></p>
+<p><a href="/icap" title="ICAP"><strong>ICAP</strong> -&nbsp;</a><a href="/icap" title="ICAP">International Compliance Assurance Programme</a></p>
+<p><a href="/pozostale/etaca" title="ETACA"><strong>ETACA</strong> - European Trust And Cooperation Approac</a></p>
+<p><a href="/pozostale/procedura-szczegolna-sme" title="Procedura szczególna SME"><strong>SME</strong> - procedura szczególna</a></p>
+<p><a href="/pozostale/globe-opodatkowanie-wyrownawcze/faq" title="FAQ"><strong>GLOBE</strong> - opodatkowanie wyrównawcze</a></p>
+<p><a href="/pozostale/crbr" title="CRBR"><strong>CRBR</strong> - Centralny Rejestr Beneficjentów Rzeczywistych</a></p>
+<p><a href="/pozostale/tax-free-vat-refund-vap-oss-i-ioss" title="TAX FREE, VAT-REFUND, VAP, OSS i IOSS">Procedury <strong>TAX FREE, VAT-REFUND, VAP, OSS i IOSS</strong></a><a href="https://podatki-arch.mf.gov.pl/wht/"></a></p>
+																</div>
+														</div>
+													</div>
+												</div>
+												<div class="accordion-item">
+													<h2 class="accordion-header mobile-accordion-header" id="flush-headingMobile_clo">
+															<button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseMobile_clo" aria-expanded="false" aria-controls="flush-collapseMobile_clo">
+															C&#x142;o
+															</button>
+													</h2>
+													<div id="flush-collapseMobile_clo" class="accordion-collapse collapse" aria-labelledby="flush-headingMobile_clo" data-bs-parent="#accordionFlushMobile">
+														<div class="accordion-body mb-4">
+																	<h3 class="fw-bold mb-4">Podstawowe informacje o cle</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/informacje-dla-osob-fizycznych/towary-objete-ograniczeniami-i-zakazami" title="Towary objęte ograniczeniami i zakazami">Informacje dla osób fizycznych</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/informacje-dla-przedsiebiorcow/aeo" title="AEO">Informacje dla przedsiębiorców</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/ograniczenia-przywozu-i-wywozu-towarow/srodki-ochrony-roslin" title="Środki ochrony roślin">Ograniczenia przywozu i wywozu towarów</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/zabezpieczenie-i-pobor-naleznosci-celnych-oraz-zwrot-i-umorzenia-naleznosci-celnych/odroczenie-terminu-platnosci-naleznosci" title="Odroczenie terminu płatności należności">Zabezpieczenie i pobór należności celnych oraz zwrot i umorzenia należności celnych</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/zintegrowana-taryfa-celna/nomenklatura-taryfowa-i-wspolna-taryfa-celna" title="Nomenklatura taryfowa i WTC">Zintegrowana Taryfa Celna </a></p>
+																</div>
+																	<h3 class="fw-bold mb-4">Pozosta&#x142;e</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/informacje-o-cle/pozostale-informacje/agenci-celni" title="Agenci celni">Agenci celni</a></p>
+<p><a href="/informacje-o-cle/pozostale-informacje/gwaranci-celni" title="Gwaranci celni">Gwaranci celni</a></p>
+<p><a href="/informacje-o-cle/pozostale-informacje/kursy-walut-w-przepisach-celnych" title="Kursy walut w przepisach celnych">Kursy walut w przepisach</a></p>
+<p><a href="/informacje-o-cle/akty-prawne-regulujace-sprawy-celne" title="Akty prawne regulujące sprawy celne">Podstawa prawna</a></p>
+<p><a href="/informacje-o-cle/pozostale-informacje/zwolnienia-celne" title="Zwolnienia celne">Zwolnienia</a></p>
+																</div>
+																	<h4 data-bs-toggle="collapse" href="#collapseMobile_clo0" role="button" aria-expanded="false" aria-controls="collapseMobile_clo0"><img src="/assets/ICONS/Caretdown.svg"><strong>Wybierz swoją sytuację</strong></h4>
+																	<ul class="list-unstyled collapse mx-4" id="collapseMobile_clo0">
+																		<p> </p>
+<p> </p>
+																	</ul>
+																	<hr />
+																	<h3 class="fw-bold mb-4">Og&#xF3;lne</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/informacje-o-cle/ogolne/cbam" title="CBAM">CBAM</a></p>
+<p><a href="/informacje-o-cle/ogolne/zgloszenie-celne-i-intrastat" title="Zgłoszenie celne i INTRASTAT">Zgłoszenie celne i INTRASTAT</a></p>
+<p><a href="/informacje-o-cle/ogolne/brexit-a-clo" title="Brexit a cło">Brexit a cło</a></p>
+<p><a href="/informacje-o-cle/ogolne/reforma-celna" title="Reforma celna">Reforma celna</a><a href="/narzedzia/kalkulator-taryfowy" title="Kalkulator taryfowy"></a></p>
+																</div>
+																	<h3 class="fw-bold mb-4">Narz&#x119;dzia</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/narzedzia/kalkulator-taryfowy" title="Kalkulator taryfowy">Kalkulator taryfowy</a></p>
+<p><a href="/narzedzia/przegladarka-taryfowa" title="Przeglądarka taryfowa">Przeglądarka taryfowa</a></p>
+																</div>
+														</div>
+													</div>
+												</div>
+													<div class="accordion-item">
+														<h2 class="accordion-header mobile-accordion-header" id="flush-headingMobile_">
+															<a class="accordion-button primary fw-bold collapsed" role="button" href="/poradniki-i-informatory">
+																Poradniki i informatory
+															</a>
+														</h2>
+													</div>
+													<div class="accordion-item">
+														<h2 class="accordion-header mobile-accordion-header" id="flush-headingMobile_">
+															<a class="accordion-button primary fw-bold collapsed" role="button" href="/aktualnosci">
+																Aktualno&#x15B;ci
+															</a>
+														</h2>
+													</div>
+												<div class="accordion-item">
+													<h2 class="accordion-header mobile-accordion-header" id="flush-headingMobile_Narzedzia">
+															<button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseMobile_Narzedzia" aria-expanded="false" aria-controls="flush-collapseMobile_Narzedzia">
+															Narz&#x119;dzia
+															</button>
+													</h2>
+													<div id="flush-collapseMobile_Narzedzia" class="accordion-collapse collapse" aria-labelledby="flush-headingMobile_Narzedzia" data-bs-parent="#accordionFlushMobile">
+														<div class="accordion-body mb-4">
+																	<h3 class="fw-bold mb-4">Kalkulatory</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="https://podatki-arch.mf.gov.pl/kalkulatory-podatkowe/kalkulator-odsetek-za-zwloke-od-zaleglosci-podatkowych-oraz-oplaty-prolongacyjnej/">Kalkulator odsetek za zwłokę od zaległości podatkowych oraz opłaty prolongacyjnej</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/kalkulatory-podatkowe/kalkulator-odsetek-ustawowych/">Kalkulator odsetek ustawowych</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/kalkulatory-podatkowe/kalkulator-walut/">Kalkulator walut</a></p>
+																</div>
+																	<h3 class="fw-bold mb-4">Wyszukiwarki</h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/narzedzia/eureka" title="EUREKA">System Informacji Celno-Skarbowej EUREKA </a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/wyszukiwarki/wyszukiwarka-teleadresowa-jednostek-kas/">Wyszukiwarka urzędów skarbowych i jednostek Krajowej Administracji Skarbowej</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/wykaz-podatnikow-vat-wyszukiwarka/">Wykaz podmiotów zarejestrowanych jako podatnicy VAT, niezarejestrowanych oraz wykreślonych i przywróconych do rejestru VAT</a></p>
+<p><a href="/narzedzia/white-list" title="White List">Plik płaski</a></p>
+<p><a href="https://sprawdznip.podatki.gov.pl/">Sprawdź status NIP</a></p>
+<p><a href="https://niw.gov.pl/opp/wykaz-opp/">Wyszukiwarka OPP 1,5%</a></p>
+<p><a href="https://kaucja-gwarancyjna.mf.gov.pl/">Kaucja gwarancyjna</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/wyszukiwarka-uprawnien-serwisantow/">Wyszukiwarka uprawnień serwisantów&nbsp;</a></p>
+<p><a href="http://ec.europa.eu/taxation_customs/vies/?locale=pl&amp;;" data-anchor="?locale=pl&amp;;">Potwierdzanie numeru VAT UE (VIES)</a></p>
+																</div>
+																	<h3 class="fw-bold mb-4">Inne narz&#x119;dzia </h3>
+																<div class="fw-bold mb-4">
+																	<p><a href="/aplikacja-mobilna-e-us" title="Aplikacja mobilna e-US">Aplikacja mobilna eUS</a></p>
+<p><a href="/aplikacja-e-paragony" title="Aplikacja e-Paragony">Aplikacja e-Paragony</a></p>
+<p><a href="/narzedzia/jak-pobrac-urzedowe-poswiadczenie-odbioru-upo" title="Jak pobrać Urzędowe Poświadczenie Odbioru (UPO)">Jak pobrać Urzędowe Poświadczenie Odbioru (UPO)</a></p>
+<p><a href="https://granica.gov.pl/index_wait.php">Czas oczekiwania na granicy</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/inne-narzedzia/wazne-terminy/">Ważne terminy&nbsp;</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/inne-narzedzia/rejestr-zastawow-skarbowych/">Rejestr zastawów skarbowych </a></p>
+<p><a href="/narzedzia/glos-podatnika" title="Głos Podatnika">Głos podatnika</a></p>
+<p><a href="https://ord-in.podatki.gov.pl/" title="Kreator wniosku ORD-IN">Kreator wniosku ORD-IN</a></p>
+<p><a href="https://elicytacje.mf.gov.pl/auction/">eLicytacje</a></p>
+																</div>
+														</div>
+													</div>
+												</div>
+												<div class="accordion-item">
+													<h2 class="accordion-header mobile-accordion-header" id="flush-headingMobile_Zalatwsprawe">
+															<a class="accordion-button primary fw-bold collapsed" role="button" href="/zalatw-sprawe-online">
+																Za&#x142;atw spraw&#x119; online
+															</a>
+													</h2>
+													<div id="flush-collapseMobile_Zalatwsprawe" class="accordion-collapse collapse" aria-labelledby="flush-headingMobile_Zalatwsprawe" data-bs-parent="#accordionFlushMobile">
+														<div class="accordion-body mb-4">
+														</div>
+													</div>
+												</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</header>
+
+
+
+
+</div>
+
+
+<div class="umb-block-grid"
+     data-grid-columns="12;"
+     style="--umb-block-grid--grid-columns: 12;">
+    
+
+<ul class="nav nav-tabs" id="taxTabs" role="tablist">
+
+
+
+
+            <li class="nav-item accordion" role="presentation">
+                <a class="nav-link accordion-item" role="button" type="button">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#osobiste" aria-expanded="false" aria-controls="osobiste">
+                            Podatki osobiste
+                        </button>
+                    </h2>
+                </a>
+            </li>
+
+
+            <li class="nav-item accordion" role="presentation">
+                <a class="nav-link accordion-item" role="button" type="button">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#firmowe" aria-expanded="false" aria-controls="firmowe">
+                            Podatki dla przedsi&#x119;biorc&#xF3;w
+                        </button>
+                    </h2>
+                </a>
+            </li>
+
+
+            <li class="nav-item accordion" role="presentation">
+                <a class="nav-link accordion-item" role="button" type="button">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#clo" aria-expanded="false" aria-controls="clo">
+                            C&#x142;o
+                        </button>
+                    </h2>
+                </a>
+            </li>
+
+
+             <li class="nav-item accordion" role="presentation">
+                <a class="nav-link accordion-item" href="/poradniki-i-informatory" role="button" type="button">
+                    <h2 class="accordion-header">
+                        <div class="link primary fw-bold">
+                            Poradniki i informatory
+                        </div>
+                    </h2>
+                </a>
+            </li>
+
+
+             <li class="nav-item accordion" role="presentation">
+                <a class="nav-link accordion-item" href="/aktualnosci" role="button" type="button">
+                    <h2 class="accordion-header">
+                        <div class="link primary fw-bold">
+                            Aktualno&#x15B;ci
+                        </div>
+                    </h2>
+                </a>
+            </li>
+
+
+            <li class="nav-item accordion" role="presentation">
+                <a class="nav-link accordion-item" role="button" type="button">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed primary fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#Narzedzia" aria-expanded="false" aria-controls="Narzedzia">
+                            Narz&#x119;dzia
+                        </button>
+                    </h2>
+                </a>
+            </li>
+
+
+             <li class="nav-item accordion" role="presentation">
+                <a class="nav-link accordion-item" href="/zalatw-sprawe-online" role="button" type="button">
+                    <h2 class="accordion-header">
+                        <div class="link primary fw-bold">
+                            Za&#x142;atw spraw&#x119; online
+                        </div>
+                    </h2>
+                </a>
+            </li>
+
+
+
+</ul>
+
+
+
+<div class="tab-content accordion" id="taxTabsContent">
+    
+
+
+
+    <div class="tab-pane fade active py-3 px-5 accordion-collapse collapse" id="osobiste" role="tabpanel" data-bs-parent="#taxTabsContent">
+        <div class="row px-5">
+            
+
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Od dochodu</h3>
+    <p>Podstawowy podatek od dochod&#xF3;w osobistych.</p>
+    <p><p><a href="/podatki-osobiste/pit/informacje-podstawowe" title="Informacje podstawowe"><strong>PIT</strong></a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe" title="Informacje podstawowe">Informacje podstawowe</a></p>
+<p><a href="/podatki-osobiste/pit/ulgi-i-odliczenia" title="Ulgi i odliczenia">Ulgi i odliczenia</a></p>
+<p><a href="/podatki-osobiste/pit/stawki-i-limity" title="Stawki i limity">Stawki i limity</a></p>
+<p><a href="/podatki-osobiste/pit/formularze" title="Formularze">Formularze</a></p></p>
+    <p><h3><strong>Wybierz swoją sytuację</strong></h3>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-pracy" title="Dochody z pracy">Mam dochody z pracy</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-pracy-wykonywanej-za-granica" title="Dochody z pracy wykonywanej za granicą">Mam dochody z pracy wykonywanej za granicą</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-umowy-zlecenia-lub-o-dzielo" title="Dochody z umowy zlecenia lub o dzieło">Mam dochody z umowy zlecenia lub o dzieło</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-praw-autorskich" title="Dochody z praw autorskich">Mam dochody z praw autorskich</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-najmu" title="Dochody z najmu">Mam dochody z najmu</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-dzialalnosci-nierejestrowanej" title="Dochody z działalności nierejestrowanej">Mam dochody z działalności nierejestrowanej</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-niani" title="Dochody niani">Mam dochody niani</a></p>
+<p><a href="/podatki-osobiste/pit/informacje-podstawowe/co-jest-opodatkowane/dochody-z-emerytury-lub-renty" title="Dochody z emerytury lub renty">Mam dochody z emerytury</a></p>
+<p><a href="/potrzebuje-pelnomocnictwa" title="Potrzebuje pełnomocnictwa">Potrzebuję pełnomocnictwa</a></p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Od maj&#x105;tku</h3>
+    <p>Podatki, kt&#xF3;re op&#x142;acasz, kiedy zmienia si&#x119; Twoja sytuacja majatkowa.</p>
+    <p><p><a href="/podatki-osobiste/sd/informacje-podstawowe" title="Informacje podstawowe">Spadki i darowizny (<strong>SD</strong>)</a></p>
+<p><a href="/podatki-osobiste/pcc/informacje-podstawowe" title="Informacje podstawowe">Czynności cywilnoprawne (<strong>PCC</strong>)</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Od zakup&#xF3;w</h3>
+    <p>Podatki zwi&#x105;zane z transakcjami kupna r&#xF3;&#x17C;nych produkt&#xF3;w z kraju i zagranicy.</p>
+    <p><p><a href="/akcyza/informacje-podstawowe" title="Informacje podstawowe">Akcyza</a></p>
+<p><a href="/podatki-firmowe/vat" title="VAT">VAT</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Pozosta&#x142;e</h3>
+    <p>Wybrane podatki lokalne oraz inne formy opodatkowania.</p>
+    <p><p><a href="/pozostale/podatek-od-gier/informacje-podstawowe" title="Informacje podstawowe">Podatek od gier</a></p>
+<p><a href="/podatki-lokalne" title="Podatki lokalne">Podatki lokalne</a></p>
+<p><a href="/interpretacje-podatkowe" title="Interpretacje podatkowe">Interpretacje podatkowe</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+
+
+        </div>
+    </div>
+
+
+    <div class="tab-pane fade active py-3 px-5 accordion-collapse collapse" id="firmowe" role="tabpanel" data-bs-parent="#taxTabsContent">
+        <div class="row px-5">
+            
+
+
+
+<div class="col-md-4 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Podstawowe podatki dla przedsi&#x119;biorc&#xF3;w</h3>
+    <p></p>
+    <p></p>
+                <ul class="nav nav-tabs"  role="tablist">
+                    
+
+
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/pit/informacje-podstawowe" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							PIT
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/cit/informacje-podstawowe" title="CIT">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							CIT
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/vat" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							VAT
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-firmowe/jednolity-plik-kontrolny/jpk_vat-z-deklaracja" title="JPK">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							<p>JPK</p>
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/akcyza/informacje-podstawowe" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							Akcyza
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+
+
+                </ul>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Pozosta&#x142;e podatki</h3>
+    <p></p>
+    <p><p><a href="/podatki-osobiste/pcc/informacje-podstawowe" title="Informacje podstawowe">od czynności cywilnoprawnych (<strong>PCC</strong>)</a></p>
+<p><a href="/podatki-osobiste/sd/informacje-podstawowe" title="Informacje podstawowe">od spadków i darowizn (<strong>SD</strong>)</a></p>
+<p><a href="/pozostale/podatek-tonazowy/informacje-podstawowe" title="Informacje podstawowe">tonażowy</a></p>
+<p><a href="/pozostale/podatek-od-gier/informacje-podstawowe" title="Informacje podstawowe">od gier</a></p>
+<p><a href="/pozostale/podatek-od-sprzedazy-detalicznej/informacje-podstawowe" title="Informacje podstawowe">od sprzedaży detalicznej</a></p>
+<p><a href="/pozostale/podatek-od-wydobycia-niektorych-kopalin/informacje-podstawowe" title="Informacje podstawowe">od wydobycia niektórych kopalin</a></p>
+<p><a href="/pozostale/podatek-od-niektorych-instytucji-finansowych/informacje-podstawowe" title="Informacje podstawowe">od niektórych instytucji finansowych</a></p>
+<p><a href="/pozostale/oplata-od-sprzedazy-alkoholu-w-opak-do-300-ml/informacje-podstawowe" title="Informacje podstawowe">od sprzedaży alkoholu w opakowaniach do 300 ml</a></p>
+<p><a href="/pozostale/oplata-cukrowa/informacje-podstawowe" title="Informacje podstawowe">Opłata cukrowa</a></p>
+<p><a href="/pozostale/klauzula-ogolna-przeciwko-unikaniu-opodatkowania" title="Klauzula ogólna przeciwko unikaniu opodatkowania">Klauzula ogólna przeciwko unikaniu opodatkowania</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-2 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p><p><a href="/podatki-lokalne" title="Podatki lokalne">Podatki lokalne</a></p>
+<p><a href="/pozostale/pelnomocnictwa/informacje-podstawowe-pelnomocnictwa" title="Informacje podstawowe pełnomocnictwa">Pełnomocnictwa</a></p>
+<p><a href="/pozostale/oplata-skarbowa/informacje-podstawowe" title="Informacje podstawowe">Opłata skarbowa</a></p>
+<p><a href="https://www.gov.pl/web/ias-katowice/rejestr-dzialalnosci-na-rzecz-spolek-lub-trustow">Rejestr działalności na rzecz spółek lub trustów</a></p>
+<p><a href="https://www.gov.pl/web/ias-katowice/rejestr-dzialalnosci-w-zakresie-walut-wirtualnych">Rejestr działalności w zakresie walut wirtualnych</a></p>
+<p><a href="/ceny-transferowe" title="Ceny transferowe">Ceny transferowe</a></p>
+<p><a href="/pozostale/program-wspoldzialania-pw" title="Program Współdziałania (PW)">Program współdziałania</a></p>
+<p><a href="/interpretacje-podatkowe" title="Interpretacje podatkowe">Interpretacje podatkowe</a></p>
+<p><a href="/podatkowa-wspolpraca-miedzynarodowa" title="Podatkowa współpraca międzynarodowa">Podatkowa współpraca międzynarodowa</a></p>
+<p><a href="/pozostale/porozumienie-inwestycyjne/informacje-podstawowe" title="Informacje podstawowe">Porozumienie inwestycyjne</a></p>
+<p><a href="/wiazace-informacje-podatkowe-i-celne" title="Wiążące informacje podatkowe i celne">Wiążące informacje podatkowe i celne</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p><p><a href="/enotariusz" title="eNotariusz">eNotariusz</a></p>
+<p><a href="/e-sprawozdania-finansowe" title="e-Sprawozdania Finansowe">eSprawozdania</a></p>
+<p><a href="/e-urzad-skarbowy/konto-organizacji/zawiadomienie-zaw-nr" title="Zawiadomienie ZAW-NR">Zawiadomienie <strong>ZAW-NR</strong></a></p>
+<p><a href="/pozostale/wht-withholding-tax-podatek-u-zrodla" title="WHT - Withholding Tax (podatek u źródła)"><strong>WHT</strong> - Withholding Tax (podatek u źródła)</a></p>
+<p><a href="/mdr" title="MDR"><strong>MDR</strong> - Raportowanie schematów podatkowych</a></p>
+<p><a href="/icap" title="ICAP"><strong>ICAP</strong> -&nbsp;</a><a href="/icap" title="ICAP">International Compliance Assurance Programme</a></p>
+<p><a href="/pozostale/etaca" title="ETACA"><strong>ETACA</strong> - European Trust And Cooperation Approac</a></p>
+<p><a href="/pozostale/procedura-szczegolna-sme" title="Procedura szczególna SME"><strong>SME</strong> - procedura szczególna</a></p>
+<p><a href="/pozostale/globe-opodatkowanie-wyrownawcze/faq" title="FAQ"><strong>GLOBE</strong> - opodatkowanie wyrównawcze</a></p>
+<p><a href="/pozostale/crbr" title="CRBR"><strong>CRBR</strong> - Centralny Rejestr Beneficjentów Rzeczywistych</a></p>
+<p><a href="/pozostale/tax-free-vat-refund-vap-oss-i-ioss" title="TAX FREE, VAT-REFUND, VAP, OSS i IOSS">Procedury <strong>TAX FREE, VAT-REFUND, VAP, OSS i IOSS</strong></a><a href="https://podatki-arch.mf.gov.pl/wht/"></a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+
+
+        </div>
+    </div>
+
+
+    <div class="tab-pane fade active py-3 px-5 accordion-collapse collapse" id="clo" role="tabpanel" data-bs-parent="#taxTabsContent">
+        <div class="row px-5">
+            
+
+
+
+<div class="col-md-6 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Podstawowe informacje o cle</h3>
+    <p></p>
+    <p><p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/informacje-dla-osob-fizycznych/towary-objete-ograniczeniami-i-zakazami" title="Towary objęte ograniczeniami i zakazami">Informacje dla osób fizycznych</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/informacje-dla-przedsiebiorcow/aeo" title="AEO">Informacje dla przedsiębiorców</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/ograniczenia-przywozu-i-wywozu-towarow/srodki-ochrony-roslin" title="Środki ochrony roślin">Ograniczenia przywozu i wywozu towarów</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/zabezpieczenie-i-pobor-naleznosci-celnych-oraz-zwrot-i-umorzenia-naleznosci-celnych/odroczenie-terminu-platnosci-naleznosci" title="Odroczenie terminu płatności należności">Zabezpieczenie i pobór należności celnych oraz zwrot i umorzenia należności celnych</a></p>
+<p><a href="/informacje-o-cle/podstawowe-informacje-o-cle/zintegrowana-taryfa-celna/nomenklatura-taryfowa-i-wspolna-taryfa-celna" title="Nomenklatura taryfowa i WTC">Zintegrowana Taryfa Celna </a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Pozosta&#x142;e</h3>
+    <p></p>
+    <p><p><a href="/informacje-o-cle/pozostale-informacje/agenci-celni" title="Agenci celni">Agenci celni</a></p>
+<p><a href="/informacje-o-cle/pozostale-informacje/gwaranci-celni" title="Gwaranci celni">Gwaranci celni</a></p>
+<p><a href="/informacje-o-cle/pozostale-informacje/kursy-walut-w-przepisach-celnych" title="Kursy walut w przepisach celnych">Kursy walut w przepisach</a></p>
+<p><a href="/informacje-o-cle/akty-prawne-regulujace-sprawy-celne" title="Akty prawne regulujące sprawy celne">Podstawa prawna</a></p>
+<p><a href="/informacje-o-cle/pozostale-informacje/zwolnienia-celne" title="Zwolnienia celne">Zwolnienia</a></p></p>
+    <p><p> </p>
+<p> </p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Og&#xF3;lne</h3>
+    <p></p>
+    <p><p><a href="/informacje-o-cle/ogolne/cbam" title="CBAM">CBAM</a></p>
+<p><a href="/informacje-o-cle/ogolne/zgloszenie-celne-i-intrastat" title="Zgłoszenie celne i INTRASTAT">Zgłoszenie celne i INTRASTAT</a></p>
+<p><a href="/informacje-o-cle/ogolne/brexit-a-clo" title="Brexit a cło">Brexit a cło</a></p>
+<p><a href="/informacje-o-cle/ogolne/reforma-celna" title="Reforma celna">Reforma celna</a><a href="/narzedzia/kalkulator-taryfowy" title="Kalkulator taryfowy"></a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-2 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Narz&#x119;dzia</h3>
+    <p></p>
+    <p><p><a href="/narzedzia/kalkulator-taryfowy" title="Kalkulator taryfowy">Kalkulator taryfowy</a></p>
+<p><a href="/narzedzia/przegladarka-taryfowa" title="Przeglądarka taryfowa">Przeglądarka taryfowa</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+
+
+        </div>
+    </div>
+
+
+    <div class="tab-pane fade active py-3 px-5 accordion-collapse collapse" id="Informacje o cle" role="tabpanel" data-bs-parent="#taxTabsContent">
+        <div class="row px-5">
+            
+
+
+
+<div class="col-md-12 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-12 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-12 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-12 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-12 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-12 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-12 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> </h3>
+    <p></p>
+    <p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+
+
+        </div>
+    </div>
+
+
+    <div class="tab-pane fade active py-3 px-5 accordion-collapse collapse" id="Narzedzia" role="tabpanel" data-bs-parent="#taxTabsContent">
+        <div class="row px-5">
+            
+
+
+
+<div class="col-md-4 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Kalkulatory</h3>
+    <p></p>
+    <p><p><a href="https://podatki-arch.mf.gov.pl/kalkulatory-podatkowe/kalkulator-odsetek-za-zwloke-od-zaleglosci-podatkowych-oraz-oplaty-prolongacyjnej/">Kalkulator odsetek za zwłokę od zaległości podatkowych oraz opłaty prolongacyjnej</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/kalkulatory-podatkowe/kalkulator-odsetek-ustawowych/">Kalkulator odsetek ustawowych</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/kalkulatory-podatkowe/kalkulator-walut/">Kalkulator walut</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-3 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Wyszukiwarki</h3>
+    <p></p>
+    <p><p><a href="/narzedzia/eureka" title="EUREKA">System Informacji Celno-Skarbowej EUREKA </a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/wyszukiwarki/wyszukiwarka-teleadresowa-jednostek-kas/">Wyszukiwarka urzędów skarbowych i jednostek Krajowej Administracji Skarbowej</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/wykaz-podatnikow-vat-wyszukiwarka/">Wykaz podmiotów zarejestrowanych jako podatnicy VAT, niezarejestrowanych oraz wykreślonych i przywróconych do rejestru VAT</a></p>
+<p><a href="/narzedzia/white-list" title="White List">Plik płaski</a></p>
+<p><a href="https://sprawdznip.podatki.gov.pl/">Sprawdź status NIP</a></p>
+<p><a href="https://niw.gov.pl/opp/wykaz-opp/">Wyszukiwarka OPP 1,5%</a></p>
+<p><a href="https://kaucja-gwarancyjna.mf.gov.pl/">Kaucja gwarancyjna</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/wyszukiwarka-uprawnien-serwisantow/">Wyszukiwarka uprawnień serwisantów&nbsp;</a></p>
+<p><a href="http://ec.europa.eu/taxation_customs/vies/?locale=pl&amp;;" data-anchor="?locale=pl&amp;;">Potwierdzanie numeru VAT UE (VIES)</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+<div class="col-md-2 col-lg-3">
+    <h3 class="fw-bold pt-4 mb-2"> Inne narz&#x119;dzia </h3>
+    <p></p>
+    <p><p><a href="/aplikacja-mobilna-e-us" title="Aplikacja mobilna e-US">Aplikacja mobilna eUS</a></p>
+<p><a href="/aplikacja-e-paragony" title="Aplikacja e-Paragony">Aplikacja e-Paragony</a></p>
+<p><a href="/narzedzia/jak-pobrac-urzedowe-poswiadczenie-odbioru-upo" title="Jak pobrać Urzędowe Poświadczenie Odbioru (UPO)">Jak pobrać Urzędowe Poświadczenie Odbioru (UPO)</a></p>
+<p><a href="https://granica.gov.pl/index_wait.php">Czas oczekiwania na granicy</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/inne-narzedzia/wazne-terminy/">Ważne terminy&nbsp;</a></p>
+<p><a href="https://podatki-arch.mf.gov.pl/inne-narzedzia/rejestr-zastawow-skarbowych/">Rejestr zastawów skarbowych </a></p>
+<p><a href="/narzedzia/glos-podatnika" title="Głos Podatnika">Głos podatnika</a></p>
+<p><a href="https://ord-in.podatki.gov.pl/" title="Kreator wniosku ORD-IN">Kreator wniosku ORD-IN</a></p>
+<p><a href="https://elicytacje.mf.gov.pl/auction/">eLicytacje</a></p></p>
+    <p></p>
+    <p></p>
+</div>
+
+
+
+
+        </div>
+    </div>
+
+
+    <div class="tab-pane fade active py-3 px-5 accordion-collapse collapse" id="Zalatwsprawe" role="tabpanel" data-bs-parent="#taxTabsContent">
+        <div class="row px-5">
+            
+
+
+
+        </div>
+    </div>
+
+
+
+
+</div>
+
+</div>
+
+
+
+<div class="container-fluid nav-tabs pt-3 d-none d-lg-block">
+    <nav style="--bs-breadcrumb-divider: url(&#34;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8'%3E%3Cpath d='M2.5 0L1 1.5 3.5 4 1 6.5 2.5 8l4-4-4-4z' fill='%236c757d'/%3E%3C/svg%3E&#34;);" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+
+                    <li class="breadcrumb-item">
+                        <a href="/">Strona G&#x142;&#xF3;wna</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        Podatki osobiste
+                    </li>
+                    <li class="breadcrumb-item">
+                        PIT
+                    </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Stawki i limity
+                </li>
+        </ol>
+    </nav>
+</div>
+
+<!-- Masthead-->
+
+    
+
+<div class="container-fluid bg-shadow">
+	<div class="container">
+		<div class="row">
+			<div class="col-12 col-lg-3 mb-4">
+				<div class="fw-bold pt-4 mb-4">
+						<h2>Podatek PIT</h2>
+				</div>
+				<div class="list-group" id="menuboczne">
+								<a href="/podatki-osobiste/pit/informacje-podstawowe" class="list-group-item list-group-item-action">Informacje podstawowe</a>
+								<a href="/podatki-osobiste/pit/platnik" class="list-group-item list-group-item-action">P&#x142;atnik</a>
+								<a href="/podatki-osobiste/pit/ulgi-i-odliczenia" class="list-group-item list-group-item-action">Ulgi i odliczenia</a>
+							<a href="/podatki-osobiste/pit/stawki-i-limity" class="list-group-item list-group-item-action primary fw-bold active">Stawki i limity</a>
+								<a href="/podatki-osobiste/pit/formularze" class="list-group-item list-group-item-action">Formularze</a>
+								<a href="/podatki-osobiste/pit/poradniki-i-informatory" class="list-group-item list-group-item-action">Poradniki i informatory</a>
+								<a href="/podatki-osobiste/pit/narzedzia-i-uslugi" class="list-group-item list-group-item-action">Narz&#x119;dzia i us&#x142;ugi</a>
+								<a href="/podatki-osobiste/pit/aktualnosci" class="list-group-item list-group-item-action">Aktualno&#x15B;ci</a>
+								<a href="/podatki-osobiste/pit/podstawa-prawna" class="list-group-item list-group-item-action">Podstawa prawna</a>
+				</div>
+				<div class="list-group accordion accordion-flush" id="menubocznemobilne">
+					<div class="accordion-item">
+						<h2 class="accordion-header" id="panelsStayOpen-heading">
+							<button class="accordion-button primary fw-bold collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapse" aria-expanded="false" aria-controls="panelsStayOpen-collapse"/>
+								Stawki i limity
+						</h2>
+						<div id="panelsStayOpen-collapse" class="collapse" aria-labelledby="panelsStayOpen-heading">
+							<div class="accordion-body">
+										<a href="/podatki-osobiste/pit/informacje-podstawowe" class="list-group-item">Informacje podstawowe</a>
+										<a href="/podatki-osobiste/pit/platnik" class="list-group-item">P&#x142;atnik</a>
+										<a href="/podatki-osobiste/pit/ulgi-i-odliczenia" class="list-group-item">Ulgi i odliczenia</a>
+										<a href="/podatki-osobiste/pit/stawki-i-limity" class="list-group-item fw-bold">Stawki i limity</a>
+										<a href="/podatki-osobiste/pit/formularze" class="list-group-item">Formularze</a>
+										<a href="/podatki-osobiste/pit/poradniki-i-informatory" class="list-group-item">Poradniki i informatory</a>
+										<a href="/podatki-osobiste/pit/narzedzia-i-uslugi" class="list-group-item">Narz&#x119;dzia i us&#x142;ugi</a>
+										<a href="/podatki-osobiste/pit/aktualnosci" class="list-group-item">Aktualno&#x15B;ci</a>
+										<a href="/podatki-osobiste/pit/podstawa-prawna" class="list-group-item">Podstawa prawna</a>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-lg-1">	</div>
+			<div class="col-12 col-lg-8">
+				<h2 class="fw-bold pt-4 mb-4">Stawki i limity</h2>
+				<h3 class="fw-bold mb-4">Sprawd&#x17A; stawki podatku dochodowego od os&#xF3;b fizycznych, w tym stawki rycza&#x142;tu od przychod&#xF3;w ewidencjonowanych i rycza&#x142;tu od przychod&#xF3;w os&#xF3;b duchownych, limit pozwalaj&#x105;cy na kwartalne rozliczenie rycza&#x142;tu oraz wysoko&#x15B;&#x107; norm szacunkowych dochodu z dzia&#x142;&#xF3;w specjalnych produkcji rolnej.</h3>
+                <p>
+                    Data publikacji: <span class="fw-bold">15.12.2025</span><br />
+                    Data aktualizacji: <span class="fw-bold">15.12.2025</span>
+                </p>
+                
+<div class="umb-block-grid"
+     data-grid-columns="12;"
+     style="--umb-block-grid--grid-columns: 12;">
+    
+
+
+
+
+
+
+
+<div class="accordion accordion-flush mb-4" id="accordionFlush_603" role="tablist" aria-label="Stawki podatku">
+
+
+
+
+<div class="accordion-item">
+		<div class="accordion-header mb-4 pt-4" id="stawki_osobiste_PIT">
+			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse595" aria-expanded="false" aria-controls="flush-collapse595">
+				<h3><strong>Stawki podatku</strong></h3>
+			</button>
+		</div>
+		<div id="flush-collapse595" class="accordion-collapse collapsed collapse" aria-labelledby="stawki_osobiste_PIT">
+			<div class="accordion-body mb-4">
+<p>Stawki podatku PIT określone w:</p>
+<ul>
+<li><a rel="noopener" href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20250000163" target="_blank" title="https://isap.sejm.gov.pl/isap.nsf/docdetails.xsp?id=wdu20250000163">ustawie z dnia 26 lipca 1991 r. o podatku dochodowym od osób fizycznych</a> (ustawie o PIT) to:
+<ul>
+<li>stawki podatku według skali podatkowej,</li>
+<li>inne stawki podatku od niektórych dochodów (przychodów),</li>
+</ul>
+</li>
+<li><a href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20250000843">ustawie z dnia 20 listopada 1998 r. o zryczałtowanym podatku dochodowym od niektórych przychodów osiąganych przez osoby fizyczne</a> (ustawie o ryczałcie) to m.in. stawki:
+<ul>
+<li>ryczałtu od przychodów ewidencjonowanych,</li>
+<li>ryczałtu od przychodów osób duchownych.</li>
+</ul>
+</li>
+</ul>
+
+
+<button class="accordion-button  mt-4 mb-4 collapsed" data-bs-toggle="collapse" href="#collapse_389" role="button" aria-expanded="false" aria-controls="collapse_389" aria-label="Stawki podatku wed&#x142;ug skali podatkowej"><img src="/assets/ICONS/Caretdown.svg" alt="Stawki podatku wed&#x142;ug skali podatkowej"><strong>Stawki podatku wed&#x142;ug skali podatkowej</strong></button>
+
+<div class="collapse mb-4 ms-4" id="collapse_389">
+	<p><strong>Skala podatkowa od 2022 roku</strong></p>
+<div class="table-responsive"><table>
+<tbody>
+<tr>
+<td colspan="2"><strong>Podstawa obliczenia podatku (zł)</strong></td>
+<td colspan="2" rowspan="2"><strong>Podatek wynosi</strong></td>
+</tr>
+<tr>
+<td>ponad</td>
+<td>do</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td>120 000</td>
+<td colspan="2">12% minus kwota zmniejszająca podatek 3 600 zł</td>
+</tr>
+<tr>
+<td>120 000</td>
+<td>&nbsp;</td>
+<td colspan="2">10 800 zł + 32% nadwyżki ponad 120 000 zł</td>
+</tr>
+</tbody>
+</table></div>
+<p>&nbsp;</p>
+
+
+
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-osobiste/pit/stawki-i-limity/stawki-podatku-wedlug-skali-podatkowej-za-lata-poprzednie" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							Stawki podatku według skali podatkowej za lata poprzednie
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+
+</div>
+<button class="accordion-button  mt-4 mb-4 collapsed" data-bs-toggle="collapse" href="#collapse_456" role="button" aria-expanded="false" aria-controls="collapse_456" aria-label="Inne stawki podatku od niekt&#xF3;rych dochod&#xF3;w (przychod&#xF3;w)"><img src="/assets/ICONS/Caretdown.svg" alt="Inne stawki podatku od niekt&#xF3;rych dochod&#xF3;w (przychod&#xF3;w)"><strong>Inne stawki podatku od niekt&#xF3;rych dochod&#xF3;w (przychod&#xF3;w)</strong></button>
+
+<div class="collapse mb-4 ms-4" id="collapse_456">
+	<p>W niektórych przypadkach zastosowanie mają inne stawki podatku, m.in.: </p>
+<ul>
+<li><strong>75%</strong> - zryczałtowany podatek od dochodu z tytułu gromadzenia oszczędności na więcej niż jednym koncie IKE lub więcej niż jednym subkoncie OIPE,</li>
+<li><strong>70%</strong> - zryczałtowany podatek od niektórych odpraw i odszkodowań,</li>
+<li><strong>20% </strong>- zryczałtowany podatek od niektórych przychodów nierezydentów,</li>
+<li><strong>19%</strong> - od dochodów z kapitałów pieniężnych, m.in. z odpłatnego zbycia akcji, udziałów, papierów wartościowych lub pochodnych instrumentów finansowych,</li>
+<li><strong>19% </strong>- zryczałtowany podatek od niektórych przychodów (dochodów) z kapitałów pieniężnych, m.in.:</li>
+<ul>
+<li>z odsetek od pożyczek,</li>
+<li>z odsetek od lokat,</li>
+<li>z dywidend,</li>
+</ul>
+<li><strong>19% </strong>- od dochodu z odpłatnego zbycia nieruchomości i niektórych praw majątkowych,</li>
+<li><strong>19%</strong> - od dochodów zagranicznej jednostki kontrolowanej,</li>
+<li><strong>19% </strong>- od dochodów z niezrealizowanych zysków, gdy ustalana jest wartość podatkowa składnika majątku,</li>
+<li><strong>12%</strong> - od przychodów z m.in. umowy zlecenia, zawartej z osobą niebędącą pracownikiem płatnika, jeżeli kwota należności określona w tej umowie nie przekracza 200 zł,</li>
+<li><strong>15%</strong> - od niektórych przychodów uzyskanych z fundacji rodzinnej,</li>
+<li><strong>10% </strong>- od przychodów m.in.:</li>
+<ul>
+<li>z wygranych w konkursach, grach i zakładach wzajemnych,</li>
+<li>uzyskanych z fundacji rodzinnej przez osobę będącą w stosunku do fundatora osobą zaliczoną do I lub II grupy podatkowej w rozumieniu przepisów ustawy z dnia 28 lipca 1983 r. o podatku od spadków i darowizn, w odpowiedniej proporcji,</li>
+</ul>
+<li><strong>3%</strong> - od dochodów z niezrealizowanych zysków, gdy nie ustala się wartości podatkowej składnika majątku.</li>
+</ul>
+
+
+
+</div>
+<button class="accordion-button  mt-4 mb-4 collapsed" data-bs-toggle="collapse" href="#collapse_836" role="button" aria-expanded="false" aria-controls="collapse_836" aria-label="Stawki rycza&#x142;tu od przychod&#xF3;w ewidencjonowanych "><img src="/assets/ICONS/Caretdown.svg" alt="Stawki rycza&#x142;tu od przychod&#xF3;w ewidencjonowanych "><strong>Stawki rycza&#x142;tu od przychod&#xF3;w ewidencjonowanych </strong></button>
+
+<div class="collapse mb-4 ms-4" id="collapse_836">
+	<p><strong>Stawki ryczałtu od przychodów ewidencjonowanych od 2022 roku wynoszą m.in.:</strong></p>
+<ul>
+<li><strong>8,5%</strong> do <strong>100&nbsp;000 zł przychodu</strong>, od nadwyżki ponad tę kwotę <strong>12,5%</strong> przychodu - od przychodów m.in. z najmu prywatnego,</li>
+<li><strong>2% </strong>- od przychodów ze sprzedaży przetworzonych w sposób inny niż przemysłowy produktów roślinnych i zwierzęcych, które pochodzą z własnej uprawy, hodowli lub chowu (z wyjątkami wskazanymi w art. 20 ust. 1c ustawy o PIT).</li>
+</ul>
+
+
+
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-osobiste/pit/stawki-i-limity/stawki-ryczaltu-od-przychodow-ewidencjonowanych-za-lata-poprzednie" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							<p>Stawki ryczałtu za lata poprzednie</p>
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+
+</div>
+<button class="accordion-button  mt-4 mb-4 collapsed" data-bs-toggle="collapse" href="#collapse_377" role="button" aria-expanded="false" aria-controls="collapse_377" aria-label="Stawki rycza&#x142;tu od przychod&#xF3;w os&#xF3;b duchownych"><img src="/assets/ICONS/Caretdown.svg" alt="Stawki rycza&#x142;tu od przychod&#xF3;w os&#xF3;b duchownych"><strong>Stawki rycza&#x142;tu od przychod&#xF3;w os&#xF3;b duchownych</strong></button>
+
+<div class="collapse mb-4 ms-4" id="collapse_377">
+	<p>Stawki ryczałtu od przychodów osób duchownych na&nbsp;<strong>2026 rok</strong> określone są w obwieszczeniu Ministra Finansów i Gospodarki z dnia 17 listopada 2025 r. w sprawie stawek karty podatkowej i kwoty, do której można wykonywać świadczenia przy prowadzeniu niektórych usług, z wyjątkiem świadczeń dla ludności, oraz kwartalnych stawek ryczałtu od przychodów proboszczów i wikariuszy, obowiązujących w 2026 r.</p>
+
+
+
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-osobiste/pit/stawki-i-limity/stawki-ryczaltu-od-przychodow-osob-duchownych-za-lata-poprzednie" title="Stawki rycza&#x142;tu od przychod&#xF3;w os&#xF3;b duchownych za lata poprzednie ">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							<p>Stawki ryczałtu od przychodów osób duchownych za lata poprzednie&nbsp;</p>
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+
+</div>
+
+
+			</div>
+		</div>
+
+	
+</div>
+
+
+
+</div>
+
+<div class="accordion accordion-flush mb-4" id="accordionFlush_827" role="tablist" aria-label="">
+
+
+
+
+<div class="accordion-item">
+		<div class="accordion-header mb-4 pt-4" id="flush-heading504">
+			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse504" aria-expanded="false" aria-controls="flush-collapse504">
+				<h3><strong>Limity</strong></h3>
+			</button>
+		</div>
+		<div id="flush-collapse504" class="accordion-collapse collapsed collapse" aria-labelledby="flush-heading504">
+			<div class="accordion-body mb-4">
+				<p>Sprawdź wysokość limitów w podatku dochodowym od osób fizycznych.</p>
+
+
+
+<button class="accordion-button  mt-4 mb-4 collapsed" data-bs-toggle="collapse" href="#collapse_528" role="button" aria-expanded="false" aria-controls="collapse_528" aria-label=""><img src="/assets/ICONS/Caretdown.svg" alt=""><strong>Limit &#x2013; kwartalne rozliczenie rycza&#x142;tu </strong></button>
+
+<div class="collapse mb-4 ms-4" id="collapse_528">
+	<p>Znajdziesz tu limit przychodów pozwalający na kwartalne rozliczenie ryczałtu od przychodów ewidencjonowanych.</p>
+<p>Do przeliczenia limitu na <strong>2026 rok</strong> zastosowany został średni kurs euro w wysokości 4,2846 zł, ogłoszony przez Narodowy Bank Polski na dzień 1 października 2025 r. (będący także pierwszym dniem roboczym października 2025 r.):</p>
+<div class="table-responsive"><table>
+<tbody>
+<tr>
+<td><strong>Rodzaj limitu&nbsp;</strong></td>
+<td><strong>Kwota w euro</strong></td>
+<td><strong>Kwota w złotych</strong></td>
+</tr>
+<tr>
+<td>Górny limit przychodów za rok 2025 pozwalający na kwartalne rozliczenie ryczałtu ewidencjonowanego w 2026 r.</td>
+<td>200 000 euro</td>
+<td>851 720 zł</td>
+</tr>
+</tbody>
+</table></div>
+<p>&nbsp;</p>
+<p><strong><a href="/podatki-osobiste/pit/stawki-i-limity/limity-w-pit-za-lata-poprzednie" title="Limit do kwartalnego rozliczenia za lata poprzednie">Limit do kwartalnego rozliczenia za lata poprzednie</a></strong></p>
+
+
+
+</div>
+<button class="accordion-button  mt-4 mb-4 collapsed" data-bs-toggle="collapse" href="#collapse_140" role="button" aria-expanded="false" aria-controls="collapse_140" aria-label="Normy szacunkowe dochodu z dzia&#x142;&#xF3;w specjalnych produkcji rolnej "><img src="/assets/ICONS/Caretdown.svg" alt="Normy szacunkowe dochodu z dzia&#x142;&#xF3;w specjalnych produkcji rolnej "><strong>Normy szacunkowe dochodu z dzia&#x142;&#xF3;w specjalnych produkcji rolnej </strong></button>
+
+<div class="collapse mb-4 ms-4" id="collapse_140">
+	<p>Normy szacunkowe dochodu z działów specjalnych produkcji rolnej na&nbsp;<strong>2026 rok</strong> określone są w rozporządzeniu Ministra Finansów i Gospodarki z dnia 9 października 2025 r. w sprawie norm szacunkowych dochodu z działów specjalnych produkcji rolnej.</p>
+
+
+
+
+<div class="col-12 col-lg-12 mb-4">
+	<a class="card h-100 primary card-link fw-bold" href="/podatki-osobiste/pit/stawki-i-limity/normy-szacunkowe-dochodu-z-dzialow-specjalnych-produkcji-rolnej-za-lata-poprzednie" title="Normy szacunkowe dochodu z dzia&#x142;&#xF3;w specjalnych produkcji rolnej za lata poprzednie ">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+						<div class="col-10">
+							<p>Normy szacunkowe dochodu z działów specjalnych produkcji rolnej za lata poprzednie&nbsp;&nbsp;</p>
+						</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+
+</div>
+
+
+			</div>
+		</div>
+
+	
+</div>
+<div class="accordion-item">
+		<div class="accordion-header mb-4 pt-4" id="flush-heading792">
+			<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse792" aria-expanded="false" aria-controls="flush-collapse792">
+				<h3><strong>Podstawa prawna</strong></h3>
+			</button>
+		</div>
+		<div id="flush-collapse792" class="accordion-collapse collapsed collapse" aria-labelledby="flush-heading792">
+			<div class="accordion-body mb-4">
+				<p><a href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20260000592">Ustawa z dnia 26 lipca 1991 roku o podatku dochodowym od osób fizycznych</a></p>
+<p><a href="https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU20250000843">Ustawa z dnia 20 listopada 1998 r. o zryczałtowanym podatku dochodowym od niektórych przychodów osiąganych przez osoby fizyczne</a></p>
+<p><a href="https://monitorpolski.gov.pl/MP/2025/1209">Obwieszczenie Ministra Finansów i Gospodarki z dnia 17 listopada 2025 r. w sprawie stawek karty podatkowej i kwoty, do której można wykonywać świadczenia przy prowadzeniu niektórych usług, z wyjątkiem świadczeń dla ludności, oraz kwartalnych stawek ryczałtu od przychodów proboszczów i wikariuszy, obowiązujących w 2026 r.</a></p>
+<p><a href="https://dziennikustaw.gov.pl/DU/2025/1403">Rozporządzenie Ministra Finansów i Gospodarki z dnia 9 października 2025 r. w sprawie norm szacunkowych dochodu z działów specjalnych produkcji rolnej</a></p>
+
+
+
+			</div>
+		</div>
+
+	
+</div>
+
+
+
+</div>
+
+</div>
+
+			</div>
+		</div>
+		<div class="row mb-4 d-flex">
+			
+		</div>
+	</div>
+</div>
+
+
+    
+    
+
+<footer>  
+
+
+   
+        
+
+<div class="container-fluid">
+    <div class="bg-white">
+        <div class="container">
+				<div class="row fw-bold pt-4 mb-4">
+
+
+	<div class="mt-5 mb-5">
+	<h2>Załatw swoją sprawę podatkową</h2>
+	</div>
+
+
+
+</div>
+            <div class="row justify-content-center">
+                
+
+
+
+<div class="col-12 col-lg-3 mb-4">
+	<a class="card h-100 primary Primary Default Hover" href="/e-urzad-skarbowy" target="_blank" title="Znajd&#x17A; us&#x142;ug&#x119;">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+					<div class="col-2">
+						<img src="/media/1acmmqjd/quick_reference_all.svg?width=50&amp;v=1dc5e5fcd8f58e0" alt="ikona z lup&#x105;">
+					</div>
+					<div class="col-8">
+						<p>Znajdź usługę</p>
+					</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-3 mb-4">
+	<a class="card h-100 primary Primary Default Hover" href="/e-deklaracje" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+					<div class="col-2">
+						<img src="/media/1klpcxtf/contract_edit.svg?width=50&amp;v=1dc5e5fcd90df80" alt="">
+					</div>
+					<div class="col-8">
+						Znajdź deklarację
+					</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-3 mb-4">
+	<a class="card h-100 primary Primary Default Hover" href="/zalatw-sprawe-online" title="">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+					<div class="col-2">
+						<img src="/media/bbedtxkn/computer.svg?width=50&amp;v=1dc5e5fcd8323e0" alt="">
+					</div>
+					<div class="col-8">
+						Znajdź serwis
+					</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+<div class="col-12 col-lg-3 mb-4">
+	<a class="card h-100 primary Primary Default Hover" href="/narzedzia-i-uslugi" title="Znajd&#x17A; narz&#x119;dzie">
+		<div class="card-body align-middle">
+			<div class="card-title fw-bold row align-middle">
+					<div class="col-2">
+						<img src="/media/fswgw0og/handyman.svg?width=50&amp;v=1dc5e5fcd9684d0" alt="">
+					</div>
+					<div class="col-8">
+						<p>Znajdź narzędzie</p>
+					</div>
+				<div class="col-2 text-end">
+						<i class="text-right fas fa-arrow-right"></i>
+				</div>
+			</div>
+				<div class="card-text small-text" ></div>
+		</div>
+	</a>
+</div>
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+	<div class="mt-5 mb-5">
+	<hr class="linia">
+	</div>
+
+
+
+<div class="container">
+    <div class="row">
+         <div class="col-12 col-md-3">
+            
+
+
+
+    
+    <div class="col-12 footer-logo mb-4"><img src="/assets/logoMF_znak_bez_orla_kolor_biale_tlo.svg?rmode=max&amp;width=147&amp;height=74" alt="logo Ministerstwa Finansów" width="147" height="74"></div>
+<div class="col-12 footer-logo"><img src="/assets/logoKAS.svg?rmode=max&amp;width=127&amp;height=72" alt="logo KAS" width="127" height="72"></div>
+
+
+
+
+        </div>
+         <div class="col-12 col-md-6">
+            
+
+
+
+    
+    <ul>
+<li><a href="/mapa-strony" title="Mapa Strony 2" data-anchor="#">Mapa strony</a></li>
+<li><a href="/deklaracja-dostepnosci" title="Deklaracja dostepności" data-anchor="#">Deklaracja dostępności serwisu</a></li>
+<li><a href="/polityka-cookie" title="Polityka cookie" data-anchor="#">Polityka cookie</a></li>
+<li><a href="/klauzula-informacyjna-ministra-finansow-i-gospodarki" title="Klauzula informacyjna Ministra Finansów i Gospodarki">Klauzula informacyjna Ministra Finansów i Gospodarki</a></li>
+<li><a href="/klauzula-informacyjna-szefa-kas" title="Klauzula informacyjna Szefa KAS">Klauzula informacyjna Szefa Krajowej Administracji Skarbowej</a></li>
+<li><a href="https://podatki-arch.mf.gov.pl/">podatki.gov.pl - archiwum</a></li>
+</ul>
+
+
+
+
+        </div>
+         <div class="col-12 col-md-3">
+            
+
+
+
+    
+    <div class=" col-sm-12 row">
+<div class="col-12 mb-4"><a href="https://podatki.gov.pl" class="footer-link"><img src="/assets/logoPodatki.svg?rmode=max&amp;width=205&amp;height=28" alt="logo podatki.gov.pl" width="205" height="28"></a></div>
+<div class="col-12 mb-4"><button class="tax-box-button fw-bold"><a href="/skontaktuj-sie-z-nami" title="Skontaktuj się z Nami" data-anchor="#">Skontaktuj się z nami <img src="/assets/ICONS/open_in_new.svg" alt=""></a></button></div>
+<div class="col-4"></div>
+</div>
+
+
+
+
+        </div>
+         <div class="col-12 col-md-12">
+            
+
+
+
+    
+    <p>Treści zamieszczone w serwisie udostępniamy bezpłatnie. Korzystanie z treści opublikowanych w serwisie podatki.gov.pl, niezależnie od celu i sposobu korzystania, nie wymaga zgody Ministerstwa Finansów. Treści znaczone w serwisie jako treści będące przedmiotem praw autorskich, o ile nie jest to stwierdzone inaczej, są udostępniane na licencji Creative Commons Uznanie Autorstwa 3.0 Polska.</p>
+
+
+
+
+        </div>
+    </div>
+</div>
+
+				
+
+</footer>
+    <!-- Bootstrap core JS-->
+    <script src="/bootstrap/js/bootstrap.bundle.min.js?v=CDOy6cOibCWEdsRiZuaHf8dSGGJRYuBGC-mjoJimHGw"></script>
+    <script src="/scripts/accordion-anchors.js"></script>
+
+
+    
+
+
+<a href="#" id="manage-consent1">Ustawienia prywatności</a>
+<script>
+    MatomoConsentSDK.init({
+        policyUrl: '/polityka-cookie/',
+    cookieTableEnabled: false,
+    });
+        if (!window.location.pathname.includes('/polityka-cookie/')) {
+    MatomoConsentSDK.showBanner();
+    }
+    document.getElementById('manage-consent1').addEventListener('click', function(e){
+    e.preventDefault();
+    if (typeof showMatomoConsentBanner === 'function') {
+    showMatomoConsentBanner({ forceShow: true, forceCookiePanel: true });
+    } else if (typeof MatomoConsentSDK !== 'undefined') {
+    MatomoConsentSDK.showBanner({ forceShow: true, forceCookiePanel: true });
+    }
+    });
+</script>
+
+
+
+    
+<script type="text/javascript" src="/_Incapsula_Resource?SWJIYLWA=719d34d31c8e3a6e6fffd425f7e032f3&ns=6&cb=1039508564" async></script></body>
+</html>
+

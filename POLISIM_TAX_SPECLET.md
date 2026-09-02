@@ -80,11 +80,11 @@ below names where each must come from; **this is the deliverable, not a placehol
 
 | country | primary source to fetch | what to take |
 |---|---|---|
-| USA | IRS Revenue Procedure (annual, inflation-adjusted brackets); Social Security Administration for the OASDI wage base | federal brackets + rates, standard deduction, payroll rate and cap, corporate rate. ⚠ **State income tax is a second layer this model has no place for** — a design question, not a data one |
-| Germany | Bundesministerium der Finanzen; §32a EStG | the *Einkommensteuertarif* is a FORMULA, not brackets — a genuinely different shape from every other country here, and the strongest argument for "brackets as data" being insufficient |
-| France | Direction générale des Finances publiques, *barème de l'impôt sur le revenu* | brackets, the *quotient familial* (household-size division — a second genuinely different shape), CSG/CRDS |
-| Italy | Agenzia delle Entrate | IRPEF brackets, plus the regional and municipal *addizionali* — a three-layer instrument |
-| Poland | Ministerstwo Finansów / KAS | PIT brackets, the *danina solidarnościowa*, ZUS contributions |
+| USA | IRS Revenue Procedure (annual, inflation-adjusted brackets); Social Security Administration for the OASDI wage base | federal brackets + rates, standard deduction, payroll rate and cap, corporate rate. ⚠ **State income tax is a second layer this model has no place for** — a design question, not a data one | ✅ **SOURCED 2026-09-02 — Rev. Proc. 2025-32 (tax year 2026), `ElectionsData/tax/README.md`; ⚠ the OASDI wage base still BILLED (ssa.gov refuses a batch fetch)** |
+| Germany | Bundesministerium der Finanzen; §32a EStG | the *Einkommensteuertarif* is a FORMULA, not brackets — a genuinely different shape from every other country here, and the strongest argument for "brackets as data" being insufficient | ✅ **SOURCED 2026-09-02 — §32a EStG for 2026, verbatim in `ElectionsData/tax/README.md`** |
+| France | Direction générale des Finances publiques, *barème de l'impôt sur le revenu* | brackets, the *quotient familial* (household-size division — a second genuinely different shape), CSG/CRDS | ✅ **SOURCED 2026-09-02 — barème 2026 (2025 income) from economie.gouv.fr and service-public.fr, `ElectionsData/tax/README.md`; ⚠ CSG/CRDS still BILLED** |
+| Italy | Agenzia delle Entrate | IRPEF brackets, plus the regional and municipal *addizionali* — a three-layer instrument | ⚠ **STILL BILLED 2026-09-02 — the Agenzia and normattiva pages are JavaScript portals that hand a batch fetch no article text; a primary PDF is the ask** |
+| Poland | Ministerstwo Finansów / KAS | PIT brackets, the *danina solidarnościowa*, ZUS contributions | ✅ **PIT scale SOURCED 2026-09-02 — podatki.gov.pl, `ElectionsData/tax/README.md`; ⚠ danina solidarnościowa and ZUS still BILLED** |
 | Sweden | SCB + Skatteverket (§2 above) | done, bar the two billed rows |
 
 ⚠ **Three of the six do not fit a flat bracket table** (Germany's formula, France's quotient familial,

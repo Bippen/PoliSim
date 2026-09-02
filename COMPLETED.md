@@ -21143,3 +21143,34 @@ the queue stands; with one it goes out through the booking outlet as any intervi
 reactivity harness (W-C2's scripted stand-in) and the round trip are green.
 
 **Bar 25 of 25.**
+
+## 211. F4's SOURCING BILL — three countries' tax instruments sourced from their own authorities, two part, one still billed (2026-09-02)
+
+The tax spec-let's §3 said: *"Nothing is written for the USA, Germany, France, Italy or Poland, because
+nothing was checked. The bill below names where each must come from."* Checked today, from the sources
+it named, with every page kept on disk beside its quotation (`ElectionsData/tax/README.md`, digests in
+it):
+
+- **Germany — SOURCED.** §32a EStG (gesetze-im-internet.de), the tariff *ab dem Veranlagungszeitraum
+  2026*, verbatim: Grundfreibetrag 12 348 €; two progressive zones as the statute's own quadratic
+  formulas in *y* and *z*; 42 % from 69 879 € (0,42 · x − 11 135,63); 45 % from 277 826 € (0,45 · x −
+  19 470,38); the Splitting in Absatz 5. **A formula, as the spec-let said — not a table.**
+- **France — SOURCED.** The barème 2026 on 2025 income from economie.gouv.fr and service-public.fr,
+  agreeing: 0 % to 11 600 €, 11 % to 29 579 €, 30 % to 84 577 €, 41 % to 181 917 €, 45 % above — **per
+  part of the quotient familial**, which the page itself makes the instrument. CSG/CRDS still billed.
+- **USA — SOURCED.** Rev. Proc. 2025-32 (tax year 2026), the § 1(j)(2) tables and the § 3.14 standard
+  deduction (married filing jointly $32,200), the PDF on disk. The OASDI wage base is still billed:
+  ssa.gov refuses a batch fetch (403), and a wage base recalled is a wage base invented.
+- **Poland — PIT scale SOURCED** from podatki.gov.pl verbatim (12 % minus 3 600 zł to 120 000 zł;
+  10 800 zł + 32 % above); the *danina solidarnościowa* and ZUS still billed — not on the page fetched.
+- **Italy — STILL BILLED.** The Agenzia's portal and normattiva's article view are JavaScript shells:
+  the TUIR art. 11 page came back at 903 KB with no article text, and was not kept. The ask is a
+  primary PDF, a real errand rather than a URL guess.
+
+⚠ **The spec-let's most important sentence held on contact:** of the five, Germany is a formula and
+France a quotient — "brackets as data" fits Poland and the USA and misrepresents the other two, which
+is exactly the design fork D-3 (b) (pluggable schedules) exists for. Nothing was built on the data; F4
+is downstream of an income dimension the substrate does not carry, and the spec-let said the sourcing
+"is not wasted whichever branch runs".
+
+The spec-let's §3 rows carry their new state. **Bar 25 of 25.**
