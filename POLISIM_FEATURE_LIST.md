@@ -335,8 +335,10 @@ In order of what a player would notice first:
   each named there with what would source it. **Elias's to source, never to invent**; a `[GAP]` stays a
   gap until a citation lands beside it.
 - **The 20 play-calibration entries** — the list is `COMPLETED.md` §189 (retired 2026-09-02 as a record);
-- **A 21st play-calibration entry, from D-20 (2026-09-02)** — until the `Newsworthiness` table is re-authored on its attention-share meaning, cheap newsworthy acts (a social post, a town hall) are a known exploit: their press coverage persuades several times the act itself. The AI does not see it; a player will.
   every entry is a number awaiting a loop to judge it against, which is F6's done-when.
+- **A 21st play-calibration entry, from D-20 (2026-09-02)** — until the `Newsworthiness` table is re-authored on its attention-share meaning, cheap newsworthy acts (a social post, a town hall) are a known exploit: their press coverage persuades several times the act itself. The AI does not see it; a player will.
+- **Two decisions taken overnight 2026-09-02, strikeable** — D-20 (`COMPLETED.md` §197, the register's last sheet: the coverage magnitude, (c) taken, (a) sought) and D-21 (§206: the live campaign runs on the vote model's compatibility, (a) taken).
+- **Three first sights, owed to play (2026-09-02)** — the live Campaign HQ from the rail (§205), the first pressed chip on its queue (§207), the first election night that counts a campaign (§206's `ELECTION: counted the campaign's shares` log line). Each is a finding to read, never a tune; the campaign is Sweden's only.
 - **`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves. ⚠ **Blocks F3's
   per-group loyalty**, which is otherwise complete.
 - **`ERRANDS.md` E-3** — the one paste: the GO on the seven marks, the derived mandate column, **the two
