@@ -21919,3 +21919,13 @@ Each attribute is a float on `CabinetMinister`, 0–100, `[AUTHORED-DRAFT]` per 
 **What the bar taught.** `MetaTextCheck` hunts the provenance tag SOURCED on player surfaces and found the stamps; the stamps are the board's ruling (the coalition page's vocabulary, printed on the instrument with the year), so the four literals are on the check's allowlist with that reason, not reworded. And `RatchetSlackCheck` named a ceiling above its measurement - `UnwiredSubsystemCheck`'s UNWIRED and UNREACHABLE both measured 2 under a ceiling of 3 - so both ceilings are 2 now, as the ratchet's own doc says to do.
 
 **Bar:** `RunAllBatch` 26 of 26 clean on the four boards together (`bar49_d11_boards_RunAllBatch.log`; the first run, `bar48_…`, failed the three checks named above).
+
+## 245. D11 — THE CLOSE: the sweep and the interrupts pass at 2560×1440 on the tree that carries all seven rows, one caption measured on its own glyph (2026-09-02, night)
+
+**The films.** `d11b2560_*` (the sweep, 82 captures) and `d11ci2560_*` (the interrupts pass, 8) on the tree at 3c1b459 plus the one fix below; `d11b1280_*` is the same sweep at 1280 on the tree the four board commits were cut from. The rail, the effects family, the ladder, the Riksbank page, the pair page and the People instruments are all seen at both widths; the edge guard is clean on every frame at both.
+
+**What the 2560 film taught.** One thing: the pair page's trade-arrow captions - the only captions on the sheet with an arrow glyph in them - overflowed their row by under three pixels at 2560, because the row was sized from the caption face's own line and the arrow's fallback glyph sits on a taller one. The row is measured on the label itself now (`DrawPairTradeArrow`), and the re-filmed sweep is clean. No other guard spoke at 2560.
+
+**Dead space, as the guard prints it:** the 1280 sweep's mean 75.6 % (P2's close measured 76.1 %); the re-filmed 2560 sweep's mean 79.1% (P2's close measured 79.4 %).
+
+**Bar:** the 2560 films are evidence, not a bar; the four board commits carry `bar49_d11_boards_RunAllBatch.log` (26 of 26), and this commit changes one measurement line.

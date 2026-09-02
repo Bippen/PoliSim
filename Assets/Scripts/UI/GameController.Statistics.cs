@@ -915,7 +915,7 @@ namespace PoliSim.UI
         {
             GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary);
             GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
-            float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            float captionHeight = Mathf.Ceil(Mathf.Max(DeskCaptionHeight(caption), caption.CalcSize(new GUIContent(label)).y));   // the arrow glyph's line is taller than the caption face's (2.7 px at 2560), so the row is measured on the label itself
             float lane = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y) + StatsUnit(2f);
             Rect r = GUILayoutUtility.GetRect(10f, captionHeight + lane + StatsUnit(3f), GUILayout.ExpandWidth(true));
             if (Event.current.type != EventType.Repaint) { return; }
