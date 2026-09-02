@@ -318,7 +318,7 @@ namespace PoliSim.Data
         /// <para>⚠ <b>Read-only in this stage, and that is the whole point of landing it alone.</b> Nothing
         /// ages it and nothing in `EconomyState` derives from it yet, so the no-policy trajectory cannot
         /// move — which the dump is run to PROVE rather than the reasoning being trusted. The spec-let's
-        /// five collisions (`POLISIM_COHORT_SPECLET.md` §4) all live in the stage that retires the eight
+        /// five collisions (`COMPLETED.md §201` §4) all live in the stage that retires the eight
         /// demographic scalars, and that stage carries its own explained baseline family.</para>
         /// <para>⚠ Not persisted yet, deliberately: it is re-seeded from the sourced table on load, exactly
         /// as `BaselineTaxRates` is. The save-layer bump belongs to the stage that makes it mutable, where

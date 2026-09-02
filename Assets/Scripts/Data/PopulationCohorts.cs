@@ -6,7 +6,7 @@ namespace PoliSim.Data
 {
     /// <summary>
     /// P-I2 stage 1 — **the cohort substrate**, ruled at D-4 (a) on the cohort spec-let
-    /// (`POLISIM_COHORT_SPECLET.md` §1: five-year cohorts, recommended because the sourcing FITS them,
+    /// (`COMPLETED.md §201` §1: five-year cohorts, recommended because the sourcing FITS them,
     /// not merely because it permits them).
     ///
     /// <para><b>21 cohorts</b>: 0–4, 5–9, … 95–99, and an open 100+. Counts are in **MILLIONS of
