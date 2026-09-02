@@ -175,6 +175,20 @@ namespace PoliSim.Elections
         /// four). Mapped by party key; a key outside the eight is in no bloc (−1). The harness has
         /// staged exactly this table since W-A4 and reads it from here now.
         /// </summary>
+        /// <summary>
+        /// P2-3.1 (2026-09-02): a party's bloc for the hemicycle's ordering and legend - the same 2022 table
+        /// the tactical model reads for Sweden (0 the left bloc, 1 the right bloc); -1 where no bloc is
+        /// sourced, which is every other chamber and any party outside the table.
+        /// </summary>
+        public static int BlocOf(CountryId country, string abbrev)
+        {
+            if (country != CountryId.Sweden) { return -1; }
+            return SwedenBlocs2022(new[] { abbrev })[0];
+        }
+
+        /// <summary>The bloc's name, as the election night film names it; "unaffiliated" for the rest.</summary>
+        public static string BlocName(int bloc) => bloc == 0 ? "the left bloc" : bloc == 1 ? "the right bloc" : "unaffiliated";
+
         public static int[] SwedenBlocs2022(IReadOnlyList<string> keys)
         {
             var bloc = new int[keys.Count];

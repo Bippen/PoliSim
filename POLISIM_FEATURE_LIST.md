@@ -433,7 +433,7 @@ counts equal the existing stance arithmetic to the seat, on Budget and on Laws. 
 **P2-3.1 — The hemicycle draws seats.** Individual mandates, not curved bands — 349 dots for
 Sweden, party-coloured, sorted by bloc then by mandates. Party list sorted by mandates with the
 blocs drawn as groups (W-D3's bloc data). *Done when:* filmed, and the dot count equals the
-chamber.
+chamber. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §227: rings chosen by capacity so every mandate is a distinct dot, parties by bloc then mandates from the 2022 table, the legend grouped with a header per bloc, and the driver holds the dot count to the chamber on every parliament capture.**
 
 **P2-3.2 — The compass converts.** Axes become CHES `lrecon` (economic left–right) × `galtan`
 (liberal–conservative), both wired at F5 with endpoints read. Parties at their published positions;

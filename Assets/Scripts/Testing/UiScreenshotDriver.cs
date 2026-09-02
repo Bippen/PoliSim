@@ -1094,6 +1094,20 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: entering WaitForEndOfFrame for {name}.");
             yield return new WaitForEndOfFrame();
             Debug.Log($"SHOT: WaitForEndOfFrame resumed for {name}.");
+            if (name.Contains("parliament"))
+            {
+                // P2-3.1 (2026-09-02): the hemicycle's dot count against the chamber, read from the frame just
+                // captured - the row's own "done when".
+                int dots = PoliSim.UI.HemicycleRenderer.LastDotsDrawn;
+                int chamber = PoliSim.UI.HemicycleRenderer.LastChamberSeats;
+                int declared = PoliSim.UI.HemicycleRenderer.LastDeclaredSeats;
+                Debug.Log($"SHOT: hemicycle drew {dots} dot(s) on {PoliSim.UI.HemicycleRenderer.LastRows} ring(s) for a chamber of {chamber} seat(s) (declared {declared}).");
+                if (dots != chamber || chamber != declared)
+                {
+                    _failed++;
+                    Debug.LogError($"SHOT: hemicycle dot count {dots} != chamber {chamber} (declared {declared}) in {name}.");
+                }
+            }
             foreach (KeyValuePair<string, float> reach in PoliSim.UI.LedgerRow.ReachByRow)
             {
                 if (!_reachByCapture.TryGetValue(reach.Key, out float worstSoFar) || reach.Value > worstSoFar) { _reachByCapture[reach.Key] = reach.Value; }

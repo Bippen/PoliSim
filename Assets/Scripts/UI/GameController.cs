@@ -4584,7 +4584,7 @@ namespace PoliSim.UI
                         GUILayout.BeginArea(r);
                         _hemicycleRenderer.Draw(string.Empty, PlayerCountryId, _playerCountry.ParliamentSeats, _labelStyle);
                         GUILayout.EndArea();
-                        LadderCaption(r, "fixed 340x190 by its constants - no size parameter", captionHeight);
+                        LadderCaption(r, "rings chosen for the width so every mandate is a distinct dot (P2-3.1)", captionHeight);
                     }
                     break;
                 case "pie":

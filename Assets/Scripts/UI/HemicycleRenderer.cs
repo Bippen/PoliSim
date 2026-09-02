@@ -1,185 +1,199 @@
 using System.Collections.Generic;
+using System.Globalization;
 using PoliSim.Data;
+using PoliSim.Elections;
 using UnityEngine;
 
 namespace PoliSim.UI
 {
     /// <summary>
-    /// Political Systems Overhaul Part B PILOT (Master Sequence step 4): a small, generic hemicycle
-    /// seat visualization - one dot per seat, arranged across a fixed number of concentric half-circle
-    /// rows, reusing PolicyWebRenderer's own "point on a circle via cos/sin" node-placement math (see
-    /// PointOnArc below) per the Master Roadmap's own explicit "same node-placement math as the Policy
-    /// Web's circular layout" instruction, just swept across 180 degrees instead of the full 360.
-    /// Seats-per-row is a simple radius-proportional approximation (more seats fit at a larger radius,
-    /// same arc-length reasoning any real hemicycle packing uses), not a rigorous packing algorithm -
-    /// good enough for a clearly-legible generic visualization, not a claim of exact real-world seating
-    /// geometry. Parties are laid out left-to-right by descending fiscal stance (W-G1: DERIVED from
-    /// each party's published CHES `lrecon`, replacing four hand-set archetype constants),
-    /// matching the real-world convention of high-tax/left on the left, low-tax/right on the right.
+    /// The chamber as seats: one dot per mandate on concentric half-rings, the ring count chosen for the
+    /// width it is given so that every dot is distinct. P2-3.1 (Playtest 2, 2026-09-02): five fixed rows
+    /// of ten-pixel dots had merged Sweden's mandates into curved bands - the rows are now found by
+    /// capacity (the arc length each ring offers at a dot-and-a-third pitch) and the dots sized from the
+    /// ring gap. Parties run left to right by bloc - the left bloc, then the unaffiliated, then the right
+    /// bloc, from <see cref="NationalElection.BlocOf"/>, sourced for Sweden's 2022 blocs and unknown
+    /// elsewhere - and within a bloc by mandates; the legend lists them in the same order with a header per
+    /// bloc where blocs are known (the earlier order was each party's published CHES lrecon, W-G1). The
+    /// dot count of the last Repaint is recorded (<see cref="LastDotsDrawn"/> against
+    /// <see cref="LastChamberSeats"/>) so the screenshot driver holds it against the chamber. Point
+    /// placement is the Policy Web's cos/sin on a circle swept across 180 degrees.
     /// </summary>
     public class HemicycleRenderer
     {
-        private const float AreaWidth = 340f;
-        private const float AreaHeight = 190f;
-        private const int RowCount = 5;
-        private const float InnerRadius = 34f;
-        private const float RowSpacing = 20f;
-        private const float DotDiameter = 10f;
+        private const int MinRows = 4;
+        private const int MaxRows = 24;
+        /// <summary>Dot diameter as a fraction of the ring gap - the rest is air between rings.</summary>
+        private const float DotFill = 0.62f;
+        /// <summary>Centre-to-centre pitch along a ring, in dot diameters.</summary>
+        private const float DotPitch = 1.35f;
+        private const float InnerRadiusFraction = 0.38f;
+        /// <summary>The outer radius cap, in label font sizes - the arc grows with the type, not the sheet.</summary>
+        private const float RadiusInFontSizes = 14f;
+
+        /// <summary>Dots drawn on the last Repaint (the harness's tally).</summary>
+        public static int LastDotsDrawn { get; private set; }
+        /// <summary>The seats the drawn dictionary summed to on the last Repaint.</summary>
+        public static int LastChamberSeats { get; private set; }
+        /// <summary>The chamber the party system declares for that country, on the last Repaint.</summary>
+        public static int LastDeclaredSeats { get; private set; }
+        /// <summary>Rings used on the last Repaint.</summary>
+        public static int LastRows { get; private set; }
 
         private Texture2D _dotTexture;
 
-        /// <summary>
-        /// W-G1: the chamber's seat-holders, left to right by DESCENDING fiscal stance - which is
-        /// ASCENDING CHES `lrecon` - so high-tax/left sits on the left and low-tax/right on the
-        /// right, the convention the class comment already claimed while ordering four fictional
-        /// archetypes by four hand-set constants.
-        ///
-        /// A party with no published position has no place on that axis, so it is placed at the
-        /// right-hand END rather than in the middle. Putting an unmeasured party at the centre would
-        /// draw it as centrist, which is a claim; putting it last draws it as "outside the measured
-        /// order", which is what it is. France's UG bloc is 178 of 577 seats, so this is not a
-        /// corner case there.
-        /// </summary>
-        private static List<PoliticalParty> LeftToRight(CountryId country)
+        /// <summary>Left bloc first, then the unaffiliated, then the right bloc.</summary>
+        private static int BlocRank(int bloc) => bloc == 0 ? 0 : bloc < 0 ? 1 : 2;
+
+        private static List<PoliticalParty> ByBlocThenMandates(CountryId country, IReadOnlyDictionary<string, int> seats)
         {
             var ordered = new List<PoliticalParty>(PartySystems.For(country));
             ordered.Sort((a, b) =>
             {
-                if (a.HasPosition != b.HasPosition) { return a.HasPosition ? -1 : 1; }
-                if (!a.HasPosition) { return string.CompareOrdinal(a.Abbrev, b.Abbrev); }
-                int byPosition = a.LrEcon.CompareTo(b.LrEcon);
-                return byPosition != 0 ? byPosition : string.CompareOrdinal(a.Abbrev, b.Abbrev);
+                int rankA = BlocRank(NationalElection.BlocOf(country, a.Abbrev));
+                int rankB = BlocRank(NationalElection.BlocOf(country, b.Abbrev));
+                if (rankA != rankB) { return rankA.CompareTo(rankB); }
+                int seatsA = seats.TryGetValue(a.Abbrev, out int sa) ? sa : 0;
+                int seatsB = seats.TryGetValue(b.Abbrev, out int sb) ? sb : 0;
+                if (seatsA != seatsB) { return seatsB.CompareTo(seatsA); }
+                return string.CompareOrdinal(a.Abbrev, b.Abbrev);
             });
             return ordered;
         }
 
+        /// <summary>The height the arc reserves for a label style - half a disc at the capped radius plus a margin.</summary>
+        private static float ArcHeight(GUIStyle labelStyle) => Mathf.Round(labelStyle.fontSize * RadiusInFontSizes) + 8f;
+
         public void Draw(string title, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle labelStyle)
         {
             EnsureTexture();
-            GUILayout.Label(title, labelStyle);
+            if (!string.IsNullOrEmpty(title)) { GUILayout.Label(title, labelStyle); }
 
             int totalSeats = 0;
-            foreach (KeyValuePair<string, int> kvp in seats)
-            {
-                totalSeats += kvp.Value;
-            }
-
+            foreach (KeyValuePair<string, int> kvp in seats) { totalSeats += kvp.Value; }
             if (totalSeats <= 0)
             {
                 GUILayout.Label("No data yet.", labelStyle);
                 return;
             }
 
-            // Flatten into one ordered list of colors, one entry per seat, left to right.
-            List<PoliticalParty> order = LeftToRight(country);
+            List<PoliticalParty> order = ByBlocThenMandates(country, seats);
             var seatColors = new List<Color>(totalSeats);
-            for (int i = 0; i < order.Count; i++)
+            bool blocsKnown = false;
+            var seatsByRank = new int[3];
+            foreach (PoliticalParty party in order)
             {
-                PoliticalParty party = order[i];
                 int count = seats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+                int bloc = NationalElection.BlocOf(country, party.Abbrev);
+                blocsKnown |= bloc >= 0;
+                seatsByRank[BlocRank(bloc)] += count;
                 Color color = PoliSimTheme.Party(country, party.Abbrev);
-                for (int j = 0; j < count; j++)
-                {
-                    seatColors.Add(color);
-                }
+                for (int j = 0; j < count; j++) { seatColors.Add(color); }
             }
 
-            Rect area = GUILayoutUtility.GetRect(AreaWidth, AreaHeight, GUILayout.ExpandWidth(false));
-            Vector2 baseline = new Vector2(area.x + area.width * 0.5f, area.y + area.height - 8f);
+            Rect area = GUILayoutUtility.GetRect(10f, ArcHeight(labelStyle), GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                DrawArc(area, seatColors, labelStyle);
+                LastDotsDrawn = seatColors.Count;
+                LastChamberSeats = totalSeats;
+                LastDeclaredSeats = PartySystems.ChamberSeats(country);
+            }
 
-            float[] radii = new float[RowCount];
+            GUILayout.Space(4f);
+            DrawLegend(country, seats, order, totalSeats, blocsKnown, seatsByRank, labelStyle);
+        }
+
+        /// <summary>
+        /// The rings: the fewest (from four) whose combined arc length seats every mandate at the pitch,
+        /// dots sized from the ring gap; seats per ring in proportion to its radius, the outermost taking
+        /// the rounding remainder. Centred in the area, baseline at its foot.
+        /// </summary>
+        private void DrawArc(Rect area, IReadOnlyList<Color> seatColors, GUIStyle labelStyle)
+        {
+            int total = seatColors.Count;
+            float outer = Mathf.Min(Mathf.Round(labelStyle.fontSize * RadiusInFontSizes), area.width * 0.5f - 2f);
+            if (outer < 8f) { return; }
+            float inner = outer * InnerRadiusFraction;
+            int rows = MinRows;
+            float gap, dot;
+            while (true)
+            {
+                gap = (outer - inner) / (rows - 1);
+                dot = gap * DotFill;
+                int capacity = 0;
+                for (int r = 0; r < rows; r++) { capacity += Mathf.FloorToInt(Mathf.PI * (inner + r * gap) / (dot * DotPitch)); }
+                if (capacity >= total || rows >= MaxRows) { break; }
+                rows++;
+            }
+            LastRows = rows;
+
             float radiusSum = 0f;
-            for (int r = 0; r < RowCount; r++)
-            {
-                radii[r] = InnerRadius + r * RowSpacing;
-                radiusSum += radii[r];
-            }
-
-            int[] seatsPerRow = new int[RowCount];
+            for (int r = 0; r < rows; r++) { radiusSum += inner + r * gap; }
+            var perRow = new int[rows];
             int assigned = 0;
-            for (int r = 0; r < RowCount; r++)
+            for (int r = 0; r < rows; r++)
             {
-                seatsPerRow[r] = Mathf.RoundToInt(totalSeats * (radii[r] / radiusSum));
-                assigned += seatsPerRow[r];
+                perRow[r] = Mathf.RoundToInt(total * ((inner + r * gap) / radiusSum));
+                assigned += perRow[r];
             }
-            seatsPerRow[RowCount - 1] += totalSeats - assigned;
+            perRow[rows - 1] += total - assigned;
 
+            var baseline = new Vector2(Mathf.Round(area.x + area.width * 0.5f), area.yMax - 4f);
             Color previousColor = GUI.color;
-            int seatIndex = 0;
-            for (int r = 0; r < RowCount && seatIndex < seatColors.Count; r++)
+            int seat = 0;
+            for (int r = 0; r < rows && seat < total; r++)
             {
-                int rowSeats = Mathf.Min(seatsPerRow[r], seatColors.Count - seatIndex);
+                int rowSeats = Mathf.Min(perRow[r], total - seat);
+                float radius = inner + r * gap;
                 for (int i = 0; i < rowSeats; i++)
                 {
                     float angle = rowSeats == 1 ? 90f : 180f - (180f / (rowSeats - 1)) * i;
-                    Vector2 point = PointOnArc(baseline, radii[r], angle);
-                    Rect dotRect = new Rect(point.x - DotDiameter * 0.5f, point.y - DotDiameter * 0.5f, DotDiameter, DotDiameter);
-                    GUI.color = seatColors[seatIndex];
-                    GUI.DrawTexture(dotRect, _dotTexture);
-                    seatIndex++;
+                    Vector2 point = PointOnArc(baseline, radius, angle);
+                    GUI.color = seatColors[seat];
+                    GUI.DrawTexture(new Rect(point.x - dot * 0.5f, point.y - dot * 0.5f, dot, dot), _dotTexture);
+                    seat++;
                 }
             }
             GUI.color = previousColor;
+        }
 
-            GUILayout.Space(4f);
+        private static void DrawLegend(CountryId country, IReadOnlyDictionary<string, int> seats, List<PoliticalParty> order,
+            int totalSeats, bool blocsKnown, int[] seatsByRank, GUIStyle labelStyle)
+        {
+            GUIStyle caption = CaptionStyle(labelStyle);
+            Color previousColor = GUI.color;
             bool anyUnsourced = false;
+            int lastRank = -1;
             for (int i = 0; i < order.Count; i++)
             {
                 PoliticalParty party = order[i];
                 int count = seats.TryGetValue(party.Abbrev, out int s) ? s : 0;
                 float percent = totalSeats > 0 ? count / (float)totalSeats * 100f : 0f;
+                int bloc = NationalElection.BlocOf(country, party.Abbrev);
+                int rank = BlocRank(bloc);
+                if (blocsKnown && rank != lastRank)
+                {
+                    // A header per group: the bloc's name and its seats, from the same dictionary the dots read.
+                    if (lastRank >= 0) { GUILayout.Space(4f); }
+                    string header = string.Format(CultureInfo.InvariantCulture, "{0} · {1} SEATS",
+                        NationalElection.BlocName(bloc).ToUpperInvariant(), seatsByRank[rank]);
+                    GUILayout.Label(header, caption);
+                    if (Event.current.type == EventType.Repaint)
+                    {
+                        Rect drawn = GUILayoutUtility.GetLastRect();
+                        UiOverflowGuard.Check(header, caption.CalcSize(new GUIContent(header)), new Vector2(drawn.width, drawn.height), caption.fontSize);
+                    }
+                    lastRank = rank;
+                }
 
                 GUILayout.BeginHorizontal();
-
-                // ⚠ THE MARKER LANE TAKES THE ROW'S FULL HEIGHT, and the swatch is centred inside it.
-                // Requesting a `fontSize`-tall rect left the swatch and emblem pinned to the TOP of a row
-                // that is now two lines tall, while the name beside them sits vertically centred — which
-                // read as a misalignment in the first capture after this conversion. The lane is sized to
-                // the row; only the mark inside it is small.
                 float markerSize = labelStyle.fontSize;
                 float rowHeight = LedgerRow.Height(labelStyle);
                 Rect markerLane = GUILayoutUtility.GetRect(markerSize, rowHeight, GUILayout.ExpandWidth(false));
                 var swatchRect = new Rect(markerLane.x, markerLane.y + (rowHeight - markerSize) * 0.5f, markerSize, markerSize);
-
-                // The party's own emblem, where a flat colour swatch used to be. These four sprites were
-                // delivered and imported weeks ago and had never once been drawn - see IconLibrary.GetFlag
-                // for the delivered-but-unreachable story they share with the country flags.
-                //
-                // **Worth noting for the v2.0 eleven-hue question**: this row now carries party identity as
-                // a MARK as well as a colour, which is exactly the substitution the redesign has to decide
-                // about. It is a live example rather than a proposal.
-                //
-                // ⚠ **THE SWATCH STAYS, AND THAT IS THE WHOLE POINT OF THIS BLOCK.** The emblem was first
-                // drawn INSTEAD of the swatch, which looked better and broke something real: the legend's
-                // colour is what keys each row to its own arc of seats in the chart above, and the emblems
-                // are authored in their own palette (gold, red, blue) that has no relationship to
-                // GetCategoricalColor's golden-angle hues. A legend whose colour does not match the chart
-                // it explains is worse than no emblem. Caught in the screenshot, not in review.
-                //
-                // So: swatch first (correspondence preserved), emblem beside it (identity added).
-                //
-                // **This is a small live answer to v2.0's eleven-hue question** - a mark and a colour can
-                // coexist and carry identity together. Whether the redesign keeps both, or drops the
-                // colour and lets the mark carry it alone, is exactly the open decision; what this proves
-                // is that dropping the colour is not free wherever a colour is also keying a chart.
-                //
-                // Untinted (the emblems are already coloured) and null-safe: a missing file simply leaves
-                // the swatch, which is what this legend has always drawn.
-                // D9 ROW 3, delivered 2026-08-31 and built 2026-09-01: **a party with no published
-                // colour draws its absence rather than a fill.** `PoliSimTheme.Party` already returns the
-                // neutral register ink for the forty-five parties with no sourced hue, and
-                // `HasPartyInk` already existed to tell a caller which case it is — ⚠ **and had no caller
-                // anywhere in the game**, so the neutral read exactly like a chosen grey. Design's
-                // ruling: *"the legend carries the same honesty chip this game already uses for
-                // PRELIMINARY/FINAL and for withheld swings: the absence is drawn, not filled."*
-                //
-                // Drawn-not-filled = a hairline box in the neutral register ink. It is the cheapest form
-                // of the channel the withheld swing and the unpolled valkrets already use, it costs no
-                // width in a row that has none to give, and it needs no sprite — the mark vocabulary
-                // that will carry identity properly is Design's next batch, not this build.
                 bool inkIsSourced = PoliSimTheme.HasPartyInk(country, party.Abbrev);
                 anyUnsourced |= !inkIsSourced;
-
                 GUI.color = PoliSimTheme.Party(country, party.Abbrev);
                 if (inkIsSourced)
                 {
@@ -189,12 +203,8 @@ namespace PoliSim.UI
                 {
                     DrawHairlineBox(swatchRect);
                 }
-
                 GUI.color = previousColor;
 
-                // W-G1: a real party's MARK, not a fictional archetype's emblem. Null for 52 of the
-                // 53 today - the legend falls back to the swatch, exactly as it always did for a
-                // missing file, and `PartyMarkCoverageCheck` counts the gap rather than the folder.
                 Texture2D emblem = IconLibrary.GetPartyMark(party.MarkName);
                 if (emblem != null)
                 {
@@ -204,59 +214,40 @@ namespace PoliSim.UI
                         emblem, ScaleMode.ScaleToFit);
                 }
 
-                // ⚠ v2.0 CONVERSION, 2026-08-11 — the legend row becomes a READ-ONLY LEDGER ROW, and the
-                // swatch's second job MOVES TO THE GAUGE rather than being dropped. The block above
-                // spells out why that colour cannot simply go: it is what keys each row to its own arc in
-                // the chart, and an emblem drawn INSTEAD of it broke that correspondence once already.
-                //
-                // `DrawReadOnly` draws its gauge in `barInk`, so passing the party's own hue keeps the
-                // correspondence exactly — and improves on a swatch, because a bar in that hue is
-                // PROPORTIONAL to the seat share as well as keyed to it. One mark carrying two readings
-                // where a solid block carried one. The swatch stays as well, since it is what the emblem
-                // is drawn over and what a missing emblem falls back to.
-                //
-                // Per Elias's ruling: seat COUNT is the figure, seat PERCENTAGE the trailing column — the
-                // same split the Statistics sector rows took. D2 deleted the only competing occupant of
-                // that column (the per-row VOTES figure), so nothing contends for it.
                 Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(labelStyle), GUILayout.ExpandWidth(true));
                 LedgerRow.DrawReadOnly(
                     rowRect,
                     party.Name,
                     totalSeats > 0 ? count / (float)totalSeats : -1f,
-                    count.ToString(System.Globalization.CultureInfo.InvariantCulture) + " seats",
-                    percent.ToString("F0", System.Globalization.CultureInfo.InvariantCulture) + "%",
+                    count.ToString(CultureInfo.InvariantCulture) + " seats",
+                    percent.ToString("F0", CultureInfo.InvariantCulture) + "%",
                     PoliSimTheme.Party(country, party.Abbrev),
                     labelStyle,
                     labelStyle);
                 GUILayout.EndHorizontal();
             }
 
-            // D9 row 3's second half: one caption for the legend, not a chip per row. Design's board
-            // draws the absence once beneath the group ("COLOUR UNSOURCED — MARKS DIFFER, INK DOES NOT"),
-            // and a legend of eight rows has no width for eight chips. ⚠ It says what is missing and does
-            // NOT apologise for the grey: the hairline boxes above are the reading, this names it.
             if (anyUnsourced)
             {
-                var caption = new GUIStyle(labelStyle)
-                {
-                    fontSize = Mathf.Max(9, Mathf.RoundToInt(labelStyle.fontSize * 0.72f)),
-                    wordWrap = false
-                };
-                caption.normal.textColor = PoliSimTheme.TextMuted;
-                caption.hover.textColor = PoliSimTheme.TextMuted;
-                caption.active.textColor = PoliSimTheme.TextMuted;
-                caption.focused.textColor = PoliSimTheme.TextMuted;
                 GUILayout.Space(2f);
                 GUILayout.Label("Outlined swatch: no published colour for this party", caption);
             }
         }
 
-        /// <summary>
-        /// A one-pixel box in the current `GUI.color`, drawn as four rects — the "drawn, not filled"
-        /// form D9 row 3 rules for a party whose colour is not sourced. ⚠ Deliberately not a `GUIStyle`
-        /// border: this has to sit inside a swatch rect that is `fontSize` square at the smallest window,
-        /// where a 9-slice's own insets would eat the whole mark.
-        /// </summary>
+        private static GUIStyle CaptionStyle(GUIStyle labelStyle)
+        {
+            var caption = new GUIStyle(labelStyle)
+            {
+                fontSize = Mathf.Max(9, Mathf.RoundToInt(labelStyle.fontSize * 0.72f)),
+                wordWrap = false
+            };
+            caption.normal.textColor = PoliSimTheme.TextMuted;
+            caption.hover.textColor = PoliSimTheme.TextMuted;
+            caption.active.textColor = PoliSimTheme.TextMuted;
+            caption.focused.textColor = PoliSimTheme.TextMuted;
+            return caption;
+        }
+
         private static void DrawHairlineBox(Rect r)
         {
             const float t = 1f;
@@ -266,7 +257,6 @@ namespace PoliSim.UI
             GUI.DrawTexture(new Rect(r.xMax - t, r.y, t, r.height), Texture2D.whiteTexture);
         }
 
-        /// <summary>Point on a half-circle arc above <paramref name="baseline"/> - angleDegrees 180 = far left, 90 = top, 0 = far right. Same cos/sin-around-a-center math PolicyWebRenderer.PointOnCircle uses for its own full-circle node placement, just negated on Y (IMGUI's Y grows downward, so seats need to arc UPWARD from the baseline) and restricted to a 180-degree sweep instead of 360.</summary>
         private static Vector2 PointOnArc(Vector2 baseline, float radius, float angleDegrees)
         {
             float rad = angleDegrees * Mathf.Deg2Rad;
@@ -275,12 +265,8 @@ namespace PoliSim.UI
 
         private void EnsureTexture()
         {
-            if (_dotTexture != null)
-            {
-                return;
-            }
-
-            const int diameter = 12;
+            if (_dotTexture != null) { return; }
+            const int diameter = 32;
             _dotTexture = new Texture2D(diameter, diameter, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
             float radius = diameter / 2f;
             var pixels = new Color[diameter * diameter];
@@ -290,7 +276,9 @@ namespace PoliSim.UI
                 {
                     float dx = x + 0.5f - radius;
                     float dy = y + 0.5f - radius;
-                    pixels[y * diameter + x] = Mathf.Sqrt(dx * dx + dy * dy) <= radius ? Color.white : Color.clear;
+                    float d = Mathf.Sqrt(dx * dx + dy * dy);
+                    // A one-pixel soft edge so a downscaled dot keeps a round rim instead of a jagged one.
+                    pixels[y * diameter + x] = new Color(1f, 1f, 1f, Mathf.Clamp01(radius - d + 0.5f));
                 }
             }
             _dotTexture.SetPixels(pixels);
