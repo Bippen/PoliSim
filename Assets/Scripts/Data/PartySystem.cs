@@ -288,21 +288,21 @@ namespace PoliSim.Data
         {
             new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f, lrGen: 3.74f, environment: 3.70f, regions: 5.29f, spendVsTax: 2.50f, immigratePolicy: 6.95f, deregulation: 3.67f,
                 leaders: One("Magdalena Andersson", "partiordforande")),
-            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, euPosition: 2.68f, lrGen: 8.53f, environment: 9.00f, regions: 5.29f, spendVsTax: 5.50f, immigratePolicy: 9.95f, deregulation: 4.57f,
+            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, "mark_party_se_sd", euPosition: 2.68f, lrGen: 8.53f, environment: 9.00f, regions: 5.29f, spendVsTax: 5.50f, immigratePolicy: 9.95f, deregulation: 4.57f,
                 leaders: One("Jimmie Akesson", "partiledare")),
-            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, euPosition: 5.74f, lrGen: 7.58f, environment: 7.60f, regions: 5.71f, spendVsTax: 8.00f, immigratePolicy: 8.47f, deregulation: 8.27f,
+            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, "mark_party_se_m", euPosition: 5.74f, lrGen: 7.58f, environment: 7.60f, regions: 5.71f, spendVsTax: 8.00f, immigratePolicy: 8.47f, deregulation: 8.27f,
                 leaders: One("Ulf Kristersson", "partiledare")),
             new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, "mark_party_se_v", euPosition: 3.32f, lrGen: 1.58f, environment: 1.40f, regions: 5.00f, spendVsTax: 0.50f, immigratePolicy: 3.05f, deregulation: 0.87f,
                 leaders: One("Nooshi Dadgostar", "partiledare")),
-            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, euPosition: 6.11f, lrGen: 5.95f, environment: 2.50f, regions: 4.29f, spendVsTax: 7.50f, immigratePolicy: 3.42f, deregulation: 8.53f,
+            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, "mark_party_se_c", euPosition: 6.11f, lrGen: 5.95f, environment: 2.50f, regions: 4.29f, spendVsTax: 7.50f, immigratePolicy: 3.42f, deregulation: 8.53f,
                 leaders: One("Annie Loof", "partiledare")),
-            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, euPosition: 5.35f, lrGen: 8.00f, environment: 7.40f, regions: 5.86f, spendVsTax: 6.50f, immigratePolicy: 8.26f, deregulation: 6.80f,
+            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, "mark_party_se_kd", euPosition: 5.35f, lrGen: 8.00f, environment: 7.40f, regions: 5.86f, spendVsTax: 6.50f, immigratePolicy: 8.26f, deregulation: 6.80f,
                 leaders: One("Ebba Busch", "partiledare")),
             // ⚠ TWO leaders, carried as two. Taking "the first" would drop Per Bolund, a real named
             // person, which the ruling forbids outright.
-            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, euPosition: 5.32f, lrGen: 2.74f, environment: 0.10f, regions: 4.43f, spendVsTax: 2.75f, immigratePolicy: 2.16f, deregulation: 3.47f,
+            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, "mark_party_se_mp", euPosition: 5.32f, lrGen: 2.74f, environment: 0.10f, regions: 4.43f, spendVsTax: 2.75f, immigratePolicy: 2.16f, deregulation: 3.47f,
                 leaders: new[] { new PartyLeader("Marta Stenevi", "sprakror"), new PartyLeader("Per Bolund", "sprakror") }),
-            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, euPosition: 6.84f, lrGen: 6.74f, environment: 6.20f, regions: 4.71f, spendVsTax: 6.75f, immigratePolicy: 6.79f, deregulation: 7.33f,
+            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, "mark_party_se_l", euPosition: 6.84f, lrGen: 6.74f, environment: 6.20f, regions: 4.71f, spendVsTax: 6.75f, immigratePolicy: 6.79f, deregulation: 7.33f,
                 leaders: One("Johan Pehrson", "partiledare")),
         };
 
