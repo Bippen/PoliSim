@@ -486,7 +486,7 @@ figures; **popularity** feeds approval through the existing cabinet portfolio te
 drives resignation and leak events under pressure. Attributes are `[AUTHORED-DRAFT]` for fictional
 ministers (the Fed-chair candidate pool is the precedent), never invented for a real person. One
 page; take the recommendation and log it strikeable. *Done when:* the page is in the record with
-each consequence's owning term named.
+each consequence's owning term named. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §234: the page - efficiency a multiplier on three portfolios' spending sensitivities (BASELINE), knowledge as disclosure not accuracy (SAFE), popularity on the option's approval figure and the dismissal cost (SAFE), loyalty as resignation and leak events under pressure (BASELINE), the liveness check to gain an attribute enumeration; five decisions logged strikeable.**
 
 **P2-5.2 — Build per the page**, SAFE where the terms already exist, BASELINE where a new term
 enters the model (efficiency on spending effectiveness will); families explained per country.
