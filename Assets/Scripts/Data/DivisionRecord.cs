@@ -109,6 +109,11 @@ namespace PoliSim.Data
         public string Abbrev;
         public int Seats;
         public int Side;
+        /// <summary>P3-A3 (2026-09-03): the stance model's alignment (−1 … +1) and the reasons that made it, as the vote was; null on a record that predates the model.</summary>
+        public float Alignment;
+        public string Reason;
+        /// <summary>The same reasons in the plate's short form (`StanceModel.ReasonShort`).</summary>
+        public string ReasonShort;
     }
 
     /// <summary>P2-4.3: one arrow of the estimate that accompanied a division to its ceremony.</summary>

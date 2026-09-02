@@ -348,18 +348,7 @@ namespace PoliSim.Simulation
         /// constraint is load-bearing rather than tidiness.
         /// </summary>
         public static void RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
-        {
-            bool contested = !Mathf.Approximately(direction, 0f);
-            float alignment = contested ? GetSeatWeightedAlignment(country, direction, axis) : 0f;
-            // P2-4.3 (2026-09-02): every party's side travels with the record, from the one enumeration the verdict
-            // read (SeatSides), so the ceremony's per-seat map is the vote as it was - not the chamber as it is later.
-            var sides = new List<DivisionSide>();
-            foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, direction, axis))
-            {
-                sides.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side });
-            }
-            country.Divisions.Append(title, date, alignment, passed, direction, (int)axis, sides);
-        }
+            => RecordDivision(country, title, BillConcern.FromLegacy(direction, axis), passed, date, axis);   // P3-A3: the scalar path records through the model too, reasons included
 
         /// <summary>
         /// Applies a resolved BudgetBill's effect. PASS: every ALREADY-IMPLEMENTED TaxLine's Rate is
@@ -914,9 +903,10 @@ namespace PoliSim.Simulation
             var sides = new List<DivisionSide>();
             if (contested)
             {
-                foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, concern))
+                // P3-A3: the alignment and the reasons travel with the side, so the ceremony prints the vote as it was.
+                foreach (PartyStance stance in StanceModel.Stances(country, concern))
                 {
-                    sides.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side });
+                    sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, Seats = stance.Seats, Side = stance.Side, Alignment = stance.Alignment, Reason = StanceModel.ReasonLine(stance), ReasonShort = StanceModel.ReasonShort(stance) });
                 }
             }
             country.Divisions.Append(title, date, alignment, passed, concern?.Direction ?? 0f, (int)axis, sides);

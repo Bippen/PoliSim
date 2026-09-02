@@ -284,10 +284,14 @@ namespace PoliSim.Simulation
                     }
                 }
 
-                // Term 3: the public-opinion cost of the lines the bill cuts.
+                // Term 3: the public-opinion cost of the lines the bill cuts. Each cut prints its arithmetic when it
+                // moves the alignment by a hundredth or more; the rest are named once with their total, so a screen
+                // is not eight lines of "+0.00" (P3-A3's first film).
                 if (concern.Cuts.Count > 0)
                 {
                     float[] voters = VoterProfile(country.Id, party.Abbrev, out bool ecological);
+                    var quiet = new List<string>();
+                    float quietCost = 0f;
                     foreach ((SpendingCategory? category, WelfareProgramType? program, float cutShare) in concern.Cuts)
                     {
                         if (cutShare <= 0f) { continue; }
@@ -301,12 +305,17 @@ namespace PoliSim.Simulation
                         float cost = OpinionWeight * salience * dependence * Mathf.Clamp01(cutShare);
                         if (cost <= 0f) { continue; }
                         alignment -= cost;
-                        reasons.Add(string.Format(CultureInfo.InvariantCulture, "cuts {0} by {1:P0}: its voters {2} in bands {3}–{4}, {5} salience {6:0.00}{7} → {8:+0.00;-0.00}",
+                        if (cost < 0.005f) { quiet.Add(line); quietCost += cost; continue; }
+                        string bands = band.From == 0 && band.To >= PopulationCohorts.OpenBandIndex ? "every band" : "bands " + PopulationCohorts.Label(band.From) + "–" + PopulationCohorts.Label(band.To);
+                        reasons.Add(string.Format(CultureInfo.InvariantCulture, "cuts {0} by {1:P0}: its voters {2} in {3}, {4} salience {5:0.00}{6} → {7:+0.00;-0.00}",
                             line, cutShare, voters == null ? "(no voter profile for this chamber)" : string.Format(CultureInfo.InvariantCulture, "{0:P0}", dependence),
-                            PopulationCohorts.Label(band.From), PopulationCohorts.Label(band.To), band.Issue, salience,
-                            salienceMeasured ? " (EB105)" : " (floor: not in the survey's top five)", -cost));
-                        if (voters != null && ecological) { reasons.Add("voter profile: ecological, from 2022 valkrets returns over 2024 pyramids"); }
+                            bands, band.Issue, salience, salienceMeasured ? " (EB105)" : " (floor: not in the survey's top five)", -cost));
                     }
+                    if (quiet.Count > 0)
+                    {
+                        reasons.Add(string.Format(CultureInfo.InvariantCulture, "opinion cost of cutting {0}: {1:-0.000} at the authored weight - below a hundredth", string.Join(", ", quiet), -quietCost));
+                    }
+                    if (voters != null && ecological && concern.Cuts.Count > 0) { reasons.Add("voter profile: ecological, from 2022 valkrets returns over 2024 pyramids"); }
                 }
 
                 alignment = Mathf.Clamp(alignment, -1f, 1f);
@@ -315,6 +324,59 @@ namespace PoliSim.Simulation
                 result.Add(new PartyStance(party, seats, alignment, side, true, reasons));
             }
             return result;
+        }
+
+        /// <summary>
+        /// P3-A3: the stance's reasons as one line for a screen - the position term first, then the term that moved
+        /// it (cohesion, the opposition's line, an opinion cost), then the undecided note; the provenance notes
+        /// ("voter profile: ecological …") are left to the record's full list.
+        /// </summary>
+        public static string ReasonLine(in PartyStance stance)
+        {
+            if (stance.Reasons == null || stance.Reasons.Count == 0) { return stance.Measured ? string.Empty : "no published position on this bill's axis"; }
+            var parts = new List<string>();
+            foreach (string reason in stance.Reasons)
+            {
+                if (reason.StartsWith("voter profile:", StringComparison.Ordinal)) { continue; }
+                parts.Add(reason);
+            }
+            return string.Join(" · ", parts);
+        }
+
+        /// <summary>
+        /// P3-A3: the reasons as a SHORT line for a plate - each term's contribution with a two-word name
+        /// ("spendvtax 2.5 → +0.50 · opposition line −0.15 · cuts SocialSecurity −0.00") - the full line is
+        /// <see cref="ReasonLine"/>. Built from the same reasons, so the two cannot disagree.
+        /// </summary>
+        public static string ReasonShort(in PartyStance stance)
+        {
+            if (stance.Reasons == null || stance.Reasons.Count == 0) { return stance.Measured ? string.Empty : "no published position on this axis"; }
+            var parts = new List<string>();
+            foreach (string reason in stance.Reasons)
+            {
+                int arrow = reason.LastIndexOf('→');
+                string tail = arrow >= 0 ? reason.Substring(arrow + 1).Trim() : null;
+                if (reason.StartsWith("voter profile:", StringComparison.Ordinal)) { continue; }
+                if (reason.Contains(" on the ") && reason.Contains(" axis, the bill toward its "))
+                {
+                    // "S 2.5 on the spendvtax axis, the bill toward its 0 end: +0.50" → "spendvtax 2.5 → +0.50"
+                    int on = reason.IndexOf(" on the ", StringComparison.Ordinal);
+                    int axisEnd = reason.IndexOf(" axis", on, StringComparison.Ordinal);
+                    int colon = reason.LastIndexOf(':');
+                    string position = reason.Substring(0, on).Trim();
+                    position = position.Substring(position.LastIndexOf(' ') + 1);
+                    parts.Add(reason.Substring(on + 8, axisEnd - on - 8) + " " + position + " → " + (colon >= 0 ? reason.Substring(colon + 1).Trim() : string.Empty));
+                }
+                else if (reason.StartsWith("cabinet party", StringComparison.Ordinal) || reason.StartsWith("support party", StringComparison.Ordinal)) { parts.Add((reason.StartsWith("cabinet", StringComparison.Ordinal) ? "cohesion " : "support pull ") + tail); }
+                else if (reason.StartsWith("opposition line", StringComparison.Ordinal)) { parts.Add("opposition line " + tail); }
+                else if (reason.StartsWith("opposition, but", StringComparison.Ordinal)) { parts.Add("nearer than the government: own position"); }
+                else if (reason.StartsWith("far from its own position", StringComparison.Ordinal)) { parts.Add("far - may refuse"); }
+                else if (reason.StartsWith("cuts ", StringComparison.Ordinal)) { parts.Add(reason.Substring(0, reason.IndexOf(" by ", StringComparison.Ordinal)) + " " + tail); }
+                else if (reason.StartsWith("opinion cost", StringComparison.Ordinal)) { parts.Add("opinion cost below 0.01"); }
+                else if (reason.StartsWith("undecided", StringComparison.Ordinal)) { parts.Add("undecided: inside the band"); }
+                else if (reason.StartsWith("no published", StringComparison.Ordinal)) { parts.Add(reason); }
+            }
+            return string.Join(" · ", parts);
         }
 
         /// <summary>The party's weighted distance from the ends the bill moves toward, 0 (at the end) to 1 (at the far end), over the measured axes.</summary>

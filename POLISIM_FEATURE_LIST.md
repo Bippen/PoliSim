@@ -560,7 +560,7 @@ splits by construction. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §247: Stanc
 **P3-A3 — The vote breakdown on screen.** Every support preview and every result screen shows
 the per-party stance with its reason (position distance, coalition line, public-opinion cost) —
 new UI content, drawn structurally now, Design's grammar via D12. *Done when:* filmed, and each
-reason traces to a term in P3-A2.
+reason traces to a term in P3-A2. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §248: the breakdown under every support preview and the pending cards, the law pane's rows on the model, the signing plate's THE STANCES panel with the recorded reasons.**
 
 ## Track B — board reconciliations (verify, then close the gap; never rebuild on assumption)
 

@@ -338,6 +338,23 @@ namespace PoliSim.UI
                 record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad);
             PlateBody(cite, record.Axis == (int)BillAxis.Trade ? "on the openness axis" : "on the fiscal axis");
 
+            // 2b. The stances - P3-A3 (2026-09-03): every party's side with the reason the model gave it, as the vote
+            // was (the record carries the alignment and the reason since this row); drawn structurally until D12.
+            Transform stances = PlatePanel(plate.transform, "Stances", 1.6f);
+            PlateCaption(stances, "THE STANCES · EVERY PARTY, WITH ITS REASON");
+            bool anyReason = false;
+            foreach (DivisionSide side in record.Sides)
+            {
+                string verdict = side.Side > 0 ? "FOR" : side.Side < 0 ? "AGAINST" : "UNDECIDED";
+                Color ink = side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
+                PlateBody(stances, string.Format(CultureInfo.InvariantCulture, "{0} · {1} seats · {2}{3}", side.Abbrev, side.Seats, verdict,
+                    string.IsNullOrEmpty(side.Reason) ? string.Empty : string.Format(CultureInfo.InvariantCulture, " {0:+0.00;-0.00}", side.Alignment)), ink);
+                string reason = string.IsNullOrEmpty(side.ReasonShort) ? side.Reason : side.ReasonShort;   // the plate takes the short form; the record keeps the full line
+                if (!string.IsNullOrEmpty(reason)) { PlateCaption(stances, reason); anyReason = true; }
+            }
+            if (record.Sides.Count == 0) { PlateCaption(stances, "no sides recorded for this division - it predates the map"); }
+            else if (!anyReason) { PlateCaption(stances, "no reasons recorded - this division predates the stance model"); }
+
             // 3. The estimate as arrows - board 5c (D11 row 3): the same three-part grammar as the sheet's
             // panel, titled AS ENACTED: the arrows from a hairline baseline, each figure signed in its
             // arrow's ink in lane order, and the scope line verbatim beneath.

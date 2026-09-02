@@ -3709,7 +3709,7 @@ namespace PoliSim.UI
 
         private void DrawLaborLiveEstimate()
         {
-            DrawBillLiveEstimate(ParliamentSystem.GetLaborBillDirection(_playerCountry, BuildLaborBillFromDrafts()));
+            DrawBillLiveEstimate(ParliamentSystem.GetLaborBillConcern(_playerCountry, BuildLaborBillFromDrafts()));   // P3-A3: the draft's concern
         }
 
         /// <summary>
@@ -3728,13 +3728,20 @@ namespace PoliSim.UI
         /// model has no seats-based majority for it to draw (see DrawPendingBillCard's own comment).
         /// </summary>
         private void DrawBillLiveEstimate(float direction, float wrapWidth = 0f, bool terse = false, BillAxis axis = BillAxis.Fiscal)
+            => DrawBillLiveEstimate(BillConcern.FromLegacy(direction, axis), wrapWidth, terse);
+
+        /// <summary>
+        /// P3-A3 (2026-09-03): the estimate over what the bill CONCERNS - the verdict, the per-seat map and, beneath
+        /// them, THE BREAKDOWN: every party's stance with its reason (the position on the axis, the cohesion pull or
+        /// the opposition's line, the opinion cost), from the one enumeration the vote reads (`StanceModel.Stances`).
+        /// Drawn structurally - one row per party, the reason in the caption face - until D12 gives it a grammar.
+        /// </summary>
+        private void DrawBillLiveEstimate(BillConcern concern, float wrapWidth = 0f, bool terse = false)
         {
-            // Unity's Mathf.Sign(0f) returns 1, not 0, so an unchanged draft would otherwise be scored as
-            // parliament's raw net stance - negative in the documented tied-parties case - and contradict
-            // the WOULD PASS verdict printed directly above it. WouldBillPass short-circuits on exactly
-            // this condition, so the bar must too.
-            bool contested = !Mathf.Approximately(direction, 0f);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction, axis);
+            float direction = concern?.Direction ?? 0f;
+            // An unchanged draft is uncontested: no side, WOULD PASS, as WouldBillPass short-circuits.
+            bool contested = concern != null && !concern.IsEmpty;
+            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, concern);
 
             // Free-aspect pass (2026-08-26): callers inside a width-bounded pane pass wrapWidth so
             // these labels WRAP there instead of requesting natural width and stretching the pane's
@@ -3768,7 +3775,31 @@ namespace PoliSim.UI
             // for this bill, from the same enumeration the verdict above reads (ParliamentSystem.SeatSides).
             float seatMapWidth = wrapWidth > 0f ? wrapWidth : Mathf.Max(10f, PoliSimWidgets.InnerWidth(Screen.width * 0.3f, _boxStyle));
             Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(seatMapWidth, _labelStyle), GUILayout.ExpandWidth(true));
-            SeatMapRenderer.Draw(seatMapRect, _playerCountry, direction, axis, _labelStyle);
+            SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle);
+
+            if (contested) { DrawStanceBreakdown(concern, seatMapWidth); }
+        }
+
+        /// <summary>
+        /// P3-A3: the vote breakdown - one row per seated party: its abbreviation and seats, its side in the verdict's
+        /// ink, and the reason line the model gives (P3-A2's terms, verbatim), wrapped to the column. The rows are the
+        /// same enumeration the seat map above coloured from, in the party system's order.
+        /// </summary>
+        private void DrawStanceBreakdown(BillConcern concern, float width)
+        {
+            GUIStyle head = DeskCaption(8f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleLeft);
+            GUIStyle reasonStyle = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
+            reasonStyle.wordWrap = true;
+            GUILayout.Label("THE BREAKDOWN · EVERY PARTY'S STANCE AND ITS REASON", head, GUILayout.Width(width));
+            foreach (PartyStance stance in StanceModel.Stances(_playerCountry, concern))
+            {
+                string side = !stance.Measured ? "UNMEASURED" : stance.Side > 0 ? "FOR" : stance.Side < 0 ? "AGAINST" : "UNDECIDED";
+                Color ink = !stance.Measured ? PoliSimTheme.TextMuted : stance.Side > 0 ? PoliSimTheme.Good : stance.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
+                GUIStyle sideStyle = DeskCaption(8f, ink, true, TextAnchor.MiddleLeft);
+                GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "{0} · {1} SEATS · {2} {3:+0.00;-0.00}", stance.Party.Abbrev, stance.Seats, side, stance.Alignment), sideStyle, GUILayout.Width(width));
+                string reason = StanceModel.ReasonLine(stance);
+                if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(reason, reasonStyle, GUILayout.Width(width)); }
+            }
         }
 
         /// <summary>See BuildCrimeJusticeBillFromDrafts's own doc comment - identical pattern.
@@ -7634,15 +7665,15 @@ namespace PoliSim.UI
             if (pendingBill != null)
             {
                 GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth));
-                float pendingDirection = ParliamentSystem.GetLawBillDirection(_playerCountry, pendingBill);
-                DrawBillLiveEstimate(pendingDirection, contentWidth, terse: true);
-                DrawLawPartyStances(pendingDirection, contentWidth);
+                BillConcern pendingConcern = ParliamentSystem.GetLawBillConcern(_playerCountry, pendingBill);   // P3-A3: the law's own concern
+                DrawBillLiveEstimate(pendingConcern, contentWidth, terse: true);
+                DrawLawPartyStances(pendingConcern, contentWidth);
             }
             else
             {
-                float direction = ParliamentSystem.GetLawBillDirection(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted });
-                DrawBillLiveEstimate(direction, contentWidth, terse: true);
-                DrawLawPartyStances(direction, contentWidth);
+                BillConcern concern = ParliamentSystem.GetLawBillConcern(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted });   // P3-A3
+                DrawBillLiveEstimate(concern, contentWidth, terse: true);
+                DrawLawPartyStances(concern, contentWidth);
             }
 
             // Code-review pass (2026-08-25): `&& !_isGameOver` moved HERE from the tab-wide
@@ -7796,35 +7827,20 @@ namespace PoliSim.UI
         /// estimate ("no per-instrument support exists"). Stance sign and seat counts are the two
         /// facts the model does keep; the lean bar above remains the quantity the vote is really
         /// decided on.</summary>
-        private void DrawLawPartyStances(float direction, float contentWidth)
+        private void DrawLawPartyStances(BillConcern concern, float contentWidth)
         {
-            if (Mathf.Approximately(direction, 0f))
+            // P3-A3 (2026-09-03): the rows are the stance model's, over the law's own concern (its twelve deltas on
+            // their dials' axes) - FOR / AGAINST / UNDECIDED / UNMEASURED with the reason beneath each. W-G1's
+            // distinction stands: UNMEASURED is "no published position on this bill's axis", not the middle.
+            if (concern == null || concern.IsEmpty) { return; }
+            GUIStyle reasonStyle = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
+            reasonStyle.wordWrap = true;
+            foreach (PartyStance stance in StanceModel.Stances(_playerCountry, concern))
             {
-                return;
-            }
-
-            float billSign = Mathf.Sign(direction);
-            foreach (PoliticalParty party in PartySystems.For(PlayerCountryId))
-            {
-                int seats = _playerCountry.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
-                if (seats <= 0)
-                {
-                    continue;
-                }
-
-                // W-G1: a party whose economic position nobody publishes is drawn UNMEASURED, not
-                // UNALIGNED. The two look similar and mean opposite things - "we know where it
-                // stands and it is in the middle" versus "we do not know where it stands" - and
-                // France's UG bloc and Poland's TD committee are the second.
-                if (!party.HasPosition)
-                {
-                    DrawLawPartyStanceRow(party.Name, seats, "UNMEASURED", contentWidth);
-                    continue;
-                }
-
-                float stance = PartySystems.FiscalStance(party) * billSign;
-                string side = stance > 0f ? "FOR" : stance < 0f ? "AGAINST" : "UNALIGNED";
-                DrawLawPartyStanceRow(party.Name, seats, side, contentWidth);
+                string side = !stance.Measured ? "UNMEASURED" : stance.Side > 0 ? "FOR" : stance.Side < 0 ? "AGAINST" : "UNDECIDED";
+                DrawLawPartyStanceRow(stance.Party.Name, stance.Seats, side, contentWidth);
+                string reason = StanceModel.ReasonLine(stance);
+                if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(reason, reasonStyle, GUILayout.Width(contentWidth)); }
             }
         }
 
@@ -8503,53 +8519,53 @@ namespace PoliSim.UI
             // Master Sequence step 5e, Phase C batch 3: each pending bill now carries the DIRECTION it
             // was scored on, not just a pre-formatted sentence, so the lean bar below can show the
             // seat-weighted alignment Parliament actually decides on rather than only its sign.
-            var pending = new List<(string Label, float Direction, UiPalette.SystemArea Area)>();
+            var pending = new List<(string Label, BillConcern Concern, UiPalette.SystemArea Area)>();
 
             BudgetBill budgetBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             if (budgetBill != null)
             {
                 pending.Add(($"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetBillDirection(_playerCountry, budgetBill), UiPalette.SystemArea.Fiscal));
+                    ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill), UiPalette.SystemArea.Fiscal));
             }
 
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
                 pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetTaxProgramBillDirection(_playerCountry, bill), UiPalette.SystemArea.Fiscal));
+                    ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Fiscal));
             }
 
             foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
             {
                 pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill), UiPalette.SystemArea.Welfare));
+                    ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Welfare));
             }
 
             LaborPolicyBill laborBill = _simulationManager.GetPendingLaborBill(PlayerCountryId);
             if (laborBill != null)
             {
                 pending.Add(($"Labor Market bill - resolves in {laborBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetLaborBillDirection(_playerCountry, laborBill), UiPalette.SystemArea.Labor));
+                    ParliamentSystem.GetLaborBillConcern(_playerCountry, laborBill), UiPalette.SystemArea.Labor));
             }
 
             CrimeJusticePolicyBill crimeJusticeBill = _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId);
             if (crimeJusticeBill != null)
             {
                 pending.Add(($"Crime & Justice bill - resolves in {crimeJusticeBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetCrimeJusticeBillDirection(_playerCountry, crimeJusticeBill), UiPalette.SystemArea.CrimeJustice));
+                    ParliamentSystem.GetCrimeJusticeBillConcern(_playerCountry, crimeJusticeBill), UiPalette.SystemArea.CrimeJustice));
             }
 
             SectorPolicyBill sectorBill = _simulationManager.GetPendingSectorBill(PlayerCountryId);
             if (sectorBill != null)
             {
                 pending.Add(($"Economic Sectors bill - resolves in {sectorBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetSectorBillDirection(_playerCountry, sectorBill), UiPalette.SystemArea.Sectors));
+                    ParliamentSystem.GetSectorBillConcern(_playerCountry, sectorBill), UiPalette.SystemArea.Sectors));
             }
 
             TradePolicyBill tradeBill = _simulationManager.GetPendingTradeBill(PlayerCountryId);
             if (tradeBill != null)
             {
                 pending.Add(($"Trade bill - resolves in {tradeBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetTradeBillDirection(_playerCountry, tradeBill, _world), UiPalette.SystemArea.Trade));
+                    ParliamentSystem.GetTradeBillConcern(_playerCountry, tradeBill, _world), UiPalette.SystemArea.Trade));
             }
 
             SwfDrawdownBill drawdownBill = _simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId);
@@ -8558,7 +8574,7 @@ namespace PoliSim.UI
                 // Names its amount, unlike the other four. A drawdown IS its number - "an emergency
                 // drawdown bill" tells a player nothing about what they are about to be committed to.
                 pending.Add(($"SWF emergency drawdown - {drawdownBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {drawdownBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetSwfDrawdownBillDirection(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth));
+                    ParliamentSystem.GetSwfDrawdownBillConcern(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth));
             }
 
             // Law system MVP slice: every pending law bill, named by its LawDefinition (falling back
@@ -8571,7 +8587,7 @@ namespace PoliSim.UI
                 LawDefinition law = LawCatalog.GetById(lawBill.LawId);
                 string lawName = law != null ? law.Name : lawBill.LawId;
                 pending.Add(($"{(lawBill.IsRepeal ? "Repeal" : "Enact")} \"{lawName}\" - resolves in {lawBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetLawBillDirection(_playerCountry, lawBill), UiPalette.SystemArea.CrimeJustice));
+                    ParliamentSystem.GetLawBillConcern(_playerCountry, lawBill), UiPalette.SystemArea.CrimeJustice));
             }
 
             if (pending.Count == 0)
@@ -8580,9 +8596,9 @@ namespace PoliSim.UI
                 return;
             }
 
-            foreach ((string label, float direction, UiPalette.SystemArea area) in pending)
+            foreach ((string label, BillConcern concern, UiPalette.SystemArea area) in pending)
             {
-                DrawPendingBillCard(label, direction, area);
+                DrawPendingBillCard(label, concern, area);
             }
         }
 
@@ -8600,15 +8616,13 @@ namespace PoliSim.UI
         /// as a bar only, with no number attached, because its display range is a presentation choice
         /// rather than anything the simulation claims precision about.
         /// </summary>
-        private void DrawPendingBillCard(string label, float direction, UiPalette.SystemArea area)
+        private void DrawPendingBillCard(string label, BillConcern concern, UiPalette.SystemArea area)
         {
-            // C-B3 / R-CL2: the tariff bill is the one bill weighed on the OPENNESS axis, and the Trade
-            // area marks exactly that bill in this list - so the card's verdict is DERIVED from the same
-            // fact the vote uses rather than passed alongside it, and the two cannot drift apart.
-            BillAxis axis = area == UiPalette.SystemArea.Trade ? BillAxis.Trade : BillAxis.Fiscal;
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction, axis);
+            // P3-A3 (2026-09-03): the card's verdict is the vote's own - over the bill's concern (the tariff on
+            // openness inside it, R-CL2's axis kept) - and the breakdown beneath the map says why, party by party.
+            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, concern);
 
-            bool contested = !Mathf.Approximately(direction, 0f);
+            bool contested = concern != null && !concern.IsEmpty;
 
             BeginAreaCard(null, area);
             GUILayout.Label(label, _labelStyle);
@@ -8620,7 +8634,8 @@ namespace PoliSim.UI
             // P2-2.2 (2026-09-02): the seat map replaces the lean bar here too (a law-support preview); an
             // unopposed bill maps every seat UNDECIDED, because SeatSides treats a zero direction as no side.
             Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(Screen.width * 0.5f, _labelStyle), GUILayout.ExpandWidth(true));
-            SeatMapRenderer.Draw(seatMapRect, _playerCountry, direction, axis, _labelStyle);
+            SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle);
+            if (contested) { DrawStanceBreakdown(concern, Mathf.Max(10f, seatMapRect.width)); }
 
             EndAreaCard(area);
         }
@@ -9298,8 +9313,7 @@ namespace PoliSim.UI
         {
             // C-B3 / R-CL2: the tariff draft is weighed on the OPENNESS axis, so this estimate and the
             // chamber that will actually vote on it cannot disagree about which axis was used.
-            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillDirection(_playerCountry, BuildTradeBillFromDrafts(), _world),
-                axis: BillAxis.Trade);
+            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillConcern(_playerCountry, BuildTradeBillFromDrafts(), _world));   // P3-A3: the tariff on openness, inside the concern
         }
 
         /// <summary>
@@ -9705,7 +9719,7 @@ namespace PoliSim.UI
             BudgetBill draft = BuildBudgetBillFromDrafts();
 
             GUILayout.Label("Support (current draft)", _headerStyle);   // P2-2.1: one line at 720, so the arrows below stay in frame
-            DrawBillLiveEstimate(ParliamentSystem.GetBillDirection(_playerCountry, draft));
+            DrawBillLiveEstimate(ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft));   // P3-A3
 
             DrawBudgetDraftFiscalImpact(draft);
         }
@@ -10304,7 +10318,7 @@ namespace PoliSim.UI
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern.</summary>
         private void DrawSectorLiveEstimate()
         {
-            DrawBillLiveEstimate(ParliamentSystem.GetSectorBillDirection(_playerCountry, BuildSectorBillFromDrafts()));
+            DrawBillLiveEstimate(ParliamentSystem.GetSectorBillConcern(_playerCountry, BuildSectorBillFromDrafts()));   // P3-A3
         }
 
         /// <summary>Bundles every current Sector draft, across every SectorType, into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>
