@@ -214,8 +214,13 @@ namespace PoliSim.EditorTools
             // Board 5e (D11 row 5, 2026-09-02): THE LADDER, printed - the re-measure is the fact. Every inked
             // party's bloc, seeded mandates, seated hex, the lift the rule gives it, and the laddered hex it
             // now draws at dot size; the board's own hexes were illustrative until this printed them.
-            sb.Append("\n--- THE LADDER (board 5e): within a bloc by mandates, the anchor holds, ±0.08 oklch L outward; an identical pair lifts the smaller +0.12 ---\n");
-            sb.Append("    party      bloc          mandates  seated   L(seated)  lift    laddered  L(laddered)\n");
+            sb.Append("\n--- THE NUDGE (P3-C6, ruled 2026-09-03): the published hue is the identity; a MEASURED collision (oklab distance below the tolerance) moves the smaller party's lightness by the least that separates it - never its hue, never the order ---\n");
+            sb.Append(F("    tolerance {0:0.00} oklab, cap {1:0.00} L (both [AUTHORED-DRAFT], for Design's confirmation - D12 row 4)\n", PoliSimTheme.NudgeTolerance, PoliSimTheme.NudgeCap));
+            foreach (CountryId nudgeCountry in (CountryId[])Enum.GetValues(typeof(CountryId)))
+            {
+                foreach (string line in PoliSimTheme.NudgeReport(nudgeCountry)) { sb.Append("    ").Append(line).Append('\n'); }
+            }
+            sb.Append("    party      bloc          mandates  seated   L(seated)  nudge   drawn     L(drawn)\n");
             foreach (CountryId country in (CountryId[])Enum.GetValues(typeof(CountryId)))
             {
                 foreach (PoliticalParty party in PartySystems.For(country))
@@ -231,8 +236,8 @@ namespace PoliSim.EditorTools
                         ToHex(seated), l0, PoliSimTheme.LadderLift(country, party.Abbrev), ToHex(laddered), l1));
                 }
             }
-            sb.Append("    The marks keep the seated hex (a second ink for one party would be a second identity); the ladder\n");
-            sb.Append("    draws where ink is the only channel - the per-seat hemicycle and the legend's swatch and bar.\n");
+            sb.Append("    The marks keep the seated hex; the nudged ink draws where ink is the only channel - the per-seat hemicycle and the legend's swatch and bar.\n");
+            sb.Append("    An ink no collision touched is its seated hex, unmoved. The pairs above go to Design as a per-party confirmation, not a re-derivation.\n");
 
             sb.Append("\n--- What has NO ink, and is not given one ---\n");
             sb.Append(F("    {0} of {1} seeded parties carry a published colour; {2} carry none.\n",

@@ -263,59 +263,91 @@ namespace PoliSim.UI
             PartyHues.TryGetValue(country + "/" + abbrev, out Color ink) ? ink : AreaAccents[UiPalette.SystemArea.Neutral];
 
         // ------------------------------------------------------------------------------------------
-        // Board 5e (D11 row 5, 2026-09-02): THE LADDER. The hue is the authority's, the lightness is
-        // ours. Within a bloc the parties are ordered by mandates (the seeded table's, so an ink never
-        // moves between screens or after an election); the anchor - most mandates - holds its seated
-        // value and the rest step in oklch lightness ±0.08 outward (+1, −1, +2, −2 …) so no two
-        // adjacent inks share L. For an identical pair (S and V seat to one hex) the smaller party
-        // lifts +0.12 instead of its step. Hue and chroma are held; one channel moves, and
-        // PartyInkHarness prints the move. The ladder applies where ink is the only channel - the
-        // per-seat hemicycle, the legend swatch - and NOT to the marks, which keep the seated hex
-        // (at ≥ 16 px the silhouette carries, and two inks for one party would be a second identity).
         // ------------------------------------------------------------------------------------------
-        private const float LadderStep = 0.08f;
-        private const float LadderIdenticalPairLift = 0.12f;
-        private static readonly Dictionary<string, Color> LadderedCache = new Dictionary<string, Color>();
+        // P3-C6 (2026-09-03), RULED by Elias: published party hues are the base and the identity. 5e's
+        // ladder over-reached - it stepped every party in a bloc by ±0.08 L outward whether or not two
+        // inks collided, and lifted the identical pair by 0.12 regardless of what separated them. What
+        // stands now is THE NUDGE: the smallest perceptual move, in oklch lightness only, that separates
+        // a MEASURED collision - two seated inks closer than NudgeTolerance in oklab - and nothing else.
+        // The larger party (by the seeded table's mandates) holds; the smaller moves away from it in L,
+        // by exactly the distance the tolerance asks for, in the direction that keeps their L order (the
+        // identical pair, S/V, has no order and the smaller lifts). Hue and chroma are never touched, no
+        // hue family is re-ordered or replaced, and a party with no collision draws its seated ink. The
+        // moves are printed by PartyInkHarness; the per-party confirmation goes to Design (D12 row 4).
+        // ------------------------------------------------------------------------------------------
+        /// <summary>[AUTHORED-DRAFT] the separation two seated inks must have in oklab (Euclidean over L, a, b) to read as two at dot size; below it, a collision. Named in D12 row 4 for Design's confirmation.</summary>
+        public const float NudgeTolerance = 0.06f;
+        /// <summary>[AUTHORED-DRAFT] the most a nudge may move lightness; a collision that would need more is printed as one the nudge could not fully separate rather than moved past the stated tolerance.</summary>
+        public const float NudgeCap = 0.10f;
+        private static readonly Dictionary<PoliSim.Data.CountryId, Dictionary<string, Color>> NudgedCache = new Dictionary<PoliSim.Data.CountryId, Dictionary<string, Color>>();
+        private static readonly Dictionary<PoliSim.Data.CountryId, List<string>> NudgeLog = new Dictionary<PoliSim.Data.CountryId, List<string>>();
 
-        /// <summary>The party's ink stepped by the bloc ladder (board 5e) - the seated ink for the anchor and for any party outside a known bloc, the neutral accent for a party with no published colour.</summary>
+        /// <summary>The party's ink after the nudge rule - its seated ink unless a measured collision moved its lightness; the neutral accent for a party with no published colour.</summary>
         public static Color PartyLaddered(PoliSim.Data.CountryId country, string abbrev)
         {
             if (!HasPartyInk(country, abbrev)) { return AreaAccents[UiPalette.SystemArea.Neutral]; }
-            string key = country + "/" + abbrev;
-            if (LadderedCache.TryGetValue(key, out Color cached)) { return cached; }
-            Color seated = Party(country, abbrev);
-            float lift = LadderLift(country, abbrev);
-            Color laddered = lift == 0f ? seated : ShiftOklchLightness(seated, lift);
-            LadderedCache[key] = laddered;
-            return laddered;
+            Dictionary<string, Color> table = NudgedTable(country);
+            return table.TryGetValue(abbrev, out Color nudged) ? nudged : Party(country, abbrev);
         }
 
-        /// <summary>The lightness move the ladder gives this party, in oklch L; zero for the anchor, for a party in no bloc, or for one with no ink.</summary>
+        /// <summary>The lightness move the nudge gave this party (0 for an ink no collision touched).</summary>
         public static float LadderLift(PoliSim.Data.CountryId country, string abbrev)
         {
-            int bloc = PoliSim.Elections.NationalElection.BlocOf(country, abbrev);
-            if (bloc < 0) { return 0f; }
-            var members = new List<PoliSim.Data.PoliticalParty>();
-            foreach (PoliSim.Data.PoliticalParty p in PoliSim.Data.PartySystems.For(country))
-            {
-                if (HasPartyInk(country, p.Abbrev) && PoliSim.Elections.NationalElection.BlocOf(country, p.Abbrev) == bloc) { members.Add(p); }
-            }
-            // By mandates, the seeded table's; ties by the table's own order.
-            members.Sort((a, b) => b.SeedSeats != a.SeedSeats ? b.SeedSeats.CompareTo(a.SeedSeats) : 0);
-            int rank = members.FindIndex(p => p.Abbrev == abbrev);
-            if (rank <= 0) { return 0f; }
-            // The identical pair: a party seated to the same hex as a larger member lifts +0.12.
-            Color mine = Party(country, abbrev);
-            for (int i = 0; i < rank; i++)
-            {
-                if (SameInk(Party(country, members[i].Abbrev), mine)) { return LadderIdenticalPairLift; }
-            }
-            int magnitude = (rank + 1) / 2;
-            return (rank % 2 == 1 ? 1f : -1f) * LadderStep * magnitude;
+            if (!HasPartyInk(country, abbrev)) { return 0f; }
+            ToOklch(Party(country, abbrev), out float l0, out float _, out float _);
+            ToOklch(PartyLaddered(country, abbrev), out float l1, out float _, out float _);
+            return l1 - l0;
         }
 
-        private static bool SameInk(Color a, Color b) =>
-            Mathf.Abs(a.r - b.r) < 0.002f && Mathf.Abs(a.g - b.g) < 0.002f && Mathf.Abs(a.b - b.b) < 0.002f;
+        /// <summary>The nudge's own print for the harness - every collision measured, the move made, the distance after.</summary>
+        public static IReadOnlyList<string> NudgeReport(PoliSim.Data.CountryId country)
+        {
+            NudgedTable(country);
+            return NudgeLog.TryGetValue(country, out List<string> log) ? log : new List<string>();
+        }
+
+        /// <summary>The chamber's inked parties by seeded mandates, descending; each smaller party is measured against every larger one and nudged away from the nearest collision until it clears the tolerance.</summary>
+        private static Dictionary<string, Color> NudgedTable(PoliSim.Data.CountryId country)
+        {
+            if (NudgedCache.TryGetValue(country, out Dictionary<string, Color> cached)) { return cached; }
+            var table = new Dictionary<string, Color>();
+            var log = new List<string>();
+            var parties = new List<PoliSim.Data.PoliticalParty>();
+            foreach (PoliSim.Data.PoliticalParty p in PoliSim.Data.PartySystems.For(country)) { if (HasPartyInk(country, p.Abbrev)) { parties.Add(p); } }
+            parties.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
+            for (int i = 0; i < parties.Count; i++)
+            {
+                Color ink = Party(country, parties[i].Abbrev);
+                ToOklab(ink, out float L, out float a, out float b);
+                float moved = 0f;
+                for (int pass = 0; pass < 4; pass++)   // a move away from one larger ink can approach another; a few passes settle it
+                {
+                    string nearest = null; float nearestDistance = float.MaxValue; float nearestL = 0f;
+                    for (int j = 0; j < i; j++)
+                    {
+                        ToOklab(table[parties[j].Abbrev], out float Lj, out float aj, out float bj);
+                        float d = Mathf.Sqrt((L - Lj) * (L - Lj) + (a - aj) * (a - aj) + (b - bj) * (b - bj));
+                        if (d < nearestDistance) { nearestDistance = d; nearest = parties[j].Abbrev; nearestL = Lj; }
+                    }
+                    if (nearest == null || nearestDistance >= NudgeTolerance) { break; }
+                    // The smallest L move that puts the pair at the tolerance: the chroma gap stays, L makes up the rest.
+                    float chromaGap = Mathf.Sqrt(Mathf.Max(0f, nearestDistance * nearestDistance - (L - nearestL) * (L - nearestL)));
+                    float neededL = Mathf.Sqrt(Mathf.Max(0f, NudgeTolerance * NudgeTolerance - chromaGap * chromaGap));
+                    float direction = L > nearestL ? 1f : L < nearestL ? -1f : 1f;   // keep the order; the identical pair lifts
+                    float target = nearestL + direction * neededL;
+                    float delta = target - L;
+                    if (Mathf.Abs(moved + delta) > NudgeCap) { delta = Mathf.Sign(delta) * Mathf.Max(0f, NudgeCap - Mathf.Abs(moved)); }
+                    if (Mathf.Abs(delta) < 0.0005f) { log.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}: collides with {1} at {2:0.000} and the cap {3:0.00} is spent - NOT fully separated", parties[i].Abbrev, nearest, nearestDistance, NudgeCap)); break; }
+                    L = Mathf.Clamp01(L + delta);
+                    moved += delta;
+                    log.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}: {1:0.000} from {2} (< {3:0.00}) → L {4:+0.000;-0.000}", parties[i].Abbrev, nearestDistance, nearest, NudgeTolerance, delta));
+                }
+                table[parties[i].Abbrev] = moved == 0f ? ink : FromOklab(L, a, b);
+            }
+            NudgedCache[country] = table;
+            NudgeLog[country] = log;
+            return table;
+        }
 
         /// <summary>sRGB → oklch, move L, → sRGB (clamped). Björn Ottosson's oklab matrices; the chroma and hue are held exactly.</summary>
         public static Color ShiftOklchLightness(Color c, float deltaL)
