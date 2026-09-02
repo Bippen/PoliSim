@@ -247,6 +247,35 @@ namespace PoliSim.EditorTools
                         failures += Assert(sb, $"{c.Id}: over {AnnualYearsToClose} years the annual series sums to the debt delta, with erosion, settlements and clamp named",
                             Mathf.Abs(observed - explained) <= tolerance, F("observed {0:0.0000} vs explained {1:0.0000} (tol {2:0.0000})", observed, explained, tolerance));
                     }
+                    // P2-3.3 (2026-09-02): THE COMPASS TRAIL IS THE STORED HISTORY, ONE POINT PER CLOSE. After the
+                    // closes above: every country whose chamber has a mean carries exactly one trail point per
+                    // closed year, dated at the close; the newest equals the chamber mean recomputed now (seats
+                    // change only at elections, and the last close saw the current seats); and the list the compass
+                    // draws (CompassPositions.Trail) is the stored lists element for element.
+                    sb.Append(F("\n--- P2-3.3. The compass trail after {0} closed years ---\n", AnnualYearsToClose));
+                    foreach (Country c in annualWorld.Countries)
+                    {
+                        PoliSim.Elections.CompassPositions.Point? now = PoliSim.Elections.CompassPositions.ChamberMean(c, out int _);
+                        List<(DateTime Date, float LrEcon, float Galtan)> trail = PoliSim.Elections.CompassPositions.Trail(c);
+                        if (!now.HasValue)
+                        {
+                            failures += Assert(sb, $"{c.Id}: a chamber with no mean stores no trail", trail.Count == 0, F("{0} point(s)", trail.Count));
+                            continue;
+                        }
+                        failures += Assert(sb, $"{c.Id}: one trail point per closed year", trail.Count == yearsClosed, F("{0} point(s) for {1} close(s)", trail.Count, yearsClosed));
+                        if (trail.Count == 0) { continue; }
+                        (DateTime Date, float LrEcon, float Galtan) newest = trail[trail.Count - 1];
+                        failures += Assert(sb, $"{c.Id}: the newest trail point is the chamber mean now",
+                            Mathf.Abs(newest.LrEcon - now.Value.LrEcon) < 1e-5f && Mathf.Abs(newest.Galtan - now.Value.Galtan) < 1e-5f,
+                            F("stored ({0:F3}, {1:F3}) vs now ({2:F3}, {3:F3})", newest.LrEcon, newest.Galtan, now.Value.LrEcon, now.Value.Galtan));
+                        bool datesOrdered = true, listsAgree = c.History.CompassTrailLrEcon.Count == trail.Count && c.History.CompassTrailGaltan.Count == trail.Count && c.History.CompassTrailDates.Count == trail.Count;
+                        for (int i = 0; i < trail.Count && listsAgree; i++)
+                        {
+                            listsAgree &= trail[i].LrEcon == c.History.CompassTrailLrEcon[i] && trail[i].Galtan == c.History.CompassTrailGaltan[i] && trail[i].Date == c.History.CompassTrailDates[i];
+                            if (i > 0 && trail[i].Date <= trail[i - 1].Date) { datesOrdered = false; }
+                        }
+                        failures += Assert(sb, $"{c.Id}: the drawn trail is the stored lists, element for element, dated in order", listsAgree && datesOrdered, F("{0} point(s), first {1:yyyy-MM-dd}, last {2:yyyy-MM-dd}", trail.Count, trail[0].Date, newest.Date));
+                    }
                 }
                 finally
                 {

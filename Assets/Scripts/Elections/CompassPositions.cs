@@ -56,6 +56,60 @@ namespace PoliSim.Elections
             return WeightedMean(country, new HashSet<string>(cabinet), out seatsLeftOut);
         }
 
+
+        /// <summary>
+        /// P2-3.3 (2026-09-02): **the electorate's position** - the compatibility-weighted mean of the parties
+        /// election night predicts from: each positioned party's compatibility on the vote model's good layer
+        /// (the fitted electorate over the cohorts, <see cref="NationalElection.TryCompatibility"/>) weights its
+        /// published pair. Null for a country with no fitted electorate or no two-election history - absence,
+        /// not a centre. <paramref name="partiesCounted"/> is how many parties carried weight.
+        /// </summary>
+        public static Point? ElectorateMean(Country country, out int partiesCounted)
+        {
+            partiesCounted = 0;
+            if (!NationalElection.TryCompatibility(country.Id, out string[] keys, out double[] compatibility, out double[] _, out double[] _)) { return null; }
+            var byAbbrev = new Dictionary<string, PoliticalParty>();
+            foreach (PoliticalParty party in PartySystems.For(country.Id)) { byAbbrev[party.Abbrev] = party; }
+            double lrSum = 0.0, galSum = 0.0, weightSum = 0.0;
+            for (int i = 0; i < keys.Length; i++)
+            {
+                if (!byAbbrev.TryGetValue(keys[i], out PoliticalParty party) || !HasPair(party)) { continue; }
+                double weight = compatibility[i];
+                if (weight <= 0.0) { continue; }
+                lrSum += party.LrEcon * weight;
+                galSum += party.Galtan * weight;
+                weightSum += weight;
+                partiesCounted++;
+            }
+            if (weightSum <= 0.0) { return null; }
+            return new Point((float)(lrSum / weightSum), (float)(galSum / weightSum), partiesCounted);
+        }
+
+        /// <summary>
+        /// P2-3.3: the country's stored trail - its chamber mean at every turn close since the start, read
+        /// straight from <see cref="StatHistory.CompassTrailLrEcon"/> / <see cref="StatHistory.CompassTrailGaltan"/>
+        /// / <see cref="StatHistory.CompassTrailDates"/> in order, nothing dropped, nothing smoothed. The
+        /// compass draws exactly this list; the diagnostic holds the two equal.
+        /// </summary>
+        public static List<(System.DateTime Date, float LrEcon, float Galtan)> Trail(Country country)
+        {
+            var trail = new List<(System.DateTime, float, float)>();
+            StatHistory history = country.History;
+            if (history == null) { return trail; }
+            int n = Mathf.Min(history.CompassTrailDates.Count, Mathf.Min(history.CompassTrailLrEcon.Count, history.CompassTrailGaltan.Count));
+            for (int i = 0; i < n; i++) { trail.Add((history.CompassTrailDates[i], history.CompassTrailLrEcon[i], history.CompassTrailGaltan[i])); }
+            return trail;
+        }
+
+        /// <summary>P2-3.3: append the chamber's current mean to the trail (the simulation calls this once per turn close). A chamber with no mean appends nothing.</summary>
+        public static void RecordTrailPoint(Country country, System.DateTime date)
+        {
+            Point? mean = ChamberMean(country, out int _);
+            if (!mean.HasValue || country.History == null) { return; }
+            country.History.CompassTrailLrEcon.Add(mean.Value.LrEcon);
+            country.History.CompassTrailGaltan.Add(mean.Value.Galtan);
+            country.History.CompassTrailDates.Add(date);
+        }
         private static Point? WeightedMean(Country country, HashSet<string> onlyAbbrevs, out int seatsLeftOut)
         {
             seatsLeftOut = 0;

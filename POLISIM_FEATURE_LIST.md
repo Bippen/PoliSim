@@ -446,7 +446,7 @@ time (it moves at elections and government changes — store it per turn, draw i
 electorate's position from the voter groups over the cohorts (F3's substrate: the eligible
 population's compatibility-weighted mean). Design's compass r2 board refines the composition; the
 data ships now. *Done when:* the trail reproduces the stored history exactly and the electorate
-point derives from cohorts.
+point derives from cohorts. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §229: three parallel history lists appended at every close and drawn as stored; the electorate at the compatibility-weighted mean over `NationalElection.TryCompatibility`'s arrays; both re-derived in the simulation diagnostics.**
 
 **P2-3.4 — The Riksbank panel.** More of what the model holds: the current rate, the reaction
 function's inputs (the model's inflation and output readings), and the **projected rate path** from

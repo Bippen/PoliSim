@@ -231,6 +231,47 @@ namespace PoliSim.EditorTools
                     ok ? "ok" : "FAIL"));
             }
 
+            // P2-3.3 (2026-09-02): THE ELECTORATE'S POINT DERIVES FROM THE COHORTS' FITTED ELECTORATE. For every
+            // country: re-derive the compatibility-weighted mean over NationalElection.TryCompatibility's own
+            // arrays (the parties election night predicts from) and hold CompassPositions.ElectorateMean to it;
+            // where no electorate is fitted the point is absent, never a centre.
+            sb.Append("\n--- P2-3.3: the electorate's point against its derivation ---\n");
+            foreach (Country country in world.Countries)
+            {
+                CompassPositions.Point? electorate = CompassPositions.ElectorateMean(country, out int counted);
+                bool fitted = NationalElection.TryCompatibility(country.Id, out string[] eKeys, out double[] eCompat, out double[] _, out double[] _);
+                bool traces;
+                string detail;
+                if (!fitted)
+                {
+                    traces = !electorate.HasValue && counted == 0;
+                    detail = "no fitted electorate - absent";
+                }
+                else
+                {
+                    var byAbbrev = new Dictionary<string, PoliticalParty>();
+                    foreach (PoliticalParty party in PartySystems.For(country.Id)) { byAbbrev[party.Abbrev] = party; }
+                    double lr = 0.0, gal = 0.0, w = 0.0; int n = 0;
+                    for (int i = 0; i < eKeys.Length; i++)
+                    {
+                        if (!byAbbrev.TryGetValue(eKeys[i], out PoliticalParty party) || float.IsNaN(party.LrEcon) || float.IsNaN(party.Galtan) || eCompat[i] <= 0.0) { continue; }
+                        lr += party.LrEcon * eCompat[i]; gal += party.Galtan * eCompat[i]; w += eCompat[i]; n++;
+                    }
+                    traces = w > 0.0
+                        ? electorate.HasValue && counted == n && Mathf.Abs(electorate.Value.LrEcon - (float)(lr / w)) < 1e-4f && Mathf.Abs(electorate.Value.Galtan - (float)(gal / w)) < 1e-4f
+                        : !electorate.HasValue;
+                    detail = electorate.HasValue
+                        ? string.Format(CultureInfo.InvariantCulture, "({0:F2}, {1:F2}) over {2} parties", electorate.Value.LrEcon, electorate.Value.Galtan, counted)
+                        : "fitted, but no positioned party carries weight - absent";
+                }
+                if (!traces)
+                {
+                    failures.Add($"electorate point does not trace for {country.Id}");
+                    Debug.LogError($"OFFICE: {country.Id} electorate point does not re-derive from TryCompatibility ({detail}).");
+                }
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-8} electorate {1} {2}\n", country.Id, detail, traces ? "ok" : "FAIL"));
+            }
+
             // P2-2.2 (2026-09-02): THE PER-SEAT MAP'S COUNTS EQUAL THE STANCE ARITHMETIC TO THE SEAT. For every
             // country, both bill directions and both axes: the sides sum to the seats the chamber holds, every
             // party's side is the sign of its stance times the bill's sign (the Laws page's own rule), and the

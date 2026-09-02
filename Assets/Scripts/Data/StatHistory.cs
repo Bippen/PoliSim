@@ -150,6 +150,13 @@ namespace PoliSim.Data
         /// is not a display figure; debt carries the cumulative on its own row.</summary>
         public readonly List<float> BudgetBalanceAnnual = new List<float>();
         public readonly List<DateTime> BudgetBalanceAnnualDates = new List<DateTime>();
+        /// <summary>P2-3.3 (2026-09-02): the compass trail - the chamber's seat-weighted CHES mean at every turn
+        /// close (CompassPositions.RecordTrailPoint, written beside the fiscal report), three parallel lists so
+        /// the pair persists without a Vector2 (whose self-referential properties the serializer trips on). The
+        /// compass draws the list as it is stored; a diagnostic holds the drawn trail to it.</summary>
+        public readonly List<float> CompassTrailLrEcon = new List<float>();
+        public readonly List<float> CompassTrailGaltan = new List<float>();
+        public readonly List<DateTime> CompassTrailDates = new List<DateTime>();
 
         /// <summary>
         /// Appends this turn's already-settled values. <paramref name="date"/> is the in-game

@@ -32,6 +32,10 @@ namespace PoliSim.UI
         private const float CaptionLineGap = 2f;
         private const float LegendGap = 14f;
         private const float LegendShareOfWidth = 0.5f;
+        // P2-3.3: the trail's ink alpha and dot, and the electorate's diamond.
+        private const float TrailAlpha = 0.35f;
+        private const float TrailDotDiameter = 5f;
+        private const float ElectorateDiamond = 14f;
 
         private static readonly Color BackgroundColor = PoliSimTheme.Card;
         private static readonly Color GridColor = PoliSimTheme.Hairline;
@@ -42,6 +46,7 @@ namespace PoliSim.UI
         private Texture2D _circleTexture;
         private Texture2D _ringTexture;
         private Texture2D _lineTexture;
+        private Texture2D _diamondTexture;
 
         private readonly struct LegendLine
         {
@@ -104,6 +109,16 @@ namespace PoliSim.UI
                     lines.Add(new LegendLine($"{string.Join("+", cabinet)}  {tail}", UiPalette.GetCountryColor(player.Id), true, false));
                 }
 
+                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S ELECTORATE · COMPATIBILITY-WEIGHTED MEAN", null, false, true));
+                CompassPositions.Point? electorateMean = CompassPositions.ElectorateMean(player, out int electorateParties);
+                lines.Add(electorateMean.HasValue
+                    ? new LegendLine(string.Format(CultureInfo.InvariantCulture, "diamond  {0} · over {1} parties, the fitted electorate over the cohorts", Pair(electorateMean.Value), electorateParties), null, false, false)
+                    : new LegendLine("no fitted electorate for this chamber - no point", null, false, false));
+                lines.Add(new LegendLine("TRAILS · each chamber's mean at every turn close, faint", null, false, true));
+                List<(System.DateTime Date, float LrEcon, float Galtan)> playerTrail = CompassPositions.Trail(player);
+                lines.Add(new LegendLine(playerTrail.Count > 0
+                    ? string.Format(CultureInfo.InvariantCulture, "{0} point(s) stored for {1}, {2:yyyy-MM-dd} to {3:yyyy-MM-dd}", playerTrail.Count, player.Name, playerTrail[0].Date, playerTrail[playerTrail.Count - 1].Date)
+                    : $"no turn has closed yet - {player.Name}'s trail starts at the first close", null, false, false));
                 lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S PARTIES · PUBLISHED PAIRS (CHES 2024)", null, false, true));
                 foreach (PoliticalParty party in PartySystems.For(player.Id))
                 {
@@ -195,6 +210,39 @@ namespace PoliSim.UI
 
             DrawGridlines(plotRect);
             if (withLegend) { DrawEndWords(plotSquare, plotRect, tagStyle); }
+
+            // P2-3.3 (2026-09-02): each country's trail - its chamber mean at every turn close, faint, in the
+            // country's ink, drawn as the stored list is stored (CompassPositions.Trail) - and, for the player's
+            // chamber, the electorate at the compatibility-weighted mean of the parties election night predicts from.
+            foreach (Country country in countries)
+            {
+                List<(System.DateTime Date, float LrEcon, float Galtan)> trail = CompassPositions.Trail(country);
+                if (trail.Count < 2) { continue; }
+                Color faint = UiPalette.GetCountryColor(country.Id);
+                faint.a = TrailAlpha;
+                Vector2 previousPoint = ToPlotPixel(plotRect, trail[0].LrEcon, trail[0].Galtan);
+                for (int i = 1; i < trail.Count; i++)
+                {
+                    Vector2 next = ToPlotPixel(plotRect, trail[i].LrEcon, trail[i].Galtan);
+                    DrawLineSegment(previousPoint, next, 1f, faint);
+                    DrawCircle(new Rect(previousPoint.x - TrailDotDiameter * 0.5f, previousPoint.y - TrailDotDiameter * 0.5f, TrailDotDiameter, TrailDotDiameter), _circleTexture, faint);
+                    previousPoint = next;
+                }
+            }
+            if (withLegend && player != null)
+            {
+                CompassPositions.Point? electorate = CompassPositions.ElectorateMean(player, out int _);
+                if (electorate.HasValue)
+                {
+                    Vector2 pixel = ToPlotPixel(plotRect, electorate.Value.LrEcon, electorate.Value.Galtan);
+                    DrawCircle(new Rect(pixel.x - ElectorateDiamond * 0.5f, pixel.y - ElectorateDiamond * 0.5f, ElectorateDiamond, ElectorateDiamond), _diamondTexture, PoliSimTheme.TextPrimary);
+                    const string tag = "electorate";
+                    Vector2 tagSize = tagStyle.CalcSize(new GUIContent(tag));
+                    float tagX = Mathf.Clamp(pixel.x - tagSize.x * 0.5f, plotRect.x, plotRect.xMax - tagSize.x);
+                    float tagY = Mathf.Clamp(pixel.y - ElectorateDiamond * 0.5f - tagSize.y, plotRect.y, plotRect.yMax - tagSize.y);
+                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), tag, tagStyle);
+                }
+            }
 
             if (withLegend && player != null)
             {
@@ -367,6 +415,7 @@ namespace PoliSim.UI
             }
             if (_circleTexture == null) { _circleTexture = BuildCircleTexture(16, filled: true); }
             if (_ringTexture == null) { _ringTexture = BuildCircleTexture(24, filled: false); }
+            if (_diamondTexture == null) { _diamondTexture = BuildDiamondTexture(24); }
             if (_lineTexture == null)
             {
                 _lineTexture = new Texture2D(1, 1, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
@@ -375,6 +424,26 @@ namespace PoliSim.UI
             }
         }
 
+
+        /// <summary>P2-3.3: a filled diamond for the electorate's point - a shape no other point uses.</summary>
+        private static Texture2D BuildDiamondTexture(int size)
+        {
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+            float half = size / 2f;
+            var pixels = new Color[size * size];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = Mathf.Abs(x + 0.5f - half);
+                    float dy = Mathf.Abs(y + 0.5f - half);
+                    pixels[y * size + x] = dx + dy <= half ? Color.white : Color.clear;
+                }
+            }
+            texture.SetPixels(pixels);
+            texture.Apply(false);
+            return texture;
+        }
         private static Texture2D BuildCircleTexture(int diameter, bool filled)
         {
             var texture = new Texture2D(diameter, diameter, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };

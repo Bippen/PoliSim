@@ -2499,6 +2499,8 @@ namespace PoliSim.Simulation
             // P2-0.4: the closed period's balance joins the annual series the sheet draws - observation only.
             country.History.BudgetBalanceAnnual.Add(period.AccruedBudgetBalance);
             country.History.BudgetBalanceAnnualDates.Add(CurrentDate);
+            // P2-3.3: the chamber's compass position joins its trail at the same close - observation only.
+            PoliSim.Elections.CompassPositions.RecordTrailPoint(country, CurrentDate);
 
             // Step 2's third section (2026-08-25): the debt ledger closes exactly where the
             // FiscalTurnReport does - the last daily slice has been observed (AdvanceDay finished
