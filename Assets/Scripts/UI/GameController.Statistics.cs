@@ -58,7 +58,15 @@ namespace PoliSim.UI
             FiscalTurnReport lastYear = _simulationManager.GetLastFiscalReport(PlayerCountryId);
             return new List<HeadlineReading>
             {
-                new HeadlineReading("Balance · last year", lastYear != null ? UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions) : "-", null, false, history?.BudgetBalanceAnnual),
+                // P3-C2 (2026-09-03): the year's balance beside last year's - the preview's own figure (revenue minus spending on the previewed
+                // year, WITH the draft; a turn is a year), and at year one last year is the seed and says so: the seeded accumulator is
+                // the seed's standing balance, and no year has closed to replace it.
+                lastYear != null
+                    ? new HeadlineReading(_simulationManager.CurrentTurn == 0 ? "Balance · last year · the seed" : "Balance · last year", UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions), null, false, history?.BudgetBalanceAnnual)
+                    : new HeadlineReading("Balance · the seed (no year closed)", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, false, null),
+                new HeadlineReading("Balance · this year · projected", _cachedPreview != null ? UiFormat.MoneyDelta(_cachedPreview.RevenueEstimate - _cachedPreview.SpendingEstimate, MoneyUnit.Billions) : "-",
+                    _cachedPreview != null && _cachedPreviewWithoutDraft != null && !Mathf.Approximately(_cachedPreview.RevenueEstimate - _cachedPreview.SpendingEstimate, _cachedPreviewWithoutDraft.RevenueEstimate - _cachedPreviewWithoutDraft.SpendingEstimate)
+                        ? "WITH THE DRAFT" : null, true, null),
                 new HeadlineReading("Government debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, false, null),
                 new HeadlineReading("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1) + "%", null, false, history?.DebtToGdpRatio.Quarterly),
                 new HeadlineReading("Revenue · last year", lastYear != null ? UiFormat.Money(lastYear.Revenue, MoneyUnit.Billions) : "-", null, false, null),
