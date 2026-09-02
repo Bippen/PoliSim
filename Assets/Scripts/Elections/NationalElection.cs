@@ -93,16 +93,27 @@ namespace PoliSim.Elections
         /// Returns false when the country has no fitted electorate or no two-election history —
         /// the four countries without a live path — and the caller holds no election.
         /// </summary>
-        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares)
+        /// <summary>
+        /// C-R4b step 5 (2026-09-02, D-21): the three inputs the live prediction is made of - each
+        /// positioned party's COMPATIBILITY on the vote model's GOOD layer (the §8 national shares on
+        /// the fitted electorate, on the compatibility scale), its PRIOR (the last election's share)
+        /// and its LOYALTY (derived from the two elections before this one) - factored out so the
+        /// campaign can be staged on the SAME compatibility election night predicts from. An idle
+        /// campaign then reproduces this prediction exactly (`PreferenceModel.Preference` over the same
+        /// three arrays), and a campaign moves it: that is what makes the campaign's result election
+        /// night's result rather than a second opinion beside it. False for the countries with no
+        /// fitted electorate or no two-election history.
+        /// </summary>
+        public static bool TryCompatibility(CountryId country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)
         {
-            shares = null;
+            keys = null; compatibility = null; prior = null; loyalty = null;
             if (!PartySystems.TryElectorate(country, out VoteModel.Electorate electorate, out double economicWeight)) { return false; }
             if (!PartySystems.TryHistory(country, out double[] latest, out double[] previous)) { return false; }
 
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
             var points = new List<VoteModel.PartyPoint>();
-            var keys = new List<string>();
-            var prior = new List<double>();
+            var keyList = new List<string>();
+            var priorList = new List<double>();
             var latestOfMeasured = new List<double>();
             var previousOfMeasured = new List<double>();
 
@@ -115,18 +126,48 @@ namespace PoliSim.Elections
                 // countries a live path may be built for later.
                 if (!party.HasPosition) { continue; }
                 points.Add(new VoteModel.PartyPoint(party.Abbrev, party.LrEcon, party.Galtan));
-                keys.Add(party.Abbrev);
-                prior.Add(latest[i]);
+                keyList.Add(party.Abbrev);
+                priorList.Add(latest[i]);
                 latestOfMeasured.Add(latest[i]);
                 previousOfMeasured.Add(previous[i]);
             }
 
             double[] national = VoteModel.PredictShares(points.ToArray(), electorate, economicWeight);
-            double[] loyalty = LoyaltyModel.PartyLoyalties(latestOfMeasured.ToArray(), previousOfMeasured.ToArray());
-            double[] preference = PreferenceModel.Preference(ToCompatScale(national), prior.ToArray(), loyalty);
+            keys = keyList.ToArray();
+            compatibility = ToCompatScale(national);
+            prior = priorList.ToArray();
+            loyalty = LoyaltyModel.PartyLoyalties(latestOfMeasured.ToArray(), previousOfMeasured.ToArray());
+            return true;
+        }
+
+        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares)
+        {
+            shares = null;
+            if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)) { return false; }
+            double[] preference = PreferenceModel.Preference(compatibility, prior, loyalty);
 
             shares = new Dictionary<string, double>();
-            for (int i = 0; i < keys.Count; i++) { shares[keys[i]] = preference[i]; }
+            for (int i = 0; i < keys.Length; i++) { shares[keys[i]] = preference[i]; }
+            DeriveRegional(country, keys, preference);
+            return true;
+        }
+
+        /// <summary>
+        /// C-R4b step 5: election night on shares the CAMPAIGN produced rather than the prediction -
+        /// the same keys, the same regional derivation, so the constituencies still add up to the
+        /// headline (F1). The shares are the run's `FinalShares` in the run's party order, which is the
+        /// prediction's own order for a staged country (`LiveCampaignSetup` builds on `TryCompatibility`).
+        /// </summary>
+        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares)
+        {
+            var shares = new Dictionary<string, double>();
+            for (int i = 0; i < keys.Length && i < finalShares.Length; i++) { shares[keys[i]] = finalShares[i]; }
+            DeriveRegional(country, keys, finalShares);
+            return shares;
+        }
+
+        private static void DeriveRegional(CountryId country, IReadOnlyList<string> keys, double[] preference)
+        {
 
             // ⚠ F1 (2026-09-01): THE REGIONAL BREAKDOWN, DERIVED FROM the national result rather than
             // computed beside it. RegionalSharesByUniformSwing applies one swing to every valkrets' own
@@ -164,8 +205,6 @@ namespace PoliSim.Elections
                 LastRegionalWeights = null;
                 LastRegionalWorstAbsError = 0.0;
             }
-
-            return true;
         }
 
         /// <summary>The backtest''s own share-to-compatibility mapping, so the live path and `CompositionHarness` cannot disagree about what the model is.</summary>

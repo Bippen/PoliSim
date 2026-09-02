@@ -5183,7 +5183,23 @@ namespace PoliSim.UI
 
         private void RunNationalElection()
         {
-            if (!NationalElection.TryPredictShares(PlayerCountryId, out Dictionary<string, double> shareByParty))
+            // C-R4b step 5 (D-21): when the player's campaign ran up to THIS boundary, election night
+            // counts the campaign's own shares - the same preference model over the same compatibility,
+            // prior and loyalty the prediction uses, moved by eight weeks of campaigning - and the
+            // regional breakdown is derived from them the same way. No campaign (another country, or
+            // no staging): the prediction, as before.
+            Dictionary<string, double> shareByParty = null;
+            CampaignRun.Result campaign = _simulationManager.PlayerCampaignResult;
+            if (campaign != null && _simulationManager.CampaignRecord != null
+                && _simulationManager.CampaignRecord.ElectionDate == SimulationManager.TurnBoundary(_simulationManager.CurrentTurn)
+                && _simulationManager.PlayerCampaign != null)
+            {
+                var keys = new string[_simulationManager.PlayerCampaign.Setup.Parties.Length];
+                for (int i = 0; i < keys.Length; i++) { keys[i] = _simulationManager.PlayerCampaign.Setup.Parties[i].Name; }
+                shareByParty = NationalElection.SharesFromCampaign(PlayerCountryId, keys, campaign.FinalShares);
+                Debug.Log($"ELECTION: counted the campaign's shares for {PlayerCountryId} - " + string.Join(" ", System.Array.ConvertAll(campaign.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
+            }
+            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty))
             {
                 _playerCountry.ElectionHistory.Add(new ElectionRecord
                 {

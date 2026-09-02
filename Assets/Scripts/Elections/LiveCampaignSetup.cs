@@ -67,11 +67,31 @@ namespace PoliSim.Elections
         /// <paramref name="scandals"/> is the caller's staging (the harness stages one; a game passes none
         /// until §17's dynamic generation exists).
         /// </summary>
-        public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note)
+        public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
+            bool onVoteModelCompatibility = false)
         {
             if (country == CountryId.Sweden)
             {
-                setup = Sweden(scandals, out note, calendar);
+                double[] compatibilityOverride = null;
+                if (onVoteModelCompatibility)
+                {
+                    // C-R4b step 5 (D-21): the GAME stages the campaign on the compatibility election night
+                    // predicts from - the vote model's good layer - so an idle campaign reproduces election
+                    // night's own prediction and a campaign moves it. Mapped by party key, never by position.
+                    if (!NationalElection.TryCompatibility(country, out string[] keys, out double[] compatibility, out _, out _))
+                    {
+                        setup = default;
+                        note = $"no campaign is staged for {country} on the vote model: it has no fitted electorate or no two-election history";
+                        return false;
+                    }
+                    compatibilityOverride = new double[SwedenParties.Length];
+                    for (int p = 0; p < SwedenParties.Length; p++)
+                    {
+                        int k = System.Array.IndexOf(keys, SwedenParties[p]);
+                        compatibilityOverride[p] = k >= 0 ? compatibility[k] : 0.0;
+                    }
+                }
+                setup = Sweden(scandals, out note, calendar, compatibilityOverride);
                 return true;
             }
             setup = default;
@@ -80,7 +100,8 @@ namespace PoliSim.Elections
         }
 
         /// <summary>Sweden 2026 on the 2022 returns - the staging `CampaignAiHarness` has run since W-C1, from the runtime tables.</summary>
-        public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null)
+        public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
+            double[] compatibilityOverride = null)
         {
             if (!PartySystems.TryHistory(CountryId.Sweden, out double[] shares2022, out double[] shares2018))
             {
@@ -98,6 +119,9 @@ namespace PoliSim.Elections
             {
                 compatibility[i] = CompatibilityCeiling * Math.Pow(prior[i] / maxPrior, 1.0 / PreferenceModel.Sharpness);
             }
+            // D-21: the game hands in the vote model's compatibility instead (see TryFor); the harness
+            // keeps the fixed point above, so its staging and digest are unchanged.
+            if (compatibilityOverride != null && compatibilityOverride.Length == compatibility.Length) { compatibility = compatibilityOverride; }
             // SOURCED salience: EB105 Spring 2026, Sweden - the four top-five issues §6 has a slot for.
             var salience = new double[IssueVector.IssueCount];
             for (int i = 0; i < salience.Length; i++) { salience[i] = double.NaN; }

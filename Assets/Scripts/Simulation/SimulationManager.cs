@@ -2063,13 +2063,15 @@ namespace PoliSim.Simulation
             {
                 // Outside the window. A finished campaign's result stays readable until the next
                 // window opens; the running state is dropped once its election has passed.
-                if (PlayerCampaign != null && CurrentDate >= PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; }
+                // Strictly AFTER the boundary day: the election is counted on the boundary day's own
+                // AdvanceTurn (the controller's CheckElection reads PlayerCampaign and the Result then).
+                if (PlayerCampaign != null && CurrentDate > PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; }
                 return;
             }
             if (PlayerCampaign == null || PlayerCampaign.Setup.Calendar.ElectionDate != calendar.ElectionDate)
             {
                 if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
-                        out Elections.CampaignRun.Setup setup, out _))
+                        out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true))
                 {
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
@@ -2109,7 +2111,7 @@ namespace PoliSim.Simulation
             if (record == null || !PlayerCountryId.HasValue || record.DaysStepped <= 0) { return; }
             var calendar = new Elections.CampaignCalendar(record.ElectionDate);
             if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
-                    out Elections.CampaignRun.Setup setup, out _))
+                    out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true))
             {
                 return;
             }

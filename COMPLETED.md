@@ -20953,3 +20953,52 @@ build is a queue and two chip buttons, not a new screen. Then election night on 
 behind its D-sheet (§204).
 
 **Bar 25 of 25.**
+
+## 206. C-R4b STEP 5 — election night counts the campaign, on the vote model's own compatibility (D-21) (2026-09-02)
+
+### D-21 · Which compatibility the live campaign runs on ⚠ DECIDED AND TAKEN (R-N1), strikeable
+**The fork §204 named.** Election night predicts through `NationalElection.TryPredictShares`: the vote
+model's good layer (§8 national shares on the fitted electorate, on the compatibility scale) through
+`PreferenceModel.Preference` over the last election as prior with loyalty derived from the two before.
+The campaign's `FinalShares` come from the SAME preference model over `LiveCampaignSetup`'s compatibility
+— which was the harness's fixed point (the compatibility at which an idle campaign reproduces 2022
+exactly), a derivation built for measuring the campaign layer alone, not for seating a chamber. Two
+compatibilities, one election: either election night ignores the campaign (§197's finding, still),
+or it counts a result that started from a different place than its own prediction.
+
+**Options.** (a) The campaign runs on the vote model's compatibility: an idle campaign then reproduces
+election night's own prediction to the digit (same function, same three arrays), and eight weeks of
+campaigning is exactly the difference. (b) Election night keeps predicting and the campaign's movement
+is added as a swing on top — two models glued at a seam nobody can read. (c) Election night keeps
+predicting and the campaign stays a screen — F6's third clause, "stakes and an ending", never fires.
+
+**Taken: (a), strikeable.** It invents nothing: `NationalElection.TryCompatibility` is the prediction's
+first half factored out (keys, compatibility, prior, loyalty), `LiveCampaignSetup.TryFor(…,
+onVoteModelCompatibility: true)` stages the game's campaign on it, mapped by party key, and the harness
+keeps its fixed point — its digest is unchanged. What (a) costs is stated: the campaign's "idle" result
+is now the model's prediction, not the 2022 return, so the campaign's own harnesses and the game's
+campaign start from different places by design; the harness measures the layer, the game plays it.
+
+### What was built
+- `NationalElection.TryCompatibility` (the prediction's inputs, shared); `TryPredictShares` uses it and
+  `DeriveRegional` (the F1 breakdown, shared); `SharesFromCampaign(country, keys, finalShares)` gives
+  election night the campaign's shares with the same regional derivation, so the constituencies still
+  add up to the headline.
+- `GameController.RunNationalElection`: when the player's campaign ran up to THIS boundary, the shares it
+  seats the chamber from are the campaign's `FinalShares`; otherwise the prediction, as before. The
+  running state now survives the boundary day (it is dropped the day after), because the election is
+  counted on the boundary day's own `AdvanceTurn`.
+- The staged campaign the day loop runs is on the vote model's compatibility; the harness's is not.
+
+**Proof and its limit.** `CampaignAiHarness` 1a: the digest is still `3c09307528e2dba2` — the harness's
+staging is untouched. `SaveLoadRoundTripDiagnostic`: the campaigns still begin, finish, replay and
+continue string-equal on the new compatibility. ⚠ The election-night branch itself — a campaign's
+shares seating the chamber — is reached only through the controller's `CheckElection`, which no batch
+instrument drives; it is compiled, guarded by the boundary date, and logs `ELECTION: counted the
+campaign's shares` the first time it runs in play. That first run is a finding to read, not a tune.
+
+**What F6 now has.** A campaign that runs before every election, that the player watches from the rail,
+whose result IS election night's result. What it lacks is the player's hand on it — step 4b, the HQ's
+input path — and a country other than Sweden.
+
+**Bar 25 of 25.**
