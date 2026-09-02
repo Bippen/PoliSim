@@ -3244,7 +3244,7 @@ namespace PoliSim.UI
             GUILayout.Label("POLICY RATE TODAY · LIVE", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
-            GUILayout.Label("HISTORY 3 px SOLID · PROJECTION 2 px DASHED · THE RULE'S READING TODAY DOTTED", DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
+            GUILayout.Label("HISTORY 3 px SOLID · PROJECTION 2 px DASHED · THE RULE DOTTED", DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight), GUILayout.Width(StatsUnit(300f)));
             GUILayout.EndHorizontal();
 
             // One graph: the history, the two projected moves, the band under the preview's year, the rule dotted.
@@ -3268,14 +3268,14 @@ namespace PoliSim.UI
                 {
                     GUILayout.BeginVertical();
                     GUILayout.Label(step.Rate.ToString("F2", CultureInfo.InvariantCulture), DeskNumeral(15f, PoliSimTheme.TextPrimary));
-                    GUILayout.Label(step.YearsAhead == 0 ? "TODAY" : step.YearsAhead == 1 ? "+1 YR · THIS YEAR'S MOVE, THE RULE ON TODAY'S READINGS" : "+2 YR · NEXT YEAR'S, THE RULE ON THE PREVIEW'S READINGS",
+                    GUILayout.Label(step.YearsAhead == 0 ? "TODAY" : step.YearsAhead == 1 ? "+1 YR · THIS YEAR'S MOVE" : "+2 YR · NEXT YEAR'S MOVE",
                         DeskCaption(7.5f, PoliSimTheme.TextMuted));
                     GUILayout.EndVertical();
                     GUILayout.Space(StatsUnit(10f));
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.Label($"THE PROJECTED PATH IS THE RULE EVALUATED ON THE PROJECTION: THIS YEAR'S MOVE CLOSES RateAdjustmentSpeed ({FederalReserveSystem.RateAdjustmentSpeed:F2}) OF THE GAP TO THE GOVERNOR'S TARGET ON TODAY'S READINGS; NEXT YEAR'S CLOSES THE SAME SHARE TO THE TARGET ON THE DETERMINISTIC PREVIEW'S READINGS (INFLATION {_cachedPreview.PreviewInflation:F1}%, UNEMPLOYMENT {_cachedPreview.PreviewUnemployment:F1}% AGAINST NAIRU {_cachedPreview.PreviewNaturalUnemployment:F1}%). NOTHING BEYOND THE PREVIEW'S YEAR IS FORECAST, AND NEITHER POINT IS A FACT.",
-                    DeskCaption(7.5f, PoliSimTheme.TextMuted));
+                    RiksbankNote());
             }
 
             // The rule, term by term - the sum the player can check.
@@ -3296,7 +3296,7 @@ namespace PoliSim.UI
             DrawRuleTerm(sum < 0f ? "THE RULE · CLAMPED AT 0" : "THE RULE", suggested.ToString("F2", CultureInfo.InvariantCulture), politicalInk);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
-            GUILayout.Label("GetSuggestedInterestRate, TERM BY TERM — InflationGapWeight AND UnemploymentGapWeight ARE THE CODE'S; THE OUTPUT GAP IS READ BUT NOT WEIGHED, AND ITS INSTRUMENT SAYS SO.", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            GUILayout.Label("GetSuggestedInterestRate, TERM BY TERM — InflationGapWeight AND UnemploymentGapWeight ARE THE CODE'S; THE OUTPUT GAP IS READ BUT NOT WEIGHED, AND ITS INSTRUMENT SAYS SO.", RiksbankNote());
 
             // The rule's inputs as readings on centred lanes.
             GUILayout.Space(StatsUnit(8f));
@@ -3345,6 +3345,14 @@ namespace PoliSim.UI
             GUI.enabled = true;
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
+        }
+
+        /// <summary>P3-B2: a note under a Riksbank instrument - the caption face, WRAPPED to the sheet (the first film ran two of them off the sheet's right edge and opened a horizontal scroll).</summary>
+        private GUIStyle RiksbankNote()
+        {
+            GUIStyle note = DeskCaption(7.5f, PoliSimTheme.TextMuted);
+            note.wordWrap = true;
+            return note;
         }
 
         /// <summary>One term of the rule as a caption over a numeral.</summary>

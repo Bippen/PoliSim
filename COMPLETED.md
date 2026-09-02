@@ -22077,3 +22077,29 @@ Reachability: none - the Policy Web is the fourth sub-tab of LAWS on the rail, o
 **What stays with its reason (R-W2's fence, unchanged by this row):** no edge invented, no valence hue beyond the good/bad convention, no grouping the model does not hold - the nine wedges are the model's own; the DERIVED/DECLARED distinction stays visible.
 
 **Bar:** none owed - the row changes no code.
+
+## 250. P3-B2 — THE RIKSBANK PAGE AGAINST BOARD 5f, VERIFIED: reachable from the rail, the composition in the board's order, two defects of this build's own closed, the 720 fold left to Design (2026-09-03)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P3, Track B): *"Same method: the one graph with the two-step path, the rule's five terms, the three input instruments, the governor and the appointment lever. Report whether the gap is composition, reachability (the RIKSBANK sub-tab), or the 720 fold. Done when: filmed at 1280 matching image 9's layout, and the sub-tab is reachable from the rail."*
+
+**What was compared.** Board 5f as it reads whole in the Design file (its text is on disk from the D11 import, §242) against the page on film at 1280 (`p3a3_1280_07d_politics_federalreserve`, and `_rows` / `_deep` for the half below the fold); image 9 was not attached (E-8), so the layout match is against the board's own text and the D11 record.
+
+**Reachability: none.** The page is the fourth sub-tab of POLITICS - one click on the rail's tongue, one on "Sveriges Riksbank" - and it is on every sweep's film. The row's question is answered: reachable.
+
+**Composition, element by element.**
+
+| board 5f | the page on film | gap |
+|---|---|---|
+| the rate today as a numeral, LIVE | 1.84 % · POLICY RATE TODAY · LIVE at the head | none |
+| one graph: history 3 px solid, projection 2 px dashed, exactly two segments, the band under the preview's year, the rule dotted | the graph draws all five - but the two projected points sat in the last two pixels of a fifty-point window and read as nothing (the first film) | **defect of this build: closed** - `DrawRatePath` gives the path the plot's right 28 %, one equal step per projected point, so two moves are two visible segments |
+| the three points TODAY · +1 YR · +2 YR beneath | the row is there, but its captions ran the row past the sheet's width with the two notes beneath it, and the sheet grew a horizontal scrollbar | **defect of this build: closed** - the captions shortened to the move's name, the two notes wrapped to the sheet (`RiksbankNote`) |
+| the rule decomposed term by term | the five terms as numerals over captions, `= THE RULE` | none |
+| three input instruments on centred lanes; the output gap READ · NOT WEIGHED | the three lanes with their markers and gaps; the stamps | none above the fold; the third lane is below it at 720 |
+| the governor's card; the appointment lever with NOMINATE › | present, below the fold at 720 | the 720 fold |
+| the graph carries no title row or paging | the renderer's title row ("Interest Rate") and its Older/Newer page buttons draw above the plot | composition - stays: the paging is the graph renderer's own furniture on every history graph (the window is fifty quarters and older ones are reachable only through it); removing it here alone would make this the one graph whose past cannot be read. Named for D12 row 6 alongside the fold |
+
+**The 720 fold** is the one gap that stays, and the sheet already sends it to Design (D12 row 6: a 720 variant or a visible scroll affordance, Design's call); the `_rows` and `_deep` captures carry the instruments and the political half.
+
+**The film:** `p3a3_1280_07d_politics_federalreserve` after the two fixes.
+
+**Bar:** `RunAllBatch` on the tree with A3 and these two fixes (`bar54_p3a3_RunAllBatch.log`).

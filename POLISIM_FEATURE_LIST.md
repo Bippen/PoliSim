@@ -573,7 +573,7 @@ layout on film and the rest state matches image 7's. **→ ⚠ VERIFIED, OPEN 20
 **P3-B2 — The Riksbank page against board 5f.** Same method: the one graph with the two-step
 path, the rule's five terms, the three input instruments, the governor and the appointment lever.
 Report whether the gap is composition, reachability (the RIKSBANK sub-tab), or the 720 fold.
-*Done when:* filmed at 1280 matching image 9's layout, and the sub-tab is reachable from the rail.
+*Done when:* filmed at 1280 matching image 9's layout, and the sub-tab is reachable from the rail. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §250: reachable, the composition in the board's order; two defects of this build closed (the projection's span, the notes' width); the 720 fold to Design (D12 row 6).**
 
 ## Track C — defects and small fixes
 

@@ -887,7 +887,12 @@ namespace PoliSim.UI
             _lastMax = max;
 
             int totalPoints = history.Count + path.Count;
-            int X(int index) => totalPoints == 1 ? TextureWidth - 1 : Mathf.RoundToInt((float)index / (totalPoints - 1) * (TextureWidth - 1));
+            // P3-B2: the path gets its own span - the right 28 % of the plot, one equal step per projected point - so two
+            // moves are two visible segments rather than the last two pixels of a fifty-point window (the first film).
+            int historyEnd = path.Count > 0 ? Mathf.RoundToInt((TextureWidth - 1) * 0.72f) : TextureWidth - 1;
+            int X(int index) => index < history.Count
+                ? (history.Count == 1 ? historyEnd : Mathf.RoundToInt((float)index / (history.Count - 1) * historyEnd))
+                : historyEnd + Mathf.RoundToInt((float)(index - history.Count + 1) / path.Count * (TextureWidth - 1 - historyEnd));
             int Y(float value) => Mathf.RoundToInt((value - min) / (max - min) * (TextureHeight - 1));
 
             // The band under the last projected segment - the preview's year - before anything draws over it.
