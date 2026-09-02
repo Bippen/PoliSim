@@ -47,7 +47,7 @@ namespace PoliSim.EditorTools
     {
         /// <summary>⚠ The ceiling, measured when this check was built on 2026-09-01. Lower it when a
         /// subsystem is wired or deleted; never raise it.</summary>
-        private const int UnwiredCeiling = 4;   // 5 -> 4 at F2 step 4 (2026-09-02): the cohort step is wired into the day loop
+        private const int UnwiredCeiling = 3;   // 5 -> 4 at F2 step 4; 4 -> 3 at C-R4b step 1 (2026-09-02): the bar measured 3 and a ratchet is lowered to what it measures
 
         /// <summary>
         /// ⚠ **THE SECOND CEILING — this check's OWN blind spot, measured 2026-09-01.**

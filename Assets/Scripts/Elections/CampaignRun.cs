@@ -244,7 +244,68 @@ namespace PoliSim.Elections
             public string Digest;
         }
 
+        /// <summary>
+        /// C-R4b step 1 (2026-09-02) — **the run as a STEPPER.** Everything the day loop carried from
+        /// one day to the next, hoisted out of `Simulate`'s locals so a campaign can be advanced ONE
+        /// DAY AT A TIME by a caller that is not this method — the game's own day loop, with a player
+        /// deciding between days — instead of only all at once by the harness. The fields keep the
+        /// locals' names and types exactly; <see cref="StepDay"/> aliases them back into locals so the
+        /// day's body is the same text it was, and <see cref="Simulate"/> is now Begin → StepDay ×
+        /// TotalDays → Finish. ⚠ The refactor is proven on the run's own decision digest (the harness's
+        /// 1a): the same seed produces the same digest before and after, so not one decision moved.
+        /// </summary>
+        public sealed class State
+        {
+            public Setup Setup;
+            public System.Random Random, DebateRandom, ScandalRandom;
+            public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
+            public List<(int Day, int Party, ScandalResponse Response, ScandalOutcome Outcome)> Scandals;
+            public double[] Credibility;
+            public Dictionary<int, List<(int Party, double Raw)>> PendingCoverage;
+            public int PartyCount, IssueCount;
+            public double[] Prior;
+            public CampaignPressure Pressure;
+            public double[] TruePreference, Baseline;
+            public MomentumTracker Momentum;
+            public double[] MomentumPp;
+            public MediaCoverage Coverage;
+            public MediaInterest.BookingLedger BookingLedger;
+            public List<double>[] BookedReach;
+            public Poll? PublicPoll;
+            public double BestOutletReach;
+            public PartyLedger[] Ledgers;
+            public ResourcePool[] Pools;
+            public Poll?[] LatestPoll;
+            public IssueMeasurement[][] Issues;
+            public int[] LastOwnPollDay;
+            public double[] Reserve, VolunteerHoursLeft, RegionEligible;
+            public RegionalMobilization Gotv;
+            public OfficeNetwork[] Offices;
+            public double[][] OfficeHoursLeft;
+            public StaffRoster[] Staff;
+            public PublicActivity Activity;
+            public int[] LastDefence, LastAnswer;
+            public PersonalityProfile[] Profiles;
+            public StringBuilder Digest;
+            public int PublicPolls, TotalDays, Day;
+            public string[] Names;
+
+            /// <summary>The campaign's days are all stepped; <see cref="Finish"/> may be called.</summary>
+            public bool Finished => Day >= TotalDays;
+            /// <summary>The calendar date of the day <see cref="StepDay"/> will step next.</summary>
+            public DateTime Today => Setup.Calendar.CampaignStart.AddDays(Day);
+        }
+
+        /// <summary>Runs a whole campaign: <see cref="Begin"/>, every day through <see cref="StepDay"/>, then <see cref="Finish"/>. The harness's entry point, unchanged in what it returns.</summary>
         public static Result Simulate(Setup setup, System.Random random, System.Random debateRandom = null, System.Random scandalRandom = null)
+        {
+            State s = Begin(setup, random, debateRandom, scandalRandom);
+            while (!s.Finished) { StepDay(s); }
+            return Finish(s);
+        }
+
+        /// <summary>Day 0's setup - the war chests, the offices and staff hired on day 0, the truth - as a <see cref="State"/> nothing has stepped yet.</summary>
+        public static State Begin(Setup setup, System.Random random, System.Random debateRandom = null, System.Random scandalRandom = null)
         {
             if (random == null) { throw new ArgumentNullException(nameof(random)); }
             debateRandom = debateRandom ?? random;
@@ -368,7 +429,46 @@ namespace PoliSim.Elections
             var names = new string[setup.Regions.Length];
             for (int r = 0; r < names.Length; r++) { names[r] = setup.Regions[r].Name; }
 
-            for (int day = 0; day < totalDays; day++)
+            return new State
+            {
+                Setup = setup, Random = random, DebateRandom = debateRandom, ScandalRandom = scandalRandom,
+                Debates = debates, Scandals = scandals, Credibility = credibility, PendingCoverage = pendingCoverage,
+                PartyCount = partyCount, IssueCount = issueCount, Prior = prior, Pressure = pressure,
+                TruePreference = truePreference, Baseline = baseline, Momentum = momentum, MomentumPp = momentumPp,
+                Coverage = coverage, BookingLedger = bookingLedger, BookedReach = bookedReach, PublicPoll = publicPoll,
+                BestOutletReach = bestOutletReach, Ledgers = ledgers, Pools = pools, LatestPoll = latestPoll, Issues = issues,
+                LastOwnPollDay = lastOwnPollDay, Reserve = reserve, VolunteerHoursLeft = volunteerHoursLeft, RegionEligible = regionEligible,
+                Gotv = gotv, Offices = offices, OfficeHoursLeft = officeHoursLeft, Staff = staff, Activity = activity,
+                LastDefence = lastDefence, LastAnswer = lastAnswer, Profiles = profiles, Digest = digest,
+                PublicPolls = publicPolls, TotalDays = totalDays, Day = 0, Names = names,
+            };
+        }
+
+        /// <summary>
+        /// One campaign day, on the state - the body the harness's loop ran, unchanged: the published
+        /// tracker, the outlets' bookings, every party's pace, poll, reactions and actions, the day's
+        /// scandals and debate, the coverage close and its two consequences (momentum and C-N1's
+        /// persuasion), then the true preference recomputed. A scripted party (<see cref="PartySetup.Script"/>)
+        /// plays the day as written; that is the seam a live player's queued decisions arrive through.
+        /// </summary>
+        public static void StepDay(State s)
+        {
+            if (s == null) { throw new ArgumentNullException(nameof(s)); }
+            if (s.Finished) { return; }
+            Setup setup = s.Setup;
+            System.Random random = s.Random; System.Random debateRandom = s.DebateRandom; System.Random scandalRandom = s.ScandalRandom;
+            var debates = s.Debates; var scandals = s.Scandals;
+            double[] credibility = s.Credibility; var pendingCoverage = s.PendingCoverage;
+            int partyCount = s.PartyCount;
+            double[] prior = s.Prior; CampaignPressure pressure = s.Pressure; double[] truePreference = s.TruePreference;
+            MomentumTracker momentum = s.Momentum; double[] momentumPp = s.MomentumPp;
+            MediaCoverage coverage = s.Coverage; MediaInterest.BookingLedger bookingLedger = s.BookingLedger;
+            List<double>[] bookedReach = s.BookedReach; Poll? publicPoll = s.PublicPoll; double bestOutletReach = s.BestOutletReach;
+            PartyLedger[] ledgers = s.Ledgers; ResourcePool[] pools = s.Pools; Poll?[] latestPoll = s.LatestPoll; IssueMeasurement[][] issues = s.Issues;
+            int[] lastOwnPollDay = s.LastOwnPollDay; double[] reserve = s.Reserve; double[] volunteerHoursLeft = s.VolunteerHoursLeft;
+            RegionalMobilization gotv = s.Gotv; OfficeNetwork[] offices = s.Offices; double[][] officeHoursLeft = s.OfficeHoursLeft; StaffRoster[] staff = s.Staff;
+            PublicActivity activity = s.Activity; int[] lastDefence = s.LastDefence; int[] lastAnswer = s.LastAnswer; PersonalityProfile[] profiles = s.Profiles;
+            StringBuilder digest = s.Digest; int publicPolls = s.PublicPolls; int totalDays = s.TotalDays; int day = s.Day;
             {
                 DateTime today = setup.Calendar.CampaignStart.AddDays(day);
                 CampaignPhase phase = setup.Calendar.PhaseOn(today);
@@ -772,6 +872,23 @@ namespace PoliSim.Elections
                 momentum.Advance(1.0);
                 for (int p = 0; p < partyCount; p++) { momentumPp[p] = momentum.MomentumPp(p); }
             }
+            // The three locals the day REASSIGNS (everything else is mutated in place through the aliases).
+            s.TruePreference = truePreference;
+            s.PublicPoll = publicPoll;
+            s.PublicPolls = publicPolls;
+            s.Day = day + 1;
+        }
+
+        /// <summary>After the last day: the ledgers' closing figures, the digest's final shares, the <see cref="Result"/>.</summary>
+        public static Result Finish(State s)
+        {
+            if (s == null) { throw new ArgumentNullException(nameof(s)); }
+            int partyCount = s.PartyCount; int totalDays = s.TotalDays; int publicPolls = s.PublicPolls;
+            PartyLedger[] ledgers = s.Ledgers; ResourcePool[] pools = s.Pools; MediaCoverage coverage = s.Coverage;
+            double[] credibility = s.Credibility; OfficeNetwork[] offices = s.Offices; StaffRoster[] staff = s.Staff;
+            StringBuilder digest = s.Digest; double[] truePreference = s.TruePreference; double[] baseline = s.Baseline;
+            double[] momentumPp = s.MomentumPp; RegionalMobilization gotv = s.Gotv; PublicActivity activity = s.Activity;
+            CampaignPressure pressure = s.Pressure; string[] names = s.Names; var debates = s.Debates; var scandals = s.Scandals;
 
             for (int p = 0; p < partyCount; p++)
             {

@@ -20806,3 +20806,35 @@ invented figure wearing a technical costume**, and that is why the two that are 
 **Total: roughly 11–13 sessions**, of which the scalar retirement is the one that can go wrong quietly.
 **Not to be started before this spec-let is ruled, and not in the same pass as C-C12's build** — two
 BASELINE families landing together cannot be explained apart.
+
+## 202. C-R4b STEP 1 — `CampaignRun` is a stepper, proven on its own digest (2026-09-02)
+
+**Why this is the first cut of C-R4b.** The row's measurement (§197, C-R4b) was exact: no gameplay
+type holds campaign state, and `CampaignRun.Simulate` runs a whole campaign in one call — a player who
+must decide between days had no seam to decide through. The seam has to exist before a persisted player
+campaign, a live `CampaignSnapshot`, or a rail cell can mean anything. This step makes it.
+
+**What changed.** `CampaignRun.State` holds everything the day loop carried from one day to the next —
+the ~40 locals `Simulate` declared before its loop, with their names and types kept exactly — and the one
+method is three: `Begin(setup, random, …)` (day 0: war chests, offices, staff, the truth), `StepDay(state)`
+(the day's body, verbatim: the tracker, the bookings, every party's pace, poll, reactions and actions,
+scandals, the debate, the coverage close and its two consequences, the preference recomputed), and
+`Finish(state)` (closing figures, the digest's final shares, the `Result`). `Simulate` is now
+`Begin → while (!Finished) StepDay → Finish` and returns what it returned. `StepDay` aliases the state's
+fields back into locals so the day's text is the text that was measured; the three locals the day
+REASSIGNS (`truePreference`, `publicPoll`, `publicPolls`) are written back at its end, everything else is
+mutated in place through the aliases. A scripted party (`PartySetup.Script`, W-C2's stand-in for the
+player) plays each day as written — that is the seam a live player's queued decisions arrive through.
+
+**Proven, not asserted.** `CampaignAiHarness` 1a — *"the same seed reproduces the decision digest
+exactly"* — reads **`3c09307528e2dba2`** before the refactor (the C-N1 landing's run) and
+**`3c09307528e2dba2`** after; the digest is the FNV-1a of every decision, poll, office, scandal and debate
+the run makes plus its final shares to nine places, so not one decision moved. All seven consuming
+harnesses green; bar 25 of 25.
+
+**What C-R4b still lacks, in order:** a `Setup` built from the live `World` (parties from
+`PartySystems`, priors from the seeded election, the electorate's salience from its issue vectors —
+nothing on the game path builds one today); a persisted player campaign (`State` on the save, `SaveVersion`
+bump) advanced by `SimulationManager`'s day loop between `CampaignStart` and polling day; the HQ screen and
+its queue reading that state instead of the driver's staged `CampaignFilmState`; the rail cell; and
+election night reading the run's shares. Each is its own commit; none is half-started here.
