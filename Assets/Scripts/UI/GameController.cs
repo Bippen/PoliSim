@@ -9820,12 +9820,12 @@ namespace PoliSim.UI
             // semantic colour: only the NET carries one, on the same higher-is-better convention
             // the rest of the screen uses for a balance.
             // P2-2.2: one line where three were, so the seat map above fits the column at 720 - the net alone carries the colour.
-            GUILayout.BeginHorizontal();
-            GUILayout.Label($"Revenue {UiFormat.MoneyDelta(_cachedBudgetImpact.RevenueDelta, MoneyUnit.Billions)} · Spending {UiFormat.MoneyDelta(_cachedBudgetImpact.SpendingDelta, MoneyUnit.Billions)} · ", _labelStyle, GUILayout.ExpandWidth(false));
+            // P4-1 film (2026-09-03): the one line wrapped INSIDE the net figure ("Net +" / "$5.72B") once seven arrows
+            // narrowed the column - a money value broken across two lines is briefly a different number (§A.9a).
+            // Two lines, always: the pair, then the net alone in its ink. Never one line that may or may not hold.
+            GUILayout.Label($"Revenue {UiFormat.MoneyDelta(_cachedBudgetImpact.RevenueDelta, MoneyUnit.Billions)} · Spending {UiFormat.MoneyDelta(_cachedBudgetImpact.SpendingDelta, MoneyUnit.Billions)}", _labelStyle);
             DrawColoredLabel($"Net {UiFormat.MoneyDelta(_cachedBudgetImpact.NetDelta, MoneyUnit.Billions)}",
-                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, higherIsBetter: true), GUILayout.ExpandWidth(false));
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, higherIsBetter: true));
 
             // P2-2.1: the scope, once, for the delta above and the arrows below - one line, so both fit a 720 frame.
             // Board 5c (D11 row 3): the scope sentence that stood here is the scope LINE under the arrows now - said
@@ -10022,7 +10022,12 @@ namespace PoliSim.UI
             // style carries its own padding and metrics, so measuring a different style sizes the column
             // for a different string. Same class as the mockup-number rule: a measurement is only valid
             // against the conditions it was taken under.
-            float actionWidth = Mathf.Max(fullRow.width * 0.12f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);   // P2-1.3: 15 -> 12 %, the track takes the difference
+            // P4-1 (2026-09-03, STABLE CONTROL LAYOUT): the column is sized for the WIDEST label the button can carry -
+            // Implement, Remove, Pending (NNd) - not for the one it carries this frame, so a bill resolving or a
+            // program toggling never moves the ledger row beside it. Measured in the button's own style, as before.
+            float actionNeed = Mathf.Max(_implementButtonStyle.CalcSize(new GUIContent("Implement")).x,
+                Mathf.Max(_removeButtonStyle.CalcSize(new GUIContent("Remove")).x, _implementButtonStyle.CalcSize(new GUIContent("Pending (99d)")).x));
+            float actionWidth = Mathf.Max(fullRow.width * 0.12f, actionNeed + gap);   // P2-1.3: 15 -> 12 %, the track takes the difference
             float verdictWidth = fullRow.width * 0.11f;   // P2-1.3: 13 -> 11 %
 
             var actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);

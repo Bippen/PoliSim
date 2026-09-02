@@ -505,6 +505,18 @@ installed. The two stat-icon PNGs and the ITANES registration, still open.
 
 > **Section closed 2026-09-02.** Every row above points at its record (`COMPLETED.md` §217–§235); the four-width matrix at the close is §236, and the end-of-budget report went to Elias with it.
 
+
+# P4 — THE THREE ITEMS OF 2026-09-03 (Elias's rows, verbatim)
+
+*"Three items, in this order, continuous; one commit each on a green bar; R-SP1 push; one report."*
+
+**P4-1 — The Budget slider readout (a load-bearing regression).** The track shrinks when a draft value appears beside the standing rate — that breaks stable control layout, one of the eight invariants. Fix structurally: one readout, fixed-width column reserved at rest, showing the standing rate; when a draft differs, the same cell shows the draft value in the amber draft cue (the other invariant this touches) — no second number, no reflow. Sweep every slider row for the same class. *Done when:* a film pair at rest and mid-drag shows identical track geometry, and a guard asserts the row's control rects are equal in both states. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §260: one readout cell (the standing at rest, the draft in the draft cue), a single-figure column need, the tax row's button column sized for its widest label; every ledger row's rects asserted identical at rest and mid-drag on film (`p4a_1280_05a_budget_tax` / `_dragged`).**
+
+**P4-2 — The sound-effects pack, tested in game.** Elias placed a pack at `G:\UNITY\Projects\PoliSim\AssetPackArchive\Sound_Effect_Package`. This is a new pipeline; run the asset discipline before anything plays: origin verification (Zone.Identifier), magic-byte check per file, the pack's licence read and recorded, an inventory by name, format and duration — nothing imported that fails a check. Then the smallest honest audio layer: a cue catalog (AudioCue → file, coverage checked both directions the way sprites are), one AudioSource path, a master volume and mute in the existing settings idiom, and a first cue set wired to real events — button press, slider step, bill passes, bill fails, interrupt raised, a constituency declares on election night. Audio is display, never simulation: trajectories byte-identical. Add a harness-only trigger so each cue can be fired by name for Elias's test. *Done when:* the inventory is in the record, every wired cue resolves to a verified file, the game runs silent with mute, and Elias can fire any cue from the harness.
+
+**P4-3 — The D13 asset ask.** Write it reconciled against D12 (whose row 2 already censused every default-styled slider track and thumb): the slider row as a family — track, thumb, tick marks, the fixed-width rate cell in its rest and draft-amber states, the WOULD PASS badge, the Remove button — one grammar for every dial in the game, drawn against the films from item 1. Annex: the two screenshots verbatim, the item-1 film pair, the census from D12. Binaries uploaded, not described. Regenerate the package; record it in `ERRANDS.md`.
+
+---
 # P3 — PLAYTEST 3 (2026-09-03): Elias's rows, verbatim
 
 > **Recorded 2026-09-03, first and verbatim, as the sitting's rows.** Elias's kickoff, in his words:

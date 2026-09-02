@@ -111,15 +111,31 @@ namespace PoliSim.UI
             // and then the overflow guard reports the break.
             float[] laneWidth = new float[arrows.Count];
             float[] laneX = new float[arrows.Count];
+            // P4-1 film (2026-09-03): seven lanes at a 1280 column could not hold "participation" at the caption's
+            // size and the fallback broke the word. The resort ladder's own order applies - the caption SHRINKS
+            // (to the 8 px floor) until every lane holds its widest word, and only past the floor do the lanes fall
+            // to equal shares, where the guard reports the break.
             float needSum = 0f;
-            for (int i = 0; i < arrows.Count; i++)
+            bool wordsFit = false;
+            for (int size = caption.fontSize; size >= 8; size--)
             {
-                float need = caption.CalcSize(new GUIContent(arrows[i].Figure)).x;
-                foreach (string word in arrows[i].Name.Split(' ')) { need = Mathf.Max(need, caption.CalcSize(new GUIContent(word)).x); }
-                laneWidth[i] = need + 2f;
-                needSum += laneWidth[i];
+                caption.fontSize = size;
+                needSum = 0f;
+                for (int i = 0; i < arrows.Count; i++)
+                {
+                    float need = caption.CalcSize(new GUIContent(arrows[i].Figure)).x;
+                    foreach (string word in arrows[i].Name.Split(' ')) { need = Mathf.Max(need, caption.CalcSize(new GUIContent(word)).x); }
+                    laneWidth[i] = need + 2f;
+                    needSum += laneWidth[i];
+                }
+                wordsFit = needSum <= area.width;
+                if (wordsFit) { break; }
             }
-            bool wordsFit = needSum <= area.width;
+            line = Mathf.Max(caption.lineHeight, caption.fontSize + 4f);
+            nameHeight = line * 3f;
+            figureHeight = line;
+            lane = Mathf.Max(8f, area.height - nameHeight - figureHeight);
+            baselineY = area.y + figureHeight + lane * 0.5f;
             float slack = wordsFit ? (area.width - needSum) / arrows.Count : 0f;
             float laneStart = area.x;
             for (int i = 0; i < arrows.Count; i++)

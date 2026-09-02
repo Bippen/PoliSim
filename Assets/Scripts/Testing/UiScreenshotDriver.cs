@@ -403,6 +403,32 @@ namespace PoliSim.Testing
                         AssertMapLabelSeparation(controller, stem);
                     }
 
+                    // P4-1 (2026-09-03): the readout pair on the TAX ledger, where the rows sit above the fold - the Income Tax
+                    // draft moved +5 points, the same frame again, the geometry compared, the draft put back.
+                    if (stem == "05a_budget_tax")
+                    {
+                        var taxInputs = controller.GetType().GetField("_taxRateInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<TaxType, float>;
+                        if (taxInputs != null)
+                        {
+                            var restGeometry = new Dictionary<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)>(LedgerRow.GeometryByRow);
+                            bool had = taxInputs.TryGetValue(TaxType.IncomeTax, out float before);
+                            float standing = (controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country)?.TaxLines.Find(t => t.Type == TaxType.IncomeTax)?.Rate ?? before;
+                            taxInputs[TaxType.IncomeTax] = Mathf.Min(standing + 5f, 90f);
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(stem + "_dragged");
+                            Debug.Log("SHOT: P4-1 - the Income Tax draft moved +5 for the mid-drag frame; the readout cell shows the draft in the draft cue, the track unmoved.");
+                            AssertLedgerGeometryStable(restGeometry, stem);
+                            if (had) { taxInputs[TaxType.IncomeTax] = before; } else { taxInputs.Remove(TaxType.IncomeTax); }
+                            yield return Settle();
+                        }
+                        else
+                        {
+                            Debug.LogError("SHOT: P4-1 - the tax inputs dictionary was not found; the readout pair is NOT filmed.");
+                            _failed++;
+                        }
+                    }
+
                     // P3-C1 (2026-09-03): the film PAIR mid-drag - one spending dial moved as a slider would move it,
                     // then the same frame again after the preview's own debounce has passed, so the arrows' response
                     // to the draft is on film; the dial is put back afterwards.
@@ -411,12 +437,16 @@ namespace PoliSim.Testing
                         var spendingInputs = controller.GetType().GetField("_spendingLineInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SpendingCategory, float>;
                         if (spendingInputs != null)
                         {
+                            // P4-1 (2026-09-03): STABLE CONTROL LAYOUT - every ledger row's four column rects at rest, to be compared
+                            // against the same rows mid-drag after the capture below.
+                            var restGeometry = new Dictionary<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)>(LedgerRow.GeometryByRow);
                             spendingInputs.TryGetValue(SpendingCategory.Education, out float before);
                             spendingInputs[SpendingCategory.Education] = before + 15f;
                             yield return Settle();
                             yield return Settle();
                             yield return Capture(stem + "_dragged");
                             Debug.Log("SHOT: P3-C1 - the Education spending dial moved +15 for the mid-drag frame; the arrows above are with vs without that draft.");
+                            AssertLedgerGeometryStable(restGeometry, stem);
                             spendingInputs[SpendingCategory.Education] = before;
                             yield return Settle();
                         }
@@ -1098,6 +1128,43 @@ namespace PoliSim.Testing
         /// frame is written, so a row drawn while the driver scrolls or settles toward the next screen is never filed
         /// under the previous stem (the first film keyed a Policy Laws dial under a Budget stem exactly that way).</summary>
         private readonly Dictionary<string, float> _reachByCapture = new Dictionary<string, float>();
+
+        /// <summary>
+        /// P4-1 (2026-09-03): STABLE CONTROL LAYOUT, asserted on film. Every ledger row recorded at rest (the capture
+        /// before the drag) is looked up again mid-drag (after the drag capture) and its four column rects must be
+        /// identical to the pixel: the track a pointer is moving must not move. A row missing from either side is
+        /// reported, never silently skipped; a run that compares no rows fails, because it verified nothing.
+        /// </summary>
+        private void AssertLedgerGeometryStable(Dictionary<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)> rest, string stem)
+        {
+            int compared = 0, moved = 0;
+            var detail = new System.Text.StringBuilder();
+            foreach (KeyValuePair<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)> row in rest)
+            {
+                if (!LedgerRow.GeometryByRow.TryGetValue(row.Key, out (Rect Name, Rect Track, Rect Figure, Rect Trailing) now)) { continue; }
+                compared++;
+                bool same = row.Value.Name == now.Name && row.Value.Track == now.Track && row.Value.Figure == now.Figure && row.Value.Trailing == now.Trailing;
+                if (!same)
+                {
+                    moved++;
+                    detail.AppendLine($"    {row.Key}: track {row.Value.Track} -> {now.Track}; figure {row.Value.Figure} -> {now.Figure}; name {row.Value.Name} -> {now.Name}; trailing {row.Value.Trailing} -> {now.Trailing}");
+                }
+            }
+            if (compared == 0)
+            {
+                Debug.LogError($"SHOT: P4-1 [{stem}] - no ledger row was recorded on both sides of the drag; the geometry guard verified NOTHING.");
+                _failed++;
+            }
+            else if (moved > 0)
+            {
+                Debug.LogError($"SHOT: P4-1 [{stem}] - {moved} of {compared} ledger row(s) MOVED between rest and mid-drag (stable control layout broken):\n{detail}");
+                _failed++;
+            }
+            else
+            {
+                Debug.Log($"SHOT: P4-1 [{stem}] - ledger geometry stable: {compared} row(s) compared at rest and mid-drag, every column rect identical.");
+            }
+        }
 
         /// <summary>
         /// P2-4.3 (2026-09-02): a staged division carries what a real one carries - its sides from

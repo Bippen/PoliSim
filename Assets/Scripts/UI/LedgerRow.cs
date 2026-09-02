@@ -56,6 +56,11 @@ namespace PoliSim.UI
         /// the driver reads the worst at its exit.</summary>
         public static readonly System.Collections.Generic.Dictionary<string, float> ReachByRow = new System.Collections.Generic.Dictionary<string, float>();
 
+        /// <summary>P4-1 (2026-09-03): the four column rects of every interactive row on the last Repaint, keyed the way the reach is
+        /// (screen / name), recorded only while a capture run is armed - so the harness can assert that a row's control rects at rest
+        /// equal its rects mid-drag (stable control layout: the control never moves under the pointer moving it).</summary>
+        public static readonly System.Collections.Generic.Dictionary<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)> GeometryByRow = new System.Collections.Generic.Dictionary<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)>();
+
         private static void RecordReach(string name, float unitsPerPixel)
         {
             if (!ReachByRow.TryGetValue(name, out float worst) || unitsPerPixel > worst) { ReachByRow[name] = unitsPerPixel; }
@@ -217,6 +222,7 @@ namespace PoliSim.UI
             if (interactive && PoliSim.Testing.CaptureIdentity.Armed && trackRect.width > 0f && Event.current.type == EventType.Repaint)
             {
                 RecordReach(UiGuardContext.CurrentScreen + " / " + name, unitsPerPixel);
+                GeometryByRow[UiGuardContext.CurrentScreen + " / " + name] = (nameRect, trackRect, figureRect, trailingRect);
             }
 
             DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk);
@@ -239,20 +245,20 @@ namespace PoliSim.UI
 
         /// <summary>
         /// What the figure column's content needs, so <see cref="Columns"/> can size it rather than
-        /// assume it (2026-08-28, UI v3.0 Phase A - label-clipping instance #15). A pair is drawn in two
-        /// halves that shrink together (<see cref="DrawFigurePair"/>), so the pair's need is twice the
-        /// wider half. Zero for an empty cell, which leaves the proportional width untouched.
+        /// assume it (2026-08-28, UI v3.0 Phase A - label-clipping instance #15). Zero for an empty cell,
+        /// which leaves the proportional width untouched.
+        ///
+        /// <para>P4-1 (2026-09-03, STABLE CONTROL LAYOUT): the column holds ONE readout - the standing
+        /// figure at rest, the draft figure in the draft cue while a draft differs - so its need is the
+        /// wider of the two single figures, never twice it. The pair it used to hold doubled the need
+        /// the moment a draft appeared, the column widened past its proportion and the track gave
+        /// ground mid-drag: the control moved under the pointer that was moving it.</para>
         /// </summary>
         private static float FigureNeed(string standingText, string draftText, GUIStyle figureStyle)
         {
             float standing = string.IsNullOrEmpty(standingText) ? 0f : figureStyle.CalcSize(new GUIContent(standingText)).x;
-            if (string.IsNullOrEmpty(draftText))
-            {
-                return standing;
-            }
-
-            float draft = figureStyle.CalcSize(new GUIContent(draftText)).x;
-            return Mathf.Max(standing, draft) * 2f;
+            float draft = string.IsNullOrEmpty(draftText) ? 0f : figureStyle.CalcSize(new GUIContent(draftText)).x;
+            return Mathf.Max(standing, draft);
         }
 
         /// <summary>P2-1.3: the widest unbreakable token of the name - the name cell wraps at spaces before it shrinks, so
@@ -456,25 +462,17 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>`standing → draft`, the draft half in amber. Behaviour 1 in text, beside the same pair drawn on the track.</summary>
+        /// <summary>
+        /// ONE readout (P4-1, 2026-09-03): the standing figure at rest in the row's ink; while a draft differs,
+        /// the same cell shows the DRAFT figure in the draft cue (D6: the darkened Caution ink for text on paper;
+        /// the knob and the hatch on the track keep the amber fill). No second number, no reflow - the standing
+        /// value stays readable as the hard tick on the track, and the hatch band is the change. The pair this
+        /// used to print ("standing → draft" in two halves) is what shrank the track the moment a draft appeared.
+        /// </summary>
         private static void DrawFigurePair(Rect rect, string standingText, string draftText, GUIStyle style, Color rowInk)
         {
-            if (string.IsNullOrEmpty(draftText))
-            {
-                DrawCell(rect, standingText, style, rowInk, TextAnchor.MiddleRight);
-                return;
-            }
-
-            // Measured as one string so the pair shrinks together - shrinking the halves independently
-            // would set the same row's figures at two different sizes, which reads as an error rather
-            // than as a fit (the reasoning behind §A.9a's resort ladder).
-            // P2-1.4 film (2026-09-02): with the narrower figure cell of P2-1.3 the two right-aligned halves printed
-            // touching ("$10.5B$10.1B"); a gap between them is the difference between a pair and a smear.
-            float gap = Mathf.Round(RefColumnGap * 0.6f * Scale(style));
-            float half = Mathf.Max(1f, (rect.width - gap) * 0.5f);
-            DrawCell(new Rect(rect.x, rect.y, half, rect.height), standingText, style, rowInk, TextAnchor.MiddleRight);
-            // D6 (2026-08-28): the draft FIGURE is text on paper - the darkened Caution ink; the knob and track above keep the fill amber.
-            DrawCell(new Rect(rect.x + half + gap, rect.y, half, rect.height), draftText, style, PoliSimTheme.Caution, TextAnchor.MiddleRight);
+            bool drafted = !string.IsNullOrEmpty(draftText);
+            DrawCell(rect, drafted ? draftText : standingText, style, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.MiddleRight);
         }
 
         /// <summary>
