@@ -421,7 +421,7 @@ direction up/down, length scaled by estimated magnitude, colour by the existing 
 `GetDeltaColor` (an effect on an outcome is already coloured by that rule; the neutral-ink ruling
 covers dial arrows, not outcome effects). Ranges never false precision — the deterministic
 preview's point with its scope stated (C-C1's precedent). *Done when:* filmed in rest and mid-drag
-states, and every arrow's length traces to the preview's own figure.
+states, and every arrow's length traces to the preview's own figure. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §225: the enum, the rescaling and sixteen scaled copies are gone from the Budget and the Desk card; `EffectArrowsRenderer` draws an arrow per outcome the draft moves from the full-turn point, the budget delta above it; filmed at rest and mid-draft at 1280 and 2560.**
 
 **P2-2.2 — Parliamentary support as seats.** The hemicycle in the Budget preview colours **each
 mandate** for/against/undecided, computed from the parties' stances on the draft; the same

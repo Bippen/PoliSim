@@ -323,6 +323,15 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // P2-2.1 (2026-09-02): the Budget at REST - before any line is drafted - so the effects panel is filmed with
+            // nothing to show (its idle sentence) as well as, below, mid-draft with its arrows.
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Budget");
+            yield return Settle();
+            yield return Capture("05r_budget_rest");
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+
             DivergeSwfWeights(controller);
             DraftSpendingLines(controller);
             yield return Settle();

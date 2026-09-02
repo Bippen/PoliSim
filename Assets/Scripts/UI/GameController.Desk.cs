@@ -468,14 +468,14 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The effects card: C16's label with C17's horizon control (the board's short forms 1D / 1W
-        /// / 1M and the code's own full-turn label - R-B4), C22's eight figures each as a diverging
+        /// The effects card: C16's label (P2-2.1 retired C17's horizon control - the chip now names the scope, next year;
+        /// the board's 1D / 1W / 1M were four rescaled copies of one projection), C22's eight figures each as a diverging
         /// bar with its numeral (the bar fills from the centre toward the sign, in the GOOD/BAD ink
         /// GetDeltaColor keys - neutral valence, the shape says nothing the ink does not), C19's
         /// margin and C20's methodology as mono captions (D4). The board named two figures the
         /// preview does not estimate (debt-to-GDP, currency); the census is the content list, so the
-        /// preview's own eight draw (R-B4). The estimate is the same cached PreviewTurn the OPEN
-        /// column's panel shows, at the same horizon.
+        /// preview's own eight draw (R-B4). The estimate is the same cached PreviewTurn the Budget
+        /// column's arrows show, the full-turn point.
         /// </summary>
         private void DrawDeskEffectsCard(Rect r)
         {
@@ -492,19 +492,15 @@ namespace PoliSim.UI
             float headerHeight = Mathf.Max(DeskCaptionHeight(header), Mathf.Round(16f * uy));
 
             GUIStyle chipCaption = DeskCaption(7.5f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
-            PreviewHorizon[] horizons = { PreviewHorizon.OneDay, PreviewHorizon.OneWeek, PreviewHorizon.OneMonth, PreviewHorizon.FullTurn };
-            string[] chipLabels = { "1D", "1W", "1M", GetHorizonLabel(PreviewHorizon.FullTurn).ToUpperInvariant() };
+            // P2-2.1 (2026-09-02): the horizon chips (1D / 1W / 1M / 1Y - four rescaled copies of one projection) are
+            // retired with the horizons; the card shows the point the preview produced for next year, and the chip
+            // says so. The rows below read the same full-turn figures the Statistics projections read.
+            const string scopeChip = "NEXT YEAR";
             float chipPad = Mathf.Round(4f * ux);
             float x = r.xMax;
-            for (int i = horizons.Length - 1; i >= 0; i--)
-            {
-                float width = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(chipLabels[i])).x) + chipPad * 2f;
-                x -= width;
-                if (DrawDeskChipButton(new Rect(x, y, width, headerHeight), chipLabels[i], chipCaption, _previewHorizon == horizons[i], _isGameOver))
-                {
-                    _previewHorizon = horizons[i];
-                }
-            }
+            float scopeWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(scopeChip)).x) + chipPad * 2f;
+            x -= scopeWidth;
+            DrawDeskChipButton(new Rect(x, y, scopeWidth, headerHeight), scopeChip, chipCaption, selected: true, disabled: true);
 
             PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, Mathf.Max(1f, x - Mathf.Round(6f * ux) - r.x), headerHeight), "ESTIMATED EFFECTS", header);
             y += headerHeight + Mathf.Round(3f * uy);
@@ -522,14 +518,14 @@ namespace PoliSim.UI
             string Signed(float v) => v.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture);
             var rows = new List<(string label, float value, string text, bool higherIsBetter, float range)>
             {
-                ("GDP growth", _cachedGdpGrowthPercentScaled, Signed(_cachedGdpGrowthPercentScaled) + "%", true, DeskRangeGdpGrowthPercent),
-                ("Inflation", _cachedInflationChangeScaled, Signed(_cachedInflationChangeScaled) + " pts", false, DeskRangeInflationPoints),
-                ("Unemployment", _cachedUnemploymentChangeScaled, Signed(_cachedUnemploymentChangeScaled) + " pts", false, DeskRangeUnemploymentPoints),
-                ("Approval", _cachedApprovalChangeScaled, Signed(_cachedApprovalChangeScaled), true, DeskRangeApproval),
-                ("Poverty rate", _cachedPovertyRateChangeScaled, Signed(_cachedPovertyRateChangeScaled) + " pts", false, DeskRangePovertyPoints),
-                ("Labor force participation", _cachedLaborForceParticipationRateChangeScaled, Signed(_cachedLaborForceParticipationRateChangeScaled) + " pts", true, DeskRangeParticipationPoints),
-                ("Crime index", _cachedCrimeIndexChangeScaled, Signed(_cachedCrimeIndexChangeScaled), false, DeskRangeCrimeIndex),
-                ("Net budget", _cachedNetBudgetImpactScaled, UiFormat.MoneyDelta(_cachedNetBudgetImpactScaled, MoneyUnit.Billions), true, DeskRangeNetBudgetShareOfGdp * gdp)
+                ("GDP growth", _cachedGdpGrowthPercentRaw, Signed(_cachedGdpGrowthPercentRaw) + "%", true, DeskRangeGdpGrowthPercent),
+                ("Inflation", _cachedInflationChangeRaw, Signed(_cachedInflationChangeRaw) + " pts", false, DeskRangeInflationPoints),
+                ("Unemployment", _cachedUnemploymentChangeRaw, Signed(_cachedUnemploymentChangeRaw) + " pts", false, DeskRangeUnemploymentPoints),
+                ("Approval", _cachedApprovalChangeRaw, Signed(_cachedApprovalChangeRaw), true, DeskRangeApproval),
+                ("Poverty rate", _cachedPovertyRateChangeRaw, Signed(_cachedPovertyRateChangeRaw) + " pts", false, DeskRangePovertyPoints),
+                ("Labor force participation", _cachedLaborForceParticipationRateChangeRaw, Signed(_cachedLaborForceParticipationRateChangeRaw) + " pts", true, DeskRangeParticipationPoints),
+                ("Crime index", _cachedCrimeIndexChangeRaw, Signed(_cachedCrimeIndexChangeRaw), false, DeskRangeCrimeIndex),
+                ("Net budget", _cachedNetBudgetImpactRaw, UiFormat.MoneyDelta(_cachedNetBudgetImpactRaw, MoneyUnit.Billions), true, DeskRangeNetBudgetShareOfGdp * gdp)
             };
 
             // 1m-r2: rows 26 tall, the label at 12, the bar 66×9, the value mono 10.5 (a zero reads in

@@ -366,101 +366,16 @@ namespace PoliSim.UI
         private int _cachedBudgetImpactTurn = -1;
         private bool _hasCachedBudgetImpact;
         private float _cachedSwfReturnsEstimateRaw;
-
-        /// <summary>
-        /// Continuous Time Migration Phase 0: which horizon the live Policy Preview currently shows -
-        /// "effect-per-day plus a selectable-horizon projection," per the Master Roadmap's own Part
-        /// One spec. Defaults to OneDay (the "per-day" figure front and center); Week/Month/FullTurn
-        /// are the "selectable" part. This is a DISPLAY-ONLY re-scaling of the SAME full-turn
-        /// PreviewTurn output every horizon shares - Phase 0 doesn't simulate sub-turn granularity
-        /// (that's Phases 1-5), so there is no more "real" per-day number to show than this.
-        /// </summary>
-        private enum PreviewHorizon { OneDay, OneWeek, OneMonth, FullTurn }
-        private PreviewHorizon _previewHorizon = PreviewHorizon.OneDay;
-        private int _cachedPreviewHorizonDays = -1;
-
-        private static int GetHorizonDays(PreviewHorizon horizon)
-        {
-            switch (horizon)
-            {
-                case PreviewHorizon.OneWeek: return 7;
-                case PreviewHorizon.OneMonth: return 30;
-                case PreviewHorizon.FullTurn: return SimulationManager.DaysPerTurn;
-                default: return 1;
-            }
-        }
-
-        private static string GetHorizonLabel(PreviewHorizon horizon)
-        {
-            switch (horizon)
-            {
-                case PreviewHorizon.OneWeek: return "1 Week";
-                case PreviewHorizon.OneMonth: return "1 Month";
-                // TURN->YEAR (non-trivial #2 of 2): was "Full Turn" - the one label of the four that
-                // didn't follow the "1 [Unit]" pattern its siblings do, because a turn wasn't a round
-                // real-world unit worth counting "1" of. Now that a turn IS a year, "1 Year" both fits
-                // that pattern and is shorter than "Full Turn" was - so the original width concern
-                // (a wide fourth label forcing a ~400px minimum onto a column as narrow as 199px, which
-                // clipped straight past the column edge) is if anything eased, not reintroduced. No
-                // information is lost either way: the day count is stated in full in the sentence
-                // directly beneath these buttons.
-                case PreviewHorizon.FullTurn: return "1 Year";
-                default: return "1 Day";
-            }
-        }
-
-        /// <summary>
-        /// Scales a full-turn (121-day) ADDITIVE/linear estimate (a "points changed" or dollar-amount
-        /// figure - Unemployment/Inflation/Approval/PovertyRate/LaborForceParticipation/CrimeIndex/
-        /// NetBudgetImpact) down to a shorter display horizon by simple proportion - a display-only
-        /// approximation, not a new simulation (Phase 0 doesn't compute genuine sub-turn values yet).
-        /// Matches the "linear/additive rates" category of the Continuous Time translation methodology
-        /// (COMPLETED.md §28, migrated from the roadmap 2026-08-27), applied here purely for display rather than to a real constant.
-        /// </summary>
-        private static float ScaleLinearForDisplay(float fullTurnValue, int horizonDays)
-        {
-            return fullTurnValue * horizonDays / SimulationManager.DaysPerTurn;
-        }
-
-        /// <summary>
-        /// Same display-only horizon scaling as ScaleLinearForDisplay, but geometric/compounding -
-        /// the correct shape for a percentage GROWTH rate (GDP), matching the SAME "identify which
-        /// mathematical shape a constant is" distinction the translation methodology draws between
-        /// additive and compounding rates, applied here for display only.
-        /// </summary>
-        private static float ScaleCompoundingForDisplay(float fullTurnGrowthPercent, int horizonDays)
-        {
-            float fullTurnMultiplier = 1f + fullTurnGrowthPercent / 100f;
-            if (fullTurnMultiplier <= 0f)
-            {
-                return ScaleLinearForDisplay(fullTurnGrowthPercent, horizonDays);
-            }
-            float dailyMultiplier = Mathf.Pow(fullTurnMultiplier, 1f / SimulationManager.DaysPerTurn);
-            float horizonMultiplier = Mathf.Pow(dailyMultiplier, horizonDays);
-            return (horizonMultiplier - 1f) * 100f;
-        }
-
-        // Horizon-scaled counterparts of the Raw fields above, recomputed alongside them in
-        // RecomputePolicyPreview whenever the horizon selection itself changes (see
-        // PolicyInputsChangedSinceLastPreview) - kept SEPARATE from the Raw fields since those still
-        // need to stay full-turn (DrawHeadlineGraphs' next-turn dashed projection genuinely means
-        // "next turn," not "next day," regardless of what horizon the preview text panel shows).
-        private string _cachedGdpGrowthScaledText;
-        private string _cachedUnemploymentScaledText;
-        private string _cachedInflationScaledText;
-        private string _cachedApprovalScaledText;
-        private string _cachedPovertyRateScaledText;
-        private string _cachedLaborForceParticipationRateScaledText;
-        private string _cachedCrimeIndexScaledText;
-        private string _cachedNetBudgetScaledText;
-        private float _cachedGdpGrowthPercentScaled;
-        private float _cachedUnemploymentChangeScaled;
-        private float _cachedApprovalChangeScaled;
-        private float _cachedInflationChangeScaled;
-        private float _cachedPovertyRateChangeScaled;
-        private float _cachedLaborForceParticipationRateChangeScaled;
-        private float _cachedCrimeIndexChangeScaled;
-        private float _cachedNetBudgetImpactScaled;
+        // P2-2.1 (2026-09-02): the rest of the preview's full-turn figures, for the Desk's effects card - the
+        // horizon-scaled copies they replace are gone with the horizons.
+        private float _cachedInflationChangeRaw;
+        private float _cachedPovertyRateChangeRaw;
+        private float _cachedLaborForceParticipationRateChangeRaw;
+        private float _cachedCrimeIndexChangeRaw;
+        private float _cachedNetBudgetImpactRaw;
+        /// <summary>P2-2.1 (2026-09-02): the outcomes this draft moves, as the arrows the effects panel draws - built with
+        /// the preview, from its own full-turn figures; an outcome that prints as zero is left off.</summary>
+        private readonly List<EffectArrow> _cachedPreviewEffects = new List<EffectArrow>();
 
         // One GraphRenderer per headline dashboard stat - see GraphRenderer.cs. Each auto-scales its
         // own Y-axis, so instances are never shared across stats with different natural ranges.
@@ -3660,8 +3575,9 @@ namespace PoliSim.UI
             }
             else
             {
-                GUILayout.Label($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})", _labelStyle);
-                DrawColoredLabel(wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL",
+                // P2-2.1: one line where two were - the direction and the verdict read together, and the Budget's
+                // right column has to fit a 720 frame with the arrows beneath.
+                DrawColoredLabel($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0}) · {(wouldPass ? "WOULD PASS" : "WOULD FAIL")}",
                     _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
             }
 
@@ -3783,13 +3699,10 @@ namespace PoliSim.UI
         /// flickering number, while still updating live as the player drags a slider or switches
         /// horizon.
         ///
-        /// Continuous Time Migration Phase 0: redesigned around a selectable horizon (1 Day/1 Week/1
-        /// Month/Full Turn - see PreviewHorizon), defaulting to 1 Day, per the Master Roadmap's own
-        /// "effect-per-day plus a selectable-horizon projection" spec. Every figure shown is a
-        /// DISPLAY-ONLY re-scaling of the same full-turn PreviewTurn output (see
-        /// ScaleLinearForDisplay/ScaleCompoundingForDisplay) - Phase 0 doesn't simulate genuine
-        /// sub-turn granularity yet (that's Phases 1-5), so this is honestly labeled as an estimate
-        /// derived from the full-turn projection, not a real per-day simulation.
+        /// P2-2.1 (2026-09-02): the horizons - 1 Day / 1 Week / 1 Month / 1 Year, four rescaled copies of one
+        /// full-turn projection - are retired. The panel shows the point the preview produced, next year, its scope
+        /// stated once, as an arrow per outcome the draft moves (EffectArrowsRenderer); the budget delta stands
+        /// above it in the same column (DrawBudgetDraftFiscalImpact).
         /// </summary>
         private void DrawPolicyPreview()
         {
@@ -3805,57 +3718,20 @@ namespace PoliSim.UI
             // Process's three-column row, and the main reason that row overflowed into a horizontal
             // scrollbar. Stacking costs one row of height, which this panel has, and removes the
             // width floor entirely.
-            GUILayout.Label("Estimated Effects", _headerStyle);
-            // Two rows of two rather than one row of four. Even with the shortened "Full Turn" label, four
-            // side by side still demand more than this column gets at small window sizes; 2x2 halves that
-            // minimum. The buttons expand to share each row so the block stays tidy at any width.
-            GUILayout.BeginHorizontal();
-            DrawHorizonButton(PreviewHorizon.OneDay);
-            DrawHorizonButton(PreviewHorizon.OneWeek);
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            DrawHorizonButton(PreviewHorizon.OneMonth);
-            DrawHorizonButton(PreviewHorizon.FullTurn);
-            GUILayout.EndHorizontal();
-            // v3.0 Phase A census (2026-08-28): "Projection only, not a guarantee." was a third hedge on a
-            // figure already headed "Estimated" - pure (c), cut.
-            // C-C14 (2026-08-31): the rolled margin is cut too, and THE SCOPE TAKES ITS PLACE. Without the
-            // scope a margin is a decoration; with the scope no margin is needed, because the projection
-            // is deterministic and rolls no event.
-            GUILayout.Label($"Over the next {GetHorizonLabel(_previewHorizon)} - a linear/compounding-scaled display estimate from the full {SimulationManager.DaysPerTurn}-day projection, not a simulated sub-year value. No margin: the projection is deterministic. Excludes events, which a projection never rolls.", _labelStyle);
-
-            // Each line's color follows UiPalette's single green-good/red-bad convention, honoring
-            // which direction is actually good for that specific stat (e.g. Unemployment/Inflation/
-            // Poverty/Crime falling is the GOOD direction, the opposite of GDP/Approval/LFP rising).
-            // Two columns, same "first half / second half" split as the dashboard's own headline
-            // stats - halves this list's own height too.
-            GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical();
-            DrawColoredLabel($"GDP Growth: {_cachedGdpGrowthScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedGdpGrowthPercentScaled, higherIsBetter: true));
-            DrawColoredLabel($"Unemployment: {_cachedUnemploymentScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedUnemploymentChangeScaled, higherIsBetter: false));
-            DrawColoredLabel($"Inflation: {_cachedInflationScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedInflationChangeScaled, higherIsBetter: false));
-            DrawColoredLabel($"Approval: {_cachedApprovalScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedApprovalChangeScaled, higherIsBetter: true));
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical();
-            DrawColoredLabel($"Poverty Rate: {_cachedPovertyRateScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedPovertyRateChangeScaled, higherIsBetter: false));
-            DrawColoredLabel($"Labor Force Participation: {_cachedLaborForceParticipationRateScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedLaborForceParticipationRateChangeScaled, higherIsBetter: true));
-            DrawColoredLabel($"Crime Index: {_cachedCrimeIndexScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedCrimeIndexChangeScaled, higherIsBetter: false));
-            DrawColoredLabel($"Net Budget Impact: {_cachedNetBudgetScaledText}", _labelStyle, UiPalette.GetDeltaColor(_cachedNetBudgetImpactScaled, higherIsBetter: true));
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
-        }
-
-        private void DrawHorizonButton(PreviewHorizon horizon)
-        {
-            bool selected = _previewHorizon == horizon;
-            GUIStyle style = UiPalette.BuildButtonStyle(_neutralActionButtonStyle, selected ? UiPalette.ButtonKind.Primary : UiPalette.ButtonKind.Neutral);
-            // ExpandWidth(true), not false: content-sized buttons let the longest label dictate the row's
-            // width, which is how this block came to demand more than its column had. Sharing the row
-            // makes each button half the column instead, whatever the label says.
-            if (GUILayout.Button(GetHorizonLabel(horizon), style, GUILayout.ExpandWidth(true)))
+            GUILayout.Space(10f);
+            GUILayout.Label("Effects", _headerStyle);   // P2-2.1: one line; the arrows are the estimate
+            // P2-2.1 (2026-09-02): the point, its scope stated once (C-C1's precedent) - no horizon buttons, no
+            // rescaled copies of one projection. The budget delta stands above in this same column
+            // (DrawBudgetDraftFiscalImpact); here the OUTCOMES the draft moves, each an arrow whose length is
+            // the preview's own figure against the largest on the panel and whose ink is the verdict on it.
+            if (_cachedPreviewEffects.Count == 0)
             {
-                _previewHorizon = horizon;
+                GUILayout.Label("Move a dial - the outcomes it moves appear here, an arrow each.", _labelStyle);
+            }
+            else
+            {
+                Rect arrows = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
+                EffectArrowsRenderer.Draw(arrows, _cachedPreviewEffects, _labelStyle);
             }
         }
 
@@ -3863,11 +3739,6 @@ namespace PoliSim.UI
         private bool PolicyInputsChangedSinceLastPreview()
         {
             if (!_hasCachedPreview || _simulationManager.CurrentTurn != _cachedPreviewTurn)
-            {
-                return true;
-            }
-
-            if (GetHorizonDays(_previewHorizon) != _cachedPreviewHorizonDays)
             {
                 return true;
             }
@@ -3891,41 +3762,33 @@ namespace PoliSim.UI
         {
             PolicyPreview preview = _simulationManager.PreviewTurn(PlayerCountryId, BuildPlayerDecision());
 
-            // Raw fields stay full-turn, UNCHANGED - DrawHeadlineGraphs' next-turn dashed projection
-            // genuinely means "next turn" (121 days), independent of whatever horizon the preview
-            // text panel below currently shows.
+            // The Raw fields are the full-turn figures the Statistics projections read (the dashed next-year
+            // segment); since P2-2.1 the effects panel reads the same full-turn point, as arrows.
             _cachedGdpGrowthPercentRaw = preview.GdpGrowthPercent;
             _cachedUnemploymentChangeRaw = preview.UnemploymentChange;
             _cachedApprovalChangeRaw = preview.ApprovalChange;
             _cachedSwfReturnsEstimateRaw = preview.SwfReturnsEstimate;
+            _cachedInflationChangeRaw = preview.InflationChange;
+            _cachedPovertyRateChangeRaw = preview.PovertyRateChange;
+            _cachedLaborForceParticipationRateChangeRaw = preview.LaborForceParticipationRateChange;
+            _cachedCrimeIndexChangeRaw = preview.CrimeIndexChange;
+            _cachedNetBudgetImpactRaw = preview.NetBudgetImpact;
 
             _cachedSwfContributionText = FormatMoneyEstimate(preview.SwfContributionEstimate, MoneyUnit.Billions);
             _cachedSwfReturnsText = FormatMoneyEstimate(preview.SwfReturnsEstimate, MoneyUnit.Billions);
 
-            // Continuous Time Migration Phase 0: the live Policy Preview panel shows THIS horizon's
-            // display-only re-scaling of the same full-turn PreviewTurn output above - see
-            // ScaleLinearForDisplay/ScaleCompoundingForDisplay's own doc comments for why GDP growth
-            // gets the compounding treatment and everything else (already a "points changed" or
-            // dollar-amount figure) gets the linear one.
-            int horizonDays = GetHorizonDays(_previewHorizon);
-            _cachedGdpGrowthPercentScaled = ScaleCompoundingForDisplay(preview.GdpGrowthPercent, horizonDays);
-            _cachedUnemploymentChangeScaled = ScaleLinearForDisplay(preview.UnemploymentChange, horizonDays);
-            _cachedInflationChangeScaled = ScaleLinearForDisplay(preview.InflationChange, horizonDays);
-            _cachedApprovalChangeScaled = ScaleLinearForDisplay(preview.ApprovalChange, horizonDays);
-            _cachedPovertyRateChangeScaled = ScaleLinearForDisplay(preview.PovertyRateChange, horizonDays);
-            _cachedLaborForceParticipationRateChangeScaled = ScaleLinearForDisplay(preview.LaborForceParticipationRateChange, horizonDays);
-            _cachedCrimeIndexChangeScaled = ScaleLinearForDisplay(preview.CrimeIndexChange, horizonDays);
-            _cachedNetBudgetImpactScaled = ScaleLinearForDisplay(preview.NetBudgetImpact, horizonDays);
-
-            _cachedGdpGrowthScaledText = FormatEstimate(_cachedGdpGrowthPercentScaled, "%");
-            _cachedUnemploymentScaledText = FormatEstimate(_cachedUnemploymentChangeScaled, " pts");
-            _cachedInflationScaledText = FormatEstimate(_cachedInflationChangeScaled, " pts");
-            _cachedApprovalScaledText = FormatEstimate(_cachedApprovalChangeScaled, " pts");
-            _cachedPovertyRateScaledText = FormatEstimate(_cachedPovertyRateChangeScaled, " pts");
-            _cachedLaborForceParticipationRateScaledText = FormatEstimate(_cachedLaborForceParticipationRateChangeScaled, " pts");
-            _cachedCrimeIndexScaledText = FormatEstimate(_cachedCrimeIndexChangeScaled, " pts");
-            _cachedNetBudgetScaledText = FormatMoneyEstimate(_cachedNetBudgetImpactScaled, MoneyUnit.Billions);
-            _cachedPreviewHorizonDays = horizonDays;
+            // P2-2.1 (2026-09-02): the seven outcomes as arrows, from the same full-turn preview - an outcome whose
+            // figure would print as zero is left off the panel rather than drawn as a zero-length arrow, which is
+            // how "the affected categories surface as a slider moves" is meant: what the draft does not move is
+            // not on the panel.
+            _cachedPreviewEffects.Clear();
+            AddPreviewEffect("GDP growth", preview.GdpGrowthPercent, higherIsBetter: true, "%");
+            AddPreviewEffect("Unemployment", preview.UnemploymentChange, higherIsBetter: false, " pts");
+            AddPreviewEffect("Inflation", preview.InflationChange, higherIsBetter: false, " pts");
+            AddPreviewEffect("Approval", preview.ApprovalChange, higherIsBetter: true, " pts");
+            AddPreviewEffect("Poverty rate", preview.PovertyRateChange, higherIsBetter: false, " pts");
+            AddPreviewEffect("Labor force participation", preview.LaborForceParticipationRateChange, higherIsBetter: true, " pts");
+            AddPreviewEffect("Crime index", preview.CrimeIndexChange, higherIsBetter: false, " pts");
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
 
@@ -3944,6 +3807,13 @@ namespace PoliSim.UI
         /// 2026-08-31: **remove it — do not re-roll it, do not stabilise it.** The scope lives in the
         /// captions instead, because without the scope a margin is a decoration.
         /// </summary>
+        /// <summary>P2-2.1: one outcome onto the effects panel - skipped when its figure would print as zero (two decimals).</summary>
+        private void AddPreviewEffect(string name, float value, bool higherIsBetter, string unit)
+        {
+            if (Mathf.Abs(value) < 0.005f) { return; }
+            _cachedPreviewEffects.Add(new EffectArrow(name, value, higherIsBetter, FormatEstimate(value, unit)));
+        }
+
         private string FormatEstimate(float value, string unitSuffix)
         {
             return $"{value:+0.00;-0.00;0}{unitSuffix}";
@@ -9272,7 +9142,7 @@ namespace PoliSim.UI
         {
             BudgetBill draft = BuildBudgetBillFromDrafts();
 
-            GUILayout.Label("Legislative Support (current draft)", _headerStyle);
+            GUILayout.Label("Support (current draft)", _headerStyle);   // P2-2.1: one line at 720, so the arrows below stay in frame
             DrawBillLiveEstimate(ParliamentSystem.GetBillDirection(_playerCountry, draft));
 
             DrawBudgetDraftFiscalImpact(draft);
@@ -9316,7 +9186,7 @@ namespace PoliSim.UI
                 _hasCachedBudgetImpact = true;
             }
 
-            GUILayout.Label("Estimated impact on the year's budget", _headerStyle);
+            GUILayout.Label("Budget impact", _headerStyle);   // P2-2.1: one line; the scope sentence below says the year
 
             // Revenue and spending rising are not the same KIND of good, so neither takes a
             // semantic colour: only the NET carries one, on the same higher-is-better convention
@@ -9326,9 +9196,8 @@ namespace PoliSim.UI
             DrawColoredLabel($"Net: {UiFormat.MoneyDelta(_cachedBudgetImpact.NetDelta, MoneyUnit.Billions)}",
                 _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, higherIsBetter: true));
 
-            GUILayout.Label("A full year, from the model's own boundary run twice - once with this draft, once without. "
-                            + "No margin: the projection is deterministic. Excludes events, which a projection never rolls.",
-                _labelStyle);
+            // P2-2.1: the scope, once, for the delta above and the arrows below - one line, so both fit a 720 frame.
+            GUILayout.Label("Next year, run with and without this draft - deterministic, no margin, no events.", _labelStyle);
         }
 
         /// <summary>Everything about a draft that could move its estimate, as one string — so the
