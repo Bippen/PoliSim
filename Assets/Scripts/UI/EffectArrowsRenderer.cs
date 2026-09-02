@@ -36,6 +36,51 @@ namespace PoliSim.UI
         private const float MinShaftFraction = 0.12f;
         private const float HeadLengthFraction = 0.22f;
 
+        // ------------------------------------------------------------------------------------------
+        // Board 5c (D11 row 3, 2026-09-02): ONE GRAMMAR for "estimated impact", three parts, never
+        // fewer - the arrow from a hairline baseline (length ∝ |move| / max|move| in this panel), the
+        // figure at the head signed in the arrow's ink, and the SCOPE LINE under every panel,
+        // verbatim. The same three parts on the sheet (the Budget mid-draft), on the signing takeover
+        // (AS ENACTED) and on election night (the chamber's first budget, if unchanged); the plate is
+        // one renderer painted once (CanvasPaint.Arrows on the takeovers), only the title changes.
+        // No whiskers, no bands, no ±: a deterministic preview is one point, and a range that is not
+        // a range is forbidden by the row.
+        // ------------------------------------------------------------------------------------------
+        public const string ScopeLine = "ESTIMATE · NEXT YEAR · WITH vs WITHOUT THIS DRAFT · NO EVENTS · ONE DETERMINISTIC POINT — NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.";
+        public const string PlateTitleDraft = "ESTIMATED IMPACT · THIS DRAFT";
+        public const string PlateTitleEnacted = "ESTIMATED IMPACT · AS ENACTED";
+        public const string PlateTitleInherited = "ESTIMATED IMPACT · THE NEW CHAMBER'S FIRST BUDGET, IF UNCHANGED";
+
+        /// <summary>The scope line's style: the caption face at the figures' size, wrapped, in the secondary ink.</summary>
+        public static GUIStyle ScopeStyle(GUIStyle labelStyle)
+        {
+            var style = new GUIStyle(labelStyle) { wordWrap = true, alignment = TextAnchor.UpperLeft };
+            // 0.66 of the label (the figures' 0.72 was a line taller at 1280 and the Budget column at 720 has no line to give); the guard's 8 px floor holds it.
+            style.fontSize = Mathf.Max(8, Mathf.RoundToInt(labelStyle.fontSize * 0.66f));
+            style.normal.textColor = PoliSimTheme.TextSecondary;
+            return style;
+        }
+
+        /// <summary>The scope line under a panel on an IMGUI sheet - laid out by GUILayout so it wraps to the column it is in.</summary>
+        public static void DrawScopeLine(GUIStyle labelStyle)
+        {
+            GUILayout.Label(ScopeLine, ScopeStyle(labelStyle));
+        }
+
+        /// <summary>Board 5c's figures line for a painted plate: each figure signed in its own arrow's ink (uGUI rich text), in lane order, separated by middle dots.</summary>
+        public static string FiguresLine(IReadOnlyList<EffectArrow> arrows)
+        {
+            var text = new System.Text.StringBuilder();
+            foreach (EffectArrow a in arrows)
+            {
+                if (text.Length > 0) { text.Append("   ·   "); }
+                text.Append(a.Name.ToUpperInvariant()).Append(' ')
+                    .Append("<color=#").Append(ColorUtility.ToHtmlStringRGB(UiPalette.GetDeltaColor(a.Value, a.HigherIsBetter))).Append('>')
+                    .Append(a.Figure).Append("</color>");
+            }
+            return text.ToString();
+        }
+
         public static float MeasureHeight(GUIStyle labelStyle)
         {
             float line = Mathf.Max(labelStyle.lineHeight, labelStyle.fontSize + 4f);
@@ -89,6 +134,9 @@ namespace PoliSim.UI
             float halfLane = lane * 0.5f;
 
             Color previous = GUI.color;
+            // Board 5c: the arrows rise and fall from ONE hairline baseline across the panel (the per-lane
+            // tick it replaces said the same thing eight times).
+            PoliSimTheme.Rule(new Rect(area.x, baselineY - 0.5f, area.width, 1f), PoliSimTheme.Hairline);
             for (int i = 0; i < arrows.Count; i++)
             {
                 EffectArrow a = arrows[i];
@@ -99,8 +147,7 @@ namespace PoliSim.UI
                 Color ink = UiPalette.GetDeltaColor(a.Value, a.HigherIsBetter);
                 GUI.color = ink;
 
-                // The baseline tick, the shaft and the stepped head - all whiteTexture rects, no sprite invented.
-                GUI.DrawTexture(new Rect(cx - headHalfWidth, baselineY - 0.5f, headHalfWidth * 2f, 1f), Texture2D.whiteTexture);
+                // The shaft and the stepped head - whiteTexture rects, no sprite invented.
                 float shaftLength = Mathf.Max(1f, length - headLength);
                 float shaftTop = up ? baselineY - shaftLength : baselineY;
                 GUI.DrawTexture(new Rect(cx - shaftWidth * 0.5f, shaftTop, shaftWidth, shaftLength), Texture2D.whiteTexture);

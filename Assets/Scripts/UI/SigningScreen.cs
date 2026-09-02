@@ -338,21 +338,21 @@ namespace PoliSim.UI
                 record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad);
             PlateBody(cite, record.Axis == (int)BillAxis.Trade ? "on the openness axis" : "on the fiscal axis");
 
-            // 3. The estimate as arrows.
+            // 3. The estimate as arrows - board 5c (D11 row 3): the same three-part grammar as the sheet's
+            // panel, titled AS ENACTED: the arrows from a hairline baseline, each figure signed in its
+            // arrow's ink in lane order, and the scope line verbatim beneath.
             Transform estimate = PlatePanel(plate.transform, "Estimate", 1.2f);
-            PlateCaption(estimate, "THE ESTIMATE · NEXT YEAR, WITH AND WITHOUT THE TURN'S DECISION");
+            PlateCaption(estimate, EffectArrowsRenderer.PlateTitleEnacted);
             if (record.Effects.Count > 0)
             {
                 var arrows = new List<EffectArrow>(record.Effects.Count);
-                var figures = new StringBuilder();
                 foreach (DivisionEffect e in record.Effects)
                 {
                     arrows.Add(new EffectArrow(e.Name, e.Value, e.HigherIsBetter, e.Figure));
-                    if (figures.Length > 0) { figures.Append(" · "); }
-                    figures.Append(e.Name).Append(' ').Append(e.Figure);
                 }
                 PlateImage(estimate, "Arrows", CanvasPaint.Arrows(420, 120, arrows, PoliSimTheme.Hex(0xF4ECDC)), 420f / 120f);
-                PlateCaption(estimate, figures.ToString());
+                PlateCaption(estimate, EffectArrowsRenderer.FiguresLine(arrows));
+                PlateCaption(estimate, EffectArrowsRenderer.ScopeLine);
             }
             else
             {

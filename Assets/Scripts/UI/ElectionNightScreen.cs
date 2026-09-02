@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using PoliSim.Data;
 using PoliSim.Elections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -84,9 +85,14 @@ namespace PoliSim.UI
         /// <param name="verdict">P2-0.2: the office test's verdict for the player, printed on the board's foot beside
         /// CONTINUE - the count and the verdict are the only election outcome a player sees. Null when the
         /// board is filmed without a player (the harness's staged nights).</param>
+        /// <param name="standingBudget">Board 5c (D11 row 3): the estimate that travelled with the standing budget act - what the
+        /// new chamber's first budget carries if it changes nothing - drawn in the effects grammar at the right. Null when no
+        /// enacted budget carries one, and the board says so.</param>
+        /// <param name="standingBudgetCitation">The act's citation (division number, date, title) for the plate's own line.</param>
         public static ElectionNightScreen Build(NightState state, string[] partyNames, string countryName,
             DateTime pollsClosed, int totalSeats, long[] previousVotes = null, string previousLabel = null,
-            string verdict = null, VoteAttribution.Ledger ledger = null, string ledgerParty = null)
+            string verdict = null, VoteAttribution.Ledger ledger = null, string ledgerParty = null,
+            IReadOnlyList<DivisionEffect> standingBudget = null, string standingBudgetCitation = null)
         {
             Sprite frame = CanvasChrome.Sliced("ui_frame_ornate", 64f, 64f, 64f, 64f);
             Texture2D scrimTexture = IconLibrary.GetChrome("ui_scrim_takeover");
@@ -145,7 +151,7 @@ namespace PoliSim.UI
             column.spacing = 10f;
 
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
-            BuildBody(content.transform, state, partyNames, totalSeats, previousVotes, previousLabel, ledger, ledgerParty);
+            BuildBody(content.transform, state, partyNames, totalSeats, previousVotes, previousLabel, ledger, ledgerParty, standingBudget, standingBudgetCitation);
             BuildFooter(content.transform, verdict, screen);
 
             // S-20: the board stamps its own capture-identity token, so a film that shows the desk over it
@@ -213,7 +219,8 @@ namespace PoliSim.UI
 
         /// <summary>§A.14's body grid, 1.25fr | 1fr: the national tally left, the constituencies and the calls right.</summary>
         private static void BuildBody(Transform parent, NightState state, string[] partyNames, int totalSeats,
-            long[] previousVotes, string previousLabel, VoteAttribution.Ledger ledger, string ledgerParty)
+            long[] previousVotes, string previousLabel, VoteAttribution.Ledger ledger, string ledgerParty,
+            IReadOnlyList<DivisionEffect> standingBudget, string standingBudgetCitation)
         {
             var body = new GameObject("Body");
             body.transform.SetParent(parent, false);
@@ -246,6 +253,49 @@ namespace PoliSim.UI
             BuildCalls(side.transform, state, partyNames);
             BuildConstituencies(side.transform, state);
             BuildLedger(side.transform, ledger, ledgerParty);   // P2-4.3
+            BuildEstimate(side.transform, standingBudget, standingBudgetCitation);   // board 5c
+        }
+
+        /// <summary>
+        /// Board 5c (D11 row 3): the effects plate at the right of the count - the same renderer the signing
+        /// takeover paints (CanvasPaint.Arrows), titled for the chamber's first budget if unchanged, with the
+        /// figures in their arrows' inks and the scope line verbatim. The estimate is the one that travelled
+        /// with the standing budget act as enacted - not a forecast made tonight - and the citation says whose.
+        /// </summary>
+        private static void BuildEstimate(Transform parent, IReadOnlyList<DivisionEffect> standingBudget, string citation)
+        {
+            Heading(parent, EffectArrowsRenderer.PlateTitleInherited);
+            if (standingBudget == null || standingBudget.Count == 0)
+            {
+                Row(parent, "NO ENACTED BUDGET CARRIES AN ESTIMATE - NOTHING IS DRAWN IN ITS PLACE", "—", 11, PoliSimTheme.TextMuted);
+                return;
+            }
+
+            var arrows = new List<EffectArrow>(standingBudget.Count);
+            foreach (DivisionEffect e in standingBudget) { arrows.Add(new EffectArrow(e.Name, e.Value, e.HigherIsBetter, e.Figure)); }
+
+            var art = new GameObject("Arrows");
+            art.transform.SetParent(parent, false);
+            art.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 110f);
+            LayoutElement element = art.AddComponent<LayoutElement>();
+            element.minHeight = 70f;
+            element.preferredHeight = 110f;
+            Texture2D texture = CanvasPaint.Arrows(420, 120, arrows, PoliSimTheme.Hex(0xF2EADB));
+            Image image = art.AddComponent<Image>();
+            image.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+
+            Text figures = CanvasChrome.MakeText(parent, "Figures", EffectArrowsRenderer.FiguresLine(arrows), PoliSimTheme.Document, 11, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            figures.horizontalOverflow = HorizontalWrapMode.Wrap;
+            figures.gameObject.AddComponent<LayoutElement>().minHeight = 18f;
+            if (!string.IsNullOrEmpty(citation))
+            {
+                Row(parent, "AS ENACTED", citation, 11, PoliSimTheme.TextSecondary);
+            }
+            Text scope = CanvasChrome.MakeText(parent, "Scope", EffectArrowsRenderer.ScopeLine, PoliSimTheme.Document, 10, PoliSimTheme.TextSecondary, TextAnchor.UpperLeft);
+            scope.horizontalOverflow = HorizontalWrapMode.Wrap;
+            scope.gameObject.AddComponent<LayoutElement>().minHeight = 28f;
         }
 
         private static void Heading(Transform parent, string text)

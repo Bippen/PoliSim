@@ -3753,7 +3753,10 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(10f);   // P2-2.2: one space where two (and a note about the retired horizon buttons) were
-            GUILayout.Label("Effects", _headerStyle);   // P2-2.1: one line; the arrows are the estimate
+            // Board 5c (D11 row 3): the plate's title in the family's own words - THIS DRAFT here, AS ENACTED on
+            // the signing takeover, the chamber's first budget on election night - and the scope line verbatim
+            // under the arrows; the three parts of the grammar, never fewer.
+            DrawStatsSectionCaption(EffectArrowsRenderer.PlateTitleDraft);
             // P2-2.1 (2026-09-02): the point, its scope stated once (C-C1's precedent) - no horizon buttons, no
             // rescaled copies of one projection. The budget delta stands above in this same column
             // (DrawBudgetDraftFiscalImpact); here the OUTCOMES the draft moves, each an arrow whose length is
@@ -3766,6 +3769,7 @@ namespace PoliSim.UI
             {
                 Rect arrows = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
                 EffectArrowsRenderer.Draw(arrows, _cachedPreviewEffects, _labelStyle);
+                EffectArrowsRenderer.DrawScopeLine(_labelStyle);
             }
         }
 
@@ -5288,11 +5292,23 @@ namespace PoliSim.UI
                     return;
                 }
 
+                // Board 5c (D11 row 3): the estimate that travelled with the standing budget act - the newest
+                // passed fiscal division carrying effects - is what the new chamber's first budget inherits if
+                // it changes nothing; the plate cites it, or says no enacted budget carries one.
+                DivisionRecord standingBudget = null;
+                List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
+                for (int d = divisions.Count - 1; d >= 0; d--)
+                {
+                    if (divisions[d].Passed && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
+                }
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 _electionNight = ElectionNightScreen.Build(
                     state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
                     System.DateTime.Now, 349, verdict: _pendingElectionVerdict,
-                    ledger: _simulationManager.PlayerCampaignLedger, ledgerParty: _simulationManager.PlayerCampaignLedgerParty);   // P2-4.3
+                    ledger: _simulationManager.PlayerCampaignLedger, ledgerParty: _simulationManager.PlayerCampaignLedgerParty,   // P2-4.3
+                    standingBudget: standingBudget?.Effects,
+                    standingBudgetCitation: standingBudget == null ? null
+                        : $"DIVISION No. {standingBudget.Number} · {standingBudget.Date:yyyy-MM-dd} · {standingBudget.Title}");
             }
             catch (System.Exception e)
             {
@@ -9393,7 +9409,9 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
 
             // P2-2.1: the scope, once, for the delta above and the arrows below - one line, so both fit a 720 frame.
-            GUILayout.Label("Next year, with vs without this draft. No events.", _labelStyle);   // P2-2.2: shorter, one line at 1280
+            // Board 5c (D11 row 3): the scope sentence that stood here is the scope LINE under the arrows now - said
+            // once, verbatim, under every panel of the family; the first 5c film at 720 clipped that line under
+            // this one, and the column has one copy of the fact.
         }
 
         /// <summary>Everything about a draft that could move its estimate, as one string — so the

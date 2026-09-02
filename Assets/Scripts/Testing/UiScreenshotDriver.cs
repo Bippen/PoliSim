@@ -2945,6 +2945,11 @@ namespace PoliSim.Testing
 
             Debug.Log($"SHOT: -shotinterrupts reached election turn {sim.CurrentTurn} on {sim.CurrentDate:yyyy-MM-dd} after {days} days; campaign result {(sim.PlayerCampaignResult != null ? "present" : "ABSENT")}.");
 
+            // Board 5c (D11 row 3): the night's plate draws the estimate that travelled with the STANDING budget
+            // act - the newest passed fiscal division carrying effects - so one is staged here with the standing
+            // preview's arrows (the same staging the ceremony films use, P2-4.3), and the harness says so.
+            StageDivisionWithContent(sim.World.GetCountry(_countryId), sim, "Harness: the standing budget act (staged for the effects plate, 5c)", 30f, passed: true);
+
             // 2. Election night is entered by the controller's own election call, and it must be a takeover
             //    the clock cannot pass.
             InvokeNoArg(controller, "CheckElection");
