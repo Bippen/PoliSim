@@ -313,7 +313,7 @@ namespace PoliSim.Simulation
                     }
                     if (quiet.Count > 0)
                     {
-                        reasons.Add(string.Format(CultureInfo.InvariantCulture, "opinion cost of cutting {0}: {1:-0.000} at the authored weight - below a hundredth", string.Join(", ", quiet), -quietCost));
+                        reasons.Add(string.Format(CultureInfo.InvariantCulture, "opinion cost of cutting {0}: {1:+0.000;-0.000} at the authored weight - below a hundredth", string.Join(", ", quiet), -quietCost));
                     }
                     if (voters != null && ecological && concern.Cuts.Count > 0) { reasons.Add("voter profile: ecological, from 2022 valkrets returns over 2024 pyramids"); }
                 }

@@ -257,10 +257,24 @@ namespace PoliSim.Simulation
             return measuredSeats > 0f ? weightedAlignment / measuredSeats : 0f;
         }
 
-        /// <summary>P3-A2: the verdict on a bill's concern - an empty concern (nothing moved) passes unconditionally, as a zero direction always has.</summary>
+        /// <summary>
+        /// P3-A2 (2026-09-03), ruled on the Track C film: THE COUNT DECIDES. A division is seats FOR against seats
+        /// AGAINST over the very stances the seat map colours from (`SeatSides`); the undecided abstain. The
+        /// seat-weighted alignment - the model's decided quantity, which the diagnostic prints - is the tie-break
+        /// only. Before this, the verdict read the alignment's sign, and on `p3c_1280_05_budget` the word WOULD PASS
+        /// sat above a map of 149 FOR and 200 AGAINST - one panel contradicting itself. An empty concern (nothing
+        /// moved) passes unconditionally, as a zero direction always has.
+        /// </summary>
         public static bool WouldBillPass(Country country, BillConcern concern)
         {
             if (concern == null || concern.IsEmpty) { return true; }
+            int forSeats = 0, againstSeats = 0;
+            foreach ((PoliticalParty _, int seats, int side, float _, bool measured) in SeatSides(country, concern))
+            {
+                if (!measured) { continue; }
+                if (side > 0) { forSeats += seats; } else if (side < 0) { againstSeats += seats; }
+            }
+            if (forSeats != againstSeats) { return forSeats > againstSeats; }
             return GetSeatWeightedAlignment(country, concern) > 0f;
         }
 
@@ -306,9 +320,9 @@ namespace PoliSim.Simulation
         public static bool WouldBillPass(Country country, float direction)
             => WouldBillPass(country, direction, BillAxis.Fiscal);
 
-        /// <summary>C-B3 / R-CL2: the same verdict, scored against a named axis. A zero-direction bill
-        /// still passes unconditionally on either — a draft introduced unchanged asks the chamber for
-        /// nothing.</summary>
+        /// <summary>C-B3 / R-CL2: the same verdict, scored against a named axis through the one concern rule
+        /// (P3-A2: the count decides). A zero-direction bill still passes unconditionally on either - a draft
+        /// introduced unchanged asks the chamber for nothing.</summary>
         public static bool WouldBillPass(Country country, float direction, BillAxis axis)
         {
             if (Mathf.Approximately(direction, 0f))
@@ -316,7 +330,7 @@ namespace PoliSim.Simulation
                 return true;
             }
 
-            return GetSeatWeightedAlignment(country, direction, axis) > 0f;
+            return WouldBillPass(country, BillConcern.FromLegacy(direction, axis));
         }
 
         /// <summary>Convenience overload - computes BudgetBill's own direction, then scores it via the shared WouldBillPass(Country, float) core.</summary>
