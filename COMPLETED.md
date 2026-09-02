@@ -22253,3 +22253,47 @@ Read: two collisions are the finding the row named - S/V at ONE seated hex (dist
 **The film pair:** `p4a_1280_05a_budget_tax` and `_dragged` (the tax ledger, the Income Tax readout in the draft cue, the track unmoved), `p4a_1280_05b_budget_spending` and `_dragged`. The guard's lines on `p4a_1280.log`: *ledger geometry stable: 42 row(s) compared at rest and mid-drag, every column rect identical* (the tax ledger) and *110 row(s)* (spending); 85 captures, 0 overflow, 0 containment escape, exit 0.
 
 **Bar:** `bar68_p4_1_RunAllBatch.log`, 27 of 27.
+
+## 261. P4-2 — THE SOUND-EFFECTS PACK, INVENTORIED AND WIRED: the asset discipline run on a new pipeline, five of seven files admitted, a cue catalog covered both ways, one AudioSource, volume and mute on the Saves screen, six events wired, the harness's cue board (2026-09-03)
+
+**The row:** *"Elias placed a pack at `AssetPackArchive\Sound_Effect_Package`. This is a new pipeline; run the asset discipline before anything plays: origin verification (Zone.Identifier), magic-byte check per file, the pack's licence read and recorded, an inventory by name, format and duration - nothing imported that fails a check. Then the smallest honest audio layer: a cue catalog (AudioCue → file, coverage checked both directions the way sprites are), one AudioSource path, a master volume and mute in the existing settings idiom, and a first cue set wired to real events - button press, slider step, bill passes, bill fails, interrupt raised, a constituency declares on election night. Audio is display, never simulation: trajectories byte-identical. Add a harness-only trigger so each cue can be fired by name for Elias's test."*
+
+### The inventory, taken on the pack before anything was copied
+
+Seven files, no licence text, no readme. Every file carries a `Zone.Identifier` stream (ZoneId 3, the internet) naming its origin host; the magic bytes were read from the first twelve bytes; the digest is sha256 (first 16 hex).
+
+| file | bytes | placed | magic bytes | origin (HostUrl) | sha256 (16) | admitted |
+|---|---|---|---|---|---|---|
+| `ApprovalStamp.mp3` | 17181 | 2026-09-02 15:20 | `ID3` v2.4 (MP3) | `https://elevenlabs.io/` | `69b137dfb2106e1d` | yes |
+| `Click1.mp3` | 12717 | 2026-09-02 15:11 | `ID3` v2.4 (MP3) | `https://elevenlabs.io/` | `c2ed74276ac790fc` | yes |
+| `Click2.mp3` | 12717 | 2026-09-02 15:11 | `ID3` v2.4 (MP3) | `https://elevenlabs.io/` | `16ade00767023093` | yes |
+| `Folderswitch1.mp3` | 25389 | 2026-09-02 15:14 | `ID3` v2.4 (MP3) | `https://elevenlabs.io/` | `bce0a991173d6ee2` | yes |
+| `Folderswitch2.mp3` | 25389 | 2026-09-02 15:14 | `ID3` v2.4 (MP3) | `https://elevenlabs.io/` | `8f5566bee81da394` | yes |
+| `RejectedBillTear.m4a` | 23481 | 2026-09-02 15:30 | `....ftypisom` (MP4 container, AAC) | `https://app.clipchamp.com/` | `2935d67c42059bba` | **NO - format** |
+| `Slider_Click_Sound.m4a` | 38236 | 2026-09-02 15:07 | `....ftypisom` (MP4 container, AAC) | `https://app.clipchamp.com/` | `c9143a338b5e62e1` | **NO - format** |
+
+**The format check.** Unity's audio importer reads MP3, OGG Vorbis, WAV, AIFF and the tracker formats; an AAC stream in an MP4 container (`.m4a`) is not on the list, so the two Clipchamp exports fail the check and were not copied. They are the slider's own click and the rejected bill's tear - the two cues that matter most to the sheet's list - and they wait for a re-export as MP3 or WAV (ERRANDS E-10). Click1 and Click2 are the same size and different bytes (two generations of one prompt); the Folderswitch pair likewise.
+
+**The licence, read and recorded.** The pack ships no licence file. Five files come from ElevenLabs' sound-effects generator and two from Clipchamp, per their origin streams; what may be done with them is governed by Elias's own accounts' terms (ElevenLabs grants commercial use of generated output on paid plans and asks attribution on the free tier; Clipchamp exports are the exporter's own). **Nothing here asserts a licence that no file states** - the record says where each file came from and that the terms are Elias's to state (E-10 asks for one line).
+
+**The clips' own measure** (from the imported files, `AudioInventoryCheck`):
+| file | ch | Hz | seconds |
+|---|---|---|---|
+| `ApprovalStamp` | 2 | 44100 | 1.071 |
+| `Click1` | 2 | 48000 | 0.528 |
+| `Click2` | 2 | 48000 | 0.528 |
+| `Folderswitch1` | 2 | 48000 | 1.056 |
+| `Folderswitch2` | 2 | 48000 | 1.056 |
+
+The five copies are byte-identical to the pack (`cmp`), and the check re-reads their magic bytes and digests on every bar.
+
+### The audio layer
+
+- **`AudioDirector`** (`Assets/Scripts/UI`): the cue catalog (`AudioCue` → file under `Resources/Audio/Cues`, with a note per row and a PROVISIONAL flag for a stand-in), one `AudioSource` on a persistent host created on first fire in play mode, `Fire(cue)` / `Fire(name)`, a rate-limited `FireStep` for drags (one tick per 40 ms), master volume and mute in `PlayerPrefs`. Display only: nothing under `PoliSim.Simulation` references it, it reads no model state, and the trajectory check's 900 digests stand unchanged on the bar.
+- **The catalog, honestly:** ButtonPress → Click1; FolderSwitch → Folderswitch1; FolderReturn → Folderswitch2; BillPasses → ApprovalStamp; SliderStep → Click2 *(stand-in for the unimportable slider click)*; InterruptRaised → Folderswitch2 *(stand-in: the pack holds no interrupt sound)*; ConstituencyDeclares → Click2 *(stand-in)*; **BillFails → no file** (a stamp or a click would say the wrong thing; the cue is wired and silent until the tear is re-exported). Every wired cue with a file resolves to a verified file; the gaps are printed by the check, not hidden.
+- **Coverage, both directions** (`AudioCueCoverageCheck`, the cheap group): every cue in the catalog exactly once; every named file present and yielding a clip; every file under the folder named by a cue; a file the importer rejects fails the run. **`AudioInventoryCheck`** re-reads every imported file's magic bytes against its extension, prints its digest beside the clip's channels, frequency and length.
+- **Volume and mute:** a SOUND section at the head of the Saves screen (the one settings screen the game has) - a ledger row for the master volume and a MUTE chip, persisted; the Editor's cue board shows the same two so a silent test is told from a muted one.
+- **The six events:** every button (the widgets' `Button` wrapper, which every `GUILayout.Button` / `GUI.Button` site in the UI now goes through, and the Desk chips) → ButtonPress; a ledger slider's draft snapping to its next step → SliderStep; a division queued for the ceremony → BillPasses / BillFails by its record; the frame's hold banner rising (time held by an interrupt) → InterruptRaised; the rail opening a folder → FolderSwitch, the Desk taken back → FolderReturn; election night → ConstituencyDeclares ONCE when the night is drawn - the night is built at its final minute (`ElectionNightFromModel.At(FinalMinute)`), so there is no per-constituency tick at runtime to hook; a live count is a row for the sheet, not a claim here.
+- **The harness trigger:** `PoliSim ▸ Audio ▸ Cue Board` (an Editor window, `Assets/Editor/AudioCueBoard.cs`): one button per cue, fired by name through the director, enabled in Play mode; and the driver's `-cuesweep`, which fires every cue in order under the film and asserts each cue with a file loaded its clip.
+
+**The sweep** (`p4b_1280.log`, `-cuesweep`): *8 cue(s) fired by name, 7 resolved to a loaded clip, 1 without a file (recorded)*; 85 captures, 0 overflow, 0 escape, exit 0. **Bar:** `bar69_p4_2_RunAllBatch.log`, 29 of 29 (the two audio checks enrolled in the cheap group), the trajectory enumeration's 900 digests unchanged.

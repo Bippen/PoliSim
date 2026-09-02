@@ -72,6 +72,8 @@ namespace PoliSim.Testing
         /// into the real saves directory, each state filmed once as proof, so §P is load-play-judge rather than
         /// set-up-first. USA stages the Trade-bill and dense-mid-game saves; Sweden the Riksbank-B one.</summary>
         public bool StageSaves;
+        /// <summary>P4-2: `-cuesweep` fires every cue in the catalog by name after the sweep's first capture and asserts each cue with a file loaded its clip - the harness's own trigger, beside the Editor cue board.</summary>
+        public bool CueSweep;
 
         /// <summary>Set by `-shotlocale=` (e.g. "en-US"): overrides the thread culture before anything draws, so number/date formatting can be captured in a locale other than the OS's. Empty = OS culture, which is what every set before 2026-08-12 rendered in (sv-SE on this machine — the decimal-comma set).</summary>
         public string Locale = "";
@@ -276,6 +278,8 @@ namespace PoliSim.Testing
             // ledger without a closed period, the rail without a spine (board 1m, D2).
             yield return Capture("01c_desk");
             AssertDeskState(controller, "01c_desk");
+
+            if (CueSweep) { RunCueSweep(); }
 
             // P3-C2 (2026-09-03): the Budget at TURN 0 - before the warm-up closes a year - so the fiscal header is filmed
             // with the seed named (no year closed) beside the year's projected balance.
@@ -1128,6 +1132,41 @@ namespace PoliSim.Testing
         /// frame is written, so a row drawn while the driver scrolls or settles toward the next screen is never filed
         /// under the previous stem (the first film keyed a Policy Laws dial under a Budget stem exactly that way).</summary>
         private readonly Dictionary<string, float> _reachByCapture = new Dictionary<string, float>();
+
+        /// <summary>
+        /// P4-2 (2026-09-03): `-cuesweep` - every cue in the catalog fired by NAME through the director, in order, and
+        /// the clip each resolves to asserted: a cue with a file must load it, a cue without one must say so in the
+        /// catalog. Batch mode has no audio device, so nothing is heard here; what is proved is that every wired cue
+        /// resolves to a verified file. The Editor's cue board (PoliSim ▸ Audio ▸ Cue Board) is the same trigger with
+        /// sound, for Elias's own test in Play mode.
+        /// </summary>
+        private void RunCueSweep()
+        {
+            int fired = 0, loaded = 0, silent = 0;
+            foreach (AudioCueEntry e in AudioDirector.Catalog)
+            {
+                bool ok = AudioDirector.Fire(e.Cue.ToString());
+                if (!ok) { Debug.LogError($"SHOT: -cuesweep - '{e.Cue}' is not a cue the director knows by name."); _failed++; continue; }
+                fired++;
+                AudioClip clip = AudioDirector.Clip(e.Cue);
+                if (string.IsNullOrEmpty(e.File))
+                {
+                    silent++;
+                    Debug.Log($"SHOT: -cuesweep - {e.Cue}: no file in the catalog ({e.Note}); fired silent, as recorded.");
+                }
+                else if (clip == null)
+                {
+                    Debug.LogError($"SHOT: -cuesweep - {e.Cue} names '{e.File}' and the clip did not load.");
+                    _failed++;
+                }
+                else
+                {
+                    loaded++;
+                    Debug.Log($"SHOT: -cuesweep - {e.Cue}: '{e.File}' {clip.channels} ch, {clip.frequency} Hz, {clip.length:0.000} s{(e.Provisional ? " (stand-in)" : "")}.");
+                }
+            }
+            Debug.Log($"SHOT: -cuesweep - {fired} cue(s) fired by name, {loaded} resolved to a loaded clip, {silent} without a file (recorded), {AudioDirector.Fired.Count} in the director's log.");
+        }
 
         /// <summary>
         /// P4-1 (2026-09-03): STABLE CONTROL LAYOUT, asserted on film. Every ledger row recorded at rest (the capture

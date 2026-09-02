@@ -12,6 +12,53 @@ namespace PoliSim.UI
     /// </summary>
     public static class PoliSimWidgets
     {
+        /// <summary>
+        /// P4-2 (2026-09-03): THE button. Every button in the UI is drawn through one of these so a press is one event
+        /// with one cue (AudioCue.ButtonPress); the call is otherwise GUILayout.Button / GUI.Button verbatim - same
+        /// control, same ID, same frame - so the control-count and control-order invariants are untouched.
+        /// </summary>
+        public static bool Button(string text, GUIStyle style, params GUILayoutOption[] options)
+        {
+            bool pressed = GUILayout.Button(text, style, options);
+            if (pressed) { AudioDirector.Fire(AudioCue.ButtonPress); }
+            return pressed;
+        }
+
+        public static bool Button(GUIContent content, GUIStyle style, params GUILayoutOption[] options)
+        {
+            bool pressed = GUILayout.Button(content, style, options);
+            if (pressed) { AudioDirector.Fire(AudioCue.ButtonPress); }
+            return pressed;
+        }
+
+        public static bool Button(string text, params GUILayoutOption[] options)
+        {
+            bool pressed = GUILayout.Button(text, options);
+            if (pressed) { AudioDirector.Fire(AudioCue.ButtonPress); }
+            return pressed;
+        }
+
+        public static bool Button(Rect rect, string text, GUIStyle style)
+        {
+            bool pressed = GUI.Button(rect, text, style);
+            if (pressed) { AudioDirector.Fire(AudioCue.ButtonPress); }
+            return pressed;
+        }
+
+        public static bool Button(Rect rect, GUIContent content, GUIStyle style)
+        {
+            bool pressed = GUI.Button(rect, content, style);
+            if (pressed) { AudioDirector.Fire(AudioCue.ButtonPress); }
+            return pressed;
+        }
+
+        public static bool Button(Rect rect, string text)
+        {
+            bool pressed = GUI.Button(rect, text);
+            if (pressed) { AudioDirector.Fire(AudioCue.ButtonPress); }
+            return pressed;
+        }
+
         // --- Styles -----------------------------------------------------------------------
 
         private static GUIStyle _label, _value, _body, _mono;

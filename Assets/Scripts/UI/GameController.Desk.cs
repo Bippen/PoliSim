@@ -305,7 +305,7 @@ namespace PoliSim.UI
 
             bool ambient = GUI.enabled;
             GUI.enabled = ambient && !disabled;
-            bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none);
+            bool clicked = PoliSimWidgets.Button(rect, GUIContent.none, GUIStyle.none);
             GUI.enabled = ambient;
             return clicked;
         }

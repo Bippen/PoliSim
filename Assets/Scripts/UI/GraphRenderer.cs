@@ -382,7 +382,7 @@ namespace PoliSim.UI
 
             GUILayout.BeginHorizontal();
             GUI.enabled = paged && _pageFromEnd < totalPages - 1;
-            if (GUILayout.Button("< Older", _pageButtonStyle, GUILayout.ExpandWidth(false)))
+            if (PoliSimWidgets.Button("< Older", _pageButtonStyle, GUILayout.ExpandWidth(false)))
             {
                 _pageFromEnd++;
             }
@@ -398,7 +398,7 @@ namespace PoliSim.UI
             GUILayout.Label(rangeLabel, _pageLabelStyle, GUILayout.ExpandWidth(true));
 
             GUI.enabled = paged && _pageFromEnd > 0;
-            if (GUILayout.Button("Newer >", _pageButtonStyle, GUILayout.ExpandWidth(false)))
+            if (PoliSimWidgets.Button("Newer >", _pageButtonStyle, GUILayout.ExpandWidth(false)))
             {
                 _pageFromEnd--;
             }

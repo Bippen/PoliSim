@@ -262,6 +262,7 @@ namespace PoliSim.EditorTools
             // returns, so it demands -shotcountry=Sweden and fails loudly under any other.
             driver.CampaignHq = Environment.GetCommandLineArgs().Contains("-shotcampaign");
             driver.Interrupts = Environment.GetCommandLineArgs().Contains("-shotinterrupts");
+            driver.CueSweep = Environment.GetCommandLineArgs().Contains("-cuesweep");
             // W-E6 (2026-08-30): film board 1h, election night, instead of the sweep. Stages the
             // SOURCED Swedish 2022 returns like -shotcampaign, and demands the same country.
             driver.ElectionNightBoard = Environment.GetCommandLineArgs().Contains("-shotelectionnight");

@@ -215,6 +215,7 @@ namespace PoliSim.UI
             if (interactive && !Mathf.Approximately(result, draft))
             {
                 result = Mathf.Clamp(Mathf.Round(result / step) * step, min, max);
+                if (!Mathf.Approximately(result, draft)) { AudioDirector.FireStep(); }   // P4-2: the draft snapped to its next step
             }
 
             // Repaint only: on the Layout event GetRect hands the caller a dummy rect, the columns squeeze to their

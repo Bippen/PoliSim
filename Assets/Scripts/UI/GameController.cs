@@ -433,6 +433,8 @@ namespace PoliSim.UI
 
 
         private ConsolidatedTab _consolidatedTab = ConsolidatedTab.Statistics;
+        /// <summary>P4-2: the hold banner's state on the last Repaint, so the interrupt cue fires on the rising edge only.</summary>
+        private bool _wasTimePausedLastFrame;
         private StatisticsCategory _statisticsCategory = StatisticsCategory.Domestic;
         private PolicyLawsCategory _policyLawsCategory = PolicyLawsCategory.LaborMarket;
         private PoliticsCategory _politicsCategory = PoliticsCategory.Parliament;
@@ -1061,6 +1063,24 @@ namespace PoliSim.UI
         /// itself only changes through this menu's own actions; no background system writes the
         /// saves directory, so the list cannot mutate under a drag.
         /// </summary>
+        /// <summary>
+        /// P4-2 (2026-09-03): the master volume and mute, on the one settings screen the game has, in its own idiom - a
+        /// ledger row for the volume (the standing is the saved value, the draft is the slider) and a MUTE button that
+        /// re-labels rather than vanishes. Persisted through AudioDirector (PlayerPrefs).
+        /// </summary>
+        private void DrawSoundSettings()
+        {
+            GUILayout.Label("SOUND", _headerStyle);
+            GUILayout.BeginHorizontal();
+            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            float saved = AudioDirector.Volume * 100f;
+            float draft = LedgerRow.Draw(rowRect, "Master volume", saved, saved, 0f, 100f, saved.ToString("F0", CultureInfo.InvariantCulture) + "%", null, "0 silent - 100 full", true, _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle);
+            if (!Mathf.Approximately(draft, saved)) { AudioDirector.Volume = draft / 100f; }
+            if (PoliSimWidgets.Button(AudioDirector.Mute ? "UNMUTE" : "MUTE", _neutralActionButtonStyle, GUILayout.Width(_labelStyle.fontSize * 7f))) { AudioDirector.Mute = !AudioDirector.Mute; }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(8f);
+        }
+
         private void DrawSavesMenuScreen()
         {
             DrawMenuBackground();
@@ -1072,6 +1092,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_boxStyle);
 
             GUILayout.Label("SAVED GAMES", _headerStyle);
+            DrawSoundSettings();
             // One label either way, per the stable-layout idiom the status line downstairs uses.
             GUILayout.Label(string.IsNullOrEmpty(_savesMenuStatus) ? " " : _savesMenuStatus, _labelStyle);
 
@@ -1083,7 +1104,7 @@ namespace PoliSim.UI
             string sanitized = SaveGameService.SanitizeSaveName(_saveNameInput);
             bool couldSave = sanitized.Length > 0;
             GUI.enabled = couldSave;
-            if (GUILayout.Button("Save", _implementButtonStyle, GUILayout.Width(width * 0.18f)) && couldSave)
+            if (PoliSimWidgets.Button("Save", _implementButtonStyle, GUILayout.Width(width * 0.18f)) && couldSave)
             {
                 if (SaveToPath(System.IO.Path.Combine(SaveGameService.DefaultSaveDirectory, sanitized + ".json")))
                 {
@@ -1111,7 +1132,7 @@ namespace PoliSim.UI
                 bool confirmingLoad = header.Path == _confirmLoadPath;
                 bool dirty = _simulationManager.CurrentDate != _lastPersistenceDate;
                 GUI.enabled = header.Compatible;
-                if (GUILayout.Button(confirmingLoad ? "Replace unsaved game?" : "Load", _neutralActionButtonStyle, GUILayout.Width(width * 0.2f)))
+                if (PoliSimWidgets.Button(confirmingLoad ? "Replace unsaved game?" : "Load", _neutralActionButtonStyle, GUILayout.Width(width * 0.2f)))
                 {
                     if (confirmingLoad || !dirty)
                     {
@@ -1127,7 +1148,7 @@ namespace PoliSim.UI
                 GUI.enabled = true;
 
                 bool confirmingDelete = header.Path == _confirmDeletePath;
-                if (GUILayout.Button(confirmingDelete ? "Really delete?" : "Delete", _removeButtonStyle, GUILayout.Width(width * 0.15f)))
+                if (PoliSimWidgets.Button(confirmingDelete ? "Really delete?" : "Delete", _removeButtonStyle, GUILayout.Width(width * 0.15f)))
                 {
                     if (confirmingDelete)
                     {
@@ -1155,7 +1176,7 @@ namespace PoliSim.UI
             GUILayout.EndScrollView();
 
             GUILayout.Label("Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F5 quicksaves to slot1, F9 loads it.", _labelStyle);
-            if (GUILayout.Button("Close", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button("Close", _neutralActionButtonStyle))
             {
                 _savesMenuOpen = false;
                 _confirmDeletePath = null;
@@ -1622,6 +1643,7 @@ namespace PoliSim.UI
                     }
                     _signingQueue.Enqueue(record);
                     _seenDivisionNumber = record.Number;
+                    AudioDirector.Fire(record.Passed ? AudioCue.BillPasses : AudioCue.BillFails);   // P4-2: display of the record, never its cause
                 }
             }
         }
@@ -1670,7 +1692,7 @@ namespace PoliSim.UI
             // not be what decides whether scenarios are reachable.
             foreach (ScenarioDefinition definition in ScenarioLibrary.All)
             {
-                if (GUILayout.Button($"Scenario: {definition.Name}", UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                if (PoliSimWidgets.Button($"Scenario: {definition.Name}", UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
                 {
                     StartScenario(definition);
                 }
@@ -1682,7 +1704,7 @@ namespace PoliSim.UI
             {
                 UiPalette.SystemArea area = UiPalette.GetCountryArea(country.Id);
                 GUIStyle style = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.TabSelected, area);
-                if (GUILayout.Button(country.Name, style))
+                if (PoliSimWidgets.Button(country.Name, style))
                 {
                     SelectPlayerCountry(country.Id);
                 }
@@ -1962,6 +1984,8 @@ namespace PoliSim.UI
             // interrupt banner the Budget tab once re-surfaced is the frame's banner on every screen
             // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
             bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening;
+            if (isTimePaused && !_wasTimePausedLastFrame && Event.current.type == EventType.Repaint) { AudioDirector.Fire(AudioCue.InterruptRaised); }   // P4-2: the hold's rising edge
+            if (Event.current.type == EventType.Repaint) { _wasTimePausedLastFrame = isTimePaused; }
             float leftColumnWidth = RailWidth();
             float rightColumnWidth = areaWidth - leftColumnWidth - columnSpacing;
 
@@ -3338,7 +3362,7 @@ namespace PoliSim.UI
                 : "A NOMINATION IS A DOCKET ITEM; ITS ESTIMATE DRAWS IN THE EFFECTS GRAMMAR (5c) ONCE A NAME IS ON THE DESK — NOT HERE, BECAUSE NOTHING IS DRAFTED.",
                 DeskCaption(7.5f, PoliSimTheme.TextMuted));
             GUI.enabled = pending;
-            if (GUILayout.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
+            if (PoliSimWidgets.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
             {
                 _federalReserveScrollPosition.y += Screen.height;   // the candidates are the modal beneath this page
             }
@@ -3434,7 +3458,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical();
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
-            if (GUILayout.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
             {
                 _playerCountry.CurrentFedChair = candidate;
                 _fedChairCandidates = null;
@@ -3708,7 +3732,7 @@ namespace PoliSim.UI
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null;
-            if (GUILayout.Button("Introduce Labor Market Bill", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button("Introduce Labor Market Bill", _neutralActionButtonStyle))
             {
                 _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts());
             }
@@ -4311,7 +4335,7 @@ namespace PoliSim.UI
             float height = RailCellHeight(cell);
             float tongue = RailWidth();
             Rect rect = GUILayoutUtility.GetRect(tongue, height, GUILayout.Width(tongue), GUILayout.Height(height));
-            bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none);
+            bool clicked = PoliSimWidgets.Button(rect, GUIContent.none, GUIStyle.none);
 
             float pad = RailCellPad(cell);
             float glyph = RailGlyphSize(cell);
@@ -4527,14 +4551,17 @@ namespace PoliSim.UI
                 {
                     _onDesk = false;
                     _consolidatedTab = tab;
+                    AudioDirector.Fire(AudioCue.FolderSwitch);   // P4-2
                 }
                 else if (_consolidatedTab == tab)
                 {
                     _onDesk = true;
+                    AudioDirector.Fire(AudioCue.FolderReturn);   // P4-2
                 }
                 else
                 {
                     _consolidatedTab = tab;
+                    AudioDirector.Fire(AudioCue.FolderSwitch);   // P4-2
                 }
             }
 
@@ -4571,7 +4598,7 @@ namespace PoliSim.UI
             // R-B2 (v3.0 Phase B): the chip is the way home - it is the calendar sheet collapsed, and
             // the sheet lives on Screen 0. An invisible click target under the painted chip, drawn
             // every frame (the control set never varies with state); a click on the Desk is a no-op.
-            if (GUI.Button(chip, GUIContent.none, GUIStyle.none))
+            if (PoliSimWidgets.Button(chip, GUIContent.none, GUIStyle.none))
             {
                 _onDesk = true;
             }
@@ -5525,6 +5552,7 @@ namespace PoliSim.UI
                     if (divisions[d].Passed && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
                 }
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                AudioDirector.Fire(AudioCue.ConstituencyDeclares);   // P4-2: the count is in - the night is built at its final minute, so this fires once
                 _electionNight = ElectionNightScreen.Build(
                     state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
                     System.DateTime.Now, 349, verdict: _pendingElectionVerdict,
@@ -5747,7 +5775,7 @@ namespace PoliSim.UI
 
             GUILayout.Space(24f);
             GUIStyle dismissStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
-            if (GUILayout.Button("Close", dismissStyle))
+            if (PoliSimWidgets.Button("Close", dismissStyle))
             {
                 DismissScenarioVerdict();
             }
@@ -5997,7 +6025,7 @@ namespace PoliSim.UI
             // label. All three current callers (the Statistics/Policy-Laws/Politics rows) pass a
             // measured height; the MinHeight arm is the pre-#13 form, kept so an unmeasured future
             // caller degrades to the old floor rather than to zero height.
-            if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinWidth(minWidth),
+            if (PoliSimWidgets.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinWidth(minWidth),
                 rowHeight > 0f ? GUILayout.Height(rowHeight) : GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 selectedCategory = category;
@@ -7279,7 +7307,7 @@ namespace PoliSim.UI
             // Code-review pass (2026-08-25): stages the click into _pendingSelectedLawId instead of
             // writing _selectedLawId directly - see that field's own doc comment for why (the
             // StatTracePanel precedent for a mid-frame GUILayout control-count mismatch).
-            if (GUI.Button(rowRect, string.Empty, GUIStyle.none))
+            if (PoliSimWidgets.Button(rowRect, string.Empty, GUIStyle.none))
             {
                 _pendingSelectedLawId = law.Id;
                 _hasPendingLawSelection = true;
@@ -7744,7 +7772,7 @@ namespace PoliSim.UI
                 _lawActionButtonSource = _neutralActionButtonStyle;
             }
             float actionWidth = Mathf.Max(0f, contentWidth + _labelStyle.margin.horizontal - _lawActionButtonStyle.margin.horizontal);
-            if (GUILayout.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
+            if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
             {
                 _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
             }
@@ -8361,7 +8389,7 @@ namespace PoliSim.UI
             GUILayout.Label(decision.Description, _labelStyle);
             foreach (CabinetDecisionOption option in decision.Options)
             {
-                if (GUILayout.Button(option.Label, _neutralActionButtonStyle))
+                if (PoliSimWidgets.Button(option.Label, _neutralActionButtonStyle))
                 {
                     _simulationManager.ResolveCabinetDecision(PlayerCountryId, portfolio, decision, option);
                 }
@@ -8428,7 +8456,7 @@ namespace PoliSim.UI
             GUILayout.Label(meeting.Description, _labelStyle);
             foreach (ForeignPolicyMeetingOption option in meeting.Options)
             {
-                if (GUILayout.Button(option.Label, _neutralActionButtonStyle))
+                if (PoliSimWidgets.Button(option.Label, _neutralActionButtonStyle))
                 {
                     _simulationManager.ResolveForeignPolicyMeeting(PlayerCountryId, option);
                 }
@@ -8731,7 +8759,7 @@ namespace PoliSim.UI
                 //
                 // Contorting this into a fixed control set would also mean rendering N candidate buttons
                 // when there are no candidates, which is not a thing.
-                if (GUILayout.Button("Reshuffle", _neutralActionButtonStyle))
+                if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle))
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
                     float approvalBeforeReshuffle = _playerCountry.State.ApprovalRating;
@@ -8753,7 +8781,7 @@ namespace PoliSim.UI
                         DrawCabinetCandidateButton(portfolio, candidate);
                     }
                 }
-                else if (GUILayout.Button("Search for candidates", _neutralActionButtonStyle))
+                else if (PoliSimWidgets.Button("Search for candidates", _neutralActionButtonStyle))
                 {
                     _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
                 }
@@ -8780,7 +8808,7 @@ namespace PoliSim.UI
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
             DrawMinisterAttributes(candidate);   // P2-5.2
-            if (GUILayout.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
             {
                 _playerCountry.CabinetMinisters[portfolio] = candidate;
                 _cabinetCandidatesByPortfolio.Remove(portfolio);
@@ -9249,7 +9277,7 @@ namespace PoliSim.UI
             // the flag comes on at today's EFFECTIVE rate, so turning it on never itself changes the
             // tariff (economically inert until a bill moves the rate). The alternative - the click
             // filing a reset bill - is one routing change away if a playtest ever wants it.
-            if (GUILayout.Button(hasOverride ? "Reset draft" : "Set Override",
+            if (PoliSimWidgets.Button(hasOverride ? "Reset draft" : "Set Override",
                     hasOverride ? _removeButtonStyle : _implementButtonStyle, GUILayout.Width(buttonWidth)))
             {
                 if (hasOverride)
@@ -9300,7 +9328,7 @@ namespace PoliSim.UI
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null;
-            if (GUILayout.Button("Introduce Trade Bill", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button("Introduce Trade Bill", _neutralActionButtonStyle))
             {
                 _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
             }
@@ -9350,7 +9378,7 @@ namespace PoliSim.UI
                 GUILayout.Label($"Would release {UiFormat.Money(deliverable, MoneyUnit.Billions)} into the budget{capped}", _labelStyle);
             }
 
-            if (GUILayout.Button("Introduce Emergency Drawdown Bill", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button("Introduce Emergency Drawdown Bill", _neutralActionButtonStyle))
             {
                 _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
                     new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
@@ -9685,7 +9713,7 @@ namespace PoliSim.UI
             // Same treatment as the horizontal sub-tabs (see BuildSubTabStyle), and this column is where
             // it matters most: it is the narrowest surface in the UI, so "Sovereign Wealth Fund" and
             // "Infrastructure" wrap here even at large window sizes.
-            if (GUILayout.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
+            if (PoliSimWidgets.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
             {
                 _budgetProcessCategory = category;
             }
@@ -9711,7 +9739,7 @@ namespace PoliSim.UI
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
-            if (GUILayout.Button("Introduce Budget Bill", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button("Introduce Budget Bill", _neutralActionButtonStyle))
             {
                 _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
             }
@@ -10037,7 +10065,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (GUI.Button(actionRect, toggleLabel, toggleStyle))
+            if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceTaxProgramBill(PlayerCountryId, taxLine.Type, !taxLine.IsImplemented);
             }
@@ -10189,7 +10217,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (GUI.Button(actionRect, toggleLabel, toggleStyle))
+            if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceWelfareProgramBill(PlayerCountryId, welfareProgram.Type, !welfareProgram.IsImplemented);
             }
@@ -10365,7 +10393,7 @@ namespace PoliSim.UI
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null;
-            if (GUILayout.Button("Introduce Economic Sectors Bill", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button("Introduce Economic Sectors Bill", _neutralActionButtonStyle))
             {
                 _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts());
             }
@@ -10431,7 +10459,7 @@ namespace PoliSim.UI
 
             string toggleLabel = draftExists ? "Dissolve Fund (draft)" : "Create Fund (draft)";
             GUIStyle toggleStyle = draftExists ? _removeButtonStyle : _implementButtonStyle;
-            if (GUILayout.Button(toggleLabel, toggleStyle))
+            if (PoliSimWidgets.Button(toggleLabel, toggleStyle))
             {
                 _swfExistsDraft = !draftExists;
                 RecomputePolicyPreview();
