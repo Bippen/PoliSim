@@ -24,12 +24,42 @@ namespace PoliSim.UI
         private const float RefFigureWidth = 150f;
         private const float RefTrailingWidth = 88f;
         private const float RefFontSize = 13f;
-        private const float RefTrackHeight = 15f;
+        // P2-1.3 (2026-09-02): thinner - a bar half its former height; the knob is sized by the thumb style.
+        private const float RefTrackHeight = 8f;
         private const float RefColumnGap = 10f;
 
         /// <summary>Knob geometry, also from the spec (14x23 at 1080p), scaled the same way.</summary>
         private const float RefKnobWidth = 14f;
         private const float RefKnobHeight = 23f;
+
+        /// <summary>P2-1.3: the draft's step, in the row's own units (percentage points for a rate). A tenth: fine
+        /// enough that any whole point is a resting value, coarse enough that the figure column's two decimals
+        /// never show a third.</summary>
+        public const float SnapStep = 0.1f;
+
+        /// <summary>P2-1.3: a whole unit - the bound the film holds every Budget row to. A row whose track covers more
+        /// than one unit per pixel cannot rest on every whole value, however it snaps.</summary>
+        public const float WholeUnit = 1f;
+
+        /// <summary>The step a track can carry: as fine as its pixels allow and never finer than what a whole unit needs
+        /// - a tenth where a unit has ten pixels, a half where it has two, else the whole unit. Adaptive so a 0-100 range
+        /// on a 1280 film and a 0-5 range on a 2560 film both rest on every whole value.</summary>
+        public static float StepFor(float unitsPerPixel)
+        {
+            if (unitsPerPixel <= SnapStep) { return SnapStep; }
+            if (unitsPerPixel <= 0.5f) { return 0.5f; }
+            return WholeUnit;
+        }
+
+        /// <summary>P2-1.3: the range each pixel of a drawn track covers, per row name, recorded only while the capture
+        /// harness is armed. A whole point is reachable without overshoot when this does not exceed <see cref="SnapStep"/>;
+        /// the driver reads the worst at its exit.</summary>
+        public static readonly System.Collections.Generic.Dictionary<string, float> ReachByRow = new System.Collections.Generic.Dictionary<string, float>();
+
+        private static void RecordReach(string name, float unitsPerPixel)
+        {
+            if (!ReachByRow.TryGetValue(name, out float worst) || unitsPerPixel > worst) { ReachByRow[name] = unitsPerPixel; }
+        }
         private const float RefTickWidth = 2f;
 
         private static float Scale(GUIStyle style) => Mathf.Max(1f, style.fontSize) / RefFontSize;
@@ -132,7 +162,7 @@ namespace PoliSim.UI
             float barFraction = -1f)
         {
             float scale = Scale(nameStyle);
-            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle), FigureNeed(standingText, draftText, figureStyle),
+            Columns(row, nameStyle, NameNeed(name, nameStyle), TrailingNeed(trailingText, figureStyle), FigureNeed(standingText, draftText, figureStyle),
                 out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
             Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
@@ -172,6 +202,22 @@ namespace PoliSim.UI
             GUI.enabled = ambient && interactive;
             float result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, thumbStyle);
             GUI.enabled = ambient;
+            // P2-1.3 (2026-09-02): FINER STEP - the draft snaps to SnapStep, so a whole point is a value the
+            // thumb can rest on rather than one it passes through; and the film records the range each pixel
+            // covers, which is the reach a whole point needs (the driver fails a run where it exceeds the snap).
+            float unitsPerPixel = trackRect.width > 0f ? (max - min) / trackRect.width : float.PositiveInfinity;
+            float step = StepFor(unitsPerPixel);
+            if (interactive && !Mathf.Approximately(result, draft))
+            {
+                result = Mathf.Clamp(Mathf.Round(result / step) * step, min, max);
+            }
+
+            // Repaint only: on the Layout event GetRect hands the caller a dummy rect, the columns squeeze to their
+            // minimum and the record would keep that ghost as the row's worst (it did, on the first film).
+            if (interactive && PoliSim.Testing.CaptureIdentity.Armed && trackRect.width > 0f && Event.current.type == EventType.Repaint)
+            {
+                RecordReach(UiGuardContext.CurrentScreen + " / " + name, unitsPerPixel);
+            }
 
             DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk);
 
@@ -209,7 +255,20 @@ namespace PoliSim.UI
             return Mathf.Max(standing, draft) * 2f;
         }
 
-        private static void Columns(Rect row, GUIStyle nameStyle, float trailingNeed, float figureNeed,
+        /// <summary>P2-1.3: the widest unbreakable token of the name - the name cell wraps at spaces before it shrinks, so
+        /// a single long word (a hyphenated party name) is the width the cell cannot go under.</summary>
+        private static float NameNeed(string name, GUIStyle nameStyle)
+        {
+            if (string.IsNullOrEmpty(name)) { return 0f; }
+            float widest = 0f;
+            foreach (string token in name.Split(' '))
+            {
+                widest = Mathf.Max(widest, nameStyle.CalcSize(new GUIContent(token)).x);
+            }
+            return widest + RefColumnGap * Scale(nameStyle);
+        }
+
+        private static void Columns(Rect row, GUIStyle nameStyle, float nameNeed, float trailingNeed, float figureNeed,
             out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect)
         {
             float scale = Scale(nameStyle);
@@ -226,9 +285,16 @@ namespace PoliSim.UI
             // font-derived FLOORS so they cannot shrink below legibility on a narrow window. This is the
             // same lesson as the row height one line below - a number from a mockup is a measurement at
             // one size, and here it was a measurement against one panel width too.
-            float nameWidth = Mathf.Max(row.width * 0.26f, RefKnobWidth * scale * 4f);
-            float figureWidth = Mathf.Max(row.width * 0.19f, RefKnobWidth * scale * 3f);
-            float trailingWidth = Mathf.Max(row.width * 0.11f, RefKnobWidth * scale * 2f);
+            // P2-1.3 (2026-09-02): LONGER TRACK - the fixed columns take less of the row (name 26 -> 20 %, figure
+            // 19 -> 14 %, trailing 11 -> 9 %, the needs capped at 24 % instead of 34 %), so the track is what is
+            // left, roughly half the row; the reach record below is what proves a whole point is reachable.
+            float nameWidth = Mathf.Max(row.width * 0.18f, RefKnobWidth * scale * 4f);
+            if (nameNeed > nameWidth)
+            {
+                nameWidth = Mathf.Min(nameNeed, row.width * 0.30f);   // P2-1.3: a name that cannot wrap takes up to 30 %
+            }
+            float figureWidth = Mathf.Max(row.width * 0.13f, RefKnobWidth * scale * 3f);
+            float trailingWidth = Mathf.Max(row.width * 0.08f, RefKnobWidth * scale * 2f);
             float minTrack = RefKnobWidth * scale * 4f;
 
             // ⚠ THE TRAILING COLUMN IS SIZED FROM ITS CONTENT, because it holds two different KINDS of
@@ -246,7 +312,7 @@ namespace PoliSim.UI
             // below as the second backstop and minTrack as the third.
             if (trailingNeed > trailingWidth)
             {
-                trailingWidth = Mathf.Min(trailingNeed, row.width * 0.34f);
+                trailingWidth = Mathf.Min(trailingNeed, row.width * 0.22f);
             }
 
             // ⚠ THE FIGURE COLUMN ASKS WHAT IT IS HOLDING TOO (2026-08-28, UI v3.0 Phase A - the
@@ -257,7 +323,7 @@ namespace PoliSim.UI
             // proportion is a measurement at one width, and a word is not a figure.
             if (figureNeed > figureWidth)
             {
-                figureWidth = Mathf.Min(figureNeed, row.width * 0.34f);
+                figureWidth = Mathf.Min(figureNeed, row.width * 0.22f);
             }
 
             // If the floors still do not fit - a very narrow window - the fixed columns give ground
@@ -455,7 +521,7 @@ namespace PoliSim.UI
             Rect row, string name, float fill, string figureText, string trailingText,
             Color barInk, GUIStyle nameStyle, GUIStyle figureStyle)
         {
-            Columns(row, nameStyle, TrailingNeed(trailingText, figureStyle), FigureNeed(figureText, null, figureStyle),
+            Columns(row, nameStyle, NameNeed(name, nameStyle), TrailingNeed(trailingText, figureStyle), FigureNeed(figureText, null, figureStyle),
                 out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
 
             DrawNameCell(nameRect, name, nameStyle, PoliSimTheme.TextPrimary);

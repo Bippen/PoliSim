@@ -1043,6 +1043,11 @@ namespace PoliSim.Testing
 
         private int _identityAsserts;
 
+        /// <summary>P2-1.3: the ledger rows drawn in each CAPTURED frame - cleared as a capture begins, collected after its
+        /// frame is written, so a row drawn while the driver scrolls or settles toward the next screen is never filed
+        /// under the previous stem (the first film keyed a Policy Laws dial under a Budget stem exactly that way).</summary>
+        private readonly Dictionary<string, float> _reachByCapture = new Dictionary<string, float>();
+
         private IEnumerator Capture(string name)
         {
             // ⚠ THIS IS WHY THE RUNNER CANNOT USE -batchmode.
@@ -1064,6 +1069,7 @@ namespace PoliSim.Testing
             // of the frame being captured - naming the screen afterwards would file this screen's
             // overflows under the next one.
             UiGuardContext.CurrentScreen = name;
+            PoliSim.UI.LedgerRow.ReachByRow.Clear();
 
             // ⚠ ENTRY TRACE (2026-08-25 hang investigation), paired with WaitForCanvasSettle's own
             // fallback trace. This project's own history names TWO independent, already-diagnosed
@@ -1079,6 +1085,10 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: entering WaitForEndOfFrame for {name}.");
             yield return new WaitForEndOfFrame();
             Debug.Log($"SHOT: WaitForEndOfFrame resumed for {name}.");
+            foreach (KeyValuePair<string, float> reach in PoliSim.UI.LedgerRow.ReachByRow)
+            {
+                if (!_reachByCapture.TryGetValue(reach.Key, out float worstSoFar) || reach.Value > worstSoFar) { _reachByCapture[reach.Key] = reach.Value; }
+            }
 
             Texture2D shot = ScreenCapture.CaptureScreenshotAsTexture();
             if (shot == null)
@@ -1223,6 +1233,34 @@ namespace PoliSim.Testing
         private void Finish(int exitCode)
         {
             _finishCalled = true;
+            // P2-1.3 (2026-09-02): every ledger row the film drew recorded the range a pixel of its track covers;
+            // a whole point is reachable without overshoot only when that does not exceed the row's snap.
+            if (_reachByCapture.Count > 0)
+            {
+                string worstName = null;
+                float worst = 0f;
+                // Keyed "capture stem / row": the verdict is the BUDGET screen's (stems 05*), which is the row P2-1.3
+                // set; every other ledger row (the Policy Web's node panel draws the same dial in a side box) is
+                // reported for the record, never judged here.
+                string worstAnyName = null;
+                float worstAny = 0f;
+                foreach (KeyValuePair<string, float> r in _reachByCapture)
+                {
+                    if (worstAnyName == null || r.Value > worstAny) { worstAnyName = r.Key; worstAny = r.Value; }
+                    if (!r.Key.StartsWith("05", System.StringComparison.Ordinal)) { continue; }
+                    if (worstName == null || r.Value > worst) { worstName = r.Key; worst = r.Value; }
+                }
+
+                Debug.Log($"SHOT: slider reach, every ledger row - worst {worstAny:0.000} units per pixel ({worstAnyName}).");
+                bool reachable = worstName == null || worst <= PoliSim.UI.LedgerRow.WholeUnit;
+                string reach = $"SHOT: slider reach on the Budget - {_reachByCapture.Count} ledger row(s) drawn in the captured frames, worst Budget row {worst:0.000} units per pixel ({worstName}) against the whole-unit bound of {PoliSim.UI.LedgerRow.WholeUnit:0.###} (the step adapts to the track: {PoliSim.UI.LedgerRow.StepFor(worst):0.###} on that row).";
+                if (reachable) { Debug.Log(reach); }
+                else
+                {
+                    Debug.LogError(reach + " A whole point is NOT reachable without overshoot on that row - lengthen the track.");
+                    exitCode = System.Math.Max(exitCode, 1);
+                }
+            }
 
             // ⚠ The hook runs BEFORE the exit and can only make the code worse, never better. A hook that
             // throws must not swallow the run's own verdict, so it is caught and counted as a failure -

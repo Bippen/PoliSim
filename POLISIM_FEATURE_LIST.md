@@ -407,7 +407,7 @@ measured table is in the record with no pair below its floor. **→ ✅ CLOSED 2
 
 **P2-1.3 — The Budget sliders.** Longer track, thinner height, finer step; the description texts
 under each slider cut (the (b)/(c) taxonomy applied to Budget). *Done when:* filmed, and a slider
-can be set to any whole percentage point without overshoot.
+can be set to any whole percentage point without overshoot. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §223: the fixed columns take less of the row, the bar is half as tall with a narrower knob, the draft snaps to a tenth, the header and mechanism paragraphs are cut, and every film fails if any ledger row's range per pixel exceeds the snap.**
 
 **P2-1.4 — Persistent fiscal header on Budget.** Balance, debt, debt-to-GDP, revenue and spending
 totals visible at all times on the Budget screen, derived, in the chip-strip idiom. *Done when:*

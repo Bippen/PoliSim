@@ -2505,8 +2505,10 @@ namespace PoliSim.UI
             int buttonFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.032f), 22, 38);
             int tabFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.024f), 18, 30);
             int bannerFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.028f), 20, 36);
-            float sliderHeight = Mathf.Clamp(Screen.height * 0.035f, 26f, 50f);
-            float sliderThumbWidth = Mathf.Clamp(Screen.width * 0.03f, 26f, 50f);
+            // P2-1.3 (2026-09-02): thinner - the bar at about half its former height and the knob narrower; the
+            // ledger row draws the bar itself at RefTrackHeight, so these size the knob and the standalone sliders.
+            float sliderHeight = Mathf.Clamp(Screen.height * 0.02f, 14f, 28f);
+            float sliderThumbWidth = Mathf.Clamp(Screen.width * 0.012f, 12f, 24f);
             float buttonHeight = Mathf.Clamp(Screen.height * 0.09f, 60f, 140f);
             float tabButtonHeight = Mathf.Clamp(Screen.height * 0.05f, 36f, 70f);
 
@@ -8978,8 +8980,6 @@ namespace PoliSim.UI
 
             float height = _headerStyle.CalcHeight(new GUIContent("Budget Process"), textWidth) + _headerStyle.margin.vertical;
 
-            height += _labelStyle.CalcHeight(new GUIContent(BudgetProcessDescription), textWidth) + _labelStyle.margin.vertical;
-            height += 8f;
 
             height += _labelStyle.CalcHeight(new GUIContent(BuildBudgetBillStatusText()), textWidth) + _labelStyle.margin.vertical;
             height += _neutralActionButtonStyle.fixedHeight + _neutralActionButtonStyle.margin.vertical;
@@ -9037,8 +9037,8 @@ namespace PoliSim.UI
             // up to more than requested), which made this label wrap against an inflated width and
             // clip mid-word rather than wrap. Tying it directly to availableWidth makes its wrap
             // boundary correct regardless of what the row does.
-            GUILayout.Label(BudgetProcessDescription, _labelStyle, GUILayout.Width(contentWidth));
-            GUILayout.Space(8f);
+            // P2-1.3 (2026-09-02): the paragraph that restated the screen (a (b)-class duplicate) is cut; the
+            // sub-tabs and the columns say what it said. BudgetProcessDescription stays as the record of it.
 
             DrawBudgetBillStatusAndIntroduce();
             GUILayout.Space(8f);
@@ -9441,7 +9441,8 @@ namespace PoliSim.UI
         private void DrawTaxPolicyContent()
         {
             DrawColoredLabel("Tax Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            GUILayout.Label("A rate slider below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Implementing or removing a tax entirely is separate - it submits its own standalone bill immediately, resolving independently of the annual cycle. See the Parliament tab for seat composition.", _labelStyle);
+            // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class) - the row's own furniture says it:
+            // the hatched draft, the figure pair, the WOULD PASS verdict and the standalone Remove.
             GUILayout.Space(8f);
 
             float taxTypeNameColumnWidth = GetTaxTypeNameColumnWidth();
@@ -9510,8 +9511,8 @@ namespace PoliSim.UI
             // style carries its own padding and metrics, so measuring a different style sizes the column
             // for a different string. Same class as the mockup-number rule: a measurement is only valid
             // against the conditions it was taken under.
-            float actionWidth = Mathf.Max(fullRow.width * 0.15f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);
-            float verdictWidth = fullRow.width * 0.13f;
+            float actionWidth = Mathf.Max(fullRow.width * 0.12f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);   // P2-1.3: 15 -> 12 %, the track takes the difference
+            float verdictWidth = fullRow.width * 0.11f;   // P2-1.3: 13 -> 11 %
 
             var actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);
             var verdictRect = new Rect(actionRect.x - verdictWidth - gap, fullRow.y, verdictWidth, fullRow.height);
@@ -9612,7 +9613,7 @@ namespace PoliSim.UI
         private void DrawWelfarePolicyContent()
         {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
-            GUILayout.Label("A generosity slider below only changes your DRAFT - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Implementing or removing a program entirely is separate - it submits its own standalone bill immediately, resolving independently of the annual cycle.", _labelStyle);
+            // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class); the row says it.
             _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
             GUILayout.Space(8f);
 
@@ -9662,8 +9663,8 @@ namespace PoliSim.UI
 
             Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
             float gap = _labelStyle.fontSize * 0.6f;
-            float actionWidth = Mathf.Max(fullRow.width * 0.15f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);
-            float verdictWidth = fullRow.width * 0.13f;
+            float actionWidth = Mathf.Max(fullRow.width * 0.12f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);   // P2-1.3: 15 -> 12 %, the track takes the difference
+            float verdictWidth = fullRow.width * 0.11f;   // P2-1.3: 13 -> 11 %
 
             var actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);
             var verdictRect = new Rect(actionRect.x - verdictWidth - gap, fullRow.y, verdictWidth, fullRow.height);
@@ -10080,7 +10081,7 @@ namespace PoliSim.UI
         private void DrawSpendingPolicyContent()
         {
             DrawColoredLabel("Spending Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            GUILayout.Label("Each line's slider is a DRAFT percentage change of its OWN current amount, not a flat dollar delta - nothing happens until the annual budget bill is introduced and passes (see the Budget Process tab). Mandatory programs have a narrower range and hit approval harder per relative size - entitlement reform is politically costly.", _labelStyle);
+            // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class); the row and the mandatory marker say it.
             GUILayout.Space(8f);
 
             // Moved here from the old combined "Trade & Spending" tab (Phase 4) - the last-turn
