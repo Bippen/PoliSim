@@ -21564,3 +21564,102 @@ The instrument that films the night is the driver's new **`-shotinterrupts`** mo
 **Bar:** `RunSimulationBatch` - eleven checks now, `PreviewParityDiagnostic` enrolled - and `RunAllBatch` clean on the committed tree (`bar36_p2_3_4_*.log`); the parity log prints the path for the three chambers with a sitting chair (the USA, Sweden, Poland).
 
 **What the film taught.** The derived-stat row's trailing lane is a fixed share of the sheet, and the first notes beside the path's figures ran to twice it at 1280 (twelve overflows across the Riksbank captures); the rows now carry the figures - the rule reading, the target and whose readings they rest on - and the scope sentence beneath carries the sentences.
+
+## 231. P2-4.1 — EVERY SCREEN FILMED AS ELIAS SAW IT, at 1280 / 1600 / 2560, with the dead-space measure per screen (2026-09-02)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P2, Track 4): *"Film every screen as Elias saw it at 1280/1600/2560 after Track 1 lands, with the dead-space measure per screen, as the annex."*
+
+**The measure.** `ScreenEdgeCheck`, which already reads every capture a pass writes for the edge guard, now also counts the frame's dead space: the share of pixels within the content threshold of a ground - the desk, the paper, the tile (`PoliSimTheme.Desk`, `Card`, `Tile`) - which is what nothing is drawn on. It prints the share on every capture's edge line (`dead nn.n%`) and closes the pass with `=== Dead space: mean … emptiest: …` naming the five emptiest captures. A measure for the annex, not a verdict: no threshold, no failure - the board reads it beside the film, and a paper page dense with type still reads mostly as ground at this threshold, so the figure is "how much of the frame is bare", not "how much is useful".
+
+**The geometry the harness accepts.** The first attempt filmed 1600×900 and was refused: the harness holds the project's four filmed geometries (S-17: 1280×720, 1600×950, 1920×1080, 2560×1440) and an off-standard height is a discrepancy, not a choice. The middle width is 1600×950.
+
+**The films** (`p2an1280_*.png`, `p2an1600_*.png`, `p2an2560_*.png` - the same eighty-two stems at each width, at HEAD after Track 3): 82 captures each, 0 overflows, 0 edge clips, 0 containment escapes; the frame probe's one standing entry is the PolicyLaws sheet 9 px past a 720 frame (pre-existing). Mean dead space over the pass: 75,7% at 1280, 76,6% at 1600, 78,5% at 2560 - the wider the frame, the more of it is bare, which is the sitting's own finding measured.
+
+**Bar:** `RunSimulationBatch` and `RunAllBatch` clean on the committed tree (`bar37_p2_4_1_*.log`).
+
+### The annex — dead space per screen, three widths
+
+| capture | 1280×720 | 1600×950 | 2560×1440 |
+|---|---|---|---|
+| `01_country_selector` | 66,7% | 66,9% | 66,9% |
+| `01a_selector_yielding` | 44,0% | 44,1% | 44,2% |
+| `01b_running_strip` | 82,0% | 83,4% | 85,4% |
+| `01c_desk` | 82,0% | 83,4% | 85,4% |
+| `01d_desk_held` | 81,2% | 82,7% | 84,8% |
+| `01e_desk_event` | 81,1% | 82,5% | 84,7% |
+| `01f_desk_gameover` | 11,4% | 10,5% | 9,1% |
+| `02_statistics` | 77,2% | 78,9% | 80,6% |
+| `02a_statistics_domestic` | 77,2% | 78,9% | 80,6% |
+| `02a_statistics_domestic_deep` | 82,9% | 84,8% | 84,3% |
+| `02a_statistics_domestic_rows` | 82,9% | 84,8% | 84,3% |
+| `02b_statistics_international` | 80,2% | 82,0% | 84,9% |
+| `02b_statistics_international_deep` | 84,0% | 85,4% | 87,4% |
+| `02b_statistics_international_rows` | 84,0% | 85,4% | 87,4% |
+| `03_decisions` | 69,7% | 73,4% | 77,6% |
+| `04_demographics` | 83,9% | 84,3% | 86,3% |
+| `05_budget` | 75,0% | 75,6% | 79,0% |
+| `05a_budget_tax` | 75,4% | 75,9% | 79,2% |
+| `05a_budget_tax_deep` | 75,0% | 75,6% | 79,0% |
+| `05a_budget_tax_rows` | 75,0% | 75,6% | 79,0% |
+| `05b_budget_spending` | 76,2% | 76,3% | 80,2% |
+| `05b_budget_spending_deep` | 75,9% | 76,7% | 80,4% |
+| `05b_budget_spending_rows` | 76,0% | 76,6% | 80,3% |
+| `05c_budget_welfare` | 75,9% | 76,3% | 79,7% |
+| `05c_budget_welfare_deep` | 74,8% | 75,5% | 79,7% |
+| `05c_budget_welfare_rows` | 74,8% | 75,5% | 79,7% |
+| `05d_budget_infrastructure` | 76,4% | 77,1% | 81,2% |
+| `05d_budget_infrastructure_deep` | 76,4% | 77,1% | 81,2% |
+| `05d_budget_infrastructure_rows` | 76,4% | 77,1% | 81,2% |
+| `05e_budget_swf` | 73,7% | 74,6% | 78,1% |
+| `05e_budget_swf_deep` | 73,9% | 75,1% | 79,4% |
+| `05e_budget_swf_rows` | 73,9% | 75,1% | 79,4% |
+| `05r_budget_rest` | 75,5% | 76,0% | 79,2% |
+| `06_policylaws` | 81,5% | 82,8% | 80,1% |
+| `06a_policylaws_labormarket` | 71,5% | 73,8% | 77,4% |
+| `06a_policylaws_labormarket_deep` | 81,5% | 82,8% | 80,1% |
+| `06a_policylaws_labormarket_rows` | 81,5% | 82,8% | 80,1% |
+| `06b_policylaws_crimejustice` | 79,3% | 79,4% | 84,6% |
+| `06b_policylaws_crimejustice_deep` | 84,4% | 85,5% | 86,7% |
+| `06b_policylaws_crimejustice_rows` | 84,4% | 85,5% | 86,7% |
+| `06c_policylaws_sectors` | 71,0% | 73,4% | 77,2% |
+| `06c_policylaws_sectors_deep` | 81,5% | 83,1% | 84,9% |
+| `06c_policylaws_sectors_rows` | 82,1% | 82,9% | 84,9% |
+| `06d_policylaws_policyweb` | 86,4% | 88,3% | 91,2% |
+| `06d_policylaws_policyweb_deep` | 81,6% | 83,3% | 86,0% |
+| `06d_policylaws_policyweb_rows` | 81,6% | 83,3% | 86,0% |
+| `06e_policylaws_trade` | 77,9% | 75,1% | 77,9% |
+| `06e_policylaws_trade_deep` | 80,3% | 82,2% | 83,3% |
+| `06e_policylaws_trade_rows` | 80,3% | 82,1% | 83,3% |
+| `06f_policylaws_laws` | 75,2% | 75,9% | 78,3% |
+| `06f_policylaws_laws_deep` | 77,4% | 79,0% | 81,2% |
+| `06f_policylaws_laws_rows` | 76,6% | 76,9% | 79,2% |
+| `06g_laws_expected_effects` | 75,2% | 76,0% | 78,8% |
+| `06h_policylaws_trace_approval` | 87,0% | 86,8% | 84,9% |
+| `06i_policylaws_trace_confidence` | 80,8% | 81,0% | 79,4% |
+| `06j_policylaws_policyweb_rest` | 86,4% | 88,3% | 91,0% |
+| `06j_policylaws_trace_debt` | 87,8% | 87,8% | 84,6% |
+| `06k_policylaws_policyweb_node_policy` | 86,4% | 88,2% | 90,9% |
+| `06k_policylaws_policyweb_node_policy_rows` | 80,8% | 83,1% | 87,0% |
+| `06l_policylaws_policyweb_node_stat` | 85,1% | 86,8% | 89,6% |
+| `06l_policylaws_policyweb_node_stat_rows` | 83,3% | 85,0% | 87,7% |
+| `06m_policylaws_policyweb_restored` | 86,4% | 88,3% | 91,0% |
+| `06m_policylaws_trade_draft_moved` | 80,8% | 80,6% | 80,1% |
+| `06n_policylaws_trade_draft_reset` | 80,9% | 80,7% | 80,2% |
+| `07_politics` | 79,5% | 79,5% | 80,5% |
+| `07a_politics_parliament` | 79,5% | 79,5% | 80,5% |
+| `07a_politics_parliament_deep` | 78,8% | 78,0% | 79,6% |
+| `07a_politics_parliament_rows` | 78,8% | 78,0% | 79,6% |
+| `07b_politics_compass` | 83,5% | 85,2% | 87,8% |
+| `07b_politics_compass_deep` | 85,0% | 85,8% | 87,8% |
+| `07b_politics_compass_rows` | 85,0% | 85,8% | 87,8% |
+| `07c_politics_cabinet` | 64,6% | 66,4% | 60,6% |
+| `07c_politics_cabinet_deep` | 58,1% | 55,7% | 56,4% |
+| `07c_politics_cabinet_rows` | 58,1% | 55,7% | 56,4% |
+| `07d_politics_federalreserve` | 82,4% | 83,6% | 85,7% |
+| `07d_politics_federalreserve_deep` | 67,1% | 70,6% | 75,7% |
+| `07d_politics_federalreserve_rows` | 67,1% | 70,6% | 75,7% |
+| `89d_signing_entrance` | 0,9% | 0,8% | 0,6% |
+| `89e_signing_settled` | 33,8% | 33,4% | 30,8% |
+| `90_interrupt_held` | 77,2% | 78,9% | 80,6% |
+| `91_interrupt_held_budget` | 75,4% | 75,9% | 79,2% |
+| `92_saves_menu` | 82,1% | 83,0% | 89,1% |

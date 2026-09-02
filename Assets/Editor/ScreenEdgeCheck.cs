@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 using System.IO;
 using System.Linq;
@@ -95,9 +96,10 @@ namespace PoliSim.EditorTools
                       $"duplicated; {paths.Length} capture(s) matching '{pattern}'.");
 
             int flagged = 0;
+            var deadShares = new List<(string Name, float Share)>();
             foreach (string path in paths)
             {
-                if (!TryAnalyse(path, marginFraction, out int left, out int top, out int right, out int bottom, out int width, out int height))
+                if (!TryAnalyse(path, marginFraction, out int left, out int top, out int right, out int bottom, out int width, out int height, out float deadShare))
                 {
                     Debug.LogError($"EDGE: could not decode {Path.GetFileName(path)}");
                     flagged++;
@@ -119,7 +121,8 @@ namespace PoliSim.EditorTools
                 int flushSides = (Covers(left, height) ? 1 : 0) + (Covers(top, width) ? 1 : 0) + (Covers(right, height) ? 1 : 0) + (Covers(bottom, width) ? 1 : 0);
                 bool gap = marginFraction <= 0f && flushSides > 0 && flushSides < 4;
                 string line = $"  {Path.GetFileNameWithoutExtension(path),-46} " +
-                              $"L{left,5} T{top,5} R{right,5} B{bottom,5}";
+                              $"L{left,5} T{top,5} R{right,5} B{bottom,5}   dead {deadShare * 100f,5:F1}%";
+                deadShares.Add((Path.GetFileNameWithoutExtension(path), deadShare));
 
                 if (clipped || gap)
                 {
@@ -134,6 +137,17 @@ namespace PoliSim.EditorTools
 
             Debug.Log($"=== Screen edges: {paths.Length} capture(s), {flagged} clipped " +
                       $"(4 pixel lines per screen; right/bottom only; flushness as the longest content run, not overrun) ===");
+            // P2-4.1: the dead-space annex line - the mean over the pass and the five emptiest captures, ground-coloured share of the frame.
+            if (deadShares.Count > 0)
+            {
+                deadShares.Sort((a, b) => b.Share.CompareTo(a.Share));
+                float mean = 0f;
+                foreach ((string _, float share) in deadShares) { mean += share; }
+                mean /= deadShares.Count;
+                var emptiest = new List<string>();
+                for (int i = 0; i < Mathf.Min(5, deadShares.Count); i++) { emptiest.Add($"{deadShares[i].Name} {deadShares[i].Share * 100f:F1}%"); }
+                Debug.Log($"=== Dead space: mean {mean * 100f:F1}% of the frame ground-coloured over {deadShares.Count} capture(s); emptiest: {string.Join(", ", emptiest)} ===");
+            }
             CheckExit.Finish(flagged == 0 ? 0 : 1);
         }
 
@@ -166,9 +180,10 @@ namespace PoliSim.EditorTools
         }
 
         private static bool TryAnalyse(string path, float marginFraction,
-            out int left, out int top, out int right, out int bottom, out int width, out int height)
+            out int left, out int top, out int right, out int bottom, out int width, out int height, out float deadShare)
         {
             left = top = right = bottom = width = height = 0;
+            deadShare = 0f;
 
             var texture = new Texture2D(2, 2);
             try
@@ -186,6 +201,16 @@ namespace PoliSim.EditorTools
                 // (1,1), "outside the margin by construction" - and at a zero margin that pixel is the rail,
                 // so every verdict flipped. The theme is the one statement of what the ground is.
                 Color32 desk = PoliSim.UI.PoliSimTheme.Desk;
+                // P2-4.1 (2026-09-02): the dead-space measure - the share of the frame within the content threshold of a
+                // ground (the desk, the paper, the tile): what is drawn nothing on. A measure for the annex, not a verdict.
+                Color32 paper = PoliSim.UI.PoliSimTheme.Card;
+                Color32 tile = PoliSim.UI.PoliSimTheme.Tile;
+                long dead = 0;
+                for (int i = 0; i < pixels.Length; i++)
+                {
+                    if (!IsContent(pixels[i], desk) || !IsContent(pixels[i], paper) || !IsContent(pixels[i], tile)) { dead++; }
+                }
+                deadShare = pixels.Length > 0 ? dead / (float)pixels.Length : 0f;
 
                 int marginX = Mathf.RoundToInt(width * marginFraction);
                 int marginY = Mathf.RoundToInt(height * marginFraction);

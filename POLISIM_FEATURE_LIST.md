@@ -456,7 +456,7 @@ the projected path equals the rule evaluated on the projection, asserted. **→ 
 ## Track 4 — the Design batch (re-composition; the dead-space paradox says spacing won't fix these)
 
 **P2-4.1 — Film every screen as Elias saw it** at 1280/1600/2560 after Track 1 lands, with the
-dead-space measure per screen, as the annex.
+dead-space measure per screen, as the annex. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §231: `ScreenEdgeCheck` prints each capture's ground-coloured share and the pass's mean and emptiest; the sweep filmed at 1280×720, 1600×950 and 2560×1440 (`p2an*`), the per-screen table in the record.**
 
 **P2-4.2 — Install the ask (D10)** in the request doc, one ask, rows: (1) **International** —
 modernise and re-compose (the country pages are built structurally; every gap the model cannot
