@@ -423,7 +423,6 @@ namespace PoliSim.UI
         // at the cap and stays a pie.
         private readonly RankedBarLedgerRenderer _spendingAllocationLedger = new RankedBarLedgerRenderer();
         private readonly RankedBarLedgerRenderer _taxRevenueLedger = new RankedBarLedgerRenderer();
-        private readonly PieChartRenderer _populationPieChart = new PieChartRenderer();
         private readonly HemicycleRenderer _hemicycleRenderer = new HemicycleRenderer();
 
         private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
@@ -8755,21 +8754,38 @@ namespace PoliSim.UI
         private const float CompassScrollGutter = 18f;
 
         /// <summary>Demographics half of the old "Compass & Demographics" tab - see DrawPoliticalCompassContent's own doc comment for the split reasoning. Called from DrawDemographicsTab. Ethnicity/religion breakdowns are explicitly OUT OF SCOPE per the Master Roadmap's own Part C spec - not tracked anywhere in this game's data model.</summary>
+        /// <summary>
+        /// Board 5b (D11 row 2, 2026-09-02): **People as instruments over real cohorts.** The pyramid is
+        /// one-sided on purpose - `PopulationCohorts` holds twenty-one bands and no sex split, so a
+        /// two-sided pyramid would draw a symmetry the model does not hold: one bar per band, the
+        /// working-age bands in the area ink and the dependent bands lighter, the two dashed rules at
+        /// 15 and 65 the substrate's own thresholds. The turnout column is the instrument Elias asked
+        /// for: a tick per eligible band on a 0–100 lane from `CohortVoterGroups` (Sweden: SCB 2014,
+        /// the series' end, printed SOURCED with the year); bands under the voting age draw a dashed
+        /// empty lane, not zero; the band the voting age splits is apportioned pro rata and the sheet
+        /// says so. Dependency as the substrate derives it - the two ratios as numerals with their
+        /// formulas and one share bar; the electorate - the eligible count and share, the voting age
+        /// SOURCED, the voter groups' shares, and "what votes" as eligible × turnout by band, labelled
+        /// a derivation, not a forecast. Every quantity is derived; the honesty class is printed on the
+        /// instrument. ⚠ THE EIGHT-SERIES CAP: `UiPalette.MaxCategoricalSeries` holds eight inks and
+        /// nothing here draws more series than inks - the share bars are three series and ONE series
+        /// respectively (the electorate's groups are one ink with hairline breaks, because Sweden's
+        /// turnout table has thirteen bands and thirteen inks would be five over the cap).
+        /// This replaces the dependency pie, the population bulletin and the population-share pie; the
+        /// sector-employment pie and the two ledgers stay as they were - not cohort quantities.
+        /// </summary>
         private void DrawDemographicsContent()
         {
-            DrawColoredLabel("Demographics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("No ethnicity/religion breakdown (not tracked anywhere in this game's data model). The five charts below are all scoped to the player's own country except Population, which is inherently comparative.", _labelStyle);
-            GUILayout.Space(4f);
-
-            EconomyState state = _playerCountry.State;
-            _dependencyRatioPieChart.Draw(
-                $"{_playerCountry.Name}: Working-Age vs. Dependent Population",
-                new[]
-                {
-                    new PieSlice("Working-age", 100f - state.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor)),
-                    new PieSlice("Dependents", state.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral)),
-                },
-                _labelStyle, "F1", moneyUnit: null);
+            DrawColoredLabel("People", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            PopulationCohorts cohorts = _playerCountry.Cohorts;
+            if (cohorts == null)
+            {
+                GUILayout.Label("This country carries no cohort substrate yet - the instruments draw when it does.", _labelStyle);
+            }
+            else
+            {
+                DrawCohortInstruments(cohorts);
+            }
             GUILayout.Space(10f);
 
             var sectorSlices = new List<PieSlice>();
@@ -8803,6 +8819,7 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
 
             // 13 TaxType members - also over the cap, same treatment.
+            EconomyState state = _playerCountry.State;
             var taxRows = new List<(string Label, float Value)>();
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
             {
@@ -8812,20 +8829,213 @@ namespace PoliSim.UI
             }
             _taxRevenueLedger.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxRows, _labelStyle,
                 UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
-            GUILayout.Space(10f);
+        }
 
-            // Annual cadence, so a bulletin rather than a chart - see PublishedFigure.
-            PublishedFigure.Draw("Population as published",
-                _playerCountry.Published.Series.TryGetValue(PublishedStat.Population, out PublishedSeries populationPublished) ? populationPublished : null,
-                _labelStyle, moneyUnit: null);
-            GUILayout.Space(10f);
+        /// <summary>The honesty class printed on an instrument, the coalition page's own vocabulary: DERIVED / DECLARED / SOURCED / MEASURED.</summary>
+        private void DrawHonestyStamp(Rect r, string text)
+        {
+            GUIStyle stamp = DeskCaption(7.5f, PoliSimTheme.TextSecondary, true, TextAnchor.MiddleCenter);
+            float w = Mathf.Min(r.width, stamp.CalcSize(new GUIContent(text)).x + StatsUnit(10f));
+            var box = new Rect(r.xMax - w, r.y, w, r.height);
+            PoliSimTheme.Rule(new Rect(box.x, box.y, box.width, 1f), PoliSimTheme.HairlineStrong);
+            PoliSimTheme.Rule(new Rect(box.x, box.yMax - 1f, box.width, 1f), PoliSimTheme.HairlineStrong);
+            PoliSimTheme.Rule(new Rect(box.x, box.y, 1f, box.height), PoliSimTheme.HairlineStrong);
+            PoliSimTheme.Rule(new Rect(box.xMax - 1f, box.y, 1f, box.height), PoliSimTheme.HairlineStrong);
+            PoliSimWidgets.MeasuredLabel(box, text, stamp);
+        }
 
-            var populationSlices = new List<PieSlice>();
-            foreach (Country country in _world.Countries)
+        /// <summary>A section caption with its honesty stamp at the right.</summary>
+        private void DrawCohortCaption(string caption, string stamp)
+        {
+            float stampWidth = DeskCaption(7.5f, PoliSimTheme.TextSecondary, true).CalcSize(new GUIContent(stamp)).x + StatsUnit(14f);
+            Rect row = DrawStatsSectionCaption(caption, reserveRight: stampWidth);
+            if (Event.current.type == EventType.Repaint) { DrawHonestyStamp(new Rect(row.xMax - stampWidth, row.y, stampWidth, Mathf.Max(1f, row.height - StatsUnit(4f))), stamp); }
+        }
+
+        private static void DrawDashedRule(Rect r, Color ink, float dash, float gap)
+        {
+            for (float x = r.x; x < r.xMax; x += dash + gap)
             {
-                populationSlices.Add(new PieSlice(country.Name, country.State.Population, UiPalette.GetCountryColor(country.Id)));
+                PoliSimTheme.Rule(new Rect(x, r.y, Mathf.Min(dash, r.xMax - x), r.height), ink);
             }
-            _populationPieChart.Draw("Population Share by Country (millions)", populationSlices, _labelStyle, "F1", moneyUnit: null);
+        }
+
+        private static string Millions(float millions)
+        {
+            return millions >= 1f
+                ? millions.ToString("0.00", CultureInfo.InvariantCulture) + "M"
+                : (millions * 1000f).ToString("0", CultureInfo.InvariantCulture) + "k";
+        }
+
+        private void DrawCohortInstruments(PopulationCohorts cohorts)
+        {
+            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Global);
+            Color dependentInk = PoliSimTheme.Tint(areaInk, 0.45f);
+            int votingAge = CohortVoterGroups.VotingAge(PlayerCountryId);
+            CohortVoterGroups.Group[] groups = CohortVoterGroups.For(_playerCountry);
+            bool turnoutSourced = groups.Length > 0 && !double.IsNaN(groups[0].TurnoutBase);
+            float total = cohorts.Total;
+            float max = 0f;
+            for (int i = 0; i < PopulationCohorts.CohortCount; i++) { max = Mathf.Max(max, cohorts.Counts[i]); }
+
+            GUILayout.Label("COHORT SUBSTRATE · 21 FIVE-YEAR BANDS · THE OPEN BAND LAST", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
+            GUILayout.Space(StatsUnit(4f));
+
+            // The pyramid with the turnout column: one row per band.
+            GUIStyle bandLabel = DeskCaption(8f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
+            GUIStyle bandFigure = DeskCaption(8f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleLeft);
+            float rowHeight = Mathf.Max(StatsUnit(11f), Mathf.Ceil(DeskCaptionHeight(bandLabel)));
+            float labelWidth = StatsUnit(44f);
+            float figureWidth = StatsUnit(44f);
+            float turnoutWidth = StatsUnit(230f);   // the caption and its SOURCED stamp share the column head; 170 left the caption 44 px at 720
+            float gapX = StatsUnit(8f);
+
+            // The two captions over the columns, each with its stamp.
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            DrawCohortCaption("POPULATION BY BAND · PopulationCohorts", "DERIVED");
+            GUILayout.EndVertical();
+            GUILayout.Space(gapX);
+            GUILayout.BeginVertical(GUILayout.Width(turnoutWidth));
+            DrawCohortCaption("TURNOUT BY AGE", turnoutSourced ? "SOURCED · SCB 2014" : "NO SOURCE");
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+
+            Rect rows = GUILayoutUtility.GetRect(10f, rowHeight * (PopulationCohorts.CohortCount + 1) + StatsUnit(2f), GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                float barX = rows.x + labelWidth + StatsUnit(4f);
+                float barMax = Mathf.Max(1f, rows.width - labelWidth - figureWidth - turnoutWidth - gapX - StatsUnit(8f));
+                float turnoutX = rows.xMax - turnoutWidth;
+                for (int i = 0; i < PopulationCohorts.CohortCount; i++)
+                {
+                    float y = rows.y + i * rowHeight;
+                    int from = i * PopulationCohorts.CohortWidth;
+                    int to = i == PopulationCohorts.OpenBandIndex ? 999 : from + PopulationCohorts.CohortWidth - 1;
+                    bool workingAge = from >= 15 && from < 65;
+                    PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y, labelWidth, rowHeight), PopulationCohorts.Label(i), bandLabel);
+                    float length = max > 0f ? barMax * cohorts.Counts[i] / max : 0f;
+                    PoliSimTheme.Rule(new Rect(barX, y + rowHeight * 0.2f, Mathf.Max(1f, length), rowHeight * 0.6f), workingAge ? areaInk : dependentInk);
+                    PoliSimWidgets.MeasuredLabel(new Rect(barX + length + StatsUnit(4f), y, figureWidth, rowHeight), Millions(cohorts.Counts[i]), bandFigure);
+
+                    // The turnout lane: a tick where the band is eligible, a dashed empty lane where it is not.
+                    float laneY = y + rowHeight * 0.5f;
+                    if (to < votingAge || !turnoutSourced)
+                    {
+                        DrawDashedRule(new Rect(turnoutX, laneY - 0.5f, turnoutWidth, 1f), PoliSimTheme.Hairline, 3f, 3f);
+                    }
+                    else
+                    {
+                        PoliSimTheme.Rule(new Rect(turnoutX, laneY - 0.5f, turnoutWidth, 1f), PoliSimTheme.Hairline);
+                        int eligibleFrom = Mathf.Max(from, votingAge);
+                        double turnout = double.NaN;
+                        foreach (CohortVoterGroups.Group g in groups)
+                        {
+                            if (eligibleFrom >= g.FromAge && eligibleFrom <= g.ToAge) { turnout = g.TurnoutBase; break; }
+                        }
+                        if (!double.IsNaN(turnout))
+                        {
+                            float tx = turnoutX + turnoutWidth * Mathf.Clamp01((float)turnout / 100f);
+                            PoliSimTheme.Rule(new Rect(tx - 1f, y + rowHeight * 0.15f, 2f, rowHeight * 0.7f), areaInk);
+                        }
+                    }
+                }
+                // The substrate's own thresholds: dashed rules at 15 and 65.
+                float y15 = rows.y + 3 * rowHeight;
+                float y65 = rows.y + 13 * rowHeight;
+                DrawDashedRule(new Rect(rows.x, y15 - 0.5f, rows.width - turnoutWidth - gapX, 1f), PoliSimTheme.HairlineStrong, 4f, 3f);
+                DrawDashedRule(new Rect(rows.x, y65 - 0.5f, rows.width - turnoutWidth - gapX, 1f), PoliSimTheme.HairlineStrong, 4f, 3f);
+                GUIStyle mark = DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight);
+                PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y15 - rowHeight, rows.width - turnoutWidth - gapX, rowHeight), "15 — WORKING AGE BEGINS", mark);
+                PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y65 - rowHeight, rows.width - turnoutWidth - gapX, rowHeight), "65 — OLD AGE", mark);
+                // The 0 and 100 of the turnout lane.
+                GUIStyle axis = DeskCaption(7f, PoliSimTheme.TextMuted);
+                PoliSimWidgets.MeasuredLabel(new Rect(turnoutX, rows.yMax - rowHeight, turnoutWidth * 0.5f, rowHeight), "0", axis);
+                PoliSimWidgets.MeasuredLabel(new Rect(turnoutX + turnoutWidth * 0.5f, rows.yMax - rowHeight, turnoutWidth * 0.5f, rowHeight), "100", DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
+            }
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("TOTAL " + Millions(total) + " · THE BANDS SUM TO IT EXACTLY", DeskCaption(8f, PoliSimTheme.TextSecondary, true));
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(turnoutSourced
+                ? $"TURNOUT: SCB 2014, THE SERIES' END — DRAWN ONLY WHERE A BAND IS ELIGIBLE; DASHED WHERE NOT. VOTING AGE {votingAge} — INSIDE THE {votingAge - votingAge % 5}–{votingAge - votingAge % 5 + 4} BAND, SPLIT PRO RATA"
+                : "TURNOUT: NO SOURCE FOR THIS COUNTRY — THE LANE IS DASHED ON EVERY BAND RATHER THAN DRAWN FROM A GUESS",
+                DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
+            GUILayout.EndHorizontal();
+            GUILayout.Space(StatsUnit(8f));
+
+            // Dependency, as the substrate derives it.
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            DrawCohortCaption("DEPENDENCY · AS THE SUBSTRATE DERIVES IT", "DERIVED");
+            GUILayout.BeginHorizontal();
+            DrawRuleTerm("OLD-AGE · 65+ ⁄ 15–64 × 100", cohorts.OldAgeDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
+            GUILayout.Space(StatsUnit(14f));
+            DrawRuleTerm("TOTAL · (0–14 + 65+) ⁄ 15–64 × 100", cohorts.TotalDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
+            GUILayout.Space(StatsUnit(14f));
+            DrawRuleTerm("SCHOOL-AGE SHARE (0–19)", cohorts.SchoolAgeShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
+            GUILayout.Space(StatsUnit(14f));
+            DrawRuleTerm("ELDERLY SHARE (65+)", cohorts.ElderlyShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            float young = total > 0f ? cohorts.InAgeRange(0, 14) / total : 0f;
+            float working = total > 0f ? cohorts.InAgeRange(15, 64) / total : 0f;
+            float old = total > 0f ? cohorts.InAgeRange(65, 999) / total : 0f;
+            DrawShareBar(new[] { ("0–14", young, UiPalette.GetCategoricalColor(0)), ("15–64", working, UiPalette.GetCategoricalColor(1)), ("65+", old, UiPalette.GetCategoricalColor(2)) });
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+            GUILayout.Space(StatsUnit(8f));
+
+            // The electorate.
+            DrawCohortCaption("THE ELECTORATE · CohortVoterGroups", "DERIVED");
+            double eligible = CohortVoterGroups.EligiblePopulation(cohorts, votingAge);
+            GUILayout.BeginHorizontal();
+            DrawRuleTerm("ELIGIBLE", Millions((float)eligible));
+            GUILayout.Space(StatsUnit(14f));
+            DrawRuleTerm("OF THE POPULATION", total > 0f ? (eligible / total * 100.0).ToString("0.0", CultureInfo.InvariantCulture) + "%" : "—");
+            GUILayout.Space(StatsUnit(14f));
+            DrawRuleTerm("VOTING AGE · SOURCED · CONSTITUTION", votingAge.ToString(CultureInfo.InvariantCulture));
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            if (groups.Length > 0)
+            {
+                GUILayout.Label($"VOTER GROUPS · POPULATION SHARE OF THE ELIGIBLE · {groups.Length} GROUPS, ONE INK WITH HAIRLINE BREAKS — UiPalette.MaxCategoricalSeries IS {UiPalette.MaxCategoricalSeries}, AND NOTHING DRAWS MORE SERIES THAN INKS", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+                var shares = new List<(string, float, Color)>();
+                foreach (CohortVoterGroups.Group g in groups) { shares.Add((g.Name, (float)g.PopulationShare, areaInk)); }
+                DrawShareBar(shares.ToArray());
+                if (turnoutSourced)
+                {
+                    double votes = 0.0;
+                    foreach (CohortVoterGroups.Group g in groups) { votes += g.PopulationShare * eligible * g.TurnoutBase / 100.0; }
+                    GUILayout.BeginHorizontal();
+                    DrawRuleTerm("WHAT VOTES · ELIGIBLE × TURNOUT BY BAND", "≈ " + Millions((float)votes));
+                    GUILayout.Space(StatsUnit(10f));
+                    GUILayout.Label("IF EACH BAND VOTED AT ITS 2014 RATE — A DERIVATION FROM TWO SOURCED SERIES, NOT A FORECAST", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+                }
+            }
+            GUILayout.Label("HONESTY, AS THE COALITION PAGE PRINTS IT: DERIVED — THE MODEL'S OWN ARITHMETIC OVER THE COHORTS · DECLARED — AUTHORED AND SAID SO · SOURCED — A PUBLISHED SERIES, WITH ITS YEAR · MEASURED — READ OFF THE RUNNING MODEL", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+        }
+
+        /// <summary>One share bar: segments in the given inks with their labels beneath where they fit; a hairline between adjacent segments of one ink.</summary>
+        private void DrawShareBar((string Label, float Share, Color Ink)[] segments)
+        {
+            GUIStyle caption = DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
+            float barHeight = StatsUnit(10f);
+            float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            Rect r = GUILayoutUtility.GetRect(10f, barHeight + captionHeight + StatsUnit(4f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            float x = r.x;
+            for (int i = 0; i < segments.Length; i++)
+            {
+                float w = r.width * Mathf.Clamp01(segments[i].Share);
+                PoliSimTheme.Rule(new Rect(x, r.y, Mathf.Max(0f, w), barHeight), segments[i].Ink);
+                if (i > 0) { PoliSimTheme.Rule(new Rect(x, r.y, 1f, barHeight), PoliSimTheme.Card); }
+                string text = segments[i].Label + " " + (segments[i].Share * 100f).ToString("0", CultureInfo.InvariantCulture);
+                if (caption.CalcSize(new GUIContent(text)).x <= w) { PoliSimWidgets.MeasuredLabel(new Rect(x, r.y + barHeight + StatsUnit(1f), w, captionHeight), text, caption); }
+                x += w;
+            }
         }
 
         /// <summary>

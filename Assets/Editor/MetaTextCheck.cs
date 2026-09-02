@@ -80,6 +80,13 @@ namespace PoliSim.EditorTools
         {
             ("GameController.cs", "SCENARIO COMPLETE"),
             ("GameController.cs", "Scenario complete"),
+            // Board 5b (D11 row 2, 2026-09-02): the People page prints its honesty class ON the instrument in the
+            // coalition page's own vocabulary - DERIVED / DECLARED / SOURCED / MEASURED - by Design's ruling; the word
+            // SOURCED is player-facing there, with its year, and is not the provenance tag this check hunts.
+            ("GameController.cs", "SOURCED · SCB 2014"),
+            ("GameController.cs", "VOTING AGE · SOURCED · CONSTITUTION"),
+            ("GameController.cs", "A DERIVATION FROM TWO SOURCED SERIES, NOT A FORECAST"),
+            ("GameController.cs", "SOURCED — A PUBLISHED SERIES, WITH ITS YEAR"),
         };
 
         public static void Run()

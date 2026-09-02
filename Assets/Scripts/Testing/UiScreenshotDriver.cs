@@ -366,6 +366,8 @@ namespace PoliSim.Testing
                     StageCabinetDecisionForTheDocket(dockSim?.World?.GetCountry(_countryId), dockSim);
                     yield return Settle();
                 }
+                ResetScrolls(controller);   // board 5b (2026-09-02): the whole-tab capture at scroll ZERO - the previous tab's deep scroll had been carried into it by SetScrolls (every scroll field at once), so People filmed at its tail
+                yield return Settle();
                 yield return Capture($"{i + 2:00}_{Tabs[i].ToLowerInvariant()}");
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))

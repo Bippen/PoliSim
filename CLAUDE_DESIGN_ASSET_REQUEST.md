@@ -1,6 +1,6 @@
 # Claude Design asset request — PoliSim
 
-## ⭐ STATUS 2026-09-02 (evening) — **D11 IS THE LIVE ASK: six rows reconciled against D10, which is unsent and carried by it. D9 was sent and answered in full 2026-09-01.**
+## ⭐ STATUS 2026-09-02 (late evening) — **D11 WAS PASTED AND ANSWERED THE SAME EVENING (boards 5a–5f on `PoliSim v2 Screens.dc.html`, plus the party batch as files) AND IS BUILT: rows 5, 4, 3, 5-ruling, 6, 1, 2 in `COMPLETED.md` §238–§244. No ask is live.** D9 was sent and answered in full 2026-09-01.
 
 **D10** is Playtest 2's re-composition: nine rows, one annex set (Elias's rows verbatim, the dead-space measure per screen, the films at 1280 / 1600 / 2560), one package (`SEND_PACKAGE.md`, regenerated 2026-09-02). **Sending is Elias's.** The D9 status that stood here is kept below it, verbatim, as the record.
 
@@ -813,7 +813,7 @@ a moment the game treats as a set piece**, and this is a design call we should n
 Prep / midway / verdict are all filmed at four widths if you want to look before answering.
 ---
 
-## ⭐ THE ONE LIVE ASK — D11, six rows reconciled against D10 (2026-09-02)
+## ⭐ D11 — six rows reconciled against D10 (2026-09-02) — ANSWERED THE SAME EVENING (boards 5a–5f) AND BUILT (`COMPLETED.md` §238–§244)
 
 ⚠ **D10 (below, unsent) is not withdrawn and is not repeated.** D11 is the ask that goes out; where a D11 row extends a D10 row it says so and carries only the new specifics, and D10's row gains a pointer back. Design reads one ask, one annex set, one package. Rows are numbered *n of 6* so a partial paste is visible. **Sending is Elias's.**
 
