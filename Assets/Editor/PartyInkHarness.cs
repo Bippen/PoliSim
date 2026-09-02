@@ -211,6 +211,29 @@ namespace PoliSim.EditorTools
                 sb.Append("    hue or picks a replacement by eye, and both are D8-2's ruling to make.\n");
             }
 
+            // Board 5e (D11 row 5, 2026-09-02): THE LADDER, printed - the re-measure is the fact. Every inked
+            // party's bloc, seeded mandates, seated hex, the lift the rule gives it, and the laddered hex it
+            // now draws at dot size; the board's own hexes were illustrative until this printed them.
+            sb.Append("\n--- THE LADDER (board 5e): within a bloc by mandates, the anchor holds, ±0.08 oklch L outward; an identical pair lifts the smaller +0.12 ---\n");
+            sb.Append("    party      bloc          mandates  seated   L(seated)  lift    laddered  L(laddered)\n");
+            foreach (CountryId country in (CountryId[])Enum.GetValues(typeof(CountryId)))
+            {
+                foreach (PoliticalParty party in PartySystems.For(country))
+                {
+                    if (!PoliSimTheme.HasPartyInk(country, party.Abbrev)) { continue; }
+                    Color seated = PoliSimTheme.Party(country, party.Abbrev);
+                    Color laddered = PoliSimTheme.PartyLaddered(country, party.Abbrev);
+                    PoliSimTheme.ToOklch(seated, out float l0, out float _, out float _);
+                    PoliSimTheme.ToOklch(laddered, out float l1, out float _, out float _);
+                    int bloc = PoliSim.Elections.NationalElection.BlocOf(country, party.Abbrev);
+                    sb.Append(F("    {0,-10} {1,-13} {2,8}  #{3}  {4,9:F3}  {5,6:+0.00;-0.00;0.00}   #{6}   {7,9:F3}\n",
+                        country + "/" + party.Abbrev, PoliSim.Elections.NationalElection.BlocName(bloc), party.SeedSeats,
+                        ToHex(seated), l0, PoliSimTheme.LadderLift(country, party.Abbrev), ToHex(laddered), l1));
+                }
+            }
+            sb.Append("    The marks keep the seated hex (a second ink for one party would be a second identity); the ladder\n");
+            sb.Append("    draws where ink is the only channel - the per-seat hemicycle and the legend's swatch and bar.\n");
+
             sb.Append("\n--- What has NO ink, and is not given one ---\n");
             sb.Append(F("    {0} of {1} seeded parties carry a published colour; {2} carry none.\n",
                 inked, inked + uninked, uninked));

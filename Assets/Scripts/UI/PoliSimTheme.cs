@@ -262,6 +262,107 @@ namespace PoliSim.UI
         public static Color Party(PoliSim.Data.CountryId country, string abbrev) =>
             PartyHues.TryGetValue(country + "/" + abbrev, out Color ink) ? ink : AreaAccents[UiPalette.SystemArea.Neutral];
 
+        // ------------------------------------------------------------------------------------------
+        // Board 5e (D11 row 5, 2026-09-02): THE LADDER. The hue is the authority's, the lightness is
+        // ours. Within a bloc the parties are ordered by mandates (the seeded table's, so an ink never
+        // moves between screens or after an election); the anchor - most mandates - holds its seated
+        // value and the rest step in oklch lightness ±0.08 outward (+1, −1, +2, −2 …) so no two
+        // adjacent inks share L. For an identical pair (S and V seat to one hex) the smaller party
+        // lifts +0.12 instead of its step. Hue and chroma are held; one channel moves, and
+        // PartyInkHarness prints the move. The ladder applies where ink is the only channel - the
+        // per-seat hemicycle, the legend swatch - and NOT to the marks, which keep the seated hex
+        // (at ≥ 16 px the silhouette carries, and two inks for one party would be a second identity).
+        // ------------------------------------------------------------------------------------------
+        private const float LadderStep = 0.08f;
+        private const float LadderIdenticalPairLift = 0.12f;
+        private static readonly Dictionary<string, Color> LadderedCache = new Dictionary<string, Color>();
+
+        /// <summary>The party's ink stepped by the bloc ladder (board 5e) - the seated ink for the anchor and for any party outside a known bloc, the neutral accent for a party with no published colour.</summary>
+        public static Color PartyLaddered(PoliSim.Data.CountryId country, string abbrev)
+        {
+            if (!HasPartyInk(country, abbrev)) { return AreaAccents[UiPalette.SystemArea.Neutral]; }
+            string key = country + "/" + abbrev;
+            if (LadderedCache.TryGetValue(key, out Color cached)) { return cached; }
+            Color seated = Party(country, abbrev);
+            float lift = LadderLift(country, abbrev);
+            Color laddered = lift == 0f ? seated : ShiftOklchLightness(seated, lift);
+            LadderedCache[key] = laddered;
+            return laddered;
+        }
+
+        /// <summary>The lightness move the ladder gives this party, in oklch L; zero for the anchor, for a party in no bloc, or for one with no ink.</summary>
+        public static float LadderLift(PoliSim.Data.CountryId country, string abbrev)
+        {
+            int bloc = PoliSim.Elections.NationalElection.BlocOf(country, abbrev);
+            if (bloc < 0) { return 0f; }
+            var members = new List<PoliSim.Data.PoliticalParty>();
+            foreach (PoliSim.Data.PoliticalParty p in PoliSim.Data.PartySystems.For(country))
+            {
+                if (HasPartyInk(country, p.Abbrev) && PoliSim.Elections.NationalElection.BlocOf(country, p.Abbrev) == bloc) { members.Add(p); }
+            }
+            // By mandates, the seeded table's; ties by the table's own order.
+            members.Sort((a, b) => b.SeedSeats != a.SeedSeats ? b.SeedSeats.CompareTo(a.SeedSeats) : 0);
+            int rank = members.FindIndex(p => p.Abbrev == abbrev);
+            if (rank <= 0) { return 0f; }
+            // The identical pair: a party seated to the same hex as a larger member lifts +0.12.
+            Color mine = Party(country, abbrev);
+            for (int i = 0; i < rank; i++)
+            {
+                if (SameInk(Party(country, members[i].Abbrev), mine)) { return LadderIdenticalPairLift; }
+            }
+            int magnitude = (rank + 1) / 2;
+            return (rank % 2 == 1 ? 1f : -1f) * LadderStep * magnitude;
+        }
+
+        private static bool SameInk(Color a, Color b) =>
+            Mathf.Abs(a.r - b.r) < 0.002f && Mathf.Abs(a.g - b.g) < 0.002f && Mathf.Abs(a.b - b.b) < 0.002f;
+
+        /// <summary>sRGB → oklch, move L, → sRGB (clamped). Björn Ottosson's oklab matrices; the chroma and hue are held exactly.</summary>
+        public static Color ShiftOklchLightness(Color c, float deltaL)
+        {
+            ToOklab(c, out float L, out float a, out float b);
+            return FromOklab(Mathf.Clamp01(L + deltaL), a, b);
+        }
+
+        public static void ToOklch(Color c, out float L, out float C, out float hDeg)
+        {
+            ToOklab(c, out L, out float a, out float b);
+            C = Mathf.Sqrt(a * a + b * b);
+            hDeg = Mathf.Atan2(b, a) * Mathf.Rad2Deg;
+            if (hDeg < 0f) { hDeg += 360f; }
+        }
+
+        private static void ToOklab(Color c, out float L, out float a, out float b)
+        {
+            float r = SrgbToLinear(c.r), g = SrgbToLinear(c.g), bl = SrgbToLinear(c.b);
+            float l = 0.4122214708f * r + 0.5363325363f * g + 0.0514459929f * bl;
+            float m = 0.2119034982f * r + 0.6806995451f * g + 0.1073969566f * bl;
+            float s = 0.0883024619f * r + 0.2817188376f * g + 0.6299787005f * bl;
+            float l3 = Mathf.Pow(l, 1f / 3f), m3 = Mathf.Pow(m, 1f / 3f), s3 = Mathf.Pow(s, 1f / 3f);
+            L = 0.2104542553f * l3 + 0.7936177850f * m3 - 0.0040720468f * s3;
+            a = 1.9779984951f * l3 - 2.4285922050f * m3 + 0.4505937099f * s3;
+            b = 0.0259040371f * l3 + 0.7827717662f * m3 - 0.8086757660f * s3;
+        }
+
+        private static Color FromOklab(float L, float a, float b)
+        {
+            float l3 = L + 0.3963377774f * a + 0.2158037573f * b;
+            float m3 = L - 0.1055613458f * a - 0.0638541728f * b;
+            float s3 = L - 0.0894841775f * a - 1.2914855480f * b;
+            float l = l3 * l3 * l3, m = m3 * m3 * m3, s = s3 * s3 * s3;
+            float r = +4.0767416621f * l - 3.3077115913f * m + 0.2309699292f * s;
+            float g = -1.2684380046f * l + 2.6097574011f * m - 0.3413193965f * s;
+            float bl = -0.0041960863f * l - 0.7034186147f * m + 1.7076147010f * s;
+            return new Color(LinearToSrgb(r), LinearToSrgb(g), LinearToSrgb(bl), 1f);
+        }
+
+        private static float SrgbToLinear(float v) => v <= 0.04045f ? v / 12.92f : Mathf.Pow((v + 0.055f) / 1.055f, 2.4f);
+        private static float LinearToSrgb(float v)
+        {
+            v = Mathf.Clamp01(v);
+            return v <= 0.0031308f ? v * 12.92f : 1.055f * Mathf.Pow(v, 1f / 2.4f) - 0.055f;
+        }
+
         public static Color Accent(UiPalette.SystemArea area) => AreaAccents[area];
 
         /// <summary>The desk-weight variant. See <see cref="AreaAccentsOnDesk"/>.</summary>

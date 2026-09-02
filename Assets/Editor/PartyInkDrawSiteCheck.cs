@@ -39,6 +39,8 @@ namespace PoliSim.EditorTools
     public static class PartyInkDrawSiteCheck
     {
         private const string PartyInkCall = "PoliSimTheme.Party(";
+        /// <summary>Board 5e (D11 row 5, 2026-09-02): the laddered accessor is the same channel - a party ink stepped in lightness - and a site drawing it is a party-ink draw site.</summary>
+        private const string PartyInkLadderedCall = "PoliSimTheme.PartyLaddered(";
 
         /// <summary>Area accents, both weights. ⚠ Both are listed because a file drawing the desk-weight
         /// variant beside a party ink is the same finding as one drawing the paper-weight variant, and a
@@ -80,7 +82,7 @@ namespace PoliSim.EditorTools
                 string file = Path.GetFileName(path);
                 scanned++;
 
-                if (!text.Contains(PartyInkCall)) { continue; }
+                if (!text.Contains(PartyInkCall) && !text.Contains(PartyInkLadderedCall)) { continue; }
 
                 drew.Add(file);
                 unusedPermission.Remove(file);

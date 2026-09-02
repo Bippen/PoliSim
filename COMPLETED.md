@@ -21845,3 +21845,21 @@ Each attribute is a float on `CabinetMinister`, 0–100, `[AUTHORED-DRAFT]` per 
 **The films:** `d11c1280_05b_budget_spending` (the plate mid-draft with the scope line), `d11c1280_89e_signing_settled` (AS ENACTED), `d11ci1280_e7c_election_night_takeover` (the inherited plate with the staged act's arrows, figures and citation); the sweep and the interrupts pass at 1280 clean of overflows and escapes; the HQ's right edge at 1280 (e7a/e7b) stays P2's finding 6, unchanged by this row.
 
 **Bar:** `RunAllBatch` on the committed tree (`bar47_d11_effects_RunAllBatch.log`).
+
+## 241. D11 ANSWERED, ROW 5 (the ruling) — board 5e's ink ladder: S against V and the four blues at dot size, one channel moved in oklch and printed by the harness (2026-09-02, evening)
+
+**The ruling.** The hue is the authority's, the lightness is ours. Valmyndigheten's `fargkod` stays the starting point and the seating keeps its hue. Within a bloc the parties are ordered by mandates; the anchor (most mandates) holds the seated value and the rest step ±0.08 in oklch lightness so no two adjacent inks share L; for the identical pair S/V the smaller party lifts +0.12. Hue and chroma are held, one channel moves, and the move is printed. The ladder applies where ink is the only channel - the per-seat hemicycle, the legend swatch, the count bar - and not to the marks, which keep the seated hex (at ≥ 16 px the silhouette carries; two inks for one party would be a second identity). S-8 stands and is not fought: lightness steps move no hue.
+
+**Built.**
+
+- **`PoliSimTheme.PartyLaddered(country, abbrev)`** - the seated ink stepped by the ladder, cached; `LadderLift` gives the move: the bloc from `NationalElection.BlocOf`, the order by the seeded table's mandates (`PoliticalParty.SeedSeats`, so an ink never moves between screens or after an election), the anchor 0, then +0.08, −0.08, +0.16, −0.16 … outward; a party seated to the same hex as a larger member of its bloc lifts +0.12 instead. `ShiftOklchLightness` / `ToOklch` are Ottosson's oklab matrices in the theme (sRGB ↔ linear ↔ LMS ↔ oklab), the lightness clamped to [0, 1]; chroma and hue pass through untouched.
+- **The three sites** in `HemicycleRenderer` - the seat dots, the legend swatch, the legend row's bar ink - take `PartyLaddered`; the mark beside the swatch keeps its seated hex, so the legend shows the laddered swatch and the seated-ink mark side by side and the eye learns them as one. The election-night count bar the board names does not draw party ink today (its rows are type); when it does, the accessor is the one to call.
+- **`PartyInkHarness`** prints the ladder - bloc, mandates, seated hex and L, the lift, the laddered hex and L - as its own section (`d11_partyink_ladder.log`), so the board's illustrative hexes are replaced by the re-measure. The print: S anchor #753838 (L 0.421), V +0.12 → #9B5A59 (0.541); SD anchor #385E75 (0.465), M +0.08 → #4F798D (0.554), KD −0.08 → #233D5E (0.356), L +0.16 → #6585A6 (0.606); in the left bloc C −0.08 → #415E21 and MP +0.16 → #68A667. The four hexes the board computed by the stated rule (V, M, KD, L) reproduce exactly. All assertions pass; the three counts kept apart stand as before.
+
+**The film:** the hemicycle at dot size and its legend, `d11b1280_07a_politics_parliament`.
+
+**What the first run taught.** A composite format item with an alignment and a format (`{5,6:+0.00}`) is two fields; written as one they throw `FormatException` at run time, and the first harness run did. One character.
+
+**What the bar taught.** `PartyInkDrawSiteCheck` enumerates the files that draw `PoliSimTheme.Party(` and found none once the three sites took the laddered accessor - an UNUSED PERMISSION on `HemicycleRenderer`; the check now counts `PartyLaddered(` as the same channel, and the permission is exercised again.
+
+**Bar:** `RunAllBatch` 26 of 26 clean on the four boards together (`bar49_d11_boards_RunAllBatch.log`; the first run, `bar48_…`, failed the three checks named above).

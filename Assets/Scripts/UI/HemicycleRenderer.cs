@@ -87,7 +87,7 @@ namespace PoliSim.UI
                 int bloc = NationalElection.BlocOf(country, party.Abbrev);
                 blocsKnown |= bloc >= 0;
                 seatsByRank[BlocRank(bloc)] += count;
-                Color color = PoliSimTheme.Party(country, party.Abbrev);
+                Color color = PoliSimTheme.PartyLaddered(country, party.Abbrev);
                 for (int j = 0; j < count; j++) { seatColors.Add(color); }
             }
 
@@ -194,7 +194,7 @@ namespace PoliSim.UI
                 var swatchRect = new Rect(markerLane.x, markerLane.y + (rowHeight - markerSize) * 0.5f, markerSize, markerSize);
                 bool inkIsSourced = PoliSimTheme.HasPartyInk(country, party.Abbrev);
                 anyUnsourced |= !inkIsSourced;
-                GUI.color = PoliSimTheme.Party(country, party.Abbrev);
+                GUI.color = PoliSimTheme.PartyLaddered(country, party.Abbrev);
                 if (inkIsSourced)
                 {
                     GUI.DrawTexture(swatchRect, Texture2D.whiteTexture);
@@ -221,7 +221,7 @@ namespace PoliSim.UI
                     totalSeats > 0 ? count / (float)totalSeats : -1f,
                     count.ToString(CultureInfo.InvariantCulture) + " seats",
                     percent.ToString("F0", CultureInfo.InvariantCulture) + "%",
-                    PoliSimTheme.Party(country, party.Abbrev),
+                    PoliSimTheme.PartyLaddered(country, party.Abbrev),
                     labelStyle,
                     labelStyle);
                 GUILayout.EndHorizontal();
