@@ -5196,8 +5196,23 @@ namespace PoliSim.UI
             {
                 var keys = new string[_simulationManager.PlayerCampaign.Setup.Parties.Length];
                 for (int i = 0; i < keys.Length; i++) { keys[i] = _simulationManager.PlayerCampaign.Setup.Parties[i].Name; }
-                shareByParty = NationalElection.SharesFromCampaign(PlayerCountryId, keys, campaign.FinalShares);
+                // D-10 (a): the tactical layer (§23) over the campaign's shares, believing the last
+                // PUBLISHED tracker - the poll the electorate saw - about who clears the threshold.
+                shareByParty = NationalElection.SharesFromCampaign(PlayerCountryId, keys, campaign.FinalShares,
+                    _simulationManager.PlayerCampaign.PublicPoll, out TacticalResult tactical);
                 Debug.Log($"ELECTION: counted the campaign's shares for {PlayerCountryId} - " + string.Join(" ", System.Array.ConvertAll(campaign.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
+                if (tactical != null)
+                {
+                    var flows = new System.Text.StringBuilder();
+                    foreach (TacticalFlow f in tactical.Flows)
+                    {
+                        if (f.Share < 5e-5) { continue; }
+                        flows.Append(keys[f.From]).Append(f.Rescue ? " lends " : " abandons to ").Append(keys[f.To]).Append(' ')
+                            .Append((f.Share * 100.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)).Append(" pp; ");
+                    }
+                    Debug.Log($"ELECTION: tactical layer (D-10 (a)) on the last tracker - " + (flows.Length > 0 ? flows.ToString() : "no flows") + " -> counted "
+                        + string.Join(" ", System.Array.ConvertAll(tactical.Preference, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
+                }
             }
             if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty))
             {

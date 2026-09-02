@@ -158,11 +158,70 @@ namespace PoliSim.Elections
         /// headline (F1). The shares are the run's `FinalShares` in the run's party order, which is the
         /// prediction's own order for a staged country (`LiveCampaignSetup` builds on `TryCompatibility`).
         /// </summary>
-        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares)
+        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares) =>
+            SharesFromCampaign(country, keys, finalShares, null, out _);
+
+        /// <summary>
+        /// [AUTHORED-DRAFT] the share of voters who reason strategically about the threshold at all
+        /// (§23), 0–1 — the tactical layer's one unsourced figure, the harness's staging value since
+        /// W-A4; W-F4's groups would carry it per group.
+        /// </summary>
+        public const double TacticalAwareness = 0.5;
+
+        /// <summary>
+        /// D-10 (a) (2026-09-02): the blocs the tactical layer lends within, for Sweden's 2022 parties —
+        /// SOURCED as the two sides of the Riksdag that formed after the 2022 election (M, KD, L and SD
+        /// at 176 seats against S, V, C and MP at 173; Valmyndigheten's returns, the Tidö agreement's
+        /// four). Mapped by party key; a key outside the eight is in no bloc (−1). The harness has
+        /// staged exactly this table since W-A4 and reads it from here now.
+        /// </summary>
+        public static int[] SwedenBlocs2022(IReadOnlyList<string> keys)
         {
+            var bloc = new int[keys.Count];
+            for (int i = 0; i < keys.Count; i++)
+            {
+                switch (keys[i])
+                {
+                    case "M": case "KD": case "L": case "SD": bloc[i] = 1; break;
+                    case "S": case "V": case "C": case "MP": bloc[i] = 0; break;
+                    default: bloc[i] = -1; break;
+                }
+            }
+            return bloc;
+        }
+
+        /// <summary>
+        /// D-10 (a): election night with the TACTICAL layer (§23) over the campaign's shares. The belief
+        /// each aware voter holds about a party clearing the threshold comes from the last PUBLISHED
+        /// tracker of the campaign — the poll the electorate saw, never the truth — and the layer lends
+        /// within the sourced blocs along CHES `lrgen` affinity. Without a tracker (a campaign that never
+        /// published one) the layer is skipped and the shares stand; `tactical` is null then. The
+        /// regional breakdown is derived from the shifted shares, so the constituencies add up to the
+        /// headline the layer produced.
+        /// </summary>
+        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares, Poll? tracker, out TacticalResult tactical)
+        {
+            tactical = null;
+            double[] counted = finalShares;
+            if (tracker.HasValue && tracker.Value.PartyCount == keys.Length && country == CountryId.Sweden)
+            {
+                var polled = new double[keys.Length];
+                var moe = new double[keys.Length];
+                for (int i = 0; i < keys.Length; i++) { polled[i] = tracker.Value.Share(i); moe[i] = tracker.Value.MarginOfErrorPp(i); }
+                IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
+                var position = new double[keys.Length];
+                for (int i = 0; i < keys.Length; i++)
+                {
+                    position[i] = 5.0;   // no published lrgen: the bloc's centre, so affinity neither favours nor shuns the party
+                    foreach (PoliticalParty party in parties) { if (party.Abbrev == keys[i] && !float.IsNaN(party.LrGen)) { position[i] = party.LrGen; break; } }
+                }
+                var spec = new TacticalSpec(SeatConversion.NationalThreshold, TacticalAwareness, SwedenBlocs2022(keys), position);
+                tactical = TacticalVoting.Apply(finalShares, polled, moe, spec);
+                counted = tactical.Preference;
+            }
             var shares = new Dictionary<string, double>();
-            for (int i = 0; i < keys.Length && i < finalShares.Length; i++) { shares[keys[i]] = finalShares[i]; }
-            DeriveRegional(country, keys, finalShares);
+            for (int i = 0; i < keys.Length && i < counted.Length; i++) { shares[keys[i]] = counted[i]; }
+            DeriveRegional(country, keys, counted);
             return shares;
         }
 

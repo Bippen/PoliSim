@@ -21174,3 +21174,42 @@ is downstream of an income dimension the substrate does not carry, and the spec-
 "is not wasted whichever branch runs".
 
 The spec-let's §3 rows carry their new state. **Bar 25 of 25.**
+
+## 212. D-10 (a) BUILT — `TacticalVoting` wired into election night, believing the campaign's last tracker (2026-09-02)
+
+**The row.** D-10 (a) ruled *wire it, as its own baseline item*; S-27 measured `TacticalVoting` as
+harness-proven with no caller, and S-33 named the reason: the layer needs a PUBLISHED poll to believe,
+and the model had none on the live path. The campaign (§203–§207) conducts one: `CampaignRun.State.
+PublicPoll`, the tracker every party and the electorate see, fielded every seven days through the
+campaign and available on the state through election night's boundary day.
+
+**What was built.** `NationalElection.SharesFromCampaign(country, keys, finalShares, tracker, out
+tactical)`: when the tracker exists, the §23 layer runs over the campaign's shares — each aware voter's
+belief about a party clearing the 4 % threshold comes from the tracker's share and its own margin of
+error (`Poll.MarginOfErrorPp`), lending within the blocs along CHES `lrgen` affinity (a party without a
+published `lrgen` sits at the bloc's centre, 5.0, so affinity neither favours nor shuns it) — and the
+regional breakdown is derived from the SHIFTED shares, so the constituencies still add up to the
+headline the layer produced (F1). Without a tracker the layer is skipped and the shares stand.
+`GameController.RunNationalElection` passes the tracker and logs every flow above 0.005 pp ("L lends
+KD 0.12 pp; …") with the counted shares. The blocs are a runtime table now, `NationalElection.SwedenBlocs2022`
+— SOURCED as the two sides of the Riksdag that formed after 2022 (M, KD, L, SD at 176 seats against S, V,
+C, MP at 173) — mapped by party key; the harness reads it from there instead of its own copy.
+
+**What is authored and said so.** `TacticalAwareness` = 0.5 — the share of voters who reason about the
+threshold at all — is the harness's staging value since W-A4 and the layer's one unsourced figure;
+W-F4's groups would carry it per group. Nothing else is typed: the threshold is `SeatConversion.
+NationalThreshold`, the positions are CHES, the blocs are the chamber's own sides.
+
+**Proof and its limit.** `TacticalVotingHarness` green on the runtime table (the same values it staged);
+`CampaignAiHarness`'s digest unchanged (the campaign is untouched; the layer runs after it). ⚠ The
+wiring itself runs only through the controller's `CheckElection`, which no batch instrument drives — it
+is compiled, guarded by the tracker's presence, and logs its flows the first time it counts in play.
+⚠ **It is BASELINE for election outcomes** — a party polling near 4 % now gains or loses from its bloc
+at the count — and the first counted campaign is the first measurement of it in the game; §197's S-27
+said "it moves election results, C-A1's FdI figures included", and that re-run (F3's Italy test) is
+where the layer's effect is read, not here.
+
+**F3's carries:** `M-B6` (D-10 (a), `TacticalVoting` wired) and `M-D4` (a live poll for it to read) are
+discharged by this and §203.
+
+**Bar 25 of 25.**

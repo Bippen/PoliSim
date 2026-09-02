@@ -245,8 +245,11 @@ then **re-run the Italy 2022 test**: with per-group loyalty and the media/moment
 ⚠ **Reachable is the strongest validation this model can get; unreachable is a named ceiling. Do not tune
 toward it.**
 
-*Carries: `M-B6` (D-10 (a), `TacticalVoting` wired) · `M-D4` (a live poll, so the tactical layer has polled
-shares to read) · and E-1's ITANES registration is the blocker on per-group loyalty, which is Elias's.*
+*Carries: ~~`M-B6` (D-10 (a), `TacticalVoting` wired) · `M-D4` (a live poll, so the tactical layer has polled
+shares to read)~~ — **both discharged 2026-09-02 (`COMPLETED.md` §212): election night applies the tactical
+layer to the campaign's shares, believing the campaign's last tracker; BASELINE for election outcomes, first
+measured at the first counted campaign** · and E-1's ITANES registration is the blocker on per-group loyalty,
+which is Elias's.*
 
 # F4 — The tax instruments
 

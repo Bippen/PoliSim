@@ -36,7 +36,7 @@ namespace PoliSim.EditorTools
     {
         private static readonly string[] Parties = { "S", "SD", "M", "V", "C", "KD", "MP", "L" };
         private static readonly double[] Lrgen = { 3.74, 8.53, 7.58, 1.58, 5.95, 8.00, 2.74, 6.74 };
-        private static readonly int[] Blocs2022 = { 0, 1, 1, 0, 0, 1, 0, 1 };
+        private static int[] Blocs2022 => NationalElection.SwedenBlocs2022(Parties);   // D-10 (a): the runtime's sourced table, not a copy (was { 0, 1, 1, 0, 0, 1, 0, 1 } here)
         private static readonly int[] Blocs2018 = { 0, -1, 1, 0, 1, 1, 0, 1 };
 
         // SCB PSU, "val idag" %, and ± (95 %): May 2022 and May 2018.
