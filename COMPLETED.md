@@ -21043,3 +21043,90 @@ click to `StepDay` is compiled, guarded, and exercised only by hand; its first p
 read.
 
 **Bar 25 of 25.**
+
+## 208. D-20 (a) BUILT — the newsworthiness table re-authored as fractions of an act's own reach; C-N7 lands and the personalities hold (2026-09-02)
+
+**The ruling.** Elias, D-20 (a): *re-author the `Newsworthiness` table on its attention-share
+meaning — a town hall's coverage is a fraction of the town hall's own reach, never a multiple — then
+re-run C-N7 and report whether the personalities hold.*
+
+**Why the table could not be per-kind constants.** A town hall's reach is 1 % of a valkrets that is
+itself 0.6 %–12.7 % of the electorate; no single figure per kind is a fraction of every town hall's
+reach. So the ruling's principle is implemented AS the mechanism: `MediaSystem.Newsworthiness(kind)`
+is now the FRACTION of the people an act reached that the press carries onward, and
+`RawNewsworthiness(spec, modifiers, reachShare)` is that fraction × the act's own resolved reach as a
+share of the electorate (the chain's `Reach` ÷ the electorate — §35's spend curve and the channel's
+reach already inside it) × the strategy's media attention. Coverage's unit is therefore a share of
+the electorate the day's news reached, and it can never exceed what the acts themselves reached —
+the ruling holds for every kind in every region by construction. `CampaignRun` passes the trace's
+reach; `CoverageSpec`'s channel reach is 1 again (the gain already IS the reached share; a second
+reach fraction would count the same people twice) with the interview's attention and weights.
+
+**The fractions — nothing new typed.** The old table's relative order is kept and scaled so the
+interview keeps the ratio it already had (its coverage reached 0.40 of its own audience): old ÷ 0.20 ×
+0.40 → announcement 0.50, interview 0.40, rally 0.30, television 0.20, town hall 0.10, digital 0.10,
+post 0.06, doors 0.02. Per act, coverage's persuasion is now 0.03 (town hall) to 0.70 (television) of
+the act's own — every one a fraction, where D-20's table had 3–27×.
+
+**⚠ The unit changed under two other constants, and they were converted, not re-calibrated.**
+`MomentumPpPerCoverage` and `InterestPerCoverage` are "per unit of coverage". The first re-run under
+the new table left the five smaller parties with ZERO interviews all campaign (their interest — 0.8 ×
+a polled 0.05–0.07 — sat under every outlet's threshold once coverage stocks fell ~4×), and
+`MediaHarness` 4b failed. Both constants were converted on the harness's own news-day anchor (an
+announcement at full interest plus a rally in the largest valkrets: raw 0.40 under the old table, 0.092
+under the new, ×4.35): momentum 1.5 → 6.5 pp per unit, interest 1.0 → 4.35. That day shocks momentum
+and buys bookings exactly as it did; what changed is which acts make news, not how much news moves
+the poll. A unit conversion on one measured scenario, stated as such.
+
+**C-N7 re-applied and measured (`CampaignAiHarness`, seed 777).** The scorer values the coverage an
+act begets — its kind's fraction of the reach the act itself will have, through the saturating gain,
+resolved through the run's own coverage spec on the press's reach the view carries. **The
+personalities HOLD:** 2a-ii, the populist against its nearest, **L1 0.405** (the ruling's threshold
+0.30; 0.241 when C-N7 first landed under the old table); every AI assertion passes; grassroots' doors
+28/27 (23/26 before); the ledger's `EarnedCoverage` line is **+0.57 pp** beside the interview's +3.09
+for the campaign's largest gainer; `VoteAttributionHarness` and `MediaHarness` green. The decision
+digest is `7315ebd8d034cfd1` — a new one, as a ruled behaviour change must be.
+
+**⚠ A finding to rule, not to tune (C-N8).** The two grassroots parties, whose personality campaigns by
+doors and posts, now make NO news — a door-day's fraction is 0.02 of 3 000 doors, a post's 0.06 of a
+small following — and are never booked: 0 interviews, coverage 0.00, momentum 0.00, persuasion ~3 000
+against 0.6–2.2 million for the others (49 and 38 interviews under the old table). That is the media
+layer reading §32's grassroots personality faithfully under the ruling: a party that does not make
+news is not booked. Whether the interest formula's polled-share term (0.8 × the polled share, under
+every threshold below ~13 %) or the threshold ladder (0.10–0.30, `[AUTHORED-DRAFT]`) should let a
+small party onto the air at all is a design question about §13, and it is Elias's.
+
+**Bars:** all campaign consumers green; cheap bar 25 of 25.
+
+## 209. D-23 · Polling day: Sweden's September Sunday or the game's turn boundary ⚠ DECIDED AND TAKEN (R-N1), strikeable (2026-09-02)
+
+**The fork.** The campaign spec's calendar is Sweden's own: polling day the second Sunday of September
+every fourth year (`CampaignCalendar.Sweden2026` = 2026-09-13), eight weeks of campaign before it, six
+of preparation before that. The game's election is a TURN: `ElectionSystem.IsElectionTurn` fires at
+turns 4, 8, … and the controller's `CheckElection` runs on the boundary day's `AdvanceTurn` — the first
+day of the election turn, which after a leap year is 31 December rather than 1 January (turns are 365
+days from the epoch). C-R4b step 3 built the campaign on the boundary: eight weeks ending on it, so a
+Swedish player campaigns in November and December and votes at New Year. §204 stated the deviation
+and named this sheet.
+
+**Options.** (a) **The boundary stays polling day.** Nothing moves; the calendar is built on the
+boundary date; the campaign is a real eight weeks that ends where the game's own election machinery
+already is — seats, the office test, the party-capital carry-over, the budget-year boundary all keyed
+on the turn. The cost is the date: a Swedish election at New Year is not Sweden's. (b) **Polling day
+is the calendar's date.** `CheckElection` fires on a DATE inside the election year — the second Sunday
+of September of the turn whose boundary it precedes — and everything the turn boundary carries for
+an election (seat change, office test, carry-over, game over) moves with it, three and a half months
+before the fiscal boundary. The cost is the machinery: `IsElectionTurn`, the controller's boundary
+flow, the save's `_pendingElectionTurn`, the round-trip diagnostic's turn-keyed scenarios, and every
+record that says "the election turn". (c) **A split:** the campaign and the count on the calendar's
+date, the seats and the office test at the boundary — a chamber elected in September and seated at
+New Year, which for Sweden is a three-month lie and for the player a result that does not land.
+
+**Taken: (a), strikeable — and (b) is the branch to build the day the campaign has been played once.**
+(a) is what stands and it invents nothing. (b) is right — the spec's calendar is the country's, and a
+player expects to campaign in late summer — but it is a change to the election machinery, not to the
+campaign, and it should be made against what the first played campaign shows rather than ahead of it:
+if November-to-New-Year reads wrong at the desk, (b) is the fix and it is sized by then; if it reads
+fine, the date is a detail. (c) is not taken because a result that does not land is worse than a date
+that is not Sweden's. ⚠ What (a) costs is written where the code is (`SimulationManager`'s campaign
+region) and here; nothing in the calendar says September while the boundary is polling day.

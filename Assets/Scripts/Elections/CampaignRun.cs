@@ -768,7 +768,8 @@ namespace PoliSim.Elections
                         }
 
                         // W-B9: every action makes (some) news; the strategy's media attention scales it.
-                        coverage.AddRaw(p, MediaSystem.RawNewsworthiness(spec, d.Spend, modifiers));
+                        // D-20 (a): the news an act makes is a fraction of the people it actually reached.
+                        coverage.AddRaw(p, MediaSystem.RawNewsworthiness(spec, modifiers, setup.NationalAudience > 0.0 ? trace.Reach / setup.NationalAudience : 0.0));
 
                         int slot = CampaignAi.IndexOfAction(d.Kind);
                         ledger.ActionCount[slot]++;
@@ -955,7 +956,8 @@ namespace PoliSim.Elections
                 PersonalityCatalog.Profile(setup.Parties[party].Personality).Strategy, setup.ElectorateLoyalty,
                 bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday,
                 staff?.ActivePlan?.Fund ?? 0.0,
-                activity?.PressureSeenBy(party), activity?.PushSeenBy(party), activity?.AttackersOf(party));
+                activity?.PressureSeenBy(party), activity?.PushSeenBy(party), activity?.AttackersOf(party),
+                MediaSystem.PressReach(setup.Outlets));   // C-N7: a public fact about the media, like bestOutletReach
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>

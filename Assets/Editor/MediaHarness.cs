@@ -123,9 +123,14 @@ namespace PoliSim.EditorTools
             int smallQuiet = MediaInterest.SlotsFor(quiet, 7);
             int bigQuiet = MediaInterest.SlotsFor(quiet, 0);
 
-            // The small party makes news: a policy announcement and a rally (raw 0.40 -> coverage ~0.33).
+            // The small party makes news: a policy announcement carried at full media interest (reach
+            // 0.18 of the electorate) and a rally in the largest valkrets (0.127 x 0.06). D-20 (a): the
+            // raw figure is each kind's fraction of the act's OWN reach, so the day's raw is
+            // 0.5 x 0.18 + 0.3 x 0.0076 = 0.092 - the news reached 9 % of the electorate.
             var newsDay = new MediaCoverage(8);
-            newsDay.AddRaw(7, MediaSystem.Newsworthiness(CampaignActionKind.PolicyAnnouncement) + MediaSystem.Newsworthiness(CampaignActionKind.Rally));
+            StrategyModifiers none = StrategyModifiers.Identity;
+            newsDay.AddRaw(7, MediaSystem.RawNewsworthiness(CampaignActions.Spec(CampaignActionKind.PolicyAnnouncement), none, 1.0 * CampaignActions.Spec(CampaignActionKind.PolicyAnnouncement).ChannelReach)
+                              + MediaSystem.RawNewsworthiness(CampaignActions.Spec(CampaignActionKind.Rally), none, 0.127 * CampaignActions.Spec(CampaignActionKind.Rally).ChannelReach));
             double[] gains = newsDay.CloseDay();
             double[] interestAfter = (double[])interest.Clone();
             interestAfter[7] = MediaSystem.Interest(newsDay.Coverage(7), MediaSystem.MomentumPpPerCoverage * gains[7], polled[7]);

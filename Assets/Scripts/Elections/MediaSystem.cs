@@ -91,8 +91,15 @@ namespace PoliSim.Elections
         /// <summary>[AUTHORED-DRAFT] the coverage a day of total national attention is worth; the saturating gain's scale.</summary>
         public const double CoverageScale = 1.0;
 
-        /// <summary>[AUTHORED-DRAFT] percentage points of §22 momentum per unit of coverage GAINED in a day.</summary>
-        public const double MomentumPpPerCoverage = 1.5;
+        /// <summary>[AUTHORED-DRAFT] percentage points of §22 momentum per unit of coverage GAINED in a day.
+        /// ⚠ D-20 (a) changed coverage's UNIT (a share of the electorate the news reached, not a share of
+        /// "national attention"), and this figure is per unit of it. Converted on the media harness's own
+        /// news day - an announcement at full interest plus a rally in the largest valkrets, raw 0.40
+        /// under the old table and 0.092 under the new, ×4.35 - so that day shocks momentum by what it
+        /// did (0.225 → 0.60 pp per unit is the same shock for that day). A unit conversion on one
+        /// measured anchor, not a re-calibration: what changed is which acts make news, not how much
+        /// news moves momentum.</summary>
+        public const double MomentumPpPerCoverage = 6.5;
 
         /// <summary>[AUTHORED-DRAFT] the share of the electorate the advertising platforms can put a paid digital ad in front of — the digital channel's ceiling, as the television outlets' combined reach is television's.</summary>
         public const double PlatformReach = 0.55;
@@ -127,7 +134,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>[AUTHORED-DRAFT] interest formula weights: coverage, |momentum| in pp, polled share, recent-event salience.</summary>
-        public const double InterestPerCoverage = 1.0;
+        public const double InterestPerCoverage = 4.35;   // D-20 (a): converted with coverage's unit on the same news-day anchor as MomentumPpPerCoverage (1.0 × 0.40 / 0.092); the bookings a day of news buys are what W-B9 measured
         public const double InterestPerMomentumPp = 0.15;
         public const double InterestPerPolledShare = 0.8;
         public const double InterestPerEventSalience = 1.0;
@@ -136,19 +143,32 @@ namespace PoliSim.Elections
         /// [AUTHORED-DRAFT] how newsworthy each §12 action is at full spend, in coverage units before
         /// saturation — a policy announcement makes the most news, door-knocking almost none, and an
         /// interview begets coverage (earned media compounds, but through the saturating gain).
-        /// </summary>
+        /// <para>⚠ <b>RE-AUTHORED ON ITS ATTENTION-SHARE MEANING — D-20 (a), ruled by Elias
+        /// 2026-09-02.</b> The first table (rally 0.15, town hall 0.05, doors 0.01, television 0.10,
+        /// digital 0.05, post 0.03, interview 0.20, announcement 0.25) was drafted for one meaning —
+        /// how much a kind shocks §22's momentum — and C-N1 gave the same figures a second: the share
+        /// of the electorate the press carries the party to. On that meaning a rally making 15 % of
+        /// the nation's news persuaded five times the rally, a town hall's coverage 3–27 times the
+        /// room (D-20's table). The ruling: <i>a town hall's coverage is a fraction of the town
+        /// hall's own reach, never a multiple</i>. So the figure is now a FRACTION OF THE ACT'S OWN
+        /// RESOLVED REACH — how much of what an act reached the press carries onward — and the raw
+        /// newsworthiness is that fraction × the act's reach share (<see cref="RawNewsworthiness"/>),
+        /// which makes the ruling hold for every kind in every region by construction: coverage can
+        /// never reach more people than the act did. The fractions keep the old table's relative
+        /// order, scaled so the interview keeps the ratio it already had (its coverage reached 0.40
+        /// of its own audience under the old figures): old / 0.20 × 0.40. Nothing else is typed.</para></summary>
         public static double Newsworthiness(CampaignActionKind kind)
         {
             switch (kind)
             {
-                case CampaignActionKind.Rally: return 0.15;
-                case CampaignActionKind.TownHall: return 0.05;
-                case CampaignActionKind.DoorToDoor: return 0.01;
-                case CampaignActionKind.TelevisionAd: return 0.10;
-                case CampaignActionKind.DigitalAd: return 0.05;
-                case CampaignActionKind.SocialPost: return 0.03;   // a post is not news unless it travels; virality is not modelled (a §13 hook)
-                case CampaignActionKind.Interview: return 0.20;
-                case CampaignActionKind.PolicyAnnouncement: return 0.25;
+                case CampaignActionKind.Rally: return 0.30;
+                case CampaignActionKind.TownHall: return 0.10;
+                case CampaignActionKind.DoorToDoor: return 0.02;
+                case CampaignActionKind.TelevisionAd: return 0.20;
+                case CampaignActionKind.DigitalAd: return 0.10;
+                case CampaignActionKind.SocialPost: return 0.06;   // a post is not news unless it travels; virality is not modelled (a §13 hook)
+                case CampaignActionKind.Interview: return 0.40;
+                case CampaignActionKind.PolicyAnnouncement: return 0.50;
                 default: return 0.0;
             }
         }
@@ -167,11 +187,14 @@ namespace PoliSim.Elections
             return scale * (1.0 - Math.Exp(-raw / scale));
         }
 
-        /// <summary>The raw newsworthiness of one action as resolved: the kind's figure × the strategy's media-attention multiplier × §35's spend effectiveness (a free action counts in full).</summary>
-        public static double RawNewsworthiness(CampaignActions.ActionSpec spec, double spend, StrategyModifiers modifiers)
+        /// <summary>The raw newsworthiness of one action as resolved: the kind's figure × the strategy's media-attention multiplier × §35's spend effectiveness (a free action counts in full).        /// <para>D-20 (a): the raw figure is the kind's FRACTION × the act's own resolved reach as a
+        /// share of the electorate (<paramref name="reachShare"/> = the chain's `Reach` ÷ the
+        /// electorate, so §35's spend curve and the channel's reach are already inside it) × the
+        /// strategy's media attention. Its unit is therefore a share of the electorate the act's news
+        /// reaches — the attention-share meaning — and it can never exceed the act's own reach.</para></summary>
+        public static double RawNewsworthiness(CampaignActions.ActionSpec spec, StrategyModifiers modifiers, double reachShare)
         {
-            double spendFactor = spec.MoneyCost > 0 ? CampaignEconomy.Effectiveness(spend, Math.Max(1.0, spec.MoneyCost)) : 1.0;
-            return Newsworthiness(spec.Kind) * modifiers.MediaAttentionMultiplier * spendFactor;
+            return Newsworthiness(spec.Kind) * Math.Max(0.0, Math.Min(1.0, reachShare)) * modifiers.MediaAttentionMultiplier;
         }
 
         /// <summary>
@@ -182,26 +205,34 @@ namespace PoliSim.Elections
         /// vote — the media system was perception-only, which §39 does not say: it lists Media
         /// Effects and Momentum as two layers of the vote, not one.
         ///
-        /// What is resolved, and with which figures — none new: the coverage GAIN is the share of a
-        /// day's total national attention the party earned (`CoverageScale` = 1 is a day of all of
-        /// it), so the people the news about the party reaches are that share of the audience the
-        /// press can reach at all — the roster's reach summed and capped at the electorate, as a
-        /// television buy's is. The message is the party as the press reports it, not any one of
-        /// its actions: the party's platform on average (the caller's `TrueMessage` with no issue).
-        /// The chain is the earned-media action's own spec, VERBATIM — the interview's channel
-        /// reach, attention, persuasion and enthusiasm weights — because an interview IS the
-        /// roster's earned-media action and no other earned-media figure is on record. Nothing is
-        /// typed here. ⚠ The first build overrode the channel reach to 1.0 ("a day of attention is
-        /// attention") and measured coverage as the largest single line of the attribution ledger,
-        /// four to six times the interview's own — §39 forbids one variable overwhelming the rest,
-        /// and the override was the one authored figure; with the spec verbatim the line is a peer
-        /// of the interview's. Coverage costs nothing (`spend` = 0 through a spec whose money cost
-        /// is 0, so §35's curve returns 1, as it does for the interview); the trace's salience shift
-        /// is not applied (§18's channel stays the actions'). The strategy's media-attention
-        /// multiplier already scaled the raw newsworthiness that became this gain; the caller
-        /// passes the NONE strategy's modifiers so no strategy is applied twice.
+        /// What is resolved, and with which figures. Since D-20 (a) (2026-09-02) the coverage GAIN is a
+        /// SHARE OF THE ELECTORATE the day's news reached — each act's own resolved reach × its kind's
+        /// fraction (<see cref="RawNewsworthiness"/>), saturated — so the coverage's audience is the
+        /// electorate × the press's reach × the gain, through a spec whose channel reach is 1: the
+        /// gain already IS the reached share, and a second reach fraction would count the same
+        /// people twice. Attention, persuasion and enthusiasm weights are the interview's, verbatim —
+        /// an interview IS the roster's earned-media action and no other earned-media figure is on
+        /// record. The message is the party as the press reports it, not any one of its actions:
+        /// the party's platform on average (the caller's `TrueMessage` with no issue). ⚠ History, so
+        /// the shape is not re-argued: C-N1's first build had channel reach 1.0 over the OLD table
+        /// (rally = 15 % of the nation's attention) and coverage dwarfed the actions; the interview
+        /// spec verbatim over that table made it a peer at the ledger but 3–27× a town hall per act
+        /// (D-20); the ruling re-authored the TABLE as fractions of reach, and with that the channel
+        /// reach of 1 is the honest unit again. Coverage costs nothing (`spend` = 0 through a spec
+        /// whose money cost is 0); the trace's salience shift is not applied (§18's channel stays
+        /// the actions'). The strategy's media-attention multiplier already scaled the raw
+        /// newsworthiness that became this gain; the caller passes the NONE strategy's modifiers so
+        /// no strategy is applied twice.
         /// </summary>
-        public static CampaignActions.ActionSpec CoverageSpec => CampaignActions.Spec(CampaignActionKind.Interview);
+        public static CampaignActions.ActionSpec CoverageSpec
+        {
+            get
+            {
+                CampaignActions.ActionSpec i = CampaignActions.Spec(CampaignActionKind.Interview);
+                return new CampaignActions.ActionSpec(CampaignActionKind.Interview, 0.0, 0.0, 1.0,
+                    i.Attention, i.PersuasionWeight, i.EnthusiasmWeight, 0.0, false);
+            }
+        }
 
         /// <summary>The share of the electorate the press can reach at all: the roster's reach summed, capped at 1 (the same cap as <see cref="MediaOutlet.TelevisionReach"/>).</summary>
         public static double PressReach(MediaOutlet[] outlets)
@@ -213,10 +244,15 @@ namespace PoliSim.Elections
 
         /// <summary>See <see cref="CoverageSpec"/>. `gain` is one day's saturated coverage gain for one party (0–1).</summary>
         public static CampaignActions.ChainTrace ResolveCoverage(double gain, double electorate, MediaOutlet[] outlets,
+            double salience, double match, double credibility, StrategyModifiers modifiers) =>
+            ResolveCoverage(gain, electorate, PressReach(outlets), salience, match, credibility, modifiers);
+
+        /// <summary>The same with the press's reach already known (C-N7: the AI carries it on its view as a public fact).</summary>
+        public static CampaignActions.ChainTrace ResolveCoverage(double gain, double electorate, double pressReach,
             double salience, double match, double credibility, StrategyModifiers modifiers)
         {
             if (gain <= 0.0) { return new CampaignActions.ChainTrace(CampaignActionKind.Interview, 0, 0, 0, 0, 0, 0, 0, 0); }
-            double audience = electorate * PressReach(outlets) * Math.Min(1.0, gain);
+            double audience = electorate * Math.Max(0.0, Math.Min(1.0, pressReach)) * Math.Min(1.0, gain);
             return CampaignStrategyModel.Resolve(CoverageSpec, audience, salience, match, credibility, 0.0, modifiers);
         }
 

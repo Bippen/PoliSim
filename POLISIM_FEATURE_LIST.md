@@ -294,7 +294,10 @@ In order of what a player would notice first:
 3. **C-R4** — the war chest and the win/lose rule, so a campaign has **stakes and an ending**.
 
 > **2026-09-02 — where F6 stands.** Items 1 and 2 landed (`COMPLETED.md` §194, §193); C-N7's attempt to
-> let the AI value coverage exposed C-N1's magnitude and is held at D-20 (§196). C-R4's ruling half is
+> let the AI value coverage exposed C-N1's magnitude (§196); **Elias ruled D-20 (a), the table is
+> re-authored as fractions of an act's own reach, and C-N7 landed with the personalities holding — L1
+> 0.405 (§208).** One finding from it is Elias's: the grassroots parties make no news and are never
+> booked (C-N8, §208). The September-vs-boundary fork is sheeted as D-23, (a) taken, strikeable (§209). C-R4's ruling half is
 > done (§135); its build half, `C-R4b`, has its first step: `CampaignRun` is a stepper (`Begin` /
 > `StepDay` / `Finish`, §202), digest-identical, and its second: `LiveCampaignSetup` builds Sweden's
 > `Setup` from the runtime tables and the harness stages through it (§203), digest-identical again —
@@ -344,8 +347,9 @@ In order of what a player would notice first:
   gap until a citation lands beside it.
 - **The 20 play-calibration entries** — the list is `COMPLETED.md` §189 (retired 2026-09-02 as a record);
   every entry is a number awaiting a loop to judge it against, which is F6's done-when.
-- **A 21st play-calibration entry, from D-20 (2026-09-02)** — until the `Newsworthiness` table is re-authored on its attention-share meaning, cheap newsworthy acts (a social post, a town hall) are a known exploit: their press coverage persuades several times the act itself. The AI does not see it; a player will.
-- **Two decisions taken overnight 2026-09-02, strikeable** — D-20 (`COMPLETED.md` §197, the register's last sheet: the coverage magnitude, (c) taken, (a) sought) and D-21 (§206: the live campaign runs on the vote model's compatibility, (a) taken).
+- ~~A 21st play-calibration entry, from D-20~~ — **closed by D-20 (a), ruled and built 2026-09-02 (§208):** coverage is a fraction of an act's own reach by construction; the exploit is gone.
+- **Decisions taken overnight 2026-09-02, strikeable** — D-21 (§206: the live campaign runs on the vote model's compatibility, (a) taken) and D-23 (§209: polling day stays the turn boundary, (a) taken; (b), the September date, is the branch to build after the first played campaign). D-20 was Elias's and is ruled.
+- **C-N8 (2026-09-02, §208) — Elias's.** Under D-20 (a) the two grassroots parties, campaigning by doors and posts, make no news and are never booked: 0 interviews, persuasion ~3 000 against millions. Whether §13's interest threshold ladder should let a small party onto the air at all is a design question about §13.
 - **Three first sights, owed to play (2026-09-02)** — the live Campaign HQ from the rail (§205), the first pressed chip on its queue (§207), the first election night that counts a campaign (§206's `ELECTION: counted the campaign's shares` log line). Each is a finding to read, never a tune; the campaign is Sweden's only.
 - **`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves. ⚠ **Blocks F3's
   per-group loyalty**, which is otherwise complete.

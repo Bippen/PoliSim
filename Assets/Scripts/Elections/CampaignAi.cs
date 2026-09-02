@@ -168,6 +168,8 @@ namespace PoliSim.Elections
         public readonly double[] RegionPush;
         /// <summary>W-C2: the decayed attacks aimed at this party, by attacker - which it can see, being the one attacked. Null = none.</summary>
         public readonly double[] AttackersOnMe;
+        /// <summary>C-N7: the share of the electorate the press can reach at all (the roster's reach summed, capped at 1 - `MediaSystem.PressReach`), a public fact about the media like <see cref="BestOutletReach"/>. 0 = unknown, and the scorer then values no coverage.</summary>
+        public readonly double PressReach;
 
         public double AttacksOnMe
         {
@@ -180,10 +182,10 @@ namespace PoliSim.Elections
             CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0,
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
             double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
-            double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null)
+            double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0)
         {
             NationalAudienceByKind = nationalAudienceByKind; VolunteerHoursToday = volunteerHoursToday; TelevisionFund = televisionFund;
-            RegionPressure = regionPressure; RegionPush = regionPush; AttackersOnMe = attackersOnMe;
+            RegionPressure = regionPressure; RegionPush = regionPush; AttackersOnMe = attackersOnMe; PressReach = pressReach;
             PartyIndex = partyIndex; Phase = phase; DaysUntilElection = daysUntilElection; Resources = resources;
             SpendingReserve = spendingReserve; HasPoll = hasPoll; LatestPoll = latestPoll; MomentumPp = momentumPp;
             Issues = issues; OwnCredibility = ownCredibility; NationalAudience = nationalAudience; Regions = regions;
@@ -717,6 +719,29 @@ namespace PoliSim.Elections
                 expectedPts += turnoutPts;
                 lowPts += turnoutPts;
                 highPts += turnoutPts;
+            }
+            // ⚠ C-N7 (2026-09-02), re-applied after D-20 (a). Since C-N1 the coverage an action begets
+            // reaches the vote; the scorer valued only the action's own chain, so the news a rally or an
+            // announcement makes was invisible to it - the same blind spot C-N2 found for turnout. The
+            // term is DERIVED, nothing authored: this action's raw newsworthiness under the party's own
+            // strategy - its kind's fraction of the people the action itself reaches (D-20's meaning) -
+            // through the saturating gain as if it were the day's only news (a first-order upper bound
+            // the personality's optimism already shades), resolved through the very spec the run uses on
+            // the press's reach (a public fact the view carries) with the party's general message as the
+            // AI has measured it (the press reports the party, not the message), in the points the chain
+            // gives. ⚠ Its first landing was reverted: under the old table it collapsed the personalities
+            // (L1 0.41 -> 0.24), because the table's magnitudes were wrong, not the scorer - D-20.
+            if (view.PressReach > 0.0 && view.NationalAudience > 0.0)
+            {
+                double reachShare = CampaignActions.Resolve(spec, audience, 0.5, 0.5, view.OwnCredibility, spend).Reach / view.NationalAudience;
+                double gain = MediaSystem.SaturatedGain(MediaSystem.RawNewsworthiness(spec, m, reachShare));
+                bool generalMeasured = TryMeasurement(view, null, out double gSalience, out _, out double gMatch, out _);
+                CampaignActions.ChainTrace carried = MediaSystem.ResolveCoverage(gain, view.NationalAudience, view.PressReach,
+                    generalMeasured ? gSalience : 0.5, generalMeasured ? gMatch : 0.5, view.OwnCredibility, StrategyModifiers.Identity);
+                double coveragePts = Points(carried, profile, StrategyModifiers.Identity);
+                expectedPts += coveragePts;
+                lowPts += coveragePts;
+                highPts += coveragePts;
             }
 
             double importance = profile.Affinity(spec.Kind) * (measured ? Math.Max(0.0, salience) / topSalience : 0.5);
