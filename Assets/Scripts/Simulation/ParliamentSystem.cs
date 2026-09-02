@@ -211,28 +211,53 @@ namespace PoliSim.Simulation
         /// produced the verdict. Falling back is a stated approximation; silently scoring a chamber
         /// at zero would be a lie.
         /// </summary>
-        public static float GetSeatWeightedAlignment(Country country, float direction, BillAxis axis)
+        /// <summary>
+        /// P2-2.2 (2026-09-02): **every mandate's side on a bill, from the one enumeration the alignment reads.**
+        /// For each party with seats: +1 when its stance times the bill's sign is positive (FOR), -1 when negative
+        /// (AGAINST), 0 when it has no measured position on this axis or its stance is exactly neutral (UNDECIDED)
+        /// - the same rule the Laws page prints as FOR / AGAINST / UNALIGNED / UNMEASURED. The seat map colours
+        /// dots from it and <see cref="GetSeatWeightedAlignment(Country, float, BillAxis)"/> sums its weights from
+        /// it, so the per-seat counts and the verdict arithmetic cannot disagree; OfficeTestDiagnostic asserts that
+        /// they do not.
+        /// </summary>
+        public static IEnumerable<(PoliticalParty Party, int Seats, int Side, float Weight, bool Measured)> SeatSides(Country country, float direction, BillAxis axis)
         {
-            float billSign = Mathf.Sign(direction);
-            float weightedAlignment = 0f;
-            float measuredSeats = 0f;
+            // Unity's Mathf.Sign(0f) is 1, so an unopposed (zero-direction) bill is given no side rather than the
+            // chamber's raw stances - the trap the pending-law card used to guard with its own contested flag.
+            float billSign = Mathf.Approximately(direction, 0f) ? 0f : Mathf.Sign(direction);
             foreach (PoliticalParty party in PartySystems.For(country.Id))
             {
-                bool measured = axis == BillAxis.Trade ? party.HasEuPosition : party.HasPosition;
-                if (!measured) { continue; }
-
                 int seats = country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+                if (seats <= 0) { continue; }
+                bool measured = axis == BillAxis.Trade ? party.HasEuPosition : party.HasPosition;
+                if (!measured)
+                {
+                    yield return (party, seats, 0, 0f, false);
+                    continue;
+                }
+
+                float stance = axis == BillAxis.Trade ? PartySystems.TradeStance(party) : PartySystems.FiscalStance(party);
+                float weight = stance * billSign;
+                int side = weight > 0f ? 1 : weight < 0f ? -1 : 0;
+                yield return (party, seats, side, weight, true);
+            }
+        }
+
+        public static float GetSeatWeightedAlignment(Country country, float direction, BillAxis axis)
+        {
+            // P2-2.2: the same enumeration the seat map colours from - the weights are summed here, the sides
+            // counted there, one loop for both. Unmeasured parties carry no weight and no seat in the denominator,
+            // exactly as before.
+            float weightedAlignment = 0f;
+            float measuredSeats = 0f;
+            foreach ((PoliticalParty _, int seats, int _, float weight, bool measured) in SeatSides(country, direction, axis))
+            {
+                if (!measured) { continue; }
                 measuredSeats += seats;
-                float stance = axis == BillAxis.Trade
-                    ? PartySystems.TradeStance(party)
-                    : PartySystems.FiscalStance(party);
-                weightedAlignment += seats * stance * billSign;
+                weightedAlignment += seats * weight;
             }
 
             if (measuredSeats > 0f) { return weightedAlignment / measuredSeats; }
-
-            // No seat in this chamber carries a position on this axis. For Trade that is the USA, by
-            // construction; fall back rather than report a chamber that opposes everything.
             return axis == BillAxis.Trade
                 ? GetSeatWeightedAlignment(country, direction, BillAxis.Fiscal)
                 : 0f;

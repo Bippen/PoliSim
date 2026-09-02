@@ -173,6 +173,45 @@ namespace PoliSim.EditorTools
                                + "office test. Sites: " + string.Join(", ", thresholdSites));
             }
 
+            // P2-2.2 (2026-09-02): THE PER-SEAT MAP'S COUNTS EQUAL THE STANCE ARITHMETIC TO THE SEAT. For every
+            // country, both bill directions and both axes: the sides sum to the seats the chamber holds, every
+            // party's side is the sign of its stance times the bill's sign (the Laws page's own rule), and the
+            // seat-weighted alignment re-summed from the enumeration equals the one the verdict reads.
+            sb.Append("\n--- P2-2.2: the seat map's sides against the stance arithmetic ---\n");
+            foreach (Country country in world.Countries)
+            {
+                int chamber = 0;
+                foreach (KeyValuePair<string, int> kv in country.ParliamentSeats) { chamber += kv.Value; }
+                foreach (BillAxis axis in new[] { BillAxis.Fiscal, BillAxis.Trade })
+                {
+                    foreach (float direction in new[] { 30f, -30f })
+                    {
+                        int forSeats = 0, againstSeats = 0, undecided = 0, listed = 0;
+                        float resummed = 0f, measuredSeats = 0f;
+                        bool sidesAgree = true;
+                        foreach ((PoliticalParty party, int seats, int side, float weight, bool measured) in ParliamentSystem.SeatSides(country, direction, axis))
+                        {
+                            listed += seats;
+                            if (side > 0) { forSeats += seats; } else if (side < 0) { againstSeats += seats; } else { undecided += seats; }
+                            float stance = measured ? (axis == BillAxis.Trade ? PartySystems.TradeStance(party) : PartySystems.FiscalStance(party)) * Mathf.Sign(direction) : 0f;
+                            int expectedSide = !measured ? 0 : stance > 0f ? 1 : stance < 0f ? -1 : 0;
+                            if (expectedSide != side) { sidesAgree = false; }
+                            if (measured) { measuredSeats += seats; resummed += seats * weight; }
+                        }
+                        float alignment = ParliamentSystem.GetSeatWeightedAlignment(country, direction, axis);
+                        float expectedAlignment = measuredSeats > 0f ? resummed / measuredSeats : (axis == BillAxis.Trade ? ParliamentSystem.GetSeatWeightedAlignment(country, direction, BillAxis.Fiscal) : 0f);
+                        bool ok = listed == chamber && sidesAgree && Mathf.Abs(alignment - expectedAlignment) < 1e-5f;
+                        if (!ok)
+                        {
+                            failures.Add($"seat map disagrees with the stance arithmetic for {country.Id} {axis} {direction:+0;-0}");
+                            Debug.LogError($"OFFICE: {country.Id} {axis} {direction:+0;-0}: sides list {listed} of {chamber} seats, sides agree {sidesAgree}, alignment {alignment:F5} vs re-summed {expectedAlignment:F5}.");
+                        }
+                        sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-8} {1,-6} {2,3}: FOR {3,3}  UNDECIDED {4,3}  AGAINST {5,3}  of {6,3}  alignment {7:+0.000;-0.000}  {8}\n",
+                            country.Id, axis, direction, forSeats, undecided, againstSeats, chamber, alignment, ok ? "ok" : "FAIL"));
+                    }
+                }
+            }
+
             sb.Append("\n    ⚠ DECLARED RED LINES ARE SOURCED FOR SWEDEN ONLY. Everywhere else the government is formed on\n");
             sb.Append("    DERIVED lines alone and may not be one that country would form - reported in the column above\n");
             sb.Append("    rather than hidden behind a green result. Inventing Germany's declarations would be inventing the\n");

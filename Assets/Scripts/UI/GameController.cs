@@ -3575,17 +3575,17 @@ namespace PoliSim.UI
             }
             else
             {
-                // P2-2.1: one line where two were - the direction and the verdict read together, and the Budget's
-                // right column has to fit a 720 frame with the arrows beneath.
-                DrawColoredLabel($"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0}) · {(wouldPass ? "WOULD PASS" : "WOULD FAIL")}",
+                // P2-2.1: one line where two were - the direction and the verdict read together (P2-2.2 dropped the
+                // "Bill direction:" prefix so the line stays one line at 1280 above the seat map).
+                DrawColoredLabel($"{directionLabel} ({direction:+0.0;-0.0;0}) · {(wouldPass ? "WOULD PASS" : "WOULD FAIL")}",
                     _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
             }
 
-            Rect barRect = GUILayoutUtility.GetRect(10f, _labelStyle.fontSize * 0.7f, GUILayout.ExpandWidth(true));
-            if (Event.current.type == EventType.Repaint)
-            {
-                UiPalette.DrawDivergingBar(barRect, contested ? ParliamentSystem.GetSeatWeightedAlignment(_playerCountry, direction) : 0f, PendingBillLeanDisplayRange);
-            }
+            // P2-2.2 (2026-09-02): the lean bar is a per-seat map - every mandate coloured FOR / UNDECIDED / AGAINST
+            // for this bill, from the same enumeration the verdict above reads (ParliamentSystem.SeatSides).
+            float seatMapWidth = wrapWidth > 0f ? wrapWidth : Mathf.Max(10f, PoliSimWidgets.InnerWidth(Screen.width * 0.3f, _boxStyle));
+            Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(seatMapWidth, _labelStyle), GUILayout.ExpandWidth(true));
+            SeatMapRenderer.Draw(seatMapRect, _playerCountry, direction, axis, _labelStyle);
         }
 
         /// <summary>See BuildCrimeJusticeBillFromDrafts's own doc comment - identical pattern.
@@ -3711,14 +3711,7 @@ namespace PoliSim.UI
                 RecomputePolicyPreview();
             }
 
-            GUILayout.Space(10f);
-            // Header and horizon buttons sit on SEPARATE rows. Previously they shared one row with a
-            // FlexibleSpace between them, which set this panel's minimum width at roughly
-            // "header + four buttons" (~864px measured) - far more than it gets inside the Budget
-            // Process's three-column row, and the main reason that row overflowed into a horizontal
-            // scrollbar. Stacking costs one row of height, which this panel has, and removes the
-            // width floor entirely.
-            GUILayout.Space(10f);
+            GUILayout.Space(10f);   // P2-2.2: one space where two (and a note about the retired horizon buttons) were
             GUILayout.Label("Effects", _headerStyle);   // P2-2.1: one line; the arrows are the estimate
             // P2-2.1 (2026-09-02): the point, its scope stated once (C-C1's precedent) - no horizon buttons, no
             // rescaled copies of one projection. The budget delta stands above in this same column
@@ -8260,13 +8253,7 @@ namespace PoliSim.UI
             BillAxis axis = area == UiPalette.SystemArea.Trade ? BillAxis.Trade : BillAxis.Fiscal;
             bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction, axis);
 
-            // A zero-direction bill (drafts introduced unchanged) passes unconditionally - WouldBillPass
-            // short-circuits before scoring it. The bar has to short-circuit on the SAME condition:
-            // Unity's Mathf.Sign(0f) returns 1, not 0, so scoring it anyway yields parliament's raw net
-            // stance - negative in this game's documented tied-parties case - and would paint a red bar
-            // directly beside the words "leans PASS".
             bool contested = !Mathf.Approximately(direction, 0f);
-            float alignment = contested ? ParliamentSystem.GetSeatWeightedAlignment(_playerCountry, direction) : 0f;
 
             BeginAreaCard(null, area);
             GUILayout.Label(label, _labelStyle);
@@ -8275,11 +8262,10 @@ namespace PoliSim.UI
                 _labelStyle,
                 UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
 
-            Rect barRect = GUILayoutUtility.GetRect(10f, _labelStyle.fontSize * 0.7f, GUILayout.ExpandWidth(true));
-            if (Event.current.type == EventType.Repaint)
-            {
-                UiPalette.DrawDivergingBar(barRect, alignment, PendingBillLeanDisplayRange);
-            }
+            // P2-2.2 (2026-09-02): the seat map replaces the lean bar here too (a law-support preview); an
+            // unopposed bill maps every seat UNDECIDED, because SeatSides treats a zero direction as no side.
+            Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(Screen.width * 0.5f, _labelStyle), GUILayout.ExpandWidth(true));
+            SeatMapRenderer.Draw(seatMapRect, _playerCountry, direction, axis, _labelStyle);
 
             EndAreaCard(area);
         }
@@ -9191,13 +9177,16 @@ namespace PoliSim.UI
             // Revenue and spending rising are not the same KIND of good, so neither takes a
             // semantic colour: only the NET carries one, on the same higher-is-better convention
             // the rest of the screen uses for a balance.
-            GUILayout.Label($"Revenue: {UiFormat.MoneyDelta(_cachedBudgetImpact.RevenueDelta, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Spending: {UiFormat.MoneyDelta(_cachedBudgetImpact.SpendingDelta, MoneyUnit.Billions)}", _labelStyle);
-            DrawColoredLabel($"Net: {UiFormat.MoneyDelta(_cachedBudgetImpact.NetDelta, MoneyUnit.Billions)}",
-                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, higherIsBetter: true));
+            // P2-2.2: one line where three were, so the seat map above fits the column at 720 - the net alone carries the colour.
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"Revenue {UiFormat.MoneyDelta(_cachedBudgetImpact.RevenueDelta, MoneyUnit.Billions)} · Spending {UiFormat.MoneyDelta(_cachedBudgetImpact.SpendingDelta, MoneyUnit.Billions)} · ", _labelStyle, GUILayout.ExpandWidth(false));
+            DrawColoredLabel($"Net {UiFormat.MoneyDelta(_cachedBudgetImpact.NetDelta, MoneyUnit.Billions)}",
+                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, higherIsBetter: true), GUILayout.ExpandWidth(false));
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
 
             // P2-2.1: the scope, once, for the delta above and the arrows below - one line, so both fit a 720 frame.
-            GUILayout.Label("Next year, run with and without this draft - deterministic, no margin, no events.", _labelStyle);
+            GUILayout.Label("Next year, with vs without this draft. No events.", _labelStyle);   // P2-2.2: shorter, one line at 1280
         }
 
         /// <summary>Everything about a draft that could move its estimate, as one string — so the

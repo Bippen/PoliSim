@@ -39,7 +39,7 @@ namespace PoliSim.UI
         public static float MeasureHeight(GUIStyle labelStyle)
         {
             float line = Mathf.Max(labelStyle.lineHeight, labelStyle.fontSize + 4f);
-            return line * 3f + labelStyle.fontSize * 3.5f;
+            return line * 3f + labelStyle.fontSize * 3f;   // P2-2.2: half a font size shorter, for the seat map above
         }
 
         /// <summary>Lays the arrows out across <paramref name="area"/>. An empty list draws the caller's own idle text instead; this draws nothing for it.</summary>

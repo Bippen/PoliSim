@@ -426,7 +426,7 @@ states, and every arrow's length traces to the preview's own figure. **→ ✅ C
 **P2-2.2 — Parliamentary support as seats.** The hemicycle in the Budget preview colours **each
 mandate** for/against/undecided, computed from the parties' stances on the draft; the same
 component replaces the lean bar on every law-support preview. *Done when:* the per-seat map's
-counts equal the existing stance arithmetic to the seat, on Budget and on Laws.
+counts equal the existing stance arithmetic to the seat, on Budget and on Laws. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §226: every law-support preview and the pending-law card draw a per-seat map from `ParliamentSystem.SeatSides`, the one enumeration the verdict sums; OfficeTestDiagnostic holds the sides to the stance arithmetic for every country, axis and direction.**
 
 ## Track 3 — Politics
 
