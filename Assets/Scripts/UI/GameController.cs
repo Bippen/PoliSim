@@ -334,6 +334,7 @@ namespace PoliSim.UI
         // removing a tax bypasses this cache entirely (see DrawTaxLineRow) since that's an immediate
         // action, not a draft value tracked here.
         private bool _hasCachedPreview;
+        private List<EffectArrow> _effectsAtTurnEnd;   // P2-4.3: the preview's arrows as the turn closed, for the divisions it resolves
         private PolicyPreview _cachedPreview;   // P2-3.4: the whole preview, for the Riksbank panel's projected path
         /// <summary>C-C9 (P-G1): the no-policy counterfactual advancing beside the real game.</summary>
         private ShadowBaseline _shadowBaseline;
@@ -1611,6 +1612,15 @@ namespace PoliSim.UI
             {
                 if (record.Number > _seenDivisionNumber)
                 {
+                    // P2-4.3: the estimate the turn's decision carried (the preview's arrows, snapshotted at the turn's
+                    // end) goes with every division that turn resolved, so the ceremony can draw it.
+                    if (record.Effects.Count == 0 && _effectsAtTurnEnd != null)
+                    {
+                        foreach (EffectArrow a in _effectsAtTurnEnd)
+                        {
+                            record.Effects.Add(new DivisionEffect { Name = a.Name, Value = a.Value, HigherIsBetter = a.HigherIsBetter, Figure = a.Figure });
+                        }
+                    }
                     _signingQueue.Enqueue(record);
                     _seenDivisionNumber = record.Number;
                 }
@@ -4859,6 +4869,8 @@ namespace PoliSim.UI
             // the identity `PolicyImpactLedgerDiagnostic` asserts byte-for-byte.
             _impactLedger?.AdvanceTurn(_simulationManager, _world, PlayerCountryId, decisions);
 
+            // P2-4.3: the estimate the decision carried, snapshotted before the turn moves the preview on.
+            _effectsAtTurnEnd = _hasCachedPreview && _cachedPreviewTurn == _simulationManager.CurrentTurn ? new List<EffectArrow>(_cachedPreviewEffects) : null;
             _simulationManager.AdvanceTurn(decisions);
 
             // C-C9 (P-G1): the counterfactual advances in lockstep, one turn for one turn, so the two
@@ -5186,7 +5198,8 @@ namespace PoliSim.UI
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 _electionNight = ElectionNightScreen.Build(
                     state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
-                    System.DateTime.Now, 349, verdict: _pendingElectionVerdict);
+                    System.DateTime.Now, 349, verdict: _pendingElectionVerdict,
+                    ledger: _simulationManager.PlayerCampaignLedger, ledgerParty: _simulationManager.PlayerCampaignLedgerParty);   // P2-4.3
             }
             catch (System.Exception e)
             {
@@ -6028,6 +6041,22 @@ namespace PoliSim.UI
                 anyPending = true;
             }
 
+            // P2-4.3 (2026-09-02): MINISTER ALERTS - the portfolios whose minister has something to say, named before
+            // the cards: a pending cabinet decision is the one thing the cabinet emits today, so that is what the region
+            // lists (P2-5 gives ministers attributes and the region real events).
+            List<(CabinetPortfolio Portfolio, CabinetDecision Decision)> pendingCabinet = _simulationManager.GetPendingCabinetDecisions(PlayerCountryId);
+            if (pendingCabinet.Count > 0)
+            {
+                BeginAreaCard("MINISTER ALERTS", UiPalette.SystemArea.Political, blocksTime: false, dossier: false);
+                foreach ((CabinetPortfolio alertPortfolio, CabinetDecision alertDecision) in pendingCabinet)
+                {
+                    string minister = _playerCountry.CabinetMinisters != null && _playerCountry.CabinetMinisters.TryGetValue(alertPortfolio, out CabinetMinister seated)
+                        ? $"{seated.Name} ({seated.Philosophy})"
+                        : "no minister seated";
+                    GUILayout.Label($"{GetPortfolioName(alertPortfolio)} - {minister}: {alertDecision.Name}", _labelStyle);
+                }
+                EndAreaCard(UiPalette.SystemArea.Political);
+            }
             foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in _simulationManager.GetPendingCabinetDecisions(PlayerCountryId))
             {
                 // Tinted by the PORTFOLIO's own area, not one flat "cabinet" color - two simultaneous
@@ -8010,6 +8039,7 @@ namespace PoliSim.UI
                 {
                     _simulationManager.ResolveCabinetDecision(PlayerCountryId, portfolio, decision, option);
                 }
+                DrawCabinetOptionEstimate(option);   // P2-4.3: the option's cost and impact, as the desk says them
             }
 
             if (drawOwnFrame)
@@ -8025,6 +8055,36 @@ namespace PoliSim.UI
         /// so it moves to Decisions wholesale (see DrawDecisionsTab) with nothing left behind. Only
         /// this modal renderer survives, reused as-is from Decisions.
         /// </summary>
+        /// <summary>
+        /// P2-4.3 (2026-09-02): a cabinet option's cost and impact as the desk says them - the budget figure on the
+        /// country's own scale (P2-0.1's rule) and the option's shocks as arrows (P2-2.1's renderer). The shocks are the
+        /// option's authored figures, applied as written by CabinetSystem.ApplyDecisionOption; nothing is estimated here.
+        /// </summary>
+        private void DrawCabinetOptionEstimate(CabinetDecisionOption option)
+        {
+            var arrows = new List<EffectArrow>();
+            void Add(string name, float value, bool higherIsBetter, string unit)
+            {
+                if (Mathf.Abs(value) >= 0.005f) { arrows.Add(new EffectArrow(name, value, higherIsBetter, value.ToString("+0.##;-0.##", CultureInfo.CurrentCulture) + unit)); }
+            }
+            Add("Crime index", option.CrimeIndexShock, higherIsBetter: false, "");
+            Add("Poverty rate", option.PovertyRateShock, higherIsBetter: false, " pts");
+            Add("Approval", option.ApprovalEffect, higherIsBetter: true, " pts");
+            Add("Trade balance", option.TradeBalanceShock, higherIsBetter: true, "");
+            Add("Youth unemployment", option.YouthUnemploymentShock, higherIsBetter: false, " pts");
+            string budget = Mathf.Abs(option.BudgetImpact) >= 0.005f
+                ? $"Budget {UiFormat.MoneyDelta(AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry), MoneyUnit.Billions)}"
+                : "No budget figure";
+            GUILayout.Label(budget, _labelStyle);
+            if (arrows.Count == 0)
+            {
+                GUILayout.Label("No modelled shock beyond the budget.", _labelStyle);
+                return;
+            }
+            Rect area = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
+            EffectArrowsRenderer.Draw(area, arrows, _labelStyle);
+        }
+
         private void DrawForeignPolicyMeetingModal(ForeignPolicyMeeting meeting, bool drawOwnFrame = true)
         {
             if (drawOwnFrame)

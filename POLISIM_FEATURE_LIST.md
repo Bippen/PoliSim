@@ -475,7 +475,7 @@ Elias's. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §232: D10 installed as the
 **P2-4.3 — The structural halves that need no board:** the law-result and election-result screens
 get their full-frame content now (per-seat vote map from P2-2.2, effect arrows from P2-2.1, the
 attribution ledger), in the v3 idiom; the Docket gets a minister-alerts region fed by whatever the
-cabinet already emits. Boards refine. *Done when:* filmed, nothing is a square on black.
+cabinet already emits. Boards refine. *Done when:* filmed, nothing is a square on black. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §233: divisions carry their sides and the turn's estimate, `CanvasPaint` paints them for the Canvas screens, the signing ceremony and election night anchor to the frame with the map, the citation, the arrows and the live campaign ledger; the Docket names ministers with something to say and draws every option's cost and shocks as arrows.**
 
 ## Track 5 — cabinet mechanics (a new system; one page, then build)
 

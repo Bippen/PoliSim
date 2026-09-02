@@ -971,6 +971,21 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Every cabinet decision rolled for this country that the player hasn't responded to yet (usually empty) - see GameController's Cabinet tab and hasPendingCabinetDecisions gate.</summary>
+        /// <summary>
+        /// P2-4.3 (2026-09-02): a harness hook - stage a pending cabinet decision so the Docket's minister alerts and
+        /// an option's cost-and-impact arrows are on film at the seed, where no minister sits and nothing has rolled.
+        /// The game never calls it; the decision is whatever the harness hands in, and its own log line says so.
+        /// </summary>
+        public void StagePendingCabinetDecision(CountryId countryId, CabinetPortfolio portfolio, CabinetDecision decision)
+        {
+            if (!_pendingCabinetDecisionsByCountry.TryGetValue(countryId, out var pending))
+            {
+                pending = new List<(CabinetPortfolio, CabinetDecision)>();
+                _pendingCabinetDecisionsByCountry[countryId] = pending;
+            }
+            pending.Add((portfolio, decision));
+        }
+
         public List<(CabinetPortfolio Portfolio, CabinetDecision Decision)> GetPendingCabinetDecisions(CountryId countryId)
         {
             return _pendingCabinetDecisionsByCountry.TryGetValue(countryId, out var pending) ? pending : new List<(CabinetPortfolio, CabinetDecision)>();
@@ -1851,7 +1866,7 @@ namespace PoliSim.Simulation
             // fiscal one. The USA has no EU position on any seat and falls back to fiscal inside
             // GetSeatWeightedAlignment, with ParliamentSystem.TradeAxisAvailable saying so.
             bool passed = ParliamentSystem.WouldBillPass(country, direction, BillAxis.Trade);
-            ParliamentSystem.RecordDivision(country, "Trade bill", direction, passed, CurrentDate);
+            ParliamentSystem.RecordDivision(country, "Trade bill", direction, passed, CurrentDate, BillAxis.Trade);
             float approvalBeforeTradeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Trade bill passed" : "Trade bill failed", country.State.ApprovalRating - approvalBeforeTradeBill);
@@ -2105,7 +2120,7 @@ namespace PoliSim.Simulation
             }
             if (PlayerCampaign.Finished && PlayerCampaignResult == null)
             {
-                PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign);
+                PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); RecordCampaignLedger();
                 UnityEngine.Debug.Log($"CAMPAIGN: finished {PlayerCampaign.TotalDays} days for {PlayerCountryId.Value}; final shares " + string.Join(" ", System.Array.ConvertAll(PlayerCampaignResult.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
             }
         }
@@ -2113,6 +2128,37 @@ namespace PoliSim.Simulation
         // ---- C-R4b step 4b: the player's hand on the campaign - a queue the party plays ----------------
 
         /// <summary>The player's party's index in the staged campaign's party order, or −1 (no party chosen, or a country with no staging).</summary>
+        /// <summary>
+        /// P2-4.3 (2026-09-02): the campaign's attribution ledger for the player's party - W-E7's inputs read from
+        /// the finished run (each side's persuasion, the attacks received, the coverage, the total per party) and
+        /// the setup's compatibility, prior and loyalty - kept here past the run's own clearing so election night
+        /// can show it beside the count. Null when no live campaign ran to the election.
+        /// </summary>
+        public Elections.VoteAttribution.Ledger PlayerCampaignLedger { get; private set; }
+        public string PlayerCampaignLedgerParty { get; private set; }
+
+        private void RecordCampaignLedger()
+        {
+            PlayerCampaignLedger = null;
+            PlayerCampaignLedgerParty = null;
+            Elections.CampaignRun.Result result = PlayerCampaignResult;
+            Elections.CampaignRun.State run = PlayerCampaign;
+            int me = PlayerPartyIndexForCampaign();
+            if (result == null || run == null || result.Parties == null || me < 0 || me >= result.Parties.Length) { return; }
+            var input = new Elections.VoteAttribution.Inputs
+            {
+                OwnPersuasionByAction = result.Parties[me].PersuasionByAction,
+                AttacksReceived = result.Parties[me].PersuasionAgainstMe,
+                OwnPersuasionFromCoverage = result.Parties[me].PersuasionFromCoverage,
+                TotalPersuasionPerParty = result.PersuasionPerParty,
+                BaseCompatibility = run.Setup.Compatibility,
+                PriorShares = run.Setup.PriorShares,
+                LoyaltyPerParty = run.Setup.LoyaltyPerParty,
+            };
+            PlayerCampaignLedger = Elections.VoteAttribution.Explain(input, me);
+            PlayerCampaignLedgerParty = run.Setup.Parties != null && me < run.Setup.Parties.Length ? run.Setup.Parties[me].Name : Elections.LiveCampaignSetup.SwedenParties[me];   // the setup's party names - State.Names are the regions
+        }
+
         public int PlayerPartyIndexForCampaign()
         {
             if (!PlayerCountryId.HasValue || _world == null) { return -1; }
@@ -2198,7 +2244,7 @@ namespace PoliSim.Simulation
             PlayerCampaign = Elections.CampaignRun.Begin(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi),
                 SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
             for (int i = 0; i < record.DaysStepped && !PlayerCampaign.Finished; i++) { Elections.CampaignRun.StepDay(PlayerCampaign); }
-            if (PlayerCampaign.Finished) { PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); }
+            if (PlayerCampaign.Finished) { PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); RecordCampaignLedger(); }
             System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> after = SimulationRandom.CaptureDrawCounts();
             UnityEngine.Debug.Log($"CAMPAIGN REPLAY: {record.DaysStepped} day(s) re-stepped for {PlayerCountryId.Value} toward {record.ElectionDate:yyyy-MM-dd}");
             foreach (SimulationRandom.Stream stream in CampaignStreams)

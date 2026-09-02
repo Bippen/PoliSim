@@ -346,11 +346,18 @@ namespace PoliSim.Simulation
         /// OF the simulation, never an input TO it - see DivisionLog's own doc comment for why that
         /// constraint is load-bearing rather than tidiness.
         /// </summary>
-        public static void RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date)
+        public static void RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
         {
             bool contested = !Mathf.Approximately(direction, 0f);
-            float alignment = contested ? GetSeatWeightedAlignment(country, direction) : 0f;
-            country.Divisions.Append(title, date, alignment, passed);
+            float alignment = contested ? GetSeatWeightedAlignment(country, direction, axis) : 0f;
+            // P2-4.3 (2026-09-02): every party's side travels with the record, from the one enumeration the verdict
+            // read (SeatSides), so the ceremony's per-seat map is the vote as it was - not the chamber as it is later.
+            var sides = new List<DivisionSide>();
+            foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, direction, axis))
+            {
+                sides.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side });
+            }
+            country.Divisions.Append(title, date, alignment, passed, direction, (int)axis, sides);
         }
 
         /// <summary>

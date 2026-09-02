@@ -1,5 +1,9 @@
+using System.Text;
+using System.Globalization;
+using System.Collections.Generic;
 using System;
 using PoliSim.Data;
+using PoliSim.Simulation;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -88,8 +92,9 @@ namespace PoliSim.UI
             var shadow = new GameObject("Shadow");
             shadow.transform.SetParent(root.transform, false);
             var shadowRect = shadow.AddComponent<RectTransform>();
-            shadowRect.anchorMin = shadowRect.anchorMax = new Vector2(0.5f, 0.5f);
-            shadowRect.sizeDelta = new Vector2(844f, 700f);
+            shadowRect.anchorMin = new Vector2(0.03f, 0.04f);   // P2-4.3: full frame, not a square on black
+            shadowRect.anchorMax = new Vector2(0.97f, 0.96f);
+            shadowRect.sizeDelta = new Vector2(24f, 20f);
             shadowRect.anchoredPosition = new Vector2(0f, -14f);
             Image shadowImage = shadow.AddComponent<Image>();
             shadowImage.color = new Color(0f, 0f, 0f, 0.55f);
@@ -99,8 +104,9 @@ namespace PoliSim.UI
             var document = new GameObject("Document");
             document.transform.SetParent(root.transform, false);
             var docRect = document.AddComponent<RectTransform>();
-            docRect.anchorMin = docRect.anchorMax = new Vector2(0.5f, 0.5f);
-            docRect.sizeDelta = new Vector2(820f, 680f);
+            docRect.anchorMin = new Vector2(0.03f, 0.04f);   // P2-4.3: the document takes the frame, a margin of paper-on-scrim around it
+            docRect.anchorMax = new Vector2(0.97f, 0.96f);
+            docRect.sizeDelta = Vector2.zero;
             docRect.anchoredPosition = new Vector2(0f, 8f);
             Image paper = document.AddComponent<Image>();
             paper.color = PoliSimTheme.Hex(0xF2EADB);
@@ -126,7 +132,7 @@ namespace PoliSim.UI
             layout.childAlignment = TextAnchor.UpperCenter;
             layout.spacing = 10f;
             layout.childControlWidth = true;
-            layout.childControlHeight = false;
+            layout.childControlHeight = true;   // P2-4.3: the column hands out heights, so the plate can take the rest
             layout.childForceExpandHeight = false;
 
             // Masthead: state seal 56 over the institution line, then title + provenance.
@@ -146,6 +152,7 @@ namespace PoliSim.UI
                 $"PARLIAMENT · {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 12,
                 PoliSimTheme.Hex(0x6B6250), TextAnchor.MiddleCenter, FontStyle.Bold);
             institution.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
+            institution.gameObject.AddComponent<LayoutElement>().preferredHeight = 18f;
 
             Text title = CanvasChrome.MakeText(content.transform, "Title", record.Title,
                 PoliSimTheme.Display, 30, PoliSimTheme.TextPrimary, TextAnchor.MiddleCenter, FontStyle.Bold);
@@ -160,10 +167,12 @@ namespace PoliSim.UI
                 $"DIVISION No. {record.Number} · {record.Date:yyyy-MM-dd}", PoliSimTheme.Document, 12,
                 PoliSimTheme.TextSecondary, TextAnchor.MiddleCenter);
             provenance.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
+            provenance.gameObject.AddComponent<LayoutElement>().preferredHeight = 18f;
 
             var closingRule = new GameObject("ClosingRule");
             closingRule.transform.SetParent(content.transform, false);
             closingRule.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 2f);
+            closingRule.AddComponent<LayoutElement>().preferredHeight = 2f;
             Image closingImage = closingRule.AddComponent<Image>();
             closingImage.color = PoliSimTheme.Hex(0x2B2620);
             closingImage.raycastTarget = false;
@@ -176,10 +185,12 @@ namespace PoliSim.UI
                 $"RESOLVED · ALIGNMENT {record.Alignment:+0.00;-0.00}", PoliSimTheme.Document, 11,
                 PoliSimTheme.TextSecondary, TextAnchor.MiddleCenter);
             resolved.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 16f);
+            resolved.gameObject.AddComponent<LayoutElement>().preferredHeight = 16f;
 
             var signatureRule = new GameObject("SignatureRule");
             signatureRule.transform.SetParent(content.transform, false);
             signatureRule.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 1.5f);
+            signatureRule.AddComponent<LayoutElement>().preferredHeight = 1.5f;
             Image signatureImage = signatureRule.AddComponent<Image>();
             signatureImage.color = PoliSimTheme.Hex(0x2B2620);
             signatureImage.raycastTarget = false;
@@ -187,6 +198,7 @@ namespace PoliSim.UI
             var signRow = new GameObject("SignRow");
             signRow.transform.SetParent(content.transform, false);
             signRow.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 116f);
+            signRow.AddComponent<LayoutElement>().preferredHeight = 116f;
             HorizontalLayoutGroup rowLayout = signRow.AddComponent<HorizontalLayoutGroup>();
             rowLayout.childAlignment = TextAnchor.MiddleCenter;
             rowLayout.spacing = 40f;
@@ -275,52 +287,128 @@ namespace PoliSim.UI
         /// <summary>The division plate: lean bar + verdict stamp, the record's own facts. The stamp is WoA on PAPER, so it takes the INK weights — the same family answer the Parliament panel recorded.</summary>
         private static void BuildDivisionPlate(Transform parent, DivisionRecord record)
         {
+            // P2-4.3 (2026-09-02): the plate is the division's content, full-frame, where a lean bar sat - three
+            // panels in a row: the vote as a per-seat map on the recorded sides (P2-2.2's rings), the citation, and
+            // the estimate that travelled with the turn's decision as arrows (P2-2.1's renderer), painted once
+            // through CanvasPaint. Its height takes a share of the frame so the document fills what it is given.
+            const float plateHeight = 200f;   // the least it needs; the column hands it every flexible pixel it has (LayoutElement below)
             var plate = new GameObject("DivisionPlate");
             plate.transform.SetParent(parent, false);
-            plate.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 64f);
+            plate.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, plateHeight);
+            LayoutElement plateElement = plate.AddComponent<LayoutElement>();   // the height pinned as a layout element too
+            plateElement.minHeight = plateHeight;
+            plateElement.preferredHeight = plateHeight;
+            plateElement.flexibleHeight = 1f;
             Image plateImage = plate.AddComponent<Image>();
             plateImage.color = PoliSimTheme.Hex(0xF4ECDC);
             plateImage.raycastTarget = false;
             HorizontalLayoutGroup plateLayout = plate.AddComponent<HorizontalLayoutGroup>();
             plateLayout.childAlignment = TextAnchor.MiddleCenter;
-            plateLayout.spacing = 26f;
+            plateLayout.spacing = 24f;
             plateLayout.padding = new RectOffset(20, 20, 12, 12);
-            plateLayout.childControlWidth = false;
-            plateLayout.childControlHeight = false;
+            plateLayout.childControlWidth = true;
+            plateLayout.childControlHeight = true;
+            plateLayout.childForceExpandWidth = true;
+            plateLayout.childForceExpandHeight = true;
 
-            Color verdictInk = record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad;
-
-            // The diverging bar as a widget: track + a fill anchored from centre, sign by ink.
-            var track = new GameObject("LeanTrack");
-            track.transform.SetParent(plate.transform, false);
-            track.AddComponent<RectTransform>().sizeDelta = new Vector2(320f, 10f);
-            Image trackImage = track.AddComponent<Image>();
-            trackImage.color = PoliSimTheme.Hex(0xC9BA9B);
-            trackImage.raycastTarget = false;
-
-            var fill = new GameObject("LeanFill");
-            fill.transform.SetParent(track.transform, false);
-            var fillRect = fill.AddComponent<RectTransform>();
-            float half = 160f;
-            float extent = Mathf.Clamp(record.Alignment / 0.5f, -1f, 1f) * half;
-            fillRect.anchorMin = fillRect.anchorMax = new Vector2(0.5f, 0.5f);
-            fillRect.pivot = new Vector2(extent >= 0f ? 0f : 1f, 0.5f);
-            fillRect.anchoredPosition = Vector2.zero;
-            fillRect.sizeDelta = new Vector2(Mathf.Abs(extent), 10f);
-            Image fillImage = fill.AddComponent<Image>();
-            fillImage.color = record.Alignment >= 0f ? PoliSimTheme.Good : PoliSimTheme.Bad;
-            fillImage.raycastTarget = false;
-
-            Texture2D stampTexture = IconLibrary.GetChrome(record.Passed ? "ui_stamp_carried" : "ui_stamp_rejected");
-            if (stampTexture != null)
+            // 1. The vote as seats.
+            int forSeats = 0, undecided = 0, against = 0;
+            foreach (DivisionSide side in record.Sides)
             {
-                // WoA on paper: ink weights, through the tint accessor.
-                Image stampImage = CanvasChrome.TintedImage(plate.transform, "Stamp",
-                    CanvasChrome.Whole(stampTexture, stampTexture.name + "#whole"), verdictInk);
-                stampImage.rectTransform.sizeDelta = new Vector2(122f, 36f);
-                stampImage.preserveAspect = true;
+                if (side.Side > 0) { forSeats += side.Seats; } else if (side.Side < 0) { against += side.Seats; } else { undecided += side.Seats; }
+            }
+            Transform votePanel = PlatePanel(plate.transform, "Vote", 1.2f);
+            PlateCaption(votePanel, "THE DIVISION · EVERY MANDATE");
+            if (record.Sides.Count > 0)
+            {
+                PlateImage(votePanel, "SeatMap", CanvasPaint.SeatMap(360, 190, forSeats, undecided, against, PoliSimTheme.Hex(0xF4ECDC)), 360f / 190f);
+                PlateCaption(votePanel, string.Format(CultureInfo.InvariantCulture, "FOR {0} · UNDECIDED {1} · AGAINST {2}", forSeats, undecided, against));
+            }
+            else
+            {
+                PlateCaption(votePanel, "no sides recorded for this division - it predates the map");
+            }
+
+            // 2. The citation.
+            Transform cite = PlatePanel(plate.transform, "Citation", 0.8f);
+            PlateCaption(cite, "THE CITATION");
+            PlateBody(cite, $"Division No. {record.Number}");
+            PlateBody(cite, record.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            PlateBody(cite, string.Format(CultureInfo.InvariantCulture, "alignment {0:+0.00;-0.00} · {1}", record.Alignment, record.Passed ? "CARRIED" : "LOST"),
+                record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad);
+            PlateBody(cite, record.Axis == (int)BillAxis.Trade ? "on the openness axis" : "on the fiscal axis");
+
+            // 3. The estimate as arrows.
+            Transform estimate = PlatePanel(plate.transform, "Estimate", 1.2f);
+            PlateCaption(estimate, "THE ESTIMATE · NEXT YEAR, WITH AND WITHOUT THE TURN'S DECISION");
+            if (record.Effects.Count > 0)
+            {
+                var arrows = new List<EffectArrow>(record.Effects.Count);
+                var figures = new StringBuilder();
+                foreach (DivisionEffect e in record.Effects)
+                {
+                    arrows.Add(new EffectArrow(e.Name, e.Value, e.HigherIsBetter, e.Figure));
+                    if (figures.Length > 0) { figures.Append(" · "); }
+                    figures.Append(e.Name).Append(' ').Append(e.Figure);
+                }
+                PlateImage(estimate, "Arrows", CanvasPaint.Arrows(420, 120, arrows, PoliSimTheme.Hex(0xF4ECDC)), 420f / 120f);
+                PlateCaption(estimate, figures.ToString());
+            }
+            else
+            {
+                PlateCaption(estimate, "no estimate travelled with this division - no preview was held for its turn, or it predates the arrows");
             }
         }
+
+        private static Transform PlatePanel(Transform parent, string name, float weight)
+        {
+            var panel = new GameObject(name);
+            panel.transform.SetParent(parent, false);
+            panel.AddComponent<RectTransform>();
+            panel.AddComponent<LayoutElement>().flexibleWidth = weight;
+            VerticalLayoutGroup column = panel.AddComponent<VerticalLayoutGroup>();
+            column.childAlignment = TextAnchor.MiddleCenter;
+            column.spacing = 4f;
+            column.childControlWidth = true;
+            column.childControlHeight = true;
+            column.childForceExpandWidth = true;
+            column.childForceExpandHeight = false;
+            return panel.transform;
+        }
+
+        private static void PlateImage(Transform parent, string name, Texture2D texture, float aspect)
+        {
+            // A sprite that preserves its aspect inside the cell the layout gives it - an AspectRatioFitter would drive the
+            // rect the layout group also drives, and the first film showed the two fighting.
+            var art = new GameObject(name);
+            art.transform.SetParent(parent, false);
+            art.AddComponent<RectTransform>();
+            LayoutElement element = art.AddComponent<LayoutElement>();
+            element.flexibleHeight = 1f;
+            element.minHeight = 40f;
+            Image image = art.AddComponent<Image>();
+            image.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+        }
+
+        private static void PlateCaption(Transform parent, string text)
+        {
+            Text caption = CanvasChrome.MakeText(parent, "Caption", text, PoliSimTheme.Document, 11, PoliSimTheme.TextSecondary, TextAnchor.MiddleCenter);
+            caption.horizontalOverflow = HorizontalWrapMode.Wrap;
+            caption.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
+        }
+
+        private static void PlateBody(Transform parent, string text, Color? ink = null)
+        {
+            Text body = CanvasChrome.MakeText(parent, "Body", text, PoliSimTheme.Document, 14, ink ?? PoliSimTheme.TextPrimary, TextAnchor.MiddleCenter);
+            body.horizontalOverflow = HorizontalWrapMode.Wrap;
+            body.gameObject.AddComponent<LayoutElement>().minHeight = 20f;
+        }
+
+
+
+
 
         /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips. The label reads "SIGN" only for a passed division - "FILE" for a rejected one, matching the plate's own REJECTED stamp rather than claiming an enactment that did not happen. Returns the button's CanvasGroup - §A.13 row 6's fade handle (the controls fade in last).</summary>
         private static CanvasGroup BuildSignButton(Transform parent, Action onSign, bool passed)

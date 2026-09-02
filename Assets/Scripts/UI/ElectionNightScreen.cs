@@ -86,7 +86,7 @@ namespace PoliSim.UI
         /// board is filmed without a player (the harness's staged nights).</param>
         public static ElectionNightScreen Build(NightState state, string[] partyNames, string countryName,
             DateTime pollsClosed, int totalSeats, long[] previousVotes = null, string previousLabel = null,
-            string verdict = null)
+            string verdict = null, VoteAttribution.Ledger ledger = null, string ledgerParty = null)
         {
             Sprite frame = CanvasChrome.Sliced("ui_frame_ornate", 64f, 64f, 64f, 64f);
             Texture2D scrimTexture = IconLibrary.GetChrome("ui_scrim_takeover");
@@ -121,10 +121,10 @@ namespace PoliSim.UI
             var document = new GameObject("Document");
             document.transform.SetParent(root.transform, false);
             RectTransform doc = document.AddComponent<RectTransform>();
-            doc.anchorMin = new Vector2(0.5f, 0.5f);
-            doc.anchorMax = new Vector2(0.5f, 0.5f);
+            doc.anchorMin = new Vector2(0.03f, 0.04f);   // P2-4.3: full frame, not a square on black
+            doc.anchorMax = new Vector2(0.97f, 0.96f);
             doc.pivot = new Vector2(0.5f, 0.5f);
-            doc.sizeDelta = new Vector2(DocumentWidth, 720f);
+            doc.sizeDelta = Vector2.zero;
             document.AddComponent<Image>().color = PoliSimTheme.Hex(0xF2EADB);   // V-N1: flat paper
 
             CanvasChrome.AsAuthoredImage(document.transform, "OrnateFrame", frame, sliced: true).type = Image.Type.Sliced;
@@ -145,7 +145,7 @@ namespace PoliSim.UI
             column.spacing = 10f;
 
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
-            BuildBody(content.transform, state, partyNames, totalSeats, previousVotes, previousLabel);
+            BuildBody(content.transform, state, partyNames, totalSeats, previousVotes, previousLabel, ledger, ledgerParty);
             BuildFooter(content.transform, verdict, screen);
 
             // S-20: the board stamps its own capture-identity token, so a film that shows the desk over it
@@ -213,7 +213,7 @@ namespace PoliSim.UI
 
         /// <summary>§A.14's body grid, 1.25fr | 1fr: the national tally left, the constituencies and the calls right.</summary>
         private static void BuildBody(Transform parent, NightState state, string[] partyNames, int totalSeats,
-            long[] previousVotes, string previousLabel)
+            long[] previousVotes, string previousLabel, VoteAttribution.Ledger ledger, string ledgerParty)
         {
             var body = new GameObject("Body");
             body.transform.SetParent(parent, false);
@@ -245,6 +245,7 @@ namespace PoliSim.UI
             sideColumn.spacing = 2f;
             BuildCalls(side.transform, state, partyNames);
             BuildConstituencies(side.transform, state);
+            BuildLedger(side.transform, ledger, ledgerParty);   // P2-4.3
         }
 
         private static void Heading(Transform parent, string text)
@@ -357,6 +358,30 @@ namespace PoliSim.UI
         /// still outstanding, so the panel states it flatly; where nothing is safe yet it says that
         /// too, rather than showing a projection dressed as a call.
         /// </summary>
+        /// <summary>
+        /// P2-4.3 (2026-09-02): the campaign's attribution beside the count - W-E7's "why, line by line" for the
+        /// player's party, the largest lines first, from the ledger the simulation kept when the live run finished
+        /// (SimulationManager.PlayerCampaignLedger). Absent when no live campaign ran to this election, and the
+        /// column says so rather than drawing zeros.
+        /// </summary>
+        private static void BuildLedger(Transform parent, VoteAttribution.Ledger ledger, string party)
+        {
+            Heading(parent, ledger == null ? "WHY — NO CAMPAIGN LEDGER FOR THIS NIGHT" : $"WHY — {party.ToUpperInvariant()}, LINE BY LINE");
+            if (ledger == null || ledger.Lines.Count == 0)
+            {
+                Row(parent, ledger == null ? "no live campaign was run to this election" : "NO ATTRIBUTION FOR THIS PARTY", "—", 12, PoliSimTheme.TextMuted);
+                return;
+            }
+            var ordered = new List<KeyValuePair<VoteAttributionSource, double>>(ledger.Lines);
+            ordered.Sort((a, b) => Math.Abs(b.Value).CompareTo(Math.Abs(a.Value)));
+            foreach (KeyValuePair<VoteAttributionSource, double> line in ordered)
+            {
+                if (Math.Abs(line.Value) < 5e-7) { continue; }   // below a hundredth of a pp
+                Row(parent, System.Text.RegularExpressions.Regex.Replace(line.Key.ToString(), "([a-z])([A-Z])", "$1 $2").ToUpperInvariant(),
+                    string.Format(CultureInfo.InvariantCulture, "{0:+0.000;-0.000} pp", line.Value * 100.0), 12, PoliSimTheme.TextPrimary);
+            }
+        }
+
         private static void BuildCalls(Transform parent, NightState state, string[] partyNames)
         {
             Heading(parent, "CALLS — SAFE WHATEVER IS STILL OUT");

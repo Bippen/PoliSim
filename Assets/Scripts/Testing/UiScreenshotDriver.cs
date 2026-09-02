@@ -359,6 +359,13 @@ namespace PoliSim.Testing
                 }
 
                 yield return Settle();
+                if (Tabs[i] == "Decisions")
+                {
+                    // P2-4.3: the Docket's alerts and option arrows need a seated minister with a pending decision; the seed has neither.
+                    var dockSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                    StageCabinetDecisionForTheDocket(dockSim?.World?.GetCountry(_countryId), dockSim);
+                    yield return Settle();
+                }
                 yield return Capture($"{i + 2:00}_{Tabs[i].ToLowerInvariant()}");
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))
@@ -636,7 +643,7 @@ namespace PoliSim.Testing
             SetEnumField(controller, "_consolidatedTab", "Statistics");
             ResetScrolls(controller);
             yield return Settle();
-            player.Divisions.Append("Harness: staged division for the entrance capture (R-C6)", sim.CurrentDate, 0.25f, passed: true);
+            StageDivisionWithContent(player, sim, "Harness: staged division for the entrance capture (R-C6)", 30f, passed: true);   // P2-4.3: with sides and an estimate
             InvokeNoArg(controller, "TriggerSigningForNewestDivision");
             for (int i = 0; i < MaxCanvasSettleFrames && !controller.CanvasSelectorActive; i++)
             {
@@ -1056,6 +1063,56 @@ namespace PoliSim.Testing
         /// frame is written, so a row drawn while the driver scrolls or settles toward the next screen is never filed
         /// under the previous stem (the first film keyed a Policy Laws dial under a Budget stem exactly that way).</summary>
         private readonly Dictionary<string, float> _reachByCapture = new Dictionary<string, float>();
+
+        /// <summary>
+        /// P2-4.3 (2026-09-02): a staged division carries what a real one carries - its sides from
+        /// ParliamentSystem.RecordDivision (the same enumeration the verdict reads) and an estimate: the standing
+        /// preview's arrows, mapped as RecomputePolicyPreview maps them, because the harness has no draft of its
+        /// own and says so here rather than leaving the ceremony's panels to state absence on every film.
+        /// </summary>
+        private static void StageDivisionWithContent(Country player, SimulationManager sim, string title, float direction, bool passed)
+        {
+            ParliamentSystem.RecordDivision(player, title, direction, passed, sim.CurrentDate);
+            DivisionRecord record = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
+            PolicyPreview preview = sim.PreviewTurn(player.Id, PolicyDecision.None());
+            void Add(string name, float value, bool higherIsBetter, string unit)
+            {
+                if (Mathf.Abs(value) < 0.005f) { return; }
+                record.Effects.Add(new DivisionEffect { Name = name, Value = value, HigherIsBetter = higherIsBetter, Figure = value.ToString("+0.##;-0.##", CultureInfo.CurrentCulture) + unit });
+            }
+            Add("GDP growth", preview.GdpGrowthPercent, true, "%");
+            Add("Unemployment", preview.UnemploymentChange, false, " pts");
+            Add("Inflation", preview.InflationChange, false, " pts");
+            Add("Approval", preview.ApprovalChange, true, " pts");
+            Add("Poverty rate", preview.PovertyRateChange, false, " pts");
+            Add("Labor force participation", preview.LaborForceParticipationRateChange, true, " pts");
+            Add("Crime index", preview.CrimeIndexChange, false, " pts");
+            Debug.Log($"SHOT: staged division '{title}' with {record.Sides.Count} side(s) and {record.Effects.Count} effect(s) (the standing preview's, the harness holds no draft).");
+        }
+
+        /// <summary>
+        /// P2-4.3: the Docket at the seed has no minister and no pending decision, so the alerts region and the
+        /// option arrows would never be on film. This seats the first candidate in Interior & Justice and stages one
+        /// synthetic decision with two options whose figures are authored here for the film - the harness says so in
+        /// its log line; nothing here reaches a real game.
+        /// </summary>
+        private static void StageCabinetDecisionForTheDocket(Country player, SimulationManager sim)
+        {
+            if (player == null || sim == null) { return; }
+            if (!player.CabinetMinisters.ContainsKey(CabinetPortfolio.InteriorJustice))
+            {
+                player.CabinetMinisters[CabinetPortfolio.InteriorJustice] = CabinetSystem.GenerateCandidates(CabinetPortfolio.InteriorJustice)[0];
+            }
+            var decision = new CabinetDecision
+            {
+                Name = "Harness: a staged decision for the Docket film",
+                Description = "Staged by the screenshot harness so the minister alerts and an option's cost and impact are on film; the figures are the harness's own.",
+            };
+            decision.Options.Add(new CabinetDecisionOption("Fund the visible-policing pilot", crimeIndexShock: -1.5f, budgetImpact: 4f, approvalEffect: 1f));
+            decision.Options.Add(new CabinetDecisionOption("Decline the pilot", approvalEffect: -0.5f));
+            sim.StagePendingCabinetDecision(player.Id, CabinetPortfolio.InteriorJustice, decision);
+            Debug.Log($"SHOT: staged a cabinet decision on {CabinetPortfolio.InteriorJustice} with {player.CabinetMinisters[CabinetPortfolio.InteriorJustice].Name} seated (the harness's own figures, for the Docket film).");
+        }
 
         private IEnumerator Capture(string name)
         {
@@ -2391,7 +2448,7 @@ namespace PoliSim.Testing
             // (the same DivisionLog.Append every real resolution goes through) to pin the branch the
             // fix actually changed — the election win/loss pair's own precedent for a binary outcome
             // that must not go unpinned by chance.
-            player.Divisions.Append("Harness Test Bill (injected for rejected-signing coverage)", sim.CurrentDate, -0.35f, passed: false);
+            StageDivisionWithContent(player, sim, "Harness Test Bill (injected for rejected-signing coverage)", -30f, passed: false);   // P2-4.3: with sides and an estimate
             InvokeNoArg(controller, "TriggerSigningForNewestDivision");
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
