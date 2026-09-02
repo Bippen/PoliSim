@@ -2057,11 +2057,12 @@ namespace PoliSim.UI
             }
             else if (_campaignScreen.HasValue)
             {
-                // W-E1 (harness only): Campaign HQ replaces the content sheet for one capture at a
-                // time - the rail stays real, so the screen is composed in the frame it will ship
-                // in. No player path sets _campaignScreen; see GameController.Campaign.cs. R-N2
-                // holds until W-G1, so there is deliberately no rail cell and no tab reaching it.
-                DrawCampaignHqStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value);
+                // W-E1: Campaign HQ replaces the content sheet - the rail stays real, so the screen is
+                // composed in the frame it ships in. Two ways in: the capture driver stages a snapshot
+                // (a film, never refreshed), and since C-R4b step 4a the rail's CAMPAIGN cell opens the
+                // LIVE campaign, re-read from the running state before every draw.
+                RefreshLiveCampaignScreen();
+                if (_campaignScreen.HasValue) { DrawCampaignHqStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value); }
             }
             else if (_onDesk)
             {
@@ -4151,6 +4152,7 @@ namespace PoliSim.UI
             DrawRailNavCell("BUDGET", ConsolidatedTab.Budget, "icon_area_fiscal", cell, cells);
             DrawRailNavCell("LAWS", ConsolidatedTab.PolicyLaws, "icon_nav_policylaws", cell, cells);
             DrawRailNavCell("POLITICS", ConsolidatedTab.Politics, "icon_area_political", cell, cells);
+            DrawRailCampaignCell(cell, cells);   // C-R4b step 4a: present only while the player's campaign runs
 
             GUILayout.FlexibleSpace();
 
@@ -4195,6 +4197,7 @@ namespace PoliSim.UI
             if (DrawRailCell("shell rail: home", cell, active, PoliSimTheme.Tint(PoliSimTheme.Brass, RailHomeWashAlpha), PoliSimTheme.Brass,
                     "DESK", active ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary, cells, out Rect slot))
             {
+                CloseLiveCampaign();   // C-R4b step 4a: the live HQ yields to the Desk
                 _onDesk = true;
             }
 
@@ -4241,6 +4244,7 @@ namespace PoliSim.UI
             {
                 // R-B2 (v3.0 Phase B): a document opens from its icon; the open document's own icon
                 // clicked again returns to the Desk (the calendar chip below is the other way home).
+                CloseLiveCampaign();   // C-R4b step 4a: an area cell leaves the live HQ
                 if (_onDesk)
                 {
                     _onDesk = false;

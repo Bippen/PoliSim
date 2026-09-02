@@ -20921,3 +20921,35 @@ a campaign moves it. That is a D-sheet for the last step, not a quiet substituti
 **Bars:** cheap 25 of 25; simulation 9 of 9; `SaveLoadRoundTripDiagnostic` 6 of 6.
 
 *(From the diagnostic's own log: `CAMPAIGN: began 2029-11-05 for Sweden, polling day 2029-12-31 (56 days)` … `CAMPAIGN REPLAY: 56 day(s) re-stepped for Sweden toward 2033-12-30` … the turn-12 and turn-16 campaigns twice each per seed, once in the unbroken run and once after the load, string-equal at the end.)*
+
+## 205. C-R4b STEP 4a — the Campaign HQ shows the LIVE campaign from the rail (2026-09-02)
+
+**What was built.** `LiveCampaignSnapshot.Build` fills the HQ's `CampaignSnapshot` from
+`SimulationManager.PlayerCampaign` — the player's party's own books as the run holds them: its pool,
+its staff (paid or unpaid today), its offices with their volunteers and upkeep, the poll it last saw
+(its own commissioned one, else the published tracker), the momentum on the view, the calendar and
+the day. The rail gains a **CAMPAIGN** cell (`DrawRailCampaignCell`, the Political area's ink, present
+only while a campaign runs for the player's party); opening it sets the HQ from the live state and
+marks it live, every draw re-reads the running state (`RefreshLiveCampaignScreen`, so the day advances
+under the screen), and DESK or any area cell closes it. The driver's staged films still enter through
+`SetCampaignScreen` and are never refreshed; `_liveCampaignOpen` tells the two apart. The three doc
+comments that said "harness only, no rail cell" are corrected — this is the wiring W-G1 foresaw,
+*"an ordinary screen by adding the rail cell and nothing else"*.
+
+⚠ **A screen the player can WATCH, not yet act from.** The party is AI-played until the HQ has an input
+path (step 4b); the "queue" plate shows the day's DECISIONS read off the party's ledger — what it did,
+not what the player asked for — and `LiveCampaignSnapshot` says so where it fills the list. Every
+figure comes from the party's own books and polls, never the truth: the §36 seam the run keeps is
+kept by the type the screen is given.
+
+**Proof.** Compiles; bar 25 of 25 (`PlayerReachabilityCheck` among them). ⚠ The screen has not been
+LOOKED at in this state — no capture was filmed tonight; the live HQ's first sight is owed to Elias's
+visual review (§198's §V queue), and whatever it shows is a finding, not a tune.
+
+**Next in C-R4b's order:** 4b, the input path — the HQ's queue as the player's, scripting the player's
+party through `PartySetup.Script` from a persisted per-day queue (the replay record grows a queue and
+the replay feeds it); the rail cell is the surface and the action screen (W-E3) the price list, so the
+build is a queue and two chip buttons, not a new screen. Then election night on the run's shares,
+behind its D-sheet (§204).
+
+**Bar 25 of 25.**

@@ -300,9 +300,12 @@ In order of what a player would notice first:
 > `Setup` from the runtime tables and the harness stages through it (§203), digest-identical again —
 > and its third: the player's campaign runs in `SimulationManager`'s day loop before each election
 > boundary and survives a save by replay (§204) — Sweden's only, the player's party AI-played until the
-> HQ queue exists. **Next, in order:** the HQ screen and its queue on live state; the rail cell;
-> election night on the run's shares (a D-sheet first: the campaign should run on the vote model's
-> compatibility so an idle campaign reproduces election night's own prediction).
+> HQ queue exists — and its fourth (4a): the rail's CAMPAIGN cell opens the HQ over the live campaign,
+> re-read every draw (§205), a screen to watch, not yet to act from. **Next, in order:** 4b, the HQ's
+> input path (the queue as the player's, scripting their party from a persisted per-day queue the
+> replay feeds); election night on the run's shares (a D-sheet first: the campaign should run on the
+> vote model's compatibility so an idle campaign reproduces election night's own prediction). The live
+> HQ's first sight is owed to the visual review.
 4. **The play-calibration list**, once the loop is playable — its constants are judged by playing, which is
    Elias's, and the list exists for exactly that sitting.
 

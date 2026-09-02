@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using PoliSim.Elections;
 using UnityEngine;
@@ -13,12 +14,13 @@ namespace PoliSim.UI
     /// directly rather than restating them, so the two stages share one type ladder — a player
     /// moving between them must not see two.
     ///
-    /// ⚠ **HARNESS ONLY — R-N2 holds until W-G1.** The screen draws when `_campaignScreen` has a
-    /// value, and only the screenshot driver sets that (`-shotcampaign`), exactly as
-    /// `_instrumentLadder` works for the instrument ladder. There is no rail cell, no tab, no save
-    /// hook and no gameplay path that reaches it; the branch sits beside `_onDesk` in the frame's
-    /// content column so the rail is real. When wiring is ruled (W-G1) this becomes an ordinary
-    /// screen by adding the rail cell and nothing else.
+    /// **Two ways in.** The screen draws when `_campaignScreen` has a value. The screenshot driver
+    /// stages one (`-shotcampaign`, a film that is never refreshed), and since C-R4b step 4a
+    /// (2026-09-02) the rail's CAMPAIGN cell opens the LIVE campaign `SimulationManager` runs for the
+    /// player's party - re-read from the running state before every draw (`LiveCampaignSnapshot`).
+    /// That cell is the wiring W-G1 foresaw: "an ordinary screen by adding the rail cell and nothing
+    /// else". ⚠ It is a screen the player can WATCH, not yet one they can act from: until the HQ has an
+    /// input path (step 4b) the party is AI-played and the queue shown is the day's decisions.
     ///
     /// **Every figure is DERIVED.** The screen lays out a <see cref="CampaignSnapshot"/> and
     /// computes nothing of its own beyond summing what it was handed, so "is that number real?" is
@@ -42,9 +44,10 @@ namespace PoliSim.UI
         private const float CampaignRacePlateHeight = 576f;
 
         /// <summary>
-        /// The snapshot the campaign screens draw. Non-null ONLY while the screenshot harness has
-        /// staged one; every player path leaves it null and takes the Desk branch. Mirrors
-        /// `_instrumentLadder` exactly, including that nothing serialises it.
+        /// The snapshot the campaign screens draw. Non-null while the screenshot harness has staged
+        /// one OR while the rail's CAMPAIGN cell has the live campaign open (`_liveCampaignOpen`,
+        /// C-R4b step 4a); every other player path leaves it null and takes the Desk branch. Nothing
+        /// serialises it - the live one is rebuilt from the running state, which the save replays.
         /// </summary>
         private CampaignSnapshot? _campaignScreen;
 
@@ -57,14 +60,86 @@ namespace PoliSim.UI
         private Rect _campaignInnerRect;
 
         /// <summary>
-        /// The ONLY way this screen is reached, and it exists for the screenshot harness (R-N2).
-        /// `internal` and undocumented in the rail on purpose: a public setter would be a wiring
-        /// path, and W-G1 has not been ruled. Mirrors SetInstrumentLadder exactly, null clearing
-        /// back to whatever screen the frame was on.
+        /// The screenshot harness's way in: a staged snapshot (a film, never refreshed), null clearing
+        /// back to whatever screen the frame was on. Mirrors SetInstrumentLadder. The player's way in
+        /// is the rail's CAMPAIGN cell (`DrawRailCampaignCell`, C-R4b step 4a), which opens the live
+        /// campaign instead.
         /// </summary>
         internal void SetCampaignScreen(CampaignSnapshot? snapshot)
         {
             _campaignScreen = snapshot;
+        }
+
+        // ---- C-R4b step 4a (2026-09-02): the HQ over the LIVE campaign ------------------------------
+        // The rail carries a CAMPAIGN cell while SimulationManager runs the player's campaign. Opening it
+        // sets _campaignScreen from the live state and marks it live, so every draw refreshes the snapshot
+        // (the day advances under it); DESK and the area cells close it. The driver's staged snapshots
+        // still arrive through SetCampaignScreen and are never refreshed - _liveCampaignOpen tells the two
+        // apart. Until the HQ has an input path (step 4b) the party is AI-played and the "queue" is the day's
+        // decisions off its ledger; LiveCampaignSnapshot says so.
+
+        /// <summary>True while the HQ on screen is the live campaign's (refreshed each draw), not a staged film.</summary>
+        private bool _liveCampaignOpen;
+
+        /// <summary>The live campaign's snapshot for the player's party, or null when none runs / the player's party is not in it.</summary>
+        private CampaignSnapshot? BuildLiveCampaignSnapshot()
+        {
+            if (_simulationManager == null || _playerCountry == null || _simulationManager.PlayerCampaign == null) { return null; }
+            double perceived = PerceivedPerformance.Perceived(_playerCountry, null).Index;
+            return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived);
+        }
+
+        /// <summary>Re-reads the live state into the HQ snapshot before a draw; closes the screen if the campaign is gone.</summary>
+        private void RefreshLiveCampaignScreen()
+        {
+            if (!_liveCampaignOpen) { return; }
+            CampaignSnapshot? live = BuildLiveCampaignSnapshot();
+            if (live.HasValue) { _campaignScreen = live; }
+            else { CloseLiveCampaign(); }
+        }
+
+        private void CloseLiveCampaign()
+        {
+            if (!_liveCampaignOpen) { return; }
+            _liveCampaignOpen = false;
+            _campaignScreen = null;
+        }
+
+        /// <summary>The rail's CAMPAIGN cell: drawn only while a campaign runs for the player's party; a click opens the live HQ (or, if it is open, returns to the Desk).</summary>
+        private void DrawRailCampaignCell(float cell, List<KeyValuePair<string, Rect>> cells)
+        {
+            if (_simulationManager == null || _playerCountry == null || _simulationManager.PlayerCampaign == null) { return; }
+            if (LiveCampaignSnapshot.PlayerPartyIndex(_simulationManager.PlayerCampaign, _playerCountry) < 0) { return; }
+            UiPalette.SystemArea area = UiPalette.SystemArea.Political;
+            bool selected = _liveCampaignOpen;
+            Color areaInk = UiPalette.GetAreaColor(area);
+            if (DrawRailCell("shell rail: CAMPAIGN", cell, selected, PoliSimTheme.AccentWash(area, RailActiveWashAlpha), areaInk,
+                    "CAMPAIGN", selected ? areaInk : PoliSimTheme.TextSecondary, cells, out Rect slot))
+            {
+                if (_liveCampaignOpen)
+                {
+                    CloseLiveCampaign();
+                    _onDesk = true;
+                }
+                else
+                {
+                    CampaignSnapshot? live = BuildLiveCampaignSnapshot();
+                    if (live.HasValue)
+                    {
+                        _onDesk = false;
+                        _liveCampaignOpen = true;
+                        _campaignScreen = live;
+                    }
+                }
+            }
+            if (Event.current.type != EventType.Repaint) { return; }
+            Texture2D icon = IconLibrary.Get("icon_area_political");
+            if (icon == null) { return; }
+            float size = RailGlyphSize(cell);
+            var iconRect = new Rect(slot.x + (slot.width - size) * 0.5f, slot.y + RailCellPad(cell), size, size);
+            GUI.color = areaInk;
+            GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit, true);
+            GUI.color = Color.white;
         }
 
         /// <summary>
