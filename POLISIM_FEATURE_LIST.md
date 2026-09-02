@@ -627,7 +627,7 @@ parties. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §256: the ladder retired f
 
 Annexes: the nine screenshots verbatim, the films after Tracks B–C, `PartyInkHarness`'s print.
 **Binary artifacts are uploaded, not described.** Regenerate the package, record it in
-`ERRANDS.md`.
+`ERRANDS.md`. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §259: D12 installed as the live ask above D11 (seven rows, the reconciliation at its head, the census inline as Annex 3), the package regenerated on the close films, E-9 recorded; the nine screenshots join when they land (E-8).**
 
 ---
 
@@ -688,6 +688,8 @@ the ITANES registration, still open.
 - **K-1** — the seed refresh from Sweden's real result, **13 September**.
 
 ## Standing findings that own no item
+
+- **The running state at 1920 is not flush (2026-09-03, `COMPLETED.md` §258):** the three RUNNING-state frames (`01b_running_strip`, `01c_desk`, `05t_budget_turn0`) read NOT FLUSH at 1920 only - the top line's content run 955 of 1920 px, the bottom line's 1847 (the fiscal strip's last chip prints a dash at the seed). Playtest 2's matrix flagged the same two Desk frames. Flush at 1280, 1600 and 2560. A row for the next sheet.
 
 `S-1` the unmoving electorate · `S-2` Germany's threshold cliff · `S-5` Sweden's top issue unrepresentable
 · `S-6` Sweden 2014 does not reproduce (6 seats) · `S-25` uniform consumption and investment rates ·

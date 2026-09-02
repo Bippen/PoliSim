@@ -1,5 +1,9 @@
 # Claude Design asset request — PoliSim
 
+## ⭐ STATUS 2026-09-03 — **D12 IS THE LIVE ASK: seven rows from Playtest 3, reconciled against D10 and D11 (§ ⭐ D12 below; the package `SEND_PACKAGE.md` regenerated 2026-09-03). Sending is Elias's.** D11 was pasted, answered and built (§238–§245); the status that stood here is kept beneath, verbatim, as the record.
+
+### The D11 status as it stood (2026-09-02, late evening)
+
 ## ⭐ STATUS 2026-09-02 (late evening) — **D11 WAS PASTED AND ANSWERED THE SAME EVENING (boards 5a–5f on `PoliSim v2 Screens.dc.html`, plus the party batch as files) AND IS BUILT: rows 5, 4, 3, 5-ruling, 6, 1, 2 in `COMPLETED.md` §238–§244. No ask is live.** D9 was sent and answered in full 2026-09-01.
 
 **D10** is Playtest 2's re-composition: nine rows, one annex set (Elias's rows verbatim, the dead-space measure per screen, the films at 1280 / 1600 / 2560), one package (`SEND_PACKAGE.md`, regenerated 2026-09-02). **Sending is Elias's.** The D9 status that stood here is kept below it, verbatim, as the record.
@@ -811,6 +815,74 @@ The debate screen is drawn as a STAGE inside the content sheet, with the exchang
 ledger. It could equally be a MODAL takeover like election night. **The two read very differently for
 a moment the game treats as a set piece**, and this is a design call we should not make by default.
 Prep / midway / verdict are all filmed at four widths if you want to look before answering.
+---
+
+## ⭐ THE ONE LIVE ASK — D12, seven rows reconciled against D10 and D11 (2026-09-03)
+
+⚠ **D11 was answered in full and built (§238–§245); D10's unsent rows were carried by D11 row for row.** D12 is what Playtest 3 found on the built screens and what Track A changed about the parliament. Where a row extends a D11 board it says so and carries only the new specifics; nothing answered is asked again. Rows are numbered *n of 7* so a partial paste is visible. **Sending is Elias's.**
+
+**Reconciliation.** D11 row 1 (5a, International) is built; D12 rows 1 and 2 are what the built page shows that a board could not: the map is a node graph, and its Prev/Next are Unity's default buttons. D11 row 6 (5f, Riksbank) is built and verified (§250); D12 row 6 is the one gap that stayed - the 720 fold. D11 row 5's ruling (5e) was over-reached and Elias re-ruled it (P3-C6, §256); D12 row 4 asks for confirmation, not derivation. D11's stance plate (5a) has one finding (D11 finding 1); D12 row 7. Rows 3 and 5 are new: the trade graph's idiom and the vote breakdown's grammar (P3-A3, §248, drawn structurally). Nothing from D10 stands unanswered.
+
+### The rows — 7 of 7
+
+| n of 7 | row | what exists | what is asked | the constraint that binds it | evidence on disk |
+|---|---|---|---|---|---|
+| **1 of 7** | **The stylized map** — International and the Desk | The world map is a node graph: six markers at hand-set positions with the trade links as weighted lines (`MapRenderer`); the same drawing sits on the Desk. | **A drawn map of the six countries, stylized, not projected** - Design's. Our side supplies the real centroid coordinates (a table, one row per country) and the trade adjacency (which pairs link, from the map's own `TradePartner` links) - no invented geography, no coastline the model does not hold. | The countries are the model's six and nothing else; the links are the model's own; the map is furniture for the pair page (5a) and the Desk, not a new instrument. | image 1 (Elias's, E-8) and `p3close_1280_02b_statistics_international` |
+| **2 of 7** | **Prev/Next and every default-styled control** | The pair page's pager draws Unity's grey default buttons (`_buttonStyle`); a census of default-styled controls across the sweep is the annex. | **Button faces in the existing sprite idiom** (the paper button, the brass canvas button) for Prev/Next, and a ruling on every control the census lists. | No new sprite unless the census proves a gap; the sliced paper and the brass strips first. | image 1; the census (annex 3, below) |
+| **3 of 7** | **The trade graph** | The trade balance draws through the graph renderer at board 1l's weights (3 px history, 2 px dashed projection); P3-C4 (§254) made its delta honest - an absolute change, marked Δ, from a zero base. | **The graph idiom applied to trade balance, with the delta convention** - how a series that starts at zero should read, and where the Δ sits. | The renderer's weights stand (1l); the delta is the model's own change, never a percentage from nothing. | `p3close_1280_02b_statistics_international_deep` |
+| **4 of 7** | **Party colours, per-party confirmation** | Elias ruled P3-C6 (§256): the published hue is the identity; the nudge moves only lightness, only the least that separates a measured collision, never re-orders a family. `PartyInkHarness` prints the collisions and the moves (`p3c6_partyink.log`). | **Confirm, per party, the published hue and the two collisions the harness measures** - S against V (one seated hex), and the four blues within the tolerance at dot size - the tolerance and the cap included. Confirm or strike each; **never re-derive**. | The hue is Valmyndigheten's; the seating derives from it; the nudge is lightness only, within `NudgeTolerance` 0.06 / `NudgeCap` 0.10 `[AUTHORED-DRAFT]`. | `p3c6_partyink.log`; `p3close_1280_07a_politics_parliament` |
+| **5 of 7** | **The vote breakdown's grammar** — P3-A3 | Every support preview, the pending cards, the law pane and the signing plate show each party's stance with the model's own reason (§248): a row per party, the side in the verdict's ink, the reason line beneath in the caption face - drawn structurally. | **How a per-party stance with a reason is drawn** on a support preview and on a result screen - the row, the reason's form (the short form is "spendvtax 2.5 → +0.50 · opposition line −0.15"), its place against the seat map. | The reasons are the model's own strings (§247's terms) and are not paraphrased; a row per seated party; the seat map stays the count. | `p3close_1280_05b_budget_spending`, `p3close_1280_06g_laws_expected_effects`, `p3close_1280_89e_signing_settled` |
+| **6 of 7** | **The Riksbank 720 fold** — extends D11 row 6 | The page is built as 5f draws it (§242, §250); at 720 the three instruments' third lane and the political half sit below the fold; the graph's title row and paging are the renderer's furniture. | **A 720 variant or a visible scroll affordance** - Design's call. | The order of the page stands; the paging stays unless every history graph loses it. | `p3close_1280_07d_politics_federalreserve` and `_rows`, `_deep` |
+| **7 of 7** | **The stance plate's marker overlap** — D11 finding 1 | On 5a's stance plate the two markers overlap when both sides read within a point (SE and US on regulation/welfare at the seed). | **Stacked tags when both sides read within a point.** | Two markers, two tags, one lane; no third colour. | `p3close_1280_02b_statistics_international_deep` |
+
+### The annex — one set
+
+1. **The nine screenshots, verbatim** - ⚠ not yet on disk (ERRANDS E-8); they join the package the day they land.
+2. **The films after Tracks B–C** at 1280 (`p3close_1280_*`, the sweep on the closing tree) and the four-width matrix at the close.
+3. **The census of default-styled controls** - the census (annex 3, below, read from the source as text): every `GUILayout.Button` / slider / field on the sweep that draws with a skin default rather than the sprite idiom, listed by screen.
+4. **`PartyInkHarness`'s print** - `p3c6_partyink.log`: the collisions, the tolerance, the moves.
+5. **The stance model's diagnostic print** - `bar50_p3a2_RunSimulationBatch.log` §StanceModelDiagnostic: five drafts, five splits, the reasons verbatim.
+
+**Binary artifacts are uploaded, not described.** Nothing in this ask summarises in prose what a `get_file` can read back.
+
+### Annex 3 — the census of default-styled controls (2026-09-03)
+
+Read from the source as text (`grep` over `Assets/Scripts/UI`), the way `MetaTextCheck` and `DialLabelCheck` read literals: every control whose style is Unity's skin default (`GUI.skin.button`, `.horizontalSlider`, `.horizontalSliderThumb`, `.textField`) rather than a sprite of the idiom (the sliced paper button, the brass canvas button, the ledger's own track). A style *derived* from the skin and then given a sprite background (`UiPalette.BuildButtonStyle`) is the idiom and is not listed.
+
+## Buttons that draw the skin's grey face
+
+| where | site | style | what it is |
+|---|---|---|---|
+| Statistics · International (5a), the pair pager | `GameController.Statistics.cs:767`, `:776` | `_buttonStyle` = `new GUIStyle(GUI.skin.button)` | `< Prev` / `Next >` - the two the finding shows (image 1, E-8) |
+| every history graph's paging | `GraphRenderer.cs:330` | `_pageButtonStyle` = `new GUIStyle(GUI.skin.button)` sized to the axis face | the ◀ ▶ page buttons under the title row (Statistics deep pages, the Riksbank page's three instruments) |
+
+Every other button on the sweep - the tab strip (`_tabButtonStyle`), Implement / Remove / the neutral actions (`_implementButtonStyle`, `_removeButtonStyle`, `_neutralActionButtonStyle`, `_lawActionButtonStyle`), the scenario picker - goes through `UiPalette.BuildButtonStyle`, which lays the brass or paper sprite over the skin base; those are the idiom.
+
+## Sliders - all of them
+
+| where | site | style |
+|---|---|---|
+| every dial row (13 `DrawDialRow` sites: tax, spending, welfare, SWF, labour, crime, sector) | `LedgerRow.cs:203` (`GUI.HorizontalSlider(track, …, sliderStyle, thumbStyle)`) | `_sliderStyle` / `_sliderThumbStyle` = `new GUIStyle(GUI.skin.horizontalSlider / …Thumb)` |
+| the Riksbank / ECB rate change | `GameController.cs:3176`, `:3201` | the same pair |
+| the SWF drawdown percent | `GameController.cs:9339` | the same pair |
+
+The track and the thumb are the skin's; the ledger row draws its own paper, marks and figures around them. This is the one class where a sprite pair (track, thumb) would touch every dial at once.
+
+## Text fields
+
+| where | site | style |
+|---|---|---|
+| the save-name field (Desk) | `GameController.cs:1081` | `UiPalette` text-field style, `new GUIStyle(GUI.skin.textField)` re-inked (`UiPalette.cs:580`) |
+| the laws search | `GameController.cs:7917` | the same |
+
+## Not on the census
+
+Toggles: none drawn through `GUILayout.Toggle` on the sweep. Scroll bars: the paper scroll style is the idiom's (§S). Boxes: `_boxStyle` is `GUI.skin.box` re-backgrounded with the paper sprite.
+
+## What is asked (D12 row 2)
+
+A ruling per class: (1) the two grey pagers - Prev/Next and the graph's ◀ ▶ - in the existing paper-button sprite; (2) whether the slider track and thumb get a sprite pair or stay the skin's; (3) whether the two text fields stay as re-inked skin fields. No new sprite unless the census proves a gap; the sliced paper and the brass strips first.
+
 ---
 
 ## ⭐ D11 — six rows reconciled against D10 (2026-09-02) — ANSWERED THE SAME EVENING (boards 5a–5f) AND BUILT (`COMPLETED.md` §238–§244)
