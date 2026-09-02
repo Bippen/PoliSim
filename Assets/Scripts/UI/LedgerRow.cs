@@ -468,10 +468,13 @@ namespace PoliSim.UI
             // Measured as one string so the pair shrinks together - shrinking the halves independently
             // would set the same row's figures at two different sizes, which reads as an error rather
             // than as a fit (the reasoning behind §A.9a's resort ladder).
-            float half = rect.width * 0.5f;
+            // P2-1.4 film (2026-09-02): with the narrower figure cell of P2-1.3 the two right-aligned halves printed
+            // touching ("$10.5B$10.1B"); a gap between them is the difference between a pair and a smear.
+            float gap = Mathf.Round(RefColumnGap * 0.6f * Scale(style));
+            float half = Mathf.Max(1f, (rect.width - gap) * 0.5f);
             DrawCell(new Rect(rect.x, rect.y, half, rect.height), standingText, style, rowInk, TextAnchor.MiddleRight);
             // D6 (2026-08-28): the draft FIGURE is text on paper - the darkened Caution ink; the knob and track above keep the fill amber.
-            DrawCell(new Rect(rect.x + half, rect.y, half, rect.height), draftText, style, PoliSimTheme.Caution, TextAnchor.MiddleRight);
+            DrawCell(new Rect(rect.x + half + gap, rect.y, half, rect.height), draftText, style, PoliSimTheme.Caution, TextAnchor.MiddleRight);
         }
 
         /// <summary>

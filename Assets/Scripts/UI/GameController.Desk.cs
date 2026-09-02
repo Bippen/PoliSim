@@ -787,11 +787,14 @@ namespace PoliSim.UI
         /// invented one. Neutral ink on the lines (D7). No area keyline: the tiles one cell away
         /// carry B9's key (R-B5).
         /// </summary>
-        private void DrawDeskChipStrip(Rect r)
+        private void DrawDeskChipStrip(Rect r) => DrawChipStrip(r, BuildHeadlineReadings());
+
+        /// <summary>P2-1.4 (2026-09-02): the chip strip as an idiom - the desk's headline readings and the Budget's fiscal
+        /// header draw through the same code, so the two cannot drift in type, pitch or the sparkline's place.</summary>
+        private void DrawChipStrip(Rect r, List<HeadlineReading> chips)
         {
             // ONE list with the Statistics plates (BuildHeadlineReadings, board 2a) - the strip and
             // the sheet one cell away can never disagree about the tenth reading.
-            List<HeadlineReading> chips = BuildHeadlineReadings();
 
             // 1m-r2: the strip is part of the sheet - no plates, a hairline divider between
             // neighbours, padding 6; caption 7.5 in the muted ink, numeral 17 bold, sparkline 46×10 -

@@ -46,6 +46,26 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>P2-1.4 (2026-09-02): the Budget screen's persistent header - the five fiscal readings a draft is
+        /// judged against, every one derived: the closed year's balance, revenue and spending from the fiscal report
+        /// (a dash before the first close - a figure no year has computed is stated, never drawn), the debt stock and
+        /// its ratio from the live state. Drawn in the chip-strip idiom above the Budget's columns, outside their
+        /// scroll, so it is on screen whatever the columns show.</summary>
+        private List<HeadlineReading> BuildFiscalReadings()
+        {
+            EconomyState state = _playerCountry.State;
+            StatHistory history = _playerCountry.History;
+            FiscalTurnReport lastYear = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+            return new List<HeadlineReading>
+            {
+                new HeadlineReading("Balance · last year", lastYear != null ? UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions) : "-", null, false, history?.BudgetBalanceAnnual),
+                new HeadlineReading("Government debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, false, null),
+                new HeadlineReading("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1) + "%", null, false, history?.DebtToGdpRatio.Quarterly),
+                new HeadlineReading("Revenue · last year", lastYear != null ? UiFormat.Money(lastYear.Revenue, MoneyUnit.Billions) : "-", null, false, null),
+                new HeadlineReading("Spending · last year", lastYear != null ? UiFormat.Money(lastYear.TotalSpending, MoneyUnit.Billions) : "-", null, false, null),
+            };
+        }
+
         /// <summary>The ten headline readings in the tiles' order: the figure with its own unit, the GDP delta and the credit outlook where they exist, and the kept history for every reading that has one (the four that keep none - currency, the debt stock, the rating, the balance - carry null and draw no line rather than an invented one).</summary>
         private List<HeadlineReading> BuildHeadlineReadings()
         {

@@ -411,7 +411,7 @@ can be set to any whole percentage point without overshoot. **→ ✅ CLOSED 202
 
 **P2-1.4 — Persistent fiscal header on Budget.** Balance, debt, debt-to-GDP, revenue and spending
 totals visible at all times on the Budget screen, derived, in the chip-strip idiom. *Done when:*
-filmed in scrolled and unscrolled states.
+filmed in scrolled and unscrolled states. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §224: the desk's chip strip became an idiom and the Budget header draws it with five derived fiscal readings above the columns, outside their scroll; filmed at scroll zero, rows and deep at 1280 and 2560.**
 
 ## Track 2 — Budget effects, redesigned
 

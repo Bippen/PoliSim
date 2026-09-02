@@ -21440,3 +21440,15 @@ The instrument that films the night is the driver's new **`-shotinterrupts`** mo
 **The film:** the sweep at 1280 and 2560 (`p2sl1280_*.png`, `p2sl2560_*.png`; the reach lines in `p2sl1280.log` and `p2sl2560.log`), the Budget sub-screens among them.
 
 **Bar:** `RunSimulationBatch` and `RunAllBatch` clean on the committed tree (`bar29_p2_1_3_*.log`).
+
+## 224. P2-1.4 — THE PERSISTENT FISCAL HEADER ON BUDGET: five derived readings in the chip-strip idiom, outside the columns' scroll (2026-09-02)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P2, Track 1): *"Balance, debt, debt-to-GDP, revenue and spending totals visible at all times on the Budget screen, derived, in the chip-strip idiom. Done when: filmed in scrolled and unscrolled states."*
+
+**Built.** The desk's chip strip is now an idiom rather than a method: `DrawChipStrip(rect, readings)` draws whatever reading list it is handed, the desk hands it the headline set as before, and the Budget hands it `BuildFiscalReadings()` — the closed year's balance (with the annual series as its line, P2-0.4's), the debt stock, the debt-to-GDP ratio (with its quarterly line), and the closed year's revenue and total spending, each from the fiscal report or the live state, a dash before the first close. The strip sits in the Budget's header, above the three columns and outside their scroll, at the desk strip's own board height scaled by the window (one strip, one size); the header's height measure counts it so the columns below are reserved against it.
+
+**One residue of P2-1.3, found on this row's first film and fixed here.** With the narrower figure cell the standing and draft figures on the Spending rows printed touching (`$10.5B$10.1B`): `LedgerRow.DrawFigurePair` right-aligned both halves of the cell with nothing between them. A gap between the halves, scaled with the type, is the difference between a pair and a smear; the second film carries it.
+
+**The film:** the Budget's five sub-screens at 1280 and 2560, at scroll zero and scrolled to the rows and deeper (`p2fh1280_05*.png`, `p2fh2560_05*.png`) — the strip is on every frame.
+
+**Bar:** `RunSimulationBatch` and `RunAllBatch` clean on the committed tree (`bar30_p2_1_4_*.log`).

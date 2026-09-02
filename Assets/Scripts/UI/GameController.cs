@@ -8974,11 +8974,16 @@ namespace PoliSim.UI
         /// <see cref="PoliSimWidgets.InnerWidth"/> of the available width — measuring at the raw width
         /// would under-count the wrapped lines, which is the quiet way to reintroduce this bug.</para>
         /// </summary>
+        /// <summary>P2-1.4: the fiscal strip's height - the desk strip's 53 board px scaled by the window height (R-B10's law), so the
+        /// Budget's header and the desk's foot are one strip at one size.</summary>
+        private float FiscalStripHeight() => Mathf.Round(53f * Screen.height / DeskBoardHeight);
+
         private float BudgetProcessHeaderHeight(float availableWidth)
         {
             float textWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
 
             float height = _headerStyle.CalcHeight(new GUIContent("Budget Process"), textWidth) + _headerStyle.margin.vertical;
+            height += FiscalStripHeight() + 8f;   // P2-1.4: the fiscal chip strip and its space
 
 
             height += _labelStyle.CalcHeight(new GUIContent(BuildBudgetBillStatusText()), textWidth) + _labelStyle.margin.vertical;
@@ -9031,6 +9036,10 @@ namespace PoliSim.UI
             float contentWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle);
 
             DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
+            // P2-1.4 (2026-09-02): the persistent fiscal header - the chip strip, outside the columns' scroll.
+            Rect fiscalStrip = GUILayoutUtility.GetRect(contentWidth, FiscalStripHeight(), GUILayout.Width(contentWidth), GUILayout.Height(FiscalStripHeight()));
+            DrawChipStrip(fiscalStrip, BuildFiscalReadings());
+            GUILayout.Space(8f);
             // Explicit Width, not left to GUILayout's own inference - the horizontal 3-column row
             // below can otherwise push this outer group's computed "natural" width past the screen
             // edge (a boxed column's GUILayout.Width request plus its GUIStyle's own padding can add
