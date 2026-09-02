@@ -247,6 +247,40 @@ namespace PoliSim.EditorTools
                                + "while the player can still pull it. Correct the record.");
             }
 
+            // P2-5.2 (2026-09-02): THE FOUR MINISTER ATTRIBUTES, ENUMERATED AS LEVERS (the P2-5.1 page, D-P2-5.1e).
+            // They are minister fields, not PolicyDecision fields, so the loop above cannot see them: each is seated
+            // on a candidate in the three portfolios that own a term, set to 0 against 100, and run through the same
+            // fingerprint - with the spending, the decision or the pressure its term needs to have something to move.
+            // KNOWLEDGE is a display rule (disclosure on the Docket) and is reported as such, exercised by the
+            // harness's Docket capture rather than here.
+            sb.Append("\n    THE ATTRIBUTES (P2-5.2): Loyalty, Knowledge, Efficiency, Popularity - each seated, set to 0 against 100, fingerprinted.\n");
+            foreach (string attribute in new[] { "Efficiency", "Popularity", "Loyalty", "Knowledge" })
+            {
+                if (attribute == "Knowledge")
+                {
+                    sb.Append(F("    {0,-40} DISPLAY - disclosure of the Docket's option estimate (CabinetSystem.CanEstimateShocks); exercised by the harness's Docket capture, not a state move\n", "Minister." + attribute));
+                    continue;
+                }
+                string movedIn = null;
+                foreach (CountryId id in AllCountries())
+                {
+                    string asWritten = RunAttributeCase(id, attribute, 100f);
+                    string moved = RunAttributeCase(id, attribute, 0f);
+                    if (!string.Equals(asWritten, moved, StringComparison.Ordinal)) { movedIn = id.ToString(); break; }
+                }
+                if (movedIn != null)
+                {
+                    live.Add("Minister." + attribute);
+                    sb.Append(F("    {0,-40} LIVE (moves the model in {1})\n", "Minister." + attribute, movedIn));
+                }
+                else
+                {
+                    dead.Add("Minister." + attribute);
+                    Debug.LogError($"P2-5.2: Minister.{attribute} is a DEAD ATTRIBUTE - seated, set to 0 against 100, and nothing in any country's EconomyState moves through its named term.");
+                    sb.Append(F("    {0,-40} ⚠ DEAD - see the error above.\n", "Minister." + attribute));
+                }
+            }
+
             failures = dead.Count + notExercised.Count + staleRecord.Count;
             if (failures == 0)
             {
@@ -492,6 +526,75 @@ namespace PoliSim.EditorTools
 
             return missing;
         }
+
+        /// <summary>
+        /// P2-5.2: one attribute case - the seeded world, the first candidate seated in each of the three portfolios
+        /// that own a term (Health & Social Affairs, Education, Interior & Justice), the attribute set to
+        /// <paramref name="value"/> on all three, and the turns run with what the term needs: spending in the three
+        /// categories (EFFICIENCY's term), one decision option with an approval figure resolved on the first turn
+        /// (POPULARITY's term), approval put below the pressure floor (LOYALTY's term - its events roll on the seeded
+        /// cabinet stream over more turns, so a disloyal minister is sure to resign or leak). The fingerprint is the
+        /// same one the levers use.
+        /// </summary>
+        private static string RunAttributeCase(CountryId id, string attribute, float value)
+        {
+            SimulationRandom.Seed(Seed);
+            var go = new GameObject("P2-5.2 ATTRIBUTE CASE");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                World world = WorldFactory.CreateDefault();
+                sim.SetWorld(world);
+                Country country = world.GetCountry(id);
+                var portfolios = new[] { CabinetPortfolio.HealthSocialAffairs, CabinetPortfolio.Education, CabinetPortfolio.InteriorJustice };
+                foreach (CabinetPortfolio portfolio in portfolios)
+                {
+                    CabinetMinister minister = CabinetSystem.GenerateCandidates(portfolio)[0];
+                    typeof(CabinetMinister).GetField(attribute).SetValue(minister, value);
+                    country.CabinetMinisters[portfolio] = minister;
+                }
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country c in world.Countries) { decisions[c.Id] = PolicyDecision.None(); }
+                var acting = new PolicyDecision();
+                // The spending goes through the player's real lever, the spending-line dictionary (the scalar fields are
+                // derived from it at the turn), stepped as the levers above are stepped.
+                foreach (SpendingLine line in country.SpendingLines) { if (!line.IsMandatory) { acting.SpendingLineChanges[line.Category] = 15f; } }
+                decisions[id] = acting;
+                if (attribute == "Popularity")
+                {
+                    var decision = new CabinetDecision { Name = "P2-5.2 liveness decision", Description = "a synthetic decision with an approval figure" };
+                    var option = new CabinetDecisionOption("the option", approvalEffect: 5f);
+                    decision.Options.Add(option);
+                    sim.ResolveCabinetDecision(id, CabinetPortfolio.HealthSocialAffairs, decision, option);
+                }
+                if (attribute == "Loyalty") { PutUnderPressure(country, sim); }
+                int turns = attribute == "Loyalty" ? LoyaltyTurns : Turns;
+                for (int t = 0; t < turns; t++)
+                {
+                    for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
+                    sim.AdvanceTurn(decisions);
+                    if (attribute == "Loyalty") { PutUnderPressure(country, sim); }
+                }
+                return Fingerprint(world) + "|ministers=" + country.CabinetMinisters.Count.ToString(CultureInfo.InvariantCulture);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(go);
+            }
+        }
+
+        /// <summary>The government put under pressure the way the game moves approval - the move recorded on the approval ledger as an event, so the ledger's own audit still explains every point.</summary>
+        private static void PutUnderPressure(Country country, SimulationManager sim)
+        {
+            float target = CabinetSystem.PressureApprovalFloor - 10f;
+            if (country.State.ApprovalRating <= target) { return; }
+            float delta = target - country.State.ApprovalRating;
+            country.State.ApprovalRating = target;
+            ApprovalLedgerRecorder.RecordEvent(country, sim.CurrentDate, "P2-5.2 liveness: pressure", delta);
+        }
+
+        /// <summary>LOYALTY's case runs longer: an event rolls at DecisionChancePerTurn per disloyal minister per turn, so thirty turns of three ministers leave a disloyal cabinet no realistic way to stay whole.</summary>
+        private const int LoyaltyTurns = 30;
 
         private static string Fingerprint(World world)
         {

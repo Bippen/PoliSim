@@ -6041,13 +6041,22 @@ namespace PoliSim.UI
                 anyPending = true;
             }
 
-            // P2-4.3 (2026-09-02): MINISTER ALERTS - the portfolios whose minister has something to say, named before
-            // the cards: a pending cabinet decision is the one thing the cabinet emits today, so that is what the region
-            // lists (P2-5 gives ministers attributes and the region real events).
+            // P2-4.3 / P2-5.2 (2026-09-02): MINISTER ALERTS - the portfolios whose minister has something to say, named
+            // before the cards: a pending cabinet decision, and (P2-5.2) the cabinet events LOYALTY's term has produced
+            // this year - a resignation that left a portfolio vacant, a leak that cost approval.
             List<(CabinetPortfolio Portfolio, CabinetDecision Decision)> pendingCabinet = _simulationManager.GetPendingCabinetDecisions(PlayerCountryId);
-            if (pendingCabinet.Count > 0)
+            var recentCabinetEvents = new List<CabinetEventRecord>();
+            foreach (CabinetEventRecord cabinetEvent in _playerCountry.CabinetEvents)
+            {
+                if ((_simulationManager.CurrentDate - cabinetEvent.Date).TotalDays <= 365) { recentCabinetEvents.Add(cabinetEvent); }
+            }
+            if (pendingCabinet.Count > 0 || recentCabinetEvents.Count > 0)
             {
                 BeginAreaCard("MINISTER ALERTS", UiPalette.SystemArea.Political, blocksTime: false, dossier: false);
+                foreach (CabinetEventRecord cabinetEvent in recentCabinetEvents)
+                {
+                    DrawColoredLabel($"{cabinetEvent.Date:yyyy-MM-dd} - {cabinetEvent.Text}", _labelStyle, PoliSimTheme.Bad);
+                }
                 foreach ((CabinetPortfolio alertPortfolio, CabinetDecision alertDecision) in pendingCabinet)
                 {
                     string minister = _playerCountry.CabinetMinisters != null && _playerCountry.CabinetMinisters.TryGetValue(alertPortfolio, out CabinetMinister seated)
@@ -8039,7 +8048,7 @@ namespace PoliSim.UI
                 {
                     _simulationManager.ResolveCabinetDecision(PlayerCountryId, portfolio, decision, option);
                 }
-                DrawCabinetOptionEstimate(option);   // P2-4.3: the option's cost and impact, as the desk says them
+                DrawCabinetOptionEstimate(portfolio, option);   // P2-4.3: the option's cost and impact, as the desk says them; P2-5.2: as far as the ministry's knowledge reaches
             }
 
             if (drawOwnFrame)
@@ -8060,7 +8069,7 @@ namespace PoliSim.UI
         /// country's own scale (P2-0.1's rule) and the option's shocks as arrows (P2-2.1's renderer). The shocks are the
         /// option's authored figures, applied as written by CabinetSystem.ApplyDecisionOption; nothing is estimated here.
         /// </summary>
-        private void DrawCabinetOptionEstimate(CabinetDecisionOption option)
+        private void DrawCabinetOptionEstimate(CabinetPortfolio portfolio, CabinetDecisionOption option)
         {
             var arrows = new List<EffectArrow>();
             void Add(string name, float value, bool higherIsBetter, string unit)
@@ -8076,6 +8085,12 @@ namespace PoliSim.UI
                 ? $"Budget {UiFormat.MoneyDelta(AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry), MoneyUnit.Billions)}"
                 : "No budget figure";
             GUILayout.Label(budget, _labelStyle);
+            // P2-5.2: KNOWLEDGE's term is disclosure - below the floor the ministry gives the budget figure and says it cannot estimate the rest.
+            if (!CabinetSystem.CanEstimateShocks(_playerCountry, portfolio))
+            {
+                GUILayout.Label("The ministry cannot estimate the rest - its knowledge is below the floor.", _labelStyle);
+                return;
+            }
             if (arrows.Count == 0)
             {
                 GUILayout.Label("No modelled shock beyond the budget.", _labelStyle);
@@ -8375,6 +8390,7 @@ namespace PoliSim.UI
                 GUILayout.BeginVertical();
                 GUILayout.Label($"{minister.Name} ({minister.Philosophy})", _labelStyle);
                 GUILayout.Label(minister.Description, _labelStyle);
+                DrawMinisterAttributes(minister);   // P2-5.2
 
                 // ⚠ A DELIBERATE EXCEPTION TO BEHAVIOUR 5's WORDING, and NOT a precedent. Recorded here
                 // in 2026-08-10's sweep so a future reader neither "fixes" it nor cites it.
@@ -8403,7 +8419,7 @@ namespace PoliSim.UI
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
                     float approvalBeforeReshuffle = _playerCountry.State.ApprovalRating;
-                    _playerCountry.State.ApprovalRating = Mathf.Clamp(_playerCountry.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost, 0f, 100f);
+                    _playerCountry.State.ApprovalRating = Mathf.Clamp(_playerCountry.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost * CabinetSystem.PopularityFactor(_playerCountry, portfolio), 0f, 100f);   // P2-5.2: dismissing a popular minister costs the full figure, an unpopular one less
                     ApprovalLedgerRecorder.RecordEvent(_playerCountry, _simulationManager.CurrentDate, $"Cabinet reshuffle ({DisplayName.Of(portfolio.ToString())})", _playerCountry.State.ApprovalRating - approvalBeforeReshuffle);
                     _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
                 }
@@ -8430,6 +8446,14 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
         }
 
+        /// <summary>P2-5.2: the four attributes on one line, each with the term it moves, so the Cabinet page says what a figure does and not only what it is.</summary>
+        private void DrawMinisterAttributes(CabinetMinister minister)
+        {
+            GUILayout.Label(string.Format(CultureInfo.CurrentCulture,
+                "Loyalty {0:0} · Knowledge {1:0} · Efficiency {2:0} · Popularity {3:0}", minister.Loyalty, minister.Knowledge, minister.Efficiency, minister.Popularity), _labelStyle);
+            GUILayout.Label("loyalty: resigns or leaks under pressure · knowledge: can the ministry estimate a decision · efficiency: the portfolio's spending per unit · popularity: how a decision lands, and what dismissal costs", _labelStyle);
+        }
+
         private void DrawCabinetCandidateButton(CabinetPortfolio portfolio, CabinetMinister candidate)
         {
             GUILayout.BeginVertical(_boxStyle);
@@ -8439,6 +8463,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical();
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
+            DrawMinisterAttributes(candidate);   // P2-5.2
             if (GUILayout.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
             {
                 _playerCountry.CabinetMinisters[portfolio] = candidate;

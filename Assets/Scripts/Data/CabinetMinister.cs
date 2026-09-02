@@ -29,6 +29,20 @@ namespace PoliSim.Data
         /// from Philosophy - see CabinetMinisterPhilosophy's own doc comment.
         /// </summary>
         public float CompetenceBias;
+        /// <summary>
+        /// P2-5.2 (2026-09-02, the P2-5.1 page): four attributes, 0–100, `[AUTHORED-DRAFT]` per fictional candidate
+        /// (CabinetSystem.Attributes - the Fed-chair pool's precedent; never a figure for a real person). Each owns
+        /// one term: LOYALTY the resignation and leak events under pressure (CabinetSystem.TryRollCabinetEvents);
+        /// KNOWLEDGE the Docket's disclosure of an option's estimate (GameController.DrawCabinetOptionEstimate);
+        /// EFFICIENCY a multiplier on the portfolio's spending sensitivity (MacroSystem.ApplyCategorySpendingEffects,
+        /// three portfolios own one); POPULARITY a multiplier on an option's approval figure and on the dismissal
+        /// cost (CabinetSystem.ApplyDecisionOption, the Reshuffle button). 100 is "as written" - a minister with no authored
+        /// figure (an older save) moves nothing, rolls nothing and hides nothing; absence is not a penalty.
+        /// </summary>
+        public float Loyalty = 100f;
+        public float Knowledge = 100f;
+        public float Efficiency = 100f;
+        public float Popularity = 100f;
 
         public CabinetMinister() { }
 
@@ -40,5 +54,24 @@ namespace PoliSim.Data
             Description = description;
             CompetenceBias = competenceBias;
         }
+    }
+
+    /// <summary>P2-5.2 (2026-09-02): what LOYALTY's term produces - a resignation or a leak, under pressure.</summary>
+    public enum CabinetEventKind
+    {
+        Resignation,
+        Leak,
+    }
+
+    /// <summary>P2-5.2: one cabinet event as it happened, kept on the country for the Docket's minister alerts.</summary>
+    [Serializable]
+    public class CabinetEventRecord
+    {
+        public DateTime Date;
+        public CabinetPortfolio Portfolio;
+        public string MinisterName;
+        public CabinetEventKind Kind;
+        public float ApprovalDelta;
+        public string Text;
     }
 }

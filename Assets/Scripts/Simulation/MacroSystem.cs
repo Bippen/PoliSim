@@ -2290,13 +2290,13 @@ namespace PoliSim.Simulation
             country.InfrastructureSpendingGrowthAdjustment = Mathf.Clamp(country.InfrastructureSpendingGrowthAdjustment + InfrastructureGrowthSensitivity * infrastructurePercent, 0f, MaxInfrastructureSpendingBoost);
 
             float healthcarePercent = PercentOfGdp(decision.HealthcareSpendingChange, state.GDP);
-            state.ConsumerConfidence = Mathf.Clamp(state.ConsumerConfidence + HealthcareConfidenceSensitivity * healthcarePercent, MinConfidence, MaxConfidence);
+            state.ConsumerConfidence = Mathf.Clamp(state.ConsumerConfidence + HealthcareConfidenceSensitivity * CabinetSystem.EfficiencyFactor(country, CabinetPortfolio.HealthSocialAffairs) * healthcarePercent, MinConfidence, MaxConfidence);   // P2-5.2: EFFICIENCY
 
             float educationPercent = PercentOfGdp(decision.EducationSpendingChange, state.GDP);
-            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EducationConfidenceSensitivity * educationPercent, MinConfidence, MaxConfidence);
+            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EducationConfidenceSensitivity * CabinetSystem.EfficiencyFactor(country, CabinetPortfolio.Education) * educationPercent, MinConfidence, MaxConfidence);   // P2-5.2: EFFICIENCY
 
             float justicePercent = PercentOfGdp(decision.JusticeSpendingChange, state.GDP);
-            country.BaselineCrimeIndex = Mathf.Clamp(country.BaselineCrimeIndex - JusticeCrimeIndexSensitivity * justicePercent, 0f, MaxCrimeIndexPercent);
+            country.BaselineCrimeIndex = Mathf.Clamp(country.BaselineCrimeIndex - JusticeCrimeIndexSensitivity * CabinetSystem.EfficiencyFactor(country, CabinetPortfolio.InteriorJustice) * justicePercent, 0f, MaxCrimeIndexPercent);   // P2-5.2: EFFICIENCY
 
             float energyPercent = PercentOfGdp(decision.EnergySpendingChange, state.GDP);
             state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EnergyConfidenceSensitivity * energyPercent, MinConfidence, MaxConfidence);

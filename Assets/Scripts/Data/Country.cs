@@ -668,6 +668,8 @@ namespace PoliSim.Data
         /// check already gets for free, just via TryGetValue instead of a null check.
         /// </summary>
         public Dictionary<CabinetPortfolio, CabinetMinister> CabinetMinisters = new Dictionary<CabinetPortfolio, CabinetMinister>();
+        /// <summary>P2-5.2 (2026-09-02): the cabinet events LOYALTY's term has produced (resignations, leaks), newest last - the Docket's minister alerts read them.</summary>
+        public List<CabinetEventRecord> CabinetEvents = new List<CabinetEventRecord>();
 
         /// <summary>
         /// This country's chamber, seats per REAL party, keyed by the abbreviation that country's own

@@ -1000,7 +1000,7 @@ namespace PoliSim.Simulation
             // (ApplyOneTimeBudgetImpact) - observed here, beside the approval observation, as a
             // dated Class B event on the debt ledger. Zero impacts are skipped inside RecordEvent.
             float debtBeforeOption = country.State.GovernmentDebt;
-            CabinetSystem.ApplyDecisionOption(country, chosenOption);
+            CabinetSystem.ApplyDecisionOption(country, portfolio, chosenOption);   // P2-5.2: POPULARITY scales the approval figure
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", country.State.ApprovalRating - approvalBeforeOption);
             DebtLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", debtBeforeOption, country.State.GovernmentDebt);
 
@@ -2681,6 +2681,13 @@ namespace PoliSim.Simulation
                 _pendingCabinetDecisionsByCountry[country.Id] = pendingDecisions;
             }
             pendingDecisions.AddRange(CabinetSystem.TryRollDecisions(country));
+            // P2-5.2: LOYALTY's term - under pressure, a disloyal minister may resign or leak; the record goes to the
+            // country for the Docket, the approval move to the ledger like any cabinet event.
+            foreach (CabinetEventRecord cabinetEvent in CabinetSystem.TryRollCabinetEvents(country, CurrentDate))
+            {
+                UnityEngine.Debug.Log($"CABINET: {cabinetEvent.Text}");
+                if (cabinetEvent.Kind == CabinetEventKind.Leak) { ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet leak ({cabinetEvent.Portfolio})", cabinetEvent.ApprovalDelta); }
+            }
         }
 
         /// <summary>

@@ -415,9 +415,112 @@ namespace PoliSim.Simulation
         };
 
         /// <summary>Draws every candidate for a portfolio (currently exactly 3, one per CabinetMinisterPhilosophy) in shuffled order - simpler than FederalReserveSystem.GenerateCandidates' own sampling, since the pool per portfolio is already exactly "2-3 candidates" without needing to sample a subset.</summary>
+        /// <summary>
+        /// P2-5.2 (2026-09-02): the four attributes per fictional candidate, `[AUTHORED-DRAFT]` - figures for original
+        /// characters, on the Fed-chair pool's precedent, never for a real person. Loyalty · Knowledge · Efficiency ·
+        /// Popularity, 0–100; 100 is "as written". Authored from each candidate's own description: the technocrats
+        /// know and deliver, the reformers are liked and restless, the traditionalists loyal and slow.
+        /// </summary>
+        private static readonly Dictionary<string, (float Loyalty, float Knowledge, float Efficiency, float Popularity)> Attributes =
+            new Dictionary<string, (float, float, float, float)>
+            {
+                { "Elena Voskresenskaya", (55f, 80f, 75f, 70f) },
+                { "Marcus Ferreira", (85f, 95f, 90f, 40f) },
+                { "Harold Whitmore", (90f, 70f, 55f, 55f) },
+                { "Amara Osei-Bonsu", (60f, 75f, 70f, 75f) },
+                { "Jonas Lindqvist", (80f, 85f, 85f, 50f) },
+                { "Bruno Castellano", (90f, 65f, 60f, 65f) },
+                { "Ingrid Solberg", (55f, 80f, 70f, 80f) },
+                { "Wei-Lin Tanaka", (80f, 95f, 90f, 45f) },
+                { "Otto Baumgartner", (95f, 65f, 55f, 60f) },
+                { "Katarzyna Ekelund", (60f, 75f, 70f, 65f) },
+                { "Rafael Iwasaki", (85f, 95f, 90f, 40f) },
+                { "Gunnar Petrakis", (95f, 70f, 55f, 60f) },
+                { "Camille Adeyemi", (55f, 80f, 70f, 80f) },
+                { "Zofia Nakamura", (80f, 90f, 85f, 50f) },
+                { "Aleksander Whitfield", (90f, 70f, 60f, 60f) },
+                { "Yuki Dahlberg", (55f, 85f, 70f, 75f) },
+                { "Nadia Fitzgerald", (85f, 90f, 90f, 45f) },
+                { "Tobias Marchetti", (95f, 65f, 55f, 60f) },
+            };
+
+        /// <summary>The candidate's authored attributes, or "as written" (100) for a name the table does not carry.</summary>
+        private static void ApplyAttributes(CabinetMinister minister)
+        {
+            if (minister == null || !Attributes.TryGetValue(minister.Name, out (float Loyalty, float Knowledge, float Efficiency, float Popularity) a)) { return; }
+            minister.Loyalty = a.Loyalty;
+            minister.Knowledge = a.Knowledge;
+            minister.Efficiency = a.Efficiency;
+            minister.Popularity = a.Popularity;
+        }
+
+        /// <summary>EFFICIENCY's term: the factor on the portfolio's spending sensitivity - 1 as written, 0.5 at 50, 1 for a vacant portfolio (absence is not a penalty).</summary>
+        public static float EfficiencyFactor(Country country, CabinetPortfolio portfolio) =>
+            country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) ? Mathf.Clamp01(m.Efficiency / 100f) : 1f;
+
+        /// <summary>POPULARITY's term: the factor on an option's approval figure and on the dismissal cost - 1 as written, 1 for a vacant portfolio.</summary>
+        public static float PopularityFactor(Country country, CabinetPortfolio portfolio) =>
+            country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) ? Mathf.Clamp01(m.Popularity / 100f) : 1f;
+
+        /// <summary>KNOWLEDGE's term is disclosure (the P2-5.1 page): below this floor the ministry cannot estimate an option's shocks and says so. [AUTHORED-DRAFT].</summary>
+        public const float KnowledgeDisclosureFloor = 70f;
+        public static bool CanEstimateShocks(Country country, CabinetPortfolio portfolio) =>
+            !country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) || m.Knowledge >= KnowledgeDisclosureFloor;
+
+        /// <summary>The government is UNDER PRESSURE when approval sits below this floor or a division was lost this turn. [AUTHORED-DRAFT]: the floor, a round figure below the seeds' approval.</summary>
+        public const float PressureApprovalFloor = 40f;
+        public static bool UnderPressure(Country country, System.DateTime today)
+        {
+            if (country.State.ApprovalRating < PressureApprovalFloor) { return true; }
+            var entries = country.Divisions.Entries;
+            return entries.Count > 0 && !entries[entries.Count - 1].Passed && entries[entries.Count - 1].Date == today;
+        }
+
+        /// <summary>
+        /// LOYALTY's term: under pressure, each seated minister rolls a cabinet event on the cabinet stream at
+        /// DecisionChancePerTurn scaled by disloyalty ((100 − loyalty) / 100) - a loyal minister never rolls one.
+        /// A RESIGNATION vacates the portfolio (CompetenceBias reads zero until a replacement is seated, the standing
+        /// vacancy behaviour); a LEAK costs ReshuffleApprovalCost of approval (the event class the cost was borrowed
+        /// from). Half the rolls are resignations, half leaks. The record goes to Country.CabinetEvents for the Docket.
+        /// </summary>
+        public static List<CabinetEventRecord> TryRollCabinetEvents(Country country, System.DateTime today)
+        {
+            var fired = new List<CabinetEventRecord>();
+            if (!UnderPressure(country, today)) { return fired; }
+            var seated = new List<KeyValuePair<CabinetPortfolio, CabinetMinister>>(country.CabinetMinisters);
+            foreach (KeyValuePair<CabinetPortfolio, CabinetMinister> appointment in seated)
+            {
+                float disloyalty = Mathf.Clamp01((100f - appointment.Value.Loyalty) / 100f);
+                if (disloyalty <= 0f || RandomSource.NextDouble() > DecisionChancePerTurn * disloyalty) { continue; }
+                bool resigns = RandomSource.NextDouble() < 0.5;
+                var record = new CabinetEventRecord
+                {
+                    Date = today,
+                    Portfolio = appointment.Key,
+                    MinisterName = appointment.Value.Name,
+                    Kind = resigns ? CabinetEventKind.Resignation : CabinetEventKind.Leak,
+                };
+                if (resigns)
+                {
+                    country.CabinetMinisters.Remove(appointment.Key);
+                    record.Text = $"{appointment.Value.Name} has resigned from {appointment.Key} under pressure; the portfolio is vacant.";
+                }
+                else
+                {
+                    float before = country.State.ApprovalRating;
+                    country.State.ApprovalRating = Mathf.Clamp(before - ReshuffleApprovalCost, 0f, 100f);
+                    record.ApprovalDelta = country.State.ApprovalRating - before;
+                    record.Text = $"A leak from {appointment.Key} ({appointment.Value.Name}) has cost the government {ReshuffleApprovalCost:0.#} points of approval.";
+                }
+                fired.Add(record);
+                country.CabinetEvents.Add(record);
+            }
+            return fired;
+        }
         public static List<CabinetMinister> GenerateCandidates(CabinetPortfolio portfolio)
         {
             var candidates = new List<CabinetMinister>(CandidatePool[portfolio]);
+            foreach (CabinetMinister candidate in candidates) { ApplyAttributes(candidate); }   // P2-5.2: the authored attributes ride with the candidate
             Shuffle(candidates);
             return candidates;
         }
@@ -469,6 +572,18 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Applies a chosen CabinetDecisionOption's one-time, bounded effect immediately - see CabinetDecisionOption's own doc comment for why each field lands where it does.</summary>
+        /// <summary>
+        /// P2-5.2: the option applied with POPULARITY's term - the approval figure scaled by the seated minister's
+        /// popularity (1 as written, 0.5 at 50; a vacant portfolio applies it as written). Everything else as written.
+        /// </summary>
+        public static void ApplyDecisionOption(Country country, CabinetPortfolio portfolio, CabinetDecisionOption option)
+        {
+            float factor = PopularityFactor(country, portfolio);
+            var scaled = new CabinetDecisionOption(option.Label, option.CrimeIndexShock, option.PovertyRateShock, option.BudgetImpact,
+                option.ApprovalEffect * factor, option.TradeBalanceShock, option.YouthUnemploymentShock);
+            ApplyDecisionOption(country, scaled);
+        }
+
         public static void ApplyDecisionOption(Country country, CabinetDecisionOption option)
         {
             EconomyState state = country.State;

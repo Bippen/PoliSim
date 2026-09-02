@@ -491,7 +491,7 @@ each consequence's owning term named. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md
 **P2-5.2 — Build per the page**, SAFE where the terms already exist, BASELINE where a new term
 enters the model (efficiency on spending effectiveness will); families explained per country.
 Minister alerts on the Docket become real events from these attributes. *Done when:* each attribute
-measurably moves the model through its named term and the lever-liveness check sees all four.
+measurably moves the model through its named term and the lever-liveness check sees all four. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §235: the four attributes on eighteen authored candidates, efficiency on three portfolios' spending sensitivities, popularity on the option's approval figure and the dismissal cost, knowledge as the Docket's disclosure, loyalty as resignation and leak events on the Docket; `LeverLivenessCheck` enumerates the four.**
 
 ---
 
