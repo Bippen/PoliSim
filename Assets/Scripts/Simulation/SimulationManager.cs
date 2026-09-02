@@ -393,6 +393,9 @@ namespace PoliSim.Simulation
                 }
             }
 
+            // C-R4b step 3: the player's campaign steps after every country's day, on the same date.
+            AdvanceCampaign();
+
             int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
             return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
         }
@@ -2000,6 +2003,139 @@ namespace PoliSim.Simulation
         /// not call this directly in normal play: SaveGameService.RestoreInto pairs it with the RNG
         /// restore so the two cannot drift apart across call sites.
         /// </summary>
+        // ---------------------------------------------------------------------------------------------
+        // C-R4b step 3 (2026-09-02): THE PLAYER'S CAMPAIGN, IN THE DAY LOOP.
+        //
+        // The campaign spec's §3 calendar runs eight weeks before polling day. The game's election is
+        // the turn boundary `ElectionSystem.IsElectionTurn` names (turns 4, 8, … - the first day of
+        // that turn), so the campaign runs the eight weeks before that boundary: `CampaignCalendar`
+        // built on the boundary date. ⚠ Sweden's real September date is the calendar's ask and the
+        // boundary is the game's; the deviation is stated here and resolved when election night moves
+        // off the boundary (C-R4b's last step), not hidden in a calendar that says September.
+        //
+        // The player's party is AI-PLAYED by its cast personality until the HQ screen's queue exists
+        // (C-R4b step 4) - `LiveCampaignSetup` scripts nothing - so a campaign runs, is measured, and
+        // reaches election night, and the player cannot yet touch it. Stated, so it is not mistaken for
+        // a campaign the player ran.
+        //
+        // Persistence is replay (`PlayerCampaignRecord`): the run is deterministic under its three RNG
+        // streams, so a save carries the streams' counts at the campaign's start and the days stepped,
+        // and a load rewinds and re-steps - landing on the saved counts, which `RestoreCampaign` asserts.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>The country the player runs, told to the manager by the controller at selection and at load. Null until then - and no campaign runs for nobody.</summary>
+        public CountryId? PlayerCountryId { get; set; }
+
+        /// <summary>The running campaign's state between <see cref="Elections.CampaignCalendar.CampaignStart"/> and the election boundary; null outside a campaign.</summary>
+        public Elections.CampaignRun.State PlayerCampaign { get; private set; }
+
+        /// <summary>The finished campaign's result, from the day the last campaign day was stepped until the next campaign begins - election night reads it.</summary>
+        public Elections.CampaignRun.Result PlayerCampaignResult { get; private set; }
+
+        /// <summary>What the save carries of the campaign - see <see cref="Elections.PlayerCampaignRecord"/>. Null when no campaign has begun.</summary>
+        public Elections.PlayerCampaignRecord CampaignRecord { get; private set; }
+
+        /// <summary>The first day of the given turn - the election boundary when that turn is an election turn.</summary>
+        public static System.DateTime TurnBoundary(int turn) => EpochDate.AddDays((long)DaysPerTurn * turn);
+
+        /// <summary>The next election turn strictly after the given turn (`ElectionSystem.ElectionCycle` apart).</summary>
+        public static int NextElectionTurnAfter(int turn) => (turn / ElectionSystem.ElectionCycle + 1) * ElectionSystem.ElectionCycle;
+
+        private static readonly SimulationRandom.Stream[] CampaignStreams =
+        {
+            SimulationRandom.Stream.CampaignAi, SimulationRandom.Stream.Debate, SimulationRandom.Stream.Scandal,
+        };
+
+        /// <summary>The campaign window and calendar for the current day: the eight weeks before the next election boundary.</summary>
+        private Elections.CampaignCalendar CurrentCampaignCalendar() =>
+            new Elections.CampaignCalendar(TurnBoundary(NextElectionTurnAfter(CurrentTurn)));
+
+        /// <summary>
+        /// Called once per day after the date has advanced: begins the player's campaign on its first
+        /// day and steps it through today; finishes it on the day after its last. Idle outside the
+        /// window and for a country with no staged campaign.
+        /// </summary>
+        private void AdvanceCampaign()
+        {
+            if (!PlayerCountryId.HasValue) { return; }
+            Elections.CampaignCalendar calendar = CurrentCampaignCalendar();
+            if (CurrentDate < calendar.CampaignStart || CurrentDate >= calendar.ElectionDate)
+            {
+                // Outside the window. A finished campaign's result stays readable until the next
+                // window opens; the running state is dropped once its election has passed.
+                if (PlayerCampaign != null && CurrentDate >= PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; }
+                return;
+            }
+            if (PlayerCampaign == null || PlayerCampaign.Setup.Calendar.ElectionDate != calendar.ElectionDate)
+            {
+                if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
+                        out Elections.CampaignRun.Setup setup, out _))
+                {
+                    return;   // no campaign staged for this country - LiveCampaignSetup says why
+                }
+                CampaignRecord = new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0 };
+                System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> atStart = SimulationRandom.CaptureDrawCounts();   // a stream that has never drawn is absent, and absent means 0
+                foreach (SimulationRandom.Stream stream in CampaignStreams) { CampaignRecord.DrawCountsAtStart[stream] = atStart.TryGetValue(stream, out int n) ? n : 0; }
+                PlayerCampaignResult = null;
+                PlayerCampaign = Elections.CampaignRun.Begin(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi),
+                    SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
+            }
+            if (PlayerCampaign.Day == 0) { UnityEngine.Debug.Log($"CAMPAIGN: began {calendar.CampaignStart:yyyy-MM-dd} for {PlayerCountryId.Value}, polling day {calendar.ElectionDate:yyyy-MM-dd} ({PlayerCampaign.TotalDays} days)"); }
+            int todayIndex = (int)(CurrentDate - calendar.CampaignStart).TotalDays;
+            while (PlayerCampaign.Day <= todayIndex && !PlayerCampaign.Finished)
+            {
+                Elections.CampaignRun.StepDay(PlayerCampaign);
+                CampaignRecord.DaysStepped = PlayerCampaign.Day;
+            }
+            if (PlayerCampaign.Finished && PlayerCampaignResult == null)
+            {
+                PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign);
+                UnityEngine.Debug.Log($"CAMPAIGN: finished {PlayerCampaign.TotalDays} days for {PlayerCountryId.Value}; final shares " + string.Join(" ", System.Array.ConvertAll(PlayerCampaignResult.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
+            }
+        }
+
+        /// <summary>
+        /// Load: rebuild the campaign the record describes by replay - the same Setup from the runtime
+        /// tables, the three streams rewound to their counts at the campaign's start, the same days
+        /// stepped. The streams end where the save recorded them, and that is asserted rather than
+        /// assumed: a mismatch is logged as an error and the campaign is still restored, because a
+        /// warned campaign beats a vanished one.
+        /// </summary>
+        public void RestoreCampaign(Elections.PlayerCampaignRecord record, int masterSeed, System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> savedCounts)
+        {
+            CampaignRecord = record;
+            PlayerCampaign = null;
+            PlayerCampaignResult = null;
+            if (record == null || !PlayerCountryId.HasValue || record.DaysStepped <= 0) { return; }
+            var calendar = new Elections.CampaignCalendar(record.ElectionDate);
+            if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
+                    out Elections.CampaignRun.Setup setup, out _))
+            {
+                return;
+            }
+            var rewound = new System.Collections.Generic.Dictionary<SimulationRandom.Stream, int>(savedCounts);
+            foreach (SimulationRandom.Stream stream in CampaignStreams)
+            {
+                if (record.DrawCountsAtStart.TryGetValue(stream, out int atStart)) { rewound[stream] = atStart; }
+            }
+            SimulationRandom.RestoreState(masterSeed, rewound);
+            PlayerCampaign = Elections.CampaignRun.Begin(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi),
+                SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
+            for (int i = 0; i < record.DaysStepped && !PlayerCampaign.Finished; i++) { Elections.CampaignRun.StepDay(PlayerCampaign); }
+            if (PlayerCampaign.Finished) { PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); }
+            System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> after = SimulationRandom.CaptureDrawCounts();
+            UnityEngine.Debug.Log($"CAMPAIGN REPLAY: {record.DaysStepped} day(s) re-stepped for {PlayerCountryId.Value} toward {record.ElectionDate:yyyy-MM-dd}");
+            foreach (SimulationRandom.Stream stream in CampaignStreams)
+            {
+                int expected = savedCounts.TryGetValue(stream, out int e) ? e : 0;
+                int actual = after.TryGetValue(stream, out int a) ? a : 0;
+                if (actual != expected)
+                {
+                    UnityEngine.Debug.LogError($"CAMPAIGN REPLAY: stream {stream} ended at draw {actual} against the save's {expected} after {record.DaysStepped} day(s) - the replay did not reproduce the campaign the save left, which means something outside the campaign drew from a campaign stream, or the staging changed under the save.");
+                }
+            }
+        }
+
         public void RestoreSaveState(World world, int currentTurn, System.DateTime currentDate, Persistence.SimulationPendingState state)
         {
             SetWorld(world);

@@ -929,6 +929,7 @@ namespace PoliSim.UI
             _world = save.World;
             _selectedPlayerCountryId = save.PlayerCountryId;
             _playerCountry = _world.GetCountry(save.PlayerCountryId);
+            _simulationManager.PlayerCountryId = save.PlayerCountryId;   // C-R4b step 3 (RestoreInto set it too, before the replay; this keeps the two paths one)
             RestoreUiDrafts(save.Ui);
 
             // The preview cache indexes into the OLD world's figures; the signing queue's entries
@@ -1585,6 +1586,7 @@ namespace PoliSim.UI
         {
             _selectedPlayerCountryId = countryId;
             _playerCountry = _world.GetCountry(countryId);
+            _simulationManager.PlayerCountryId = countryId;   // C-R4b step 3: the day loop runs the player's campaign for this country
             _prevGdp = _playerCountry.State.GDP;
 
             // C-R2 (R-CL1): the player has a party. ⚠ The PICKER is billed, not built (`COMPLETED.md`

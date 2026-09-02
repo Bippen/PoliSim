@@ -298,9 +298,11 @@ In order of what a player would notice first:
 > done (§135); its build half, `C-R4b`, has its first step: `CampaignRun` is a stepper (`Begin` /
 > `StepDay` / `Finish`, §202), digest-identical, and its second: `LiveCampaignSetup` builds Sweden's
 > `Setup` from the runtime tables and the harness stages through it (§203), digest-identical again —
-> Editor-side until step 3 gives it a game-path caller (`UnwiredSubsystemCheck`'s ratchet is never raised).
-> **Next, in order:** a persisted player campaign advanced by the day loop; the HQ screen and its queue
-> on live state; the rail cell; election night on the run's shares.
+> and its third: the player's campaign runs in `SimulationManager`'s day loop before each election
+> boundary and survives a save by replay (§204) — Sweden's only, the player's party AI-played until the
+> HQ queue exists. **Next, in order:** the HQ screen and its queue on live state; the rail cell;
+> election night on the run's shares (a D-sheet first: the campaign should run on the vote model's
+> compatibility so an idle campaign reproduces election night's own prediction).
 4. **The play-calibration list**, once the loop is playable — its constants are judged by playing, which is
    Elias's, and the list exists for exactly that sitting.
 

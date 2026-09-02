@@ -135,6 +135,12 @@ namespace PoliSim.EditorTools
             {
                 SimulationManager simA = goA.AddComponent<SimulationManager>();
                 simA.SetWorld(world);
+                // C-R4b step 3: the day loop runs the player's campaign for this country (Sweden's is
+                // staged; the other five have none and say so). With eight turns before the save the
+                // turn-4 and turn-8 campaigns have run and finished, so the save carries a replay record;
+                // the restore replays it and the end-state comparison below proves the replay and the
+                // continuation through turn 12's campaign land where the unbroken run lands.
+                simA.PlayerCountryId = player;
                 Country playerCountry = world.GetCountry(player);
 
                 // A minister so cabinet decisions can roll and sit PENDING across the save - the

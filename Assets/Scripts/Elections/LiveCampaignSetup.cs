@@ -9,10 +9,9 @@ namespace PoliSim.Elections
 {
     /// <summary>
     /// C-R4b step 2 (2026-09-02) — **a campaign <see cref="CampaignRun.Setup"/> from what the game
-    /// already carries, not from a harness's private tables.** ⚠ It sits in the EDITOR assembly for now:
-    /// `UnwiredSubsystemCheck` counts a runtime type with no game-path caller as an unwired subsystem, and
-    /// its ratchet is never raised - so the builder moves into the runtime together with its first consumer
-    /// (step 3, the persisted player campaign), not one commit before. Everything it reads is runtime already. Until this the only builder of a Setup
+    /// already carries, not from a harness's private tables.** Its first game-path caller is
+    /// `SimulationManager.AdvanceCampaign` (C-R4b step 3), which is why it lives in the runtime assembly - it
+    /// sat in the Editor assembly for one commit, until that caller existed (`UnwiredSubsystemCheck`). Until this the only builder of a Setup
     /// was `CampaignAiHarness.BuildSetup`, in the Editor assembly, reading its own copies of Sweden's
     /// 2022 and 2018 shares and its own copy of the valkrets file; the game path had nothing to hand
     /// `CampaignRun`. This is the same staging, one type, from the runtime tables, ready to move with its first game-path consumer; every input
@@ -68,11 +67,11 @@ namespace PoliSim.Elections
         /// <paramref name="scandals"/> is the caller's staging (the harness stages one; a game passes none
         /// until §17's dynamic generation exists).
         /// </summary>
-        public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, out CampaignRun.Setup setup, out string note)
+        public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note)
         {
             if (country == CountryId.Sweden)
             {
-                setup = Sweden(scandals, out note);
+                setup = Sweden(scandals, out note, calendar);
                 return true;
             }
             setup = default;
@@ -81,7 +80,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>Sweden 2026 on the 2022 returns - the staging `CampaignAiHarness` has run since W-C1, from the runtime tables.</summary>
-        public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note)
+        public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null)
         {
             if (!PartySystems.TryHistory(CountryId.Sweden, out double[] shares2022, out double[] shares2018))
             {
@@ -138,7 +137,7 @@ namespace PoliSim.Elections
                 "    strategies (W-B6): prof SwingVoter, pop Populist, est BroadAppeal, grass BaseMobilization, chaos NegativeCampaign; electorate loyalty {0:F1} (one group, W-A1 weighted mean)\n",
                 electorateLoyalty));
             note = sb.ToString();
-            return new CampaignRun.Setup(CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
+            return new CampaignRun.Setup(calendar ?? CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals);
         }
 

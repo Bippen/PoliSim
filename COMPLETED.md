@@ -20872,3 +20872,52 @@ harness has measured for a week. Seven consuming harnesses green; bar 25 of 25.
 `SimulationManager`'s day loop between `CampaignStart` and polling day, with the player's party
 scripted from a queue; then the HQ screen and its queue on that state; the rail cell; election night on
 the run's shares.
+
+## 204. C-R4b STEP 3 — the player's campaign runs in the day loop and survives a save (2026-09-02)
+
+**What was built.** `SimulationManager` knows the player's country (`PlayerCountryId`, set by the
+controller at selection and by `SaveGameService.RestoreInto` at load) and, once a day after every
+country's day, steps the player's campaign (`AdvanceCampaign`): on the first day of the eight weeks
+before the next election boundary it builds the country's Setup through `LiveCampaignSetup` (now in
+the runtime assembly — this is the caller §203 waited for), begins a `CampaignRun.State` on the three
+campaign RNG streams, steps it through today, and on the day after its last day calls `Finish` and
+keeps the `Result` for election night. Sweden's campaign is staged; the other five have none and the
+day loop does nothing for them, as `LiveCampaignSetup.TryFor` says.
+
+**Two deviations, stated where they are made.** (1) The campaign runs the eight weeks before the
+GAME's election — the turn boundary `ElectionSystem.IsElectionTurn` names, the first day of turns 4,
+8, … — and not before Sweden's September Sunday; the calendar is built on the boundary date, and the
+September date is the last step's to resolve when election night moves off the boundary. (2) The
+player's party is AI-PLAYED by its cast personality until the HQ screen's queue exists (step 4):
+`LiveCampaignSetup` scripts nothing, so a campaign runs and is measured, and the player cannot yet
+touch it. Both sentences are in the code where the behaviour is.
+
+**Persistence is replay, and the save proves it.** `CampaignRun.State` is thirty-odd live objects
+shaped for a run, not a save. What the save carries (`PlayerCampaignRecord`, format 6) is what replays
+the run exactly: the election boundary, the start date, the days stepped, and the three streams'
+draw counts at the campaign's first day. `RestoreCampaign` rebuilds the same Setup from the runtime
+tables, rewinds the three streams to those counts, steps the same days, and lands on the state the
+save left — and on the streams' saved counts, which it asserts (a mismatch logs an error and keeps the
+campaign: a warned campaign beats a vanished one). The proof is the existing
+`SaveLoadRoundTripDiagnostic`, told who the player is: its scenarios already run eight turns before
+the save and eight after, so Sweden's turn-4 and turn-8 campaigns run and finish before the save, the
+load replays the record, and the continuation through turn 12's campaign must land — end-state
+snapshot, draw counts and re-serialised save all string-equal — where the unbroken run lands.
+⚠ The first run threw on Sweden: `CaptureDrawCounts` lists only streams that have drawn, and a campaign
+stream that had not yet drawn was read as absent rather than as zero. Fixed at both lookups; the
+diagnostic then passes for all six countries.
+
+**Digest.** `CampaignAiHarness` 1a still reads `3c09307528e2dba2`: the calendar parameter defaults to
+`Sweden2026` for the harness, so the staging it measures is unchanged.
+
+**Next in C-R4b's order:** the HQ screen and its queue on this live state (the player's party scripted
+from the queue instead of AI-played); the rail cell; election night reading `PlayerCampaignResult` —
+which needs a decision first: election night predicts through `NationalElection.TryPredictShares`
+(the vote model's compatibility over the 2022 prior) and the campaign's `FinalShares` come from the
+same preference model over `LiveCampaignSetup`'s fixed-point compatibility; the campaign should run on
+the vote model's compatibility so that an idle campaign reproduces election night's own prediction and
+a campaign moves it. That is a D-sheet for the last step, not a quiet substitution here.
+
+**Bars:** cheap 25 of 25; simulation 9 of 9; `SaveLoadRoundTripDiagnostic` 6 of 6.
+
+*(From the diagnostic's own log: `CAMPAIGN: began 2029-11-05 for Sweden, polling day 2029-12-31 (56 days)` … `CAMPAIGN REPLAY: 56 day(s) re-stepped for Sweden toward 2033-12-30` … the turn-12 and turn-16 campaigns twice each per seed, once in the unbroken run and once after the load, string-equal at the end.)*

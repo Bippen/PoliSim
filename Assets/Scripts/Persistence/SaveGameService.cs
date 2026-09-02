@@ -49,7 +49,7 @@ namespace PoliSim.Persistence
         // persisted World graph (R-CL1). Same reasoning as the 2 -> 3 bump: an absent party is not a
         // harmless default, it is a DIFFERENT game state - "this save was played without a party" -
         // and selection would silently seat one on load. Older saves refused plainly; no migration.
-        public const int CurrentSaveVersion = 5;   // 5: F2 step 4 - the demography is the cohort substrate; a version-4 save carries the 2024 pyramid unwalked and scalar rules that no longer exist
+        public const int CurrentSaveVersion = 6;   // 5: F2 step 4 (the substrate is the demography); 6: C-R4b step 3 (the player campaign's replay record)
 
         /// <summary>
         /// One settings object, built fresh per call (JsonSerializerSettings is mutable; sharing a
@@ -98,6 +98,7 @@ namespace PoliSim.Persistence
                 CurrencyZoneGroups = CaptureZoneGroups(world),
                 World = world,
                 Sim = sim.CaptureSaveState(),
+                PlayerCampaign = sim.CampaignRecord,
                 Ui = ui
             };
         }
@@ -226,6 +227,10 @@ namespace PoliSim.Persistence
         {
             SimulationRandom.RestoreState(save.MasterSeed, save.RngDrawCounts);
             sim.RestoreSaveState(save.World, save.CurrentTurn, save.CurrentDate, save.Sim);
+            // C-R4b step 3: the campaign is REPLAYED from its record, after the streams are at the save's
+            // counts (the replay rewinds three of them to the campaign's start and re-steps to here).
+            sim.PlayerCountryId = save.PlayerCountryId;
+            sim.RestoreCampaign(save.PlayerCampaign, save.MasterSeed, save.RngDrawCounts);
         }
 
         /// <summary>Atomic: serialize beside the target, then swap - a crash mid-save must never

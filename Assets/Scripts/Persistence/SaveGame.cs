@@ -48,6 +48,8 @@ namespace PoliSim.Persistence
 
         public World World;
         public SimulationPendingState Sim;
+        /// <summary>C-R4b step 3: the player's campaign as a REPLAY record (streams' counts at its start, days stepped) - see `PlayerCampaignRecord`. Null when no campaign has begun. Format 6.</summary>
+        public PoliSim.Elections.PlayerCampaignRecord PlayerCampaign;
         public UiDraftState Ui;
     }
 
