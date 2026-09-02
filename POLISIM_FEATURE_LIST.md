@@ -505,6 +505,139 @@ installed. The two stat-icon PNGs and the ITANES registration, still open.
 
 > **Section closed 2026-09-02.** Every row above points at its record (`COMPLETED.md` §217–§235); the four-width matrix at the close is §236, and the end-of-budget report went to Elias with it.
 
+# P3 — PLAYTEST 3 (2026-09-03): Elias's rows, verbatim
+
+> **Recorded 2026-09-03, first and verbatim, as the sitting's rows.** Elias's kickoff, in his words:
+> *"Append as the next section; record the nine screenshots and the findings verbatim first. Work
+> down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and
+> self-taken, one report at end of budget. Screens film at 1280/2560; the matrix at the close."*
+>
+> The rows below are the sheet as sent. Execution lands in `COMPLETED.md` records, one per item, and
+> each row here gains a pointer to its record as it closes — the row's text is never edited forward.
+>
+> ⚠ **The nine screenshots.** The sheet names them (image 1 — International's node-graph map and its
+> raw grey Prev/Next; images 7 and 8 — the Policy Web at rest and pinned, board 2b; image 9 — the
+> Riksbank page, board 5f) and the rows bind to them. **They were not attached to the message that
+> carried the sheet and are not on disk** (Desktop, Downloads and the captures folder searched at the
+> kickoff); nothing is transcribed in their place. Where a row needs the image, the nearest frame on
+> film is named in its record and the deviation from the image is left to the image's arrival; the
+> nine go into D12's annex the day they land (ERRANDS).
+
+---
+
+## Track A — the stance model (the gameplay finding; the largest item)
+
+**P3-A1 — The design page, one page, self-ruled.** Parliament votes on a single fiscal axis while
+parties carry nine CHES dimensions (F5). Replace the scorer:
+
+- **Each bill category loads the dimension(s) it actually concerns** — a `LawCategory`/dial → CHES
+  axis map, stated in code and sourced from the CHES codebook's own axis definitions (welfare and
+  taxation on `lrecon`/spending axes; crime and justice on `galtan`; immigration and trade on their
+  own; sectors on the state-intervention axis). A party's stance on a bill is its distance from the
+  bill's direction on that axis, from its published position — never one number for everything.
+- **Coalition cohesion:** parties in the formed government (W-D3's formation) support the
+  government's bills with a cohesion term; defection is driven by the bill's distance from the
+  party's own position and by loyalty (P2-5's attribute now exists), so a coalition partner can
+  refuse a bill far from its position. Opposition parties oppose government bills unless the bill
+  is nearer their position than the government's — and say so.
+- **Public opinion enters:** each party weighs the issue's salience (EB105/SOM data) and the
+  voter groups over the cohorts (F3) that the party depends on — a right-wing party does not cut
+  spending its own voters depend on without cost, and the score says why.
+- **Output stays honest:** stance sign + real seats, undecided as a real state (not a zero-sign
+  artefact), and the per-seat map shows the result. The lean bar's decided quantity survives.
+- **Determinism and sourcing:** every position from CHES; every weight `[AUTHORED-DRAFT]` with
+  its line; no invented party.
+
+*Done when:* the page names every term's source and the calibration debt; take the recommendation
+and log it.
+
+**P3-A2 — Build it.** BASELINE for the parliament-stress matrix (the no-policy baseline does not
+move — no bills pass without a player). Re-run the matrix and explain every cell that changed.
+*Done when:* the same draft produces different for/against/undecided counts across bill
+categories, coalition partners visibly split on a far bill, and no two categories produce identical
+splits by construction.
+
+**P3-A3 — The vote breakdown on screen.** Every support preview and every result screen shows
+the per-party stance with its reason (position distance, coalition line, public-opinion cost) —
+new UI content, drawn structurally now, Design's grammar via D12. *Done when:* filmed, and each
+reason traces to a term in P3-A2.
+
+## Track B — board reconciliations (verify, then close the gap; never rebuild on assumption)
+
+**P3-B1 — The Policy Web against board 2b.** Compare the built screen to the board (levers grouped
+by area on the left, the books on the right with history counts, the causal band, the pinned-node
+pane with one line per edge). List every deviation; build the missing composition; state any
+deviation that stays with its reason (R-W2's fence). *Done when:* the pinned state matches image 8's
+layout on film and the rest state matches image 7's.
+
+**P3-B2 — The Riksbank page against board 5f.** Same method: the one graph with the two-step
+path, the rule's five terms, the three input instruments, the governor and the appointment lever.
+Report whether the gap is composition, reachability (the RIKSBANK sub-tab), or the 720 fold.
+*Done when:* filmed at 1280 matching image 9's layout, and the sub-tab is reachable from the rail.
+
+## Track C — defects and small fixes
+
+**P3-C1 — Live arrows.** The Budget effects panel recomputes on slider drag (the preview is
+deterministic and its cost is measured — debounce to the measured budget). *Done when:* a film
+pair mid-drag shows the arrows moved.
+
+**P3-C2 — Balance from year one.** The fiscal header shows the current year's projected balance
+(the preview's own figure) beside last year's actual; at year one, last year is the seed and says
+so. *Done when:* filmed at turn 0 with both figures present.
+
+**P3-C3 — The slider label.** "Deregulation / Nationalization" on the left against "0 nationalized
+– 100 private" on the right: one axis, one wording, both ends. Sweep every dial for the same
+class. *Done when:* a harness asserts each dial's left label, right label and range agree.
+
+**P3-C4 — The trade graph.** The Domestic/International trade balance graph reads as a broken
+line with a −100.0% delta. Measure the cause (a zero baseline in the delta is the likeliest); draw
+it through the graph renderer at 1l's weights with an honest delta or none. *Done when:* the delta
+is either correct or absent with its reason.
+
+**P3-C5 — The hemicycle in sectors.** Parties as angular sectors left→right in bloc order (left
+bloc at the left), not rings; every mandate a dot in its party's ink. *Done when:* filmed, and the
+sector counts equal seats.
+
+**P3-C6 — Party colours, ruled.** Published party hues are the base and the identity. 5e's ladder
+over-reached: it may apply only the **smallest perceptual nudge** (oklch, within a stated
+tolerance) that separates a measured collision, and it never re-orders or replaces a hue family.
+Re-print `PartyInkHarness`; the S/V collision and the four-blues-at-dot-size finding go to Design
+as a per-party confirmation, not a re-derivation. *Done when:* the hemicycle reads as Sweden's
+parties.
+
+## Track D — the D12 asset ask (Code writes it; sending stays Elias's)
+
+**P3-D1 — Install D12**, one ask, reconciled against D10/D11:
+
+1. **The stylized map** (International, the Desk): a drawn map of the six countries, stylized not
+   projected, Design's — our side supplies real centroid coordinates and the trade adjacency, no
+   invented geography. Annex: image 1, the current node-graph film.
+2. **Prev/Next and every default button**: the raw grey buttons on International (image 1) are not
+   the chrome; ask for the button faces in the existing sprite idiom and sweep every screen for
+   default-styled controls (annex: the census).
+3. **The trade graph**: the graph idiom applied to trade balance, with the delta convention.
+4. **Party colours**: per-party confirmation of the published hues and the two collisions, per
+   P3-C6's ruling — Design confirms, never re-derives.
+5. **The vote breakdown grammar** (P3-A3): how a per-party stance with a reason is drawn on a
+   support preview and on a result screen.
+6. **The Riksbank 720 fold**: the political half below the fold at the floor size — a 720 variant
+   or a visible scroll affordance, Design's call.
+7. **The stance-plate marker overlap** (D11 finding 1): stacked tags when both sides read within
+   a point.
+
+Annexes: the nine screenshots verbatim, the films after Tracks B–C, `PartyInkHarness`'s print.
+**Binary artifacts are uploaded, not described.** Regenerate the package, record it in
+`ERRANDS.md`.
+
+---
+
+## Yours
+
+Play again after Track A lands — it changes what the parliament is. The D12 paste. The two PNGs and
+the ITANES registration, still open.
+
+---
+
 # APPENDIX — the short tail
 
 ⚠ **Nothing here outranks F1–F6.** One line each, with its owner.
