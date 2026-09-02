@@ -555,7 +555,7 @@ and log it. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §246: the dial → axis
 move — no bills pass without a player). Re-run the matrix and explain every cell that changed.
 *Done when:* the same draft produces different for/against/undecided counts across bill
 categories, coalition partners visibly split on a far bill, and no two categories produce identical
-splits by construction.
+splits by construction. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §247: StanceModel built per §246, nine concern builders, the nine vote sites and the records on the concern; five drafts of one magnitude give five different splits, the support partner splits on two, the matrix's four cells unchanged and explained.**
 
 **P3-A3 — The vote breakdown on screen.** Every support preview and every result screen shows
 the per-party stance with its reason (position distance, coalition line, public-opinion cost) —

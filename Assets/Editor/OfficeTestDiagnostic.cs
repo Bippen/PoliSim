@@ -292,13 +292,13 @@ namespace PoliSim.EditorTools
                         {
                             listed += seats;
                             if (side > 0) { forSeats += seats; } else if (side < 0) { againstSeats += seats; } else { undecided += seats; }
-                            float stance = measured ? (axis == BillAxis.Trade ? PartySystems.TradeStance(party) : PartySystems.FiscalStance(party)) * Mathf.Sign(direction) : 0f;
-                            int expectedSide = !measured ? 0 : stance > 0f ? 1 : stance < 0f ? -1 : 0;
+                            // P3-A2: the side is the model's own alignment against the undecided band (§246 term 4); the weight IS the alignment.
+                            int expectedSide = !measured ? 0 : Mathf.Abs(weight) < StanceModel.UndecidedBand ? 0 : weight > 0f ? 1 : -1;
                             if (expectedSide != side) { sidesAgree = false; }
                             if (measured) { measuredSeats += seats; resummed += seats * weight; }
                         }
                         float alignment = ParliamentSystem.GetSeatWeightedAlignment(country, direction, axis);
-                        float expectedAlignment = measuredSeats > 0f ? resummed / measuredSeats : (axis == BillAxis.Trade ? ParliamentSystem.GetSeatWeightedAlignment(country, direction, BillAxis.Fiscal) : 0f);
+                        float expectedAlignment = measuredSeats > 0f ? resummed / measuredSeats : 0f;
                         bool ok = listed == chamber && sidesAgree && Mathf.Abs(alignment - expectedAlignment) < 1e-5f;
                         if (!ok)
                         {

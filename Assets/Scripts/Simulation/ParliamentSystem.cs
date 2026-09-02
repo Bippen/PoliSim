@@ -221,46 +221,47 @@ namespace PoliSim.Simulation
         /// they do not.
         /// </summary>
         public static IEnumerable<(PoliticalParty Party, int Seats, int Side, float Weight, bool Measured)> SeatSides(Country country, float direction, BillAxis axis)
-        {
-            // Unity's Mathf.Sign(0f) is 1, so an unopposed (zero-direction) bill is given no side rather than the
-            // chamber's raw stances - the trap the pending-law card used to guard with its own contested flag.
-            float billSign = Mathf.Approximately(direction, 0f) ? 0f : Mathf.Sign(direction);
-            foreach (PoliticalParty party in PartySystems.For(country.Id))
-            {
-                int seats = country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
-                if (seats <= 0) { continue; }
-                bool measured = axis == BillAxis.Trade ? party.HasEuPosition : party.HasPosition;
-                if (!measured)
-                {
-                    yield return (party, seats, 0, 0f, false);
-                    continue;
-                }
+            => SeatSides(country, BillConcern.FromLegacy(direction, axis));
 
-                float stance = axis == BillAxis.Trade ? PartySystems.TradeStance(party) : PartySystems.FiscalStance(party);
-                float weight = stance * billSign;
-                int side = weight > 0f ? 1 : weight < 0f ? -1 : 0;
-                yield return (party, seats, side, weight, true);
+        /// <summary>
+        /// P3-A2 (2026-09-03): the same enumeration over what the bill CONCERNS (`StanceModel`, §246): the party's
+        /// position on the axes the bill loads, its government's cohesion or the opposition's line, the opinion
+        /// cost of what it cuts, undecided as a state. The legacy overload above scores a scalar direction on the
+        /// fiscal or trade axis through this same model, so no caller is left on the old one-axis rule. A zero
+        /// concern (an uncontested bill) gives no side, as before.
+        /// </summary>
+        public static IEnumerable<(PoliticalParty Party, int Seats, int Side, float Weight, bool Measured)> SeatSides(Country country, BillConcern concern)
+        {
+            foreach (PartyStance stance in StanceModel.Stances(country, concern))
+            {
+                yield return (stance.Party, stance.Seats, stance.Side, stance.Alignment, stance.Measured);
             }
         }
 
         public static float GetSeatWeightedAlignment(Country country, float direction, BillAxis axis)
+            => GetSeatWeightedAlignment(country, BillConcern.FromLegacy(direction, axis));
+
+        /// <summary>P3-A2: the decided quantity over the bill's concern - seats × alignment over the measured parties, normalised by the measured seats; zero when nothing is measured (the openness fallback is inside the model: a chamber with no EU item scores openness on `lrecon`).</summary>
+        public static float GetSeatWeightedAlignment(Country country, BillConcern concern)
         {
             // P2-2.2: the same enumeration the seat map colours from - the weights are summed here, the sides
-            // counted there, one loop for both. Unmeasured parties carry no weight and no seat in the denominator,
-            // exactly as before.
+            // counted there, one loop for both. Unmeasured parties carry no weight and no seat in the denominator.
             float weightedAlignment = 0f;
             float measuredSeats = 0f;
-            foreach ((PoliticalParty _, int seats, int _, float weight, bool measured) in SeatSides(country, direction, axis))
+            foreach ((PoliticalParty _, int seats, int _, float weight, bool measured) in SeatSides(country, concern))
             {
                 if (!measured) { continue; }
                 measuredSeats += seats;
                 weightedAlignment += seats * weight;
             }
+            return measuredSeats > 0f ? weightedAlignment / measuredSeats : 0f;
+        }
 
-            if (measuredSeats > 0f) { return weightedAlignment / measuredSeats; }
-            return axis == BillAxis.Trade
-                ? GetSeatWeightedAlignment(country, direction, BillAxis.Fiscal)
-                : 0f;
+        /// <summary>P3-A2: the verdict on a bill's concern - an empty concern (nothing moved) passes unconditionally, as a zero direction always has.</summary>
+        public static bool WouldBillPass(Country country, BillConcern concern)
+        {
+            if (concern == null || concern.IsEmpty) { return true; }
+            return GetSeatWeightedAlignment(country, concern) > 0f;
         }
 
         /// <summary>
@@ -780,6 +781,145 @@ namespace PoliSim.Simulation
         public static float GetSwfDrawdownBillDirection(Country country, SwfDrawdownBill bill)
         {
             return bill.WithdrawalPercentOfGdp;
+        }
+
+        // ------------------------------------------------------------------------------------------
+        // P3-A2 (2026-09-03): WHAT EACH BILL CONCERNS - the dial → CHES axis pairings of `COMPLETED.md`
+        // §246's table, one builder per bill kind beside its direction method. The direction methods
+        // stay (the records and the lean bar keep their scalar); the concern is what the chamber votes
+        // on. Sign convention per axis: a move is positive toward the axis's 10 end. `spendvtax` reads
+        // "0 = improve public services … 10 = reduce taxes", so more spending, more generosity, a tax
+        // RISE and a drawdown all move toward 0 (the services/revenue side of the one trade-off) and a
+        // cut toward 10; `lrecon` "0 = more state", so more support or intervention moves toward 0;
+        // `galtan` "10 = traditional/authoritarian", so harsher and stricter move toward 10 and reform
+        // toward 0; `immigrate_policy` "10 = restrictive"; `deregulation` "10 = favors deregulation";
+        // openness (eu_position rescaled) "10 = most open", so a tariff rise moves toward 0.
+        // ------------------------------------------------------------------------------------------
+        public static BillConcern GetBudgetBillConcern(Country country, BudgetBill bill)
+        {
+            var concern = new BillConcern { Direction = GetBillDirection(country, bill) };
+            foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
+            {
+                TaxLine standing = FindTaxLine(country, kvp.Key);
+                if (standing == null || !standing.IsImplemented) { continue; }
+                concern.Add(StanceAxis.SpendVsTax, -(kvp.Value - standing.Rate));
+            }
+            foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingPercentChanges)
+            {
+                concern.Add(StanceAxis.SpendVsTax, -kvp.Value);
+                if (kvp.Value < 0f) { concern.Cuts.Add((kvp.Key, null, -kvp.Value / 100f)); }
+            }
+            foreach (KeyValuePair<WelfareProgramType, float> kvp in bill.WelfarePrograms)
+            {
+                WelfareProgram standing = FindWelfareProgram(country, kvp.Key);
+                if (standing == null || !standing.IsImplemented) { continue; }
+                float delta = kvp.Value - standing.GenerosityLevel;
+                concern.Add(StanceAxis.SpendVsTax, -delta);
+                if (delta < 0f && standing.GenerosityLevel > 0f) { concern.Cuts.Add((null, kvp.Key, -delta / standing.GenerosityLevel)); }
+            }
+            return concern;
+        }
+
+        public static BillConcern GetTaxProgramBillConcern(Country country, TaxProgramBill bill)
+        {
+            float direction = GetTaxProgramBillDirection(country, bill);
+            return new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction);
+        }
+
+        public static BillConcern GetWelfareProgramBillConcern(Country country, WelfareProgramBill bill)
+        {
+            float direction = GetWelfareProgramBillDirection(country, bill);
+            var concern = new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction);
+            if (!bill.IsAdd && direction < 0f) { concern.Cuts.Add((null, bill.Type, 1f)); }
+            return concern;
+        }
+
+        public static BillConcern GetLaborBillConcern(Country country, LaborPolicyBill bill)
+        {
+            var concern = new BillConcern { Direction = GetLaborBillDirection(country, bill) };
+            if (country.MinimumWageImplemented) { concern.Add(StanceAxis.LrEcon, -(bill.MinimumWage - country.MinimumWagePercentOfMedianBase)); }
+            concern.Add(StanceAxis.LrEcon, -(bill.PaidFamilyLeaveWeeks - country.PaidFamilyLeaveWeeksBase));
+            concern.Add(StanceAxis.LrEcon, -(bill.OvertimeRegulation - country.OvertimeRegulationBase));
+            concern.Add(StanceAxis.LrEcon, -(bill.RetrainingProgram - country.RetrainingProgramBase));
+            concern.Add(StanceAxis.LrEcon, -(bill.FamilyPolicy - country.FamilyPolicyBase));
+            concern.Add(StanceAxis.ImmigratePolicy, -(bill.ImmigrationPolicy - country.ImmigrationPolicyBase));   // more open → the liberal (0) end
+            return concern;
+        }
+
+        public static BillConcern GetCrimeJusticeBillConcern(Country country, CrimeJusticePolicyBill bill)
+        {
+            var concern = new BillConcern { Direction = GetCrimeJusticeBillDirection(country, bill) };
+            concern.Add(StanceAxis.Galtan, bill.PoliceFunding - country.PoliceFundingLevel);
+            concern.Add(StanceAxis.Galtan, bill.SentencingSeverity - country.SentencingSeverity);
+            concern.Add(StanceAxis.Galtan, -(bill.BailReform - country.BailReformLevel));
+            concern.Add(StanceAxis.Galtan, bill.DrugPolicy - country.DrugPolicyLevel);
+            concern.Add(StanceAxis.Galtan, bill.JudicialFunding - country.JudicialFundingLevel);
+            concern.Add(StanceAxis.ImmigratePolicy, bill.BorderEnforcement - country.BorderEnforcementLevel);
+            return concern;
+        }
+
+        /// <summary>The law catalog's twelve dial deltas: the crime six on `galtan` (border enforcement on `immigrate_policy`), the labour six on `lrecon` (immigration openness on `immigrate_policy`) - the same index order `LawDialSigns` reads.</summary>
+        private static readonly (StanceAxis Axis, float Toward10)[] LawDialAxes =
+        {
+            (StanceAxis.Galtan, 1f), (StanceAxis.Galtan, 1f), (StanceAxis.Galtan, -1f), (StanceAxis.Galtan, 1f), (StanceAxis.Galtan, 1f), (StanceAxis.ImmigratePolicy, 1f),
+            (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.ImmigratePolicy, -1f)
+        };
+
+        public static BillConcern GetLawBillConcern(Country country, LawBill bill)
+        {
+            var concern = new BillConcern { Direction = GetLawBillDirection(country, bill) };
+            LawDefinition law = LawCatalog.GetById(bill.LawId);
+            if (law == null) { return concern; }
+            float sign = bill.IsRepeal ? -1f : 1f;
+            float[] deltas = law.DialDeltas;
+            for (int i = 0; i < deltas.Length && i < LawDialAxes.Length; i++)
+            {
+                if (i == MinimumWageDeltaIndex && !country.MinimumWageImplemented) { continue; }
+                concern.Add(LawDialAxes[i].Axis, sign * LawDialAxes[i].Toward10 * deltas[i]);
+            }
+            return concern;
+        }
+
+        public static BillConcern GetSectorBillConcern(Country country, SectorPolicyBill bill)
+        {
+            var concern = new BillConcern { Direction = GetSectorBillDirection(country, bill) };
+            foreach (Sector sector in country.Sectors)
+            {
+                if (bill.SubsidyLevels.TryGetValue(sector.Type, out float subsidy)) { concern.Add(StanceAxis.LrEcon, -(subsidy - sector.SubsidyLevel)); }
+                if (bill.RegulationLevels.TryGetValue(sector.Type, out float regulation)) { concern.Add(StanceAxis.LrEcon, -(regulation - sector.RegulationLevel)); }
+                if (bill.TaxCreditLevels.TryGetValue(sector.Type, out float taxCredit)) { concern.Add(StanceAxis.LrEcon, -(taxCredit - sector.TaxCreditLevel)); }
+                if (bill.ResearchGrantsLevels.TryGetValue(sector.Type, out float researchGrants)) { concern.Add(StanceAxis.LrEcon, -(researchGrants - sector.ResearchGrantsLevel)); }
+                if (bill.DeregulationLevels.TryGetValue(sector.Type, out float deregulation)) { concern.Add(StanceAxis.Deregulation, deregulation - sector.DeregulationNationalizationLevel); }
+            }
+            return concern;
+        }
+
+        public static BillConcern GetTradeBillConcern(Country country, TradePolicyBill bill, World world)
+        {
+            float direction = GetTradeBillDirection(country, bill, world);
+            return new BillConcern { Direction = direction }.Add(StanceAxis.Openness, -direction);
+        }
+
+        public static BillConcern GetSwfDrawdownBillConcern(Country country, SwfDrawdownBill bill)
+        {
+            float direction = GetSwfDrawdownBillDirection(country, bill);
+            return new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction);
+        }
+
+        /// <summary>P3-A2: the record from the concern the verdict read - every party's side from the same enumeration, the scalar direction kept for the lean bar.</summary>
+        public static void RecordDivision(Country country, string title, BillConcern concern, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
+        {
+            bool contested = concern != null && !concern.IsEmpty;
+            float alignment = contested ? GetSeatWeightedAlignment(country, concern) : 0f;
+            var sides = new List<DivisionSide>();
+            if (contested)
+            {
+                foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, concern))
+                {
+                    sides.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side });
+                }
+            }
+            country.Divisions.Append(title, date, alignment, passed, concern?.Direction ?? 0f, (int)axis, sides);
         }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplySwfDrawdownBillEffects).</summary>

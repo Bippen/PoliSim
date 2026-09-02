@@ -21999,3 +21999,43 @@ Every position is CHES 2024 (GPS 2019 for the USA) from `party_positions.md` and
 - **D-P3-A1g** - P3-A2 is BASELINE for the parliament-stress matrix: the scenario's bills are the USA's, whose chamber has no formation and no `spendvtax`, so its verdicts move only where a budget bill's `lrecon` alignment did not already decide them; every changed cell is explained in A2's record.
 
 **Bar:** none owed - the page changes no code; P3-A2 builds it.
+
+## 247. P3-A2 — BUILT PER THE PAGE: the stance model - every bill votes on the CHES axes it concerns, the formed government's cohesion and the opposition's line, the opinion cost over an ecological voter profile, undecided as a state; the diagnostic that proves the "done when" (2026-09-03)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P3, Track A): *"Build it. BASELINE for the parliament-stress matrix … Done when: the same draft produces different for/against/undecided counts across bill categories, coalition partners visibly split on a far bill, and no two categories produce identical splits by construction."*
+
+**Built** (the page is §246; every term is the one it names).
+
+- **`StanceModel`** (Simulation, new): `BillConcern` - the signed move a bill makes on each axis (positive toward the axis's 10 end, in the dial's units), the lines it cuts, and the legacy scalar direction kept for the records and the lean bar; `StanceModel.Stances(country, concern)` - every seated party's `PartyStance` (seats, alignment, side, measured, reasons) through the four terms: the position on each loaded axis weighted by the bill's own share of movement (the `spendvtax` → `lrecon` fallback per party, openness → `lrecon` for a chamber with no EU item, as R-CL2's chamber rule); the cabinet's pull (`Cohesion` 0.6, scaled by nearness; a support party at `SupportPull` 0.5) and the opposition's line (`OppositionLine` 0.3, applied only when the bill is nearer the cabinet's seat-weighted position than the party's own - the comparison printed either way); the opinion cost (`OpinionWeight` 0.5 × the country's EB105/Gallup salience for the line's issue, or `SalienceFloor` 0.10 with the reason when the survey's top five do not name it × the share of the party's voters in the line's bands × the cut share); undecided at `|alignment| < UndecidedBand` 0.1. Five `[AUTHORED-DRAFT]` constants, each with its line. The salience table is the SOURCED file's rows mapped onto `IssueId` as the campaign maps them; the line → band → issue tables are authored and say so; the voter profile is the ecological estimate - the party's 2022 votes per valkrets (`SwedishValkretsReturns2022`) weighting each valkrets's 2024 pyramid (`SwedishValkretsPopulation2024`) over the bands of voting age - Sweden only, cached, and the reason line stamps it ecological.
+- **`ParliamentSystem`**: `SeatSides(country, direction, axis)` and `GetSeatWeightedAlignment(country, direction, axis)` route through the model on `BillConcern.FromLegacy` (fiscal → `spendvtax` toward the services end for an expansionary direction; trade → openness toward closed for a rise), so no caller is left on the one-axis rule; the concern overloads beside them, `WouldBillPass(country, concern)`, and `RecordDivision(…, concern, …)` whose sides come from the same enumeration the verdict read. **Nine `Get*BillConcern` builders**, one per bill kind beside its direction method, each the page's table in code: the budget's tax lines, spending shares and welfare generosity on `spendvtax` with the cuts recorded for the opinion term; program add/remove and the SWF drawdown on `spendvtax`; the labour dials on `lrecon` and immigration openness on `immigrate_policy`; the crime dials on `galtan` and border enforcement on `immigrate_policy`; the law catalog's twelve deltas on their dials' axes (`LawDialAxes`, index-locked to `LawDialSigns`); the sector dials on `lrecon` and the deregulation dial on `deregulation`; the tariff on openness.
+- **`SimulationManager`**: all nine vote sites decide on the concern and record with it; the direction methods still print the scalar.
+- **`GovernmentFormation.TryGovernment`** (new): the cabinet and its support parties by abbreviation from the same formation `Form` runs - term 2's context. A bill is a government bill when the player's party sits in the cabinet.
+- **`OfficeTestDiagnostic`** keeps P2-2.2's guarantee under the model: every party's side is its own alignment against the band, the sides sum to the chamber, and the re-summed alignment is the verdict's.
+- **`StanceModelDiagnostic`** (new, in the simulation group): five drafts of one magnitude - a spending cut on `spendvtax` cutting SocialSecurity by a fifth, more labour support on `lrecon`, harsher sentencing on `galtan`, deregulation on `deregulation`, a tariff rise on openness - scored on Sweden with the player seated in the formed cabinet's anchor party (M; cabinet M+KD+L, support SD). It asserts the row's three sentences and prints every party's reasons.
+
+**What the print says** (`bar50_p3a2_RunSimulationBatch.log`, the seeded 2022 chamber; the figures are the run's own):
+
+| draft, magnitude 20 | FOR | UNDECIDED | AGAINST | verdict | a partner splits from M |
+|---|---|---|---|---|---|
+| a spending cut | 176 | 24 | 149 | fails (−0.029) | - (C undecided: 7.5 on `spendvtax` but the opposition line pulls it to +0.05) |
+| more labour support | 149 | 0 | 200 | fails (−0.027) | - (S, V, MP vote their position: the bill is nearer them than the government) |
+| harsher sentencing | 176 | 0 | 173 | passes (+0.113) | - (L at 4.5 on `galtan` is carried FOR by cohesion, and says it is far) |
+| deregulation | 127 | 73 | 149 | passes (+0.053) | SD, the support party, undecided at 4.6 |
+| a tariff rise | 97 | 0 | 252 | fails (−0.250) | SD for at 2.8 on `eu_position`; M, KD and L against their own government's rise |
+
+Five splits, no two alike; the support partner splits on two of the five; a cabinet party's pull shrinks to 0.02 at distance 0.97 (L on the tariff) and it refuses. The USA on the same five: FOR 220 / AGAINST 215 on `lrecon` and `galtan` (no formation, so no cohesion), and the deregulation draft UNMEASURED for all 435 - GPS 2019 has no `deregulation` item, and the model says so rather than scoring it on `lrecon`.
+
+**The first measured calibration finding.** The opinion term is live and prints its arithmetic - SocialSecurity cut by a fifth, a party's voters 26–27 % in the 65+ bands, Economy at the floor because EB105's Sweden top five do not name it - and its product is three thousandths: at the authored weight it moves no side at the seeded values. It stays as the page ruled it, with the weight named as the debt it is; a roll-call source would set it.
+
+**BASELINE for the matrix**, by construction and by measurement: the baseline scenario introduces no bill, and the parliament-stress scenario's bills are the USA's budget bills - scored on `lrecon` (no `spendvtax` in GPS) with the same sign the fiscal axis had, in a chamber with no formation - so every cell is expected unchanged. The before/after cells are below, from the runs this record names.
+
+| cell (seed 777) | before (1a0206f) vs after | changed |
+|---|---|---|
+| baseline / 100 turns | six countries' final-turn lines identical | none |
+| baseline / 500 turns | identical | none |
+| parliamentstress / 100 turns | identical | none |
+| parliamentstress / 500 turns | identical | none |
+
+The runs: `p3a2_before_*` on the committed tree with the working changes stashed, `p3a2_after_*` on this tree (`matrix.ps1`, one Unity launch per cell, `BatchSimulationRunner.Run -scenario -turns -seed=777`). Every cell explained: the baseline introduces no bill; the parliament-stress scenario's budget bills are the USA's, whose two GPS-2019 parties carry `lrecon` and `galtan` only and form no government, so each bill's verdict is the same `lrecon` sign the fiscal axis produced and no cohesion, opposition or opinion term is live there. The model changes what a chamber with published axes and a formed government does - Sweden, on the diagnostic's five drafts - and nothing the matrix measures.
+
+**Bars:** `RunSimulationBatch` 12 of 12 clean with the new diagnostic enrolled (`bar50_p3a2_RunSimulationBatch.log`; the first run failed to compile on one missing `using`); `RunAllBatch` 26 of 26 clean (`bar51_p3a2_RunAllBatch.log`).

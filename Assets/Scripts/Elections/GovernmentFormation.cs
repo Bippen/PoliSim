@@ -122,6 +122,30 @@ namespace PoliSim.Elections
             return cabinet;
         }
 
+        /// <summary>
+        /// P3-A2 (2026-09-03): the sitting government for the stance model's term 2 - the cabinet's parties and the
+        /// parties supporting it from outside (confidence and supply), by abbreviation, from the same formation
+        /// <see cref="Form"/> runs. False when no government forms from this chamber, and both lists are empty.
+        /// </summary>
+        public static bool TryGovernment(Country country, out IReadOnlyList<string> cabinet, out IReadOnlyList<string> support)
+        {
+            var cabinetList = new List<string>();
+            var supportList = new List<string>();
+            cabinet = cabinetList;
+            support = supportList;
+            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] _, out CoalitionResult result, out bool _, out string _))
+            {
+                return false;
+            }
+            if (result.Outcome == CoalitionOutcomeKind.NewElection || result.Outcome == CoalitionOutcomeKind.Collapse) { return false; }
+            for (int p = 0; p < parties.Count; p++)
+            {
+                if ((result.Government.Cabinet & (1 << p)) != 0) { cabinetList.Add(parties[p].Abbrev); }
+                else if ((result.Government.Support & (1 << p)) != 0) { supportList.Add(parties[p].Abbrev); }
+            }
+            return cabinetList.Count > 0;
+        }
+
         /// <summary>The formation itself - the chamber's seats, the derived compatibility, the declared red lines and the chamber's own rule - shared by <see cref="Form"/> and <see cref="Cabinet"/>.</summary>
         private static bool TryFormChamber(Country country, out IReadOnlyList<PoliticalParty> parties, out int[] seats,
             out CoalitionResult result, out bool declarationsSourced, out string reason)

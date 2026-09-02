@@ -1105,8 +1105,9 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             float direction = ParliamentSystem.GetBillDirection(country, bill);
-            bool passed = ParliamentSystem.WouldBillPass(country, direction);
-            ParliamentSystem.RecordDivision(country, "Annual budget bill", direction, passed, CurrentDate);
+            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+            ParliamentSystem.RecordDivision(country, "Annual budget bill", concern, passed, CurrentDate);
             float approvalBeforeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyBillResult(country, bill, passed, ApplyBudgetBillSpendingAndSwf);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax hike)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
@@ -1193,8 +1194,9 @@ namespace PoliSim.Simulation
                 }
 
                 float direction = ParliamentSystem.GetTaxProgramBillDirection(country, bill);
-                bool passed = ParliamentSystem.WouldBillPass(country, direction);
-                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", direction, passed, CurrentDate);
+                BillConcern concern = ParliamentSystem.GetTaxProgramBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, passed, CurrentDate);
                 float approvalBeforeTaxBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed);
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
@@ -1250,8 +1252,9 @@ namespace PoliSim.Simulation
                 }
 
                 float direction = ParliamentSystem.GetWelfareProgramBillDirection(country, bill);
-                bool passed = ParliamentSystem.WouldBillPass(country, direction);
-                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", direction, passed, CurrentDate);
+                BillConcern concern = ParliamentSystem.GetWelfareProgramBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, passed, CurrentDate);
                 float approvalBeforeWelfareBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed);
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeWelfareBill);
@@ -1299,8 +1302,9 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             float direction = ParliamentSystem.GetLaborBillDirection(country, bill);
-            bool passed = ParliamentSystem.WouldBillPass(country, direction);
-            ParliamentSystem.RecordDivision(country, "Labor Market bill", direction, passed, CurrentDate);
+            BillConcern concern = ParliamentSystem.GetLaborBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+            ParliamentSystem.RecordDivision(country, "Labor Market bill", concern, passed, CurrentDate);
             float approvalBeforeLaborBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Labor Market bill passed" : "Labor Market bill failed", country.State.ApprovalRating - approvalBeforeLaborBill);
@@ -1386,8 +1390,9 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             float direction = ParliamentSystem.GetCrimeJusticeBillDirection(country, bill);
-            bool passed = ParliamentSystem.WouldBillPass(country, direction);
-            ParliamentSystem.RecordDivision(country, "Crime & Justice bill", direction, passed, CurrentDate);
+            BillConcern concern = ParliamentSystem.GetCrimeJusticeBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+            ParliamentSystem.RecordDivision(country, "Crime & Justice bill", concern, passed, CurrentDate);
             float approvalBeforeCrimeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Crime & Justice bill passed" : "Crime & Justice bill failed", country.State.ApprovalRating - approvalBeforeCrimeBill);
@@ -1448,8 +1453,9 @@ namespace PoliSim.Simulation
                 LawDefinition law = LawCatalog.GetById(bill.LawId);
                 string lawName = law != null ? law.Name : bill.LawId;
                 float direction = ParliamentSystem.GetLawBillDirection(country, bill);
-                bool passed = ParliamentSystem.WouldBillPass(country, direction);
-                ParliamentSystem.RecordDivision(country, $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName}", direction, passed, CurrentDate);
+                BillConcern concern = ParliamentSystem.GetLawBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+                ParliamentSystem.RecordDivision(country, $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName}", concern, passed, CurrentDate);
                 // Found by the fiscal-ledger pass's own bar (2026-08-25), pre-existing since the MVP
                 // slice: this was the ONE bill type resolving OUTSIDE the approval ledger's
                 // observation sites - a failed vote's BillFailedApprovalCost and a passed law's
@@ -1713,8 +1719,9 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             float direction = ParliamentSystem.GetSectorBillDirection(country, bill);
-            bool passed = ParliamentSystem.WouldBillPass(country, direction);
-            ParliamentSystem.RecordDivision(country, "Economic Sectors bill", direction, passed, CurrentDate);
+            BillConcern concern = ParliamentSystem.GetSectorBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+            ParliamentSystem.RecordDivision(country, "Economic Sectors bill", concern, passed, CurrentDate);
             float approvalBeforeSectorBill = country.State.ApprovalRating;
             ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Economic Sectors bill passed" : "Economic Sectors bill failed", country.State.ApprovalRating - approvalBeforeSectorBill);
@@ -1781,8 +1788,9 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             float direction = ParliamentSystem.GetSwfDrawdownBillDirection(country, bill);
-            bool passed = ParliamentSystem.WouldBillPass(country, direction);
-            ParliamentSystem.RecordDivision(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", direction, passed, CurrentDate);
+            BillConcern concern = ParliamentSystem.GetSwfDrawdownBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+            ParliamentSystem.RecordDivision(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", concern, passed, CurrentDate);
             float approvalBeforeSwfBill = country.State.ApprovalRating;
             // Pass 5 (2026-08-26): the drawdown is F1's THIRD writer, found by the retirement sweep -
             // it now reaches the stock through ApplyOneTimeBudgetImpact, so the debt ledger observes
@@ -1865,8 +1873,9 @@ namespace PoliSim.Simulation
             // C-B3 / R-CL2: the tariff bill is scored on the OPENNESS axis (CHES eu_position), not the
             // fiscal one. The USA has no EU position on any seat and falls back to fiscal inside
             // GetSeatWeightedAlignment, with ParliamentSystem.TradeAxisAvailable saying so.
-            bool passed = ParliamentSystem.WouldBillPass(country, direction, BillAxis.Trade);
-            ParliamentSystem.RecordDivision(country, "Trade bill", direction, passed, CurrentDate, BillAxis.Trade);
+            BillConcern concern = ParliamentSystem.GetTradeBillConcern(country, bill, _world);   // P3-A2: the chamber votes on what the bill concerns
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+            ParliamentSystem.RecordDivision(country, "Trade bill", concern, passed, CurrentDate, BillAxis.Trade);
             float approvalBeforeTradeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Trade bill passed" : "Trade bill failed", country.State.ApprovalRating - approvalBeforeTradeBill);
