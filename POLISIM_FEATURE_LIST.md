@@ -272,6 +272,14 @@ goes on looking like it works. **Read the endpoints, or wire nothing.** D-18 sta
 
 *Carries: `M-S15`.*
 
+> **2026-09-02 — wired (`COMPLETED.md` §200).** The endpoints are READ: `pdftotext` (it ships with Git for
+> Windows) extracts the codebook's text, and all five definitions are quoted verbatim in
+> `party_positions.md` and on `PoliticalParty`'s five new fields. The 31 CHES-positioned EU units carry
+> them, matched to their CSV rows on their own `lrecon`/`galtan` pair; `IdeologyVector.FromParty` builds all
+> eight §4 axes with the two inversions stated per axis (S-37). ⚠ Nothing on the live path reads an
+> `IdeologyVector` yet — the voter groups' own axis positions are F3's other half, and until they exist the
+> eight axes meet nothing. D-18 is lifted by quotation, not by inference.
+
 # F6 — What the campaign still lacks to be played
 
 In order of what a player would notice first:

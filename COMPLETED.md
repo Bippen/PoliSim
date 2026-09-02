@@ -20587,3 +20587,39 @@ market through the pyramid, at measured rates rather than through a 0.02-per-poi
 in a player-facing Policy Web string, `MetaTextCheck`'s exact remit; removed).
 
 **F2's done-when is met.** The voter-group view over the substrate is F3's opening clause, not F2's.
+
+## 200. F5 WIRED — the five CHES axes' endpoints are QUOTED and the axes seeded; D-18 lifted by quotation (2026-09-02)
+
+**The blocker was a tool, not the data.** §174 banked the five "undefined" §4 axes as CHES 2024 columns and
+D-18 held them out of the model because `CHES.2024.Codebook.pdf`'s variable pages read as subsetted-font
+ciphers and *"a bound is a direction as well as a number"* (S-37) — an inverted axis fails silently. The
+codebook yields its text to `pdftotext -layout`, which ships with Git for Windows and was on the path all
+along. The five definitions are now quoted verbatim in `ElectionsData/positions/party_positions.md` and
+on `PoliticalParty`'s fields:
+
+| §4 axis | CHES column | 0 = … | 10 = … | vs. the axis name's 0 end |
+|---|---|---|---|---|
+| `EnvironmentalIndustrial` | `environment` | strongly supports environmental protection even at the cost of economic growth | strongly supports economic growth even at the cost of environmental protection | same |
+| `CentralizationDecentralization` | `regions` | strongly favors political decentralisation | strongly opposes political decentralisation | **inverted** |
+| `TaxHighLow` | `spendvtax` | strongly favors improving public services | strongly favors reducing taxes | same |
+| `ImmigrationRestrictiveLiberal` | `immigrate_policy` | strongly favors a liberal policy on immigration | strongly favors a restrictive policy on immigration | **inverted** |
+| `PublicPrivate` | `deregulation` | strongly opposes deregulation of markets | strongly favors deregulation of markets | same |
+
+The corroboration §174 recorded (every green party at the bottom of `environment`) agreed with the
+quotation; it is corroboration now, not a stand-in.
+
+**What was wired.** `PoliticalParty` gained `Environment`, `Regions`, `SpendVsTax`, `ImmigratePolicy`,
+`Deregulation` (`float.NaN` default). The 31 EU units that carry a CHES position were seeded from
+`CHES_2024_final_v2.csv` by a script that matched each unit's already-seeded `lrecon`/`galtan` pair to its
+CSV row — never by name, so France's nuances and Italy's lists that are one party got that party's row
+and the joint candidacies got nothing (31 inserted, 0 missed). `IdeologyVector.FromParty` builds all eight
+§4 axes from a party: CHES 0–10 tenfold, the two inverted axes as 100 − 10×, `eu_position` 1–7 mapped so
+7 (strongly in favour of integration) is the globalist 0 — the one direction in the builder that reads
+the axis name rather than a quotation, and its doc says so.
+
+⚠ **Nothing on the live path reads an `IdeologyVector`.** §7's compatibility is harness-proven
+(`CompatibilityHarness`) and has no gameplay caller; the voter groups' own positions on these axes are
+F3's other half. The data side of F5 is done and the comparison waits on its counterpart — stated in the
+feature list rather than left to be discovered.
+
+**Bar 25 of 25.**

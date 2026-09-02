@@ -1,4 +1,5 @@
 using System;
+using PoliSim.Data;
 
 namespace PoliSim.Elections
 {
@@ -23,17 +24,21 @@ namespace PoliSim.Elections
         public static double Clamp(double value) => value < Min ? Min : (value > Max ? Max : value);
     }
 
-    /// <summary>Spec §4's ideological dimensions — "ideology should not simply be one left/right number". An axis set to <see cref="double.NaN"/> is UNDEFINED and is skipped by every comparison rather than treated as a centre value: the sourced CHES data defines three of these eight, and a model must not silently invent the other five.</summary>
+    /// <summary>Spec §4's ideological dimensions — "ideology should not simply be one left/right number". An axis set to <see cref="double.NaN"/> is UNDEFINED and is skipped by every comparison rather than treated as a centre value: until F5 (2026-09-02) the sourced CHES data defined three of these eight and the model refused to invent the other five; since F5 all eight are sourced for the CHES-positioned units (<see cref="IdeologyVector.FromParty"/>), and a unit without a published position stays NaN.</summary>
     public enum IdeologyAxis
     {
         EconomicLeftRight = 0,        // CHES lrecon (sourced)
         SocialLiberalConservative = 1, // CHES galtan (sourced)
         GlobalistNationalist = 2,      // CHES eu_position, rescaled (sourced)
-        EnvironmentalIndustrial = 3,
-        CentralizationDecentralization = 4,
-        TaxHighLow = 5,
-        ImmigrationRestrictiveLiberal = 6,
-        PublicPrivate = 7,
+        // F5 (2026-09-02): the five below are CHES 2024 columns (D-18 lifted - the codebook's endpoints are
+        // QUOTED on PoliticalParty's fields). The name's FIRST word is the 0 end, as for the three above
+        // (Economic LEFT = 0 ↔ lrecon 0 = left; Social LIBERAL = 0 ↔ galtan 0 = libertarian), so two of the
+        // five run against their CHES column and are inverted in FromParty - stated there, per S-37.
+        EnvironmentalIndustrial = 3,        // CHES environment (0 = protection … 10 = growth): same direction
+        CentralizationDecentralization = 4, // CHES regions (0 = FAVORS decentralisation): INVERTED
+        TaxHighLow = 5,                     // CHES spendvtax (0 = improving services … 10 = reducing taxes): same direction
+        ImmigrationRestrictiveLiberal = 6,  // CHES immigrate_policy (0 = LIBERAL … 10 = restrictive): INVERTED
+        PublicPrivate = 7,                  // CHES deregulation (0 = opposes … 10 = favors deregulation): same direction
     }
 
     /// <summary>Spec §6's issue list, the weights and positions both sides of a compatibility calculation are expressed in.</summary>
@@ -80,6 +85,34 @@ namespace PoliSim.Elections
             axes[(int)IdeologyAxis.GlobalistNationalist] = globalistNationalist;
             return new IdeologyVector(axes);
         }
+
+        /// <summary>
+        /// F5 (2026-09-02): a real party's vector on ALL EIGHT axes from its sourced CHES/GPS positions,
+        /// each rescaled to the spec's 0–100 and oriented so the axis name's first word is the 0 end.
+        /// NaN stays NaN - an axis the survey did not publish for this unit stays undefined and
+        /// <see cref="Compatibility.IdeologicalMatch"/> skips it, exactly as before. The quotations that
+        /// fix each direction are on <see cref="PoliticalParty"/>'s fields; the two inversions are
+        /// `regions` (CHES 0 = favors decentralisation, our 0 = centralisation) and `immigrate_policy`
+        /// (CHES 0 = liberal, our 0 = restrictive). `eu_position` runs 1–7 with 7 = strongly in favour
+        /// of integration, which is the GLOBALIST end, so it maps to (7 − eu) / 6 × 100 - the one
+        /// direction here that is a reading of the axis name rather than a quotation, and it says so.
+        /// </summary>
+        public static IdeologyVector FromParty(PoliticalParty party)
+        {
+            var axes = new double[AxisCount];
+            axes[(int)IdeologyAxis.EconomicLeftRight] = Tenfold(party.LrEcon);
+            axes[(int)IdeologyAxis.SocialLiberalConservative] = Tenfold(party.Galtan);
+            axes[(int)IdeologyAxis.GlobalistNationalist] = float.IsNaN(party.EuPosition) ? double.NaN : (7.0 - party.EuPosition) / 6.0 * 100.0;
+            axes[(int)IdeologyAxis.EnvironmentalIndustrial] = Tenfold(party.Environment);
+            axes[(int)IdeologyAxis.CentralizationDecentralization] = Inverted(party.Regions);
+            axes[(int)IdeologyAxis.TaxHighLow] = Tenfold(party.SpendVsTax);
+            axes[(int)IdeologyAxis.ImmigrationRestrictiveLiberal] = Inverted(party.ImmigratePolicy);
+            axes[(int)IdeologyAxis.PublicPrivate] = Tenfold(party.Deregulation);
+            return new IdeologyVector(axes);
+        }
+
+        private static double Tenfold(float ches0To10) => float.IsNaN(ches0To10) ? double.NaN : ches0To10 * 10.0;
+        private static double Inverted(float ches0To10) => float.IsNaN(ches0To10) ? double.NaN : 100.0 - ches0To10 * 10.0;
 
         public static IdeologyVector Uniform(double value)
         {

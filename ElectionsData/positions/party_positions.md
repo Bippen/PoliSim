@@ -207,3 +207,38 @@ not a quotation.** The remaining step is one codebook page.
 | Sweden | SAP | 3.70 | 5.29 | 2.50 | 6.95 | 3.67 |
 | Sweden | SD | 9.00 | 5.29 | 5.50 | 9.95 | 4.57 |
 | Sweden | V | 1.40 | 5.00 | 0.50 | 3.05 | 0.87 |
+
+
+---
+
+## THE ENDPOINTS, QUOTED — and the five axes WIRED (2026-09-02, F5)
+
+The section above said the codebook's variable pages were in subsetted-font ciphers and the wording was
+not in hand. **It is in hand.** `CHES.2024.Codebook.pdf` (the URL in the source register, fetched again
+2026-09-02, 24 pages) yields its text to `pdftotext -layout` — the tool ships with Git for Windows and was
+simply not tried. The five definitions, verbatim from the extracted text (codebook page numbers as printed):
+
+- **`immigrate_policy`**: *"Where did political parties stand on IMMIGRATION in 2024? 0 = strongly favors a
+  liberal policy on immigration … 10 = strongly favors a restrictive policy on immigration"*
+- **`environment`**: *"What was their position towards ENVIRONMENTAL SUSTAINABILITY during 2024? 0 =
+  strongly supports environmental protection even at the cost of economic growth … 10 = strongly supports
+  economic growth even at the cost of environmental protection"*
+- **`spendvtax`**: *"Position on IMPROVING PUBLIC SERVICES VS. REDUCING TAXES during 2024. 0 = strongly
+  favors improving public services … 10 = strongly favors reducing taxes"*
+- **`deregulation`**: *"Position on DEREGULATION OF MARKETS. 0 = strongly opposes deregulation of markets …
+  10 = strongly favors deregulation of markets"* (page 20)
+- **`regions`**: *"Position on POLITICAL DECENTRALISATION TO REGIONS/LOCALITIES. 0 = strongly favors
+  political decentralisation … 10 = strongly opposes political decentralisation"*
+
+The corroboration recorded above (every green party at the bottom of `environment`) agreed with the
+quotation; it is now corroboration of a quoted direction rather than a stand-in for one.
+
+**Wired:** `PoliticalParty` carries `Environment`, `Regions`, `SpendVsTax`, `ImmigratePolicy`,
+`Deregulation` for the 31 EU units that carry a CHES position — each unit matched to its CSV row on its
+own `lrecon`/`galtan` pair, never by name, so a nuance or a list that is one party gets that party's row
+and nothing else does — and `IdeologyVector.FromParty` builds all eight §4 axes from them, oriented so the
+axis name's first word is the 0 end (two of the five are therefore inverted from CHES: `regions` and
+`immigrate_policy`; the code says so per axis). ⚠ **Nothing on the live path reads an `IdeologyVector`
+yet** — §7's compatibility is harness-proven and consumed only by `CompatibilityHarness`; the voter groups'
+own axis positions are F3's, and until they exist a party's eight axes meet nothing to be compared with.
+The data is wired; the comparison waits on its other half.
