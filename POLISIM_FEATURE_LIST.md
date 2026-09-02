@@ -356,6 +356,153 @@ In order of what a player would notice first:
 
 ---
 
+# P2 — PLAYTEST 2 (2026-09-02): Elias's rows, verbatim
+
+> **Recorded 2026-09-02, first and verbatim, as the sitting's rows.** Elias's kickoff, in his words:
+> *"Append these as the feature list's next section. Record the findings first, verbatim, dated, as the
+> sitting's rows. Work down in order, continuously; one commit per item, one green bar per commit, R-SP1
+> push, decisions sheeted and self-taken, one report at end of budget. Screen items film at 1280/2560;
+> the four-width matrix once at the section's close. Conventions unchanged: no transcribed counts, no
+> invented figures, evidence binds where the change lives."*
+>
+> The rows below are the sheet as sent. Execution lands in `COMPLETED.md` records, one per item, and
+> each row here gains a pointer to its record as it closes — the row's text is never edited forward.
+
+---
+
+## Track 0 — defects (wrong on screen; before anything else)
+
+**P2-0.1 — The deficit basis bug.** Measure first: which figure on Statistics › Domestic mixes a
+national-unit (SEK) line with a USD total. The likeliest seam is the budget decomposition's sourced
+lines against the USD seed. Trace every money figure on that screen to its basis; fix at the seam,
+never at the display; state the correction per country. *Done when:* every money figure on the
+screen carries one basis and a harness asserts it.
+
+**P2-0.2 — The legacy election result.** Establish whether `ElectionSystem`'s approval-threshold
+"Re-Elected" path still fires now that C-R4b gives the player a party. If it does, retire it — the
+last D0 clause — so the only election outcome the player ever sees is election night's count and
+C-R4's win/lose rule. *Done when:* one election path exists and a harness proves the old one is
+unreachable.
+
+**P2-0.3 — The campaign announces itself.** Campaign start is an interrupt: the clock HELDs, the
+banner names it, and HQ opens (the Fed-chair pause is the template). Election night is entered the
+same way — never a screen the player can miss. *Done when:* a Sweden game cannot pass campaign
+start or election night without the player dismissing an interrupt, filmed.
+
+**P2-0.4 — Budget balance shows the year, not the cumulative.** The Domestic series becomes annual
+(per fiscal year); cumulative belongs to debt, which already has its own row. *Done when:* filmed,
+and the annual series sums to the debt delta.
+
+## Track 1 — the frame and the quick wins (every screen)
+
+**P2-1.1 — No gaps.** The sheet meets the rail and the window edge-to-edge: no paper margin, no
+gap between the rail and the sheet, on every screen. One frame token change, filmed on all screens
+at the close. *Done when:* the edge check reports the sheet flush on all four sides.
+
+**P2-1.2 — Contrast, round two.** D6 aimed at 4.5:1 and two targets missed (Caution 4.09/3.90,
+TextPrimary-on-brass 4.03). Re-measure every ink pair at its real size after P2-1.1, and raise the
+faint inks until every body-text pair clears 4.5 and every caption pair clears 3.5. Token values
+only; if a target cannot be met without a new hue, that pair goes to Design. *Done when:* the
+measured table is in the record with no pair below its floor.
+
+**P2-1.3 — The Budget sliders.** Longer track, thinner height, finer step; the description texts
+under each slider cut (the (b)/(c) taxonomy applied to Budget). *Done when:* filmed, and a slider
+can be set to any whole percentage point without overshoot.
+
+**P2-1.4 — Persistent fiscal header on Budget.** Balance, debt, debt-to-GDP, revenue and spending
+totals visible at all times on the Budget screen, derived, in the chip-strip idiom. *Done when:*
+filmed in scrolled and unscrolled states.
+
+## Track 2 — Budget effects, redesigned
+
+**P2-2.1 — Retire the 1D/1W/1M/1Y horizons.** The effects panel becomes: the budget delta on the
+right, always; and as a slider moves, the affected categories surface with an arrow per category —
+direction up/down, length scaled by estimated magnitude, colour by the existing direction-aware
+`GetDeltaColor` (an effect on an outcome is already coloured by that rule; the neutral-ink ruling
+covers dial arrows, not outcome effects). Ranges never false precision — the deterministic
+preview's point with its scope stated (C-C1's precedent). *Done when:* filmed in rest and mid-drag
+states, and every arrow's length traces to the preview's own figure.
+
+**P2-2.2 — Parliamentary support as seats.** The hemicycle in the Budget preview colours **each
+mandate** for/against/undecided, computed from the parties' stances on the draft; the same
+component replaces the lean bar on every law-support preview. *Done when:* the per-seat map's
+counts equal the existing stance arithmetic to the seat, on Budget and on Laws.
+
+## Track 3 — Politics
+
+**P2-3.1 — The hemicycle draws seats.** Individual mandates, not curved bands — 349 dots for
+Sweden, party-coloured, sorted by bloc then by mandates. Party list sorted by mandates with the
+blocs drawn as groups (W-D3's bloc data). *Done when:* filmed, and the dot count equals the
+chamber.
+
+**P2-3.2 — The compass converts.** Axes become CHES `lrecon` (economic left–right) × `galtan`
+(liberal–conservative), both wired at F5 with endpoints read. Parties at their published positions;
+a country at the seat-weighted mean of its chamber; the government's point marked. Axis labels in
+the conventional words. *Done when:* every point traces to a CHES row or a seat-weighted
+derivation, no authored position anywhere.
+
+**P2-3.3 — The compass gains history and the electorate.** A trail of each country's point over
+time (it moves at elections and government changes — store it per turn, draw it faint); and the
+electorate's position from the voter groups over the cohorts (F3's substrate: the eligible
+population's compatibility-weighted mean). Design's compass r2 board refines the composition; the
+data ships now. *Done when:* the trail reproduces the stored history exactly and the electorate
+point derives from cohorts.
+
+**P2-3.4 — The Riksbank panel.** More of what the model holds: the current rate, the reaction
+function's inputs (the model's inflation and output readings), and the **projected rate path** from
+the Taylor rule applied to the preview's projection — derived, with the scope stated. *Done when:*
+the projected path equals the rule evaluated on the projection, asserted.
+
+## Track 4 — the Design batch (re-composition; the dead-space paradox says spacing won't fix these)
+
+**P2-4.1 — Film every screen as Elias saw it** at 1280/1600/2560 after Track 1 lands, with the
+dead-space measure per screen, as the annex.
+
+**P2-4.2 — Install the ask (D10)** in the request doc, one ask, rows: (1) **International** —
+modernise and re-compose (the country pages are built structurally; every gap the model cannot
+fill is named); (2) **Docket** — re-compose, add a minister-alerts region (ministers who have
+something to say), and per-decision cost-and-impact with arrows; (3) **People** — re-compose from a
+rolling list of unconnected stats into instruments over the cohort substrate; (4) **Laws** — the
+browser streamlined and the enactment page decluttered; (5) **Politics** — the per-seat hemicycle,
+the bloc grouping, compass r2 with trail and electorate; (6) **the law-result screen** — full
+frame, not a square on black: the vote as a per-seat map, the estimated impact as arrows, the
+citation; (7) **the election-result screen** — the same treatment, with the campaign's attribution
+ledger beside the count; (8) **the frame** — sheet-to-rail-to-edge tokens; (9) **contrast** — any
+pair P2-1.2 could not clear. Drawn at 1280 first; Elias's verbatim complaints as the annex's first
+page. Regenerate the package; **binary artifacts are uploaded, not described.** Sending stays
+Elias's.
+
+**P2-4.3 — The structural halves that need no board:** the law-result and election-result screens
+get their full-frame content now (per-seat vote map from P2-2.2, effect arrows from P2-2.1, the
+attribution ledger), in the v3 idiom; the Docket gets a minister-alerts region fed by whatever the
+cabinet already emits. Boards refine. *Done when:* filmed, nothing is a square on black.
+
+## Track 5 — cabinet mechanics (a new system; one page, then build)
+
+**P2-5.1 — The design page.** Ministers gain four attributes — loyalty, knowledge, efficiency,
+popularity — each with one mechanical consequence the player can feel: **efficiency** scales the
+portfolio's spending effectiveness; **knowledge** narrows the preview's error on that portfolio's
+figures; **popularity** feeds approval through the existing cabinet portfolio terms; **loyalty**
+drives resignation and leak events under pressure. Attributes are `[AUTHORED-DRAFT]` for fictional
+ministers (the Fed-chair candidate pool is the precedent), never invented for a real person. One
+page; take the recommendation and log it strikeable. *Done when:* the page is in the record with
+each consequence's owning term named.
+
+**P2-5.2 — Build per the page**, SAFE where the terms already exist, BASELINE where a new term
+enters the model (efficiency on spending effectiveness will); families explained per country.
+Minister alerts on the Docket become real events from these attributes. *Done when:* each attribute
+measurably moves the model through its named term and the lever-liveness check sees all four.
+
+---
+
+## Yours (appendix rows)
+
+Play it again after Track 0 lands — the deficit figure, the single election path, and the campaign
+interrupt are the three things that change what you see first. The Design paste when D10 is
+installed. The two stat-icon PNGs and the ITANES registration, still open.
+
+---
+
 # APPENDIX — the short tail
 
 ⚠ **Nothing here outranks F1–F6.** One line each, with its owner.
@@ -382,6 +529,7 @@ In order of what a player would notice first:
 - **Decisions taken overnight 2026-09-02, strikeable** — D-21 (§206: the live campaign runs on the vote model's compatibility, (a) taken) and D-23 (§209: polling day stays the turn boundary, (a) taken; (b), the September date, is the branch to build after the first played campaign). D-20 was Elias's and is ruled.
 - **C-N8 (2026-09-02, §208) — Elias's.** Under D-20 (a) the two grassroots parties, campaigning by doors and posts, make no news and are never booked: 0 interviews, persuasion ~3 000 against millions. Whether §13's interest threshold ladder should let a small party onto the air at all is a design question about §13.
 - **Three first sights, owed to play (2026-09-02)** — the live Campaign HQ from the rail (§205), the first pressed chip on its queue (§207), the first election night that counts a campaign (§206's `ELECTION: counted the campaign's shares` log line). Each is a finding to read, never a tune; the campaign is Sweden's only.
+- **Playtest 2's own three rows for Elias (2026-09-02, the sitting's "Yours", verbatim in P2 above)** — play it again after Track 0 lands (the deficit figure, the single election path, the campaign interrupt are the three things that change first); the Design paste when D10 is installed; the two stat-icon PNGs and the ITANES registration, still open.
 - **`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves. ⚠ **Blocks F3's
   per-group loyalty**, which is otherwise complete.
 - **`ERRANDS.md` E-3** — the one paste: the GO on the seven marks, the derived mandate column, **the two
