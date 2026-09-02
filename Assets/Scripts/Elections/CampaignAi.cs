@@ -113,9 +113,13 @@ namespace PoliSim.Elections
         /// <summary>W-C2: whether the party has its own office here (its own books).</summary>
         public readonly bool HasOffice;
 
-        public RegionAudience(string name, double audience, double volunteerHours = 0.0, bool hasOffice = false)
+        /// <summary>F3 (2026-09-02): the ELIGIBLE electorate of the region - who can be mobilised - as distinct from <see cref="Audience"/> (who can be reached, the valid votes the returns record). Sweden's is the 18+ population of `SwedishValkretsPopulation2024`; a region without a figure carries its audience here, which is the older approximation stated.</summary>
+        public readonly double Eligible;
+
+        public RegionAudience(string name, double audience, double volunteerHours = 0.0, bool hasOffice = false, double eligible = double.NaN)
         {
             Name = name; Audience = audience; VolunteerHours = volunteerHours; HasOffice = hasOffice;
+            Eligible = double.IsNaN(eligible) ? audience : eligible;
         }
     }
 
@@ -710,7 +714,7 @@ namespace PoliSim.Elections
             // daily knocking is NOT counted here - it happens with or without this action.
             if (spec.Kind == CampaignActionKind.DoorToDoor && regionIndex >= 0 && view.NationalAudience > 0.0)
             {
-                double eligible = view.Regions[regionIndex].Audience;
+                double eligible = view.Regions[regionIndex].Eligible;   // F3: the mobilisable electorate, as the run's own GotvModel base
                 double weighted = audience * GotvModel.Spec(GotvOperation.DoorKnocking).Weight;
                 double attributeLift = GotvModel.Mobilization(weighted, eligible) - GotvModel.Mobilization(0.0, eligible);
                 double turnoutPts = profile.EnthusiasmValue * attributeLift

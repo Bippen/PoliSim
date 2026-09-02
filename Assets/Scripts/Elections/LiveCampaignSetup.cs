@@ -175,7 +175,15 @@ namespace PoliSim.Elections
             for (int r = 0; r < regions.Length; r++)
             {
                 double valid = SwedishValkretsReturns2022.Valid[r];
-                regions[r] = new RegionAudience(SwedishValkretsReturns2022.Names[r], valid);
+                // F3 (2026-09-02): the region's ELIGIBLE electorate for the ground game - who can be mobilised -
+                // is Valmyndigheten's own roll for the valkrets (the returns catalog's Eligible), not its valid
+                // votes: the doors an office can knock are the electorate's, not the turnout's. ⚠ It is NOT the
+                // 18+ population of SwedishValkretsPopulation2024, which the per-valkrets voter-group VIEW is
+                // built on: that is residents, and 11-15 % of the metropolitan valkretsar's adult residents are
+                // not Swedish citizens (VoterGroupViewDiagnostic prints the ratio). A Riksdag electorate is
+                // citizens on the roll, and the roll is the sourced figure.
+                double eligible = SwedishValkretsReturns2022.Eligible[r];
+                regions[r] = new RegionAudience(SwedishValkretsReturns2022.Names[r], valid, eligible: eligible);
                 national += valid;
             }
             return regions;

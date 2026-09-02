@@ -32,10 +32,16 @@ method); `sha256sum` of the four is the check.
 ## What it is for, and what it is not yet
 
 This is the age marginal per valkrets — the input the voter-group VIEW (`CohortVoterGroups`, C-D1's
-substrate view, F3) needs to become a per-region view rather than a national one. Nothing on the game
-path reads it yet; that consumer is F3's build, and this file lands as a discharged bill the way the
-participation and tax sources did. ⚠ Two things it does not carry: education and income per
-municipality (the other two marginals C-D1 billed, SCB UF0506 and HE0110 — still billed), and the
-ELIGIBLE electorate per valkrets (citizenship and age 18+; `SwedishValkretsReturns2022.Eligible` has
-the 2022 electorate from Valmyndigheten, which is the honest denominator until an SCB citizenship cut
-is fetched).
+substrate view, F3) needs to become a per-region view rather than a national one. It reaches the code
+through the generated catalog `SwedishValkretsPopulation2024` (`ValkretsPopulationCatalogGenerator`;
+`GeneratedCatalogCheck` re-derives the digests of both derived files and asserts every name joins the
+returns catalog) and `CohortVoterGroups.ForValkrets`, whose per-valkrets groups sum to 1 in all 29
+(`VoterGroupViewDiagnostic`). ⚠ Nothing on the GAME path reads the per-valkrets view yet: the campaign
+has no age-group mechanic, and that consumer is the per-group design, which waits on per-group loyalty.
+⚠ Two things it does not carry: education and income per municipality
+(the other two marginals C-D1 billed, SCB UF0506 and HE0110 — still billed), and the ELIGIBLE
+electorate. **Its 18+ count is RESIDENTS, not the electorate:** against Valmyndigheten's 2022 roll it
+runs 1.03–1.09 in the counties and 1.11–1.16 in Stockholm (kommun and län), Uppsala, Göteborg and
+Malmö — non-citizen adults plus two years' growth — so the campaign's mobilisable electorate per valkrets is the roll
+(`SwedishValkretsReturns2022.Eligible`), and this file's job is the AGE STRUCTURE of each valkrets's
+voters, not their number. An SCB citizenship cut is the fetch that would close the gap.

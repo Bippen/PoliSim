@@ -344,7 +344,7 @@ namespace PoliSim.Elections
             var reserve = new double[partyCount];
             var volunteerHoursLeft = new double[partyCount];   // W-B11: a day's volunteer-hours, the bound on doors knocked
             var regionEligible = new double[setup.Regions.Length];
-            for (int r = 0; r < regionEligible.Length; r++) { regionEligible[r] = setup.Regions[r].Audience; }
+            for (int r = 0; r < regionEligible.Length; r++) { regionEligible[r] = setup.Regions[r].Eligible; }   // F3: who can be mobilised (18+), not who cast a valid vote
             var gotv = new RegionalMobilization(regionEligible, partyCount);   // W-B11: the ground game election day will read (W-D1)
             var offices = new OfficeNetwork[partyCount];                       // W-B4: each party's §10 offices
             var officeHoursLeft = new double[partyCount][];                     // W-B4: each office's volunteer-hours still unspent today, per region
@@ -950,7 +950,8 @@ namespace PoliSim.Elections
                     regions[r] = new RegionAudience(setup.Regions[r].Name,
                         CampaignOffices.LocalAudience(setup.Regions[r].Audience, offices.Influence(r)),
                         officeHoursLeft != null ? officeHoursLeft[r] : offices.VolunteerHours(r),
-                        offices.HasOffice(r));
+                        offices.HasOffice(r),
+                        setup.Regions[r].Eligible);   // F3: the mobilisable electorate rides the view unchanged - a public fact, not the party's reach
                 }
             }
 

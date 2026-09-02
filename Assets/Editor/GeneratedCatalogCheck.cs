@@ -115,6 +115,7 @@ namespace PoliSim.EditorTools
             // is identical to the one above: a generated table whose source has moved underneath it.
             // A second check would have been a second thing to keep true for no added coverage.
             failures += CheckProjections(sb);
+            failures += CheckValkretsPopulation(sb);
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -131,6 +132,63 @@ namespace PoliSim.EditorTools
         /// the catalog's own `SourcePath` table**, so a country added to the projection catalog is covered
         /// here the day it lands with no edit in this file — the `PartyMarkCoverageCheck` idiom.
         /// </summary>
+        /// <summary>
+        /// F3 (2026-09-02): `SwedishValkretsPopulation2024` against its two sources - the aggregated
+        /// valkrets × band file and the municipality map it was named from - plus the two identities the
+        /// catalog exists for: 29 rows whose bands sum to their own totals, and every name joining
+        /// `SwedishValkretsReturns2022` (the campaign looks the electorate up by that name).
+        /// </summary>
+        private static int CheckValkretsPopulation(StringBuilder sb)
+        {
+            int failures = 0;
+            string root = Directory.GetCurrentDirectory();
+            var sources = new (string Relative, string Recorded, string What)[]
+            {
+                ("ElectionsData/sweden/valkrets_population_by_age_2024.csv", SwedishValkretsPopulation2024.SourceDigest, "the valkrets x band file"),
+                ("ElectionsData/sweden/valkrets_municipalities_2024.csv", SwedishValkretsPopulation2024.NamesDigest, "the municipality map"),
+            };
+            foreach ((string relative, string recorded, string what) in sources)
+            {
+                string path = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path))
+                {
+                    failures++;
+                    Debug.LogError($"CATALOG: {relative} is not on disk, so the valkrets population catalog cannot be verified against {what}.");
+                    continue;
+                }
+                string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(path));
+                if (!string.Equals(onDisk, recorded, StringComparison.OrdinalIgnoreCase))
+                {
+                    failures++;
+                    Debug.LogError($"CATALOG: {relative} changed since the valkrets population catalog was generated ({what}: on disk {onDisk}, recorded {recorded}). Re-run ValkretsPopulationCatalogGenerator.");
+                }
+            }
+            int rows = SwedishValkretsPopulation2024.Bands.Length;
+            long grand = 0;
+            var unjoined = new List<string>();
+            for (int v = 0; v < rows; v++)
+            {
+                long sum = 0;
+                foreach (long b in SwedishValkretsPopulation2024.Bands[v]) { sum += b; }
+                if (sum != SwedishValkretsPopulation2024.Total[v])
+                {
+                    failures++;
+                    Debug.LogError($"CATALOG: valkrets {v + 1} ({SwedishValkretsPopulation2024.Names[v]}) bands sum to {sum} against its total {SwedishValkretsPopulation2024.Total[v]}.");
+                }
+                grand += SwedishValkretsPopulation2024.Total[v];
+                if (Array.IndexOf(SwedishValkretsReturns2022.Names, SwedishValkretsPopulation2024.Names[v]) < 0) { unjoined.Add(SwedishValkretsPopulation2024.Names[v]); }
+            }
+            if (rows != 29 || unjoined.Count > 0)
+            {
+                failures++;
+                Debug.LogError($"CATALOG: the valkrets population catalog has {rows} rows (29 expected) and {unjoined.Count} name(s) that do not join the returns catalog: {string.Join(", ", unjoined.ToArray())}.");
+            }
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "    valkrets population 2024: {0} rows x {1} bands, national total {2:N0}, {3} name(s) unjoined - {4}\n",
+                rows, rows > 0 ? SwedishValkretsPopulation2024.Bands[0].Length : 0, grand, unjoined.Count, failures == 0 ? "ok" : "FAIL"));
+            return failures;
+        }
+
         private static int CheckProjections(StringBuilder sb)
         {
             int failures = 0;

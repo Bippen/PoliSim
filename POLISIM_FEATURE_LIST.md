@@ -245,8 +245,14 @@ then **re-run the Italy 2022 test**: with per-group loyalty and the media/moment
 > **2026-09-02 — the age marginals are on disk (`COMPLETED.md` §213, `ElectionsData/sweden/VALKRETS_POPULATION_README.md`):**
 > SCB's 2024 population by single year of age for all 290 municipalities, mapped to the 29 valkretsar by
 > Vallagen's own lists and reconciled to SCB's national total to the person. Education and income marginals
-> still billed. **Next in F3:** `CohortVoterGroups` as a per-valkrets view over this file (the consumer);
-> per-group loyalty stays Elias's (ITANES); the Italy re-run waits on it.
+> still billed. **The consumer landed the same morning (§214):** `SwedishValkretsPopulation2024`, a
+> generated catalog under `GeneratedCatalogCheck`; `CohortVoterGroups.ForValkrets`, whose 29 views each
+> sum to 1 (Editor-consumed: the campaign has no age-group mechanic, so the view waits on the per-group
+> design); and the campaign's regions now carry the ELIGIBLE electorate — Valmyndigheten's roll, not the
+> 18+ resident count, which runs 3–16 % above it (non-citizen adults, most in the four metropolitan
+> valkretsar) — for the ground game. **Next in F3:**
+> per-group loyalty stays Elias's (ITANES); the Italy re-run waits on it; education and income marginals
+> still billed.
 
 ⚠ **Reachable is the strongest validation this model can get; unreachable is a named ceiling. Do not tune
 toward it.**

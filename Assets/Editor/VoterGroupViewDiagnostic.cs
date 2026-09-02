@@ -148,6 +148,50 @@ namespace PoliSim.EditorTools
             sb.Append("    assumes an even spread inside a five-year band - the assumption the aging step REPLACED with observed\n");
             sb.Append("    data, and which cannot be replaced here because no source publishes the electorate by single year.\n");
 
+            // F3 (2026-09-02): the same join PER VALKRETS, over SwedishValkretsPopulation2024 - each of the
+            // 29 valkretsar's groups must sum to 1, and its name must join the returns catalog. The 18+
+            // RESIDENTS of 2024 are printed beside Valmyndigheten's 2022 ROLL and no identity is asserted
+            // between them: the ratio is what it is - non-citizen adult residents plus two years' growth,
+            // 1.03-1.09 in the counties and 1.11-1.16 in Stockholm, Uppsala, Göteborg and Malmö - the reason the
+            // campaign's mobilisable electorate is the roll and not the resident count (LiveCampaignSetup).
+            // The last two columns MEASURE whether the age structure carries anything the roll does not: each
+            // valkrets's turnout as its 2024 age mix weights SCB's 2014 band rates, beside its ACTUAL 2022
+            // turnout (Cast / Eligible from the returns). The levels differ by year (85.8 national in 2014,
+            // 84.2 in 2022); the SPREADS are the comparison, and they are printed, not asserted. ⚠ Nothing on
+            // the game path reads this view (the campaign has no age-group mechanic; that consumer is the
+            // per-group design, which waits on per-group loyalty) - so it is Editor-consumed, and it counts
+            // against UnwiredSubsystemCheck's ceilings the way C-D1 left it.
+            sb.Append("\n    --- SWEDEN PER VALKRETS: the view over the 2024 pyramid of each of the 29 ---\n");
+            sb.Append("    valkrets                          groups  share sum   18+ res. 2024   roll 2022   ratio   age-pred %   actual 2022 %\n");
+            int perValkretsFailures = 0;
+            double predMin = double.MaxValue, predMax = double.MinValue, actMin = double.MaxValue, actMax = double.MinValue;
+            for (int v = 0; v < PoliSim.Elections.Generated.SwedishValkretsPopulation2024.Names.Length; v++)
+            {
+                CohortVoterGroups.Group[] vg = CohortVoterGroups.ForValkrets(v);
+                PopulationCohorts pyramid = CohortVoterGroups.ValkretsPyramid(v);
+                double vEligible = pyramid != null ? CohortVoterGroups.EligiblePopulation(pyramid, CohortVoterGroups.VotingAge(CountryId.Sweden)) : 0.0;
+                double vSum = 0.0, predicted = 0.0;
+                foreach (CohortVoterGroups.Group g in vg) { vSum += g.PopulationShare; predicted += g.PopulationShare * g.TurnoutBase; }
+                string name = PoliSim.Elections.Generated.SwedishValkretsPopulation2024.Names[v];
+                int returnsIndex = System.Array.IndexOf(PoliSim.Elections.Generated.SwedishValkretsReturns2022.Names, name);
+                double roll = returnsIndex >= 0 ? PoliSim.Elections.Generated.SwedishValkretsReturns2022.Eligible[returnsIndex] / 1_000_000.0 : double.NaN;
+                double ratio = roll > 0 ? vEligible / roll : double.NaN;
+                double actual = returnsIndex >= 0 ? 100.0 * PoliSim.Elections.Generated.SwedishValkretsReturns2022.Cast[returnsIndex] / PoliSim.Elections.Generated.SwedishValkretsReturns2022.Eligible[returnsIndex] : double.NaN;
+                if (returnsIndex >= 0) { predMin = System.Math.Min(predMin, predicted); predMax = System.Math.Max(predMax, predicted); actMin = System.Math.Min(actMin, actual); actMax = System.Math.Max(actMax, actual); }
+                bool bad = vg.Length == 0 || System.Math.Abs(vSum - 1.0) > ShareTolerance || returnsIndex < 0;
+                if (bad) { perValkretsFailures++; }
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-32} {1,6} {2,10:F6} {3,14:F4} {4,11:F4} {5,7:F3} {7,12:F1} {8,15:F1}{6}\n",
+                    name, vg.Length, vSum, vEligible, roll, ratio, bad ? "  <- FAIL" : "", predicted, actual));
+            }
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "    spread: age-predicted {0:F1}-{1:F1} ({2:F1} points) against actual 2022 {3:F1}-{4:F1} ({5:F1} points) - printed\n"
+                + "    beside the roll, not asserted to explain it.\n",
+                predMin, predMax, predMax - predMin, actMin, actMax, actMax - actMin));
+            if (perValkretsFailures > 0)
+            {
+                failures.Add($"{perValkretsFailures} valkrets view(s)");
+                Debug.LogError($"COHORTVOTERS: {perValkretsFailures} valkrets view(s) fail - shares not summing to 1 or a name that does not join the returns catalog (see the table).");
+            }
             if (failures.Count == 0)
             {
                 sb.Append("\n    CLEAN - the join holds in all six, and Sweden's weights reproduce its published total.\n");

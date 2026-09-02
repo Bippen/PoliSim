@@ -144,6 +144,47 @@ namespace PoliSim.Elections
 
         /// <summary>Millions eligible to vote: the cohorts at or above the voting age, with the band that
         /// STRADDLES it apportioned by the share of its years that qualify.</summary>
+        /// <summary>
+        /// F3 (2026-09-02): the same view PER VALKRETS, over the pyramid `SwedishValkretsPopulation2024`
+        /// carries for it — SCB's 31 December 2024 population by five-year band, mapped to the 29
+        /// Riksdag valkretsar by Vallagen's own municipality lists. Sweden only; index = the statute's
+        /// item − 1 (`SwedishValkretsPopulation2024.Names[index]` is the valkrets in Valmyndigheten's
+        /// form). ⚠ This pyramid is the 2024 STOCK, not the walked, stepping national pyramid the
+        /// country carries: a regional projection is not on record, so a valkrets's age structure is
+        /// its last observed one, and the doc says so rather than scaling it silently.
+        /// </summary>
+        public static Group[] ForValkrets(int index)
+        {
+            PopulationCohorts pyramid = ValkretsPyramid(index);
+            if (pyramid == null) { return Array.Empty<Group>(); }
+            int votingAge = VotingAge(CountryId.Sweden);
+            double eligible = EligiblePopulation(pyramid, votingAge);
+            if (eligible <= 0.0) { return Array.Empty<Group>(); }
+            (int FromAge, int ToAge, double Percent)[] bands = SwedenTurnout2014;
+            var groups = new Group[bands.Length];
+            for (int b = 0; b < bands.Length; b++)
+            {
+                double people = InEligibleRange(pyramid, bands[b].FromAge, bands[b].ToAge, votingAge);
+                groups[b] = new Group(
+                    bands[b].ToAge >= 999 ? $"{bands[b].FromAge}+" : $"{bands[b].FromAge}-{bands[b].ToAge}",
+                    bands[b].FromAge, bands[b].ToAge, people / eligible, bands[b].Percent);
+            }
+            return groups;
+        }
+
+        /// <summary>The valkrets's 2024 pyramid in the substrate's unit (millions), or null when the index is out of the catalog's range.</summary>
+        public static PopulationCohorts ValkretsPyramid(int index)
+        {
+            if (index < 0 || index >= Generated.SwedishValkretsPopulation2024.Bands.Length) { return null; }
+            long[] bands = Generated.SwedishValkretsPopulation2024.Bands[index];
+            var counts = new float[PopulationCohorts.CohortCount];
+            for (int k = 0; k < counts.Length && k < bands.Length; k++) { counts[k] = bands[k] / 1_000_000f; }
+            return new PopulationCohorts(counts);
+        }
+
+        /// <summary>The valkrets's index in the catalog by Valmyndigheten's name (the returns catalog's form), or −1.</summary>
+        public static int ValkretsIndex(string name) => Array.IndexOf(Generated.SwedishValkretsPopulation2024.Names, name);
+
         public static double EligiblePopulation(PopulationCohorts cohorts, int votingAge)
             => InEligibleRange(cohorts, votingAge, 999, votingAge);
 
