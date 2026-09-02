@@ -352,6 +352,7 @@ namespace PoliSim.EditorTools
                 // SCB's separately-published all-ages figure - two independently sourced things agreeing,
                 // which is the strongest form of check this suite has.
                 ("VoterGroupViewDiagnostic", VoterGroupViewDiagnostic.Run),
+                ("DomesticMoneyBasisDiagnostic", DomesticMoneyBasisDiagnostic.Run),   // P2-0.1 (2026-09-02): every Domestic money figure to its basis; the one-time settlements as a share of the deciding country GDP
 
                 // ⚠ REGISTERED LAST HERE TOO, 2026-09-01, and it closes a hole rather than adding cover.
                 // This group owns two ratchets - CohortAgingStepDiagnostic's runaway count and

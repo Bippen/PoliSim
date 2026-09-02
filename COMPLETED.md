@@ -21283,3 +21283,43 @@ becoming a per-valkrets view, F3's build, which is where the data is spent.
 - **Italy** — third route tried: normattiva's ELI and export endpoints (shell / error page), the Gazzetta's article endpoint (shell), and the Gazzetta's issue PDF of Legge 207/2024 — 25.6 MB, **scanned**: `pdftotext` yields 85 KB of front matter. It needs OCR, which is not a tool here. Italy alone stays billed, with the route that would work named.
 
 **Nothing built.** F4 waits on the income dimension, as §211 said; the sourcing is complete for four countries and the fifth's block is now a tooling fact, not a portal fact.
+
+## 217. P2-0.1 — THE DEFICIT BASIS BUG: measured, and it was the one-time settlements, not a SEK line (2026-09-02)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P2, Track 0): *"Measure first: which figure on Statistics › Domestic mixes a national-unit (SEK) line with a USD total. The likeliest seam is the budget decomposition's sourced lines against the USD seed."*
+
+**The measurement is `DomesticMoneyBasisDiagnostic`** (Editor, in `CheckSuite.Simulation`), and its first run was red — that run is the record (`PoliSim-captures/logs/p2_0_1_measure.log`). It traces every money figure the Domestic sheet prints to its basis, per country:
+
+1. **The seed.** GDP, the debt stock, the Debt-to-GDP identity, GDP per capita's identity, and every seeded spending line as a share of GDP. **All six countries clean.** The sourced decompositions (Sweden's utgiftsområden, the four R-K7 budgets) are share weights over the game's own total by construction, and the diagnostic proves it by measurement: no seeded line above its ceiling, no portfolio above its ceiling. ⚠ **The SEK hypothesis is measured false** — there is no national-unit line on the sheet.
+2. **After two closed years.** The report's revenue, spending and balance as shares of GDP, the sheet's deficit sign convention against the report's balance over the same GDP. **All six clean.** (The cumulative accumulator is printed beside the year's balance — P2-0.4's fact, asserted there, not here.)
+3. **The one-time settlements — where the basis actually broke.** Every option in the cabinet decision pool and the foreign-policy meeting pool carries a `BudgetImpact` authored in the game's billions when the USA was the only playable country, and `CabinetSystem.ApplyDecisionOption` / `ForeignPolicySystem.ApplyMeetingOption` applied it **unscaled to whichever country decided**. The run before the fix, verbatim:
+
+```
+  USA      largest as applied  +220.0 =  0.75% of GDP (unscaled it was  +220.0 =   0.75% of GDP)  <- cabinet: Loophole Closure Package / Push it through
+  Sweden   largest as applied  +220.0 = 35.14% of GDP (unscaled it was  +220.0 =  35.14% of GDP)  <- cabinet: Loophole Closure Package / Push it through
+  Germany  largest as applied  +220.0 =  4.60% of GDP
+  France   largest as applied  +220.0 =  6.68% of GDP
+  Italy    largest as applied  +220.0 =  9.65% of GDP
+  Poland   largest as applied  +220.0 = 26.36% of GDP
+```
+
+   One "Push it through" on a Swedish Finance minister's decision moved Sweden's books by a third of its GDP. That is a deficit figure with two bases on one screen — the year's flows on Sweden's scale and a settlement on the USA's — and it is what a player sees as the Budget Balance headline after a cabinet decision. The infrastructure, welfare and SWF flows are all shares of GDP and were never affected; only the two authored pools were.
+
+**The fix, at the seam.** `AuthoredImpactScale` (Simulation) states the authored basis once — the USA seed's GDP, read off `WorldFactory.UsaSeedGdp`, which is now the single statement of that seed and is used in the USA's own constructor call — and converts: an authored settlement lands as **the same share of the deciding country's current GDP**. Both apply sites route through it; the two option types' `BudgetImpact` fields document the basis. Nothing at the display moved. The run after the fix (`p2_0_1_after2.log`):
+
+```
+  USA      largest as applied  +221.8 =  0.76% of GDP (unscaled it was  +220.0 =   0.75% of GDP)
+  Sweden   largest as applied    +4.8 =  0.76% of GDP (unscaled it was  +220.0 =  35.14% of GDP)
+  Germany  largest as applied   +36.2 =  0.76% of GDP (unscaled it was  +220.0 =   4.60% of GDP)
+  France   largest as applied   +25.0 =  0.76% of GDP (unscaled it was  +220.0 =   6.68% of GDP)
+  Italy    largest as applied   +17.3 =  0.76% of GDP (unscaled it was  +220.0 =   9.65% of GDP)
+  Poland   largest as applied    +6.3 =  0.76% of GDP (unscaled it was  +220.0 =  26.36% of GDP)
+```
+
+**The correction per country, stated:** the USA at seed is byte-identical (the factor is exactly one; asserted on a fresh seed world — the diagnostic's own first version asked it of a USA that had closed two years and reported growth as a defect, which is the ordering error the comment there now names); after the seed the USA's settlements scale with its GDP, which is the honest reading of a settlement as a share of the economy that pays it. Sweden's settlements shrink to roughly a forty-sixth of what they were, Poland's to a thirty-fifth, Italy's to a thirteenth, France's to a ninth, Germany's to a sixth — each now the same share of its own GDP as the authored figure is of the USA seed's. **Class: SAFE for the trajectory bar** — neither pool is reached by `TrajectoryBaselineDump` (cabinet decisions roll only for appointed ministers and are resolved only by the controller; meetings roll only in `AdvanceCountryDayTick`), so the no-policy trajectories cannot move; the change reaches play, and only play.
+
+**The harness that asserts one basis** is the same diagnostic, now green and armed: the identities, the seeded shares, the closed-year shares, and every pooled settlement under its ceiling on every country. Its ceilings are directions (S-37): growth above any of them fails; none is a target.
+
+**What was not done.** The four figures on the sheet the sheet itself derives — the deficit rows named by sign, GDP per capita, the impact ledger's money lines — were traced and not touched: each reads one state field in the seed's unit. The Budget Balance headline still shows the cumulative accumulator, which is P2-0.4's row, next.
+
+**Bar:** `RunSimulationBatch` 10 of 10 (the diagnostic among them) and `RunAllBatch` 25 of 25 clean on the committed tree (`bar23_p2_0_1_*.log`).

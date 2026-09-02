@@ -74,6 +74,11 @@ namespace PoliSim.Data
     /// </summary>
     public static class WorldFactory
     {
+        /// <summary>The USA seed's GDP, in the game's billions - stated ONCE so a scale that is defined against it
+        /// (AuthoredImpactScale, P2-0.1) reads it rather than transcribing it. The figure is the seed the class
+        /// comment documents; it is used in the constructor call below and nowhere else in this class.</summary>
+        public const float UsaSeedGdp = 29000f;
+
         public static World CreateDefault()
         {
             var eurozone = new CurrencyZone("Eurozone", 2.25f);
@@ -105,7 +110,7 @@ namespace PoliSim.Data
             // "trend output" reference value nothing else in WorldFactory reads, moves.
             var usa = new Country(
                 CountryId.USA, "United States",
-                new EconomyState(gdp: 29000f, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
+                new EconomyState(gdp: UsaSeedGdp, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
                     potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f, organizedCrimeIndex: 35f, corruptionIndex: 31f,
                     population: 341.8f, birthRate: 10.6f, deathRate: 9.1f, netMigrationRate: 3.7f, dependencyRatio: 28f),
                 usDollarZone, baseTariffRate: 3f,

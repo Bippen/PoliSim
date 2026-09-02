@@ -376,7 +376,7 @@ In order of what a player would notice first:
 national-unit (SEK) line with a USD total. The likeliest seam is the budget decomposition's sourced
 lines against the USD seed. Trace every money figure on that screen to its basis; fix at the seam,
 never at the display; state the correction per country. *Done when:* every money figure on the
-screen carries one basis and a harness asserts it.
+screen carries one basis and a harness asserts it. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §217: the seam was the one-time settlements (authored on the USA seed's scale, applied unscaled), not a SEK line; `DomesticMoneyBasisDiagnostic` measured it red and holds it green.**
 
 **P2-0.2 — The legacy election result.** Establish whether `ElectionSystem`'s approval-threshold
 "Re-Elected" path still fires now that C-R4b gives the player a party. If it does, retire it — the

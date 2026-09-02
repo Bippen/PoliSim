@@ -91,7 +91,9 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
             // F1: routed through the one real path (stock + accumulator together) - see
             // SimulationManager.ApplyOneTimeBudgetImpact for the routing claim and the boundary.
-            SimulationManager.ApplyOneTimeBudgetImpact(country, option.BudgetImpact);
+            // P2-0.1 (2026-09-02): the authored figure is on the USA seed's scale and lands as the same
+            // share of THIS country's GDP - see AuthoredImpactScale for the seam and its measurement.
+            SimulationManager.ApplyOneTimeBudgetImpact(country, AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, country));
             state.TradeBalance += option.TradeBalanceShock;
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + option.ApprovalEffect, 0f, 100f);
         }

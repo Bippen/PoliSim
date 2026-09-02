@@ -476,7 +476,9 @@ namespace PoliSim.Simulation
             state.PovertyRate = Mathf.Clamp(state.PovertyRate + option.PovertyRateShock, 0f, 100f);
             // F1: routed through the one real path (stock + accumulator together) - see
             // SimulationManager.ApplyOneTimeBudgetImpact for the routing claim and the boundary.
-            SimulationManager.ApplyOneTimeBudgetImpact(country, option.BudgetImpact);
+            // P2-0.1 (2026-09-02): the authored figure is on the USA seed's scale and lands as the same
+            // share of THIS country's GDP - see AuthoredImpactScale for the seam and its measurement.
+            SimulationManager.ApplyOneTimeBudgetImpact(country, AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, country));
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + option.ApprovalEffect, 0f, 100f);
             // R4-4 (ruling R2): unclamped like ApplyMeetingOption's identical trade shock - the
             // trade system recomputes the balance every turn, which is the fade that qualifies it.
