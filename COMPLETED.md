@@ -21763,3 +21763,20 @@ Each attribute is a float on `CabinetMinister`, 0–100, `[AUTHORED-DRAFT]` per 
 **Found on the way, not this row's.** The Politics sheet's Cabinet banner reads "THE CABINET — THREE PORTFOLIOS, LIVE" while the page seats six (R4-4 added Defense, Foreign Affairs and Education); a stale string, recorded for the report.
 
 **What the bar taught.** The first run called efficiency dead: the attribute case fed the three legacy scalar spending fields, which the turn derives from the spending-line dictionary - the player's real lever, the one the check steps - so nothing reached the sensitivities. The case now steps the dictionary as the levers are stepped, and efficiency moves the model like the other two; knowledge stays DISPLAY, as ruled. The second run printed all four right and still exited red: the loyalty case had written approval straight into the state to put the government under pressure, and the approval ledger's own audit - which explains every point of every move - logged the unexplained points as errors on every turn. The case now moves approval the way the game does, recording the move on the ledger as an event; the audit explains it and the bar is green.
+
+## 236. P2 — THE FOUR-WIDTH MATRIX AT THE SECTION'S CLOSE: the sweep at 1280×720, 1600×950, 1920×1080 and 2560×1440 on the tree that closes Playtest 2 (2026-09-02)
+
+**The sheet's instruction:** *"the four-width matrix once at the section's close."* The four are the harness's own standard geometries (S-17), filmed on HEAD after P2-5.2 - 1280 and 2560 by P2-5.2's own films (`p2mn1280_*`, `p2mn2560_*`), 1600 and 1920 by this pass (`p2mx1600_*`, `p2mx1920_*`).
+
+| width | captures | overflows | escapes | edge clips | frame probe | dead space (mean) |
+|---|---|---|---|---|---|---|
+| 1280×720 | 82, 0 failed | 0 | 0 | 0 | PolicyLaws 9 px past the frame (pre-existing) | 76,1% |
+| 1600×950 | 82, 0 failed | 0 | 0 | 0 | none | 77,0% |
+| 1920×1080 | 82, 0 failed | 0 | 0 | 2 (see below) | none | 77,9% |
+| 2560×1440 | 82, 0 failed | 0 | 0 | 0 | none | 79,4% |
+
+**What only the matrix shows.** At 1920×1080 the edge guard flags the two Desk frames (`01b_running_strip`, `01c_desk`) NOT FLUSH at zero margin: the top line's longest content run covers about half the width (955 of 1920 px) where the rule asks nine tenths, while the same frames are flush at 1280, 1600 and 2560. A width-specific composition of the Desk's masthead - not seen at the two widths the rows film at, and the reason the sheet asks for the matrix once at the close. Recorded here and in the report; D10's frame row (8 of 9) carries the film.
+
+**Dead space** rises with width across all four - 76,1 · 77,0 · 77,9 · 79,4 per cent of the frame ground-coloured - the sitting's own finding, measured at the close on the tree that closes it.
+
+**Bar:** the tree is P2-5.2's (`bar41_p2_5_2_*.log`, 11 of 11 and 26 of 26); this record changes no code, and the cheap bar runs once more on the commit that carries it (`bar42_p2_close_RunAllBatch.log`).

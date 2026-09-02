@@ -503,6 +503,8 @@ installed. The two stat-icon PNGs and the ITANES registration, still open.
 
 ---
 
+> **Section closed 2026-09-02.** Every row above points at its record (`COMPLETED.md` §217–§235); the four-width matrix at the close is §236, and the end-of-budget report went to Elias with it.
+
 # APPENDIX — the short tail
 
 ⚠ **Nothing here outranks F1–F6.** One line each, with its owner.
