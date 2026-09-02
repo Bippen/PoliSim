@@ -387,7 +387,7 @@ unreachable. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §218: it fired on ever
 **P2-0.3 — The campaign announces itself.** Campaign start is an interrupt: the clock HELDs, the
 banner names it, and HQ opens (the Fed-chair pause is the template). Election night is entered the
 same way — never a screen the player can miss. *Done when:* a Sweden game cannot pass campaign
-start or election night without the player dismissing an interrupt, filmed.
+start or election night without the player dismissing an interrupt, filmed. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §219: the opening is a state-derived hold on the Fed-chair template (banner, HQ opens itself, TAKE THE TRAIL), election night names itself on the banner; `-shotinterrupts` proves both held clocks on a played Sweden game at 1280 and 2560.**
 
 **P2-0.4 — Budget balance shows the year, not the cumulative.** The Domestic series becomes annual
 (per fiscal year); cumulative belongs to debt, which already has its own row. *Done when:* filmed,

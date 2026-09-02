@@ -803,7 +803,12 @@ namespace PoliSim.UI
             {
                 return;
             }
-            if (UpdateFedChairSelectionState() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
+            // P2-0.3: the campaign announces itself - HQ opens the moment the hold is on, before any gate,
+            // so a load or a harness that lands inside an unacknowledged opening meets the same screen the
+            // day loop would have opened. State-derived, so it is idempotent.
+            if (HasPendingCampaignOpening() && !_liveCampaignOpen && !_isGameOver) { OpenLiveCampaign(); }
+
+            if (UpdateFedChairSelectionState() || HasPendingCampaignOpening() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                 || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
                 || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
@@ -841,7 +846,7 @@ namespace PoliSim.UI
                 // draining _daySpeedTimer toward days/turns that can't happen yet - re-check every gate
                 // before this same frame's loop continues.
                 if (_isGameOver || _electionNight != null || _signingQueue.Count > 0
-                    || UpdateFedChairSelectionState()
+                    || UpdateFedChairSelectionState() || HasPendingCampaignOpening()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
                     || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
@@ -983,6 +988,7 @@ namespace PoliSim.UI
                 PendingElectionVerdict = _pendingElectionVerdict,
                 PendingElectionVerdictEndsGame = _pendingElectionVerdictEndsGame,
                 PendingElectionTurn = _pendingElectionTurn,
+                CampaignOpeningAcknowledgedElection = _campaignOpeningAcknowledgedElection,
                 Scenario = _scenarioProgress,
                 ScenarioVerdictPending = _scenarioVerdictPending,
                 GameSpeedValue = (int)_gameSpeed,
@@ -1051,6 +1057,9 @@ namespace PoliSim.UI
             _pendingElectionVerdict = ui?.PendingElectionVerdict;
             _pendingElectionVerdictEndsGame = ui?.PendingElectionVerdictEndsGame ?? false;
             _pendingElectionTurn = ui?.PendingElectionTurn ?? 0;
+            _campaignOpeningAcknowledgedElection = ui?.CampaignOpeningAcknowledgedElection;
+            // P2-0.3: a load that lands inside an unacknowledged opening opens HQ, as the day did.
+            if (HasPendingCampaignOpening() && !_liveCampaignOpen) { OpenLiveCampaign(); }
             // P2-0.2: a save taken while election night held its verdict cannot rebuild the night (the count it
             // showed is in-process state), so the verdict lands on the desk at once - stated, never lost.
             if (!string.IsNullOrEmpty(_pendingElectionVerdict)) { ApplyElectionVerdict(); }
@@ -1992,6 +2001,7 @@ namespace PoliSim.UI
             // Part B design's explicit instruction to extend the existing pattern rather than build a
             // fourth separate ad-hoc pause-check system.
             bool hasPendingBudgetProcess = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
+            bool hasPendingCampaignOpening = HasPendingCampaignOpening();   // P2-0.3
 
             float marginX = Screen.width * ScreenMarginFraction;
             float marginY = Screen.height * ScreenMarginFraction;
@@ -2023,7 +2033,7 @@ namespace PoliSim.UI
             // and its persisted overrides were deleted in v3.1 Phase B (COMPLETED.md section 45). The
             // interrupt banner the Budget tab once re-surfaced is the frame's banner on every screen
             // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
-            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess;
+            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening;
             float leftColumnWidth = RailWidth();
             float rightColumnWidth = areaWidth - leftColumnWidth - columnSpacing;
 
@@ -4836,6 +4846,18 @@ namespace PoliSim.UI
             }
 
             var blocking = new List<string>();
+            // P2-0.3: the takeover and the opening name themselves - the banner says what holds the clock,
+            // not whichever meeting waits behind it.
+            if (_electionNight != null)
+            {
+                blocking.Add("election night - the count is in, and CONTINUE is on the board");
+            }
+
+            if (HasPendingCampaignOpening())
+            {
+                blocking.Add("the opening of your election campaign (Campaign HQ)");
+            }
+
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
                 blocking.Add($"a {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()} appointment (Politics tab)");

@@ -82,6 +82,49 @@ namespace PoliSim.UI
         private bool _liveCampaignOpen;
 
         /// <summary>The live campaign's snapshot for the player's party, or null when none runs / the player's party is not in it.</summary>
+        /// <summary>
+        /// P2-0.3 (2026-09-02): **the campaign announces itself.** The election date (yyyy-MM-dd) of the
+        /// campaign whose opening the player has acknowledged; null until they have. Derived against
+        /// the live campaign every frame (`HasPendingCampaignOpening`), so the hold is a fact about
+        /// state - it survives a load, and a harness that drives the sim directly still meets it.
+        /// Persisted with the UI draft state.
+        /// </summary>
+        private string _campaignOpeningAcknowledgedElection;
+
+        /// <summary>
+        /// True while the player's campaign has opened and its opening has not been acknowledged: the
+        /// clock HELDs, the banner names it, and HQ opens (the Fed-chair pause is the template). Only
+        /// for a party the player runs; a country whose campaign is not staged never holds.
+        /// </summary>
+        private bool HasPendingCampaignOpening()
+        {
+            CampaignRun.State campaign = _simulationManager?.PlayerCampaign;
+            if (campaign == null || campaign.Finished || _playerCountry == null) { return false; }
+            if (LiveCampaignSnapshot.PlayerPartyIndex(campaign, _playerCountry) < 0) { return false; }
+            return _campaignOpeningAcknowledgedElection != CampaignOpeningKey(campaign);
+        }
+
+        private static string CampaignOpeningKey(CampaignRun.State campaign) =>
+            campaign.Setup.Calendar.ElectionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        /// <summary>The interrupt's exit: the HQ's own chip, and the harness's way of pressing it. The clock runs again the next frame.</summary>
+        private void AcknowledgeCampaignOpening()
+        {
+            CampaignRun.State campaign = _simulationManager?.PlayerCampaign;
+            if (campaign == null) { return; }
+            _campaignOpeningAcknowledgedElection = CampaignOpeningKey(campaign);
+        }
+
+        /// <summary>Opens the live HQ over the running campaign - the rail cell's own branch, also taken by the campaign's opening interrupt and by a load that lands on one.</summary>
+        private void OpenLiveCampaign()
+        {
+            CampaignSnapshot? live = BuildLiveCampaignSnapshot();
+            if (!live.HasValue) { return; }
+            _onDesk = false;
+            _liveCampaignOpen = true;
+            _campaignScreen = live;
+        }
+
         private CampaignSnapshot? BuildLiveCampaignSnapshot()
         {
             if (_simulationManager == null || _playerCountry == null || _simulationManager.PlayerCampaign == null) { return null; }
@@ -149,13 +192,7 @@ namespace PoliSim.UI
                 }
                 else
                 {
-                    CampaignSnapshot? live = BuildLiveCampaignSnapshot();
-                    if (live.HasValue)
-                    {
-                        _onDesk = false;
-                        _liveCampaignOpen = true;
-                        _campaignScreen = live;
-                    }
+                    OpenLiveCampaign();
                 }
             }
             if (Event.current.type != EventType.Repaint) { return; }
@@ -257,8 +294,21 @@ namespace PoliSim.UI
 
             string phaseText = SpacedIdentifier(s.Phase.ToString()).ToUpperInvariant();
             float phaseWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(phaseText)).x) + Mathf.Round(16f * ux);
-            DrawDeskChipButton(new Rect(daysRect.x - phaseWidth - Mathf.Round(6f * ux), chipY, phaseWidth, chipHeight),
-                phaseText, chipCaption, selected: true, disabled: true);
+            var phaseRect = new Rect(daysRect.x - phaseWidth - Mathf.Round(6f * ux), chipY, phaseWidth, chipHeight);
+            DrawDeskChipButton(phaseRect, phaseText, chipCaption, selected: true, disabled: true);
+
+            // P2-0.3: the opening interrupt's exit. The clock is held until this is pressed; the banner above
+            // the sheet says so. Drawn only while the hold is on, so a re-opened HQ carries no stale chip.
+            if (HasPendingCampaignOpening())
+            {
+                const string trailText = "TAKE THE TRAIL";
+                float trailWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(trailText)).x) + Mathf.Round(16f * ux);
+                if (DrawDeskChipButton(new Rect(phaseRect.x - trailWidth - Mathf.Round(6f * ux), chipY, trailWidth, chipHeight),
+                        trailText, chipCaption, selected: false, disabled: false))
+                {
+                    AcknowledgeCampaignOpening();
+                }
+            }
         }
 
         // ------------------------------------------------------------------------------------------

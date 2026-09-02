@@ -2752,6 +2752,57 @@ namespace PoliSim.Testing
 
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
 
+            // 0. P2-0.3: the campaign's opening is an interrupt. Drive the day path until the sim has begun
+            //    the player's campaign, then let the controller's own Update meet it: the banner must name
+            //    it, HQ must have opened itself, and the clock must not move until it is acknowledged.
+            int daysToOpening = 0;
+            while (sim.PlayerCampaign == null && daysToOpening < MaxStateSearchDays)
+            {
+                bool boundaryBefore = sim.AdvanceDay();
+                sim.AdvanceCountryDayTick(_countryId);
+                daysToOpening++;
+                if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
+            }
+
+            if (sim.PlayerCampaign == null)
+            {
+                Debug.LogError($"SHOT: -shotinterrupts - no campaign began for {_countryId} within {MaxStateSearchDays} days; the opening interrupt is NOT filmed. A Sweden game must have one.");
+                _failed++;
+                yield break;
+            }
+
+            yield return Settle();
+            yield return Settle();
+            string interruptText = controller.GetType().GetMethod("BuildFoldedInterruptText", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.Invoke(controller, new object[] { true, true }) as string;
+            FieldInfo hqOpenField = controller.GetType().GetField("_liveCampaignOpen", BindingFlags.Instance | BindingFlags.NonPublic);
+            bool hqOpen = hqOpenField?.GetValue(controller) is bool h && h;
+            if (interruptText == null || interruptText.IndexOf("campaign", System.StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                Debug.LogError($"SHOT: -shotinterrupts - the campaign began ({sim.CurrentDate:yyyy-MM-dd}) and the banner does not name it: \"{interruptText ?? "(no banner)"}\".");
+                _failed++;
+            }
+
+            if (!hqOpen)
+            {
+                Debug.LogError("SHOT: -shotinterrupts - the campaign began and Campaign HQ did not open itself.");
+                _failed++;
+            }
+
+            Claim("imgui");   // the HQ is an IMGUI sheet - it stamps the desk token, as every folded screen does
+            yield return Capture("e7a_campaign_opening_hq");
+            yield return AssertClockHeld(controller, sim, "the campaign's opening");
+
+            InvokeNoArg(controller, "AcknowledgeCampaignOpening");
+            yield return Settle();
+            yield return Capture("e7b_campaign_opening_acknowledged");
+            yield return ReportClockAfterDismissal(controller, sim, "the campaign's opening");
+
+            // Back to the Desk for the rest of the run, as a player who has read the HQ would go.
+            InvokeNoArg(controller, "CloseLiveCampaign");
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+
             // 1. To the first election turn, through the controller-shaped day path (the campaign runs inside
             //    the sim's own day; the boundary is where the controller would call CheckElection).
             int days = 0;

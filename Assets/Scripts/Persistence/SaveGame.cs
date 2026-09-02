@@ -147,6 +147,8 @@ namespace PoliSim.Persistence
         public string PendingElectionVerdict;
         public bool PendingElectionVerdictEndsGame;
         public int PendingElectionTurn;
+        /// <summary>P2-0.3 (2026-09-02): the election date of the campaign whose opening the player acknowledged - the hold is derived against the live campaign, so this is the only state it needs.</summary>
+        public string CampaignOpeningAcknowledgedElection;
 
         /// <summary>
         /// STEP 3 (R-S3e's "one id plus counters"): the active scenario's id and objective progress,
