@@ -4442,9 +4442,9 @@ namespace PoliSim.UI
                         GUIStyle style = LadderStyle(w, 480f);
                         // R-SP4: the rung is the renderer's honest footprint at this width - the plot
                         // square plus its caption band - not a bare square with captions loose.
-                        Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, w, w, style);
+                        Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, w, w, style, PlayerCountryId, withLegend: false);
                         Rect r = cursor.Place(footprint.x, footprint.y, captionHeight);
-                        _politicalCompassRenderer.Draw(r, _world.Countries, PlayerCountryId, style);
+                        _politicalCompassRenderer.Draw(r, _world.Countries, PlayerCountryId, style, withLegend: false);
                         LadderCaption(r, $"{w} plot, {Mathf.Round(footprint.x)}x{Mathf.Round(footprint.y)} footprint, type {style.fontSize}", captionHeight);
                     }
                     break;
@@ -8373,16 +8373,16 @@ namespace PoliSim.UI
         private void DrawPoliticalCompassContent(float availableWidth)
         {
             DrawColoredLabel("Political Compass", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("Grounded entirely in this game's own tracked policy data - no invented ideology labels. X: average implemented tax rate blended with total government spending (% of GDP) - further right means a bigger fiscal footprint. Y: average sector regulation blended with average implemented welfare generosity - higher means more market regulation and a more generous welfare state. Your own country is ringed in ink.", _labelStyle);
-            float compassSize = Mathf.Clamp(Screen.height * 0.4f, 260f, 520f);
+            GUILayout.Label("CHES 2024 positions: economic left-right across, liberal-conservative down. Parties at their published pairs, countries at the seat-weighted mean of their chambers, the sitting cabinet ringed.", _labelStyle);   // P2-3.2 (2026-09-02)
+            float compassSize = Mathf.Clamp(Screen.height * 0.55f, 260f, 800f);   // P2-3.2: the plot takes the height the sheet has; the legend column takes the rest of the width
             // R-SP4 (2026-08-28): reserve the compass's HONEST footprint - the plot square plus its
             // caption band at the width the captions need, capped at the sheet's own inner width less
             // the scroll view's gutter - so the renderer's declared rect contains everything it draws
             // and the layout reflows around the real size rather than a bare square.
             float footprintWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - CompassScrollGutter;
-            Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, compassSize, footprintWidth, _labelStyle);
+            Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, compassSize, footprintWidth, _labelStyle, PlayerCountryId, withLegend: true);
             Rect compassRect = GUILayoutUtility.GetRect(footprint.x, footprint.y, GUILayout.Width(footprint.x), GUILayout.Height(footprint.y));
-            _politicalCompassRenderer.Draw(compassRect, _world.Countries, PlayerCountryId, _labelStyle);
+            _politicalCompassRenderer.Draw(compassRect, _world.Countries, PlayerCountryId, _labelStyle, withLegend: true);
         }
 
         /// <summary>The Compass tab's scroll view takes its vertical scrollbar out of the content's width - the Budget ledger's own 18 px allowance, the same measurement.</summary>

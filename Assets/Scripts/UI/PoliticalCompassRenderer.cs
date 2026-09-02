@@ -1,47 +1,41 @@
 using System.Collections.Generic;
+using System.Globalization;
 using PoliSim.Data;
+using PoliSim.Elections;
 using UnityEngine;
 
 namespace PoliSim.UI
 {
     /// <summary>
-    /// Political Systems Overhaul Part C: a 2D scatter plot, one dot per country, grounded entirely
-    /// in this game's OWN real, already-tracked policy data - not invented ideology labels. Reuses
-    /// the same hand-drawn Texture2D circle/line technique MapRenderer/PolicyWebRenderer already
-    /// established (BuildCircleTexture, rotated-stretched-rect line segments), procedurally drawn
-    /// per Master Roadmap working-discipline rule 10.
-    ///
-    /// X axis ("fiscal size"): average implemented TaxLine.Rate blended with total government
-    /// spending as a percent of GDP (whichever mechanism the country actually uses - detailed
-    /// SpendingLines if present, else the legacy GovernmentSpendingRate baseline) - higher means
-    /// more tax collected and more spent, a bigger fiscal footprint either way.
-    /// Y axis ("regulatory/social intervention"): average Sector.RegulationLevel blended with
-    /// average implemented WelfareProgram.GenerosityLevel - higher means more regulated markets and
-    /// a more generous welfare state.
-    /// Both axes land on the SAME already-existing 0-100 dial scale every policy lever in this game
-    /// already uses (50 = neutral), so no new normalization scheme was invented for this widget.
+    /// The political compass on the CHES scales (P2-3.2, Playtest 2, 2026-09-02): X is <c>lrecon</c>
+    /// (economic left … right), Y is <c>galtan</c> (liberal / GAL … conservative / TAN), both 0–10 with the
+    /// endpoints the codebook gives, fixed - not auto-scaled to the observed spread, so a point's place is
+    /// its value. Three kinds of point, every one from <see cref="CompassPositions"/>: the player's
+    /// chamber's parties at their published pairs (small, in the neutral ink - D9 row 5: party ink never sits beside
+    /// an area accent, and the countries are drawn in theirs - tagged by abbreviation), each
+    /// country at the seat-weighted mean of its chamber (in the country's ink, the player's ringed), and the
+    /// player's sitting cabinet at the seat-weighted mean of its members (a hollow ring in the country's
+    /// ink, tagged). With <c>withLegend</c> the plot is joined by a column that names every point with its
+    /// pair and the seats it rests on - the six chamber means sit within a unit of one another, so names on
+    /// the plot would pile up; without it (the Desk card, the ladder) the plot carries the six dots, the
+    /// player's ring and name, and the two axis captions. The axes' old policy-data blends live on in
+    /// <see cref="PoliSim.Simulation.PolicyStanceAxes"/> for the Statistics comparison; they are no longer
+    /// positions on this plot.
     /// </summary>
     public class PoliticalCompassRenderer
     {
-        private const float MinAxisValue = 0f;
-        private const float MaxAxisValue = 100f;
         private const float DotDiameter = 14f;
+        private const float PartyDotDiameter = 8f;
         private const float PlayerRingExtraDiameter = 8f;
+        private const float CabinetRingDiameter = 22f;
+        private const float CaptionGap = 6f;
+        private const float CaptionLineGap = 2f;
+        private const float LegendGap = 14f;
+        private const float LegendShareOfWidth = 0.5f;
 
-        /// <summary>Paper, not near-black - the FIFTH renderer carrying this literal, found by sweeping rather than by looking at the screen it breaks.</summary>
         private static readonly Color BackgroundColor = PoliSimTheme.Card;
         private static readonly Color GridColor = PoliSimTheme.Hairline;
-        private static readonly Color AxisLabelColor = new Color(0.65f, 0.65f, 0.65f, 1f);
-        /// <summary>
-        /// The ring marking the player's own dot. Was Color.white - correct against a black ground, and
-        /// INVISIBLE against paper.
-        ///
-        /// ⚠ **The ground sweep could not have caught this one.** It repointed BackgroundColor and
-        /// GridColor, which is why this screen otherwise arrived correct - but a highlight is not a
-        /// ground, and "white" only reads as emphasis while the thing behind it is dark. Inverting a
-        /// theme inverts what "stands out" means, and every such choice has to be re-decided rather than
-        /// re-tinted. The copy said "ringed in white" too, so the text was wrong in the same breath.
-        /// </summary>
+        private static readonly Color AxisLabelColor = PoliSimTheme.TextMuted;
         private static readonly Color PlayerRingColor = PoliSimTheme.TextPrimary;
 
         private Texture2D _backgroundTexture;
@@ -49,105 +43,19 @@ namespace PoliSim.UI
         private Texture2D _ringTexture;
         private Texture2D _lineTexture;
 
-        /// <summary>This country's X-axis position (0-100): the average of its implemented tax rates and its total government spending as a percent of GDP, whichever mechanism (detailed SpendingLines or the legacy GovernmentSpendingRate baseline) it actually uses.</summary>
-        public static float GetFiscalSizeAxisValue(Country country)
+        private readonly struct LegendLine
         {
-            float taxSum = 0f;
-            int taxCount = 0;
-            foreach (TaxLine taxLine in country.TaxLines)
-            {
-                if (!taxLine.IsImplemented) continue;
-                taxSum += taxLine.Rate;
-                taxCount++;
-            }
-            float avgTaxRate = taxCount > 0 ? taxSum / taxCount : 0f;
-
-            float spendingPercentOfGdp;
-            if (country.SpendingLines.Count > 0)
-            {
-                float total = 0f;
-                foreach (SpendingLine line in country.SpendingLines)
-                {
-                    total += line.Amount;
-                }
-                spendingPercentOfGdp = country.State.GDP > 0f ? total / country.State.GDP * 100f : 0f;
-            }
-            else
-            {
-                spendingPercentOfGdp = country.GovernmentSpendingRate;
-            }
-
-            return Mathf.Clamp((avgTaxRate + spendingPercentOfGdp) * 0.5f, MinAxisValue, MaxAxisValue);
+            public readonly string Text;
+            public readonly Color? Swatch;
+            public readonly bool Ring;
+            public readonly bool Header;
+            public LegendLine(string text, Color? swatch, bool ring, bool header) { Text = text; Swatch = swatch; Ring = ring; Header = header; }
         }
 
-        /// <summary>This country's Y-axis position (0-100): the average of its eight sectors' RegulationLevel and its implemented welfare programs' GenerosityLevel (0 if none implemented).</summary>
-        public static float GetRegulationWelfareAxisValue(Country country)
-        {
-            float regulationSum = 0f;
-            foreach (Sector sector in country.Sectors)
-            {
-                regulationSum += sector.RegulationLevel;
-            }
-            float avgRegulation = country.Sectors.Count > 0 ? regulationSum / country.Sectors.Count : 50f;
+        private static (string X, string Y) CaptionTexts() =>
+            ("X: economic left (0) to right (10) - CHES lrecon.",
+             "Y: liberal / GAL (0) to conservative / TAN (10) - CHES galtan.");
 
-            float generositySum = 0f;
-            int welfareCount = 0;
-            foreach (WelfareProgram program in country.WelfarePrograms)
-            {
-                if (!program.IsImplemented) continue;
-                generositySum += program.GenerosityLevel;
-                welfareCount++;
-            }
-            float avgGenerosity = welfareCount > 0 ? generositySum / welfareCount : 0f;
-
-            return Mathf.Clamp((avgRegulation + avgGenerosity) * 0.5f, MinAxisValue, MaxAxisValue);
-        }
-
-        /// <summary>
-        /// Draws the whole compass into <paramref name="rect"/> - one dot per country in
-        /// <paramref name="countries"/>, colored via UiPalette.GetCountryColor, the player's own
-        /// ringed in ink so it's never ambiguous which dot is "mine" among six similarly-sized
-        /// ones. Both axes auto-scale to the OBSERVED min/max across the given countries (padded),
-        /// the same "zoom into whatever real variance exists" philosophy GraphRenderer's own Y-axis
-        /// auto-scaling already uses - six countries' real policy differences are often modest
-        /// relative to the dials' full 0-100 range, and a fixed 0-100 plot left them clustered into
-        /// an unreadably tight, overlapping clump. Country-name labels get a light vertical
-        /// decluttering pass (pushed down just enough to clear the previous label, top to bottom) so
-        /// they never overlap each other even when two dots land close together.
-        /// </summary>
-        /// <summary>Clearance between the plot square and the caption band, and between the two captions.</summary>
-        private const float CaptionGap = 6f;
-        private const float CaptionLineGap = 2f;
-
-        /// <summary>The two axis captions - the observed, padded range in the text - computed once per call so <see cref="Footprint"/> and <see cref="Draw"/> read the same strings.</summary>
-        private static (string X, string Y) CaptionTexts(IReadOnlyList<Country> countries)
-        {
-            ComputeRanges(countries, out float[] _, out float[] _, out float minX, out float maxX, out float minY, out float maxY);
-            return ($"X: fiscal size, {minX:F0} (smaller govt) to {maxX:F0} (bigger govt)",
-                    $"Y: regulation & welfare generosity, {minY:F0} (less) to {maxY:F0} (more)");
-        }
-
-        private static void ComputeRanges(IReadOnlyList<Country> countries, out float[] xValues, out float[] yValues,
-            out float minX, out float maxX, out float minY, out float maxY)
-        {
-            int count = countries.Count;
-            xValues = new float[count];
-            yValues = new float[count];
-            minX = float.MaxValue; maxX = float.MinValue; minY = float.MaxValue; maxY = float.MinValue;
-            for (int i = 0; i < count; i++)
-            {
-                xValues[i] = GetFiscalSizeAxisValue(countries[i]);
-                yValues[i] = GetRegulationWelfareAxisValue(countries[i]);
-                minX = Mathf.Min(minX, xValues[i]);
-                maxX = Mathf.Max(maxX, xValues[i]);
-                minY = Mathf.Min(minY, yValues[i]);
-                maxY = Mathf.Max(maxY, yValues[i]);
-            }
-            PadRange(ref minX, ref maxX);
-            PadRange(ref minY, ref maxY);
-        }
-
-        /// <summary>A caption style at the plot's own axis-label voice: two points under the label type, wrapping (a caption wraps rather than shrinks - shrinking to dodge the containment assert is the one thing R-SP4 forbids).</summary>
         private static GUIStyle CaptionStyle(GUIStyle labelStyle, bool wrap)
         {
             var style = new GUIStyle(labelStyle) { fontSize = Mathf.Max(9, labelStyle.fontSize - 2), wordWrap = wrap, alignment = TextAnchor.UpperLeft };
@@ -158,7 +66,6 @@ namespace PoliSim.UI
             return style;
         }
 
-        /// <summary>The caption band's height at <paramref name="width"/>: both captions wrapped to it, plus the gaps.</summary>
         private static float CaptionBandHeight((string X, string Y) captions, GUIStyle captionStyle, float width)
         {
             return CaptionGap
@@ -167,168 +74,261 @@ namespace PoliSim.UI
                    + captionStyle.CalcHeight(new GUIContent(captions.Y), width);
         }
 
-        /// <summary>
-        /// R-SP4 (the stage-prep micro-pass, 2026-08-28): the compass's HONEST footprint - the plot
-        /// square plus the caption band beneath it, at the width the captions need (their single-line
-        /// width, capped at what the host can give; past the cap they wrap). Until this pass the two
-        /// range captions were GUILayout labels emitted after the plot, landing wherever the layout
-        /// cursor stood - under the plot on the Compass tab, at the sheet's corner on the ladder film -
-        /// so the renderer's declared rect did not contain everything it drew. Callers reserve THIS,
-        /// not a bare square, and <see cref="Draw"/> asserts that every rect it lays down sits inside
-        /// the one it was given.
-        /// </summary>
-        public Vector2 Footprint(IReadOnlyList<Country> countries, float plotSize, float availableWidth, GUIStyle labelStyle)
+        private static string Pair(CompassPositions.Point p) => string.Format(CultureInfo.InvariantCulture, "{0:F1} · {1:F1}", p.LrEcon, p.Galtan);
+
+        /// <summary>The legend column's lines: every point on the plot, named, with its pair and the seats it rests on.</summary>
+        private static List<LegendLine> BuildLegend(IReadOnlyList<Country> countries, Country player)
         {
-            (string X, string Y) captions = CaptionTexts(countries);
-            GUIStyle flat = CaptionStyle(labelStyle, wrap: false);
-            float need = Mathf.Max(flat.CalcSize(new GUIContent(captions.X)).x, flat.CalcSize(new GUIContent(captions.Y)).x);
-            float width = Mathf.Min(Mathf.Max(availableWidth, 1f), Mathf.Max(plotSize, need));
-            GUIStyle wrapped = CaptionStyle(labelStyle, wrap: true);
-            return new Vector2(width, plotSize + CaptionBandHeight(captions, wrapped, width));
+            var lines = new List<LegendLine> { new LegendLine("COUNTRIES · CHAMBER MEAN · lrecon · galtan · seats", null, false, true) };
+            foreach (Country country in countries)
+            {
+                CompassPositions.Point? mean = CompassPositions.ChamberMean(country, out int leftOut);
+                string tail = mean.HasValue
+                    ? string.Format(CultureInfo.InvariantCulture, "{0} · {1} seats{2}", Pair(mean.Value), mean.Value.Seats, leftOut > 0 ? string.Format(CultureInfo.InvariantCulture, " ({0} publish no pair)", leftOut) : string.Empty)
+                    : "no seated party publishes a pair";
+                lines.Add(new LegendLine($"{country.Name}{(ReferenceEquals(country, player) ? " (ringed)" : string.Empty)}  {tail}", UiPalette.GetCountryColor(country.Id), false, false));
+            }
+
+            if (player != null)
+            {
+                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S CABINET · SEAT-WEIGHTED MEAN", null, false, true));
+                IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(player);
+                CompassPositions.Point? cabinetMean = CompassPositions.CabinetMean(player, out int _);
+                if (cabinet.Count == 0)
+                {
+                    lines.Add(new LegendLine("no government is formed from this chamber", null, false, false));
+                }
+                else
+                {
+                    string tail = cabinetMean.HasValue ? string.Format(CultureInfo.InvariantCulture, "{0} · {1} seats", Pair(cabinetMean.Value), cabinetMean.Value.Seats) : "no member publishes a pair";
+                    lines.Add(new LegendLine($"{string.Join("+", cabinet)}  {tail}", UiPalette.GetCountryColor(player.Id), true, false));
+                }
+
+                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S PARTIES · PUBLISHED PAIRS (CHES 2024)", null, false, true));
+                foreach (PoliticalParty party in PartySystems.For(player.Id))
+                {
+                    CompassPositions.Point? own = CompassPositions.Party(party);
+                    lines.Add(new LegendLine($"{party.Abbrev}  {(own.HasValue ? Pair(own.Value) : "no published pair")}", PoliSimTheme.TextSecondary, false, false));
+                }
+            }
+            return lines;
         }
 
-        public void Draw(Rect rect, IReadOnlyList<Country> countries, CountryId playerCountryId, GUIStyle labelStyle)
+        private static float LegendLineHeight(LegendLine line, GUIStyle labelStyle, GUIStyle captionStyle) =>
+            Mathf.Ceil((line.Header ? captionStyle : labelStyle).CalcSize(new GUIContent(line.Text)).y) + 2f;
+
+        private static float LegendWidthNeed(List<LegendLine> lines, GUIStyle labelStyle, GUIStyle captionStyle)
+        {
+            float need = 0f;
+            foreach (LegendLine line in lines)
+            {
+                float text = (line.Header ? captionStyle : labelStyle).CalcSize(new GUIContent(line.Text)).x;
+                need = Mathf.Max(need, text + (line.Swatch.HasValue ? labelStyle.fontSize + 6f : 0f));
+            }
+            return Mathf.Ceil(need);
+        }
+
+        private static float LegendHeight(List<LegendLine> lines, GUIStyle labelStyle, GUIStyle captionStyle)
+        {
+            float height = 0f;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (lines[i].Header && i > 0) { height += captionStyle.fontSize * 0.6f; }
+                height += LegendLineHeight(lines[i], labelStyle, captionStyle);
+            }
+            return height;
+        }
+
+        private static Country Find(IReadOnlyList<Country> countries, CountryId id)
+        {
+            foreach (Country c in countries) { if (c.Id == id) { return c; } }
+            return null;
+        }
+
+        /// <summary>
+        /// The footprint: without a legend, the plot square plus the caption band at the width the axis
+        /// captions need (capped at the available width); with one, the whole available width, and the
+        /// taller of the plot-with-captions and the legend column.
+        /// </summary>
+        public Vector2 Footprint(IReadOnlyList<Country> countries, float plotSize, float availableWidth, GUIStyle labelStyle, CountryId playerCountryId, bool withLegend)
+        {
+            (string X, string Y) captions = CaptionTexts();
+            GUIStyle flat = CaptionStyle(labelStyle, wrap: false);
+            GUIStyle wrapped = CaptionStyle(labelStyle, wrap: true);
+            if (!withLegend)
+            {
+                float need = Mathf.Max(flat.CalcSize(new GUIContent(captions.X)).x, flat.CalcSize(new GUIContent(captions.Y)).x);
+                float width = Mathf.Min(Mathf.Max(availableWidth, 1f), Mathf.Max(plotSize, need));
+                return new Vector2(width, plotSize + CaptionBandHeight(captions, wrapped, width));
+            }
+
+            List<LegendLine> lines = BuildLegend(countries, Find(countries, playerCountryId));
+            float legendHeight = LegendHeight(lines, labelStyle, flat);
+            float plotWidth = Mathf.Max(1f, availableWidth - Mathf.Min(LegendWidthNeed(lines, labelStyle, flat), availableWidth * LegendShareOfWidth) - LegendGap);
+            float side = Mathf.Min(plotSize, plotWidth);
+            return new Vector2(Mathf.Max(availableWidth, 1f), Mathf.Max(side + CaptionBandHeight(captions, wrapped, side), legendHeight));
+        }
+
+        public void Draw(Rect rect, IReadOnlyList<Country> countries, CountryId playerCountryId, GUIStyle labelStyle, bool withLegend)
         {
             EnsureTexturesInitialized();
             GUI.DrawTexture(rect, _backgroundTexture, ScaleMode.StretchToFill);
 
-            // R-SP4: the plot is the square that leaves the caption band its measured height; the band
-            // takes the rect's full width beneath it. Everything below is placed inside `rect` and
-            // asserted so - the containment guard is the point of the change, not an afterthought.
-            (string X, string Y) captions = CaptionTexts(countries);
+            (string X, string Y) captions = CaptionTexts();
             GUIStyle captionStyle = CaptionStyle(labelStyle, wrap: true);
-            float bandHeight = CaptionBandHeight(captions, captionStyle, rect.width);
-            float plotSide = Mathf.Max(1f, Mathf.Min(rect.width, rect.height - bandHeight));
+            GUIStyle tagStyle = CaptionStyle(labelStyle, wrap: false);
+            Country player = Find(countries, playerCountryId);
+
+            // The plot square: the rect less the legend column (if any) and the caption band beneath.
+            List<LegendLine> lines = withLegend ? BuildLegend(countries, player) : null;
+            float legendWidth = withLegend ? Mathf.Min(LegendWidthNeed(lines, labelStyle, tagStyle), rect.width * LegendShareOfWidth) : 0f;
+            float plotWidthAvailable = withLegend ? rect.width - legendWidth - LegendGap : rect.width;
+            float bandHeight = CaptionBandHeight(captions, captionStyle, Mathf.Max(1f, plotWidthAvailable));
+            float plotSide = Mathf.Max(1f, Mathf.Min(plotWidthAvailable, rect.height - bandHeight));
             var plotSquare = new Rect(rect.x, rect.y, plotSide, plotSide);
 
-            float margin = labelStyle.fontSize * 1.5f;
+            // The margin holds the end words (full mode) or a little air (compact).
+            float margin = withLegend
+                ? Mathf.Max(labelStyle.fontSize * 1.5f, tagStyle.CalcSize(new GUIContent("RIGHT")).x + 4f)
+                : Mathf.Max(4f, DotDiameter * 0.5f + 2f);
             var plotRect = new Rect(plotSquare.x + margin, plotSquare.y + margin, plotSquare.width - margin * 2f, plotSquare.height - margin * 2f);
 
-            ComputeRanges(countries, out float[] xValues, out float[] yValues, out float minX, out float maxX, out float minY, out float maxY);
-            int count = countries.Count;
-
             DrawGridlines(plotRect);
+            if (withLegend) { DrawEndWords(plotSquare, plotRect, tagStyle); }
 
-            var points = new List<(Vector2 Pixel, Country Country)>(count);
-            for (int i = 0; i < count; i++)
+            if (withLegend && player != null)
             {
-                Vector2 point = ToPlotPixel(plotRect, xValues[i], yValues[i], minX, maxX, minY, maxY);
-                points.Add((point, countries[i]));
-
-                bool isPlayer = countries[i].Id == playerCountryId;
-                if (isPlayer)
+                // 1. The player's parties, small, in the neutral ink (D9 row 5), tagged by abbreviation.
+                foreach (PoliticalParty party in PartySystems.For(player.Id))
                 {
+                    CompassPositions.Point? p = CompassPositions.Party(party);
+                    if (!p.HasValue) { continue; }
+                    Vector2 pixel = ToPlotPixel(plotRect, p.Value.LrEcon, p.Value.Galtan);
+                    DrawCircle(new Rect(pixel.x - PartyDotDiameter * 0.5f, pixel.y - PartyDotDiameter * 0.5f, PartyDotDiameter, PartyDotDiameter),
+                        _circleTexture, PoliSimTheme.TextSecondary);
+                    Vector2 tagSize = tagStyle.CalcSize(new GUIContent(party.Abbrev));
+                    float tagX = Mathf.Clamp(pixel.x + PartyDotDiameter * 0.5f + 2f, plotRect.x, plotRect.xMax - tagSize.x);
+                    float tagY = Mathf.Clamp(pixel.y - tagSize.y * 0.5f, plotRect.y, plotRect.yMax - tagSize.y);
+                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), party.Abbrev, tagStyle);
+                }
+
+                // 2. The sitting cabinet, a hollow ring in the country's ink.
+                CompassPositions.Point? cabinet = CompassPositions.CabinetMean(player, out int _);
+                if (cabinet.HasValue)
+                {
+                    Vector2 pixel = ToPlotPixel(plotRect, cabinet.Value.LrEcon, cabinet.Value.Galtan);
+                    DrawCircle(new Rect(pixel.x - CabinetRingDiameter * 0.5f, pixel.y - CabinetRingDiameter * 0.5f, CabinetRingDiameter, CabinetRingDiameter),
+                        _ringTexture, UiPalette.GetCountryColor(player.Id));
+                    const string tag = "cabinet";
+                    Vector2 tagSize = tagStyle.CalcSize(new GUIContent(tag));
+                    float tagX = Mathf.Clamp(pixel.x - tagSize.x * 0.5f, plotRect.x, plotRect.xMax - tagSize.x);
+                    float tagY = Mathf.Clamp(pixel.y + CabinetRingDiameter * 0.5f + 1f, plotRect.y, plotRect.yMax - tagSize.y);
+                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), tag, tagStyle);
+                }
+            }
+
+            // 3. Each country at its chamber's seat-weighted mean, the player's ringed.
+            Vector2? playerPixel = null;
+            foreach (Country country in countries)
+            {
+                CompassPositions.Point? mean = CompassPositions.ChamberMean(country, out int _);
+                if (!mean.HasValue) { continue; }
+                Vector2 point = ToPlotPixel(plotRect, mean.Value.LrEcon, mean.Value.Galtan);
+                if (country.Id == playerCountryId)
+                {
+                    playerPixel = point;
                     float ringDiameter = DotDiameter + PlayerRingExtraDiameter;
-                    var ringRect = new Rect(point.x - ringDiameter * 0.5f, point.y - ringDiameter * 0.5f, ringDiameter, ringDiameter);
-                    DrawCircle(ringRect, _ringTexture, PlayerRingColor);
+                    DrawCircle(new Rect(point.x - ringDiameter * 0.5f, point.y - ringDiameter * 0.5f, ringDiameter, ringDiameter), _ringTexture, PlayerRingColor);
                 }
-
-                var dotRect = new Rect(point.x - DotDiameter * 0.5f, point.y - DotDiameter * 0.5f, DotDiameter, DotDiameter);
-                DrawCircle(dotRect, _circleTexture, UiPalette.GetCountryColor(countries[i].Id));
+                DrawCircle(new Rect(point.x - DotDiameter * 0.5f, point.y - DotDiameter * 0.5f, DotDiameter, DotDiameter), _circleTexture, UiPalette.GetCountryColor(country.Id));
             }
 
-            // Playtest finding 3 (2026-08-25): the declutter pass pushed labels DOWN with nothing
-            // tying a displaced label back to its dot ("France" far from France), and every label
-            // sat unconditionally to the dot's RIGHT, so a long name near the right edge ran
-            // across the cluster ("United States" over the dots). Three additions, same pass:
-            // a label whose right edge would leave the plot flips to the dot's LEFT; every label
-            // clamps inside the plot rect; and a label displaced vertically by more than its own
-            // height gets a thin leader line back to its dot, so the pairing never has to be
-            // guessed. The top-to-bottom declutter itself is unchanged.
-            points.Sort((a, b) => a.Pixel.y.CompareTo(b.Pixel.y));
-            float minLabelGap = labelStyle.fontSize + 4f;
-            float? previousLabelY = null;
-            foreach ((Vector2 point, Country country) in points)
+            // Compact: the player's name beside its ring - the one label the card has room for.
+            if (!withLegend && player != null && playerPixel.HasValue)
             {
-                Vector2 labelSize = labelStyle.CalcSize(new GUIContent(country.Name));
-                float naturalY = point.y - labelSize.y * 0.5f;
-                float labelY = naturalY;
-                if (previousLabelY.HasValue && labelY < previousLabelY.Value + minLabelGap)
-                {
-                    labelY = previousLabelY.Value + minLabelGap;
-                }
-
-                bool placeLeft = point.x + DotDiameter * 0.5f + 3f + labelSize.x > plotRect.xMax;
-                float labelX = placeLeft
-                    ? point.x - DotDiameter * 0.5f - 3f - labelSize.x
-                    : point.x + DotDiameter * 0.5f + 3f;
+                Vector2 labelSize = labelStyle.CalcSize(new GUIContent(player.Name));
+                float half = (DotDiameter + PlayerRingExtraDiameter) * 0.5f;
+                bool placeLeft = playerPixel.Value.x + half + 3f + labelSize.x > plotRect.xMax;
+                float labelX = placeLeft ? playerPixel.Value.x - half - 3f - labelSize.x : playerPixel.Value.x + half + 3f;
                 labelX = Mathf.Clamp(labelX, plotRect.x, plotRect.xMax - labelSize.x);
-
-                // Label-vs-DOT collision (the first capture's residual: label-vs-label decluttering
-                // left "United States" running straight across its neighbours' dots, because the
-                // first label in the chain keeps its natural y ON the dot row). A label whose rect
-                // would cross another country's dot is pushed below that dot; the leader line then
-                // carries the pairing, same as any other displacement.
-                var candidate = new Rect(labelX, labelY, labelSize.x, labelSize.y);
-                foreach ((Vector2 otherPixel, Country otherCountry) in points)
-                {
-                    if (ReferenceEquals(otherCountry, country))
-                    {
-                        continue;
-                    }
-
-                    var dotRect = new Rect(otherPixel.x - DotDiameter * 0.5f, otherPixel.y - DotDiameter * 0.5f, DotDiameter, DotDiameter);
-                    if (candidate.Overlaps(dotRect))
-                    {
-                        labelY = Mathf.Max(labelY, otherPixel.y + DotDiameter * 0.5f + 2f);
-                        candidate.y = labelY;
-                    }
-                }
-
-                labelY = Mathf.Clamp(labelY, plotRect.y, plotRect.yMax - labelSize.y);
-                previousLabelY = labelY;
-
-                if (Mathf.Abs(labelY - naturalY) > labelSize.y * 0.6f)
-                {
-                    var leaderStart = new Vector2(point.x, point.y + (labelY > point.y ? DotDiameter * 0.5f : -DotDiameter * 0.5f));
-                    var leaderEnd = new Vector2(placeLeft ? labelX + labelSize.x : labelX, labelY + labelSize.y * 0.5f);
-                    DrawLineSegment(leaderStart, leaderEnd, 1f, AxisLabelColor);
-                }
-
-                GUI.Label(new Rect(labelX, labelY, labelSize.x, labelSize.y), country.Name, labelStyle);
+                float labelY = Mathf.Clamp(playerPixel.Value.y - labelSize.y * 0.5f, plotRect.y, plotRect.yMax - labelSize.y);
+                GUI.Label(new Rect(labelX, labelY, labelSize.x, labelSize.y), player.Name, labelStyle);
             }
 
-            // The caption band, INSIDE the declared rect (R-SP4) - each caption at the height it wraps
-            // to at this width, so the rect is exact by construction and the assert below is the proof.
-            float xHeight = captionStyle.CalcHeight(new GUIContent(captions.X), rect.width);
-            float yHeight = captionStyle.CalcHeight(new GUIContent(captions.Y), rect.width);
-            var xRect = new Rect(rect.x, plotSquare.yMax + CaptionGap, rect.width, xHeight);
-            var yRect = new Rect(rect.x, xRect.yMax + CaptionLineGap, rect.width, yHeight);
+            // The captions wrap at the width the footprint measured them at: the plot's beside a legend, the rect's without one.
+            float captionWidth = withLegend ? plotSide : rect.width;
+            float xHeight = captionStyle.CalcHeight(new GUIContent(captions.X), captionWidth);
+            float yHeight = captionStyle.CalcHeight(new GUIContent(captions.Y), captionWidth);
+            var xRect = new Rect(rect.x, plotSquare.yMax + CaptionGap, captionWidth, xHeight);
+            var yRect = new Rect(rect.x, xRect.yMax + CaptionLineGap, captionWidth, yHeight);
             GUI.Label(xRect, captions.X, captionStyle);
             GUI.Label(yRect, captions.Y, captionStyle);
-
             UiContainmentGuard.Check("Compass plot", plotSquare, rect);
             UiContainmentGuard.Check("Compass caption X", xRect, rect);
             UiContainmentGuard.Check("Compass caption Y", yRect, rect);
+
+            if (withLegend)
+            {
+                DrawLegend(new Rect(plotSquare.xMax + LegendGap, rect.y, rect.xMax - plotSquare.xMax - LegendGap, rect.height), lines, labelStyle, tagStyle, rect);
+            }
         }
 
-        /// <summary>Pads an observed [min, max] range by 15% on each side (or a flat +-5 for an unreachably narrow/zero range) so dots never sit flush against the plot's own edge.</summary>
-        private static void PadRange(ref float min, ref float max)
+        private void DrawLegend(Rect column, List<LegendLine> lines, GUIStyle labelStyle, GUIStyle captionStyle, Rect container)
         {
-            float range = max - min;
-            float pad = range < 1f ? 5f : range * 0.15f;
-            min -= pad;
-            max += pad;
+            float y = column.y;
+            Color previous = GUI.color;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                LegendLine line = lines[i];
+                GUIStyle style = line.Header ? captionStyle : labelStyle;
+                if (line.Header && i > 0) { y += captionStyle.fontSize * 0.6f; }
+                float height = LegendLineHeight(line, labelStyle, captionStyle);
+                float x = column.x;
+                if (line.Swatch.HasValue)
+                {
+                    float size = labelStyle.fontSize;
+                    var swatch = new Rect(x, y + (height - 2f - size) * 0.5f, size, size);
+                    DrawCircle(swatch, line.Ring ? _ringTexture : _circleTexture, line.Swatch.Value);
+                    x += size + 6f;
+                }
+                var textRect = new Rect(x, y, column.xMax - x, height - 2f);
+                GUI.Label(textRect, line.Text, style);
+                UiOverflowGuard.Check(line.Text, style.CalcSize(new GUIContent(line.Text)), new Vector2(textRect.width, textRect.height), style.fontSize);
+                UiContainmentGuard.Check("Compass legend line", textRect, container);
+                y += height;
+            }
+            GUI.color = previous;
         }
 
-        private static Vector2 ToPlotPixel(Rect plotRect, float x, float y, float minX, float maxX, float minY, float maxY)
+        /// <summary>The conventional words at the plot's four edges, in the margin the plot square keeps around the plot.</summary>
+        private static void DrawEndWords(Rect plotSquare, Rect plotRect, GUIStyle tagStyle)
         {
-            float tx = maxX > minX ? Mathf.InverseLerp(minX, maxX, x) : 0.5f;
-            float ty = maxY > minY ? Mathf.InverseLerp(minY, maxY, y) : 0.5f;
-            return new Vector2(plotRect.x + tx * plotRect.width, plotRect.y + (1f - ty) * plotRect.height);
+            GUIStyle centred = new GUIStyle(tagStyle) { alignment = TextAnchor.MiddleCenter };
+            float line = centred.CalcSize(new GUIContent("LIBERAL")).y;
+            GUI.Label(new Rect(plotRect.x, plotSquare.y + (plotRect.y - plotSquare.y - line) * 0.5f, plotRect.width, line), "LIBERAL (GAL)", centred);
+            GUI.Label(new Rect(plotRect.x, plotRect.yMax + (plotSquare.yMax - plotRect.yMax - line) * 0.5f, plotRect.width, line), "CONSERVATIVE (TAN)", centred);
+            GUIStyle left = new GUIStyle(tagStyle) { alignment = TextAnchor.MiddleRight };
+            GUIStyle right = new GUIStyle(tagStyle) { alignment = TextAnchor.MiddleLeft };
+            GUI.Label(new Rect(plotSquare.x, plotRect.y, plotRect.x - plotSquare.x - 3f, plotRect.height), "LEFT", left);
+            GUI.Label(new Rect(plotRect.xMax + 3f, plotRect.y, plotSquare.xMax - plotRect.xMax - 3f, plotRect.height), "RIGHT", right);
         }
 
-        /// <summary>Light gridlines at the plot's own quarter marks, plus a slightly brighter one at the midpoint (each axis' own observed-range center, not a universal "50") so "which half" reads at a glance even though the range itself is per-draw.</summary>
+        /// <summary>The fixed 0–10 scales: x left to right, y with GAL (0) at the top and TAN (10) at the foot.</summary>
+        private static Vector2 ToPlotPixel(Rect plotRect, float lrEcon, float galtan)
+        {
+            float tx = Mathf.InverseLerp(CompassPositions.ScaleMin, CompassPositions.ScaleMax, lrEcon);
+            float ty = Mathf.InverseLerp(CompassPositions.ScaleMin, CompassPositions.ScaleMax, galtan);
+            return new Vector2(plotRect.x + tx * plotRect.width, plotRect.y + ty * plotRect.height);
+        }
+
         private void DrawGridlines(Rect plotRect)
         {
             for (int i = 0; i <= 4; i++)
             {
                 float t = i * 0.25f;
-                Color color = i == 2 ? Color.Lerp(GridColor, Color.white, 0.25f) : GridColor;
-
+                Color color = i == 2 ? Color.Lerp(GridColor, PoliSimTheme.TextMuted, 0.35f) : GridColor;
                 float gx = plotRect.x + t * plotRect.width;
                 DrawLineSegment(new Vector2(gx, plotRect.y), new Vector2(gx, plotRect.y + plotRect.height), 1f, color);
-
                 float gy = plotRect.y + t * plotRect.height;
                 DrawLineSegment(new Vector2(plotRect.x, gy), new Vector2(plotRect.x + plotRect.width, gy), 1f, color);
             }
@@ -342,21 +342,17 @@ namespace PoliSim.UI
             GUI.color = previous;
         }
 
-        /// <summary>Same rotated-stretched-rect technique as MapRenderer/PolicyWebRenderer's own DrawLineSegment.</summary>
         private void DrawLineSegment(Vector2 from, Vector2 to, float thickness, Color color)
         {
             Vector2 delta = to - from;
             float length = delta.magnitude;
             if (length < 1f) return;
-
             float angleDegrees = Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg;
             Matrix4x4 previousMatrix = GUI.matrix;
             Color previousColor = GUI.color;
-
             GUIUtility.RotateAroundPivot(angleDegrees, from);
             GUI.color = color;
             GUI.DrawTexture(new Rect(from.x, from.y - thickness * 0.5f, length, thickness), _lineTexture, ScaleMode.StretchToFill);
-
             GUI.matrix = previousMatrix;
             GUI.color = previousColor;
         }
@@ -369,24 +365,16 @@ namespace PoliSim.UI
                 _backgroundTexture.SetPixels(new[] { BackgroundColor, BackgroundColor, BackgroundColor, BackgroundColor });
                 _backgroundTexture.Apply(false);
             }
-            if (_circleTexture == null)
-            {
-                _circleTexture = BuildCircleTexture(16, filled: true);
-            }
-            if (_ringTexture == null)
-            {
-                _ringTexture = BuildCircleTexture(24, filled: false);
-            }
+            if (_circleTexture == null) { _circleTexture = BuildCircleTexture(16, filled: true); }
+            if (_ringTexture == null) { _ringTexture = BuildCircleTexture(24, filled: false); }
             if (_lineTexture == null)
             {
-                _lineTexture = new Texture2D(2, 2, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-                var white = Color.white;
-                _lineTexture.SetPixels(new[] { white, white, white, white });
+                _lineTexture = new Texture2D(1, 1, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+                _lineTexture.SetPixel(0, 0, Color.white);
                 _lineTexture.Apply(false);
             }
         }
 
-        /// <summary>Same filled-disc technique as PolicyWebRenderer.BuildCircleTexture, extended with an optional hollow-ring mode (a thin annulus instead of a solid disc) for the player-country highlight ring.</summary>
         private static Texture2D BuildCircleTexture(int diameter, bool filled)
         {
             var texture = new Texture2D(diameter, diameter, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };

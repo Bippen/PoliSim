@@ -173,6 +173,64 @@ namespace PoliSim.EditorTools
                                + "office test. Sites: " + string.Join(", ", thresholdSites));
             }
 
+            // P2-3.2 (2026-09-02): EVERY COMPASS POINT TRACES TO A CHES ROW OR A SEAT-WEIGHTED DERIVATION. For
+            // every country: each party point is its own published pair (or absent when either scale is NaN);
+            // the chamber mean re-summed here from seats × published pairs equals CompassPositions.ChamberMean;
+            // the cabinet mean re-summed over GovernmentFormation.Cabinet's members equals CabinetMean; and the
+            // seats left out are exactly the seated parties without a pair. No point can come from anywhere else.
+            sb.Append("\n--- P2-3.2: the compass's points against their derivations ---\n");
+            foreach (Country country in world.Countries)
+            {
+                IReadOnlyList<PoliticalParty> chamberParties = PartySystems.For(country.Id);
+                float lrSum = 0f, galSum = 0f; int seatSum = 0, unpaired = 0, partyPoints = 0;
+                bool partyPointsTrace = true;
+                foreach (PoliticalParty party in chamberParties)
+                {
+                    CompassPositions.Point? own = CompassPositions.Party(party);
+                    bool pair = !float.IsNaN(party.LrEcon) && !float.IsNaN(party.Galtan);
+                    if (own.HasValue != pair || (own.HasValue && (own.Value.LrEcon != party.LrEcon || own.Value.Galtan != party.Galtan))) { partyPointsTrace = false; }
+                    if (own.HasValue) { partyPoints++; }
+                    int seats = country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+                    if (seats <= 0) { continue; }
+                    if (!pair) { unpaired += seats; continue; }
+                    lrSum += party.LrEcon * seats; galSum += party.Galtan * seats; seatSum += seats;
+                }
+                CompassPositions.Point? chamber = CompassPositions.ChamberMean(country, out int leftOut);
+                bool chamberTraces = seatSum > 0
+                    ? chamber.HasValue && Mathf.Abs(chamber.Value.LrEcon - lrSum / seatSum) < 1e-4f && Mathf.Abs(chamber.Value.Galtan - galSum / seatSum) < 1e-4f && chamber.Value.Seats == seatSum
+                    : !chamber.HasValue;
+                bool leftOutTraces = leftOut == unpaired;
+
+                IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(country);
+                var cabinetSet = new HashSet<string>(cabinet);
+                float cLr = 0f, cGal = 0f; int cSeats = 0;
+                foreach (PoliticalParty party in chamberParties)
+                {
+                    if (!cabinetSet.Contains(party.Abbrev)) { continue; }
+                    int seats = country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+                    if (seats <= 0 || float.IsNaN(party.LrEcon) || float.IsNaN(party.Galtan)) { continue; }
+                    cLr += party.LrEcon * seats; cGal += party.Galtan * seats; cSeats += seats;
+                }
+                CompassPositions.Point? cabinetMean = CompassPositions.CabinetMean(country, out int _);
+                bool cabinetTraces = cSeats > 0
+                    ? cabinetMean.HasValue && Mathf.Abs(cabinetMean.Value.LrEcon - cLr / cSeats) < 1e-4f && Mathf.Abs(cabinetMean.Value.Galtan - cGal / cSeats) < 1e-4f
+                    : !cabinetMean.HasValue;
+
+                bool ok = partyPointsTrace && chamberTraces && leftOutTraces && cabinetTraces;
+                if (!ok)
+                {
+                    failures.Add($"compass point does not trace for {country.Id}");
+                    Debug.LogError($"OFFICE: {country.Id} compass: parties {partyPointsTrace}, chamber {chamberTraces}, left-out {leftOutTraces}, cabinet {cabinetTraces}.");
+                }
+                sb.Append(string.Format(CultureInfo.InvariantCulture,
+                    "    {0,-8} parties {1,2} pairs; chamber ({2}) on {3,3} seats, {4,3} left out; cabinet [{5}] ({6}) {7}\n",
+                    country.Id, partyPoints,
+                    chamber.HasValue ? string.Format(CultureInfo.InvariantCulture, "{0:F2}, {1:F2}", chamber.Value.LrEcon, chamber.Value.Galtan) : "none",
+                    seatSum, unpaired, string.Join("+", cabinet),
+                    cabinetMean.HasValue ? string.Format(CultureInfo.InvariantCulture, "{0:F2}, {1:F2}", cabinetMean.Value.LrEcon, cabinetMean.Value.Galtan) : "none",
+                    ok ? "ok" : "FAIL"));
+            }
+
             // P2-2.2 (2026-09-02): THE PER-SEAT MAP'S COUNTS EQUAL THE STANCE ARITHMETIC TO THE SEAT. For every
             // country, both bill directions and both axes: the sides sum to the seats the chamber holds, every
             // party's side is the sign of its stance times the bill's sign (the Laws page's own rule), and the

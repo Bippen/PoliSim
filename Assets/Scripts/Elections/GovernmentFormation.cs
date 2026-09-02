@@ -72,42 +72,18 @@ namespace PoliSim.Elections
         /// </summary>
         public static Formed Form(Country country)
         {
-            if (country == null) { return Formed.None("no country"); }
-            if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return Formed.None("the player holds no party"); }
-
-            IReadOnlyList<PoliticalParty> parties = PartySystems.For(country.Id);
-            if (parties == null || parties.Count == 0) { return Formed.None("no party system is seeded for this country"); }
-
-            int n = parties.Count;
-            var seats = new int[n];
-            int playerIndex = -1;
-            int totalSeats = 0;
-            for (int p = 0; p < n; p++)
+            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] seats, out CoalitionResult result,
+                    out bool declarationsSourced, out string reason))
             {
-                country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held);
-                seats[p] = held;
-                totalSeats += held;
+                return Formed.None(reason);
+            }
+            if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return Formed.None("the player holds no party"); }
+            int playerIndex = -1;
+            for (int p = 0; p < parties.Count; p++)
+            {
                 if (string.Equals(parties[p].Abbrev, country.PlayerPartyAbbrev, StringComparison.Ordinal)) { playerIndex = p; }
             }
-
-            if (totalSeats <= 0) { return Formed.None("the chamber holds no seats"); }
             if (playerIndex < 0) { return Formed.None($"the player's party '{country.PlayerPartyAbbrev}' is not in this chamber"); }
-
-            // ⚠ A party with no published position cannot be placed on the axes, and a centred stand-in
-            // would make it every party's natural partner. It is given MINIMUM compatibility with
-            // everyone instead - which keeps it out of cabinets rather than into them, the direction an
-            // absence should push.
-            double[,] compatibility = Compatibility(parties);
-            List<RedLine> lines = DeclaredRedLines.For(country.Id, parties);
-            bool declarationsSourced = DeclaredRedLines.IsSourced(country.Id);
-
-            CoalitionResult result = CoalitionFormation.Form(seats, compatibility, lines,
-                negativeRule: ChamberRules.UsesNegativeParliamentarism(country.Id));
-
-            // NewElection and Collapse are the two outcomes in which nobody governs. A government that
-            // formed is one of the three kinds above them, and the player is in office or not according
-            // to its CABINET - which is why ConfidenceAndSupply counts as a government here while the
-            // party supporting it from outside is still out of office.
             if (result.Outcome == CoalitionOutcomeKind.NewElection || result.Outcome == CoalitionOutcomeKind.Collapse)
             {
                 return new Formed(false, false, false, declarationsSourced, null,
@@ -117,14 +93,59 @@ namespace PoliSim.Elections
             int bit = 1 << playerIndex;
             bool inCabinet = (result.Government.Cabinet & bit) != 0;
             bool supports = !inCabinet && (result.Government.Support & bit) != 0;
-
             var cabinet = new List<string>();
-            for (int p = 0; p < n; p++)
+            for (int p = 0; p < parties.Count; p++)
             {
                 if ((result.Government.Cabinet & (1 << p)) != 0) { cabinet.Add(parties[p].Abbrev); }
             }
-
             return new Formed(true, inCabinet, supports, declarationsSourced, string.Join("+", cabinet), null);
+        }
+
+        /// <summary>
+        /// P2-3.2 (2026-09-02): the sitting cabinet's parties, by abbreviation, for a chamber - the same
+        /// formation <see cref="Form"/> runs, read without the player's standing in it, so the compass can mark
+        /// the government whether or not the player holds a party. Empty when no government forms from this
+        /// chamber (a new election or a collapse) or nothing is seeded for it.
+        /// </summary>
+        public static IReadOnlyList<string> Cabinet(Country country)
+        {
+            var cabinet = new List<string>();
+            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] _, out CoalitionResult result, out bool _, out string _))
+            {
+                return cabinet;
+            }
+            if (result.Outcome == CoalitionOutcomeKind.NewElection || result.Outcome == CoalitionOutcomeKind.Collapse) { return cabinet; }
+            for (int p = 0; p < parties.Count; p++)
+            {
+                if ((result.Government.Cabinet & (1 << p)) != 0) { cabinet.Add(parties[p].Abbrev); }
+            }
+            return cabinet;
+        }
+
+        /// <summary>The formation itself - the chamber's seats, the derived compatibility, the declared red lines and the chamber's own rule - shared by <see cref="Form"/> and <see cref="Cabinet"/>.</summary>
+        private static bool TryFormChamber(Country country, out IReadOnlyList<PoliticalParty> parties, out int[] seats,
+            out CoalitionResult result, out bool declarationsSourced, out string reason)
+        {
+            parties = null; seats = null; result = null; declarationsSourced = false; reason = null;
+            if (country == null) { reason = "no country"; return false; }
+            parties = PartySystems.For(country.Id);
+            if (parties == null || parties.Count == 0) { reason = "no party system is seeded for this country"; return false; }
+            int n = parties.Count;
+            seats = new int[n];
+            int totalSeats = 0;
+            for (int p = 0; p < n; p++)
+            {
+                country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held);
+                seats[p] = held;
+                totalSeats += held;
+            }
+            if (totalSeats <= 0) { reason = "the chamber holds no seats"; return false; }
+            double[,] compatibility = Compatibility(parties);
+            List<RedLine> lines = DeclaredRedLines.For(country.Id, parties);
+            declarationsSourced = DeclaredRedLines.IsSourced(country.Id);
+            result = CoalitionFormation.Form(seats, compatibility, lines,
+                negativeRule: ChamberRules.UsesNegativeParliamentarism(country.Id));
+            return true;
         }
 
         /// <summary>§29's matrix, over each party's OWN sourced positions — the same weighting

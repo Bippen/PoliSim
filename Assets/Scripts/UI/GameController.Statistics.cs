@@ -797,12 +797,12 @@ namespace PoliSim.UI
                 : "They use different currencies.", _labelStyle);
 
             GUILayout.Space(StatsUnit(6f));
-            DrawPairRow("Compass — fiscal size",
-                $"{PoliticalCompassRenderer.GetFiscalSizeAxisValue(_playerCountry):F1}",
-                $"{PoliticalCompassRenderer.GetFiscalSizeAxisValue(them):F1}");
-            DrawPairRow("Compass — regulation / welfare",
-                $"{PoliticalCompassRenderer.GetRegulationWelfareAxisValue(_playerCountry):F1}",
-                $"{PoliticalCompassRenderer.GetRegulationWelfareAxisValue(them):F1}");
+            DrawPairRow("Policy stance — fiscal size",
+                $"{PolicyStanceAxes.GetFiscalSizeAxisValue(_playerCountry):F1}",
+                $"{PolicyStanceAxes.GetFiscalSizeAxisValue(them):F1}");
+            DrawPairRow("Policy stance — regulation / welfare",
+                $"{PolicyStanceAxes.GetRegulationWelfareAxisValue(_playerCountry):F1}",
+                $"{PolicyStanceAxes.GetRegulationWelfareAxisValue(them):F1}");
 
             GUILayout.Space(StatsUnit(6f));
 

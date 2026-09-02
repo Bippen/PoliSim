@@ -449,10 +449,10 @@ namespace PoliSim.UI
             float ux = box.width / 250f;
             float uy = box.height / 250f;
             GUIStyle style = DeskBody(9f, PoliSimTheme.TextPrimary);
-            Vector2 probe = _politicalCompassRenderer.Footprint(_world.Countries, box.width, box.width, style);
+            Vector2 probe = _politicalCompassRenderer.Footprint(_world.Countries, box.width, box.width, style, PlayerCountryId, withLegend: false);
             float band = Mathf.Max(0f, probe.y - box.width);
             float plot = Mathf.Max(1f, box.height - band);
-            Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, plot, box.width, style);
+            Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, plot, box.width, style, PlayerCountryId, withLegend: false);
             // The full box width, not the footprint's: the renderer paints its own paper over the rect
             // it is given, and a narrower rect left a strip of the plate showing at the right (the
             // first matrix at 1600/1920); the plot side is bounded by the height either way.
@@ -463,7 +463,7 @@ namespace PoliSim.UI
                 PoliSimTheme.RoundedCard(box, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
             }
 
-            _politicalCompassRenderer.Draw(rect, _world.Countries, PlayerCountryId, style);
+            _politicalCompassRenderer.Draw(rect, _world.Countries, PlayerCountryId, style, withLegend: false);
             DrawDeskPlateCaption(box, "POLITICAL COMPASS · SIX STATES", ux, uy);
         }
 

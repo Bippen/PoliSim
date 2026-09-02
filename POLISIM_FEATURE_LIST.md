@@ -439,7 +439,7 @@ chamber. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §227: rings chosen by capa
 (liberal–conservative), both wired at F5 with endpoints read. Parties at their published positions;
 a country at the seat-weighted mean of its chamber; the government's point marked. Axis labels in
 the conventional words. *Done when:* every point traces to a CHES row or a seat-weighted
-derivation, no authored position anywhere.
+derivation, no authored position anywhere. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §228: fixed 0–10 CHES scales, parties at published pairs, countries and the sitting cabinet at seat-weighted means (`CompassPositions`, `GovernmentFormation.Cabinet`), a legend column naming every point; the old policy blends moved to `PolicyStanceAxes` for the Statistics comparison; OfficeTestDiagnostic re-derives every point.**
 
 **P2-3.3 — The compass gains history and the electorate.** A trail of each country's point over
 time (it moves at elections and government changes — store it per turn, draw it faint); and the
