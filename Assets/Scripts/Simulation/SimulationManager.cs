@@ -2070,12 +2070,15 @@ namespace PoliSim.Simulation
             }
             if (PlayerCampaign == null || PlayerCampaign.Setup.Calendar.ElectionDate != calendar.ElectionDate)
             {
+                // The record first: the player's script reads its queue, so the Setup closes over it.
+                var record = new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0 };
                 if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
-                        out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true))
+                        out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
+                        playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record)))
                 {
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
-                CampaignRecord = new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0 };
+                CampaignRecord = record;
                 System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> atStart = SimulationRandom.CaptureDrawCounts();   // a stream that has never drawn is absent, and absent means 0
                 foreach (SimulationRandom.Stream stream in CampaignStreams) { CampaignRecord.DrawCountsAtStart[stream] = atStart.TryGetValue(stream, out int n) ? n : 0; }
                 PlayerCampaignResult = null;
@@ -2096,6 +2099,65 @@ namespace PoliSim.Simulation
             }
         }
 
+        // ---- C-R4b step 4b: the player's hand on the campaign - a queue the party plays ----------------
+
+        /// <summary>The player's party's index in the staged campaign's party order, or −1 (no party chosen, or a country with no staging).</summary>
+        public int PlayerPartyIndexForCampaign()
+        {
+            if (!PlayerCountryId.HasValue || _world == null) { return -1; }
+            Country country = _world.GetCountry(PlayerCountryId.Value);
+            if (country == null || string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return -1; }
+            return System.Array.IndexOf(Elections.LiveCampaignSetup.SwedenParties, country.PlayerPartyAbbrev);
+        }
+
+        /// <summary>
+        /// The player's party's script: each day, exactly what the HQ queued for that day, in order
+        /// (`PartySetup.Script`, W-C2's seam). Closed over the RECORD, so the replay on load feeds the
+        /// same queue the original run did. ⚠ A scripted party is NOT played by its personality any
+        /// more: an empty day is a day of nothing, and that is the player's, not the AI's.
+        /// </summary>
+        private System.Func<int, Elections.AiDecision[]> PlayerScriptOver(Elections.PlayerCampaignRecord record)
+        {
+            if (record == null) { return null; }
+            // The Setup the labels come from is the running state's own - Begin has returned before any
+            // day is stepped, so PlayerCampaign is set by the time the script is first asked.
+            return day =>
+            {
+                if (PlayerCampaign == null) { return new Elections.AiDecision[0]; }
+                System.Collections.Generic.List<Elections.QueuedDecisionRecord> queued = record.QueuedFor(day);
+                var decisions = new Elections.AiDecision[queued.Count];
+                for (int i = 0; i < queued.Count; i++) { decisions[i] = queued[i].ToDecision(PlayerCampaign.Setup); }
+                return decisions;
+            };
+        }
+
+        /// <summary>
+        /// Queue a decision for the NEXT campaign day (the day the run will step next). Refused when no
+        /// campaign runs, when the kind is not legal in that day's phase, or when the player's party is
+        /// not in the campaign - and the refusal is the return value, so the screen can say why.
+        /// </summary>
+        public bool QueueCampaignDecision(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal)
+        {
+            refusal = null;
+            if (PlayerCampaign == null || CampaignRecord == null) { refusal = "no campaign is running"; return false; }
+            if (PlayerCampaign.Finished) { refusal = "the campaign is over"; return false; }
+            if (PlayerPartyIndexForCampaign() < 0) { refusal = "your party is not in this campaign"; return false; }
+            int day = PlayerCampaign.Day;
+            Elections.CampaignPhase phase = PlayerCampaign.Setup.Calendar.PhaseOn(PlayerCampaign.Setup.Calendar.CampaignStart.AddDays(day));
+            if (!Elections.CampaignLegality.IsLegal(kind, phase)) { refusal = $"{kind} is not legal in the {phase} phase"; return false; }
+            if (regionIndex >= PlayerCampaign.Setup.Regions.Length) { refusal = "no such region"; return false; }
+            CampaignRecord.Queue.Add(new Elections.QueuedDecisionRecord { Day = day, Kind = kind, RegionIndex = regionIndex, Issue = issue.HasValue ? (int)issue.Value : -1, Spend = spend });
+            return true;
+        }
+
+        /// <summary>Empties the next campaign day's queue.</summary>
+        public void ClearCampaignQueue()
+        {
+            if (PlayerCampaign == null || CampaignRecord == null) { return; }
+            int day = PlayerCampaign.Day;
+            CampaignRecord.Queue.RemoveAll(q => q.Day == day);
+        }
+
         /// <summary>
         /// Load: rebuild the campaign the record describes by replay - the same Setup from the runtime
         /// tables, the three streams rewound to their counts at the campaign's start, the same days
@@ -2111,7 +2173,8 @@ namespace PoliSim.Simulation
             if (record == null || !PlayerCountryId.HasValue || record.DaysStepped <= 0) { return; }
             var calendar = new Elections.CampaignCalendar(record.ElectionDate);
             if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
-                    out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true))
+                    out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
+                    playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record)))
             {
                 return;
             }

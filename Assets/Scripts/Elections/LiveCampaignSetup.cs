@@ -68,7 +68,7 @@ namespace PoliSim.Elections
         /// until §17's dynamic generation exists).
         /// </summary>
         public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
-            bool onVoteModelCompatibility = false)
+            bool onVoteModelCompatibility = false, int playerParty = -1, Func<int, AiDecision[]> playerScript = null)
         {
             if (country == CountryId.Sweden)
             {
@@ -91,7 +91,7 @@ namespace PoliSim.Elections
                         compatibilityOverride[p] = k >= 0 ? compatibility[k] : 0.0;
                     }
                 }
-                setup = Sweden(scandals, out note, calendar, compatibilityOverride);
+                setup = Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript);
                 return true;
             }
             setup = default;
@@ -101,7 +101,7 @@ namespace PoliSim.Elections
 
         /// <summary>Sweden 2026 on the 2022 returns - the staging `CampaignAiHarness` has run since W-C1, from the runtime tables.</summary>
         public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
-            double[] compatibilityOverride = null)
+            double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null)
         {
             if (!PartySystems.TryHistory(CountryId.Sweden, out double[] shares2022, out double[] shares2018))
             {
@@ -137,9 +137,11 @@ namespace PoliSim.Elections
                 var match = new double[IssueVector.IssueCount];
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
                 AiPersonality personality = SwedenPersonalities[p];
+                // C-R4b step 4b: the player's party plays the HQ's queue (a scripted party, W-C2's seam);
+                // every other party, and the player's until a script is given, is its cast personality.
                 parties[p] = new CampaignRun.PartySetup(SwedenParties[p], personality, FlatCredibility, WarChest, match, Volunteers,
                     CandidateFor(personality, SwedenParties[p]), OfficesFor(personality, regions), OfficeOperationsPerDay,
-                    StaffFor(personality), TelevisionBuysFor(personality));
+                    StaffFor(personality), TelevisionBuysFor(personality), p == playerParty ? playerScript : null);
             }
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[SwedenParties.Length]);
             var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[SwedenParties.Length], isInternal: true);

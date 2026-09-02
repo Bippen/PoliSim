@@ -25,5 +25,42 @@ namespace PoliSim.Elections
         public int DaysStepped;
         /// <summary>The three campaign streams' draw counts the moment the campaign began - the replay's rewind point.</summary>
         public Dictionary<SimulationRandom.Stream, int> DrawCountsAtStart = new Dictionary<SimulationRandom.Stream, int>();
+
+        /// <summary>
+        /// C-R4b step 4b: the PLAYER's decisions, by campaign day - what the HQ queued. The player's
+        /// party plays each day exactly this list (`PartySetup.Script`), so the queue is part of what
+        /// replays the campaign: a load re-steps the same days with the same queue and lands on the
+        /// same state. Empty for a day means the party does nothing that day - the hours go unspent.
+        /// </summary>
+        public List<QueuedDecisionRecord> Queue = new List<QueuedDecisionRecord>();
+
+        /// <summary>The decisions queued for one campaign day, in order.</summary>
+        public List<QueuedDecisionRecord> QueuedFor(int day)
+        {
+            var list = new List<QueuedDecisionRecord>();
+            foreach (QueuedDecisionRecord q in Queue) { if (q.Day == day) { list.Add(q); } }
+            return list;
+        }
+    }
+
+    /// <summary>One queued decision as the save carries it: the action, its target (a region index or −1 for national; an issue or −1 for the general message), the outlay.</summary>
+    [Serializable]
+    public class QueuedDecisionRecord
+    {
+        public int Day;
+        public CampaignActionKind Kind;
+        public int RegionIndex = -1;
+        public int Issue = -1;
+        public double Spend;
+
+        /// <summary>The decision as the run resolves it - the spec's hours, the label from the region or "national".</summary>
+        public AiDecision ToDecision(CampaignRun.Setup setup)
+        {
+            CampaignActions.ActionSpec spec = CampaignActions.Spec(Kind);
+            IssueId? issue = Issue >= 0 ? (IssueId?)(IssueId)Issue : null;
+            string label = RegionIndex >= 0 && RegionIndex < setup.Regions.Length ? setup.Regions[RegionIndex].Name : "national";
+            var target = RegionIndex >= 0 ? new CampaignActions.ActionTarget(RegionIndex, -1, issue) : CampaignActions.ActionTarget.National(issue);
+            return new AiDecision(Kind, target, label, Spend, spec.Hours, 0.0, false);
+        }
     }
 }

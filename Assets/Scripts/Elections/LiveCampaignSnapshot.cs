@@ -20,16 +20,17 @@ namespace PoliSim.Elections
     public static class LiveCampaignSnapshot
     {
         /// <summary>The snapshot for the player's party in a running (or just finished) campaign, or null when the state carries no such party.</summary>
-        public static CampaignSnapshot? Build(CampaignRun.State s, Country country, double perceivedEconomyIndex)
+        public static CampaignSnapshot? Build(CampaignRun.State s, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record = null)
         {
             if (s == null || country == null) { return null; }
             int p = PlayerPartyIndex(s, country);
             if (p < 0) { return null; }
             CampaignRun.Setup setup = s.Setup;
             CampaignCalendar calendar = setup.Calendar;
-            // The day the screen shows is the last day stepped (the run's "today" is the NEXT day to step);
-            // before the first step it is the campaign's first day.
-            int shownDay = s.Day > 0 ? s.Day - 1 : 0;
+            bool playerRun = setup.Parties[p].Script != null && record != null;
+            // A player-run party's screen is about the day it will step NEXT (what is queued for it); an
+            // AI-played party's about the last day stepped (what it did). Before the first step, day 0.
+            int shownDay = playerRun ? System.Math.Min(s.Day, System.Math.Max(0, s.TotalDays - 1)) : (s.Day > 0 ? s.Day - 1 : 0);
             System.DateTime today = calendar.CampaignStart.AddDays(shownDay);
             CampaignPhase phase = calendar.PhaseOn(today);
 
@@ -39,13 +40,26 @@ namespace PoliSim.Elections
             // The poll the party last saw: its own commissioned poll if it bought one, else the published tracker.
             Poll poll = s.LatestPoll[p] ?? s.PublicPoll ?? default;
 
-            // Today's decisions, from the ledger's log - the day just stepped.
             var queue = new List<QueuedAction>();
-            foreach (CampaignRun.DecisionRecord d in s.Ledgers[p].Log)
+            if (playerRun)
             {
-                if (d.Day != shownDay) { continue; }
-                CampaignActions.ActionSpec spec = CampaignActions.Spec(d.Kind);
-                queue.Add(new QueuedAction(d.Kind, d.Target, d.Spend, spec.Hours));
+                // C-R4b step 4b: the player's queue for the next day, as the record holds it.
+                foreach (QueuedDecisionRecord q in record.QueuedFor(s.Day))
+                {
+                    CampaignActions.ActionSpec spec = CampaignActions.Spec(q.Kind);
+                    string label = q.RegionIndex >= 0 && q.RegionIndex < setup.Regions.Length ? setup.Regions[q.RegionIndex].Name : "national";
+                    queue.Add(new QueuedAction(q.Kind, label, q.Spend, spec.Hours));
+                }
+            }
+            else
+            {
+                // An AI-played party: its decisions of the day just stepped, from the ledger's log.
+                foreach (CampaignRun.DecisionRecord d in s.Ledgers[p].Log)
+                {
+                    if (d.Day != shownDay) { continue; }
+                    CampaignActions.ActionSpec spec = CampaignActions.Spec(d.Kind);
+                    queue.Add(new QueuedAction(d.Kind, d.Target, d.Spend, spec.Hours));
+                }
             }
 
             var staff = new List<StaffMember>();

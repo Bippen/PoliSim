@@ -21002,3 +21002,44 @@ whose result IS election night's result. What it lacks is the player's hand on i
 input path — and a country other than Sweden.
 
 **Bar 25 of 25.**
+
+## 207. C-R4b STEP 4b — the player's hand on the campaign: a queue the party plays, persisted and replayed (2026-09-02)
+
+**What was built.** The player's party is SCRIPTED (`PartySetup.Script`, W-C2's seam for the player's
+stand-in) from a queue the HQ fills: on the live HQ's queue plate a row of chips — RALLY · TOWN HALL ·
+DOORS · TV AD · DIGITAL · POST · POLICY · CLEAR — queues an action for the day the run steps next, at
+the action's own smallest outlay; a chip is disabled where the kind is not legal in the day's phase
+(`CampaignLegality`). A local act goes to the region where the party's organisation is strongest (its
+largest office by volunteers, else the largest electorate) — a region picker is a design surface, the
+campaign map its natural home, and it is not improvised here. The interview is not offered: its
+booking is the outlets' to give on the day (W-B9), and a queued interview with no booking would end
+the day's plan at the run's first refusal.
+
+**The queue is part of the replay.** `PlayerCampaignRecord.Queue` carries every queued decision by
+day (kind, region or national, issue or general, spend); the party's script closes over the record,
+so the replay on load re-steps the same days with the same queue and lands on the same state — the
+existing round-trip diagnostic exercises it (its player's party, the second-largest, is scripted with
+an empty queue from this commit on). `SimulationManager.QueueCampaignDecision` refuses, with the
+reason as its return, when no campaign runs, the campaign is over, the party is not in it, or the
+kind is illegal in the phase; `ClearCampaignQueue` empties the next day's.
+
+⚠ **A scripted party is no longer played by its personality.** From the moment the player has a party
+in a staged campaign, an empty day is a day of nothing — the hours go unspent, the war chest sits —
+and that is the player's, not the AI's. The HQ's queue plate shows the NEXT day's queue for a
+player-run party (what is asked) and the LAST day's decisions for an AI-played one (what it did);
+`LiveCampaignSnapshot` labels which by the party's script.
+
+**What F6 now is.** A campaign that runs before every election, that the player opens from the rail,
+fills day by day from the HQ, that survives a save, and whose result is election night's result.
+**What it still lacks:** a region picker and an issue for the message (both design surfaces; the
+action screen W-E3 is the price list and the campaign map the picker); the interview through the
+outlets' bookings; §17's scandals and §18's events in the live run; a second staged country; and
+the September calendar the boundary stands in for.
+
+**Proof and its limit.** `CampaignAiHarness` 1a: the digest is unchanged (the harness scripts nobody).
+`SaveLoadRoundTripDiagnostic`: the campaigns begin, finish, replay and continue string-equal with the
+player's party scripted. ⚠ The chips have not been pressed in play tonight - the queue path from a
+click to `StepDay` is compiled, guarded, and exercised only by hand; its first press is a finding to
+read.
+
+**Bar 25 of 25.**

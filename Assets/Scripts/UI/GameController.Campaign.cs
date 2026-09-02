@@ -86,7 +86,7 @@ namespace PoliSim.UI
         {
             if (_simulationManager == null || _playerCountry == null || _simulationManager.PlayerCampaign == null) { return null; }
             double perceived = PerceivedPerformance.Perceived(_playerCountry, null).Index;
-            return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived);
+            return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord);
         }
 
         /// <summary>Re-reads the live state into the HQ snapshot before a draw; closes the screen if the campaign is gone.</summary>
@@ -103,6 +103,32 @@ namespace PoliSim.UI
             if (!_liveCampaignOpen) { return; }
             _liveCampaignOpen = false;
             _campaignScreen = null;
+        }
+
+        /// <summary>
+        /// C-R4b step 4b: where a queued LOCAL act goes - the region of the party's largest office (by
+        /// volunteers), else the largest electorate. A region picker is a design surface (the campaign
+        /// map is the natural one) and is not improvised here; this is the one-region rule until it exists.
+        /// </summary>
+        private int StrongestCampaignRegion()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null || _playerCountry == null) { return -1; }
+            int p = LiveCampaignSnapshot.PlayerPartyIndex(s, _playerCountry);
+            if (p < 0) { return -1; }
+            int best = -1;
+            int bestVolunteers = -1;
+            foreach (CampaignOffice office in s.Offices[p].Offices)
+            {
+                if (office.Volunteers > bestVolunteers) { bestVolunteers = office.Volunteers; best = office.Region; }
+            }
+            if (best >= 0) { return best; }
+            double bestAudience = -1.0;
+            for (int r = 0; r < s.Setup.Regions.Length; r++)
+            {
+                if (s.Setup.Regions[r].Audience > bestAudience) { bestAudience = s.Setup.Regions[r].Audience; best = r; }
+            }
+            return best;
         }
 
         /// <summary>The rail's CAMPAIGN cell: drawn only while a campaign runs for the player's party; a click opens the live HQ (or, if it is open, returns to the Desk).</summary>
@@ -565,6 +591,44 @@ namespace PoliSim.UI
                         $"+{s.Queue.Length - room} MORE QUEUED", DeskCaption(8.5f, PoliSimTheme.TextMuted));
                     y += rowHeight;
                 }
+            }
+            // C-R4b step 4b: the player's hand. On the LIVE HQ a row of chips queues an action for the
+            // day the run steps next, at the action's own smallest outlay (§35's price list is the action
+            // screen's); a local act goes to the region where the party's organisation is strongest.
+            // The interview is not offered: its booking is the outlets' to give on the day (W-B9), and a
+            // queued interview with no booking would end the day's plan at the first refusal.
+            if (_liveCampaignOpen && _simulationManager != null && _simulationManager.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished)
+            {
+                GUIStyle chipCaption = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
+                float chipHeight = Mathf.Ceil(DeskCaptionHeight(chipCaption)) + Mathf.Round(6f * uy);
+                float gap = Mathf.Round(4f * ux);
+                float x = r.x;
+                CampaignActionKind[] offered =
+                {
+                    CampaignActionKind.Rally, CampaignActionKind.TownHall, CampaignActionKind.DoorToDoor, CampaignActionKind.TelevisionAd,
+                    CampaignActionKind.DigitalAd, CampaignActionKind.SocialPost, CampaignActionKind.PolicyAnnouncement,
+                };
+                string[] captions = { "RALLY", "TOWN HALL", "DOORS", "TV AD", "DIGITAL", "POST", "POLICY" };
+                for (int i = 0; i < offered.Length; i++)
+                {
+                    bool legal = CampaignLegality.IsLegal(offered[i], s.Phase);
+                    float w = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(captions[i])).x) + Mathf.Round(12f * ux);
+                    if (x + w > r.xMax) { break; }
+                    if (DrawDeskChipButton(new Rect(x, y, w, chipHeight), captions[i], chipCaption, selected: false, disabled: !legal) && legal)
+                    {
+                        CampaignActions.ActionSpec spec = CampaignActions.Spec(offered[i]);
+                        int region = spec.IsLocal ? StrongestCampaignRegion() : -1;
+                        _simulationManager.QueueCampaignDecision(offered[i], region, null, spec.MoneyCost, out string refusal);
+                        if (refusal != null) { Debug.Log("CAMPAIGN QUEUE: " + refusal); }
+                    }
+                    x += w + gap;
+                }
+                float clearWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent("CLEAR")).x) + Mathf.Round(12f * ux);
+                if (x + clearWidth <= r.xMax && DrawDeskChipButton(new Rect(x, y, clearWidth, chipHeight), "CLEAR", chipCaption, selected: false, disabled: false))
+                {
+                    _simulationManager.ClearCampaignQueue();
+                }
+                y += chipHeight + Mathf.Round(4f * uy);
             }
 
             y += Mathf.Round(4f * uy);
