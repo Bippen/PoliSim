@@ -165,6 +165,7 @@ namespace PoliSim.EditorTools
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),
             ("UpstreamCheck", UpstreamCheck.Run),
+            ("DialLabelCheck", DialLabelCheck.Run),   // P3-C3 (2026-09-03): every dial's left label, right label and range agree (the ends in the trailing's order, the range's own numbers).
             ("MetaTextCheck", MetaTextCheck.Run),   // P-A1 (2026-08-29): no developer-facing text on a player surface - the ninth
             // C-E3 (2026-08-31, S-11): a doc comment naming a guard must name one that EXISTS. Cheap - it
             // reads text and reflects over loaded types, builds no World - so it belongs in the nine.
