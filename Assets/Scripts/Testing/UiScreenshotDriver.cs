@@ -277,6 +277,15 @@ namespace PoliSim.Testing
             yield return Capture("01c_desk");
             AssertDeskState(controller, "01c_desk");
 
+            // P3-C2 (2026-09-03): the Budget at TURN 0 - before the warm-up closes a year - so the fiscal header is filmed
+            // with the seed named (no year closed) beside the year's projected balance.
+            SetPrivateField(controller, "_onDesk", false);
+            SetEnumField(controller, "_consolidatedTab", "Budget");
+            yield return Settle();
+            yield return Capture("05t_budget_turn0");
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+
             AdvanceDays(controller, _countryId);
 
             // R-D4: the playtest saves are staged on the warmed-up game BEFORE the sweep's own drafts
@@ -1098,7 +1107,16 @@ namespace PoliSim.Testing
         /// </summary>
         private static void StageDivisionWithContent(Country player, SimulationManager sim, string title, float direction, bool passed)
         {
-            ParliamentSystem.RecordDivision(player, title, direction, passed, sim.CurrentDate);
+            // P3 close (2026-09-03): a record never contradicts its own sides. The verdict is the chamber's (§257, the count
+            // decides); when the harness asks for the other outcome the direction is flipped and re-judged, and when the
+            // chamber decides the same either way the record keeps the chamber's verdict and the log says so.
+            bool verdict = ParliamentSystem.WouldBillPass(player, direction);
+            if (verdict != passed)
+            {
+                if (ParliamentSystem.WouldBillPass(player, -direction) == passed) { direction = -direction; verdict = passed; Debug.Log($"SHOT: staged division '{title}' takes direction {direction:+0;-0} so the chamber's own verdict is {(passed ? "CARRIED" : "LOST")}, as the capture asks."); }
+                else { Debug.Log($"SHOT: staged division '{title}': the chamber {(verdict ? "carries" : "loses")} it in either direction; the record keeps the chamber's verdict, not the harness's ask."); }
+            }
+            ParliamentSystem.RecordDivision(player, title, direction, verdict, sim.CurrentDate);
             DivisionRecord record = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
             PolicyPreview preview = sim.PreviewTurn(player.Id, PolicyDecision.None());
             void Add(string name, float value, bool higherIsBetter, string unit)

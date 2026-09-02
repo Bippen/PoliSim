@@ -253,6 +253,9 @@ namespace PoliSim.UI
             // (row 5) is §1g's own beat below, at its own 1.3 → 1.0 / 140ms - a declared deviation
             // from the envelope's 1.15 / 120ms, kept because §1g is the ceremony's own spec. Rows
             // 1–3 are the IMGUI seam's (GameController's takeover: lock, cover, hold-and-swap).
+            // P3 close (2026-09-03): the layout is resolved NOW, not two frames on - the stance panel (§248, seventeen texts) needed
+            // more layout passes than the entrance capture waits, and the canvas guard photographed its rects unlaid (89d).
+            LayoutRebuilder.ForceRebuildLayoutImmediate(document.GetComponent<RectTransform>());
             screen._entrance = document.AddComponent<DocumentEntrance>();
             screen._entrance.Controls = controls;
 
@@ -340,14 +343,14 @@ namespace PoliSim.UI
 
             // 2b. The stances - P3-A3 (2026-09-03): every party's side with the reason the model gave it, as the vote
             // was (the record carries the alignment and the reason since this row); drawn structurally until D12.
-            Transform stances = PlatePanel(plate.transform, "Stances", 1.6f);
-            PlateCaption(stances, "THE STANCES · EVERY PARTY, WITH ITS REASON");
+            Transform stances = PlatePanel(plate.transform, "Stances", 1.6f, 240f);   // P3 close: the column shrank under the images at 1280 and every AGAINST row wrapped (canvas clip 89d/89e); the minimum holds the longest row
+            PlateCaption(stances, "THE STANCES");   // P3 close: the longer captions wrapped at 1280 (canvas clip 89d/89e); the row says party · seats · side · alignment
             bool anyReason = false;
             foreach (DivisionSide side in record.Sides)
             {
                 string verdict = side.Side > 0 ? "FOR" : side.Side < 0 ? "AGAINST" : "UNDECIDED";
                 Color ink = side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
-                PlateBody(stances, string.Format(CultureInfo.InvariantCulture, "{0} · {1} seats · {2}{3}", side.Abbrev, side.Seats, verdict,
+                PlateBody(stances, string.Format(CultureInfo.InvariantCulture, "{0} · {1} · {2}{3}", side.Abbrev, side.Seats, verdict,   // P3 close: "seats" dropped - the AGAINST rows wrapped at 1280
                     string.IsNullOrEmpty(side.Reason) ? string.Empty : string.Format(CultureInfo.InvariantCulture, " {0:+0.00;-0.00}", side.Alignment)), ink);
                 string reason = string.IsNullOrEmpty(side.ReasonShort) ? side.Reason : side.ReasonShort;   // the plate takes the short form; the record keeps the full line
                 if (!string.IsNullOrEmpty(reason)) { PlateCaption(stances, reason); anyReason = true; }
@@ -377,12 +380,12 @@ namespace PoliSim.UI
             }
         }
 
-        private static Transform PlatePanel(Transform parent, string name, float weight)
+        private static Transform PlatePanel(Transform parent, string name, float weight, float minWidth = 0f)
         {
             var panel = new GameObject(name);
             panel.transform.SetParent(parent, false);
             panel.AddComponent<RectTransform>();
-            panel.AddComponent<LayoutElement>().flexibleWidth = weight;
+            LayoutElement element = panel.AddComponent<LayoutElement>(); element.flexibleWidth = weight; element.minWidth = minWidth;   // P3 close: a panel of text keeps the width its longest row needs when the images crowd the plate
             VerticalLayoutGroup column = panel.AddComponent<VerticalLayoutGroup>();
             column.childAlignment = TextAnchor.MiddleCenter;
             column.spacing = 4f;

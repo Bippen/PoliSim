@@ -22201,3 +22201,37 @@ Read: two collisions are the finding the row named - S/V at ONE seated hex (dist
 **Also in this commit:** the opinion term's summary line printed `--0.004` (a minus in the format over a negative value); it now prints through a signed format.
 
 **Films:** `p3c_1280_05_budget` (before the change, the contradiction; after, the verdict agrees with the count), `p3c_1280_05b_budget_spending` and `_dragged`.
+
+## 258. THE PLAYTEST 3 CLOSE — three findings of the closing films fixed, the four-width matrix on the closing tree (2026-09-03)
+
+**Found on the close films and fixed here.**
+
+1. **The signing plate's entrance frame clipped** (`89d_signing_entrance`, the canvas guard: the stance panel's seventeen texts reported preferred heights over their rects; the settled frame was clean). Measured in three passes, each on a film: (a) the document's layout is now forced before the entrance plays (`LayoutRebuilder.ForceRebuildLayoutImmediate`) - and with the layout honest the settled frame reported the same clips, so timing was not the cause; (b) the caption shortened to THE STANCES and the row to party · seats · side · alignment without the word "seats" - the five AGAINST rows still wrapped while every FOR row fit; (c) a wider flexible share (2.2 for 1.6) changed nothing, which located the cause: the plate's two images (the seat map at 360 px, the arrows at 420 px) crowd the row at 1280, the horizontal layout shrinks every panel toward its minimum, and a panel of text had none - the stances column shrank under "C · 24 · AGAINST -0.50" at the body face while the FOR rows still fit. `PlatePanel` takes a minimum width; the stances hold 240 px and the images, aspect-bound, give way. One line per row; the reasons beneath fit as they were.
+2. **P3-C2's "filmed at turn 0" was not filmed at turn 0.** The sweep's Budget capture comes after the harness warm-up, which closes a year, so the first chip read LAST YEAR from a closed report. A new capture, `05t_budget_turn0`, is taken on the Desk's guaranteed running state before the warm-up: the chip reads BALANCE · THE SEED (NO YEAR CLOSED) beside BALANCE · THIS YEAR · PROJECTED. The first chip also says THE SEED whenever no turn has closed (`CurrentTurn == 0`).
+3. **The harness's staged divisions contradicted their own sides.** The signing frames showed *alignment +0.03 · CARRIED* over FOR 149 · AGAINST 200: `StageDivisionWithContent` recorded the outcome the capture asked for (`passed: true`), not the chamber's. Now the verdict is the chamber's (§257); when a capture needs the other outcome the direction is flipped and re-judged, and when the chamber decides the same either way the record keeps the chamber's verdict and the log says so.
+4. **P3-C3's commit carried the dial-label line in the P3-C1 commit** - a hunk split at three lines of context put the label hunk on the wrong side; recorded, not rewritten (the commits were pushed).
+
+**The four-width matrix** (`p3close_1280/1600/1920/2560`, the sweep on the closing tree, 84 captures each - the sweep plus `05t_budget_turn0`; the harness's own standard is 1600×950, and it refused 1600×900 by name):
+
+| width | captures | text overflow | containment | canvas | screen edges | exit |
+|---|---|---|---|---|---|---|
+| 1280×720 | 84 | 0 | 0 | 0 across 3 asserts | 0 clipped | 0 |
+| 1600×950 | 84 | 0 | 0 | 0 | 0 clipped | 0 |
+| 1920×1080 | 84 | 0 | 0 | 0 | **3 not flush** | 1 |
+| 2560×1440 | 84 | 0 | 0 | 0 | 0 clipped | 0 |
+
+**The one finding, 1920 only, and not new:** the three RUNNING-state frames (`01b_running_strip`, `01c_desk`, and the new `05t_budget_turn0`, which is taken in that state) read *NOT FLUSH* - the top line's content run is 955 of 1920 px and the bottom line's 1847. Playtest 2's matrix (`p2mx1920.log`) flagged the same two Desk frames with the same top run (955); the bottom run has since gone from 1920 to 1847 (the last chip of the fiscal strip, BUDGET BALANCE, prints a dash at the seed and leaves 73 px bare). At 1280, 1600 and 2560 every edge is flush. This stays an OPEN finding of the running state at 1920 - a row for the next sheet, not fixed here - and the Budget's turn-0 capture inherits it by construction.
+
+**Bar:** `bar61_p3close_RunAllBatch.log`, 27 of 27.
+
+## 259. P3-D1 — D12 INSTALLED: seven rows reconciled against D10 and D11, the census annex read from the source, the package regenerated on the close films, the paste recorded as E-9 (2026-09-03)
+
+**The row:** *"Install D12, one ask, reconciled against D10/D11: the stylized map; Prev/Next and a default-button census; the trade graph idiom; party colours as a per-party confirmation; the vote breakdown's grammar; the Riksbank 720 fold; the stance plate's marker overlap. Annexes: the nine screenshots verbatim, the films after B–C, the PartyInkHarness print. Binaries uploaded, not described. Regenerate the package; record it in ERRANDS.md."*
+
+**Installed** (`CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D12, above D11; the status line replaced and the D11 status kept beneath as the record). Seven rows, numbered *n of 7*, each with what exists, what is asked, the constraint that binds it and the evidence on disk by film name; the reconciliation at the head says which D11 row each extends (rows 1, 2 and 6 extend D11 rows 1 and 6; row 7 is D11 finding 1; row 4 is P3-C6's ruling turned into a confirmation; rows 3 and 5 are new). Nothing D11 answered is asked again; nothing from D10 stands unanswered.
+
+**The census** (Annex 3, inline): read from the source as text - the grey pagers are two (`< Prev` / `Next >` on the pair page, the graph renderer's ◀ ▶ under every history graph), every slider's track and thumb are the skin's (thirteen dial rows through `LedgerRow`, the two rate sliders, the fund drawdown), two text fields are re-inked skin fields; every action and tab button already goes through the sprite idiom. Three classes, one ruling asked per class.
+
+**The package** (`SEND_PACKAGE.md`, regenerated): the request and the feature list by digest; the ink harness print, the stance diagnostic print, the closing bar and the two film logs by digest; every close film at 1280 and 2560 (`p3close_*`) by name, size and digest, computed on disk; the D9 returns and the glance carried unchanged. **The nine screenshots are not in it** - they are not on disk (E-8) and join the day they land.
+
+**The errand:** `ERRANDS.md` E-9 - the paste is Elias's.
