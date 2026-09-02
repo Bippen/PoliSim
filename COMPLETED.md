@@ -21663,3 +21663,15 @@ The instrument that films the night is the driver's new **`-shotinterrupts`** mo
 | `90_interrupt_held` | 77,2% | 78,9% | 80,6% |
 | `91_interrupt_held_budget` | 75,4% | 75,9% | 79,2% |
 | `92_saves_menu` | 82,1% | 83,0% | 89,1% |
+
+## 232. P2-4.2 — THE ASK INSTALLED: D10, Playtest 2's re-composition, nine rows, one annex set, the package regenerated with every film by name and digest (2026-09-02)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P2, Track 4): *"Install the ask (D10) in the request doc, one ask, rows: (1) International … (9) contrast. Drawn at 1280 first; Elias's verbatim complaints as the annex's first page. Regenerate the package; binary artifacts are uploaded, not described. Sending stays Elias's."*
+
+**Installed.** `CLAUDE_DESIGN_ASSET_REQUEST.md` now opens on a 2026-09-02 status - D10 is the live ask, D9 sent and answered in full - with the D9 status kept beneath it verbatim; `§ ⭐ THE ONE LIVE ASK — D10` sits where D9's did, and D9's heading is retitled as the record it now is, nothing withdrawn. The nine rows are numbered *n of 9*: International (the country pages exist structurally; every gap the model cannot fill is named on the page), the Docket (re-compose; minister alerts; cost-and-impact arrows per decision - P2-4.3 builds the structural half), People (instruments over F2's cohort substrate), Laws (browser and card), Politics (built, not asked for; the board refines the composition, the compass legend in particular), the law-result screen and the election-result screen (full frame; P2-4.3 builds their content, its films join the package when it lands), the frame tokens (zero, filmed), and contrast (every pair clears at HEAD; open only if a board introduces an ink the check does not know). Each row's evidence is a film stem that exists at the three widths, `p2an<width>_…`.
+
+**The annex.** Three pages: Elias's rows verbatim (`POLISIM_FEATURE_LIST.md` § P2 - the complaint is the brief), the dead-space measure per screen (§231's table; the three logs), and the films at 1280×720, 1600×950 and 2560×1440.
+
+**The package.** `SEND_PACKAGE.md` is regenerated as a send: the ask doc, the feature list and the three logs by size and SHA-256, then all 246 films by name, size and SHA-256 - computed by the installer, not typed - with the D9 returns still owed (the derived mandate column, the two stat-icon files, Elias's one word on the seven Swedish marks) and the glance command kept verbatim. Sending stays Elias's; nothing here is sent by writing it.
+
+**Bar:** `RunAllBatch` clean on the committed tree (`bar38_p2_4_2_RunAllBatch.log`); no simulation code changed, so the simulation bar is §231's.

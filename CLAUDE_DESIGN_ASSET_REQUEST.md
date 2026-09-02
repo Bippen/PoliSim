@@ -1,6 +1,12 @@
 # Claude Design asset request — PoliSim
 
-## ✅ STATUS 2026-09-01 — **D9 WAS SENT, AND ANSWERED IN FULL. NO ASK IS LIVE.**
+## ⭐ STATUS 2026-09-02 — **D10 IS THE LIVE ASK (P2-4.2). D9 was sent and answered in full 2026-09-01.**
+
+**D10** is Playtest 2's re-composition: nine rows, one annex set (Elias's rows verbatim, the dead-space measure per screen, the films at 1280 / 1600 / 2560), one package (`SEND_PACKAGE.md`, regenerated 2026-09-02). **Sending is Elias's.** The D9 status that stood here is kept below it, verbatim, as the record.
+
+### The D9 status as it stood (2026-09-01)
+
+**D9 WAS SENT, AND ANSWERED IN FULL.**
 
 ⚠ **Verified, not assumed** (`COMPLETED.md` §146): this document reached Design as
 `uploads/CLAUDE_DESIGN_ASSET_REQUEST-347e3be8.md` and **reads back at 77 510 bytes / `347e3be8…`** — the
@@ -807,7 +813,45 @@ a moment the game treats as a set piece**, and this is a design call we should n
 Prep / midway / verdict are all filmed at four widths if you want to look before answering.
 ---
 
-## ⭐ THE ONE LIVE ASK — D9, the consolidated request (2026-08-31, C-F1)
+## ⭐ THE ONE LIVE ASK — D10, Playtest 2's re-composition (2026-09-02, P2-4.2)
+
+⚠ **THIS SUPERSEDES D9 AS THE LIVE ASK.** D9 was sent and answered in full (§STATUS above); everything it
+asked for stays below as the record of how it arrived and is not asked for twice. **One ask, one annex set,
+one package.** Rows are numbered *n of N* so a partial paste is visible. **Sending is Elias's.**
+
+**Where this ask comes from.** Playtest 2 (2026-09-02) — Elias played the v3 build end to end and wrote
+the sitting's rows himself; they are `POLISIM_FEATURE_LIST.md § P2`, verbatim, and the annex's first
+page reproduces them so the board is drawn against the complaint, not against a paraphrase. Tracks 0–3
+of that sheet are built and filmed at HEAD (`COMPLETED.md` §217–§230); the annex films are those builds.
+**Drawn at 1280 first.** The films at 1600 and 2560 are the same screens at the other two widths, with
+the dead-space measure per screen (the annex's second page) so a board that composes for one width can
+see what it costs at the others.
+
+### The rows — 9 of 9
+
+| n of N | row | what it is | evidence on disk |
+|---|---|---|---|
+| **1 of 9** | **International — modernise and re-compose** | The country pages exist structurally (C-C8): a trade partner's page says what the model holds and, in its own words, what it does not — *no bilateral relations state at all*, and *"no trade link exists between these two"* drawn as a different fact from *"trade of zero"*. Every gap the model cannot fill is named on the page. The board composes what is there; it does not draw a warm/cool reading the model has no data for. | `p2an<width>_02b_statistics_international.png` (and `_deep`, `_rows`) at the three widths |
+| **2 of 9** | **Docket — re-compose, a minister-alerts region, cost-and-impact per decision** | Today the Docket is a column of cards, one per thing waiting (Fed chair, foreign meeting, cabinet decision, budget process). P2-4.3 builds the structural half now: a **minister-alerts region** fed by what the cabinet already emits (a portfolio's pending decision, with the minister's name and description), and per decision its **cost and its impact as arrows** (the P2-2.1 arrow renderer). The board composes those three regions. | `p2an<width>_03_decisions.png` at the three widths (the Docket before P2-4.3; P2-4.3's films join the package when it lands) |
+| **3 of 9** | **People — instruments over the cohort substrate** | The People screen is a rolling list of unconnected stats. The model beneath it is F2's cohort substrate (five-year bands, the eligible population, turnout by age for Sweden — SCB 2014, the end of the series). The board re-composes the list as instruments over that substrate: a pyramid, the eligible share, the bands that vote. Nothing is asked for that the substrate does not carry. | `p2an<width>_04_demographics.png` at the three widths |
+| **4 of 9** | **Laws — the browser streamlined, the enactment page decluttered** | The statute book (100 laws, three filters, three sorts, four statuses, a search) and the law card (magnitude, dial movement, expected effects, the party list FOR/AGAINST, the enact button). The board streamlines the browser and declutters the card. | `p2an<width>_06f_policylaws_laws.png` (and `_deep`, `_rows`) at the three widths |
+| **5 of 9** | **Politics — the per-seat hemicycle, the bloc grouping, compass r2 with trail and electorate** | ⚠ **Built, not asked for** (P2-3.1 … P2-3.4): 349 distinct dots on rings chosen by capacity, parties by bloc then mandates with a header per bloc; the compass on CHES `lrecon × galtan` with a legend column naming every point, the sitting cabinet ringed, the electorate as a diamond, a faint trail per chamber; the Riksbank panel with the projected path. **The board refines the composition** — in particular the compass legend, which is a column of text beside a square today. | `p2an<width>_07a_politics_parliament.png`, `07b_politics_compass.png`, `07d_politics_federalreserve.png` at the three widths |
+| **6 of 9** | **The law-result screen — full frame, not a square on black** | The signing ceremony is an 820×680 document over a scrim. P2-4.3 gives it its content full-frame: **the vote as a per-seat map** (P2-2.2's map on the division's recorded sides), **the estimated impact as arrows** (P2-2.1's renderer on the bill's preview), **the citation** (the division number, date and alignment). The board composes the frame; the v3 idiom (paper, hairlines, the seal) stands. | `p2an<width>_89d_signing_entrance.png`, `89e_signing_settled` at the three widths (the square on black as it stands; P2-4.3's full-frame films join the package when it lands) |
+| **7 of 9** | **The election-result screen — the same treatment, with the campaign's attribution ledger beside the count** | Election night is the count, the calls and the constituencies in a document over a scrim. P2-4.3 adds **the campaign's attribution ledger** (W-E7's "why, line by line": persuasion by action, attacks received, coverage, the prior) beside the count, full-frame. | the interrupts pass (`-shotinterrupts`, `e7c`/`e7d` election night) - the sweep does not reach election night; P2-4.3 films it full-frame at the three widths and those films join the package when it lands |
+| **8 of 9** | **The frame — sheet-to-rail-to-edge tokens** | P2-1.1 set the frame tokens to zero: the sheet meets the rail and the window edge to edge, and the edge guard holds every capture flush on four sides. The board rules the tokens (a hairline? a shadow? nothing?) with the films as the evidence of what zero looks like. | every `p2an*` capture; `=== Screen edges:` in `p2an1280.log` |
+| **9 of 9** | **Contrast — any pair P2-1.2 could not clear** | P2-1.2 derived every ink pair's contrast from the theme tokens and holds fifty-four pairs above the floors (body 4.5, caption 3.5). ⚠ **Every pair clears** at HEAD; this row is open only if a board introduces an ink the check does not know. Nothing is asked for. | `InkContrastCheck` in `bar36_p2_3_4_RunAllBatch.log` |
+
+### The annex — two pages, then the films
+
+1. **Elias's rows, verbatim** — `POLISIM_FEATURE_LIST.md § P2`, the sheet as sent, with each row's pointer to its record. The complaint is the brief.
+2. **The dead-space measure per screen** — `=== Dead space:` and the `dead nn.n%` column in `p2an1280.log`, `p2an1600.log`, `p2an2560.log`: the share of each frame within the content threshold of a ground (desk, paper, tile). A measure, not a verdict — the board reads it beside the film.
+3. **The films** — the whole sweep at 1280×720, 1600×950 and 2560×1440 (`p2an<width>_*.png`), the same eighty-two stems at each width.
+
+**Binary artifacts are uploaded, not described** (P2-4.2's own words): the package lists each film by name and digest; nothing is summarised in prose that a `get_file` can read back.
+
+---
+
+## D9 — the consolidated request (2026-08-31, C-F1) — SENT AND ANSWERED IN FULL; kept as the record
 
 ⚠ **THIS SUPERSEDES §2 (D7) AND §3 (D8) AS SEPARATE ASKS.** Both stay below as the record of how each
 row arrived; **nothing in them is withdrawn and nothing is asked for twice.** What changed is that they

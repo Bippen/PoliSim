@@ -470,7 +470,7 @@ citation; (7) **the election-result screen** — the same treatment, with the ca
 ledger beside the count; (8) **the frame** — sheet-to-rail-to-edge tokens; (9) **contrast** — any
 pair P2-1.2 could not clear. Drawn at 1280 first; Elias's verbatim complaints as the annex's first
 page. Regenerate the package; **binary artifacts are uploaded, not described.** Sending stays
-Elias's.
+Elias's. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §232: D10 installed as the one live ask with its nine rows and three-page annex; `SEND_PACKAGE.md` regenerated with every film by name, size and digest; sending stays Elias's.**
 
 **P2-4.3 — The structural halves that need no board:** the law-result and election-result screens
 get their full-frame content now (per-seat vote map from P2-2.2, effect arrows from P2-2.1, the
