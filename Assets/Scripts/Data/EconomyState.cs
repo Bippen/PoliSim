@@ -21,7 +21,10 @@ namespace PoliSim.Data
         /// <summary>Public approval of the government, 0-100.</summary>
         public float ApprovalRating;
 
-        /// <summary>Current government budget balance, in the same currency units as GDP. Negative values indicate deficit.</summary>
+        /// <summary>The budget ACCUMULATOR, in the same currency units as GDP: every day's balance and every one-time
+        /// settlement is added and nothing resets it. P2-0.4 (2026-09-02): NOT a display figure - the player sees the
+        /// closed year's balance (FiscalTurnReport.BudgetBalance, StatHistory.BudgetBalanceAnnual); this field serves the
+        /// model's own delta reading (PreviewTurn's net budget impact) and the debt stock's twin bookkeeping.</summary>
         public float Budget;
 
         /// <summary>Net exports (exports minus imports, after tariff effects) for the most recent turn.</summary>

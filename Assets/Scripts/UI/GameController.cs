@@ -7821,7 +7821,8 @@ namespace PoliSim.UI
             if (isPlayer)
             {
                 DrawDerivedStatRow("Poverty rate", -1f, $"{state.PovertyRate:F1}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
-                DrawDerivedStatRow("Budget balance", -1f, UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), "cumulative", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
+                FiscalTurnReport lastYearReport = _simulationManager.GetLastFiscalReport(PlayerCountryId);   // P2-0.4: the year, not the accumulator
+                DrawDerivedStatRow("Budget balance", -1f, lastYearReport != null ? UiFormat.MoneyDelta(lastYearReport.BudgetBalance, MoneyUnit.Billions) : "-", "last closed year", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
                 DrawDerivedStatRow("Currency strength", -1f, $"{state.CurrencyStrength:F1}", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             }
 

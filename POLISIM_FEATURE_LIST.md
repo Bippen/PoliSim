@@ -391,7 +391,7 @@ start or election night without the player dismissing an interrupt, filmed. **�
 
 **P2-0.4 — Budget balance shows the year, not the cumulative.** The Domestic series becomes annual
 (per fiscal year); cumulative belongs to debt, which already has its own row. *Done when:* filmed,
-and the annual series sums to the debt delta.
+and the annual series sums to the debt delta. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §220: the headline and the Budget row read the closed year, `StatHistory.BudgetBalanceAnnual` is the series, and the diagnostic proves the series plus erosion, settlements and clamp sum to the debt delta on every country.**
 
 ## Track 1 — the frame and the quick wins (every screen)
 

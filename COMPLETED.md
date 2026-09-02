@@ -21365,3 +21365,29 @@ The instrument that films the night is the driver's new **`-shotinterrupts`** mo
 **The film** — `-shotinterrupts`, Sweden, seed 777, both widths (`p2int1280_*.png`, `p2int2560_*.png`; logs `p2int1280.log`, `p2int2560.log`): the driver plays through the controller-shaped day path until the sim has begun the campaign, then lets the controller's own Update meet it. Asserted, each width: the banner names the campaign and HQ has opened itself (`e7a_campaign_opening_hq`); the clock is HELD with the speed set to VeryFast (`SHOT: the clock is HELD on the campaign's opening`); after `AcknowledgeCampaignOpening` the campaign's hold is gone (`e7b_campaign_opening_acknowledged`) - and the frame says why the clock is still held: the harness drove the sim straight to the opening, so the Riksbank appointment, a foreign-policy meeting and the incoming government's budget window had accumulated behind it, each named on the banner in the order the game holds them (in play they are met on their own days); the driver reports that state rather than asserting a running clock, because another interrupt behind this one is legitimate; then the election through `CheckElection`, the night takeover held (`e7c_election_night_takeover`), CONTINUE, and the verdict on the desk (`e7d_…`). A missing interrupt at either point fails the run.
 
 **Bar:** `RunSimulationBatch` and `RunAllBatch` clean on the committed tree (`bar25_p2_0_3_*.log`).
+
+## 220. P2-0.4 — BUDGET BALANCE SHOWS THE YEAR: the annual series, and it sums to the debt delta with every other mover named (2026-09-02)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P2, Track 0): *"The Domestic series becomes annual (per fiscal year); cumulative belongs to debt, which already has its own row. Done when: filmed, and the annual series sums to the debt delta."*
+
+**Before.** `EconomyState.Budget` is an accumulator: every day's balance and every one-time settlement is added to it and nothing ever resets it (`ApplyRevenueAndSpending`, `ApplyOneTimeBudgetImpact`). Two player surfaces printed it as if it were a balance — the Statistics › Domestic headline plate (and through the same readings, the desk strip's BUDGET BALANCE) and the Budget screen's derived row, which at least said "cumulative" in small type. P2-0.1's measurement printed the accumulator beside the year's balance for six countries after two closed years and the two were never the same number; the P2-0.2 film shows the strip carrying it. The sheet's fiscal-position rows were already annual (they read the closed year's report); only the money figure was not.
+
+**Built.**
+
+- `StatHistory.BudgetBalanceAnnual` (with its dates): one point per closed fiscal period, appended where the period closes and the report is written (`SimulationManager`, beside `_lastFiscalReports`). Observation only — nothing reads it back into the model, so the trajectory bar cannot move.
+- The Domestic headline reads **the last closed year's balance** from the fiscal report, draws the annual series as its sparkline (the reading had none), and prints a dash before the first close rather than a number no year has computed. The Budget screen's row reads the same figure and says "last closed year" instead of "cumulative". Debt keeps the cumulative, on its own row, as the row said. The accumulator field stays for the model's own delta reading (`PreviewTurn`'s net budget impact) and its doc says it is not a display figure.
+- **The harness** is section 4 of `DomesticMoneyBasisDiagnostic` (no new check — R-N5): a fresh world closed one year at a time for every country; after each close the series' newest point IS the report's balance, and the balance IS the debt ledger's flow terms with the sign flipped; over the run the debt delta equals the negated sum of the annual series **plus** the three other stock movers the ledger already attributes — the erosion term, the one-time settlements, and the clamp's truncation — within the ledger's own tolerance idiom. That is the row's done-when stated honestly: the annual series sums to the debt delta once the movers that are not a year's flow are named beside it, and the diagnostic prints them per country every run. The first run, verbatim (`p2_0_4_measure.log`):
+
+```
+  USA      debt   35960.0 ->   39454.0  delta  +3494.0 = -sum(annual balance)  +6968.8 + erosion -3474.8 + settlements   +0.0 + clamp   +0.0
+  Sweden   debt     217.0 ->     235.2  delta    +18.2 = -sum(annual balance)    +30.8 + erosion   -12.6 + settlements   +0.0 + clamp   +0.0
+  Germany  debt    2961.0 ->    3096.9  delta   +135.9 = -sum(annual balance)   +503.7 + erosion  -367.9 + settlements   +0.0 + clamp   +0.0
+  France   debt    3712.0 ->    3957.9  delta   +245.9 = -sum(annual balance)   +744.9 + erosion  -498.9 + settlements   +0.0 + clamp   +0.0
+  Italy    debt    3174.0 ->    3233.1  delta    +59.1 = -sum(annual balance)   +411.3 + erosion  -352.2 + settlements   +0.0 + clamp   +0.0
+  Poland   debt     495.6 ->     634.6  delta   +139.0 = -sum(annual balance)   +168.7 + erosion   -29.6 + settlements   +0.0 + clamp   +0.0
+```
+
+
+**The film:** Statistics › Domestic at 1280 and 2560 (`p2bal1280_02a_statistics_domestic.png`, `p2bal2560_02a_statistics_domestic.png`): the plate carries the year's balance with the annual sparkline.
+
+**Bar:** `RunSimulationBatch` and `RunAllBatch` clean on the committed tree (`bar26_p2_0_4_*.log`).

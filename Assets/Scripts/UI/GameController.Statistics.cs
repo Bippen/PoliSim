@@ -85,7 +85,11 @@ namespace PoliSim.UI
                 rating.Outlook == RatingOutlook.Positive,
                 null));
             // Signed on purpose: a balance's direction is the whole reading.
-            readings.Add(new HeadlineReading("Budget Balance", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, false, null));
+            // P2-0.4 (2026-09-02): THE YEAR, not the accumulator - the last closed fiscal period's balance from the
+            // report, the annual series as its line, and a dash before any year has closed (a figure no year has
+            // computed is stated, never drawn).
+            FiscalTurnReport lastYear = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+            readings.Add(new HeadlineReading("Budget Balance", lastYear != null ? UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions) : "-", null, false, history?.BudgetBalanceAnnual));
             return readings;
         }
 

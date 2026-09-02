@@ -144,6 +144,13 @@ namespace PoliSim.Data
         // ROUND 4 BATCH R4-5 (C5): productivity - the arc's last series.
         public readonly MultiResolutionSeries Productivity = new MultiResolutionSeries();
 
+        /// <summary>P2-0.4 (2026-09-02): the budget balance PER CLOSED FISCAL PERIOD - the series the Domestic
+        /// sheet draws and the Budget screen reads. One point per close (SimulationManager writes it beside the
+        /// fiscal report), with its date in the parallel list. The cumulative accumulator (EconomyState.Budget)
+        /// is not a display figure; debt carries the cumulative on its own row.</summary>
+        public readonly List<float> BudgetBalanceAnnual = new List<float>();
+        public readonly List<DateTime> BudgetBalanceAnnualDates = new List<DateTime>();
+
         /// <summary>
         /// Appends this turn's already-settled values. <paramref name="date"/> is the in-game
         /// calendar date the turn resolved on (Continuous Time Migration Phase 0 - see

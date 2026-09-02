@@ -25,7 +25,7 @@ namespace PoliSim.EditorTools
     /// GDP (a SEK figure applied to a $-basis economy would be a multiple of it, not a share of it);
     /// (2) after two closed years — the fiscal report's revenue, spending and balance as shares of GDP,
     /// with the sign convention the sheet prints, and the cumulative accumulator beside the year's
-    /// balance (P2-0.4's fact, printed here and asserted there); (3) <b>the one-time settlements</b> —
+    /// balance (P2-0.4's fact - section 4 below asserts the annual series against the debt identity); (3) <b>the one-time settlements</b> —
     /// every option in the cabinet decision pool and the foreign-policy meeting pool, its authored
     /// figure, and what it lands as on each country's economy. ⚠ <b>This is where the basis broke:</b>
     /// the pools are authored in billions on the USA seed's scale and were applied unscaled, so the same
@@ -56,6 +56,8 @@ namespace PoliSim.EditorTools
         /// GDP (printed by the run) and gives nothing beyond that headroom.</summary>
         private const float MaxOneTimeImpactShareOfGdp = 2f;
         private const int TurnsToClose = 2;
+        /// <summary>P2-0.4: years closed one at a time for the annual series and the debt identity.</summary>
+        private const int AnnualYearsToClose = 4;
 
         public static void Run()
         {
@@ -179,6 +181,77 @@ namespace PoliSim.EditorTools
 
                 failures += Assert(sb, "USA at seed: every option applies exactly as authored (the scale is the USA seed, byte-identical)",
                     usaIdentical, F("USA GDP now {0}", usa.State.GDP));
+
+                // P2-0.4 (2026-09-02): THE ANNUAL SERIES SUMS TO THE DEBT DELTA. A fresh world, closed one year at a
+                // time; after every close the year's balance must be the newest point of the annual series the
+                // sheet draws, and the balance must be the debt ledger's own flow terms with the sign flipped
+                // (the ledger's terms are contributions TO debt). Over the whole run the identity the row asked
+                // for holds with every other stock mover named beside the balance: the erosion term (the real
+                // stock's -pi*b drift), the one-time settlements (which land on the stock and the accumulator,
+                // never in a year's flow), and the clamp's truncation - the same three the ledger's own audit
+                // adds to explain a period. The tolerance is the ledger's idiom: relative to the stock, floored.
+                sb.Append(F("\n--- 4. The annual budget balance: the series the sheet draws, and the debt identity over {0} closed years ---\n", AnnualYearsToClose));
+                SimulationRandom.Seed(777);
+                World annualWorld = WorldFactory.CreateDefault();
+                var annualGo = new GameObject("DomesticMoneyBasisAnnual");
+                try
+                {
+                    SimulationManager annualSim = annualGo.AddComponent<SimulationManager>();
+                    annualSim.SetWorld(annualWorld);
+                    var debtAtSeed = new Dictionary<CountryId, float>();
+                    var sumNegBalance = new Dictionary<CountryId, float>();
+                    var sumErosion = new Dictionary<CountryId, float>();
+                    var sumEvents = new Dictionary<CountryId, float>();
+                    var sumClamp = new Dictionary<CountryId, float>();
+                    foreach (Country c in annualWorld.Countries)
+                    {
+                        debtAtSeed[c.Id] = c.State.GovernmentDebt;
+                        sumNegBalance[c.Id] = 0f; sumErosion[c.Id] = 0f; sumEvents[c.Id] = 0f; sumClamp[c.Id] = 0f;
+                    }
+
+                    int yearsClosed = 0;
+                    int dayGuard = 0;
+                    while (yearsClosed < AnnualYearsToClose && dayGuard++ < 400 * AnnualYearsToClose)
+                    {
+                        if (!annualSim.AdvanceDay()) { continue; }
+                        annualSim.AdvanceTurn(noDecisions);
+                        yearsClosed++;
+                        foreach (Country c in annualWorld.Countries)
+                        {
+                            FiscalTurnReport yearReport = annualSim.GetLastFiscalReport(c.Id);
+                            DebtAttribution ledger = c.FiscalLedgerLastPeriod;
+                            IReadOnlyList<float> series = c.History.BudgetBalanceAnnual;
+                            bool newestIsTheYear = yearReport != null && series.Count == yearsClosed && series[series.Count - 1] == yearReport.BudgetBalance;
+                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: the annual series' newest point IS the closed year's balance",
+                                newestIsTheYear, F("series has {0} point(s), newest {1}, report {2}", series.Count, series.Count > 0 ? series[series.Count - 1] : float.NaN, yearReport?.BudgetBalance ?? float.NaN));
+                            if (yearReport == null || ledger == null) { continue; }
+
+                            float flowTerms = ledger.TermSum - ledger.Erosion;
+                            float tolerance = Mathf.Max(0.01f, 2e-4f * Mathf.Max(Mathf.Abs(ledger.DebtAtPeriodOpen), Mathf.Abs(ledger.DebtAtClose)));
+                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: the year's balance is the ledger's flow terms, sign flipped",
+                                Mathf.Abs(-yearReport.BudgetBalance - flowTerms) <= tolerance, F("-balance {0:0.0000} vs terms-erosion {1:0.0000} (tol {2:0.0000})", -yearReport.BudgetBalance, flowTerms, tolerance));
+                            sumNegBalance[c.Id] += -yearReport.BudgetBalance;
+                            sumErosion[c.Id] += ledger.Erosion;
+                            sumEvents[c.Id] += ledger.EventSum;
+                            sumClamp[c.Id] += ledger.ClampLoss;
+                        }
+                    }
+
+                    foreach (Country c in annualWorld.Countries)
+                    {
+                        float observed = c.State.GovernmentDebt - debtAtSeed[c.Id];
+                        float explained = sumNegBalance[c.Id] + sumErosion[c.Id] + sumEvents[c.Id] + sumClamp[c.Id];
+                        float tolerance = Mathf.Max(0.01f, 2e-4f * Mathf.Max(Mathf.Abs(debtAtSeed[c.Id]), Mathf.Abs(c.State.GovernmentDebt))) * AnnualYearsToClose;
+                        sb.Append(F("  {0,-8} debt {1,9:0.0} -> {2,9:0.0}  delta {3,8:+0.0;-0.0} = -sum(annual balance) {4,8:+0.0;-0.0} + erosion {5,7:+0.0;-0.0} + settlements {6,6:+0.0;-0.0} + clamp {7,6:+0.0;-0.0}\n",
+                            c.Id, debtAtSeed[c.Id], c.State.GovernmentDebt, observed, sumNegBalance[c.Id], sumErosion[c.Id], sumEvents[c.Id], sumClamp[c.Id]));
+                        failures += Assert(sb, $"{c.Id}: over {AnnualYearsToClose} years the annual series sums to the debt delta, with erosion, settlements and clamp named",
+                            Mathf.Abs(observed - explained) <= tolerance, F("observed {0:0.0000} vs explained {1:0.0000} (tol {2:0.0000})", observed, explained, tolerance));
+                    }
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(annualGo);
+                }
             }
             finally
             {
