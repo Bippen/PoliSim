@@ -518,8 +518,8 @@ installed. The two stat-icon PNGs and the ITANES registration, still open.
 > ⚠ **The nine screenshots.** The sheet names them (image 1 — International's node-graph map and its
 > raw grey Prev/Next; images 7 and 8 — the Policy Web at rest and pinned, board 2b; image 9 — the
 > Riksbank page, board 5f) and the rows bind to them. **They were not attached to the message that
-> carried the sheet and are not on disk** (Desktop, Downloads and the captures folder searched at the
-> kickoff); nothing is transcribed in their place. Where a row needs the image, the nearest frame on
+> carried the sheet and are not on disk** (Desktop, Downloads, Documents and the captures folder searched at the
+> kickoff; the file the second message names, `PLAYTEST3_ROWS.md`, is not on disk either - the pasted sheet is the record); nothing is transcribed in their place. Where a row needs the image, the nearest frame on
 > film is named in its record and the deviation from the image is left to the image's arrival; the
 > nine go into D12's annex the day they land (ERRANDS).
 
@@ -549,7 +549,7 @@ parties carry nine CHES dimensions (F5). Replace the scorer:
   its line; no invented party.
 
 *Done when:* the page names every term's source and the calibration debt; take the recommendation
-and log it.
+and log it. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §246: the dial → axis map from the codebook's definitions, four terms (the axis, cohesion and the opposition's line, opinion over an ecological voter profile, undecided as a state), six debts named, seven decisions logged.**
 
 **P3-A2 — Build it.** BASELINE for the parliament-stress matrix (the no-policy baseline does not
 move — no bills pass without a player). Re-run the matrix and explain every cell that changed.

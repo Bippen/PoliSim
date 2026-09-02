@@ -21929,3 +21929,73 @@ Each attribute is a float on `CabinetMinister`, 0–100, `[AUTHORED-DRAFT]` per 
 **Dead space, as the guard prints it:** the 1280 sweep's mean 75.6 % (P2's close measured 76.1 %); the re-filmed 2560 sweep's mean 79.1% (P2's close measured 79.4 %).
 
 **Bar:** the 2560 films are evidence, not a bar; the four board commits carry `bar49_d11_boards_RunAllBatch.log` (26 of 26), and this commit changes one measurement line.
+
+## 246. P3-A1 — THE DESIGN PAGE: the stance model - each bill on the CHES axis it concerns, the government's cohesion and the opposition's line, public opinion as salience over the voters a party depends on, undecided as a state; every term's source and the calibration debt named; the recommendation taken and logged strikeable (2026-09-03)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P3, Track A): *"Parliament votes on a single fiscal axis while parties carry nine CHES dimensions (F5). Replace the scorer … Done when: the page names every term's source and the calibration debt; take the recommendation and log it."*
+
+### What the scorer is today
+
+One line in `ParliamentSystem.SeatSides`: a party's stance is `PartySystems.FiscalStance` - `(5 − lrecon) / 5` - for every bill but the tariff bill, which reads `TradeStance` from `eu_position` (with the fiscal fallback where no EU item is published, the USA). The bill's direction is one signed float per bill kind (eight `Get*BillDirection` methods, each with its own stated sign convention: more spending, higher tax, more support or intervention, more reform positive; stricter, harsher, more deregulated negative), and a party's side is the sign of stance × direction. So a Riksdag that votes on sentencing, on immigration openness, on a sector's deregulation and on a pension cut is the same eight-number chamber each time, and `lrecon` alone decides. Undecided is only the exact-zero artefact. No government exists in the vote: the cabinet `GovernmentFormation.Form` seats is never consulted, so a coalition partner votes against its own government's budget whenever `lrecon` says so, and the opposition supports it whenever it does not. Nothing of what voters want enters.
+
+### Term 1 - the bill loads the axis it concerns
+
+**The map, stated in code as `BillConcern` and sourced from the CHES 2024 codebook's own variable definitions** (quoted in `PartySystem.cs` at F5, `CHES.2024.Codebook.pdf`): `lrecon` "economic left-right, 0 = left / more state, 10 = right / more market"; `galtan` "0 = libertarian/post-materialist … 10 = traditional/authoritarian"; `spendvtax` "0 = strongly favors improving public services … 10 = strongly favors reducing taxes"; `immigrate_policy` "0 = liberal … 10 = restrictive"; `deregulation` "0 = strongly opposes deregulation of markets … 10 = strongly favors"; `eu_position` (1–7, openness, `TradeStance`'s existing rescale). A bill is a set of dial moves; each dial carries its axis and its sign on that axis, and the bill's concern is the signed move summed per axis. A bill that moves dials on two axes is scored on both, each axis weighted by the share of the bill's absolute movement it carries - the weights are the bill's own arithmetic, not an authored number.
+
+| dial (bill kind) | CHES axis | which end the dial's "more" points at | source of the pairing |
+|---|---|---|---|
+| tax rates, spending %, welfare generosity (BudgetBill); program add/remove (TaxProgramBill, WelfareProgramBill); SWF drawdown | `spendvtax` where published, else `lrecon` | more spending / more generosity / a drawdown → the 0 end (improve public services); a tax rise → the 0 end (the revenue side of the same question - the codebook's item is one trade-off, taxes against services); a cut → the 10 end | the codebook's `spendvtax` wording is the budget's own question; `lrecon` is the codebook's economic axis and is the fallback for the USA, whose GPS-2019 rows carry lrecon and galtan only |
+| minimum wage, paid family leave, overtime regulation, retraining, family policy (LaborPolicyBill; the labour six of a LawBill) | `lrecon` | more support / more regulation → the 0 end (more state) | the codebook defines `lrecon` on "the role of the state in the economy"; every labour dial is a state-in-the-market dial |
+| immigration policy (the labour bill's sixth dial; the law catalog's immigration-openness delta); border enforcement (CrimeJusticePolicyBill) | `immigrate_policy` | more open → the 0 end; more enforcement → the 10 end | the codebook's item is the dial's own question |
+| police funding, judicial funding, sentencing severity, bail reform, drug policy (CrimeJusticePolicyBill; the crime six of a LawBill) | `galtan` | harsher sentencing, stricter drugs, more police → the 10 end (law and order is the codebook's `galtan` content); bail reform → the 0 end | the codebook's `galtan` wording names law and order among the traditional/authoritarian pole's concerns; the row's own placement |
+| subsidy, tax credits, research grants, regulation (SectorPolicyBill) | `lrecon` | more intervention → the 0 end | the row's "state-intervention axis" is the codebook's `lrecon` |
+| deregulation / nationalisation (SectorPolicyBill) | `deregulation` | more deregulated → the 10 end | the codebook's item is the dial's own question |
+| tariff (TradePolicyBill) | `eu_position` openness, `lrecon` fallback | a higher tariff → the closed end | R-CL2's existing axis, unchanged |
+
+Two axes the parties carry are loaded by nothing: `environment` (no dial concerns the climate) and `regions` (no dial concerns decentralisation); `lrgen` stays the coalition matrix's general term. The page says so rather than inventing a dial for them.
+
+**The stance on one axis.** The party's position `p` (0–10) and the axis end `e` the bill's move points at (0 or 10): `alignment = (e == 10 ? p − 5 : 5 − p) / 5`, in [−1, +1], the same arithmetic `FiscalStance` uses today, generalised to the axis and the end. A party with no published position on the axis is UNMEASURED on that bill - as today, it carries no weight and no seat in the denominator, and `MeasuredSeatShare` becomes per-axis. Undecided is a real state: `|alignment| < UndecidedBand` - the party sits within half a point of the axis midpoint - and it is neither for nor against. `UndecidedBand = 0.1` `[AUTHORED-DRAFT]`.
+
+### Term 2 - the government's cohesion and the opposition's line
+
+The cabinet is the one `GovernmentFormation.Cabinet` forms from the chamber (W-D3: §29's compatibility, the declared red lines, the chamber's own rule); the support parties are `GovernmentOption.Support`. A bill is a government bill when the player's party sits in the cabinet (`Formed.PlayerInCabinet`) - the player introduces every bill - and otherwise the chamber votes on positions alone.
+
+- **A cabinet party** pulls toward its government: `alignment ← alignment + Cohesion × (1 − distance) × (1 − alignment)` where `distance = |p − e| / 10` is how far the party's own position sits from the end the bill moves toward. Near the bill the pull is whole and the partner supports; far from it the pull vanishes and the partner votes its position - a coalition partner can refuse a bill far from its position, and the reason says so. `Cohesion = 0.6` `[AUTHORED-DRAFT]`. A support party takes half the pull `[AUTHORED-DRAFT]`.
+- **An opposition party** opposes a government bill unless the bill is nearer its own position than the government's: with `g` the seat-weighted cabinet position on the axis, if `|p − e| < |g − e|` the party keeps its own alignment (and the reason says "nearer this party than the government"); otherwise `alignment ← alignment − OppositionLine × (1 + alignment)`, pulling toward against. `OppositionLine = 0.3` `[AUTHORED-DRAFT]`.
+- **Loyalty.** The row names P2-5's attribute. It is a MINISTER's (`CabinetMinister.Loyalty`), and a minister in this model has a portfolio and no party - the candidate pool is one pool for every chamber (§235). Reading a party's coalition loyalty off a technocrat's figure would be a fabrication, so the page does not; the cohesion weight is the party-level term, and the minister's loyalty stays where P2-5 put it (resignations and leaks under pressure). When ministers carry parties, the hook is `Cohesion × loyalty / 100` on that party's pull, and this line is where it goes.
+
+### Term 3 - public opinion enters
+
+- **Salience** is `ElectionsData/salience/issue_salience.md` - Eurobarometer 105 (Spring 2026) per country, Gallup MIP for the USA, SOURCED - mapped onto `IssueId` (Economy, Healthcare, Immigration, Climate, Crime, Taxes, Education, Housing, Defense) as the harness already maps it; a bill's issue is its axis's: `spendvtax`/`lrecon` → Taxes and Economy, `galtan` → Crime, `immigrate_policy` → Immigration, `eu_position` → Economy. The salience `s` is the country's share naming the issue, 0–1.
+- **The voters a party depends on.** No survey of party support by age is on disk (SCB's PSU publishes it; it is not fetched). What IS on disk is `valkrets_votes_2022.csv` (Valmyndigheten, every valkrets's party count) and `valkrets_population_by_age_2024.csv` (SCB, every valkrets's pyramid), and from the two a party's voters' age profile is an **ecological estimate**: the party's share of each valkrets weighting that valkrets's bands. It is DERIVED and stamped ecological - individual-level support may differ, and the page says so rather than dressing it as a survey.
+- **What a spending line means to an age band** - pensions to 65+, healthcare to 65+, education to 5–24, family policy and paid leave to 25–44, unemployment benefits to 20–64 - is `[AUTHORED-DRAFT]` per line, a table with one row per `SpendingCategory` and welfare program that has a clear beneficiary band; lines with none carry no dependence.
+- **The cost:** for a bill that cuts a line, a party's `dependence = Σ_band (share of the party's voters in the band) × (the line's weight for the band)`; `alignment ← alignment − OpinionWeight × s × dependence × cutShare` where `cutShare` is the cut as a share of the line. A right-wing party does not cut the pensions its old electorate lives on without cost, and the reason prints the band and the share. `OpinionWeight = 0.5` `[AUTHORED-DRAFT]`. Sweden carries all three inputs; the other five carry salience only, so their opinion term is the salience-weighted issue cost without the voter profile, and the reason says "no voter profile for this chamber".
+
+### Term 4 - the output stays honest
+
+`SeatSides` yields, per party: seats, side (+1 / −1 / 0 undecided), the alignment as the weight, measured or not, and **the reasons** - the axis and the party's position on it, the distance, the cohesion pull or the opposition line with the comparison that decided it, the opinion cost with its band and share. `GetSeatWeightedAlignment` sums seats × alignment over the measured parties on the bill's axes exactly as today, so the lean bar's decided quantity survives unchanged in kind; `WouldBillPass` is its sign; the per-seat map colours from the same enumeration (P2-2.2's guarantee holds). Every party's reasons are what P3-A3 draws.
+
+### Determinism and sourcing
+
+Every position is CHES 2024 (GPS 2019 for the USA) from `party_positions.md` and the F5 columns; no party is invented; no party is given a position it lacks. The weights are five authored constants, each `[AUTHORED-DRAFT]` with its line above; the maps are two tables in code with their sources in the doc. The scorer is arithmetic over the state - no stream is drawn, and the harness's `OfficeTestDiagnostic` assertion (the seat map's counts against the verdict) keeps holding by construction.
+
+### The calibration debt, named
+
+1. The five weights (`UndecidedBand`, `Cohesion`, the support party's half, `OppositionLine`, `OpinionWeight`) are authored; nothing on disk calibrates them. A roll-call source (the Riksdag's voting records, `data.riksdagen.se`) would.
+2. The dial → axis pairings for `galtan` (the crime six) and the placement of border enforcement on `immigrate_policy` are the row's and this page's readings of the codebook, not a fitted assignment.
+3. The spending line → age band table is authored.
+4. The voter profile is ecological (valkrets-level), 2022 votes over a 2024 pyramid; the salience is 2026 against 2024 positions (the vintage mismatch W-F3 named); SOM is absent.
+5. The USA scores every budget bill on `lrecon` (no `spendvtax` in GPS) and holds no formation, so its opposition and cohesion terms are inert; France's chamber is measured over its published seats only.
+6. Two published axes (`environment`, `regions`) load no bill.
+
+### Decisions logged, strikeable (Elias's to strike)
+
+- **D-P3-A1a** - the map above, `spendvtax` first and `lrecon` as its fallback for budget bills; the crime six on `galtan`; border enforcement and immigration openness on `immigrate_policy`; the sector dials on `lrecon` with the deregulation dial on `deregulation`.
+- **D-P3-A1b** - a multi-axis bill is scored on each axis it moves, weighted by the bill's own share of movement on it.
+- **D-P3-A1c** - undecided is `|alignment| < 0.1`, a state, printed as such.
+- **D-P3-A1d** - cohesion is the party's, from the formed cabinet and the distance; the minister's loyalty is not read as the party's.
+- **D-P3-A1e** - the opposition's line is the comparison of distances against the cabinet's seat-weighted position, and it is printed.
+- **D-P3-A1f** - the voter profile is the ecological estimate from the two valkrets tables, stamped ecological; the dependence table is authored.
+- **D-P3-A1g** - P3-A2 is BASELINE for the parliament-stress matrix: the scenario's bills are the USA's, whose chamber has no formation and no `spendvtax`, so its verdicts move only where a budget bill's `lrecon` alignment did not already decide them; every changed cell is explained in A2's record.
+
+**Bar:** none owed - the page changes no code; P3-A2 builds it.
