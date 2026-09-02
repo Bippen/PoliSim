@@ -2723,6 +2723,20 @@ namespace PoliSim.Simulation
             => PreviewTurnOnClone(ClonePreviewCountry(_world.GetCountry(countryId)), countryId, decision);
 
         /// <summary>
+        /// P3-C1 (2026-09-03): the preview WITH the budget draft enacted - the draft applied to the clone first
+        /// (`ParliamentSystem.ApplyBillResult` as a PASS, the same application the boundary makes, on the clone's
+        /// own tax lines, spending lines, welfare programs and fund), then the turn previewed on it. Against
+        /// <see cref="PreviewTurn"/> on the same decision this is "with vs without this draft" - the scope line
+        /// under the effects panel, made true. The clone comes from `ClonePreviewCountry` and nothing else.
+        /// </summary>
+        public PolicyPreview PreviewTurnWithBudgetDraft(CountryId countryId, PolicyDecision decision, BudgetBill draft)
+        {
+            Country clone = ClonePreviewCountry(_world.GetCountry(countryId));
+            if (draft != null) { ParliamentSystem.ApplyBillResult(clone, draft, passed: true, ApplyBudgetBillSpendingAndSwf); }
+            return PreviewTurnOnClone(clone, countryId, decision);
+        }
+
+        /// <summary>
         /// C-C1: `PreviewTurn`'s body, taking a clone the caller has already made — so a caller can
         /// modify that clone FIRST (apply a draft bill to it) and preview the result. `PreviewTurn`
         /// itself is unchanged in behaviour: it makes the clone and calls this.

@@ -22103,3 +22103,101 @@ Reachability: none - the Policy Web is the fourth sub-tab of LAWS on the rail, o
 **The film:** `p3a3_1280_07d_politics_federalreserve` after the two fixes.
 
 **Bar:** `RunAllBatch` on the tree with A3 and these two fixes (`bar54_p3a3_RunAllBatch.log`).
+
+## 251. P3-C1 — LIVE ARROWS: the Budget's effects panel is "with vs without this draft" in fact, recomputed on drag behind a debounce derived from the preview's own measured cost (2026-09-03)
+
+**The row** (`POLISIM_FEATURE_LIST.md` P3, Track C): *"The Budget effects panel recomputes on slider drag (the preview is deterministic and its cost is measured - debounce to the measured budget). Done when: a film pair mid-drag shows the arrows moved."*
+
+**What was wrong, measured.** The panel's scope line said "with vs without this draft"; the arrows were the plain preview's own next-year move. `BuildPlayerDecision` has carried only the interest-rate input since the Political Systems Overhaul (every other dial reaches the simulation through a passed bill), so `PreviewTurn` never saw a budget draft, `PolicyInputsChangedSinceLastPreview` compared only the rate, and no slider could move an arrow - the arrows were true of the standing policy and false of the draft.
+
+**Built.**
+
+- **`SimulationManager.PreviewTurnWithBudgetDraft`** (new): the draft applied to the preview clone as a PASS (`ParliamentSystem.ApplyBillResult` with the boundary's own spending-and-fund application, on the clone's own tax lines, spending lines, welfare programs and fund - C-C1's clone, hand-listed) and the turn previewed on it.
+- **`RecomputePolicyPreview`** runs both previews on the same decision: the arrows are WITH minus WITHOUT per outcome (GDP growth, unemployment, inflation, approval, poverty, participation, crime), the cached preview the Riksbank path and the raw fields read is the WITH one (the preview's year with this draft, as the scope line says). An outcome the draft does not move prints no arrow, as before.
+- **The trigger:** the budget draft's fingerprint - every tax, spending and welfare dial and the fund's six draft fields, hashed - beside the rate; a changed fingerprint recomputes.
+- **The debounce is the measured cost:** each recompute is timed (`Stopwatch`), and the next is allowed no sooner than four times the last measured duration (clamped to 30 ms … 500 ms), so a drag that moves a slider every frame spends at most a fifth of the frame on previews; the arrows follow the slider within that window and settle on release.
+- **The film pair:** the harness moves the Education spending dial +15 after the Budget › Spending capture, waits two settles (the debounce elapses), captures `05b_budget_spending_dragged`, and puts the dial back; the log says so.
+
+**The film:** `p3c_1280_05b_budget_spending` and `p3c_1280_05b_budget_spending_dragged` - the same frame before and after the dial moved; the arrows differ.
+
+**Bar:** `RunAllBatch` (`bar55_p3c1_RunAllBatch.log`; the closing tree `bar59_p3c_RunAllBatch.log`). **Also here:** the Budget site draws THE BREAKDOWN (§248) after the effects panel in the short form, so the arrows stay above the 720 fold (`withBreakdown: false` at the site, the breakdown at the end of `DrawPolicyPreview`).
+
+## 252. P3-C2 — BALANCE FROM YEAR ONE: the fiscal header shows the year's projected balance beside last year's, and at year one last year is the seed and says so (2026-09-03)
+
+**The row:** *"The fiscal header shows the current year's projected balance (the preview's own figure) beside last year's actual; at year one, last year is the seed and says so. Done when: filmed at turn 0 with both figures present."*
+
+**Built** (`BuildFiscalReadings`, the Budget's chip strip). The first chip is last year's closed balance from the fiscal report as before, and at year one - no report closed - it is BALANCE · THE SEED (NO YEAR CLOSED) with the seeded accumulator's standing balance (the seed's own figure, which the first close replaces). Beside it a new chip, BALANCE · THIS YEAR · PROJECTED: the preview's own figure, revenue minus spending on the previewed year (`PolicyPreview.RevenueEstimate − SpendingEstimate`; a turn is a year, so nothing is scaled), WITH the draft - the preview P3-C1 caches - and a WITH THE DRAFT pill when the draft moves it against the standing policy's own projection (`_cachedPreviewWithoutDraft`). No sparkline: a projection has no history.
+
+**The film:** `p3c_1280_05_budget` at turn 0 - both chips present, the seed named.
+
+## 253. P3-C3 — THE SLIDER LABEL: one axis, one wording, both ends; a check that every dial's left label, right label and range agree (2026-09-03)
+
+**The row:** *""Deregulation / Nationalization" on the left against "0 nationalized – 100 private" on the right: one axis, one wording, both ends. Sweep every dial for the same class. Done when: a harness asserts each dial's left label, right label and range agree."*
+
+**Built.** The dial reads NATIONALIZATION / DEREGULATION with `0 nationalized - 100 deregulated` - the ends in the trailing's order, in the name's own words (the direction code `GetSectorBillDirection`/`GetSectorBillConcern` was already "higher = more deregulated"; only the label lied). **`DialLabelCheck`** (Editor, in the cheap group): reads every `DrawDialRow` call in `GameController.cs` as text, the way `MetaTextCheck` reads literals, and asserts (1) a trailing of the form "N word - M word" carries the range's own ends - N and M equal the Min/Max constants the call names, reflected from the controller, never restated; (2) a two-ended name ("A / B") has a trailing whose first word belongs to A and second to B by a shared five-letter stem, so order and wording agree; (3) a two-ended name with no trailing is a failure - its ends are unsaid. Every dial is printed with its verdict; a run that reads no dial fails rather than passing on nothing.
+
+**What the sweep found:** the one dial the row named; every other two-ended name on the sheet ("Overtime / Working-Hour Regulation") is one concept with a slash and carries a single-ended trailing, which the check reports and passes.
+
+## 254. P3-C4 — THE TRADE GRAPH: the delta from a zero base is an absolute change, marked, never ±100 % (2026-09-03)
+
+**The row:** *"The Domestic/International trade balance graph reads as a broken line with a −100.0% delta. Measure the cause (a zero baseline in the delta is the likeliest); draw it through the graph renderer at 1l's weights with an honest delta or none. Done when: the delta is either correct or absent with its reason."*
+
+**Measured.** `GraphRenderer.DrawTitleRow` printed the first-to-last change of the visible window as a percentage, and for a first value of zero it substituted ±100 % by the sign of the last - so every series that starts at zero (the trade balance from the seed, until its first quarter is written) carried a "−100.0 %" that measured nothing. The line itself is the renderer's own history line at `HistoryWeight` (3 px, board 1l); it reads "broken" because the window's first point is the seed's zero and the second is the first quarter's real balance - the drop is the series, not a rendering defect.
+
+**Built.** From a zero base the delta is the ABSOLUTE change in the series' own unit, marked Δ - through `UiFormat.MoneyDelta` in the graph's declared money unit, or the axis formatter otherwise - and it takes the same good/bad ink; where the base is real the percentage stays. No delta is invented and none is hidden: a reader sees "Δ −$14.2B" for what it is.
+
+**The film:** `p3c_1280_02b_statistics_international_deep` (the trade graph's title row).
+
+## 255. P3-C5 — THE HEMICYCLE IN SECTORS: parties as angular wedges left to right in bloc order, every mandate a dot in its party's ink (2026-09-03)
+
+**The row:** *"Parties as angular sectors left→right in bloc order (left bloc at the left), not rings; every mandate a dot in its party's ink. Done when: filmed, and the sector counts equal seats."*
+
+**Built** (`HemicycleRenderer.DrawArc`). The ring geometry is unchanged - the fewest rings whose arc length seats every mandate at the pitch, dots sized from the ring gap - but the seats are dealt differently: every position on every ring is laid out first, the positions are ordered by angle (left to right across the chamber, inner ring before outer at one angle), and the inks - already in bloc order, the left bloc first and by mandates within it - are dealt onto that order. A party therefore occupies a contiguous wedge across all rings, as a chamber is drawn, and the count of dots in each wedge is the party's seats by construction (one dot per seat, dealt in order); `LastDotsDrawn` still equals the chamber and the office test's seat-map assertion still holds.
+
+**The film:** `p3c_1280_07a_politics_parliament`.
+
+## 256. P3-C6 — PARTY COLOURS, RULED: the published hue is the identity; the ladder retired for the smallest perceptual nudge that separates a measured collision; the harness re-printed; the collisions to Design as a confirmation (2026-09-03)
+
+**The row and the ruling:** *"Published party hues are the base and the identity. 5e's ladder over-reached: it may apply only the smallest perceptual nudge (oklch, within a stated tolerance) that separates a measured collision, and it never re-orders or replaces a hue family. Re-print PartyInkHarness; the S/V collision and the four-blues-at-dot-size finding go to Design as a per-party confirmation, not a re-derivation. Done when: the hemicycle reads as Sweden's parties."*
+
+**Built** (`PoliSimTheme`). The ladder (§241: every bloc member stepped ±0.08 L outward, the identical pair lifted 0.12 regardless) is gone. **The nudge:** the chamber's inked parties by seeded mandates; each smaller party is measured against every larger one in oklab (Euclidean over L, a, b); a pair closer than `NudgeTolerance` (0.06, `[AUTHORED-DRAFT]`) is a collision, and the smaller party moves in LIGHTNESS ONLY by exactly the distance that puts the pair at the tolerance - in the direction that keeps their L order (the identical pair has none and the smaller lifts), a few passes so a move away from one ink does not land on another, capped at `NudgeCap` (0.10, `[AUTHORED-DRAFT]`) and printed as not fully separated when the cap is spent. Hue and chroma are untouched; an ink no collision touched is its seated hex, unmoved; no hue family is re-ordered or replaced. `PartyLaddered` keeps its name at the three draw sites and now returns the nudged ink; `LadderLift` reports the move; `NudgeReport` is the harness's print.
+
+**The harness's print** (`p3c6_partyink.log`) is the fact:
+```
+    tolerance 0.06 oklab, cap 0.10 L (both [AUTHORED-DRAFT], for Design's confirmation - D12 row 4)
+    M: 0.012 from SD (< 0.06) → L +0.050
+    V: 0.000 from S (< 0.06) → L +0.060
+    KD: 0.036 from SD (< 0.06) → L -0.027
+    MP: 0.034 from C (< 0.06) → L -0.035
+    L: 0.024 from SD (< 0.06) → L -0.040
+    L: 0.008 from KD (< 0.06) → L -0.057
+    L: collides with KD at 0.060 and the cap 0.10 is spent - NOT fully separated
+    party      bloc          mandates  seated   L(seated)  nudge   drawn     L(drawn)
+    Sweden/S   the left bloc      107  #753838      0.421    0.00   #753838       0.421
+    Sweden/SD  the right bloc       73  #385E75      0.465    0.00   #385E75       0.465
+    Sweden/M   the right bloc       68  #386275      0.474   +0.05   #467184       0.524
+    Sweden/V   the left bloc       24  #753838      0.421   +0.06   #884948       0.481
+    Sweden/C   the left bloc       24  #577538      0.525    0.00   #577538       0.525
+    Sweden/KD  the right bloc       19  #385375      0.436   -0.03   #314B6D       0.409
+    Sweden/MP  the left bloc       18  #387538      0.507   -0.03   #2E6B2E       0.472
+    Sweden/L   the right bloc       16  #385775      0.446   -0.10   #1F3C59       0.349
+    The marks keep the seated hex; the nudged ink draws where ink is the only channel - the per-seat hemicycle and the legend's swatch and b
+```
+
+Read: two collisions are the finding the row named - S/V at ONE seated hex (distance 0.000; V lifts 0.06 L) and the four blues (SD, M, KD, L) inside the tolerance at dot size; L moves the full cap and still sits at exactly the tolerance from KD, which the print says. Hue and chroma are untouched throughout; C and S and SD draw their seated hex.
+
+**To Design (D12 row 4):** the pairs the harness measured as collisions and the moves made, per party, for confirmation - never a re-derivation.
+
+**The film:** `p3c_1280_07a_politics_parliament` (the sectors in the nudged inks; the legend's swatch beside the seated-ink mark).
+
+## 257. P3-A2 FOLLOW-UP, FOUND ON THE TRACK C FILM — THE COUNT DECIDES: a division is seats for against seats against over the stances the map colours from; the alignment is the tie-break; the matrix unchanged, cell by cell (2026-09-03)
+
+**The finding.** `p3c_1280_05_budget` (the first Track C film) showed the Budget's support panel contradicting itself: the verdict line read *Expansionary (+30,0) · WOULD PASS* above a seat map captioned *FOR 149 · UNDECIDED 0 · AGAINST 200*. Both came from the one enumeration (`SeatSides`, §247), but the verdict was the SIGN of the seat-weighted alignment - 149 seats at +0.50 outweigh 200 at −0.15 to −0.30 - while the map counts sides. `StanceModelDiagnostic`'s own print carried the same split without asserting on it: *budget cut 176/24/149 fails*, *sectors 127/73/149 passes*.
+
+**Ruled and built** (`ParliamentSystem.WouldBillPass(country, concern)`): a division is a COUNT - the seats whose side is for against the seats whose side is against, the undecided abstaining, over the measured parties; the seat-weighted alignment decides only a tie. The legacy axis overload routes through the concern rule, so every caller - the nine vote sites, the per-line stamps, the pending cards, the law pane, the diagnostics - reads one verdict. An empty concern still passes unconditionally. The same film after the change: *WOULD FAIL* over 149/200; the per-line stamps, each a smaller ask, read on their own concern.
+
+**The matrix, re-run** (`matrix_ab.sh`, `PFX=p3c7`: baseline and parliamentstress at 100 and 500 turns, seed 777, before = HEAD 38edce7 with the working tree stashed, after = the working tree): **every cell identical** - the final-turn lines of all six countries diff empty in all four cells, and no cell logs a division. The explanation is the one §247 gave: `BatchSimulationRunner` drives the economy with no player and no legislature, so the verdict rule is never consulted there; the matrix is a regression guard on the economy, not on the chamber. The chamber's own guard is `StanceModelDiagnostic` (five drafts, five splits) and `OfficeTestDiagnostic` (the sides against the band), both green on `bar59_p3c_RunAllBatch.log`.
+
+**Also in this commit:** the opinion term's summary line printed `--0.004` (a minus in the format over a negative value); it now prints through a signed format.
+
+**Films:** `p3c_1280_05_budget` (before the change, the contradiction; after, the verdict agrees with the count), `p3c_1280_05b_budget_spending` and `_dragged`.

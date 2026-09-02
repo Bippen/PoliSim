@@ -3744,7 +3744,7 @@ namespace PoliSim.UI
         /// the opposition's line, the opinion cost), from the one enumeration the vote reads (`StanceModel.Stances`).
         /// Drawn structurally - one row per party, the reason in the caption face - until D12 gives it a grammar.
         /// </summary>
-        private void DrawBillLiveEstimate(BillConcern concern, float wrapWidth = 0f, bool terse = false)
+        private void DrawBillLiveEstimate(BillConcern concern, float wrapWidth = 0f, bool terse = false, bool withBreakdown = true)
         {
             float direction = concern?.Direction ?? 0f;
             // An unchanged draft is uncontested: no side, WOULD PASS, as WouldBillPass short-circuits.
@@ -3785,7 +3785,7 @@ namespace PoliSim.UI
             Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(seatMapWidth, _labelStyle), GUILayout.ExpandWidth(true));
             SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle);
 
-            if (contested) { DrawStanceBreakdown(concern, seatMapWidth); }
+            if (contested && withBreakdown) { DrawStanceBreakdown(concern, seatMapWidth); }
         }
 
         /// <summary>
@@ -3805,7 +3805,7 @@ namespace PoliSim.UI
                 Color ink = !stance.Measured ? PoliSimTheme.TextMuted : stance.Side > 0 ? PoliSimTheme.Good : stance.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
                 GUIStyle sideStyle = DeskCaption(8f, ink, true, TextAnchor.MiddleLeft);
                 GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "{0} · {1} SEATS · {2} {3:+0.00;-0.00}", stance.Party.Abbrev, stance.Seats, side, stance.Alignment), sideStyle, GUILayout.Width(width));
-                string reason = StanceModel.ReasonLine(stance);
+                string reason = StanceModel.ReasonShort(stance);   // the short form on the sheet (P3-C1: the full lines pushed the arrows out of the 720 frame)
                 if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(reason, reasonStyle, GUILayout.Width(width)); }
             }
         }
@@ -3952,7 +3952,11 @@ namespace PoliSim.UI
                 EffectArrowsRenderer.Draw(arrows, _cachedPreviewEffects, _labelStyle);
                 EffectArrowsRenderer.DrawScopeLine(_labelStyle);
             }
+            if (_budgetConcernForBreakdown != null && !_budgetConcernForBreakdown.IsEmpty) { DrawStanceBreakdown(_budgetConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(Screen.width * 0.3f, _boxStyle))); }
         }
+
+        /// <summary>P3-C1: the Budget draft's concern, kept from the support preview for the breakdown drawn after the arrows.</summary>
+        private BillConcern _budgetConcernForBreakdown;
 
         /// <summary>True if no preview has been computed yet, the turn has advanced since the last one was, or any slider's value (including any tax line's requested rate change) differs from the snapshot the cached preview was computed from.</summary>
         private bool PolicyInputsChangedSinceLastPreview()
@@ -3962,59 +3966,97 @@ namespace PoliSim.UI
                 return true;
             }
 
-            // Political Systems Overhaul Part B, full rollout (Master Sequence step 5c/5d): draft
-            // Tax/Spending/Welfare/SWF (step 5c) and now Minimum Wage/Police Funding/Sentencing
-            // Severity/Bail Reform/Drug Policy/Judicial Funding/Border Enforcement/Family Policy/
-            // Immigration Policy/Paid Family Leave/Overtime Regulation/Retraining Program/every Sector
-            // dial/Tariff Rate/Partner Tariff Overrides (step 5d) no longer change what the preview
-            // would show at all - they only ever reach the simulation via a passed bill - so this only
-            // needs to check InterestRateChange now (the one input BuildPlayerDecision still reads).
-            // See BuildBudgetBillFromDrafts/BuildLaborBillFromDrafts/BuildCrimeJusticeBillFromDrafts/
-            // BuildSectorBillFromDrafts/BuildTradeBillFromDrafts for where these same draft
-            // dictionaries/fields actually get read now, and each tab's own live vote estimate for the
-            // live feedback those drafts DO still drive.
-            return !Mathf.Approximately(_interestRateChangeInput, _cachedInterestRateChangeInput);
+            // P3-C1 (2026-09-03): the BUDGET DRAFT reaches the preview again - as "with vs without this draft"
+            // (PreviewTurnWithBudgetDraft against PreviewTurn), so every tax, spending and welfare dial and the
+            // fund's draft fields move the arrows on drag; the other tiers (labour, crime, sectors, trade) still
+            // reach the simulation only through their own bills and drive their tabs' vote estimates. A moved
+            // draft recomputes no sooner than the debounce derived from the preview's own measured cost.
+            if (!Mathf.Approximately(_interestRateChangeInput, _cachedInterestRateChangeInput)) { return true; }
+            return DraftFingerprint(BuildBudgetBillFromDrafts()) != _cachedDraftFingerprint && PreviewDebounceElapsed();
         }
 
-        /// <summary>Reruns PreviewTurn, re-rolls each figure's margin, and snapshots the slider values/turn number the result is now valid for.</summary>
+        /// <summary>Reruns PreviewTurn - without and with the budget draft (P3-C1) - and snapshots the inputs and the turn the result is valid for; the cost is measured for the debounce.</summary>
         private void RecomputePolicyPreview()
         {
-            PolicyPreview preview = _simulationManager.PreviewTurn(PlayerCountryId, BuildPlayerDecision());
-            _cachedPreview = preview;
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            PolicyDecision decision = BuildPlayerDecision();
+            BudgetBill draft = BuildBudgetBillFromDrafts();
+            int fingerprint = DraftFingerprint(draft);
+            PolicyPreview preview = _simulationManager.PreviewTurn(PlayerCountryId, decision);
+            PolicyPreview withDraft = _simulationManager.PreviewTurnWithBudgetDraft(PlayerCountryId, decision, draft);
+            _cachedPreview = withDraft;   // the preview's year WITH this draft - what the Riksbank path and the raw fields read
+            _cachedPreviewWithoutDraft = preview;   // P3-C2: the standing policy's year, for the fiscal header's projected balance beside the draft's
 
             // The Raw fields are the full-turn figures the Statistics projections read (the dashed next-year
             // segment); since P2-2.1 the effects panel reads the same full-turn point, as arrows.
-            _cachedGdpGrowthPercentRaw = preview.GdpGrowthPercent;
-            _cachedUnemploymentChangeRaw = preview.UnemploymentChange;
-            _cachedApprovalChangeRaw = preview.ApprovalChange;
-            _cachedSwfReturnsEstimateRaw = preview.SwfReturnsEstimate;
-            _cachedInflationChangeRaw = preview.InflationChange;
-            _cachedPovertyRateChangeRaw = preview.PovertyRateChange;
-            _cachedLaborForceParticipationRateChangeRaw = preview.LaborForceParticipationRateChange;
-            _cachedCrimeIndexChangeRaw = preview.CrimeIndexChange;
-            _cachedNetBudgetImpactRaw = preview.NetBudgetImpact;
+            _cachedGdpGrowthPercentRaw = withDraft.GdpGrowthPercent;
+            _cachedUnemploymentChangeRaw = withDraft.UnemploymentChange;
+            _cachedApprovalChangeRaw = withDraft.ApprovalChange;
+            _cachedSwfReturnsEstimateRaw = withDraft.SwfReturnsEstimate;
+            _cachedInflationChangeRaw = withDraft.InflationChange;
+            _cachedPovertyRateChangeRaw = withDraft.PovertyRateChange;
+            _cachedLaborForceParticipationRateChangeRaw = withDraft.LaborForceParticipationRateChange;
+            _cachedCrimeIndexChangeRaw = withDraft.CrimeIndexChange;
+            _cachedNetBudgetImpactRaw = withDraft.NetBudgetImpact;
 
-            _cachedSwfContributionText = FormatMoneyEstimate(preview.SwfContributionEstimate, MoneyUnit.Billions);
-            _cachedSwfReturnsText = FormatMoneyEstimate(preview.SwfReturnsEstimate, MoneyUnit.Billions);
+            _cachedSwfContributionText = FormatMoneyEstimate(withDraft.SwfContributionEstimate, MoneyUnit.Billions);
+            _cachedSwfReturnsText = FormatMoneyEstimate(withDraft.SwfReturnsEstimate, MoneyUnit.Billions);
 
             // P2-2.1 (2026-09-02): the seven outcomes as arrows, from the same full-turn preview - an outcome whose
             // figure would print as zero is left off the panel rather than drawn as a zero-length arrow, which is
             // how "the affected categories surface as a slider moves" is meant: what the draft does not move is
             // not on the panel.
+            // P3-C1 (2026-09-03): the arrows are WITH vs WITHOUT this draft - the same turn previewed on a clone with
+            // the draft enacted, against the plain preview - so a slider moves them; before this row the panel drew
+            // the plain preview's own move and no draft could reach it (BuildPlayerDecision carries only the rate).
             _cachedPreviewEffects.Clear();
-            AddPreviewEffect("GDP growth", preview.GdpGrowthPercent, higherIsBetter: true, "%");
-            AddPreviewEffect("Unemployment", preview.UnemploymentChange, higherIsBetter: false, " pts");
-            AddPreviewEffect("Inflation", preview.InflationChange, higherIsBetter: false, " pts");
-            AddPreviewEffect("Approval", preview.ApprovalChange, higherIsBetter: true, " pts");
-            AddPreviewEffect("Poverty rate", preview.PovertyRateChange, higherIsBetter: false, " pts");
-            AddPreviewEffect("Labor force participation", preview.LaborForceParticipationRateChange, higherIsBetter: true, " pts");
-            AddPreviewEffect("Crime index", preview.CrimeIndexChange, higherIsBetter: false, " pts");
+            AddPreviewEffect("GDP growth", withDraft.GdpGrowthPercent - preview.GdpGrowthPercent, higherIsBetter: true, "%");
+            AddPreviewEffect("Unemployment", withDraft.UnemploymentChange - preview.UnemploymentChange, higherIsBetter: false, " pts");
+            AddPreviewEffect("Inflation", withDraft.InflationChange - preview.InflationChange, higherIsBetter: false, " pts");
+            AddPreviewEffect("Approval", withDraft.ApprovalChange - preview.ApprovalChange, higherIsBetter: true, " pts");
+            AddPreviewEffect("Poverty rate", withDraft.PovertyRateChange - preview.PovertyRateChange, higherIsBetter: false, " pts");
+            AddPreviewEffect("Labor force participation", withDraft.LaborForceParticipationRateChange - preview.LaborForceParticipationRateChange, higherIsBetter: true, " pts");
+            AddPreviewEffect("Crime index", withDraft.CrimeIndexChange - preview.CrimeIndexChange, higherIsBetter: false, " pts");
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
+            _cachedDraftFingerprint = fingerprint;
+            _previewCostMs = (float)stopwatch.Elapsed.TotalMilliseconds;
+            _lastPreviewAt = Time.realtimeSinceStartup;
 
             _cachedPreviewTurn = _simulationManager.CurrentTurn;
             _hasCachedPreview = true;
         }
+
+        /// <summary>P3-C1: the budget draft's fingerprint - every dial the draft carries, hashed - so the preview recomputes when a slider moves and not otherwise.</summary>
+        private int DraftFingerprint(BudgetBill draft)
+        {
+            unchecked
+            {
+                int h = 17;
+                foreach (KeyValuePair<TaxType, float> kv in draft.TaxLines) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                foreach (KeyValuePair<SpendingCategory, float> kv in draft.SpendingPercentChanges) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                foreach (KeyValuePair<WelfareProgramType, float> kv in draft.WelfarePrograms) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                h = h * 31 + draft.SwfContributionRatePercent.GetHashCode(); h = h * 31 + (draft.SwfShouldExist ? 1 : 0); h = h * 31 + draft.SwfDomesticAllocationPercent.GetHashCode();
+                h = h * 31 + draft.SwfEquitiesWeight.GetHashCode(); h = h * 31 + draft.SwfBondsWeight.GetHashCode(); h = h * 31 + draft.SwfInfrastructureWeight.GetHashCode(); h = h * 31 + draft.SwfRealEstateWeight.GetHashCode();
+                return h;
+            }
+        }
+
+        /// <summary>
+        /// P3-C1: the recompute's debounce, derived from its own measured cost - a preview is re-run no sooner than
+        /// four times its last measured duration after the previous one (never under 30 ms, never over half a
+        /// second), so a drag that moves a slider every frame costs at most a fifth of the frame budget.
+        /// </summary>
+        private bool PreviewDebounceElapsed()
+        {
+            float debounce = Mathf.Clamp(_previewCostMs * 4f / 1000f, 0.03f, 0.5f);
+            return Time.realtimeSinceStartup - _lastPreviewAt >= debounce;
+        }
+
+        private int _cachedDraftFingerprint;
+        private PolicyPreview _cachedPreviewWithoutDraft;
+        private float _previewCostMs;
+        private float _lastPreviewAt = -1f;
 
         /// <summary>
         /// One estimated figure, as the point the model actually produced.
@@ -9727,7 +9769,9 @@ namespace PoliSim.UI
             BudgetBill draft = BuildBudgetBillFromDrafts();
 
             GUILayout.Label("Support (current draft)", _headerStyle);   // P2-2.1: one line at 720, so the arrows below stay in frame
-            DrawBillLiveEstimate(ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft));   // P3-A3
+            // P3-C1: the breakdown of THIS column draws after the arrows (DrawPolicyPreview), so the arrows stay in frame at 720.
+            _budgetConcernForBreakdown = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft);
+            DrawBillLiveEstimate(_budgetConcernForBreakdown, withBreakdown: false);
 
             DrawBudgetDraftFiscalImpact(draft);
         }
@@ -10299,9 +10343,9 @@ namespace PoliSim.UI
                 sector.ResearchGrantsLevel, GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
 
-            _sectorDeregulationInputs[sector.Type] = DrawDialRow("Deregulation / Nationalization",
+            _sectorDeregulationInputs[sector.Type] = DrawDialRow("Nationalization / Deregulation",   // P3-C3: one axis, both ends in the trailing's order
                 sector.DeregulationNationalizationLevel, GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 private");
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated");
         }
 
         /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceSectorBill/GetPendingSectorBill).</summary>

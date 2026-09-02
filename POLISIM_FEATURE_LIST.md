@@ -555,7 +555,7 @@ and log it. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §246: the dial → axis
 move — no bills pass without a player). Re-run the matrix and explain every cell that changed.
 *Done when:* the same draft produces different for/against/undecided counts across bill
 categories, coalition partners visibly split on a far bill, and no two categories produce identical
-splits by construction. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §247: StanceModel built per §246, nine concern builders, the nine vote sites and the records on the concern; five drafts of one magnitude give five different splits, the support partner splits on two, the matrix's four cells unchanged and explained.**
+splits by construction. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §247: StanceModel built per §246, nine concern builders, the nine vote sites and the records on the concern; five drafts of one magnitude give five different splits, the support partner splits on two, the matrix's four cells unchanged and explained. **Follow-up §257 (2026-09-03): the verdict is the COUNT of sides, the alignment the tie-break - found on the Track C film; the matrix re-run, every cell identical.** **
 
 **P3-A3 — The vote breakdown on screen.** Every support preview and every result screen shows
 the per-party stance with its reason (position distance, coalition line, public-opinion cost) —
@@ -579,31 +579,31 @@ Report whether the gap is composition, reachability (the RIKSBANK sub-tab), or t
 
 **P3-C1 — Live arrows.** The Budget effects panel recomputes on slider drag (the preview is
 deterministic and its cost is measured — debounce to the measured budget). *Done when:* a film
-pair mid-drag shows the arrows moved.
+pair mid-drag shows the arrows moved. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §251: the arrows are with-minus-without the draft in fact (`PreviewTurnWithBudgetDraft`), recomputed on a changed draft behind a debounce of four times the measured cost; the film pair `p3c_1280_05b_budget_spending` / `_dragged`.**
 
 **P3-C2 — Balance from year one.** The fiscal header shows the current year's projected balance
 (the preview's own figure) beside last year's actual; at year one, last year is the seed and says
-so. *Done when:* filmed at turn 0 with both figures present.
+so. *Done when:* filmed at turn 0 with both figures present. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §252: BALANCE · THIS YEAR · PROJECTED beside last year's, the seed named at turn 0; `p3c_1280_05_budget`.**
 
 **P3-C3 — The slider label.** "Deregulation / Nationalization" on the left against "0 nationalized
 – 100 private" on the right: one axis, one wording, both ends. Sweep every dial for the same
-class. *Done when:* a harness asserts each dial's left label, right label and range agree.
+class. *Done when:* a harness asserts each dial's left label, right label and range agree. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §253: NATIONALIZATION / DEREGULATION with `0 nationalized - 100 deregulated`; `DialLabelCheck` over all 13 dials in the cheap group.**
 
 **P3-C4 — The trade graph.** The Domestic/International trade balance graph reads as a broken
 line with a −100.0% delta. Measure the cause (a zero baseline in the delta is the likeliest); draw
 it through the graph renderer at 1l's weights with an honest delta or none. *Done when:* the delta
-is either correct or absent with its reason.
+is either correct or absent with its reason. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §254: the cause was the zero base (±100 % substituted); from a zero base the delta is the absolute change, marked Δ; `p3c_1280_02b_statistics_international_deep`.**
 
 **P3-C5 — The hemicycle in sectors.** Parties as angular sectors left→right in bloc order (left
 bloc at the left), not rings; every mandate a dot in its party's ink. *Done when:* filmed, and the
-sector counts equal seats.
+sector counts equal seats. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §255: positions sorted by angle, inks dealt in bloc order - contiguous wedges, one dot per seat by construction; `p3c_1280_07a_politics_parliament`.**
 
 **P3-C6 — Party colours, ruled.** Published party hues are the base and the identity. 5e's ladder
 over-reached: it may apply only the **smallest perceptual nudge** (oklch, within a stated
 tolerance) that separates a measured collision, and it never re-orders or replaces a hue family.
 Re-print `PartyInkHarness`; the S/V collision and the four-blues-at-dot-size finding go to Design
 as a per-party confirmation, not a re-derivation. *Done when:* the hemicycle reads as Sweden's
-parties.
+parties. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §256: the ladder retired for the lightness-only nudge (tolerance 0.06 oklab, cap 0.10 L); the harness print in §256 and `p3c6_partyink.log`; S/V and the four blues to Design as D12 row 4.**
 
 ## Track D — the D12 asset ask (Code writes it; sending stays Elias's)
 

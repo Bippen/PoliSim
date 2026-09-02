@@ -394,6 +394,30 @@ namespace PoliSim.Testing
                         AssertMapLabelSeparation(controller, stem);
                     }
 
+                    // P3-C1 (2026-09-03): the film PAIR mid-drag - one spending dial moved as a slider would move it,
+                    // then the same frame again after the preview's own debounce has passed, so the arrows' response
+                    // to the draft is on film; the dial is put back afterwards.
+                    if (stem == "05b_budget_spending")
+                    {
+                        var spendingInputs = controller.GetType().GetField("_spendingLineInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SpendingCategory, float>;
+                        if (spendingInputs != null)
+                        {
+                            spendingInputs.TryGetValue(SpendingCategory.Education, out float before);
+                            spendingInputs[SpendingCategory.Education] = before + 15f;
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(stem + "_dragged");
+                            Debug.Log("SHOT: P3-C1 - the Education spending dial moved +15 for the mid-drag frame; the arrows above are with vs without that draft.");
+                            spendingInputs[SpendingCategory.Education] = before;
+                            yield return Settle();
+                        }
+                        else
+                        {
+                            Debug.LogError("SHOT: P3-C1 - the spending inputs dictionary was not found; the mid-drag frame is NOT filmed.");
+                            _failed++;
+                        }
+                    }
+
                     // The v3.0 fold-pair sweep (V3-R4: the other fold state's guards on every screen,
                     // three screens on film as `_folded` / `_open`) lived here until v3.1 R-E1 made ONE
                     // FRAME the only state; it was deleted with the OPEN branch in v3.1 Phase B.
