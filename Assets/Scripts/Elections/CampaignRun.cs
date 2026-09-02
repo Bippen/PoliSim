@@ -682,6 +682,10 @@ namespace PoliSim.Elections
                             // W-C2: a scripted party (the player's stand-in) plays its day as written.
                             if (guard >= scripted.Length) { break; }
                             d = scripted[guard];
+                            // C-R4b 4c (2026-09-02): a queued interview is a request, not a booking - the
+                            // outlets decide on the day (W-B9). With no booking it is SKIPPED, the rest of
+                            // the day's queue stands; the AI never queues one unbooked (Evaluate filters).
+                            if (d.Kind == CampaignActionKind.Interview && bookedReach[p].Count == 0) { continue; }
                         }
                         else if (guard < committed.Count)
                         {

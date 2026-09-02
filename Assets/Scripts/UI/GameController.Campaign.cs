@@ -595,8 +595,8 @@ namespace PoliSim.UI
             // C-R4b step 4b: the player's hand. On the LIVE HQ a row of chips queues an action for the
             // day the run steps next, at the action's own smallest outlay (§35's price list is the action
             // screen's); a local act goes to the region where the party's organisation is strongest.
-            // The interview is not offered: its booking is the outlets' to give on the day (W-B9), and a
-            // queued interview with no booking would end the day's plan at the first refusal.
+            // The interview (C-R4b 4c) is a REQUEST: its booking is the outlets' to give on the day (W-B9),
+            // and a queued interview no outlet books is skipped by the run, the rest of the queue standing.
             if (_liveCampaignOpen && _simulationManager != null && _simulationManager.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished)
             {
                 GUIStyle chipCaption = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
@@ -606,9 +606,9 @@ namespace PoliSim.UI
                 CampaignActionKind[] offered =
                 {
                     CampaignActionKind.Rally, CampaignActionKind.TownHall, CampaignActionKind.DoorToDoor, CampaignActionKind.TelevisionAd,
-                    CampaignActionKind.DigitalAd, CampaignActionKind.SocialPost, CampaignActionKind.PolicyAnnouncement,
+                    CampaignActionKind.DigitalAd, CampaignActionKind.SocialPost, CampaignActionKind.PolicyAnnouncement, CampaignActionKind.Interview,
                 };
-                string[] captions = { "RALLY", "TOWN HALL", "DOORS", "TV AD", "DIGITAL", "POST", "POLICY" };
+                string[] captions = { "RALLY", "TOWN HALL", "DOORS", "TV AD", "DIGITAL", "POST", "POLICY", "INTERVIEW?" };
                 for (int i = 0; i < offered.Length; i++)
                 {
                     bool legal = CampaignLegality.IsLegal(offered[i], s.Phase);

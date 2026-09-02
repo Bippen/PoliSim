@@ -21130,3 +21130,16 @@ if November-to-New-Year reads wrong at the desk, (b) is the fix and it is sized 
 fine, the date is a detail. (c) is not taken because a result that does not land is worse than a date
 that is not Sweden's. ⚠ What (a) costs is written where the code is (`SimulationManager`'s campaign
 region) and here; nothing in the calendar says September while the boundary is polling day.
+
+## 210. C-R4b 4c — the player's interview is a request the outlets may book (2026-09-02)
+
+§207 withheld the interview from the HQ's chips because a queued interview with no booking ended the
+day's plan at the run's first refusal — the AI never queues one unbooked (`Evaluate` filters), but a
+player cannot see tomorrow's bookings, which the outlets allocate on the day (W-B9). The run now treats
+a SCRIPTED party's queued interview as a request: with no booking that day it is skipped and the rest of
+the queue stands; with one it goes out through the booking outlet as any interview does. The chip reads
+**INTERVIEW?** — the question mark is the mechanism, not decoration. Nothing changes for AI parties
+(the guard is on the scripted branch only): `CampaignAiHarness`'s digest is unchanged from §208's, the
+reactivity harness (W-C2's scripted stand-in) and the round trip are green.
+
+**Bar 25 of 25.**

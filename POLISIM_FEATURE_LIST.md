@@ -307,10 +307,11 @@ In order of what a player would notice first:
 > re-read every draw (§205), a screen to watch, not yet to act from — and its fifth: election night
 > counts the campaign's shares, the campaign staged on the vote model's own compatibility (D-21, §206),
 > so the campaign has stakes and an ending — and 4b: the HQ's chips queue the player's party's day,
-> the queue persisted and replayed (§207). **F6 is played end to end for Sweden.** **What it lacks:** a
-> region picker and an issue for the message (design surfaces — the campaign map, the action screen);
-> the interview through the outlets' bookings; scandals and events in the live run; a second staged
-> country; the September calendar the boundary stands in for. The live HQ's first sight, the first
+> the queue persisted and replayed (§207); the interview offered as a request the outlets may book
+> (4c, §210). **F6 is played end to end for Sweden.** **What it lacks:** a region picker and an issue
+> for the message (design surfaces — the campaign map, the action screen); scandals and events in the
+> live run (§17's generation needs figures nobody has); a second staged country (D-22 waits on the
+> first play); the September calendar (D-23, (b) is the branch after the first play). The live HQ's first sight, the first
 > pressed chip and the first counted campaign are owed to the visual review and the first play.
 >
 > **The second country, sized 2026-09-02 and not started:** Germany has everything the prediction
