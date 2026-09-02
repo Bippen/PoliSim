@@ -81,3 +81,17 @@ State, and B6's honesty channels stay where P-A2 moved them.
 ⚠ **And the ruling names the real defect, which was never the band.** *"The real defect is that Design was
 drawing a cut screen without being told."* Recorded as **S-39** — a finding of its own, not a footnote to
 this errand, because the band was one instance and the gap is the class.
+
+## E-6 · Italy's IRPEF, as a text a batch fetch can read — OPEN (2026-09-02)
+
+**The ask:** one primary document with the current IRPEF *scaglioni* (TUIR art. 11 as amended by Legge
+207/2024, art. 1 comma 2) that has a **text layer** — a PDF saved from normattiva's or the Agenzia delle
+Entrate's article view in a browser, or the Agenzia's own *Redditi PF* instructions PDF — dropped into
+`ElectionsData/tax/italy/`. Nothing else in F4's bill is open (`COMPLETED.md` §216).
+
+**Why it is an errand and not a fetch:** three routes were tried from the shell — the Agenzia's portal
+and normattiva's article, ELI and export endpoints (JavaScript shells or an error page), the Gazzetta
+Ufficiale's article endpoint (an 11 KB shell), and the Gazzetta's own issue PDF of Legge 207/2024
+(Supplemento ordinario n. 43, 31 December 2024, 25.6 MB), which is **scanned** — `pdftotext` returns 85 KB
+of front matter and no law text. The one tool that would read it is OCR, which this environment does not
+have. A browser renders the article view in seconds; that is the whole errand.
