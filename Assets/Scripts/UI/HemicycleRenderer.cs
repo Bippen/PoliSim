@@ -139,21 +139,33 @@ namespace PoliSim.UI
             }
             perRow[rows - 1] += total - assigned;
 
+            // P3-C5 (2026-09-03): SECTORS, not rings. Every seat's position on the rings is laid out first, then the
+            // positions are ordered by angle - left to right across the chamber, inner ring before outer at one
+            // angle - and the parties' inks (already in bloc order, left bloc first, by mandates within it) are
+            // dealt onto that order. A party therefore occupies a contiguous wedge across all the rings, the way
+            // a chamber is drawn, and every mandate is still one dot in its party's ink; the ring geometry, the
+            // pitch and the dot size are unchanged.
+            var positions = new List<(float Angle, int Ring, Vector2 Point)>(total);
             var baseline = new Vector2(Mathf.Round(area.x + area.width * 0.5f), area.yMax - 4f);
-            Color previousColor = GUI.color;
-            int seat = 0;
-            for (int r = 0; r < rows && seat < total; r++)
+            int laid = 0;
+            for (int r = 0; r < rows && laid < total; r++)
             {
-                int rowSeats = Mathf.Min(perRow[r], total - seat);
+                int rowSeats = Mathf.Min(perRow[r], total - laid);
                 float radius = inner + r * gap;
                 for (int i = 0; i < rowSeats; i++)
                 {
                     float angle = rowSeats == 1 ? 90f : 180f - (180f / (rowSeats - 1)) * i;
-                    Vector2 point = PointOnArc(baseline, radius, angle);
-                    GUI.color = seatColors[seat];
-                    GUI.DrawTexture(new Rect(point.x - dot * 0.5f, point.y - dot * 0.5f, dot, dot), _dotTexture);
-                    seat++;
+                    positions.Add((angle, r, PointOnArc(baseline, radius, angle)));
+                    laid++;
                 }
+            }
+            positions.Sort((p, q) => p.Angle != q.Angle ? q.Angle.CompareTo(p.Angle) : p.Ring.CompareTo(q.Ring));
+            Color previousColor = GUI.color;
+            for (int seat = 0; seat < positions.Count && seat < total; seat++)
+            {
+                Vector2 point = positions[seat].Point;
+                GUI.color = seatColors[seat];
+                GUI.DrawTexture(new Rect(point.x - dot * 0.5f, point.y - dot * 0.5f, dot, dot), _dotTexture);
             }
             GUI.color = previousColor;
         }
