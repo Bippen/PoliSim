@@ -805,5 +805,137 @@ namespace PoliSim.UI
             }
             pixels[y * bufferWidth + x] = color;
         }
+
+        // ------------------------------------------------------------------------------------------
+        // Board 5f (D11 row 6, 2026-09-02): the rate graph with a PATH - the history at HistoryWeight
+        // solid, then exactly as many dashed segments as the projection holds (RatePathProjection: two),
+        // a tinted band under the LAST projected segment (the preview's year - the band stops where
+        // the preview stops), and a reference riding the plot as a DOTTED Caution line (the rule's
+        // reading today), distinct from the dashed threshold and from the projection's dashes. The
+        // buffer, the weights and the Bresenham are the graph's own; nothing is restated.
+        // ------------------------------------------------------------------------------------------
+        private readonly List<float> _drawnPath = new List<float>();
+        private bool _drawnHasReference;
+        private float _drawnReference;
+        private static readonly Color ProjectionBandColor = new Color(PoliSimTheme.TextPrimary.r, PoliSimTheme.TextPrimary.g, PoliSimTheme.TextPrimary.b, 0.07f);
+
+        public void DrawRatePath(string title, IReadOnlyList<float> history, IReadOnlyList<float> projectedPath, float? referenceValue, string referenceLabel, GUIStyle labelStyle)
+        {
+            EnsureOverlayStylesInitialized(labelStyle);
+            _moneyUnit = null;
+            if (history == null || history.Count == 0)
+            {
+                DrawTitleRow(title, null, null, labelStyle);
+                GUILayout.Label("No data yet - advance a year.", labelStyle);
+                DrawPageRow(1);
+                return;
+            }
+
+            int totalPages = Mathf.Max(1, Mathf.CeilToInt(history.Count / (float)WindowSize));
+            _pageFromEnd = Mathf.Clamp(_pageFromEnd, 0, totalPages - 1);
+            bool isMostRecentPage = _pageFromEnd == 0;
+            int endExclusive = history.Count - _pageFromEnd * WindowSize;
+            int startInclusive = Mathf.Max(0, endExclusive - WindowSize);
+            var visibleWindow = new List<float>(endExclusive - startInclusive);
+            for (int i = startInclusive; i < endExclusive; i++) { visibleWindow.Add(history[i]); }
+            IReadOnlyList<float> path = isMostRecentPage && projectedPath != null ? projectedPath : System.Array.Empty<float>();
+
+            DrawTitleRow(title, visibleWindow, null, labelStyle);
+            DrawPageRow(totalPages);
+
+            if (NeedsPathRedraw(visibleWindow, path, referenceValue))
+            {
+                RegeneratePath(visibleWindow, path, referenceValue);
+            }
+
+            float displayHeight = Mathf.Clamp(Screen.height * 0.11f, 64f, 140f);   // the page's one graph takes a little more of the sheet than a dashboard's three
+            Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
+            if (_texture != null)
+            {
+                GUI.DrawTexture(rect, _texture, ScaleMode.StretchToFill);
+                DrawAxisLabelOverlay(rect);
+                if (referenceValue.HasValue && !string.IsNullOrEmpty(referenceLabel))
+                {
+                    DrawThresholdLabelOverlay(rect, referenceValue.Value, referenceLabel);
+                }
+            }
+        }
+
+        private bool NeedsPathRedraw(IReadOnlyList<float> history, IReadOnlyList<float> path, float? reference)
+        {
+            if (_neverDrawn || _texture == null || history.Count != _drawnHistory.Count || path.Count != _drawnPath.Count) { return true; }
+            for (int i = 0; i < history.Count; i++) { if (!Mathf.Approximately(history[i], _drawnHistory[i])) { return true; } }
+            for (int i = 0; i < path.Count; i++) { if (!Mathf.Approximately(path[i], _drawnPath[i])) { return true; } }
+            if (reference.HasValue != _drawnHasReference) { return true; }
+            return reference.HasValue && !Mathf.Approximately(reference.Value, _drawnReference);
+        }
+
+        private void RegeneratePath(IReadOnlyList<float> history, IReadOnlyList<float> path, float? reference)
+        {
+            if (_texture == null)
+            {
+                _texture = new Texture2D(TextureWidth, TextureHeight, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp };
+            }
+            var pixels = new Color[TextureWidth * TextureHeight];
+            for (int i = 0; i < pixels.Length; i++) { pixels[i] = BackgroundColor; }
+
+            // The scale folds the path and the reference in, so both are always on the plot.
+            var all = new List<float>(history);
+            all.AddRange(path);
+            GetScaleRange(all, null, reference, out float min, out float max);
+            _lastMin = min;
+            _lastMax = max;
+
+            int totalPoints = history.Count + path.Count;
+            int X(int index) => totalPoints == 1 ? TextureWidth - 1 : Mathf.RoundToInt((float)index / (totalPoints - 1) * (TextureWidth - 1));
+            int Y(float value) => Mathf.RoundToInt((value - min) / (max - min) * (TextureHeight - 1));
+
+            // The band under the last projected segment - the preview's year - before anything draws over it.
+            if (path.Count > 0)
+            {
+                int x0 = X(totalPoints - 2), x1 = X(totalPoints - 1);
+                for (int x = Mathf.Max(0, x0); x <= Mathf.Min(TextureWidth - 1, x1); x++)
+                {
+                    for (int y = 0; y < TextureHeight; y++)
+                    {
+                        Color under = pixels[y * TextureWidth + x];
+                        pixels[y * TextureWidth + x] = Color.Lerp(under, new Color(ProjectionBandColor.r, ProjectionBandColor.g, ProjectionBandColor.b, 1f), ProjectionBandColor.a);
+                    }
+                }
+            }
+
+            DrawHorizontalLine(pixels, TextureHeight / 2, GridColor);
+            if (reference.HasValue)
+            {
+                int y = Mathf.Clamp(Y(reference.Value), 0, TextureHeight - 1);
+                for (int x = 0; x < TextureWidth; x++) { if (x % 3 == 0) { pixels[y * TextureWidth + x] = PoliSimTheme.Caution; } }   // dotted: one on, two off
+            }
+
+            Vector2Int? previous = null;
+            for (int i = 0; i < totalPoints; i++)
+            {
+                float value = i < history.Count ? history[i] : path[i - history.Count];
+                var pixel = new Vector2Int(X(i), Y(value));
+                if (previous.HasValue)
+                {
+                    bool projected = i >= history.Count;
+                    DrawLine(pixels, TextureWidth, TextureHeight, previous.Value, pixel, projected ? ProjectedLineColor : HistoryLineColor, projected, projected ? ProjectionWeight : HistoryWeight);
+                }
+                previous = pixel;
+            }
+
+            _texture.SetPixels(pixels);
+            _texture.Apply(false);
+            _drawnHistory.Clear();
+            _drawnHistory.AddRange(history);
+            _drawnPath.Clear();
+            _drawnPath.AddRange(path);
+            _drawnHasProjection = false;
+            _drawnHasThreshold = reference.HasValue;
+            _drawnThresholdValue = reference ?? 0f;
+            _drawnHasReference = reference.HasValue;
+            _drawnReference = reference ?? 0f;
+            _neverDrawn = false;
+        }
     }
 }

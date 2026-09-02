@@ -3144,56 +3144,8 @@ namespace PoliSim.UI
             if (_playerCountry.CurrentFedChair != null)
             {
                 FedChair chair = _playerCountry.CurrentFedChair;
-                // The sitting chair's row is a TEXT treatment, recorded as deliberate (omnibus
-                // 2026-08-28, R-K6): the turn-0 chair (Harriet Ellsworth) sits outside the candidate
-                // pool and has no portrait by decision - no new Design ask - so the row names the
-                // chair and their philosophy in type, and the candidate cards below keep the portraits.
-                GUILayout.Label($"{GetCentralBankHeadTitle(PlayerCountryId)}: {chair.Name} ({chair.Philosophy})", _labelStyle);
-                GUILayout.Label(chair.Description, _labelStyle);
-                // Pass 4 (2026-08-26) put the rule's reading and the chair's target on screen as one
-                // sentence; omnibus 2026-08-28 (roadmap item 4's "concatenated labels") re-measured the
-                // Fed tab at three sentence labels (one per branch) and converts each into the row
-                // family - name, figure, trailing - so a column reads down instead of a sentence across
-                // (DrawDerivedStatsRow's own conversion). Same fixed ordinals per branch, content-only
-                // variation, no control involved.
-                float suggested = TaylorRule.GetSuggestedInterestRate(_playerCountry);
-                float chairTarget = Mathf.Clamp(suggested + chair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
-                DrawDerivedStatRow("Rule reading", -1f, $"{suggested:F2}%",
-                    $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
-                DrawDerivedStatRow($"{GetCentralBankHeadTitle(PlayerCountryId)}'s lean", -1f, $"{chair.RateBias:+0.00;-0.00;0.00} pts", null, politicalInk);
-                // Trailing text kept short: the omni_h1280 capture measured the first wording ("held
-                // within 0-15%; the rate moves 15% of the way each year") at 210px against a 195px
-                // trailing cell at the 8px floor - the width-less-label class's trailing-cell cousin.
-                DrawDerivedStatRow("Target", -1f, $"{chairTarget:F2}%",
-                    $"band {CurrencySystem.MinInterestRate:F0}-{CurrencySystem.MaxInterestRate:F0}%; closes {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the gap per year", politicalInk);
-
-                // P2-3.4 (2026-09-02): more of what the model holds - the rate today, the rule's inputs as readings,
-                // and the projected path: the rule on today's readings for this year's move, the rule on the
-                // preview's year-end readings for next year's, the chair closing its share of the gap each year
-                // (RatePathProjection - the arithmetic FederalReserveSystem runs at a close, on the preview's clone).
-                DrawDerivedStatRow("Policy rate now", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "the rate the economy runs at today", politicalInk);
-                DrawDerivedStatRow("Rule inputs", -1f, $"{_playerCountry.State.Inflation:F1}% · {_playerCountry.State.Unemployment:F1}%",
-                    $"target {TaylorRule.InflationTarget(PlayerCountryId):F1}% · NAIRU {_playerCountry.NaturalUnemploymentRate:F1}% · gap {TaylorRule.GetUnemploymentGapPercent(_playerCountry):+0.0;-0.0} pts · output gap {TaylorRule.GetOutputGapPercent(_playerCountry):+0.0;-0.0}%",
-                    politicalInk);
-                if (!_hasCachedPreview || _simulationManager.CurrentTurn != _cachedPreviewTurn)
-                {
-                    RecomputePolicyPreview();
-                }
-                RatePathProjection.Step[] ratePath = RatePathProjection.Project(_playerCountry, _cachedPreview);
-                if (ratePath != null)
-                {
-                    GUILayout.Space(6f);
-                    DrawColoredLabel("Projected path", _labelStyle, politicalInk);
-                    foreach (RatePathProjection.Step step in ratePath)
-                    {
-                        string when = step.YearsAhead == 0 ? "Now" : step.YearsAhead == 1 ? "After this year" : "After next year";
-                        string note = step.YearsAhead == 0
-                            ? step.Basis
-                            : $"rule {step.RuleReading:F2}% · target {step.Target:F2}% · {(step.YearsAhead == 1 ? "today's readings" : "the preview's readings")}";
-                        DrawDerivedStatRow(when, -1f, $"{step.Rate:F2}%", note, politicalInk);
-                    }
-                    GUILayout.Label($"Scope: next year's readings are the preview's - the current draft applied for one deterministic year, no margin, no events: inflation {_cachedPreview.PreviewInflation:F1}%, unemployment {_cachedPreview.PreviewUnemployment:F1}% against NAIRU {_cachedPreview.PreviewNaturalUnemployment:F1}%. The rule weighs the inflation gap and the unemployment gap, not the output gap; a target is the rule plus the chair's lean, clamped to the band; the chair closes {FederalReserveSystem.RateAdjustmentSpeed * 100f:F0}% of the gap to it each year. Nothing beyond the preview's year is forecast.", _labelStyle);
-                }
+                // Board 5f (D11 row 6, 2026-09-02): the panel P2-3.4 built becomes its page - DrawRiksbankPage.
+                DrawRiksbankPage(chair, politicalInk);
                 DrawFedChairSelectionModal();
             }
             else
@@ -3255,10 +3207,201 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             // Neutral (no green/red judgment) - which direction of rate change is "good" depends
             // entirely on the current inflation/growth situation, not a fixed convention.
-            _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null);
+            if (_playerCountry.CurrentFedChair == null) { _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null); }   // board 5f: the chair's page draws its own graph above
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Board 5f (D11 row 6, 2026-09-02): **the Riksbank page** - one graph, the inputs as
+        /// instruments, the governor. The rate's history at 3 px solid and the projection at 2 px
+        /// dashed (board 1l's weights); the projection is exactly two segments because
+        /// `RatePathProjection` holds exactly two moves, the tinted band under them is the preview's
+        /// year and stops where the preview stops, and the rule's reading today rides the graph as a
+        /// dotted Caution line so the gap the path is closing is visible without arithmetic. Below the
+        /// graph the rule is decomposed term by term (`GetSuggestedInterestRate`), so its reading is a
+        /// sum the player can check, not a verdict. Each input is a reading against its reference on a
+        /// centred lane - inflation against `InflationTarget`, unemployment against NAIRU - in good/bad
+        /// ink by direction; the output gap draws the same lane in the neutral and is stamped READ ·
+        /// NOT WEIGHED, because the rule does not weigh it and the page must not imply otherwise. The
+        /// governor's card carries what is theirs (lean, target, adjustment speed) and says in one line
+        /// what those do; the appointment lever is the page's one action, and its estimate is deferred
+        /// to the effects grammar on the Docket - this page never previews a nomination that does not exist.
+        /// </summary>
+        private void DrawRiksbankPage(FedChair chair, Color politicalInk)
+        {
+            DrawStatsSectionCaption("THE RATE · THE RULE · THE GOVERNOR");
+            GUILayout.Space(StatsUnit(4f));
+
+            float rate = _playerCountry.CurrencyZone.InterestRate;
+            float suggested = TaylorRule.GetSuggestedInterestRate(_playerCountry);
+            float chairTarget = Mathf.Clamp(suggested + chair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+
+            // The rate today, as a numeral, and the graph's legend as its trailing caption.
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical();
+            GUILayout.Label(rate.ToString("F2", CultureInfo.InvariantCulture) + "%", DeskNumeral(26f, PoliSimTheme.TextPrimary));
+            GUILayout.Label("POLICY RATE TODAY · LIVE", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("HISTORY 3 px SOLID · PROJECTION 2 px DASHED · THE RULE'S READING TODAY DOTTED", DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
+            GUILayout.EndHorizontal();
+
+            // One graph: the history, the two projected moves, the band under the preview's year, the rule dotted.
+            if (!_hasCachedPreview || _simulationManager.CurrentTurn != _cachedPreviewTurn)
+            {
+                RecomputePolicyPreview();
+            }
+            RatePathProjection.Step[] ratePath = RatePathProjection.Project(_playerCountry, _cachedPreview);
+            var projected = new List<float>();
+            if (ratePath != null)
+            {
+                foreach (RatePathProjection.Step step in ratePath) { if (step.YearsAhead > 0) { projected.Add(step.Rate); } }
+            }
+            _interestRateGraph.DrawRatePath("Interest Rate", _playerCountry.History.InterestRate.Quarterly, projected,
+                suggested, "THE RULE'S READING TODAY · " + suggested.ToString("F2", CultureInfo.InvariantCulture), _labelStyle);
+
+            if (ratePath != null)
+            {
+                GUILayout.BeginHorizontal();
+                foreach (RatePathProjection.Step step in ratePath)
+                {
+                    GUILayout.BeginVertical();
+                    GUILayout.Label(step.Rate.ToString("F2", CultureInfo.InvariantCulture), DeskNumeral(15f, PoliSimTheme.TextPrimary));
+                    GUILayout.Label(step.YearsAhead == 0 ? "TODAY" : step.YearsAhead == 1 ? "+1 YR · THIS YEAR'S MOVE, THE RULE ON TODAY'S READINGS" : "+2 YR · NEXT YEAR'S, THE RULE ON THE PREVIEW'S READINGS",
+                        DeskCaption(7.5f, PoliSimTheme.TextMuted));
+                    GUILayout.EndVertical();
+                    GUILayout.Space(StatsUnit(10f));
+                }
+                GUILayout.EndHorizontal();
+                GUILayout.Label($"THE PROJECTED PATH IS THE RULE EVALUATED ON THE PROJECTION: THIS YEAR'S MOVE CLOSES RateAdjustmentSpeed ({FederalReserveSystem.RateAdjustmentSpeed:F2}) OF THE GAP TO THE GOVERNOR'S TARGET ON TODAY'S READINGS; NEXT YEAR'S CLOSES THE SAME SHARE TO THE TARGET ON THE DETERMINISTIC PREVIEW'S READINGS (INFLATION {_cachedPreview.PreviewInflation:F1}%, UNEMPLOYMENT {_cachedPreview.PreviewUnemployment:F1}% AGAINST NAIRU {_cachedPreview.PreviewNaturalUnemployment:F1}%). NOTHING BEYOND THE PREVIEW'S YEAR IS FORECAST, AND NEITHER POINT IS A FACT.",
+                    DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            }
+
+            // The rule, term by term - the sum the player can check.
+            GUILayout.Space(StatsUnit(6f));
+            float inflation = _playerCountry.State.Inflation;
+            float inflationGapTerm = TaylorRule.InflationGapWeight * (inflation - TaylorRule.InflationTarget(PlayerCountryId));
+            float unemploymentGapTerm = TaylorRule.GetGapTermPercentagePoints(_playerCountry);
+            float sum = TaylorRule.NeutralRealRate + inflation + inflationGapTerm + unemploymentGapTerm;
+            GUILayout.BeginHorizontal();
+            DrawRuleTerm("NEUTRAL REAL RATE", TaylorRule.NeutralRealRate.ToString("F2", CultureInfo.InvariantCulture));
+            DrawRuleOperator("+");
+            DrawRuleTerm("INFLATION", inflation.ToString("F2", CultureInfo.InvariantCulture));
+            DrawRuleOperator("+");
+            DrawRuleTerm($"INFLATION GAP × {TaylorRule.InflationGapWeight:0.##}", inflationGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
+            DrawRuleOperator("+");
+            DrawRuleTerm($"U-GAP × {TaylorRule.UnemploymentGapWeight:0.##}", unemploymentGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
+            DrawRuleOperator("=");
+            DrawRuleTerm(sum < 0f ? "THE RULE · CLAMPED AT 0" : "THE RULE", suggested.ToString("F2", CultureInfo.InvariantCulture), politicalInk);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.Label("GetSuggestedInterestRate, TERM BY TERM — InflationGapWeight AND UnemploymentGapWeight ARE THE CODE'S; THE OUTPUT GAP IS READ BUT NOT WEIGHED, AND ITS INSTRUMENT SAYS SO.", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+
+            // The rule's inputs as readings on centred lanes.
+            GUILayout.Space(StatsUnit(8f));
+            DrawStatsSectionCaption("THE RULE'S INPUTS · AS READINGS");
+            GUILayout.Space(StatsUnit(3f));
+            DrawReadingLane("INFLATION", inflation, "TaylorRule.InflationTarget", TaylorRule.InflationTarget(PlayerCountryId), "%", higherIsBetter: false, span: 3f, neutral: false, stamp: "LIVE");
+            DrawReadingLane("UNEMPLOYMENT", _playerCountry.State.Unemployment, "NAIRU", _playerCountry.NaturalUnemploymentRate, "%", higherIsBetter: false, span: 4f, neutral: false, stamp: "LIVE",
+                trailing: $"GetUnemploymentGapPercent · {TaylorRule.GetUnemploymentGapPercent(_playerCountry):+0.0;-0.0} pp — THE RULE LEANS {(TaylorRule.GetUnemploymentGapPercent(_playerCountry) < 0f ? "DOWN" : "UP")}");
+            DrawReadingLane("OUTPUT GAP", TaylorRule.GetOutputGapPercent(_playerCountry), "POTENTIAL", 0f, "%", higherIsBetter: true, span: 4f, neutral: true, stamp: "READ · NOT WEIGHED",
+                trailing: "GetOutputGapPercent — A READING THE RULE DOES NOT WEIGH; DRAWN IN THE NEUTRAL, NO GOOD/BAD INK");
+
+            // The political half: the governor's card and the appointment lever.
+            GUILayout.Space(StatsUnit(8f));
+            DrawStatsSectionCaption("THE POLITICAL HALF");
+            GUILayout.Space(StatsUnit(3f));
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+            GUILayout.Label($"{GetCentralBankHeadTitle(PlayerCountryId)} · {chair.Name}", DeskNumeral(14f, PoliSimTheme.TextPrimary));
+            GUILayout.Label(chair.Description, _labelStyle);
+            GUILayout.BeginHorizontal();
+            DrawRuleTerm("LEAN", chair.Philosophy.ToString().ToUpperInvariant() + " " + chair.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
+            GUILayout.Space(StatsUnit(10f));
+            DrawRuleTerm("TARGET", chairTarget.ToString("F2", CultureInfo.InvariantCulture) + "%");
+            GUILayout.Space(StatsUnit(10f));
+            DrawRuleTerm("SPEED", FederalReserveSystem.RateAdjustmentSpeed.ToString("0.##", CultureInfo.InvariantCulture) + " ⁄ YR");
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.Label("THE LEAN AND THE SPEED ARE THE GOVERNOR'S — THEY SET WHERE THE PATH CLOSES TO AND HOW FAST, NOT WHAT THE RULE READS.", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            GUILayout.EndVertical();
+            GUILayout.Space(StatsUnit(14f));
+            GUILayout.BeginVertical(GUILayout.Width(StatsUnit(300f)));
+            GUILayout.Label("THE APPOINTMENT LEVER", DeskCaption(8.5f, PoliSimTheme.TextSecondary, true));
+            int termEnds = _simulationManager.CurrentTurn + 1;
+            while (!ElectionSystem.IsElectionTurn(termEnds) && termEnds < _simulationManager.CurrentTurn + 64) { termEnds++; }
+            bool pending = _fedChairCandidates != null && _fedChairCandidates.Count > 0;
+            GUILayout.Label($"TERM ENDS WITH THE ELECTION CYCLE · TURN {termEnds} · {FederalReserveSystem.PoolSize} IN THE POOL", DeskCaption(8f, PoliSimTheme.TextMuted));
+            GUILayout.Label(pending
+                ? "A NAME IS ON THE DESK: THE CANDIDATES ARE BELOW. THE ESTIMATE DRAWS IN THE EFFECTS GRAMMAR (5c) ON THE DOCKET, NOT HERE."
+                : "A NOMINATION IS A DOCKET ITEM; ITS ESTIMATE DRAWS IN THE EFFECTS GRAMMAR (5c) ONCE A NAME IS ON THE DESK — NOT HERE, BECAUSE NOTHING IS DRAFTED.",
+                DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            GUI.enabled = pending;
+            if (GUILayout.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
+            {
+                _federalReserveScrollPosition.y += Screen.height;   // the candidates are the modal beneath this page
+            }
+            GUI.enabled = true;
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+        }
+
+        /// <summary>One term of the rule as a caption over a numeral.</summary>
+        private void DrawRuleTerm(string caption, string figure, Color? ink = null)
+        {
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(false));
+            GUILayout.Label(figure, DeskNumeral(15f, ink ?? PoliSimTheme.TextPrimary));
+            GUILayout.Label(caption, DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            GUILayout.EndVertical();
+        }
+
+        private void DrawRuleOperator(string op)
+        {
+            GUILayout.Space(StatsUnit(6f));
+            GUILayout.Label(op, DeskNumeral(15f, PoliSimTheme.TextSecondary));
+            GUILayout.Space(StatsUnit(6f));
+        }
+
+        /// <summary>
+        /// One input as an instrument: the reading against its reference on a centred lane - the reference at the
+        /// centre, the marker offset by the gap over <paramref name="span"/> (clamped to the lane), the ink the
+        /// direction-aware verdict (<see cref="UiPalette.GetDeltaColor"/>) or the neutral when the rule does not weigh it.
+        /// </summary>
+        private void DrawReadingLane(string name, float live, string referenceName, float reference, string unit, bool higherIsBetter, float span, bool neutral, string stamp, string trailing = null)
+        {
+            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary);
+            GUIStyle figure = DeskNumeral(13f, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            GUIStyle stampStyle = DeskCaption(7.5f, PoliSimTheme.TextMuted, true, TextAnchor.MiddleRight);
+            float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            float lane = StatsUnit(16f);
+            float trailingHeight = trailing == null ? 0f : captionHeight;
+            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + lane + trailingHeight + StatsUnit(6f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            float gap = live - reference;
+            Color ink = neutral ? PoliSimTheme.TextSecondary : UiPalette.GetDeltaColor(gap, higherIsBetter);
+            string headline = $"{name}   LIVE {live.ToString("0.0", CultureInfo.InvariantCulture)}{unit}   vs {referenceName} {reference.ToString("0.0", CultureInfo.InvariantCulture)}{unit}";
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, r.width * 0.7f, captionHeight), headline, caption);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x + r.width * 0.7f, r.y, r.width * 0.3f, captionHeight), stamp, stampStyle);
+            float trackY = r.y + captionHeight + lane * 0.5f;
+            float figureWidth = figure.CalcSize(new GUIContent("+00.0 pp")).x + StatsUnit(6f);
+            float x0 = r.x;
+            float width = Mathf.Max(1f, r.width - figureWidth);
+            PoliSimTheme.Rule(new Rect(x0, trackY - 0.5f, width, 1f), PoliSimTheme.Hairline);
+            PoliSimTheme.Rule(new Rect(x0 + width * 0.5f, trackY - lane * 0.3f, 1f, lane * 0.6f), PoliSimTheme.HairlineStrong);
+            float t = Mathf.Clamp(gap / span, -1f, 1f);
+            float markerX = x0 + width * 0.5f + t * width * 0.45f;
+            float dot = Mathf.Max(4f, StatsUnit(7f));
+            PoliSimTheme.Rule(new Rect(Mathf.Min(markerX, x0 + width * 0.5f), trackY - 1f, Mathf.Abs(markerX - (x0 + width * 0.5f)), 2f), ink);
+            PoliSimTheme.Rule(new Rect(markerX - dot * 0.5f, trackY - dot * 0.5f, dot, dot), ink);
+            GUIStyle inked = new GUIStyle(figure);
+            inked.normal.textColor = ink;
+            PoliSimWidgets.MeasuredLabel(new Rect(x0 + width + StatsUnit(4f), r.y + captionHeight, figureWidth, lane), gap.ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + (unit == "%" ? " pp" : unit), inked);
+            if (trailing != null)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y + captionHeight + lane, r.width, captionHeight), trailing, DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            }
         }
 
         /// <summary>Every OTHER country sharing the player's own CurrencyZone (reference equality, matching CurrencySystem.SharesCurrencyZoneWithOthers' own idiom - see that method), comma-joined - only meaningful when DrawFederalReserveTab has already confirmed the player's country is in a shared zone.</summary>

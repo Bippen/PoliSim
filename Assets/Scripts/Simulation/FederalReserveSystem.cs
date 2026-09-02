@@ -46,6 +46,9 @@ namespace PoliSim.Simulation
         // the rolled display margin it existed for.)
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.FederalReserve);
 
+        /// <summary>Board 5f: the size of the pool a nomination draws from - printed on the appointment lever, never the names.</summary>
+        public static int PoolSize => CandidatePool.Count;
+
         private static readonly List<FedChair> CandidatePool = new List<FedChair>
         {
             new FedChair(
