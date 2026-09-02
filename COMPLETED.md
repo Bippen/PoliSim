@@ -21213,3 +21213,32 @@ where the layer's effect is read, not here.
 discharged by this and §203.
 
 **Bar 25 of 25.**
+
+## 213. F3's SECOND CLAUSE — the per-valkrets age marginals, fetched from SCB and mapped by the statute (2026-09-02)
+
+**The bill.** C-D1 billed *"SCB per-valkrets marginals — ⚠ PxWeb is POST-only"*; `DATA_BILL.md` named the
+table (`START/BE/BE0101/BE0101A/BefolkningNy`) and the join (*kommun → valkrets membership, Vallagen
+(2005:837) 4 kap. 2 §*). Both were opened today, and the join was done from the statute's own text.
+
+**What is on disk** (`ElectionsData/sweden/`, README beside it, `Tools/build_valkrets_population.sh`
+the method): SCB's population at 31 December 2024 for all 290 municipalities by single year of age and
+sex (58 580 rows, the API's own JSON); Vallagen as riksdagen.se publishes it; the derived municipality
+→ valkrets map; and the 29 valkretsar × 21 five-year bands (the substrate's own bands).
+
+**Two reconciliations, both to the source and neither to a figure typed here.** (1) The map: a
+county's municipalities to the county's valkrets, and the seven split valkretsar by the statute's
+municipality lists — matched to SCB's names exactly or with the statute's genitive −s removed. Each
+split valkrets holds exactly the number the statute lists (Skåne 8 / 11 / 13, Västra Götaland
+11 / 14 / 8 / 15), Skåne's 33 and Västra Götaland's 49 are all placed, and all 290 municipalities map
+to exactly one valkrets. (2) The aggregate: the 29 totals sum to **10 587 710**, which is SCB's own
+national figure for 2024 fetched separately (Riket: 5 324 785 men + 5 262 925 women) — to the person.
+⚠ The build tripped twice on its way — an awk idiom that skipped every line when its first file was
+empty, and the statute's non-breaking spaces before each item number — and both fixes are in the
+script, which is why the script is the method and not the prose.
+
+**What it is not.** The education and income marginals (SCB UF0506, HE0110) are still billed; the
+eligible electorate per valkrets (citizenship, 18+) is Valmyndigheten's 2022 figure until a citizenship
+cut is fetched; and nothing on the game path reads the file yet — its consumer is `CohortVoterGroups`
+becoming a per-valkrets view, F3's build, which is where the data is spent.
+
+**Bar 25 of 25.**

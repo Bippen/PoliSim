@@ -242,6 +242,12 @@ Then C-D1's Swedish marginals (billed: SCB per-valkrets, ⚠ PxWeb is POST-only)
 then **re-run the Italy 2022 test**: with per-group loyalty and the media/momentum layers live, is FdI's
 **4.35 → 29.27** surge reachable?
 
+> **2026-09-02 — the age marginals are on disk (`COMPLETED.md` §213, `ElectionsData/sweden/VALKRETS_POPULATION_README.md`):**
+> SCB's 2024 population by single year of age for all 290 municipalities, mapped to the 29 valkretsar by
+> Vallagen's own lists and reconciled to SCB's national total to the person. Education and income marginals
+> still billed. **Next in F3:** `CohortVoterGroups` as a per-valkrets view over this file (the consumer);
+> per-group loyalty stays Elias's (ITANES); the Italy re-run waits on it.
+
 ⚠ **Reachable is the strongest validation this model can get; unreachable is a named ceiling. Do not tune
 toward it.**
 
