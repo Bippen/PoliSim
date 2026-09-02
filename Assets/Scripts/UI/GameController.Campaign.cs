@@ -216,7 +216,7 @@ namespace PoliSim.UI
             float innerWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle);
 
             GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth),
-                GUILayout.Height(availableHeight + _boxStyle.padding.vertical));
+                GUILayout.ExpandHeight(true));   // P2-1.1: the sheet fills the frame-height column
             Rect inner = GUILayoutUtility.GetRect(innerWidth, availableHeight,
                 GUILayout.Width(innerWidth), GUILayout.Height(availableHeight));
             GUILayout.EndVertical();

@@ -97,7 +97,7 @@ namespace PoliSim.EditorTools
             int flagged = 0;
             foreach (string path in paths)
             {
-                if (!TryAnalyse(path, marginFraction, out int left, out int top, out int right, out int bottom))
+                if (!TryAnalyse(path, marginFraction, out int left, out int top, out int right, out int bottom, out int width, out int height))
                 {
                     Debug.LogError($"EDGE: could not decode {Path.GetFileName(path)}");
                     flagged++;
@@ -107,12 +107,23 @@ namespace PoliSim.EditorTools
                 // Full-bleed on an axis (both sides flush) is a BACKGROUND, not a clip - the menu screen
                 // fills the whole screen on purpose. The asymmetry is the diagnosis.
                 bool clipped = (Flush(right) && !Flush(left)) || (Flush(bottom) && !Flush(top));
+                // P2-1.1 (2026-09-02): at a ZERO margin the frame is the sheet, and the rule is the row's own
+                // done-when - flush on all four sides. Some sides flush and others not is a gap that crept back
+                // (or a screen that never filled its frame); NO side flush is a takeover on the ground (the
+                // country selector, the saves menu), symmetric, and a background by the rule above. The
+                // asymmetry test above still names a clip.
+                // At zero margin "flush" is stricter than the >20 px run the clip test uses: the sheet must COVER
+                // the line (FullLineFraction of its length). The rail is content down the whole left column and
+                // along the bottom row's first cells whatever the sheet does, so a 20 px run would have called a
+                // 33 px band under the sheet flush - the first zero-margin film did exactly that.
+                int flushSides = (Covers(left, height) ? 1 : 0) + (Covers(top, width) ? 1 : 0) + (Covers(right, height) ? 1 : 0) + (Covers(bottom, width) ? 1 : 0);
+                bool gap = marginFraction <= 0f && flushSides > 0 && flushSides < 4;
                 string line = $"  {Path.GetFileNameWithoutExtension(path),-46} " +
                               $"L{left,5} T{top,5} R{right,5} B{bottom,5}";
 
-                if (clipped)
+                if (clipped || gap)
                 {
-                    Debug.LogError(line + "   <-- CLIPPED");
+                    Debug.LogError(line + (clipped ? "   <-- CLIPPED" : "   <-- NOT FLUSH (a gap at zero margin)"));
                     flagged++;
                 }
                 else
@@ -127,6 +138,11 @@ namespace PoliSim.EditorTools
         }
 
         private static bool Flush(int count) => count > FlushMinPixels;
+        /// <summary>P2-1.1: the share of a margin line a frame edge must cover to count as flush at zero margin. The
+        /// hold banner's plate and the paper both read as content against the desk; a band of desk under the sheet
+        /// breaks the bottom row's run at the rail's edge, far below this.</summary>
+        private const float FullLineFraction = 0.9f;
+        private static bool Covers(int run, int lineLength) => run >= lineLength * FullLineFraction;
 
         /// <summary>
         /// ⚠ READ FROM `GameController`, NOT COPIED. The Python original hardcoded 0.02 with a comment
@@ -150,9 +166,9 @@ namespace PoliSim.EditorTools
         }
 
         private static bool TryAnalyse(string path, float marginFraction,
-            out int left, out int top, out int right, out int bottom)
+            out int left, out int top, out int right, out int bottom, out int width, out int height)
         {
-            left = top = right = bottom = 0;
+            left = top = right = bottom = width = height = 0;
 
             var texture = new Texture2D(2, 2);
             try
@@ -162,13 +178,14 @@ namespace PoliSim.EditorTools
                     return false;
                 }
 
-                int width = texture.width;
-                int height = texture.height;
+                width = texture.width;
+                height = texture.height;
                 Color32[] pixels = texture.GetPixels32();
 
-                // The desk colour, sampled outside the margin by construction. Texture2D is
-                // bottom-up, so row 1 here is the capture's second-from-bottom row - still desk.
-                Color32 desk = pixels[1 * width + 1];
+                // The desk colour, READ FROM THE THEME (P2-1.1, 2026-09-02). It used to be sampled at pixel
+                // (1,1), "outside the margin by construction" - and at a zero margin that pixel is the rail,
+                // so every verdict flipped. The theme is the one statement of what the ground is.
+                Color32 desk = PoliSim.UI.PoliSimTheme.Desk;
 
                 int marginX = Mathf.RoundToInt(width * marginFraction);
                 int marginY = Mathf.RoundToInt(height * marginFraction);

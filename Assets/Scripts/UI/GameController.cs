@@ -162,8 +162,11 @@ namespace PoliSim.UI
         // measured values): the screen margin and the rail→sheet gap 2 % → 1.2 % (26×14 → 15×8 and
         // 25 → 15 at 1280), the section spacing 3 % → 2 % (20 → 13). Re-measured on film after
         // (deadspace.ps1); the re-measure is the fact.
-        private const float ScreenMarginFraction = 0.012f;
-        private const float ColumnSpacingFraction = 0.012f;
+        // P2-1.1 (2026-09-02, Playtest 2): NO GAPS - the sheet meets the rail and the window edge to edge. The
+        // screen margin and the rail-to-sheet gap are zero; the paper box's skin margin is zeroed where the
+        // box is dressed. Three literals, one frame. The edge check's zero-margin rule is the guard.
+        private const float ScreenMarginFraction = 0f;
+        private const float ColumnSpacingFraction = 0f;
         private const float SectionSpacingFraction = 0.02f;
 
         /// <summary>Fixed display height (px) for the World Map tab's map rect - the map itself stretches to whatever width the tab gives it (see MapRenderer.Draw's ScaleMode.StretchToFill), so only the height needs pinning to keep its aspect roughly sane.</summary>
@@ -2043,7 +2046,9 @@ namespace PoliSim.UI
             DrawFoldedRail(leftColumnWidth, areaHeight, isTimePaused);
             GUILayout.Space(columnSpacing);
 
-            GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth));
+            // P2-1.1: the column takes the FRAME's height, so a sheet that expands fills it whatever the
+            // banner above it measured (the banner's measured height ran 4 px over what the layout consumed).
+            GUILayout.BeginVertical(GUILayout.Width(rightColumnWidth), GUILayout.Height(areaHeight));
             // The content sheet starts at the top of the column. The held interrupt's REASONS - the
             // load-bearing half of B8, the rail's dot carrying the state - surface here as the banner
             // the Budget precedent already drew, measured so the sheet below is reserved against it
@@ -2129,6 +2134,14 @@ namespace PoliSim.UI
                 case ConsolidatedTab.Politics:
                     DrawPoliticsTab(tabContentHeight, rightColumnWidth);
                     break;
+            }
+
+            // P2-1.1: the frame's own probe - on Repaint the sheet must end where the column ends. A shortfall
+            // is logged with its size so a film carries the number rather than a reader estimating it.
+            if (Event.current.type == EventType.Repaint)
+            {
+                float sheetShortBy = areaHeight - GUILayoutUtility.GetLastRect().yMax;
+                if (Mathf.Abs(sheetShortBy) > 0.5f) { Debug.Log($"FRAME: the sheet ends {sheetShortBy:0.#} px short of the frame ({(_onDesk ? "desk" : _consolidatedTab.ToString())})."); }
             }
 
             GUILayout.EndVertical();
@@ -2366,6 +2379,10 @@ namespace PoliSim.UI
             // dressed here); the explicit numbers are applied, so a nesting level now costs 20 px of
             // width (plus the skin's own margin), not the 16 the first row says. Two literals to revert.
             box.padding = new RectOffset(10, 10, 8, 10);
+            // P2-1.1 (2026-09-02): the skin box's own margin was the last gap between rail, sheet and window
+            // once the frame fractions went to zero - adjacent margins collapse, but a collapsed margin is
+            // still a margin. Zero, so the rect IS the frame edge.
+            box.margin = new RectOffset(0, 0, 0, 0);
             // ⚠ THE SHADOW HANGS OUTSIDE THE RECT (v3.1 Phase B, 2026-08-28 - found on the first
             // 1m-r2 film, where the ledger's first glyphs and the strip's numerals vanished into the
             // paper's edge). ui_panel_paper carries its drop shadow INSIDE the texture: measured from
@@ -6025,7 +6042,10 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawStatisticsTab(float availableHeight, float availableWidth)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
+            // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
+            // px at 720, hidden by the old margin). The campaign stages already size their box this way.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             DrawColoredLabel("Statistics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 2);
@@ -6081,7 +6101,10 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawDecisionsTab(float availableHeight)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
+            // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
+            // px at 720, hidden by the old margin). The campaign stages already size their box this way.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.ExpandHeight(true));
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _decisionsScrollPosition = GUILayout.BeginScrollView(_decisionsScrollPosition, GUILayout.Height(scrollHeight));
@@ -6267,7 +6290,10 @@ namespace PoliSim.UI
         /// <summary>Master Sequence step 5e, Phase A: Demographics tab - just the pie-chart half of the old "Compass & Demographics" tab (see DrawDemographicsContent's own doc comment), no category selector needed since there's only one content source. Never gated on game-over, matching the old tab's own behavior (pure visualization, no player-facing controls).</summary>
         private void DrawDemographicsTab(float availableHeight)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
+            // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
+            // px at 720, hidden by the old margin). The campaign stages already size their box this way.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.ExpandHeight(true));
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _demographicsScrollPosition = GUILayout.BeginScrollView(_demographicsScrollPosition, GUILayout.Height(scrollHeight));
             DrawDemographicsContent();
@@ -6286,7 +6312,10 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawPolicyLawsTab(float availableHeight, float availableWidth)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
+            // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
+            // px at 720, hidden by the old margin). The campaign stages already size their box this way.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 6);
@@ -7650,7 +7679,10 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawPoliticsTab(float availableHeight, float availableWidth)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
+            // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
+            // px at 720, hidden by the old margin). The campaign stages already size their box this way.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             DrawColoredLabel("Politics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 4);
@@ -8984,7 +9016,9 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawBudgetProcessTab(float availableHeight, float availableWidth)
         {
-            GUILayout.BeginVertical(_boxStyle);
+            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content (see the tab heads above) -
+            // this one overran the frame by some 260 px at 720 and fell 20 px short at 1440 on its own arithmetic.
+            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
 
             // ⚠ availableWidth IS THE WIDTH OF THE PAPER, NOT OF THE SPACE ON IT. Everything below this
             // line sits inside _boxStyle, so the width anything may claim is the paper minus its own

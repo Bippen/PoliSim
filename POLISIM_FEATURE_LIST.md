@@ -397,7 +397,7 @@ and the annual series sums to the debt delta. **→ ✅ CLOSED 2026-09-02, `COMP
 
 **P2-1.1 — No gaps.** The sheet meets the rail and the window edge-to-edge: no paper margin, no
 gap between the rail and the sheet, on every screen. One frame token change, filmed on all screens
-at the close. *Done when:* the edge check reports the sheet flush on all four sides.
+at the close. *Done when:* the edge check reports the sheet flush on all four sides. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §221: three literals to zero, the sheets expand to the frame (the margin had hidden a per-tab band under every sheet), `ScreenEdgeCheck` re-derived (theme reference, strict zero-margin flushness) and clean on all screens at 1280 and 2560.**
 
 **P2-1.2 — Contrast, round two.** D6 aimed at 4.5:1 and two targets missed (Caution 4.09/3.90,
 TextPrimary-on-brass 4.03). Re-measure every ink pair at its real size after P2-1.1, and raise the
