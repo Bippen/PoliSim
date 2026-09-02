@@ -282,8 +282,10 @@ The five billed countries' sourcing can proceed at any time and is **not wasted 
 > **2026-09-02 — the bill, checked (`COMPLETED.md` §211, `ElectionsData/tax/README.md`):** Germany
 > (§32a EStG's 2026 formula, verbatim), France (the 2026 barème per part, two official pages agreeing)
 > and the USA (Rev. Proc. 2025-32's tables and standard deduction) are SOURCED; Poland's PIT scale is;
-> Italy is still billed (its portals are JavaScript shells to a batch fetch), as are the OASDI wage base,
-> CSG/CRDS, and Poland's levy and ZUS. Germany's formula and France's quotient confirm the spec-let's
+> Italy is still billed (its portals are JavaScript shells to a batch fetch). **Later the same day (§216):**
+> the OASDI wage base (the SSA's own Federal Register notice, $184,500 for 2026), CSG/CRDS (URSSAF's 2026
+> table) and Poland's levy and contributions (the Sejm's consolidated acts via its ELI API) are SOURCED;
+> Italy's Gazzetta PDF turned out to be scanned, so Italy alone stays billed. Germany's formula and France's quotient confirm the spec-let's
 > warning against brackets-as-data. Nothing built: F4 waits on the income dimension.
 
 *Carries: `M-B7` (D-11 (c)) and, adjacent, `D-16`'s landing — see the appendix.*

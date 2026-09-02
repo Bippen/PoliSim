@@ -35,8 +35,13 @@ Both official pages carry the same table, per *part* of the quotient familial:
 | au-delà de 181 917 € | 45 % |
 
 The economie.gouv.fr page's own words: *"Multipliez le résultat obtenu à l'étape 2 par le nombre de vos
-parts fiscales"* — the quotient is the instrument, not a footnote to it. ⚠ CSG/CRDS: not on these pages;
-still BILLED.
+parts fiscales"* — the quotient is the instrument, not a footnote to it.
+
+**CSG/CRDS — discharged 2026-09-02 (`france/urssaf_taux_cotisations_secteur_prive.html`, urssaf.fr, the
+2026 table).** Verbatim, the salarié column: *CSG imposable* **2,40 % sur 98,25 % du salaire brut dans la
+limite de 192 240 € en 2026**; *CSG non imposable* **6,80 %** on the same base; *CRDS* **0,50 %** on the
+same base. So 9,20 % CSG + 0,50 % CRDS on 98,25 % of gross up to four PASS, of which only the 2,40 % is
+deductible from the income-tax base — the split is the instrument.
 
 ## USA — Rev. Proc. 2025-32, tax year 2026 (`usa/rp-25-32.pdf`, irs.gov)
 
@@ -52,22 +57,51 @@ $116,896 plus 35 %; over $768,700: $206,583.50 plus 37 %.
 *Standard deduction (§ 3.14):* married filing jointly **$32,200**; the other filing statuses follow in
 the same section.
 
-⚠ The OASDI wage base (Social Security Administration) is still BILLED: ssa.gov returns 403 to a batch
-fetch, and a figure recalled is a figure invented.
+**The OASDI wage base — discharged 2026-09-02 (`usa/fr-2025-19763_cola_2026.pdf`, the Social Security
+Administration's notice *Cost-of-Living Increase and Other Determinations for 2026*, 90 FR, 3 November
+2025, fetched from govinfo.gov via the Federal Register API — ssa.gov itself still 403s a batch fetch).**
+Verbatim: *"The OASDI contribution and benefit base will be **$184,500** for remuneration paid in 2026 and
+self-employment income earned in tax years beginning in 2026"*; the same notice gives the 2.8 percent
+benefit increase and the "old-law" base of $137,100.
 
 ## Poland — skala podatkowa (`poland/podatki_gov_pl_stawki.html`, podatki.gov.pl)
 
 Verbatim, *"Skala podatkowa od 2022 roku"*: podstawa obliczenia podatku do **120 000 zł**: **12 %
 minus kwota zmniejszająca podatek 3 600 zł**; ponad 120 000 zł: **10 800 zł + 32 % nadwyżki ponad
-120 000 zł**. ⚠ The *danina solidarnościowa* and ZUS contributions are not on this page and stay BILLED.
+120 000 zł**.
+
+**The levy and the contributions — discharged 2026-09-02 from the Sejm's ELI API (api.sejm.gov.pl, the
+consolidated texts, *tekst ujednolicony*; the originals it also serves are the 1991 and 1998 acts as
+first passed and carry neither).**
+
+- `poland/sejm_eli_DU_1991_350_ustawa_pit_ujednolicony.pdf` (Dz.U. 1991 nr 80 poz. 350, consolidated on
+  t.j. Dz.U. 2026 poz. 592, 779, 846): **art. 27 ust. 1** is the scale above, verbatim in the act — *do
+  120 000: 12 % minus kwota zmniejszająca podatek 3600 zł; ponad 120 000: 10 800 zł + 32 % nadwyżki
+  ponad 120 000 zł* — and **art. 30h ust. 1–2**: *"Osoby fizyczne są obowiązane do zapłaty daniny
+  solidarnościowej w wysokości **4 %** podstawy obliczenia tej daniny. Podstawę obliczenia daniny
+  solidarnościowej stanowi nadwyżka ponad **1 000 000 zł** sumy dochodów …"*.
+- `poland/sejm_eli_DU_1998_887_ustawa_sus_ujednolicony.pdf` (Dz.U. 1998 nr 137 poz. 887, consolidated on
+  t.j. Dz.U. 2026 poz. 199 … 734): **art. 22 ust. 1**: *19,52 % podstawy wymiaru — na ubezpieczenie
+  emerytalne; 8,00 % — na ubezpieczenia rentowe; 2,45 % — na ubezpieczenie chorobowe; od 0,40 % do
+  8,12 % — wypadkowe*; **art. 16**: emerytalne financed *"w równych częściach, ubezpieczeni i płatnicy
+  składek"* (9,76 % each), rentowe *"1,5 % podstawy wymiaru ubezpieczeni i 6,5 % płatnicy"*, chorobowe
+  *"w całości … sami ubezpieczeni"*. So the employee side is 9,76 + 1,50 + 2,45 = **13,71 %** of the base.
+  `poland/zus_wysokosc_skladek.html` (zus.pl) shows the same four rates in force and the 1,67 % accident
+  rate for small payers.
 
 ## Italy — STILL BILLED
 
 The Agenzia delle Entrate's portal and normattiva's article view are JavaScript shells that hand a batch
 fetch no article text (the TUIR art. 11 page fetched at 903 KB contained no "per cento"); the shell was
-not kept. The ask is a primary PDF or a page that renders without a browser — a real errand.
+not kept. **Second attempt, 2026-09-02:** normattiva's ELI and export endpoints return the same shell or
+an error page; the Gazzetta Ufficiale's article endpoint returns an 11 KB shell; and the Gazzetta's
+issue PDF of Legge 207/2024 (Supplemento ordinario n. 43 of 31 December 2024, 25.6 MB) is SCANNED —
+`pdftotext` yields 85 KB of front matter and no law text — so it needs OCR, which is not a tool here.
+The ask is a primary PDF with a text layer or a page that renders without a browser — a real errand.
 
 ## Digests (`sha256sum`, first 16 hex, at fetch)
 
 `964f5bee61b994d8` economie.gouv.fr tranches · `741a32d757bc2502` service-public F1419 ·
-`053bfcfc2ba961a3` §32a EStG · `6426b64c1d497d9a` podatki.gov.pl stawki · `e9ada115fb43a4af` rp-25-32.pdf
+`053bfcfc2ba961a3` §32a EStG · `6426b64c1d497d9a` podatki.gov.pl stawki · `e9ada115fb43a4af` rp-25-32.pdf ·
+`2fd045566387c0c6` urssaf taux · `4d2754905fbbe1f1` fr-2025-19763 · `eca28a1b7394b2d0` PIT act (U) ·
+`307adbff35f42174` SUS act (U) · `bc28df6bf65b55e5` zus.pl składki
