@@ -118,7 +118,12 @@ namespace PoliSim.EditorTools
                 // the line (FullLineFraction of its length). The rail is content down the whole left column and
                 // along the bottom row's first cells whatever the sheet does, so a 20 px run would have called a
                 // 33 px band under the sheet flush - the first zero-margin film did exactly that.
-                int flushSides = (Covers(left, height) ? 1 : 0) + (Covers(top, width) ? 1 : 0) + (Covers(right, height) ? 1 : 0) + (Covers(bottom, width) ? 1 : 0);
+                // Board 1n-r3 (D11 row 4, 2026-09-02): the LEFT line is the tongue column - paper tabs with 4 u of
+                // desk ground between them by ruling, and ground under the utility block - so it can never be
+                // covered 90 % and is not asked to be. What the left line must still prove is that the tongues
+                // REACH the frame: a run at least one tongue tall (the narrowest is the 39 px cell at 720p, and
+                // the grain never runs 20), which a band of ground along the edge fails at zero.
+                int flushSides = (Flush(left) ? 1 : 0) + (Covers(top, width) ? 1 : 0) + (Covers(right, height) ? 1 : 0) + (Covers(bottom, width) ? 1 : 0);
                 bool gap = marginFraction <= 0f && flushSides > 0 && flushSides < 4;
                 string line = $"  {Path.GetFileNameWithoutExtension(path),-46} " +
                               $"L{left,5} T{top,5} R{right,5} B{bottom,5}   dead {deadShare * 100f,5:F1}%";

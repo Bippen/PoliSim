@@ -2073,6 +2073,9 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
+
+            // Board 1n-r3: the active tongue's paper over the seam, after the sheet has drawn its own edge.
+            DrawRailActiveTongueOverlap();
             GUILayout.EndArea();
 
             // CANVAS SEAM, Restore phase: the scrim lifts OVER the just-redrawn IMGUI, so it draws
@@ -3969,11 +3972,67 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         private const float RailIconGridUnits = 24f;
         private const float RailMarginUnits = 10f;
-        /// <summary>Board 1n's active cell: the area-ink wash's alpha and the spine's width at the 39 px cell (scaled with the cell).</summary>
+        /// <summary>Board 1n's active cell: the area-ink wash's alpha; board 1n-r3 names the spine in grid units (3 u, RailSpineUnits).</summary>
         private const float RailActiveWashAlpha = 0.12f;
-        private const float RailSpineWidthAt39 = 3f;
         /// <summary>Board 1n-r2 (2026-08-28): the HOME cell's wash while the Desk is up - brass at 0.16 (`rgba(156,129,72,0.16)`), the spine brass at the nav cells' width.</summary>
         private const float RailHomeWashAlpha = 0.16f;
+
+        // ------------------------------------------------------------------------------------------
+        // Board 1n-r3 (D11 row 4, 2026-09-02): the cells become FOLDER TONGUES. Each cell is a paper
+        // tab standing on the desk ground with 4 u of ground between tabs - that gap is the whole
+        // idiom (without it the rail is a strip; with it, a folder's edge) and it is the frame token
+        // D10 row 8 asked for: not a hairline, not a shadow, the gap. The active tongue is the sheet's
+        // own paper carried 2 px over the seam so no line stands between tab and document (the pulled-
+        // forward folder), with the area spine (3 u) on its left edge and the 12 % wash; an inactive
+        // tongue is the same paper in the plate's recessed tint behind a 1 px hairline seam. No new
+        // sprite: the tongue is the sheet's sliced paper (ui_panel_paper, clipped to the tongue so its
+        // baked shadow does not fill the gap), the seam the hairline, the spine and wash the accent.
+        // The tongue's width is the rail's (RailWidth) - edge to edge with the sheet, P2-1.1's zero
+        // tokens holding; the cell's derivation (RailCellWidth and its three fractions) is unchanged.
+        // ------------------------------------------------------------------------------------------
+        private const float RailSpineUnits = 3f;
+        private const float RailTongueOverlapPx = 2f;
+        /// <summary>The recessed tint as a multiplier on the paper sprite: the plate's tint over the paper's, per channel - a derivation of two tokens, not a third colour.</summary>
+        private static readonly Color RailRecessedTint = new Color(
+            PoliSimTheme.CardInset.r / PoliSimTheme.Card.r, PoliSimTheme.CardInset.g / PoliSimTheme.Card.g, PoliSimTheme.CardInset.b / PoliSimTheme.Card.b, 1f);
+        private GUIStyle _railTongueStyle;
+        /// <summary>The active tongue's paper face, widened under the sheet, and the seam strip it carries over; painted again after the sheet so the sheet's own edge line yields to it (the sheet draws after the rail).</summary>
+        private Rect _railActiveTongueFace;
+        private Rect _railActiveTongueStrip;
+        private bool _railActiveTongueSet;
+
+        private GUIStyle RailTongueStyle()
+        {
+            if (_railTongueStyle == null)
+            {
+                _railTongueStyle = new GUIStyle(_boxStyle) { padding = new RectOffset(0, 0, 0, 0), margin = new RectOffset(0, 0, 0, 0) };
+            }
+            return _railTongueStyle;
+        }
+
+        /// <summary>The spine's width: 3 u of the icons' 24-unit grid (board 1n-r3), never thinner than two pixels.</summary>
+        private float RailSpineWidth() => Mathf.Max(2f, Mathf.Round(RailIconSize() * RailSpineUnits / RailIconGridUnits));
+
+        /// <summary>One tongue's paper: the sheet's sliced paper drawn at <paramref name="face"/> but clipped to <paramref name="clip"/>, in the recessed tint when inactive. Repaint only.</summary>
+        private void DrawRailTonguePaper(Rect face, Rect clip, bool recessed)
+        {
+            Color previous = GUI.color;
+            GUI.BeginClip(clip);
+            GUI.color = recessed ? RailRecessedTint : Color.white;
+            GUI.Box(new Rect(face.x - clip.x, face.y - clip.y, face.width, face.height), GUIContent.none, RailTongueStyle());
+            GUI.color = previous;
+            GUI.EndClip();
+        }
+
+        /// <summary>After the sheet has drawn: the active tongue's paper carried RailTongueOverlapPx over the seam, so the document and its tab are one sheet of paper with no line between them.</summary>
+        private void DrawRailActiveTongueOverlap()
+        {
+            if (Event.current.type != EventType.Repaint || !_railActiveTongueSet)
+            {
+                return;
+            }
+            DrawRailTonguePaper(_railActiveTongueFace, _railActiveTongueStrip, recessed: false);
+        }
 
         // ------------------------------------------------------------------------------------------
         // Board 1n-r2 (2026-08-28, v3.1 Phase B): the rail's WIDTH is unchanged - the cell is still the
@@ -4020,8 +4079,11 @@ namespace PoliSim.UI
         /// </summary>
         private bool DrawRailCell(string key, float cell, bool active, Color wash, Color spineInk, string caption, Color captionInk, List<KeyValuePair<string, Rect>> cells, out Rect glyphSlot)
         {
+            // Board 1n-r3: the tongue is the rail's full width (flush to the sheet); the cell's own
+            // measure still sizes the glyph, the pad and the caption inside it.
             float height = RailCellHeight(cell);
-            Rect rect = GUILayoutUtility.GetRect(cell, height, GUILayout.Width(cell), GUILayout.Height(height));
+            float tongue = RailWidth();
+            Rect rect = GUILayoutUtility.GetRect(tongue, height, GUILayout.Width(tongue), GUILayout.Height(height));
             bool clicked = GUI.Button(rect, GUIContent.none, GUIStyle.none);
 
             float pad = RailCellPad(cell);
@@ -4035,13 +4097,26 @@ namespace PoliSim.UI
 
             if (active)
             {
+                // The sheet's own paper: the face runs under the sheet by the sprite's border so no edge
+                // pixel of the tongue's paper lands in the seam strip; the strip itself is painted again
+                // after the sheet (DrawRailActiveTongueOverlap) - the paper carried 2 px over the seam.
+                var face = new Rect(rect.x, rect.y, rect.width + RailTongueStyle().border.right, rect.height);
+                DrawRailTonguePaper(face, rect, recessed: false);
+                _railActiveTongueFace = face;
+                _railActiveTongueStrip = new Rect(rect.xMax - 1f, rect.y, RailTongueOverlapPx + 1f, rect.height);
+                _railActiveTongueSet = true;
                 PoliSimTheme.Rule(rect, wash);
-                float spine = Mathf.Max(2f, Mathf.Round(cell * (RailSpineWidthAt39 / 39f)));
-                PoliSimTheme.Rule(new Rect(rect.x, rect.y, spine, rect.height), spineInk);
+                PoliSimTheme.Rule(new Rect(rect.x, rect.y, RailSpineWidth(), rect.height), spineInk);
             }
-            else if (rect.Contains(Event.current.mousePosition))
+            else
             {
-                PoliSimTheme.Rule(rect, PoliSimTheme.Tint(PoliSimTheme.StockOff, 0.45f));
+                DrawRailTonguePaper(rect, rect, recessed: true);
+                if (rect.Contains(Event.current.mousePosition))
+                {
+                    PoliSimTheme.Rule(rect, PoliSimTheme.Tint(PoliSimTheme.StockOff, 0.45f));
+                }
+                // The seam: one hairline against the sheet.
+                PoliSimTheme.Rule(new Rect(rect.xMax - 1f, rect.y, 1f, rect.height), PoliSimTheme.Hairline);
             }
 
             float captionTop = glyphSlot.yMax + RailCaptionGap(cell);
@@ -4096,31 +4171,48 @@ namespace PoliSim.UI
         {
             float cell = RailCellWidth();
             var cells = new List<KeyValuePair<string, Rect>>();
+            _railActiveTongueSet = false;
 
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(railWidth), GUILayout.Height(areaHeight - _boxStyle.margin.vertical));
+            // Board 1n-r3: the column is the desk ground, not a paper box - each tongue brings its own
+            // paper, and the 4 u gap (RailGap, the icons' grid) of ground between tongues is the idiom.
+            GUILayout.BeginVertical(GUILayout.Width(railWidth), GUILayout.Height(areaHeight));
 
-            // v3.1 R-E2 (2026-08-28): HOME first; board 1n-r2 gave it its face the same day.
+            // v3.1 R-E2 (2026-08-28): HOME first; board 1n-r2 gave it its face the same day; 1n-r3 makes it the first tongue.
             DrawRailHomeCell(cell, cells);
             DrawRailHomeSeparator(cell);
 
             // 1n-r2's captions (≤ 8 characters each; the documents' names stay on their own sheets).
             DrawRailNavCell("STATS", ConsolidatedTab.Statistics, "icon_nav_statistics", cell, cells);
+            GUILayout.Space(RailGap());
             DrawRailNavCell("DOCKET", ConsolidatedTab.Decisions, "icon_nav_decisions", cell, cells);
+            GUILayout.Space(RailGap());
             DrawRailNavCell("PEOPLE", ConsolidatedTab.Demographics, "icon_nav_demographics", cell, cells);
+            GUILayout.Space(RailGap());
             DrawRailNavCell("BUDGET", ConsolidatedTab.Budget, "icon_area_fiscal", cell, cells);
+            GUILayout.Space(RailGap());
             DrawRailNavCell("LAWS", ConsolidatedTab.PolicyLaws, "icon_nav_policylaws", cell, cells);
+            GUILayout.Space(RailGap());
             DrawRailNavCell("POLITICS", ConsolidatedTab.Politics, "icon_area_political", cell, cells);
+            GUILayout.Space(RailGap());
             DrawRailCampaignCell(cell, cells);   // C-R4b step 4a: present only while the player's campaign runs
 
             GUILayout.FlexibleSpace();
 
+            // The utility block (chip · lamp · PAUSE/RUN) keeps its cell-width faces, centred on the
+            // tongue column now that no box padding centres them.
+            GUILayout.BeginHorizontal(GUILayout.Width(railWidth)); GUILayout.FlexibleSpace();
             DrawRailCalendarChip(cell, cells);
+            GUILayout.FlexibleSpace(); GUILayout.EndHorizontal();
             GUILayout.Space(RailGap());
+            GUILayout.BeginHorizontal(GUILayout.Width(railWidth)); GUILayout.FlexibleSpace();
             DrawRailStatusDot(cell, isTimePaused, cells);
+            GUILayout.FlexibleSpace(); GUILayout.EndHorizontal();
             GUILayout.Space(RailGap());
             // v3.1 R-E1: the fold toggle retired with the OPEN state; its cell carries the player's
             // pause/run control (R-E1a, the duty audit's one addition).
+            GUILayout.BeginHorizontal(GUILayout.Width(railWidth)); GUILayout.FlexibleSpace();
             DrawRailPauseChip(cell, isTimePaused, cells);
+            GUILayout.FlexibleSpace(); GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
 
@@ -4182,7 +4274,8 @@ namespace PoliSim.UI
         private void DrawRailHomeSeparator(float cell)
         {
             GUILayout.Space(RailGap());
-            Rect rule = GUILayoutUtility.GetRect(cell, 1f, GUILayout.Width(cell), GUILayout.Height(1f));
+            float tongue = RailWidth();   // board 1n-r3: the rule spans the tongue column, on the desk ground between HOME and the documents
+            Rect rule = GUILayoutUtility.GetRect(tongue, 1f, GUILayout.Width(tongue), GUILayout.Height(1f));
             if (Event.current.type == EventType.Repaint)
             {
                 PoliSimTheme.Rule(new Rect(rule.x + 3f, rule.y, Mathf.Max(1f, rule.width - 6f), 1f), PoliSimTheme.HairlineStrong);
