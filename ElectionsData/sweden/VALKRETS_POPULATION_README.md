@@ -45,3 +45,37 @@ runs 1.03–1.09 in the counties and 1.11–1.16 in Stockholm (kommun and län),
 Malmö — non-citizen adults plus two years' growth — so the campaign's mobilisable electorate per valkrets is the roll
 (`SwedishValkretsReturns2022.Eligible`), and this file's job is the AGE STRUCTURE of each valkrets's
 voters, not their number. An SCB citizenship cut is the fetch that would close the gap.
+
+## The other two marginals — income and education, 2024 (F3's third clause, 2026-09-02)
+
+Both billed by C-D1 and both now on disk, fetched the same way (PxWeb v1, POST; queries recorded in
+`Tools/build_valkrets_marginals.sh`, which re-derives the two derived files) and mapped to the 29
+valkretsar through the same `valkrets_municipalities_2024.csv`.
+
+- **`scb_SamForvInk1_2024_municipality_age_incomeclass.json`** — SCB `HE0110A/SamForvInk1`,
+  *Sammanräknad förvärvsinkomst för boende i Sverige hela året*, persons (`HE0110J9`), all 290
+  municipalities, both sexes, 15 age bands (16–19, 20–24 … 85+) plus the 16+ total, the 26 income
+  classes (0, 1–19 tkr … 1 000+ tkr) plus TOT, 2024. 125 280 cells, **16 888 of them suppressed** (`..`,
+  SCB's cells under 3 persons — the smallest published value is 3), all in the age × class cells; every
+  band's TOT is published. → **`valkrets_income_by_age_class_2024.csv`**: 29 × 15 rows, the 26 classes,
+  and per row `published_sum`, `total` (the band's TOT), `unpublished` = total − published_sum, and the
+  count of suppressed cells. ⚠ **Measured, and it is the source's own property: the table is not
+  additive to the person.** Its 16+ TOT summed over municipalities is 8 561 886 against Riket's own
+  8 561 903 (17 persons), the band TOTs sum to 8 561 924, and per municipality the band TOTs differ from
+  the 16+ TOT in 269 of 290 cases by −14..+14 — SCB's disclosure control, not a mapping error (the
+  education table below, mapped through the identical file, reconciles to the person). So `unpublished`
+  is the suppressed mass *net of that noise*: 28 370 persons positive, −1 288 in the 89 rows where the
+  published classes exceed the band total (worst −48), net **27 082 of 8 561 924 (0.32 %)**. A consumer
+  takes the class shares as published and names the residual; it does not spread it.
+- **`scb_UtbBefRegionR_2024_municipality_age_sex_level_part{11,12,21,22}.json`** — SCB
+  `UF0506B/UtbBefRegionR`, *Befolkning 16–95+ år efter region, utbildningsnivå, ålder och kön*, all 290
+  municipalities, single years 16 … 94 and 95+, the seven SUN levels plus *uppgift saknas*, both sexes,
+  2024 — in four parts because the whole exceeds the API's 150 000-cell limit (sex × two age halves).
+  371 200 cells, **none suppressed**. → **`valkrets_education_by_age_2024.csv`**: 29 × 17 five-year
+  bands (band_3 = 16–19 … band_19 = 95+), the eight levels summed over sex, and a total. ⚠ Reconciled to
+  the publisher **to the person, per level**: the 290 municipalities sum to Riket's own 8 682 407, and
+  each of the eight levels matches Riket's row exactly (fetched separately in the same session).
+
+⚠ The same caveat as the age marginal: these are RESIDENTS 16+, not the electorate. Their job is the
+income and education STRUCTURE of each valkrets, for the voter-group view's non-demographic axis when
+the per-group design exists; nothing on the game path reads them, and they land as a discharged bill.

@@ -251,8 +251,14 @@ then **re-run the Italy 2022 test**: with per-group loyalty and the media/moment
 > design); and the campaign's regions now carry the ELIGIBLE electorate — Valmyndigheten's roll, not the
 > 18+ resident count, which runs 3–16 % above it (non-citizen adults, most in the four metropolitan
 > valkretsar) — for the ground game. **Next in F3:**
-> per-group loyalty stays Elias's (ITANES); the Italy re-run waits on it; education and income marginals
-> still billed.
+> per-group loyalty stays Elias's (ITANES); the Italy re-run waits on it.
+>
+> **2026-09-02 — the income and education marginals are on disk too (`COMPLETED.md` §215, the same
+> README):** SCB's income classes by municipality and age band (16 888 suppressed cells under 3 persons,
+> the residual measured per valkrets-band at 0.32 % net, and the table found NOT additive to the person —
+> SCB's disclosure control) and education level by municipality, single year and sex (reconciled to the
+> person per level). C-D1's three marginals are all discharged; the view's non-demographic axis has its
+> data and waits on the per-group design.
 
 ⚠ **Reachable is the strongest validation this model can get; unreachable is a named ceiling. Do not tune
 toward it.**
