@@ -43,6 +43,9 @@ namespace PoliSim.EditorTools
         /// <summary>Below this saturation a colour has no usable hue; it is compared on saturation instead.</summary>
         private const float GreyThreshold = 0.20f;
 
+        /// <summary>Where `PoliSimTheme.PartyHuesAlternative`'s values come from - printed here, beside every consultation, and kept out of the runtime (a board named in a runtime string is developer text, MetaTextCheck's class).</summary>
+        private const string AlternativeSource = "board 6b row 4, PoliSim v2 Screens.dc.html (Design, 2026-09-03)";
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -215,7 +218,8 @@ namespace PoliSim.EditorTools
             // party's bloc, seeded mandates, seated hex, the lift the rule gives it, and the laddered hex it
             // now draws at dot size; the board's own hexes were illustrative until this printed them.
             sb.Append("\n--- THE NUDGE (P3-C6, ruled 2026-09-03): the published hue is the identity; a MEASURED collision (oklab distance below the tolerance) moves the smaller party's lightness by the least that separates it - never its hue, never the order ---\n");
-            sb.Append(F("    tolerance {0:0.00} oklab, cap {1:0.00} L (both [AUTHORED-DRAFT], for Design's confirmation - D12 row 4)\n", PoliSimTheme.NudgeTolerance, PoliSimTheme.NudgeCap));
+            sb.Append("--- THE FORK, RULED (Elias, 2026-09-03, COMPLETED.md §279): Valmyndigheten's published table is the base and the identity; Design's quoted set is the ALTERNATIVE, recorded with its source and consulted only where ours produces a measured collision - tried first for the smaller party, taken only if it clears the tolerance ---\n");
+            sb.Append(F("    tolerance {0:0.00} oklab, cap {1:0.00} L (both [AUTHORED-DRAFT], confirmed by Design on board 6b row 4)\n", PoliSimTheme.NudgeTolerance, PoliSimTheme.NudgeCap));
             foreach (CountryId nudgeCountry in (CountryId[])Enum.GetValues(typeof(CountryId)))
             {
                 foreach (string line in PoliSimTheme.NudgeReport(nudgeCountry)) { sb.Append("    ").Append(line).Append('\n'); }
@@ -234,6 +238,20 @@ namespace PoliSim.EditorTools
                     sb.Append(F("    {0,-10} {1,-13} {2,8}  #{3}  {4,9:F3}  {5,6:+0.00;-0.00;0.00}   #{6}   {7,9:F3}\n",
                         country + "/" + party.Abbrev, PoliSim.Elections.NationalElection.BlocName(bloc), party.SeedSeats,
                         ToHex(seated), l0, PoliSimTheme.LadderLift(country, party.Abbrev), ToHex(laddered), l1));
+                }
+            }
+            // The two tables side by side, and which one each drawn ink came from - the E-12 return's fact.
+            sb.Append(F("\n    THE TWO TABLES: ours = Valmyndigheten fargkod, the identity; the alternative = {0}\n", AlternativeSource));
+            sb.Append("    party      ours      alternative  drawn from\n");
+            foreach (CountryId country in (CountryId[])Enum.GetValues(typeof(CountryId)))
+            {
+                foreach (PoliticalParty party in PartySystems.For(country))
+                {
+                    if (!PoliSimTheme.HasPartyInk(country, party.Abbrev)) { continue; }
+                    int alternative = PoliSimTheme.AlternativePublishedOf(country, party.Abbrev);
+                    string from = PoliSimTheme.DrawsAlternative(country, party.Abbrev) ? "the ALTERNATIVE (a measured collision, its hue clears the tolerance)"
+                        : Math.Abs(PoliSimTheme.LadderLift(country, party.Abbrev)) > 0.0005f ? "ours, lightness nudged" : "ours, unmoved";
+                    sb.Append(F("    {0,-10} #{1}   {2,-11}  {3}\n", country + "/" + party.Abbrev, ToHex(PublishedOf(country, party.Abbrev)), alternative == 0 ? "-" : "#" + ToHex(alternative), from));
                 }
             }
             sb.Append("    The marks keep the seated hex; the nudged ink draws where ink is the only channel - the per-seat hemicycle and the legend's swatch and bar.\n");

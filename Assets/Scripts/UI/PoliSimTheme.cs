@@ -237,6 +237,43 @@ namespace PoliSim.UI
             { "Sweden/L",  DeskSeated(0x3399FF) },
         };
 
+        /// <summary>
+        /// THE ALTERNATIVE TABLE — [AUTHORED-REFERENCE] the published hexes as Design quoted them on board 6b row 4 of
+        /// `PoliSim v2 Screens.dc.html` (2026-09-03; the harness prints that source beside every consultation - it lives
+        /// there and not here because a runtime string naming a board is developer text, MetaTextCheck's class). ⚠ NOT
+        /// the identity. The fork was RULED by Elias on 2026-09-03
+        /// (COMPLETED.md §279): Valmyndigheten's published `fargkod` table (<see cref="PartyHues"/>, read from the same
+        /// backend the seat counts were read from) is the base and the identity; this set is recorded with its source and
+        /// CONSULTED ONLY where ours produces a measured collision - the nudge tries the alternative's hue for the smaller
+        /// party of the pair, seated by the same arithmetic, before it moves lightness, takes it only if it clears the
+        /// tolerance against every larger ink already drawn, and prints which it did. A party absent here has no
+        /// alternative and takes the lightness nudge as before. Never read by a draw site directly.
+        /// </summary>
+        private static readonly Dictionary<string, int> PartyHuesAlternative = new Dictionary<string, int>
+        {
+            { "Sweden/S",  0xE8112D },
+            { "Sweden/SD", 0xDDDD00 },
+            { "Sweden/M",  0x52BDEC },
+            { "Sweden/V",  0xDA291C },
+            { "Sweden/C",  0x009933 },
+            { "Sweden/KD", 0x000077 },
+            { "Sweden/MP", 0x83CF39 },
+            { "Sweden/L",  0x006AB3 },
+        };
+
+        /// <summary>The alternative table's published hex for a party, 0 when it holds none - for the harness's print, never for a draw.</summary>
+        public static int AlternativePublishedOf(PoliSim.Data.CountryId country, string abbrev) =>
+            PartyHuesAlternative.TryGetValue(country + "/" + abbrev, out int hex) ? hex : 0;
+
+        /// <summary>True when the nudge took the alternative's hue for this party at a measured collision (the ruling's one case); false for an ink drawn from the identity table, nudged or not.</summary>
+        public static bool DrawsAlternative(PoliSim.Data.CountryId country, string abbrev)
+        {
+            NudgedTable(country);
+            return AlternativeTaken.TryGetValue(country, out HashSet<string> taken) && taken.Contains(abbrev);
+        }
+
+        private static readonly Dictionary<PoliSim.Data.CountryId, HashSet<string>> AlternativeTaken = new Dictionary<PoliSim.Data.CountryId, HashSet<string>>();
+
         /// <summary>The desk's saturation for a party ink — the midpoint of the four inks this replaces (0.23–0.58).</summary>
         private const float PartyInkSaturation = 0.52f;
 
@@ -315,20 +352,40 @@ namespace PoliSim.UI
             var parties = new List<PoliSim.Data.PoliticalParty>();
             foreach (PoliSim.Data.PoliticalParty p in PoliSim.Data.PartySystems.For(country)) { if (HasPartyInk(country, p.Abbrev)) { parties.Add(p); } }
             parties.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
+            var taken = new HashSet<string>();
             for (int i = 0; i < parties.Count; i++)
             {
-                Color ink = Party(country, parties[i].Abbrev);
+                string abbrev = parties[i].Abbrev;
+                Color ink = Party(country, abbrev);
                 ToOklab(ink, out float L, out float a, out float b);
                 float moved = 0f;
+
+                // THE FORK, RULED (Elias, 2026-09-03; COMPLETED.md §279): where OUR seating collides, the alternative
+                // table is consulted FIRST - its hue for the smaller party, seated by the same arithmetic - and taken
+                // only if that ink clears the tolerance against every larger ink already drawn. Otherwise the lightness
+                // nudge below runs from the seated ink, as before. The consultation is logged either way, with the
+                // distance it measured; an ink with no collision never consults anything.
+                string first = Nearest(table, parties, i, L, a, b, out float firstDistance, out float _);
+                if (first != null && firstDistance < NudgeTolerance && PartyHuesAlternative.TryGetValue(country + "/" + abbrev, out int altHex))
+                {
+                    Color alt = DeskSeated(altHex);
+                    ToOklab(alt, out float altL, out float altA, out float altB);
+                    string altNearest = Nearest(table, parties, i, altL, altA, altB, out float altDistance, out float _);
+                    if (altNearest == null || altDistance >= NudgeTolerance)
+                    {
+                        ink = alt; L = altL; a = altA; b = altB;
+                        taken.Add(abbrev);
+                        log.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}: {1:0.000} from {2} (< {3:0.00}) → the alternative #{4:X6} consulted: {5:0.000} from {6} - TAKEN, its hue seated the desk's way, lightness unmoved", abbrev, firstDistance, first, NudgeTolerance, altHex, altDistance, altNearest ?? "-"));
+                    }
+                    else
+                    {
+                        log.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}: {1:0.000} from {2} (< {3:0.00}) → the alternative #{4:X6} consulted: {5:0.000} from {6} - below the tolerance, NOT taken; the lightness nudge follows", abbrev, firstDistance, first, NudgeTolerance, altHex, altDistance, altNearest));
+                    }
+                }
+
                 for (int pass = 0; pass < 4; pass++)   // a move away from one larger ink can approach another; a few passes settle it
                 {
-                    string nearest = null; float nearestDistance = float.MaxValue; float nearestL = 0f;
-                    for (int j = 0; j < i; j++)
-                    {
-                        ToOklab(table[parties[j].Abbrev], out float Lj, out float aj, out float bj);
-                        float d = Mathf.Sqrt((L - Lj) * (L - Lj) + (a - aj) * (a - aj) + (b - bj) * (b - bj));
-                        if (d < nearestDistance) { nearestDistance = d; nearest = parties[j].Abbrev; nearestL = Lj; }
-                    }
+                    string nearest = Nearest(table, parties, i, L, a, b, out float nearestDistance, out float nearestL);
                     if (nearest == null || nearestDistance >= NudgeTolerance) { break; }
                     // The smallest L move that puts the pair at the tolerance: the chroma gap stays, L makes up the rest.
                     float chromaGap = Mathf.Sqrt(Mathf.Max(0f, nearestDistance * nearestDistance - (L - nearestL) * (L - nearestL)));
@@ -342,11 +399,27 @@ namespace PoliSim.UI
                     moved += delta;
                     log.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}: {1:0.000} from {2} (< {3:0.00}) → L {4:+0.000;-0.000}", parties[i].Abbrev, nearestDistance, nearest, NudgeTolerance, delta));
                 }
-                table[parties[i].Abbrev] = moved == 0f ? ink : FromOklab(L, a, b);
+                table[abbrev] = moved == 0f ? ink : FromOklab(L, a, b);
             }
             NudgedCache[country] = table;
             NudgeLog[country] = log;
+            AlternativeTaken[country] = taken;
             return table;
+        }
+
+        /// <summary>The nearest of the larger parties' DRAWN inks to a candidate (oklab, Euclidean over L, a, b): its abbreviation, or null when there is none yet; the distance and its L through the out parameters.</summary>
+        private static string Nearest(Dictionary<string, Color> drawn, List<PoliSim.Data.PoliticalParty> parties, int count, float L, float a, float b, out float distance, out float nearestL)
+        {
+            string nearest = null;
+            distance = float.MaxValue;
+            nearestL = 0f;
+            for (int j = 0; j < count; j++)
+            {
+                ToOklab(drawn[parties[j].Abbrev], out float Lj, out float aj, out float bj);
+                float d = Mathf.Sqrt((L - Lj) * (L - Lj) + (a - aj) * (a - aj) + (b - bj) * (b - bj));
+                if (d < distance) { distance = d; nearest = parties[j].Abbrev; nearestL = Lj; }
+            }
+            return nearest;
         }
 
         /// <summary>sRGB → oklch, move L, → sRGB (clamped). Björn Ottosson's oklab matrices; the chroma and hue are held exactly.</summary>

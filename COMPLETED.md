@@ -22486,3 +22486,33 @@ Board 6b closed with *no D12 annex is in-project* and named what would close row
 **ERRANDS:** E-10 moves to the DONE table as *closed by ruling*. What the row asked for in (a) and (c) - the re-export, and sounds for the interrupt and the declaration - is withdrawn with this reason, not left to go stale.
 
 **Bar:** `bar90_e10_RunAllBatch.log`, 29 of 29 clean; the coverage check prints *3 stand-in(s) [SliderStep (Click2), InterruptRaised (Folderswitch2), ConstituencyDeclares (Click2)] and 1 cue(s) without a file [BillFails] - reported as such by ruling*.
+
+## 279. THE PARTY-HUE FORK, RULED AND BUILT: Valmyndigheten's table is the base and the identity; Design's quoted set is the alternative, recorded with its source, consulted only where ours produces a measured collision; the harness prints every consultation (2026-09-04)
+
+**The fork** (§272): board 6b row 4 quoted one published set (S #E8112D, V #DA291C, M #52BDEC, KD #000077, L #006AB3, C #009933, MP #83CF39, SD #DDDD00) and this project's table carried another (S #FF0000, SD #4E83A3, M #66BEE6, V #C40000, C #63A91D, KD #1B5CB1, MP #008000, L #3399FF), disagreeing on every party. §272 sent it to the next ask as a per-party line with the source path beside each hex.
+
+**The ruling (Elias, 2026-09-03):** *"Valmyndigheten's published table is the base and the identity; Design's quoted set is recorded as the alternative with its source, consulted only where ours produces a measured collision."* **The reason, as the return states it:** the project's hexes are the `fargkod` values read from the same Valmyndigheten backend the seat counts were read from - one source for the counts and the colours, so a colour is verifiable by the reference the counts already carry and a seating derived from it can be re-derived by anyone with the file; a quoted set has no such path back to a file. It is not discarded: it is kept as the alternative, named for where it came from, and asked for its hue at the one moment the identity table cannot answer on its own - when two of our seated inks measure as one at dot size.
+
+**Built** (`PoliSimTheme`, `PartyInkHarness`). `PartyHuesAlternative` [AUTHORED-REFERENCE] holds Design's eight hexes with its source - *board 6b row 4, PoliSim v2 Screens.dc.html (Design, 2026-09-03)* - printed by the harness and kept out of the runtime (a board named in a runtime string is developer text, and `MetaTextCheck` caught the first draft of this section putting it there); no draw site reads it. The nudge (§256) is unchanged in its rule and its constants (tolerance 0.06, cap 0.10, both confirmed by Design on the board) and gains ONE step before it moves lightness: where the smaller party's seated ink measures a collision, the alternative's hue for that party is seated by the same arithmetic (`DeskSeated`: the hue at the desk's saturation 0.52 and value 0.46) and measured against every larger ink already drawn; it is TAKEN only if it clears the tolerance, otherwise the lightness nudge runs from the seated ink as before. Every consultation is logged with the distance it measured, taken or not; `DrawsAlternative` says which inks came from the alternative, and the harness prints the two tables side by side with each ink's provenance.
+
+**The print** (`e12_partyink.log`, the E-12 return's file):
+```
+    M: 0.012 from SD (< 0.06) → the alternative #52BDEC consulted: 0.014 from SD - below the tolerance, NOT taken; the lightness nudge follows
+    V: 0.000 from S (< 0.06) → the alternative #DA291C consulted: 0.011 from S - below the tolerance, NOT taken; the lightness nudge follows
+    KD: 0.036 from SD (< 0.06) → the alternative #000077 consulted: 0.115 from SD - TAKEN, its hue seated the desk's way, lightness unmoved
+    MP: 0.034 from C (< 0.06) → the alternative #83CF39 consulted: 0.001 from C - below the tolerance, NOT taken; the lightness nudge follows
+    L: 0.024 from SD (< 0.06) → the alternative #006AB3 consulted: 0.006 from SD - below the tolerance, NOT taken; the lightness nudge follows
+    party      ours      alternative  drawn from
+    Sweden/S   #FF0000   #E8112D      ours, unmoved
+    Sweden/SD  #4E83A3   #DDDD00      ours, unmoved
+    Sweden/M   #66BEE6   #52BDEC      ours, lightness nudged
+    Sweden/V   #C40000   #DA291C      ours, lightness nudged
+    Sweden/C   #63A91D   #009933      ours, unmoved
+    Sweden/KD  #1B5CB1   #000077      the ALTERNATIVE (a measured collision, its hue clears the tolerance)
+    Sweden/MP  #008000   #83CF39      ours, lightness nudged
+    Sweden/L   #3399FF   #006AB3      ours, lightness nudged
+```
+
+**What the ruling changed on the desk, measured:** ONE ink. KD collided with SD at 0.036 and its alternative (#000077, a hue of 240° against SD's 202°) seats 0.115 from SD, so KD now draws the alternative's blue (#383875) with its lightness unmoved, where §256 had nudged it −0.027 in L. The other four consultations measure 0.001–0.014 from the same larger ink - Design's hexes for M, V, MP and L differ from ours in darkness and vividness, not in hue, and seating strips exactly that - so they are NOT taken and the lightness nudge runs as before. ⚠ **A second-order gain the ruling did not aim at:** L used to collide with KD after its own move (§256's print: *L: collides with KD at 0.060 and the cap 0.10 is spent - NOT fully separated*, L −0.057 in all); with KD on the alternative's hue L clears SD with −0.040 and meets nothing else, so every inked party is now fully separated at the seed - the four-blues finding is closed by the ruling's own mechanism, and the cap-spent line is gone from the print.
+
+**Films:** none owed - the hemicycle draws through the same accessor (`PartyLaddered`) and the 1920 close of this block films it (§281). **Bar:** `bar92_hue_RunAllBatch.log`, 29 of 29 clean (a first bar, `bar91_hue_RunAllBatch.log`, failed MetaTextCheck on the board reference in a runtime string - the correction above). The return states the ruling and its reason (§280).
