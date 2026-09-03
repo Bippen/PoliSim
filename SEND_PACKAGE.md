@@ -1,6 +1,6 @@
-# The send package — regenerated 2026-09-03 (the RETURN after boards 6a and 6b; paste-and-glance; **sending is Elias's**)
+# The send package — regenerated 2026-09-04 (the RETURN after boards 6a and 6b, carrying the party-hue ruling; paste-and-glance; **sending is Elias's**)
 
-⚠ **THIS IS A RETURN, NOT A NEW ASK.** Boards 6a (D13) and 6b (D12, seven of seven) were read and BUILT (`COMPLETED.md` §267–§274). Board 6b said every cell was drawn from the rows' text because no annex was in-project; this paste carries the files it named: the centroid table (`COUNTRY_CENTROIDS.md`, row 1), the ink harness print (`p3c6_partyink.log`, row 4 - and the finding that the two published-hue tables disagree, §272), the stance diagnostic print (`bar50_p3a2_RunSimulationBatch.log`, row 5), and the films of the built screens at 1280 (`p5a_*`..`p5d_*`). **Binaries are uploaded, not described.** No row is asked again; where the build deviates from a board it says so in its section.
+⚠ **THIS IS A RETURN, NOT A NEW ASK.** Boards 6a (D13) and 6b (D12, seven of seven) were read and BUILT (`COMPLETED.md` §267–§274). Board 6b said every cell was drawn from the rows' text because no annex was in-project; this paste carries the files it named: the centroid table (`COUNTRY_CENTROIDS.md`, row 1), the ink harness print (`e12_partyink.log`, row 4 - printed AFTER the fork was ruled, see the ruling below), the stance diagnostic print (`bar50_p3a2_RunSimulationBatch.log`, row 5), and the films of the built screens at 1280 (`p5a_*`..`p5d_*`). **Binaries are uploaded, not described.** No row is asked again; where the build deviates from a board it says so in its section.
 
 ⚠ **The D9 returns still owed travel with this package unchanged** — the derived mandate column, the two stat-icon files, and Elias's GO on the marks.
 
@@ -9,11 +9,11 @@
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
 | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 113748 | `9cfd86ae274e19beb16405cb52c128b304e1c35d8aee8a67dba8d691022e6cc1` |
-| `POLISIM_FEATURE_LIST.md` | 88909 | `477717a8f7f84e847206083f2013954bfeb3839face43d57ce60f7568bd3f2b4` |
+| `POLISIM_FEATURE_LIST.md` | 89294 | `9c8bc78f05092ce3a11c8de3c01512ff72faa8091ce15f4836afb0540cdf30e1` |
 | `COUNTRY_CENTROIDS.md` | 2744 | `350f448e74ec0c72acbbbde69718a08afd6d179b30a4838217d788306d6ddb79` |
-| `p3c6_partyink.log` | 29932 | `a63f54c8a6af63970ea34627786e5585a203d3b6291cfd2aa5ee4d7f67fa56e5` |
+| `e12_partyink.log` | 50876 | `2a2d3dde0406575e039a734e138469cf14c1ae62b6270f10faa8342b8006513b` |
 | `bar50_p3a2_RunSimulationBatch.log` | 335398 | `7606ce12f9da2f6d70137b87963880053fbb7ac751e896fe8707b4b9c3ce41d1` |
-| `bar88_p5_2_RunAllBatch.log` | 467883 | `17ad61cb2131064b4be5de25ba43c3fc46d4c34e83618071f741b47d50608df3` |
+| `bar92_hue_RunAllBatch.log` | 430445 | `a5118ffd5e302c5372fee82e8a0f652e11df739621adabe7898128671fac5022` |
 | `p5a_1280.log` | 1106878 | `447c77bfbf05efe4ad9451f1812e11c03ca5e3c375d06c44a4a6c2391d740d9c` |
 | `p5b_1280.log` | 1106871 | `19b6cb79fb090073cbdd9fe5c5a87a37b11e1e138f91f2cbfc570ffca7e083d9` |
 | `p5c_1280.log` | 1106989 | `50e23f78240e0edfafa79ec3f4e2ead5268866053161101e04d9de5319f3110a` |
@@ -52,6 +52,29 @@
 | `p4a_1280_05a_budget_tax_dragged.png` | 668463 | `15668d81781e74925943c5a346e616615c176c00094bcb66d84b39f153925d25` |
 
 ⚠ `get_file` caps at 256 KiB: a film larger than that cannot be hash-verified whole through it — only its leading bytes — so the glance on a large film is its size and its name; the digest is for the next session on this side.
+
+## The party-hue fork, RULED (Elias, 2026-09-03) — for board 6b row 4
+
+Board 6b quoted one published set and this project's table carried another, disagreeing on every party (`COMPLETED.md` §272). **The ruling:**
+
+> **Valmyndigheten's published table is the base and the identity.** Design's quoted set is recorded as **the alternative, with its source**, and is **consulted only where ours produces a measured collision.**
+
+**The reason, stated:** the project's hexes are the `fargkod` values read from the same Valmyndigheten backend the seat counts were read from — one source for the counts and the colours, so a colour is verifiable by the reference the counts already carry, and a seating derived from it can be re-derived by anyone with the file. A quoted set has no such path back to a file. It is not discarded: it is kept as the alternative, named for where it came from, and asked for its hue at the one moment the identity table cannot answer on its own — when two of our seated inks measure as one at dot size.
+
+**What that means in the game (`PoliSimTheme`, `COMPLETED.md` §279):** the seating still derives from `PartyHues` (ours). Where the nudge measures a collision (oklab distance below the tolerance, 0.06), it now consults the alternative's hue for the smaller party FIRST — seated by the same arithmetic — and takes it only if that ink clears the tolerance against every larger ink already drawn; otherwise the lightness nudge runs from the seated ink as before. Every consultation is printed by `PartyInkHarness`, taken or not, with the distance measured. Hue is otherwise never touched; the marks keep the seated hex.
+
+| party | ours (Valmyndigheten `fargkod`, the identity) | the alternative (board 6b row 4, Design, 2026-09-03) |
+|---|---|---|
+| S | `#FF0000` | `#E8112D` |
+| SD | `#4E83A3` | `#DDDD00` |
+| M | `#66BEE6` | `#52BDEC` |
+| V | `#C40000` | `#DA291C` |
+| C | `#63A91D` | `#009933` |
+| KD | `#1B5CB1` | `#000077` |
+| MP | `#008000` | `#83CF39` |
+| L | `#3399FF` | `#006AB3` |
+
+The harness print in this package (`e12_partyink.log`) shows what the rule did with the seed's collisions. Row 4 closes on this: nothing further is asked.
 
 ---
 
