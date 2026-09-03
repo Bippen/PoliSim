@@ -22399,3 +22399,37 @@ Nine Playtest 3 crops and the two Tax Policy slider crops: eleven, as expected. 
 **Films** (`p5a_1280`, 85 captures, 0 overflow, 0 escape, the reach guard at 0.70 units per pixel on the narrowest row, exit 0): `05a_budget_tax` / `_dragged` (the family at rest and mid-drag - the revenue under the rate, the pencil and the amber rate, the badge, the button), `05c_budget_welfare` (the cost under the rate, an em dash for an unimplemented line), `06c_policylaws_sectors` (end-names under the track ends), `07d_politics_federalreserve` (the rate change as a row of the family, ticks per quarter-point), `05d_budget_sovereignwealthfund` (the drawdown as a row).
 
 **Bar:** `bar81_p5_1_RunAllBatch.log`, 29 of 29. Seven bars and eight films stand behind this record; the two invalid bytes and the eaten escape my own scripts introduced on the way are in the environment quirks, not here.
+
+## 268. P5-3 — BOARD 6b ROW 2, THE PAGERS: both pagers in the paper face through the idiom's builder; the graph's pager as glyphs at the axis face height; the two text fields stay (2026-09-03)
+
+**Built.** The pair page's `‹ PREV` / `NEXT ›` draw through `_neutralActionButtonStyle` (`UiPalette.BuildButtonStyle`, the paper face) instead of the raw skin button; the graph renderer's pager is `UiPalette.BuildButtonStyle(…, Neutral)` over a copy of the reference style at the axis size + 4, with the glyphs ◀ / ▶ in the body serif (never the mono), the button's height the axis face height (axis size + 10, which is 24 at the 1280 face) and its width 1.6 × that. The two text fields stay re-inked skin fields, as the board rules. The census's grey-face class is closed: no `GUI.skin.button` face remains on the sweep.
+
+**Films:** `p5b_1280_02b_statistics_international` (‹ PREV / NEXT › in the paper face), `p5b_1280_02b_statistics_international_deep` and `07d_politics_federalreserve` (the graph pager as glyph buttons); 85 captures, 0 overflow, 0 escape, exit 0. **Bar:** `bar84_p5_3478_RunAllBatch.log`, 29 of 29 (one bar and one film stand behind §268–§271 together; the commits are split by file and hunk).
+
+## 269. P5-8 — BOARD 6b ROW 7, STACKED TAGS WITHIN A POINT: the pair page's stance lane stacks the two tags at the pair's midpoint with a leader each; the markers do not move (2026-09-03)
+
+**Built** (`DrawPairStanceLane` / `DrawPairStanceMarker`). The lane reserves two tag rows always, so its geometry does not change with the readings. When |own − partner| < 1.0 point on the axis's own scale, both tags lift and stack at the pair's midpoint - the own side (inkText) nearest the rule, the partner (the secondary ink) above it - and each tag is joined to its own marker by a 1 px leader in its ink at 50 %: a vertical from the marker's top to the tag's foot and, where the tag sits off the marker's x, a horizontal along the tag's foot. Two markers, two tags, one lane, no third colour; the markers stay where the readings put them.
+
+**Films:** `p5b_1280_02b_statistics_international_deep` - the REGULATION / WELFARE lane at the seed, SE and US within a point, the two tags stacked at the midpoint with their leaders; the FISCAL SIZE lane apart, unstacked. **Bar:** `bar84_p5_3478_RunAllBatch.log`.
+
+## 270. P5-4 — BOARD 6b ROW 3, THE TRADE GRAPH'S ZERO RULE: a dotted inkText rule at 0 wherever the scale spans it; the Δ from a zero base stays absolute; its place stated as a deviation (2026-09-03)
+
+**Built** (`GraphRenderer.Regenerate`). Where a graph's scale spans zero - a balance, a change - the rule at 0 is drawn dotted (one pixel in three) in the text ink, the Year-0 sparkline's own baseline idiom, so a series that starts at zero reads as distance from the rule, which is what a balance is. History stays 3 px solid and the projection 2 px dashed (1l's weights untouched). The delta from a zero base is the absolute change marked Δ (P3-C4) and never a percentage.
+
+**The deviation, stated:** the board places the Δ *at the projection's head, right-anchored above the preview band*. The trade balance is a history graph with no projection and no preview band - the rate path is the one graph that has them - so the Δ stays in the title row, right-anchored, where the graph family prints its change. If a projection is ever drawn for a balance, the Δ moves to its head with it.
+
+**Films:** `p5b_1280_02b_statistics_international_deep` - the trade balance with the dotted rule at 0 near the scale's top and Δ −$14.7B in the title row. **Bar:** `bar84_p5_3478_RunAllBatch.log`.
+
+## 271. P5-7 — BOARD 6b ROW 6, THE RIKSBANK 720 FOLD: no variant; the vertical paper scrollbar always at the floor, and the first caption below the fold peeks on a strip of paper (2026-09-03)
+
+**Built** (`DrawFederalReserveTab`, `DrawRiksbankFoldPeek`). At the floor size (a window 800 px tall or less) the Riksbank page's scroll view draws the idiom's vertical paper scrollbar always, never on hover. The page records its section captions' content y as it draws; after the scroll view closes, the first caption whose y lies below the viewport's lower edge is drawn on a strip of the sheet's own paper pinned at that edge - the paper fading in above it over 1.5 × the peek, a hairline at its top, the caption peeking 14 px with *· BELOW THE FOLD* - the fold shown as paper, the way 1m-r2 showed the strip. At 1280+ nothing is re-composed: the peek draws only when a caption is below the fold, which at the floor is the rule's inputs and the governor.
+
+**Films:** `p5b_1280_07d_politics_federalreserve` at 1280×720 - the vertical paper scrollbar, and THE POLITICAL HALF · BELOW THE FOLD peeking on its strip at the sheet's lower edge. **Bar:** `bar84_p5_3478_RunAllBatch.log`.
+
+## 272. P5-5 — BOARD 6b ROW 4, THE PARTY INKS CONFIRMED: the rule, the tolerance and the cap stand; the 5e ladder's moves are already gone; the two "published" tables disagree, and the harness print is the fact (2026-09-03)
+
+**Confirmed by Design:** the hue is the authority's, lightness the only mover, 0.06 / 0.10 stand; V +0.12 and L +0.16 (5e's derived ladder) are struck - they were already retired by §256's nudge, whose moves are measured per pair and printed.
+
+**The finding this row makes, stated:** board 6b quotes the published hexes *as this side knows them* - S #E8112D, V #DA291C, M #52BDEC, KD #000077, L #006AB3, C #009933, MP #83CF39, SD #DDDD00 - and says the harness print is the fact. This project's table (`PoliSimTheme.PartyHues`, `PartyInkHarness.PublishedOf`) reads Valmyndigheten's `fargkod` from the same JSON backend the counts came from: S #FF0000, SD #4E83A3, M #66BEE6, V #C40000, C #63A91D, KD #1B5CB1, MP #008000, L #3399FF. **The two tables disagree on every party.** Both name Valmyndigheten; only one can be the backend's value, and this side's was read from the file the counts were read from. Nothing is changed here: the seating derives from the project's sourced table, the harness asserts the derivation, and the discrepancy goes to the next ask as a per-party line with the source path beside each hex, so it is resolved by a reference and not by a preference. Row 4 closes on Design's side when the harness print lands in-project (a file, which the package carries).
+
+**Built:** nothing in the game; the record and the ask line.

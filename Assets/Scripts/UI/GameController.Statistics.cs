@@ -764,7 +764,7 @@ namespace PoliSim.UI
 
             // The pager: prev · the partners in enum order, the current one in the primary ink · next.
             GUILayout.BeginHorizontal();
-            if (PoliSimWidgets.Button("< Prev", _buttonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex--; }
+            if (PoliSimWidgets.Button("\u2039 PREV", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex--; }
             GUILayout.FlexibleSpace();
             for (int i = 0; i < others.Count; i++)
             {
@@ -773,7 +773,7 @@ namespace PoliSim.UI
                 if (i < others.Count - 1) { GUILayout.Label("·", DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter)); }
             }
             GUILayout.FlexibleSpace();
-            if (PoliSimWidgets.Button("Next >", _buttonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex++; }
+            if (PoliSimWidgets.Button("NEXT \u203A", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex++; }
             GUILayout.EndHorizontal();
             GUILayout.Space(StatsUnit(6f));
 

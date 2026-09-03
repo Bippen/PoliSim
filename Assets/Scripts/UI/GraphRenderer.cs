@@ -327,7 +327,11 @@ namespace PoliSim.UI
             _changeLabelStyle = new GUIStyle(referenceStyle) { wordWrap = false, fontStyle = FontStyle.Bold };
 
             _pageLabelStyle = new GUIStyle(referenceStyle) { fontSize = axisFontSize, wordWrap = false, fontStyle = FontStyle.Normal, alignment = TextAnchor.MiddleCenter };
-            _pageButtonStyle = new GUIStyle(GUI.skin.button) { fontSize = axisFontSize, fixedHeight = axisFontSize + 10f };
+            // P5-3 (board 6b row 2, 2026-09-03): the pager in the idiom's paper face, not the skin's grey; the glyphs at the axis face
+            // height (24 @1x - here the axis size + 10, which is 24 at the 1280 face) in the body serif, never the mono.
+            _pageButtonStyle = UiPalette.BuildButtonStyle(new GUIStyle(referenceStyle) { fontSize = axisFontSize + 4, wordWrap = false, alignment = TextAnchor.MiddleCenter }, UiPalette.ButtonKind.Neutral);
+            _pageButtonStyle.fixedHeight = axisFontSize + 10f;
+            _pageButtonStyle.fixedWidth = 0f;
         }
 
         /// <summary>Title plus a "first-to-last visible value" percentage change, computed straight from the CURRENT PAGE's own visible window (not the full retained history) - matches GameController's existing signed-delta number format (see FormatEstimate) rather than inventing a new one.</summary>
@@ -382,7 +386,7 @@ namespace PoliSim.UI
 
             GUILayout.BeginHorizontal();
             GUI.enabled = paged && _pageFromEnd < totalPages - 1;
-            if (PoliSimWidgets.Button("< Older", _pageButtonStyle, GUILayout.ExpandWidth(false)))
+            if (PoliSimWidgets.Button("\u25C0", _pageButtonStyle, GUILayout.Width(_pageButtonStyle.fixedHeight * 1.6f)))
             {
                 _pageFromEnd++;
             }
@@ -398,7 +402,7 @@ namespace PoliSim.UI
             GUILayout.Label(rangeLabel, _pageLabelStyle, GUILayout.ExpandWidth(true));
 
             GUI.enabled = paged && _pageFromEnd > 0;
-            if (PoliSimWidgets.Button("Newer >", _pageButtonStyle, GUILayout.ExpandWidth(false)))
+            if (PoliSimWidgets.Button("\u25B6", _pageButtonStyle, GUILayout.Width(_pageButtonStyle.fixedHeight * 1.6f)))
             {
                 _pageFromEnd--;
             }
