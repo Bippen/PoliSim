@@ -50,6 +50,11 @@ namespace PoliSim.UI
     /// were copied under Resources/Audio/Cues. Both directions of coverage are asserted by AudioCueCoverageCheck the
     /// way sprites are: every cue's file exists (or the cue says it has none), and every file under the folder is
     /// named by a cue.
+    ///
+    /// The pack's licence: CONFIRMED BY OWNER, 2026-09-03 (ERRANDS E-10, closed by ruling; COMPLETED.md §278). No terms
+    /// are transcribed here - none were given to transcribe - and the two AAC-container files the pack also holds are
+    /// set aside by the same ruling: not imported, no re-export chased; the stand-ins the catalog names stay stand-ins,
+    /// and the coverage check keeps counting them as such on every run.
     /// </summary>
     public static class AudioDirector
     {
@@ -61,13 +66,13 @@ namespace PoliSim.UI
         public static readonly AudioCueEntry[] Catalog =
         {
             new AudioCueEntry(AudioCue.ButtonPress, "Click1", false, "the pack's first click"),
-            new AudioCueEntry(AudioCue.SliderStep, "Click2", true, "the pack's Slider_Click_Sound.m4a is AAC in an MP4 container, which Unity's importer does not read; the second click stands in until it is re-exported (E-10)"),
+            new AudioCueEntry(AudioCue.SliderStep, "Click2", true, "the pack's Slider_Click_Sound is an AAC stream in an MP4 container, which Unity's importer does not read; SET ASIDE by ruling (E-10, Elias 2026-09-03) - the second click stands in, and stays a stand-in"),
             new AudioCueEntry(AudioCue.FolderSwitch, "Folderswitch1", false, "the pack's first folder switch"),
             new AudioCueEntry(AudioCue.FolderReturn, "Folderswitch2", false, "the pack's second folder switch"),
             new AudioCueEntry(AudioCue.BillPasses, "ApprovalStamp", false, "the pack's approval stamp"),
-            new AudioCueEntry(AudioCue.BillFails, null, false, "the pack's RejectedBillTear.m4a is AAC in an MP4 container, which Unity's importer does not read; no stand-in - a stamp or a click would say the wrong thing (E-10)"),
-            new AudioCueEntry(AudioCue.InterruptRaised, "Folderswitch2", true, "the pack holds no interrupt sound; a folder landing on the Desk stands in (E-10)"),
-            new AudioCueEntry(AudioCue.ConstituencyDeclares, "Click2", true, "the pack holds no declaration sound; a click stands in (E-10)"),
+            new AudioCueEntry(AudioCue.BillFails, null, false, "the pack's RejectedBillTear is an AAC stream in an MP4 container, which Unity's importer does not read; SET ASIDE by ruling (E-10, Elias 2026-09-03) - no stand-in, a stamp or a click would say the wrong thing; the cue is wired and silent"),
+            new AudioCueEntry(AudioCue.InterruptRaised, "Folderswitch2", true, "the pack holds no interrupt sound; a folder landing on the Desk stands in, and stays a stand-in (E-10, closed by ruling 2026-09-03)"),
+            new AudioCueEntry(AudioCue.ConstituencyDeclares, "Click2", true, "the pack holds no declaration sound; a click stands in, and stays a stand-in (E-10, closed by ruling 2026-09-03)"),
         };
 
         private static readonly Dictionary<AudioCue, AudioClip> Clips = new Dictionary<AudioCue, AudioClip>();

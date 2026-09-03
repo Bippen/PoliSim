@@ -49,11 +49,13 @@ namespace PoliSim.EditorTools
             else { failures.Add($"the cue folder {Folder} does not exist"); }
 
             var named = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var standIns = new List<string>();
+            var silent = new List<string>();
             sb.Append(string.Format("    {0,-22} {1,-16} {2,-12} {3}\n", "cue", "file", "state", "note"));
             foreach (AudioCueEntry e in AudioDirector.Catalog)
             {
                 string state;
-                if (string.IsNullOrEmpty(e.File)) { state = "NO FILE"; }
+                if (string.IsNullOrEmpty(e.File)) { state = "NO FILE"; silent.Add(e.Cue.ToString()); }
                 else
                 {
                     named.Add(e.File);
@@ -62,7 +64,7 @@ namespace PoliSim.EditorTools
                     {
                         AudioClip clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
                         if (clip == null) { state = "UNREADABLE"; failures.Add($"cue {e.Cue} names '{e.File}' at {path}, which the importer yields no clip for"); }
-                        else { state = e.Provisional ? "stand-in" : "ok"; }
+                        else { state = e.Provisional ? "stand-in" : "ok"; if (e.Provisional) { standIns.Add(e.Cue + " (" + e.File + ")"); } }
                     }
                 }
                 sb.Append(string.Format("    {0,-22} {1,-16} {2,-12} {3}\n", e.Cue, e.File ?? "-", state, e.Note));
@@ -75,6 +77,10 @@ namespace PoliSim.EditorTools
                 if (!named.Contains(f.Key)) { failures.Add($"file {f.Value} is named by no cue - a sound nothing can play"); }
             }
             sb.Append(string.Format("    {0} cue(s), {1} file(s) under {2}, {3} named by a cue.\n", AudioDirector.Catalog.Length, files.Count, Folder, named.Count));
+            // E-10, closed by ruling (Elias, 2026-09-03; COMPLETED.md §278): the stand-ins and the silent cue STAY, and
+            // this line keeps saying so on every run - counted and named, never folded into "covered" and never a failure.
+            sb.Append(string.Format("    {0} stand-in(s) [{1}] and {2} cue(s) without a file [{3}] - reported as such by ruling (E-10, 2026-09-03), not accepted as covered.\n",
+                standIns.Count, string.Join(", ", standIns), silent.Count, string.Join(", ", silent)));
 
             if (failures.Count == 0)
             {

@@ -52,7 +52,7 @@ namespace PoliSim.EditorTools
             }
             else { failures.Add($"{folder} does not exist"); }
             if (count == 0) { failures.Add("no cue file under the folder - this verified nothing"); }
-            sb.Append(string.Format("    {0} file(s). The pack's licence: none shipped in the folder; the origin of every file is its Zone.Identifier stream, recorded in COMPLETED.md §261.\n", count));
+            sb.Append(string.Format("    {0} file(s). The pack's licence: confirmed by owner, 2026-09-03 (ERRANDS E-10, closed by ruling; no terms transcribed). The origin of every file is its Zone.Identifier stream, recorded in COMPLETED.md §261.\n", count));
 
             if (failures.Count == 0)
             {
