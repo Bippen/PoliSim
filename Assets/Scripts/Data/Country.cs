@@ -157,14 +157,22 @@ namespace PoliSim.Data
         public float BenefitRatePerUnemployed;
 
         /// <summary>
-        /// How much of the theoretical tax base is actually collected (0.0-1.0), reflecting
-        /// enforcement quality, the size of the informal economy, and evasion - a structural
-        /// per-country constant. Applied as a multiplier in SimulationManager.ApplyRevenueAndSpending
-        /// (ActualRevenue = GetTotalTaxRevenue() * CollectionEfficiency), not inside
-        /// GetTotalTaxRevenue itself, so that method still returns the theoretical figure. Calibrated
-        /// per country in WorldFactory so the default tax portfolio's actual revenue-to-GDP lands
-        /// close to that country's real-world tax-to-GDP ratio - see WorldFactory's doc comment for
-        /// the derivation.
+        /// THE COVERAGE BRIDGE between the four modelled instruments and a whole tax system - re-documented
+        /// by D-16 (a), 2026-09-04 (COMPLETED.md §282). Applied as a multiplier in
+        /// SimulationManager.ApplyRevenueAndSpending (ActualRevenue = GetTotalTaxRevenue() * CollectionEfficiency),
+        /// not inside GetTotalTaxRevenue itself, so that method still returns the instruments' own figure. Solved
+        /// per country in WorldFactory as Target / Implied so the default portfolio's actual revenue-to-GDP lands
+        /// on that country's calibration target - see WorldFactory's doc comment for the derivation.
+        ///
+        /// ⚠ WHAT THE NUMBER MEANS DEPENDS ON THE BASE IT IS SOLVED OVER. For the five countries on the sourced
+        /// per-country bases (TaxBaseTable: realised revenue over the seeded rate), rate x base already IS
+        /// realised revenue - the collection loss is inside the base - so the constant no longer marks anything
+        /// down: it EXCEEDS 1, and the excess is the receipts the four instruments do not model (property, excise,
+        /// social contributions beyond payroll...). It is COVERAGE, not efficiency, and its old reading
+        /// ("how much of the theoretical base is actually collected, 0.0-1.0") is false for the five. For the USA,
+        /// on the uniform stand-in bases by F-B's perimeter ruling, the old reading still holds and the value is
+        /// below 1. A Finance minister's competence bias still adds to it (CabinetSystem); the floor is 0 and there
+        /// is no ceiling - SimulationManager no longer clamps it to 1.
         /// </summary>
         public float CollectionEfficiency = 1f;
 

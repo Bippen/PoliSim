@@ -8935,7 +8935,7 @@ namespace PoliSim.UI
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
             {
                 if (!taxLine.IsImplemented) continue;
-                float revenue = state.GDP * (taxLine.Rate / 100f) * taxLine.BaseShareOfGdp;
+                float revenue = state.GDP * (taxLine.Rate / 100f) * TaxBaseTable.BaseShareOfGdp(_playerCountry.Id, taxLine.Type);   // D-16 (a)
                 taxRows.Add((DisplayName.Of(taxLine.Type.ToString()), revenue));
             }
             _taxRevenueLedger.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxRows, _labelStyle,
@@ -10090,7 +10090,7 @@ namespace PoliSim.UI
 
             // B3: no call site renders currency without naming a MoneyUnit. This is the same per-line
             // figure the revenue breakdown uses, so the two can never disagree.
-            float estimatedRevenue = _playerCountry.State.GDP * (taxLine.Rate / 100f) * taxLine.BaseShareOfGdp;
+            float estimatedRevenue = _playerCountry.State.GDP * (taxLine.Rate / 100f) * TaxBaseTable.BaseShareOfGdp(_playerCountry.Id, taxLine.Type);   // D-16 (a): the same base the turn's revenue reads
 
             // GetRect + GUI.HorizontalSlider is exactly what GUILayout.HorizontalSlider does internally,
             // so the control-ID sequence this row emits is unchanged: button, then slider, every frame.

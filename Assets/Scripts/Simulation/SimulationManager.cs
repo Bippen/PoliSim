@@ -3559,7 +3559,7 @@ namespace PoliSim.Simulation
                     continue;
                 }
 
-                revenue += gdp * (taxLine.Rate / 100f) * taxLine.BaseShareOfGdp;
+                revenue += gdp * (taxLine.Rate / 100f) * TaxBaseTable.BaseShareOfGdp(country.Id, taxLine.Type);   // D-16 (a): the per-country base for the five, the stand-in for the USA (TaxBaseTable says why)
             }
 
             return revenue;
@@ -4389,7 +4389,12 @@ namespace PoliSim.Simulation
                 ? fiscalReactionMultiplierOverride
                 : GetFiscalReactionMultiplier(country);
             float financeTreasuryCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.FinanceTreasury);
-            float effectiveCollectionEfficiency = Mathf.Clamp01(country.CollectionEfficiency + financeTreasuryCompetenceBias);
+            // D-16 (a), 2026-09-04: CollectionEfficiency is the COVERAGE BRIDGE between the four modelled instruments
+            // and a whole tax system, solved on the sourced per-country bases (TaxBaseTable), and it EXCEEDS 1 for
+            // the five countries whose four instruments under-cover their real receipts (Country.CollectionEfficiency's
+            // doc). The old Clamp01 would have cut those to 1 and knocked the anchored primary balance off in all
+            // five; only the floor at 0 is a bound the quantity has.
+            float effectiveCollectionEfficiency = Mathf.Max(0f, country.CollectionEfficiency + financeTreasuryCompetenceBias);
             // NOTE: `swfReturns` here is now the STRUCTURAL DRAW, not the realised market return - see
             // SwfStructuralDrawPercentPerYear. The parameter name is retained because it is the fund's
             // contribution to revenue either way, and renaming it across every call site would obscure

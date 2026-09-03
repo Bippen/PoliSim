@@ -182,7 +182,7 @@ namespace PoliSim.EditorTools
                     {
                         if (!line.IsImplemented) { continue; }
                         seededRate[line.Type] = line.Rate;
-                        baseShare[line.Type] = line.BaseShareOfGdp;
+                        baseShare[line.Type] = TaxBaseTable.BaseShareOfGdp(Subject, line.Type);
                     }
                 }
                 finally

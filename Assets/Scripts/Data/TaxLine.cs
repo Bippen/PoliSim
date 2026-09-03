@@ -108,7 +108,13 @@ namespace PoliSim.Data
         public float Rate;
         public bool IsImplemented;
 
-        /// <summary>Derived from Type via TaxTypeBaseShares, not stored, so every TaxLine of the same Type always agrees.</summary>
+        /// <summary>The UNIFORM stand-in base for this instrument (TaxTypeBaseShares), derived from Type and not stored.
+        /// ⚠ Since D-16 (a) (2026-09-04) NO revenue site reads this: every one - the turn's revenue, the household burden
+        /// term, the Budget's estimates, the Policy Web's caption, the diagnostics - reads
+        /// <see cref="TaxBaseTable.BaseShareOfGdp"/>, which serves the sourced per-country base for the five and this
+        /// stand-in for the USA (F-B's perimeter reason) and for any instrument without a sourced row. A new site that
+        /// multiplies a rate by THIS property is on the wrong base for five countries; it stays only as the stand-in the
+        /// table falls back to.</summary>
         public float BaseShareOfGdp => TaxTypeBaseShares.GetBaseShareOfGdp(Type);
 
         /// <summary>Derived from Type via TaxTypeRateRanges - the bounds SimulationManager.ApplyTaxRateChanges clamps a requested rate to.</summary>

@@ -31,21 +31,16 @@ namespace PoliSim.EditorTools
     public static class CollectionEfficiencyBasisDiagnostic
     {
         /// <summary>
-        /// The sourced per-country bases, copied from `COMPLETED.md §197`'s D-9 sheet where they were
-        /// recorded when they were fetched. ⚠ **Local to this diagnostic on purpose**: D-2 (c) is
-        /// reverted and stays reverted, so nothing the game runs may read this table. Provenance: OECD
-        /// Revenue Statistics `DSD_REV_COMP_OECD`, general government, % of GDP, 2022 — income `T_1110`,
-        /// corporate `T_1210`, VAT `T_5111`, payroll `T_2000+T_3000`; Poland from Eurostat
-        /// `gov_10a_taxag` D51A/D51B, the OECD flow carrying no income rows for Poland in 2020–2023.
+        /// The USA's sourced rows ONLY, from `COMPLETED.md §197`'s D-9 sheet (OECD Revenue Statistics
+        /// `DSD_REV_COMP_OECD`, general government, % of GDP, 2022 — income `T_1110`, corporate `T_1210`,
+        /// payroll `T_2000+T_3000`; the USA has no VAT line). ⚠ **Local to this diagnostic on purpose**: the
+        /// USA is EXCLUDED from `TaxBaseTable` by F-B's ruling (the federal perimeter), so these rows exist
+        /// nowhere the game runs and are read here solely to SIZE the perimeter mismatch below. The five
+        /// countries' rows moved into `TaxBaseTable` when D-16 (a) landed (2026-09-04) and are read from there.
         /// </summary>
         private static readonly Dictionary<string, float> Sourced = new Dictionary<string, float>
         {
             { "USA/IncomeTax", 0.3077f },     { "USA/CorporateTax", 0.0955f },     { "USA/PayrollTax", 0.3929f },
-            { "Germany/IncomeTax", 0.2317f }, { "Germany/CorporateTax", 0.0772f }, { "Germany/VAT", 0.3860f }, { "Germany/PayrollTax", 0.3673f },
-            { "France/IncomeTax", 0.2154f },  { "France/CorporateTax", 0.1139f },  { "France/VAT", 0.3745f },  { "France/PayrollTax", 0.2469f },
-            { "Italy/IncomeTax", 0.2491f },   { "Italy/CorporateTax", 0.1106f },   { "Italy/VAT", 0.3151f },   { "Italy/PayrollTax", 0.4257f },
-            { "Poland/IncomeTax", 0.1406f },  { "Poland/CorporateTax", 0.1474f },  { "Poland/VAT", 0.3132f },  { "Poland/PayrollTax", 0.3775f },
-            { "Sweden/IncomeTax", 0.1998f },  { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
         };
 
         /// <summary>The calibration targets `WorldFactory`'s doc solves CE against — its own recorded
@@ -64,10 +59,11 @@ namespace PoliSim.EditorTools
             World world = WorldFactory.CreateDefault();
 
             var sb = new StringBuilder();
-            sb.Append("=== F-A: does CollectionEfficiency double-count the collection loss? MEASURED, NOTHING APPLIED ===\n");
+            sb.Append("=== F-A: does CollectionEfficiency double-count the collection loss? MEASURED; D-16 (a) EXECUTED 2026-09-04 (COMPLETED.md §282) ===\n");
             sb.Append("    Implied = sum over implemented tax lines of (seeded rate % x base). CE is solved as Target/Implied.\n");
-            sb.Append("    UNIFORM = the stand-in bases the game runs on today. SOURCED = the D-2 (c) table, REVERTED and read\n");
-            sb.Append("    here only for arithmetic.\n\n");
+            sb.Append("    UNIFORM = the stand-in bases (TaxTypeBaseShares). SOURCED = TaxBaseTable, the basis the game RUNS ON for\n");
+            sb.Append("    the five since D-16 (a); the USA stays on the stand-in (F-B, sized below). 'CE today' should now EQUAL\n");
+            sb.Append("    'CE needed(SOURCED)' for the five, less the seed tariff decrement (pass 5) - the coverage bridge, solved.\n\n");
             sb.Append("    country    implied(UNIFORM)  implied(SOURCED)   target    CE today   CE needed(UNIFORM)  CE needed(SOURCED)\n");
             sb.Append("    ---------------------------------------------------------------------------------------------------------\n");
 
@@ -83,9 +79,7 @@ namespace PoliSim.EditorTools
 
                     float rate = line.Rate;
                     uniform += rate * TaxTypeBaseShares.GetBaseShareOfGdp(line.Type);
-                    sourced += rate * (Sourced.TryGetValue(c.Id + "/" + line.Type, out float s)
-                        ? s
-                        : TaxTypeBaseShares.GetBaseShareOfGdp(line.Type));
+                    sourced += rate * TaxBaseTable.BaseShareOfGdp(c.Id, line.Type);
                 }
 
                 if (uniform <= 0f || sourced <= 0f)
@@ -118,20 +112,18 @@ namespace PoliSim.EditorTools
             sb.Append(F("\n    {0} of {1} countries need CE ABOVE 1 to hit their target on the sourced basis.\n", aboveOne, measured));
             sb.Append("\n    THE SHAPE, READ OFF THE TABLE\n    -----------------------------\n");
             sb.Append("    ⚠ On the UNIFORM basis the implied figure is deliberately LARGER than reality and CE marks it\n");
-            sb.Append("    down - which is what the word 'efficiency' means and why every CE today is below 1.\n");
+            sb.Append("    down - which is what the word 'efficiency' means and why the USA's CE is below 1.\n");
             sb.Append("    ⚠ On the SOURCED basis, base = realised revenue / seeded rate, so rate x base IS the realised\n");
-            sb.Append("    revenue. Marking it down again applies one correction twice. Where CE would have to exceed 1,\n");
-            sb.Append("    the four modelled instruments UNDER-COVER that country's tax system, and the constant would be\n");
-            sb.Append("    measuring COVERAGE rather than efficiency - which is not what its own doc says it is.\n");
-            sb.Append("\n    THE PROPOSAL (nothing applied)\n    ------------------------------\n");
-            sb.Append("    A sourced base and a solved efficiency cannot both be right about the same quantity. Three exits,\n");
-            sb.Append("    and only the first keeps the anchored primary balance fixed:\n");
-            sb.Append("      1. Re-solve CE per country and RE-DOCUMENT it as the coverage bridge it would then be.\n");
-            sb.Append("      2. Re-derive the bases at the THEORETICAL level so CE keeps its meaning - OECD publishes\n");
-            sb.Append("         realised revenue, not theoretical bases, so this may have no source.\n");
-            sb.Append("      3. Leave the uniform bases and keep the identical-across-six response, with its cause named.\n");
-            sb.Append("    ⚠ This diagnostic does not choose. The register's D-14 holds the ruling; today it is (a), the\n");
-            sb.Append("    revert stands, and this measurement exists so the choice is made against numbers.\n");
+            sb.Append("    revenue. Marking it down again would apply one correction twice. Where CE exceeds 1, the four\n");
+            sb.Append("    modelled instruments UNDER-COVER that country's tax system, and the constant measures COVERAGE\n");
+            sb.Append("    rather than efficiency - which is what Country.CollectionEfficiency's doc now says it is.\n");
+            sb.Append("\n    THE RULING, EXECUTED (D-14 (a) taken at D-16, 2026-09-01; landed 2026-09-04, COMPLETED.md §282)\n    ------------------------------------------------------------------------------------------\n");
+            sb.Append("    Exit 1 of the three this diagnostic used to list: the five run on the sourced bases (TaxBaseTable),\n");
+            sb.Append("    CE is re-solved per country as Target / Implied(SOURCED) less the seed tariff decrement, and it is\n");
+            sb.Append("    documented as the coverage bridge. The anchored primary balance is preserved by construction; the\n");
+            sb.Append("    response family moves (TaxTransmissionDiagnostic). The USA keeps the uniform stand-in and its CE below 1\n");
+            sb.Append("    for F-B's reason, sized below. This block still measures rather than trusts: 'CE today' against\n");
+            sb.Append("    'CE needed(SOURCED)' is the check that the solve held.\n");
             // ---------------------------------------------------------------------------------------
             // F-B, the USA's perimeter mismatch. ⚠ It lives HERE rather than in its own file because a
             // second diagnostic would have reprinted this one's arithmetic to add one ratio - and a tool

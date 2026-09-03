@@ -1321,7 +1321,7 @@ namespace PoliSim.UI
                 if (line.Type != type) continue;
                 lines.Add(line.IsImplemented ? $"Current rate: {line.Rate:F1}%" : "Not currently implemented.");
                 lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised this year");
-                lines.Add($"Revenue base: ~{line.BaseShareOfGdp * 100f:F0}% of GDP x rate (feeds Budget/DebtToGdp)");
+                lines.Add($"Revenue base: ~{TaxBaseTable.BaseShareOfGdp(country.Id, line.Type) * 100f:F0}% of GDP x rate (feeds Budget/DebtToGdp)");
                 return true;
             }
             lines.Add("No TaxLine of this type exists for this country.");

@@ -101,6 +101,7 @@ namespace PoliSim.EditorTools
 
             SimulationRandom.Seed(Seed);
             World probe = WorldFactory.CreateDefault();
+            var responsesOfTheSourced = new List<string>();   // D-16 step 4: dC as a share of GDP, per sourced country, to three decimals
             foreach (Country c in probe.Countries)
             {
                 float gdp = c.State.GDP;
@@ -109,24 +110,33 @@ namespace PoliSim.EditorTools
                 {
                     if (!line.IsImplemented) { continue; }
                     if (line.Type == TaxType.CorporateTax || line.Type == TaxType.Tariffs) { continue; }
-                    burden += line.Rate / 100f * line.BaseShareOfGdp;
-                    if (line.Type == TaxType.IncomeTax) { incomeRate = line.Rate; incomeShare = line.BaseShareOfGdp; }
+                    burden += line.Rate / 100f * TaxBaseTable.BaseShareOfGdp(c.Id, line.Type);
+                    if (line.Type == TaxType.IncomeTax) { incomeRate = line.Rate; incomeShare = TaxBaseTable.BaseShareOfGdp(c.Id, line.Type); }
                 }
 
                 float dBurden = 0.10f * incomeShare;
                 float dC = -0.67f * dBurden * gdp;
-                sb.Append(F("    {0,-9} {1,10:F1} {2,17:P2} {3,10:P2} {4,9:F0} {5,9:F2} {6,15:P2}\n",
-                    c.Id, incomeRate, burden, dBurden, gdp, dC, gdp > 0 ? dC / gdp : 0));
+                sb.Append(F("    {0,-9} {1,10:F1} {2,17:P2} {3,10:P2} {4,9:F0} {5,9:F2} {6,15:P2}{7}\n",
+                    c.Id, incomeRate, burden, dBurden, gdp, dC, gdp > 0 ? dC / gdp : 0,
+                    TaxBaseTable.IsSourced(c.Id) ? "" : "   (the uniform stand-in - F-B)"));
+                if (TaxBaseTable.IsSourced(c.Id)) { responsesOfTheSourced.Add(F("{0:P3}", gdp > 0 ? dC / gdp : 0)); }
             }
 
-            sb.Append("    ⚠ READ THE LAST COLUMN TWICE: it is IDENTICAL for all six, and that is a FINDING rather than a\n");
-            sb.Append("    tidy result. `TaxLine.BaseShareOfGdp` is a per-TAX-TYPE constant, not a per-country one, so an\n");
-            sb.Append("    income-tax POINT moves every country's consumption by the same share of its own GDP. What differs\n");
-            sb.Append("    per country is the LEVEL of the household burden - 26.2% for the USA, which has no VAT, against\n");
-            sb.Append("    56.7% for France - and not the response to a change in it.\n");
-            sb.Append("    ⚠ Real income-tax bases differ substantially across these six, so a PER-COUNTRY base share is a\n");
-            sb.Append("    real and separate sourcing item. It is NAMED here rather than invented: this term is exactly as\n");
-            sb.Append("    country-specific as the tax bases it inherits, and no more.\n");
+            // D-16 (a), 2026-09-04 (its step 4): the response MUST differ per country now that the base is the
+            // country's own. Before the table this column read -2.68 % for all six, which was the finding; a run
+            // where the five sourced countries still answer with one figure means the table is not being read.
+            var distinctResponses = new HashSet<string>(responsesOfTheSourced);
+            if (responsesOfTheSourced.Count >= 2 && distinctResponses.Count < 2)
+            {
+                failures++;
+                Debug.LogError("D-16: the five sourced countries answer a +10-point income-tax rise with ONE figure (dC as a share "
+                               + "of GDP) - the per-country base is not reaching the burden term, and the point of the item is lost.");
+            }
+            sb.Append(F("    The last column is the item's point (D-16 (a), COMPLETED.md §282): {0} distinct response(s) among the {1}\n", distinctResponses.Count, responsesOfTheSourced.Count));
+            sb.Append("    sourced countries. Before the table it read one figure for all six - `TaxLine.BaseShareOfGdp` was a\n");
+            sb.Append("    per-TAX-TYPE constant, so an income-tax POINT moved every country's consumption by the same share of\n");
+            sb.Append("    its own GDP. Now each of the five pays its own base's worth (TaxBaseTable, OECD/Eurostat 2022 over the\n");
+            sb.Append("    seeded rate); the USA stays on the uniform stand-in for F-B's perimeter reason and still reads -2.68 %.\n");
             sb.Append(F("\n    THE CHANNEL: {0}\n", consumptionMoved && gdpMoved
                 ? "LIVE. The tax rise reaches Consumption AND GDP. Built at C-N4; this harness now guards it."
                 : "⚠ SEVERED - see the errors above."));

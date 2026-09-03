@@ -290,6 +290,8 @@ The five billed countries' sourcing can proceed at any time and is **not wasted 
 
 *Carries: `M-B7` (D-11 (c)) and, adjacent, `D-16`'s landing — see the appendix.*
 
+> **2026-09-04 — D-16 (a) landed (`COMPLETED.md` §282):** the sourced per-country base table for the five is what the game runs on, `CollectionEfficiency` is the coverage bridge, and a point of income tax now costs each country its own base's worth. Nothing else of F4 moved: the schedules still wait on the income dimension.
+
 # F5 — The five CHES axes (the afternoon that was a bill)
 
 S-4's premise was false: all five undefined axes are published columns in `CHES_2024_final_v2.csv`, already
@@ -688,6 +690,7 @@ the ITANES registration, still open.
 - **`D-16` — the sourced tax-base table for five countries**, `CollectionEfficiency` re-solved and
   re-documented as a coverage bridge, the >1 values named as coverage rather than efficiency. **BASELINE**;
   ruled and TAKEN, execution logged STOPPED with its five-step order in `COMPLETED.md` §197 §D. Rides F4.
+  **→ ✅ EXECUTED 2026-09-04, `COMPLETED.md` §282: the table (`TaxBaseTable`, the five; the USA excluded at the call site by F-B) read by every revenue site; CE re-solved on the sourced bases (SE 1.0026 · DE 1.1483 · FR 1.1800 · IT 1.2363 · PL 1.3086) and documented as the coverage bridge, the Clamp01 that would have cut it lifted; the five back on their T1 primaries to 0.01 pp; the transmission response now per country (asserted); the trajectory suite explained - only Budget, GovernmentDebt and EffectiveDebtRate move for the five, by the two constants' four-decimal rounding.**
 
 ## Elias's, unchanged
 

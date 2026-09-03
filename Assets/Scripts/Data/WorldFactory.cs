@@ -21,20 +21,26 @@ namespace PoliSim.Data
     /// all six countries for simplicity - not researched figures either.
     ///
     /// Each country's CollectionEfficiency is solved for so that its DEFAULT tax portfolio's actual
-    /// revenue-to-GDP (theoretical revenue-to-GDP * CollectionEfficiency) lands on that country's
+    /// revenue-to-GDP (the instruments' own revenue-to-GDP * CollectionEfficiency) lands on that country's
     /// real-world tax-to-GDP target. RECALIBRATED (build-order item 1, terminal rulings 2026-08-26):
     /// the five EU targets re-anchored to ONE basis and vintage - Eurostat `gov_10a_taxag`, total
     /// receipts from taxes and net social contributions, % of GDP, 2024 (API vintage 2026-07-21;
     /// Germany carries Eurostat flag `p`, provisional):
     /// <code>
-    /// Country   Implied (Rate*BaseShareOfGdp summed)   Target       CollectionEfficiency = Target/Implied
-    /// USA       29.37%                                 18.0%        18.0 / 29.37 = 0.6129  (UNCHANGED)
-    /// Germany   48.73%                                 40.9% [p]    40.9 / 48.73 = 0.8393
-    /// France    60.45%                                 45.3%        45.3 / 60.45 = 0.7494
-    /// Italy     45.10%                                 42.5%        42.5 / 45.10 = 0.9424
-    /// Poland    42.10%                                 37.6%        37.6 / 42.10 = 0.8931
-    /// Sweden    53.45%                                 42.2%        42.2 / 53.45 = 0.7895
+    /// Country   Implied (Rate*base summed)             Target       CollectionEfficiency = Target/Implied
+    /// USA       29.37% (UNIFORM stand-in bases)        18.0%        18.0 / 29.37   = 0.6129  (UNCHANGED, F-B)
+    /// Germany   35.5410% (SOURCED, TaxBaseTable)       40.9% [p]    40.9 / 35.5410 = 1.1508
+    /// France    38.3197% (SOURCED)                     45.3%        45.3 / 38.3197 = 1.1822
+    /// Italy     34.3689% (SOURCED)                     42.5%        42.5 / 34.3689 = 1.2366
+    /// Poland    28.6659% (SOURCED)                     37.6%        37.6 / 28.6659 = 1.3117
+    /// Sweden    41.9274% (SOURCED)                     42.2%        42.2 / 41.9274 = 1.0065
     /// </code>
+    /// D-16 (a), 2026-09-04: the five EU rows are solved on the SOURCED per-country bases (TaxBaseTable -
+    /// realised OECD/Eurostat 2022 revenue over the seeded rate), and a CollectionEfficiency ABOVE 1 there is
+    /// COVERAGE, not efficiency: rate x base already IS realised revenue for the four modelled instruments,
+    /// and the excess is the receipts the four do not model. The 2026-08-26 row on the uniform bases (DE
+    /// 48.73 / 0.8393, FR 60.45 / 0.7494, IT 45.10 / 0.9424, PL 42.10 / 0.8931, SE 53.45 / 0.7895) is in git
+    /// history; Implied x CE is the same revenue-to-GDP on both, so the anchored primary balances did not move.
     /// (The pre-recalibration targets 38/45/43/37/41 were mixed-basis, mixed-vintage figures; the
     /// old table is in git history. USA is deliberately untouched - see the perimeter rule below.)
     ///
@@ -217,12 +223,22 @@ namespace PoliSim.Data
             // duties is NOT the justification and is recorded as unverified: customs are ESA D.2121,
             // EU customs are S.212 own resources, and gov_10a_taxag has S13 and S13_S212 variants -
             // which one was pulled is not recorded.)
-            usa.CollectionEfficiency = 0.6119f;    // 0.6129 (18.0 / 29.37, federal-only) - 0.0010
-            germany.CollectionEfficiency = 0.8375f; // 0.8393 (40.9 [Eurostat flag p] / 48.73) - 0.0018
-            france.CollectionEfficiency = 0.7480f;  // 0.7494 (45.3 / 60.45) - 0.0014
-            italy.CollectionEfficiency = 0.9422f;   // 0.9424 (42.5 / 45.10) - 0.0002
-            poland.CollectionEfficiency = 0.8910f;  // 0.8931 (37.6 / 42.10) - 0.0021
-            sweden.CollectionEfficiency = 0.7865f;  // 0.7895 (42.2 / 53.45) - 0.0030
+            //
+            // D-16 (a), 2026-09-04 (COMPLETED.md §282): the five are RE-SOLVED on the SOURCED per-country bases
+            // (TaxBaseTable - realised OECD/Eurostat revenue over the seeded rate), the same Target / Implied
+            // less the same tariff decrement, and every one now EXCEEDS 1: on a base that already contains
+            // the collection loss the constant is the COVERAGE BRIDGE between the four modelled instruments
+            // and the whole tax system, not an efficiency (Country.CollectionEfficiency's doc). The anchored
+            // quantity is preserved by construction - Implied x CE is the same revenue-to-GDP to the second
+            // decimal (SE 42.04, DE 40.81, FR 45.22, IT 42.49, PL 37.51) - so the T1 primaries do not move;
+            // the RESPONSE family does. USA unchanged: F-B (Elias, 2026-09-01) keeps the federal perimeter
+            // and the uniform stand-in bases, so its value still reads as an efficiency below 1.
+            usa.CollectionEfficiency = 0.6119f;    // 0.6129 (18.0 / 29.37, federal-only, UNIFORM bases) - 0.0010
+            germany.CollectionEfficiency = 1.1483f; // 1.1508 (40.9 [Eurostat flag p] / 35.5410 sourced) - 0.0024 (4.075 / 1670.4)
+            france.CollectionEfficiency = 1.1800f;  // 1.1822 (45.3 / 38.3197 sourced) - 0.0022 (2.685 / 1226.2)
+            italy.CollectionEfficiency = 1.2363f;   // 1.2366 (42.5 / 34.3689 sourced) - 0.0003 (0.240 / 790.5)
+            poland.CollectionEfficiency = 1.3086f;  // 1.3117 (37.6 / 28.6659 sourced) - 0.0031 (0.735 / 240.8)
+            sweden.CollectionEfficiency = 1.0026f;  // 1.0065 (42.2 / 41.9274 sourced) - 0.0039 (1.010 / 259.9)
 
             // Fiscal reaction function's per-country comfort anchor (see "Fiscal Reaction Function" in
             // CLAUDE.md) - reuses each country's own seeded starting debt-to-GDP ratio from the

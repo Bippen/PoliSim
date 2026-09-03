@@ -154,7 +154,7 @@ namespace PoliSim.Simulation
                 float rate = line.Rate;
                 if (atBaseline && !country.BaselineTaxRates.TryGetValue(line.Type, out rate)) { rate = line.Rate; }
 
-                share += rate / 100f * line.BaseShareOfGdp;
+                share += rate / 100f * TaxBaseTable.BaseShareOfGdp(country.Id, line.Type);   // D-16 (a): the per-country base, so a point of income tax costs each country its own base's worth
             }
 
             return share;
