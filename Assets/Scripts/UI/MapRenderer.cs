@@ -79,15 +79,52 @@ namespace PoliSim.UI
         /// geographic accuracy or borders - this is a network diagram, not a map. Spaced generously to
         /// avoid the label-crowding the earlier coastline-constrained layouts had.
         /// </summary>
-        private static readonly Dictionary<CountryId, Vector2> CountryMapPositions = new Dictionary<CountryId, Vector2>
+        /// <summary>
+        /// P5-2 (board 6b row 1, 2026-09-03): THE GEOGRAPHIC CENTRES, one row per country - the table our side supplies. Each is
+        /// the commonly cited geographic centre of the country's territory (the contiguous states for the USA), latitude and
+        /// longitude in degrees, WGS84, as published on the national reference the point is named after. No coastline, no
+        /// projection beyond a flat plate over the six's own bounding box - "six plates on a plain paper field". Tagged
+        /// AUTHORED-REFERENCE: the figures are quoted, not measured here, and the reference point is named so it can be checked.
+        /// The same table is delivered to Design as docs/COUNTRY_CENTROIDS.md.
+        /// </summary>
+        private static readonly Dictionary<CountryId, Vector2> CountryCentroids = new Dictionary<CountryId, Vector2>
         {
-            { CountryId.USA, new Vector2(0.15f, 0.50f) },
-            { CountryId.Sweden, new Vector2(0.72f, 0.12f) },
-            { CountryId.Poland, new Vector2(0.90f, 0.32f) },
-            { CountryId.Germany, new Vector2(0.68f, 0.34f) },
-            { CountryId.France, new Vector2(0.50f, 0.50f) },
-            { CountryId.Italy, new Vector2(0.66f, 0.70f) },
+            { CountryId.USA, new Vector2(-98.5795f, 39.8283f) },      // Lebanon, Kansas - the geographic centre of the contiguous United States
+            { CountryId.Sweden, new Vector2(16.3250f, 62.3875f) },    // Flataklocken, Medelpad - Sweden's geographic centre
+            { CountryId.Poland, new Vector2(19.4794f, 52.0694f) },    // Piatek - the geographic centre of Poland
+            { CountryId.Germany, new Vector2(10.4541f, 51.1642f) },   // Niederdorla, Thuringia - Germany's geographic centre
+            { CountryId.France, new Vector2(2.4306f, 46.5386f) },     // Nassigny, Allier - the geographic centre of metropolitan France
+            { CountryId.Italy, new Vector2(12.5167f, 42.5167f) },     // Narni, Umbria - the geographic centre of Italy
         };
+
+        /// <summary>The 24-grid the chips snap to (board 6b row 1), in the map's own units at 1x; the Desk and the pair page place the chips identically because both snap the same way.</summary>
+        private const float GridUnit = 24f;
+
+        /// <summary>The centroids projected onto the unit square over the six's bounding box, padded so no chip sits on the edge - the normalised positions the rest of the renderer reads.</summary>
+        private static readonly Dictionary<CountryId, Vector2> CountryMapPositions = ProjectCentroids();
+
+        private static Dictionary<CountryId, Vector2> ProjectCentroids()
+        {
+            float lonMin = float.MaxValue, lonMax = float.MinValue, latMin = float.MaxValue, latMax = float.MinValue;
+            foreach (Vector2 c in CountryCentroids.Values)
+            {
+                lonMin = Mathf.Min(lonMin, c.x); lonMax = Mathf.Max(lonMax, c.x);
+                latMin = Mathf.Min(latMin, c.y); latMax = Mathf.Max(latMax, c.y);
+            }
+            const float pad = 0.06f;
+            var result = new Dictionary<CountryId, Vector2>();
+            foreach (KeyValuePair<CountryId, Vector2> kv in CountryCentroids)
+            {
+                float x = pad + (kv.Value.x - lonMin) / Mathf.Max(0.001f, lonMax - lonMin) * (1f - 2f * pad);
+                float y = pad + (latMax - kv.Value.y) / Mathf.Max(0.001f, latMax - latMin) * (1f - 2f * pad);
+                result[kv.Key] = new Vector2(x, y);
+            }
+            return result;
+        }
+
+        /// <summary>The chip's plate at 1x - board 6b row 1: 26 x 20, in the country's own outline at its centre.</summary>
+        private const float ChipWidth = 26f;
+        private const float ChipHeight = 20f;
 
         private Texture2D _backgroundTexture;
         private Texture2D _circleTexture;
@@ -128,6 +165,7 @@ namespace PoliSim.UI
             // LabelReserveWidth undersized this for "Sweden"/"Germany" at some window sizes, the same
             // label-truncation root cause found in the Sector/TaxLine/WelfareProgram/Policy-Web labels.
             float labelReserveWidth = GetLabelReserveWidth(countries, labelStyle);
+            _lastLabelStyle = labelStyle;   // P5-2: the links snap to the same grid the chips do
 
             // Trade lines render first (underneath the nodes) - real TradePartner data, not decoration.
             DrawTradeLines(rect, countries, labelReserveWidth);
@@ -172,11 +210,13 @@ namespace PoliSim.UI
             var nodeRects = new Dictionary<CountryId, Rect>();
             foreach (Country country in countries)
             {
-                Vector2 pixel = ToPixel(rect, CountryMapPositions[country.Id], labelReserveWidth);
+                Vector2 pixel = Snap(ToPixel(rect, CountryMapPositions[country.Id], labelReserveWidth), rect, labelStyle);
                 float diameter = nodeDiameters[country.Id];
-
-                var nodeRect = new Rect(pixel.x - diameter * 0.5f, pixel.y - diameter * 0.5f, diameter, diameter);
-                DrawCircle(nodeRect, UiPalette.GetCountryColor(country.Id));
+                // P5-2 (board 6b row 1): a chip, 26 x 20 at 1x, in the country's own outline at its centre - the node's size no longer
+                // says anything (the disc's diameter did); the chip carries the two-letter tag, the label beside it keeps the name.
+                float u = Mathf.Max(1f, labelStyle.fontSize) / 14f;
+                var nodeRect = new Rect(Mathf.Round(pixel.x - ChipWidth * u * 0.5f), Mathf.Round(pixel.y - ChipHeight * u * 0.5f), Mathf.Round(ChipWidth * u), Mathf.Round(ChipHeight * u));
+                DrawChip(nodeRect, UiPalette.GetCountryColor(country.Id), country.Id, labelStyle);
                 nodeRects[country.Id] = nodeRect;
 
                 if (nodeRect.Contains(mousePosition))
@@ -253,7 +293,8 @@ namespace PoliSim.UI
                         continue;
                     }
 
-                    float volume = link.ExportVolume + link.ImportVolume;
+                    // P5-2 (board 6b row 1): the weight is the LARGER flow of the pair, and a link with no volume yet draws dashed.
+                    float volume = Mathf.Max(link.ExportVolume, link.ImportVolume);
                     maxVolume = Mathf.Max(maxVolume, volume);
                     pairs.Add((country.Id, link.PartnerId, volume));
                 }
@@ -261,17 +302,75 @@ namespace PoliSim.UI
 
             foreach ((CountryId a, CountryId b, float volume) in pairs)
             {
-                Vector2 from = ToPixel(rect, CountryMapPositions[a], labelReserveWidth);
-                Vector2 to = ToPixel(rect, CountryMapPositions[b], labelReserveWidth);
+                Vector2 from = Snap(ToPixel(rect, CountryMapPositions[a], labelReserveWidth), rect, _lastLabelStyle);
+                Vector2 to = Snap(ToPixel(rect, CountryMapPositions[b], labelReserveWidth), rect, _lastLabelStyle);
                 float t = volume / maxVolume;
                 float thickness = Mathf.Lerp(MinLineThickness, MaxLineThickness, t);
                 float alpha = Mathf.Lerp(MinLineAlpha, MaxLineAlpha, t);
-
-                DrawLineSegment(from, to, thickness, new Color(TradeLineColor.r, TradeLineColor.g, TradeLineColor.b, alpha));
+                var ink = new Color(TradeLineColor.r, TradeLineColor.g, TradeLineColor.b, alpha);
+                if (volume <= 0f) { DrawDashedSegment(from, to, MinLineThickness, new Color(TradeLineColor.r, TradeLineColor.g, TradeLineColor.b, MinLineAlpha)); }
+                else { DrawLineSegment(from, to, thickness, ink); }
             }
         }
 
         /// <summary>Draws a thick line as a rotated, stretched solid-color rect (GUIUtility.RotateAroundPivot) rather than a per-pixel distance field - cheap enough to redraw every frame (trade topology is static, but this keeps the code simple and stays correct even if it weren't), and GUI.matrix is always restored immediately after so rotation never leaks into anything drawn afterward.</summary>
+        private GUIStyle _lastLabelStyle;
+
+        /// <summary>P5-2: the 24-grid snap - the map's own units scale with the label face, so the Desk and the pair page snap alike.</summary>
+        private static Vector2 Snap(Vector2 pixel, Rect rect, GUIStyle labelStyle)
+        {
+            float unit = Mathf.Max(4f, GridUnit * (labelStyle != null ? Mathf.Max(1f, labelStyle.fontSize) / 14f : 1f) * 0.5f);
+            return new Vector2(rect.x + Mathf.Round((pixel.x - rect.x) / unit) * unit, rect.y + Mathf.Round((pixel.y - rect.y) / unit) * unit);
+        }
+
+        private static GUIStyle _chipTagStyle;
+
+        /// <summary>P5-2: the chip - a paper plate in the country's own outline with its two-letter tag.</summary>
+        private static void DrawChip(Rect rect, Color outline, CountryId id, GUIStyle labelStyle)
+        {
+            Color previous = GUI.color;
+            GUI.color = outline; GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = PoliSimTheme.Card; GUI.DrawTexture(new Rect(rect.x + 1.5f, rect.y + 1.5f, rect.width - 3f, rect.height - 3f), Texture2D.whiteTexture);
+            GUI.color = previous;
+            if (_chipTagStyle == null || _chipTagStyle.fontSize != Mathf.Max(7, Mathf.RoundToInt(labelStyle.fontSize * 0.55f)))
+            {
+                _chipTagStyle = new GUIStyle(labelStyle) { fontSize = Mathf.Max(7, Mathf.RoundToInt(labelStyle.fontSize * 0.55f)), alignment = TextAnchor.MiddleCenter, wordWrap = false, fontStyle = FontStyle.Bold };
+                if (PoliSimTheme.Document != null) { _chipTagStyle.font = PoliSimTheme.Document; }
+                _chipTagStyle.padding = new RectOffset(0, 0, 0, 0);
+            }
+            _chipTagStyle.normal.textColor = outline;
+            GUI.Label(rect, ChipTag(id), _chipTagStyle);
+        }
+
+        private static string ChipTag(CountryId id)
+        {
+            switch (id)
+            {
+                case CountryId.Sweden: return "SE";
+                case CountryId.Germany: return "DE";
+                case CountryId.France: return "FR";
+                case CountryId.Italy: return "IT";
+                case CountryId.Poland: return "PL";
+                case CountryId.USA: return "US";
+                default: return id.ToString().Substring(0, 2).ToUpperInvariant();
+            }
+        }
+
+        /// <summary>P5-2: a dashed link - a link the model holds with no volume yet.</summary>
+        private void DrawDashedSegment(Vector2 from, Vector2 to, float thickness, Color color)
+        {
+            Vector2 delta = to - from;
+            float length = delta.magnitude;
+            if (length < 1f) { return; }
+            Vector2 dir = delta / length;
+            const float dash = 6f, gap = 4f;
+            for (float d = 0f; d < length; d += dash + gap)
+            {
+                float end = Mathf.Min(length, d + dash);
+                DrawLineSegment(from + dir * d, from + dir * end, thickness, color);
+            }
+        }
+
         private void DrawLineSegment(Vector2 from, Vector2 to, float thickness, Color color)
         {
             Vector2 delta = to - from;
