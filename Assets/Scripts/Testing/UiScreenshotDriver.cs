@@ -74,6 +74,12 @@ namespace PoliSim.Testing
         public bool StageSaves;
         /// <summary>P4-2: `-cuesweep` fires every cue in the catalog by name after the sweep's first capture and asserts each cue with a file loaded its clip - the harness's own trigger, beside the Editor cue board.</summary>
         public bool CueSweep;
+        /// <summary>Set by `-shotstop=&lt;capture name&gt;` (2026-09-04, the 1920 wedge): the sweep ends the moment that
+        /// capture is written, judged by the same fold as a whole sweep over what it filmed. A bisect at one width
+        /// then costs the frames up to the one in question rather than the set. ⚠ The log names the stop and the
+        /// count, so a partial set can never pass for a sweep; a name no capture carries stops nothing and the
+        /// sweep runs out as usual - the film's own count says which happened.</summary>
+        public string StopAfter = "";
 
         /// <summary>Set by `-shotlocale=` (e.g. "en-US"): overrides the thread culture before anything draws, so number/date formatting can be captured in a locale other than the OS's. Empty = OS culture, which is what every set before 2026-08-12 rendered in (sv-SE on this machine — the decimal-comma set).</summary>
         public string Locale = "";
@@ -523,29 +529,7 @@ namespace PoliSim.Testing
                 yield return CaptureStatePins(controller);
             }
 
-            Debug.Log($"SHOT: capture-identity - {_identityAsserts} capture(s) proved they show the surface they claim.");
-            Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
-
-            int overflows = ReportOverflows();
-            Debug.Log($"SHOT: {overflows} text overflow(s) recorded.");
-
-            int escapes = ReportContainmentEscapes();
-            Debug.Log($"SHOT: {escapes} containment escape(s) recorded.");
-
-            Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
-
-            // Ruling 1's fold: a red line nothing counted is still a failure. The four counters
-            // above are the driver's own asserts; _loggedErrors catches everything else - the ~18
-            // uncounted LogError sites and any ATTRIB the simulation raised while this drove it.
-            bool clean = _failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0;
-            if (_loggedErrors > 0)
-            {
-                Debug.Log(clean
-                    ? $"SHOT: FOLD - the run's own counters were clean but {_loggedErrors} error(s) were logged during it; exiting nonzero. First: \"{(_firstLoggedError != null && _firstLoggedError.Length > 200 ? _firstLoggedError.Substring(0, 200) + "…" : _firstLoggedError)}\"."
-                    : $"SHOT: {_loggedErrors} error(s) logged during the run; the failure is already reflected.");
-            }
-
-            Finish(clean && _loggedErrors == 0 ? 0 : 1);
+            EndSweep();
             }
             finally
             {
@@ -1072,6 +1056,35 @@ namespace PoliSim.Testing
             Debug.Log("SHOT: seam-settle fallback complete, handing control back to the caller.");
         }
 
+        /// <summary>The sweep's own verdict over what was filmed, then the exit. One site, so a sweep that
+        /// stops early (<see cref="StopAfter"/>) is judged by the same fold as one that runs out.</summary>
+        private void EndSweep()
+        {
+            Debug.Log($"SHOT: capture-identity - {_identityAsserts} capture(s) proved they show the surface they claim.");
+            Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
+
+            int overflows = ReportOverflows();
+            Debug.Log($"SHOT: {overflows} text overflow(s) recorded.");
+
+            int escapes = ReportContainmentEscapes();
+            Debug.Log($"SHOT: {escapes} containment escape(s) recorded.");
+
+            Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
+
+            // Ruling 1's fold: a red line nothing counted is still a failure. The four counters
+            // above are the driver's own asserts; _loggedErrors catches everything else - the ~18
+            // uncounted LogError sites and any ATTRIB the simulation raised while this drove it.
+            bool clean = _failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0;
+            if (_loggedErrors > 0)
+            {
+                Debug.Log(clean
+                    ? $"SHOT: FOLD - the run's own counters were clean but {_loggedErrors} error(s) were logged during it; exiting nonzero. First: \"{(_firstLoggedError != null && _firstLoggedError.Length > 200 ? _firstLoggedError.Substring(0, 200) + "…" : _firstLoggedError)}\"."
+                    : $"SHOT: {_loggedErrors} error(s) logged during the run; the failure is already reflected.");
+            }
+
+            Finish(clean && _loggedErrors == 0 ? 0 : 1);
+        }
+
         private int _captured;
         private int _failed;
 
@@ -1398,6 +1411,13 @@ namespace PoliSim.Testing
             // S-20: the claim resets to IMGUI after every shot, so a Canvas claim can never leak onto the
             // next capture and quietly pass it. A caller that means a board says so, once, each time.
             CaptureIdentity.Expected = "imgui";
+
+            if (!string.IsNullOrEmpty(StopAfter) && name == StopAfter)
+            {
+                Debug.Log($"SHOT: -shotstop={StopAfter} - the sweep ends at this capture by request: a PARTIAL set of {_captured}, not a sweep.");
+                EndSweep();
+                yield break;
+            }
         }
 
         /// <summary>S-20: the next capture claims this surface. Resets to `imgui` the moment the shot is

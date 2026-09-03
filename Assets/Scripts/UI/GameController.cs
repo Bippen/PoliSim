@@ -524,6 +524,20 @@ namespace PoliSim.UI
         private GUIStyle _sliderStyle;
         private GUIStyle _sliderThumbStyle;
         private GUIStyle _boxStyle;
+        /// <summary>The frame's sheet where it stands at the top of the window (2026-09-04, the 1920 wedge, `COMPLETED.md` §281):
+        /// `_boxStyle`'s paper with the sprite's ten transparent shadow rows cropped off, so the 9-slice's top piece begins AT
+        /// the rect and no vertex of the sheet is ever drawn above the frame. ⚠ At zero margin the sheet's top shadow has
+        /// nowhere to fall - the window ends there - and drawing it anyway put the top piece ten pixels above the clip, which at
+        /// 1920 alone left a desk-coloured wedge three rows deep over x 955–1280 (the piece's own diagonal, 22 rows over 1831 px;
+        /// measured on film, §275, and reproduced with the overflow zeroed in §281). Same padding, margin and side/bottom overflow
+        /// as `_boxStyle`, so no layout width moves; only the top border (22 → 12) and the top overflow (10 → 0) differ, by the
+        /// crop's own count. Built by <see cref="BuildSheetStyle"/>.</summary>
+        private GUIStyle _sheetStyle;
+        /// <summary>The style the frame's sheet draws with THIS pass: `_boxStyle` while something (the hold banner) stands above
+        /// the sheet, so its shadow falls on that as before; `_sheetStyle` when the sheet's top IS the window's top edge. Chosen
+        /// once per OnGUI pass by DrawImguiFrame from the banner's measured height, read by every frame-level sheet site; inner
+        /// cards keep `_boxStyle`.</summary>
+        private GUIStyle _frameSheetStyle;
         private GUIStyle _tabButtonStyle;
         private GUIStyle _eventBannerStyle;
         /// <summary>v2.0 chrome: `_eventBannerStyle` dressed in the `ui_banner_hold` dark desk plate — the B8 interrupt indicator's own style, built in InitializeStylesIfNeeded and drawn via DrawHoldBannerLabel. Degrades to a plain clone of `_eventBannerStyle` when the sprite is missing.</summary>
@@ -2004,6 +2018,11 @@ namespace PoliSim.UI
             // the Budget precedent already drew, measured so the sheet below is reserved against it
             // (instance #12).
             float foldedBannerHeight = DrawFoldedInterruptBanner(rightColumnWidth);
+            // 2026-09-04 (the 1920 wedge, §281): the sheet draws no vertex above the frame. With the banner above it the
+            // sheet's top shadow falls on the banner and the paper style stands; when the sheet's top IS the window's
+            // top edge the shadow has nowhere to fall, and the cropped sheet style draws the paper from the rect's own
+            // first row. Chosen here, once per pass, from the banner's measured height; the same on Layout and Repaint.
+            _frameSheetStyle = foldedBannerHeight >= _boxStyle.overflow.top ? _boxStyle : _sheetStyle;
 
             // ⚠ INSTANCE #12, RIGHT COLUMN — same defect, same line of reasoning. Every tab wraps its
             // content in a `_boxStyle` box, and that box's padding and margin come out of `areaHeight`
@@ -2303,6 +2322,8 @@ namespace PoliSim.UI
             StyleScrollbars();
             StyleSliders();
             StyleBoxAsPaper(_boxStyle);
+            _sheetStyle = BuildSheetStyle(_boxStyle);   // the 1920 wedge (2026-09-04, §281): the sheet at the frame's top edge
+            _frameSheetStyle = _boxStyle;
 
             _stylesInitialized = true;
         }
@@ -2349,6 +2370,39 @@ namespace PoliSim.UI
             // (or on the parent sheet) as a drop shadow should; the padding tokens now mean what
             // Annex C and D4 took them to mean, and no layout width moved. Four measured literals.
             box.overflow = new RectOffset(14, 14, 10, 26);
+        }
+
+        /// <summary>
+        /// The frame's own sheet (see <see cref="_sheetStyle"/>): the paper texture cropped by its measured top margin, the
+        /// 9-slice's top border and overflow reduced by the same count. ⚠ The one literal is the margin the overflow already
+        /// states (the box's `overflow.top`, 10 - measured on the PNG's alpha); nothing else is authored, and the crop is taken
+        /// from the delivered sprite at run time rather than shipped as a second file. Falls back to the box itself when the
+        /// paper is missing or unreadable, so a degraded chrome pack costs the top shadow's absence and never a crash.
+        /// </summary>
+        private static GUIStyle BuildSheetStyle(GUIStyle box)
+        {
+            var sheet = new GUIStyle(box);
+            Texture2D paper = box.normal.background;
+            int crop = box.overflow.top;
+            if (paper == null || crop <= 0 || crop >= paper.height || !paper.isReadable)
+            {
+                return sheet;
+            }
+
+            // Unity's pixel rows run bottom-up: the sprite's TOP rows are its LAST rows, so the kept block starts at row 0.
+            var cropped = new Texture2D(paper.width, paper.height - crop, TextureFormat.RGBA32, false)
+            {
+                name = paper.name + "_sheet",
+                filterMode = paper.filterMode,
+                wrapMode = paper.wrapMode,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            cropped.SetPixels(paper.GetPixels(0, 0, paper.width, paper.height - crop));
+            cropped.Apply(false, true);
+            sheet.normal.background = cropped;
+            sheet.border = new RectOffset(box.border.left, box.border.right, box.border.top - crop, box.border.bottom);
+            sheet.overflow = new RectOffset(box.overflow.left, box.overflow.right, 0, box.overflow.bottom);
+            return sheet;
         }
 
         /// <summary>
@@ -2468,6 +2522,7 @@ namespace PoliSim.UI
             _headerStyle.fontSize = headerFontSize;
             _labelStyle.fontSize = labelFontSize;
             _boxStyle.fontSize = labelFontSize;
+            if (_sheetStyle != null) { _sheetStyle.fontSize = labelFontSize; }
 
             _buttonStyle.fontSize = buttonFontSize;
             _buttonStyle.fixedHeight = buttonHeight;
@@ -6401,7 +6456,7 @@ namespace PoliSim.UI
             // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
             // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
             // px at 720, hidden by the old margin). The campaign stages already size their box this way.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             DrawColoredLabel("Statistics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 2);
@@ -6460,7 +6515,7 @@ namespace PoliSim.UI
             // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
             // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
             // px at 720, hidden by the old margin). The campaign stages already size their box this way.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.ExpandHeight(true));
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _decisionsScrollPosition = GUILayout.BeginScrollView(_decisionsScrollPosition, GUILayout.Height(scrollHeight));
@@ -6674,7 +6729,7 @@ namespace PoliSim.UI
             // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
             // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
             // px at 720, hidden by the old margin). The campaign stages already size their box this way.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.ExpandHeight(true));
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _demographicsScrollPosition = GUILayout.BeginScrollView(_demographicsScrollPosition, GUILayout.Height(scrollHeight));
             DrawDemographicsContent();
@@ -6696,7 +6751,7 @@ namespace PoliSim.UI
             // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
             // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
             // px at 720, hidden by the old margin). The campaign stages already size their box this way.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 6);
@@ -8048,7 +8103,7 @@ namespace PoliSim.UI
             // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
             // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
             // px at 720, hidden by the old margin). The campaign stages already size their box this way.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             DrawColoredLabel("Politics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 4);
@@ -9507,7 +9562,7 @@ namespace PoliSim.UI
         {
             // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content (see the tab heads above) -
             // this one overran the frame by some 260 px at 720 and fell 20 px short at 1440 on its own arithmetic.
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
 
             // ⚠ availableWidth IS THE WIDTH OF THE PAPER, NOT OF THE SPACE ON IT. Everything below this
             // line sits inside _boxStyle, so the width anything may claim is the paper minus its own
