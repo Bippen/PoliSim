@@ -22372,3 +22372,10 @@ Nine Playtest 3 crops and the two Tax Policy slider crops: eleven, as expected. 
 
 **E-10 → PARTLY DONE:** (a) the re-export has not happened - a rename is not a transcode; the two need exporting as MP3 or WAV from Clipchamp (the container must be MPEG audio, "ID3" or a frame sync at byte 0); (b) the licence line is still owed; (c) the two missing sounds are still owed.
 
+## 266. E-11 — D13 SENT; D12 went in the same paste; the answer LANDED the same day as boards 6a and 6b (2026-09-03)
+
+**Sent, verified by digest:** the Design project's `uploads/` holds `CLAUDE_DESIGN_ASSET_REQUEST-19e455d4.md` and `SEND_PACKAGE-4d7270dd.md`, and `19e455d4` / `4d7270dd` are the sha256 prefixes of the two files at commit f9266aa (the D13 install). The D13 request document carries D12 whole beneath it, so **D12 went in the same paste** - and board 6b confirms it read both ("D13 + D12 — how the paste was read").
+
+**The answer landed:** `PoliSim v2 Screens.dc.html` now carries **6a** (D13: the slider row as a family — *no new sprite; the pair already exists*: `ui_slider_track`, `ui_slider_tick`, `ui_slider_knob` / `_disabled` have been in the delivered pack since pass 3, MANIFEST rows 29–32, and `LedgerRow` never gave the styles the sprites) and **6b** (D12's seven rows answered: the map's form ruled with geometry pending our centroid table; both pagers → `ui_btn_paper`; the trade graph's Δ from a dotted zero rule at the projection's head; the party inks confirmed with the 5e ladder's V +0.12 / L +0.16 struck; the vote breakdown's grammar as a row per seated party in the seat map's order; the Riksbank 720 fold as a visible fold with the paper scrollbar always; stacked tags within a point with 1 px leaders). The file reads to the 256 KiB cap and 6b is cut inside its row 4; the boards were read from the decoded file on disk, not summarised from memory. **The build of 6a and 6b is the next block (the D11 way: against the boards, verified not assumed, deviations stated), recorded row by row from §267.**
+
+**E-11 → SENT 2026-09-03, ANSWERED 2026-09-03.**

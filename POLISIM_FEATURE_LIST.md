@@ -506,6 +506,30 @@ installed. The two stat-icon PNGs and the ITANES registration, still open.
 > **Section closed 2026-09-02.** Every row above points at its record (`COMPLETED.md` §217–§235); the four-width matrix at the close is §236, and the end-of-budget report went to Elias with it.
 
 
+
+# P5 — DESIGN'S ANSWER TO D13 AND D12, DRAWN 2026-09-03 (boards 6a and 6b on `PoliSim v2 Screens.dc.html`): built the D11 way — against the boards, verified not assumed, deviations stated
+
+The boards were read from the decoded file on disk (`COMPLETED.md` §266). Each row is one board element; each closes with a film and a bar. Nothing here is asked of Design again.
+
+**P5-1 — 6a, the slider row as a family (D13).** *No new sprite; the pair already exists* (`ui_slider_track` 256×28 @2×, 9-slice 10/10/4/12, drawn at 14 px @1×; `ui_slider_tick` 4×28 white-on-alpha, tinted rule for scale ticks and inkText for the standing tick; `ui_hatch_draft` as an 8 px band centred on the track; `ui_slider_knob` 30×46 brass at 15×23 @1×, uniform scale, hit rect = sprite rect; `ui_slider_knob_disabled` for PENDING; `icon_pencil_draft` 12 px @1× at the draft end and in the rate cell before the figure, the slot reserved at rest). Scale ticks: five at 0/25/50/75/100 on every 0–100 dial; on the two rate sliders one per quarter-point while the pitch stays ≥ 12 px @1×, else per whole point. The trailing end-names UNDER the track ends in caption mono 7.5. The badge: its own cell, the word only, an em dash in TextMuted where there is no bill to judge. The button: one width sized to PENDING (NNd); IMPLEMENT = `ui_btn_brass`, REMOVE = `ui_btn_paper`, PENDING = `ui_btn_disabled`. ONE GRAMMAR, SIXTEEN SITES: the thirteen `DrawDialRow` rows, the two rate sliders and the fund drawdown draw this row. Columns: P4-1's measured columns win where the board's proposal (190 · ≈561 · 92 · 120 · 118) differs. *Done when:* every one of the sixteen sites draws the sprites through `LedgerRow`, the geometry guard still holds, filmed at 1280 and 2560.
+
+**P5-2 — 6b row 1, the stylized map: form ruled, geometry pending.** Six plates on a plain paper field; each country a 26×20 chip in its own outline at its centroid, snapped to a 24-grid so the Desk and the pair page place them identically; links the map's own `TradePartner` pairs in the Trade ink, dashed until a volume exists, weight ∝ the larger flow. *Owed by our side first:* the centroid table (one row per country) and the adjacency as a file in the project. *Done when:* the table is delivered, then the map drawn to the rule on the Desk and the pair page.
+
+**P5-3 — 6b row 2, Prev/Next and the graph pagers.** Both pagers → `ui_btn_paper` through `UiPalette.BuildButtonStyle`; the graph's ◀ ▶ at the axis face height (24 @1×) with the glyphs in Pagella, never Courier. The slider → 6a. The two text fields stay re-inked skin fields. *Done when:* no `GUI.skin.button` face remains on the sweep (the census re-run says zero).
+
+**P5-4 — 6b row 3, the trade graph's Δ from zero.** A dotted inkText baseline at 0 (the Year-0 sparkline's idiom), history 3 px solid from it, projection 2 px dashed, 1l's weights untouched; the Δ at the projection's head, right-anchored above the preview band: the glyph Δ, then the signed absolute figure in direction-aware ink, unit always; never a percentage. *Done when:* filmed on the International deep page.
+
+**P5-5 — 6b row 4, the party inks confirmed.** The rule, the tolerance (0.06) and the cap (0.10) confirmed; hue Valmyndigheten's, lightness the only mover. Struck from 5e: V +0.12 and L +0.16 (derived, not measured) — already gone with §256's nudge. The published hexes the board quotes (S #E8112D, V #DA291C, M #52BDEC, KD #000077, L #006AB3, C #009933, MP #83CF39, SD #DDDD00) against the seating's own table — a check that the seating derives from THESE. *Done when:* `PartyInkHarness` prints the published hex beside the seated one for the eight and the two agree by derivation, and the harness print goes to Design as a file (row 4 closes only when it lands).
+
+**P5-6 — 6b row 5, the vote breakdown's grammar.** A row per seated party in the seat map's own order (bloc, then mandates): the mark 14 px in its own ink, the mandates in caption mono, the name in body serif, the SIDE right-aligned in the verdict ink (Good / Bad / Muted for abstain), the reason beneath verbatim in caption mono 7.5 — the short form as §247 prints it. On a support preview under the seat map; on a result screen beside it. *Done when:* the breakdown draws this row on the Budget's support panel, the pending cards, the law pane and the signing plate, filmed.
+
+**P5-7 — 6b row 6, the Riksbank 720 fold, Design's call: no variant.** At 720 the page draws the idiom's vertical paper scrollbar ALWAYS (never on hover), and lane 3's header is pinned to peek 14 px above the sheet's lower edge with the paper fading under it. Nothing re-composed at 1280+. *Done when:* filmed at 720 with the peek and the scrollbar.
+
+**P5-8 — 6b row 7, stacked tags within a point.** Both tags lift above the lane and stack at the pair's midpoint — own side (inkText) nearest the rule, partner (Neutral) above it — each joined to its own marker by a 1 px leader in its ink at 50 %; the markers do not move; threshold 1.0 point on the axis's scale. *Done when:* filmed on the pair page's stance plate at the seed (SE and US within a point).
+
+**Owed to Design after this block (files, not prose):** the centroid table and adjacency (P5-2), `p3c6_partyink.log` (P5-5), and the films — the board says every cell was drawn from the rows' text because no annex was in-project.
+
+---
 # P4 — THE THREE ITEMS OF 2026-09-03 (Elias's rows, verbatim)
 
 *"Three items, in this order, continuous; one commit each on a green bar; R-SP1 push; one report."*
