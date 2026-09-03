@@ -3152,12 +3152,47 @@ namespace PoliSim.UI
         /// member, an advisory reading for Sweden/Poland - one always-drawn Label per branch at a
         /// fixed ordinal (the stable-control-layout pattern; the branches are immutable per country).
         /// </summary>
+        /// <summary>P5-7: the Riksbank page's section captions (text, content y) as drawn this frame, for the fold's peek.</summary>
+        private readonly List<(string Text, float Y)> _riksbankCaptions = new List<(string Text, float Y)>();
+        private bool _riksbankPeekWanted;
+
+        /// <summary>
+        /// P5-7 (board 6b row 6): the fold shown as paper - the first section caption whose content y lies below the viewport's
+        /// lower edge is drawn on a strip of the sheet's own paper pinned at that edge, its text peeking 14 px, the paper fading
+        /// in above it (the way 1m-r2 showed the strip). Drawn on Repaint only, after the scroll view, inside the viewport rect.
+        /// </summary>
+        private void DrawRiksbankFoldPeek(Rect viewport)
+        {
+            if (!_riksbankPeekWanted || Event.current.type != EventType.Repaint) { return; }
+            float bottom = _federalReserveScrollPosition.y + viewport.height;
+            string text = null;
+            foreach ((string Text, float Y) c in _riksbankCaptions) { if (c.Y > bottom - 4f) { text = c.Text; break; } }
+            if (text == null) { return; }
+            float peek = Mathf.Round(14f * (_labelStyle.fontSize / 14f));
+            float fade = peek * 1.5f;
+            var strip = new Rect(viewport.x, viewport.yMax - peek, viewport.width - GUI.skin.verticalScrollbar.fixedWidth, peek);
+            for (int i = 0; i < 6; i++)
+            {
+                Color paper = PoliSimTheme.Card; paper.a = (i + 1) / 6f;
+                PoliSimTheme.Rule(new Rect(strip.x, strip.y - fade + fade * i / 6f, strip.width, fade / 6f + 1f), paper);
+            }
+            PoliSimTheme.Rule(strip, PoliSimTheme.Card);
+            PoliSimTheme.Rule(new Rect(strip.x, strip.y, strip.width, 1f), PoliSimTheme.Hairline);
+            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary, true, TextAnchor.UpperLeft);
+            PoliSimWidgets.MeasuredLabel(new Rect(strip.x + 4f, strip.y + 2f, strip.width - 8f, strip.height), text + "  \u00B7  BELOW THE FOLD", caption);
+        }
+
         private void DrawFederalReserveTab(float availableHeight)
         {
             GUILayout.BeginVertical(_boxStyle);
 
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _federalReserveScrollPosition = GUILayout.BeginScrollView(_federalReserveScrollPosition, GUILayout.Height(scrollHeight));
+            // P5-7 (board 6b row 6, 2026-09-03): Design's call on the 720 fold - no variant, a VISIBLE fold. At the floor size the
+            // idiom's vertical paper scrollbar draws always (never on hover), and the first section caption below the fold peeks
+            // 14 px above the sheet's lower edge on a strip of paper (drawn after the scroll view, below). Nothing is re-composed at 1280+.
+            bool atTheFloor = Screen.height <= 800;
+            _federalReserveScrollPosition = GUILayout.BeginScrollView(_federalReserveScrollPosition, false, atTheFloor, GUILayout.Height(scrollHeight));
+            _riksbankCaptions.Clear();
 
             DrawColoredLabel(GetCentralBankName(PlayerCountryId), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
             string centralBankFlavorText = GetCentralBankFlavorText(PlayerCountryId);
@@ -3167,11 +3202,13 @@ namespace PoliSim.UI
             }
 
             Color politicalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Political);
+            _riksbankPeekWanted = atTheFloor && _playerCountry.CurrentFedChair != null;   // P5-7: the peek draws after the scroll view closes
             if (_playerCountry.CurrentFedChair != null)
             {
                 FedChair chair = _playerCountry.CurrentFedChair;
                 // Board 5f (D11 row 6, 2026-09-02): the panel P2-3.4 built becomes its page - DrawRiksbankPage.
                 DrawRiksbankPage(chair, politicalInk);
+                _riksbankRecording = false;
                 DrawFedChairSelectionModal();
             }
             else
@@ -3236,6 +3273,7 @@ namespace PoliSim.UI
             if (_playerCountry.CurrentFedChair == null) { _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null); }   // board 5f: the chair's page draws its own graph above
 
             GUILayout.EndScrollView();
+            DrawRiksbankFoldPeek(GUILayoutUtility.GetLastRect());   // P5-7: the fold shown as paper
             GUILayout.EndVertical();
         }
 
@@ -3255,9 +3293,12 @@ namespace PoliSim.UI
         /// what those do; the appointment lever is the page's one action, and its estimate is deferred
         /// to the effects grammar on the Docket - this page never previews a nomination that does not exist.
         /// </summary>
+        private bool _riksbankRecording;
+
         private void DrawRiksbankPage(FedChair chair, Color politicalInk)
         {
             DrawStatsSectionCaption("THE RATE · THE RULE · THE GOVERNOR");
+            _riksbankRecording = true;
             GUILayout.Space(StatsUnit(4f));
 
             float rate = _playerCountry.CurrencyZone.InterestRate;

@@ -197,6 +197,7 @@ namespace PoliSim.UI
             if (Event.current.type == EventType.Repaint)
             {
                 PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, Mathf.Max(1f, row.width - reserveRight), height), caption, style);
+                if (_riksbankRecording) { _riksbankCaptions.Add((caption, row.y)); }   // P5-7: the Riksbank page's captions, for the fold's peek
                 PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), PoliSimTheme.HairlineStrong);
             }
 
