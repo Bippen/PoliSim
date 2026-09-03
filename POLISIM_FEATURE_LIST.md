@@ -725,7 +725,7 @@ the ITANES registration, still open.
 
 ## Standing findings that own no item
 
-- **The running state at 1920 is not flush (2026-09-03, `COMPLETED.md` §258):** the three RUNNING-state frames (`01b_running_strip`, `01c_desk`, `05t_budget_turn0`) read NOT FLUSH at 1920 only - the top line's content run 955 of 1920 px, the bottom line's 1847 (the fiscal strip's last chip prints a dash at the seed). Playtest 2's matrix flagged the same two Desk frames. Flush at 1280, 1600 and 2560. A row for the next sheet.
+- **The running state at 1920 is not flush (2026-09-03, `COMPLETED.md` §258):** the three RUNNING-state frames (`01b_running_strip`, `01c_desk`, `05t_budget_turn0`) read NOT FLUSH at 1920 only - the top line's content run 955 of 1920 px, the bottom line's 1847 (the fiscal strip's last chip prints a dash at the seed). Playtest 2's matrix flagged the same two Desk frames. Flush at 1280, 1600 and 2560. A row for the next sheet. **Measured to the pixel 2026-09-03, `COMPLETED.md` §275: a desk-coloured wedge three rows deep over x 955–1280 at 1920 only, not the paper sprite; still OPEN.**
 
 `S-1` the unmoving electorate · `S-2` Germany's threshold cliff · `S-5` Sweden's top issue unrepresentable
 · `S-6` Sweden 2014 does not reproduce (6 seats) · `S-25` uniform consumption and investment rates ·

@@ -194,6 +194,7 @@ namespace PoliSim.EditorTools
 
                 EditorWindow view = EditorWindow.GetWindow(gameViewType, false, "Game", true);
                 view.position = new Rect(0f, 0f, ViewWidth, ViewHeight);
+                SelectFreeAspect(view, gameViewType);
                 view.Repaint();
 
                 // P2-0.2 (2026-09-02): a DOCKED Game View ignores the position assignment - its size is the
@@ -201,13 +202,19 @@ namespace PoliSim.EditorTools
                 // (every frame reports a HEIGHT MISMATCH, which is the guard working; this is the cure).
                 // When the assignment did not take, the docked view is closed and a fresh one is shown
                 // floating, which honours its position. Said in the log either way.
-                if (Mathf.Abs(view.position.width - ViewWidth) > 2f || Mathf.Abs(view.position.height - ViewHeight) > 2f)
+                // 2026-09-03: the docked view ECHOES the assignment (it printed "resized to 1280x720") while its real size stayed
+                // the layout's - a sitting in the Editor had left the layout with the Game View filling the window, and four films
+                // read 962 px tall with the check fooled. So the docked view is ALWAYS closed and a floating one shown at the
+                // requested size; the comparison below is kept only as the log's witness of what the docked view claimed.
+                const bool alwaysFloat = false;   // the floating path stalled the driver (no capture in four minutes, 2026-09-03); the cure for a maximized layout is to reset the layout file, not to float
+                if (alwaysFloat || Mathf.Abs(view.position.width - ViewWidth) > 2f || Mathf.Abs(view.position.height - ViewHeight) > 2f)
                 {
                     Rect docked = view.position;
                     view.Close();
                     EditorWindow floating = ScriptableObject.CreateInstance(gameViewType) as EditorWindow;
                     floating.Show();
                     floating.position = new Rect(0f, 0f, ViewWidth, ViewHeight);
+                    SelectFreeAspect(floating, gameViewType);
                     floating.Repaint();
                     Debug.Log($"SHOT: the docked Game View ignored the resize ({docked.width}x{docked.height}); re-created it floating at {floating.position.width}x{floating.position.height}.");
                 }
@@ -219,6 +226,49 @@ namespace PoliSim.EditorTools
             catch (Exception e)
             {
                 Debug.LogWarning($"SHOT: could not resize Game View ({e.GetType().Name}) - capturing at default size.");
+            }
+        }
+
+        /// <summary>
+        /// 2026-09-03: the Game View's SIZE PRESET is Editor state the harness never set - a sitting in the Editor that left
+        /// a fixed preset selected (the Library changed at 11:56 that day) made every frame of the next film 962 px tall
+        /// while the window read 1280x720 and the guard failed all 85. The harness now selects the first preset - Free
+        /// Aspect, the one whose render size IS the window's - by reflection, and says what it read back.
+        /// </summary>
+        private static void SelectFreeAspect(EditorWindow view, Type gameViewType)
+        {
+            try
+            {
+                System.Reflection.PropertyInfo index = gameViewType.GetProperty("selectedSizeIndex",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+                if (index == null) { Debug.LogWarning("SHOT: GameView.selectedSizeIndex not found - the size preset is whatever the Editor kept."); return; }
+                object before = index.GetValue(view, null);
+                index.SetValue(view, 0, null);
+                Debug.Log($"SHOT: Game View size preset {before} -> {index.GetValue(view, null)} (0 = Free Aspect, the window's own size).");
+
+                // The same sitting can leave PLAY MAXIMIZED on (Unity 6: enterPlayModeBehavior; older Editors: maximizeOnPlay) -
+                // then the view fills the Editor window on play (1920 x 962 on this machine) whatever its docked size says, and
+                // every frame reads 962 px tall. Play Focused is the behaviour whose render size is the window's.
+                System.Reflection.PropertyInfo behaviour = gameViewType.GetProperty("enterPlayModeBehavior",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+                if (behaviour != null)
+                {
+                    object was = behaviour.GetValue(view, null);
+                    behaviour.SetValue(view, Enum.ToObject(behaviour.PropertyType, 0), null);
+                    Debug.Log($"SHOT: Game View enter-play behaviour {was} -> {behaviour.GetValue(view, null)} (0 = Play Focused, not maximized).");
+                }
+                System.Reflection.PropertyInfo maximize = gameViewType.GetProperty("maximizeOnPlay",
+                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public);
+                if (maximize != null && maximize.PropertyType == typeof(bool))
+                {
+                    object was = maximize.GetValue(view, null);
+                    maximize.SetValue(view, false, null);
+                    Debug.Log($"SHOT: Game View maximizeOnPlay {was} -> false.");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning($"SHOT: could not select the Game View's size preset ({e.GetType().Name}).");
             }
         }
 
