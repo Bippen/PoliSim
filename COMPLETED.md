@@ -22328,3 +22328,25 @@ The five copies are byte-identical to the pack (`cmp`), and the check re-reads t
 **Films:** `p4c_1280_06j_policylaws_policyweb_rest` (image 7's state), `p4c_1280_06k_policylaws_policyweb_node_policy` (image 8's: Income Tax pinned, its lines to Approval Rating and Debt-to-GDP, the pane), `p4c_1280_06l_policylaws_policyweb_node_stat` (Approval Rating pinned); 85 captures, 0 overflow, 0 escape, exit 0. The first two boards on film threw on the enum's unlisted stat and lost nine captures; the third and fourth found the dead panels and the stat-graph helper (DeadStateCheck) and the pinned caption on the group name - all closed before this record.
 
 **Bar:** `bar73_b1_RunAllBatch.log`, 29 of 29.
+## 264. E-8 DISCHARGED — the eleven screenshots verified by content, each bound to its finding; B1 built against images 7 and 8 (§263); the first annex of D12 and D13 filled; the package regenerated (2026-09-03)
+
+**Verified by content, not filename.** Eleven PNGs at `G:\UNITY\Projects\PoliSim-captures\Elias Screenshots`, every one with the PNG signature (`89 50 4E 47 0D 0A 1A 0A`), every chunk CRC good (`pngcheck.ps1`), every file with a `Zone.Identifier` stream naming `https://ctrl.vi/` (ZoneId 3), placed 2026-09-03 10:15–10:17. The IHDR dimensions were read with System.Drawing after a hand-rolled parse mis-read them (recorded so the next reader does not repeat it).
+
+| file | px | sha256 (16) | what it shows | the finding it is bound to |
+|---|---|---|---|---|
+| `nedladdning (2).png` | 1568×505 | `dd64d8d2ede54945` | the World Map as a node graph with the grey `< Prev` / `Next >` | **image 1** — P3-D1 rows 1 and 2 (D12 rows 1, 2) |
+| `nedladdning (3).png` | 1568×423 | `93aba636d33af3fd` | the International trade graph with **−100,0 %** | P3-C4 (§254) |
+| `nedladdning (4).png` | 541×494 | `9957cedd509c5618` | the Budget's Support panel: Contractionary · WOULD PASS · FOR 200 · AGAINST 149, the estimated-impact arrows | P3-A3 (§248) and P3-C1 (§251) — the panel both tracks changed |
+| `nedladdning (5).png` | 1568×140 | `fd1a9d3d872355b1` | the Budget Process header with BALANCE · LAST YEAR only | P3-C2 (§252) |
+| `nedladdning (6).png` | 1568×65 | `76614aecd34ab58e` | "Deregulation / Nationalization" against "0 nationalized - 100 private" | P3-C3 (§253) |
+| `nedladdning (7).png` | 1568×416 | `7d20d6f8604e762c` | the hemicycle in RINGS, the parties as concentric bands | P3-C5 (§255) and P3-C6 (§256) |
+| `nedladdning (8).png` | 1265×749 | `6fa3ccad505719b2` | **board 2b at rest** — levers by area, the books with counts, the causal graph, the legend | **image 7** — P3-B1 (§249, built §263) |
+| `nedladdning (9).png` | 1144×638 | `557814b8507e5d4b` | **board 2b pinned** — Income Tax, six lines to the books, the pane with MOVES one line per edge | **image 8** — P3-B1 |
+| `nedladdning (10).png` | 1306×792 | `b5c358ff100c60bc` | **board 5f** — the Riksbank page, one graph, the inputs as instruments, the governor | **image 9** — P3-B2 (§250) |
+| `nedladdning.png` | 824×103 | `9a25691e32d68756` | the Tax Policy row DRAFTED: "52.00 % 51.50 %", two numbers beside the track | P4-1 (§260) / D13 — the slider crop, draft state |
+| `nedladdning (1).png` | 829×41 | `932aea67989df360` | the Tax Policy row at REST: "52.00 %" | P4-1 / D13 — the slider crop, rest state |
+
+Nine Playtest 3 crops and the two Tax Policy slider crops: eleven, as expected. `PLAYTEST3_ROWS.md` is still not on disk; the pasted sheet remains the record of the rows.
+
+**Discharged:** B1's image matching — built (§263); D12's first annex and D13's first annex — the request doc's two "not yet on disk" lines now name the files, and the package carries all eleven by digest. E-8 → DONE.
+

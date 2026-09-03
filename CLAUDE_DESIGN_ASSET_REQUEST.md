@@ -842,7 +842,7 @@ Prep / midway / verdict are all filmed at four widths if you want to look before
 
 ### The annex — one set
 
-1. **The two screenshots, verbatim** - ⚠ Elias's two screenshots for this item are not on disk (the same standing as the nine of E-8); they join the package the day they land.
+1. **The two screenshots, verbatim** - ✅ on disk 2026-09-03 (E-8 done, §264): `Elias Screenshots/nedladdning.png` (the Tax Policy row drafted: "52.00 % 51.50 %") and `nedladdning (1).png` (the same row at rest); in the package by digest.
 2. **The item-1 film pair** - `p4a_1280_05a_budget_tax.png` and `p4a_1280_05a_budget_tax_dragged.png` (rest and mid-drag, the geometry identical, the readout in its two faces), and the spending pair `p4a_1280_05b_budget_spending` / `_dragged`.
 3. **The census from D12** - Annex 3 under D12 below (the slider class: thirteen dial rows through `LedgerRow`, the two rate sliders, the fund drawdown).
 
@@ -870,7 +870,7 @@ Prep / midway / verdict are all filmed at four widths if you want to look before
 
 ### The annex — one set
 
-1. **The nine screenshots, verbatim** - ⚠ not yet on disk (ERRANDS E-8); they join the package the day they land.
+1. **The nine screenshots, verbatim** - ✅ on disk 2026-09-03 (E-8 done, `COMPLETED.md` §264): `Elias Screenshots/nedladdning (2)…(10).png` - image 1 = `(2)`, images 7 and 8 = `(8)` and `(9)`, image 9 = `(10)`, the rest bound to P3-C1/A3, C2, C3, C4, C5/C6 by content; in the package by digest.
 2. **The films after Tracks B–C** at 1280 (`p3close_1280_*`, the sweep on the closing tree) and the four-width matrix at the close.
 3. **The census of default-styled controls** - the census (annex 3, below, read from the source as text): every `GUILayout.Button` / slider / field on the sweep that draws with a skin default rather than the sprite idiom, listed by screen.
 4. **`PartyInkHarness`'s print** - `p3c6_partyink.log`: the collisions, the tolerance, the moves.

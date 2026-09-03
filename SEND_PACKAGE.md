@@ -1,6 +1,6 @@
-# The send package — regenerated 2026-09-03 (night) for D13 (paste-and-glance; **sending is Elias's**)
+# The send package — regenerated 2026-09-03 (E-8 landed) for D13 (paste-and-glance; **sending is Elias's**)
 
-⚠ **THIS IS A SEND: D13, the slider row as a family, reconciled against D12.** The ask is `CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D13; D12 (unsent, unanswered) sits beneath it whole, so Design reads two asks in one paste, the newer first. The annexes are the item-1 film pair (`p4a_1280_05a_budget_tax` / `_dragged`, `05b_budget_spending` / `_dragged`), the close films at 1280 and 2560 (`p3close_*`), the ink harness print, the stance diagnostic print and the census (inline under D12). **Binaries are uploaded, not described.** The nine Playtest 3 screenshots (E-8) and the two of this item join the day they land.
+⚠ **THIS IS A SEND: D13, the slider row as a family, reconciled against D12.** The ask is `CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D13; D12 (unsent, unanswered) sits beneath it whole, so Design reads two asks in one paste, the newer first. The annexes are the item-1 film pair (`p4a_1280_05a_budget_tax` / `_dragged`, `05b_budget_spending` / `_dragged`), the close films at 1280 and 2560 (`p3close_*`), the ink harness print, the stance diagnostic print and the census (inline under D12). **Binaries are uploaded, not described.** **The eleven screenshots landed 2026-09-03 (E-8 done, §264) and are in the table below by digest** — the nine Playtest 3 crops and the two Tax Policy slider crops, under `Elias Screenshots/`. D13 was pasted before they landed (E-11); they travel with the next paste.
 
 ⚠ **The D9 returns still owed travel with this package unchanged** — the derived mandate column, the two stat-icon files, and Elias's GO on the marks.
 
@@ -8,8 +8,8 @@
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 113502 | `19e455d4bb2e9266c9e7df5c9552e4a54528ab627b4702fe22c9d306d8a05bf6` |
-| `POLISIM_FEATURE_LIST.md` | 80778 | `022bc639a042d5db3adbc8f809728e707747e09ad17d99cbb8acc1714a95702a` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 113748 | `9cfd86ae274e19beb16405cb52c128b304e1c35d8aee8a67dba8d691022e6cc1` |
+| `POLISIM_FEATURE_LIST.md` | 81107 | `d8d8a41df14c5c70a989c2403b1dead644655614b9016077c9a42e328bec1d2e` |
 | `p4a_1280.log` | 1121715 | `017c0bd5ace2a74dd8702c34a0c823a9de4a60d0e5f3947b66a969393c7c2f0e` |
 | `p3c6_partyink.log` | 29932 | `a63f54c8a6af63970ea34627786e5585a203d3b6291cfd2aa5ee4d7f67fa56e5` |
 | `bar50_p3a2_RunSimulationBatch.log` | 335398 | `7606ce12f9da2f6d70137b87963880053fbb7ac751e896fe8707b4b9c3ce41d1` |
@@ -17,10 +17,21 @@
 | `p3close_1280.log` | 1062104 | `99843586e70ecbded553f8a672acacf1e5c711cf895a8d073105b3b4ef7d351c` |
 | `p3close_2560.log` | 1027268 | `299cfa1ed1c3aa2aa3744546bf3a2c840b8f025ac672e32362d1600dc4b05774` |
 
-### The item-1 film pair (P4-1) and the close sweep at 1280 and 2560
+### The eleven screenshots (E-8, verified by content - §264), the item-1 film pair (P4-1) and the close sweep at 1280 and 2560
 
 | film | bytes | sha256 |
 |---|---|---|
+| `Elias Screenshots/nedladdning (1).png` | 27855 | `932aea67989df360b5d746c66f4508a3b07ffa00365c1c005bc9e78cb20ae954` |
+| `Elias Screenshots/nedladdning (10).png` | 524754 | `b5c358ff100c60bcebcd7a3f7f3161b1f36c85c857428c78382ead389a720317` |
+| `Elias Screenshots/nedladdning (2).png` | 297366 | `dd64d8d2ede54945600e3f50766200a907e5bdcf01354318ab680b9b3ffd097a` |
+| `Elias Screenshots/nedladdning (3).png` | 182535 | `93aba636d33af3fd02d3d491bc913b2ececf80372957d9c30a014949cb00c539` |
+| `Elias Screenshots/nedladdning (4).png` | 224532 | `9957cedd509c5618ca3d68abf124aee4192bb4b1300baade8a3046e4724d5a41` |
+| `Elias Screenshots/nedladdning (5).png` | 101510 | `fd1a9d3d872355b1103c52357ba7113fd7ff177784512ca60e4cd1c20a1a6d44` |
+| `Elias Screenshots/nedladdning (6).png` | 44703 | `76614aecd34ab58e8a951436e8714661926536700676d7170391e9f5419d626b` |
+| `Elias Screenshots/nedladdning (7).png` | 411934 | `7d20d6f8604e762cb67834ec8b176c470485235a1ffcf1903ace853a237dfb19` |
+| `Elias Screenshots/nedladdning (8).png` | 473415 | `6fa3ccad505719b2ef9a05b849bc4d7f9450625b59023429a806bbb23e3e64b1` |
+| `Elias Screenshots/nedladdning (9).png` | 464824 | `557814b8507e5d4b11124f9bfc0b3ca42c6e103c305603807804039db886b8a8` |
+| `Elias Screenshots/nedladdning.png` | 46212 | `9a25691e32d687566ea0ecc3d10db73f79f8bab730d0b76ed077dbb708ea3762` |
 | `p4a_1280_05a_budget_tax.png` | 660874 | `cce8144887f2d5b6edac88456d2992865db67b31c6b0b44a1833cd06ecdf22de` |
 | `p4a_1280_05a_budget_tax_dragged.png` | 668463 | `15668d81781e74925943c5a346e616615c176c00094bcb66d84b39f153925d25` |
 | `p4a_1280_05b_budget_spending.png` | 689489 | `a3450565339ebea613f1f517e8c3a8d8affebd8b41f325498ceb5feb442c6c5a` |
