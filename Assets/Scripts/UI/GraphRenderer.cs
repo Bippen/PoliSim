@@ -559,6 +559,16 @@ namespace PoliSim.UI
                 int thresholdY = Mathf.RoundToInt(Mathf.InverseLerp(min, max, thresholdValue.Value) * (TextureHeight - 1));
                 DrawDashedHorizontalLine(pixels, thresholdY, ThresholdLineColor);
             }
+            // P5-4 (board 6b row 3, 2026-09-03): THE ZERO RULE. Where the scale spans zero (a balance, a change) the rule at 0 is the
+            // graph's only axis and it is drawn - dotted, in the text ink, the Year-0 sparkline's own baseline idiom - so a series that
+            // starts at zero reads as distance from the rule, which is what a balance is. The delta from a zero base is the absolute
+            // change (P3-C4), and it stays in the title row: the board places it at the projection's head, and a history graph has no
+            // projection to head - stated as the deviation in COMPLETED.md section 270.
+            if (min < 0f && max > 0f)
+            {
+                int zeroY = Mathf.RoundToInt(Mathf.InverseLerp(min, max, 0f) * (TextureHeight - 1));
+                DrawDottedHorizontalLine(pixels, zeroY, PoliSimTheme.TextPrimary);
+            }
             PlotSeries(pixels, history, projectedValue, min, max);
 
             _texture.SetPixels(pixels);
@@ -635,6 +645,13 @@ namespace PoliSim.UI
         }
 
         /// <summary>Same as DrawHorizontalLine but dashed (every 4th pixel skipped) - visually distinguishes the threshold reference line from the plain solid midline gridline at a glance, without needing a different color alone to carry that distinction.</summary>
+        /// <summary>P5-4: a dotted rule - one pixel in three - for the zero axis.</summary>
+        private static void DrawDottedHorizontalLine(Color[] pixels, int y, Color color)
+        {
+            if (y < 0 || y >= TextureHeight) { return; }
+            for (int x = 0; x < TextureWidth; x++) { if (x % 3 == 0) { pixels[y * TextureWidth + x] = color; } }
+        }
+
         private static void DrawDashedHorizontalLine(Color[] pixels, int y, Color color)
         {
             y = Mathf.Clamp(y, 0, TextureHeight - 1);
