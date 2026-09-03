@@ -22350,3 +22350,25 @@ Nine Playtest 3 crops and the two Tax Policy slider crops: eleven, as expected. 
 
 **Discharged:** B1's image matching — built (§263); D12's first annex and D13's first annex — the request doc's two "not yet on disk" lines now name the files, and the package carries all eleven by digest. E-8 → DONE.
 
+## 265. E-10, PARTLY DONE — the pipeline re-run from the start on the changed folder: the two files were RENAMED, not re-exported; nothing imported; the licence row stays open (2026-09-03)
+
+**Re-run, never trusting §261's inventory.** Origin stream, magic bytes and sha256 per file, on the folder as it stands: seven files, all `.mp3` by name.
+
+| file | bytes | magic bytes | origin | sha256 (16) | against §261 |
+|---|---|---|---|---|---|
+| `ApprovalStamp.mp3` | 17181 | `ID3` | elevenlabs.io | `69b137dfb2106e1d` | unchanged |
+| `Click1.mp3` | 12717 | `ID3` | elevenlabs.io | `c2ed74276ac790fc` | unchanged |
+| `Click2.mp3` | 12717 | `ID3` | elevenlabs.io | `16ade00767023093` | unchanged |
+| `Folderswitch1.mp3` | 25389 | `ID3` | elevenlabs.io | `bce0a991173d6ee2` | unchanged |
+| `Folderswitch2.mp3` | 25389 | `ID3` | elevenlabs.io | `8f5566bee81da394` | unchanged |
+| `RejectedBillTear.mp3` | 23481 | `....ftypisom` (MP4 / AAC) | app.clipchamp.com | `2935d67c42059bba` | **the same bytes as `RejectedBillTear.m4a`** — renamed |
+| `Slider_Click_Sound.mp3` | 38236 | `....ftypisom` (MP4 / AAC) | app.clipchamp.com | `c9143a338b5e62e1` | **the same bytes as `Slider_Click_Sound.m4a`** — renamed |
+
+**The format check fails the two again:** the bytes are an MP4 container with an AAC stream; the extension says MP3. An importer chooses its decoder by extension and would fail to decode these, and "nothing imported that fails a check" holds - **nothing was imported.** The stand-ins stay: SliderStep → Click2, InterruptRaised → Folderswitch2, ConstituencyDeclares → Click2; BillFails has no file.
+
+**Counts, before and after:** stand-ins 3 → 3; silent cues 1 → 1 (`AudioCueCoverageCheck`, both directions, unchanged on the bar).
+
+**The licence:** no statement is in the folder (seven audio files, nothing else). The row stays open and says so.
+
+**E-10 → PARTLY DONE:** (a) the re-export has not happened - a rename is not a transcode; the two need exporting as MP3 or WAV from Clipchamp (the container must be MPEG audio, "ID3" or a frame sync at byte 0); (b) the licence line is still owed; (c) the two missing sounds are still owed.
+
