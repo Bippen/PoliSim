@@ -3884,16 +3884,40 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawStanceBreakdown(BillConcern concern, float width)
         {
+            // P5-6 (board 6b row 5, 2026-09-03): THE GRAMMAR - a row per seated party in the seat map's own order (bloc, then
+            // mandates) so the eye walks the arc and the list together: the mark 14 px in its own ink, the mandates in caption
+            // mono, the name in the body serif, the SIDE right-aligned in the verdict ink (Good / Bad / Muted), the reason
+            // beneath verbatim in caption mono - the model's string, never paraphrased, the short form as section 247 prints it.
+            // The model's third state is UNDECIDED (its own word); the board's ABSTAIN is the same row in the muted ink.
             GUIStyle head = DeskCaption(8f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleLeft);
+            GUIStyle mono = DeskCaption(8f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
             GUIStyle reasonStyle = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
             reasonStyle.wordWrap = true;
+            GUIStyle nameStyle = new GUIStyle(_labelStyle) { alignment = TextAnchor.MiddleLeft, wordWrap = false };
+            nameStyle.normal.textColor = PoliSimTheme.TextPrimary;
             GUILayout.Label("THE BREAKDOWN · EVERY PARTY'S STANCE AND ITS REASON", head, GUILayout.Width(width));
-            foreach (PartyStance stance in StanceModel.Stances(_playerCountry, concern))
+            var byAbbrev = new Dictionary<string, PartyStance>();
+            foreach (PartyStance stance in StanceModel.Stances(_playerCountry, concern)) { byAbbrev[stance.Party.Abbrev] = stance; }
+            float u = _labelStyle.fontSize / 14f;
+            float mark = Mathf.Round(14f * u);
+            float rowHeight = Mathf.Max(mark + 4f * u, _labelStyle.CalcSize(new GUIContent("Ag")).y);   // CalcSize, not lineHeight - the serif's box is a pixel taller than its line (quirk 3 of the layout facts)
+            float mandateWidth = Mathf.Round(30f * u);
+            float sideWidth = Mathf.Round(70f * u);
+            foreach (PoliticalParty party in HemicycleRenderer.SeatOrder(PlayerCountryId, _playerCountry.ParliamentSeats))
             {
+                if (!byAbbrev.TryGetValue(party.Abbrev, out PartyStance stance) || stance.Seats <= 0) { continue; }
                 string side = !stance.Measured ? "UNMEASURED" : stance.Side > 0 ? "FOR" : stance.Side < 0 ? "AGAINST" : "UNDECIDED";
-                Color ink = !stance.Measured ? PoliSimTheme.TextMuted : stance.Side > 0 ? PoliSimTheme.Good : stance.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
-                GUIStyle sideStyle = DeskCaption(8f, ink, true, TextAnchor.MiddleLeft);
-                GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "{0} · {1} SEATS · {2} {3:+0.00;-0.00}", stance.Party.Abbrev, stance.Seats, side, stance.Alignment), sideStyle, GUILayout.Width(width));
+                Color ink = !stance.Measured ? PoliSimTheme.TextMuted : stance.Side > 0 ? PoliSimTheme.Good : stance.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextMuted;
+                Rect row = GUILayoutUtility.GetRect(10f, rowHeight, GUILayout.Width(width));
+                if (Event.current.type == EventType.Repaint)
+                {
+                    HemicycleRenderer.DrawMark(new Rect(row.x, row.y + (row.height - mark) * 0.5f, mark, mark), PlayerCountryId, party);   // the chamber's own call draws the ink (PartyInkDrawSiteCheck)
+                }
+                LedgerRow.Cell(new Rect(row.x + mark + 4f * u, row.y, mandateWidth, row.height), stance.Seats.ToString(CultureInfo.InvariantCulture), mono, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+                float nameX = row.x + mark + mandateWidth + 10f * u;
+                LedgerRow.Cell(new Rect(nameX, row.y, Mathf.Max(10f, row.width - (nameX - row.x) - sideWidth - 4f * u), row.height), party.Name, nameStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                GUIStyle sideStyle = DeskCaption(8f, ink, true, TextAnchor.MiddleRight);
+                LedgerRow.Cell(new Rect(row.xMax - sideWidth, row.y, sideWidth, row.height), string.Format(CultureInfo.InvariantCulture, "{0} {1:+0.00;-0.00}", side, stance.Alignment), sideStyle, ink, TextAnchor.MiddleRight);
                 string reason = StanceModel.ReasonShort(stance);   // the short form on the sheet (P3-C1: the full lines pushed the arrows out of the 720 frame)
                 if (!string.IsNullOrEmpty(reason)) { GUILayout.Label(reason, reasonStyle, GUILayout.Width(width)); }
             }

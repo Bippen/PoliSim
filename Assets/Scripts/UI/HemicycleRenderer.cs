@@ -45,6 +45,19 @@ namespace PoliSim.UI
         /// <summary>Left bloc first, then the unaffiliated, then the right bloc.</summary>
         private static int BlocRank(int bloc) => bloc == 0 ? 0 : bloc < 0 ? 1 : 2;
 
+        /// <summary>P5-6 (board 6b row 5): the seat map's own order, for every list that walks the arc with it - left bloc first, then the unaffiliated, then the right bloc, by mandates within a bloc.</summary>
+        public static List<PoliticalParty> SeatOrder(CountryId country, IReadOnlyDictionary<string, int> seats) => ByBlocThenMandates(country, seats);
+
+        /// <summary>P5-6 (board 6b row 5): a party's mark in its own laddered ink, drawn HERE because the chamber is the one surface that may draw party ink (PartyInkDrawSiteCheck) - the breakdown row on any surface asks this for its mark, so the arc, the legend and the row come from the same call.</summary>
+        public static void DrawMark(Rect rect, CountryId country, PoliticalParty party)
+        {
+            Texture2D emblem = IconLibrary.GetPartyMark(party.MarkName);
+            Color previous = GUI.color;
+            GUI.color = PoliSimTheme.PartyLaddered(country, party.Abbrev);
+            if (emblem != null) { GUI.DrawTexture(rect, emblem, ScaleMode.ScaleToFit); } else { GUI.DrawTexture(rect, Texture2D.whiteTexture); }
+            GUI.color = previous;
+        }
+
         private static List<PoliticalParty> ByBlocThenMandates(CountryId country, IReadOnlyDictionary<string, int> seats)
         {
             var ordered = new List<PoliticalParty>(PartySystems.For(country));
