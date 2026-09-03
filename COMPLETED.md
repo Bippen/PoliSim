@@ -22467,4 +22467,8 @@ Nine Playtest 3 crops and the two Tax Policy slider crops: eleven, as expected. 
 
 **Built** (`UiScreenshotCapture.SelectFreeAspect`): the harness now pins the Game View's size preset to Free Aspect and its enter-play behaviour to Play Focused by reflection and logs what it read back, so a film says which Editor state it ran under; the resize path keeps its docked-view witness. The layout file is Editor state the repo does not track; the cure is written in the environment quirks (kill Unity, clear `m_Maximized` on the window, film).
 
-**Bar:** the harness is Editor code; the next bar covers it.
+**Bar:** `bar89_close_RunAllBatch.log`, 29 of 29, on the pushed tree.
+
+## 277. THE RETURN PACKAGE AFTER BOARDS 6a AND 6b: the files Design said were not in-project, and the films of what was built (2026-09-03)
+
+Board 6b closed with *no D12 annex is in-project* and named what would close rows 1 and 4: the centroid table and the harness print. `SEND_PACKAGE.md` is regenerated as a RETURN, not an ask: `COUNTRY_CENTROIDS.md`, `p3c6_partyink.log` (with §272's finding beside it), the stance diagnostic print, the bar and film logs, and the films of the built boards at 1280 (the slider family, the pagers, the stacked tags, the zero rule, the fold peek, the breakdown, the map, the Policy Web), plus the eleven screenshots and the item-1 pair, every one by size and digest. The paste is Elias's (ERRANDS E-12). Nothing is asked again.
