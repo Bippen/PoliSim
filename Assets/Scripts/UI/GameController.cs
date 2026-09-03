@@ -624,6 +624,7 @@ namespace PoliSim.UI
         // frame in RescaleStylesToScreen alongside the base styles they're cloned from, so their
         // font size/fixed height always stay in sync with the current screen size too.
         private GUIStyle _implementButtonStyle;
+        private GUIStyle _pendingButtonStyle;   // P5-1 (board 6a)
         private GUIStyle _removeButtonStyle;
         private GUIStyle _neutralActionButtonStyle;
 
@@ -2537,6 +2538,8 @@ namespace PoliSim.UI
             // _buttonStyle's just-updated size above, rather than drifting stale from whatever size
             // they happened to be cloned at in InitializeStylesIfNeeded.
             _implementButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Implement);
+            _pendingButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Disabled);   // P5-1 (board 6a): PENDING = the stamped-grey face, rendered never omitted
+            _pendingButtonStyle.padding = _implementButtonStyle.padding;   // P5-1: the pending FACE, not a wider slot - measured, the sprite's own padding cost the welfare track its floor
             _removeButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Remove);
             _neutralActionButtonStyle = UiPalette.BuildButtonStyle(_tabButtonStyle, UiPalette.ButtonKind.Neutral);
         }
@@ -3196,8 +3199,8 @@ namespace PoliSim.UI
                     DrawDerivedStatRow($"Independent {GetCentralBankName(PlayerCountryId)} would read", -1f,
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"the Fed/ECB rule: inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
-                    GUILayout.Label($"Interest Rate Change: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
-                    _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, _sliderStyle, _sliderThumbStyle);
+                    // P5-1 (board 6a): the rate change as a ledger row of the family - in points, a tick per quarter-point while the pitch holds.
+                    _interestRateChangeInput = DrawDialRow("Policy rate change", 0f, _interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                 }
                 else
                 {
@@ -3221,8 +3224,8 @@ namespace PoliSim.UI
                     DrawDerivedStatRow($"{_playerCountry.Name}'s own reading", -1f,
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
-                    GUILayout.Label($"National Rate Push: {_interestRateChangeInput:+0.00;-0.00;0} pts", _labelStyle);
-                    _interestRateChangeInput = GUILayout.HorizontalSlider(_interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, _sliderStyle, _sliderThumbStyle);
+                    // P5-1 (board 6a): the rate push as a ledger row of the family.
+                    _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                     DrawDerivedStatRow("Eurozone interest rate", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "shared by all three members", politicalInk);
                 }
             }
@@ -3638,16 +3641,37 @@ namespace PoliSim.UI
         /// Emits exactly one control, always, enabled or not.
         /// </summary>
         private float DrawDialRow(string name, float standing, float draft, float min, float max,
-            string format, string suffix, string trailing, bool interactive = true)
+            string format, string suffix, string trailing, bool interactive = true, float tickStep = 0f)
         {
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            // P5-1 (board 6a, 2026-09-03): the family's track, ticks, knob, pencil slot and end-names on every dial. The board's
+            // verdict and action cells are NOT drawn on a ledger with no bill to judge and no action: on film they cost the
+            // Budget's narrowest track its floor (1.37 units per pixel against the whole-unit bound), so the absence is not
+            // drawn where the whole ledger lacks the column - the deviation is stated in COMPLETED.md section 267.
+            Rect ledgerRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
             bool changed = interactive && !Mathf.Approximately(standing, draft);
             return LedgerRow.Draw(
-                rowRect, name, standing, draft, min, max,
+                ledgerRect, name, standing, draft, min, max,
                 interactive ? standing.ToString(format, CultureInfo.InvariantCulture) + suffix : "n/a",
                 changed ? draft.ToString(format, CultureInfo.InvariantCulture) + suffix : null,
                 trailing, interactive,
-                _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle);
+                _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, tickStep: tickStep);
+        }
+
+        /// <summary>
+        /// P5-1 (board 6a): the family's three trailing rects - the ledger row, the verdict cell (11 % of the row) and the action
+        /// slot (sized for the widest label a button can carry: Implement, Remove, Pending (NNd)) - one arithmetic for the tax
+        /// row, the welfare row and every dial row, so their columns are one column down the sheet.
+        /// </summary>
+        private void LedgerFamilyColumns(Rect fullRow, out Rect ledgerRect, out Rect verdictRect, out Rect actionRect)
+        {
+            float gap = _labelStyle.fontSize * 0.6f;
+            float actionNeed = Mathf.Max(_implementButtonStyle.CalcSize(new GUIContent("Implement")).x,
+                Mathf.Max(_removeButtonStyle.CalcSize(new GUIContent("Remove")).x, _pendingButtonStyle.CalcSize(new GUIContent("Pending (99d)")).x));
+            float actionWidth = Mathf.Max(fullRow.width * 0.12f, actionNeed + gap);
+            float verdictWidth = fullRow.width * 0.11f;
+            actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);
+            verdictRect = new Rect(actionRect.x - verdictWidth - gap, fullRow.y, verdictWidth, fullRow.height);
+            ledgerRect = new Rect(fullRow.x, fullRow.y, verdictRect.x - fullRow.x - gap, fullRow.height);
         }
 
         /// <summary>
@@ -9236,11 +9260,8 @@ namespace PoliSim.UI
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && fundExists && pendingBill == null;
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label($"Withdraw: {_swfDrawdownPercentInput:F1}% of GDP", _labelStyle, GUILayout.Width(200f));
-            _swfDrawdownPercentInput = GUILayout.HorizontalSlider(_swfDrawdownPercentInput,
-                MinSwfDrawdownPercentOfGdp, MaxSwfDrawdownPercentOfGdp, _sliderStyle, _sliderThumbStyle);
-            GUILayout.EndHorizontal();
+            // P5-1 (board 6a): the drawdown as a ledger row of the family - 0 to the cap, the same drawing.
+            _swfDrawdownPercentInput = DrawDialRow("Fund drawdown", 0f, _swfDrawdownPercentInput, MinSwfDrawdownPercentOfGdp, MaxSwfDrawdownPercentOfGdp, "F1", "% of GDP", string.Empty);
 
             if (fundExists)
             {
@@ -9905,7 +9926,7 @@ namespace PoliSim.UI
                 // screen's own header explains that implementing or removing submits a standalone bill.
                 ? $"Pending ({pendingBill.DaysRemaining}d)"
                 : taxLine.IsImplemented ? "Remove" : "Implement";
-            GUIStyle toggleStyle = taxLine.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
+            GUIStyle toggleStyle = pendingBill != null ? _pendingButtonStyle : taxLine.IsImplemented ? _removeButtonStyle : _implementButtonStyle;   // P5-1 (board 6a): three faces, one width
 
             // ONE ROW, not four stacked lines. Until the first live capture this drew a full-width
             // button, then a sentence-long estimate, then the ledger row - three lines per instrument on
@@ -9918,23 +9939,7 @@ namespace PoliSim.UI
             // matters, so drawing the same two controls in the same sequence at different rects is safe
             // where varying the sequence would not be.
             Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-            float gap = _labelStyle.fontSize * 0.6f;
-            // Measured in the style the button ACTUALLY renders in, not in _labelStyle. The first inline
-            // capture measured the label style and "Implement" wrapped to "Implemen / t" - the button
-            // style carries its own padding and metrics, so measuring a different style sizes the column
-            // for a different string. Same class as the mockup-number rule: a measurement is only valid
-            // against the conditions it was taken under.
-            // P4-1 (2026-09-03, STABLE CONTROL LAYOUT): the column is sized for the WIDEST label the button can carry -
-            // Implement, Remove, Pending (NNd) - not for the one it carries this frame, so a bill resolving or a
-            // program toggling never moves the ledger row beside it. Measured in the button's own style, as before.
-            float actionNeed = Mathf.Max(_implementButtonStyle.CalcSize(new GUIContent("Implement")).x,
-                Mathf.Max(_removeButtonStyle.CalcSize(new GUIContent("Remove")).x, _implementButtonStyle.CalcSize(new GUIContent("Pending (99d)")).x));
-            float actionWidth = Mathf.Max(fullRow.width * 0.12f, actionNeed + gap);   // P2-1.3: 15 -> 12 %, the track takes the difference
-            float verdictWidth = fullRow.width * 0.11f;   // P2-1.3: 13 -> 11 %
-
-            var actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);
-            var verdictRect = new Rect(actionRect.x - verdictWidth - gap, fullRow.y, verdictWidth, fullRow.height);
-            var ledgerRect = new Rect(fullRow.x, fullRow.y, verdictRect.x - fullRow.x - gap, fullRow.height);
+            LedgerFamilyColumns(fullRow, out Rect ledgerRect, out Rect verdictRect, out Rect actionRect);   // P5-1 (board 6a): the family's one arithmetic
 
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
@@ -9981,10 +9986,10 @@ namespace PoliSim.UI
                 // InvariantCulture, deliberately. UiFormat pins money for this reason and its doc comment
                 // names the exact string this machine's sv-SE locale produced ("$29,0T"); a rate printed
                 // beside a pinned money figure must not disagree with it about what a decimal point is.
-                taxLine.IsImplemented ? taxLine.Rate.ToString("F2", CultureInfo.InvariantCulture) + "%" : "not implemented",
+                taxLine.IsImplemented ? taxLine.Rate.ToString("F2", CultureInfo.InvariantCulture) + "%" : "—",   // P5-1 (board 6a): the Implement button and the verdict carry the state; a status word in a figure column cost the track its reach
                 hasDraft ? draftRate.ToString("F2", CultureInfo.InvariantCulture) + "%" : null,
                 taxLine.IsImplemented ? UiFormat.Money(estimatedRevenue, MoneyUnit.Billions) : "-",
-                taxLine.IsImplemented,
+                taxLine.IsImplemented && pendingBill == null,   // P5-1 (board 6a): PENDING - the knob says it cannot be moved; the row stays drawn and counted
                 _labelStyle,
                 _labelStyle,
                 _sliderStyle,
@@ -10071,7 +10076,7 @@ namespace PoliSim.UI
                 // screen's own header explains that implementing or removing submits a standalone bill.
                 ? $"Pending ({pendingBill.DaysRemaining}d)"
                 : welfareProgram.IsImplemented ? "Remove" : "Implement";
-            GUIStyle toggleStyle = welfareProgram.IsImplemented ? _removeButtonStyle : _implementButtonStyle;
+            GUIStyle toggleStyle = pendingBill != null ? _pendingButtonStyle : welfareProgram.IsImplemented ? _removeButtonStyle : _implementButtonStyle;   // P5-1 (board 6a): three faces, one width
 
             // Identical shape to DrawTaxLineRow - see that method for the control-order reasoning, which
             // applies here unchanged: button, then slider, every frame, same sequence at different rects.
@@ -10080,13 +10085,7 @@ namespace PoliSim.UI
                 && !Mathf.Approximately(draftGenerosity, welfareProgram.GenerosityLevel);
 
             Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-            float gap = _labelStyle.fontSize * 0.6f;
-            float actionWidth = Mathf.Max(fullRow.width * 0.12f, toggleStyle.CalcSize(new GUIContent(toggleLabel)).x + gap);   // P2-1.3: 15 -> 12 %, the track takes the difference
-            float verdictWidth = fullRow.width * 0.11f;   // P2-1.3: 13 -> 11 %
-
-            var actionRect = new Rect(fullRow.xMax - actionWidth, fullRow.y, actionWidth, fullRow.height);
-            var verdictRect = new Rect(actionRect.x - verdictWidth - gap, fullRow.y, verdictWidth, fullRow.height);
-            var ledgerRect = new Rect(fullRow.x, fullRow.y, verdictRect.x - fullRow.x - gap, fullRow.height);
+            LedgerFamilyColumns(fullRow, out Rect ledgerRect, out Rect verdictRect, out Rect actionRect);   // P5-1 (board 6a): the family's one arithmetic - P4-1's sweep missed this row
 
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
@@ -10112,7 +10111,7 @@ namespace PoliSim.UI
                 100f,
                 welfareProgram.IsImplemented
                     ? welfareProgram.GenerosityLevel.ToString("F0", CultureInfo.InvariantCulture) + "%"
-                    : "not implemented",
+                    : "—",   // P5-1 (board 6a): as the tax row
                 hasDraft ? draftGenerosity.ToString("F0", CultureInfo.InvariantCulture) + "%" : null,
                 // Cost at FULL generosity, which is what the share is defined against - a real seeded
                 // figure rather than one scaled by the draft, so the column answers "how big is this
@@ -10120,7 +10119,7 @@ namespace PoliSim.UI
                 welfareProgram.IsImplemented
                     ? welfareProgram.CostShareOfGdp.ToString("F1", CultureInfo.InvariantCulture) + "% GDP"
                     : "-",
-                welfareProgram.IsImplemented,
+                welfareProgram.IsImplemented && pendingBill == null,   // P5-1 (board 6a): PENDING - the knob disabled
                 _labelStyle,
                 _labelStyle,
                 _sliderStyle,

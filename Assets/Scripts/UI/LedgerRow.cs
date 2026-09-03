@@ -25,7 +25,16 @@ namespace PoliSim.UI
         private const float RefTrailingWidth = 88f;
         private const float RefFontSize = 13f;
         // P2-1.3 (2026-09-02): thinner - a bar half its former height; the knob is sized by the thumb style.
-        private const float RefTrackHeight = 8f;
+        // P5-1 (2026-09-03, board 6a): 14 px @1x - the delivered ui_slider_track drawn at the height the board names.
+        private const float RefTrackHeight = 14f;
+        /// <summary>P5-1 (board 6a): the caption band UNDER the track where a dial's end-names sit ("0 nationalized" left, "100 deregulated" right) - furniture, never on the track.</summary>
+        private const float RefEndCaption = 12f;   // 12 - the caption face at 0.6 of a 17 px row needs 14 px; 10 was one short on film
+        /// <summary>P5-1 (board 6a): the knob, 15x23 @1x, uniform scale; the hit rect is the sprite rect.</summary>
+        private const float RefKnobSpriteWidth = 15f;
+        private const float RefKnobSpriteHeight = 23f;
+        /// <summary>P5-1 (board 6a): the pencil's slot in the rate cell - reserved at rest, filled by the pencil while a draft differs.</summary>
+        private const float RefPencilSlot = 12f;
+        private const float RefTickMinPitch = 12f;
         private const float RefColumnGap = 10f;
 
         /// <summary>Knob geometry, also from the spec (14x23 at 1080p), scaled the same way.</summary>
@@ -88,7 +97,8 @@ namespace PoliSim.UI
             // track is RefTrackHeight = 15, which stays - it is a bar height, not a lane term, and it
             // fits inside two lines at every size this UI reaches: 15·s < line for fonts under ~27 px
             // and the serif's own line box carries it above that).
-            return Mathf.Max(line * 2f, RefLaneTrackTerm * scale + line) + RefLanePadding * scale;
+            // P5-1 (board 6a): plus the caption band under the track, on every row - one geometry for the family.
+            return Mathf.Max(line * 2f, RefLaneTrackTerm * scale + line) + RefLanePadding * scale + RefEndCaption * scale;
         }
 
         /// <summary>D4's lane term and padding (see <see cref="Height"/>): 8 and 4 at the 13 px reference, scaled.</summary>
@@ -164,7 +174,8 @@ namespace PoliSim.UI
             GUIStyle figureStyle,
             GUIStyle sliderStyle,
             GUIStyle thumbStyle,
-            float barFraction = -1f)
+            float barFraction = -1f,
+            float tickStep = 0f)
         {
             float scale = Scale(nameStyle);
             Columns(row, nameStyle, NameNeed(name, nameStyle), TrailingNeed(trailingText, figureStyle), FigureNeed(standingText, draftText, figureStyle),
@@ -199,13 +210,14 @@ namespace PoliSim.UI
 
             if (Event.current.type == EventType.Repaint)
             {
-                DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive);
+                DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive, tickStep);
+                DrawEndNames(trackRect, trailingText, figureStyle, scale, interactive);
             }
 
             // ALWAYS emitted, enabled or not - see the control-ID note above.
             bool ambient = GUI.enabled;
             GUI.enabled = ambient && interactive;
-            float result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, thumbStyle);
+            float result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, KnobStyle(thumbStyle, scale, interactive));
             GUI.enabled = ambient;
             // P2-1.3 (2026-09-02): FINER STEP - the draft snaps to SnapStep, so a whole point is a value the
             // thumb can rest on rather than one it passes through; and the film records the range each pixel
@@ -229,7 +241,7 @@ namespace PoliSim.UI
             DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk);
 
 
-            DrawCell(trailingRect, trailingText, figureStyle, rowInk, TextAnchor.MiddleRight);
+            if (!IsEndNames(trailingText) && Event.current.type == EventType.Repaint) { DrawTrailingUnderFigure(figureRect, trackRect, trailingText, figureStyle, scale, interactive); }   // P5-1: under the rate cell
 
             return interactive ? result : draft;
         }
@@ -241,7 +253,7 @@ namespace PoliSim.UI
         /// <summary>What the trailing column's content actually needs, so <see cref="Columns"/> can size it rather than assume it. Zero for an empty cell, which leaves the proportional width untouched.</summary>
         private static float TrailingNeed(string trailingText, GUIStyle figureStyle)
         {
-            return string.IsNullOrEmpty(trailingText) ? 0f : figureStyle.CalcSize(new GUIContent(trailingText)).x;
+            return string.IsNullOrEmpty(trailingText) || IsEndNames(trailingText) ? 0f : figureStyle.CalcSize(new GUIContent(trailingText)).x;
         }
 
         /// <summary>
@@ -259,7 +271,8 @@ namespace PoliSim.UI
         {
             float standing = string.IsNullOrEmpty(standingText) ? 0f : figureStyle.CalcSize(new GUIContent(standingText)).x;
             float draft = string.IsNullOrEmpty(draftText) ? 0f : figureStyle.CalcSize(new GUIContent(draftText)).x;
-            return Mathf.Max(standing, draft);
+            // P5-1 (board 6a): the pencil's slot is part of the cell at rest, so the figure never shifts when a draft begins.
+            return Mathf.Max(standing, draft) + RefPencilSlot * Scale(figureStyle);
         }
 
         /// <summary>P2-1.3: the widest unbreakable token of the name - the name cell wraps at spaces before it shrinks, so
@@ -301,7 +314,12 @@ namespace PoliSim.UI
                 nameWidth = Mathf.Min(nameNeed, row.width * 0.30f);   // P2-1.3: a name that cannot wrap takes up to 30 %
             }
             float figureWidth = Mathf.Max(row.width * 0.13f, RefKnobWidth * scale * 3f);
-            float trailingWidth = Mathf.Max(row.width * 0.08f, RefKnobWidth * scale * 2f);
+            // P5-1 (board 6a, measured on film, 2026-09-03): NO TRAILING COLUMN. The board's rate cell carries its measure beneath it, so the
+            // trailing figure (a tax line's revenue, a programme's cost, a dial's end-names) draws in the caption band the family
+            // already reserves under every row - under the rate cell, or under the track ends for an end-name legend - and the
+            // column it used to take (8-22 % of the row) goes to the track. On the Budget's narrowest welfare row the track had
+            // hit its floor at 1.37 units per pixel against the whole-unit bound; the column was the lever.
+            float trailingWidth = 0f;
             float minTrack = RefKnobWidth * scale * 4f;
 
             // ⚠ THE TRAILING COLUMN IS SIZED FROM ITS CONTENT, because it holds two different KINDS of
@@ -317,10 +335,7 @@ namespace PoliSim.UI
             //
             // Capped at a third of the row so a long legend can never starve the track, with the squeeze
             // below as the second backstop and minTrack as the third.
-            if (trailingNeed > trailingWidth)
-            {
-                trailingWidth = Mathf.Min(trailingNeed, row.width * 0.22f);
-            }
+            // (the trailing need no longer sizes a column - see above)
 
             // ⚠ THE FIGURE COLUMN ASKS WHAT IT IS HOLDING TOO (2026-08-28, UI v3.0 Phase A - the
             // label-clipping class's instance #15). The v3 rail took ~75 px from the Budget ledger's
@@ -349,7 +364,7 @@ namespace PoliSim.UI
             float trackWidth = Mathf.Max(minTrack, row.width - nameWidth - figureWidth - trailingWidth - gap * 3f);
 
             nameRect = new Rect(row.x, row.y, nameWidth, row.height);
-            trackRect = new Rect(nameRect.xMax + gap, row.y + (row.height - RefTrackHeight * scale) * 0.5f, trackWidth, RefTrackHeight * scale);
+            trackRect = new Rect(nameRect.xMax + gap, row.y + (row.height - RefEndCaption * scale - RefTrackHeight * scale) * 0.5f, trackWidth, RefTrackHeight * scale);
             figureRect = new Rect(trackRect.xMax + gap, row.y, figureWidth, row.height);
             trailingRect = new Rect(figureRect.xMax + gap, row.y, trailingWidth, row.height);
 
@@ -361,11 +376,11 @@ namespace PoliSim.UI
             UiContainmentGuard.Check("LedgerRow name column", nameRect, row);
             UiContainmentGuard.Check("LedgerRow track", trackRect, row);
             UiContainmentGuard.Check("LedgerRow figure column", figureRect, row);
-            UiContainmentGuard.Check("LedgerRow trailing column", trailingRect, row);
+            if (trailingRect.width > 0f) { UiContainmentGuard.Check("LedgerRow trailing column", trailingRect, row); }
         }
 
         /// <summary>The standing tick and the draft hatch band - drawn UNDER the slider so the knob reads as sitting on the track rather than beside it.</summary>
-        private static void DrawTrackFurniture(Rect track, float standing, float draft, float min, float max, float scale, bool interactive)
+        private static void DrawTrackFurniture(Rect track, float standing, float draft, float min, float max, float scale, bool interactive, float tickStep)
         {
             float span = Mathf.Max(0.0001f, max - min);
             float standingX = track.x + track.width * Mathf.Clamp01((standing - min) / span);
@@ -393,9 +408,13 @@ namespace PoliSim.UI
                 float tickWidth = Mathf.Max(1f, RefTickWidth * scale * 0.5f);
                 Color tickPrev = GUI.color;
                 GUI.color = PoliSimTheme.Hairline;
-                for (int step = 1; step < 10; step++)
+                // P5-1 (board 6a): SPARSE - a quarter of the span on every 0-100 dial (0/25/50/75/100), and the caller's own step on
+                // a dial in points (a quarter-point on the rate sliders) widened fourfold until the pitch holds 12 px @1x.
+                float step = tickStep > 0f ? tickStep : span / 4f;
+                while (step > 0f && track.width * (step / span) < RefTickMinPitch * scale && step < span) { step *= 4f; }
+                for (float v = min; v <= max + step * 0.001f; v += step)
                 {
-                    float x = track.x + track.width * (step / 10f);
+                    float x = track.x + track.width * Mathf.Clamp01((v - min) / span);
                     GUI.DrawTexture(new Rect(x - tickWidth * 0.5f, track.y, tickWidth, track.height), tick, ScaleMode.StretchToFill);
                 }
                 GUI.color = tickPrev;
@@ -463,6 +482,77 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>P5-1 (board 6a): whether a trailing text is an end-name legend ("0 nationalized - 100 deregulated") - then it sits UNDER the track ends and the trailing cell holds its absence.</summary>
+        private static readonly System.Text.RegularExpressions.Regex EndNames = new System.Text.RegularExpressions.Regex(@"^\s*(?<n>-?\d+(?:\.\d+)?)\s+(?<a>[^-]+?)\s*-\s*(?<m>-?\d+(?:\.\d+)?)\s+(?<b>.+?)\s*$");
+        public static bool IsEndNames(string trailingText) => !string.IsNullOrEmpty(trailingText) && EndNames.IsMatch(trailingText);
+
+        private static GUIStyle _endCaptionStyle;
+        private static int _endCaptionSourceSize = -1;
+
+        /// <summary>The end-names under the track ends in caption mono (board 6a: 7.5 board px - here 0.6 of the row's figure size, floored at 8), left end left-aligned, right end right-aligned; furniture, never on the track.</summary>
+        private static void DrawEndNames(Rect track, string trailingText, GUIStyle figureStyle, float scale, bool interactive)
+        {
+            if (!IsEndNames(trailingText)) { return; }
+            System.Text.RegularExpressions.Match m = EndNames.Match(trailingText);
+            int size = Mathf.Max(8, Mathf.RoundToInt(figureStyle.fontSize * 0.6f));
+            if (_endCaptionStyle == null || _endCaptionSourceSize != size)
+            {
+                _endCaptionStyle = new GUIStyle(figureStyle) { fontSize = size, wordWrap = false, fontStyle = FontStyle.Normal };
+                if (PoliSimTheme.Document != null) { _endCaptionStyle.font = PoliSimTheme.Document; }
+                _endCaptionStyle.padding = new RectOffset(0, 0, 0, 0);
+                _endCaptionSourceSize = size;
+            }
+            Color ink = interactive ? PoliSimTheme.TextSecondary : PoliSimTheme.TextMuted;
+            var band = new Rect(track.x, track.yMax + 1f * scale, track.width, RefEndCaption * scale);
+            string left = (m.Groups["n"].Value + " " + m.Groups["a"].Value).ToUpperInvariant();
+            string right = (m.Groups["m"].Value + " " + m.Groups["b"].Value).ToUpperInvariant();
+            Cell(new Rect(band.x, band.y, band.width * 0.5f, band.height), left, _endCaptionStyle, ink, TextAnchor.UpperLeft);
+            Cell(new Rect(band.x + band.width * 0.5f, band.y, band.width * 0.5f, band.height), right, _endCaptionStyle, ink, TextAnchor.UpperRight);
+        }
+
+        /// <summary>P5-1 (board 6a): the trailing measure UNDER the rate cell in the caption band - right-aligned to the figure, caption mono, secondary ink.</summary>
+        private static void DrawTrailingUnderFigure(Rect figure, Rect track, string trailingText, GUIStyle figureStyle, float scale, bool interactive)
+        {
+            if (string.IsNullOrEmpty(trailingText)) { return; }
+            GUIStyle caption = EndCaptionStyle(figureStyle);
+            Color ink = interactive ? PoliSimTheme.TextSecondary : PoliSimTheme.TextMuted;
+            // The band runs from the track's start to the rate cell's right edge and the measure right-aligns to the rate: a figure sits
+            // under the rate, and a prose trailing (the tariff dial's "inert - bloc rates apply to every partner") has the track's
+            // width too - the end-names, which own the track's band, are the exclusive other case.
+            var band = new Rect(track.x, track.yMax + 1f * scale, figure.xMax - track.x, RefEndCaption * scale);
+            Cell(band, trailingText.ToUpperInvariant(), caption, ink, TextAnchor.UpperRight);
+        }
+
+        private static GUIStyle EndCaptionStyle(GUIStyle figureStyle)
+        {
+            int size = Mathf.Max(8, Mathf.RoundToInt(figureStyle.fontSize * 0.6f));
+            if (_endCaptionStyle == null || _endCaptionSourceSize != size)
+            {
+                _endCaptionStyle = new GUIStyle(figureStyle) { fontSize = size, wordWrap = false, fontStyle = FontStyle.Normal };
+                if (PoliSimTheme.Document != null) { _endCaptionStyle.font = PoliSimTheme.Document; }
+                _endCaptionStyle.padding = new RectOffset(0, 0, 0, 0);
+                _endCaptionSourceSize = size;
+            }
+            return _endCaptionStyle;
+        }
+
+        private static GUIStyle _knobStyle, _knobDisabledStyle;
+        private static float _knobScale = -1f;
+
+        /// <summary>P5-1 (board 6a): the brass knob at 15x23 @1x, uniform scale, the hit rect the sprite rect; the disabled face when the row cannot be moved (PENDING, or not applicable) - the row stays drawn and counted.</summary>
+        private static GUIStyle KnobStyle(GUIStyle thumbStyle, float scale, bool interactive)
+        {
+            if (_knobStyle == null || !Mathf.Approximately(_knobScale, scale))
+            {
+                _knobStyle = new GUIStyle(thumbStyle) { fixedWidth = Mathf.Round(RefKnobSpriteWidth * scale), fixedHeight = Mathf.Round(RefKnobSpriteHeight * scale) };
+                _knobDisabledStyle = new GUIStyle(_knobStyle);
+                Texture2D disabled = IconLibrary.GetChrome("ui_slider_knob_disabled");
+                if (disabled != null) { _knobDisabledStyle.normal.background = disabled; _knobDisabledStyle.hover.background = disabled; _knobDisabledStyle.active.background = disabled; _knobDisabledStyle.focused.background = disabled; }
+                _knobScale = scale;
+            }
+            return interactive ? _knobStyle : _knobDisabledStyle;
+        }
+
         /// <summary>
         /// ONE readout (P4-1, 2026-09-03): the standing figure at rest in the row's ink; while a draft differs,
         /// the same cell shows the DRAFT figure in the draft cue (D6: the darkened Caution ink for text on paper;
@@ -473,7 +563,21 @@ namespace PoliSim.UI
         private static void DrawFigurePair(Rect rect, string standingText, string draftText, GUIStyle style, Color rowInk)
         {
             bool drafted = !string.IsNullOrEmpty(draftText);
-            DrawCell(rect, drafted ? draftText : standingText, style, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.MiddleRight);
+            // P5-1 (board 6a): the pencil's slot at the cell's left is reserved at rest and filled while a draft differs - one draft colour, three carriers (the hatch, the pencil, the figure).
+            float scale = Scale(style);
+            float slot = RefPencilSlot * scale;
+            if (drafted && Event.current.type == EventType.Repaint)
+            {
+                Texture2D pencil = IconLibrary.GetChrome("icon_pencil_draft");
+                if (pencil != null)
+                {
+                    float size = RefPencilSlot * scale;
+                    Color previous = GUI.color; GUI.color = PoliSimTheme.Caution;
+                    GUI.DrawTexture(new Rect(rect.x, rect.y + (rect.height - size) * 0.5f, size, size), pencil, ScaleMode.ScaleToFit);
+                    GUI.color = previous;
+                }
+            }
+            DrawCell(new Rect(rect.x + slot, rect.y, Mathf.Max(1f, rect.width - slot), rect.height), drafted ? draftText : standingText, style, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.MiddleRight);
         }
 
         /// <summary>
@@ -552,7 +656,9 @@ namespace PoliSim.UI
             }
 
             DrawCell(figureRect, figureText, figureStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
-            DrawCell(trailingRect, trailingText, figureStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+            // P5-1 (board 6a): a read-only row with an end-name legend draws it under the track ends too, and the trailing cell holds its absence.
+            if (Event.current.type == EventType.Repaint) { DrawEndNames(trackRect, trailingText, figureStyle, Scale(nameStyle), true); }
+            if (!IsEndNames(trailingText) && Event.current.type == EventType.Repaint) { DrawTrailingUnderFigure(figureRect, trackRect, trailingText, figureStyle, Scale(nameStyle), true); }   // P5-1: under the rate cell
         }
 
         /// <summary>Public so a caller composing extra columns beside a row - the tax screen's verdict cell, say - prints them in the same measured, never-clipping way rather than reaching for a raw GUI.Label.</summary>
