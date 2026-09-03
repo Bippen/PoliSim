@@ -525,7 +525,7 @@ The boards were read from the decoded file on disk (`COMPLETED.md` §266). Each 
 
 **P5-7 — 6b row 6, the Riksbank 720 fold, Design's call: no variant.** At 720 the page draws the idiom's vertical paper scrollbar ALWAYS (never on hover), and lane 3's header is pinned to peek 14 px above the sheet's lower edge with the paper fading under it. Nothing re-composed at 1280+. *Done when:* filmed at 720 with the peek and the scrollbar.
 
-**P5-8 — 6b row 7, stacked tags within a point.** Both tags lift above the lane and stack at the pair's midpoint — own side (inkText) nearest the rule, partner (Neutral) above it — each joined to its own marker by a 1 px leader in its ink at 50 %; the markers do not move; threshold 1.0 point on the axis's scale. *Done when:* filmed on the pair page's stance plate at the seed (SE and US within a point).
+**P5-8 — 6b row 7, stacked tags within a point.** Both tags lift above the lane and stack at the pair's midpoint — own side (inkText) nearest the rule, partner (Neutral) above it — each joined to its own marker by a 1 px leader in its ink at 50 %; the markers do not move; threshold 1.0 point on the axis's scale. *Done when:* filmed on the pair page's stance plate at the seed (SE and US within a point). **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §269: two tag rows reserved always; within 1.0 point the tags stack at the midpoint, own side nearest the rule, each on a 1 px leader at 50 %; the markers stay.**
 
 **Owed to Design after this block (files, not prose):** the centroid table and adjacency (P5-2), `p3c6_partyink.log` (P5-5), and the films — the board says every cell was drawn from the rows' text because no annex was in-project.
 

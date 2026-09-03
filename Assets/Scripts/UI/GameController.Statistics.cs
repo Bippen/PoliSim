@@ -981,27 +981,42 @@ namespace PoliSim.UI
             float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
             float lane = StatsUnit(18f);
             float tagHeight = captionHeight;   // the markers' tags get a full caption row above the track (the first film squeezed them into half a lane)
-            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + tagHeight + lane + StatsUnit(4f), GUILayout.ExpandWidth(true));
+            // P5-8 (board 6b row 7, 2026-09-03): when the two sides read within a point the tags STACK above the lane - two tag rows,
+            // reserved always so the lane's geometry does not change with the readings.
+            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + tagHeight * 2f + lane + StatsUnit(4f), GUILayout.ExpandWidth(true));
             if (Event.current.type != EventType.Repaint) { return; }
             PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, r.width, captionHeight), axis, caption);
-            float trackY = r.y + captionHeight + tagHeight + lane * 0.5f;
+            float trackY = r.y + captionHeight + tagHeight * 2f + lane * 0.5f;
             float tagWidth = StatsUnit(22f);
             float x0 = r.x + tagWidth * 0.5f;
             float span = Mathf.Max(1f, r.width - tagWidth);
             PoliSimTheme.Rule(new Rect(x0, trackY - 0.5f, span, 1f), PoliSimTheme.Hairline);
             PoliSimTheme.Rule(new Rect(x0 + span * 0.5f, trackY - lane * 0.25f, 1f, lane * 0.5f), PoliSimTheme.HairlineStrong);
-            DrawPairStanceMarker(x0 + span * Mathf.Clamp01(mine / 100f), trackY, PairCountryTag(PlayerCountryId), tagWidth, lane, tag, PoliSimTheme.TextPrimary);
-            DrawPairStanceMarker(x0 + span * Mathf.Clamp01(theirs / 100f), trackY, PairCountryTag(them.Id), tagWidth, lane, tag, PoliSimTheme.TextSecondary);
+            float mineX = x0 + span * Mathf.Clamp01(mine / 100f);
+            float theirsX = x0 + span * Mathf.Clamp01(theirs / 100f);
+            bool stacked = Mathf.Abs(mine - theirs) < 1f;   // the threshold: 1.0 point on the axis's own scale (board 6b row 7)
+            float midX = (mineX + theirsX) * 0.5f;
+            // Own side nearest the rule, the partner above it; a 1 px leader in each tag's ink at 50 % joins tag to marker. The markers do not move.
+            DrawPairStanceMarker(mineX, trackY, PairCountryTag(PlayerCountryId), tagWidth, lane, tag, PoliSimTheme.TextPrimary, stacked ? midX : mineX, 0, stacked);
+            DrawPairStanceMarker(theirsX, trackY, PairCountryTag(them.Id), tagWidth, lane, tag, PoliSimTheme.TextSecondary, stacked ? midX : theirsX, stacked ? 1 : 0, stacked);
         }
 
-        private void DrawPairStanceMarker(float x, float y, string tagText, float tagWidth, float lane, GUIStyle tag, Color ink)
+        private void DrawPairStanceMarker(float x, float y, string tagText, float tagWidth, float lane, GUIStyle tag, Color ink, float tagX, int tagRow, bool leader)
         {
             float dot = Mathf.Max(4f, StatsUnit(6f));
             PoliSimTheme.Rule(new Rect(x - dot * 0.5f, y - dot * 0.5f, dot, dot), ink);
             GUIStyle inked = new GUIStyle(tag);
             inked.normal.textColor = ink;
             float tagHeight = Mathf.Ceil(DeskCaptionHeight(tag));
-            PoliSimWidgets.MeasuredLabel(new Rect(x - tagWidth * 0.5f, y - lane * 0.5f - tagHeight, tagWidth, tagHeight), tagText, inked);
+            float tagTop = y - lane * 0.5f - tagHeight * (tagRow + 1);
+            if (leader)
+            {
+                // The leader: 1 px, the tag's ink at 50 %, from the marker's top to the tag's foot at the tag's own x.
+                Color half = new Color(ink.r, ink.g, ink.b, ink.a * 0.5f);
+                PoliSimTheme.Rule(new Rect(x - 0.5f, tagTop + tagHeight, 1f, Mathf.Max(1f, y - dot * 0.5f - (tagTop + tagHeight))), half);
+                if (Mathf.Abs(tagX - x) > 1f) { PoliSimTheme.Rule(new Rect(Mathf.Min(x, tagX), tagTop + tagHeight - 0.5f, Mathf.Abs(tagX - x), 1f), half); }
+            }
+            PoliSimWidgets.MeasuredLabel(new Rect(tagX - tagWidth * 0.5f, tagTop, tagWidth, tagHeight), tagText, inked);
         }
 
         /// <summary>Two-letter country tags for a marker (the ISO forms of the six).</summary>
