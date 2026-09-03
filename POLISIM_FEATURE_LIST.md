@@ -580,7 +580,7 @@ reason traces to a term in P3-A2. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §
 by area on the left, the books on the right with history counts, the causal band, the pinned-node
 pane with one line per edge). List every deviation; build the missing composition; state any
 deviation that stays with its reason (R-W2's fence). *Done when:* the pinned state matches image 8's
-layout on film and the rest state matches image 7's. **→ ⚠ VERIFIED, OPEN 2026-09-03, `COMPLETED.md` §249: four gaps, all composition; nothing rebuilt on assumption - the build waits for images 7 and 8 (E-8) or the board read whole.**
+layout on film and the rest state matches image 7's. **→ ⚠ VERIFIED, OPEN 2026-09-03, `COMPLETED.md` §249: four gaps, all composition; nothing rebuilt on assumption - the build waits for images 7 and 8 (E-8) or the board read whole.** **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §263: images 7 and 8 landed (E-8) and the board is built - `PolicyWebBoard` (levers by area, the books with counts, the causal band, the pinned pane one line per edge); the ring retired; filmed `p4c_1280_06j_policylaws_policyweb_rest` / `06k_..._node_policy` / `06l_..._node_stat`.**
 
 **P3-B2 — The Riksbank page against board 5f.** Same method: the one graph with the two-step
 path, the rule's five terms, the three input instruments, the governor and the appointment lever.

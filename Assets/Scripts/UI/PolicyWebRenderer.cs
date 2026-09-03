@@ -1120,6 +1120,8 @@ namespace PoliSim.UI
 
         public static string GetPolicyDescription(PolicyNodeId id) => PolicyInfo[id].Description;
         public static string GetStatName(StatNodeId id) => StatInfo[id].Name;
+        /// <summary>P3-B1 (2026-09-03): whether the web knows this stat - the enum carries two appended Society rows (§E4) the web's table does not, and the board iterates the enum.</summary>
+        public static bool HasStat(StatNodeId id) => StatInfo.ContainsKey(id);
         public static UiPalette.SystemArea GetPolicyArea(PolicyNodeId id) => PolicyInfo[id].Area;
 
         /// <summary>This stat's good/bad/neither framing. Exposed for PolicyScreenStats so each policy screen's contextual stat row colours a delta by the SAME judgment this widget uses, rather than forming a second opinion that could disagree about the same number.</summary>

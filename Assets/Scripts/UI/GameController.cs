@@ -411,7 +411,7 @@ namespace PoliSim.UI
         // next turn advances - see AdvanceTurn for where this list is appended to and pruned.
         private const int EventMarkerFadeTurns = 6;
         private readonly MapRenderer _mapRenderer = new MapRenderer();
-        private readonly PolicyWebRenderer _policyWebRenderer = new PolicyWebRenderer();
+        private readonly PolicyWebBoard _policyWebBoard = new PolicyWebBoard();   // P3-B1: board 2b's composition over the renderer's data
 
         // Political Systems Overhaul Part C (UI/graph restyling and political visualization).
         private readonly PoliticalCompassRenderer _politicalCompassRenderer = new PoliticalCompassRenderer();
@@ -4839,7 +4839,7 @@ namespace PoliSim.UI
                     {
                         Rect r = cursor.Place(w, w, captionHeight);
                         GUIStyle style = LadderStyle(w, 640f);
-                        _policyWebRenderer.Draw(r, style, _playerCountry, null, null, out _, out _);
+                        _policyWebBoard.Draw(r, style, style, _calendarMetaStyle, _playerCountry, null, null, out _, out _, out _);   // P3-B1: the ladder surveys the board now
                         LadderCaption(r, $"{w}x{w} type {style.fontSize}", captionHeight);
                     }
                     break;
@@ -8155,18 +8155,11 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Policy Web tab: a node/connecting-line diagram of which policy levers affect which stats
-        /// (see PolicyWebRenderer for the full node/edge data and rendering technique - reuses
-        /// MapRenderer's own node+line approach). Clicking a node pins a detail panel below, the same
-        /// "click pins a panel, exactly one at a time" idiom the World Map tab already established.
-        ///
-        /// R-W1 (the Policy Web micro-pass, 2026-08-28, from the sitting's third finding): the web
-        /// takes the FULL SHEET - the diagram rect is the scroll viewport itself, drawn FIRST, so at
-        /// rest the ring fills the sheet's inner area edge to edge; the explainer paragraph and the
-        /// clicked-node readout live below the fold, unchanged in content (the frame's own caption
-        /// names the screen, so the in-sheet duplicate title went with the move - a build call,
-        /// recorded). Same nodes, same edges, same clicked-node idiom - the room, not the
-        /// composition; board 2b (ask D7) refines the composition and nothing built here fights it.
+        /// Policy Web tab - board 2b's composition (P3-B1, built 2026-09-03 against Elias's images 7 and 8; `COMPLETED.md`
+        /// §263): the levers grouped by area on the left, the books on the right with their counts, the causal band, and
+        /// the pinned pane beside the web with one line per edge - `PolicyWebBoard`, over `PolicyWebRenderer`'s own data.
+        /// The ring this tab drew from R-W1 to P3 is retired; the click idiom (a node pins, the same node or the paper
+        /// unpins) is the one C-C3 set. The board asks for the height it needs, so a short window scrolls the sheet.
         /// </summary>
         private void DrawPolicyWebTab(float availableHeight)
         {
@@ -8175,33 +8168,22 @@ namespace PoliSim.UI
             float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
             _policyWebScrollPosition = GUILayout.BeginScrollView(_policyWebScrollPosition, GUILayout.Height(scrollHeight));
 
-            // R-W1: the drawing rect IS the sheet's inner viewport - full width (ExpandWidth accounts
-            // for the scrollbar the below-the-fold content raises), the viewport's own height, floored
-            // at the old half-screen minimum so a pathologically short window still gets a ring worth
-            // drawing (then the viewport scrolls, exactly as before). The old ceiling is gone: the
-            // viewport is the bound now, and the ring scales with it (radius = min(w, h)/2 less the
-            // header-label margin - PolicyWebRenderer.Draw's own arithmetic, untouched).
-            float diagramHeight = Mathf.Max(scrollHeight, Screen.height * 0.5f);
-            Rect webRect = GUILayoutUtility.GetRect(10f, diagramHeight, GUILayout.ExpandWidth(true));
-            // R-K1 (2026-08-28): the web reads the PLAYER COUNTRY's edge set - the policy rate's
-            // issuance edge draws for the five and not for the USA (Country.BaseDebtInterestRateOverride).
-            _policyWebRenderer.Draw(webRect, _labelStyle, _playerCountry, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode, out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat, out bool clickedEmptySpace);
+            bool pinned = _selectedPolicyWebPolicyNode.HasValue || _selectedPolicyWebStatNode.HasValue;
+            float width = PoliSimWidgets.InnerWidth(Screen.width - RailWidth() - 40f, _boxStyle, 1, GUI.skin.box);
+            float needed = _policyWebBoard.NeededHeight(width, _labelStyle, pinned);
+            Rect webRect = GUILayoutUtility.GetRect(10f, Mathf.Max(scrollHeight - 8f, needed), GUILayout.ExpandWidth(true));
+            _policyWebBoard.Draw(webRect, _labelStyle, _headerStyle, _calendarMetaStyle, _playerCountry, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode,
+                out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat, out bool clickedEmptySpace);
 
-            // C-C3 (P-F1): clicking the FOCUSED node again releases it, and a click on empty space
-            // inside the web does the same - "a second click or empty-space click restores", the
-            // finding's own words. Without the toggle a player who focused a node would have to find
-            // some other node to click to get the whole web back, which is the opposite of a restore.
             if (clickedPolicy.HasValue)
             {
-                bool sameNode = _selectedPolicyWebPolicyNode.HasValue
-                                && _selectedPolicyWebPolicyNode.Value == clickedPolicy.Value;
+                bool sameNode = _selectedPolicyWebPolicyNode.HasValue && _selectedPolicyWebPolicyNode.Value == clickedPolicy.Value;
                 _selectedPolicyWebPolicyNode = sameNode ? (PolicyNodeId?)null : clickedPolicy;
                 _selectedPolicyWebStatNode = null;
             }
             else if (clickedStat.HasValue)
             {
-                bool sameNode = _selectedPolicyWebStatNode.HasValue
-                                && _selectedPolicyWebStatNode.Value == clickedStat.Value;
+                bool sameNode = _selectedPolicyWebStatNode.HasValue && _selectedPolicyWebStatNode.Value == clickedStat.Value;
                 _selectedPolicyWebStatNode = sameNode ? (StatNodeId?)null : clickedStat;
                 _selectedPolicyWebPolicyNode = null;
             }
@@ -8211,120 +8193,12 @@ namespace PoliSim.UI
                 _selectedPolicyWebStatNode = null;
             }
 
-            GUILayout.Space(10f);
-
-            // R-W1: the explainer follows the web now (the sheet caption carries the title); its text
-            // is the same paragraph, below the fold with the readout it introduces.
-            GUILayout.Label("The ~9 category headers around the ring are always shown. Hover a node (or click to pin it, and its details below, even after you move away) to reveal its own name and ONLY its own connections - too many of the ~73 nodes to label them all at once legibly. Colored by area; line color follows this game's usual green/red convention (from that STAT's own perspective), thickness reflects relative effect strength where that's meaningfully comparable, uniform otherwise.", _labelStyle);
-            GUILayout.Space(6f);
-
-            if (_selectedPolicyWebPolicyNode.HasValue)
-            {
-                DrawSelectedPolicyWebPolicyPanel(_selectedPolicyWebPolicyNode.Value);
-            }
-            else if (_selectedPolicyWebStatNode.HasValue)
-            {
-                DrawSelectedPolicyWebStatPanel(_selectedPolicyWebStatNode.Value);
-            }
-            else
-            {
-                GUILayout.Label("Click a policy or stat node for details.", _labelStyle);
-            }
-
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
 
-        private void DrawSelectedPolicyWebPolicyPanel(PolicyNodeId node)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-            DrawColoredLabel(PolicyWebRenderer.GetPolicyName(node), _headerStyle, UiPalette.GetAreaColor(PolicyWebRenderer.GetPolicyArea(node)));
-            GUILayout.Label(PolicyWebRenderer.GetPolicyDescription(node), _labelStyle);
-            GUILayout.Space(4f);
 
-            GUILayout.Label("Current effects:", _labelStyle);
-            foreach (string line in PolicyWebRenderer.GetCurrentEffectSummary(node, _playerCountry))
-            {
-                GUILayout.Label($"  {line}", _labelStyle);
-            }
 
-            // R-K1 (2026-08-28): the node's edges for THIS country, each tagged with its honesty class -
-            // "ledger: <term>" where a ledger term records the effect, "declared" where a formula
-            // asserts it with no term behind it yet. The same distinction the lines draw.
-            List<PolicyWebEdge> outgoing = PolicyWebRenderer.GetEdgesFor(node, _playerCountry);
-            if (outgoing.Count > 0)
-            {
-                GUILayout.Space(4f);
-                GUILayout.Label("Moves:", _labelStyle);
-                foreach (PolicyWebEdge edge in outgoing)
-                {
-                    GUILayout.Label($"  {PolicyWebRenderer.GetStatName(edge.Target)} {(edge.Increases ? "▲" : "▼")} — {PolicyWebRenderer.ProvenanceTag(edge)}", _labelStyle);
-                }
-            }
-
-            GUILayout.EndVertical();
-        }
-
-        private void DrawSelectedPolicyWebStatPanel(StatNodeId node)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-            DrawColoredLabel(PolicyWebRenderer.GetStatName(node), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral));
-
-            // R-K1 (2026-08-28): this country's edge set, tagged by honesty class (see the policy
-            // panel), and the causal graph's own stat -> stat edges - what this stat is moved by and
-            // what it feeds, every one a ledger term the boundary audit proves.
-            List<PolicyWebEdge> incoming = PolicyWebRenderer.GetEdgesForTarget(node, _playerCountry);
-            if (incoming.Count > 0)
-            {
-                GUILayout.Label("Affected by (levers):", _labelStyle);
-                foreach (PolicyWebEdge edge in incoming)
-                {
-                    GUILayout.Label($"  {PolicyWebRenderer.GetPolicyName(edge.Source)} {(edge.Increases ? "▲" : "▼")} — {PolicyWebRenderer.ProvenanceTag(edge)}", _labelStyle);
-                }
-            }
-
-            List<StatWebEdge> statEdges = PolicyWebRenderer.GetStatEdgesFor(node);
-            if (statEdges.Count > 0)
-            {
-                GUILayout.Label("In the books (stat → stat):", _labelStyle);
-                foreach (StatWebEdge edge in statEdges)
-                {
-                    string line = edge.Target == node
-                        ? $"  moved by {PolicyWebRenderer.GetStatName(edge.Source)} {(edge.Increases ? "▲" : "▼")} — ledger: {edge.LedgerTerm}"
-                        : $"  feeds {PolicyWebRenderer.GetStatName(edge.Target)} {(edge.Increases ? "▲" : "▼")} — ledger: {edge.LedgerTerm}";
-                    GUILayout.Label(line, _labelStyle);
-                }
-            }
-
-            IReadOnlyList<float> history = PolicyWebRenderer.GetHistory(node, _playerCountry.History);
-            if (history != null)
-            {
-                GraphRenderer graph = GetOrCreatePolicyWebStatGraph(node);
-                GUILayout.Space(6f);
-                // The one graph that draws an arbitrary stat, and therefore the one that would have needed
-                // a hand-maintained "which of these are money" list. It asks the stat instead.
-                graph.DrawNeutral($"{PolicyWebRenderer.GetStatName(node)} (last 50 years)", history, null, _labelStyle,
-                    moneyUnit: PolicyWebRenderer.GetStatUnit(node));
-            }
-            else
-            {
-                GUILayout.Label("No trend history tracked for this stat yet.", _labelStyle);
-            }
-
-            GUILayout.EndVertical();
-        }
-
-        private readonly Dictionary<StatNodeId, GraphRenderer> _policyWebStatGraphs = new Dictionary<StatNodeId, GraphRenderer>();
-
-        private GraphRenderer GetOrCreatePolicyWebStatGraph(StatNodeId node)
-        {
-            if (!_policyWebStatGraphs.TryGetValue(node, out GraphRenderer graph))
-            {
-                graph = new GraphRenderer();
-                _policyWebStatGraphs[node] = graph;
-            }
-            return graph;
-        }
 
         /// <summary>Display name per CabinetPortfolio - kept separate from the enum's own C# identifier since "FinanceTreasury"/"InteriorJustice"/"HealthSocialAffairs" read awkwardly as UI text, the same "enum identifier vs. display string" separation PolicyWebRenderer.GetPolicyName/GetStatName already established.</summary>
         private static string GetPortfolioName(CabinetPortfolio portfolio)
