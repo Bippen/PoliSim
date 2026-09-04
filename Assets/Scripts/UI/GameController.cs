@@ -3754,23 +3754,49 @@ namespace PoliSim.UI
         {
             if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return; }
             int band = RangeCaptions.BandIndex(draft, min, max);
-            // The presenter's key is the ROW's identity, not the dial's name: eight sectors draw a "Subsidy" row each, and
-            // the first film lit every one of them when one moved.
             float alpha = RangeCaptionPresenter.Alpha(captionKey, band, !Mathf.Approximately(draft, standing));
             if (alpha <= 0f) { return; }
-            Rect area = LedgerRow.LastCaptionBand;
-            if (LedgerRow.LastHadEndNames) { area = new Rect(area.x + area.width * 0.2f, area.y, area.width * 0.6f, area.height); }
             RangeCaptions.Band b = dial.Bands[band];
-            // Lower-centred in the band: the knob's lower half hangs into the band's top, and the first film drew the
-            // caption's middle under it.
-            GUIStyle caption = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { alignment = TextAnchor.LowerCenter, fontStyle = FontStyle.Normal };
-            Color ink = PoliSimTheme.TextSecondary;
+
+            // P6-4 (board 8d, 2026-09-04): centred under the track inside the band the row already holds, between the
+            // end-names with at least the board's clearance each side - or the name drops and the line stands, the line
+            // being the content and the name its index. Face: caption mono at 8d's size (9.5 @1280, scaled with the label
+            // font) in TextPrimary - the one line on the row that is speaking - NAME bold, a middle dot, the line regular,
+            // on ONE line; two would grow the band and break P4-1. Nothing in the row moves: the band exists at rest.
+            Rect area = LedgerRow.LastCaptionBand;
+            float clear = Mathf.Round(RangeCaptionClearanceAt1280 * _labelStyle.fontSize / 14f);
+            if (LedgerRow.LastHadEndNames)
+            {
+                // The end-names sit at the band's ends (LedgerRow); the middle three fifths is the clear width between them.
+                area = new Rect(area.x + area.width * 0.2f + clear, area.y, area.width * 0.6f - clear * 2f, area.height);
+            }
+            if (area.width <= 8f) { return; }
+            int size = Mathf.Max(8, Mathf.RoundToInt(RangeCaptionFontAt1280 * _labelStyle.fontSize / 14f));
+            GUIStyle line = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { fontSize = size, alignment = TextAnchor.LowerLeft, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
+            GUIStyle nameStyle = new GUIStyle(line) { fontStyle = FontStyle.Bold };
+            Color ink = PoliSimTheme.TextPrimary;
             ink.a *= alpha;
+            string nameText = b.Name.ToUpperInvariant() + " · ";
+            float nameWidth = nameStyle.CalcSize(new GUIContent(nameText)).x;
+            float lineWidth = line.CalcSize(new GUIContent(b.Line)).x;
+            bool withName = nameWidth + lineWidth <= area.width;
+            if (!withName && lineWidth > area.width) { return; }   // neither fits: the band stays empty rather than overflow (the guards would say so)
+            float total = withName ? nameWidth + lineWidth : lineWidth;
+            float x = Mathf.Round(area.x + (area.width - total) * 0.5f);
             Color previous = GUI.color;
             GUI.color = new Color(1f, 1f, 1f, alpha);
-            PoliSimWidgets.MeasuredLabel(area, b.Name.ToUpperInvariant() + " · " + b.Line, Inked(caption, ink));
+            if (withName)
+            {
+                GUI.Label(new Rect(x, area.y, nameWidth, area.height), nameText, Inked(nameStyle, ink));
+                x += nameWidth;
+            }
+            GUI.Label(new Rect(x, area.y, lineWidth, area.height), b.Line, Inked(line, ink));
             GUI.color = previous;
         }
+
+        /// <summary>P6-4 (board 8d): the caption's face at 1280 - 6a's caption size - and the clearance it keeps from each end-name. Both scale with the label font.</summary>
+        private const float RangeCaptionFontAt1280 = 9.5f;
+        private const float RangeCaptionClearanceAt1280 = 12f;
 
         /// <summary>
         /// P5-1 (board 6a): the family's three trailing rects - the ledger row, the verdict cell (11 % of the row) and the action

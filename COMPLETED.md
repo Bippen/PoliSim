@@ -22895,3 +22895,15 @@ Five, as the sheet named them: the event card's empty state, the trade-volume ma
 **Films:** `p6a_1280` and `p6a_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `03a_decisions_options`, the staged decision's two options as two rows.
 
 **Bar:** `bar113_p6a_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §305–§308 together; the commits are split by file).
+
+## 306. P6-4 BUILT — BOARD 8d, THE RANGE CAPTION: placement, face, fade (2026-09-04, evening)
+
+**The board:** *"Centred under the track, in the band beneath the slider that carries the end-names - the same band, the same line; it fits between them with ≥12 px clear each side or it shortens: the name drops and the line stands. Face: caption mono 9.5 px at 1280, TextPrimary - the one line on the row that is speaking; NAME bold uppercase, a middle dot, the line in regular case, one line. Fade α = (1 − u)², u = (t − 1.5)/2.5: ease-in, not linear. Hold 1.5 s and fade 2.5 s kept."*
+
+**Built** (`DrawRangeCaption`, `RangeCaptionPresenter.Alpha`): the caption is laid out as two labels on one line - the name bold, the line regular - centred inside the band's middle three fifths less 12 px (×s) of clearance from each end-name; when the pair does not fit, the name drops and the line stands; when even the line does not fit, the band stays empty rather than overflow (the guards would say so). Face 9.5 px at 1280 (×s) in TextPrimary; before the board it was the caption size at 8.4 in TextSecondary, lower-centred. The fade is squared: readable through most of its life, gone quickly at the end; deterministic on the harness's clock as before. Nothing in the row moved - the band exists at rest (P4-1), which the film asserts again.
+
+**Deviations, stated:** the end-names are not moved and their band is the one LedgerRow reserved in P5-1 (its height is the row's caption band, not a stated 16 px - the board's own clause: the caption fits the built band).
+
+**Films:** `p6a_1280` and `p6a_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `06a_policylaws_labormarket_caption_drag` / `_held` / `_faded` and the Manufacturing subsidy trio on `06c`; the ledger geometry asserted identical at rest and showing.
+
+**Bar:** `bar113_p6a_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §305–§308 together; the commits are split by file).

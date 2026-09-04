@@ -53,7 +53,8 @@ namespace PoliSim.UI
             }
             float elapsed = now - touch.At;
             if (elapsed <= HoldSeconds) { return 1f; }
-            return Mathf.Clamp01(1f - (elapsed - HoldSeconds) / FadeSeconds);
+            float u = Mathf.Clamp01((elapsed - HoldSeconds) / FadeSeconds);
+            return (1f - u) * (1f - u);   // P6-4 (board 8d): ease-in, not linear - readable through most of the fade, gone quickly at the end
         }
 
         /// <summary>The harness's reset between films - every touch forgotten.</summary>
