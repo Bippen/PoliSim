@@ -22808,3 +22808,16 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **The package** (`SEND_PACKAGE.md`, regenerated): the request, the feature list and the lever map by digest; the two closing bars and the four film logs by digest; the frames D14 cites at both widths by name, size and digest; the E-8 screenshots; the D9 returns and the glance carried unchanged. The request reads back at `d7354760…` and the package at `8b923f19…` as installed (the first install cited the pre-fix film pair by name; corrected to the closing pair, `p4g_*`, in the same hour); the digests move with any later edit, and the receipt is the upload.
 
 **The errand:** E-14 - the D14 paste. Elias's.
+
+## 301. PLAYTEST 4, THE CLOSE — the four-width matrix on the closing tree, clean at every width (2026-09-04)
+
+**The sheet's close:** *"Screens film at 1280/2560; the matrix at the close."* The closing tree is fe069b7 (Tracks A–F, §284–§300; P4-C3 open). The sweep is 93 captures now - the 92 of the morning plus `03a_decisions_options` (P4-E3).
+
+| width | film | captures | failed | text overflows | containment escapes | screen edges | ledger geometry (rest vs mid-drag) |
+|---|---|---|---|---|---|---|---|
+| 1280×720 | `p4g_1280` | 93 | 0 | 0 | 0 | 0 clipped | stable on 05a, 05b, 06a, 06c (42 / 110 / 244 / 279 rows) |
+| 1600×950 | `p4close_1600` | 93 | 0 | 0 | 0 | 0 clipped | stable |
+| 1920×1080 | `p4close_1920` | 93 | 0 | 0 | 0 | 0 clipped | stable |
+| 2560×1440 | `p4g_2560` | 93 | 0 | 0 | 0 | 0 clipped | stable on the same four |
+
+The 1920 RUNNING-state finding of the P3 close (§"the four-width matrix", three frames NOT FLUSH) does not recur: the wedge was owned and fixed this morning (§281) and the edge check reads 0 clipped at 1920. The repeal assertion (§292) printed 182 quantities byte-identical on every width's sweep. **Bars behind the tree:** `bar108_p4cde_RunAllBatch.log` 31 of 31; `bar106_p4cde_RunSimulationBatch.log` 14 of 14.
