@@ -41,6 +41,15 @@ namespace PoliSim.Data
         /// <summary>P5-B2: the level of the line's driver (SpendingDrivers) at the last index, so each turn applies the RATIO now/then. Captured at the seed by Country.CaptureStructuralBases (so the first year's change counts); 0 = not yet read (a save from before this pass): the first index takes the level and applies a factor of 1.</summary>
         public float DriverReference;
 
+        /// <summary>P5-B5 (2026-09-05): the amount as the year opened, before the index and the year's changes - the row's delta against last year; 0 until a year has run.</summary>
+        public float LastYearAmount;
+
+        /// <summary>P5-B5: the driver ratio the last index applied (1 = the driver did not move); 0 until the first index. The row's projection carries it one year forward.</summary>
+        public float LastDriverRatio;
+
+        /// <summary>P5-B5: the figure this line reads next year if the player leaves it - the amount times the driver's last ratio, the same arithmetic IndexSpendingLines runs for the player (no price term: the book is in constant prices); a pinned line reads itself.</summary>
+        public float ProjectNextYear() => Pinned ? Amount : Amount * (LastDriverRatio > 0f ? LastDriverRatio : 1f);
+
         public SpendingLine() { }
 
         public SpendingLine(SpendingCategory category, float amount, bool isMandatory)
@@ -54,7 +63,7 @@ namespace PoliSim.Data
         /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - SpendingLine.Amount and (for a Discretionary line) SeedAmount are both mutated turn to turn, so the preview needs its own copies, not shared references. SeedAmount is copied explicitly (not re-derived from the current, possibly-mutated Amount) since it must stay independently anchored, not reset to Amount's current value.</summary>
         public SpendingLine Clone()
         {
-            return new SpendingLine(Category, Amount, IsMandatory) { SeedAmount = SeedAmount, Pinned = Pinned, DriverReference = DriverReference };
+            return new SpendingLine(Category, Amount, IsMandatory) { SeedAmount = SeedAmount, Pinned = Pinned, DriverReference = DriverReference, LastYearAmount = LastYearAmount, LastDriverRatio = LastDriverRatio };
         }
     }
 }

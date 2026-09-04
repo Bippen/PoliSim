@@ -521,14 +521,23 @@ namespace PoliSim.Testing
                             // P4-1 (2026-09-03): STABLE CONTROL LAYOUT - every ledger row's four column rects at rest, to be compared
                             // against the same rows mid-drag after the capture below.
                             var restGeometry = new Dictionary<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)>(LedgerRow.GeometryByRow);
-                            spendingInputs.TryGetValue(SpendingCategory.Education, out float before);
-                            spendingInputs[SpendingCategory.Education] = before + 15f;
+                            // P5-B5: the drafts are figures - Education drafted at 1.15x its standing amount (the +15 % the frame always showed).
+                            bool hadBefore = spendingInputs.TryGetValue(SpendingCategory.Education, out float before);
+                            var dragPlayer = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country;
+                            float educationStanding = dragPlayer?.SpendingLines.Find(l => l.Category == SpendingCategory.Education)?.Amount ?? 0f;
+                            spendingInputs[SpendingCategory.Education] = educationStanding * 1.15f;
                             yield return Settle();
                             yield return Settle();
                             yield return Capture(stem + "_dragged");
                             Debug.Log("SHOT: P3-C1 - the Education spending dial moved +15 for the mid-drag frame; the arrows above are with vs without that draft.");
                             AssertLedgerGeometryStable(restGeometry, stem);
-                            spendingInputs[SpendingCategory.Education] = before;
+                            // P5-B5 (2026-09-05): the same drag, scrolled to the rows - the figure, the band's instruments and a caption under
+                            // drafted rows on film; the scroll is put back to the top before the drag is undone.
+                            ScrollBy(controller, 900f);
+                            yield return Settle();
+                            yield return Capture(stem + "_rows_dragged");
+                            ScrollBy(controller, 0f);
+                            if (hadBefore) { spendingInputs[SpendingCategory.Education] = before; } else { spendingInputs.Remove(SpendingCategory.Education); }
                             yield return Settle();
                         }
                         else
@@ -1888,11 +1897,14 @@ namespace PoliSim.Testing
                 // carriers real but off-screen: the bill direction moved, proving the draft was live,
                 // while every row in frame still rendered at zero change. A capture that depends on
                 // which rows happen to be scrolled into view is not evidence.
-                inputs[category] = (drafted % 2 == 0) ? 6f : -4f;
+                // P5-B5: the drafts are FIGURES - alternate 1.06x and 0.96x of the line's standing amount (the +6 % / -4 % the frame always showed).
+                object amountObj = line.GetType().GetProperty("Amount")?.GetValue(line) ?? line.GetType().GetField("Amount")?.GetValue(line);
+                float standingAmount = amountObj is float fa ? fa : 0f;
+                inputs[category] = standingAmount * ((drafted % 2 == 0) ? 1.06f : 0.96f);
                 drafted++;
             }
 
-            Debug.Log($"SHOT: drafted {drafted} spending lines (+6%, -4%) so B1's hatch, draft figure and pencil render.");
+            Debug.Log($"SHOT: drafted {drafted} spending lines (x1.06, x0.96 of their standing amounts) so B1's hatch, draft figure and pencil render.");
         }
 
         private static bool SetPrivateField(object target, string field, object value)

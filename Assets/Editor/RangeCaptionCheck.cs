@@ -22,7 +22,7 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class RangeCaptionCheck
     {
-        private static readonly Regex DialCall = new Regex("DrawDialRow\\(\\s*\"([^\"]+)\"", RegexOptions.Compiled);
+        private static readonly Regex DialCall = new Regex("(?:DrawDialRow|DrawRangeCaption)\\(\\s*\"([^\"]+)\"", RegexOptions.Compiled);
 
         public static void Run()
         {
@@ -102,6 +102,8 @@ namespace PoliSim.EditorTools
                 case "Workforce Retraining Programs": return Labor(LaborDial.RetrainingProgram, LaborEffectStat.UnemploymentRate, out basis);
                 case "Family Policy": return Labor(LaborDial.FamilyPolicy, LaborEffectStat.BirthRate, out basis);
                 case "Immigration Policy": return Labor(LaborDial.ImmigrationPolicy, LaborEffectStat.NetMigrationRate, out basis);
+                case "Discretionary line": basis = "the figure set is the line's amount (ApplySpendingLineChanges, the nominal target) - P5-B5"; return 1;
+                case "Mandatory line": basis = "the figure set is the line's amount (ApplySpendingLineChanges, the nominal target) - P5-B5"; return 1;
                 case "General Base Tariff": basis = "the take is imports x rate (TradeSystem)"; return 1;
                 case "    Override rate": basis = "the take on this partner is its imports x rate (TradeSystem)"; return 1;
                 case "Fund drawdown": basis = "the withdrawal is GDP x percent, booked as revenue (SimulationManager)"; return 1;

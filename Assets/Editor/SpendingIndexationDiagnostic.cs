@@ -67,12 +67,13 @@ namespace PoliSim.EditorTools
 
                     float pinnedAtOne = float.NaN, targetedAtOne = float.NaN;
                     var levelStanding = new Dictionary<SpendingCategory, float>();   // each driver as it stood when the last turn opened
+                    var projected = new Dictionary<SpendingCategory, float>();   // P5-B5: each line's ProjectNextYear() read before the last turn
                     for (int year = 1; year <= Years; year++)
                     {
                         for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                         if (year == Years)
                         {
-                            foreach (SpendingLine l in country.SpendingLines) { levelStanding[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); }
+                            foreach (SpendingLine l in country.SpendingLines) { levelStanding[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); projected[l.Category] = l.ProjectNextYear(); }
                         }
                         sim.AdvanceTurn(decisions);
                         decisions[player] = PolicyDecision.None();
@@ -117,6 +118,20 @@ namespace PoliSim.EditorTools
                         if (Mathf.Abs(ratioCommitted - ratioStanding) <= 1e-6f) { readings.Add("either (the driver did not move within the turn)"); }
                         else { readings.Add(matchesCommitted ? "as committed this turn" : "as it stood when the turn opened"); }
                     }
+                    // P5-B5: the row's projection. A line with no driver, or a pinned line, must read exactly what it projected; a line
+                    // with a driver misses by the driver's own year-to-year move (the projection carries LAST year's ratio), reported.
+                    float worstProjectionMiss = 0f;
+                    foreach (SpendingLine l in country.SpendingLines)
+                    {
+                        if (l.Category == targeted) { continue; }
+                        float miss = Mathf.Abs(l.Amount / projected[l.Category] - 1f);
+                        if (SpendingDrivers.Of(l.Category) == SpendingDriver.None || l.Pinned)
+                        {
+                            if (miss > Tolerance) { Debug.LogError($"INDEXATION: {player} {l.Category} projected {projected[l.Category]:F4} for year {Years} and reads {l.Amount:F4}."); ok = false; }
+                        }
+                        else { worstProjectionMiss = Mathf.Max(worstProjectionMiss, miss); }
+                    }
+                    Debug.Log($"INDEXATION: {player} - the projection is exact on every line without a driver and on the pinned line; on the driver lines it misses by at most {worstProjectionMiss * 100f:F3} %, the driver's own year-to-year move.");
                     SpendingLine pinnedLine = country.SpendingLines.Find(l => l.Category == pinned);
                     if (BitConverter.SingleToInt32Bits(pinnedLine.Amount) != BitConverter.SingleToInt32Bits(pinnedAtOne))
                     {

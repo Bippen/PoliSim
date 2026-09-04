@@ -3761,6 +3761,8 @@ namespace PoliSim.Simulation
                 float level = SpendingDrivers.Level(driver, country);
                 float driverRatio = line.DriverReference > 0f && level > 0f ? level / line.DriverReference : 1f;   // the reference is the seed's level (Country.CaptureStructuralBases) or the last index's; 0 only on a save from before this pass
                 line.DriverReference = level;
+                line.LastYearAmount = line.Amount;   // P5-B5: the row's delta against last year reads this
+                line.LastDriverRatio = driverRatio;  // P5-B5: the row's projection carries this forward
                 float factor = driverRatio * realGrowth;
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }

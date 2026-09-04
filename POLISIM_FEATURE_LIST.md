@@ -672,7 +672,7 @@ slider and every negligible one either lifted or retired. **→ ✅ BUILT 2026-0
 small instruments, the delta against last year, and the projected next year; the slider sets the
 figure directly with the range captions (P4-B) rewritten for nominal ranges. The fiscal header's
 projected balance reads from the indexed lines. *Done when:* filmed rest and mid-drag, rects
-stable, every figure derived.
+stable, every figure derived. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §316: the slider carries the figure (the track this year's allowed change around the standing amount), the bill carries it as a nominal target and the parliament weighs it as the percentage it implies; the driver's ratio and the projection (`SpendingLine.ProjectNextYear`) in the band's left and right ends, the delta against last year beside it; two caption catalogs for the nominal ranges; filmed rest and mid-drag at 1280 and 2560, rects stable. The fiscal header already read the indexed lines through the preview.**
 
 **P5-B6 — The book in current prices.** *(Sheeted by P5-B2, §314, from a measurement.)* The model
 keeps every $B figure in constant prices: `EconomyState.PotentialGDP` grows at the real potential rate alone, GDP

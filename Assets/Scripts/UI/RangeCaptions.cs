@@ -267,6 +267,37 @@ namespace PoliSim.UI
                 B("Unfettered", "The rulebook is a pamphlet. Output high; jobs fewer.", +1),
                 B("Laissez-faire", "Output at the ceiling; the sector runs itself, with fewer hands.", +1),
             }) },
+            // P5-B5 (2026-09-05): the spending rows carry the FIGURE (P5-B2's nominal line); the track is the year's allowed
+            // change around the standing amount (±30 % Discretionary, ±15 % Mandatory), the standing tick at its centre, so
+            // the neutral band is the fifth and the stat is the line's own provision - it rises with the dial by construction
+            // (ApplySpendingLineChanges sets the amount to the target). Two catalogs because the same band is a different
+            // deed on an entitlement than on a programme.
+            { "Discretionary line", new Dial("Discretionary line", "the line's provision", +1, 0.5f, new[]
+            {
+                B("Gutted", "A third of the line gone in a year. The ministry issues a statement; the statement is short.", -1),
+                B("Slashed", "A quarter off. Programmes close; the closures make the news.", -1),
+                B("Cut", "A real cut. The department finds economies, and then finds it cannot.", -1),
+                B("Trimmed", "A little less than the index carried here. Nobody outside the building notices.", -1),
+                B("As it stands", "The figure the index carried here. The driver did this; the player did nothing.", 0),
+                B("Topped up", "A little more than the index gave. The minister mentions it once.", +1),
+                B("Raised", "A real increase. Something new opens; the opposition asks what it costs.", +1),
+                B("Expanded", "A fifth more than last year. Provision widens; the deficit notices.", +1),
+                B("Surged", "A quarter on the line in one year. The ministry hires; the treasury frowns.", +1),
+                B("Doubled down", "Nearly a third more. A signature commitment, funded on the day it is announced.", +1),
+            }) },
+            { "Mandatory line", new Dial("Mandatory line", "the line's provision", +1, 0.5f, new[]
+            {
+                B("Clawed back", "A seventh off an entitlement. Cheques shrink; the letters arrive in bulk.", -1),
+                B("Cut", "A real cut to a promise made. Recipients organise; their organisation has a mailing list.", -1),
+                B("Tightened", "Eligibility narrows or the rate slips. Felt at the margin, litigated at the centre.", -1),
+                B("Trimmed", "A shade below what the index carried. Most recipients will not see it; some will.", -1),
+                B("As it stands", "The entitlement the index carried here. Its cohort did this, not the player.", 0),
+                B("Uprated", "A shade above the index. An honest uprating, and the cheapest kind of gratitude.", +1),
+                B("Raised", "A real rise in the entitlement. Recipients notice; so does the projection.", +1),
+                B("Widened", "A tenth more than last year: broader eligibility or a fatter rate. A promise that persists.", +1),
+                B("Enlarged", "A big rise on a big line. The deficit carries the weight for every year after.", +1),
+                B("Recast", "A seventh more in one year. A new social contract, priced at its opening.", +1),
+            }) },
         };
     }
 }

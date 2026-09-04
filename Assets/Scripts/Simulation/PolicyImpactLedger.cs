@@ -64,7 +64,8 @@ namespace PoliSim.Simulation
             {
                 "Spending", new[]
                 {
-                    "SpendingLineChanges", "HealthcareSpendingChange", "DefenseSpendingChange",
+                    "SpendingLineChanges", "SpendingNominalTargets", "SpendingPinChanges",   // P5-B2's figure and pin - the same spending family
+                    "HealthcareSpendingChange", "DefenseSpendingChange",
                     "InfrastructureSpendingChange", "EducationSpendingChange", "JusticeSpendingChange",
                     "HomelandSecuritySpendingChange", "EnergySpendingChange", "HousingSpendingChange"
                 }
@@ -249,7 +250,7 @@ namespace PoliSim.Simulation
         /// <summary>⚠ The completeness check. A `PolicyDecision` field in no family would be a dial the
         /// ledger silently never attributes; a name in the table that is not a field would be a family
         /// that quietly attributes nothing. Both throw, naming the offender.</summary>
-        private static void AssertPartitionCovers()
+        private static void AssertPartitionCovers()   // PolicyImpactLedgerCheck reaches it by reflection on the cheap bar (P5-B5) - a harness reaching private state is the project's idiom
         {
             var claimed = new HashSet<string>();
             foreach (KeyValuePair<string, string[]> family in Families)

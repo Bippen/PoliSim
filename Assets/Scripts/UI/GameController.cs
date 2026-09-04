@@ -230,6 +230,7 @@ namespace PoliSim.UI
         // clamped to its own range in SimulationManager) - unlike _taxRateInputs, this IS cleared by
         // ResetPolicyInputs each turn, since SpendingLine.Amount itself is what persists, not this
         // draft.
+        /// <summary>P5-B5: the spending drafts are nominal FIGURES (a line's drafted amount), not percentages; a line with no entry stands where it is.</summary>
         private readonly Dictionary<SpendingCategory, float> _spendingLineInputs = new Dictionary<SpendingCategory, float>();
         private float _interestRateChangeInput;
 
@@ -894,7 +895,7 @@ namespace PoliSim.UI
                 SectorTaxCreditInputs = new Dictionary<SectorType, float>(_sectorTaxCreditInputs),
                 SectorResearchGrantsInputs = new Dictionary<SectorType, float>(_sectorResearchGrantsInputs),
                 SectorDeregulationInputs = new Dictionary<SectorType, float>(_sectorDeregulationInputs),
-                SpendingLineInputs = new Dictionary<SpendingCategory, float>(_spendingLineInputs),
+                SpendingNominalDrafts = new Dictionary<SpendingCategory, float>(_spendingLineInputs),
                 PartnerTariffInputs = new Dictionary<CountryId, float>(_partnerTariffInputs),
                 SwfExistsDraft = _swfExistsDraft,
                 SwfDrawdownPercentInput = _swfDrawdownPercentInput,
@@ -960,7 +961,7 @@ namespace PoliSim.UI
                 CopyDrafts(ui.SectorTaxCreditInputs, _sectorTaxCreditInputs);
                 CopyDrafts(ui.SectorResearchGrantsInputs, _sectorResearchGrantsInputs);
                 CopyDrafts(ui.SectorDeregulationInputs, _sectorDeregulationInputs);
-                CopyDrafts(ui.SpendingLineInputs, _spendingLineInputs);
+                CopyDrafts(ui.SpendingNominalDrafts, _spendingLineInputs);
                 CopyDrafts(ui.PartnerTariffInputs, _partnerTariffInputs);
             }
 
@@ -3747,12 +3748,13 @@ namespace PoliSim.UI
         /// construction; where the row draws end-names the caption keeps to the middle three fifths between them.
         /// A dial with no catalog entry draws nothing (RangeCaptionCheck fails the bar on one).
         /// </summary>
-        private void DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max)
+        /// <returns>P5-B5: whether a caption was painted this Repaint - a spending row lays its instruments around it when it was.</returns>
+        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, bool endPieces = false)
         {
-            if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return; }
+            if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return false; }
             int band = RangeCaptions.BandIndex(draft, min, max);
             float alpha = RangeCaptionPresenter.Alpha(captionKey, band, !Mathf.Approximately(draft, standing));
-            if (alpha <= 0f) { return; }
+            if (alpha <= 0f) { return false; }
             RangeCaptions.Band b = dial.Bands[band];
 
             // P6-4 (board 8d, 2026-09-04): centred under the track inside the band the row already holds, between the
@@ -3762,12 +3764,12 @@ namespace PoliSim.UI
             // on ONE line; two would grow the band and break P4-1. Nothing in the row moves: the band exists at rest.
             Rect area = LedgerRow.LastCaptionBand;
             float clear = Mathf.Round(RangeCaptionClearanceAt1280 * _labelStyle.fontSize / 14f);
-            if (LedgerRow.LastHadEndNames)
+            if (LedgerRow.LastHadEndNames || endPieces)   // P5-B5: a spending row's instruments sit in the band's two ends, as end-names do
             {
                 // The end-names sit at the band's ends (LedgerRow); the middle three fifths is the clear width between them.
                 area = new Rect(area.x + area.width * 0.2f + clear, area.y, area.width * 0.6f - clear * 2f, area.height);
             }
-            if (area.width <= 8f) { return; }
+            if (area.width <= 8f) { return false; }
             int size = Mathf.Max(8, Mathf.RoundToInt(RangeCaptionFontAt1280 * _labelStyle.fontSize / 14f));
             GUIStyle line = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { fontSize = size, alignment = TextAnchor.LowerLeft, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
             GUIStyle nameStyle = new GUIStyle(line) { fontStyle = FontStyle.Bold };
@@ -3777,7 +3779,7 @@ namespace PoliSim.UI
             float nameWidth = nameStyle.CalcSize(new GUIContent(nameText)).x;
             float lineWidth = line.CalcSize(new GUIContent(b.Line)).x;
             bool withName = nameWidth + lineWidth <= area.width;
-            if (!withName && lineWidth > area.width) { return; }   // neither fits: the band stays empty rather than overflow (the guards would say so)
+            if (!withName && lineWidth > area.width) { return false; }   // neither fits: the band stays empty rather than overflow (the guards would say so)
             float total = withName ? nameWidth + lineWidth : lineWidth;
             float x = Mathf.Round(area.x + (area.width - total) * 0.5f);
             Color previous = GUI.color;
@@ -3789,6 +3791,7 @@ namespace PoliSim.UI
             }
             GUI.Label(new Rect(x, area.y, lineWidth, area.height), b.Line, Inked(line, ink));
             GUI.color = previous;
+            return true;
         }
 
         /// <summary>P6-4 (board 8d): the caption's face at 1280 - 6a's caption size - and the clearance it keeps from each end-name. Both scale with the label font.</summary>
@@ -4270,6 +4273,7 @@ namespace PoliSim.UI
                 int h = 17;
                 foreach (KeyValuePair<TaxType, float> kv in draft.TaxLines) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
                 foreach (KeyValuePair<SpendingCategory, float> kv in draft.SpendingPercentChanges) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                foreach (KeyValuePair<SpendingCategory, float> kv in draft.SpendingNominalTargets) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
                 foreach (KeyValuePair<WelfareProgramType, float> kv in draft.WelfarePrograms) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
                 h = h * 31 + draft.SwfContributionRatePercent.GetHashCode(); h = h * 31 + (draft.SwfShouldExist ? 1 : 0); h = h * 31 + draft.SwfDomesticAllocationPercent.GetHashCode();
                 h = h * 31 + draft.SwfEquitiesWeight.GetHashCode(); h = h * 31 + draft.SwfBondsWeight.GetHashCode(); h = h * 31 + draft.SwfInfrastructureWeight.GetHashCode(); h = h * 31 + draft.SwfRealEstateWeight.GetHashCode();
@@ -5574,9 +5578,10 @@ namespace PoliSim.UI
         }
 
         /// <summary>The Spending Policy tab's draft PERCENTAGE change for a SpendingCategory this turn (Mandatory or Discretionary), or 0 if the player hasn't touched that slider.</summary>
-        private float GetSpendingLineInput(SpendingCategory category)
+        /// <summary>P5-B5: the drafted FIGURE for a line, or its standing amount when nothing is drafted.</summary>
+        private float GetSpendingLineInput(SpendingCategory category, float standing)
         {
-            return _spendingLineInputs.TryGetValue(category, out float value) ? value : 0f;
+            return _spendingLineInputs.TryGetValue(category, out float value) ? value : standing;
         }
 
         private PolicyDecision BuildPlayerDecision()
@@ -10069,6 +10074,11 @@ namespace PoliSim.UI
                 sb.Append((int)line.Key).Append(':').Append(line.Value.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             }
 
+            foreach (KeyValuePair<SpendingCategory, float> line in draft.SpendingNominalTargets)
+            {
+                sb.Append('=').Append((int)line.Key).Append(':').Append(line.Value.ToString("R", CultureInfo.InvariantCulture)).Append('|');
+            }
+
             foreach (KeyValuePair<SpendingCategory, float> line in draft.SpendingPercentChanges)
             {
                 sb.Append((int)line.Key).Append(':').Append(line.Value.ToString("R", CultureInfo.InvariantCulture)).Append('|');
@@ -10112,10 +10122,11 @@ namespace PoliSim.UI
 
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
             {
-                float percent = GetSpendingLineInput(spendingLine.Category);
-                if (percent != 0f)
+                // P5-B5: the bill carries the FIGURE the slider set (the parliament weighs it as the percentage it implies).
+                float figure = GetSpendingLineInput(spendingLine.Category, spendingLine.Amount);
+                if (!Mathf.Approximately(figure, spendingLine.Amount))
                 {
-                    bill.SpendingPercentChanges[spendingLine.Category] = percent;
+                    bill.SpendingNominalTargets[spendingLine.Category] = figure;
                 }
             }
 
@@ -10999,41 +11010,85 @@ namespace PoliSim.UI
 
         private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent, float groupMax)
         {
-            float draftPercent = GetSpendingLineInput(spendingLine.Category);
-            bool hasDraft = !Mathf.Approximately(draftPercent, 0f);
-            float draftAmount = spendingLine.Amount * (1f + draftPercent / 100f);
+            float standing = spendingLine.Amount;
+            float draft = GetSpendingLineInput(spendingLine.Category, standing);
+            bool hasDraft = !Mathf.Approximately(draft, standing);
 
-            // ⚠ SPENDING'S STANDING VALUE SITS AT ZERO, and that is the whole translation.
-            //
-            // A tax row's slider carries the RATE, so its standing tick sits at the enacted rate. A
-            // spending row's slider carries a PERCENTAGE CHANGE to its own amount, so the position
-            // meaning "as it stands" is 0 - dead centre of a -range..+range track. Mapping standing to 0
-            // rather than to the amount is what makes the hatch band read correctly: it spans from
-            // no-change to the drafted change, in whichever direction, which is exactly what it means on
-            // a tax row too. The units differ; the geometry and behaviour 1 do not.
+            // P5-B5 (2026-09-05): THE SLIDER CARRIES THE FIGURE. Before this pass it carried a percentage change with
+            // its standing tick at 0; now the standing tick is the line's nominal amount - the figure the index carried
+            // here (P5-B2) - and the track is this year's allowed change around it (±rangePercent, the law
+            // ApplySpendingLineChanges enforces on a percentage change; Mandatory narrower). The bill carries the
+            // figure as a nominal target (BudgetBill.SpendingNominalTargets), and the parliament weighs it as the
+            // percentage it implies (ParliamentSystem.SpendingPercentChangesOf). A draft is stored as the figure; no
+            // draft is the standing amount, which is why a slider left where it stands stores nothing.
+            float min = standing * (1f - rangePercent / 100f);
+            float max = standing * (1f + rangePercent / 100f);
             Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
 
-            float newPercent = LedgerRow.Draw(
+            float result = LedgerRow.Draw(
                 rowRect,
                 DisplayName.Of(spendingLine.Category.ToString()),
-                0f,
-                draftPercent,
-                -rangePercent,
-                rangePercent,
-                UiFormat.Money(spendingLine.Amount, MoneyUnit.Billions),
-                // The draft half prints the AMOUNT it lands at, not the percentage that got it there -
-                // the board's column is STANDING then DRAFT, two comparable figures, and "$1.53T then
-                // +2.0%" would make the reader do the arithmetic the row exists to have already done.
-                hasDraft ? UiFormat.Money(draftAmount, MoneyUnit.Billions) : null,
-                SpendingShareOfGdpText(spendingLine.Amount),
+                standing,
+                draft,
+                min,
+                max,
+                UiFormat.Money(standing, MoneyUnit.Billions),
+                hasDraft ? UiFormat.Money(draft, MoneyUnit.Billions) : null,
+                SpendingTrailingText(spendingLine),
                 interactive: true,
                 _labelStyle,
                 _labelStyle,
                 _sliderStyle,
                 _sliderThumbStyle,
-                barFraction: spendingLine.Amount / groupMax);
+                barFraction: standing / groupMax);
 
-            _spendingLineInputs[spendingLine.Category] = newPercent;
+            if (Event.current.type == EventType.Repaint)
+            {
+                // Two literal keys so RangeCaptionCheck's enumeration of the drawn dials reads them off this file.
+                bool captionShown = spendingLine.IsMandatory
+                    ? DrawRangeCaption("Mandatory line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true)
+                    : DrawRangeCaption("Discretionary line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true);
+                DrawSpendingLineInstruments(spendingLine, captionShown);
+            }
+
+            if (Mathf.Approximately(result, standing)) { _spendingLineInputs.Remove(spendingLine.Category); }
+            else { _spendingLineInputs[spendingLine.Category] = result; }
+        }
+
+        /// <summary>
+        /// P5-B5: the row's small instruments, in the two ends of the caption band beneath the track. Left, the driver:
+        /// its short name and the ratio the last index applied (`65+ ×1.013`), or NO DRIVER, or PINNED. Right, NEXT -
+        /// the projection <see cref="SpendingLine.ProjectNextYear"/>, the same arithmetic the turn runs. The ends take
+        /// 35 % of the band each at rest; while a range caption is painted (mid-drag and its fade) they take 20 %, as
+        /// end-names do, and the caption keeps the middle. A piece that does not fit its end at the width in force is
+        /// shortened (the ratio dropped) rather than clipped - the caption checks measure, they do not guess. The delta
+        /// against the amount the year opened with sits beside NEXT and is the first thing dropped when the end is narrow.
+        /// </summary>
+        private void DrawSpendingLineInstruments(SpendingLine line, bool captionShown)
+        {
+            Rect band = LedgerRow.LastCaptionBand;
+            if (band.width <= 8f) { return; }
+            GUIStyle face = LedgerRow.CaptionStyle(_labelStyle);
+            float end = band.width * (captionShown ? 0.2f : 0.35f);
+            string driver = SpendingDrivers.Short(SpendingDrivers.Of(line.Category));
+            string leftFull = line.Pinned ? "PINNED · " + driver
+                : SpendingDrivers.Of(line.Category) == SpendingDriver.None ? "NO DRIVER"
+                : line.LastDriverRatio > 0f ? driver + " ×" + line.LastDriverRatio.ToString("F3", CultureInfo.InvariantCulture) : driver;
+            string leftShort = line.Pinned ? "PINNED" : driver;
+            string left = face.CalcSize(new GUIContent(leftFull)).x <= end ? leftFull : leftShort;
+            string next = "NEXT " + UiFormat.Money(line.ProjectNextYear(), MoneyUnit.Billions);
+            string rightFull = line.LastYearAmount > 0f ? "Δ " + UiFormat.MoneyDelta(line.Amount - line.LastYearAmount, MoneyUnit.Billions) + " · " + next : next;
+            string right = face.CalcSize(new GUIContent(rightFull)).x <= end ? rightFull : next;
+            Color ink = PoliSimTheme.TextSecondary;
+            GUI.Label(new Rect(band.x, band.y, end, band.height), left, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, ink));
+            GUI.Label(new Rect(band.xMax - end, band.y, end, band.height), right, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperRight, clipping = TextClipping.Clip }, ink));
+        }
+
+        /// <summary>The trailing cell of a spending row: the share of GDP (B3: the unit named).</summary>
+        private string SpendingTrailingText(SpendingLine line)
+        {
+            // The delta lives in the band's right end beside NEXT (the trailing cell is drawn under the figure and spilled into the band when it carried both).
+            return SpendingShareOfGdpText(line.Amount);
         }
 
         /// <summary>This line's share of GDP, the board's trailing column for a spending row. B3: the unit is named, and a share is not money so it takes a format string rather than a MoneyUnit.</summary>

@@ -101,6 +101,22 @@ namespace PoliSim.Data
                  + cohorts.InAgeRange(80, 999) * OldestCostWeight;
         }
 
+        /// <summary>P5-B5: the driver's short name for the row's instrument band (caption mono, a fifth of the track at 1280).</summary>
+        public static string Short(SpendingDriver driver)
+        {
+            switch (driver)
+            {
+                case SpendingDriver.Population: return "POPULATION";
+                case SpendingDriver.Elderly65Plus: return "65+";
+                case SpendingDriver.Youth0To19: return "0–19";
+                case SpendingDriver.WorkingAge20To64: return "20–64";
+                case SpendingDriver.Students15To29: return "15–29";
+                case SpendingDriver.AgeCostIndex: return "AGE COST";
+                case SpendingDriver.UnemploymentRate: return "JOBLESS RATE";
+                default: return "NO DRIVER";
+            }
+        }
+
         public static string Name(SpendingDriver driver)
         {
             switch (driver)

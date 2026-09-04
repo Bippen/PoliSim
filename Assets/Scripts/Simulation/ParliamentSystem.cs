@@ -115,6 +115,18 @@ namespace PoliSim.Simulation
         /// % change, welfare generosity points) - consistent with this formula's own existing precedent
         /// as a stated proposal rather than a rigorously-derived one.
         /// </summary>
+        /// <summary>P5-B5: the bill's spending changes as percentages of each line's standing amount - the percentage dictionary as it is, and every nominal target (P5-B2) read against the line it sets, so a figure set on the screen weighs on the vote exactly as the same change asked as a percentage.</summary>
+        private static IEnumerable<KeyValuePair<SpendingCategory, float>> SpendingPercentChangesOf(Country country, BudgetBill bill)
+        {
+            foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingPercentChanges) { yield return kvp; }
+            foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingNominalTargets)
+            {
+                SpendingLine line = country.SpendingLines.Find(l => l.Category == kvp.Key);
+                if (line == null || line.Amount <= 0f) { continue; }
+                yield return new KeyValuePair<SpendingCategory, float>(kvp.Key, (kvp.Value / line.Amount - 1f) * 100f);
+            }
+        }
+
         public static float GetBillDirection(Country country, BudgetBill bill)
         {
             float direction = 0f;
@@ -129,7 +141,7 @@ namespace PoliSim.Simulation
                 direction += kvp.Value - standing.Rate;
             }
 
-            foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingPercentChanges)
+            foreach (KeyValuePair<SpendingCategory, float> kvp in SpendingPercentChangesOf(country, bill))
             {
                 direction += kvp.Value;
             }
@@ -820,7 +832,7 @@ namespace PoliSim.Simulation
                 // Taxation → redistribution ("0 = strongly favors redistribution"): a rise moves toward 0, a cut toward 10.
                 concern.Add(StanceAxis.Redistribution, -(kvp.Value - standing.Rate));
             }
-            foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingPercentChanges)
+            foreach (KeyValuePair<SpendingCategory, float> kvp in SpendingPercentChangesOf(country, bill))
             {
                 foreach ((StanceAxis axis, float towardTenPerUnit) in BudgetLineAxes(kvp.Key))
                 {

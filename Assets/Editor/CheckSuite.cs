@@ -242,6 +242,7 @@ namespace PoliSim.EditorTools
             ("InkContrastCheck", InkContrastCheck.Run),   // P2-1.2 (2026-09-02): every ink pair at its use, WCAG ratio derived from the theme, floors 4.5 body / 3.5 caption
             ("RangeCaptionCheck", RangeCaptionCheck.Run),   // P4-B1 (2026-09-04): every dial ten bands, every band's direction the dial's own effect sign
             ("EventPoolCheck", EventPoolCheck.Run),   // P4-D2 (2026-09-04): every event named, lined, tagged, cited and banded; the pool at least doubled; EventPool[0] pinned for the Desk film
+            ("PolicyImpactLedgerCheck", PolicyImpactLedgerCheck.Run),   // P5-B5 (2026-09-05): every PolicyDecision field in a ledger family - the ledger throws at PLAY time otherwise, which the bars never reached (B2 shipped two fields outside one; the film found it)
 
             // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped
             // discriminating. ⚠ REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above

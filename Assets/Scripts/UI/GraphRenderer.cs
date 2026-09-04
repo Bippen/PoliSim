@@ -428,12 +428,26 @@ namespace PoliSim.UI
                 ? "THE WHOLE SERIES"
                 : _pageFromEnd == 0 ? $"LAST {WindowSize} YEARS" : $"{_pageFromEnd * WindowSize + 1}–{(_pageFromEnd + 1) * WindowSize} YEARS AGO";
             string left = $"OLDER ◀ ▶ NEWER · {window}" + (spansZero ? " · DOTTED = ZERO" : "");
-            string right = "Δ = LAST − FIRST IN WINDOW · " + (deltaInPoints ? "POINTS" : _moneyUnit.HasValue ? "MONEY, NEVER %" : "% OF THE FIRST, MONEY FROM A ZERO BASE");
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(left, _footStyle, GUILayout.ExpandWidth(false));
-            GUILayout.FlexibleSpace();
-            GUILayout.Label(right, _footStyle, GUILayout.ExpandWidth(false));
-            GUILayout.EndHorizontal();
+            string unit = deltaInPoints ? "POINTS" : _moneyUnit.HasValue ? "MONEY, NEVER %" : "% OF THE FIRST, MONEY FROM A ZERO BASE";
+            // P5-B5 (2026-09-05): THE FOOT NEVER WIDENS THE PAGE. As two ExpandWidth(false) labels in a horizontal, the foot's
+            // minimum width was the sum of its texts - wider than the Budget centre column at 1280, so the whole scroll view
+            // grew a horizontal scrollbar and every spending row's figure cell slid off the panel (the B4 film caught it).
+            // The foot takes the row it is given and the right piece steps down a ladder until it fits beside the left one.
+            Rect foot = GUILayoutUtility.GetRect(10f, _footStyle.CalcHeight(new GUIContent(left), 4000f), GUILayout.ExpandWidth(true));
+            float gap = 8f;
+            float leftWidth = Mathf.Min(_footStyle.CalcSize(new GUIContent(left)).x, foot.width * 0.6f);
+            float rightWidth = Mathf.Max(0f, foot.width - leftWidth - gap);
+            string right = null;
+            foreach (string candidate in new[] { "Δ = LAST − FIRST IN WINDOW · " + unit, "Δ = LAST − FIRST · " + unit, "Δ = LAST − FIRST" })
+            {
+                if (_footStyle.CalcSize(new GUIContent(candidate)).x <= rightWidth) { right = candidate; break; }
+            }
+            PoliSimWidgets.MeasuredLabel(new Rect(foot.x, foot.y, leftWidth, foot.height), left, _footStyle);
+            if (right != null)
+            {
+                GUIStyle rightStyle = new GUIStyle(_footStyle) { alignment = TextAnchor.UpperRight };
+                PoliSimWidgets.MeasuredLabel(new Rect(foot.xMax - rightWidth, foot.y, rightWidth, foot.height), right, rightStyle);
+            }
         }
 
 

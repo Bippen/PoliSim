@@ -112,7 +112,8 @@ namespace PoliSim.Persistence
         public Dictionary<SectorType, float> SectorTaxCreditInputs = new Dictionary<SectorType, float>();
         public Dictionary<SectorType, float> SectorResearchGrantsInputs = new Dictionary<SectorType, float>();
         public Dictionary<SectorType, float> SectorDeregulationInputs = new Dictionary<SectorType, float>();
-        public Dictionary<SpendingCategory, float> SpendingLineInputs = new Dictionary<SpendingCategory, float>();
+        /// <summary>P5-B5 (2026-09-05): the spending drafts as FIGURES (a line's drafted amount). Replaces SpendingLineInputs, which held percentages; a save from before this pass simply has no drafts.</summary>
+        public Dictionary<SpendingCategory, float> SpendingNominalDrafts = new Dictionary<SpendingCategory, float>();
         public Dictionary<CountryId, float> PartnerTariffInputs = new Dictionary<CountryId, float>();
 
         public bool? SwfExistsDraft;
