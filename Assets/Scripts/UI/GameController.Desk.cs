@@ -908,21 +908,15 @@ namespace PoliSim.UI
                 return;
             }
 
+            // P4-D3 (2026-09-04): the empty slot is an instrument-class line, not a paragraph - the dashed reservation and
+            // one caption in the card's own mono, centred in the band: the year and the fact. The purpose line and the
+            // two-line paragraph it replaces restated what the frame already says.
             DeskDashedFrame(r, PoliSimTheme.HairlineStrong, 5f, 4f);
-            GUIStyle purpose = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
-            float purposeHeight = DeskCaptionHeight(purpose);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x + padX, r.y + padY, Mathf.Max(1f, r.width - padX * 2f), purposeHeight), "EVENT CARD — DRAWS ONLY WHILE AN EVENT IS LIVE", purpose);
-
-            GUIStyle quiet = DeskCaption(8f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
+            GUIStyle quiet = DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
             float lineHeight = DeskCaptionHeight(quiet);
-            float lineGap = Mathf.Round(2f * uy);
             int turn = _simulationManager.CurrentTurn;
-            string opening = turn == 0 ? "YEAR 0 OPENS QUIET" : $"YEAR {turn} IS QUIET";
-            float top = r.y + padY + purposeHeight;
-            float band = r.yMax - padY - top;
-            float firstY = top + Mathf.Max(0f, (band - lineHeight * 2f - lineGap) * 0.5f);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x + padX, firstY, Mathf.Max(1f, r.width - padX * 2f), lineHeight), opening + " — THE RESERVATION HOLDS ITS GROUND", quiet);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x + padX, firstY + lineHeight + lineGap, Mathf.Max(1f, r.width - padX * 2f), lineHeight), "AND THE CALENDAR ABOVE SAYS WHAT IS COMING INSTEAD", quiet);
+            float centreY = r.y + padY + Mathf.Max(0f, (r.height - padY * 2f - lineHeight) * 0.5f);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x + padX, centreY, Mathf.Max(1f, r.width - padX * 2f), lineHeight), $"YEAR {turn} · NO EVENT LIVE", quiet);
         }
 
         /// <summary>Whether the preview has a draft to read: the interest-rate change is the one input BuildPlayerDecision still carries (PolicyInputsChangedSinceLastPreview's own note) - bills reach the estimate only as they pass.</summary>

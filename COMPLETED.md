@@ -22742,3 +22742,13 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **The check** (`EventPoolCheck`, the cheap bar): every event named, lined, tagged and cited with a class the catalog knows; no shock past the ceiling; nothing that moves nothing; the pool at least 48; and the first entry pinned by name, because the Desk film stages it and a reordered pool would change a frame silently.
 
 **Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).
+
+## 295. P4-D3 — THE EVENT SLOT STREAMLINED: the empty state one instrument-class line; the live card as it was (2026-09-04)
+
+**The row:** *"The empty state ("Year 1 is quiet…") becomes an instrument-class line, not a paragraph; a live event draws in the card's grammar. Done when: filmed empty and live."*
+
+**Empty** (`DrawDeskEventReservation`): the purpose line (*EVENT CARD — DRAWS ONLY WHILE AN EVENT IS LIVE*) and the two-line paragraph (*YEAR n IS QUIET — THE RESERVATION HOLDS ITS GROUND / AND THE CALENDAR ABOVE SAYS WHAT IS COMING INSTEAD*) are cut; the dashed reservation stays, and one caption in the card's own mono sits centred in it: *YEAR n · NO EVENT LIVE*. **Live**: the card already drew in its own grammar (the BREAKING chip, the name, the line, the three bars) and is unchanged; with the pool doubled it still shows the first entry the driver stages, which `EventPoolCheck` now pins.
+
+**Films:** `p4g_1280` and `p4g_2560` (the full sweep on the closing tree, 0 failed, 0 overflows, 0 escapes): `01c_desk` empty - YEAR 0 · NO EVENT LIVE centred in the reservation - and `01e_desk_event` live, the staged first entry on its card.
+
+**Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).

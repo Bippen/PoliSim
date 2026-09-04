@@ -591,7 +591,7 @@ when:* the pool doubles at minimum and the per-year rate is measured after. **�
 
 **P4-D3 — The event slot streamlined.** The empty state ("Year 1 is quiet…") becomes an
 instrument-class line, not a paragraph; a live event draws in the card's grammar. *Done when:*
-filmed empty and live.
+filmed empty and live. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §295: the empty slot is one caption in the card's mono - YEAR n · NO EVENT LIVE - inside the dashed reservation; the live card unchanged; filmed empty and live at 1280 and 2560.**
 
 ## Track E — the cuts and small fixes
 
