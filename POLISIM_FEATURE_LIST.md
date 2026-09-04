@@ -562,7 +562,7 @@ to the preview. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §290: `SectorCoupli
 **P4-C1 — The lever map, measured.** Enumerate every macro quantity the model holds (NAIRU,
 inflation regime, potential growth, participation, the coupling table's targets, the central bank's
 parameters, and the rest) and for each: which dials and laws reach it today. The unreached set is
-the coverage plan. *Done when:* the map is in the record, generated not transcribed.
+the coverage plan. *Done when:* the map is in the record, generated not transcribed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §291: `LeverMapDump` probes 127 dials and 100 laws through the real turn path and writes `LEVER_MAP.md` - 68 of 76 quantities reached, eight unreached (the NAIRU first among them) and thirty reached by no law; the coverage plan for P4-C3.**
 
 **P4-C2 — Repeal.** An enacted law can be put to the chamber for repeal through the same
 bill-and-vote path; its effect is the negative of enactment (the delta-composed recomputation
