@@ -22883,3 +22883,15 @@ Five, as the sheet named them: the event card's empty state, the trade-volume ma
 **Films:** `p4j_1280` and `p4j_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `06f_policylaws_laws` with the fifth chip (120 laws), `06h_laws_institutions_card` and `06h_laws_fiscal_card`.
 
 **Bar:** `bar112_p4c3b_RunAllBatch.log`, 31 of 31 clean; `bar111_p4c3b_RunSimulationBatch.log`, 14 of 14 simulation checks clean.
+
+## 308. P6-6 BUILT — BOARD 8f, THE DOCKET OPTION CARD: button, cost, plate as one row (2026-09-04, evening)
+
+**The board:** *"The card is a row. Button at left (the brass face, one width for every option, the word CHOOSE + the letter - the option's name is not on the button, it is the title). The body in the middle: title in Pagella 14, the cost line in the Budget's words and ink - Cost of this option +$X in Bad, Saving from this option −$X in Good - then the option's own scope line. The plate at right, fixed 340 wide, 5c's renderer at the card's scale. The card reserves the plate's height for the most lanes any option draws, so the rows are equal. Below the knowledge floor: the cost line still draws; the scope line becomes the one sentence; the plate cell is empty paper, not a dashed collar. Columns 150 · fill · 340 at 1149."*
+
+**Built** (`DrawCabinetDecisionModal`, `DrawCabinetOptionCostLine`, `CabinetOptionArrows`): the option is one row of three cells - the brass button at 150 (×s) reading CHOOSE A / B / C, the body (the option's label as the title in the header face, the cost line in the Budget's words and ink with *Saving from this option* for a negative impact, the option's scope line in the scope face), the plate cell at 340 (×s) with the plate caption and the renderer's arrows at the reserved height - the same height on every row, so three options are three rows of one shape. Below the ministry's knowledge floor the cost line draws, the scope line is the one sentence (*The ministry cannot estimate this option - its knowledge is below the floor.*), and the plate cell is empty paper at the same height. The button clause answered: the built button carried the option's name; the title moved off it.
+
+**Deviations, stated:** the plate's height is the renderer's measure (§298 gave it one caption line more), not the count of lanes the decision's options draw - the renderer reserves for every plate alike, which is the board's "equal rows" by a stronger rule. The columns are proposed against 1149; the built card's width is the Docket's, and the two fixed columns scale with the label font while the body takes the rest.
+
+**Films:** `p6a_1280` and `p6a_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `03a_decisions_options`, the staged decision's two options as two rows.
+
+**Bar:** `bar113_p6a_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §305–§308 together; the commits are split by file).

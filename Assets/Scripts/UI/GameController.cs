@@ -8533,13 +8533,49 @@ namespace PoliSim.UI
 
             GUILayout.Label($"DECISION - {GetPortfolioName(portfolio)}: {decision.Name}", _eventBannerStyle);
             GUILayout.Label(decision.Description, _labelStyle);
+
+            // P6-6 (board 8f, 2026-09-04): the option is ONE ROW, three cells - the brass button at left (one width for every
+            // option, CHOOSE and the letter; the option's name is the title, not the button), the body in the middle (the
+            // title, the cost line in the Budget's words and ink, the option's own scope line), the plate at right (5c's
+            // renderer at the card's scale). The plate cell's height is reserved for every option alike, so three options
+            // stack as three rows of one shape and the page reads as a ledger, not a column of plates. Below the ministry's
+            // knowledge floor the cost line still draws (the Budget always knows what it spends), the scope line becomes
+            // the one sentence, and the plate cell is empty paper - not a dashed collar, which would promise a value.
+            float scale = _labelStyle.fontSize / 14f;
+            float buttonWidth = Mathf.Round(DocketButtonWidthAt1149 * scale);
+            float plateWidth = Mathf.Round(DocketPlateWidthAt1149 * scale);
+            float plateHeight = EffectArrowsRenderer.MeasureHeight(_labelStyle);
+            bool canEstimate = CabinetSystem.CanEstimateShocks(_playerCountry, portfolio);
+            char letter = 'A';
             foreach (CabinetDecisionOption option in decision.Options)
             {
-                if (PoliSimWidgets.Button(option.Label, _neutralActionButtonStyle))
+                GUILayout.BeginHorizontal();
+                GUILayout.BeginVertical(GUILayout.Width(buttonWidth));
+                if (PoliSimWidgets.Button($"CHOOSE {letter}", _neutralActionButtonStyle, GUILayout.Width(buttonWidth)))
                 {
                     _simulationManager.ResolveCabinetDecision(PlayerCountryId, portfolio, decision, option);
                 }
-                DrawCabinetOptionEstimate(portfolio, option);   // P2-4.3: the option's cost and impact, as the desk says them; P2-5.2: as far as the ministry's knowledge reaches
+                GUILayout.EndVertical();
+                GUILayout.Space(8f);
+                GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
+                GUILayout.Label(option.Label, _headerStyle);
+                DrawCabinetOptionCostLine(option);
+                GUILayout.Label(canEstimate ? EffectArrowsRenderer.ScopeLineOption : "The ministry cannot estimate this option - its knowledge is below the floor.", EffectArrowsRenderer.ScopeStyle(_labelStyle));
+                GUILayout.EndVertical();
+                GUILayout.Space(8f);
+                GUILayout.BeginVertical(GUILayout.Width(plateWidth));
+                DrawStatsSectionCaption(EffectArrowsRenderer.PlateTitleOption);
+                Rect plate = GUILayoutUtility.GetRect(plateWidth, plateHeight, GUILayout.Width(plateWidth));
+                if (canEstimate)
+                {
+                    var arrows = CabinetOptionArrows(option);
+                    if (arrows.Count == 0) { GUI.Label(plate, "No modelled shock beyond the budget.", _labelStyle); }
+                    else { EffectArrowsRenderer.Draw(plate, arrows, _labelStyle); }
+                }
+                GUILayout.EndVertical();
+                GUILayout.EndHorizontal();
+                GUILayout.Space(8f);
+                letter++;
             }
 
             if (drawOwnFrame)
@@ -8548,19 +8584,23 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>
-        /// Master Sequence step 5e, Phase A: the old standalone Foreign Policy tab is fully retired,
-        /// not split - its ENTIRE content was always just this interrupt (confirmed by reading its old
-        /// body: explanatory text + either the modal or "No meeting currently pending," nothing else),
-        /// so it moves to Decisions wholesale (see DrawDecisionsTab) with nothing left behind. Only
-        /// this modal renderer survives, reused as-is from Decisions.
-        /// </summary>
-        /// <summary>
-        /// P2-4.3 (2026-09-02): a cabinet option's cost and impact as the desk says them - the budget figure on the
-        /// country's own scale (P2-0.1's rule) and the option's shocks as arrows (P2-2.1's renderer). The shocks are the
-        /// option's authored figures, applied as written by CabinetSystem.ApplyDecisionOption; nothing is estimated here.
-        /// </summary>
-        private void DrawCabinetOptionEstimate(CabinetPortfolio portfolio, CabinetDecisionOption option)
+        /// <summary>P6-6 (board 8f): the option row's fixed columns at the board's 1149 px card width - the button and the plate; the body takes the rest. Scaled with the label font.</summary>
+        private const float DocketButtonWidthAt1149 = 150f;
+        private const float DocketPlateWidthAt1149 = 340f;
+
+        /// <summary>P6-6: the cost line in the Budget's words and ink - a cost in Bad, a saving in Good, neither when nothing is modelled.</summary>
+        private void DrawCabinetOptionCostLine(CabinetDecisionOption option)
+        {
+            bool hasCost = Mathf.Abs(option.BudgetImpact) >= 0.005f;
+            float costBillions = AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry);
+            string text = !hasCost ? "Cost of this option · no budget figure modelled"
+                : costBillions > 0f ? $"Cost of this option {UiFormat.MoneyDelta(costBillions, MoneyUnit.Billions)}"
+                : $"Saving from this option {UiFormat.MoneyDelta(costBillions, MoneyUnit.Billions)}";
+            DrawColoredLabel(text, _labelStyle, !hasCost ? PoliSimTheme.TextSecondary : costBillions > 0f ? PoliSimTheme.Bad : PoliSimTheme.Good);
+        }
+
+        /// <summary>P2-4.3's arrows for one option, the renderer's own (5c) - the shocks the option carries, each with its unit.</summary>
+        private List<EffectArrow> CabinetOptionArrows(CabinetDecisionOption option)
         {
             var arrows = new List<EffectArrow>();
             void Add(string name, float value, bool higherIsBetter, string unit)
@@ -8572,29 +8612,7 @@ namespace PoliSim.UI
             Add("Approval", option.ApprovalEffect, higherIsBetter: true, " pts");
             Add("Trade balance", option.TradeBalanceShock, higherIsBetter: true, "");
             Add("Youth unemployment", option.YouthUnemploymentShock, higherIsBetter: false, " pts");
-            // P4-E3 (2026-09-04): the option's cost in the Budget's own words and ink, then the 5c plate - caption, arrows, scope
-            // line - the way every draft on the desk is estimated (P3-C1, P4-B3). A positive BudgetImpact is spending: a cost.
-            bool hasCost = Mathf.Abs(option.BudgetImpact) >= 0.005f;
-            float costBillions = AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry);
-            DrawColoredLabel(hasCost ? $"Cost of this option {UiFormat.MoneyDelta(costBillions, MoneyUnit.Billions)}" : "Cost of this option · no budget figure modelled",
-                _labelStyle, !hasCost ? PoliSimTheme.TextSecondary : costBillions > 0f ? PoliSimTheme.Bad : PoliSimTheme.Good);
-            // P2-5.2: KNOWLEDGE's term is disclosure - below the floor the ministry gives the budget figure and says it cannot estimate the rest.
-            if (!CabinetSystem.CanEstimateShocks(_playerCountry, portfolio))
-            {
-                GUILayout.Label("The ministry cannot estimate the rest - its knowledge is below the floor.", _labelStyle);
-                return;
-            }
-            DrawStatsSectionCaption(EffectArrowsRenderer.PlateTitleOption);
-            Rect area = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
-            if (arrows.Count == 0)
-            {
-                GUI.Label(area, "No modelled shock beyond the budget.", _labelStyle);
-            }
-            else
-            {
-                EffectArrowsRenderer.Draw(area, arrows, _labelStyle);
-            }
-            EffectArrowsRenderer.DrawScopeLine(_labelStyle, EffectArrowsRenderer.ScopeLineOption);
+            return arrows;
         }
 
         private void DrawForeignPolicyMeetingModal(ForeignPolicyMeeting meeting, bool drawOwnFrame = true)
