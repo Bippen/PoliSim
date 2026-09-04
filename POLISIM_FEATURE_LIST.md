@@ -587,7 +587,7 @@ record. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §293: one turn is one year,
 **P4-D2 — More events.** Expand the pool with authored events, each tagged, each with effects
 through the model's own terms and a magnitude band, sourced analogues cited where an event mirrors
 history. Frequency tuned to the measurement, not to feel — a target stated and defended. *Done
-when:* the pool doubles at minimum and the per-year rate is measured after.
+when:* the pool doubles at minimum and the per-year rate is measured after. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §294: 50 events, each tagged, banded by its GDP shock (derived) and cited with the catalog's classes; `EventChancePerTurn` 0.12 → 0.40, defended against Sweden's own record; `EventPoolCheck` on the cheap bar; measured after.**
 
 **P4-D3 — The event slot streamlined.** The empty state ("Year 1 is quiet…") becomes an
 instrument-class line, not a paragraph; a live event draws in the card's grammar. *Done when:*
