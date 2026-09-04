@@ -727,7 +727,7 @@ underfunding a ministry measurably degrades its outcomes through the minister, a
 **P5-D1 — Install D15**, reconciled: (1) the pie without leaders, stated as a deviation; (2) the
 Budget line row for nominal figures with drivers, delta and projection; (3) one instrument grammar
 for the society stats as they land, family by family; (4) the Cabinet's effectiveness readout.
-Annex: the screenshot, B5's films, C1's catalog. Binaries uploaded. Package regenerated, `ERRANDS`.
+Annex: the screenshot, B5's films, C1's catalog. Binaries uploaded. Package regenerated, `ERRANDS`. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §317: D15 installed at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md` - four rows written against Design's own sighting note of 2026-09-04 (the pie read-back, the Budget row for a figure, the society-stat grammar on health, the effectiveness readout); `SEND_PACKAGE.md` regenerated with the Track A and B films by digest; E-15 read as landed, E-17 opened for the paste. C1's catalog is not in the annex: it waits on E-16.**
 
 ## Yours
 

@@ -1,63 +1,50 @@
-# The send package — regenerated 2026-09-04 (late evening): the RETURN after boards 8a–8f (D14 answered and BUILT, `COMPLETED.md` §305–§310); paste-and-glance; **sending is Elias's**
+# The send package — regenerated 2026-09-05: D15, four items from Playtest 5 (§ ⭐ D15 at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`; D14 answered and built beneath it); paste-and-glance; **sending is Elias's**
 
-⚠ **THIS IS A RETURN, NOT A NEW ASK.** D14's six items were answered as boards 8a–8f and built the D11 way - against the boards, verified, deviations stated - the same evening: 8a the pie and bar as instruments (§309), 8b the graph composed once (§310), 8c the path grows by the cut captions (§305), 8d the caption's face and fade (§306), 8e the map confirmed, the chip's border checked (§307), 8f the Docket option row (§308). The check clauses each board carried are answered in its row. **Nothing is asked of Design.** The one deviation worth Design's eye: 8b's year labels under the plot are not built - the renderer holds a window, not a calendar - and the foot's legend names the window instead.
+⚠ **THIS IS A NEW ASK.** D15 installs P5-D1's four items - the pie without leaders stated as a deviation from 8a (read-back only; Design accepted it in advance in its sighting note), the Budget line row for a figure with the driver, NEXT and the delta in the caption band (6a's row re-purposed - the board the note says it will want), one instrument grammar for the society stats drawn once on health so C3–C6 inherit it, and the Cabinet's effectiveness readout. D14's return was read (the board's note of 2026-09-04); nothing is asked twice. The Playtest 5 screenshot, findings and metric list (E-16) are NOT in this package: they are not on disk.
 
 ## What goes in — computed, not claimed
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122797 | `5165241bf3893cc07b477a85397bc97fc65800cc42f3b960f3f9925764a5e0b6` |
-| `POLISIM_FEATURE_LIST.md` | 111588 | `c4bf356bc72e8215b9780ec03127ade2b25f5b5162b76e42905c67369b3357a0` |
-| `LEVER_MAP.md` | 196163 | `a84541d5d2f8be18a2e172736aed866eedbe5b642099bd75d7abc571109a8f0d` |
-| `logs/bar113_p6a_RunAllBatch.log` | 474575 | `a7b35355df2051ae541ba277800a78cdd036bb3ba1d0745c05f2a12e89ad4274` |
-| `logs/bar117_p6b_RunAllBatch.log` | 474554 | `e3f47401bef284562d9a9698143cae28cfc4d17b1886485bb73271d5530b7843` |
-| `logs/p6a_1280.log` | 1234198 | `f66e3f5b16993c0da92d28bc8bd6945145413518d51c33167551f33652a44afe` |
-| `logs/p6a_2560.log` | 1214165 | `ffc2e5bf49e7c217f90889ce9219852ff122d45bba0847934ea1d305e4c8823d` |
-| `logs/p6d_1280.log` | 1244995 | `ee0de184f97b503e29febd20f2552c98d4d37abcd80a4c7f6d4fa36f99953a19` |
-| `logs/p6d_2560.log` | 1230053 | `3c6bee48e57baab3256f285a79e03092334f3b6e9058ed7d74beec50c04069f8` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 131694 | `d3ed04d087fa0f1c67d93977eedb043af0ca287b14f84fd1c17d81ef40ccb4d3` |
+| `POLISIM_FEATURE_LIST.md` | 123067 | `218d8d582a5b3694670b38c940c036c672feffc09e9130f5bddad6058241687d` |
+| `COMPLETED.md` | 2166996 | `3bb2d87667ef7fb08d0e8f692684234fe5c414859b3887bc5f710b6da53855a1` |
+| `ERRANDS.md` | 15158 | `6648653a1c8a3a29bb352877672dbfa7029fa37f28d26924fb7722409c18d98a` |
+| `BUDGET_PREMISE.md` | 22304 | `a1de8d362d7e5dfc71a45935a730069c0249d65bb64246276d65fbdf8f5efe90` |
+| `logs/bar122_p5b2_RunAllBatch.log` | 442780 | `2e259de74c8e236c2d96191a28ecec69c6cdc07fbf256d200ba1f0c59f5c8ffd` |
+| `logs/bar121_p5b2_RunSimulationBatch.log` | 375607 | `0ce1e405a8654e12ab83484365ea45f65b580c576ccfb95870cd416f6ec8ab8f` |
+| `logs/bar125_p5b4_RunAllBatch.log` | 459314 | `786946500a2fc806e35727f4c8458326a5415db74aac94eb6109baad831f01d3` |
+| `logs/bar132_p5b5_RunAllBatch.log` | 460741 | `7f495c2840444c5cc3f98b0e0ba66c6643d50b02649811e782ffb701dc36fa1a` |
+| `logs/bar129_p5b5_RunSimulationBatch.log` | 383366 | `03ae13caeb2b15ac29c331ac374dc9f20e78cf4b74be85d281758b75b874d9ea` |
+| `logs/p5a_1280.log` | 1245996 | `43d4b4685b51c58bc1a2897978c0ce3f42a5a7d5ead5acdf4fb126ed7f738b36` |
+| `logs/p5a_2560.log` | 1226039 | `d4188ea7d89c915d114509bbc0737ad125d542ab14bf9046d70a90d9a28cf026` |
+| `logs/p5al_1280.log` | 451403 | `5ea1c005ed7853326cd7502fce7f9dde2d7baade466c3203e0ec053a79861e91` |
+| `logs/p5b4_1280.log` | 789625 | `0d9fea3f1b7bd7665a59147500105737e8d1f76cba62d4fe288a245144fb393a` |
+| `logs/p5b4_2560.log` | 794312 | `0b225f4ffa59650932bd0ac469b9c86285a47c048ef81cdc27b2b16f20afcd72` |
+| `logs/p5b5_1280.log` | 689457 | `34d747cf166e1fd3575d9fab7c71b2592a70b8b73dd45c487cab58cbb4b6ad32` |
+| `logs/p5b5_2560.log` | 674378 | `805102888fb582c3a0ea226a1c670b26fc5c8ab2fe071dfc157d0912e96101ad` |
 
-### The films of the built boards at 1280 and 2560 (8c, 8d, 8f: `p6a_1280` / `p6a_2560`; 8a, 8b: `p6d_1280` / `p6d_2560`)
+### The films at 1280 and 2560 (item 1: `p5a_*`, `p5al_1280`; item 2: `p5b5_*`; P5-B4's fund page: `p5b4_*`)
 
 | film | bytes | sha256 |
 |---|---|---|
-| `p6a_1280_07d_politics_federalreserve.png` | 435408 | `18c3eaaa0f73140582846d78bc21d095606b638ac38d7535fb501f6850ca5c09` |
-| `p6a_1280_06a_policylaws_labormarket_caption_drag.png` | 536737 | `d0271b049a0f7b48c3666c9b07e34771fbc87c9872f2594adcd6b2d7e2a9540d` |
-| `p6a_1280_06a_policylaws_labormarket_caption_held.png` | 536737 | `d0271b049a0f7b48c3666c9b07e34771fbc87c9872f2594adcd6b2d7e2a9540d` |
-| `p6a_1280_06a_policylaws_labormarket_caption_faded.png` | 531455 | `341359555b079499c5fd67e7bc4d920e136c775b0ca691a1373631817924308b` |
-| `p6a_1280_03a_decisions_options.png` | 466564 | `0cfd195d98d18e09711311ff918013e2bfb8da46306fc5036898782a4cf969e3` |
-| `p6d_1280_04_demographics.png` | 495141 | `00e4acd7e7bfa4c5f03e423e6b68e50b32d8204fd43fd66448ae1187196a0b8b` |
-| `p6d_1280_04a_demographics_pie.png` | 490725 | `d8edda637ee338e7337ff5c536e2f639c67862a0ae741556da2bcc9dffc7ef2e` |
-| `p6d_1280_02b_statistics_international_deep.png` | 490829 | `631a67ea5404acef1ea4d571d7fb8af8788288c947ccdd3bd75317e1ab6bf921` |
-| `p6d_1280_02a_statistics_domestic.png` | 423984 | `eeb602d0ecf55713567ae9d8f18336dcb67d66e6908cedd44c1d4d6da50b3829` |
-| `p6d_1280_01c_desk.png` | 500307 | `8fe4e71ed7b3be7cd731a1b660179a953bcfdba8e45a7ff606eea7c1b7342047` |
-| `p6a_2560_07d_politics_federalreserve.png` | 1381407 | `910bcc6edd85d13b2ccc76221e9317630af3d185d5a13dac58130d760d94f2a5` |
-| `p6a_2560_06a_policylaws_labormarket_caption_drag.png` | 1505238 | `b995017de69696a5f8ea96171cba08822a2c734ce065db9629533eedea589527` |
-| `p6a_2560_06a_policylaws_labormarket_caption_held.png` | 1505238 | `b995017de69696a5f8ea96171cba08822a2c734ce065db9629533eedea589527` |
-| `p6a_2560_06a_policylaws_labormarket_caption_faded.png` | 1496438 | `0c5d3331ee05f07de43af7e6e584a7d18151f7aa90607a5e3941bfad28261a0e` |
-| `p6a_2560_03a_decisions_options.png` | 1379118 | `2f387be030b58cc42eebe4c381c5165300df85229313b82de1186944f9dedaf8` |
-| `p6d_2560_04_demographics.png` | 1355386 | `8c9e189fad82c249d1cd66af235df6e8727f2c6c7639f8f32359317008dbe598` |
-| `p6d_2560_04a_demographics_pie.png` | 1352418 | `6db52dcf6bc31ad731c9fb80d77e4fe94d4c008f0f8489aaf365666b6ba8a49a` |
-| `p6d_2560_02b_statistics_international_deep.png` | 1379760 | `8a40bc88bc2b1154c4a105e7f69ef52c6af2480def672d1101a9b1de27a27bae` |
-| `p6d_2560_02a_statistics_domestic.png` | 1187568 | `9b71f9760f35e411ceda30c8218cfdf218e7935d6b774f75939a3bff8fa92936` |
-| `p6d_2560_01c_desk.png` | 1350604 | `a18d9276ad784ac176fb5fb220dd8681ae0e7372a05f5de800ea214699cbe11e` |
-| `Elias Screenshots/NEW_nedladdning (11).png` | 86195 | `4a90ae383da00f2f87388128d9ee6f03be4669ac1fb9af6cb188fdd268e068fe` |
-| `Elias Screenshots/New_nedladdning.png` | 714934 | `9109ec43c07bb73c1ce8173df38a734e74fd5707c5fb461c6e348d805af9fe32` |
-| `Elias Screenshots/nedladdning (1).png` | 27855 | `932aea67989df360b5d746c66f4508a3b07ffa00365c1c005bc9e78cb20ae954` |
-| `Elias Screenshots/nedladdning (10).png` | 524754 | `b5c358ff100c60bcebcd7a3f7f3161b1f36c85c857428c78382ead389a720317` |
-| `Elias Screenshots/nedladdning (11).png` | 217086 | `a65d1ca4cd63fdd0b23c54998ba4a7231788dc03d277304ea6a1e890a6f5ecac` |
-| `Elias Screenshots/nedladdning (12).png` | 64672 | `52a454c75d893b25a1800edec918b3653af8ffe0b9ccd9a42c02c3e16ef4edac` |
-| `Elias Screenshots/nedladdning (13).png` | 102497 | `ac4fa0e4c06bdfce8b16aed9d57fcc92f1e405cd991a77b0be80440809343182` |
-| `Elias Screenshots/nedladdning (2).png` | 297366 | `dd64d8d2ede54945600e3f50766200a907e5bdcf01354318ab680b9b3ffd097a` |
-| `Elias Screenshots/nedladdning (3).png` | 182535 | `93aba636d33af3fd02d3d491bc913b2ececf80372957d9c30a014949cb00c539` |
-| `Elias Screenshots/nedladdning (4).png` | 224532 | `9957cedd509c5618ca3d68abf124aee4192bb4b1300baade8a3046e4724d5a41` |
-| `Elias Screenshots/nedladdning (5).png` | 101510 | `fd1a9d3d872355b1103c52357ba7113fd7ff177784512ca60e4cd1c20a1a6d44` |
-| `Elias Screenshots/nedladdning (6).png` | 44703 | `76614aecd34ab58e8a951436e8714661926536700676d7170391e9f5419d626b` |
-| `Elias Screenshots/nedladdning (7).png` | 411934 | `7d20d6f8604e762cb67834ec8b176c470485235a1ffcf1903ace853a237dfb19` |
-| `Elias Screenshots/nedladdning (8).png` | 473415 | `6fa3ccad505719b2ef9a05b849bc4d7f9450625b59023429a806bbb23e3e64b1` |
-| `Elias Screenshots/nedladdning (9).png` | 464824 | `557814b8507e5d4b11124f9bfc0b3ca42c6e103c305603807804039db886b8a8` |
-| `Elias Screenshots/nedladdning.png` | 46212 | `9a25691e32d687566ea0ecc3d10db73f79f8bab730d0b76ed077dbb708ea3762` |
+| `p5a_1280_04_demographics.png` | 495141 | `00e4acd7e7bfa4c5f03e423e6b68e50b32d8204fd43fd66448ae1187196a0b8b` |
+| `p5a_1280_04a_demographics_pie.png` | 491517 | `3e947e851a9753ab9ba8b56702cc3ccbb253d879df2060c39e0bbecbbfe01087` |
+| `p5a_2560_04_demographics.png` | 1329809 | `bc41f62e28fc22a92f5b25a4ba491e9390b672856c62e4fa98bd25fb74f7a637` |
+| `p5a_2560_04a_demographics_pie.png` | 1329582 | `681411b247d87c64678ad5d584705282e9e0466031c37616810128cd2e9199ac` |
+| `p5al_1280_ladder_pie.png` | 400767 | `b1b3b10b38566db2b3829cfa71b8f0be1e18bddb89fd68837510871d198f60ee` |
+| `p5b5_1280_05b_budget_spending.png` | 684198 | `0bd6eb4aa66263b244a12604698fed03a7c0abe62909e4046fc4aa018cc0adc8` |
+| `p5b5_1280_05b_budget_spending_dragged.png` | 685989 | `b8f0a88b895f48d7752c4d1854eb6b7c3cce981618b9289c6c8d6977895507f4` |
+| `p5b5_1280_05b_budget_spending_rows.png` | 657919 | `1eceba13ebb621506b97ae4b92a463b429011c9e53d50afffb9d4e2aeb496baf` |
+| `p5b5_1280_05b_budget_spending_rows_dragged.png` | 660163 | `395d235b63803d9fa4f095f9ccc7f7ffa2fa045453c686a38d1e1bfb4b5888ab` |
+| `p5b5_2560_05b_budget_spending.png` | 2073080 | `2b7dc5d35aeb4966586937514619d62821b4cf3f5b792dc2b3b6af7e3c99860d` |
+| `p5b5_2560_05b_budget_spending_dragged.png` | 2076763 | `bf4e2e2e23dce5ef69c1a9a26911db157655a92335214d1af558d8b93e5fe330` |
+| `p5b5_2560_05b_budget_spending_rows.png` | 2023429 | `4e60136eb041e60c73503c37a0bf59c839cf2223680e7ce8f4fdffca5364888f` |
+| `p5b5_2560_05b_budget_spending_rows_dragged.png` | 2027578 | `82fe31ac7a128801d137f1431af97a9f5e2f75e17f0ad15b5d20d3c8b87fdc94` |
+| `p5b4_1280_05e_budget_swf.png` | 667266 | `8c89cd3fbd3f1139c110d9fac00acb02e30486b794f8c2da5657d866b00b046f` |
+| `p5b4_2560_05e_budget_swf.png` | 1982783 | `a46978626eb2eb5862a45d4293ff4a812ede9f56fcf130a2b932b0615c712899` |
 
-⚠ `get_file` caps at 256 KiB: a film larger than that cannot be hash-verified whole through it — only its leading bytes — so the glance on a large film is its size and its name; the digest is for this side's record.
+⚠ `get_file` caps at 256 KiB: a film larger than that cannot be hash-verified whole through it — only its leading bytes — so the glance on a large film is its size and its name; the digest is for this side's record and for the day the cap lifts.
 
 ---
 
