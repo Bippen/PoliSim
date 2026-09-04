@@ -537,7 +537,7 @@ populist party's stance on the same bill measurably differs from a non-populist 
 
 **P4-A4 — The label and the breakdown.** "Contractionary (−30) · WOULD PASS" retires; the verdict
 is the count (P3's ruling), and the per-party breakdown in 6b's grammar shows each party's stance
-with its reason. The same panel serves laws. *Done when:* filmed on Budget and on a law.
+with its reason. The same panel serves laws. *Done when:* filmed on Budget and on a law. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §287: the line reads FOR n · AGAINST m [· UNDECIDED k] · WOULD PASS/FAIL from the seat map's own enumeration at every estimate site; the direction word and number are gone; the breakdown is §273's and prints the new terms; filmed on the Budget and the law pane at 1280 and 2560.**
 
 ## Track B — range captions on every dial
 

@@ -22635,3 +22635,15 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **Built besides:** `ReasonShort` prints *bloc line …* and *populism …* on the plate; the plate drops the "no published people_v_elite" absence and the full line keeps it.
 
 **Bar:** `bar99_p4a3_RunAllBatch.log`, 29 of 29 clean; `bar99_p4a3_RunSimulationBatch.log`, 12 of 12 simulation checks clean.
+
+## 287. P4-A4 — THE LABEL AND THE BREAKDOWN: "Contractionary (−30) · WOULD PASS" retires for the count, on the Budget and on a law (2026-09-04)
+
+**The row:** *"'Contractionary (−30) · WOULD PASS' retires; the verdict is the count (P3's ruling), and the per-party breakdown in 6b's grammar shows each party's stance with its reason. The same panel serves laws. Done when: filmed on Budget and on a law."*
+
+**Built** (`GameController.DrawBillLiveEstimate`, the one renderer every estimate site shares): the line above the seat map reads **FOR n · AGAINST m [· UNDECIDED k] · WOULD PASS / WOULD FAIL**, the counts summed from `ParliamentSystem.SeatSides` - the same enumeration the seat map colours and the breakdown lists, so the three cannot disagree, and the verdict is the count's (P3-A2's ruling, the tie to the alignment). The direction word and its number are gone from every site: they named a fiscal sign the budget no longer reduces to (§284, §285); the legacy scalar stays in the record and the lean bar. An uncontested draft reads *Nothing changes · uncontested · WOULD PASS*. The wrapped form (the laws detail pane, the pending cards) puts the count on one line and the verdict on the next.
+
+**The breakdown** is §273's already - a row per seated party in the seat map's own order, the mark, the mandates, the name, the side in the verdict ink, the reason beneath (`DrawStanceBreakdown`) - and it draws the new terms' reasons through `ReasonShort` (*bloc line …*, *populism …*) with no change of its own. It serves the Budget's support panel, the pending cards, the law pane and the signing plate as before.
+
+**Films:** `p4a4_1280` and `p4a4_2560` (the fifty-six captures to the effects pane, both extremes): 0 overflows, 0 escapes, 0 clipped. The Budget's support panel (`05_budget`) reads the count above the seat map (two lines at 1280 where UNDECIDED is present - inside its panel, the guards silent); the law pane (`06f_policylaws_laws`) the count on one line and the verdict on the next; the breakdown beneath each unchanged in its grammar.
+
+**Bar:** `bar100_p4a4_RunAllBatch.log`, 29 of 29 clean.

@@ -3890,7 +3890,6 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawBillLiveEstimate(BillConcern concern, float wrapWidth = 0f, bool terse = false, bool withBreakdown = true)
         {
-            float direction = concern?.Direction ?? 0f;
             // An unchanged draft is uncontested: no side, WOULD PASS, as WouldBillPass short-circuits.
             bool contested = concern != null && !concern.IsEmpty;
             bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, concern);
@@ -3900,27 +3899,33 @@ namespace PoliSim.UI
             // scroll content past its viewport (the intro-label class; the laws detail pane at the
             // 1280x720 floor is the measured case). Zero keeps the four policy-screen callers'
             // existing natural-width behavior byte-for-byte.
-            string directionLabel = !contested ? "Neutral" : direction > 0f ? "Expansionary" : "Contractionary";
+            // P4-A4 (Playtest 4, 2026-09-04): "Contractionary (-30) · WOULD PASS" retires. The verdict is THE COUNT
+            // (P3-A2's ruling: seats FOR against seats AGAINST, the undecided abstaining) and the line says the count
+            // - the same enumeration the seat map colours and the breakdown beneath lists, so the three cannot
+            // disagree. The direction word and its number named a fiscal sign the budget no longer reduces to (§284);
+            // the scalar stays in the record and the lean bar, not on the line. An uncontested draft says so.
+            int forSeats = 0, againstSeats = 0, undecidedSeats = 0;
+            if (contested)
+            {
+                foreach ((PoliticalParty _, int seats, int side, float _, bool measured) in ParliamentSystem.SeatSides(_playerCountry, concern))
+                {
+                    if (!measured) { continue; }
+                    if (side > 0) { forSeats += seats; } else if (side < 0) { againstSeats += seats; } else { undecidedSeats += seats; }
+                }
+            }
+            string verdict = wouldPass ? "WOULD PASS" : "WOULD FAIL";
+            string count = !contested ? "Nothing changes · uncontested" : $"FOR {forSeats} · AGAINST {againstSeats}{(undecidedSeats > 0 ? $" · UNDECIDED {undecidedSeats}" : "")}";
+            Color verdictInk = UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
             if (wrapWidth > 0f)
             {
-                // Playtest 3 cut (2026-08-27), the laws detail pane only (`terse`): the direction's
-                // number was a (b) beside its word, and "Current seat composition:" a (b) framing
-                // around the verdict - the Budget row's own precedent, the estimate collapsing to the
-                // verdict word it was carrying. The four policy-screen bill cards were not in the
-                // survey and keep the full form byte-for-byte.
-                GUILayout.Label(terse ? $"Bill direction: {directionLabel}" : $"Bill direction: {directionLabel} ({direction:+0.0;-0.0;0})",
-                    _labelStyle, GUILayout.Width(wrapWidth));
-                DrawColoredLabel(terse
-                        ? (wouldPass ? "WOULD PASS" : "WOULD FAIL")
-                        : (wouldPass ? "Current seat composition: WOULD PASS" : "Current seat composition: WOULD FAIL"),
-                    _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true), GUILayout.Width(wrapWidth));
+                // The laws detail pane and the pending cards (`terse`): the count on one line, the verdict word on the next.
+                GUILayout.Label(count, _labelStyle, GUILayout.Width(wrapWidth));
+                DrawColoredLabel(verdict, _labelStyle, verdictInk, GUILayout.Width(wrapWidth));
             }
             else
             {
-                // P2-2.1: one line where two were - the direction and the verdict read together (P2-2.2 dropped the
-                // "Bill direction:" prefix so the line stays one line at 1280 above the seat map).
-                DrawColoredLabel($"{directionLabel} ({direction:+0.0;-0.0;0}) · {(wouldPass ? "WOULD PASS" : "WOULD FAIL")}",
-                    _labelStyle, UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
+                // The Budget's support panel and the four policy-screen cards: one line above the seat map.
+                DrawColoredLabel($"{count} · {verdict}", _labelStyle, verdictInk);
             }
 
             // P2-2.2 (2026-09-02): the lean bar is a per-seat map - every mandate coloured FOR / UNDECIDED / AGAINST
