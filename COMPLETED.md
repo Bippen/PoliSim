@@ -22762,3 +22762,17 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **Films:** `p4g_1280` and `p4g_2560`: `01c_desk` and `02b_statistics_international`, the six chips and their links on plain paper.
 
 **Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).
+
+## 297. P4-E2 — THE RIKSBANK PAGE STREAMLINED: the restating captions cut, the stray head label measured and corrected (2026-09-04)
+
+**The row:** *"The (b)/(c) cut applied to its mono captions - the long explanatory lines under the graph and the rule are restatements of what the instruments show; keep the instruments, the five terms and the governor, cut the paragraphs. The stray "Interest Rate … 0%" label at the graph's head is measured and removed or corrected. Done when: filmed with dead-space measured before and after."*
+
+**The cut.** Four captions go: the two-line paragraph under the projected path (*THE PROJECTED PATH IS THE RULE EVALUATED ON THE PROJECTION: …*), the line under the rule's five terms (*GetSuggestedInterestRate, TERM BY TERM — …*), and the two trailing sentences on the unemployment and output-gap reading lanes, each of which restated the lane's own stamp. The instruments, the five terms with their operators, the readings and the governor stay.
+
+**The stray label, measured.** `GraphRenderer.DrawTitleRow` prints the graph's title and, for a window of two points or more, the window's change as a PERCENTAGE of its first value. On a flat policy-rate window that is *0%* - a percent of a percent, printed beside a title the page had already given as *POLICY RATE TODAY · LIVE*. Corrected, not merely removed: the rate path passes an empty title (an empty title draws nothing) and asks for its delta in the instrument's own unit - *Δ +0.25 pts over the window* - and a flat window prints nothing at all, because the three figures beneath (TODAY, +1 YR, +2 YR) already say it. Every other graph keeps its percentage delta.
+
+**Dead space, measured** on the 1280 frames, before (`p4c_1280_07d_politics_federalreserve`) and after: the caption THE RULE'S INPUTS · AS READINGS sat at y ≈ 590 and sits at y ≈ 549 - 41 px reclaimed above the fold, 5.9 % of the 699 px frame; the output-gap lane, below the fold before, now shows above it, and the fold peek's own line (P5-7) reads BELOW THE FOLD only for the political half. The graph's head lost its title row's height where the window is flat and keeps one line (Δ in points) where it is not.
+
+**Films:** `p4g_1280` and `p4g_2560`: `07d_politics_federalreserve`, the captions gone, the head reading Δ in points, the readings above the fold.
+
+**Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).

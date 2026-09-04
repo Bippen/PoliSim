@@ -3325,7 +3325,7 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             // Neutral (no green/red judgment) - which direction of rate change is "good" depends
             // entirely on the current inflation/growth situation, not a fixed convention.
-            if (_playerCountry.CurrentFedChair == null) { _interestRateGraph.DrawNeutral("Interest Rate", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null); }   // board 5f: the chair's page draws its own graph above
+            if (_playerCountry.CurrentFedChair == null) { _interestRateGraph.DrawNeutral("", _playerCountry.History.InterestRate.Quarterly, null, _labelStyle, moneyUnit: null, deltaInPoints: true); }   // board 5f: the chair's page draws its own graph above
 
             GUILayout.EndScrollView();
             DrawRiksbankFoldPeek(GUILayoutUtility.GetLastRect());   // P5-7: the fold shown as paper
@@ -3381,7 +3381,7 @@ namespace PoliSim.UI
             {
                 foreach (RatePathProjection.Step step in ratePath) { if (step.YearsAhead > 0) { projected.Add(step.Rate); } }
             }
-            _interestRateGraph.DrawRatePath("Interest Rate", _playerCountry.History.InterestRate.Quarterly, projected,
+            _interestRateGraph.DrawRatePath("", _playerCountry.History.InterestRate.Quarterly, projected,
                 suggested, "THE RULE'S READING TODAY · " + suggested.ToString("F2", CultureInfo.InvariantCulture), _labelStyle);
 
             if (ratePath != null)
@@ -3397,8 +3397,6 @@ namespace PoliSim.UI
                     GUILayout.Space(StatsUnit(10f));
                 }
                 GUILayout.EndHorizontal();
-                GUILayout.Label($"THE PROJECTED PATH IS THE RULE EVALUATED ON THE PROJECTION: THIS YEAR'S MOVE CLOSES RateAdjustmentSpeed ({FederalReserveSystem.RateAdjustmentSpeed:F2}) OF THE GAP TO THE GOVERNOR'S TARGET ON TODAY'S READINGS; NEXT YEAR'S CLOSES THE SAME SHARE TO THE TARGET ON THE DETERMINISTIC PREVIEW'S READINGS (INFLATION {_cachedPreview.PreviewInflation:F1}%, UNEMPLOYMENT {_cachedPreview.PreviewUnemployment:F1}% AGAINST NAIRU {_cachedPreview.PreviewNaturalUnemployment:F1}%). NOTHING BEYOND THE PREVIEW'S YEAR IS FORECAST, AND NEITHER POINT IS A FACT.",
-                    RiksbankNote());
             }
 
             // The rule, term by term - the sum the player can check.
@@ -3419,17 +3417,14 @@ namespace PoliSim.UI
             DrawRuleTerm(sum < 0f ? "THE RULE · CLAMPED AT 0" : "THE RULE", suggested.ToString("F2", CultureInfo.InvariantCulture), politicalInk);
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
-            GUILayout.Label("GetSuggestedInterestRate, TERM BY TERM — InflationGapWeight AND UnemploymentGapWeight ARE THE CODE'S; THE OUTPUT GAP IS READ BUT NOT WEIGHED, AND ITS INSTRUMENT SAYS SO.", RiksbankNote());
 
             // The rule's inputs as readings on centred lanes.
             GUILayout.Space(StatsUnit(8f));
             DrawStatsSectionCaption("THE RULE'S INPUTS · AS READINGS");
             GUILayout.Space(StatsUnit(3f));
             DrawReadingLane("INFLATION", inflation, "TaylorRule.InflationTarget", TaylorRule.InflationTarget(PlayerCountryId), "%", higherIsBetter: false, span: 3f, neutral: false, stamp: "LIVE");
-            DrawReadingLane("UNEMPLOYMENT", _playerCountry.State.Unemployment, "NAIRU", _playerCountry.NaturalUnemploymentRate, "%", higherIsBetter: false, span: 4f, neutral: false, stamp: "LIVE",
-                trailing: $"GetUnemploymentGapPercent · {TaylorRule.GetUnemploymentGapPercent(_playerCountry):+0.0;-0.0} pp — THE RULE LEANS {(TaylorRule.GetUnemploymentGapPercent(_playerCountry) < 0f ? "DOWN" : "UP")}");
-            DrawReadingLane("OUTPUT GAP", TaylorRule.GetOutputGapPercent(_playerCountry), "POTENTIAL", 0f, "%", higherIsBetter: true, span: 4f, neutral: true, stamp: "READ · NOT WEIGHED",
-                trailing: "GetOutputGapPercent — A READING THE RULE DOES NOT WEIGH; DRAWN IN THE NEUTRAL, NO GOOD/BAD INK");
+            DrawReadingLane("UNEMPLOYMENT", _playerCountry.State.Unemployment, "NAIRU", _playerCountry.NaturalUnemploymentRate, "%", higherIsBetter: false, span: 4f, neutral: false, stamp: "LIVE");
+            DrawReadingLane("OUTPUT GAP", TaylorRule.GetOutputGapPercent(_playerCountry), "POTENTIAL", 0f, "%", higherIsBetter: true, span: 4f, neutral: true, stamp: "READ · NOT WEIGHED");
 
             // The political half: the governor's card and the appointment lever.
             GUILayout.Space(StatsUnit(8f));
@@ -3470,13 +3465,6 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>P3-B2: a note under a Riksbank instrument - the caption face, WRAPPED to the sheet (the first film ran two of them off the sheet's right edge and opened a horizontal scroll).</summary>
-        private GUIStyle RiksbankNote()
-        {
-            GUIStyle note = DeskCaption(7.5f, PoliSimTheme.TextMuted);
-            note.wordWrap = true;
-            return note;
-        }
 
         /// <summary>One term of the rule as a caption over a numeral.</summary>
         private void DrawRuleTerm(string caption, string figure, Color? ink = null)

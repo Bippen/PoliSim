@@ -602,7 +602,7 @@ stays as delivered (6b's six chips at geographic centres) on plain paper. *Done 
 long explanatory lines under the graph and the rule are restatements of what the instruments show;
 keep the instruments, the five terms and the governor, cut the paragraphs. The stray "Interest
 Rate … 0%" label at the graph's head is measured and removed or corrected. *Done when:* filmed
-with dead-space measured before and after.
+with dead-space measured before and after. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §297: four restating captions cut; the head label measured as `DrawTitleRow`'s window delta printed as a percent of a flat rate - corrected to points, or nothing when flat, with an empty title drawing nothing; dead space measured before and after; filmed at 1280 and 2560.**
 
 **P4-E3 — Docket decisions show impact.** Each option carries its cost and its effect arrows in
 the 5c grammar (D10 row 2's ask, structural now). *Done when:* filmed with two options visible.

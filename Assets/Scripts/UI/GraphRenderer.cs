@@ -116,14 +116,14 @@ namespace PoliSim.UI
         /// added with the same silence. Prefer passing <c>PolicyWebRenderer.GetStatUnit(stat)</c> where
         /// the call site has a StatNodeId, so the answer comes from the stat's own metadata.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null, IReadOnlyList<float> shadowHistory = null)
+        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null, IReadOnlyList<float> shadowHistory = null, bool deltaInPoints = false)
         {
             EnsureOverlayStylesInitialized(labelStyle);
             _moneyUnit = moneyUnit;
 
             if (history == null || history.Count == 0)
             {
-                DrawTitleRow(title, null, higherIsBetter, labelStyle);
+                DrawTitleRow(title, null, higherIsBetter, labelStyle, deltaInPoints);
                 GUILayout.Label("No data yet - advance a year.", labelStyle);
 
                 // ⚠ THE PAGE ROW IS STILL DRAWN, and this is the same behaviour-5 defect as DrawPageRow's
@@ -155,7 +155,7 @@ namespace PoliSim.UI
 
             float? visibleProjectedValue = isMostRecentPage ? projectedValue : null;
 
-            DrawTitleRow(title, visibleWindow, higherIsBetter, labelStyle);
+            DrawTitleRow(title, visibleWindow, higherIsBetter, labelStyle, deltaInPoints);
             DrawPageRow(totalPages);
 
             if (NeedsRedraw(visibleWindow, visibleProjectedValue, thresholdValue))
@@ -307,9 +307,9 @@ namespace PoliSim.UI
 
 
         /// <summary>Convenience wrapper for a stat with no clear "good direction" - see Draw's higherIsBetter remarks. <paramref name="moneyUnit"/> stays required here too: "no clear good direction" says nothing about whether the series is money, and the one caller that draws an arbitrary StatNodeId through this overload can genuinely be handed GDP or Trade Balance.</summary>
-        public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null)
+        public void DrawNeutral(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, bool deltaInPoints = false)
         {
-            Draw(title, history, projectedValue, labelStyle, higherIsBetter: null, moneyUnit: moneyUnit, thresholdValue: thresholdValue, thresholdLabel: thresholdLabel);
+            Draw(title, history, projectedValue, labelStyle, higherIsBetter: null, moneyUnit: moneyUnit, thresholdValue: thresholdValue, thresholdLabel: thresholdLabel, deltaInPoints: deltaInPoints);
         }
 
         /// <summary>Lazily builds the overlay styles from the caller's own label style (font/skin already resolved by GameController's RescaleStylesToScreen) rather than GUI.skin directly, so they stay proportionate to the rest of the panel without GraphRenderer needing its own screen-size-aware rescaling logic.</summary>
@@ -335,10 +335,10 @@ namespace PoliSim.UI
         }
 
         /// <summary>Title plus a "first-to-last visible value" percentage change, computed straight from the CURRENT PAGE's own visible window (not the full retained history) - matches GameController's existing signed-delta number format (see FormatEstimate) rather than inventing a new one.</summary>
-        private void DrawTitleRow(string title, IReadOnlyList<float> visibleWindow, bool? higherIsBetter, GUIStyle labelStyle)
+        private void DrawTitleRow(string title, IReadOnlyList<float> visibleWindow, bool? higherIsBetter, GUIStyle labelStyle, bool deltaInPoints = false)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Label(title, labelStyle);
+            if (!string.IsNullOrEmpty(title)) { GUILayout.Label(title, labelStyle); }   // P4-E2: the Riksbank page names its instrument above the graph; an empty title draws nothing
 
             if (visibleWindow != null && visibleWindow.Count >= 2)
             {
@@ -347,9 +347,10 @@ namespace PoliSim.UI
                 // P3-C4 (2026-09-03): a percentage from a ZERO base is not a percentage - the old form printed ±100 % for any
                 // series that starts at zero (the trade balance from the seed read "−100.0%"). From a zero base the delta is
                 // the absolute change in the series' own unit, marked Δ; the percentage stays where the base is real.
+                if (deltaInPoints && Mathf.Abs(last - first) < 0.005f) { GUILayout.EndHorizontal(); return; }   // P4-E2: a flat rate window says nothing the figures beneath do not - the old head printed it as "0%"
                 bool zeroBase = Mathf.Approximately(first, 0f);
                 float change = zeroBase ? last - first : (last - first) / Mathf.Abs(first) * 100f;
-                string deltaText = zeroBase
+                string deltaText = deltaInPoints ? "Δ " + (last - first).ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture) + " pts over the window" : zeroBase
                     ? "Δ " + (_moneyUnit.HasValue ? UiFormat.MoneyDelta(change, _moneyUnit.Value) : (change >= 0f ? "+" : "") + FormatAxisValue(change))
                     : $"{change:+0.0;-0.0;0}%";
 
@@ -851,7 +852,7 @@ namespace PoliSim.UI
             _moneyUnit = null;
             if (history == null || history.Count == 0)
             {
-                DrawTitleRow(title, null, null, labelStyle);
+                DrawTitleRow(title, null, null, labelStyle, deltaInPoints: true);
                 GUILayout.Label("No data yet - advance a year.", labelStyle);
                 DrawPageRow(1);
                 return;
@@ -866,7 +867,7 @@ namespace PoliSim.UI
             for (int i = startInclusive; i < endExclusive; i++) { visibleWindow.Add(history[i]); }
             IReadOnlyList<float> path = isMostRecentPage && projectedPath != null ? projectedPath : System.Array.Empty<float>();
 
-            DrawTitleRow(title, visibleWindow, null, labelStyle);
+            DrawTitleRow(title, visibleWindow, null, labelStyle, deltaInPoints: true);
             DrawPageRow(totalPages);
 
             if (NeedsPathRedraw(visibleWindow, path, referenceValue))
