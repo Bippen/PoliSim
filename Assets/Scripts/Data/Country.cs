@@ -125,6 +125,12 @@ namespace PoliSim.Data
         /// <summary>P5-B3 (2026-09-05): the seed's GDP and the seed level of each tax-base driver (TaxBases.Level, indexed by TaxBaseDriver), captured by CaptureStructuralBases; a base is its sourced share of the seed's GDP times its driver's ratio to these. 0 = not yet referenced (consumption is computed by the first day; TaxBases.Base takes it then).</summary>
         public float RevenueBaseSeedGdp;
         public float[] RevenueBaseSeeds = new float[TaxBases.DriverCount];
+
+        /// <summary>P5-B7 (2026-09-05): potential output's factors - the seed's potential, the seed's labour input (PotentialOutput.LabourInput) and the productivity index that compounds daily at the trend (1 at the seed); the labour input as it stood at the last turn, for the derived growth rate. Captured by CaptureStructuralBases; 0 = a save from before this pass, which keeps the old compounding.</summary>
+        public float PotentialGdpSeed;
+        public float PotentialLabourSeed;
+        public float PotentialProductivityIndex;
+        public float PotentialLabourAtLastTurn;
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
 
@@ -133,6 +139,10 @@ namespace PoliSim.Data
         {
             foreach (SpendingLine line in SpendingLines) { line.DriverReference = SpendingDrivers.Level(SpendingDrivers.Of(line.Category), this); }
             RevenueBaseSeedGdp = State.GDP;   // P5-B3
+            PotentialGdpSeed = State.PotentialGDP;   // P5-B7: potential is its factors from here on
+            PotentialLabourSeed = PotentialOutput.LabourInput(this);
+            PotentialProductivityIndex = 1f;
+            PotentialLabourAtLastTurn = PotentialLabourSeed;
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
             for (int d = 0; d < TaxBases.DriverCount; d++) { RevenueBaseSeeds[d] = TaxBases.Level((TaxBaseDriver)d, this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;

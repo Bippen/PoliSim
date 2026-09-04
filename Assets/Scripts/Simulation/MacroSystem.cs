@@ -446,6 +446,17 @@ namespace PoliSim.Simulation
         public static void ApplyPotentialGdpGrowthDaily(Country country)
         {
             EconomyState state = country.State;
+            // P5-B7 (2026-09-05): potential is its FACTORS - the seed's potential × the labour input's ratio to the seed (the
+            // 20–64 cohort × participation × (1 − NAIRU), read today) × a productivity index that compounds daily at the
+            // ledger's trend (ProductivityTrendGrowth, the SOURCED productivity trend plus the two adjustments). Before this
+            // pass the level compounded at PotentialGrowthRate whatever the workforce did (POTENTIAL_PREMISE.md measured it);
+            // a save from before this pass has no seeds and keeps that compounding, stated here.
+            if (PotentialOutput.HasSeeds(country))
+            {
+                country.PotentialProductivityIndex *= Mathf.Pow(1f + country.ProductivityTrendGrowth / 100f, MacroSliceFractionPerDay);
+                state.PotentialGDP = Mathf.Max(0f, PotentialOutput.Potential(country));
+                return;
+            }
             state.PotentialGDP = Mathf.Max(0f, state.PotentialGDP * Mathf.Pow(1f + country.PotentialGrowthRate / 100f, MacroSliceFractionPerDay));
         }
 
@@ -1850,7 +1861,19 @@ namespace PoliSim.Simulation
             // ledger would be a cyclical potential feeding Okun's own growth gap and the identity's
             // attractor, which would make a recession permanently lower a country's potential.
             country.ProductivityTrendGrowthRate = Mathf.Clamp(country.BasePotentialGrowthRate + totalAdjustment, 0f, MaxPotentialGrowthRate);
-            country.PotentialGrowthRate = country.ProductivityTrendGrowthRate;
+            // P5-B7 (2026-09-05): potential growth is DERIVED - the trend compounded with the labour input's growth since
+            // the last turn (PotentialOutput.DerivedGrowthPercent) - so Okun's growth gap, the AI's budget rule and every
+            // other reader see the growth of the potential that ApplyPotentialGdpGrowthDaily actually writes. Without the
+            // seeds (a save from before this pass) the 1:1 pipe stands.
+            if (PotentialOutput.HasSeeds(country))
+            {
+                country.PotentialGrowthRate = PotentialOutput.DerivedGrowthPercent(country, country.PotentialLabourAtLastTurn);
+                country.PotentialLabourAtLastTurn = PotentialOutput.LabourInput(country);
+                // The cohort commits at the top of AdvanceTurn, after the year's days wrote potential on last year's cohort;
+                // rewrite it here so the turn closes on the potential its factors give today (the diagnostic reads it here).
+                country.State.PotentialGDP = Mathf.Max(0f, PotentialOutput.Potential(country));
+            }
+            else { country.PotentialGrowthRate = country.ProductivityTrendGrowthRate; }
         }
 
         /// <summary>Unemployment points removed per point the aggregate Sector Employment (summed gap vs. each sector's own BaselineEmploymentShare) sits above its own trend - sector employment growth nudges economy-wide Unemployment down, contraction nudges it up. Mirrors GetMinimumWageUnemploymentAdjustment/GetOvertimeUnemploymentAdjustment's own "small, additive term inside ApplyOkunsLaw" pattern exactly.</summary>

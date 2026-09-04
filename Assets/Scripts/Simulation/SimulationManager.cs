@@ -3102,6 +3102,10 @@ namespace PoliSim.Simulation
                 TaxLines = ClonePreviewTaxLines(country.TaxLines),
                 RevenueBaseSeedGdp = country.RevenueBaseSeedGdp,   // P5-B3: the preview's revenue reads the same bases as the turn's
                 RevenueBaseSeeds = country.RevenueBaseSeeds == null ? null : (float[])country.RevenueBaseSeeds.Clone(),
+                PotentialGdpSeed = country.PotentialGdpSeed,   // P5-B7: the preview's potential is the turn's
+                PotentialLabourSeed = country.PotentialLabourSeed,
+                PotentialProductivityIndex = country.PotentialProductivityIndex,
+                PotentialLabourAtLastTurn = country.PotentialLabourAtLastTurn,
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
                 // Seed-spread ruling (2026-08-27): the welfare anchor rides the hand-list too (the

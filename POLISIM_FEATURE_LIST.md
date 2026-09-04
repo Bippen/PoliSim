@@ -699,7 +699,7 @@ seeds restated so year 1 is unchanged, and the growth rate the derived quantity 
 BASELINE family, on its own pass, after B6 or before it — the three families Track B owes are B6,
 B7 and nothing else. *Done when:* the trajectory suite before and after, explained per country; a
 country whose workforce shrinks sees its output and its revenue shrink together; the Okun and
-Phillips blocks read the same potential.
+Phillips blocks read the same potential. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §322: `PotentialOutput` - potential is the labour input (the 20–64 cohort × participation × (1 − NAIRU), from F2) times a productivity index compounding at the SOURCED trend (Eurostat nama_10_lp_ulc and BLS PRS85006092, 2010–2025 means: USA 1.613, Sweden 1.019, Germany 0.938, France 0.513, Italy 0.119, Poland 3.019); `Country.PotentialGrowthRate` derived once a turn; asserted on all six by `PotentialOutputDiagnostic`; the premise measured before (`POTENTIAL_PREMISE.md`) and after; the year-100 debt table before and after is the headline. The pass's one BASELINE family.**
 
 ## Track C — the society stats expansion (one family per session; each BASELINE on its own)
 

@@ -114,13 +114,23 @@ namespace PoliSim.Data
             // still real-approximate-nominal-GDP-scaled) or any other calibration built against it
             // (debt-to-GDP, CollectionEfficiency's tax-to-GDP targets, etc.) - only PotentialGDP, the
             // "trend output" reference value nothing else in WorldFactory reads, moves.
+            //
+            // P5-B7 (2026-09-05): the `potentialGrowthRate` argument below is the TREND OF LABOUR PRODUCTIVITY PER HOUR, not
+            // total output growth - potential is labour input x productivity now (PotentialOutput), so the labour part comes
+            // from F2's substrate and only the productivity trend is seeded. [VERIFIED] as the 2010–2025 mean of the annual
+            // % change: Eurostat nama_10_lp_ulc, na_item RLPR_HW (real labour productivity per hour worked), unit PCH_PRE, for
+            // Germany 0.938, France 0.513, Italy 0.119, Poland 3.019, Sweden 1.019 (sums 15.0 / 8.2 / 1.9 / 48.3 / 16.3 over 16
+            // years); BLS series PRS85006092 (nonfarm business, output per hour, annual % change) for the USA 1.613 (sum 25.8
+            // over 16 years) - a narrower perimeter than total economy, stated. One vintage, fetched 2026-09-05 through the
+            // Eurostat and BLS APIs; the pandemic years are in. The old arguments (2.0 / 1.5 / 0.8 / 0.8 / 0.8 / 3.5) were total
+            // growth trends that carried the labour force implicitly; POTENTIAL_PREMISE.md measured what that did.
             var usa = new Country(
                 CountryId.USA, "United States",
                 new EconomyState(gdp: UsaSeedGdp, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
                     potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f, organizedCrimeIndex: 35f, corruptionIndex: 31f,
                     population: 341.8f, birthRate: 10.6f, deathRate: 9.1f, netMigrationRate: 3.7f, dependencyRatio: 28f),
                 usDollarZone, baseTariffRate: 3f,
-                naturalUnemploymentRate: 4.0f, potentialGrowthRate: 2.0f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);
+                naturalUnemploymentRate: 4.0f, potentialGrowthRate: 1.613f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);
 
             // Sweden's PotentialGDP is seeded to 614.25 (not left to default to GDP) - the
             // RECALIBRATION's ruled follow-up (terminal ruling 2026-08-26, "re-solve potential
@@ -138,7 +148,7 @@ namespace PoliSim.Data
                     potentialGdp: 614.25f, governmentDebt: 620f * 0.35f, povertyRate: 9f, laborForceParticipationRate: 72.6f, crimeIndex: 30f, prisonPopulationRate: 60f, organizedCrimeIndex: 32f, corruptionIndex: 18f,
                     population: 10.6f, birthRate: 10.8f, deathRate: 9.5f, netMigrationRate: 1.1f, dependencyRatio: 33f),
                 swedishKronaZone, baseTariffRate: 1f,
-                naturalUnemploymentRate: 6.5f, potentialGrowthRate: 1.5f, governmentSpendingRate: 26f, benefitRatePerUnemployed: 0.25f);
+                naturalUnemploymentRate: 6.5f, potentialGrowthRate: 1.019f, governmentSpendingRate: 26f, benefitRatePerUnemployed: 0.25f);
 
             var germany = new Country(
                 CountryId.Germany, "Germany",
@@ -146,7 +156,7 @@ namespace PoliSim.Data
                     governmentDebt: 4700f * 0.63f, povertyRate: 11f, laborForceParticipationRate: 61.7f, crimeIndex: 25f, prisonPopulationRate: 72f, organizedCrimeIndex: 20f, corruptionIndex: 22f,
                     population: 83.6f, birthRate: 8.2f, deathRate: 12.2f, netMigrationRate: 1.8f, dependencyRatio: 35f),
                 eurozone, baseTariffRate: 1f,
-                naturalUnemploymentRate: 3.3f, potentialGrowthRate: 0.8f, governmentSpendingRate: 21f, benefitRatePerUnemployed: 0.20f);
+                naturalUnemploymentRate: 3.3f, potentialGrowthRate: 0.938f, governmentSpendingRate: 21f, benefitRatePerUnemployed: 0.20f);
 
             var france = new Country(
                 CountryId.France, "France",
@@ -154,7 +164,7 @@ namespace PoliSim.Data
                     governmentDebt: 3200f * 1.16f, povertyRate: 8f, laborForceParticipationRate: 56.0f, crimeIndex: 30f, prisonPopulationRate: 111f, organizedCrimeIndex: 28f, corruptionIndex: 30f,
                     population: 69.1f, birthRate: 9.7f, deathRate: 9.5f, netMigrationRate: 1.1f, dependencyRatio: 33f),
                 eurozone, baseTariffRate: 1f,
-                naturalUnemploymentRate: 7.5f, potentialGrowthRate: 0.8f, governmentSpendingRate: 24f, benefitRatePerUnemployed: 0.22f);
+                naturalUnemploymentRate: 7.5f, potentialGrowthRate: 0.513f, governmentSpendingRate: 24f, benefitRatePerUnemployed: 0.22f);
 
             var italy = new Country(
                 CountryId.Italy, "Italy",
@@ -162,7 +172,7 @@ namespace PoliSim.Data
                     governmentDebt: 2300f * 1.38f, povertyRate: 14f, laborForceParticipationRate: 49.8f, crimeIndex: 18f, prisonPopulationRate: 92f, organizedCrimeIndex: 55f, corruptionIndex: 44f,
                     population: 58.9f, birthRate: 6.3f, deathRate: 10.4f, netMigrationRate: 1.3f, dependencyRatio: 40f),
                 eurozone, baseTariffRate: 1f,
-                naturalUnemploymentRate: 8.0f, potentialGrowthRate: 0.8f, governmentSpendingRate: 19f, benefitRatePerUnemployed: 0.18f);
+                naturalUnemploymentRate: 8.0f, potentialGrowthRate: 0.119f, governmentSpendingRate: 19f, benefitRatePerUnemployed: 0.18f);
 
             var poland = new Country(
                 CountryId.Poland, "Poland",
@@ -170,7 +180,7 @@ namespace PoliSim.Data
                     governmentDebt: 840f * 0.59f, povertyRate: 10f, laborForceParticipationRate: 58.5f, crimeIndex: 20f, prisonPopulationRate: 185f, organizedCrimeIndex: 22f, corruptionIndex: 40f,
                     population: 37.5f, birthRate: 6.7f, deathRate: 10.9f, netMigrationRate: 0.2f, dependencyRatio: 28f),
                 polishZlotyZone, baseTariffRate: 1f,
-                naturalUnemploymentRate: 5.0f, potentialGrowthRate: 3.5f, governmentSpendingRate: 18f, benefitRatePerUnemployed: 0.12f);
+                naturalUnemploymentRate: 5.0f, potentialGrowthRate: 3.019f, governmentSpendingRate: 18f, benefitRatePerUnemployed: 0.12f);
 
             // BasePotentialGrowthRate (see "Infrastructure Feedback" in CLAUDE.md) - the immutable
             // structural anchor PotentialGrowthRate is now recomputed from each turn, seeded equal to
