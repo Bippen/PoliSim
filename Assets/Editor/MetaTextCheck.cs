@@ -87,6 +87,10 @@ namespace PoliSim.EditorTools
             ("GameController.cs", "VOTING AGE · SOURCED · CONSTITUTION"),
             ("GameController.cs", "A DERIVATION FROM TWO SOURCED SERIES, NOT A FORECAST"),
             ("GameController.cs", "SOURCED — A PUBLISHED SERIES, WITH ITS YEAR"),
+            // P4-B1 (2026-09-04): the range-caption catalog is [AUTHORED] game fiction - the desk's own deadpan on every
+            // dial's ten bands - and is exempt BY NAME so its satire is not read as meta-text; RangeCaptionCheck holds it
+            // to the model's effect signs instead. Nothing else in Assets/Scripts/UI is widened by this row.
+            ("RangeCaptions.cs", ""),
         };
 
         public static void Run()

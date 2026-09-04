@@ -1550,6 +1550,25 @@ namespace PoliSim.Simulation
         internal const float SectorDeregulationSensitivity = 0.04f;
 
         /// <summary>
+        /// P4-B1 (2026-09-04): the SIGN of a sector dial's effect on the sector's OUTPUT share as the dial rises - read
+        /// off the constants above and the arithmetic of <see cref="ApplySectorEffectsInternal"/>, so the range-caption
+        /// check can hold the catalog's lines to what the model does without the Editor reading internals. +1 rises,
+        /// −1 falls, 0 for a name that is not a sector dial.
+        /// </summary>
+        public static int SectorDialOutputSign(string dialName)
+        {
+            switch (dialName)
+            {
+                case "Subsidy": return SectorSubsidySensitivity > 0f ? 1 : -1;
+                case "Regulation": return -SectorRegulationSensitivity > 0f ? 1 : -1;
+                case "Tax Credits": return SectorTaxCreditSensitivity > 0f ? 1 : -1;
+                case "Research Grants": return SectorResearchGrantsSensitivity > 0f ? 1 : -1;
+                case "Nationalization / Deregulation": return SectorDeregulationSensitivity > 0f ? 1 : -1;
+                default: return 0;
+            }
+        }
+
+        /// <summary>
         /// Each of a country's Sectors mean-reverts Output/Employment/SectorMetric toward its own
         /// BaselineX anchor, adjusted by that sector's five policy dials' gaps versus their shared
         /// neutral 50 (the same uniform-dial idiom Country.PoliceFundingLevel/SentencingSeverity
