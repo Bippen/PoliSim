@@ -22919,3 +22919,9 @@ Five, as the sheet named them: the event card's empty state, the trade-volume ma
 **Films:** `p6a_1280` and `p6a_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `07d_politics_federalreserve`.
 
 **Bar:** `bar113_p6a_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §305–§308 together; the commits are split by file).
+
+## 307. P6-5 RULED — BOARD 8e, THE MAP ON PLAIN PAPER: confirmed as delivered, the paper carries nothing (2026-09-04, evening)
+
+**The board:** *"The six chips as 6b/7a placed them stand on plain paper without a rule, a border or a texture of their own. A rule implies an axis; a frame inside the plate implies the pad. Nothing on the paper is the honest choice. IF THE BUILT CHIP HAS NO 1.5 PX BORDER, THAT BORDER IS THE ONE THING TO CHECK BEFORE CALLING IT CONFIRMED."*
+
+**Checked, on the code and the film:** `MapRenderer.DrawChip` fills the chip's rect in the outline ink and inlays the paper 1.5 px inside it - a 1.5 px border, as drawn. **One deviation, stated:** the border's ink is the country's own outline colour (7a's ruling, P5-2: "a paper plate in the country's own outline"), not TextPrimary as 8e's contrast figure assumes; the tag inside is TextPrimary. The map on plain paper was filmed at both widths in §296 (`01c_desk`, `02b_statistics_international`) and again on every sweep since; the plate caption and the empty-relations collar are as 5a drew them. Nothing is built for this row; nothing is asked of Design.
