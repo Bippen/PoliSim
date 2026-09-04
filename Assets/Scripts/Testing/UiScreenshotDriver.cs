@@ -388,6 +388,15 @@ namespace PoliSim.Testing
                 ResetScrolls(controller);   // board 5b (2026-09-02): the whole-tab capture at scroll ZERO - the previous tab's deep scroll had been carried into it by SetScrolls (every scroll field at once), so People filmed at its tail
                 yield return Settle();
                 yield return Capture($"{i + 2:00}_{Tabs[i].ToLowerInvariant()}");
+                if (Tabs[i] == "Decisions")
+                {
+                    // P4-E3 (2026-09-04): the staged Cabinet decision's options scrolled into view - two options, each with its cost line, plate and scope line.
+                    ScrollBy(controller, Screen.height * 0.8f);
+                    yield return Settle();
+                    yield return Capture("03a_decisions_options");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))
                 {
