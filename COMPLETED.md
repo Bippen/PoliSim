@@ -22843,3 +22843,21 @@ The 1920 RUNNING-state finding of the P3 close (§"the four-width matrix", three
 **Films:** `p4h_1280` and `p4h_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `06f_policylaws_laws` with the fourth chip (110 laws, 10 in the category). The card's EXPECTED EFFECTS line for an institutions law is NOT on a frame - the sweep selects the browser's first row, a crime law - and is owed to the next category's film, which will stage one; stated rather than claimed.
 
 **Bar:** `bar110_p4c3_RunAllBatch.log`, 31 of 31 clean; `bar109_p4c3_RunSimulationBatch.log`, 14 of 14 simulation checks clean (the composition re-run prints the category's proof; the save round trip carries one institutions law).
+
+## 303. E-13 DISCHARGED — the five Playtest 4 screenshots, selected by time and verified by content, each bound to its finding; D14's first annex filled; the package regenerated (2026-09-04)
+
+**Selected by modification time, not by name.** Sixteen PNGs sit in `G:\UNITY\Projects\PoliSim-captures\Elias Screenshots`; eleven are E-8's (2026-09-03 10:15–10:17, §264) and five were placed 2026-09-04 11:00:42–11:01:43. The names do not sort with the arrival (`New_nedladdning.png`, `NEW_nedladdning (11).png`, `nedladdning (11)…(13).png`), which is why the time was the key.
+
+**Verified by content, the way the eleven were:** every one carries the PNG signature (`89 50 4E 47 0D 0A 1A 0A`); every chunk CRC is good and the IDAT stream inflates (`pngcheck.ps1`, the E-8 tool); every file carries a `Zone.Identifier` stream with ZoneId 3 and `HostUrl=https://ctrl.vi/`; the pixel sizes read with System.Drawing.
+
+| file | px | sha256 (16) | placed | what it shows | the finding it is bound to |
+|---|---|---|---|---|---|
+| `nedladdning (13).png` | 716×213 | `ac4fa0e4c06bdfce` | 11:01:43 | the event card's dashed reservation with the purpose line and the two-line "YEAR 1 IS QUIET" paragraph | **P4-D3** (§295) - the empty state before its cut |
+| `nedladdning (12).png` | 712×445 | `52a454c75d893b25` | 11:01:31 | THE WORLD — TRADE VOLUME on the Desk, six chips and the links, on the grid | **P4-E1** (§296) - the Desk's map before the grid went |
+| `NEW_nedladdning (11).png` | 1826×284 | `4a90ae383da00f2f` | 11:00:59 | the map on Statistics, the same six chips on the grid | **P4-E1** (§296) - Statistics' map before |
+| `nedladdning (11).png` | 1842×250 | `a65d1ca4cd63fdd0` | 11:01:14 | the Trade panel: pass-through +0,00 pp, Trade balance −$15.2B, **Δ −$400M**, the graph with the dotted rule at its head | **P4-E4** (§299) and D14 item 2 - the trade graph with the money delta |
+| `New_nedladdning.png` | 1801×672 | `9109ec43c07bb73c` | 11:00:42 | the Riksbank page: 1.82 %, **Interest Rate … 0%** at the graph's head, the two paragraph captions under the path and the rule, the two trailing lane sentences | **P4-E2** (§297) and D14 item 3 - the page before the cut, the stray head label on record |
+
+Five, as the sheet named them: the event card's empty state, the trade-volume map on the Desk, the trade panel with its Δ, the map on Statistics, the Riksbank page. Each is the BEFORE of a row whose AFTER is the film the row names; D14's annex now says so file by file.
+
+**Discharged:** D14's first annex (`CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D14) names the five with their bindings; `SEND_PACKAGE.md` regenerated carries all sixteen by digest; `ERRANDS.md` E-13 → DONE; the P4-F1 pointer amended. E-14 (the paste) stays Elias's.

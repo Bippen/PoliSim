@@ -2,17 +2,17 @@
 
 ⚠ **D14 IS THE LIVE ASK** (`CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D14, above D13). The E-12 return (boards 6a/6b, the party-hue ruling) was pasted and answered as boards 7a/7b and BUILT (`COMPLETED.md` §282–§283); nothing from it is asked again. The films below are the ones D14's rows cite by name: Track B's caption trio and Track E's cuts, at 1280 and 2560.
 
-⚠ **The five Playtest 4 screenshots are NOT on disk** (ERRANDS E-13, Elias's); D14's annex names them and they join the package the day they land, as E-8's eleven did.
+✅ **The five Playtest 4 screenshots are on disk** (E-13 done 2026-09-04, `COMPLETED.md` §303): verified by content (signature, every chunk CRC, the IDAT stream inflated, the `Zone.Identifier` origin `https://ctrl.vi/`), bound by content to P4-D3, E1, E4 and E2, and in the table below by digest with E-8's eleven.
 
 ## What goes in — computed, not claimed
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122001 | `d73547600bc9d091262223ef09f503f4e9a4f798c64d3f8b2dd1c2b0e6b6b8da` |
-| `POLISIM_FEATURE_LIST.md` | 104372 | `34b9c55b31ccbd37402530b4589bec61a0838ab6824e6b463eae91505b2aa32e` |
-| `LEVER_MAP.md` | 183633 | `b5eabd7f2d366809c701b89b61c65f01033d897e05395e3b8c61daeaf1b86bde` |
-| `logs/bar108_p4cde_RunAllBatch.log` | 474328 | `5dd53fca5bed58491e074809944f3482e23f9836c684af0fa86dc72fc9c3e474` |
-| `logs/bar106_p4cde_RunSimulationBatch.log` | 348198 | `597329e539daaec4aa791b06df87bdd6bc7047f25d061cd6f932b488a60f9408` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122312 | `d062838633a7fae9ef4920a5653a29f6f98f5f81ac6e21302699cfdcb4160f58` |
+| `POLISIM_FEATURE_LIST.md` | 104748 | `9a7fdc35f06895dde851f18eafae3df3672497f11782d6bbd0da2e1f22592e84` |
+| `LEVER_MAP.md` | 194084 | `54dffb1e32cc5bd72be126aa18dc1e6f8d3aa476bacf055541dd0b64cfa307d7` |
+| `logs/bar110_p4c3_RunAllBatch.log` | 457013 | `7ce4d09175b6201b56012f45c0c9d784b381366297eea869c23148f881cd425c` |
+| `logs/bar109_p4c3_RunSimulationBatch.log` | 368589 | `030808670178d35d7831ffdbe7e3130616ee0dcf1db95a17cbc27192c4817ebe` |
 | `logs/p4g_1280.log` | 1219615 | `385cb5350f0417eb0d9101c8682f7adf9eaf2a457b8c5525e9bf19f16f146f57` |
 | `logs/p4g_2560.log` | 1199710 | `8f8dcb9b10c5b6a3a453e8f8dd4e0e19a288ecbafa15c252784e8eb6c430138f` |
 | `logs/p4b4_1280.log` | 998641 | `addacfb356497c28319333e9c335cedc3b12c18491b953aae9386b52af6003df` |

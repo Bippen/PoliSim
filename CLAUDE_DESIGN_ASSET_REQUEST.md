@@ -844,7 +844,7 @@ Prep / midway / verdict are all filmed at four widths if you want to look before
 
 ### The annex — one set
 
-1. **The five Playtest 4 screenshots, verbatim** - ⚠ NOT on disk at this writing (ERRANDS E-13, Elias's); the sheet binds them to P4-A1 (the budget parliament), P4-B (the slider without a caption), P4-E1 (the gridded map), P4-E2 (the Riksbank page with its captions and the stray head label) and P4-E3 (the Docket option without a cost). They join the package by digest the day they land, as E-8's eleven did.
+1. **The five Playtest 4 screenshots, verbatim** - ✅ on disk 2026-09-04 (E-13 done, `COMPLETED.md` §303), verified by content and bound by content, in the package by digest: `Elias Screenshots/nedladdning (13).png` (716×213) the event card's empty state - P4-D3; `nedladdning (12).png` (712×445) the Desk's trade-volume map on the grid - P4-E1; `NEW_nedladdning (11).png` (1826×284) the map on Statistics on the grid - P4-E1; `nedladdning (11).png` (1842×250) the trade panel with its Δ and the graph - P4-E4 / item 2; `New_nedladdning.png` (1801×672) the Riksbank page with its captions and the *Interest Rate … 0%* head - P4-E2 / item 3. Each row's BEFORE is on this list; its AFTER is the film the row names.
 2. **The films after Track B** - the caption trio at 1280 and 2560 (`p4b4_*`), in the package by digest.
 3. **The films after Track E** - the full sweep on the tree that closed Tracks C–E (`p4g_1280_*`, `p4g_2560_*`), the frames each row names, in the package by digest.
 4. **The lever map** - `LEVER_MAP.md` (P4-C1, §291), generated, for the record of what the model reaches; Design is not asked to read it.
