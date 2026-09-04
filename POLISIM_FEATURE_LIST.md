@@ -605,7 +605,7 @@ Rate … 0%" label at the graph's head is measured and removed or corrected. *Do
 with dead-space measured before and after. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §297: four restating captions cut; the head label measured as `DrawTitleRow`'s window delta printed as a percent of a flat rate - corrected to points, or nothing when flat, with an empty title drawing nothing; dead space measured before and after; filmed at 1280 and 2560.**
 
 **P4-E3 — Docket decisions show impact.** Each option carries its cost and its effect arrows in
-the 5c grammar (D10 row 2's ask, structural now). *Done when:* filmed with two options visible.
+the 5c grammar (D10 row 2's ask, structural now). *Done when:* filmed with two options visible. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §298: the cost line in the Budget's words and ink, the plate caption, the plate reserved, the option's own scope line - the 5c grammar on every Docket option; filmed with two options visible at 1280 and 2560.**
 
 **P4-E4 — The trade graph.** Verify against 6b's dotted zero rule; if the built graph is not on
 the board, close the gap; the ±100 % delta stays retired. *Done when:* filmed.

@@ -8488,23 +8488,29 @@ namespace PoliSim.UI
             Add("Approval", option.ApprovalEffect, higherIsBetter: true, " pts");
             Add("Trade balance", option.TradeBalanceShock, higherIsBetter: true, "");
             Add("Youth unemployment", option.YouthUnemploymentShock, higherIsBetter: false, " pts");
-            string budget = Mathf.Abs(option.BudgetImpact) >= 0.005f
-                ? $"Budget {UiFormat.MoneyDelta(AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry), MoneyUnit.Billions)}"
-                : "No budget figure";
-            GUILayout.Label(budget, _labelStyle);
+            // P4-E3 (2026-09-04): the option's cost in the Budget's own words and ink, then the 5c plate - caption, arrows, scope
+            // line - the way every draft on the desk is estimated (P3-C1, P4-B3). A positive BudgetImpact is spending: a cost.
+            bool hasCost = Mathf.Abs(option.BudgetImpact) >= 0.005f;
+            float costBillions = AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry);
+            DrawColoredLabel(hasCost ? $"Cost of this option {UiFormat.MoneyDelta(costBillions, MoneyUnit.Billions)}" : "Cost of this option · no budget figure modelled",
+                _labelStyle, !hasCost ? PoliSimTheme.TextSecondary : costBillions > 0f ? PoliSimTheme.Bad : PoliSimTheme.Good);
             // P2-5.2: KNOWLEDGE's term is disclosure - below the floor the ministry gives the budget figure and says it cannot estimate the rest.
             if (!CabinetSystem.CanEstimateShocks(_playerCountry, portfolio))
             {
                 GUILayout.Label("The ministry cannot estimate the rest - its knowledge is below the floor.", _labelStyle);
                 return;
             }
+            DrawStatsSectionCaption(EffectArrowsRenderer.PlateTitleOption);
+            Rect area = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
             if (arrows.Count == 0)
             {
-                GUILayout.Label("No modelled shock beyond the budget.", _labelStyle);
-                return;
+                GUI.Label(area, "No modelled shock beyond the budget.", _labelStyle);
             }
-            Rect area = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
-            EffectArrowsRenderer.Draw(area, arrows, _labelStyle);
+            else
+            {
+                EffectArrowsRenderer.Draw(area, arrows, _labelStyle);
+            }
+            EffectArrowsRenderer.DrawScopeLine(_labelStyle, EffectArrowsRenderer.ScopeLineOption);
         }
 
         private void DrawForeignPolicyMeetingModal(ForeignPolicyMeeting meeting, bool drawOwnFrame = true)

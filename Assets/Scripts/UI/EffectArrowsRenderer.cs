@@ -50,6 +50,9 @@ namespace PoliSim.UI
         public const string PlateTitleDraft = "ESTIMATED IMPACT · THIS DRAFT";
         public const string PlateTitleEnacted = "ESTIMATED IMPACT · AS ENACTED";
         public const string PlateTitleInherited = "ESTIMATED IMPACT · THE NEW CHAMBER'S FIRST BUDGET, IF UNCHANGED";
+        public const string PlateTitleOption = "ESTIMATED IMPACT · THIS OPTION";   // P4-E3 (2026-09-04): the Docket's option, in the same grammar
+        /// <summary>P4-E3: the Docket option's scope line - authored one-time shocks applied on the decision, not a previewed year.</summary>
+        public const string ScopeLineOption = "AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.";
 
         /// <summary>The scope line's style: the caption face at the figures' size, wrapped, in the secondary ink.</summary>
         public static GUIStyle ScopeStyle(GUIStyle labelStyle)
@@ -65,6 +68,12 @@ namespace PoliSim.UI
         public static void DrawScopeLine(GUIStyle labelStyle)
         {
             GUILayout.Label(ScopeLine, ScopeStyle(labelStyle));
+        }
+
+        /// <summary>P4-E3: the same line in the same style with another scope's words.</summary>
+        public static void DrawScopeLine(GUIStyle labelStyle, string line)
+        {
+            GUILayout.Label(line, ScopeStyle(labelStyle));
         }
 
         /// <summary>Board 5c's figures line for a painted plate: each figure signed in its own arrow's ink (uGUI rich text), in lane order, separated by middle dots.</summary>
@@ -84,7 +93,7 @@ namespace PoliSim.UI
         public static float MeasureHeight(GUIStyle labelStyle)
         {
             float line = Mathf.Max(labelStyle.lineHeight, labelStyle.fontSize + 4f);
-            return line * 3f + labelStyle.fontSize * 3f;   // P2-2.2: half a font size shorter, for the seat map above
+            return line * 3f + labelStyle.fontSize * 4f;   // P2-2.2: half a font size shorter, for the seat map above; P4-E3 (2026-09-04): one caption line more, the falling arrow's figure now has its own room under the head
         }
 
         /// <summary>Lays the arrows out across <paramref name="area"/>. An empty list draws the caller's own idle text instead; this draws nothing for it.</summary>
@@ -104,7 +113,7 @@ namespace PoliSim.UI
             float line = Mathf.Max(caption.lineHeight, caption.fontSize + 4f);
             float nameHeight = line * 3f;   // three lines: "Labor force participation" needs them at a 1280 column
             float figureHeight = line;
-            float lane = Mathf.Max(8f, area.height - nameHeight - figureHeight);
+            float lane = Mathf.Max(8f, area.height - nameHeight - figureHeight * 2f);   // P4-E3: a figure's height above the baseline for the rising arrows AND below it for the falling - the Docket's tall plate pushed a falling figure into its own shaft
             float baselineY = area.y + figureHeight + lane * 0.5f;
             // The lanes are sized by their widest word (a caption never breaks inside a word) with the slack
             // shared equally; only when the words alone exceed the width do the lanes fall back to equal shares,
@@ -134,7 +143,7 @@ namespace PoliSim.UI
             line = Mathf.Max(caption.lineHeight, caption.fontSize + 4f);
             nameHeight = line * 3f;
             figureHeight = line;
-            lane = Mathf.Max(8f, area.height - nameHeight - figureHeight);
+            lane = Mathf.Max(8f, area.height - nameHeight - figureHeight * 2f);
             baselineY = area.y + figureHeight + lane * 0.5f;
             float slack = wordsFit ? (area.width - needSum) / arrows.Count : 0f;
             float laneStart = area.x;

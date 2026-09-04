@@ -22776,3 +22776,15 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **Films:** `p4g_1280` and `p4g_2560`: `07d_politics_federalreserve`, the captions gone, the head reading Δ in points, the readings above the fold.
 
 **Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).
+
+## 298. P4-E3 — DOCKET OPTIONS IN THE 5c GRAMMAR: the cost line in the Budget's words, the plate, the scope line (2026-09-04)
+
+**The row:** *"Each option carries its cost and its effect arrows in the 5c grammar (D10 row 2's ask, structural now). Done when: filmed with two options visible."*
+
+**Measured first:** `DrawCabinetOptionEstimate` (P2-4.3) already drew a budget line and the effect arrows under every option - the arrows were the renderer's, the words were not the desk's: *Budget +$X* rather than the cost line every draft prints, no plate caption, no scope line, and a plate that appeared only when there were arrows. Now: *Cost of this option +$X* in the Budget's ink (a positive `BudgetImpact` is spending), the caption *ESTIMATED IMPACT · THIS OPTION*, the plate reserved at the same height whether or not the ministry has a shock to show, and a scope line of the option's own - *AUTHORED SHOCKS · APPLIED WHEN THE OPTION IS TAKEN · ONE POINT, NOT A RANGE* - because an option's effects are authored one-time shocks, not a previewed year, and the draft's scope line would have claimed a preview that does not happen. The disclosure rule (P2-5.2, below the knowledge floor the ministry says it cannot estimate) is unchanged.
+
+**A renderer finding, from the first film of the card.** The Docket's plate is taller than the Budget's lanes had ever been, and its largest move fell: the falling arrow's figure was drawn INTO its own shaft, because `EffectArrowsRenderer` reserved a figure's height above the baseline (for the rising arrows) and none below it (the falling figure sat wherever the name row left it - which, for a full-length arrow, was on the arrow). Fixed once in the renderer, for every plate: the lane now reserves the figure's height on both sides and the plate measures one caption line taller, so a rising figure sits above its head and a falling one under its head, on the Budget, the sectors, the takeovers and the Docket alike. The first film pair (`p4f_*`) shows the defect on `03a_decisions_options`; the closing pair shows the fix.
+
+**Films:** `p4g_1280` and `p4g_2560`: `03a_decisions_options` - the staged Cabinet decision scrolled into view, two options each with its cost line, caption, plate and scope line.
+
+**Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).
