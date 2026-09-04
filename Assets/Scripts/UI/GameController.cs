@@ -10431,6 +10431,8 @@ namespace PoliSim.UI
             _sectorDeregulationInputs[sector.Type] = DrawDialRow("Nationalization / Deregulation",   // P3-C3: one axis, both ends in the trailing's order
                 sector.DeregulationNationalizationLevel, GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated", captionKey: sector.Type + "/Deregulation");
+
+            DrawSectorCostAndImpact(sector);   // P4-B3: the cost line and the 5c plate beneath the five dials
         }
 
         /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceSectorBill/GetPendingSectorBill).</summary>
@@ -10457,6 +10459,101 @@ namespace PoliSim.UI
         {
             _tierConcernForBreakdown = ParliamentSystem.GetSectorBillConcern(_playerCountry, BuildSectorBillFromDrafts());   // P3-A3
             DrawBillLiveEstimate(_tierConcernForBreakdown, withBreakdown: false);   // P4-B2: the breakdown after the rows
+        }
+
+        // ------------------------------------------------------------------------------------------
+        // P4-B3 (2026-09-04): the sectors page's own preview - the whole sector draft applied to a clone
+        // (SimulationManager.PreviewTurnWithSectorDraft) and every sector's output, employment and metric
+        // change read from it, so every arrow on the page is the preview's figure and none is computed on
+        // the sheet. Cached on the draft's fingerprint and the Budget preview's own debounce, so a dragged
+        // dial recomputes no sooner than the preview's measured cost allows.
+        // ------------------------------------------------------------------------------------------
+        private PolicyPreview _cachedSectorPreview;
+        private int _cachedSectorFingerprint = int.MinValue;
+        private int _cachedSectorPreviewTurn = -1;
+
+        private int SectorDraftFingerprint(SectorPolicyBill draft)
+        {
+            unchecked
+            {
+                int h = 23;
+                foreach (KeyValuePair<SectorType, float> kv in draft.SubsidyLevels) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                foreach (KeyValuePair<SectorType, float> kv in draft.RegulationLevels) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                foreach (KeyValuePair<SectorType, float> kv in draft.TaxCreditLevels) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                foreach (KeyValuePair<SectorType, float> kv in draft.ResearchGrantsLevels) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                foreach (KeyValuePair<SectorType, float> kv in draft.DeregulationLevels) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
+                return h;
+            }
+        }
+
+        private PolicyPreview SectorPreview()
+        {
+            SectorPolicyBill draft = BuildSectorBillFromDrafts();
+            int fingerprint = SectorDraftFingerprint(draft);
+            bool stale = _cachedSectorPreview == null || _cachedSectorPreviewTurn != _simulationManager.CurrentTurn;
+            if (stale || (fingerprint != _cachedSectorFingerprint && PreviewDebounceElapsed()))
+            {
+                _cachedSectorPreview = _simulationManager.PreviewTurnWithSectorDraft(PlayerCountryId, BuildPlayerDecision(), draft);
+                _cachedSectorFingerprint = fingerprint;
+                _cachedSectorPreviewTurn = _simulationManager.CurrentTurn;
+                if (PoliSim.Testing.CaptureIdentity.Armed && _cachedSectorPreview.SectorDeltas != null)
+                {
+                    foreach (KeyValuePair<SectorType, (float Output, float Employment, float Metric)> kv in _cachedSectorPreview.SectorDeltas)
+                    {
+                        if (Mathf.Abs(kv.Value.Output) + Mathf.Abs(kv.Value.Employment) + Mathf.Abs(kv.Value.Metric) < 0.0005f) { continue; }
+                        Debug.Log($"SECTOR PREVIEW: {kv.Key} output {kv.Value.Output:+0.000;-0.000} pp, employment {kv.Value.Employment:+0.000;-0.000} pp, metric {kv.Value.Metric:+0.000;-0.000} - the arrows on the sheet.");
+                    }
+                }
+            }
+            return _cachedSectorPreview;
+        }
+
+        /// <summary>
+        /// P4-B3: beneath a sector's five dials, the cost line in the Budget's own words and the 5c plate - an arrow per
+        /// outcome the draft moves (output share, employment share, the sector's own metric), the figure at the head in
+        /// the arrow's ink, the scope line under the panel. The cost is SectorCouplings' at the draft against the standing
+        /// dials; the arrows are the sector preview's deltas. A sector at rest draws the cost line at zero and the plate's
+        /// empty sentence, so the page stays navigable at rest and the plate appears where a dial has moved.
+        /// </summary>
+        private void DrawSectorCostAndImpact(Sector sector)
+        {
+            float gdp = _playerCountry.State.GDP;
+            float standingCost = SectorCouplings.SupportCost(gdp, sector.SubsidyLevel, sector.TaxCreditLevel, sector.ResearchGrantsLevel);
+            float draftCost = SectorCouplings.SupportCost(gdp,
+                GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel),
+                GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel),
+                GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel));
+            float costDelta = draftCost - standingCost;
+            bool moved = !Mathf.Approximately(GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel), sector.SubsidyLevel)
+                || !Mathf.Approximately(GetSectorRegulationInput(sector.Type, sector.RegulationLevel), sector.RegulationLevel)
+                || !Mathf.Approximately(GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel), sector.TaxCreditLevel)
+                || !Mathf.Approximately(GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel), sector.ResearchGrantsLevel)
+                || !Mathf.Approximately(GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel), sector.DeregulationNationalizationLevel);
+
+            DrawColoredLabel($"Cost of this draft {UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions)}/yr · support standing {UiFormat.Money(standingCost, MoneyUnit.Billions)}/yr",
+                _labelStyle, costDelta > 0f ? PoliSimTheme.Bad : costDelta < 0f ? PoliSimTheme.Good : PoliSimTheme.TextSecondary);
+
+            // The plate is RESERVED at rest and drawn into on a move - the same height either way - so a drag never grows
+            // the sector and never shifts the rows beneath it (P4-1's invariant; the first film moved five rows by 129 px).
+            var arrows = new List<EffectArrow>();
+            PolicyPreview preview = moved ? SectorPreview() : null;
+            if (preview != null && preview.SectorDeltas != null && preview.SectorDeltas.TryGetValue(sector.Type, out (float Output, float Employment, float Metric) delta))
+            {
+                arrows.Add(new EffectArrow("Output share", delta.Output, true, $"{delta.Output:+0.00;-0.00} pp"));
+                arrows.Add(new EffectArrow("Employment share", delta.Employment, true, $"{delta.Employment:+0.00;-0.00} pp"));
+                arrows.Add(new EffectArrow(GetSectorMetricLabel(sector.Type), delta.Metric, true, $"{delta.Metric:+0.00;-0.00}"));
+            }
+            DrawStatsSectionCaption(EffectArrowsRenderer.PlateTitleDraft);
+            Rect plate = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
+            if (arrows.Count == 0)
+            {
+                GUI.Label(plate, "Move a dial - the outcomes it moves appear here, an arrow each.", _labelStyle);
+            }
+            else
+            {
+                EffectArrowsRenderer.Draw(plate, arrows, _labelStyle);
+            }
+            EffectArrowsRenderer.DrawScopeLine(_labelStyle);
         }
 
         /// <summary>Bundles every current Sector draft, across every SectorType, into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>

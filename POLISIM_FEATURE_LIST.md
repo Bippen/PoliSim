@@ -555,7 +555,7 @@ on two dials, guards silent, rect stable (the P4-1 invariant — the caption nev
 
 **P4-B3 — Sector dials gain cost and impact.** The effects-arrow grammar (5c) and a cost line on
 every Economic Sectors slider, the way Budget's have them. *Done when:* filmed, every arrow traces
-to the preview.
+to the preview. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §290: `SectorCouplings` charges a sector's subsidy, tax credits and research grants to the Commerce line ([AUTHORED-DRAFT] per point, zero at the seed); `PolicyPreview.SectorDeltas` from a preview run with the sector draft applied; each sector draws the cost line and the 5c plate from those figures; filmed at 1280 and 2560.**
 
 ## Track C — laws that reach every macro lever, and repeal
 

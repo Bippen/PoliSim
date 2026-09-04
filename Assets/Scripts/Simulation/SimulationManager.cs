@@ -91,6 +91,9 @@ namespace PoliSim.Simulation
         public float SwfContributionEstimate;
         public float SwfReturnsEstimate;
 
+        /// <summary>P4-B3 (2026-09-04): per sector, the clone's output share, employment share and own metric after the previewed turn against before - the sectors page's arrows, the preview's own figures.</summary>
+        public Dictionary<SectorType, (float Output, float Employment, float Metric)> SectorDeltas;
+
         /// <summary>
         /// C-C1: the boundary's own revenue and total spending on the previewed clone, for one full
         /// turn — **and a full turn is a year** (`DaysPerTurn` is 365, the identity W-G1's
@@ -2736,6 +2739,41 @@ namespace PoliSim.Simulation
             return PreviewTurnOnClone(clone, countryId, decision);
         }
 
+        /// <summary>P4-B3: each sector's change over the previewed turn, from the shares recorded before it.</summary>
+        private static Dictionary<SectorType, (float Output, float Employment, float Metric)> SectorDeltasSince(Country previewCountry, Dictionary<SectorType, (float Output, float Employment, float Metric)> before)
+        {
+            var deltas = new Dictionary<SectorType, (float Output, float Employment, float Metric)>();
+            foreach (Sector sector in previewCountry.Sectors)
+            {
+                if (!before.TryGetValue(sector.Type, out (float Output, float Employment, float Metric) b)) { continue; }
+                deltas[sector.Type] = (sector.OutputShareOfGdp - b.Output, sector.EmploymentShare - b.Employment, sector.SectorMetric - b.Metric);
+            }
+            return deltas;
+        }
+
+        /// <summary>
+        /// P4-B3 (2026-09-04): the preview WITH a sector draft - the bill's five override tables handed to the clone the
+        /// way a passed sector bill's are (ApplySectorBillEffects), so the sectors page's cost line and arrows read the
+        /// preview's own figures. The decision's other overrides are the caller's as ever.
+        /// </summary>
+        public PolicyPreview PreviewTurnWithSectorDraft(CountryId countryId, PolicyDecision decision, SectorPolicyBill draft)
+        {
+            Country clone = ClonePreviewCountry(_world.GetCountry(countryId));
+            if (draft != null)
+            {
+                var sectorDecision = new PolicyDecision
+                {
+                    SectorSubsidyOverrides = draft.SubsidyLevels,
+                    SectorRegulationOverrides = draft.RegulationLevels,
+                    SectorTaxCreditOverrides = draft.TaxCreditLevels,
+                    SectorResearchGrantsOverrides = draft.ResearchGrantsLevels,
+                    SectorDeregulationNationalizationOverrides = draft.DeregulationLevels
+                };
+                ApplySectorPolicyChanges(clone, sectorDecision);
+            }
+            return PreviewTurnOnClone(clone, countryId, decision);
+        }
+
         /// <summary>
         /// C-C1: `PreviewTurn`'s body, taking a clone the caller has already made — so a caller can
         /// modify that clone FIRST (apply a draft bill to it) and preview the result. `PreviewTurn`
@@ -2758,6 +2796,9 @@ namespace PoliSim.Simulation
             float povertyBefore = state.PovertyRate;
             float laborForceParticipationBefore = state.LaborForceParticipationRate;
             float crimeIndexBefore = state.CrimeIndex;
+            // P4-B3: every sector's shares before the turn, for the deltas the sectors page draws as arrows.
+            var sectorsBefore = new Dictionary<SectorType, (float Output, float Employment, float Metric)>();
+            foreach (Sector sector in previewCountry.Sectors) { sectorsBefore[sector.Type] = (sector.OutputShareOfGdp, sector.EmploymentShare, sector.SectorMetric); }
 
             ApplyTariffRateChange(previewCountry, decision);
             ApplyPartnerTariffOverrides(previewCountry, decision);
@@ -2882,6 +2923,7 @@ namespace PoliSim.Simulation
                 CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
                 SwfContributionEstimate = swfContribution,
                 SwfReturnsEstimate = swfReturns,
+                SectorDeltas = SectorDeltasSince(previewCountry, sectorsBefore),   // P4-B3
                 PreviewInflation = state.Inflation,
                 PreviewUnemployment = state.Unemployment,
                 PreviewNaturalUnemployment = previewCountry.NaturalUnemploymentRate,
@@ -3623,6 +3665,7 @@ namespace PoliSim.Simulation
                 ApplyDemographicPensionPressure(country);
                 ApplyDemographicHealthcarePressure(country);
                 ApplyEnforcementCostPressure(country);
+                ApplySectorSupportCostPressure(country);   // P4-B3: the sector dials' support cost, the same idiom
                 float discretionaryTotalBefore = GetSpendingLineTotal(country, mandatory: false);
                 SpendingLineChangeResult changeResult = ApplySpendingLineChanges(country, decision);
                 float discretionaryTotalAfter = GetSpendingLineTotal(country, mandatory: false);
@@ -3832,6 +3875,25 @@ namespace PoliSim.Simulation
             {
                 borderLine.Amount = ClampToSeedRange(borderLine, borderLine.Amount + (borderTarget - country.AppliedBorderEnforcementCost));
                 country.AppliedBorderEnforcementCost = borderTarget;
+            }
+        }
+
+        /// <summary>
+        /// P4-B3 (2026-09-04): the sector dials' cost, in the enforcement cost's own shape - a stateless target
+        /// (<see cref="SectorCouplings.SupportCostTarget"/>: every sector's subsidy, tax credits and research grants above
+        /// the neutral dial, at their standing levels) composed with the stateful Commerce line (else PublicServices)
+        /// through <see cref="Country.AppliedSectorSupportCost"/>, so each boundary applies only the difference. Zero at
+        /// neutral dials, so the seed's trajectory does not move; the target moves only when a sector bill passes.
+        /// </summary>
+        private void ApplySectorSupportCostPressure(Country country)
+        {
+            float target = SectorCouplings.SupportCostTarget(country);
+            SpendingLine line = FindSpendingLine(country, SpendingCategory.Commerce)
+                ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+            if (line != null)
+            {
+                line.Amount = ClampToSeedRange(line, line.Amount + (target - country.AppliedSectorSupportCost));
+                country.AppliedSectorSupportCost = target;
             }
         }
 

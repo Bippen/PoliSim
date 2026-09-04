@@ -437,7 +437,7 @@ namespace PoliSim.Testing
                         {
                             var inputs = controller.GetType().GetField("_sectorSubsidyInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SectorType, float>;
                             if (inputs != null) { before = inputs.TryGetValue(firstSector, out float b0) ? (object)b0 : null; inputs[firstSector] = 80f; }
-                            ScrollBy(controller, Screen.height * 0.6f);   // past the sectors bill card to the first sector's dials (a fraction of the height: the card scales with the face)
+                            ScrollBy(controller, Screen.height * 0.74f);   // past the sectors bill card so the first sector AND its plate (P4-B3) sit above the fold; to the first sector's dials (a fraction of the height: the card scales with the face)
                         }
                         yield return Settle();
                         yield return Settle();

@@ -595,6 +595,11 @@ namespace PoliSim.Data
         /// Migration, else PublicServices).</summary>
         public float AppliedBorderEnforcementCost = 0f;
 
+        /// <summary>P4-B3 (2026-09-04): the sector twin of <see cref="AppliedJusticeEnforcementCost"/> - the last applied
+        /// sector-support cost (SectorCouplings: subsidies, tax credits and research grants above the neutral dial) on the
+        /// Commerce line (else PublicServices). Additive save field; old saves load 0 and self-correct at their first boundary.</summary>
+        public float AppliedSectorSupportCost = 0f;
+
         /// <summary>
         /// This country's old-age dependency ratio at the start of play (65+ as a percentage of
         /// 15–64), the fixed anchor every gap-based effect (pension pressure, labor force
