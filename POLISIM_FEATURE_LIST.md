@@ -711,7 +711,7 @@ sourced estimate exists, else absent), or **N/A** (counties, partisan military a
 the six-country frame cannot hold). Each kept metric gets its coupling (which dial or law reaches
 it, sourced or `[AUTHORED-DRAFT]` with its line), its display home, and its trajectory-family
 note. Order the families by gameplay impact. *Done when:* the catalog is in the record with every
-row sourced or N/A-with-reason; no metric built from this row.
+row sourced or N/A-with-reason; no metric built from this row. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §320: `SOCIETY_STATS_CATALOG.md` at the root - every row of the annex list kept (series named per family), mapped (Medicare/Medicaid → coverage and quality; illegal immigrants → irregular migration under two stated definitions; poverty effect → the poverty gap) or ruled N/A with the reason; couplings proposed as [AUTHORED-DRAFT] lines, display homes and family notes on every kept row; six families in §3's order plus the N/A table. No metric built.**
 
 **P5-C2 — Health.** Coverage (public/private), quality, **wait times** (OECD), retiree coverage
 as the 65+ share of the cohort substrate; health spending reaches them through the coupling table.
