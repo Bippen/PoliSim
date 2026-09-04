@@ -608,7 +608,7 @@ with dead-space measured before and after. **→ ✅ CLOSED 2026-09-04, `COMPLET
 the 5c grammar (D10 row 2's ask, structural now). *Done when:* filmed with two options visible. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §298: the cost line in the Budget's words and ink, the plate caption, the plate reserved, the option's own scope line - the 5c grammar on every Docket option; filmed with two options visible at 1280 and 2560.**
 
 **P4-E4 — The trade graph.** Verify against 6b's dotted zero rule; if the built graph is not on
-the board, close the gap; the ±100 % delta stays retired. *Done when:* filmed.
+the board, close the gap; the ±100 % delta stays retired. *Done when:* filmed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §299: verified on the film - the dotted rule sits at zero on the signed scale (P5-4's build of 6b row 3), the delta is the money delta from the zero base; nothing to build.**
 
 ## Track F — the D14 ask
 

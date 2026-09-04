@@ -22788,3 +22788,11 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **Films:** `p4g_1280` and `p4g_2560`: `03a_decisions_options` - the staged Cabinet decision scrolled into view, two options each with its cost line, caption, plate and scope line.
 
 **Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).
+
+## 299. P4-E4 — THE TRADE GRAPH VERIFIED AGAINST 6b's DOTTED ZERO RULE: on the board already; no gap to close (2026-09-04)
+
+**The row:** *"Verify against 6b's dotted zero rule; if the built graph is not on the board, close the gap; the ±100 % delta stays retired. Done when: filmed."*
+
+**Verified on the film, not assumed.** The trade balance graph (Statistics · International, `DrawTradeStatsContent`) is drawn by `GraphRenderer`, whose P5-4 build put board 6b row 3's rule in once for every signed series: where the scale spans zero the rule at 0 is dotted, and a series from a zero base reads as distance from it. On the 1280 frame the axis reads $1.52B at the top and −$16.7B at the foot; the dotted rule sits at zero, eight per cent of the span down from the top, and the series leaves it at the seed and runs to −$14.2B. The head's delta is the money delta from the zero base (*Δ -$14.7B*), the ±100 % form retired in P3-C4. Nothing to build; the record carries the crop.
+
+**Films:** `p4g_1280` and `p4g_2560`: `02b_statistics_international_deep`, the trade graph with the rule at zero.
