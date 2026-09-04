@@ -11,7 +11,9 @@ namespace PoliSim.Data
         CrimeJustice,
         LaborMarket,
         /// <summary>P4-C3 (2026-09-04), the first category from the lever map's unreached set: laws that move the natural rate of unemployment - benefit rules, employment protection, bargaining, active programmes.</summary>
-        LabourInstitutions
+        LabourInstitutions,
+        /// <summary>P4-C3, the second category: the fiscal framework - debt anchors and brakes, expenditure ceilings, the debt office's mandate, fiscal councils, tax administration - reaching five structural parameters no dial reaches.</summary>
+        FiscalFramework
     }
 
     /// <summary>
@@ -110,16 +112,17 @@ namespace PoliSim.Data
         public float FamilyPolicyDelta;
         public float ImmigrationPolicyDelta;
 
-        /// <summary>P4-C3 (2026-09-04): the thirteenth effect and the first that is not a player dial - a move of the country's NATURAL
-        /// RATE OF UNEMPLOYMENT in percentage points, composed from the enacted set exactly as the twelve dials are
-        /// (SimulationManager.RecomputeStructuralParametersFromEnactedLaws: base plus the sum, clamped fresh each time). Laws
-        /// of the LabourInstitutions category carry it; every other law's is 0.</summary>
-        public float NaturalUnemploymentDelta;
+        /// <summary>P4-C3 (2026-09-04): the STRUCTURAL effects - moves of the model's seeded per-country parameters (the natural rate of
+        /// unemployment, the debt anchor, the debt maturity, the premium sensitivity, collection coverage, the spending share), each in
+        /// its own unit, composed from the enacted set by SimulationManager.RecomputeStructuralParametersFromEnactedLaws exactly as the
+        /// twelve dials are. One table (StructuralParameters) rather than a field per parameter. Empty for every law of the two dial
+        /// categories.</summary>
+        public StructuralDelta[] Structural = System.Array.Empty<StructuralDelta>();
 
         /// <summary>P4-C3: the law's own reading on the economic axis (-1 left … +1 right), used for the NAIRU effect's stance
         /// term because the sign of a NAIRU move does not tell a law's politics - a benefit cut and a training programme both
         /// lower it. The twelve dials keep their uniform axis signs (ParliamentSystem.LawDialAxes); this field is read only
-        /// for the thirteenth.</summary>
+        /// for the structural effects.</summary>
         public float LrEconToward10;
 
         /// <summary>Code-review pass (2026-08-25): the dial deltas as ONE ordered array - every
@@ -137,8 +140,7 @@ namespace PoliSim.Data
             PoliceFundingDelta, SentencingSeverityDelta, BailReformDelta,
             DrugPolicyDelta, JudicialFundingDelta, BorderEnforcementDelta,
             MinimumWageDelta, PaidFamilyLeaveWeeksDelta, OvertimeRegulationDelta,
-            RetrainingProgramDelta, FamilyPolicyDelta, ImmigrationPolicyDelta,
-            NaturalUnemploymentDelta
+            RetrainingProgramDelta, FamilyPolicyDelta, ImmigrationPolicyDelta
         };
 
         /// <summary>Approval-rating cost paid ONCE, on successful enactment - distinct from ParliamentSystem.BillFailedApprovalCost (which is charged on a FAILED vote, for every bill kind uniformly). Represents a controversial law being costly to enact even when it passes, the same spirit as BudgetBill's own tax-hike approval penalty, sized here per-law rather than derived from the delta magnitude (a simplification, honestly - the MVP's four laws use small, illustrative, gameplay-tuning values, not researched figures, matching every other approval-cost constant in this codebase).</summary>

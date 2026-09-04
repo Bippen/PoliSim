@@ -282,8 +282,7 @@ namespace PoliSim.EditorTools
         private static readonly string[] LawDialNames =
         {
             "Police Funding", "Sentencing Severity", "Bail Reform", "Drug Policy", "Judicial Funding", "Border Enforcement",
-            "Minimum Wage", "Paid Family Leave", "Overtime Regulation", "Retraining Programs", "Family Policy", "Immigration Policy",
-            "Natural rate of unemployment"   // P4-C3: the thirteenth effect, in percentage points
+            "Minimum Wage", "Paid Family Leave", "Overtime Regulation", "Retraining Programs", "Family Policy", "Immigration Policy"
         };
 
         private static string[] DialsMoved(LawDefinition law)
@@ -293,6 +292,11 @@ namespace PoliSim.EditorTools
             for (int i = 0; i < deltas.Length && i < LawDialNames.Length; i++)
             {
                 if (Mathf.Abs(deltas[i]) > 0f) { moved.Add(LawDialNames[i] + " " + deltas[i].ToString("+0.#;-0.#", CultureInfo.InvariantCulture)); }
+            }
+            foreach (StructuralDelta d in law.Structural)   // P4-C3: the structural effects, in their own units
+            {
+                StructuralParameters.Spec spec = StructuralParameters.Of(d.Parameter);
+                moved.Add(spec.Name + " " + d.Delta.ToString("+0.##;-0.##", CultureInfo.InvariantCulture) + " " + spec.Unit);
             }
             return moved.ToArray();
         }

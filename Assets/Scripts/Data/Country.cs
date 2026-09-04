@@ -115,6 +115,25 @@ namespace PoliSim.Data
         /// never mutated incrementally, the clamp-safe idiom the crime dials taught (COMPOSITION).</summary>
         public float NaturalUnemploymentRateBase;
 
+        /// <summary>P4-C3: the seeded bases of the other structural parameters a law may move (StructuralParameters) - captured once the
+        /// seeds are placed (CaptureStructuralBases, at the end of WorldFactory.CreateDefault), composed on by the enacted set.</summary>
+        public float ComfortableDebtToGdpPercentBase;
+        public float AverageDebtMaturityYearsBase;
+        public float RiskPremiumSensitivityBase;
+        public float CollectionEfficiencyBase;
+        public float GovernmentSpendingRateBase;
+
+        /// <summary>P4-C3: record every structural parameter's seeded value as its base. Called once, after seeding; a save carries the bases.</summary>
+        public void CaptureStructuralBases()
+        {
+            NaturalUnemploymentRateBase = NaturalUnemploymentRate;
+            ComfortableDebtToGdpPercentBase = ComfortableDebtToGdpPercent;
+            AverageDebtMaturityYearsBase = AverageDebtMaturityYears;
+            RiskPremiumSensitivityBase = RiskPremiumSensitivity;
+            CollectionEfficiencyBase = CollectionEfficiency;
+            GovernmentSpendingRateBase = GovernmentSpendingRate;
+        }
+
         /// <summary>
         /// Trend/potential GDP growth rate, in percent per turn, used by Okun's Law (actual vs.
         /// potential growth) and to grow PotentialGDP each turn. Recomputed every turn as

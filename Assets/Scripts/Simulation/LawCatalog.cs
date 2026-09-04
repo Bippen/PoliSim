@@ -138,8 +138,7 @@ namespace PoliSim.Simulation
         public static readonly float[] DialMagnitudeScales =
         {
             1f, 1f, 1f, 1f, 1f, 1f,
-            2f, 1f, 1f, 1f, 1f, 1f,
-            15f   // CONVENTION (P4-C3, 2026-09-04): the natural rate of unemployment speaks in percentage points; x15 puts -0.4 pp at MINOR's edge (6), -0.9 at MODERATE's (14), -1.4 at MAJOR's (22) - Hartz IV's measured -1.4 pp sits at the MAJOR-SWEEPING line, where the record puts it
+            2f, 1f, 1f, 1f, 1f, 1f
         };
 
         public static readonly List<LawDefinition> All = new List<LawDefinition>
@@ -1911,7 +1910,7 @@ namespace PoliSim.Simulation
                 Description = "Merges long-term unemployment assistance into a flat, means-tested benefit, tightens the duty to accept work and shortens the insured benefit's duration.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Germany's Hartz IV (2005) - Arbeitslosenhilfe and Sozialhilfe merged into Arbeitslosengeld II, with the Hartz I-III activation and placement reforms of 2003-04 beneath it.",
-                NaturalUnemploymentDelta = -1.2f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -1.2f) },
                 LrEconToward10 = 1f,
                 EnactmentApprovalCost = 2.0f
             },
@@ -1926,7 +1925,7 @@ namespace PoliSim.Simulation
                 Description = "Halves the maximum duration of insured unemployment benefit and makes continued benefit conditional on activation from the first year.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Denmark's labour-market reforms of 1994-99 (benefit duration 9 → 4 years, activation from year one) and the 2010 halving to two years.",
-                NaturalUnemploymentDelta = -1.0f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -1.0f) },
                 LrEconToward10 = 0.5f,
                 EnactmentApprovalCost = 1.5f
             },
@@ -1940,7 +1939,7 @@ namespace PoliSim.Simulation
                 Description = "A tax credit on earned income only, widening the gap between wages and benefits so that work pays at the margin.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Sweden's jobbskatteavdrag (2007-), the earned-income tax credit built out in five steps; the US EITC is the older model.",
-                NaturalUnemploymentDelta = -0.5f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.5f) },
                 LrEconToward10 = 0.5f,
                 EnactmentApprovalCost = 1.0f
             },
@@ -1954,7 +1953,7 @@ namespace PoliSim.Simulation
                 Description = "Ends the extended-benefit tiers and caps insured unemployment at its ordinary duration.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "The expiry of the US Emergency Unemployment Compensation programme (December 2013), which had extended benefits to up to 99 weeks after 2008.",
-                NaturalUnemploymentDelta = -0.4f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.4f) },
                 LrEconToward10 = 1f,
                 EnactmentApprovalCost = 1.5f
             },
@@ -1968,7 +1967,7 @@ namespace PoliSim.Simulation
                 Description = "Lowers severance costs, narrows the grounds on which a dismissal can be reversed and lets firms adjust hours and pay in a downturn.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Spain's labour reform of 2012 (Real Decreto-ley 3/2012) and Italy's Jobs Act (2015), both loosening dismissal rules for open-ended contracts.",
-                NaturalUnemploymentDelta = -0.4f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.4f) },
                 LrEconToward10 = 1f,
                 EnactmentApprovalCost = 1.5f
             },
@@ -1982,7 +1981,7 @@ namespace PoliSim.Simulation
                 Description = "Moves wage-setting from the national round to the sector and the firm, with a coordinating norm set by the exposed sector.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "The Netherlands' Wassenaar Agreement (1982) and Sweden's Industrial Agreement (Industriavtalet, 1997) - wage moderation coordinated on the exposed sector.",
-                NaturalUnemploymentDelta = -0.3f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.3f) },
                 LrEconToward10 = 0.5f,
                 EnactmentApprovalCost = 1.0f
             },
@@ -1996,7 +1995,7 @@ namespace PoliSim.Simulation
                 Description = "Funds training, subsidised placements and job-search support for the long-term unemployed, with participation a condition of benefit.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Denmark's and Sweden's active labour-market spending, at 1-2 % of GDP the OECD's highest (OECD Employment Database).",
-                NaturalUnemploymentDelta = -0.3f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.3f) },
                 LrEconToward10 = -0.5f,
                 EnactmentApprovalCost = 1.0f
             },
@@ -2010,7 +2009,7 @@ namespace PoliSim.Simulation
                 Description = "Merges benefit administration and job placement into one office with caseloads, targets and a duty to place.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "The UK's Jobcentre Plus (2002) and Germany's Hartz III reorganisation of the Bundesagentur für Arbeit (2004).",
-                NaturalUnemploymentDelta = -0.3f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.3f) },
                 LrEconToward10 = 0.25f,
                 EnactmentApprovalCost = 0.5f
             },
@@ -2024,7 +2023,7 @@ namespace PoliSim.Simulation
                 Description = "Cuts the statutory working week with pay maintained, on the argument that shared hours are shared jobs.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "France's Aubry laws (1998, 2000) - the 35-hour week.",
-                NaturalUnemploymentDelta = 0.3f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, 0.3f) },
                 LrEconToward10 = -1f,
                 EnactmentApprovalCost = 1.0f
             },
@@ -2038,11 +2037,154 @@ namespace PoliSim.Simulation
                 Description = "Raises the insured benefit's ceiling and replacement rate and lengthens the period before it tapers.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Sweden's permanent raise of the unemployment-insurance ceiling (2022), making the 2020 pandemic increase standing.",
-                NaturalUnemploymentDelta = 0.5f,
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, 0.5f) },
                 LrEconToward10 = -1f,
                 EnactmentApprovalCost = 1.0f
             },
 
+            // ================================================================================================
+            // P4-C3, category four - THE FISCAL FRAMEWORK (2026-09-04): the second category from the lever map's
+            // unreached set, reaching five structural parameters no dial reaches (the debt-comfort anchor the fiscal
+            // reaction reads, the debt stock's average maturity, the market's risk-premium sensitivity, tax-collection
+            // coverage, the baseline spending share). Ten laws, each a structural delta in the parameter's own unit
+            // (StructuralParameters carries the tier-grid scale) and its own reading on the economic axis.
+            // ================================================================================================
+
+            // CONFIRMED-DIRECTION: Germany's Schuldenbremse (Grundgesetz Art. 109/115, 2009; binding on the Bund from
+            // 2016) - a structural-deficit ceiling of 0.35 % of GDP; the debt ratio fell from 82 % (2010) to 59 %
+            // (2019). Modelled as the comfort anchor moving DOWN ten points (the automatic reaction tightens earlier),
+            // MODERATE (10 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "constitutional_debt_brake_act",
+                Name = "Constitutional Debt Brake Act",
+                Description = "Writes a structural-deficit ceiling into the constitution, with an escape clause for emergencies and a repayment plan when it is used.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "Germany's Schuldenbremse (Basic Law Articles 109 and 115, 2009), binding on the federation from 2016 and on the Länder from 2020.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ComfortableDebtToGdpPercent, -10f) },
+                LrEconToward10 = 1f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // CONFIRMED-DIRECTION: Sweden's fiscal framework gained a debt anchor of 35 % of GDP (Maastricht debt) in 2019,
+            // beside the surplus target and the expenditure ceiling. MINOR (5 x1).
+            new LawDefinition
+            {
+                Id = "debt_anchor_act",
+                Name = "Debt Anchor Act",
+                Description = "Sets a public-debt anchor as a share of GDP and obliges the government to explain to Parliament any drift of more than five points from it.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "Sweden's debt anchor (skuldankaret) of 35 % of GDP, in force from 2019 within the fiscal policy framework.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ComfortableDebtToGdpPercent, -5f) },
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // CONFIRMED-DIRECTION: the brake's emergency clause was invoked 2020-22 and a defence exemption added in 2025;
+            // the anchor moving UP fifteen points is the loosening. MAJOR (15 x1). Reads left of centre.
+            new LawDefinition
+            {
+                Id = "debt_brake_suspension_act",
+                Name = "Debt Brake Suspension Act",
+                Description = "Invokes the escape clause and exempts a named class of spending from the deficit ceiling for the parliamentary term.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "The Bundestag's emergency-clause resolutions of 2020-22 and the March 2025 amendment exempting defence spending above 1 % of GDP from the brake.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ComfortableDebtToGdpPercent, 15f) },
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // CONFIRMED: Sweden's expenditure ceiling (utgiftstaket, 1997) - a nominal cap on central-government spending set
+            // three years ahead; central-government spending fell from about 40 % of GDP to under 30 % over the following
+            // decade. Modelled as the baseline spending share moving down one point of GDP, MODERATE (1.0 x10). Reads right.
+            new LawDefinition
+            {
+                Id = "expenditure_ceiling_act",
+                Name = "Expenditure Ceiling Act",
+                Description = "Sets a nominal ceiling on central-government spending three years ahead, voted before the budget and binding on it.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "Sweden's expenditure ceiling (utgiftstaket), introduced in the 1997 budget reform and part of the fiscal framework since.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.GovernmentSpendingRate, -1.0f) },
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // DIRECTIONAL: Debrun & Kinda (IMF, 2017) find independent fiscal councils associated with more accurate
+            // forecasts and better compliance with rules; the market channel (a lower premium per point of debt) is the
+            // game's reading of that credibility. MODERATE (0.15 x60 = 9). Reads near the centre.
+            new LawDefinition
+            {
+                Id = "fiscal_council_act",
+                Name = "Independent Fiscal Council Act",
+                Description = "Establishes an independent council that audits the government's forecasts and its compliance with the fiscal rules, reporting to Parliament.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "Sweden's Fiscal Policy Council (Finanspolitiska rådet, 2007) and the UK's Office for Budget Responsibility (2010).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.RiskPremiumSensitivity, -0.15f) },
+                LrEconToward10 = 0.25f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // CONFIRMED: the UK Debt Management Office issues long - the gilt stock's average maturity is about 14 years,
+            // the longest in the OECD - so the effective rate reprices slowly. Two years more, MODERATE (2 x5 = 10).
+            new LawDefinition
+            {
+                Id = "debt_office_long_issuance_act",
+                Name = "Debt Office Long-Issuance Mandate",
+                Description = "Directs the debt office to lengthen the stock's average maturity, trading a higher term premium today for slower repricing.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "The UK Debt Management Office's issuance remit - a gilt stock with an average maturity near 14 years; Sweden's Riksgälden steers its own by a time-to-refixing range.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.AverageDebtMaturityYears, 2f) },
+                LrEconToward10 = 0f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // DIRECTIONAL: issuing at the short end saves the term premium and exposes the stock to repricing - the
+            // Italian Treasury's shortening in the 1990s and the US Treasury's post-2020 bill share are the cases.
+            // MODERATE (1.5 x5 = 7.5).
+            new LawDefinition
+            {
+                Id = "short_issuance_savings_act",
+                Name = "Short-Issuance Savings Act",
+                Description = "Directs the debt office to fund at the short end to cut the interest bill now, accepting faster repricing when rates move.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "The US Treasury's rising bill share after 2020 and Italy's short-dated funding of the early 1990s.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.AverageDebtMaturityYears, -1.5f) },
+                LrEconToward10 = 0.25f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // CONFIRMED-DIRECTION: Italy's mandatory e-invoicing (FatturaPA for B2B, 2019) - the revenue agency put the
+            // first-year VAT gain near EUR 3.5 bn; the EU VAT-gap series fell after. Coverage +0.03, MODERATE (0.03 x300 = 9).
+            new LawDefinition
+            {
+                Id = "electronic_invoicing_mandate_act",
+                Name = "Electronic Invoicing Mandate",
+                Description = "Requires every business invoice to pass through the tax authority's exchange system, closing the gap between invoiced and declared sales.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "Italy's mandatory B2B e-invoicing through the Sistema di Interscambio (FatturaPA, 2019).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.CollectionEfficiency, 0.03f) },
+                LrEconToward10 = 0f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // CONFIRMED: Kleven, Knudsen, Kreiner, Pedersen & Saez (Econometrica, 2011), the Danish audit experiment -
+            // evasion near zero on third-party-reported income, substantial on self-reported. Coverage +0.02, MINOR (6).
+            new LawDefinition
+            {
+                Id = "third_party_reporting_act",
+                Name = "Third-Party Reporting and Withholding Act",
+                Description = "Extends withholding and third-party information reporting to the income the tax authority cannot yet see - platform earnings, rents, capital income.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "Denmark's third-party reporting regime, the setting of the 2011 Danish tax-audit experiment.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.CollectionEfficiency, 0.02f) },
+                LrEconToward10 = -0.25f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // DIRECTIONAL: Alm, Martinez-Vazquez & Wallace (2009) and the Italian scudi fiscali (2001-09) - repeated
+            // amnesties raise revenue once and erode compliance after; the sign here is the erosion. Coverage -0.02, MINOR.
+            new LawDefinition
+            {
+                Id = "tax_amnesty_act",
+                Name = "Tax Amnesty Act",
+                Description = "Lets undeclared income and assets be regularised at a flat rate without penalty, for one year.",
+                Category = LawCategory.FiscalFramework,
+                Citation = "Italy's scudi fiscali (2001, 2003, 2009) - repatriation amnesties at 2.5-5 %.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.CollectionEfficiency, -0.02f) },
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 0.5f
+            },
         };
 
         /// <summary>Looks up a law by its stable Id, or null if no such law exists (e.g. an old save citing a since-removed law - the caller decides how to degrade, matching PolicyWebRenderer/DisplayName's own "missing entry, not a crash" idiom).</summary>

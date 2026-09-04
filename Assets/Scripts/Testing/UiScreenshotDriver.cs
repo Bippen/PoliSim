@@ -618,6 +618,16 @@ namespace PoliSim.Testing
                                 : $"SHOT: P4-C2 [{stem}] - {drifted} quantit(ies) drifted after enact-then-repeal of {stagedLawId}.");
                             lawCountry.State.ApprovalRating = approvalUntouched;
                             selectedLaw?.SetValue(controller, selectedBefore);
+                            // P4-C3 (2026-09-04): one card per structural category on film - the law selected, its EXPECTED EFFECTS line in the parameter's own unit.
+                            foreach ((string lawId, string capture) in new[] { ("hartz_benefit_reform_act", "06h_laws_institutions_card"), ("constitutional_debt_brake_act", "06h_laws_fiscal_card") })
+                            {
+                                selectedLaw?.SetValue(controller, lawId);
+                                ResetScrolls(controller);
+                                detailScroll.SetValue(controller, new Vector2(0f, Screen.height * 0.3f));   // the effects and the citation sit under the name and the magnitude; the same scroll 06g uses
+                                yield return Settle();
+                                yield return Capture(capture);
+                            }
+                            selectedLaw?.SetValue(controller, selectedBefore);
                             yield return Settle();
                         }
                     }

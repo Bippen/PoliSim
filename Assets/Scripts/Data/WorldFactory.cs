@@ -1016,6 +1016,8 @@ namespace PoliSim.Data
                 }
             }
 
+            foreach (Country c in world.Countries) { c.CaptureStructuralBases(); }   // P4-C3: the seeds above are the bases the structural laws compose on
+
             return world;
         }
 

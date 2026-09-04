@@ -97,7 +97,8 @@ namespace PoliSim.EditorTools
 
                 ok &= VerifyExactBaseline(country);
                 ok &= VerifyByteIdentical(untouched, Snapshot(country));   // P4-C2
-                ok &= VerifyInstitutions(sim, world.GetCountry(CountryId.Sweden));   // P4-C3
+                ok &= VerifyStructural(sim, world.GetCountry(CountryId.Sweden), LawCategory.LabourInstitutions);   // P4-C3
+                ok &= VerifyStructural(sim, world.GetCountry(CountryId.Germany), LawCategory.FiscalFramework);   // P4-C3, the second category
 
                 Debug.Log(ok
                     ? "COMPOSITION: PASS - all six dials matched their independently-summed composed value " +
@@ -188,43 +189,56 @@ namespace PoliSim.EditorTools
             return true;
         }
 
-        // P4-C3 (2026-09-04): the thirteenth effect composes like the twelve. Every LabourInstitutions law is enacted on a
-        // fresh country; the natural rate must read base plus the independently summed deltas, clamped by the manager's own
-        // bounds (the whole set sums to -3.6 pp - Sweden's 6.5 lands at 2.9, inside the clamp, so the sum is asserted exact);
-        // then every law is repealed and the rate must be the base again, bit for bit.
-        private static bool VerifyInstitutions(SimulationManager sim, Country country)
+        // P4-C3 (2026-09-04): a structural category composes like the twelve dials. Every law of the category is enacted on a
+        // fresh country; every structural parameter must read base plus the independently summed deltas, clamped by the table's
+        // own bounds; then every law is repealed and every parameter must be the base again, bit for bit.
+        private static bool VerifyStructural(SimulationManager sim, Country country, LawCategory category)
         {
-            float before = country.NaturalUnemploymentRate;
-            int baseBits = BitConverter.SingleToInt32Bits(country.NaturalUnemploymentRateBase);
-            float expected = country.NaturalUnemploymentRateBase;
+            var baseBits = new Dictionary<StructuralParameter, int>();
+            var expected = new Dictionary<StructuralParameter, float>();
+            foreach (StructuralParameters.Spec spec in StructuralParameters.All)
+            {
+                baseBits[spec.Parameter] = BitConverter.SingleToInt32Bits(spec.GetBase(country));
+                expected[spec.Parameter] = spec.GetBase(country);
+            }
             int enacted = 0;
             foreach (LawDefinition law in LawCatalog.All)
             {
-                if (law.Category != LawCategory.LabourInstitutions) { continue; }
+                if (law.Category != category) { continue; }
                 ApplyLawBillEffects(sim, country, new LawBill { LawId = law.Id, IsRepeal = false });
-                expected += law.NaturalUnemploymentDelta;
+                foreach (StructuralDelta d in law.Structural) { expected[d.Parameter] += d.Delta; }
                 enacted++;
             }
             bool ok = enacted >= 10;
-            if (!ok) { Debug.LogError($"COMPOSITION: P4-C3 - only {enacted} LabourInstitutions law(s) in the catalog; the category was built with ten."); }
-            if (Mathf.Abs(country.NaturalUnemploymentRate - expected) > 1e-4f)
+            if (!ok) { Debug.LogError($"COMPOSITION: P4-C3 - only {enacted} {category} law(s) in the catalog; each category was built with ten."); }
+            var moved = new List<string>();
+            foreach (StructuralParameters.Spec spec in StructuralParameters.All)
             {
-                Debug.LogError($"COMPOSITION: P4-C3 - the natural rate after {enacted} enactments is {country.NaturalUnemploymentRate:F4}; base {country.NaturalUnemploymentRateBase:F4} plus the summed deltas is {expected:F4}.");
-                ok = false;
+                float want = Mathf.Clamp(expected[spec.Parameter], spec.Min, spec.Max);
+                float got = spec.Get(country);
+                if (Mathf.Abs(got - want) > 1e-4f)
+                {
+                    Debug.LogError($"COMPOSITION: P4-C3 - {category}: {spec.Parameter} after {enacted} enactments is {got:F4}; base plus the summed deltas, clamped, is {want:F4}.");
+                    ok = false;
+                }
+                if (Mathf.Abs(want - spec.GetBase(country)) > 1e-6f) { moved.Add($"{spec.Parameter} {spec.GetBase(country):F2} -> {want:F2}"); }
             }
             foreach (LawDefinition law in LawCatalog.All)
             {
-                if (law.Category != LawCategory.LabourInstitutions) { continue; }
+                if (law.Category != category) { continue; }
                 ApplyLawBillEffects(sim, country, new LawBill { LawId = law.Id, IsRepeal = true });
             }
-            if (BitConverter.SingleToInt32Bits(country.NaturalUnemploymentRate) != baseBits)
+            foreach (StructuralParameters.Spec spec in StructuralParameters.All)
             {
-                Debug.LogError($"COMPOSITION: P4-C3 - after repealing the whole category the natural rate is {country.NaturalUnemploymentRate:R}, not the base {country.NaturalUnemploymentRateBase:R}.");
-                ok = false;
+                if (BitConverter.SingleToInt32Bits(spec.Get(country)) != baseBits[spec.Parameter])
+                {
+                    Debug.LogError($"COMPOSITION: P4-C3 - {category}: after repealing the whole category {spec.Parameter} is {spec.Get(country):R}, not the base {spec.GetBase(country):R}.");
+                    ok = false;
+                }
             }
             Debug.Log(ok
-                ? $"COMPOSITION: P4-C3 - {enacted} LabourInstitutions laws composed the natural rate from {before:F2} to {expected:F2} and back to the base bit for bit."
-                : "COMPOSITION: P4-C3 - FAILED (see above).");
+                ? $"COMPOSITION: P4-C3 - {enacted} {category} laws composed {moved.Count} parameter(s) ({string.Join("; ", moved)}) on {country.Id} and back to the base bit for bit."
+                : $"COMPOSITION: P4-C3 - {category} FAILED (see above).");
             return ok;
         }
 
