@@ -8,13 +8,13 @@
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122000 | `10794f0035c489a649a5c378f48ece5a158907b47236a09382dd131ff4b2672e` |
-| `POLISIM_FEATURE_LIST.md` | 104067 | `c739c2900fac88cd1ba6af2bb5c37846cfe98a6b7c05d45f03487fe033b6ca20` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122001 | `d73547600bc9d091262223ef09f503f4e9a4f798c64d3f8b2dd1c2b0e6b6b8da` |
+| `POLISIM_FEATURE_LIST.md` | 104372 | `34b9c55b31ccbd37402530b4589bec61a0838ab6824e6b463eae91505b2aa32e` |
 | `LEVER_MAP.md` | 183633 | `b5eabd7f2d366809c701b89b61c65f01033d897e05395e3b8c61daeaf1b86bde` |
 | `logs/bar108_p4cde_RunAllBatch.log` | 474328 | `5dd53fca5bed58491e074809944f3482e23f9836c684af0fa86dc72fc9c3e474` |
 | `logs/bar106_p4cde_RunSimulationBatch.log` | 348198 | `597329e539daaec4aa791b06df87bdd6bc7047f25d061cd6f932b488a60f9408` |
-| `logs/p4de_1280.log` | 1230212 | `cf17d379447536bd12aff3920c9a9f72d72789c5b86dfefa337913286942d18c` |
-| `logs/p4de_2560.log` | 1192725 | `851415b614918bd586c7c97d12f704aca79693bb8d1091d68f00c5433704c1f2` |
+| `logs/p4g_1280.log` | 1219615 | `385cb5350f0417eb0d9101c8682f7adf9eaf2a457b8c5525e9bf19f16f146f57` |
+| `logs/p4g_2560.log` | 1199710 | `8f8dcb9b10c5b6a3a453e8f8dd4e0e19a288ecbafa15c252784e8eb6c430138f` |
 | `logs/p4b4_1280.log` | 998641 | `addacfb356497c28319333e9c335cedc3b12c18491b953aae9386b52af6003df` |
 | `logs/p4b4_2560.log` | 984262 | `72649a97ab61b803e2f1c78bc4871978c309f8825065be13d403deee4c3bb6eb` |
 
@@ -22,24 +22,24 @@
 
 | film | bytes | sha256 |
 |---|---|---|
-| `p4de_1280_04_demographics.png` | 493971 | `8195df08e6f0764308d040383ee4d634f6a7c9feaecede2d2d9da5032b1663f9` |
-| `p4de_1280_02b_statistics_international_deep.png` | 473490 | `d8c6d0cfd2abb7feb2b285f0ab2b3479eca1780d3f04d6a86532c644e5aa406a` |
-| `p4de_1280_07d_politics_federalreserve.png` | 466175 | `73f47617a1ff8aadd160b845451e456e107b8b0fb216f64502ba7be1bc170f33` |
+| `p4g_1280_04_demographics.png` | 493971 | `8195df08e6f0764308d040383ee4d634f6a7c9feaecede2d2d9da5032b1663f9` |
+| `p4g_1280_02b_statistics_international_deep.png` | 473490 | `d8c6d0cfd2abb7feb2b285f0ab2b3479eca1780d3f04d6a86532c644e5aa406a` |
+| `p4g_1280_07d_politics_federalreserve.png` | 468291 | `6adb15394d93d362003cc07db1b09174446eb9f38a4e73930fbdf81d03aecd8e` |
 | `p4b4_1280_06a_policylaws_labormarket_caption_drag.png` | 535053 | `c29546b02b9721a8fdd7d6204ae7c419fa47778635a2adfd284c0c719eb69e9d` |
 | `p4b4_1280_06a_policylaws_labormarket_caption_held.png` | 535053 | `c29546b02b9721a8fdd7d6204ae7c419fa47778635a2adfd284c0c719eb69e9d` |
 | `p4b4_1280_06a_policylaws_labormarket_caption_faded.png` | 531582 | `04e5b6c71d2b51e51ee0c111286edafc18ecc1eeddc113583d1ccad55bbd9234` |
-| `p4de_1280_01c_desk.png` | 500307 | `8fe4e71ed7b3be7cd731a1b660179a953bcfdba8e45a7ff606eea7c1b7342047` |
-| `p4de_1280_02b_statistics_international.png` | 378269 | `45ab062690eb646bff8fd1dd4e9af50c4de1ebab7d4661d27da7096259852825` |
-| `p4de_1280_03_decisions.png` | 535414 | `148f1b0242e4a1b11bfa8e72626d40ebc57d0197bbf0f267b4964020e8482824` |
-| `p4de_2560_04_demographics.png` | 1313566 | `2dbfff958ec63e443e5643212fd0d706388388db5fb93bbd62fbcbe77afd2699` |
-| `p4de_2560_02b_statistics_international_deep.png` | 1333137 | `8cbc4c6fc9547cba6d46227b2655f5841bdc7c1a0d8135b585382d3a1340a501` |
-| `p4de_2560_07d_politics_federalreserve.png` | 1521583 | `a690fe26c8c253226c078b4a389fc1d05f68a720aaf758385ed7019668188b94` |
+| `p4g_1280_01c_desk.png` | 500307 | `8fe4e71ed7b3be7cd731a1b660179a953bcfdba8e45a7ff606eea7c1b7342047` |
+| `p4g_1280_02b_statistics_international.png` | 378269 | `45ab062690eb646bff8fd1dd4e9af50c4de1ebab7d4661d27da7096259852825` |
+| `p4g_1280_03a_decisions_options.png` | 375320 | `753b8b24f6744349ea2221e7553af45b9c6f587d896ba01a3e3ad9b7eb65668e` |
+| `p4g_2560_04_demographics.png` | 1313566 | `2dbfff958ec63e443e5643212fd0d706388388db5fb93bbd62fbcbe77afd2699` |
+| `p4g_2560_02b_statistics_international_deep.png` | 1333137 | `8cbc4c6fc9547cba6d46227b2655f5841bdc7c1a0d8135b585382d3a1340a501` |
+| `p4g_2560_07d_politics_federalreserve.png` | 1521583 | `a690fe26c8c253226c078b4a389fc1d05f68a720aaf758385ed7019668188b94` |
 | `p4b4_2560_06a_policylaws_labormarket_caption_drag.png` | 1529773 | `971b812b15dd31ed93f20c22e76dd41eb2030ea7b4754979923ce761bc3e74fd` |
 | `p4b4_2560_06a_policylaws_labormarket_caption_held.png` | 1529773 | `971b812b15dd31ed93f20c22e76dd41eb2030ea7b4754979923ce761bc3e74fd` |
 | `p4b4_2560_06a_policylaws_labormarket_caption_faded.png` | 1520513 | `b721ea7d550f39e049b849e6489319002b02d762889f48c69d4c135bd5aa042c` |
-| `p4de_2560_01c_desk.png` | 1350604 | `a18d9276ad784ac176fb5fb220dd8681ae0e7372a05f5de800ea214699cbe11e` |
-| `p4de_2560_02b_statistics_international.png` | 1322045 | `d9653362ca50391c1fd9dd5a2b94c93410b69d623807edb8703fbfcc4781aceb` |
-| `p4de_2560_03_decisions.png` | 1364832 | `1bce67c7e61af03614db0769c8f83f7f188c6a6fb832657de57485fec948f1fc` |
+| `p4g_2560_01c_desk.png` | 1350604 | `a18d9276ad784ac176fb5fb220dd8681ae0e7372a05f5de800ea214699cbe11e` |
+| `p4g_2560_02b_statistics_international.png` | 1322045 | `d9653362ca50391c1fd9dd5a2b94c93410b69d623807edb8703fbfcc4781aceb` |
+| `p4g_2560_03a_decisions_options.png` | 1144164 | `2d65529986f224696008480899909abfc47d0d71197f55548663d49f88f6487a` |
 | `Elias Screenshots/NEW_nedladdning (11).png` | 86195 | `4a90ae383da00f2f87388128d9ee6f03be4669ac1fb9af6cb188fdd268e068fe` |
 | `Elias Screenshots/New_nedladdning.png` | 714934 | `9109ec43c07bb73c1ce8173df38a734e74fd5707c5fb461c6e348d805af9fe32` |
 | `Elias Screenshots/nedladdning (1).png` | 27855 | `932aea67989df360b5d746c66f4508a3b07ffa00365c1c005bc9e78cb20ae954` |

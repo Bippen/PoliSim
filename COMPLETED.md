@@ -22805,6 +22805,6 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 
 **The annex, honestly:** the five screenshots are NOT on disk (E-13, Elias's) - the ask binds each to its row by content and they join the package by digest the day they land, as E-8's eleven did; the Track B trio and the Track E sweep are on disk and in the package by digest.
 
-**The package** (`SEND_PACKAGE.md`, regenerated): the request, the feature list and the lever map by digest; the two closing bars and the four film logs by digest; the frames D14 cites at both widths by name, size and digest; the E-8 screenshots; the D9 returns and the glance carried unchanged. The request reads back at `10794f00…` and the package at `e06635ac…` as installed; the digests move with any later edit, and the receipt is the upload.
+**The package** (`SEND_PACKAGE.md`, regenerated): the request, the feature list and the lever map by digest; the two closing bars and the four film logs by digest; the frames D14 cites at both widths by name, size and digest; the E-8 screenshots; the D9 returns and the glance carried unchanged. The request reads back at `d7354760…` and the package at `8b923f19…` as installed (the first install cited the pre-fix film pair by name; corrected to the closing pair, `p4g_*`, in the same hour); the digests move with any later edit, and the receipt is the upload.
 
 **The errand:** E-14 - the D14 paste. Elias's.
