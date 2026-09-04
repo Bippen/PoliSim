@@ -715,7 +715,7 @@ row sourced or N/A-with-reason; no metric built from this row. **→ ✅ BUILT 2
 
 **P5-C2 — Health.** Coverage (public/private), quality, **wait times** (OECD), retiree coverage
 as the 65+ share of the cohort substrate; health spending reaches them through the coupling table.
-*Done when:* seeded for six, coupled, displayed as instruments, family explained.
+*Done when:* seeded for six, coupled, displayed as instruments, family explained. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §321 (the build waits on D15 item 3, E-17): `HEALTH_FAMILY_SPINE.md` - coverage for six (OECD DF_HEALTH_PROT), quality for six on treatable mortality (DF_AM; the HCQI rows for five, France absent and stated), waiting times for three (DF_WAITING; Germany, France and the USA publish none), retiree coverage derived; the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.**
 
 **P5-C3 — Education.** Academic score (PISA), graduation rate, attainment; education spending and
 the 0–19 cohort reach them. *Done when:* as C2.
