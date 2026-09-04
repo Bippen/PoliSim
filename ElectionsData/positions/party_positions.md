@@ -242,3 +242,41 @@ axis name's first word is the 0 end (two of the five are therefore inverted from
 yet** — §7's compatibility is harness-proven and consumed only by `CompatibilityHarness`; the voter groups'
 own axis positions are F3's, and until they exist a party's eight axes meet nothing to be compared with.
 The data is wired; the comparison waits on its other half.
+
+## THE FOUR MORE — P4-A2 / P4-A3 (2026-09-04): `redistribution`, `people_v_elite`, `anti_elite_salience`, `civlib_laworder`, `nationalism`
+
+Read 2026-09-04 from the same `CHES_2024_final_v2.csv` (re-fetched from the chesdata release; 279 parties, 53 columns), matched to the 31 EU units on their own `lrecon`/`galtan` pair with `spendvtax` re-read as the check that the match held (all 31 agree with the values above). The endpoints are QUOTED from `CHES.2024.Codebook.pdf` (pdftotext, 2026-09-04) on `PoliticalParty`'s fields: `redistribution` *0 = strongly favors redistribution … 10 = Strongly opposes redistribution*; `people_v_elite` *0 = elected office holders should make the most important decisions … 10 = "the people", not politicians, should make the most important decisions*; `anti_elite_salience` *0 = not important at all … 10 = extremely important*; `civlib_laworder` *0 = strongly favors civil liberties … 10 = strongly favors tough measures to fight crime*; `nationalism` *0 = strongly promotes cosmopolitan conceptions of society … 10 = strongly promotes nationalist conceptions of society*. The USA's two GPS units carry none of these; `PeopleVsElite` for REP and DEM is an `[AUTHORED-DRAFT]` placement tagged at its rows (P4-A3).
+
+| unit | redistribution | people_v_elite | anti_elite_salience | civlib_laworder | nationalism |
+|---|---|---|---|---|---|
+| AfD | 7.06 | 8.00 | 9.00 | 9.11 | 9.57 |
+| AzIV | 4.77 | 2.43 | 1.60 | 2.83 | 2.50 |
+| BSW | 2.00 | 7.00 | 8.86 | 6.25 | 6.86 |
+| C | 6.58 | 2.55 | 2.17 | 3.10 | 2.90 |
+| CDU | 6.39 | 2.64 | 2.75 | 7.11 | 5.86 |
+| CSU | 6.93 | 3.88 | 3.25 | 7.57 | 6.50 |
+| ECO | 1.40 | 5.33 | 5.00 | 2.17 | 0.67 |
+| ENS | 6.20 | 2.71 | 3.75 | 5.80 | 4.00 |
+| FDP | 8.11 | 3.90 | 2.38 | 2.67 | 2.71 |
+| FI | 8.21 | 4.75 | 3.00 | 6.33 | 6.62 |
+| FdI | 7.07 | 5.62 | 7.17 | 8.83 | 9.50 |
+| Grune | 3.06 | 4.82 | 2.50 | 1.89 | 1.29 |
+| KD | 6.58 | 2.27 | 3.83 | 7.90 | 7.20 |
+| KO | 5.39 | 3.00 | 2.55 | 3.12 | 3.56 |
+| Konf | 8.67 | 8.00 | 8.20 | 7.88 | 9.81 |
+| L | 6.26 | 1.36 | 2.17 | 5.70 | 3.90 |
+| LR | 7.40 | 3.00 | 5.00 | 7.83 | 8.33 |
+| Lega | 7.71 | 6.38 | 7.67 | 8.67 | 9.12 |
+| Linke | 0.94 | 4.33 | 6.88 | 3.00 | 1.71 |
+| M | 7.32 | 0.92 | 2.33 | 8.70 | 7.10 |
+| M5S | 1.64 | 7.12 | 7.50 | 4.33 | 4.38 |
+| MP | 2.89 | 5.67 | 2.67 | 1.60 | 1.70 |
+| NL | 2.37 | 5.00 | 2.90 | 2.07 | 1.56 |
+| PD | 2.57 | 3.12 | 2.67 | 3.33 | 1.50 |
+| PiS | 2.61 | 4.57 | 7.90 | 8.31 | 9.06 |
+| RN | 4.70 | 7.00 | 8.75 | 8.83 | 10.00 |
+| S | 3.00 | 0.92 | 2.67 | 6.40 | 4.50 |
+| SD | 5.37 | 5.33 | 8.00 | 9.30 | 9.50 |
+| SOC | 2.20 | 4.00 | 4.25 | 2.83 | 2.75 |
+| SPD | 2.89 | 3.09 | 2.38 | 4.22 | 3.29 |
+| V | 1.37 | 3.92 | 5.50 | 2.10 | 2.10 |

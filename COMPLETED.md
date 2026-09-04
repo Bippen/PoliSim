@@ -22592,3 +22592,25 @@ Worse than one sign: the two moves cancel to a zero entry on `spendvtax`, so `Lo
 **Built:** the measurement, as a print in `StanceModelDiagnostic` (`BudgetSplitsDiffer`, readable after a run; P4-A2 turns it into the assertion). Nothing in the game changed.
 
 **Bar:** `bar97_p4a1_RunAllBatch.log`, 29 of 29 clean.
+
+## 285. P4-A2 — A BUDGET DECOMPOSES INTO ITS LINES: each line loads the CHES axis it concerns, the map stated in code and sourced from the codebook, four more columns read for the 31 EU units; two budgets of one net balance now split the chamber differently, asserted (2026-09-04)
+
+**The row:** *"Each budget line loads the CHES axis it concerns … with the mapping stated in code and sourced from the codebook's axis definitions. A party's stance on a budget is the seat-weighted sum over its lines' loads against the party's published positions — never the net sign. Done when: two budgets with the same net balance but different compositions produce different splits, asserted."*
+
+**The data first.** `CHES_2024_final_v2.csv` was re-fetched (the chesdata release; 279 parties, 53 columns) and five columns the game had not read were matched to the 31 EU units on their own `lrecon`/`galtan` pair - the way F5 matched its five - with `spendvtax` re-read as the check that every match held (31 of 31 agree with the typed values). `redistribution`, `civlib_laworder` and `nationalism` are P4-A2's; `people_v_elite` and `anti_elite_salience` are P4-A3's. Each endpoint is QUOTED from `CHES.2024.Codebook.pdf` (`pdftotext`, 2026-09-04) on `PoliticalParty`'s new fields, and the table is banked in `party_positions.md`. `StanceAxis` gains `Redistribution`, `Environment` (the column F5 had already read but nothing loaded), `CivLibLawOrder` and `Nationalism`; `Position` gives redistribution the `lrecon` fallback (the USA's GPS rows carry no redistribution item, and the codebook's economic axis is the one it sits on) and the other three none.
+
+**The map** (`ParliamentSystem.BudgetLineAxes`, one row per spending category, the sign a one-percent rise moves the axis): transfers and health (SocialSecurity, Medicare, Medicaid, IncomeSecurity, VeteransBenefitsMandatory, FederalRetirement, HHSDiscretionary, Housing) → `lrecon` toward 0 AND `spendvtax` toward 0, the welfare state's two published dimensions; Education → `spendvtax` toward 0; Justice → `civlib_laworder` toward 10 (the codebook's own law-and-order item, now on every EU unit); HomelandSecurity → `immigrate_policy` toward 10 (§246's border-enforcement precedent); the sector lines (Transportation, Energy, Agriculture, Commerce, NASA, VeteransAffairsDiscretionary) → `lrecon` toward 0, the sheet's *state intervention*; taxation → `redistribution` toward 0 on a rise; welfare generosity → `lrecon` and `spendvtax` toward 0. ⚠ **Three pairings are `[AUTHORED-DRAFT]` and say so in the code:** Defense → `nationalism` toward 10 (CHES 2024 carries no defence-spending item; cosmopolitanism-vs-nationalism is the nearest published dimension), StateForeignAffairs → `nationalism` toward 0 (its mirror), Interior → `environment` toward 0 (the line's remit, not the codebook's question). A category not in the map loads `spendvtax` toward 0 as every line did before, so a new line is on the old road until placed, never on none. Each line carries its own signed size; `BillConcern.Loaded` weights the axes by the bill's own arithmetic, as §246 built it; the cuts feed the opinion term unchanged.
+
+**Measured (`p4a2_StanceModel.log`, the same two budgets as §284):**
+```
+    A: Defense +10 %, Education -10 %    direction 0  loads: nationalism toward 10 (50 %), spendvtax toward 10 (50 %)  FOR 176 UNDECIDED 0 AGAINST 173  PASSES
+    B: Education +10 %, Defense -10 %    direction 0  loads: spendvtax toward 0 (50 %), nationalism toward 0 (50 %)  FOR 165 UNDECIDED 24 AGAINST 160  PASSES
+    DIFFERENT SPLITS: composition reaches the scorer
+```
+The same net balance, opposite compositions, two different chambers: A carries the right bloc and the cut to education, B the left and the cut to defence, with 24 seats undecided between them. Neither is empty and neither is the 349-UNDECIDED FAIL of §284.
+
+**Asserted** (`StanceModelDiagnostic`): the two budgets must split the chamber differently, and neither may be the empty concern; the five drafts of §246 and the partner-refusal assertion stand.
+
+**What did not move:** the trajectory suite's no-policy path files no bill, so nothing there can change; the standalone program bills (`GetTaxProgramBillConcern` etc.) still load `spendvtax` alone - they are single-line bills and the sheet's row is the budget's. The lean bar's scalar `Direction` (the legacy sum) stays as the record's number; P4-A4 retires it from the label.
+
+**Bar:** `bar98_p4a2_RunAllBatch.log`, 29 of 29 clean; `bar98_p4a2_RunSimulationBatch.log`, 12 of 12 simulation checks clean.

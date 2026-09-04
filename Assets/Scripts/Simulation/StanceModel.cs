@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace PoliSim.Simulation
 {
-    /// <summary>The CHES 2024 axes a bill can load (P3-A1's map). Openness is `eu_position` rescaled to 0–10 (R-CL2's trade axis).</summary>
+    /// <summary>The CHES 2024 axes a bill can load (P3-A1's map; P4-A2 added the last four, which the budget's lines load). Openness is `eu_position` rescaled to 0–10 (R-CL2's trade axis).</summary>
     public enum StanceAxis
     {
         LrEcon,
@@ -17,7 +17,15 @@ namespace PoliSim.Simulation
         SpendVsTax,
         ImmigratePolicy,
         Deregulation,
-        Openness
+        Openness,
+        /// <summary>CHES 2024 `redistribution` (P4-A2): 0 = strongly favors redistribution … 10 = strongly opposes. The taxation lines' axis.</summary>
+        Redistribution,
+        /// <summary>CHES 2024 `environment` (P4-A2): 0 = environmental protection even at the cost of growth … 10 = growth even at the cost of the environment.</summary>
+        Environment,
+        /// <summary>CHES 2024 `civlib_laworder` (P4-A2): 0 = strongly favors civil liberties … 10 = strongly favors tough measures to fight crime. The justice line's axis.</summary>
+        CivLibLawOrder,
+        /// <summary>CHES 2024 `nationalism` (P4-A2): 0 = cosmopolitan conceptions of society … 10 = nationalist conceptions. The nearest published item to a defence line, and the pairing says it is a draft.</summary>
+        Nationalism
     }
 
     /// <summary>
@@ -185,6 +193,13 @@ namespace PoliSim.Simulation
                 case StanceAxis.ImmigratePolicy: return party.ImmigratePolicy;
                 case StanceAxis.Deregulation: return party.Deregulation;
                 case StanceAxis.Openness: return opennessAvailable ? (float)CoalitionCompatibility.RescaleEu(party.EuPosition) : party.LrEcon;
+                // P4-A2: the four the budget's lines load. Redistribution falls back to lrecon where unpublished (the
+                // USA's GPS rows), the codebook's economic axis being the one the item sits on; the other three have no
+                // stand-in and read NaN, which the reason line names.
+                case StanceAxis.Redistribution: return float.IsNaN(party.Redistribution) ? party.LrEcon : party.Redistribution;
+                case StanceAxis.Environment: return party.Environment;
+                case StanceAxis.CivLibLawOrder: return party.CivLibLawOrder;
+                case StanceAxis.Nationalism: return party.Nationalism;
                 default: return float.NaN;
             }
         }
@@ -200,6 +215,10 @@ namespace PoliSim.Simulation
                 case StanceAxis.ImmigratePolicy: return "immigrate_policy";
                 case StanceAxis.Deregulation: return "deregulation";
                 case StanceAxis.Openness: return "eu_position";
+                case StanceAxis.Redistribution: return "redistribution";
+                case StanceAxis.Environment: return "environment";
+                case StanceAxis.CivLibLawOrder: return "civlib_laworder";
+                case StanceAxis.Nationalism: return "nationalism";
                 default: return axis.ToString();
             }
         }

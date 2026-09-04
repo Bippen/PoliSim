@@ -145,8 +145,15 @@ namespace PoliSim.EditorTools
             bool sameSplit = budgetSplits[0].For == budgetSplits[1].For && budgetSplits[0].Undecided == budgetSplits[1].Undecided && budgetSplits[0].Against == budgetSplits[1].Against;
             sb.Append(sameSplit
                 ? "    ⚠ THE SAME SPLIT: composition did not reach the scorer - the budget is one signed number on one axis before StanceModel sees it (P4-A1's finding).\n"
-                : "    DIFFERENT SPLITS: composition reaches the scorer.\n");
+                : "    DIFFERENT SPLITS: composition reaches the scorer (P4-A2's done-when).\n");
             BudgetSplitsDiffer = !sameSplit;
+            // P4-A2's done-when, ASSERTED: two budgets of one net balance and different compositions must split the
+            // chamber differently, and neither may be the empty concern that passes or fails a chamber with no opinion.
+            if (sameSplit) { failures.Add("P4-A2: two budgets of the same net balance and different compositions produce ONE split - the lines' axes are not reaching the scorer"); }
+            foreach ((string name, int _, int _, int _, bool empty, string _) in budgetSplits)
+            {
+                if (empty) { failures.Add($"P4-A2: budget '{name}' loads no axis at all - a composed budget must load the axes of its lines"); }
+            }
 
             sb.Append("\n    The weights are §246's five [AUTHORED-DRAFT] constants; the positions CHES 2024 / GPS 2019; the salience EB105 / Gallup;\n");
             sb.Append("    Sweden's voter profile the ecological estimate from the 2022 valkrets returns over the 2024 pyramids. Nothing here is a roll call.\n");

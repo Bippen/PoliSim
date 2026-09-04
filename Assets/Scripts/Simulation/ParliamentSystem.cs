@@ -798,6 +798,13 @@ namespace PoliSim.Simulation
         // toward 0; `immigrate_policy` "10 = restrictive"; `deregulation` "10 = favors deregulation";
         // openness (eu_position rescaled) "10 = most open", so a tariff rise moves toward 0.
         // ------------------------------------------------------------------------------------------
+        /// <summary>
+        /// P4-A2 (Playtest 4, 2026-09-04): **a budget decomposes into its lines.** Each line loads the CHES axis it
+        /// concerns (<see cref="BudgetLineAxes"/>), with its own signed size, so a party's stance is the seat-weighted sum
+        /// over the lines' loads against its published positions and never the net sign (P4-A1, `COMPLETED.md` §284:
+        /// one axis for every line, and composition cancelled before the scorer saw it). Cuts still feed the opinion
+        /// term as before.
+        /// </summary>
         public static BillConcern GetBudgetBillConcern(Country country, BudgetBill bill)
         {
             var concern = new BillConcern { Direction = GetBillDirection(country, bill) };
@@ -805,11 +812,15 @@ namespace PoliSim.Simulation
             {
                 TaxLine standing = FindTaxLine(country, kvp.Key);
                 if (standing == null || !standing.IsImplemented) { continue; }
-                concern.Add(StanceAxis.SpendVsTax, -(kvp.Value - standing.Rate));
+                // Taxation → redistribution ("0 = strongly favors redistribution"): a rise moves toward 0, a cut toward 10.
+                concern.Add(StanceAxis.Redistribution, -(kvp.Value - standing.Rate));
             }
             foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingPercentChanges)
             {
-                concern.Add(StanceAxis.SpendVsTax, -kvp.Value);
+                foreach ((StanceAxis axis, float towardTenPerUnit) in BudgetLineAxes(kvp.Key))
+                {
+                    concern.Add(axis, towardTenPerUnit * kvp.Value);
+                }
                 if (kvp.Value < 0f) { concern.Cuts.Add((kvp.Key, null, -kvp.Value / 100f)); }
             }
             foreach (KeyValuePair<WelfareProgramType, float> kvp in bill.WelfarePrograms)
@@ -817,10 +828,93 @@ namespace PoliSim.Simulation
                 WelfareProgram standing = FindWelfareProgram(country, kvp.Key);
                 if (standing == null || !standing.IsImplemented) { continue; }
                 float delta = kvp.Value - standing.GenerosityLevel;
+                // Welfare generosity → lrecon (more state, toward 0) and spendvtax (public services, toward 0): the
+                // welfare state's two published dimensions, each carrying the whole move.
+                concern.Add(StanceAxis.LrEcon, -delta);
                 concern.Add(StanceAxis.SpendVsTax, -delta);
                 if (delta < 0f && standing.GenerosityLevel > 0f) { concern.Cuts.Add((null, kvp.Key, -delta / standing.GenerosityLevel)); }
             }
             return concern;
+        }
+
+        /// <summary>
+        /// P4-A2: THE LINE → AXIS MAP, stated here and sourced from the codebook's own variable definitions (quoted on
+        /// `PoliticalParty`'s fields). Each pair is the axis a spending line loads and the sign a one-percent RISE of
+        /// that line moves it: −1 toward the axis's 0 end, +1 toward its 10 end. A line may load two axes; each
+        /// carries the whole move and `BillConcern.Loaded` weights the axes by the bill's own arithmetic.
+        /// <list type="bullet">
+        /// <item><description><b>Transfers and health</b> (SocialSecurity, Medicare, Medicaid, IncomeSecurity,
+        /// VeteransBenefitsMandatory, FederalRetirement, HHSDiscretionary, Housing): `lrecon` toward 0 ("more state")
+        /// and `spendvtax` toward 0 ("improving public services") - the welfare state's two published dimensions;
+        /// the sheet's "lrecon and the welfare-state dimension".</description></item>
+        /// <item><description><b>Education</b>: `spendvtax` toward 0 - a public service in the codebook's own
+        /// words.</description></item>
+        /// <item><description><b>Defense</b>: `nationalism` toward 10. ⚠ [AUTHORED-DRAFT] pairing: CHES 2024 carries
+        /// no defence-spending item; "cosmopolitanism vs nationalism" is the nearest published dimension, and this is
+        /// a placement rather than the codebook's own question. The reason line names the axis, so a reader sees which
+        /// item decided.</description></item>
+        /// <item><description><b>HomelandSecurity</b>: `immigrate_policy` toward 10 ("restrictive") - the crime bill's
+        /// border-enforcement precedent (§246); the department's remit is border and immigration
+        /// enforcement.</description></item>
+        /// <item><description><b>Justice</b>: `civlib_laworder` toward 10 ("tough measures to fight crime") - the
+        /// codebook's own law-and-order item, now published on every EU unit.</description></item>
+        /// <item><description><b>Interior</b> (public lands): `environment` toward 0 ("environmental protection even
+        /// at the cost of economic growth"). ⚠ [AUTHORED-DRAFT] pairing - the line's remit, not the codebook's
+        /// question.</description></item>
+        /// <item><description><b>Sector lines</b> (Transportation, Energy, Agriculture, Commerce, NASA,
+        /// VeteransAffairsDiscretionary): `lrecon` toward 0 - the sheet's "state intervention", the codebook's
+        /// economic axis.</description></item>
+        /// <item><description><b>StateForeignAffairs</b>: `nationalism` toward 0 (cosmopolitan). ⚠ [AUTHORED-DRAFT]
+        /// pairing, the mirror of Defense's.</description></item>
+        /// </list>
+        /// A category not listed here loads `spendvtax` toward 0 as every line did before P4-A2, so a new line is on
+        /// the old road until it is placed, never silently on none.
+        /// </summary>
+        public static IEnumerable<(StanceAxis Axis, float TowardTenPerUnit)> BudgetLineAxes(SpendingCategory category)
+        {
+            switch (category)
+            {
+                case SpendingCategory.SocialSecurity:
+                case SpendingCategory.Medicare:
+                case SpendingCategory.Medicaid:
+                case SpendingCategory.IncomeSecurity:
+                case SpendingCategory.VeteransBenefitsMandatory:
+                case SpendingCategory.FederalRetirement:
+                case SpendingCategory.HHSDiscretionary:
+                case SpendingCategory.Housing:
+                    yield return (StanceAxis.LrEcon, -1f);
+                    yield return (StanceAxis.SpendVsTax, -1f);
+                    break;
+                case SpendingCategory.Education:
+                    yield return (StanceAxis.SpendVsTax, -1f);
+                    break;
+                case SpendingCategory.Defense:
+                    yield return (StanceAxis.Nationalism, 1f);
+                    break;
+                case SpendingCategory.HomelandSecurity:
+                    yield return (StanceAxis.ImmigratePolicy, 1f);
+                    break;
+                case SpendingCategory.Justice:
+                    yield return (StanceAxis.CivLibLawOrder, 1f);
+                    break;
+                case SpendingCategory.Interior:
+                    yield return (StanceAxis.Environment, -1f);
+                    break;
+                case SpendingCategory.StateForeignAffairs:
+                    yield return (StanceAxis.Nationalism, -1f);
+                    break;
+                case SpendingCategory.Transportation:
+                case SpendingCategory.Energy:
+                case SpendingCategory.Agriculture:
+                case SpendingCategory.Commerce:
+                case SpendingCategory.NASA:
+                case SpendingCategory.VeteransAffairsDiscretionary:
+                    yield return (StanceAxis.LrEcon, -1f);
+                    break;
+                default:
+                    yield return (StanceAxis.SpendVsTax, -1f);
+                    break;
+            }
         }
 
         public static BillConcern GetTaxProgramBillConcern(Country country, TaxProgramBill bill)

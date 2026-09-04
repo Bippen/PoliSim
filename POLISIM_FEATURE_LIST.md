@@ -526,7 +526,7 @@ defence, environment, immigration-related lines → their own axes; sector lines
 intervention), with the mapping stated in code and sourced from the codebook's axis definitions. A
 party's stance on a budget is the seat-weighted sum over its lines' loads against the party's
 published positions — never the net sign. *Done when:* two budgets with the same net balance but
-different compositions produce different splits, asserted.
+different compositions produce different splits, asserted. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §285: `ParliamentSystem.BudgetLineAxes` - transfers and health on `lrecon` + `spendvtax`, taxation on `redistribution`, justice on `civlib_laworder`, homeland security on `immigrate_policy`, sector lines on `lrecon`, three pairings tagged [AUTHORED-DRAFT] (defence and foreign affairs on `nationalism`, interior on `environment`); five CHES columns read for the 31 units; the two budgets of §284 now split 176/0/173 against 165/24/160, asserted in `StanceModelDiagnostic`.**
 
 **P4-A3 — Bloc side and populism.** Bloc cohesion as an explicit term (government bloc supports
 its budget, opposition bloc's support depends on distance, both with loyalty-driven defection —
