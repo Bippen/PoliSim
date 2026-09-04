@@ -397,6 +397,17 @@ namespace PoliSim.Testing
                     ResetScrolls(controller);
                     yield return Settle();
                 }
+                if (Tabs[i] == "Demographics")
+                {
+                    // P6-1 (board 8a): the sector pie sits deep in the People page - scroll to where the renderer laid it out (its LastArea, read after a settled frame), the disc with its outside labels on film.
+                    var pie = controller.GetType().GetField("_sectorEmploymentPieChart", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as PieChartRenderer;
+                    float pieY = pie != null ? pie.LastArea.y : 2400f;
+                    ScrollBy(controller, Mathf.Max(0f, pieY - Screen.height * 0.12f));
+                    yield return Settle();
+                    yield return Capture("04a_demographics_pie");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))
                 {

@@ -9084,7 +9084,8 @@ namespace PoliSim.UI
                 sectorSlices.Add(new PieSlice(DisplayName.Spaced(sector.Type.ToString()), sector.EmploymentShare, UiPalette.GetCategoricalColor(sectorIndex)));
                 sectorIndex++;
             }
-            _sectorEmploymentPieChart.Draw($"{_playerCountry.Name}: Employment Share by Sector", sectorSlices, _labelStyle, "F1", moneyUnit: null);
+            DrawCohortCaption("EMPLOYMENT · SHARE BY SECTOR · Sector.EmploymentShare", "DERIVED");   // P6-1 (board 8a): the head row is the instrument's - title left, stamp right
+            _sectorEmploymentPieChart.Draw(string.Empty, sectorSlices, _labelStyle, "F1", moneyUnit: null);
             GUILayout.Space(10f);
 
             // 29 SpendingCategory members against an eight-ink cap, so this is a ranked ledger, not a
@@ -9238,6 +9239,11 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y15 - rowHeight, rows.width - turnoutWidth - gapX, rowHeight), "15 — WORKING AGE BEGINS", mark);
                 PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y65 - rowHeight, rows.width - turnoutWidth - gapX, rowHeight), "65 — OLD AGE", mark);
                 // The 0 and 100 of the turnout lane.
+                // P6-1 (board 8a): the bar's face - a baseline hairline where the bars start, the scale as two numbers (zero and the max) at the foot, no gridlines.
+                PoliSimTheme.Rule(new Rect(barX - 1f, rows.y, 1f, rowHeight * PopulationCohorts.CohortCount), PoliSimTheme.Hairline);
+                GUIStyle scale = DeskCaption(7f, PoliSimTheme.TextMuted);
+                PoliSimWidgets.MeasuredLabel(new Rect(barX, rows.yMax - rowHeight, barMax * 0.5f, rowHeight), "0", scale);
+                PoliSimWidgets.MeasuredLabel(new Rect(barX, rows.yMax - rowHeight, barMax, rowHeight), Millions(max), DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
                 GUIStyle axis = DeskCaption(7f, PoliSimTheme.TextMuted);
                 PoliSimWidgets.MeasuredLabel(new Rect(turnoutX, rows.yMax - rowHeight, turnoutWidth * 0.5f, rowHeight), "0", axis);
                 PoliSimWidgets.MeasuredLabel(new Rect(turnoutX + turnoutWidth * 0.5f, rows.yMax - rowHeight, turnoutWidth * 0.5f, rowHeight), "100", DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
@@ -9352,7 +9358,7 @@ namespace PoliSim.UI
             // Playtest 3 cut: "Overall Trade Balance: $X" above the graph and the graph's own "Trade
             // Balance" title were a (c) pair - one copy stays, and it is the one that carries the
             // figure: the graph's title row names the series and its current level in one line.
-            _tradeBalanceGraph.Draw($"Trade balance {UiFormat.MoneyDelta(state.TradeBalance, MoneyUnit.Billions)}", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true,
+            _tradeBalanceGraph.Draw("Trade balance · goods and services", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true,
                 moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.TradeBalance));
         }
 
