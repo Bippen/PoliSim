@@ -23195,3 +23195,12 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `bar144_p5c2_RunAllBatch.log`, 32 of 32 clean (a document).
 
+
+## 325. TWO QUIRKS RECORDED — the OECD CSV that shifts columns under a naive read, and the global replace that hit its own helper (2026-09-05)
+
+**The instruction:** *"The quirks, recorded: OECD CSV flows shift columns under a naive read because a label column carries commas — every family's parse is header-aware, asserted; a global replace can hit its own helper and a stack overflow leaves no log line."*
+
+**Recorded in `CLAUDE.md` under Conventions** (and in the session memory's environment quirks): (1) OECD SDMX `csvfilewithlabels` flows put a label column beside every code column and the labels carry commas, so a split on commas reads a confidence bound for a value and a year for a code - every family's parse is HEADER-AWARE, the column found by name with a de-duplicated header (the flows carry "MEASURE" and "Measure" both), the unit column deciding between the two units one file holds, and the pass that seeds a family asserts the column it read, by name, in its record; the fetched-summary route missed two flows in eighty-six and shuffled a JSON-stat response's years, so list everything and decode by index. (2) A global replace can hit the helper it just inserted - P5-B5's parliament helper called itself after a `s///g` over its own file - and a C# stack overflow kills Unity with no log line: the bar log ends mid-check. When a bar ends without its CHECKS line, grep the last edit for self-reference before anything else; a replace that touches a name being introduced runs once, anchored, never globally.
+
+**Bar:** `bar145_quirks_RunAllBatch.log`, 32 of 32 clean (a document).
+

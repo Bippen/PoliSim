@@ -5452,6 +5452,11 @@ this is positive evidence that the 5e UI work did not disturb the simulation.
    is a design question for a future item, not a bug - flagged so it isn't rediscovered as one.
 
 ## Conventions
+
+### Two quirks recorded 2026-09-05 (P5, item 4 of the standing sheet)
+
+- **OECD SDMX CSV flows shift columns under a naive read.** `format=csvfilewithlabels` puts a label column beside every code column and the labels contain commas ("… (during same hospital admission, unlinked data)"), so a split on commas reads a confidence bound for a value and a year for a code. Every family's parse is HEADER-AWARE - the column is found by its name (a de-duplicated header: the flows carry "MEASURE" and "Measure" both) and the unit column decides between the two units one file can hold - and the pass that seeds a family asserts the column it read, by name, in its record. The fetched-summary route missed two flows in a list of eighty-six and shuffled the years of a JSON-stat response; list everything and decode by index.
+- **A global replace can hit its own helper, and a stack overflow leaves no log line.** P5-B5's parliament helper called itself after a `s///g` over the file that had just inserted it; the simulation bar and the films died with no verdict - the log simply ends mid-check. When a bar ends without its CHECKS line, grep the last edit for self-reference before anything else; and a replace that touches a name being introduced runs once, anchored, never globally.
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
 - Cross-references between countries (trade partners, bloc membership) go through the `CountryId` enum, never direct object references — avoids reference cycles and keeps the data model Unity-Inspector-serializable. Shared-currency membership is instead detected by *reference equality* on `CurrencyZone` (see `CurrencySystem.SharesCurrencyZoneWithOthers`), since that shared reference is exactly what "using the same currency" means in this model.
