@@ -22716,3 +22716,13 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **Films:** `p4g_1280` and `p4g_2560` (the full sweep on the closing tree, 92 captures each, 0 failed, 0 overflows, 0 escapes): `06g_laws_repealable`, the law browser with the Truth in Sentencing Act in force and selected, its status cell reading ENACTED · REPEALABLE; the driver's own assertion printed 182 quantities byte-identical after the repeal, the approval 1.0 below and restored.
 
 **Bar:** `bar108_p4cde_RunAllBatch.log`, 30 of 30 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean - `LawCompositionDiagnostic` joins the simulation group (it had run standalone since the marathon) and prints the byte-identical count; the fourteenth is §293's, on the same tree.
+
+## 293. P4-D1 — THE EVENT RATE, MEASURED: one turn is one year, so 12 % a turn was 1.2 events a game and a quiet slot in most games (2026-09-04)
+
+**The row:** *"How often events fire per year, from the pool's size and probabilities, against what a player sees in a ten-year game. Done when: the number is in the record."*
+
+**From the constants.** `EventSystem.TryRollEvent` fires with `EventChancePerTurn` = 0.12 per country per turn, then draws uniformly from a 24-event pool. The fact that turns the figure into a rate: `SimulationManager.DaysPerTurn` is 365 - one turn is one year. So the rate was 0.12 events per country-year: 1.2 events in a ten-year game, and 0.88 to the tenth power = 28 % of ten-year games with no event at all. The Desk's event slot, filmed "quiet" since the board that drew it, was quiet for the model's reason, not the film's.
+
+**Measured** (`EventRateDiagnostic`, the simulation bar - it builds and advances worlds; 60 worlds, ten years each, every country counted): the diagnostic joined the bar together with P4-D2's change of the constant, so its first print is of the NEW rate and the old rate's figures above are the binomial's own - 1,489 events in 3,600 country-years (60 worlds × 10 years × 6 countries): 0.414 per country-year against the constant's 0.40 (±0.008 standard error), 4.1 events per ten-year game, none of the 360 ten-year games without an event (the constant predicts 0.6 %); all 50 of the pool's events drawn at least once.
+
+**Bar:** `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (`EventRateDiagnostic` joins the simulation group); `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean.

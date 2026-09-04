@@ -582,7 +582,7 @@ recorded reason it should stay unreachable.
 
 **P4-D1 — Measure the event rate.** How often events fire per year, from the pool's size and
 probabilities, against what a player sees in a ten-year game. *Done when:* the number is in the
-record.
+record. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §293: one turn is one year, so 0.12 a turn was 1.2 events per ten-year game and 28 % of games with none; `EventRateDiagnostic` (the simulation bar) measures the realised rate on 60 worlds × 10 years.**
 
 **P4-D2 — More events.** Expand the pool with authored events, each tagged, each with effects
 through the model's own terms and a magnitude band, sourced analogues cited where an event mirrors

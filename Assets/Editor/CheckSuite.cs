@@ -350,6 +350,10 @@ namespace PoliSim.EditorTools
                 // six dials back on 50.0000 and (new) the WHOLE country byte-identical, the approval excepted by name.
                 // It ran standalone since the marathon; a check off every bar decays, so it joins this group (it builds a World).
                 ("LawCompositionDiagnostic", LawCompositionDiagnostic.Run),
+
+                // P4-D1 (2026-09-04): the event rate measured on 60 worlds x 10 years - it advances turns, so it belongs here.
+                ("EventRateDiagnostic", EventRateDiagnostic.Run),
+
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for
                 // every party of every country as the player's, so it belongs to this group on the same
                 // cost argument as the rest. ⚠ Its Sweden 2022 assertion is the one in the suite whose
