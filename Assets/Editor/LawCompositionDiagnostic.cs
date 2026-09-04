@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using PoliSim.Data;
 using PoliSim.Simulation;
 using UnityEngine;
@@ -71,6 +72,7 @@ namespace PoliSim.EditorTools
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(world);
                 Country country = world.GetCountry(CountryId.USA);
+                List<(string Name, int Bits)> untouched = Snapshot(country);   // P4-C2: the whole country, bit for bit, before any law
 
                 Debug.Log($"COMPOSITION: enacting {EnactedSet.Length} of {LawCatalog.All.Count} laws.");
                 foreach (string lawId in EnactedSet)
@@ -94,6 +96,7 @@ namespace PoliSim.EditorTools
                 }
 
                 ok &= VerifyExactBaseline(country);
+                ok &= VerifyByteIdentical(untouched, Snapshot(country));   // P4-C2
 
                 Debug.Log(ok
                     ? "COMPOSITION: PASS - all six dials matched their independently-summed composed value " +
@@ -182,6 +185,69 @@ namespace PoliSim.EditorTools
 
             Debug.Log($"COMPOSITION: {label} {dialName} OK - {actual:F4} (raw sum {expectedRaw:F4}).");
             return true;
+        }
+
+        // P4-C2 (2026-09-04): repeal's promise is the whole state back, not six dials back. Every public float on the
+        // Country, its EconomyState and its Sectors is snapshotted BIT FOR BIT before the first enactment and compared after
+        // the last repeal; a one-ulp drift anywhere is a finding. The one named exception is ApprovalRating: enactment
+        // charges the law's EnactmentApprovalCost, the political price of passing it, and a repeal does not refund a price
+        // already paid - so the approval is expected to sit BELOW the untouched value by exactly the summed costs, which
+        // is asserted too rather than merely excluded.
+        private static List<(string Name, int Bits)> Snapshot(Country country)
+        {
+            var list = new List<(string Name, int Bits)>();
+            foreach (FieldInfo f in typeof(Country).GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (f.FieldType == typeof(float)) { list.Add(("Country." + f.Name, BitConverter.SingleToInt32Bits((float)f.GetValue(country)))); }
+            }
+            foreach (FieldInfo f in typeof(EconomyState).GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (f.FieldType == typeof(float)) { list.Add(("State." + f.Name, BitConverter.SingleToInt32Bits((float)f.GetValue(country.State)))); }
+            }
+            foreach (Sector sector in country.Sectors)
+            {
+                foreach (FieldInfo f in typeof(Sector).GetFields(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    if (f.FieldType == typeof(float)) { list.Add(($"Sector.{sector.Type}.{f.Name}", BitConverter.SingleToInt32Bits((float)f.GetValue(sector)))); }
+                }
+            }
+            list.Add(("EnactedLaws.Count", country.EnactedLaws.Count));
+            return list;
+        }
+
+        private static bool VerifyByteIdentical(List<(string Name, int Bits)> before, List<(string Name, int Bits)> after)
+        {
+            bool ok = before.Count == after.Count;
+            int drifted = 0;
+            float approvalBefore = 0f, approvalAfter = 0f;
+            for (int i = 0; ok && i < before.Count; i++)
+            {
+                if (before[i].Name == "State.ApprovalRating")
+                {
+                    approvalBefore = BitConverter.Int32BitsToSingle(before[i].Bits);
+                    approvalAfter = BitConverter.Int32BitsToSingle(after[i].Bits);
+                    continue;
+                }
+                if (before[i].Bits != after[i].Bits)
+                {
+                    drifted++;
+                    Debug.LogError($"COMPOSITION: after enact-then-repeal, {before[i].Name} is not byte-identical - " +
+                                   $"{BitConverter.Int32BitsToSingle(before[i].Bits):R} became {BitConverter.Int32BitsToSingle(after[i].Bits):R}.");
+                }
+            }
+            float expectedCost = 0f;
+            foreach (string lawId in EnactedSet) { expectedCost += LawCatalog.GetById(lawId)?.EnactmentApprovalCost ?? 0f; }
+            float expectedApproval = Mathf.Max(0f, approvalBefore - expectedCost);
+            bool approvalOk = Mathf.Abs(approvalAfter - expectedApproval) <= 1e-3f;
+            if (!approvalOk)
+            {
+                Debug.LogError($"COMPOSITION: approval after enact-then-repeal is {approvalAfter:F3}; expected {expectedApproval:F3} " +
+                               $"(untouched {approvalBefore:F3} less the {expectedCost:F3} paid to pass the set - a repeal refunds no price).");
+            }
+            Debug.Log(drifted == 0 && approvalOk
+                ? $"COMPOSITION: P4-C2 - {before.Count - 1} quantities byte-identical after enact-then-repeal of {EnactedSet.Length} laws; approval sits {expectedCost:F2} below untouched, the price paid to pass them."
+                : $"COMPOSITION: P4-C2 - {drifted} quantit(ies) drifted after enact-then-repeal.");
+            return ok && drifted == 0 && approvalOk;
         }
 
         /// <summary>After a full repeal of the entire enacted set, every dial must land on EXACTLY

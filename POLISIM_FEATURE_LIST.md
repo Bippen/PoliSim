@@ -568,7 +568,7 @@ the coverage plan. *Done when:* the map is in the record, generated not transcri
 bill-and-vote path; its effect is the negative of enactment (the delta-composed recomputation
 already supports removal), its support scoring inverts, the law browser shows REPEALABLE on
 in-force rows. *Done when:* a law is enacted and repealed in a harness with the state returning to
-byte-identical, and filmed.
+byte-identical, and filmed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §292: the path already stood end to end (bill, vote, delta-composed removal, inverted stances, the Repeal button); added the whole-country byte-identical assertion in `LawCompositionDiagnostic` (now on the simulation bar) and in the film's own staging, the approval excepted by name as the price paid; in-force rows read ENACTED · REPEALABLE; filmed at 1280 and 2560.**
 
 **P4-C3 — Catalog expansion, one category per session.** From P4-C1's unreached set, add law
 categories that reach them — labour-market institutions for NAIRU, monetary-regime laws for the

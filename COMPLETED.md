@@ -22702,3 +22702,17 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 - **How coupled the rest is**: 77 dials reach GDP, inflation, unemployment, the zone rate and the Taylor readings - any lever that moves spending, revenue or a sector moves the macro block within two years. Every law reaches approval by its enactment cost alone, which the map states so the "100 of 100" on that row is not misread as a coupling.
 
 **Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean (the dump is not a check; it compiles with the suite and ran as `levermap03.log`; the thirty-first check is §294's, on the same tree).
+
+## 292. P4-C2 — REPEAL: the path was already whole; what was missing was the proof and the mark (2026-09-04)
+
+**The row:** *"An enacted law can be put to the chamber for repeal through the same bill-and-vote path; its effect is the negative of enactment (the delta-composed recomputation already supports removal), its support scoring inverts, the law browser shows REPEALABLE on in-force rows. Done when: a law is enacted and repealed in a harness with the state returning to byte-identical, and filmed."*
+
+**Measured first, and most of it stood.** `IntroduceLawBill` takes a `LawBill` with `IsRepeal`; the same pending-bill, same vote, same `ApplyLawBillResult` resolve it; `ApplyLawBillEffects` removes the entry and both categories' dials are recomputed fresh from the enacted set (the marathon's clamp-safe recompute, §"COMPOSITION"); `GetLawBillConcern` multiplies every axis move by −1 on a repeal, so the stances invert with it; the card's button reads *Repeal …* on an in-force law and the row's status *REPEAL PENDING* while the chamber has it. None of that is new. What the row asked for beyond it:
+
+**The proof.** `LawCompositionDiagnostic` (the simulation bar) asserted six dials back on 50.0000 after enacting and repealing its 27-law set. It now snapshots EVERY public float on the country, its `EconomyState` and its eight sectors as raw bits before the first enactment and compares after the last repeal - 183 quantities, bit for bit. One quantity is excepted by name and asserted separately rather than waved through: `ApprovalRating`, which enactment charges by the law's `EnactmentApprovalCost` and a repeal does not refund - a price paid to pass a law is not returned for unpassing it (ruling, self-taken; the alternative, refunding on repeal, would make enact-repeal a free instrument). So the approval is asserted to sit exactly the summed costs below untouched. The harness in the film does the same for one law, and then puts the approval back by hand so the captures after it see the untouched country.
+
+**The mark.** An in-force row's status read *ENACTED*; it reads *ENACTED · REPEALABLE* - the fact and the affordance in one cell, the card beneath offering the repeal.
+
+**Films:** `p4g_1280` and `p4g_2560` (the full sweep on the closing tree, 92 captures each, 0 failed, 0 overflows, 0 escapes): `06g_laws_repealable`, the law browser with the Truth in Sentencing Act in force and selected, its status cell reading ENACTED · REPEALABLE; the driver's own assertion printed 182 quantities byte-identical after the repeal, the approval 1.0 below and restored.
+
+**Bar:** `bar108_p4cde_RunAllBatch.log`, 30 of 30 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean - `LawCompositionDiagnostic` joins the simulation group (it had run standalone since the marathon) and prints the byte-identical count; the fourteenth is §293's, on the same tree.

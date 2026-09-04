@@ -7993,7 +7993,7 @@ namespace PoliSim.UI
             }
             else if (row.Enacted)
             {
-                label = "ENACTED";
+                label = "ENACTED · REPEALABLE";   // P4-C2: the in-force fact and the affordance - the card beneath offers Repeal
                 color = UiPalette.GetAreaColor(LawCategoryArea(row.Law.Category));
             }
             else

@@ -565,6 +565,52 @@ namespace PoliSim.Testing
                             yield return Capture("06g_laws_expected_effects");
                             ResetScrolls(controller);
                         }
+
+                        // P4-C2 (2026-09-04): a law in force shows ENACTED · REPEALABLE. One law is enacted through the real
+                        // effects path (SimulationManager's private ApplyLawBillEffects, LawCompositionDiagnostic's idiom),
+                        // the browser filmed at rest with it in force, the law repealed the same way, and every public float
+                        // on the country, its state and its sectors asserted BIT-IDENTICAL to before the enactment - the
+                        // approval excepted (enactment's price, which a repeal does not refund) and restored by hand so the
+                        // captures after this one see the untouched country.
+                        var lawSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                        Country lawCountry = lawSim?.World?.GetCountry(_countryId);
+                        MethodInfo applyLaw = typeof(SimulationManager).GetMethod("ApplyLawBillEffects", BindingFlags.Instance | BindingFlags.NonPublic);
+                        if (lawSim == null || lawCountry == null || applyLaw == null)
+                        {
+                            Debug.LogError("SHOT: P4-C2 - the law effects path could not be reached by reflection; the repealable capture is MISSING, not clean.");
+                        }
+                        else
+                        {
+                            const string stagedLawId = "truth_in_sentencing_act";
+                            float approvalUntouched = lawCountry.State.ApprovalRating;
+                            List<(string Name, int Bits)> untouched = SnapshotFloats(lawCountry);
+                            FieldInfo selectedLaw = controller.GetType().GetField("_selectedLawId", BindingFlags.Instance | BindingFlags.NonPublic);
+                            object selectedBefore = selectedLaw?.GetValue(controller);
+                            applyLaw.Invoke(lawSim, new object[] { lawCountry, new LawBill { LawId = stagedLawId, IsRepeal = false } });
+                            ResetScrolls(controller);
+                            selectedLaw?.SetValue(controller, stagedLawId);   // the detail pane carries the status cell; select the law in force so the mark is on the frame
+                            yield return Settle();
+                            yield return Capture("06g_laws_repealable");
+                            applyLaw.Invoke(lawSim, new object[] { lawCountry, new LawBill { LawId = stagedLawId, IsRepeal = true } });
+                            List<(string Name, int Bits)> restored = SnapshotFloats(lawCountry);
+                            int drifted = 0;
+                            for (int k = 0; k < untouched.Count && k < restored.Count; k++)
+                            {
+                                if (untouched[k].Name == "State.ApprovalRating") { continue; }
+                                if (untouched[k].Bits != restored[k].Bits)
+                                {
+                                    drifted++;
+                                    Debug.LogError($"SHOT: P4-C2 - {untouched[k].Name} is not byte-identical after enact-then-repeal of {stagedLawId}.");
+                                }
+                            }
+                            float price = LawCatalog.GetById(stagedLawId)?.EnactmentApprovalCost ?? 0f;
+                            Debug.Log(drifted == 0
+                                ? $"SHOT: P4-C2 [{stem}] - {untouched.Count - 1} quantities byte-identical after enact-then-repeal of {stagedLawId}; approval sat {price:F1} below untouched (the price paid to pass it), restored for the captures that follow."
+                                : $"SHOT: P4-C2 [{stem}] - {drifted} quantit(ies) drifted after enact-then-repeal of {stagedLawId}.");
+                            lawCountry.State.ApprovalRating = approvalUntouched;
+                            selectedLaw?.SetValue(controller, selectedBefore);
+                            yield return Settle();
+                        }
                     }
                 }
 
@@ -4113,6 +4159,29 @@ namespace PoliSim.Testing
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
 
         private static void ScrollBy(object target, float y) => SetScrolls(target, y);
+
+        /// <summary>P4-C2: every public float on the country, its state and its sectors, as raw bits - the snapshot the
+        /// repeal assertion compares. Order is reflection order, the same on both sides of the comparison.</summary>
+        private static List<(string Name, int Bits)> SnapshotFloats(Country country)
+        {
+            var list = new List<(string Name, int Bits)>();
+            foreach (FieldInfo f in typeof(Country).GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (f.FieldType == typeof(float)) { list.Add(("Country." + f.Name, BitConverter.SingleToInt32Bits((float)f.GetValue(country)))); }
+            }
+            foreach (FieldInfo f in typeof(EconomyState).GetFields(BindingFlags.Public | BindingFlags.Instance))
+            {
+                if (f.FieldType == typeof(float)) { list.Add(("State." + f.Name, BitConverter.SingleToInt32Bits((float)f.GetValue(country.State)))); }
+            }
+            foreach (Sector sector in country.Sectors)
+            {
+                foreach (FieldInfo f in typeof(Sector).GetFields(BindingFlags.Public | BindingFlags.Instance))
+                {
+                    if (f.FieldType == typeof(float)) { list.Add(($"Sector.{sector.Type}.{f.Name}", BitConverter.SingleToInt32Bits((float)f.GetValue(sector)))); }
+                }
+            }
+            return list;
+        }
 
         private static void SetScrolls(object target, float y)
         {
