@@ -22572,3 +22572,23 @@ Board 6b closed with *no D12 annex is in-project* and named what would close row
 **Records:** ERRANDS E-12 to DONE (sent and answered); the feature list's P5-2 row pointed; the package regenerated with the print's row and the head note.
 
 **Bar:** `bar96_b7a_RunAllBatch.log`, 29 of 29 clean.
+
+## 284. P4-A1 — THE BUDGET'S PATH, MEASURED: every line of a budget loads the one axis `spendvtax` with its own signed size, so composition cancels before the stance model sees it; a net-zero recomposition loads nothing, reads UNDECIDED on all 349 seats and FAILS on the tie (2026-09-04)
+
+**The row:** *"Prove which path the Budget bill's support takes. If it reduces to one fiscal sign before reaching Track A's scorer, that is the finding; record it with the call site."*
+
+**The path, read from the code.** The Budget does reach Track A's scorer: the resolution (`SimulationManager.AdvanceBudgetBillDay`) and the Budget tab's estimate (`GameController.DrawLegislativeSupportEstimate`) both build `ParliamentSystem.GetBudgetBillConcern(country, bill)` and hand it to `WouldBillPass(country, BillConcern)` → `StanceModel.Stances`. **The reduction happens inside the builder:** every tax delta, every spending percentage and every welfare delta calls `concern.Add(StanceAxis.SpendVsTax, ±size)`, and `BillConcern.Add` SUMS moves per axis - so a budget of any composition is one signed number on one axis by the time the scorer sees it, the same thing the legacy `GetBillDirection` computed, only with `Cuts` beside it for the opinion term. The two standalone row verdicts (`DrawTaxProgramBillVerdict`, `DrawWelfareProgramBillVerdict`) still hand the scorer a float through `BillConcern.FromLegacy`, the same one-axis road.
+
+**Measured, on the live path (`p4a1_StanceModel.log`, Sweden, the formed government, the player in the anchor party):** two real `BudgetBill`s with the same net balance - A: Defence +10 %, Education −10 %; B: Education +10 %, Defence −10 %:
+
+```
+    A: Defense +10 %, Education -10 %    direction 0  loads:   FOR 0 UNDECIDED 349 AGAINST 0  FAILS
+    B: Education +10 %, Defense -10 %    direction 0  loads:   FOR 0 UNDECIDED 349 AGAINST 0  FAILS
+    ⚠ THE SAME SPLIT: composition did not reach the scorer
+```
+
+Worse than one sign: the two moves cancel to a zero entry on `spendvtax`, so `Loaded()` yields no axis, every party is unmeasured, the chamber is 349 UNDECIDED, and the count's tie falls to the alignment's sign, which is 0 - **FAILS**. The estimate reads *Neutral (0) · WOULD FAIL* above a map of 349 grey seats. A government that moves money between two lines without changing the total is voted down by a chamber with no opinion. That is the finding, and it is what P4-A2 builds against.
+
+**Built:** the measurement, as a print in `StanceModelDiagnostic` (`BudgetSplitsDiffer`, readable after a run; P4-A2 turns it into the assertion). Nothing in the game changed.
+
+**Bar:** `bar97_p4a1_RunAllBatch.log`, 29 of 29 clean.

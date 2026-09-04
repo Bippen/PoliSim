@@ -24,6 +24,9 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class StanceModelDiagnostic
     {
+        /// <summary>P4-A1's measurement, readable after a run: do two budgets of one net balance and different compositions split the chamber differently? A print at P4-A1; P4-A2 asserts it.</summary>
+        public static bool BudgetSplitsDiffer;
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -110,6 +113,40 @@ namespace PoliSim.EditorTools
                 }
                 sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-28} FOR {1,3}  UNDECIDED {2,3}  AGAINST {3,3}  UNMEASURED {4,3}\n", name, forSeats, undecided, against, unmeasured));
             }
+
+            // P4-A1 (Playtest 4, 2026-09-04): WHICH PATH THE BUDGET TAKES. Two real BudgetBills with the SAME net
+            // balance and DIFFERENT compositions, scored through the live path (GetBudgetBillConcern - the one the
+            // resolution at SimulationManager.AdvanceBudgetBillDay and the Budget tab's estimate both call). If the
+            // two produce one split, the budget has been reduced to one number before the scorer saw it.
+            sb.Append("\n--- P4-A1: two budgets, the same net balance, different compositions (Sweden, the live path) ---\n");
+            var budgetA = new BudgetBill();
+            budgetA.SpendingPercentChanges[SpendingCategory.Defense] = 10f;
+            budgetA.SpendingPercentChanges[SpendingCategory.Education] = -10f;
+            var budgetB = new BudgetBill();
+            budgetB.SpendingPercentChanges[SpendingCategory.Education] = 10f;
+            budgetB.SpendingPercentChanges[SpendingCategory.Defense] = -10f;
+            var budgetSplits = new List<(string Name, int For, int Undecided, int Against, bool Empty, string Loads)>();
+            foreach ((string name, BudgetBill bill) in new[] { ("A: Defense +10 %, Education -10 %", budgetA), ("B: Education +10 %, Defense -10 %", budgetB) })
+            {
+                BillConcern concern = ParliamentSystem.GetBudgetBillConcern(sweden, bill);
+                int forSeats = 0, undecided = 0, against = 0;
+                foreach (PartyStance st in StanceModel.Stances(sweden, concern))
+                {
+                    if (st.Side > 0) { forSeats += st.Seats; } else if (st.Side < 0) { against += st.Seats; } else { undecided += st.Seats; }
+                }
+                var loads = new List<string>();
+                foreach ((StanceAxis axis, int end, float weight) in concern.Loaded()) { loads.Add(string.Format(CultureInfo.InvariantCulture, "{0} toward {1} ({2:P0})", StanceModel.AxisName(axis), end, weight)); }
+                string loadText = concern.IsEmpty ? "EMPTY - no axis loaded, passes unconditionally" : string.Join(", ", loads);
+                bool passes = ParliamentSystem.WouldBillPass(sweden, concern);
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-36} direction {1:+0.0;-0.0;0}  loads: {2}  FOR {3} UNDECIDED {4} AGAINST {5}  {6}\n",
+                    name, concern.Direction, loadText, forSeats, undecided, against, passes ? "PASSES" : "FAILS"));
+                budgetSplits.Add((name, forSeats, undecided, against, concern.IsEmpty, loadText));
+            }
+            bool sameSplit = budgetSplits[0].For == budgetSplits[1].For && budgetSplits[0].Undecided == budgetSplits[1].Undecided && budgetSplits[0].Against == budgetSplits[1].Against;
+            sb.Append(sameSplit
+                ? "    ⚠ THE SAME SPLIT: composition did not reach the scorer - the budget is one signed number on one axis before StanceModel sees it (P4-A1's finding).\n"
+                : "    DIFFERENT SPLITS: composition reaches the scorer.\n");
+            BudgetSplitsDiffer = !sameSplit;
 
             sb.Append("\n    The weights are §246's five [AUTHORED-DRAFT] constants; the positions CHES 2024 / GPS 2019; the salience EB105 / Gallup;\n");
             sb.Append("    Sweden's voter profile the ecological estimate from the 2022 valkrets returns over the 2024 pyramids. Nothing here is a roll call.\n");

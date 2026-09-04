@@ -509,6 +509,122 @@ installed. The two stat-icon PNGs and the ITANES registration, still open.
 
 
 
+# PLAYTEST 4 (2026-09-04): Elias's rows, verbatim
+
+⚠ **The row names are the sheet's own (`P4-A1` …). The block above headed `# P4` is the three items of 2026-09-03 (`P4-1` … `P4-3`); the two prefixes coincide and the row names do not.** *"Append as the next section; record the five screenshots and the findings verbatim first. Work down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and self-taken, one report at end of budget. Screens film at 1280/2560; the matrix at the close."*
+
+**The five screenshots:** not on disk at the sheet's arrival (2026-09-04 — `PoliSim-captures\Elias Screenshots` holds E-8's eleven `nedladdning*.png` and nothing newer); recorded as owed in `ERRANDS.md` E-13 and bound to their findings the day they land, as E-8's were.
+
+## Track A — party support, round two (the Budget never met the stance model)
+
+**P4-A1 — Measure first.** Prove which path the Budget bill's support takes. If it reduces to one
+fiscal sign before reaching Track A's scorer, that is the finding; record it with the call site. **→ ✅ MEASURED 2026-09-04, `COMPLETED.md` §284: the Budget reaches the scorer through `GetBudgetBillConcern`, but every line adds its signed size to the one axis `spendvtax`, so composition cancels before `StanceModel` sees it; two budgets of one net balance (Defence/Education swapped) load nothing, read 349 UNDECIDED and FAIL on the tie - printed by `StanceModelDiagnostic`.**
+
+**P4-A2 — A budget decomposes into its lines.** Each budget line loads the CHES axis it concerns
+(welfare and transfers → `lrecon` and the welfare-state dimension; taxation → redistribution;
+defence, environment, immigration-related lines → their own axes; sector lines → state
+intervention), with the mapping stated in code and sourced from the codebook's axis definitions. A
+party's stance on a budget is the seat-weighted sum over its lines' loads against the party's
+published positions — never the net sign. *Done when:* two budgets with the same net balance but
+different compositions produce different splits, asserted.
+
+**P4-A3 — Bloc side and populism.** Bloc cohesion as an explicit term (government bloc supports
+its budget, opposition bloc's support depends on distance, both with loyalty-driven defection —
+Track A's machinery); populism from CHES's people-versus-elite item where published, `[AUTHORED-
+DRAFT]` where not, entering as a bias toward anti-establishment framing of a bill. *Done when:* a
+populist party's stance on the same bill measurably differs from a non-populist party at the same
+`lrecon` position.
+
+**P4-A4 — The label and the breakdown.** "Contractionary (−30) · WOULD PASS" retires; the verdict
+is the count (P3's ruling), and the per-party breakdown in 6b's grammar shows each party's stance
+with its reason. The same panel serves laws. *Done when:* filmed on Budget and on a law.
+
+## Track B — range captions on every dial
+
+**P4-B1 — The caption catalog.** For every dial in the game (the 13 the label check reads): ten
+bands, each with a name and one dry line, **authored from the dial's measured effect at that
+range** — the writer reads the effect table first and no caption contradicts what the model does
+there. Tone: the desk's own civil-service deadpan. Tagged `[AUTHORED]` as game fiction;
+`MetaTextCheck` exempts the catalog by name so satire is not read as meta-text. *Done when:* every
+dial has ten bands and a harness asserts each band's direction agrees with the dial's effect sign.
+
+**P4-B2 — The presentation.** The caption appears on drag beneath the slider, holds, and fades
+over a few seconds; moving again brings it back. Time-based alpha in IMGUI, deterministic under
+the film harness (staged at three moments: on-drag, held, faded). *Done when:* filmed at all three
+on two dials, guards silent, rect stable (the P4-1 invariant — the caption never reflows the row).
+
+**P4-B3 — Sector dials gain cost and impact.** The effects-arrow grammar (5c) and a cost line on
+every Economic Sectors slider, the way Budget's have them. *Done when:* filmed, every arrow traces
+to the preview.
+
+## Track C — laws that reach every macro lever, and repeal
+
+**P4-C1 — The lever map, measured.** Enumerate every macro quantity the model holds (NAIRU,
+inflation regime, potential growth, participation, the coupling table's targets, the central bank's
+parameters, and the rest) and for each: which dials and laws reach it today. The unreached set is
+the coverage plan. *Done when:* the map is in the record, generated not transcribed.
+
+**P4-C2 — Repeal.** An enacted law can be put to the chamber for repeal through the same
+bill-and-vote path; its effect is the negative of enactment (the delta-composed recomputation
+already supports removal), its support scoring inverts, the law browser shows REPEALABLE on
+in-force rows. *Done when:* a law is enacted and repealed in a harness with the state returning to
+byte-identical, and filmed.
+
+**P4-C3 — Catalog expansion, one category per session.** From P4-C1's unreached set, add law
+categories that reach them — labour-market institutions for NAIRU, monetary-regime laws for the
+inflation target and the bank's mandate, and so on — each law with a real-world citation
+(CONFIRMED / DIRECTIONAL / GENRE-IDIOM per the existing convention), effects through the coupling
+table, magnitude bands per the stepped rule. Sized as it goes; each category its own commit and
+film. *Done when:* every quantity in P4-C1's unreached set has at least one law reaching it, or a
+recorded reason it should stay unreachable.
+
+## Track D — events
+
+**P4-D1 — Measure the event rate.** How often events fire per year, from the pool's size and
+probabilities, against what a player sees in a ten-year game. *Done when:* the number is in the
+record.
+
+**P4-D2 — More events.** Expand the pool with authored events, each tagged, each with effects
+through the model's own terms and a magnitude band, sourced analogues cited where an event mirrors
+history. Frequency tuned to the measurement, not to feel — a target stated and defended. *Done
+when:* the pool doubles at minimum and the per-year rate is measured after.
+
+**P4-D3 — The event slot streamlined.** The empty state ("Year 1 is quiet…") becomes an
+instrument-class line, not a paragraph; a live event draws in the card's grammar. *Done when:*
+filmed empty and live.
+
+## Track E — the cuts and small fixes
+
+**P4-E1 — Remove the grid** behind the world map on the Desk and on Statistics; the stylized map
+stays as delivered (6b's six chips at geographic centres) on plain paper. *Done when:* filmed.
+
+**P4-E2 — The Riksbank page streamlined.** The (b)/(c) cut applied to its mono captions — the
+long explanatory lines under the graph and the rule are restatements of what the instruments show;
+keep the instruments, the five terms and the governor, cut the paragraphs. The stray "Interest
+Rate … 0%" label at the graph's head is measured and removed or corrected. *Done when:* filmed
+with dead-space measured before and after.
+
+**P4-E3 — Docket decisions show impact.** Each option carries its cost and its effect arrows in
+the 5c grammar (D10 row 2's ask, structural now). *Done when:* filmed with two options visible.
+
+**P4-E4 — The trade graph.** Verify against 6b's dotted zero rule; if the built graph is not on
+the board, close the gap; the ±100 % delta stays retired. *Done when:* filmed.
+
+## Track F — the D14 ask
+
+**P4-F1 — Install D14**, reconciled against D12/D13: (1) People's pie and bar instruments
+redrawn to the game's grammar; (2) the trade graph's composition; (3) the Riksbank page after
+P4-E2's cut; (4) the range-caption presentation — placement, type, fade; (5) the map on plain
+paper, confirming the chip set; (6) the Docket option card with cost and arrows. Annexes: the five
+screenshots verbatim (on disk this time, under `PoliSim-captures\Elias Screenshots`), the films
+after Tracks B and E. Binaries uploaded, not described. Package regenerated, `ERRANDS.md` row.
+
+## Yours
+
+The five screenshots into `PoliSim-captures\Elias Screenshots`. The E-12 paste if not yet sent;
+D14's when installed. Play again after Track A — the Budget's parliament changes.
+
+---
 # P5 — DESIGN'S ANSWER TO D13 AND D12, DRAWN 2026-09-03 (boards 6a and 6b on `PoliSim v2 Screens.dc.html`): built the D11 way — against the boards, verified not assumed, deviations stated
 
 The boards were read from the decoded file on disk (`COMPLETED.md` §266). Each row is one board element; each closes with a film and a bar. Nothing here is asked of Design again.
