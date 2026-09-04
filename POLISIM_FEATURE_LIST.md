@@ -576,7 +576,7 @@ inflation target and the bank's mandate, and so on — each law with a real-worl
 (CONFIRMED / DIRECTIONAL / GENRE-IDIOM per the existing convention), effects through the coupling
 table, magnitude bands per the stepped rule. Sized as it goes; each category its own commit and
 film. *Done when:* every quantity in P4-C1's unreached set has at least one law reaching it, or a
-recorded reason it should stay unreachable.
+recorded reason it should stay unreachable. **→ ⏳ FIRST CATEGORY BUILT 2026-09-04, `COMPLETED.md` §302: Labour-market institutions - ten cited laws moving the natural rate of unemployment through a thirteenth composed effect; the map regenerated with the NAIRU reached. The row stays open: seven unreached quantities, the four Taylor constants and the dials-only set remain, each its own category.**
 
 ## Track D — events
 

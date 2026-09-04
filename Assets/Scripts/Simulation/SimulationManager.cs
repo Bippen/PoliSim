@@ -560,6 +560,13 @@ namespace PoliSim.Simulation
         /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxLaborDialLevel = 100f;
 
+        /// <summary>P4-C3 (2026-09-04): bounds for Country.NaturalUnemploymentRate as the enacted LabourInstitutions laws compose it. CONVENTION - a
+        /// structural-parameter bound: the seeds run 3.3 (Germany) to 8.0 (Italy), the catalog's whole set sums to -3.6 pp, and a natural rate
+        /// below 2 or above 12 is outside anything the OECD has measured for these six.</summary>
+        private const float MinNaturalUnemploymentRate = 2f;
+        /// <remarks>CONVENTION - the upper bound of the same range.</remarks>
+        private const float MaxNaturalUnemploymentRate = 12f;
+
         /// <summary>
         /// Ceiling on SovereignWealthFund.TotalAssets, as a percentage of GDP - matches
         /// MaxDebtToGdpPercent's own number for consistency, a gameplay safety bound not a realistic
@@ -1540,6 +1547,25 @@ namespace PoliSim.Simulation
             // mixed future law.
             RecomputeCrimeJusticeDialsFromEnactedLaws(country);
             RecomputeLaborDialsFromEnactedLaws(country);
+            RecomputeStructuralParametersFromEnactedLaws(country);   // P4-C3
+        }
+
+        /// <summary>
+        /// P4-C3 (2026-09-04): the natural rate of unemployment recomputed FRESH from the seeded base and the enacted
+        /// LabourInstitutions laws - the same clamp-safe idiom as the two dial recomputes (never incremental, so a
+        /// repeal in any order lands on the base exactly; LawCompositionDiagnostic asserts it). A law of any other
+        /// category carries a 0 delta, so the loop is an exact no-op for them.
+        /// </summary>
+        private void RecomputeStructuralParametersFromEnactedLaws(Country country)
+        {
+            float natural = country.NaturalUnemploymentRateBase;
+            foreach (EnactedLaw enacted in country.EnactedLaws)
+            {
+                LawDefinition law = LawCatalog.GetById(enacted.LawId);
+                if (law == null) { continue; }
+                natural += law.NaturalUnemploymentDelta;
+            }
+            country.NaturalUnemploymentRate = Mathf.Clamp(natural, MinNaturalUnemploymentRate, MaxNaturalUnemploymentRate);
         }
 
         /// <summary>

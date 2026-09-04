@@ -599,7 +599,11 @@ namespace PoliSim.Simulation
             // all-positive coding ("more support/intervention = positive"), applied per delta:
             // minimum wage, paid leave, overtime regulation, retraining, family policy,
             // immigration openness.
-            1f, 1f, 1f, 1f, 1f, 1f
+            1f, 1f, 1f, 1f, 1f, 1f,
+            // P4-C3 (2026-09-04): the thirteenth, the natural rate of unemployment, has NO uniform sign - a benefit cut and a
+            // training programme both lower it. Placeholder 0; both loops special-case NaturalUnemploymentDeltaIndex on the law's
+            // own LrEconToward10 (interventionist = positive here, so a right-leaning law reads negative).
+            0f
         };
 
         /// <summary>DialDeltas index of MinimumWageDelta (the first labor field) - the one delta
@@ -608,6 +612,7 @@ namespace PoliSim.Simulation
         /// LawDefinition.DialDeltas' documented order.</summary>
         /// <remarks>CONVENTION - an index into a documented order, not a quantity. Index-locked to LawDefinition.DialDeltas as its own summary states.</remarks>
         private const int MinimumWageDeltaIndex = 6;
+        private const int NaturalUnemploymentDeltaIndex = 12;   // DERIVED (P4-C3): the position of NaturalUnemploymentDelta in LawDefinition.DialDeltas, the thirteenth entry
 
         public static float GetLawBillDirection(Country country, LawBill bill)
         {
@@ -631,6 +636,11 @@ namespace PoliSim.Simulation
                     continue;
                 }
 
+                if (i == NaturalUnemploymentDeltaIndex)
+                {
+                    direction += sign * -law.LrEconToward10 * Mathf.Abs(deltas[i]) * LawCatalog.DialMagnitudeScales[i];   // P4-C3
+                    continue;
+                }
                 direction += sign * LawDialSigns[i] * deltas[i];
             }
 
@@ -959,7 +969,8 @@ namespace PoliSim.Simulation
         private static readonly (StanceAxis Axis, float Toward10)[] LawDialAxes =
         {
             (StanceAxis.Galtan, 1f), (StanceAxis.Galtan, 1f), (StanceAxis.Galtan, -1f), (StanceAxis.Galtan, 1f), (StanceAxis.Galtan, 1f), (StanceAxis.ImmigratePolicy, 1f),
-            (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.ImmigratePolicy, -1f)
+            (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.LrEcon, -1f), (StanceAxis.ImmigratePolicy, -1f),
+            (StanceAxis.LrEcon, 0f)   // P4-C3: the NAIRU effect - the axis is LrEcon, the sign is the law's own (LrEconToward10), read in GetLawBillConcern
         };
 
         public static BillConcern GetLawBillConcern(Country country, LawBill bill)
@@ -972,6 +983,11 @@ namespace PoliSim.Simulation
             for (int i = 0; i < deltas.Length && i < LawDialAxes.Length; i++)
             {
                 if (i == MinimumWageDeltaIndex && !country.MinimumWageImplemented) { continue; }
+                if (i == NaturalUnemploymentDeltaIndex)
+                {
+                    concern.Add(StanceAxis.LrEcon, sign * law.LrEconToward10 * Mathf.Abs(deltas[i]) * LawCatalog.DialMagnitudeScales[i]);   // P4-C3: the law's own reading, scaled onto the dial grid
+                    continue;
+                }
                 concern.Add(LawDialAxes[i].Axis, sign * LawDialAxes[i].Toward10 * deltas[i]);
             }
             return concern;

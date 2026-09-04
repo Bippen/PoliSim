@@ -138,7 +138,8 @@ namespace PoliSim.Simulation
         public static readonly float[] DialMagnitudeScales =
         {
             1f, 1f, 1f, 1f, 1f, 1f,
-            2f, 1f, 1f, 1f, 1f, 1f
+            2f, 1f, 1f, 1f, 1f, 1f,
+            15f   // CONVENTION (P4-C3, 2026-09-04): the natural rate of unemployment speaks in percentage points; x15 puts -0.4 pp at MINOR's edge (6), -0.9 at MODERATE's (14), -1.4 at MAJOR's (22) - Hartz IV's measured -1.4 pp sits at the MAJOR-SWEEPING line, where the record puts it
         };
 
         public static readonly List<LawDefinition> All = new List<LawDefinition>
@@ -1888,7 +1889,160 @@ namespace PoliSim.Simulation
                 ImmigrationPolicyDelta = -3f,
                 RetrainingProgramDelta = 3f,
                 EnactmentApprovalCost = 0.5f
-            }
+            },
+            // ================================================================================================
+            // P4-C3, category three - LABOUR-MARKET INSTITUTIONS (2026-09-04): the first category built from the
+            // lever map's unreached set (LEVER_MAP.md §2), reaching the NATURAL RATE OF UNEMPLOYMENT, which no dial
+            // and no law reached before. Ten laws, each with one thirteenth-effect delta in percentage points
+            // (DialMagnitudeScales x15 for the tier grid) and its own reading on the economic axis (LrEconToward10),
+            // because a NAIRU move's sign does not tell a law's politics. Citations carry the catalog's classes:
+            // CONFIRMED where a measured structural-unemployment effect exists, CONFIRMED-DIRECTION where the sign is
+            // the record's and the size the game's, DIRECTIONAL where the literature argues.
+            // ================================================================================================
+
+            // CONFIRMED-scale: Krebs & Scheffel (IMF Economic Review, 2013) put the Hartz reforms' long-run effect
+            // on unemployment at about -1.4 pp; Dustmann, Fitzenberger, Schönberg & Spitz-Oener (JEP, 2014) on the
+            // wage moderation beneath it. MAJOR (-1.2 x15 = 18); the approval cost is the reform's own politics
+            // (the SPD lost Länder elections and its chancellor over it).
+            new LawDefinition
+            {
+                Id = "hartz_benefit_reform_act",
+                Name = "Unemployment Benefit Consolidation Act",
+                Description = "Merges long-term unemployment assistance into a flat, means-tested benefit, tightens the duty to accept work and shortens the insured benefit's duration.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "Germany's Hartz IV (2005) - Arbeitslosenhilfe and Sozialhilfe merged into Arbeitslosengeld II, with the Hartz I-III activation and placement reforms of 2003-04 beneath it.",
+                NaturalUnemploymentDelta = -1.2f,
+                LrEconToward10 = 1f,
+                EnactmentApprovalCost = 2.0f
+            },
+            // CONFIRMED-DIRECTION: Denmark's structural unemployment fell from about 9 % (1993) to about 4 % through
+            // the 2000s (Danish Economic Councils; OECD) as benefit duration went from nine years toward four (1994-99)
+            // and later two (2010); how much of the fall is the duration and how much the activation beside it is
+            // argued. MAJOR (-1.0 x15 = 15).
+            new LawDefinition
+            {
+                Id = "benefit_duration_reform_act",
+                Name = "Benefit Duration Reform Act",
+                Description = "Halves the maximum duration of insured unemployment benefit and makes continued benefit conditional on activation from the first year.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "Denmark's labour-market reforms of 1994-99 (benefit duration 9 → 4 years, activation from year one) and the 2010 halving to two years.",
+                NaturalUnemploymentDelta = -1.0f,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // DIRECTIONAL: the Swedish Fiscal Policy Council and the National Institute of Economic Research put the
+            // earned-income tax credit's long-run effect on equilibrium unemployment at roughly -0.5 to -1 pp; the
+            // estimates rest on labour-supply elasticities rather than an observed break. MODERATE (-0.5 x15 = 7.5).
+            new LawDefinition
+            {
+                Id = "in_work_tax_credit_act",
+                Name = "In-Work Tax Credit Act",
+                Description = "A tax credit on earned income only, widening the gap between wages and benefits so that work pays at the margin.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "Sweden's jobbskatteavdrag (2007-), the earned-income tax credit built out in five steps; the US EITC is the older model.",
+                NaturalUnemploymentDelta = -0.5f,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // DIRECTIONAL and CONTESTED: Hagedorn, Manovskii & Mitman (2015) attribute a large share of the 2014 US
+            // employment gain to the expiry of extended benefits; Rothstein (2011) and Farber & Valletta (2015) find
+            // small effects on job finding. MODERATE (-0.4 x15 = 6) - the smallest MODERATE, for a contested case.
+            new LawDefinition
+            {
+                Id = "ui_duration_cut_act",
+                Name = "Unemployment Insurance Duration Act",
+                Description = "Ends the extended-benefit tiers and caps insured unemployment at its ordinary duration.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "The expiry of the US Emergency Unemployment Compensation programme (December 2013), which had extended benefits to up to 99 weeks after 2008.",
+                NaturalUnemploymentDelta = -0.4f,
+                LrEconToward10 = 1f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // DIRECTIONAL: OECD Employment Outlook (2013, 2020) - stricter employment protection lengthens unemployment
+            // spells and lowers flows; the effect on the LEVEL of structural unemployment is small and disputed.
+            // MODERATE (-0.4 x15 = 6).
+            new LawDefinition
+            {
+                Id = "employment_protection_reform_act",
+                Name = "Employment Protection Reform Act",
+                Description = "Lowers severance costs, narrows the grounds on which a dismissal can be reversed and lets firms adjust hours and pay in a downturn.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "Spain's labour reform of 2012 (Real Decreto-ley 3/2012) and Italy's Jobs Act (2015), both loosening dismissal rules for open-ended contracts.",
+                NaturalUnemploymentDelta = -0.4f,
+                LrEconToward10 = 1f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // DIRECTIONAL: Calmfors & Driffill (Economic Policy, 1988) - the hump: fully centralised and fully
+            // decentralised bargaining both outperform the middle; the Netherlands' Wassenaar Agreement (1982) and
+            // Sweden's Industrial Agreement (1997) are the coordination cases. MINOR (-0.3 x15 = 4.5).
+            new LawDefinition
+            {
+                Id = "bargaining_decentralisation_act",
+                Name = "Wage Bargaining Reform Act",
+                Description = "Moves wage-setting from the national round to the sector and the firm, with a coordinating norm set by the exposed sector.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "The Netherlands' Wassenaar Agreement (1982) and Sweden's Industrial Agreement (Industriavtalet, 1997) - wage moderation coordinated on the exposed sector.",
+                NaturalUnemploymentDelta = -0.3f,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // DIRECTIONAL: Card, Kluve & Weber (JEEA, 2018), a meta-analysis of 200 programme evaluations - modest
+            // positive effects in the medium run, larger for training than for public employment. MINOR (-0.3 x15 = 4.5);
+            // the law reads LEFT on the economic axis - this is spending, not a cut.
+            new LawDefinition
+            {
+                Id = "active_labour_market_expansion_act",
+                Name = "Active Labour-Market Programmes Expansion Act",
+                Description = "Funds training, subsidised placements and job-search support for the long-term unemployed, with participation a condition of benefit.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "Denmark's and Sweden's active labour-market spending, at 1-2 % of GDP the OECD's highest (OECD Employment Database).",
+                NaturalUnemploymentDelta = -0.3f,
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // CONFIRMED-DIRECTION: Launov & Wälde (International Economic Review, 2016) attribute about half of the
+            // post-Hartz fall in unemployment to the placement-service reform (Hartz III) rather than the benefit cut.
+            // MINOR (-0.3 x15 = 4.5); administrative, so it reads near the centre.
+            new LawDefinition
+            {
+                Id = "public_employment_service_reform_act",
+                Name = "Public Employment Service Reform Act",
+                Description = "Merges benefit administration and job placement into one office with caseloads, targets and a duty to place.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "The UK's Jobcentre Plus (2002) and Germany's Hartz III reorganisation of the Bundesagentur für Arbeit (2004).",
+                NaturalUnemploymentDelta = -0.3f,
+                LrEconToward10 = 0.25f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // DIRECTIONAL and CONTESTED: Crépon & Kramarz (JPE, 2002) found job losses from France's earlier 39-hour
+            // step; Chemin & Wasmer (JOLE, 2009) find no employment effect of the 35 hours in the Alsace-Moselle
+            // comparison. The sign here is the sceptics' (+0.3, MINOR); the law reads LEFT.
+            new LawDefinition
+            {
+                Id = "working_time_reduction_act",
+                Name = "Statutory Working-Time Reduction Act",
+                Description = "Cuts the statutory working week with pay maintained, on the argument that shared hours are shared jobs.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "France's Aubry laws (1998, 2000) - the 35-hour week.",
+                NaturalUnemploymentDelta = 0.3f,
+                LrEconToward10 = -1f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // DIRECTIONAL: Layard, Nickell & Jackman (Unemployment, 1991) - the replacement rate and benefit duration
+            // are the two institutions that most raise equilibrium unemployment across the OECD panel; later panels
+            // (Nickell, Nunziata & Ochel 2005) agree on the sign and argue the size. MODERATE (+0.5 x15 = 7.5); LEFT.
+            new LawDefinition
+            {
+                Id = "benefit_generosity_act",
+                Name = "Unemployment Benefit Generosity Act",
+                Description = "Raises the insured benefit's ceiling and replacement rate and lengthens the period before it tapers.",
+                Category = LawCategory.LabourInstitutions,
+                Citation = "Sweden's permanent raise of the unemployment-insurance ceiling (2022), making the 2020 pandemic increase standing.",
+                NaturalUnemploymentDelta = 0.5f,
+                LrEconToward10 = -1f,
+                EnactmentApprovalCost = 1.0f
+            },
+
         };
 
         /// <summary>Looks up a law by its stable Id, or null if no such law exists (e.g. an old save citing a since-removed law - the caller decides how to degrade, matching PolicyWebRenderer/DisplayName's own "missing entry, not a crash" idiom).</summary>

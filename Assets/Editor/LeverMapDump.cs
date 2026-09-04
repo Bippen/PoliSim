@@ -282,7 +282,8 @@ namespace PoliSim.EditorTools
         private static readonly string[] LawDialNames =
         {
             "Police Funding", "Sentencing Severity", "Bail Reform", "Drug Policy", "Judicial Funding", "Border Enforcement",
-            "Minimum Wage", "Paid Family Leave", "Overtime Regulation", "Retraining Programs", "Family Policy", "Immigration Policy"
+            "Minimum Wage", "Paid Family Leave", "Overtime Regulation", "Retraining Programs", "Family Policy", "Immigration Policy",
+            "Natural rate of unemployment"   // P4-C3: the thirteenth effect, in percentage points
         };
 
         private static string[] DialsMoved(LawDefinition law)

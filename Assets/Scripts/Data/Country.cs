@@ -110,6 +110,11 @@ namespace PoliSim.Data
         /// </summary>
         public float NaturalUnemploymentRate;
 
+        /// <summary>P4-C3 (2026-09-04): the seeded natural rate, the base the enacted LabourInstitutions laws compose on -
+        /// NaturalUnemploymentRate is recomputed from this plus the enacted set (SimulationManager.RecomputeStructuralParametersFromEnactedLaws),
+        /// never mutated incrementally, the clamp-safe idiom the crime dials taught (COMPOSITION).</summary>
+        public float NaturalUnemploymentRateBase;
+
         /// <summary>
         /// Trend/potential GDP growth rate, in percent per turn, used by Okun's Law (actual vs.
         /// potential growth) and to grow PotentialGDP each turn. Recomputed every turn as
@@ -794,6 +799,7 @@ namespace PoliSim.Data
             CurrencyZone = currencyZone;
             BaseTariffRate = baseTariffRate;
             NaturalUnemploymentRate = naturalUnemploymentRate;
+            NaturalUnemploymentRateBase = naturalUnemploymentRate;
             PotentialGrowthRate = potentialGrowthRate;
             GovernmentSpendingRate = governmentSpendingRate;
             BenefitRatePerUnemployed = benefitRatePerUnemployed;

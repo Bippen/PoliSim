@@ -423,7 +423,7 @@ namespace PoliSim.EditorTools
             // Pass 3 (2026-08-26): laws from BOTH categories cross the save - the pass's own bar
             // names this explicitly. Four labor laws drawn across batches 1/2/3/5, including the
             // multi-dial flexicurity package (weak-proxy shape) and the dual-dial skills levy, so
-            // the round trip proves the twelve-field DialDeltas shape and the two-book labor
+            // the round trip proves the DialDeltas shape (twelve fields then; thirteen since P4-C3, whose hartz_benefit_reform_act crosses too) and the two-book labor
             // state, not just C&J content a second time.
             string[] lawsToEnact =
             {
@@ -433,7 +433,7 @@ namespace PoliSim.EditorTools
                 "restorative_justice_program", "mental_health_diversion_courts", "human_trafficking_task_force",
                 "antimafia_asset_confiscation_law", "national_guard_border_deployment", "pretrial_services_agency_establishment",
                 "raise_the_wage_act", "immigration_restriction_act", "flexicurity_package_act",
-                "immigration_skills_levy_act"
+                "immigration_skills_levy_act", "hartz_benefit_reform_act"
             };
             foreach (string lawId in lawsToEnact)
             {

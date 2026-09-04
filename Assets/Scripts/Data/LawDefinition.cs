@@ -9,7 +9,9 @@ namespace PoliSim.Data
     public enum LawCategory
     {
         CrimeJustice,
-        LaborMarket
+        LaborMarket,
+        /// <summary>P4-C3 (2026-09-04), the first category from the lever map's unreached set: laws that move the natural rate of unemployment - benefit rules, employment protection, bargaining, active programmes.</summary>
+        LabourInstitutions
     }
 
     /// <summary>
@@ -108,6 +110,18 @@ namespace PoliSim.Data
         public float FamilyPolicyDelta;
         public float ImmigrationPolicyDelta;
 
+        /// <summary>P4-C3 (2026-09-04): the thirteenth effect and the first that is not a player dial - a move of the country's NATURAL
+        /// RATE OF UNEMPLOYMENT in percentage points, composed from the enacted set exactly as the twelve dials are
+        /// (SimulationManager.RecomputeStructuralParametersFromEnactedLaws: base plus the sum, clamped fresh each time). Laws
+        /// of the LabourInstitutions category carry it; every other law's is 0.</summary>
+        public float NaturalUnemploymentDelta;
+
+        /// <summary>P4-C3: the law's own reading on the economic axis (-1 left … +1 right), used for the NAIRU effect's stance
+        /// term because the sign of a NAIRU move does not tell a law's politics - a benefit cut and a training programme both
+        /// lower it. The twelve dials keep their uniform axis signs (ParliamentSystem.LawDialAxes); this field is read only
+        /// for the thirteenth.</summary>
+        public float LrEconToward10;
+
         /// <summary>Code-review pass (2026-08-25): the dial deltas as ONE ordered array - every
         /// consumer that needs "all of a law's dials" (GameController.LawMagnitudeTier,
         /// ParliamentSystem.GetLawBillDirection) should read from this instead of hand-listing the
@@ -123,7 +137,8 @@ namespace PoliSim.Data
             PoliceFundingDelta, SentencingSeverityDelta, BailReformDelta,
             DrugPolicyDelta, JudicialFundingDelta, BorderEnforcementDelta,
             MinimumWageDelta, PaidFamilyLeaveWeeksDelta, OvertimeRegulationDelta,
-            RetrainingProgramDelta, FamilyPolicyDelta, ImmigrationPolicyDelta
+            RetrainingProgramDelta, FamilyPolicyDelta, ImmigrationPolicyDelta,
+            NaturalUnemploymentDelta
         };
 
         /// <summary>Approval-rating cost paid ONCE, on successful enactment - distinct from ParliamentSystem.BillFailedApprovalCost (which is charged on a FAILED vote, for every bill kind uniformly). Represents a controversial law being costly to enact even when it passes, the same spirit as BudgetBill's own tax-hike approval penalty, sized here per-law rather than derived from the delta magnitude (a simplification, honestly - the MVP's four laws use small, illustrative, gameplay-tuning values, not researched figures, matching every other approval-cost constant in this codebase).</summary>

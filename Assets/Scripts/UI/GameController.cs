@@ -63,7 +63,7 @@ namespace PoliSim.UI
         private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade, Laws }
 
         /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum - Nullable&lt;LawCategory&gt; does not satisfy that constraint, so this can't self-derive from LawCategory's members at compile time. <b>The browser rebuild's own finding (2026-08-25): this filter has never once narrowed anything, and that is NOT a mechanism defect - it is a real, reported coupling.</b> LawCategory has exactly one populated member (CrimeJustice), so "All" and "Crime & Justice" render byte-identical lists; the fix for that is more law CATEGORIES, not a UI change. What this enum's shape does cost: it must be hand-extended in lockstep with LawCategory every time a second category ships, because the generic constraint above rules out deriving it automatically. That coupling - not a bug - is the honest cause.</summary>
-        private enum LawBrowserFilter { All, CrimeJustice, LaborMarket }
+        private enum LawBrowserFilter { All, CrimeJustice, LaborMarket, LabourInstitutions }
 
         /// <summary>Law system MVP slice, browser rebuild (2026-08-25): the status filter/sort dimension the marathon's own stop condition found missing - "the top two rows both un-enacted, no sort-by-status" (CLAUDE.md, run_85g_bill_laws.png). All four values are always offered regardless of LawCategory's population, unlike LawBrowserFilter above - status is a property of ENACTMENT, not of catalog content, so this dimension is never inert the way the category one currently is.</summary>
         private enum LawStatusFilter { All, Enacted, Pending, Available }
@@ -6921,6 +6921,27 @@ namespace PoliSim.UI
             }
         }
 
+        private static int? _labourInstitutionsLawCountCache;
+
+        /// <summary>P4-C3 (2026-09-04): the third category's count, the same once-per-session cache as its two siblings.</summary>
+        private static int LabourInstitutionsLawCount
+        {
+            get
+            {
+                if (_labourInstitutionsLawCountCache == null)
+                {
+                    int count = 0;
+                    foreach (LawDefinition law in LawCatalog.All)
+                    {
+                        if (law.Category == LawCategory.LabourInstitutions) { count++; }
+                    }
+                    _labourInstitutionsLawCountCache = count;
+                }
+
+                return _labourInstitutionsLawCountCache.Value;
+            }
+        }
+
         /// <summary>
         /// Law system MVP slice, REBUILT 2026-08-25 twice: first against §7's own scale argument,
         /// then against Design's own board 1i ruling (COMPLETED.md §182, delivered as
@@ -6978,14 +6999,16 @@ namespace PoliSim.UI
             // categories that never entered the enum). The summary line below drops its
             // "all CRIME & JUSTICE" clause - the chips carry the per-category counts now.
             GUILayout.BeginHorizontal();
-            float categoryShare = SubTabShare(lawsOuterInnerWidth, 3);
+            float categoryShare = SubTabShare(lawsOuterInnerWidth, 4);   // P4-C3: four chips
             string allChipLabel = $"All - {LawCatalog.All.Count}";
             string crimeChipLabel = $"Crime & Justice - {CrimeJusticeLawCount}";
             string laborChipLabel = $"Labor Market - {LaborMarketLawCount}";
-            float categoryRowHeight = SubTabRowHeight(categoryShare, allChipLabel, crimeChipLabel, laborChipLabel);
+            string institutionsChipLabel = $"Labour Institutions - {LabourInstitutionsLawCount}";   // P4-C3
+            float categoryRowHeight = SubTabRowHeight(categoryShare, allChipLabel, crimeChipLabel, laborChipLabel, institutionsChipLabel);
             DrawSubCategoryButton(allChipLabel, LawBrowserFilter.All, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
             DrawSubCategoryButton(crimeChipLabel, LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
             DrawSubCategoryButton(laborChipLabel, LawBrowserFilter.LaborMarket, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
+            DrawSubCategoryButton(institutionsChipLabel, LawBrowserFilter.LabourInstitutions, ref _lawBrowserFilter, categoryShare, categoryRowHeight);   // P4-C3
             GUILayout.EndHorizontal();
             // Free-aspect pass (2026-08-26): the ORDER row's minimum (caption + three measured
             // button floors + the search slot) is MEASURED against the box's inner width, and the
@@ -7062,6 +7085,11 @@ namespace PoliSim.UI
                 }
 
                 if (_lawBrowserFilter == LawBrowserFilter.LaborMarket && law.Category != LawCategory.LaborMarket)
+                {
+                    continue;
+                }
+
+                if (_lawBrowserFilter == LawBrowserFilter.LabourInstitutions && law.Category != LawCategory.LabourInstitutions)
                 {
                     continue;
                 }
@@ -7669,6 +7697,7 @@ namespace PoliSim.UI
             {
                 case LawCategory.CrimeJustice: return "CRIME & JUSTICE";
                 case LawCategory.LaborMarket: return "LABOR MARKET";
+                case LawCategory.LabourInstitutions: return "LABOUR INSTITUTIONS";   // P4-C3
                 default: return category.ToString().ToUpperInvariant();
             }
         }
@@ -7687,7 +7716,7 @@ namespace PoliSim.UI
                 return LawCategoryLabel(category);
             }
 
-            return category == LawCategory.LaborMarket ? "LABOR" : "C&J";
+            return category == LawCategory.LaborMarket ? "LABOR" : category == LawCategory.LabourInstitutions ? "INSTIT." : "C&J";   // P4-C3
         }
 
         /// <summary>The one place a LawCategory maps to its area color (pass 3, 2026-08-26): with
@@ -7697,7 +7726,7 @@ namespace PoliSim.UI
         /// (LABOR MARKET BILL draws SystemArea.Labor).</summary>
         private static UiPalette.SystemArea LawCategoryArea(LawCategory category)
         {
-            return category == LawCategory.LaborMarket ? UiPalette.SystemArea.Labor : UiPalette.SystemArea.CrimeJustice;
+            return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink
         }
 
         /// <summary>The magnitude taxonomy's own four tiers (LawCatalog's class doc: MINOR +-3..6,
@@ -7887,7 +7916,14 @@ namespace PoliSim.UI
             // finding LaborCouplings' class doc records), so the labor branch quotes the labor
             // table instead, its minimum-wage edges gated on the player country's statutory-wage
             // fact exactly as the simulation gates them.
-            if (law.Category == LawCategory.LaborMarket)
+            if (law.Category == LawCategory.LabourInstitutions)
+            {
+                // P4-C3: no coupling table between the law and the stat - the delta IS the effect, on the rate the Phillips curve and the Taylor rule read.
+                GUILayout.Label("EXPECTED EFFECTS", _labelStyle, GUILayout.Width(contentWidth));
+                GUILayout.Label($"Natural rate of unemployment: {law.NaturalUnemploymentDelta:+0.00;-0.00} pp (the rate the Phillips curve and the rule read)", _labelStyle, GUILayout.Width(contentWidth));
+                GUILayout.Space(4f);
+            }
+            else             if (law.Category == LawCategory.LaborMarket)
             {
                 var laborEffects = LaborCouplings.AggregateLawEffects(law, _playerCountry.MinimumWageImplemented);
                 if (laborEffects.Count > 0)
@@ -8031,7 +8067,9 @@ namespace PoliSim.UI
             // filter below would hide the foreign six anyway, but dispatching keeps the
             // real-unit labels honest (Kaitz points and weeks are not 0-100 dial points and must
             // not read as such).
-            (string Name, float Delta)[] dials = law.Category == LawCategory.LaborMarket
+            (string Name, float Delta)[] dials = law.Category == LawCategory.LabourInstitutions
+                ? new (string, float)[] { ("Natural rate of unemployment (pp)", law.NaturalUnemploymentDelta) }   // P4-C3: the thirteenth effect, in its own unit
+                : law.Category == LawCategory.LaborMarket
                 ? new (string, float)[]
                 {
                     ("Minimum Wage (Kaitz pts)", law.MinimumWageDelta),
