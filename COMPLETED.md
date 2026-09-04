@@ -22752,3 +22752,13 @@ Asserted: the two differ by at least a hundredth, and the populist sits further 
 **Films:** `p4g_1280` and `p4g_2560` (the full sweep on the closing tree, 0 failed, 0 overflows, 0 escapes): `01c_desk` empty - YEAR 0 · NO EVENT LIVE centred in the reservation - and `01e_desk_event` live, the staged first entry on its card.
 
 **Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).
+
+## 296. P4-E1 — THE GRID REMOVED: plain paper under the map on the Desk and on Statistics (2026-09-04)
+
+**The row:** *"Remove the grid behind the world map on the Desk and on Statistics; the stylized map stays as delivered (6b's six chips at geographic centres) on plain paper. Done when: filmed."*
+
+**Measured first:** the grid was not drawn, it was BAKED - `MapRenderer.BuildBackgroundTexture` painted every twentieth pixel row and column in the hairline ink into the one background texture both maps stretch to their rects. So the cut is one line: every pixel is the paper colour, and the two constants that named the grid are gone with it. The chips, their snap pitch (`GridUnit`, P5-2 - a layout pitch, not a drawn line) and the links are untouched.
+
+**Films:** `p4g_1280` and `p4g_2560`: `01c_desk` and `02b_statistics_international`, the six chips and their links on plain paper.
+
+**Bar:** `bar108_p4cde_RunAllBatch.log`, 31 of 31 clean; `bar106_p4cde_RunSimulationBatch.log`, 14 of 14 simulation checks clean (one bar pair and one film pair stand behind §293–§299 together; the commits are split by file).

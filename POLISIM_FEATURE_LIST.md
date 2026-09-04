@@ -596,7 +596,7 @@ filmed empty and live. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §295: the em
 ## Track E — the cuts and small fixes
 
 **P4-E1 — Remove the grid** behind the world map on the Desk and on Statistics; the stylized map
-stays as delivered (6b's six chips at geographic centres) on plain paper. *Done when:* filmed.
+stays as delivered (6b's six chips at geographic centres) on plain paper. *Done when:* filmed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §296: the grid was baked into the one background texture both maps use; every pixel is paper now; filmed on the Desk and Statistics at 1280 and 2560.**
 
 **P4-E2 — The Riksbank page streamlined.** The (b)/(c) cut applied to its mono captions — the
 long explanatory lines under the graph and the rule are restatements of what the instruments show;

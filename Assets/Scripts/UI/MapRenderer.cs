@@ -41,7 +41,6 @@ namespace PoliSim.UI
     {
         private const int TextureWidth = 400;
         private const int TextureHeight = 240;
-        private const int GridSpacing = 20;
 
         private const float BaseNodeDiameter = 22f;
         /// <summary>The smallest country's node is never drawn smaller than this fraction of the largest - legibility over strict GDP proportionality (Poland/Sweden must stay clearly visible next to the USA).</summary>
@@ -68,7 +67,6 @@ namespace PoliSim.UI
         /// v2.0 pack's business, the marks inside are not. Node inks, edge good/bad and area accents all
         /// stay exactly as they were - they are already on the aged palette.
         private static readonly Color BackgroundColor = PoliSimTheme.Card;
-        private static readonly Color GridLineColor = PoliSimTheme.Hairline;
         private static readonly Color TradeLineColor = PoliSimTheme.TextSecondary;
 
         /// <summary>
@@ -793,8 +791,7 @@ namespace PoliSim.UI
             {
                 for (int x = 0; x < TextureWidth; x++)
                 {
-                    bool onGridLine = x % GridSpacing == 0 || y % GridSpacing == 0;
-                    pixels[y * TextureWidth + x] = onGridLine ? GridLineColor : BackgroundColor;
+                    pixels[y * TextureWidth + x] = BackgroundColor;   // P4-E1 (2026-09-04): plain paper - the grid is gone from the Desk and Statistics alike, one texture serving both
                 }
             }
 
