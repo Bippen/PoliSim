@@ -22907,3 +22907,15 @@ Five, as the sheet named them: the event card's empty state, the trade-volume ma
 **Films:** `p6a_1280` and `p6a_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `06a_policylaws_labormarket_caption_drag` / `_held` / `_faded` and the Manufacturing subsidy trio on `06c`; the ledger geometry asserted identical at rest and showing.
 
 **Bar:** `bar113_p6a_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §305–§308 together; the commits are split by file).
+
+## 305. P6-3 BUILT — BOARD 8c, THE RIKSBANK PAGE AFTER THE CUT: the space goes to the path (2026-09-04, evening)
+
+**The board:** *"The instruments do not move up; the path grows. Its height clamp goes UP by the sum of the three captions between it and the governor (3 × 22 at 1280 ≈ 66 px, ×s elsewhere), and the fourth caption's row closes the gap above the governor. The rule and the lanes keep their heights and widths. An empty head cell draws nothing; it does not draw 0 pt."*
+
+**Built** (`GraphRenderer.DrawRatePath`): the path's height clamp gains `CutCaptionsHeightAt1280` (66, MEASURED on the §297 films: the readings caption rose 41 px and the two lane sentences were 12 px each), scaled with the label font. The head after P4-E2 already drew nothing for a flat window and no title; unchanged. The rule and the lanes are untouched. The fold peek (P5-7) reads the new stack by the same rule.
+
+**Verified, not assumed** on the 1280 frames (`p4g_1280_07d` before, `p6a_1280_07d` after): the path grew from 63 px tall to 129 px; the rule row and the readings caption sit 66 px lower (the caption at y ≈ 628, from ≈ 549 after the cut and ≈ 590 before it); the lanes and the governor are unchanged in height and width; the fold peek names THE POLITICAL HALF as before. The dead paper beneath the last lane is gone - the board's ≈ 88 → 22 read as proportions, the frame's pixels are the fact.
+
+**Films:** `p6a_1280` and `p6a_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `07d_politics_federalreserve`.
+
+**Bar:** `bar113_p6a_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §305–§308 together; the commits are split by file).

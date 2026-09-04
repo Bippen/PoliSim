@@ -32,6 +32,8 @@ namespace PoliSim.UI
 
         /// <summary>How many turns one page shows - unchanged from the graph's original fixed display window, just now one page of potentially several rather than the only page.</summary>
         private const int WindowSize = 50;
+        /// <summary>P6-3 (board 8c, 2026-09-04): the height the four captions P4-E2 cut held on the Riksbank page at 1280 - measured on the films (§297: the readings caption rose 41 px; the two lane sentences beneath were 12 px each) - given to the projected path rather than closed up, which would have re-opened dead paper at the foot. Scales with the label font.</summary>
+        private const float CutCaptionsHeightAt1280 = 66f;   // MEASURED on p4c_1280 / p4g_1280 (§297)
 
         /// <summary>
         /// The plate a procedural chart is drawn ON - paper, not the dark-dashboard near-black this was
@@ -875,7 +877,8 @@ namespace PoliSim.UI
                 RegeneratePath(visibleWindow, path, referenceValue);
             }
 
-            float displayHeight = Mathf.Clamp(Screen.height * 0.11f, 64f, 140f);   // the page's one graph takes a little more of the sheet than a dashboard's three
+            float cutCaptions = Mathf.Round(CutCaptionsHeightAt1280 * labelStyle.fontSize / 14f);   // P6-3 (board 8c): the room the four cut captions held goes to the path, not to the instruments beneath
+            float displayHeight = Mathf.Clamp(Screen.height * 0.11f, 64f, 140f) + cutCaptions;   // the page's one graph takes a little more of the sheet than a dashboard's three
             Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture != null)
             {
