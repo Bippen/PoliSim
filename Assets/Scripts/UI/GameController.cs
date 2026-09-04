@@ -5191,13 +5191,12 @@ namespace PoliSim.UI
                     {
                         Rect r = cursor.Place(640f, 360f, captionHeight);
                         GUILayout.BeginArea(r);
-                        _dependencyRatioPieChart.Draw(string.Empty, new[]
-                        {
-                            new PieSlice("Working-age", 100f - _playerCountry.State.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor)),
-                            new PieSlice("Dependents", _playerCountry.State.DependencyRatio, UiPalette.GetAreaColor(UiPalette.SystemArea.Neutral)),
-                        }, _labelStyle, "F1", moneyUnit: null);
+                        // P5-A1 (2026-09-05): nine series - one past the palette's eight, so the fold into OTHER and the legend with nine rows are on film; the harness's own figures.
+                        var nine = new PieSlice[9];
+                        for (int s = 0; s < 9; s++) { nine[s] = new PieSlice(s < 8 ? DisplayName.Spaced(((SectorType)s).ToString()) : "Ninth series", 30f - s * 3f, UiPalette.GetCategoricalColor(Mathf.Min(s, UiPalette.MaxCategoricalSeries - 1))); }
+                        _dependencyRatioPieChart.Draw(string.Empty, nine, _labelStyle, "F1", moneyUnit: null);
                         GUILayout.EndArea();
-                        LadderCaption(r, "fixed diameter 120 by its constant - no size parameter", captionHeight);
+                        LadderCaption(r, "fixed diameter 120 by its constant - no size parameter; nine series, the ninth folded (P5-A1)", captionHeight);
                     }
                     break;
                 case "flag":

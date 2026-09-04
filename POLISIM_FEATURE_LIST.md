@@ -636,7 +636,7 @@ D14's when installed. Play again after Track A — the Budget's parliament chang
 **P5-A1 — Leaders retire.** The list beside the pie is the legend: wedge inks keyed to its rows,
 large wedges labelled inside where the label fits, the rest carried by the list alone; no leader
 lines. Stated to Design as a deviation from 8a with the screenshot as the reason. *Done when:*
-filmed at 1280 with nine wedges and nothing crossing.
+filmed at 1280 with nine wedges and nothing crossing. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §313: the legend beside the disc keyed by swatch, the large wedges labelled inside, no leaders; the ladder's pie carries nine series; filmed at 1280 with nothing crossing; stated to Design as D15 item 1.**
 
 ## Track B — the budget as nominal lines that persist and index (BASELINE; the sheet's core)
 
