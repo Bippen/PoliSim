@@ -666,7 +666,7 @@ or its own — sheet it.
 **P5-B4 — Every slider moves something.** From B1's audit: each dead or negligible slider either
 gains a sourced transmission (basis attached) or is retired by name with the reason (a dial that
 does nothing is not kept as decoration). *Done when:* the liveness audit re-runs with no dead
-slider and every negligible one either lifted or retired.
+slider and every negligible one either lifted or retired. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §315: the audit re-runs with 93 live, 0 negligible, 0 dead, 33 not armable - the two negligibles lifted by B2's drivers, the fund's domestic-allocation dial retired from the fund page by name (C-N6: the field stays, the surface goes), and the other eight dead sliders reclassified NOT ARMABLE with the reason printed in the row (`LeverProbes.Lever.NotArmable`): a tax not implemented, a governor who sets the rate, a customs union that sets the tariff.**
 
 **P5-B5 — The Budget screen on the new lines.** The row shows the nominal figure, its drivers as
 small instruments, the delta against last year, and the projected next year; the slider sets the

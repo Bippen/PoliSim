@@ -57,39 +57,39 @@ A rate held constant yields rising revenue in a growing economy and falling reve
 
 ## 3. The liveness audit at magnitude - every slider stepped by its full range, read at one and five years
 
-A slider is **LIVE** when its step moves a headline quantity (GDP, Unemployment, Inflation, Budget, GovernmentDebt, ApprovalRating, PovertyRate, Gini, Investment, Consumption) of the probed country by at least 0,05 % of itself (or 0,01 of a point where the quantity sits under 1) at one year or at five; **LIVE-BUT-NEGLIGIBLE** when something moves but no headline quantity by that much at five years; **DEAD** when no public EconomyState float of the probed country moves at all at five years. The thresholds are stated, not derived: half a tenth of a percent after five years is the size of a rounding difference on the sheet.
+A slider is **LIVE** when its step moves a headline quantity (GDP, Unemployment, Inflation, Budget, GovernmentDebt, ApprovalRating, PovertyRate, Gini, Investment, Consumption) of the probed country by at least 0,05 % of itself (or 0,01 of a point where the quantity sits under 1) at one year or at five; **LIVE-BUT-NEGLIGIBLE** when something moves but no headline quantity by that much at five years; **DEAD** when no public EconomyState float of the probed country moves at all at five years. **NOT ARMABLE** when the lever is not the probed country's to pull, and the row says why (P5-B4): a tax it has not implemented (the row is drawn disabled), the policy rate where a governor sits, the base tariff of a customs-union member, a partner it does not trade with, a fund or programme it does not have. The thresholds are stated, not derived: half a tenth of a percent after five years is the size of a rounding difference on the sheet.
 
 | slider | family | largest headline move at 1 yr | at 5 yr | anything moved at 5 yr | class |
 |---|---|---|---|---|---|
 | Budget line SocialSecurity (the dial's full range) | Budget line | ApprovalRating 5,631 % | Budget 45,989 % | yes | LIVE |
-| Budget line Medicare (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line Medicaid (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
+| Budget line Medicare (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line Medicaid (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line IncomeSecurity (the dial's full range) | Budget line | ApprovalRating 7,620 % | Budget 51,860 % | yes | LIVE |
-| Budget line VeteransBenefitsMandatory (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line FederalRetirement (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
+| Budget line VeteransBenefitsMandatory (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line FederalRetirement (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Defense (the dial's full range) | Budget line | ApprovalRating 1,036 % | Budget 36,518 % | yes | LIVE |
-| Budget line VeteransAffairsDiscretionary (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
+| Budget line VeteransAffairsDiscretionary (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Transportation (the dial's full range) | Budget line | ApprovalRating 0,972 % | Budget 17,397 % | yes | LIVE |
-| Budget line HHSDiscretionary (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line HomelandSecurity (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
+| Budget line HHSDiscretionary (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line HomelandSecurity (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Education (the dial's full range) | Budget line | ApprovalRating 1,480 % | Budget 17,138 % | yes | LIVE |
 | Budget line Energy (the dial's full range) | Budget line | ApprovalRating 0,094 % | Budget 1,636 % | yes | LIVE |
-| Budget line Housing (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
+| Budget line Housing (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Justice (the dial's full range) | Budget line | ApprovalRating 0,882 % | Budget 15,812 % | yes | LIVE |
-| Budget line StateForeignAffairs (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
+| Budget line StateForeignAffairs (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Agriculture (the dial's full range) | Budget line | none | Budget 3,630 % | yes | LIVE |
-| Budget line Interior (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line NASA (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line Commerce (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line Labor (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line TreasuryOps (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line NSF (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line EPA (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line SBA (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line SocialPrograms (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line InfrastructureAndDevelopment (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line PublicServices (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
-| Budget line Administration (the dial's full range) | Budget line | - | - | - | NOT ARMED for Sweden |
+| Budget line Interior (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line NASA (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line Commerce (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line Labor (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line TreasuryOps (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line NSF (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line EPA (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line SBA (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line SocialPrograms (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line InfrastructureAndDevelopment (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line PublicServices (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Budget line Administration (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line CentralGovernment (the dial's full range) | Budget line | none | Budget 3,630 % | yes | LIVE |
 | Budget line FinancialAdministration (the dial's full range) | Budget line | none | Budget 3,630 % | yes | LIVE |
 | Budget line TaxAdministration (the dial's full range) | Budget line | none | Budget 2,639 % | yes | LIVE |
@@ -112,24 +112,24 @@ A slider is **LIVE** when its step moves a headline quantity (GDP, Unemployment,
 | Tax VAT (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 63,834 % | yes | LIVE |
 | Tax PayrollTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 74,918 % | yes | LIVE |
 | Tax CapitalGainsTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | ApprovalRating 15,755 % | yes | LIVE |
-| Tax SalesTax (+5 pts) | Tax rate | none | none | no | **DEAD** |
-| Tax ExciseTax (+5 pts) | Tax rate | none | none | no | **DEAD** |
-| Tax PropertyTax (+5 pts) | Tax rate | none | none | no | **DEAD** |
-| Tax EstateTax (+5 pts) | Tax rate | none | none | no | **DEAD** |
-| Tax WealthTax (+5 pts) | Tax rate | none | none | no | **DEAD** |
+| Tax SalesTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
+| Tax ExciseTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
+| Tax PropertyTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
+| Tax EstateTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
+| Tax WealthTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
 | Tax CarbonTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 17,283 % | yes | LIVE |
-| Tax Tariffs (+5 pts) | Tax rate | - | - | - | NOT ARMED for Sweden |
-| Tax StampDuty (+5 pts) | Tax rate | none | none | no | **DEAD** |
-| Welfare UBI (to 80) | Welfare generosity | - | - | - | NOT ARMED for Sweden |
-| Welfare NegativeIncomeTax (to 80) | Welfare generosity | - | - | - | NOT ARMED for Sweden |
+| Tax Tariffs (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
+| Tax StampDuty (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
+| Welfare UBI (to 80) | Welfare generosity | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this programme: the row is drawn disabled, no slider |
+| Welfare NegativeIncomeTax (to 80) | Welfare generosity | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this programme: the row is drawn disabled, no slider |
 | Welfare MeansTestedWelfare (to 80) | Welfare generosity | ApprovalRating 2,378 % | Budget 176,478 % | yes | LIVE |
 | Welfare UniversalHealthcare (to 80) | Welfare generosity | ApprovalRating 0,701 % | Budget 40,608 % | yes | LIVE |
 | Welfare HousingAssistance (to 80) | Welfare generosity | ApprovalRating 1,830 % | Budget 33,959 % | yes | LIVE |
 | Welfare ChildcareSubsidies (to 80) | Welfare generosity | ApprovalRating 0,668 % | Budget 8,064 % | yes | LIVE |
-| Policy rate (+1 pt) | Central bank | none | none | no | **DEAD** |
-| Base tariff (+5 pts) | Trade | none | none | no | **DEAD** |
+| Policy rate (+1 pt) | Central bank | - | - | - | NOT ARMABLE for Sweden: a governor sits: the bank is independent and sets the rate (FederalReserveSystem.ApplyFedChairInterestRate); the decision's InterestRateChange is read only where no governor sits |
+| Base tariff (+5 pts) | Trade | - | - | - | NOT ARMABLE for Sweden: a customs-union member: every partner reads the bloc's internal or external rate, never this country's base rate (TradeSystem.GetStandingTariffRate); only the per-partner overrides move its take |
 | Partner tariff override, first partner (+10 pts) | Trade | none | Budget 7,920 % | yes | LIVE |
-| Minimum Wage (+10 Kaitz) | Labour dial | - | - | - | NOT ARMED for Sweden |
+| Minimum Wage (+10 Kaitz) | Labour dial | - | - | - | NOT ARMABLE for Sweden: the country has no statutory minimum wage: the dial is not drawn for it |
 | Paid Family Leave (+20 weeks) | Labour dial | ApprovalRating 2,227 % | ApprovalRating 11,519 % | yes | LIVE |
 | Overtime Regulation (to 80) | Labour dial | none | Budget 17,357 % | yes | LIVE |
 | Retraining Programs (to 80) | Labour dial | none | Budget 13,012 % | yes | LIVE |
@@ -182,11 +182,10 @@ A slider is **LIVE** when its step moves a headline quantity (GDP, Unemployment,
 | Telecommunications Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
 | Telecommunications Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
 | Fund contribution rate (+1 pt) | Fund | none | Budget 37,497 % | yes | LIVE |
-| Fund domestic allocation (to 80) | Fund | none | none | no | **DEAD** |
 | Fund equities weight (+20) | Fund | none | Budget 0,783 % | yes | LIVE |
 | Fund bonds weight (+20) | Fund | none | Budget 1,065 % | yes | LIVE |
 | Fund infrastructure weight (+20) | Fund | none | Budget 0,247 % | yes | LIVE |
 | Fund real-estate weight (+20) | Fund | none | Budget 0,907 % | yes | LIVE |
 | Fund drawdown (2 % of GDP) | Fund | Budget 53,081 % | Budget 1,534 % | yes | LIVE |
 
-**93 LIVE · 0 LIVE-BUT-NEGLIGIBLE · 9 DEAD · 25 not armable for Sweden.** The negligible and dead sliders are P5-B4's list: each gains a sourced transmission or is retired by name.
+**93 LIVE · 0 LIVE-BUT-NEGLIGIBLE · 0 DEAD · 33 not armable for Sweden, each with its reason.** P5-B4 (2026-09-05) worked the list down: a dead slider either gained a sourced transmission or was retired by name; a lever that is not the country's to pull is NOT ARMABLE, not dead.

@@ -118,7 +118,6 @@ namespace PoliSim.Persistence
         public bool? SwfExistsDraft;
         public float SwfDrawdownPercentInput;
         public float? SwfContributionRateInput;
-        public float? SwfDomesticAllocationInput;
         public float? SwfEquitiesWeightInput;
         public float? SwfBondsWeightInput;
         public float? SwfInfrastructureWeightInput;

@@ -138,7 +138,7 @@ namespace PoliSim.EditorTools
 
             // ---- §3 the liveness audit at magnitude ----------------------------------------------------
             sb.Append("## 3. The liveness audit at magnitude - every slider stepped by its full range, read at one and five years\n\n");
-            sb.Append($"A slider is **LIVE** when its step moves a headline quantity ({string.Join(", ", Headline)}) of the probed country by at least {NegligibleRelative:P2} of itself (or {NegligibleAbsolute} of a point where the quantity sits under 1) at one year or at five; **LIVE-BUT-NEGLIGIBLE** when something moves but no headline quantity by that much at five years; **DEAD** when no public EconomyState float of the probed country moves at all at five years. The thresholds are stated, not derived: half a tenth of a percent after five years is the size of a rounding difference on the sheet.\n\n");
+            sb.Append($"A slider is **LIVE** when its step moves a headline quantity ({string.Join(", ", Headline)}) of the probed country by at least {NegligibleRelative:P2} of itself (or {NegligibleAbsolute} of a point where the quantity sits under 1) at one year or at five; **LIVE-BUT-NEGLIGIBLE** when something moves but no headline quantity by that much at five years; **DEAD** when no public EconomyState float of the probed country moves at all at five years. **NOT ARMABLE** when the lever is not the probed country's to pull, and the row says why (P5-B4): a tax it has not implemented (the row is drawn disabled), the policy rate where a governor sits, the base tariff of a customs-union member, a partner it does not trade with, a fund or programme it does not have. The thresholds are stated, not derived: half a tenth of a percent after five years is the size of a rounding difference on the sheet.\n\n");
             List<LeverProbes.Quantity> quantities = LeverProbes.BuildQuantities();
             var headlineIndex = new List<int>();
             for (int i = 0; i < quantities.Count; i++)
@@ -153,7 +153,7 @@ namespace PoliSim.EditorTools
             foreach (LeverProbes.Lever lever in levers)
             {
                 float[] p1 = LeverProbes.RunOne(lever, quantities, 1, out bool armed);
-                if (!armed) { sb.Append($"| {lever.Name} | {lever.Family} | - | - | - | NOT ARMED for {LeverProbes.Probed} |\n"); notArmed++; continue; }
+                if (!armed) { sb.Append($"| {lever.Name} | {lever.Family} | - | - | - | NOT ARMABLE for {LeverProbes.Probed}: {lever.NotArmable} |\n"); notArmed++; continue; }
                 float[] p5 = LeverProbes.RunOne(lever, quantities, Horizon, out _);
                 (string name1, float rel1, bool big1) = Largest(quantities, headlineIndex, base1, p1);
                 (string name5, float rel5, bool big5) = Largest(quantities, headlineIndex, base5, p5);
@@ -167,7 +167,7 @@ namespace PoliSim.EditorTools
                 if (!anything) { dead++; } else if (big1 || big5) { live++; } else { negligible++; }
                 sb.Append($"| {lever.Name} | {lever.Family} | {Describe(name1, rel1)} | {Describe(name5, rel5)} | {(anything ? "yes" : "no")} | {cls} |\n");
             }
-            sb.Append($"\n**{live} LIVE · {negligible} LIVE-BUT-NEGLIGIBLE · {dead} DEAD · {notArmed} not armable for {LeverProbes.Probed}.** The negligible and dead sliders are P5-B4's list: each gains a sourced transmission or is retired by name.\n");
+            sb.Append($"\n**{live} LIVE · {negligible} LIVE-BUT-NEGLIGIBLE · {dead} DEAD · {notArmed} not armable for {LeverProbes.Probed}, each with its reason.** P5-B4 (2026-09-05) worked the list down: a dead slider either gained a sourced transmission or was retired by name; a lever that is not the country's to pull is NOT ARMABLE, not dead.\n");
 
             File.WriteAllText(outPath, sb.ToString());
             Debug.Log($"PREMISE: wrote {Path.GetFullPath(outPath)} - {baseLines.Count} spending lines, {baseRevenue.Count} tax lines, {levers.Count} sliders: {live} live, {negligible} negligible, {dead} dead, {notArmed} not armable.");

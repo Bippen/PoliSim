@@ -221,7 +221,6 @@ namespace PoliSim.UI
         // see DrawSwfPolicyContent's stable-control-layout note for why this changed at step 5c. Not
         // cleared by ResetPolicyInputs, for the same reason _minimumWageInput isn't.
         private float? _swfContributionRateInput;
-        private float? _swfDomesticAllocationInput;
         private float? _swfEquitiesWeightInput;
         private float? _swfBondsWeightInput;
         private float? _swfInfrastructureWeightInput;
@@ -900,7 +899,6 @@ namespace PoliSim.UI
                 SwfExistsDraft = _swfExistsDraft,
                 SwfDrawdownPercentInput = _swfDrawdownPercentInput,
                 SwfContributionRateInput = _swfContributionRateInput,
-                SwfDomesticAllocationInput = _swfDomesticAllocationInput,
                 SwfEquitiesWeightInput = _swfEquitiesWeightInput,
                 SwfBondsWeightInput = _swfBondsWeightInput,
                 SwfInfrastructureWeightInput = _swfInfrastructureWeightInput,
@@ -969,7 +967,6 @@ namespace PoliSim.UI
             _swfExistsDraft = ui?.SwfExistsDraft;
             _swfDrawdownPercentInput = ui?.SwfDrawdownPercentInput ?? 0f;
             _swfContributionRateInput = ui?.SwfContributionRateInput;
-            _swfDomesticAllocationInput = ui?.SwfDomesticAllocationInput;
             _swfEquitiesWeightInput = ui?.SwfEquitiesWeightInput;
             _swfBondsWeightInput = ui?.SwfBondsWeightInput;
             _swfInfrastructureWeightInput = ui?.SwfInfrastructureWeightInput;
@@ -5559,7 +5556,6 @@ namespace PoliSim.UI
         }
 
         private float GetSwfContributionRateInput(float fallbackLevel) => _swfContributionRateInput ?? fallbackLevel;
-        private float GetSwfDomesticAllocationInput(float fallbackLevel) => _swfDomesticAllocationInput ?? fallbackLevel;
         private float GetSwfEquitiesWeightInput(float fallbackLevel) => _swfEquitiesWeightInput ?? fallbackLevel;
         private float GetSwfBondsWeightInput(float fallbackLevel) => _swfBondsWeightInput ?? fallbackLevel;
         private float GetSwfInfrastructureWeightInput(float fallbackLevel) => _swfInfrastructureWeightInput ?? fallbackLevel;
@@ -10136,7 +10132,7 @@ namespace PoliSim.UI
             SovereignWealthFund standingDefaults = fund ?? new SovereignWealthFund();
             bill.SwfShouldExist = GetSwfExistsDraft(fund != null);
             bill.SwfContributionRatePercent = GetSwfContributionRateInput(standingDefaults.ContributionRatePercent);
-            bill.SwfDomesticAllocationPercent = GetSwfDomesticAllocationInput(standingDefaults.DomesticAllocationPercent);
+            bill.SwfDomesticAllocationPercent = standingDefaults.DomesticAllocationPercent;   // P5-B4: no slider - the standing figure rides the bill unchanged (C-N6)
             bill.SwfEquitiesWeight = GetSwfEquitiesWeightInput(standingDefaults.EquitiesWeight);
             bill.SwfBondsWeight = GetSwfBondsWeightInput(standingDefaults.BondsWeight);
             bill.SwfInfrastructureWeight = GetSwfInfrastructureWeightInput(standingDefaults.InfrastructureWeight);
@@ -10806,19 +10802,11 @@ namespace PoliSim.UI
                 _swfContributionRateInput = newContributionRate;
             }
 
-            // The complement, not a restatement: the slider sets the domestic share, so the useful
-            // context is what is therefore international.
-            float draftDomesticAllocation = GetSwfDomesticAllocationInput(standingDefaults.DomesticAllocationPercent);
-            float newDomesticAllocation = SwfRow(
-                "Domestic Allocation",
-                standingDefaults.DomesticAllocationPercent, draftDomesticAllocation,
-                MinPolicyDialLevel, MaxPolicyDialLevel,
-                "F0", "%",
-                (100f - draftDomesticAllocation).ToString("F0", CultureInfo.InvariantCulture) + "% intl");
-            if (draftExists)
-            {
-                _swfDomesticAllocationInput = newDomesticAllocation;
-            }
+            // P5-B4 (2026-09-05): the "Domestic Allocation" row is RETIRED from this page. C-N6 (2026-08-31) found that
+            // nothing reads SovereignWealthFund.DomesticAllocationPercent and ruled that the field stays and its consumer
+            // (a sourced domestic-vs-international return spread) is billed - and that no player-facing surface may imply
+            // the dial does anything. A slider that does nothing is not kept as decoration: the field, the decision leg
+            // and the bill leg stay for the day the spread is sourced; the bill carries the standing figure unchanged.
 
             GUILayout.Space(8f);
             GUILayout.Label("Asset Class Mix (weights, normalized automatically - don't need to sum to 100)", _labelStyle);

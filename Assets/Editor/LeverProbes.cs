@@ -41,6 +41,7 @@ namespace PoliSim.EditorTools
             public string Name;
             public Action<SimulationManager, Country, PolicyDecision> Arm;   // fills the first turn's decision or mutates the country before it
             public string[] ViaDials;   // laws: the dials the law moves (from DialDeltas); dials: null
+            public string NotArmable;   // set by RunOne when Arm threw NotSupportedException: the reason, from the message
         }
 
         /// <summary>One probe run: the quantities after <paramref name="horizon"/> turns; <paramref name="armed"/> false when the lever does not exist for the probed country.</summary>
@@ -75,7 +76,7 @@ namespace PoliSim.EditorTools
                 {
                     PolicyDecision first = PolicyDecision.None();
                     try { lever.Arm(sim, country, first); }
-                    catch (NotSupportedException) { armed = false; }
+                    catch (NotSupportedException ex) { armed = false; lever.NotArmable = string.IsNullOrEmpty(ex.Message) || ex.Message.StartsWith("Specified method") ? "the country has no such line" : ex.Message; }
                     decisions[Probed] = first;
                 }
                 for (int turn = 1; turn <= horizon; turn++)
@@ -159,6 +160,7 @@ namespace PoliSim.EditorTools
                 {
                     TaxLine line = c.TaxLines.Find(l => l.Type == t0);
                     if (line == null) { throw new NotSupportedException(); }
+                    if (!line.IsImplemented) { throw new NotSupportedException("the country has not implemented this tax: the row is drawn disabled, no slider"); }
                     d.TaxRateOverrides[t0] = line.Rate + TaxProbePoints;
                 } });
             }
@@ -167,20 +169,20 @@ namespace PoliSim.EditorTools
                 WelfareProgramType w0 = w;
                 list.Add(new Lever { Family = "Welfare generosity", Name = $"Welfare {w0} (to {DialProbeLevel:0})", Arm = (sim, c, d) =>
                 {
-                    if (!c.WelfarePrograms.Exists(p => p.Type == w0 && p.IsImplemented)) { throw new NotSupportedException(); }
+                    if (!c.WelfarePrograms.Exists(p => p.Type == w0 && p.IsImplemented)) { throw new NotSupportedException("the country has not implemented this programme: the row is drawn disabled, no slider"); }
                     d.WelfareGenerosityOverrides[w0] = DialProbeLevel;
                 } });
             }
-            list.Add(new Lever { Family = "Central bank", Name = $"Policy rate ({RateProbePoints:+0} pt)", Arm = (sim, c, d) => d.InterestRateChange = RateProbePoints });
-            list.Add(new Lever { Family = "Trade", Name = $"Base tariff ({TariffProbePoints:+0} pts)", Arm = (sim, c, d) => d.TariffRateChange = TariffProbePoints });
+            list.Add(new Lever { Family = "Central bank", Name = $"Policy rate ({RateProbePoints:+0} pt)", Arm = (sim, c, d) => { if (c.CurrentFedChair != null) { throw new NotSupportedException("a governor sits: the bank is independent and sets the rate (FederalReserveSystem.ApplyFedChairInterestRate); the decision's InterestRateChange is read only where no governor sits"); } d.InterestRateChange = RateProbePoints; } });
+            list.Add(new Lever { Family = "Trade", Name = $"Base tariff ({TariffProbePoints:+0} pts)", Arm = (sim, c, d) => { if (sim.World.TradeBlocs.Exists(b => b.IsMember(c.Id))) { throw new NotSupportedException("a customs-union member: every partner reads the bloc's internal or external rate, never this country's base rate (TradeSystem.GetStandingTariffRate); only the per-partner overrides move its take"); } d.TariffRateChange = TariffProbePoints; } });
             list.Add(new Lever { Family = "Trade", Name = $"Partner tariff override, first partner (+{TariffProbePoints * 2:0} pts)", Arm = (sim, c, d) =>
             {
-                if (c.TradePartners.Count == 0) { throw new NotSupportedException(); }
+                if (c.TradePartners.Count == 0) { throw new NotSupportedException("the country has no trade partners"); }
                 d.PartnerTariffOverrides[c.TradePartners[0].PartnerId] = c.BaseTariffRate + TariffProbePoints * 2f;
             } });
             list.Add(new Lever { Family = "Labour dial", Name = $"Minimum Wage ({MinimumWageProbePoints:+0} Kaitz)", Arm = (sim, c, d) =>
             {
-                if (!c.MinimumWageImplemented) { throw new NotSupportedException(); }
+                if (!c.MinimumWageImplemented) { throw new NotSupportedException("the country has no statutory minimum wage: the dial is not drawn for it"); }
                 d.MinimumWageOverride = c.MinimumWagePercentOfMedian + MinimumWageProbePoints;
             } });
             list.Add(new Lever { Family = "Labour dial", Name = $"Paid Family Leave ({PaidLeaveProbeWeeks:+0} weeks)", Arm = (sim, c, d) => d.PaidFamilyLeaveWeeksOverride = c.PaidFamilyLeaveWeeks + PaidLeaveProbeWeeks });
@@ -204,7 +206,7 @@ namespace PoliSim.EditorTools
                 list.Add(new Lever { Family = "Sector dial", Name = $"{t} Nationalization / Deregulation (to 80)", Arm = (sim, c, d) => d.SectorDeregulationNationalizationOverrides[t] = DialProbeLevel });
             }
             list.Add(new Lever { Family = "Fund", Name = "Fund contribution rate (+1 pt)", Arm = (sim, c, d) => { RequireFund(c); d.SwfContributionRateOverride = c.SovereignWealthFund.ContributionRatePercent + 1f; } });
-            list.Add(new Lever { Family = "Fund", Name = "Fund domestic allocation (to 80)", Arm = (sim, c, d) => { RequireFund(c); d.SwfDomesticAllocationOverride = DialProbeLevel; } });
+            // P5-B4: the fund's domestic allocation is no longer a slider (C-N6: nothing reads the field; the surface is retired), so it is not in the audit.
             list.Add(new Lever { Family = "Fund", Name = "Fund equities weight (+20)", Arm = (sim, c, d) => { RequireFund(c); d.SwfEquitiesWeightOverride = c.SovereignWealthFund.EquitiesWeight + 20f; } });
             list.Add(new Lever { Family = "Fund", Name = "Fund bonds weight (+20)", Arm = (sim, c, d) => { RequireFund(c); d.SwfBondsWeightOverride = c.SovereignWealthFund.BondsWeight + 20f; } });
             list.Add(new Lever { Family = "Fund", Name = "Fund infrastructure weight (+20)", Arm = (sim, c, d) => { RequireFund(c); d.SwfInfrastructureWeightOverride = c.SovereignWealthFund.InfrastructureWeight + 20f; } });
@@ -226,7 +228,7 @@ namespace PoliSim.EditorTools
             return list;
         }
 
-        private static void RequireFund(Country c) { if (c.SovereignWealthFund == null) { throw new NotSupportedException(); } }
+        private static void RequireFund(Country c) { if (c.SovereignWealthFund == null) { throw new NotSupportedException("the country has no sovereign fund"); } }
 
         private static readonly string[] LawDialNames =
         {

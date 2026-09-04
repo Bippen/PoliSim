@@ -134,6 +134,8 @@ namespace PoliSim.EditorTools
                 + "it is cloned, seeded per country and carried on a BudgetBill - but NOTHING READS IT. "
                 + "SovereignWealthFundSystem never mentions it; the four asset-class weights drive the fund's "
                 + "returns alone. Found by this guard on its FIRST RUN."
+                + " P5-B4 (2026-09-05): the slider is retired from the fund page; the field, the decision leg and the bill"
+                + " leg stay (the bill carries the standing figure) for the day C-N6's spread is sourced."
             }
         };
 
