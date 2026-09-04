@@ -1,47 +1,52 @@
-# The send package — regenerated 2026-09-04 (the RETURN after boards 6a and 6b, carrying the party-hue ruling; paste-and-glance; **sending is Elias's**)
+# The send package — regenerated 2026-09-04 (evening): D14 installed (six items from Playtest 4, reconciled against D12 and D13); paste-and-glance; **sending is Elias's**
 
-⚠ **THIS IS A RETURN, NOT A NEW ASK.** Boards 6a (D13) and 6b (D12, seven of seven) were read and BUILT (`COMPLETED.md` §267–§274). Board 6b said every cell was drawn from the rows' text because no annex was in-project; this paste carries the files it named: the centroid table (`COUNTRY_CENTROIDS.md`, row 1), the ink harness print (`e12_partyink.log`, row 4 - printed AFTER the fork was ruled, see the ruling below), the stance diagnostic print (`bar50_p3a2_RunSimulationBatch.log`, row 5), and the films of the built screens at 1280 (`p5a_*`..`p5d_*`). **Binaries are uploaded, not described.** No row is asked again; where the build deviates from a board it says so in its section.
+⚠ **D14 IS THE LIVE ASK** (`CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D14, above D13). The E-12 return (boards 6a/6b, the party-hue ruling) was pasted and answered as boards 7a/7b and BUILT (`COMPLETED.md` §282–§283); nothing from it is asked again. The films below are the ones D14's rows cite by name: Track B's caption trio and Track E's cuts, at 1280 and 2560.
 
-⚠ **Boards 7a and 7b (2026-09-04) READ THIS PACKAGE (uploads/SEND_PACKAGE-b04bf825.md is this file by digest) and said what arrived: every markdown, and not one binary or log - the transport keeps `.md` and drops the rest.** So the ink harness print now travels as text too: `E12_PARTYINK_PRINT.md`, the print verbatim, so row 4's outcome is readable where the ruling already was. The films stay listed by digest for this side's record; nothing is asked of Design for them. Board 7a's one finding (DE and PL in adjacent cells, the western chip pushed one cell west) is BUILT (`COMPLETED.md` §283); the stale "one word" paragraph 7b named is gone from the tail.
-
-⚠ **The D9 returns still owed travel with this package unchanged** — the derived mandate column, the two stat-icon files, and Elias's GO on the marks.
+⚠ **The five Playtest 4 screenshots are NOT on disk** (ERRANDS E-13, Elias's); D14's annex names them and they join the package the day they land, as E-8's eleven did.
 
 ## What goes in — computed, not claimed
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 113748 | `9cfd86ae274e19beb16405cb52c128b304e1c35d8aee8a67dba8d691022e6cc1` |
-| `POLISIM_FEATURE_LIST.md` | 89294 | `9c8bc78f05092ce3a11c8de3c01512ff72faa8091ce15f4836afb0540cdf30e1` |
-| `COUNTRY_CENTROIDS.md` | 2744 | `350f448e74ec0c72acbbbde69718a08afd6d179b30a4838217d788306d6ddb79` |
-| `E12_PARTYINK_PRINT.md` | 6110 | `be675f08b0e0e2d6de4cbe7d624f53e087c5bcbf5c0e83adce694c6f660caf96` |
-| `e12_partyink.log` | 50876 | `2a2d3dde0406575e039a734e138469cf14c1ae62b6270f10faa8342b8006513b` |
-| `bar50_p3a2_RunSimulationBatch.log` | 335398 | `7606ce12f9da2f6d70137b87963880053fbb7ac751e896fe8707b4b9c3ce41d1` |
-| `bar92_hue_RunAllBatch.log` | 430445 | `a5118ffd5e302c5372fee82e8a0f652e11df739621adabe7898128671fac5022` |
-| `p5a_1280.log` | 1106878 | `447c77bfbf05efe4ad9451f1812e11c03ca5e3c375d06c44a4a6c2391d740d9c` |
-| `p5b_1280.log` | 1106871 | `19b6cb79fb090073cbdd9fe5c5a87a37b11e1e138f91f2cbfc570ffca7e083d9` |
-| `p5c_1280.log` | 1106989 | `50e23f78240e0edfafa79ec3f4e2ead5268866053161101e04d9de5319f3110a` |
-| `p5d_1280.log` | 1094298 | `0b91d48a1ec08bd7b47ba84892a9806f53fcf7563fea5f3971bb389a1573beb6` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122000 | `10794f0035c489a649a5c378f48ece5a158907b47236a09382dd131ff4b2672e` |
+| `POLISIM_FEATURE_LIST.md` | 104067 | `c739c2900fac88cd1ba6af2bb5c37846cfe98a6b7c05d45f03487fe033b6ca20` |
+| `LEVER_MAP.md` | 183633 | `b5eabd7f2d366809c701b89b61c65f01033d897e05395e3b8c61daeaf1b86bde` |
+| `logs/bar108_p4cde_RunAllBatch.log` | 474328 | `5dd53fca5bed58491e074809944f3482e23f9836c684af0fa86dc72fc9c3e474` |
+| `logs/bar106_p4cde_RunSimulationBatch.log` | 348198 | `597329e539daaec4aa791b06df87bdd6bc7047f25d061cd6f932b488a60f9408` |
+| `logs/p4de_1280.log` | 1230212 | `cf17d379447536bd12aff3920c9a9f72d72789c5b86dfefa337913286942d18c` |
+| `logs/p4de_2560.log` | 1192725 | `851415b614918bd586c7c97d12f704aca79693bb8d1091d68f00c5433704c1f2` |
+| `logs/p4b4_1280.log` | 998641 | `addacfb356497c28319333e9c335cedc3b12c18491b953aae9386b52af6003df` |
+| `logs/p4b4_2560.log` | 984262 | `72649a97ab61b803e2f1c78bc4871978c309f8825065be13d403deee4c3bb6eb` |
 
-### The films of the built boards at 1280 (6a: `p5a_*`; 6b rows 2, 3, 6, 7: `p5b_*`; row 5: `p5c_*`; row 1: `p5d_*`), the eleven screenshots (E-8), and the item-1 pair
+### The films D14 cites, at 1280 and 2560
 
 | film | bytes | sha256 |
 |---|---|---|
-| `p5a_1280_05a_budget_tax.png` | 653350 | `c9d71ab02a54ab3a0df5a45e54f6caaffe56170281335087bafa5905130c3f94` |
-| `p5a_1280_05a_budget_tax_dragged.png` | 661783 | `c04ac6a257192bdbaeab8549b7bfc1fdad954150391b65dbbd01fd8f3d58a387` |
-| `p5a_1280_05c_budget_welfare.png` | 638913 | `260282074f4a4d2b5747dab0c6974832092b0c4914306c585ba3bcc023d336f0` |
-| `p5a_1280_06c_policylaws_sectors_rows.png` | 519121 | `eddb49a97edbb2c52084bce6a6c3083d065ee08e88bb5890dc6c4de8a546ea13` |
-| `p5a_1280_07d_politics_federalreserve_rows.png` | 565398 | `fc79483ed92492b45934a1bf32132293fdea3bf0d0da2de64a8b9dbb7315462f` |
-| `p5b_1280_02b_statistics_international.png` | 390716 | `1688952b8bfb970264d13181772f9bece8346ae397ca689d9d630d1fe03a17ff` |
-| `p5b_1280_02b_statistics_international_deep.png` | 473782 | `87f5751bbd788473be644930698e7397975184b5c3c16442349f26843dc509a6` |
-| `p5b_1280_07d_politics_federalreserve.png` | 495223 | `c2760eeebbaedb4006e96bbf224463a9f1e2770f03069c583844afa192adbcd1` |
-| `p5c_1280_06g_laws_expected_effects.png` | 577019 | `f4d71449108998d2dfe7c18fb41fe07bc920df3f0dc5c39bb05653b2b6f06c9c` |
-| `p5c_1280_05b_budget_spending.png` | 688122 | `f03e76f589d1e390b1f34b7227f04bed64b2d6c29796f21ddc9af1ae47a864d5` |
-| `p5d_1280_02b_statistics_international.png` | 391882 | `5327f24bf7c595ab1367717658412b90c956a250aac57575ceb04db3e52143fb` |
-| `p5d_1280_01c_desk.png` | 521356 | `b91327bcf77d21d5e2e8dee242002e320e5ac53e7e45af59e0e229cc4213b057` |
-| `p4c_1280_06j_policylaws_policyweb_rest.png` | 544386 | `4af104f369093b1504179c8e2867178bb67e7e62ef9962d8c701fbde5c1a933d` |
-| `p4c_1280_06k_policylaws_policyweb_node_policy.png` | 595104 | `703ff1b3e441b47d8487acca27f4aa6f618ddf77c50b09cadb2e67f34fa0d1a6` |
+| `p4de_1280_04_demographics.png` | 493971 | `8195df08e6f0764308d040383ee4d634f6a7c9feaecede2d2d9da5032b1663f9` |
+| `p4de_1280_02b_statistics_international_deep.png` | 473490 | `d8c6d0cfd2abb7feb2b285f0ab2b3479eca1780d3f04d6a86532c644e5aa406a` |
+| `p4de_1280_07d_politics_federalreserve.png` | 466175 | `73f47617a1ff8aadd160b845451e456e107b8b0fb216f64502ba7be1bc170f33` |
+| `p4b4_1280_06a_policylaws_labormarket_caption_drag.png` | 535053 | `c29546b02b9721a8fdd7d6204ae7c419fa47778635a2adfd284c0c719eb69e9d` |
+| `p4b4_1280_06a_policylaws_labormarket_caption_held.png` | 535053 | `c29546b02b9721a8fdd7d6204ae7c419fa47778635a2adfd284c0c719eb69e9d` |
+| `p4b4_1280_06a_policylaws_labormarket_caption_faded.png` | 531582 | `04e5b6c71d2b51e51ee0c111286edafc18ecc1eeddc113583d1ccad55bbd9234` |
+| `p4de_1280_01c_desk.png` | 500307 | `8fe4e71ed7b3be7cd731a1b660179a953bcfdba8e45a7ff606eea7c1b7342047` |
+| `p4de_1280_02b_statistics_international.png` | 378269 | `45ab062690eb646bff8fd1dd4e9af50c4de1ebab7d4661d27da7096259852825` |
+| `p4de_1280_03_decisions.png` | 535414 | `148f1b0242e4a1b11bfa8e72626d40ebc57d0197bbf0f267b4964020e8482824` |
+| `p4de_2560_04_demographics.png` | 1313566 | `2dbfff958ec63e443e5643212fd0d706388388db5fb93bbd62fbcbe77afd2699` |
+| `p4de_2560_02b_statistics_international_deep.png` | 1333137 | `8cbc4c6fc9547cba6d46227b2655f5841bdc7c1a0d8135b585382d3a1340a501` |
+| `p4de_2560_07d_politics_federalreserve.png` | 1521583 | `a690fe26c8c253226c078b4a389fc1d05f68a720aaf758385ed7019668188b94` |
+| `p4b4_2560_06a_policylaws_labormarket_caption_drag.png` | 1529773 | `971b812b15dd31ed93f20c22e76dd41eb2030ea7b4754979923ce761bc3e74fd` |
+| `p4b4_2560_06a_policylaws_labormarket_caption_held.png` | 1529773 | `971b812b15dd31ed93f20c22e76dd41eb2030ea7b4754979923ce761bc3e74fd` |
+| `p4b4_2560_06a_policylaws_labormarket_caption_faded.png` | 1520513 | `b721ea7d550f39e049b849e6489319002b02d762889f48c69d4c135bd5aa042c` |
+| `p4de_2560_01c_desk.png` | 1350604 | `a18d9276ad784ac176fb5fb220dd8681ae0e7372a05f5de800ea214699cbe11e` |
+| `p4de_2560_02b_statistics_international.png` | 1322045 | `d9653362ca50391c1fd9dd5a2b94c93410b69d623807edb8703fbfcc4781aceb` |
+| `p4de_2560_03_decisions.png` | 1364832 | `1bce67c7e61af03614db0769c8f83f7f188c6a6fb832657de57485fec948f1fc` |
+| `Elias Screenshots/NEW_nedladdning (11).png` | 86195 | `4a90ae383da00f2f87388128d9ee6f03be4669ac1fb9af6cb188fdd268e068fe` |
+| `Elias Screenshots/New_nedladdning.png` | 714934 | `9109ec43c07bb73c1ce8173df38a734e74fd5707c5fb461c6e348d805af9fe32` |
 | `Elias Screenshots/nedladdning (1).png` | 27855 | `932aea67989df360b5d746c66f4508a3b07ffa00365c1c005bc9e78cb20ae954` |
 | `Elias Screenshots/nedladdning (10).png` | 524754 | `b5c358ff100c60bcebcd7a3f7f3161b1f36c85c857428c78382ead389a720317` |
+| `Elias Screenshots/nedladdning (11).png` | 217086 | `a65d1ca4cd63fdd0b23c54998ba4a7231788dc03d277304ea6a1e890a6f5ecac` |
+| `Elias Screenshots/nedladdning (12).png` | 64672 | `52a454c75d893b25a1800edec918b3653af8ffe0b9ccd9a42c02c3e16ef4edac` |
+| `Elias Screenshots/nedladdning (13).png` | 102497 | `ac4fa0e4c06bdfce8b16aed9d57fcc92f1e405cd991a77b0be80440809343182` |
 | `Elias Screenshots/nedladdning (2).png` | 297366 | `dd64d8d2ede54945600e3f50766200a907e5bdcf01354318ab680b9b3ffd097a` |
 | `Elias Screenshots/nedladdning (3).png` | 182535 | `93aba636d33af3fd02d3d491bc913b2ececf80372957d9c30a014949cb00c539` |
 | `Elias Screenshots/nedladdning (4).png` | 224532 | `9957cedd509c5618ca3d68abf124aee4192bb4b1300baade8a3046e4724d5a41` |
@@ -51,33 +56,8 @@
 | `Elias Screenshots/nedladdning (8).png` | 473415 | `6fa3ccad505719b2ef9a05b849bc4d7f9450625b59023429a806bbb23e3e64b1` |
 | `Elias Screenshots/nedladdning (9).png` | 464824 | `557814b8507e5d4b11124f9bfc0b3ca42c6e103c305603807804039db886b8a8` |
 | `Elias Screenshots/nedladdning.png` | 46212 | `9a25691e32d687566ea0ecc3d10db73f79f8bab730d0b76ed077dbb708ea3762` |
-| `p4a_1280_05a_budget_tax.png` | 660874 | `cce8144887f2d5b6edac88456d2992865db67b31c6b0b44a1833cd06ecdf22de` |
-| `p4a_1280_05a_budget_tax_dragged.png` | 668463 | `15668d81781e74925943c5a346e616615c176c00094bcb66d84b39f153925d25` |
 
-⚠ `get_file` caps at 256 KiB: a film larger than that cannot be hash-verified whole through it — only its leading bytes — so the glance on a large film is its size and its name; the digest is for the next session on this side.
-
-## The party-hue fork, RULED (Elias, 2026-09-03) — for board 6b row 4
-
-Board 6b quoted one published set and this project's table carried another, disagreeing on every party (`COMPLETED.md` §272). **The ruling:**
-
-> **Valmyndigheten's published table is the base and the identity.** Design's quoted set is recorded as **the alternative, with its source**, and is **consulted only where ours produces a measured collision.**
-
-**The reason, stated:** the project's hexes are the `fargkod` values read from the same Valmyndigheten backend the seat counts were read from — one source for the counts and the colours, so a colour is verifiable by the reference the counts already carry, and a seating derived from it can be re-derived by anyone with the file. A quoted set has no such path back to a file. It is not discarded: it is kept as the alternative, named for where it came from, and asked for its hue at the one moment the identity table cannot answer on its own — when two of our seated inks measure as one at dot size.
-
-**What that means in the game (`PoliSimTheme`, `COMPLETED.md` §279):** the seating still derives from `PartyHues` (ours). Where the nudge measures a collision (oklab distance below the tolerance, 0.06), it now consults the alternative's hue for the smaller party FIRST — seated by the same arithmetic — and takes it only if that ink clears the tolerance against every larger ink already drawn; otherwise the lightness nudge runs from the seated ink as before. Every consultation is printed by `PartyInkHarness`, taken or not, with the distance measured. Hue is otherwise never touched; the marks keep the seated hex.
-
-| party | ours (Valmyndigheten `fargkod`, the identity) | the alternative (board 6b row 4, Design, 2026-09-03) |
-|---|---|---|
-| S | `#FF0000` | `#E8112D` |
-| SD | `#4E83A3` | `#DDDD00` |
-| M | `#66BEE6` | `#52BDEC` |
-| V | `#C40000` | `#DA291C` |
-| C | `#63A91D` | `#009933` |
-| KD | `#1B5CB1` | `#000077` |
-| MP | `#008000` | `#83CF39` |
-| L | `#3399FF` | `#006AB3` |
-
-The harness print in this package (`e12_partyink.log`) shows what the rule did with the seed's collisions. Row 4 closes on this: nothing further is asked.
+⚠ `get_file` caps at 256 KiB: a film larger than that cannot be hash-verified whole through it — only its leading bytes — so the glance on a large film is its size and its name; the digest is for this side's record.
 
 ---
 

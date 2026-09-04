@@ -617,7 +617,7 @@ redrawn to the game's grammar; (2) the trade graph's composition; (3) the Riksba
 P4-E2's cut; (4) the range-caption presentation — placement, type, fade; (5) the map on plain
 paper, confirming the chip set; (6) the Docket option card with cost and arrows. Annexes: the five
 screenshots verbatim (on disk this time, under `PoliSim-captures\Elias Screenshots`), the films
-after Tracks B and E. Binaries uploaded, not described. Package regenerated, `ERRANDS.md` row.
+after Tracks B and E. Binaries uploaded, not described. Package regenerated, `ERRANDS.md` row. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §300: D14 installed above D13 (six items, each against the films of Tracks B and E at 1280 and 2560, reconciled against D12/D13 row by row); the package regenerated; E-14 opened. The five screenshots are NOT on disk (E-13) and join by digest when they land.**
 
 ## Yours
 
