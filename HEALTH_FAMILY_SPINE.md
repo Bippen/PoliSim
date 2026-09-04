@@ -78,3 +78,28 @@ The family reads three things the model already has: the health spending line pe
 The grammar is Design's (the ask is installed: the People page's society block or the ministry's card, a figure with its unit and source line, its band, its coupling arrows). This document holds the seeds and the couplings so the family lands on the drawn grammar in one pass; it draws nothing.
 
 **Next on this family, in order:** E-17 (the paste) → Design's board → the pass: seeds from the tables above re-fetched and digested, the coupling lines measured, the instruments on the grammar, the trajectory suite before and after, the record.
+
+---
+
+## 6. The spine extended (2026-09-05, later) — E-17 not yet pasted, the board not landed, so the build waits and the spine grows
+
+**The coupling for the three-country wait-time set, made explicit.** The wait instrument exists only where a series does (Sweden, Italy, Poland). For those three: *wait_t+1 = wait_t × (1 − k) + k × wait_target*, with *wait_target = wait_seed × (effectiveness_seed ÷ effectiveness_t)^e* - waits scale inversely with the portfolio's effectiveness (P5-C7: allocated ÷ requested × the minister's efficiency; until C7 lands, spending per head against its seed stands in for the ratio), *k* a reversion speed and *e* an elasticity, both `[AUTHORED-DRAFT]` with the line stated here and measured on the pass (the claim to CHECK: Poland's knee wait of 282 days against Sweden's 141 is roughly their health-spending-per-head gap on the OECD's own figures - if it is not, *e* is not 1). For Germany, France and the USA the instrument prints **ABSENT** with the reason, no wait is simulated, and the effectiveness channel reaches QUALITY directly for them (the next paragraph) so underfunding is still felt - a country without a series is not a country without a consequence.
+
+**The quality key for all six, the target form.** *treatable mortality_target = tm_seed × (spend-per-age-cost-unit_seed ÷ spend-per-age-cost-unit_t)^q × (efficiency_seed ÷ efficiency_t)^m*, drifting toward the target at a reversion speed; lower is better; *q* and *m* `[AUTHORED-DRAFT]`. The seed is the OECD figure per country (Sweden 45, France 46, Italy 51, Germany 63, the USA 92, Poland 106 per 100 000); the spend-per-age-cost-unit is the health line over `SpendingDriver.AgeCostIndex`, so an ageing cohort the money did not follow raises treatable mortality on its own - the demographic pressure P5-B2 removed from the lines comes back where it belongs, on the outcome. The supporting five-of-six rows (avoidable admissions, 30-day mortality) are readouts and move with the key by their seed ratios - never a second coupling.
+
+**Coverage, the target form.** *coverage_target = min(ceiling, coverage_seed × (spend-per-head_t ÷ spend-per-head_seed)^c)*, ceiling 100 for the five and the USA's own (its 91.8 is structural: the split between public and primary private is not a spending outcome); *c* `[AUTHORED-DRAFT]`. Retiree coverage is coverage on the 65+ cohort with the USA's Medicare rule.
+
+**The display rows, drafted so the board has something to correct** (the People page's society block, the health family; the ministry's card carries the same three figures and nothing else). Each row: the figure in its unit · the source line in caption mono · the band · the coupling arrows (5c's renderer) to what reaches it.
+
+| row | figure | unit | source line (caption mono) | band | arrows to |
+|---|---|---|---|---|---|
+| Coverage | 100 / 99.9 / 99.9 / 100 / 92.1 / 91.8 | % of population | OECD HEALTH_PROT · TPRIBASI · 2024–25 | the seed's figure to 100 | the health line (spending per head) |
+| … of which public | 100 / 99.9 / 99.9 / 100 / 92.1 / 39.2 | % of population | OECD HEALTH_PROT · COVGCMED | - | none (a derived readout) |
+| Retiree coverage | derived | % of the 65+ cohort | derived · F2 substrate × coverage | - | none |
+| Quality · treatable mortality | 45 / 63 / 46 / 51 / 106 / 92 | deaths per 100 000, age-standardised, lower is better | OECD HEALTH_STAT · TRTM · 2022–24 | 40 to 120 | the health line over the age-cost index; the minister's efficiency; effectiveness (C7) |
+| Waiting · cataract | 60 / absent / absent / 69 / 47 / absent | mean days, specialist to treatment | OECD HEALTH_PROC · WAIT_MEAN · CM131_138 · 2025 | 0 to 180 | effectiveness (C7) |
+| Waiting · knee replacement | 141 / absent / absent / 90 / 282 / absent | mean days | OECD HEALTH_PROC · WAIT_MEAN · CM8154 · 2025 | 0 to 400 | effectiveness (C7) |
+| Supporting · avoidable admissions | five of six | per 100 000 aged 15+ | OECD HCQO · DF_PC · 2022–23 | - | none (readouts, moved by the quality key) |
+| Supporting · 30-day mortality | five of six | per 100 admissions aged 45+ | OECD HCQO · DF_AC · 2022–23 | - | none |
+
+The order of the six figures in each row is Sweden, Germany, France, Italy, Poland, USA. "Absent" prints as the word, in the caption face, never as a zero or a dash the eye could read as a figure. Nothing here is built; the board corrects it, then the pass builds what the board says.

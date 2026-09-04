@@ -23180,3 +23180,18 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `bar143_fixtrack_RunAllBatch.log`, 32 of 32 clean (documents only).
 
+
+## 324. P5-C2 — THE SPINE EXTENDED, THE BUILD STILL WAITING: E-17 not pasted, no board landed; the wait-time coupling for the three-country set made explicit, the treatable-mortality key given its target form for all six, the display rows drafted so the board has something to correct (2026-09-05)
+
+**The instruction:** *"Health on Design's grammar, if E-17 has come back … If the board has not landed, do not build the family — extend the spine instead: the coupling proposed for the three-country wait-time set, the treatable-mortality quality key for all six, and the display rows drafted so the board has something to correct."*
+
+**Checked first:** the Design project's `uploads/` holds no `SEND_PACKAGE-8fd6accd` and no `CLAUDE_DESIGN_ASSET_REQUEST-5c6481d0` (the digests of the D15 package as installed at §317/§318), and the screens file's nav still ends at 8f - E-17 has not been pasted, so no board exists to build against. **The family is not built.** `HEALTH_FAMILY_SPINE.md` § 6 is the extension.
+
+**The wait-time coupling, three of six.** For Sweden, Italy and Poland (the reporters): *wait* reverts toward *wait_seed × (effectiveness_seed ÷ effectiveness)^e*, the portfolio's effectiveness being P5-C7's ratio (spending per head against its seed standing in until C7 exists), speed and elasticity `[AUTHORED-DRAFT]` with the claim to check on the pass (Poland's 282-day knee wait against Sweden's 141 against their spending-per-head gap). For Germany, France and the USA the instrument prints ABSENT with the reason, no wait is simulated, and the effectiveness channel reaches QUALITY directly so underfunding is still felt - a country without a series is not a country without a consequence.
+
+**The quality key, six of six.** Treatable mortality's target: *tm_seed × (spend-per-age-cost-unit_seed ÷ spend-per-age-cost-unit)^q × (efficiency_seed ÷ efficiency)^m*, lower is better; the spend per age-cost unit is the health line over `SpendingDriver.AgeCostIndex`, so an ageing cohort the money did not follow raises treatable mortality on its own - the demographic pressure P5-B2 removed from the lines returns where it belongs, on the outcome. The five-of-six supporting rows move with the key by their seed ratios and carry no coupling of their own. Coverage's target: *min(ceiling, coverage_seed × (spend-per-head ÷ seed)^c)*, the USA's ceiling its own.
+
+**The display rows, drafted** (eight rows for the People page's society block - coverage, its public share, retiree coverage, treatable mortality, cataract and knee waits, the two supporting readouts - each with figure, unit, source line in caption mono, band and arrows; the six figures in the order Sweden, Germany, France, Italy, Poland, USA; ABSENT printed as the word). The board corrects them; the pass builds what the board says.
+
+**Bar:** `bar144_p5c2_RunAllBatch.log`, 32 of 32 clean (a document).
+
