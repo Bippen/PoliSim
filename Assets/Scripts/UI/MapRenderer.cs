@@ -208,9 +208,10 @@ namespace PoliSim.UI
             }
 
             var nodeRects = new Dictionary<CountryId, Rect>();
+            Dictionary<CountryId, Vector2> placed = SnappedPositions(rect, countries, labelReserveWidth, labelStyle);   // board 7a: the snap and the west-push, once
             foreach (Country country in countries)
             {
-                Vector2 pixel = Snap(ToPixel(rect, CountryMapPositions[country.Id], labelReserveWidth), rect, labelStyle);
+                Vector2 pixel = placed[country.Id];
                 float diameter = nodeDiameters[country.Id];
                 // P5-2 (board 6b row 1): a chip, 26 x 20 at 1x, in the country's own outline at its centre - the node's size no longer
                 // says anything (the disc's diameter did); the chip carries the two-letter tag, the label beside it keeps the name.
@@ -300,10 +301,11 @@ namespace PoliSim.UI
                 }
             }
 
+            Dictionary<CountryId, Vector2> placed = SnappedPositions(rect, countries, labelReserveWidth, _lastLabelStyle);   // board 7a: the links follow a pushed chip
             foreach ((CountryId a, CountryId b, float volume) in pairs)
             {
-                Vector2 from = Snap(ToPixel(rect, CountryMapPositions[a], labelReserveWidth), rect, _lastLabelStyle);
-                Vector2 to = Snap(ToPixel(rect, CountryMapPositions[b], labelReserveWidth), rect, _lastLabelStyle);
+                Vector2 from = placed[a];
+                Vector2 to = placed[b];
                 float t = volume / maxVolume;
                 float thickness = Mathf.Lerp(MinLineThickness, MaxLineThickness, t);
                 float alpha = Mathf.Lerp(MinLineAlpha, MaxLineAlpha, t);
@@ -316,12 +318,70 @@ namespace PoliSim.UI
         /// <summary>Draws a thick line as a rotated, stretched solid-color rect (GUIUtility.RotateAroundPivot) rather than a per-pixel distance field - cheap enough to redraw every frame (trade topology is static, but this keeps the code simple and stays correct even if it weren't), and GUI.matrix is always restored immediately after so rotation never leaks into anything drawn afterward.</summary>
         private GUIStyle _lastLabelStyle;
 
-        /// <summary>P5-2: the 24-grid snap - the map's own units scale with the label face, so the Desk and the pair page snap alike.</summary>
-        private static Vector2 Snap(Vector2 pixel, Rect rect, GUIStyle labelStyle)
+        /// <summary>P5-2: the 24-grid snap - the map's own units scale with the label face, so the Desk and the pair page snap alike.
+        /// ⚠ Board 7a (2026-09-04): the pitch is the board's 24 at 1x. The first build halved it (a 12-unit snap) without saying so;
+        /// 7a's arithmetic - DE and PL in one row in adjacent cells - is for the 24 pitch, and the deviation is withdrawn rather than
+        /// carried: the board's cell column is the one the build now reads.</summary>
+        private static float SnapUnit(GUIStyle labelStyle) =>
+            Mathf.Max(4f, GridUnit * (labelStyle != null ? Mathf.Max(1f, labelStyle.fontSize) / 14f : 1f));
+
+        private static Vector2 Snap(Vector2 pixel, Rect rect, float unit) =>
+            new Vector2(rect.x + Mathf.Round((pixel.x - rect.x) / unit) * unit, rect.y + Mathf.Round((pixel.y - rect.y) / unit) * unit);
+
+        /// <summary>
+        /// Board 7a (2026-09-04, the one finding of placing the chips from the centroid table): a 26-wide chip on a 24 pitch overlaps its
+        /// horizontal neighbour by 2 px, and the table puts two centroids that close (DE-PL, 9.03 deg of longitude - under two cells on
+        /// any rect narrower than ~713 px). THE RULE, one and no new number: when two snapped chips share a row in adjacent cells, the
+        /// WESTERN chip moves one cell west; west always has room (the USA holds it, the pad is never breached), east would breach
+        /// the pad at PL. Repeated until no row holds an adjacent pair, so a push that lands beside a third chip pushes again. The
+        /// links read the same positions, so a pushed chip's link ends move with it. Logged once per rect size and label face, so
+        /// a film's log says which chip moved and where.
+        /// </summary>
+        private static Dictionary<CountryId, Vector2> SnappedPositions(Rect rect, IReadOnlyList<Country> countries, float labelReserveWidth, GUIStyle labelStyle)
         {
-            float unit = Mathf.Max(4f, GridUnit * (labelStyle != null ? Mathf.Max(1f, labelStyle.fontSize) / 14f : 1f) * 0.5f);
-            return new Vector2(rect.x + Mathf.Round((pixel.x - rect.x) / unit) * unit, rect.y + Mathf.Round((pixel.y - rect.y) / unit) * unit);
+            float unit = SnapUnit(labelStyle);
+            var positions = new Dictionary<CountryId, Vector2>();
+            foreach (Country country in countries)
+            {
+                if (!CountryMapPositions.ContainsKey(country.Id)) { continue; }
+                positions[country.Id] = Snap(ToPixel(rect, CountryMapPositions[country.Id], labelReserveWidth), rect, unit);
+            }
+
+            var pushed = new List<string>();
+            for (int pass = 0; pass < 8; pass++)
+            {
+                bool moved = false;
+                foreach (CountryId a in new List<CountryId>(positions.Keys))
+                {
+                    foreach (CountryId b in positions.Keys)
+                    {
+                        if (a == b) { continue; }
+                        Vector2 pa = positions[a], pb = positions[b];
+                        if (Mathf.Abs(pa.y - pb.y) > 0.5f) { continue; }                       // not the same row
+                        if (Mathf.Abs(Mathf.Abs(pa.x - pb.x) - unit) > 0.5f) { continue; }     // not adjacent cells
+                        CountryId western = pa.x < pb.x ? a : b;
+                        Vector2 before = positions[western];
+                        positions[western] = new Vector2(before.x - unit, before.y);
+                        pushed.Add($"{western} one cell west ({before.x - rect.x:0},{before.y - rect.y:0}) -> ({before.x - unit - rect.x:0},{before.y - rect.y:0}) beside {(western == a ? b : a)}");
+                        moved = true;
+                        break;
+                    }
+                    if (moved) { break; }
+                }
+                if (!moved) { break; }
+            }
+
+            string key = $"{rect.width:0}x{rect.height:0}/{unit:0}";
+            if (_loggedPlacements.Add(key))
+            {
+                var cells = new List<string>();
+                foreach (KeyValuePair<CountryId, Vector2> kv in positions) { cells.Add($"{kv.Key} ({kv.Value.x - rect.x:0},{kv.Value.y - rect.y:0})"); }
+                Debug.Log($"MAP: chips on the {unit:0}-pitch at {rect.width:0}x{rect.height:0} - {string.Join(", ", cells)}; west-push: {(pushed.Count == 0 ? "none" : string.Join("; ", pushed))}.");
+            }
+            return positions;
         }
+
+        private static readonly HashSet<string> _loggedPlacements = new HashSet<string>();
 
         private static GUIStyle _chipTagStyle;
 

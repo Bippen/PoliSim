@@ -2,6 +2,8 @@
 
 ⚠ **THIS IS A RETURN, NOT A NEW ASK.** Boards 6a (D13) and 6b (D12, seven of seven) were read and BUILT (`COMPLETED.md` §267–§274). Board 6b said every cell was drawn from the rows' text because no annex was in-project; this paste carries the files it named: the centroid table (`COUNTRY_CENTROIDS.md`, row 1), the ink harness print (`e12_partyink.log`, row 4 - printed AFTER the fork was ruled, see the ruling below), the stance diagnostic print (`bar50_p3a2_RunSimulationBatch.log`, row 5), and the films of the built screens at 1280 (`p5a_*`..`p5d_*`). **Binaries are uploaded, not described.** No row is asked again; where the build deviates from a board it says so in its section.
 
+⚠ **Boards 7a and 7b (2026-09-04) READ THIS PACKAGE (uploads/SEND_PACKAGE-b04bf825.md is this file by digest) and said what arrived: every markdown, and not one binary or log - the transport keeps `.md` and drops the rest.** So the ink harness print now travels as text too: `E12_PARTYINK_PRINT.md`, the print verbatim, so row 4's outcome is readable where the ruling already was. The films stay listed by digest for this side's record; nothing is asked of Design for them. Board 7a's one finding (DE and PL in adjacent cells, the western chip pushed one cell west) is BUILT (`COMPLETED.md` §283); the stale "one word" paragraph 7b named is gone from the tail.
+
 ⚠ **The D9 returns still owed travel with this package unchanged** — the derived mandate column, the two stat-icon files, and Elias's GO on the marks.
 
 ## What goes in — computed, not claimed
@@ -11,6 +13,7 @@
 | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 113748 | `9cfd86ae274e19beb16405cb52c128b304e1c35d8aee8a67dba8d691022e6cc1` |
 | `POLISIM_FEATURE_LIST.md` | 89294 | `9c8bc78f05092ce3a11c8de3c01512ff72faa8091ce15f4836afb0540cdf30e1` |
 | `COUNTRY_CENTROIDS.md` | 2744 | `350f448e74ec0c72acbbbde69718a08afd6d179b30a4838217d788306d6ddb79` |
+| `E12_PARTYINK_PRINT.md` | 6110 | `be675f08b0e0e2d6de4cbe7d624f53e087c5bcbf5c0e83adce694c6f660caf96` |
 | `e12_partyink.log` | 50876 | `2a2d3dde0406575e039a734e138469cf14c1ae62b6270f10faa8342b8006513b` |
 | `bar50_p3a2_RunSimulationBatch.log` | 335398 | `7606ce12f9da2f6d70137b87963880053fbb7ac751e896fe8707b4b9c3ce41d1` |
 | `bar92_hue_RunAllBatch.log` | 430445 | `a5118ffd5e302c5372fee82e8a0f652e11df739621adabe7898128671fac5022` |
@@ -143,12 +146,6 @@ the convention exactly rather than at a crop's mercy:
 Both go to `uploads/` under their own names. The two icons to be drawn are
 `icon_stat_youthunemployment` and `icon_stat_lifeexpectancy`, already reported as **GAPS not failures** by
 `StatIconCoverageCheck` (R-CL4) — which is what made them drawable.
-
-### The one word — D9 row 2's *"say GO"*
-
-Design will cut **seven Swedish party marks** on one word, then the other forty-five as a batch. ⚠ **This
-is Elias's and nothing here presumes it.** The vocabulary (5 silhouettes × 4 cuts × 2 fills) is ruled on
-the board; what waits is only the go-ahead.
 
 ---
 
