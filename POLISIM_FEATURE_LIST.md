@@ -625,6 +625,103 @@ The five screenshots into `PoliSim-captures\Elias Screenshots`. The E-12 paste i
 D14's when installed. Play again after Track A — the Budget's parliament changes.
 
 ---
+# PLAYTEST 5 (2026-09-05): rows for `POLISIM_FEATURE_LIST.md` — Elias's sheet, verbatim; the screenshot, the findings and the metric list are NOT in the paste and NOT on disk at this writing (ERRANDS E-16) and are recorded the day they land
+
+**The sheet's own preamble, verbatim:** *"Append as the next section; record the screenshot and the findings verbatim first (Elias's metric list included as reference material, marked as a foreign game's wiki, not a spec). Work down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and self-taken, one report at end of budget. Two BASELINE families never land in one pass."*
+
+⚠ **What did not arrive:** the sheet names one screenshot (the pie with its leaders, P5-A1's reason), a findings list, and Elias's metric list ("a foreign game's wiki, not a spec", P5-C1's input). The paste carried the rows only; no file newer than the sixteen screenshots is in `PoliSim-captures\Elias Screenshots`, and no findings or metric-list file is in the repo or the captures folder. They are recorded verbatim the day they land (E-16), as E-8's eleven and E-13's five were. P5-A1 proceeds on this side's own film of the pie (§309, `p6d_1280_04a_demographics_pie`: leaders converging on the label column, two crossing); P5-C1 waits for the list.
+
+## Track A — the pie (small, first)
+
+**P5-A1 — Leaders retire.** The list beside the pie is the legend: wedge inks keyed to its rows,
+large wedges labelled inside where the label fits, the rest carried by the list alone; no leader
+lines. Stated to Design as a deviation from 8a with the screenshot as the reason. *Done when:*
+filmed at 1280 with nine wedges and nothing crossing.
+
+## Track B — the budget as nominal lines that persist and index (BASELINE; the sheet's core)
+
+**P5-B1 — Measure the premise.** For every spending line and every tax line: what the dial sets
+today (a percentage delta? of what base?), what happens to it at the fiscal-year boundary
+("normalises after a year" — prove it), and what drives the line's value between player changes.
+Then the liveness audit at magnitude: for every slider, the model's response to a large step at
+one and five years (C-C10's leave-one-out machinery) — **live**, **live-but-negligible** (a stated
+threshold), or **dead**. *Done when:* the table is generated and in the record; nothing built yet.
+
+**P5-B2 — Nominal lines.** Each spending line holds a nominal amount in the country's unit,
+player-set, **persisting across years**. Between player changes it indexes to its drivers:
+inflation on every line; the demographic or cyclical driver where one exists — pensions to the
+65+ cohort, unemployment benefits to the unemployment rate, education to the 0–19 cohort, health
+to the age structure (all from F2's substrate). The player may pin a line (override the index) or
+set it. The share-of-GDP view becomes a derived readout beside the figure. **Single-book rider:**
+the stored kronor figure is the presented one. *Done when:* a line left untouched for five years
+follows its drivers exactly (asserted per driver), a pinned line does not, and the family is
+explained per country.
+
+**P5-B3 — Revenue that grows with its base.** Revenue per tax line = rate × base, where the base
+moves with nominal GDP, employment and — where F4's income dimension exists — the distribution.
+Prove that a tax rate held constant yields rising revenue in a growing economy and falling revenue
+in a recession, with the elasticity stated. *Done when:* asserted per country, same family as B2
+or its own — sheet it.
+
+**P5-B4 — Every slider moves something.** From B1's audit: each dead or negligible slider either
+gains a sourced transmission (basis attached) or is retired by name with the reason (a dial that
+does nothing is not kept as decoration). *Done when:* the liveness audit re-runs with no dead
+slider and every negligible one either lifted or retired.
+
+**P5-B5 — The Budget screen on the new lines.** The row shows the nominal figure, its drivers as
+small instruments, the delta against last year, and the projected next year; the slider sets the
+figure directly with the range captions (P4-B) rewritten for nominal ranges. The fiscal header's
+projected balance reads from the indexed lines. *Done when:* filmed rest and mid-drag, rects
+stable, every figure derived.
+
+## Track C — the society stats expansion (one family per session; each BASELINE on its own)
+
+**P5-C1 — The catalog, self-ruled.** One document mapping Elias's list to this game: for each
+metric — **keep** (with the sourced series per country named: OECD, Eurostat, PISA, WEF/EDGAR, the
+national offices), **map** (the US-specific term rewritten to its general form: Medicare/Medicaid →
+public vs private coverage and quality; illegal immigrant count → irregular migration where a
+sourced estimate exists, else absent), or **N/A** (counties, partisan military approval, anything
+the six-country frame cannot hold). Each kept metric gets its coupling (which dial or law reaches
+it, sourced or `[AUTHORED-DRAFT]` with its line), its display home, and its trajectory-family
+note. Order the families by gameplay impact. *Done when:* the catalog is in the record with every
+row sourced or N/A-with-reason; no metric built from this row.
+
+**P5-C2 — Health.** Coverage (public/private), quality, **wait times** (OECD), retiree coverage
+as the 65+ share of the cohort substrate; health spending reaches them through the coupling table.
+*Done when:* seeded for six, coupled, displayed as instruments, family explained.
+
+**P5-C3 — Education.** Academic score (PISA), graduation rate, attainment; education spending and
+the 0–19 cohort reach them. *Done when:* as C2.
+
+**P5-C4 — Infrastructure.** Road condition and congestion (WEF/OECD), energy mix by source;
+infrastructure spending and the sector dials reach them. *Done when:* as C2.
+
+**P5-C5 — Environment.** CO₂ per capita split electricity/transport (Eurostat/EDGAR); the energy
+mix and the sector dials reach it. *Done when:* as C2.
+
+**P5-C6 — Immigration and poverty depth.** Migration counts from the cohort substrate's own
+inflow term (already sourced); homelessness only where a comparable series exists (state the gap
+otherwise); poverty effect and per-capita income as derived readouts. *Done when:* as C2.
+
+**P5-C7 — Department effectiveness (the mechanic).** Each ministry submits a budget request
+derived from its drivers (B2's indexation is the request); effectiveness = allocated ÷ requested,
+scaled by the minister's **efficiency** attribute (P2-5), and effectiveness is what the coupling
+table reads for that portfolio's outcomes. The Cabinet and Budget screens show it. *Done when:*
+underfunding a ministry measurably degrades its outcomes through the minister, asserted, filmed.
+
+## Track D — the D15 ask
+
+**P5-D1 — Install D15**, reconciled: (1) the pie without leaders, stated as a deviation; (2) the
+Budget line row for nominal figures with drivers, delta and projection; (3) one instrument grammar
+for the society stats as they land, family by family; (4) the Cabinet's effectiveness readout.
+Annex: the screenshot, B5's films, C1's catalog. Binaries uploaded. Package regenerated, `ERRANDS`.
+
+## Yours
+
+The D14 return (E-15) if not yet sent; D15's paste when installed. Play after Track B — the budget
+you set will still be there next year, and it will have grown.
+
+---
 # P6 — DESIGN'S ANSWER TO D14, DRAWN 2026-09-04 (boards 8a–8f on `PoliSim v2 Screens.dc.html`): built the D11 way — against the boards, verified not assumed, deviations stated
 
 The boards were read from the decoded file (`get_file`, capped at 256 KiB; the six sit inside the cap). Design drew every one WITHOUT the films (the paste carries markdown only) and says so on each board; where a board's "IF THE BUILT … " clause names the thing to check, the row checks it first. Each row closes with a film and a bar. Nothing here is asked of Design again.
