@@ -91,6 +91,7 @@ namespace PoliSim.UI
         private GUIStyle _changeLabelStyle;
         private GUIStyle _pageLabelStyle;
         private GUIStyle _pageButtonStyle;
+        private GUIStyle _footStyle;   // 8b: the one caption line under the plot
 
         /// <summary>
         /// Draws this graph via GUILayout, stretching to whatever width the current layout group
@@ -125,7 +126,7 @@ namespace PoliSim.UI
 
             if (history == null || history.Count == 0)
             {
-                DrawTitleRow(title, null, higherIsBetter, labelStyle, deltaInPoints);
+                DrawHeadRow(title, null, higherIsBetter, labelStyle, deltaInPoints, 1);   // 8b: the head row carries the pager now
                 GUILayout.Label("No data yet - advance a year.", labelStyle);
 
                 // ⚠ THE PAGE ROW IS STILL DRAWN, and this is the same behaviour-5 defect as DrawPageRow's
@@ -139,7 +140,7 @@ namespace PoliSim.UI
                 // above the emitter rather than beside it.** Found by asking what the fix below did NOT
                 // cover, which is the same "what does this check not assert" question the verification
                 // note in CLAUDE.md is about.
-                DrawPageRow(1);
+                // 8b: the pager lives in the head row (DrawHeadRow above) - the disabled arrows still draw, as the note above requires.
                 return;
             }
 
@@ -157,8 +158,7 @@ namespace PoliSim.UI
 
             float? visibleProjectedValue = isMostRecentPage ? projectedValue : null;
 
-            DrawTitleRow(title, visibleWindow, higherIsBetter, labelStyle, deltaInPoints);
-            DrawPageRow(totalPages);
+            DrawHeadRow(title, visibleWindow, higherIsBetter, labelStyle, deltaInPoints, totalPages);
 
             if (NeedsRedraw(visibleWindow, visibleProjectedValue, thresholdValue))
             {
@@ -173,16 +173,18 @@ namespace PoliSim.UI
             Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture != null)
             {
-                GUI.DrawTexture(rect, _texture, ScaleMode.StretchToFill);
-                DrawAxisLabelOverlay(rect);
+                Rect plot = PlotRect(rect, labelStyle);   // 8b: the y-labels leave the plot for the gutter
+                GUI.DrawTexture(plot, _texture, ScaleMode.StretchToFill);
+                DrawAxisLabelOverlay(rect, plot);
                 if (thresholdValue.HasValue && !string.IsNullOrEmpty(thresholdLabel))
                 {
-                    DrawThresholdLabelOverlay(rect, thresholdValue.Value, thresholdLabel);
+                    DrawThresholdLabelOverlay(plot, thresholdValue.Value, thresholdLabel);
                 }
 
-                DrawShadowSeries(rect, shadowHistory, history);
-                DrawEnactmentMarkers(rect, enactmentPositions);
+                DrawShadowSeries(plot, shadowHistory, history);
+                DrawEnactmentMarkers(plot, enactmentPositions);
             }
+            DrawFootRow(totalPages, deltaInPoints, _lastMin < 0f && _lastMax > 0f);
         }
 
         /// <summary>
@@ -329,6 +331,10 @@ namespace PoliSim.UI
             _changeLabelStyle = new GUIStyle(referenceStyle) { wordWrap = false, fontStyle = FontStyle.Bold };
 
             _pageLabelStyle = new GUIStyle(referenceStyle) { fontSize = axisFontSize, wordWrap = false, fontStyle = FontStyle.Normal, alignment = TextAnchor.MiddleCenter };
+            _pageLabelStyle.alignment = TextAnchor.MiddleLeft;   // 8b: the head's title cell
+            _footStyle = new GUIStyle(referenceStyle) { fontSize = Mathf.Max(8, axisFontSize - 1), wordWrap = false, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
+            _footStyle.normal.textColor = PoliSimTheme.TextMuted;
+            if (PoliSimTheme.Document != null) { _footStyle.font = PoliSimTheme.Document; _pageLabelStyle.font = PoliSimTheme.Document; }
             // P5-3 (board 6b row 2, 2026-09-03): the pager in the idiom's paper face, not the skin's grey; the glyphs at the axis face
             // height (24 @1x - here the axis size + 10, which is 24 at the 1280 face) in the body serif, never the mono.
             _pageButtonStyle = UiPalette.BuildButtonStyle(new GUIStyle(referenceStyle) { fontSize = axisFontSize + 4, wordWrap = false, alignment = TextAnchor.MiddleCenter }, UiPalette.ButtonKind.Neutral);
@@ -337,33 +343,99 @@ namespace PoliSim.UI
         }
 
         /// <summary>Title plus a "first-to-last visible value" percentage change, computed straight from the CURRENT PAGE's own visible window (not the full retained history) - matches GameController's existing signed-delta number format (see FormatEstimate) rather than inventing a new one.</summary>
-        private void DrawTitleRow(string title, IReadOnlyList<float> visibleWindow, bool? higherIsBetter, GUIStyle labelStyle, bool deltaInPoints = false)
+        // ------------------------------------------------------------------------------------------
+        // P6-2 (board 8b, 2026-09-04): the graph composed ONCE as one instrument - head, gutter, foot - for every
+        // graph on the sheet. The head row is one line, three cells: the title at left in the caption face
+        // (WHAT · UNIT · SCOPE); the window's last value as the hero numeral with the window's delta beside it,
+        // direction-aware; the pager at the far right of the same line, the disabled arrow in the hairline ink. The
+        // head never shares a line with the plot. The y-labels leave the plot for a gutter at its left, right-aligned
+        // with a 4 px tick each; the plot narrows by the gutter and never shortens. The foot is one caption line: the
+        // window and pager legend at left, the delta's definition at right - so nothing beneath restates the head.
+        // ------------------------------------------------------------------------------------------
+        /// <summary>8b: the gutter at 1280 that carries the y-labels; scales with the label font.</summary>
+        private const float GutterAt1280 = 46f;
+        private const float TickWidth = 4f;
+
+        private Rect PlotRect(Rect rect, GUIStyle labelStyle)
+        {
+            float gutter = Mathf.Round(GutterAt1280 * labelStyle.fontSize / 14f);
+            return new Rect(rect.x + gutter, rect.y, Mathf.Max(10f, rect.width - gutter), rect.height);
+        }
+
+        private void DrawHeadRow(string title, IReadOnlyList<float> visibleWindow, bool? higherIsBetter, GUIStyle labelStyle, bool deltaInPoints, int totalPages)
         {
             GUILayout.BeginHorizontal();
-            if (!string.IsNullOrEmpty(title)) { GUILayout.Label(title, labelStyle); }   // P4-E2: the Riksbank page names its instrument above the graph; an empty title draws nothing
-
-            if (visibleWindow != null && visibleWindow.Count >= 2)
+            if (!string.IsNullOrEmpty(title)) { GUILayout.Label(title, _pageLabelStyle, GUILayout.ExpandWidth(false)); }   // P4-E2: an empty title draws nothing
+            GUILayout.FlexibleSpace();
+            if (visibleWindow != null && visibleWindow.Count >= 1)
             {
-                float first = visibleWindow[0];
                 float last = visibleWindow[visibleWindow.Count - 1];
-                // P3-C4 (2026-09-03): a percentage from a ZERO base is not a percentage - the old form printed ±100 % for any
-                // series that starts at zero (the trade balance from the seed read "−100.0%"). From a zero base the delta is
-                // the absolute change in the series' own unit, marked Δ; the percentage stays where the base is real.
-                if (deltaInPoints && Mathf.Abs(last - first) < 0.005f) { GUILayout.EndHorizontal(); return; }   // P4-E2: a flat rate window says nothing the figures beneath do not - the old head printed it as "0%"
-                bool zeroBase = Mathf.Approximately(first, 0f);
-                float change = zeroBase ? last - first : (last - first) / Mathf.Abs(first) * 100f;
-                string deltaText = deltaInPoints ? "Δ " + (last - first).ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture) + " pts over the window" : zeroBase
-                    ? "Δ " + (_moneyUnit.HasValue ? UiFormat.MoneyDelta(change, _moneyUnit.Value) : (change >= 0f ? "+" : "") + FormatAxisValue(change))
-                    : $"{change:+0.0;-0.0;0}%";
-
-                _changeLabelStyle.normal.textColor = higherIsBetter.HasValue
-                    ? UiPalette.GetDeltaColor(change, higherIsBetter.Value)
-                    : UiPalette.NeutralChangeColor;
-                GUILayout.Label(deltaText, _changeLabelStyle, GUILayout.ExpandWidth(false));
+                if (!string.IsNullOrEmpty(title))
+                {
+                    // The hero numeral: the window's last value, in the instrument's own unit. (The Riksbank page passes no
+                    // title and prints its own lead figure above the graph, so it takes the delta only.)
+                    _changeLabelStyle.normal.textColor = PoliSimTheme.TextPrimary;
+                    GUILayout.Label(deltaInPoints ? last.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : FormatValue(last), _changeLabelStyle, GUILayout.ExpandWidth(false));
+                }
+                if (visibleWindow.Count >= 2)
+                {
+                    float first = visibleWindow[0];
+                    // P3-C4 (2026-09-03): a percentage from a ZERO base is not a percentage - from a zero base the delta is the
+                    // absolute change in the series' own unit, marked Δ; the percentage stays where the base is real.
+                    // P4-E2: a rate's delta reads in points, and a flat window prints nothing at all.
+                    bool flatPoints = deltaInPoints && Mathf.Abs(last - first) < 0.005f;
+                    if (!flatPoints)
+                    {
+                        bool zeroBase = Mathf.Approximately(first, 0f);
+                        float change = zeroBase ? last - first : (last - first) / Mathf.Abs(first) * 100f;
+                        string deltaText = deltaInPoints ? "Δ " + (last - first).ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture) + " pts"
+                            : zeroBase
+                                ? "Δ " + (_moneyUnit.HasValue ? UiFormat.MoneyDelta(change, _moneyUnit.Value) : (change >= 0f ? "+" : "") + FormatAxisValue(change))
+                                : $"Δ {change:+0.0;-0.0;0}%";
+                        _changeLabelStyle.normal.textColor = higherIsBetter.HasValue
+                            ? UiPalette.GetDeltaColor(change, higherIsBetter.Value)
+                            : UiPalette.NeutralChangeColor;
+                        GUILayout.Space(6f);
+                        GUILayout.Label(deltaText, _changeLabelStyle, GUILayout.ExpandWidth(false));
+                    }
+                }
             }
-
+            GUILayout.Space(8f);
+            DrawPager(totalPages);
             GUILayout.EndHorizontal();
         }
+
+        private void DrawPager(int totalPages)
+        {
+            bool paged = totalPages > 1;
+            GUI.enabled = paged && _pageFromEnd < totalPages - 1;
+            if (PoliSimWidgets.Button("◀", _pageButtonStyle, GUILayout.Width(_pageButtonStyle.fixedHeight * 1.6f)))
+            {
+                _pageFromEnd++;
+            }
+            GUI.enabled = paged && _pageFromEnd > 0;
+            if (PoliSimWidgets.Button("▶", _pageButtonStyle, GUILayout.Width(_pageButtonStyle.fixedHeight * 1.6f)))
+            {
+                _pageFromEnd--;
+            }
+            GUI.enabled = true;
+        }
+
+        /// <summary>8b: one caption line under the plot - the window and the pager's legend at left, the delta's definition at right.</summary>
+        private void DrawFootRow(int totalPages, bool deltaInPoints, bool spansZero)
+        {
+            string window = totalPages <= 1
+                ? "THE WHOLE SERIES"
+                : _pageFromEnd == 0 ? $"LAST {WindowSize} YEARS" : $"{_pageFromEnd * WindowSize + 1}–{(_pageFromEnd + 1) * WindowSize} YEARS AGO";
+            string left = $"OLDER ◀ ▶ NEWER · {window}" + (spansZero ? " · DOTTED = ZERO" : "");
+            string right = "Δ = LAST − FIRST IN WINDOW · " + (deltaInPoints ? "POINTS" : _moneyUnit.HasValue ? "MONEY, NEVER %" : "% OF THE FIRST, MONEY FROM A ZERO BASE");
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(left, _footStyle, GUILayout.ExpandWidth(false));
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(right, _footStyle, GUILayout.ExpandWidth(false));
+            GUILayout.EndHorizontal();
+        }
+
 
         /// <summary>
         /// Prev/Next page buttons plus a "how far back" label.
@@ -383,45 +455,21 @@ namespace PoliSim.UI
         /// **The discipline was already here, one level too shallow** - the buttons inside were correctly
         /// disabled at the ends rather than omitted. The same treatment now covers the row itself.
         /// </summary>
-        private void DrawPageRow(int totalPages)
-        {
-            bool paged = totalPages > 1;
-
-            GUILayout.BeginHorizontal();
-            GUI.enabled = paged && _pageFromEnd < totalPages - 1;
-            if (PoliSimWidgets.Button("\u25C0", _pageButtonStyle, GUILayout.Width(_pageButtonStyle.fixedHeight * 1.6f)))
-            {
-                _pageFromEnd++;
-            }
-            GUI.enabled = true;
-
-            // Blank rather than "Last 50 years" on a single-page graph: the row is present for control
-            // stability, not to announce a pagination the player has no use for yet.
-            string rangeLabel = !paged
-                ? string.Empty
-                : _pageFromEnd == 0
-                    ? $"Last {WindowSize} years"
-                    : $"{_pageFromEnd * WindowSize + 1}-{(_pageFromEnd + 1) * WindowSize} years ago";
-            GUILayout.Label(rangeLabel, _pageLabelStyle, GUILayout.ExpandWidth(true));
-
-            GUI.enabled = paged && _pageFromEnd > 0;
-            if (PoliSimWidgets.Button("\u25B6", _pageButtonStyle, GUILayout.Width(_pageButtonStyle.fixedHeight * 1.6f)))
-            {
-                _pageFromEnd--;
-            }
-            GUI.enabled = true;
-            GUILayout.EndHorizontal();
-        }
 
         /// <summary>Min/max at top-left/bottom-left, plus the midpoint value at the existing midline gridline - all read straight from the same auto-scaled range Regenerate just computed (cached in _lastMin/_lastMax), so labels never drift out of sync with what the line is actually plotted against.</summary>
-        private void DrawAxisLabelOverlay(Rect rect)
+        private void DrawAxisLabelOverlay(Rect rect, Rect plot)
         {
+            // 8b: the labels sit in the gutter at the plot's left, right-aligned, a 4 px tick each; the plot's left edge is a hairline.
             float labelHeight = _axisLabelStyle.fontSize + 4f;
             float mid = (_lastMin + _lastMax) * 0.5f;
-
-            GUI.Label(new Rect(rect.x + 2f, rect.y, rect.width - 4f, labelHeight), FormatValue(_lastMax), _axisLabelStyle);
-            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height * 0.5f - labelHeight * 0.5f, rect.width - 4f, labelHeight), FormatValue(mid), _axisLabelStyle);
-            GUI.Label(new Rect(rect.x + 2f, rect.y + rect.height - labelHeight, rect.width - 4f, labelHeight), FormatValue(_lastMin), _axisLabelStyle);
+            float labelWidth = Mathf.Max(8f, plot.x - TickWidth - 2f - rect.x);
+            _axisLabelStyle.alignment = TextAnchor.MiddleRight;
+            foreach ((float value, float y) in new[] { (_lastMax, plot.y), (mid, plot.y + plot.height * 0.5f - labelHeight * 0.5f), (_lastMin, plot.y + plot.height - labelHeight) })
+            {
+                GUI.Label(new Rect(rect.x, y, labelWidth, labelHeight), FormatValue(value), _axisLabelStyle);
+                PoliSimTheme.Rule(new Rect(plot.x - TickWidth, y + labelHeight * 0.5f - 0.5f, TickWidth, 1f), PoliSimTheme.Hairline);
+            }
+            PoliSimTheme.Rule(new Rect(plot.x - 0.5f, plot.y, 1f, plot.height), PoliSimTheme.Hairline);
         }
 
         /// <summary>
@@ -854,9 +902,8 @@ namespace PoliSim.UI
             _moneyUnit = null;
             if (history == null || history.Count == 0)
             {
-                DrawTitleRow(title, null, null, labelStyle, deltaInPoints: true);
+                DrawHeadRow(title, null, null, labelStyle, true, 1);
                 GUILayout.Label("No data yet - advance a year.", labelStyle);
-                DrawPageRow(1);
                 return;
             }
 
@@ -869,8 +916,7 @@ namespace PoliSim.UI
             for (int i = startInclusive; i < endExclusive; i++) { visibleWindow.Add(history[i]); }
             IReadOnlyList<float> path = isMostRecentPage && projectedPath != null ? projectedPath : System.Array.Empty<float>();
 
-            DrawTitleRow(title, visibleWindow, null, labelStyle, deltaInPoints: true);
-            DrawPageRow(totalPages);
+            DrawHeadRow(title, visibleWindow, null, labelStyle, true, totalPages);
 
             if (NeedsPathRedraw(visibleWindow, path, referenceValue))
             {
@@ -882,13 +928,15 @@ namespace PoliSim.UI
             Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture != null)
             {
-                GUI.DrawTexture(rect, _texture, ScaleMode.StretchToFill);
-                DrawAxisLabelOverlay(rect);
+                Rect plot = PlotRect(rect, labelStyle);   // 8b
+                GUI.DrawTexture(plot, _texture, ScaleMode.StretchToFill);
+                DrawAxisLabelOverlay(rect, plot);
                 if (referenceValue.HasValue && !string.IsNullOrEmpty(referenceLabel))
                 {
-                    DrawThresholdLabelOverlay(rect, referenceValue.Value, referenceLabel);
+                    DrawThresholdLabelOverlay(plot, referenceValue.Value, referenceLabel);
                 }
             }
+            DrawFootRow(totalPages, true, _lastMin < 0f && _lastMax > 0f);
         }
 
         private bool NeedsPathRedraw(IReadOnlyList<float> history, IReadOnlyList<float> path, float? reference)

@@ -22939,3 +22939,19 @@ Five, as the sheet named them: the event card's empty state, the trade-volume ma
 **Films:** `p6d_1280` and `p6d_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `04_demographics` (the band bars with their baseline and scale) and `04a_demographics_pie` (the sector pie with its outside labels - a capture the driver gained for the row, scrolled to the rect the renderer laid the disc out in, `PieChartRenderer.LastArea`, after a first blind scroll landed on the spending lists beneath it).
 
 **Bar:** `bar117_p6b_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §309 and §310; the commits are split by file).
+
+## 310. P6-2 BUILT — BOARD 8b, THE TRADE GRAPH COMPOSED AS ONE INSTRUMENT: head, gutter, foot, once for every graph (2026-09-04, evening)
+
+**The board:** *"The head row is one line, three cells: the title at left in the caption mono; the figure - the window's last value - as the hero numeral with the Δ beside it in direction-aware ink; the pager at the far right end of the same line. A 46 px gutter at the plot's left carries the y-labels right-aligned with a 4 px tick each; the plot narrows by the gutter, it does not grow taller. Nothing is drawn over the plot except the dotted zero rule and the projection band. The foot is one caption line: the window and pager legend at left, the delta's definition at right. IF GraphRenderer ALREADY OWNS A HEAD ROW WITH A DIFFERENT HEIGHT, ITS HEIGHT WINS."*
+
+**Checked first:** the renderer owned a title row (title left, the window's change right) and a separate pager row (◀ · range label · ▶), and laid its three y-labels over the plot's left edge. Two rows became one; the labels left the plot.
+
+**Built** (`GraphRenderer`: `DrawHeadRow`, `DrawPager`, `PlotRect`, `DrawAxisLabelOverlay`, `DrawFootRow`): the head is one line - the title in the caption face at left, then the hero numeral (the window's last value in the instrument's unit, TextPrimary) with the Δ beside it in the direction's ink (the P3-C4 zero-base rule and the P4-E2 points rule kept: a rate's flat window prints nothing), then the two pager arrows at the far right, the disabled one in the skin's disabled face. The plot narrows by a 46 px gutter (@1280, ×s) whose three y-labels are right-aligned with a 4 px tick each; the plot's left edge is a hairline; the threshold label, the shadow series and the enactment markers draw on the plot rect. The foot is one caption line in TextMuted: *OLDER ◀ ▶ NEWER · LAST 50 YEARS · DOTTED = ZERO* (the last clause only where the scale spans zero) at left, *Δ = LAST − FIRST IN WINDOW · MONEY, NEVER %* (or POINTS, or the percentage rule) at right. Composed once: every dashboard graph, the trade graph and the Riksbank path draw it. The Riksbank page passes no title and prints its own lead figure, so its head carries the delta only, as 8c ruled.
+
+**A duplication found on the first film and cut:** the trade graph's caller put the current balance into the title, so the head read the figure twice - the title's (the state's balance) beside the hero numeral (the window's last quarter). The title is *Trade balance · goods and services* now; the numeral carries the figure.
+
+**Deviations, stated:** the x-axis year labels the board draws under the plot are not built - the renderer holds a series and a window, not a calendar; the foot's window legend says which years the window is. The head's height is the renderer's (the board's clause).
+
+**Films:** `p6d_1280` and `p6d_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `02b_statistics_international_deep` (the trade graph), `02a_statistics_domestic` (a dashboard graph), `07d_politics_federalreserve` (the rate path).
+
+**Bar:** `bar117_p6b_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §309 and §310; the commits are split by file).
