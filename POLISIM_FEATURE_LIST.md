@@ -645,7 +645,7 @@ today (a percentage delta? of what base?), what happens to it at the fiscal-year
 ("normalises after a year" — prove it), and what drives the line's value between player changes.
 Then the liveness audit at magnitude: for every slider, the model's response to a large step at
 one and five years (C-C10's leave-one-out machinery) — **live**, **live-but-negligible** (a stated
-threshold), or **dead**. *Done when:* the table is generated and in the record; nothing built yet.
+threshold), or **dead**. *Done when:* the table is generated and in the record; nothing built yet. **→ ✅ CLOSED 2026-09-05, `COMPLETED.md` §312: `BUDGET_PREMISE.md` generated - a dial sets a percentage of the current nominal amount and the amount PERSISTS (a +30 % step reads 1.30× for five years; the dial resets, not the line); every line grows at potential exactly and indexes to nothing else; revenue's elasticity to nominal GDP is exactly 1; 91 live, 2 negligible, 9 dead sliders at full range, the dead ones records not sliders.**
 
 **P5-B2 — Nominal lines.** Each spending line holds a nominal amount in the country's unit,
 player-set, **persisting across years**. Between player changes it indexes to its drivers:
