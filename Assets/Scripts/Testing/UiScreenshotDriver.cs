@@ -413,6 +413,57 @@ namespace PoliSim.Testing
                         AssertMapLabelSeparation(controller, stem);
                     }
 
+                    // P4-B2 (2026-09-04): the range caption at its three moments on two dials - the Minimum Wage on the
+                    // labour page and the first sector's Subsidy on the sectors page. The draft moves into a new band
+                    // with the presenter's clock at 0 (on-drag), then the clock alone advances to the hold's end (held)
+                    // and past the fade (faded); the row's geometry is compared at rest and with the caption showing.
+                    if (stem == "06a_policylaws_labormarket" || stem == "06c_policylaws_sectors")
+                    {
+                        var restGeometry = new Dictionary<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)>(LedgerRow.GeometryByRow);
+                        RangeCaptionPresenter.Reset();
+                        RangeCaptionPresenter.ClockOverride = 0f;
+                        object before = null;
+                        SectorType firstSector = SectorType.Manufacturing;
+                        if (stem == "06a_policylaws_labormarket")
+                        {
+                            // Paid Family Leave, not the minimum wage: Sweden's wage floor is collective bargaining ("none"), so
+                            // that dial is drawn disabled and a caption never shows on it - the first film of this block proved it.
+                            var field = controller.GetType().GetField("_paidFamilyLeaveWeeksInput", BindingFlags.Instance | BindingFlags.NonPublic);
+                            before = field?.GetValue(controller);
+                            field?.SetValue(controller, (float?)60f);
+                            ScrollBy(controller, Screen.height * 0.45f);   // the rows sit under the bill card; a fraction of the height, since the card scales with the face
+                        }
+                        else
+                        {
+                            var inputs = controller.GetType().GetField("_sectorSubsidyInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SectorType, float>;
+                            if (inputs != null) { before = inputs.TryGetValue(firstSector, out float b0) ? (object)b0 : null; inputs[firstSector] = 80f; }
+                            ScrollBy(controller, Screen.height * 0.6f);   // past the sectors bill card to the first sector's dials (a fraction of the height: the card scales with the face)
+                        }
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(stem + "_caption_drag");
+                        RangeCaptionPresenter.ClockOverride = RangeCaptionPresenter.HoldSeconds * 0.9f;
+                        yield return Settle();
+                        yield return Capture(stem + "_caption_held");
+                        RangeCaptionPresenter.ClockOverride = RangeCaptionPresenter.HoldSeconds + RangeCaptionPresenter.FadeSeconds + 1f;
+                        yield return Settle();
+                        yield return Capture(stem + "_caption_faded");
+                        AssertLedgerGeometryStable(restGeometry, stem);
+                        Debug.Log($"SHOT: P4-B2 - the range caption filmed at 0 s (on-drag), {RangeCaptionPresenter.HoldSeconds * 0.9f:0.0} s (held) and {RangeCaptionPresenter.HoldSeconds + RangeCaptionPresenter.FadeSeconds + 1f:0.0} s (faded) on {stem}; the row's geometry compared at rest and showing.");
+                        if (stem == "06a_policylaws_labormarket")
+                        {
+                            controller.GetType().GetField("_paidFamilyLeaveWeeksInput", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(controller, before);
+                        }
+                        else
+                        {
+                            var inputs = controller.GetType().GetField("_sectorSubsidyInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SectorType, float>;
+                            if (inputs != null) { if (before is float b1) { inputs[firstSector] = b1; } else { inputs.Remove(firstSector); } }
+                        }
+                        RangeCaptionPresenter.ClockOverride = null;
+                        RangeCaptionPresenter.Reset();
+                        yield return Settle();
+                    }
+
                     // P4-1 (2026-09-03): the readout pair on the TAX ledger, where the rows sit above the fold - the Income Tax
                     // draft moved +5 points, the same frame again, the geometry compared, the draft put back.
                     if (stem == "05a_budget_tax")

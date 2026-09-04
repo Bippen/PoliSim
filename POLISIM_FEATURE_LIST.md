@@ -546,12 +546,12 @@ bands, each with a name and one dry line, **authored from the dial's measured ef
 range** — the writer reads the effect table first and no caption contradicts what the model does
 there. Tone: the desk's own civil-service deadpan. Tagged `[AUTHORED]` as game fiction;
 `MetaTextCheck` exempts the catalog by name so satire is not read as meta-text. *Done when:* every
-dial has ten bands and a harness asserts each band's direction agrees with the dial's effect sign.
+dial has ten bands and a harness asserts each band's direction agrees with the dial's effect sign. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §288: `RangeCaptions` - fourteen dials (DialLabelCheck's rows), ten bands each, 140 [AUTHORED] lines authored from `LaborCouplings.All` and the sector sensitivities; `RangeCaptionCheck` on the bar holds every band's sign to the model's own, re-derived; `MetaTextCheck` exempts the file by name.**
 
 **P4-B2 — The presentation.** The caption appears on drag beneath the slider, holds, and fades
 over a few seconds; moving again brings it back. Time-based alpha in IMGUI, deterministic under
 the film harness (staged at three moments: on-drag, held, faded). *Done when:* filmed at all three
-on two dials, guards silent, rect stable (the P4-1 invariant — the caption never reflows the row).
+on two dials, guards silent, rect stable (the P4-1 invariant — the caption never reflows the row). **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §289: `RangeCaptionPresenter` (hold 1.5 s, fade 2.5 s, the harness's clock) and the caption drawn into the row's own reserved band; filmed at the three moments on the Minimum Wage and Manufacturing's Subsidy at 1280 and 2560, the ledger geometry asserted identical at rest and showing.**
 
 **P4-B3 — Sector dials gain cost and impact.** The effects-arrow grammar (5c) and a cost line on
 every Economic Sectors slider, the way Budget's have them. *Done when:* filmed, every arrow traces

@@ -3737,7 +3737,7 @@ namespace PoliSim.UI
         /// Emits exactly one control, always, enabled or not.
         /// </summary>
         private float DrawDialRow(string name, float standing, float draft, float min, float max,
-            string format, string suffix, string trailing, bool interactive = true, float tickStep = 0f)
+            string format, string suffix, string trailing, bool interactive = true, float tickStep = 0f, string captionKey = null)
         {
             // P5-1 (board 6a, 2026-09-03): the family's track, ticks, knob, pencil slot and end-names on every dial. The board's
             // verdict and action cells are NOT drawn on a ledger with no bill to judge and no action: on film they cost the
@@ -3745,12 +3745,43 @@ namespace PoliSim.UI
             // drawn where the whole ledger lacks the column - the deviation is stated in COMPLETED.md section 267.
             Rect ledgerRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
             bool changed = interactive && !Mathf.Approximately(standing, draft);
-            return LedgerRow.Draw(
+            float result = LedgerRow.Draw(
                 ledgerRect, name, standing, draft, min, max,
                 interactive ? standing.ToString(format, CultureInfo.InvariantCulture) + suffix : "n/a",
                 changed ? draft.ToString(format, CultureInfo.InvariantCulture) + suffix : null,
                 trailing, interactive,
                 _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, tickStep: tickStep);
+            if (interactive && Event.current.type == EventType.Repaint) { DrawRangeCaption(name, captionKey ?? name, result, standing, min, max); }
+            return result;
+        }
+
+        /// <summary>
+        /// P4-B2 (2026-09-04): the range caption - the draft's band from the catalog (P4-B1), drawn into the caption band
+        /// beneath the track the row just painted, at the presenter's alpha (held, then fading). The band is the row's
+        /// own reserved band (the end-names' band, P5-1), so the caption never reflows the row - the P4-1 invariant by
+        /// construction; where the row draws end-names the caption keeps to the middle three fifths between them.
+        /// A dial with no catalog entry draws nothing (RangeCaptionCheck fails the bar on one).
+        /// </summary>
+        private void DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max)
+        {
+            if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return; }
+            int band = RangeCaptions.BandIndex(draft, min, max);
+            // The presenter's key is the ROW's identity, not the dial's name: eight sectors draw a "Subsidy" row each, and
+            // the first film lit every one of them when one moved.
+            float alpha = RangeCaptionPresenter.Alpha(captionKey, band, !Mathf.Approximately(draft, standing));
+            if (alpha <= 0f) { return; }
+            Rect area = LedgerRow.LastCaptionBand;
+            if (LedgerRow.LastHadEndNames) { area = new Rect(area.x + area.width * 0.2f, area.y, area.width * 0.6f, area.height); }
+            RangeCaptions.Band b = dial.Bands[band];
+            // Lower-centred in the band: the knob's lower half hangs into the band's top, and the first film drew the
+            // caption's middle under it.
+            GUIStyle caption = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { alignment = TextAnchor.LowerCenter, fontStyle = FontStyle.Normal };
+            Color ink = PoliSimTheme.TextSecondary;
+            ink.a *= alpha;
+            Color previous = GUI.color;
+            GUI.color = new Color(1f, 1f, 1f, alpha);
+            PoliSimWidgets.MeasuredLabel(area, b.Name.ToUpperInvariant() + " · " + b.Line, Inked(caption, ink));
+            GUI.color = previous;
         }
 
         /// <summary>
@@ -3836,6 +3867,7 @@ namespace PoliSim.UI
                 $"Dependency Ratio {demographicState.DependencyRatio:F1}",
                 _labelStyle);
 
+            DrawTierBreakdownAfterRows();   // P4-B2: the labour bill's breakdown, after the rows
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
@@ -3861,7 +3893,26 @@ namespace PoliSim.UI
 
         private void DrawLaborLiveEstimate()
         {
-            DrawBillLiveEstimate(ParliamentSystem.GetLaborBillConcern(_playerCountry, BuildLaborBillFromDrafts()));   // P3-A3: the draft's concern
+            // P4-B2 (2026-09-04): the breakdown draws AFTER the dial rows (DrawTierBreakdownAfterRows), the Budget's own
+            // P3-C1 shape - in the card above them it appeared when a draft became contested and pushed every row 367 px
+            // down the sheet, which the geometry guard read as five rows MOVED on the first caption film.
+            _tierConcernForBreakdown = ParliamentSystem.GetLaborBillConcern(_playerCountry, BuildLaborBillFromDrafts());   // P3-A3: the draft's concern
+            DrawBillLiveEstimate(_tierConcernForBreakdown, withBreakdown: false);
+        }
+
+        /// <summary>P4-B2: the concern the tier's card scored this pass, for the breakdown drawn after the rows.</summary>
+        private BillConcern _tierConcernForBreakdown;
+
+        /// <summary>P4-B2: the breakdown beneath a tier's dial rows - the card above keeps the count and the seat map; the rows never move when a draft becomes contested.</summary>
+        private void DrawTierBreakdownAfterRows()
+        {
+            if (_tierConcernForBreakdown != null && !_tierConcernForBreakdown.IsEmpty)
+            {
+                GUILayout.Space(8f);
+                // The Budget's own width term for its breakdown (DrawPolicyPreview): a share of the screen, not a measured
+                // rect, so the breakdown's width is the same on every event and never a Layout-pass dummy.
+                DrawStanceBreakdown(_tierConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(Screen.width * 0.6f, _boxStyle)));
+            }
         }
 
         /// <summary>
@@ -9242,6 +9293,7 @@ namespace PoliSim.UI
                 DrawTradePartnerRow(link, partner, maxVolume);
                 GUILayout.Space(10f);
             }
+            DrawTierBreakdownAfterRows();   // P4-B2: the trade bill's breakdown, after the base rate and the partner rows
         }
 
         private void DrawTradePartnerRow(TradePartner link, Country partner, float maxVolume)
@@ -9411,7 +9463,8 @@ namespace PoliSim.UI
         {
             // C-B3 / R-CL2: the tariff draft is weighed on the OPENNESS axis, so this estimate and the
             // chamber that will actually vote on it cannot disagree about which axis was used.
-            DrawBillLiveEstimate(ParliamentSystem.GetTradeBillConcern(_playerCountry, BuildTradeBillFromDrafts(), _world));   // P3-A3: the tariff on openness, inside the concern
+            _tierConcernForBreakdown = ParliamentSystem.GetTradeBillConcern(_playerCountry, BuildTradeBillFromDrafts(), _world);
+            DrawBillLiveEstimate(_tierConcernForBreakdown, withBreakdown: false);   // P3-A3: the tariff on openness; P4-B2: the breakdown after the partner rows, inside the concern
         }
 
         /// <summary>
@@ -10308,6 +10361,7 @@ namespace PoliSim.UI
                 GUILayout.Space(10f);
             }
 
+            DrawTierBreakdownAfterRows();   // P4-B2: the sectors bill's breakdown, after the forty rows
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
@@ -10360,23 +10414,23 @@ namespace PoliSim.UI
             // into eights, and a reader scans headers rather than rows.
             _sectorSubsidyInputs[sector.Type] = DrawDialRow("Subsidy",
                 sector.SubsidyLevel, GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: sector.Type + "/Subsidy");
 
             _sectorRegulationInputs[sector.Type] = DrawDialRow("Regulation",
                 sector.RegulationLevel, GetSectorRegulationInput(sector.Type, sector.RegulationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 light - 100 heavy");
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 light - 100 heavy", captionKey: sector.Type + "/Regulation");
 
             _sectorTaxCreditInputs[sector.Type] = DrawDialRow("Tax Credits",
                 sector.TaxCreditLevel, GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: sector.Type + "/Tax Credits");
 
             _sectorResearchGrantsInputs[sector.Type] = DrawDialRow("Research Grants",
                 sector.ResearchGrantsLevel, GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null);
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: sector.Type + "/Research Grants");
 
             _sectorDeregulationInputs[sector.Type] = DrawDialRow("Nationalization / Deregulation",   // P3-C3: one axis, both ends in the trailing's order
                 sector.DeregulationNationalizationLevel, GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated");
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated", captionKey: sector.Type + "/Deregulation");
         }
 
         /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceSectorBill/GetPendingSectorBill).</summary>
@@ -10401,7 +10455,8 @@ namespace PoliSim.UI
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern.</summary>
         private void DrawSectorLiveEstimate()
         {
-            DrawBillLiveEstimate(ParliamentSystem.GetSectorBillConcern(_playerCountry, BuildSectorBillFromDrafts()));   // P3-A3
+            _tierConcernForBreakdown = ParliamentSystem.GetSectorBillConcern(_playerCountry, BuildSectorBillFromDrafts());   // P3-A3
+            DrawBillLiveEstimate(_tierConcernForBreakdown, withBreakdown: false);   // P4-B2: the breakdown after the rows
         }
 
         /// <summary>Bundles every current Sector draft, across every SectorType, into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>

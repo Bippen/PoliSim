@@ -212,6 +212,11 @@ namespace PoliSim.UI
             {
                 DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive, tickStep);
                 DrawEndNames(trackRect, trailingText, figureStyle, scale, interactive);
+                // P4-B2: the last row's track and scale, for a caller that draws a range caption into the caption band
+                // beneath it (the band DrawEndNames uses) after this returns - read on the same Repaint, never stored.
+                LastTrackRect = trackRect;
+                LastScale = scale;
+                LastHadEndNames = IsEndNames(trailingText);
             }
 
             // ALWAYS emitted, enabled or not - see the control-ID note above.
@@ -490,6 +495,29 @@ namespace PoliSim.UI
         private static int _endCaptionSourceSize = -1;
 
         /// <summary>The end-names under the track ends in caption mono (board 6a: 7.5 board px - here 0.6 of the row's figure size, floored at 8), left end left-aligned, right end right-aligned; furniture, never on the track.</summary>
+        /// <summary>P4-B2: the track rect the last <see cref="Draw"/> painted on this Repaint, and its scale, so the caller can place a range caption in the caption band beneath it.</summary>
+        public static Rect LastTrackRect;
+        public static float LastScale = 1f;
+        /// <summary>P4-B2: whether the last row drew end-names in its band (the caption then keeps clear of the band's two ends).</summary>
+        public static bool LastHadEndNames;
+
+        /// <summary>P4-B2: the caption band beneath the last row's track - the rect <see cref="DrawEndNames"/> writes its two ends into.</summary>
+        public static Rect LastCaptionBand => new Rect(LastTrackRect.x, LastTrackRect.yMax + 1f * LastScale, LastTrackRect.width, RefEndCaption * LastScale);
+
+        /// <summary>P4-B2: the caption face the band is set in (the end-names' own), for a range caption drawn into the same band.</summary>
+        public static GUIStyle CaptionStyle(GUIStyle figureStyle)
+        {
+            int size = Mathf.Max(8, Mathf.RoundToInt(figureStyle.fontSize * 0.6f));
+            if (_endCaptionStyle == null || _endCaptionSourceSize != size)
+            {
+                _endCaptionStyle = new GUIStyle(figureStyle) { fontSize = size, wordWrap = false, fontStyle = FontStyle.Normal };
+                if (PoliSimTheme.Document != null) { _endCaptionStyle.font = PoliSimTheme.Document; }
+                _endCaptionStyle.padding = new RectOffset(0, 0, 0, 0);
+                _endCaptionSourceSize = size;
+            }
+            return _endCaptionStyle;
+        }
+
         private static void DrawEndNames(Rect track, string trailingText, GUIStyle figureStyle, float scale, bool interactive)
         {
             if (!IsEndNames(trailingText)) { return; }
