@@ -23073,3 +23073,20 @@ The lines' share of GDP climbs at the inflation rate from year one - and the rea
 
 **Bar:** `bar133_p5d1_RunAllBatch.log`, 32 of 32 clean (documents only: the request doc, the package, the errands, this record).
 
+
+## 318. E-16 DISCHARGED — the Playtest 5 annex read, the pie screenshot selected by time and verified by content and bound to P5-A1; the D15 package carries both by digest (2026-09-05)
+
+**The annex as a file, this time.** `PLAYTEST5_ANNEX_E16.md` sits at the repo root (5 297 bytes): §1 Elias's findings verbatim (Statistics "looks weird with the pie chart and arrows"; the Budget: figures on the sliders instead of percentages that normalise after a year, cost and revenue that appreciate with growth, inflation, unemployment "and other factors", every slider with an impact, more welfare factors "such as healthcare quality wait times"); §2 the metric list verbatim, marked as it was asked to be marked - a foreign game's wiki, US-centric, breadth not content; §3 the mapping rules already ruled (keep where a sourced six-country series exists; map US terms to their general form; N/A with reason for counties, partisan approval, city and school property taxes; tax brackets behind F4; department effectiveness lifted whole as a mechanic; the order by gameplay impact: health → education → infrastructure → environment → immigration and poverty depth → effectiveness). Written into the repo because "chat attachments have failed to reach disk four times this month" - which is also why P5-C1 starts from §3 rather than from scratch. Read against what Track B built: §1's Budget paragraph is P5-B2/B4/B5 as delivered (§314–§316), with one correction the record already carries - cost and revenue appreciate with the DRIVERS and, for revenue, with GDP; not with inflation, because the book is in constant prices (§314; P5-B6 sheeted).
+
+**Selected by modification time, not by name.** Seventeen PNGs in `G:\UNITY\Projects\PoliSim-captures\Elias Screenshots`; the sixteen bound in §264 and §303 are dated 2026-09-03 and 2026-09-04 11:00–11:01; one is newer: `PIECHART.png`, placed 2026-09-04 19:37:06.
+
+**Verified by content, the E-8 way:** the PNG signature `89 50 4E 47 0D 0A 1A 0A`; every chunk CRC good and the IDAT stream inflating to 560 383 bytes (`pngcheck.ps1`); a `Zone.Identifier` stream with ZoneId 3 and `HostUrl=https://ctrl.vi/`, the same origin as the sixteen; 423×331 px; sha256 `9c5e91e3ae304205aa96622f45641cfc667d8794cef574a3671d4ac99dc54975`.
+
+| file | px | sha256 (16) | placed | what it shows | the finding it is bound to |
+|---|---|---|---|---|---|
+| `PIECHART.png` | 423×331 | `9c5e91e3ae304205` | 2026-09-04 19:37:06 | the Statistics employment pie as 8a built it (§309): nine wedges from 12 o'clock, nine outside labels in one column at the disc's right (Manufacturing 11,0 · 30 % … Energy 0,8 · 2 %), nine leaders converging on that column, the lower ones crossing on the way; the source line cut off beneath | **P5-A1** (§313) - the reason the leaders retired: "a leader that crosses says less than no leader" (Design's sighting note accepted it in advance); the legend keyed by swatch and the ≥40° inside label are the label rule now (D15 item 1, the read-back) |
+
+**Recorded where the sheet asked.** The Playtest 5 section of `POLISIM_FEATURE_LIST.md` now points to the annex and the screenshot where it said they had not arrived; D15's annex line 1 reads "on disk, by digest" instead of "not on disk"; `SEND_PACKAGE.md` regenerated with `PLAYTEST5_ANNEX_E16.md` and `Elias Screenshots/PIECHART.png` in the digest tables; `ERRANDS.md` E-16 ✅ DONE.
+
+**Bar:** `bar134_e16_RunAllBatch.log`, 32 of 32 clean (documents and the package only).
+

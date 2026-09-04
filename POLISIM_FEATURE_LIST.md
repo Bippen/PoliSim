@@ -629,6 +629,8 @@ D14's when installed. Play again after Track A — the Budget's parliament chang
 
 **The sheet's own preamble, verbatim:** *"Append as the next section; record the screenshot and the findings verbatim first (Elias's metric list included as reference material, marked as a foreign game's wiki, not a spec). Work down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and self-taken, one report at end of budget. Two BASELINE families never land in one pass."*
 
+**→ ✅ E-16 LANDED 2026-09-05 (`COMPLETED.md` §318):** the findings (§1) and the metric list (§2) are in `PLAYTEST5_ANNEX_E16.md` at the repo root, verbatim, with the mapping rules P5-C1 starts from (§3); the screenshot is `Elias Screenshots/PIECHART.png` (423×331, sha256 `9c5e91e3ae304205…`, placed 2026-09-04 19:37), selected by time, verified by content and bound to P5-A1 - the nine leaders converging on one column, two crossing. Both are in the D15 package by digest. The paragraph beneath is kept as it stood.
+
 ⚠ **What did not arrive:** the sheet names one screenshot (the pie with its leaders, P5-A1's reason), a findings list, and Elias's metric list ("a foreign game's wiki, not a spec", P5-C1's input). The paste carried the rows only; no file newer than the sixteen screenshots is in `PoliSim-captures\Elias Screenshots`, and no findings or metric-list file is in the repo or the captures folder. They are recorded verbatim the day they land (E-16), as E-8's eleven and E-13's five were. P5-A1 proceeds on this side's own film of the pie (§309, `p6d_1280_04a_demographics_pie`: leaders converging on the label column, two crossing); P5-C1 waits for the list.
 
 ## Track A — the pie (small, first)

@@ -850,7 +850,7 @@ Prep / midway / verdict are all filmed at four widths if you want to look before
 
 ### The annex — one set
 
-1. **The Playtest 5 screenshot, findings and metric list** - ⚠ NOT on disk (E-16 open): the sheet names them as its annex and they did not arrive; they go in by digest the day they land, as E-13's did.
+1. **The Playtest 5 screenshot, findings and metric list** - ✅ on disk 2026-09-05 (E-16 done, `COMPLETED.md` §318): `PLAYTEST5_ANNEX_E16.md` at the repo root (the findings and the list verbatim, the mapping rules), and `Elias Screenshots/PIECHART.png` (423×331) - the employment pie as 8a built it, nine leaders converging on one column and crossing, the reason for item 1; both in the package by digest.
 2. **The films after Track A** - the People page and the pie ladder at 1280 and 2560 (`p5a_*`, `p5al_1280`), by digest.
 3. **The films after Track B** - the fund page (`p5b4_*`, P5-B4) and the spending page at rest, mid-drag, rows and rows mid-drag (`p5b5_*`, P5-B5) at 1280 and 2560, by digest.
 4. **`BUDGET_PREMISE.md`** - the generated liveness audit (93 live, 0 dead, 33 not armable with the reason per row, §315); Design is not asked to read it. **`COMPLETED.md` §312–§316** for the records; §314 carries the constant-price finding and the sixty-year table.

@@ -1,16 +1,18 @@
-# The send package — regenerated 2026-09-05: D15, four items from Playtest 5 (§ ⭐ D15 at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`; D14 answered and built beneath it); paste-and-glance; **sending is Elias's**
+# The send package — regenerated 2026-09-05 (with the E-16 annex): D15, four items from Playtest 5 (§ ⭐ D15 at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`; D14 answered and built beneath it); paste-and-glance; **sending is Elias's**
 
-⚠ **THIS IS A NEW ASK.** D15 installs P5-D1's four items - the pie without leaders stated as a deviation from 8a (read-back only; Design accepted it in advance in its sighting note), the Budget line row for a figure with the driver, NEXT and the delta in the caption band (6a's row re-purposed - the board the note says it will want), one instrument grammar for the society stats drawn once on health so C3–C6 inherit it, and the Cabinet's effectiveness readout. D14's return was read (the board's note of 2026-09-04); nothing is asked twice. The Playtest 5 screenshot, findings and metric list (E-16) are NOT in this package: they are not on disk.
+⚠ **THIS IS A NEW ASK.** D15 installs P5-D1's four items - the pie without leaders stated as a deviation from 8a (read-back only; Design accepted it in advance in its sighting note), the Budget line row for a figure with the driver, NEXT and the delta in the caption band (6a's row re-purposed - the board the note says it will want), one instrument grammar for the society stats drawn once on health so C3–C6 inherit it, and the Cabinet's effectiveness readout. D14's return was read (the board's note of 2026-09-04); nothing is asked twice. The Playtest 5 annex (E-16) is in: `PLAYTEST5_ANNEX_E16.md` and the pie screenshot `Elias Screenshots/PIECHART.png`, by digest (§318).
 
 ## What goes in — computed, not claimed
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 131694 | `d3ed04d087fa0f1c67d93977eedb043af0ca287b14f84fd1c17d81ef40ccb4d3` |
-| `POLISIM_FEATURE_LIST.md` | 123067 | `218d8d582a5b3694670b38c940c036c672feffc09e9130f5bddad6058241687d` |
-| `COMPLETED.md` | 2166996 | `3bb2d87667ef7fb08d0e8f692684234fe5c414859b3887bc5f710b6da53855a1` |
-| `ERRANDS.md` | 15158 | `6648653a1c8a3a29bb352877672dbfa7029fa37f28d26924fb7722409c18d98a` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 131899 | `5c6481d0880d380bf7873451823ccd652ddb956255017c4bf27559e6ca08bb61` |
+| `POLISIM_FEATURE_LIST.md` | 123596 | `b7d21727262966c27d69b3585042c3429a270e4f7295bd9370edbed92f0ef2ef` |
+| `COMPLETED.md` | 2170503 | `fa186532ad5b60921b3c7c1564306f60637d33e6dd00642656115830a146b41f` |
+| `ERRANDS.md` | 15388 | `2f4588271e7d8f1a7dccedae4704896a5e86cddd3c95f8b78f64c0589cc87732` |
 | `BUDGET_PREMISE.md` | 22304 | `a1de8d362d7e5dfc71a45935a730069c0249d65bb64246276d65fbdf8f5efe90` |
+| `PLAYTEST5_ANNEX_E16.md` | 5297 | `72b88de5cbd742ce6eda67064027f7839c7708e9bfe59c7de0250f3a3012ae04` |
+| `Elias Screenshots/PIECHART.png` | 103906 | `9c5e91e3ae304205aa96622f45641cfc667d8794cef574a3671d4ac99dc54975` |
 | `logs/bar122_p5b2_RunAllBatch.log` | 442780 | `2e259de74c8e236c2d96191a28ecec69c6cdc07fbf256d200ba1f0c59f5c8ffd` |
 | `logs/bar121_p5b2_RunSimulationBatch.log` | 375607 | `0ce1e405a8654e12ab83484365ea45f65b580c576ccfb95870cd416f6ec8ab8f` |
 | `logs/bar125_p5b4_RunAllBatch.log` | 459314 | `786946500a2fc806e35727f4c8458326a5415db74aac94eb6109baad831f01d3` |
