@@ -23204,3 +23204,14 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `bar145_quirks_RunAllBatch.log`, 32 of 32 clean (a document).
 
+
+## 326. P5-C3 — THE EDUCATION FAMILY'S DATA SPINE LANDED: attainment and students per teacher sourced for six, early leavers for five with the USA absent and stated, PISA and graduation named as fetches; the coupling proposed; the build waits on the grammar (2026-09-05)
+
+**The row:** *"Education. Academic score (PISA), graduation rate, attainment; education spending and the 0–19 cohort reach them. Done when: as C2."* The standing list's next family in the catalog's order; with no board landed (E-17 not pasted) the family gets its spine, as health did (§321, §324). The row stays OPEN.
+
+**Sourced** (`EDUCATION_FAMILY_SPINE.md`): attainment for six from the OECD's Education at a Glance flow (adults' attainment distribution, 25–64; tertiary Sweden 50.8, USA 52.2, France 43.4, Poland 40.0, Germany 35.5, Italy 22.3; below upper secondary from Poland's 5.1 to Italy's 33.0) and cross-checked against Eurostat edat_lfse_03 for the five, the two within a point everywhere; students per teacher for six from the EAG flow (primary from Italy's 10.5 to France's 18.1; lower secondary from Poland's 9.5 to France's 14.7); early leavers 18–24 for the five from Eurostat edat_lfse_14 (Poland 4.0 to Germany 13.1 in 2025), the USA **absent and stated** (a different definition on a different age band, no API). **PISA and the graduation rate are FETCH TO DO with the source named and no figure written:** PISA is on no OECD SDMX dataflow (checked under every agency) - the source is the PISA 2022 Results Volume I Annex B1 tables; the graduation rate is in the EAG tables while the flows hold counts. Nothing was recalled.
+
+**Coupling proposed, every line `[AUTHORED-DRAFT]`, none built:** students per teacher as the immediate readout of the education line per pupil (`SpendingDriver.Youth0To19` the pupil count, so a shrinking cohort is more money per pupil); PISA a slow drift toward a target set by the ratio and effectiveness with a schooling-length lag; early leavers pulled by `EconomyState.YouthUnemployment` and pushed by spending; graduation the complement; attainment a stock-flow line over F2's substrate that cannot move fast. One feedback proposed and not built: attainment → the productivity trend P5-B7 seeded, the one channel through which education reaches output. The display rows are drafted for the board in the same form as health's.
+
+**Bar:** `bar146_p5c3_RunAllBatch.log`, 32 of 32 clean (a document).
+

@@ -730,7 +730,7 @@ as the 65+ share of the cohort substrate; health spending reaches them through t
 *Done when:* seeded for six, coupled, displayed as instruments, family explained. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §321 (the build waits on D15 item 3, E-17): `HEALTH_FAMILY_SPINE.md` - coverage for six (OECD DF_HEALTH_PROT), quality for six on treatable mortality (DF_AM; the HCQI rows for five, France absent and stated), waiting times for three (DF_WAITING; Germany, France and the USA publish none), retiree coverage derived; the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.**
 
 **P5-C3 — Education.** Academic score (PISA), graduation rate, attainment; education spending and
-the 0–19 cohort reach them. *Done when:* as C2.
+the 0–19 cohort reach them. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §326 (the build waits on D15 item 3): `EDUCATION_FAMILY_SPINE.md` - attainment for six (OECD EAG, Eurostat cross-check), students per teacher for six, early leavers for five (the USA absent and stated), PISA and graduation as named fetches with no figure written; the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.**
 
 **P5-C4 — Infrastructure.** Road condition and congestion (WEF/OECD), energy mix by source;
 infrastructure spending and the sector dials reach them. *Done when:* as C2.
