@@ -533,7 +533,7 @@ its budget, opposition bloc's support depends on distance, both with loyalty-dri
 Track A's machinery); populism from CHES's people-versus-elite item where published, `[AUTHORED-
 DRAFT]` where not, entering as a bias toward anti-establishment framing of a bill. *Done when:* a
 populist party's stance on the same bill measurably differs from a non-populist party at the same
-`lrecon` position.
+`lrecon` position. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §286: the bloc's line (`BlocPull`, the government's bloc outside the cabinet, distance-scaled) and a one-directional populism term from CHES `people_v_elite` (the USA's two an [AUTHORED-DRAFT] placement); a populist twin at L's positions reads −0.235 against the non-populist's −0.065, asserted through `StanceModel.StancesOver`.**
 
 **P4-A4 — The label and the breakdown.** "Contractionary (−30) · WOULD PASS" retires; the verdict
 is the count (P3's ruling), and the per-party breakdown in 6b's grammar shows each party's stance

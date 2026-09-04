@@ -228,9 +228,22 @@ namespace PoliSim.Simulation
         /// the seat map, the record and the breakdown all read.
         /// </summary>
         public static List<PartyStance> Stances(Country country, BillConcern concern)
+            => StancesOver(country, PartySystems.For(country.Id), null, concern);
+
+        /// <summary>[AUTHORED-DRAFT] P4-A3 term 2b: how far a party in the GOVERNMENT'S BLOC but outside the cabinet and its support is pulled toward a government bill, scaled by its nearness to it - a bloc's line, weaker than a partner's cohesion.</summary>
+        public const float BlocPull = 0.3f;
+        /// <summary>[AUTHORED-DRAFT] P4-A3 term 2c: the weight of populism - a party's `people_v_elite` above the midpoint pushes it against a government bill (the anti-establishment framing), below the midpoint slightly toward it.</summary>
+        public const float PopulismWeight = 0.3f;
+
+        /// <summary>
+        /// P4-A3 (2026-09-04): the same enumeration over ANY list of parties with their seats - the diagnostic evaluates
+        /// synthetic parties (a populist and a non-populist at one `lrecon`) through the very code the chamber votes
+        /// with. <paramref name="seatsOf"/> null reads the country's chamber; the government context (the cabinet, its
+        /// support, its bloc) is the country's either way.
+        /// </summary>
+        public static List<PartyStance> StancesOver(Country country, IReadOnlyList<PoliticalParty> parties, IReadOnlyDictionary<string, int> seatsOf, BillConcern concern)
         {
             var result = new List<PartyStance>();
-            IReadOnlyList<PoliticalParty> parties = PartySystems.For(country.Id);
             if (parties == null) { return result; }
             bool opennessAvailable = ParliamentSystem.TradeAxisAvailable(country);
             var loaded = new List<(StanceAxis Axis, int End, float Weight)>(concern.Loaded());
@@ -238,11 +251,22 @@ namespace PoliSim.Simulation
             // The government context (term 2): the formed cabinet and its support, and whether this is a government bill.
             bool government = GovernmentFormation.TryGovernment(country, out IReadOnlyList<string> cabinet, out IReadOnlyList<string> support);
             bool governmentBill = government && !string.IsNullOrEmpty(country.PlayerPartyAbbrev) && cabinet.Contains(country.PlayerPartyAbbrev);
-            float[] cabinetPosition = governmentBill ? CabinetPositions(country, parties, cabinet, loaded, opennessAvailable) : null;
+            float[] cabinetPosition = governmentBill ? CabinetPositions(country, PartySystems.For(country.Id), cabinet, loaded, opennessAvailable) : null;
+            // P4-A3: the government's bloc is the bloc of its largest cabinet party (the seat map's own blocs, NationalElection.BlocOf).
+            int governmentBloc = -1;
+            if (governmentBill)
+            {
+                int largest = -1;
+                foreach (string abbrev in cabinet)
+                {
+                    int held = country.ParliamentSeats.TryGetValue(abbrev, out int cs) ? cs : 0;
+                    if (held > largest) { largest = held; governmentBloc = NationalElection.BlocOf(country.Id, abbrev); }
+                }
+            }
 
             foreach (PoliticalParty party in parties)
             {
-                int seats = country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0;
+                int seats = seatsOf != null ? (seatsOf.TryGetValue(party.Abbrev, out int so) ? so : 0) : (country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0);
                 if (seats <= 0) { continue; }
                 var reasons = new List<string>();
 
@@ -285,6 +309,18 @@ namespace PoliSim.Simulation
                             inCabinet ? "cabinet" : "support", pull, distance, alignment - before));
                         if (distance > 0.5f) { reasons.Add("far from its own position - the pull is small and it may refuse"); }
                     }
+                    else if (governmentBloc >= 0 && governmentBloc <= 1 && NationalElection.BlocOf(country.Id, party.Abbrev) == governmentBloc)
+                    {
+                        // P4-A3 term 2b: the government's own bloc outside the cabinet - the bloc's line, a weaker pull
+                        // than a partner's cohesion, scaled by nearness so a far party refuses as a far partner does.
+                        float distance = Distance(party, loaded, opennessAvailable);
+                        float pull = BlocPull * (1f - distance);
+                        float before = alignment;
+                        alignment += pull * (1f - alignment);
+                        reasons.Add(string.Format(CultureInfo.InvariantCulture, "bloc party ({0}): the bloc's line {1:0.00} at distance {2:0.00} from the bill → {3:+0.00;-0.00}",
+                            NationalElection.BlocName(governmentBloc), pull, distance, alignment - before));
+                        if (distance > 0.5f) { reasons.Add("far from its own position - the pull is small and it may refuse"); }
+                    }
                     else
                     {
                         float mine = Distance(party, loaded, opennessAvailable);
@@ -299,6 +335,30 @@ namespace PoliSim.Simulation
                             float before = alignment;
                             alignment -= OppositionLine * (1f + alignment);
                             reasons.Add(string.Format(CultureInfo.InvariantCulture, "opposition line: the bill is nearer the government ({0:0.00}) than this party ({1:0.00}) → {2:+0.00;-0.00}", governments, mine, alignment - before));
+                        }
+                    }
+
+                    // P4-A3 term 2c: populism - ONE-DIRECTIONAL, the sheet's "bias toward anti-establishment framing of
+                    // a bill". A party outside the government whose `people_v_elite` sits above the midpoint frames a
+                    // government bill as the establishment's and moves against it by that much; below the midpoint
+                    // there is no term (trusting elected office holders is not support for the government of the day -
+                    // the first cut pulled S toward a cut it opposed by +0.40, and was wrong). A cabinet or support
+                    // party IS the establishment for this bill and carries no term. Unpublished (NaN) means no term
+                    // and the reason says so; the USA's two values are a tagged draft and the reason says that too.
+                    bool inGovernment = cabinet.Contains(party.Abbrev) || support.Contains(party.Abbrev);
+                    if (!inGovernment)
+                    {
+                        if (!party.HasPopulism)
+                        {
+                            reasons.Add("no published people_v_elite position - no populism term");
+                        }
+                        else if (party.PeopleVsElite > 5f)
+                        {
+                            float bias = PopulismWeight * (party.PeopleVsElite - 5f) / 5f;
+                            float before = alignment;
+                            alignment -= bias * (1f + alignment);
+                            reasons.Add(string.Format(CultureInfo.InvariantCulture, "populism: people_v_elite {0:0.0}{1} → {2:+0.00;-0.00} (anti-establishment framing of a government bill)",
+                                party.PeopleVsElite, country.Id == CountryId.USA ? " [AUTHORED-DRAFT]" : "", alignment - before));
                         }
                     }
                 }
@@ -388,6 +448,9 @@ namespace PoliSim.Simulation
                 }
                 else if (reason.StartsWith("cabinet party", StringComparison.Ordinal) || reason.StartsWith("support party", StringComparison.Ordinal)) { parts.Add((reason.StartsWith("cabinet", StringComparison.Ordinal) ? "cohesion " : "support pull ") + tail); }
                 else if (reason.StartsWith("opposition line", StringComparison.Ordinal)) { parts.Add("opposition line " + tail); }
+                else if (reason.StartsWith("bloc party", StringComparison.Ordinal)) { parts.Add("bloc line " + tail); }   // P4-A3
+                else if (reason.StartsWith("populism:", StringComparison.Ordinal)) { parts.Add("populism " + (tail != null && tail.IndexOf('(') > 0 ? tail.Substring(0, tail.IndexOf('(')).Trim() : tail)); }   // P4-A3
+                else if (reason.StartsWith("no published people_v_elite", StringComparison.Ordinal)) { continue; }   // P4-A3: an absence the full line keeps and the plate does not
                 else if (reason.StartsWith("opposition, but", StringComparison.Ordinal)) { parts.Add("nearer than the government: own position"); }
                 else if (reason.StartsWith("far from its own position", StringComparison.Ordinal)) { parts.Add("far - may refuse"); }
                 else if (reason.StartsWith("cuts ", StringComparison.Ordinal)) { parts.Add(reason.Substring(0, reason.IndexOf(" by ", StringComparison.Ordinal)) + " " + tail); }

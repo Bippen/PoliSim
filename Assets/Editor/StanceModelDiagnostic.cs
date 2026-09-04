@@ -155,6 +155,52 @@ namespace PoliSim.EditorTools
                 if (empty) { failures.Add($"P4-A2: budget '{name}' loads no axis at all - a composed budget must load the axes of its lines"); }
             }
 
+            // P4-A3 (2026-09-04): BLOC SIDE AND POPULISM. (a) The bloc term, printed on the spending cut: which parties
+            // took the bloc's line (the government's bloc outside the cabinet) and which the opposition's. (b) The
+            // done-when, ASSERTED on two SYNTHETIC parties evaluated through the chamber's own code: the same lrecon,
+            // galtan, spendvtax and every other position, one with people_v_elite 2.0 and one with 8.0, both outside the
+            // government, on a government bill - their stances must differ, and in the direction the term states
+            // (the populist further against the establishment's bill).
+            sb.Append("\n--- P4-A3: the bloc's line and populism on the spending cut (Sweden, the government bill) ---\n");
+            foreach (PartyStance st in StanceModel.Stances(sweden, drafts[0].Concern))
+            {
+                string term = "-";
+                foreach (string r in st.Reasons)
+                {
+                    if (r.StartsWith("bloc party", System.StringComparison.Ordinal) || r.StartsWith("populism:", System.StringComparison.Ordinal) || r.StartsWith("opposition line", System.StringComparison.Ordinal) || r.StartsWith("cabinet party", System.StringComparison.Ordinal) || r.StartsWith("support party", System.StringComparison.Ordinal))
+                    {
+                        term = term == "-" ? r : term + " · " + r;
+                    }
+                }
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-3} {1,3} seats  {2:+0.00;-0.00}  | {3}\n", st.Party.Abbrev, st.Seats, st.Alignment, term));
+            }
+            PoliticalParty template = default;
+            bool templateFound = false;
+            foreach (PoliticalParty p in PartySystems.For(CountryId.Sweden)) { if (p.Abbrev == "L") { template = p; templateFound = true; } }
+            if (!templateFound) { failures.Add("P4-A3: Sweden's L is not in the party system - the synthetic pair has no template"); }
+            else
+            {
+                var pair = new List<PoliticalParty>
+                {
+                    new PoliticalParty("SYN-ELITE", "synthetic, trusts office holders", template.LrEcon, template.Galtan, 10, spendVsTax: template.SpendVsTax, environment: template.Environment, regions: template.Regions,
+                        immigratePolicy: template.ImmigratePolicy, deregulation: template.Deregulation, redistribution: template.Redistribution, civLibLawOrder: template.CivLibLawOrder, nationalism: template.Nationalism, peopleVsElite: 2.0f),
+                    new PoliticalParty("SYN-POPULIST", "synthetic, the people decide", template.LrEcon, template.Galtan, 10, spendVsTax: template.SpendVsTax, environment: template.Environment, regions: template.Regions,
+                        immigratePolicy: template.ImmigratePolicy, deregulation: template.Deregulation, redistribution: template.Redistribution, civLibLawOrder: template.CivLibLawOrder, nationalism: template.Nationalism, peopleVsElite: 8.0f),
+                };
+                var seatsOf = new Dictionary<string, int> { { "SYN-ELITE", 10 }, { "SYN-POPULIST", 10 } };
+                List<PartyStance> synthetic = StanceModel.StancesOver(sweden, pair, seatsOf, drafts[0].Concern);
+                if (synthetic.Count != 2) { failures.Add($"P4-A3: the synthetic pair evaluated to {synthetic.Count} stance(s), not 2"); }
+                else
+                {
+                    float elite = synthetic[0].Alignment, populist = synthetic[1].Alignment;
+                    sb.Append(string.Format(CultureInfo.InvariantCulture, "    synthetic pair at L's positions (lrecon {0:0.00}): people_v_elite 2.0 → {1:+0.000;-0.000}; people_v_elite 8.0 → {2:+0.000;-0.000}; difference {3:0.000}\n",
+                        template.LrEcon, elite, populist, elite - populist));
+                    foreach (PartyStance st in synthetic) { sb.Append("      " + st.Party.Abbrev + ": " + string.Join("; ", st.Reasons) + "\n"); }
+                    if (Mathf.Abs(elite - populist) < 0.01f) { failures.Add($"P4-A3: a populist and a non-populist party at the same lrecon read the same stance ({elite:F3} vs {populist:F3}) - the populism term is not reaching the scorer"); }
+                    if (populist > elite) { failures.Add($"P4-A3: the populist party ({populist:F3}) sits nearer the government bill than the non-populist ({elite:F3}) - the term's sign is backwards"); }
+                }
+            }
+
             sb.Append("\n    The weights are §246's five [AUTHORED-DRAFT] constants; the positions CHES 2024 / GPS 2019; the salience EB105 / Gallup;\n");
             sb.Append("    Sweden's voter profile the ecological estimate from the 2022 valkrets returns over the 2024 pyramids. Nothing here is a roll call.\n");
 

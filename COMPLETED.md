@@ -22614,3 +22614,24 @@ The same net balance, opposite compositions, two different chambers: A carries t
 **What did not move:** the trajectory suite's no-policy path files no bill, so nothing there can change; the standalone program bills (`GetTaxProgramBillConcern` etc.) still load `spendvtax` alone - they are single-line bills and the sheet's row is the budget's. The lean bar's scalar `Direction` (the legacy sum) stays as the record's number; P4-A4 retires it from the label.
 
 **Bar:** `bar98_p4a2_RunAllBatch.log`, 29 of 29 clean; `bar98_p4a2_RunSimulationBatch.log`, 12 of 12 simulation checks clean.
+
+## 286. P4-A3 — BLOC SIDE AND POPULISM: the government's bloc outside the cabinet takes the bloc's line; a party's `people_v_elite` above the midpoint moves it against a government bill; a populist and a non-populist twin at one `lrecon` now read different stances, asserted through the chamber's own code (2026-09-04)
+
+**The row:** *"Bloc cohesion as an explicit term (government bloc supports its budget, opposition bloc's support depends on distance, both with loyalty-driven defection — Track A's machinery); populism from CHES's people-versus-elite item where published, `[AUTHORED-DRAFT]` where not, entering as a bias toward anti-establishment framing of a bill. Done when: a populist party's stance on the same bill measurably differs from a non-populist party at the same `lrecon` position."*
+
+**Term 2b - the bloc's line** (`StanceModel`, `BlocPull` 0.3 `[AUTHORED-DRAFT]`). The government's bloc is the bloc of its largest cabinet party (`NationalElection.BlocOf`, the seat map's own blocs - Sweden's two; every other chamber reads unaffiliated and the term does not fire). A party in that bloc but outside the cabinet and its support is pulled toward a government bill by `BlocPull × (1 − distance)`, weaker than a partner's cohesion (0.6) and scaled by nearness the same way, so a far bloc party refuses as a far partner does - the loyalty-driven defection the row names is the distance term §246 already built, now on a third class of party. The opposition bloc keeps §246's opposition line. ⚠ At the seed Sweden's whole right bloc is in the cabinet or its support, so no party takes the bloc's line on the printed drafts; the term is built for the chamber a player's coalition leaves behind, and the diagnostic prints which class each party fell into.
+
+**Term 2c - populism** (`PopulismWeight` 0.3 `[AUTHORED-DRAFT]`), ONE-DIRECTIONAL: a party outside the government whose `people_v_elite` sits above the midpoint frames a government bill as the establishment's and moves against it by `PopulismWeight × (people_v_elite − 5) / 5 × (1 + alignment)`; below the midpoint there is no term. ⚠ The first cut was symmetric and pulled S (`people_v_elite` 0.9) toward a spending cut it opposed by +0.40, larger than the opposition line - trusting elected office holders is not support for the government of the day, and the term was corrected before it was measured green. A cabinet or support party is the establishment for its own bill and carries no term. The data: CHES 2024 `people_v_elite` (quoted: *0 = elected office holders should make the most important decisions … 10 = "the people", not politicians, should make the most important decisions*) for the 31 EU units, with `anti_elite_salience` beside it for the record; the USA's REP 7.0 and DEM 3.5 are an `[AUTHORED-DRAFT]` placement on the same wording, tagged at their rows and in every reason line, the first thing a GPS 2019 read replaces. At the seed the term reaches MP alone among Sweden's opposition (5.7 → −0.02); SD (5.3) and the government are inside it.
+
+**The done-when, asserted the honest way** (`StanceModelDiagnostic`, `StanceModel.StancesOver`): two SYNTHETIC parties at L's every position (`lrecon` 7.32, `galtan`, `spendvtax` 6.8, the rest), one with `people_v_elite` 2.0 and one with 8.0, both outside the government, evaluated on the spending-cut draft through the same enumeration the chamber votes with:
+
+```
+    synthetic pair at L's positions (lrecon 7.32): people_v_elite 2.0 → -0.065; people_v_elite 8.0 → -0.235; difference 0.170
+      SYN-POPULIST: … opposition line … → -0.41; populism: people_v_elite 8.0 → -0.17 (anti-establishment framing of a government bill); …
+```
+
+Asserted: the two differ by at least a hundredth, and the populist sits further from the government's bill. The five drafts, the partner refusal and P4-A2's two budgets stand.
+
+**Built besides:** `ReasonShort` prints *bloc line …* and *populism …* on the plate; the plate drops the "no published people_v_elite" absence and the full line keeps it.
+
+**Bar:** `bar99_p4a3_RunAllBatch.log`, 29 of 29 clean; `bar99_p4a3_RunSimulationBatch.log`, 12 of 12 simulation checks clean.
