@@ -22955,3 +22955,11 @@ Five, as the sheet named them: the event card's empty state, the trade-volume ma
 **Films:** `p6d_1280` and `p6d_2560` (the full sweep, 0 failed, 0 overflows, 0 escapes): `02b_statistics_international_deep` (the trade graph), `02a_statistics_domestic` (a dashboard graph), `07d_politics_federalreserve` (the rate path).
 
 **Bar:** `bar117_p6b_RunAllBatch.log`, 31 of 31 clean (one bar and one film pair stand behind §309 and §310; the commits are split by file).
+
+## 311. D14 ANSWERED AND BUILT THE SAME EVENING — boards 8a–8f read from the file, six rows built or ruled (§305–§310), the return package regenerated, E-14 closed, E-15 opened (2026-09-04, late evening)
+
+**The paste** (E-14, Elias's): the project's `uploads/` holds `CLAUDE_DESIGN_ASSET_REQUEST-d7354760.md` and `SEND_PACKAGE-8b923f19.md` - this side's fe069b7 files by digest, the D14 install before E-13's binding. Design answered on `PoliSim v2 Screens.dc.html` as boards **8a–8f**, one per item, each drawn WITHOUT the films (the paste carries markdown only, as every board says) and each carrying an "IF THE BUILT …" clause naming the thing to check first; 8f also reads back the E-12 paste (the party-ink print landed as text; 7b's *OUTCOME unread* closes).
+
+**Built the D11 way** - the P6 section (`POLISIM_FEATURE_LIST.md`, above P5): P6-1 8a the pie renderer rewritten and the bars' baseline and scale (§309); P6-2 8b the graph composed once - head row, gutter, foot (§310); P6-3 8c the path grows by the cut captions' 66 px (§305); P6-4 8d the caption's face, placement and eased fade (§306); P6-5 8e ruled, the chip's border checked (§307); P6-6 8f the Docket option as one row (§308). Every clause answered in its row; every deviation stated there.
+
+**The return** (`SEND_PACKAGE.md`, regenerated): the request, the feature list and the lever map by digest; the two bars and the four film logs; the frames of the six built boards at both widths by name, size and digest; the sixteen screenshots. Nothing is asked of Design. `ERRANDS.md`: E-14 → SENT (Elias, 2026-09-04) and answered; **E-15** opened - the return paste, Elias's.

@@ -1,5 +1,9 @@
 # Claude Design asset request — PoliSim
 
+## ⭐ STATUS 2026-09-04 (late evening) — **D14 WAS PASTED (E-14, Elias) AND ANSWERED THE SAME EVENING AS BOARDS 8a–8f ON `PoliSim v2 Screens.dc.html`, AND IS BUILT: P6-1…P6-6 in `COMPLETED.md` §305–§310, every board's check clause answered in its row. No ask is live; the RETURN package (`SEND_PACKAGE.md`, regenerated) is Elias's to paste (E-15).** The status that stood here is kept beneath, verbatim, as the record.
+
+### The D14 status as it stood (2026-09-04, evening)
+
 ## ⭐ STATUS 2026-09-04 (evening) — **D14 IS THE LIVE ASK: six items from Playtest 4, reconciled against D12 and D13 (§ ⭐ D14 below; the package `SEND_PACKAGE.md` regenerated 2026-09-04 evening). D13 was pasted and answered (board 6a) and built; D12 as board 6b; the E-12 return as boards 7a/7b. Sending is Elias's.** The status that stood here is kept beneath, verbatim, as the record.
 
 ### The D13 status as it stood (2026-09-03, night)

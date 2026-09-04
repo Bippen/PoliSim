@@ -1,45 +1,45 @@
-# The send package — regenerated 2026-09-04 (evening): D14 installed (six items from Playtest 4, reconciled against D12 and D13); paste-and-glance; **sending is Elias's**
+# The send package — regenerated 2026-09-04 (late evening): the RETURN after boards 8a–8f (D14 answered and BUILT, `COMPLETED.md` §305–§310); paste-and-glance; **sending is Elias's**
 
-⚠ **D14 IS THE LIVE ASK** (`CLAUDE_DESIGN_ASSET_REQUEST.md` § ⭐ D14, above D13). The E-12 return (boards 6a/6b, the party-hue ruling) was pasted and answered as boards 7a/7b and BUILT (`COMPLETED.md` §282–§283); nothing from it is asked again. The films below are the ones D14's rows cite by name: Track B's caption trio and Track E's cuts, at 1280 and 2560.
-
-✅ **The five Playtest 4 screenshots are on disk** (E-13 done 2026-09-04, `COMPLETED.md` §303): verified by content (signature, every chunk CRC, the IDAT stream inflated, the `Zone.Identifier` origin `https://ctrl.vi/`), bound by content to P4-D3, E1, E4 and E2, and in the table below by digest with E-8's eleven.
+⚠ **THIS IS A RETURN, NOT A NEW ASK.** D14's six items were answered as boards 8a–8f and built the D11 way - against the boards, verified, deviations stated - the same evening: 8a the pie and bar as instruments (§309), 8b the graph composed once (§310), 8c the path grows by the cut captions (§305), 8d the caption's face and fade (§306), 8e the map confirmed, the chip's border checked (§307), 8f the Docket option row (§308). The check clauses each board carried are answered in its row. **Nothing is asked of Design.** The one deviation worth Design's eye: 8b's year labels under the plot are not built - the renderer holds a window, not a calendar - and the foot's legend names the window instead.
 
 ## What goes in — computed, not claimed
 
 | artifact | bytes | sha256 (on disk) |
 |---|---|---|
-| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122312 | `d062838633a7fae9ef4920a5653a29f6f98f5f81ac6e21302699cfdcb4160f58` |
-| `POLISIM_FEATURE_LIST.md` | 104748 | `9a7fdc35f06895dde851f18eafae3df3672497f11782d6bbd0da2e1f22592e84` |
-| `LEVER_MAP.md` | 194084 | `54dffb1e32cc5bd72be126aa18dc1e6f8d3aa476bacf055541dd0b64cfa307d7` |
-| `logs/bar110_p4c3_RunAllBatch.log` | 457013 | `7ce4d09175b6201b56012f45c0c9d784b381366297eea869c23148f881cd425c` |
-| `logs/bar109_p4c3_RunSimulationBatch.log` | 368589 | `030808670178d35d7831ffdbe7e3130616ee0dcf1db95a17cbc27192c4817ebe` |
-| `logs/p4g_1280.log` | 1219615 | `385cb5350f0417eb0d9101c8682f7adf9eaf2a457b8c5525e9bf19f16f146f57` |
-| `logs/p4g_2560.log` | 1199710 | `8f8dcb9b10c5b6a3a453e8f8dd4e0e19a288ecbafa15c252784e8eb6c430138f` |
-| `logs/p4b4_1280.log` | 998641 | `addacfb356497c28319333e9c335cedc3b12c18491b953aae9386b52af6003df` |
-| `logs/p4b4_2560.log` | 984262 | `72649a97ab61b803e2f1c78bc4871978c309f8825065be13d403deee4c3bb6eb` |
+| `CLAUDE_DESIGN_ASSET_REQUEST.md` | 122797 | `5165241bf3893cc07b477a85397bc97fc65800cc42f3b960f3f9925764a5e0b6` |
+| `POLISIM_FEATURE_LIST.md` | 111588 | `c4bf356bc72e8215b9780ec03127ade2b25f5b5162b76e42905c67369b3357a0` |
+| `LEVER_MAP.md` | 196163 | `a84541d5d2f8be18a2e172736aed866eedbe5b642099bd75d7abc571109a8f0d` |
+| `logs/bar113_p6a_RunAllBatch.log` | 474575 | `a7b35355df2051ae541ba277800a78cdd036bb3ba1d0745c05f2a12e89ad4274` |
+| `logs/bar117_p6b_RunAllBatch.log` | 474554 | `e3f47401bef284562d9a9698143cae28cfc4d17b1886485bb73271d5530b7843` |
+| `logs/p6a_1280.log` | 1234198 | `f66e3f5b16993c0da92d28bc8bd6945145413518d51c33167551f33652a44afe` |
+| `logs/p6a_2560.log` | 1214165 | `ffc2e5bf49e7c217f90889ce9219852ff122d45bba0847934ea1d305e4c8823d` |
+| `logs/p6d_1280.log` | 1244995 | `ee0de184f97b503e29febd20f2552c98d4d37abcd80a4c7f6d4fa36f99953a19` |
+| `logs/p6d_2560.log` | 1230053 | `3c6bee48e57baab3256f285a79e03092334f3b6e9058ed7d74beec50c04069f8` |
 
-### The films D14 cites, at 1280 and 2560
+### The films of the built boards at 1280 and 2560 (8c, 8d, 8f: `p6a_1280` / `p6a_2560`; 8a, 8b: `p6d_1280` / `p6d_2560`)
 
 | film | bytes | sha256 |
 |---|---|---|
-| `p4g_1280_04_demographics.png` | 493971 | `8195df08e6f0764308d040383ee4d634f6a7c9feaecede2d2d9da5032b1663f9` |
-| `p4g_1280_02b_statistics_international_deep.png` | 473490 | `d8c6d0cfd2abb7feb2b285f0ab2b3479eca1780d3f04d6a86532c644e5aa406a` |
-| `p4g_1280_07d_politics_federalreserve.png` | 468291 | `6adb15394d93d362003cc07db1b09174446eb9f38a4e73930fbdf81d03aecd8e` |
-| `p4b4_1280_06a_policylaws_labormarket_caption_drag.png` | 535053 | `c29546b02b9721a8fdd7d6204ae7c419fa47778635a2adfd284c0c719eb69e9d` |
-| `p4b4_1280_06a_policylaws_labormarket_caption_held.png` | 535053 | `c29546b02b9721a8fdd7d6204ae7c419fa47778635a2adfd284c0c719eb69e9d` |
-| `p4b4_1280_06a_policylaws_labormarket_caption_faded.png` | 531582 | `04e5b6c71d2b51e51ee0c111286edafc18ecc1eeddc113583d1ccad55bbd9234` |
-| `p4g_1280_01c_desk.png` | 500307 | `8fe4e71ed7b3be7cd731a1b660179a953bcfdba8e45a7ff606eea7c1b7342047` |
-| `p4g_1280_02b_statistics_international.png` | 378269 | `45ab062690eb646bff8fd1dd4e9af50c4de1ebab7d4661d27da7096259852825` |
-| `p4g_1280_03a_decisions_options.png` | 375320 | `753b8b24f6744349ea2221e7553af45b9c6f587d896ba01a3e3ad9b7eb65668e` |
-| `p4g_2560_04_demographics.png` | 1313566 | `2dbfff958ec63e443e5643212fd0d706388388db5fb93bbd62fbcbe77afd2699` |
-| `p4g_2560_02b_statistics_international_deep.png` | 1333137 | `8cbc4c6fc9547cba6d46227b2655f5841bdc7c1a0d8135b585382d3a1340a501` |
-| `p4g_2560_07d_politics_federalreserve.png` | 1521583 | `a690fe26c8c253226c078b4a389fc1d05f68a720aaf758385ed7019668188b94` |
-| `p4b4_2560_06a_policylaws_labormarket_caption_drag.png` | 1529773 | `971b812b15dd31ed93f20c22e76dd41eb2030ea7b4754979923ce761bc3e74fd` |
-| `p4b4_2560_06a_policylaws_labormarket_caption_held.png` | 1529773 | `971b812b15dd31ed93f20c22e76dd41eb2030ea7b4754979923ce761bc3e74fd` |
-| `p4b4_2560_06a_policylaws_labormarket_caption_faded.png` | 1520513 | `b721ea7d550f39e049b849e6489319002b02d762889f48c69d4c135bd5aa042c` |
-| `p4g_2560_01c_desk.png` | 1350604 | `a18d9276ad784ac176fb5fb220dd8681ae0e7372a05f5de800ea214699cbe11e` |
-| `p4g_2560_02b_statistics_international.png` | 1322045 | `d9653362ca50391c1fd9dd5a2b94c93410b69d623807edb8703fbfcc4781aceb` |
-| `p4g_2560_03a_decisions_options.png` | 1144164 | `2d65529986f224696008480899909abfc47d0d71197f55548663d49f88f6487a` |
+| `p6a_1280_07d_politics_federalreserve.png` | 435408 | `18c3eaaa0f73140582846d78bc21d095606b638ac38d7535fb501f6850ca5c09` |
+| `p6a_1280_06a_policylaws_labormarket_caption_drag.png` | 536737 | `d0271b049a0f7b48c3666c9b07e34771fbc87c9872f2594adcd6b2d7e2a9540d` |
+| `p6a_1280_06a_policylaws_labormarket_caption_held.png` | 536737 | `d0271b049a0f7b48c3666c9b07e34771fbc87c9872f2594adcd6b2d7e2a9540d` |
+| `p6a_1280_06a_policylaws_labormarket_caption_faded.png` | 531455 | `341359555b079499c5fd67e7bc4d920e136c775b0ca691a1373631817924308b` |
+| `p6a_1280_03a_decisions_options.png` | 466564 | `0cfd195d98d18e09711311ff918013e2bfb8da46306fc5036898782a4cf969e3` |
+| `p6d_1280_04_demographics.png` | 495141 | `00e4acd7e7bfa4c5f03e423e6b68e50b32d8204fd43fd66448ae1187196a0b8b` |
+| `p6d_1280_04a_demographics_pie.png` | 490725 | `d8edda637ee338e7337ff5c536e2f639c67862a0ae741556da2bcc9dffc7ef2e` |
+| `p6d_1280_02b_statistics_international_deep.png` | 490829 | `631a67ea5404acef1ea4d571d7fb8af8788288c947ccdd3bd75317e1ab6bf921` |
+| `p6d_1280_02a_statistics_domestic.png` | 423984 | `eeb602d0ecf55713567ae9d8f18336dcb67d66e6908cedd44c1d4d6da50b3829` |
+| `p6d_1280_01c_desk.png` | 500307 | `8fe4e71ed7b3be7cd731a1b660179a953bcfdba8e45a7ff606eea7c1b7342047` |
+| `p6a_2560_07d_politics_federalreserve.png` | 1381407 | `910bcc6edd85d13b2ccc76221e9317630af3d185d5a13dac58130d760d94f2a5` |
+| `p6a_2560_06a_policylaws_labormarket_caption_drag.png` | 1505238 | `b995017de69696a5f8ea96171cba08822a2c734ce065db9629533eedea589527` |
+| `p6a_2560_06a_policylaws_labormarket_caption_held.png` | 1505238 | `b995017de69696a5f8ea96171cba08822a2c734ce065db9629533eedea589527` |
+| `p6a_2560_06a_policylaws_labormarket_caption_faded.png` | 1496438 | `0c5d3331ee05f07de43af7e6e584a7d18151f7aa90607a5e3941bfad28261a0e` |
+| `p6a_2560_03a_decisions_options.png` | 1379118 | `2f387be030b58cc42eebe4c381c5165300df85229313b82de1186944f9dedaf8` |
+| `p6d_2560_04_demographics.png` | 1355386 | `8c9e189fad82c249d1cd66af235df6e8727f2c6c7639f8f32359317008dbe598` |
+| `p6d_2560_04a_demographics_pie.png` | 1352418 | `6db52dcf6bc31ad731c9fb80d77e4fe94d4c008f0f8489aaf365666b6ba8a49a` |
+| `p6d_2560_02b_statistics_international_deep.png` | 1379760 | `8a40bc88bc2b1154c4a105e7f69ef52c6af2480def672d1101a9b1de27a27bae` |
+| `p6d_2560_02a_statistics_domestic.png` | 1187568 | `9b71f9760f35e411ceda30c8218cfdf218e7935d6b774f75939a3bff8fa92936` |
+| `p6d_2560_01c_desk.png` | 1350604 | `a18d9276ad784ac176fb5fb220dd8681ae0e7372a05f5de800ea214699cbe11e` |
 | `Elias Screenshots/NEW_nedladdning (11).png` | 86195 | `4a90ae383da00f2f87388128d9ee6f03be4669ac1fb9af6cb188fdd268e068fe` |
 | `Elias Screenshots/New_nedladdning.png` | 714934 | `9109ec43c07bb73c1ce8173df38a734e74fd5707c5fb461c6e348d805af9fe32` |
 | `Elias Screenshots/nedladdning (1).png` | 27855 | `932aea67989df360b5d746c66f4508a3b07ffa00365c1c005bc9e78cb20ae954` |
