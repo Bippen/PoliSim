@@ -110,8 +110,8 @@ namespace PoliSim.EditorTools
                 {
                     if (!line.IsImplemented) { continue; }
                     if (line.Type == TaxType.CorporateTax || line.Type == TaxType.Tariffs) { continue; }
-                    burden += line.Rate / 100f * TaxBaseTable.BaseShareOfGdp(c.Id, line.Type);
-                    if (line.Type == TaxType.IncomeTax) { incomeRate = line.Rate; incomeShare = TaxBaseTable.BaseShareOfGdp(c.Id, line.Type); }
+                    burden += line.Rate / 100f * TaxBases.Base(c, line.Type) / Mathf.Max(1f, c.State.GDP);   // P5-B3: as MacroSystem.HouseholdTaxBurdenShare reads it
+                    if (line.Type == TaxType.IncomeTax) { incomeRate = line.Rate; incomeShare = TaxBases.Base(c, line.Type) / Mathf.Max(1f, c.State.GDP); }
                 }
 
                 float dBurden = 0.10f * incomeShare;

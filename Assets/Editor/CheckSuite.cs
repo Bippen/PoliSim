@@ -358,6 +358,7 @@ namespace PoliSim.EditorTools
 
                 // P5-B2 (2026-09-05): the nominal lines follow their drivers exactly, per country - it advances worlds.
                 ("SpendingIndexationDiagnostic", SpendingIndexationDiagnostic.Run),
+                ("RevenueBaseDiagnostic", RevenueBaseDiagnostic.Run),   // P5-B3 (2026-09-05): every tax base at its sourced share x the seed's GDP x its driver's ratio, all six; the recession probe shows the employment channel
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for
                 // every party of every country as the player's, so it belongs to this group on the same

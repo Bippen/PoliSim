@@ -42,7 +42,7 @@ namespace PoliSim.EditorTools
             foreach (TaxLine line in c.TaxLines)
             {
                 if (!line.IsImplemented || line.Type == TaxType.Tariffs) { continue; }
-                revenue += c.State.GDP * (line.Rate / 100f) * TaxBaseTable.BaseShareOfGdp(c.Id, line.Type);
+                revenue += TaxBases.Revenue(c, line);   // P5-B3: the turn's accessor
             }
 
             return revenue;

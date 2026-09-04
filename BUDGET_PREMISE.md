@@ -40,20 +40,20 @@ Nominal GDP over the same 5 turns grew by 1.01×. A residual of 1.000 means the 
 
 **The persistence probe** (CentralGovernment, a Discretionary line, stepped +30 % - the dial's full range - on turn 1, then untouched): the line against the untouched baseline reads year 1 1.3×, year 2 1.3×, year 3 1.3×, year 4 1.3×, year 5 1.3×. The step PERSISTS at its full ratio through every later year (the index applies to both); nothing normalises the amount. The dial reads 0 % from year 2: the decision's delta was consumed.
 
-## 2. The tax lines - revenue = GDP × rate × the base's share of GDP
+## 2. The tax lines - revenue = rate × the base, and the base follows its driver
 
-From the code (`GetTotalTaxRevenue`, `TaxBaseTable.BaseShareOfGdp`, D-16): a tax line's revenue is nominal GDP times the rate times a FIXED per-country share of GDP for that base. The base therefore moves one-for-one with nominal GDP and with nothing else - not employment, not the wage bill, not the distribution (F4's income dimension does not enter). At a held rate the revenue's elasticity to nominal GDP is exactly 1 by construction; the run below measures it.
+From the code (`TaxBases.Revenue`, P5-B3; the share table `TaxBaseTable.BaseShareOfGdp`, D-16, beneath it): a tax line's revenue is the rate times its BASE, and the base is the sourced share of the seed's GDP carried forward by its own DRIVER - the wage bill (the 20–64 cohort × participation × (1 − unemployment) × the real wage) for income and payroll taxes, consumption for VAT, sales and excise, the housing stock at its price for property tax, output for the rest. Before P5-B3 every base was a fixed share of GDP: §312 measured the elasticity to GDP at exactly 1 and named the missing employment channel. The distribution channel (F4's income dimension) is still not there - the substrate carries no income. The book is in constant prices, so "nominal" GDP is GDP. Proved below - the run has NO player.
 
-| tax line | rate held (%) | revenue year 1 ($B) | revenue year 5 ($B) | ratio | GDP ratio | elasticity to nominal GDP |
-|---|---|---|---|---|---|---|
-| CapitalGainsTax | 30 | 9.114 | 9.391 | 1.03 | 1.03 | 1 |
-| CarbonTax | 30 | 18.228 | 18.781 | 1.03 | 1.03 | 1 |
-| CorporateTax | 20.6 | 20.965 | 21.602 | 1.03 | 1.03 | 1 |
-| IncomeTax | 52 | 63.127 | 65.043 | 1.03 | 1.03 | 1 |
-| PayrollTax | 31.4 | 85.624 | 88.224 | 1.03 | 1.03 | 1 |
-| VAT | 25 | 57.691 | 59.443 | 1.03 | 1.03 | 1 |
+| tax line | driver | rate held (%) | revenue year 1 ($B) | revenue year 5 ($B) | ratio | driver ratio | GDP ratio | elasticity to its driver | elasticity to GDP |
+|---|---|---|---|---|---|---|---|---|---|
+| CapitalGainsTax | output | 30 | 9.114 | 9.391 | 1.03 | 1.03 | 1.03 | 1 | 1 |
+| CarbonTax | output | 30 | 18.228 | 18.781 | 1.03 | 1.03 | 1.03 | 1 | 1 |
+| CorporateTax | output | 20.6 | 20.965 | 21.602 | 1.03 | 1.03 | 1.03 | 1 | 1 |
+| IncomeTax | the wage bill | 52 | 65.354 | 70.705 | 1.082 | 1.082 | 1.03 | 1 | 2.632 |
+| PayrollTax | the wage bill | 31.4 | 88.645 | 95.904 | 1.082 | 1.082 | 1.03 | 1 | 2.632 |
+| VAT | consumption | 25 | 58.869 | 60.798 | 1.033 | 1.033 | 1.03 | 1 | 1.079 |
 
-A rate held constant yields rising revenue in a growing economy and falling revenue in a recession - through nominal GDP alone. What is NOT there: an employment channel (a recession that cuts employment more than GDP does not cut payroll revenue more), and a distribution channel (a rising Gini does not move income-tax revenue). Track B3's family.
+A rate held constant yields rising revenue in a growing economy and falling revenue in a recession - through its base's driver: elasticity 1 to the wage bill on the income and payroll lines (jobs lost cut them beyond what output lost), 1 to consumption on VAT, 1 to output on the rest (a driver elasticity of exactly 1 is the construction; the GDP column shows how far each driver ran from output over the horizon). The year-1 revenue of a consumption line reads its reference from the first day (the seed has no consumption yet). What is still NOT there: the distribution channel (a rising Gini does not move income-tax revenue) - it waits on F4's income dimension. `RevenueBaseDiagnostic` states the elasticities on the simulation bar.
 
 ## 3. The liveness audit at magnitude - every slider stepped by its full range, read at one and five years
 
@@ -61,23 +61,23 @@ A slider is **LIVE** when its step moves a headline quantity (GDP, Unemployment,
 
 | slider | family | largest headline move at 1 yr | at 5 yr | anything moved at 5 yr | class |
 |---|---|---|---|---|---|
-| Budget line SocialSecurity (the dial's full range) | Budget line | ApprovalRating 5,631 % | Budget 45,989 % | yes | LIVE |
+| Budget line SocialSecurity (the dial's full range) | Budget line | ApprovalRating 5,631 % | Budget 108,482 % | yes | LIVE |
 | Budget line Medicare (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Medicaid (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
-| Budget line IncomeSecurity (the dial's full range) | Budget line | ApprovalRating 7,620 % | Budget 51,860 % | yes | LIVE |
+| Budget line IncomeSecurity (the dial's full range) | Budget line | ApprovalRating 7,620 % | Budget 122,038 % | yes | LIVE |
 | Budget line VeteransBenefitsMandatory (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line FederalRetirement (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
-| Budget line Defense (the dial's full range) | Budget line | ApprovalRating 1,036 % | Budget 36,518 % | yes | LIVE |
+| Budget line Defense (the dial's full range) | Budget line | ApprovalRating 1,036 % | Budget 96,299 % | yes | LIVE |
 | Budget line VeteransAffairsDiscretionary (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
-| Budget line Transportation (the dial's full range) | Budget line | ApprovalRating 0,972 % | Budget 17,397 % | yes | LIVE |
+| Budget line Transportation (the dial's full range) | Budget line | ApprovalRating 0,972 % | Budget 45,669 % | yes | LIVE |
 | Budget line HHSDiscretionary (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line HomelandSecurity (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
-| Budget line Education (the dial's full range) | Budget line | ApprovalRating 1,480 % | Budget 17,138 % | yes | LIVE |
-| Budget line Energy (the dial's full range) | Budget line | ApprovalRating 0,094 % | Budget 1,636 % | yes | LIVE |
+| Budget line Education (the dial's full range) | Budget line | ApprovalRating 1,480 % | Budget 45,422 % | yes | LIVE |
+| Budget line Energy (the dial's full range) | Budget line | ApprovalRating 0,094 % | Budget 4,317 % | yes | LIVE |
 | Budget line Housing (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
-| Budget line Justice (the dial's full range) | Budget line | ApprovalRating 0,882 % | Budget 15,812 % | yes | LIVE |
+| Budget line Justice (the dial's full range) | Budget line | ApprovalRating 0,882 % | Budget 41,639 % | yes | LIVE |
 | Budget line StateForeignAffairs (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
-| Budget line Agriculture (the dial's full range) | Budget line | none | Budget 3,630 % | yes | LIVE |
+| Budget line Agriculture (the dial's full range) | Budget line | none | Budget 9,546 % | yes | LIVE |
 | Budget line Interior (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line NASA (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Commerce (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
@@ -90,102 +90,102 @@ A slider is **LIVE** when its step moves a headline quantity (GDP, Unemployment,
 | Budget line InfrastructureAndDevelopment (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line PublicServices (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Budget line Administration (the dial's full range) | Budget line | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
-| Budget line CentralGovernment (the dial's full range) | Budget line | none | Budget 3,630 % | yes | LIVE |
-| Budget line FinancialAdministration (the dial's full range) | Budget line | none | Budget 3,630 % | yes | LIVE |
-| Budget line TaxAdministration (the dial's full range) | Budget line | none | Budget 2,639 % | yes | LIVE |
-| Budget line InternationalAid (the dial's full range) | Budget line | none | Budget 8,078 % | yes | LIVE |
-| Budget line Migration (the dial's full range) | Budget line | none | Budget 2,145 % | yes | LIVE |
-| Budget line HealthcareAndSocialCare (the dial's full range) | Budget line | ApprovalRating 1,804 % | Budget 20,798 % | yes | LIVE |
-| Budget line SicknessAndDisability (the dial's full range) | Budget line | ApprovalRating 1,726 % | Budget 13,805 % | yes | LIVE |
-| Budget line FamilyAndChildren (the dial's full range) | Budget line | ApprovalRating 1,437 % | Budget 11,361 % | yes | LIVE |
-| Budget line IntegrationAndEquality (the dial's full range) | Budget line | none | Budget 0,992 % | yes | LIVE |
-| Budget line LaborMarket (the dial's full range) | Budget line | none | Budget 12,506 % | yes | LIVE |
-| Budget line StudentAid (the dial's full range) | Budget line | none | Budget 5,318 % | yes | LIVE |
-| Budget line CultureAndMedia (the dial's full range) | Budget line | none | Budget 2,805 % | yes | LIVE |
-| Budget line RegionalPlanningAndDevelopment (the dial's full range) | Budget line | none | Budget 1,157 % | yes | LIVE |
-| Budget line ClimateAndEnvironment (the dial's full range) | Budget line | none | Budget 2,971 % | yes | LIVE |
-| Budget line BusinessAndIndustry (the dial's full range) | Budget line | none | Budget 1,487 % | yes | LIVE |
-| Budget line MunicipalGrants (the dial's full range) | Budget line | none | Budget 30,457 % | yes | LIVE |
-| Budget line EuMembershipFee (the dial's full range) | Budget line | none | Budget 9,238 % | yes | LIVE |
-| Tax IncomeTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 34,189 % | yes | LIVE |
-| Tax CorporateTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 34,606 % | yes | LIVE |
-| Tax VAT (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 63,834 % | yes | LIVE |
-| Tax PayrollTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 74,918 % | yes | LIVE |
-| Tax CapitalGainsTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | ApprovalRating 15,755 % | yes | LIVE |
+| Budget line CentralGovernment (the dial's full range) | Budget line | none | Budget 9,546 % | yes | LIVE |
+| Budget line FinancialAdministration (the dial's full range) | Budget line | none | Budget 9,546 % | yes | LIVE |
+| Budget line TaxAdministration (the dial's full range) | Budget line | none | Budget 6,954 % | yes | LIVE |
+| Budget line InternationalAid (the dial's full range) | Budget line | none | Budget 21,278 % | yes | LIVE |
+| Budget line Migration (the dial's full range) | Budget line | none | Budget 5,650 % | yes | LIVE |
+| Budget line HealthcareAndSocialCare (the dial's full range) | Budget line | ApprovalRating 1,804 % | Budget 54,458 % | yes | LIVE |
+| Budget line SicknessAndDisability (the dial's full range) | Budget line | ApprovalRating 1,726 % | Budget 32,551 % | yes | LIVE |
+| Budget line FamilyAndChildren (the dial's full range) | Budget line | ApprovalRating 1,437 % | Budget 26,784 % | yes | LIVE |
+| Budget line IntegrationAndEquality (the dial's full range) | Budget line | none | Budget 2,602 % | yes | LIVE |
+| Budget line LaborMarket (the dial's full range) | Budget line | none | Budget 33,026 % | yes | LIVE |
+| Budget line StudentAid (the dial's full range) | Budget line | none | Budget 14,006 % | yes | LIVE |
+| Budget line CultureAndMedia (the dial's full range) | Budget line | none | Budget 7,388 % | yes | LIVE |
+| Budget line RegionalPlanningAndDevelopment (the dial's full range) | Budget line | none | Budget 3,037 % | yes | LIVE |
+| Budget line ClimateAndEnvironment (the dial's full range) | Budget line | none | Budget 7,825 % | yes | LIVE |
+| Budget line BusinessAndIndustry (the dial's full range) | Budget line | none | Budget 3,908 % | yes | LIVE |
+| Budget line MunicipalGrants (the dial's full range) | Budget line | none | Budget 80,259 % | yes | LIVE |
+| Budget line EuMembershipFee (the dial's full range) | Budget line | none | Budget 24,338 % | yes | LIVE |
+| Tax IncomeTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 77,920 % | yes | LIVE |
+| Tax CorporateTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 79,543 % | yes | LIVE |
+| Tax VAT (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 135,439 % | yes | LIVE |
+| Tax PayrollTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 171,260 % | yes | LIVE |
+| Tax CapitalGainsTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 18,722 % | yes | LIVE |
 | Tax SalesTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
 | Tax ExciseTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
 | Tax PropertyTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
 | Tax EstateTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
 | Tax WealthTax (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
-| Tax CarbonTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 17,283 % | yes | LIVE |
+| Tax CarbonTax (+5 pts) | Tax rate | ApprovalRating 16,700 % | Budget 37,266 % | yes | LIVE |
 | Tax Tariffs (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has no such line |
 | Tax StampDuty (+5 pts) | Tax rate | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this tax: the row is drawn disabled, no slider |
 | Welfare UBI (to 80) | Welfare generosity | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this programme: the row is drawn disabled, no slider |
 | Welfare NegativeIncomeTax (to 80) | Welfare generosity | - | - | - | NOT ARMABLE for Sweden: the country has not implemented this programme: the row is drawn disabled, no slider |
-| Welfare MeansTestedWelfare (to 80) | Welfare generosity | ApprovalRating 2,378 % | Budget 176,478 % | yes | LIVE |
-| Welfare UniversalHealthcare (to 80) | Welfare generosity | ApprovalRating 0,701 % | Budget 40,608 % | yes | LIVE |
-| Welfare HousingAssistance (to 80) | Welfare generosity | ApprovalRating 1,830 % | Budget 33,959 % | yes | LIVE |
-| Welfare ChildcareSubsidies (to 80) | Welfare generosity | ApprovalRating 0,668 % | Budget 8,064 % | yes | LIVE |
+| Welfare MeansTestedWelfare (to 80) | Welfare generosity | ApprovalRating 2,378 % | Budget 416,085 % | yes | LIVE |
+| Welfare UniversalHealthcare (to 80) | Welfare generosity | ApprovalRating 0,701 % | Budget 96,989 % | yes | LIVE |
+| Welfare HousingAssistance (to 80) | Welfare generosity | ApprovalRating 1,830 % | Budget 80,063 % | yes | LIVE |
+| Welfare ChildcareSubsidies (to 80) | Welfare generosity | ApprovalRating 0,668 % | Budget 18,724 % | yes | LIVE |
 | Policy rate (+1 pt) | Central bank | - | - | - | NOT ARMABLE for Sweden: a governor sits: the bank is independent and sets the rate (FederalReserveSystem.ApplyFedChairInterestRate); the decision's InterestRateChange is read only where no governor sits |
 | Base tariff (+5 pts) | Trade | - | - | - | NOT ARMABLE for Sweden: a customs-union member: every partner reads the bloc's internal or external rate, never this country's base rate (TradeSystem.GetStandingTariffRate); only the per-partner overrides move its take |
-| Partner tariff override, first partner (+10 pts) | Trade | none | Budget 7,920 % | yes | LIVE |
+| Partner tariff override, first partner (+10 pts) | Trade | none | Budget 17,629 % | yes | LIVE |
 | Minimum Wage (+10 Kaitz) | Labour dial | - | - | - | NOT ARMABLE for Sweden: the country has no statutory minimum wage: the dial is not drawn for it |
 | Paid Family Leave (+20 weeks) | Labour dial | ApprovalRating 2,227 % | ApprovalRating 11,519 % | yes | LIVE |
-| Overtime Regulation (to 80) | Labour dial | none | Budget 17,357 % | yes | LIVE |
-| Retraining Programs (to 80) | Labour dial | none | Budget 13,012 % | yes | LIVE |
-| Family Policy (to 80) | Labour dial | none | Budget 1,481 % | yes | LIVE |
-| Immigration Policy (to 80) | Labour dial | none | Budget 3,833 % | yes | LIVE |
-| Police Funding (to 80) | Crime dial | none | Budget 4,132 % | yes | LIVE |
+| Overtime Regulation (to 80) | Labour dial | none | Budget 60,794 % | yes | LIVE |
+| Retraining Programs (to 80) | Labour dial | none | Budget 49,953 % | yes | LIVE |
+| Family Policy (to 80) | Labour dial | none | Budget 3,686 % | yes | LIVE |
+| Immigration Policy (to 80) | Labour dial | none | Budget 16,334 % | yes | LIVE |
+| Police Funding (to 80) | Crime dial | none | Budget 11,844 % | yes | LIVE |
 | Sentencing Severity (to 80) | Crime dial | none | ApprovalRating 1,550 % | yes | LIVE |
-| Bail Reform (to 80) | Crime dial | none | ApprovalRating 0,402 % | yes | LIVE |
+| Bail Reform (to 80) | Crime dial | none | Budget 1,064 % | yes | LIVE |
 | Drug Policy (to 80) | Crime dial | ApprovalRating 1,336 % | ApprovalRating 6,925 % | yes | LIVE |
-| Judicial Funding (to 80) | Crime dial | none | ApprovalRating 2,195 % | yes | LIVE |
-| Border Enforcement (to 80) | Crime dial | none | Budget 1,947 % | yes | LIVE |
-| Manufacturing Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Manufacturing Regulation (to 80) | Sector dial | none | Inflation 0,548 % | yes | LIVE |
-| Manufacturing Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Manufacturing Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Manufacturing Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Technology Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Technology Regulation (to 80) | Sector dial | none | Inflation 0,548 % | yes | LIVE |
-| Technology Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Technology Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Technology Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Agriculture Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Agriculture Regulation (to 80) | Sector dial | none | Inflation 0,548 % | yes | LIVE |
-| Agriculture Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Agriculture Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Agriculture Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Finance Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Finance Regulation (to 80) | Sector dial | none | Inflation 0,548 % | yes | LIVE |
-| Finance Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Finance Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Finance Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Energy Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Energy Regulation (to 80) | Sector dial | none | Inflation 0,421 % | yes | LIVE |
-| Energy Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Energy Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Energy Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Construction Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Construction Regulation (to 80) | Sector dial | none | Inflation 0,548 % | yes | LIVE |
-| Construction Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Construction Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Construction Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Retail Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Retail Regulation (to 80) | Sector dial | none | Inflation 0,566 % | yes | LIVE |
-| Retail Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Retail Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Retail Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Telecommunications Subsidy (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Telecommunications Regulation (to 80) | Sector dial | none | Inflation 0,211 % | yes | LIVE |
-| Telecommunications Tax Credits (to 80) | Sector dial | none | Inflation 0,341 % | yes | LIVE |
-| Telecommunications Research Grants (to 80) | Sector dial | none | Budget 0,178 % | yes | LIVE |
-| Telecommunications Nationalization / Deregulation (to 80) | Sector dial | none | Budget 1,294 % | yes | LIVE |
-| Fund contribution rate (+1 pt) | Fund | none | Budget 37,497 % | yes | LIVE |
-| Fund equities weight (+20) | Fund | none | Budget 0,783 % | yes | LIVE |
-| Fund bonds weight (+20) | Fund | none | Budget 1,065 % | yes | LIVE |
-| Fund infrastructure weight (+20) | Fund | none | Budget 0,247 % | yes | LIVE |
-| Fund real-estate weight (+20) | Fund | none | Budget 0,907 % | yes | LIVE |
-| Fund drawdown (2 % of GDP) | Fund | Budget 53,081 % | Budget 1,534 % | yes | LIVE |
+| Judicial Funding (to 80) | Crime dial | none | Budget 4,016 % | yes | LIVE |
+| Border Enforcement (to 80) | Crime dial | none | Budget 5,659 % | yes | LIVE |
+| Manufacturing Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Manufacturing Regulation (to 80) | Sector dial | none | Budget 2,170 % | yes | LIVE |
+| Manufacturing Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Manufacturing Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Manufacturing Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Technology Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Technology Regulation (to 80) | Sector dial | none | Budget 2,170 % | yes | LIVE |
+| Technology Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Technology Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Technology Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Agriculture Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Agriculture Regulation (to 80) | Sector dial | none | Budget 2,170 % | yes | LIVE |
+| Agriculture Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Agriculture Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Agriculture Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Finance Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Finance Regulation (to 80) | Sector dial | none | Budget 2,170 % | yes | LIVE |
+| Finance Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Finance Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Finance Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Energy Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Energy Regulation (to 80) | Sector dial | none | Budget 1,635 % | yes | LIVE |
+| Energy Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Energy Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Energy Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Construction Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Construction Regulation (to 80) | Sector dial | none | Budget 2,170 % | yes | LIVE |
+| Construction Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Construction Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Construction Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Retail Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Retail Regulation (to 80) | Sector dial | none | Budget 2,248 % | yes | LIVE |
+| Retail Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Retail Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Retail Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Telecommunications Subsidy (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Telecommunications Regulation (to 80) | Sector dial | none | Budget 0,846 % | yes | LIVE |
+| Telecommunications Tax Credits (to 80) | Sector dial | none | Budget 1,349 % | yes | LIVE |
+| Telecommunications Research Grants (to 80) | Sector dial | none | Budget 0,114 % | yes | LIVE |
+| Telecommunications Nationalization / Deregulation (to 80) | Sector dial | none | Budget 3,552 % | yes | LIVE |
+| Fund contribution rate (+1 pt) | Fund | none | Budget 88,543 % | yes | LIVE |
+| Fund equities weight (+20) | Fund | none | Budget 1,834 % | yes | LIVE |
+| Fund bonds weight (+20) | Fund | none | Budget 2,490 % | yes | LIVE |
+| Fund infrastructure weight (+20) | Fund | none | Budget 0,572 % | yes | LIVE |
+| Fund real-estate weight (+20) | Fund | none | Budget 2,114 % | yes | LIVE |
+| Fund drawdown (2 % of GDP) | Fund | Budget 57,531 % | Budget 3,535 % | yes | LIVE |
 
 **93 LIVE · 0 LIVE-BUT-NEGLIGIBLE · 0 DEAD · 33 not armable for Sweden, each with its reason.** P5-B4 (2026-09-05) worked the list down: a dead slider either gained a sourced transmission or was retired by name; a lever that is not the country's to pull is NOT ARMABLE, not dead.

@@ -663,7 +663,7 @@ explained per country. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §314: `Spendi
 moves with nominal GDP, employment and — where F4's income dimension exists — the distribution.
 Prove that a tax rate held constant yields rising revenue in a growing economy and falling revenue
 in a recession, with the elasticity stated. *Done when:* asserted per country, same family as B2
-or its own — sheet it.
+or its own — sheet it. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §319: `TaxBases` - every base is its sourced share of the seed's GDP carried by its own driver (the wage bill for income and payroll, consumption for VAT, housing for property, output for the rest), one accessor for every revenue site; elasticity 1 to the driver, asserted on all six by `RevenueBaseDiagnostic` with a recession probe that shows the employment channel; its own BASELINE family, the trajectory suite before and after explained per country. The distribution channel waits on F4, as the row said.**
 
 **P5-B4 — Every slider moves something.** From B1's audit: each dead or negligible slider either
 gains a sourced transmission (basis attached) or is retired by name with the reason (a dial that
@@ -688,6 +688,18 @@ stock with a real rate underneath, the seeds restated, and THEN the lines take p
 tax base (P5-B3) and this row are the two families Track B still owes, one per session. *Done
 when:* the trajectory suite before and after, explained per country; a held real spending share
 is a held share; the Budget screen's figures grow with prices on film.
+
+**P5-B7 — Potential output carries the labour force.** *(Sheeted by P5-B3, §319, from a
+measurement.)* `EconomyState.PotentialGDP` grows at `Country.PotentialGrowthRate` whatever the
+working-age cohort does, so once the tax bases follow the wage bill (B3) a shrinking country keeps
+its output and loses its revenue: Poland's debt at t100 ×2.95 against the tree before, Italy's
+×1.92, while Sweden's and the USA's fall. The two should move together: potential output as the
+labour input (the 20–64 cohort × participation, from F2's substrate) times productivity growth, the
+seeds restated so year 1 is unchanged, and the growth rate the derived quantity it should be. Its own
+BASELINE family, on its own pass, after B6 or before it — the three families Track B owes are B6,
+B7 and nothing else. *Done when:* the trajectory suite before and after, explained per country; a
+country whose workforce shrinks sees its output and its revenue shrink together; the Okun and
+Phillips blocks read the same potential.
 
 ## Track C — the society stats expansion (one family per session; each BASELINE on its own)
 

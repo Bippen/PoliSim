@@ -35,9 +35,11 @@ namespace PoliSim.Data
     ///
     /// <para><b>Coverage.</b> The four sourced instruments per country; every other implemented instrument (capital
     /// gains, carbon, estate, sales...) and every country not in the table falls back to the uniform stand-in, which
-    /// is what `TaxLine.BaseShareOfGdp` has always been. ONE ACCESSOR, READ BY EVERY REVENUE SITE: the turn's
-    /// revenue, the household burden term, the Budget's estimates, the Policy Web's caption and the diagnostics all
-    /// call <see cref="BaseShareOfGdp"/>, so no site can quietly stay on the uniform base for a sourced pair.</para>
+    /// is what `TaxLine.BaseShareOfGdp` has always been. ONE ACCESSOR, READ BY EVERY REVENUE SITE - since P5-B3 (2026-09-05) that
+    /// accessor is <see cref="TaxBases.Base"/> / <see cref="TaxBases.Revenue"/>, which reads THIS table for the share at the
+    /// seed and carries it forward by the base's own driver (the wage bill, consumption, housing, output); the turn's
+    /// revenue, the household burden term, the Budget's estimates, the Policy Web's caption and the diagnostics all go
+    /// through it, so no site can quietly stay on a fixed share of GDP or on the uniform base for a sourced pair.</para>
     /// </summary>
     public static class TaxBaseTable
     {

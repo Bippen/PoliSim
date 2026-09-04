@@ -59,6 +59,7 @@ namespace PoliSim.EditorTools
             var seedDriver = new Dictionary<SpendingCategory, float>();
             var endDriver = new Dictionary<SpendingCategory, float>();
             var baseRevenue = new Dictionary<TaxType, List<float>>();
+            var baseDriverLevel = new Dictionary<TaxType, List<float>>();   // P5-B3: each line's driver level, turn by turn
             var baseRates = new Dictionary<TaxType, float>();
             float potentialGrowth = 0f;
             LeverProbes.RunWorld(null, Horizon, (sim, world, country, turn) =>
@@ -76,7 +77,9 @@ namespace PoliSim.EditorTools
                 {
                     if (!t.IsImplemented || t.Type == TaxType.Tariffs) { continue; }
                     if (!baseRevenue.TryGetValue(t.Type, out List<float> list)) { baseRevenue[t.Type] = list = new List<float>(); baseRates[t.Type] = t.Rate; }
-                    list.Add(country.State.GDP * (t.Rate / 100f) * TaxBaseTable.BaseShareOfGdp(country.Id, t.Type));
+                    list.Add(TaxBases.Revenue(country, t));
+                    if (!baseDriverLevel.TryGetValue(t.Type, out List<float> lv)) { baseDriverLevel[t.Type] = lv = new List<float>(); }
+                    lv.Add(TaxBases.Level(TaxBases.Of(t.Type), country));
                 }
             }, out _);
             float seedGdp = 0f;
@@ -124,17 +127,19 @@ namespace PoliSim.EditorTools
             }
 
             // ---- §2 the tax lines ------------------------------------------------------------------------
-            sb.Append("## 2. The tax lines - revenue = GDP × rate × the base's share of GDP\n\n");
-            sb.Append("From the code (`GetTotalTaxRevenue`, `TaxBaseTable.BaseShareOfGdp`, D-16): a tax line's revenue is nominal GDP times the rate times a FIXED per-country share of GDP for that base. The base therefore moves one-for-one with nominal GDP and with nothing else - not employment, not the wage bill, not the distribution (F4's income dimension does not enter). At a held rate the revenue's elasticity to nominal GDP is exactly 1 by construction; the run below measures it.\n\n");
-            sb.Append($"| tax line | rate held (%) | revenue year 1 ($B) | revenue year {Horizon} ($B) | ratio | GDP ratio | elasticity to nominal GDP |\n|---|---|---|---|---|---|---|\n");
+            sb.Append("## 2. The tax lines - revenue = rate × the base, and the base follows its driver\n\n");
+            sb.Append("From the code (`TaxBases.Revenue`, P5-B3; the share table `TaxBaseTable.BaseShareOfGdp`, D-16, beneath it): a tax line's revenue is the rate times its BASE, and the base is the sourced share of the seed's GDP carried forward by its own DRIVER - the wage bill (the 20–64 cohort × participation × (1 − unemployment) × the real wage) for income and payroll taxes, consumption for VAT, sales and excise, the housing stock at its price for property tax, output for the rest. Before P5-B3 every base was a fixed share of GDP: §312 measured the elasticity to GDP at exactly 1 and named the missing employment channel. The distribution channel (F4's income dimension) is still not there - the substrate carries no income. The book is in constant prices, so \"nominal\" GDP is GDP. Proved below - the run has NO player.\n\n");
+            sb.Append($"| tax line | driver | rate held (%) | revenue year 1 ($B) | revenue year {Horizon} ($B) | ratio | driver ratio | GDP ratio | elasticity to its driver | elasticity to GDP |\n|---|---|---|---|---|---|---|---|---|---|\n");
             foreach (KeyValuePair<TaxType, List<float>> kv in baseRevenue.OrderBy(k => k.Key.ToString(), StringComparer.Ordinal))
             {
                 float r1 = kv.Value[0], r5 = kv.Value[Horizon - 1];
                 float gdp1 = baseGdp[0], gdp5 = baseGdp[Horizon - 1];
                 float elasticity = Mathf.Abs(Mathf.Log(gdp5 / gdp1)) > 1e-6f ? Mathf.Log(r5 / r1) / Mathf.Log(gdp5 / gdp1) : float.NaN;
-                sb.Append($"| {kv.Key} | {Inv(baseRates[kv.Key])} | {Inv(r1)} | {Inv(r5)} | {Inv(r5 / r1)} | {Inv(gdp5 / gdp1)} | {Inv(elasticity)} |\n");
+                float d1 = baseDriverLevel[kv.Key][0], d5 = baseDriverLevel[kv.Key][Horizon - 1];
+                float driverElasticity = d1 > 0f && Mathf.Abs(Mathf.Log(d5 / d1)) > 1e-6f ? Mathf.Log(r5 / r1) / Mathf.Log(d5 / d1) : float.NaN;
+                sb.Append($"| {kv.Key} | {TaxBases.Name(TaxBases.Of(kv.Key))} | {Inv(baseRates[kv.Key])} | {Inv(r1)} | {Inv(r5)} | {Inv(r5 / r1)} | {Inv(d1 > 0f ? d5 / d1 : 1f)} | {Inv(gdp5 / gdp1)} | {Inv(driverElasticity)} | {Inv(elasticity)} |\n");
             }
-            sb.Append("\nA rate held constant yields rising revenue in a growing economy and falling revenue in a recession - through nominal GDP alone. What is NOT there: an employment channel (a recession that cuts employment more than GDP does not cut payroll revenue more), and a distribution channel (a rising Gini does not move income-tax revenue). Track B3's family.\n\n");
+            sb.Append("\nA rate held constant yields rising revenue in a growing economy and falling revenue in a recession - through its base's driver: elasticity 1 to the wage bill on the income and payroll lines (jobs lost cut them beyond what output lost), 1 to consumption on VAT, 1 to output on the rest (a driver elasticity of exactly 1 is the construction; the GDP column shows how far each driver ran from output over the horizon). The year-1 revenue of a consumption line reads its reference from the first day (the seed has no consumption yet). What is still NOT there: the distribution channel (a rising Gini does not move income-tax revenue) - it waits on F4's income dimension. `RevenueBaseDiagnostic` states the elasticities on the simulation bar.\n\n");
 
             // ---- §3 the liveness audit at magnitude ----------------------------------------------------
             sb.Append("## 3. The liveness audit at magnitude - every slider stepped by its full range, read at one and five years\n\n");

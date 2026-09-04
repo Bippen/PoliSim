@@ -3100,6 +3100,8 @@ namespace PoliSim.Simulation
             {
                 TradePartners = ClonePreviewTradePartners(country.TradePartners),
                 TaxLines = ClonePreviewTaxLines(country.TaxLines),
+                RevenueBaseSeedGdp = country.RevenueBaseSeedGdp,   // P5-B3: the preview's revenue reads the same bases as the turn's
+                RevenueBaseSeeds = country.RevenueBaseSeeds == null ? null : (float[])country.RevenueBaseSeeds.Clone(),
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
                 // Seed-spread ruling (2026-08-27): the welfare anchor rides the hand-list too (the
@@ -3624,7 +3626,7 @@ namespace PoliSim.Simulation
                     continue;
                 }
 
-                revenue += gdp * (taxLine.Rate / 100f) * TaxBaseTable.BaseShareOfGdp(country.Id, taxLine.Type);   // D-16 (a): the per-country base for the five, the stand-in for the USA (TaxBaseTable says why)
+                revenue += TaxBases.Revenue(country, taxLine);   // P5-B3: rate x the base, and the base follows its driver (the wage bill, consumption, housing, output) from its sourced share at the seed (TaxBases; D-16's share table beneath)
             }
 
             return revenue;

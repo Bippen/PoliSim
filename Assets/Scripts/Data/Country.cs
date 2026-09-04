@@ -121,6 +121,10 @@ namespace PoliSim.Data
         public float ComfortableDebtToGdpPercentBase;
         public float AverageDebtMaturityYearsBase;
         public float RiskPremiumSensitivityBase;
+
+        /// <summary>P5-B3 (2026-09-05): the seed's GDP and the seed level of each tax-base driver (TaxBases.Level, indexed by TaxBaseDriver), captured by CaptureStructuralBases; a base is its sourced share of the seed's GDP times its driver's ratio to these. 0 = not yet referenced (consumption is computed by the first day; TaxBases.Base takes it then).</summary>
+        public float RevenueBaseSeedGdp;
+        public float[] RevenueBaseSeeds = new float[TaxBases.DriverCount];
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
 
@@ -128,6 +132,9 @@ namespace PoliSim.Data
         public void CaptureStructuralBases()
         {
             foreach (SpendingLine line in SpendingLines) { line.DriverReference = SpendingDrivers.Level(SpendingDrivers.Of(line.Category), this); }
+            RevenueBaseSeedGdp = State.GDP;   // P5-B3
+            RevenueBaseSeeds = new float[TaxBases.DriverCount];
+            for (int d = 0; d < TaxBases.DriverCount; d++) { RevenueBaseSeeds[d] = TaxBases.Level((TaxBaseDriver)d, this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;
             ComfortableDebtToGdpPercentBase = ComfortableDebtToGdpPercent;
             AverageDebtMaturityYearsBase = AverageDebtMaturityYears;
