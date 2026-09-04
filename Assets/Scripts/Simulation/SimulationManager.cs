@@ -1129,7 +1129,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private void ApplyBudgetBillSpendingAndSwf(Country country, BudgetBill bill)
         {
-            var spendingDecision = new PolicyDecision { SpendingLineChanges = bill.SpendingPercentChanges };
+            var spendingDecision = new PolicyDecision { SpendingLineChanges = bill.SpendingPercentChanges, SpendingNominalTargets = bill.SpendingNominalTargets, SpendingPinChanges = bill.SpendingPinChanges };   // P5-B2: the bill carries the set figures and the pins too
             ApplySpendingLineChanges(country, spendingDecision);
 
             if (!bill.SwfShouldExist)
@@ -3683,10 +3683,7 @@ namespace PoliSim.Simulation
         {
             if (country.SpendingLines.Count > 0)
             {
-                ApplyDiscretionarySpendingGrowth(country);
-                ApplyMandatorySpendingGrowth(country);
-                ApplyDemographicPensionPressure(country);
-                ApplyDemographicHealthcarePressure(country);
+                IndexSpendingLines(country);   // P5-B2: the driver on every line that has one (the AI's real growth besides); the four growth and pressure calls this replaces are named in its doc
                 ApplyEnforcementCostPressure(country);
                 ApplySectorSupportCostPressure(country);   // P4-B3: the sector dials' support cost, the same idiom
                 float discretionaryTotalBefore = GetSpendingLineTotal(country, mandatory: false);
@@ -3718,71 +3715,56 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// Every Discretionary line drifts up each turn at the country's own PotentialGrowthRate -
-        /// the same rate PotentialGDP itself compounds at - restoring the property the old
-        /// GDP-proportional GovernmentSpendingRate mechanic had (G growing in step with trend GDP),
-        /// which a fixed-dollar SpendingLines portfolio otherwise loses entirely. See "Discretionary
-        /// Spending Growth" in CLAUDE.md for why this specific rate is the only stable choice - a
-        /// faster rate causes runaway divergence (the growing G term eventually dominates and GDP
-        /// explodes), a slower one reintroduces a widening gap. A no-op for a country without a
-        /// detailed SpendingLines portfolio (the loop body never runs against an empty list).
+        /// P5-B2 (2026-09-05) - THE LINES INDEX. Between the player's own changes every spending line follows its
+        /// DRIVER where it has one (SpendingDrivers: pensions to the 65+ cohort, unemployment benefits to the
+        /// unemployment rate, education to the 0–19 cohort, health to the age-cost index, …): the RATIO of the
+        /// driver's level now to its level at the last index (the seed's level is captured by
+        /// Country.CaptureStructuralBases, so the first year's change counts). A PINNED line holds its amount and
+        /// takes none of it (its driver reference still advances, so unpinning resumes from today, not from the
+        /// pin). The seed anchor indexes by the same factor, so the [0.2x, 3x] band the player's changes are clamped
+        /// to follows the line.
         ///
-        /// SeedAmount grows by this SAME factor, right alongside Amount - this is what stops the
-        /// MaxSpendingLineAmountRatio ceiling (see that constant) from silently freezing G in absolute
-        /// dollar terms. An earlier version left SeedAmount fixed at construction forever, so this
-        /// passive growth alone reached the 3x ceiling after ~56 turns with zero player input and then
-        /// flattened Amount there for the rest of the game - which broke the very "G tracks GDP"
-        /// property this method exists to provide: G stopped growing while tax revenue (proportional to
-        /// GDP) kept climbing, producing an ever-widening primary surplus that paid USA's debt to
-        /// exactly 0 by turn ~70 and flatlined it there - see "SpendingLine Amount Ceiling -
-        /// Debt-to-Zero Fix" in CLAUDE.md. Growing both figures by the identical factor leaves their
-        /// ratio unchanged when it started in range (so a previously-uncapped line is unaffected), and
-        /// still lets ClampToSeedRange correct anything that drifted out - a maxed-out (player-exploited)
-        /// line now stays pegged at exactly MaxSpendingLineAmountRatio times a SeedAmount that itself
-        /// keeps compounding, so even the exploited case keeps tracking GDP instead of freezing.
+        /// <para>NO PRICE TERM, and why - measured, not assumed. The sheet asked for inflation on every line. This
+        /// model keeps its book in CONSTANT PRICES: PotentialGDP grows at PotentialGrowthRate alone
+        /// (MacroSystem.ApplyPotentialGdpGrowthDaily), GDP is solved against it, revenue is rates times that GDP,
+        /// and the Inflation stat is a side book (the Phillips curve, read by the central bank, the real wage and
+        /// approval) that no $B figure carries. The first build of this pass put prices on the lines, and the
+        /// trajectory family showed what that is in a constant-price book: real spending growing at the inflation
+        /// rate every year - every country's lines from a fifth or a half of GDP to three times GDP inside sixty
+        /// years, the output-gap fixed point pulled up by a G that outgrows potential, unemployment to zero,
+        /// inflation to its cap, GDP past 1e38 by t340 (§314 has the table). Prices belong on the lines the day the
+        /// book is in current prices, which is its own BASELINE family (sheeted as P5-B6); until then a price term
+        /// here is a real growth term wearing the wrong name.</para>
+        ///
+        /// <para>The AI's budget rule, stated: a country the player does not govern has nobody to raise its lines,
+        /// so its lines also grow at the country's real PotentialGrowthRate each year - the annual budget its
+        /// finance ministry would pass - which is what every line did before this pass (§312 measured it: potential
+        /// growth exactly, nothing else). The player's own lines take their drivers ONLY: the budget the player set
+        /// is still there next year, grown by what its drivers did, and real provision grows only when the player
+        /// raises it. [AUTHORED-DRAFT] as a rule; the alternative (drivers alone for the AI too) drifts every AI
+        /// budget below its economy at the real growth rate and re-opens the "debt to zero" path CLAUDE.md records
+        /// for a G that stopped tracking GDP.</para>
+        ///
+        /// <para>Replaced here: ApplyDiscretionarySpendingGrowth and ApplyMandatorySpendingGrowth (both potential-rate
+        /// growth on every line, the AI rule's ancestor) and the two bounded demographic pressures on the pension and
+        /// health lines (ApplyDemographicPensionPressure, ApplyDemographicHealthcarePressure - at most 0.5 % and 0.4 %
+        /// a year on a dependency gap), which the 65+ and age-cost drivers replace in full: a driver is the whole
+        /// headcount, a pressure was a nudge on its change.</para>
         /// </summary>
-        private void ApplyDiscretionarySpendingGrowth(Country country)
+        private void IndexSpendingLines(Country country)
         {
+            bool aiBudget = !PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id;
+            float realGrowth = aiBudget ? 1f + country.PotentialGrowthRate / 100f : 1f;
             foreach (SpendingLine line in country.SpendingLines)
             {
-                if (line.IsMandatory)
-                {
-                    continue;
-                }
-
-                float growthFactor = 1f + country.PotentialGrowthRate / 100f;
-                line.SeedAmount *= growthFactor;
-                line.Amount = ClampToSeedRange(line, line.Amount * growthFactor);
-            }
-        }
-
-        /// <summary>
-        /// Every Mandatory line ALSO drifts up each turn at the country's own PotentialGrowthRate,
-        /// mirroring ApplyDiscretionarySpendingGrowth exactly (same growth rate, same lockstep
-        /// SeedAmount growth so MaxSpendingLineAmountRatio's ceiling tracks GDP rather than freezing).
-        /// Real mandatory/entitlement spending (Social Security, Medicare, Medicaid, etc.) grows with
-        /// the economy too - demographics and healthcare-cost growth don't stop just because a program
-        /// is Mandatory rather than Discretionary - and its previous fixed-dollar freeze was a second,
-        /// separate contributor (alongside the debt-risk-premium feedback loop) to the debt-to-GDP
-        /// bimodality "SpendingLine Amount Ceiling - Debt-to-Zero Fix" investigated. Growing Mandatory
-        /// at this same rate was tried in isolation during that investigation and found to overshoot
-        /// badly (DebtToGdpRatio pegged near 294%) - it only became viable once paired with
-        /// GetFiscalReactionMultiplier's negative feedback (see "Fiscal Reaction Function" in
-        /// CLAUDE.md), which is the fix that actually closed the gap; this growth is shipped alongside
-        /// it, not in isolation. A no-op for a country without a detailed SpendingLines portfolio.
-        /// </summary>
-        private void ApplyMandatorySpendingGrowth(Country country)
-        {
-            foreach (SpendingLine line in country.SpendingLines)
-            {
-                if (!line.IsMandatory)
-                {
-                    continue;
-                }
-
-                float growthFactor = 1f + country.PotentialGrowthRate / 100f;
-                line.SeedAmount *= growthFactor;
-                line.Amount = ClampToSeedRange(line, line.Amount * growthFactor);
+                SpendingDriver driver = SpendingDrivers.Of(line.Category);
+                float level = SpendingDrivers.Level(driver, country);
+                float driverRatio = line.DriverReference > 0f && level > 0f ? level / line.DriverReference : 1f;   // the reference is the seed's level (Country.CaptureStructuralBases) or the last index's; 0 only on a save from before this pass
+                line.DriverReference = level;
+                float factor = driverRatio * realGrowth;
+                line.SeedAmount *= factor;
+                if (line.Pinned) { continue; }
+                line.Amount = ClampToSeedRange(line, line.Amount * factor);
             }
         }
 
@@ -3800,47 +3782,6 @@ namespace PoliSim.Simulation
             return null;
         }
 
-        /// <summary>Fraction of the pension-equivalent line's own current Amount added per point DependencyRatio sits above its own Country.BaselineDependencyRatio, before MaxPensionPressureFraction caps the result.</summary>
-        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - an ageing population really does push pension and healthcare spending up; the fraction per point of dependency ratio is a game figure.</remarks>
-        private const float PensionPressureSensitivity = 0.0002f;
-
-        /// <summary>Cap on ApplyDemographicPensionPressure's per-turn fractional nudge - deliberately small ("small and bounded," the same standard this task set for healthcare cost pressure too), reached once DependencyRatio has drifted roughly 25 points above baseline.</summary>
-        /// <remarks>CONVENTION - a cap on a per-turn fractional nudge, deliberately small and bounded as the summary states. A bound on the arithmetic, not a claim about the world.</remarks>
-        private const float MaxPensionPressureFraction = 0.005f;
-
-        /// <summary>
-        /// Round 3 item 5, Part A: nudges the pension-equivalent SpendingLine's Amount up as
-        /// DependencyRatio rises above its own baseline - real, rising old-age dependency mechanically
-        /// raises pension outlays. Targets USA's Mandatory SocialSecurity line, or (for the other five
-        /// countries, which have no Mandatory portfolio at all) their Discretionary SocialPrograms line
-        /// from "Country Selection" Part 2 - the closest analog they have, honestly an approximation
-        /// (SocialPrograms is broader than pensions specifically), not a precise pension-specific line.
-        ///
-        /// Reconciled against the ALREADY-EXISTING automatic growth mechanism (ApplyMandatorySpendingGrowth/
-        /// ApplyDiscretionarySpendingGrowth, both already run earlier this same call) by nudging Amount
-        /// ONLY, never SeedAmount - the automatic growth mechanism is the sole thing that ever moves
-        /// SeedAmount (and therefore the [0.2x, 3.0x] ceiling's own moving reference point), so this
-        /// can never itself become a SECOND source of ceiling drift the way "SpendingLine Amount
-        /// Ceiling - Debt-to-Zero Fix" once found and fixed for Discretionary spending. Re-clamped to
-        /// the line's existing ceiling via the same ClampToSeedRange every other spending-line mutation
-        /// already uses. Runs INSIDE ResolveSpendingForTurn (via the call just above) rather than after
-        /// it returns, so this turn's own fiscal totals already reflect the nudge, the same timing the
-        /// automatic growth mechanism itself already has - a no-op if neither line exists (shouldn't
-        /// happen given WorldFactory's seeding, but defensive).
-        /// </summary>
-        private void ApplyDemographicPensionPressure(Country country)
-        {
-            SpendingLine pensionLine = FindSpendingLine(country, SpendingCategory.SocialSecurity)
-                ?? FindSpendingLine(country, SpendingCategory.SocialPrograms);
-            if (pensionLine == null)
-            {
-                return;
-            }
-
-            float dependencyGap = Mathf.Max(0f, country.State.DependencyRatio - country.BaselineDependencyRatio);
-            float pressureFraction = Mathf.Clamp(PensionPressureSensitivity * dependencyGap, 0f, MaxPensionPressureFraction);
-            pensionLine.Amount = ClampToSeedRange(pensionLine, pensionLine.Amount * (1f + pressureFraction));
-        }
 
         /// <summary>
         /// THE COUPLINGS PASS (build-order item 2, terminal rulings 2026-08-26, "line-resident,
@@ -3920,40 +3861,6 @@ namespace PoliSim.Simulation
             }
         }
 
-        /// <summary>Fraction of Medicare's own current Amount added per point DependencyRatio sits above its own Country.BaselineDependencyRatio, before MaxHealthcarePressureFraction caps the result.</summary>
-        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - an ageing population really does push pension and healthcare spending up; the fraction per point of dependency ratio is a game figure.</remarks>
-        private const float HealthcarePressureSensitivity = 0.00015f;
-
-        /// <summary>Cap on ApplyDemographicHealthcarePressure's per-turn fractional nudge - small and bounded, per this item's own explicit framing.</summary>
-        /// <remarks>CONVENTION - a cap on a per-turn fractional nudge, deliberately small and bounded as the summary states. A bound on the arithmetic, not a claim about the world.</remarks>
-        private const float MaxHealthcarePressureFraction = 0.004f;
-
-        /// <summary>
-        /// Round 3 item 5, Part A: nudges USA's Medicare SpendingLine's Amount up as DependencyRatio
-        /// rises above its own baseline - real, aging-driven healthcare cost pressure (Medicare
-        /// specifically serves the elderly population, the one existing line with a genuinely direct
-        /// real-world link to population aging - Medicaid/HHSDiscretionary serve broader populations
-        /// and were deliberately left untouched). USA-ONLY in this pass - the other five countries have
-        /// no Medicare-equivalent line ("Country Selection" Part 2's generic decomposition has no
-        /// healthcare-specific category), honestly disclosed rather than forced onto an unrelated line,
-        /// the same "USA-first, no clean analog exists yet" precedent "Detailed Spending Portfolio" and
-        /// the original Sovereign Wealth Fund both already established. Reconciled against the
-        /// automatic growth mechanism the exact same way ApplyDemographicPensionPressure is - Amount
-        /// only, never SeedAmount, re-clamped via ClampToSeedRange, run inside ResolveSpendingForTurn
-        /// so this turn's own totals already reflect it.
-        /// </summary>
-        private void ApplyDemographicHealthcarePressure(Country country)
-        {
-            SpendingLine medicareLine = FindSpendingLine(country, SpendingCategory.Medicare);
-            if (medicareLine == null)
-            {
-                return;
-            }
-
-            float dependencyGap = Mathf.Max(0f, country.State.DependencyRatio - country.BaselineDependencyRatio);
-            float pressureFraction = Mathf.Clamp(HealthcarePressureSensitivity * dependencyGap, 0f, MaxHealthcarePressureFraction);
-            medicareLine.Amount = ClampToSeedRange(medicareLine, medicareLine.Amount * (1f + pressureFraction));
-        }
 
         /// <summary>
         /// Applies this turn's requested PERCENTAGE change (PolicyDecision.SpendingLineChanges) to
@@ -3984,6 +3891,15 @@ namespace PoliSim.Simulation
                     float maxRange = line.IsMandatory ? MandatoryPercentChangeRange : DiscretionaryPercentChangeRange;
                     float clampedPercent = Mathf.Clamp(requestedPercent, -maxRange, maxRange);
                     line.Amount = ClampToSeedRange(line, line.Amount * (1f + clampedPercent / 100f));
+                }
+                // P5-B2: a line SET to a nominal amount takes it (clamped to the seed band), and a pin holds it there until unpinned.
+                if (decision.SpendingNominalTargets.TryGetValue(line.Category, out float nominalTarget))
+                {
+                    line.Amount = ClampToSeedRange(line, Mathf.Max(0f, nominalTarget));
+                }
+                if (decision.SpendingPinChanges.TryGetValue(line.Category, out bool pin))
+                {
+                    line.Pinned = pin;
                 }
 
                 float actualChange = line.Amount - amountBefore;

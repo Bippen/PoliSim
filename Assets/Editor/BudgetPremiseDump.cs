@@ -56,12 +56,15 @@ namespace PoliSim.EditorTools
             var baseLines = new Dictionary<SpendingCategory, List<float>>();
             var baseGdp = new List<float>();
             var baseInflation = new List<float>();
+            var seedDriver = new Dictionary<SpendingCategory, float>();
+            var endDriver = new Dictionary<SpendingCategory, float>();
             var baseRevenue = new Dictionary<TaxType, List<float>>();
             var baseRates = new Dictionary<TaxType, float>();
             float potentialGrowth = 0f;
             LeverProbes.RunWorld(null, Horizon, (sim, world, country, turn) =>
             {
                 potentialGrowth = country.PotentialGrowthRate;
+                foreach (SpendingLine l in country.SpendingLines) { endDriver[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); }
                 foreach (SpendingLine l in country.SpendingLines)
                 {
                     if (!baseLines.TryGetValue(l.Category, out List<float> list)) { baseLines[l.Category] = list = new List<float>(); }
@@ -84,26 +87,25 @@ namespace PoliSim.EditorTools
                 Country c = w.GetCountry(LeverProbes.Probed);
                 seedGdp = c.State.GDP;
                 foreach (SpendingLine l in c.SpendingLines) { seedLines[l.Category] = (l.Amount, l.IsMandatory); }
+                foreach (SpendingLine l in c.SpendingLines) { seedDriver[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), c); }
             }
 
             sb.Append("## 1. The spending lines - what the dial sets, what the year boundary does, what moves the line between changes\n\n");
-            sb.Append("**What the dial sets (from the code, `ApplySpendingLineChanges`):** a PERCENTAGE change of the line's CURRENT nominal amount, applied once on the turn the decision carries it - clamped to ±30 % for a Discretionary line and ±15 % for a Mandatory one, and then the amount is clamped to [0.2×, 3×] of the line's seed anchor (`ClampToSeedRange`). The amount is nominal (the same $B-scale unit as GDP) and PERSISTS - nothing resets it at the fiscal-year boundary (`IsFiscalYearStart` only opens the budget process). **The \"normalises after a year\" a player sees is the DIAL, not the line:** `PolicyDecision.SpendingLineChanges` is a per-turn delta, consumed on application, so next year's dial reads 0 % while the amount it set stays. Proved below.\n\n");
-            sb.Append("**What moves a line between player changes (from the code):** every line - Mandatory and Discretionary alike - is multiplied by (1 + PotentialGrowthRate) each turn, seed anchor and amount together (`ApplyDiscretionarySpendingGrowth`, `ApplyMandatorySpendingGrowth`); the pension line (SocialSecurity) also takes a dependency-gap pressure of up to 0.5 % a year (`ApplyPensionPressure`); the Medicare line where it exists an ageing pressure; the Justice (else PublicServices) and HomelandSecurity (else PublicServices) lines take the crime dials' enforcement cost; the Commerce (else PublicServices) line the sector dials' support cost (P4-B3). **Inflation moves no line** - there is no price index on any spending line; a nominal amount grows at the real potential rate, so in real terms every untouched line SHRINKS by the inflation rate each year. Proved below.\n\n");
+            sb.Append("**What the dial sets (from the code, `ApplySpendingLineChanges`):** a PERCENTAGE change of the line's CURRENT nominal amount, applied once on the turn the decision carries it - clamped to ±30 % for a Discretionary line and ±15 % for a Mandatory one, and then the amount is clamped to [0.2×, 3×] of the line's seed anchor (`ClampToSeedRange`); since P5-B2 a line can also be SET to a nominal amount (`PolicyDecision.SpendingNominalTargets`) and PINNED (`PolicyDecision.SpendingPinChanges`). The amount is nominal (the same $B-scale unit as GDP) and PERSISTS - nothing resets it at the fiscal-year boundary (`IsFiscalYearStart` only opens the budget process). **The \"normalises after a year\" a player sees is the DIAL, not the line:** `PolicyDecision.SpendingLineChanges` is a per-turn delta, consumed on application, so next year's dial reads 0 % while the amount it set stays. Proved below.\n\n");
+            sb.Append("**What moves a line between player changes (from the code, P5-B2's `IndexSpendingLines`):** a line with a DRIVER (`SpendingDrivers`: pensions to the 65+ cohort, unemployment benefits to the unemployment rate, education to the 0–19 cohort, health to the age-cost index, …) indexes to its level as the ratio now/then - there is NO price term, the book being in constant prices (`SimulationManager.IndexSpendingLines` says why, with the measurement); a line with no driver holds its figure; a pinned line takes none of it; a country the player does not govern also grows its lines at its real potential rate (the AI's budget rule). The Justice (else PublicServices) and HomelandSecurity (else PublicServices) lines take the crime dials' enforcement cost; the Commerce (else PublicServices) line the sector dials' support cost (P4-B3). Before P5-B2 every line grew at the seed's potential rate and nothing else (§312). Proved below - the run below has NO player, so every country is under the AI rule.\n\n");
 
-            sb.Append($"| line | mandatory | seed ($B) | dial range | amount after {Horizon} untouched turns | ratio | (1+g)^{Horizon} with g = {Inv(potentialGrowth)} % | inflation compound | GDP ratio | reads |\n|---|---|---|---|---|---|---|---|---|---|\n");
+            sb.Append($"| line | driver | mandatory | seed ($B) | dial range | amount after {Horizon} turns | ratio | price index | driver ratio | real growth (AI) | residual |\n|---|---|---|---|---|---|---|---|---|---|---|\n");
             float growthCompound = Mathf.Pow(1f + potentialGrowth / 100f, Horizon);
-            float inflationCompound = 1f;
-            foreach (float pi in baseInflation) { inflationCompound *= 1f + pi / 100f; }
             float gdpRatio = baseGdp[Horizon - 1] / seedGdp;
             foreach (KeyValuePair<SpendingCategory, List<float>> kv in baseLines.OrderBy(k => k.Key.ToString(), StringComparer.Ordinal))
             {
                 (float seed, bool mandatory) = seedLines[kv.Key];
                 float ratio = kv.Value[Horizon - 1] / seed;
-                string reads = Mathf.Abs(ratio - growthCompound) < 0.002f ? "potential growth exactly"
-                    : ratio > growthCompound + 0.002f ? "potential growth plus a pressure" : ratio < 1f + 1e-4f ? "held" : "potential growth less a pressure";
-                sb.Append($"| {kv.Key} | {(mandatory ? "yes" : "no")} | {Inv(seed)} | ±{(mandatory ? 15 : 30)} % | {Inv(kv.Value[Horizon - 1])} | {Inv(ratio)} | {Inv(growthCompound)} | {Inv(inflationCompound)} | {Inv(gdpRatio)} | {reads} |\n");
+                float driverRatio = seedDriver.TryGetValue(kv.Key, out float d0) && d0 > 0f && endDriver.TryGetValue(kv.Key, out float d5) ? d5 / d0 : 1f;
+                float residual = ratio / (driverRatio * growthCompound);
+                sb.Append($"| {kv.Key} | {SpendingDrivers.Name(SpendingDrivers.Of(kv.Key))} | {(mandatory ? "yes" : "no")} | {Inv(seed)} | ±{(mandatory ? 15 : 30)} % | {Inv(kv.Value[Horizon - 1])} | {Inv(ratio)} | {Inv(driverRatio)} | {Inv(growthCompound)} | {Inv(residual)} |\n");
             }
-            sb.Append($"\nGDP over the same {Horizon} turns grew by {Inv(gdpRatio)}× (nominal); the inflation compound was {Inv(inflationCompound)}×. A line that follows potential growth exactly follows neither price nor the actual economy - it follows the seed's potential rate, which is the family Track B replaces.\n\n");
+            sb.Append($"\nNominal GDP over the same {Horizon} turns grew by {Inv(gdpRatio)}×. A residual of 1.000 means the line is exactly its seed times its driver (times real growth under the AI rule) - the enforcement and support costs move a line only when their dials do, and nothing here moved them.\n\n");
 
             // the persistence probe: +full range on the first Discretionary line, then untouched
             SpendingCategory probeCat = baseLines.Keys.FirstOrDefault(k => !seedLines[k].Mandatory);
@@ -118,7 +120,7 @@ namespace PoliSim.EditorTools
                 sb.Append($"**The persistence probe** ({probeCat}, a Discretionary line, stepped +30 % - the dial's full range - on turn 1, then untouched): ");
                 var parts = new List<string>();
                 for (int t = 0; t < Horizon; t++) { parts.Add($"year {t + 1} {Inv(stepped[t] / baseLines[probeCat][t])}×"); }
-                sb.Append("the line against the untouched baseline reads " + string.Join(", ", parts) + $". The step PERSISTS at its full ratio through every later year (the growth applies to both); nothing normalises the amount. The dial reads 0 % from year 2: the decision's delta was consumed.\n\n");
+                sb.Append("the line against the untouched baseline reads " + string.Join(", ", parts) + $". The step PERSISTS at its full ratio through every later year (the index applies to both); nothing normalises the amount. The dial reads 0 % from year 2: the decision's delta was consumed.\n\n");
             }
 
             // ---- §2 the tax lines ------------------------------------------------------------------------

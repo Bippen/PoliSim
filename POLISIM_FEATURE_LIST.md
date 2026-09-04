@@ -655,7 +655,7 @@ to the age structure (all from F2's substrate). The player may pin a line (overr
 set it. The share-of-GDP view becomes a derived readout beside the figure. **Single-book rider:**
 the stored kronor figure is the presented one. *Done when:* a line left untouched for five years
 follows its drivers exactly (asserted per driver), a pinned line does not, and the family is
-explained per country.
+explained per country. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §314: `SpendingDrivers` + `SimulationManager.IndexSpendingLines` - the driver's ratio on every line that has one, pins and nominal targets on the decision and the bill; the AI's budget rule stated; asserted per driver on all six by `SpendingIndexationDiagnostic`; the trajectory family dumped before and after and explained per country. NO PRICE TERM, by measurement: the book is in constant prices - the first build's prices on the lines took every country to the inflation cap inside sixty years (the table is in §314), so prices wait for P5-B6, sheeted below. The screen is B5's.**
 
 **P5-B3 — Revenue that grows with its base.** Revenue per tax line = rate × base, where the base
 moves with nominal GDP, employment and — where F4's income dimension exists — the distribution.
@@ -673,6 +673,19 @@ small instruments, the delta against last year, and the projected next year; the
 figure directly with the range captions (P4-B) rewritten for nominal ranges. The fiscal header's
 projected balance reads from the indexed lines. *Done when:* filmed rest and mid-drag, rects
 stable, every figure derived.
+
+**P5-B6 — The book in current prices.** *(Sheeted by P5-B2, §314, from a measurement.)* The model
+keeps every $B figure in constant prices: `EconomyState.PotentialGDP` grows at the real potential rate alone, GDP
+is solved against it, revenue is rates × that GDP, debt and interest sit on it, and the `EconomyState.Inflation`
+stat is a side book the central bank, the real wage and approval read. B2's first build put prices
+on the spending lines and the trajectory family blew up in sixty years (§314: every country's lines
+to three times GDP, unemployment to zero, inflation to its cap). This row moves the book to current
+prices: potential and GDP carry the price level, revenue follows nominal GDP, the debt is a nominal
+stock with a real rate underneath, the seeds restated, and THEN the lines take prices (the hook is
+`SimulationManager.IndexSpendingLines`, one factor). Its own BASELINE family, on its own pass — the
+tax base (P5-B3) and this row are the two families Track B still owes, one per session. *Done
+when:* the trajectory suite before and after, explained per country; a held real spending share
+is a held share; the Budget screen's figures grow with prices on film.
 
 ## Track C — the society stats expansion (one family per session; each BASELINE on its own)
 

@@ -35,6 +35,12 @@ namespace PoliSim.Data
         /// </summary>
         public float SeedAmount;
 
+        /// <summary>P5-B2 (2026-09-05): a pinned line does not index - the player holds its nominal amount until it is unpinned or set again. Persisted.</summary>
+        public bool Pinned;
+
+        /// <summary>P5-B2: the level of the line's driver (SpendingDrivers) at the last index, so each turn applies the RATIO now/then. Captured at the seed by Country.CaptureStructuralBases (so the first year's change counts); 0 = not yet read (a save from before this pass): the first index takes the level and applies a factor of 1.</summary>
+        public float DriverReference;
+
         public SpendingLine() { }
 
         public SpendingLine(SpendingCategory category, float amount, bool isMandatory)
@@ -48,7 +54,7 @@ namespace PoliSim.Data
         /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - SpendingLine.Amount and (for a Discretionary line) SeedAmount are both mutated turn to turn, so the preview needs its own copies, not shared references. SeedAmount is copied explicitly (not re-derived from the current, possibly-mutated Amount) since it must stay independently anchored, not reset to Amount's current value.</summary>
         public SpendingLine Clone()
         {
-            return new SpendingLine(Category, Amount, IsMandatory) { SeedAmount = SeedAmount };
+            return new SpendingLine(Category, Amount, IsMandatory) { SeedAmount = SeedAmount, Pinned = Pinned, DriverReference = DriverReference };
         }
     }
 }

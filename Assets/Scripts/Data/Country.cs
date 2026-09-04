@@ -113,6 +113,7 @@ namespace PoliSim.Data
         /// <summary>P4-C3 (2026-09-04): the seeded natural rate, the base the enacted LabourInstitutions laws compose on -
         /// NaturalUnemploymentRate is recomputed from this plus the enacted set (SimulationManager.RecomputeStructuralParametersFromEnactedLaws),
         /// never mutated incrementally, the clamp-safe idiom the crime dials taught (COMPOSITION).</summary>
+
         public float NaturalUnemploymentRateBase;
 
         /// <summary>P4-C3: the seeded bases of the other structural parameters a law may move (StructuralParameters) - captured once the
@@ -123,9 +124,10 @@ namespace PoliSim.Data
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
 
-        /// <summary>P4-C3: record every structural parameter's seeded value as its base. Called once, after seeding; a save carries the bases.</summary>
+        /// <summary>P4-C3: record every structural parameter's seeded value as its base. Called once, after seeding; a save carries the bases. P5-B2: also the seed level of every spending line's driver (SpendingLine.DriverReference), so the first year's index counts the seed-to-year-one change.</summary>
         public void CaptureStructuralBases()
         {
+            foreach (SpendingLine line in SpendingLines) { line.DriverReference = SpendingDrivers.Level(SpendingDrivers.Of(line.Category), this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;
             ComfortableDebtToGdpPercentBase = ComfortableDebtToGdpPercent;
             AverageDebtMaturityYearsBase = AverageDebtMaturityYears;

@@ -55,6 +55,12 @@ namespace PoliSim.Data
         /// </summary>
         public Dictionary<SpendingCategory, float> SpendingLineChanges = new Dictionary<SpendingCategory, float>();
 
+        /// <summary>P5-B2 (2026-09-05): the line SET to a nominal amount (the country's -scale unit) this turn - the Budget screen's slider sets the figure directly; clamped to the seed band like every other line mutation. Persisting: the amount stays and indexes from there.</summary>
+        public Dictionary<SpendingCategory, float> SpendingNominalTargets = new Dictionary<SpendingCategory, float>();
+
+        /// <summary>P5-B2: pin (true) or unpin (false) a line this turn - a pinned line holds its nominal amount instead of indexing to prices and its driver.</summary>
+        public Dictionary<SpendingCategory, bool> SpendingPinChanges = new Dictionary<SpendingCategory, bool>();
+
         /// <summary>Discretionary healthcare spending change this turn - see MacroSystem.ApplyCategorySpendingEffects for its confidence/approval profile. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (HHSDiscretionary alone - Medicaid is Mandatory and feeds its own approval term instead, see MacroSystem.MandatorySpendingApprovalMultiplier) rather than set directly by the player - see PolicyDecision.SpendingLineChanges.</summary>
         public float HealthcareSpendingChange;
 

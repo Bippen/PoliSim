@@ -35,6 +35,9 @@ namespace PoliSim.Data
         /// <summary>Requested absolute Rate per TaxType - only meaningful for a TaxType the country currently has implemented (see this class's own doc comment).</summary>
         public Dictionary<TaxType, float> TaxLines = new Dictionary<TaxType, float>();
         public Dictionary<SpendingCategory, float> SpendingPercentChanges = new Dictionary<SpendingCategory, float>();
+        /// <summary>P5-B2: nominal amounts the bill sets outright, and pins it toggles - see PolicyDecision's fields of the same names.</summary>
+        public Dictionary<SpendingCategory, float> SpendingNominalTargets = new Dictionary<SpendingCategory, float>();
+        public Dictionary<SpendingCategory, bool> SpendingPinChanges = new Dictionary<SpendingCategory, bool>();
 
         /// <summary>Requested absolute GenerosityLevel per WelfareProgramType - only meaningful for a WelfareProgramType the country currently has implemented (see this class's own doc comment).</summary>
         public Dictionary<WelfareProgramType, float> WelfarePrograms = new Dictionary<WelfareProgramType, float>();

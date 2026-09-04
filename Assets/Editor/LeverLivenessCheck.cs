@@ -404,6 +404,18 @@ namespace PoliSim.EditorTools
 
                     break;
 
+                // P5-B2: the nominal target and the pin - a target 20 % above the line's standing amount (inside the [0.2x, 3x]
+                // band); a pin holds the line against its index, which is a move against every unpinned year.
+                case "SpendingNominalTargets":
+                    foreach (SpendingLine line in c.SpendingLines) { d.SpendingNominalTargets[line.Category] = line.Amount * 1.2f; }
+
+                    break;
+
+                case "SpendingPinChanges":
+                    foreach (SpendingLine line in c.SpendingLines) { d.SpendingPinChanges[line.Category] = true; }
+
+                    break;
+
                 // The eight legacy discretionary fields are dollar deltas, so they are stepped as a share
                 // of the country's own GDP rather than a flat amount that would be huge for Sweden and
                 // trivial for the USA.
