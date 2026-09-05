@@ -15,6 +15,12 @@ namespace PoliSim.Data
         /// <summary>Annualized inflation rate, as a percentage (e.g. 2.5 = 2.5%).</summary>
         public float Inflation;
 
+        /// <summary>P5-B6 (2026-09-05): THE PRICE LEVEL - 1 at the seed, compounding every day at this state's Inflation (MacroSystem.ApplyPriceLevelDaily). The macro block (C+I+G+NX, potential, Okun, the Phillips curve) is real; the BOOK (spending lines, tax bases, revenue, debt) is nominal and carries this. Nominal GDP is GDP x PriceLevel; the constant-price view is GDP itself, the derived readout.</summary>
+        public float PriceLevel = 1f;
+
+        /// <summary>P5-B6: GDP in current prices - the figure the book is measured against and the screens print as GDP.</summary>
+        public float NominalGdp => GDP * Math.Max(0.0001f, PriceLevel);
+
         /// <summary>Unemployment rate, as a percentage (e.g. 5.0 = 5.0%).</summary>
         public float Unemployment;
 
@@ -293,7 +299,7 @@ namespace PoliSim.Data
         /// Unemployment/Inflation/TaxRate are stored in this codebase, not a raw 0-1 fraction.
         /// Derived, not stored, so it's always consistent with the current GDP and GovernmentDebt.
         /// </summary>
-        public float DebtToGdpRatio => GDP > 0f ? GovernmentDebt / GDP * 100f : 0f;
+        public float DebtToGdpRatio => GDP > 0f ? GovernmentDebt / NominalGdp * 100f : 0f;   // P5-B6: a nominal stock over nominal GDP
 
         public EconomyState() { }
 

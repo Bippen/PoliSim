@@ -56,8 +56,8 @@ namespace PoliSim.Simulation
                 {
                     PeriodOpenDate = date,
                     DebtAtPeriodOpen = openingDebt,
-                    GdpAtPeriodOpen = state.GDP,
-                    RatioAtPeriodOpen = state.GDP > 0f ? openingDebt / state.GDP * 100f : 0f,
+                    GdpAtPeriodOpen = state.NominalGdp,
+                    RatioAtPeriodOpen = state.NominalGdp > 0f ? openingDebt / state.NominalGdp * 100f : 0f,
                     InflationAtOpen = state.Inflation
                 };
             }
@@ -146,7 +146,7 @@ namespace PoliSim.Simulation
             DebtAttribution ledger = EnsureAccruing(country, date, state.GovernmentDebt);
             ledger.PeriodCloseDate = date;
             ledger.DebtAtClose = state.GovernmentDebt;
-            ledger.GdpAtClose = state.GDP;
+            ledger.GdpAtClose = state.NominalGdp;
             ledger.RatioAtClose = state.DebtToGdpRatio;
             ledger.InflationAtClose = state.Inflation;
             if (ledger.DaysRecorded == 0)
@@ -189,7 +189,7 @@ namespace PoliSim.Simulation
             {
                 PeriodOpenDate = date,
                 DebtAtPeriodOpen = state.GovernmentDebt,
-                GdpAtPeriodOpen = state.GDP,
+                GdpAtPeriodOpen = state.NominalGdp,
                 RatioAtPeriodOpen = state.DebtToGdpRatio,
                 InflationAtOpen = state.Inflation
             };

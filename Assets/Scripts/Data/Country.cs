@@ -131,6 +131,9 @@ namespace PoliSim.Data
         public float PotentialLabourSeed;
         public float PotentialProductivityIndex;
         public float PotentialLabourAtLastTurn;
+
+        /// <summary>P5-B6 (2026-09-05): the price level as it stood when the spending lines were last indexed, so the lines carry the year's prices as the ratio now/then (IndexSpendingLines). 1 at the seed; 0 = a save from before this pass (the first index takes the level and applies 1).</summary>
+        public float PriceLevelAtLastIndex;
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
 
@@ -143,6 +146,7 @@ namespace PoliSim.Data
             PotentialLabourSeed = PotentialOutput.LabourInput(this);
             PotentialProductivityIndex = 1f;
             PotentialLabourAtLastTurn = PotentialLabourSeed;
+            PriceLevelAtLastIndex = State.PriceLevel;   // P5-B6
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
             for (int d = 0; d < TaxBases.DriverCount; d++) { RevenueBaseSeeds[d] = TaxBases.Level((TaxBaseDriver)d, this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;

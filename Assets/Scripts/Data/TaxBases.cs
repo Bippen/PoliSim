@@ -10,7 +10,9 @@ namespace PoliSim.Data
     /// not carry yet). The base is now the sourced share of GDP AT THE SEED, carried forward by the ratio of its own
     /// driver: the wage bill for income and payroll taxes, consumption for VAT and the sales and excise lines, the
     /// housing stock at its price for property tax, and output itself for the rest - where output IS the base's
-    /// driver the arithmetic is D-16's unchanged. There is no price term: the book is in constant prices (§314).
+    /// driver the arithmetic is D-16's unchanged. P5-B6 (2026-09-05): the base is NOMINAL - the real base times
+    /// EconomyState.PriceLevel - because the book is in current prices from that pass on (§314 measured what a price term
+    /// did in a constant-price book; B6 gave the book the prices first).
     /// </summary>
     public enum TaxBaseDriver
     {
@@ -80,17 +82,17 @@ namespace PoliSim.Data
             float share = TaxBaseTable.BaseShareOfGdp(country.Id, type);
             if (country.RevenueBaseSeedGdp <= 0f || country.RevenueBaseSeeds == null || country.RevenueBaseSeeds.Length < DriverCount)
             {
-                return share * country.State.GDP;
+                return share * country.State.NominalGdp;   // P5-B6: nominal
             }
             TaxBaseDriver driver = Of(type);
             float level = Level(driver, country);
             float reference = country.RevenueBaseSeeds[(int)driver];
             if (reference <= 0f)
             {
-                if (level <= 0f) { return share * country.RevenueBaseSeedGdp; }
+                if (level <= 0f) { return share * country.RevenueBaseSeedGdp * country.State.PriceLevel; }
                 country.RevenueBaseSeeds[(int)driver] = reference = level;
             }
-            return share * country.RevenueBaseSeedGdp * (level / reference);
+            return share * country.RevenueBaseSeedGdp * (level / reference) * country.State.PriceLevel;   // P5-B6: the base is NOMINAL - the real base at the seed's prices times the price level
         }
 
         /// <summary>The instrument's revenue before the coverage bridge: rate × base. ONE ACCESSOR, READ BY EVERY REVENUE SITE (the turn, the household burden, the Budget's estimates, the diagnostics), as D-16's was.</summary>

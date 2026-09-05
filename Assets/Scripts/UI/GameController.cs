@@ -5084,7 +5084,7 @@ namespace PoliSim.UI
                         float w = Mathf.Round(330f * s);
                         float h = PoliSimWidgets.StatTileHeight(s, true, false);
                         Rect r = cursor.Place(w, h, captionHeight);
-                        PoliSimWidgets.StatTile(r, "GDP", UiFormat.Money(_playerCountry.State.GDP, MoneyUnit.Billions), null, "+1.20%", true, null, UiPalette.SystemArea.Global, s);
+                        PoliSimWidgets.StatTile(r, "GDP", UiFormat.Money(_playerCountry.State.NominalGdp, MoneyUnit.Billions), null, "+1.20%", true, null, UiPalette.SystemArea.Global, s);
                         LadderCaption(r, $"{w}x{Mathf.Round(h)} scale {s}", captionHeight);
                     }
                     break;
@@ -8419,7 +8419,7 @@ namespace PoliSim.UI
             // own conversion). The event panel beside it keeps its sentence ON PURPOSE: it mirrors the
             // BREAKING banner's effect wording, and two wordings for one event would be the defect.
             Color globalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Global);
-            DrawDerivedStatRow("GDP", -1f, UiFormat.Money(state.GDP, MoneyUnit.Billions), null, globalInk);
+            DrawDerivedStatRow("GDP", -1f, UiFormat.Money(state.NominalGdp, MoneyUnit.Billions), null, globalInk);
             DrawDerivedStatRow("Unemployment", -1f, $"{state.Unemployment:F2}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
             DrawDerivedStatRow("Inflation", -1f, $"{state.Inflation:F2}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             DrawDerivedStatRow("Approval rating", -1f, $"{state.ApprovalRating:F1}", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
@@ -9572,7 +9572,7 @@ namespace PoliSim.UI
             {
                 // What the request would actually deliver, not what it asks for. The fund may hold less,
                 // and finding that out only after a multi-day vote would be the worst moment to learn it.
-                float requested = _playerCountry.State.GDP * _swfDrawdownPercentInput / 100f;
+                float requested = _playerCountry.State.NominalGdp * _swfDrawdownPercentInput / 100f;   // P5-B6: the book is nominal
                 float deliverable = Mathf.Min(requested, _playerCountry.SovereignWealthFund.TotalAssets);
                 string capped = deliverable < requested ? "  (CAPPED - the fund holds less than this)" : string.Empty;
                 GUILayout.Label($"Would release {UiFormat.Money(deliverable, MoneyUnit.Billions)} into the budget{capped}", _labelStyle);
@@ -10651,7 +10651,7 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawSectorCostAndImpact(Sector sector)
         {
-            float gdp = _playerCountry.State.GDP;
+            float gdp = _playerCountry.State.NominalGdp;   // P5-B6: a nominal figure over nominal GDP
             float standingCost = SectorCouplings.SupportCost(gdp, sector.SubsidyLevel, sector.TaxCreditLevel, sector.ResearchGrantsLevel);
             float draftCost = SectorCouplings.SupportCost(gdp,
                 GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel),
@@ -11076,7 +11076,7 @@ namespace PoliSim.UI
                 : line.LastDriverRatio > 0f ? driver + " ×" + line.LastDriverRatio.ToString("F3", CultureInfo.InvariantCulture) : driver;
             string leftShort = line.Pinned ? "PINNED" : driver;
             string left = face.CalcSize(new GUIContent(leftFull)).x <= end ? leftFull : leftShort;
-            string next = "NEXT " + UiFormat.Money(line.ProjectNextYear(), MoneyUnit.Billions);
+            string next = "NEXT " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions);
             string rightFull = line.LastYearAmount > 0f ? "Δ " + UiFormat.MoneyDelta(line.Amount - line.LastYearAmount, MoneyUnit.Billions) + " · " + next : next;
             string right = face.CalcSize(new GUIContent(rightFull)).x <= end ? rightFull : next;
             Color ink = PoliSimTheme.TextSecondary;
@@ -11094,7 +11094,7 @@ namespace PoliSim.UI
         /// <summary>This line's share of GDP, the board's trailing column for a spending row. B3: the unit is named, and a share is not money so it takes a format string rather than a MoneyUnit.</summary>
         private string SpendingShareOfGdpText(float amount)
         {
-            float gdp = _playerCountry.State.GDP;
+            float gdp = _playerCountry.State.NominalGdp;   // P5-B6: a nominal figure over nominal GDP
             if (gdp <= 0f)
             {
                 return "-";

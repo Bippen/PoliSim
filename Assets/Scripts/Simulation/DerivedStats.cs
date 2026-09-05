@@ -36,7 +36,7 @@ namespace PoliSim.Simulation
         public static float? GdpPerCapita(Country country)
         {
             float population = country.State.Population;
-            return population > 0f ? country.State.GDP / population : (float?)null;
+            return population > 0f ? country.State.NominalGdp / population : (float?)null;   // P5-B6: current prices
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace PoliSim.Simulation
                 return null;
             }
 
-            float gdp = country.State.GDP;
+            float gdp = country.State.NominalGdp;   // P5-B6: a nominal amount over nominal GDP
             return gdp > 0f ? amount.Value / gdp * 100f : (float?)null;
         }
     }

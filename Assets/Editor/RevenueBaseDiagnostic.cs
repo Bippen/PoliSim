@@ -59,12 +59,12 @@ namespace PoliSim.EditorTools
                         float share = TaxBaseTable.BaseShareOfGdp(id, line.Type);
                         float reference = c.RevenueBaseSeeds[(int)driver];
                         float level = TaxBases.Level(driver, c);
-                        float expected = share * seedGdp * (reference > 0f ? level / reference : 1f);
+                        float expected = share * seedGdp * (reference > 0f ? level / reference : 1f) * c.State.PriceLevel;   // P5-B6: the base is nominal - the real base x the price level
                         float actual = TaxBases.Base(c, line.Type);
                         basesChecked++;
                         if (Mathf.Abs(actual / expected - 1f) > Tolerance)
                         {
-                            Debug.LogError($"REVBASE: {id} {line.Type} ({TaxBases.Name(driver)}) base {actual:F4} after {Years} years; share {share:F4} x seed GDP {seedGdp:F2} x driver ratio {(reference > 0f ? level / reference : 1f):F5} = {expected:F4}.");
+                            Debug.LogError($"REVBASE: {id} {line.Type} ({TaxBases.Name(driver)}) base {actual:F4} after {Years} years; share {share:F4} x seed GDP {seedGdp:F2} x driver ratio {(reference > 0f ? level / reference : 1f):F5} x price level {c.State.PriceLevel:F5} = {expected:F4}.");
                             ok = false;
                         }
                         byDriver[driver] = reference > 0f ? level / reference : 1f;

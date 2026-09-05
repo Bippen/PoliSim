@@ -378,7 +378,7 @@ namespace PoliSim.Simulation
                     float anchoredPotential = macroPeriod.PotentialGdpAtPeriodOpen > 0f
                         ? macroPeriod.PotentialGdpAtPeriodOpen
                         : country.State.PotentialGDP;
-                    MacroSystem.ApplyNationalAccountsDaily(country, macroPeriod.PlannedGovernmentSpending, country.CurrencyZone.InterestRate, anchoredPotential, macroPeriod.WageGrowthGapAtPeriodOpen);
+                    MacroSystem.ApplyNationalAccountsDaily(country, macroPeriod.PlannedGovernmentSpending / Mathf.Max(0.0001f, country.State.PriceLevel), country.CurrencyZone.InterestRate, anchoredPotential, macroPeriod.WageGrowthGapAtPeriodOpen);   // P5-B6: G is a nominal budget; the identity is real - deflate it by today's price level
                     MacroSystem.ApplyPotentialGdpGrowthDaily(country);
                     // The day's growth increment is measured against the PERIOD-OPEN GDP, not the
                     // day's own base - the third fixed reference of this phase: daily linear
@@ -394,6 +394,7 @@ namespace PoliSim.Simulation
                     // period (a price-LEVEL stance planned at the boundary); what actually printed
                     // is kept on the period so the boundary's expectations step can look through it.
                     macroPeriod.AppliedTariffPassThroughPp = MacroSystem.ApplyPhillipsCurveInflation(country, macroPeriod.PlannedTariffPassThroughPp);
+                    MacroSystem.ApplyPriceLevelDaily(country);   // P5-B6: the price level compounds at the inflation just printed - the book's prices
                     // Expectations deliberately absent here - a boundary stance; see MacroSystem's
                     // Phase 5 block comment for the measured failure of the daily form.
 
@@ -720,6 +721,11 @@ namespace PoliSim.Simulation
             /// remainder", self-correcting at the next boundary - the WageGrowthGapAtPeriodOpen
             /// posture, no guard needed.</summary>
             public float PlannedTariffRevenue;
+
+            /// <summary>P5-B6: the same take at the seed's prices - what the pass-through measures its CHANGE against, so a
+            /// price level the nominal figure carries never reads as a tariff move. Zero from an older save degrades to the
+            /// nominal figure deflated by today's level (RealPlannedTariffRevenue).</summary>
+            public float PlannedTariffRevenueReal;
 
             /// <summary>Pass 6 (2026-08-27): the tariff pass-through planned for this period -
             /// TradeCosts.ImportPricePassThrough x 100 x (this boundary's take - the closing period's
@@ -1854,7 +1860,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
-            float requested = country.State.GDP * bill.WithdrawalPercentOfGdp / 100f;
+            float requested = country.State.NominalGdp * bill.WithdrawalPercentOfGdp / 100f;
             float withdrawn = Mathf.Clamp(requested, 0f, fund.TotalAssets);
 
             fund.TotalAssets -= withdrawn;
@@ -2616,7 +2622,7 @@ namespace PoliSim.Simulation
             // period. The expectations step runs AFTER the re-plan and must look through the CLOSING
             // period's term, not the coming one's (the ordering trap, named).
             float closingAppliedTariffPassThroughPp = period.AppliedTariffPassThroughPp;
-            float closingPlannedTariffRevenue = period.PlannedTariffRevenue;
+            float closingPlannedTariffRevenue = RealPlannedTariffRevenue(period, country);   // P5-B6: real against real
 
             // Open the next period. The SWF return is drawn ONCE here and accrued daily - see
             // FiscalPeriod's doc comment for that decision and why daily draws were rejected. The draw
@@ -2641,7 +2647,8 @@ namespace PoliSim.Simulation
                 ? TradeCosts.ImportPricePassThrough * TradeCosts.PassThroughMeasurementScale
                     * 100f * (tariffRevenue - closingPlannedTariffRevenue) / Mathf.Max(state.GDP, 1f)
                 : 0f;
-            period.PlannedTariffRevenue = tariffRevenue;
+            period.PlannedTariffRevenueReal = tariffRevenue;
+            period.PlannedTariffRevenue = tariffRevenue * country.State.PriceLevel;   // P5-B6: the take is computed on real trade; the book is nominal
 
             // Read AFTER 121 days of accrual have finished moving the debt stock, so the stance the next
             // period adopts responds to the debt the country actually ended this one with - the same
@@ -2872,7 +2879,7 @@ namespace PoliSim.Simulation
             {
                 previewCountry.SovereignWealthFund.TotalAssets += swfContribution;
                 swfReturns = SovereignWealthFundSystem.GetAverageReturnEstimate(previewCountry.SovereignWealthFund);
-                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
                 previewCountry.SovereignWealthFund.TotalAssets = Mathf.Clamp(previewCountry.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
 
                 // Mirrors AdvanceTurn exactly: the budget sees the structural DRAW, not the return. The
@@ -3019,10 +3026,18 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The tariff take the country's CURRENT fiscal period planned (what the next boundary's pass-through is measured against), read with TryGetValue so a preview or an estimate never seeds a period; before the first period exists, the seed take from the same pure function.</summary>
+        /// <summary>P5-B6: the period's planned take at the seed's prices - the real field when the period carries it, else the
+        /// nominal figure over today's level (an older save). The pass-through compares real to real: a rate change moves it,
+        /// the price level never does.</summary>
+        private static float RealPlannedTariffRevenue(FiscalPeriod period, Country country)
+            => period.PlannedTariffRevenueReal > 0f
+                ? period.PlannedTariffRevenueReal
+                : period.PlannedTariffRevenue / Mathf.Max(0.0001f, country.State.PriceLevel);
+
         private float StandingPlannedTariffRevenue(CountryId countryId)
         {
             return _fiscalPeriods.TryGetValue(countryId, out FiscalPeriod period)
-                ? period.PlannedTariffRevenue
+                ? RealPlannedTariffRevenue(period, _world.GetCountry(countryId))
                 : TradeSystem.ComputeTariffRevenue(_world.GetCountry(countryId), _world);
         }
 
@@ -3106,6 +3121,7 @@ namespace PoliSim.Simulation
                 PotentialLabourSeed = country.PotentialLabourSeed,
                 PotentialProductivityIndex = country.PotentialProductivityIndex,
                 PotentialLabourAtLastTurn = country.PotentialLabourAtLastTurn,
+                PriceLevelAtLastIndex = country.PriceLevelAtLastIndex,   // P5-B6
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
                 // Seed-spread ruling (2026-08-27): the welfare anchor rides the hand-list too (the
@@ -3488,7 +3504,7 @@ namespace PoliSim.Simulation
         private float GetSwfContribution(Country country)
         {
             SovereignWealthFund fund = country.SovereignWealthFund;
-            return fund == null ? 0f : country.State.GDP * (fund.ContributionRatePercent / 100f);
+            return fund == null ? 0f : country.State.NominalGdp * (fund.ContributionRatePercent / 100f);   // P5-B6: nominal
         }
 
         /// <summary>
@@ -3585,7 +3601,7 @@ namespace PoliSim.Simulation
             // implemented at seed books nothing here and only a player's deviation moves the budget
             // (a removal below the seed books NEGATIVE cost: spending below the sourced line). Bit-
             // identical to the pre-ruling sum while no country seeds a program (x - 0f == x).
-            return WelfareCostOf(country.WelfarePrograms, country.State.GDP) - WelfareCostOf(country.BaselineWelfarePrograms, country.State.GDP);
+            return WelfareCostOf(country.WelfarePrograms, country.State.NominalGdp) - WelfareCostOf(country.BaselineWelfarePrograms, country.State.NominalGdp);   // P5-B6: nominal
         }
 
         private static float WelfareCostOf(List<WelfareProgram> programs, float gdp)
@@ -3645,7 +3661,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private float GetBaselineGovernmentSpending(Country country)
         {
-            return country.State.GDP * (country.GovernmentSpendingRate / 100f);
+            return country.State.NominalGdp * (country.GovernmentSpendingRate / 100f);   // P5-B6: a share of nominal GDP
         }
 
         /// <summary>Bundles what ResolveSpendingForTurn resolves this turn's spending down to, for either mechanism (detailed SpendingLines or the legacy baseline+category-delta one).</summary>
@@ -3730,8 +3746,13 @@ namespace PoliSim.Simulation
         /// pin). The seed anchor indexes by the same factor, so the [0.2x, 3x] band the player's changes are clamped
         /// to follows the line.
         ///
-        /// <para>NO PRICE TERM, and why - measured, not assumed. The sheet asked for inflation on every line. This
-        /// model keeps its book in CONSTANT PRICES: PotentialGDP grows at PotentialGrowthRate alone
+        /// <para>THE PRICE TERM (P5-B6, 2026-09-05): every line carries the year's prices as the ratio of EconomyState.PriceLevel now
+        /// to its level at the last index - the book is in current prices since B6 (GDP, the bases, the flows, the debt all
+        /// carry the level), so a nominal line that follows it holds its real share. The paragraph that follows is B2's
+        /// measurement of what the same term did BEFORE the book carried prices, kept as the reason B6 exists.</para>
+        ///
+        /// <para>NO PRICE TERM (B2, superseded by B6) - measured, not assumed. The sheet asked for inflation on every line. This
+        /// model kept its book in CONSTANT PRICES: PotentialGDP grows at PotentialGrowthRate alone
         /// (MacroSystem.ApplyPotentialGdpGrowthDaily), GDP is solved against it, revenue is rates times that GDP,
         /// and the Inflation stat is a side book (the Phillips curve, read by the central bank, the real wage and
         /// approval) that no $B figure carries. The first build of this pass put prices on the lines, and the
@@ -3761,6 +3782,12 @@ namespace PoliSim.Simulation
         {
             bool aiBudget = !PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id;
             float realGrowth = aiBudget ? 1f + country.PotentialGrowthRate / 100f : 1f;
+            // P5-B6 (2026-09-05): THE PRICE TERM RETURNS - the book is in current prices now, so a nominal line carries the
+            // year's prices as the ratio of the price level now to the level at the last index (0 = a save from before: a
+            // factor of 1 once). §314 withdrew this term because the book did not carry prices; B6 gave the book its prices
+            // first (GDP, the bases, the flows, the debt), and the line follows.
+            float prices = country.PriceLevelAtLastIndex > 0f ? country.State.PriceLevel / country.PriceLevelAtLastIndex : 1f;
+            country.PriceLevelAtLastIndex = country.State.PriceLevel;
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);
@@ -3769,7 +3796,7 @@ namespace PoliSim.Simulation
                 line.DriverReference = level;
                 line.LastYearAmount = line.Amount;   // P5-B5: the row's delta against last year reads this
                 line.LastDriverRatio = driverRatio;  // P5-B5: the row's projection carries this forward
-                float factor = driverRatio * realGrowth;
+                float factor = prices * driverRatio * realGrowth;
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }
                 line.Amount = ClampToSeedRange(line, line.Amount * factor);
@@ -4002,7 +4029,7 @@ namespace PoliSim.Simulation
         private float GetUnemploymentBenefitCost(Country country)
         {
             EconomyState state = country.State;
-            return country.BenefitRatePerUnemployed * state.Unemployment / 100f * state.GDP;
+            return country.BenefitRatePerUnemployed * state.Unemployment / 100f * state.NominalGdp;   // P5-B6: a nominal flow
         }
 
         /// <summary>Sovereign risk premium: lenders charge more above a conventional "safe" debt-to-GDP benchmark, capped so it can't make InterestOnDebt quadratic in Debt.</summary>
@@ -4039,8 +4066,8 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             state.Budget += amount;
-            float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
-            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.GDP;
+            float maxDebt = MaxDebtToGdpPercent / 100f * state.NominalGdp;   // P5-B6: bounds on nominal GDP
+            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
             state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - amount, -netCreditorGuard, maxDebt);
         }
 
@@ -4175,7 +4202,8 @@ namespace PoliSim.Simulation
                     : 0f,
                 // Pass 5: the opening period's tariff flow, from the same pure function the boundary
                 // reports - so turn 1 accrues the seed rates' take rather than a period of nothing.
-                PlannedTariffRevenue = TradeSystem.ComputeTariffRevenue(country, _world),
+                PlannedTariffRevenueReal = TradeSystem.ComputeTariffRevenue(country, _world),
+                PlannedTariffRevenue = TradeSystem.ComputeTariffRevenue(country, _world) * country.State.PriceLevel,   // P5-B6: nominal
                 // Pass 6: no previous boundary, so no tariff change to pass through.
                 PlannedTariffPassThroughPp = 0f,
                 AppliedTariffPassThroughPp = 0f,
@@ -4243,7 +4271,7 @@ namespace PoliSim.Simulation
                 swfReturns = period.PlannedSwfReturn * FiscalFlowPerDayFraction;
                 country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfReturns);
 
-                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
                 country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
 
                 swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction() * FiscalFlowPerDayFraction;
@@ -4280,10 +4308,10 @@ namespace PoliSim.Simulation
             // update's, on the same state - and the ledger's twin-drift detector is what keeps it
             // so. The clamp is detected by landing ON either bound, tested against the same two
             // limits the update clamps to.
-            float erosionFactorApplied = Mathf.Pow(Mathf.Max(0.01f, 1f - state.Inflation / 100f), FiscalFlowPerDayFraction);
+            float erosionFactorApplied = 1f;   // P5-B6: no erosion - the book is nominal, and a nominal stock is not eroded by the prices it is written in
             float debtAfterWrite = state.GovernmentDebt;
-            float ceilingToday = MaxDebtToGdpPercent / 100f * state.GDP;
-            float guardToday = NetCreditorRunawayGuardPercent / 100f * state.GDP;
+            float ceilingToday = MaxDebtToGdpPercent / 100f * state.NominalGdp;   // P5-B6: bounds on nominal GDP
+            float guardToday = NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
             bool clampBoundToday = debtAfterWrite >= ceilingToday || debtAfterWrite <= -guardToday;
             DebtLedgerRecorder.RecordDay(country, CurrentDate, debtBeforeWrite, debtAfterWrite, erosionFactorApplied,
                 revenue, totalSpending, interestOnDebt, interestAtIssuanceToday, budgetBalance,
@@ -4315,7 +4343,7 @@ namespace PoliSim.Simulation
                 country.SovereignWealthFund.TotalAssets += swfContribution;
                 country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfPeriodReturn);
 
-                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.GDP;
+                float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
                 country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
 
                 swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction();
@@ -4340,7 +4368,8 @@ namespace PoliSim.Simulation
             period.PlannedGovernmentSpending = governmentSpending;
             period.PlannedMandatorySpending = mandatorySpending;
             period.PlannedSwfReturn = swfPeriodReturn;
-            period.PlannedTariffRevenue = tariffRevenue;
+            period.PlannedTariffRevenueReal = tariffRevenue;
+            period.PlannedTariffRevenue = tariffRevenue * country.State.PriceLevel;   // P5-B6: the take is computed on real trade; the book is nominal
             AccrueDailyFiscalFlows(country);
         }
 
@@ -4456,8 +4485,8 @@ namespace PoliSim.Simulation
             //
             // The CEILING is unchanged and is not a guard: MaxDebtToGdpPercent is a calibrated gameplay
             // bound that no country has ever reached either, but it predates this and stays as it was.
-            float maxDebt = MaxDebtToGdpPercent / 100f * state.GDP;
-            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.GDP;
+            float maxDebt = MaxDebtToGdpPercent / 100f * state.NominalGdp;   // P5-B6: bounds on nominal GDP (the ledger reads the same)
+            float netCreditorGuard = NetCreditorRunawayGuardPercent / 100f * state.NominalGdp;
 
             // THE EROSION TERM (2026-08-17; mechanism-report rulings R1-R3). The standard
             // debt-dynamics identity's −π·b, previously missing: per R2's DECLARATION (recorded in
@@ -4476,8 +4505,11 @@ namespace PoliSim.Simulation
             // budgetBalance subtraction is the same within-period feedback Phase 3's stated drift
             // budget already covers (see the equivalence check's erosion enumeration). The inner
             // Max is defensive only - Inflation is produced clamped far below 100 everywhere.
-            float erosionFactor = Mathf.Pow(Mathf.Max(0.01f, 1f - state.Inflation / 100f), revenuePeriodFraction);
-            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt * erosionFactor - budgetBalance, -netCreditorGuard, maxDebt);
+            // P5-B6 (2026-09-05): THE EROSION TERM IS RETIRED. R2 (2026-08-17) declared the book constant-price with the debt as
+            // its one nominal stock and bridged the two with −π·b; B6 makes the book nominal - revenue, spending and the balance
+            // are in current prices - so the debt accrues nominal balances and the bridge would count inflation twice.
+            // What erodes now is the debt-to-GDP RATIO, through nominal GDP, which is what the identity says.
+            state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, -netCreditorGuard, maxDebt);
 
             return actualRevenue;
         }

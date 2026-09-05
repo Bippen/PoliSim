@@ -137,8 +137,8 @@ namespace PoliSim.EditorTools
                     failures += Assert(sb, $"{country.Id}: the year's balance within {MaxBalanceShareOfGdp}% of GDP either way",
                         deficit.HasValue && Mathf.Abs(deficit.Value) <= MaxBalanceShareOfGdp, F("{0:0.0}%", deficit ?? float.NaN));
                     failures += Assert(sb, $"{country.Id}: the sheet's deficit is the report's balance with the sign flipped, over the same GDP",
-                        deficit.HasValue && Mathf.Abs(deficit.Value - (-report.BudgetBalance / country.State.GDP * 100f)) < 1e-3f,
-                        F("{0} vs {1}", deficit ?? float.NaN, -report.BudgetBalance / country.State.GDP * 100f));
+                        deficit.HasValue && Mathf.Abs(deficit.Value - (-report.BudgetBalance / country.State.NominalGdp * 100f)) < 1e-3f,
+                        F("{0} vs {1}", deficit ?? float.NaN, -report.BudgetBalance / country.State.NominalGdp * 100f));
                 }
 
                 sb.Append("\n--- 3. The one-time settlements: every pooled option, authored and as applied, per country ---\n");

@@ -85,7 +85,7 @@ namespace PoliSim.UI
                 // tiles' old lesson. Billions is a fact about EconomyState.GDP, stated here rather than
                 // read from a StatNodeId (GetStatUnit(...).Value would throw inside OnGUI were the entry
                 // ever cleared - the sparkline crash is what an exception in a draw call costs).
-                new HeadlineReading("GDP", UiFormat.Money(state.GDP, MoneyUnit.Billions), _lastGrowthPercent.ToString("+0.00;-0.00;0", CultureInfo.InvariantCulture) + "%", _lastGrowthPercent >= 0f, history?.Gdp.Quarterly),
+                new HeadlineReading("GDP", UiFormat.Money(state.NominalGdp, MoneyUnit.Billions), _lastGrowthPercent.ToString("+0.00;-0.00;0", CultureInfo.InvariantCulture) + "%", _lastGrowthPercent >= 0f, history?.Gdp.Quarterly),
                 new HeadlineReading("Unemployment", UiFormat.Number(state.Unemployment, 2) + "%", null, false, history?.Unemployment.Quarterly),
                 new HeadlineReading("Inflation", UiFormat.Number(state.Inflation, 2) + "%", null, false, history?.Inflation.Quarterly),
                 new HeadlineReading("Approval Rating", UiFormat.Number(state.ApprovalRating, 1), null, false, history?.ApprovalRating.Quarterly)
@@ -590,7 +590,7 @@ namespace PoliSim.UI
             float? projectedApproval = null;
             if (_hasCachedPreview)
             {
-                projectedGdp = state.GDP * (1f + _cachedGdpGrowthPercentRaw / 100f);
+                projectedGdp = state.NominalGdp * (1f + _cachedGdpGrowthPercentRaw / 100f);   // P5-B6: the level in current prices, the growth the real one
                 projectedUnemployment = state.Unemployment + _cachedUnemploymentChangeRaw;
                 projectedApproval = state.ApprovalRating + _cachedApprovalChangeRaw;
             }
@@ -835,7 +835,7 @@ namespace PoliSim.UI
         {
             DrawStatsSectionCaption("EIGHT HEADLINE READINGS · THE SAME EIGHT EACH SIDE");
             GUILayout.Space(StatsUnit(3f));
-            DrawPairMirrorRow("GDP", UiFormat.Money(_playerCountry.State.GDP, MoneyUnit.Billions), UiFormat.Money(them.State.GDP, MoneyUnit.Billions));
+            DrawPairMirrorRow("GDP", UiFormat.Money(_playerCountry.State.NominalGdp, MoneyUnit.Billions), UiFormat.Money(them.State.NominalGdp, MoneyUnit.Billions));
             DrawPairMirrorRow("UNEMPLOYMENT", UiFormat.Number(_playerCountry.State.Unemployment, 1) + "%", UiFormat.Number(them.State.Unemployment, 1) + "%");
             DrawPairMirrorRow("INFLATION", UiFormat.Number(_playerCountry.State.Inflation, 1) + "%", UiFormat.Number(them.State.Inflation, 1) + "%");
             DrawPairMirrorRow("APPROVAL", UiFormat.Number(_playerCountry.State.ApprovalRating, 1), UiFormat.Number(them.State.ApprovalRating, 1));
@@ -864,7 +864,7 @@ namespace PoliSim.UI
         {
             FiscalTurnReport last = _simulationManager.GetLastFiscalReport(country.Id);
             if (last == null || country.State.GDP <= 0f) { return "—"; }
-            return (last.BudgetBalance / country.State.GDP * 100f).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "% GDP";
+            return (last.BudgetBalance / country.State.NominalGdp * 100f).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "% GDP";
         }
 
         /// <summary>The standing rating (set by scheduled review); a dash until the first review - an unrated sovereign is not a top-rated one.</summary>

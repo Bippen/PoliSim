@@ -687,7 +687,7 @@ stock with a real rate underneath, the seeds restated, and THEN the lines take p
 `SimulationManager.IndexSpendingLines`, one factor). Its own BASELINE family, on its own pass — the
 tax base (P5-B3) and this row are the two families Track B still owes, one per session. *Done
 when:* the trajectory suite before and after, explained per country; a held real spending share
-is a held share; the Budget screen's figures grow with prices on film.
+is a held share; the Budget screen's figures grow with prices on film. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §327: the book in current prices - `EconomyState.PriceLevel` compounds at the printed inflation; nominal GDP, nominal bases, the lines carrying prices again, GDP-share flows and the tariff take nominal, the debt accruing nominal balances with the erosion term retired; the macro block real and the constant-price view the derived readout; the WDI deflator (one vintage, six countries) the yardstick; `PriceLevelDiagnostic` asserts the level, the bases and that no country nears the cap in a century; the family explained per country against B7.**
 
 **P5-B7 — Potential output carries the labour force.** *(Sheeted by P5-B3, §319, from a
 measurement.)* `EconomyState.PotentialGDP` grows at `Country.PotentialGrowthRate` whatever the

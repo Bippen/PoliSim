@@ -154,7 +154,7 @@ namespace PoliSim.Simulation
                 float rate = line.Rate;
                 if (atBaseline && !country.BaselineTaxRates.TryGetValue(line.Type, out rate)) { rate = line.Rate; }
 
-                share += rate / 100f * TaxBases.Base(country, line.Type) / Mathf.Max(1f, country.State.GDP);   // P5-B3: the base as it stands (its driver's ratio on the sourced share), over today's GDP
+                share += rate / 100f * TaxBases.Base(country, line.Type) / Mathf.Max(1f, country.State.NominalGdp);   // P5-B3/B6: the nominal base over nominal GDP - a real share
             }
 
             return share;
@@ -443,6 +443,13 @@ namespace PoliSim.Simulation
 
         /// <summary>Phase 5 daily wrapper for trend output - the annual-rate POWER SLICE, the shape
         /// Phase 4's verdict predicted for exactly this method.</summary>
+        /// <summary>P5-B6 (2026-09-05): the price level compounds at this state's inflation, one daily slice - the same slice class as potential. Read after the Phillips curve has printed the day's inflation.</summary>
+        public static void ApplyPriceLevelDaily(Country country)
+        {
+            EconomyState state = country.State;
+            state.PriceLevel = Mathf.Max(0.0001f, state.PriceLevel * Mathf.Pow(1f + state.Inflation / 100f, MacroSliceFractionPerDay));
+        }
+
         public static void ApplyPotentialGdpGrowthDaily(Country country)
         {
             EconomyState state = country.State;
@@ -1674,7 +1681,7 @@ namespace PoliSim.Simulation
         public static void ApplyInfrastructureCondition(Country country, PolicyDecision decision)
         {
             EconomyState state = country.State;
-            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP);
+            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, state.NominalGdp);
             foreach (InfrastructureAsset asset in country.InfrastructureAssets)
             {
                 asset.ConditionIndex = Mathf.Clamp(
@@ -1720,7 +1727,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public static void ApplyInfrastructureInvestment(Country country, PolicyDecision decision)
         {
-            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, country.State.GDP);
+            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, country.State.NominalGdp);
             foreach (InfrastructureAsset asset in country.InfrastructureAssets)
             {
                 asset.ConditionIndex = Mathf.Clamp(
@@ -2092,15 +2099,15 @@ namespace PoliSim.Simulation
             float taxHikePenalty = TaxHikeApprovalSensitivity * totalTaxHike;
 
             float weightedSpendingPercent =
-                HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.GDP) +
-                DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.GDP) +
-                InfrastructureApprovalMultiplier * PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP) +
-                EducationApprovalMultiplier * PercentOfGdp(decision.EducationSpendingChange, state.GDP) +
-                JusticeApprovalMultiplier * PercentOfGdp(decision.JusticeSpendingChange, state.GDP) +
-                HomelandSecurityApprovalMultiplier * PercentOfGdp(decision.HomelandSecuritySpendingChange, state.GDP) +
-                EnergyApprovalMultiplier * PercentOfGdp(decision.EnergySpendingChange, state.GDP) +
-                HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.GDP) +
-                MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.GDP);
+                HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.NominalGdp) +
+                DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.NominalGdp) +
+                InfrastructureApprovalMultiplier * PercentOfGdp(decision.InfrastructureSpendingChange, state.NominalGdp) +
+                EducationApprovalMultiplier * PercentOfGdp(decision.EducationSpendingChange, state.NominalGdp) +
+                JusticeApprovalMultiplier * PercentOfGdp(decision.JusticeSpendingChange, state.NominalGdp) +
+                HomelandSecurityApprovalMultiplier * PercentOfGdp(decision.HomelandSecuritySpendingChange, state.NominalGdp) +
+                EnergyApprovalMultiplier * PercentOfGdp(decision.EnergySpendingChange, state.NominalGdp) +
+                HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.NominalGdp) +
+                MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.NominalGdp);
 
             float spendingEffect;
             if (weightedSpendingPercent >= 0f)
@@ -2169,15 +2176,15 @@ namespace PoliSim.Simulation
             float taxHikePenalty = TaxHikeApprovalSensitivity * totalTaxHike;
 
             float weightedSpendingPercent =
-                HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.GDP) +
-                DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.GDP) +
-                InfrastructureApprovalMultiplier * PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP) +
-                EducationApprovalMultiplier * PercentOfGdp(decision.EducationSpendingChange, state.GDP) +
-                JusticeApprovalMultiplier * PercentOfGdp(decision.JusticeSpendingChange, state.GDP) +
-                HomelandSecurityApprovalMultiplier * PercentOfGdp(decision.HomelandSecuritySpendingChange, state.GDP) +
-                EnergyApprovalMultiplier * PercentOfGdp(decision.EnergySpendingChange, state.GDP) +
-                HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.GDP) +
-                MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.GDP);
+                HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.NominalGdp) +
+                DefenseApprovalMultiplier * PercentOfGdp(decision.DefenseSpendingChange, state.NominalGdp) +
+                InfrastructureApprovalMultiplier * PercentOfGdp(decision.InfrastructureSpendingChange, state.NominalGdp) +
+                EducationApprovalMultiplier * PercentOfGdp(decision.EducationSpendingChange, state.NominalGdp) +
+                JusticeApprovalMultiplier * PercentOfGdp(decision.JusticeSpendingChange, state.NominalGdp) +
+                HomelandSecurityApprovalMultiplier * PercentOfGdp(decision.HomelandSecuritySpendingChange, state.NominalGdp) +
+                EnergyApprovalMultiplier * PercentOfGdp(decision.EnergySpendingChange, state.NominalGdp) +
+                HousingApprovalMultiplier * PercentOfGdp(decision.HousingSpendingChange, state.NominalGdp) +
+                MandatorySpendingApprovalMultiplier * PercentOfGdp(totalMandatorySpendingChange, state.NominalGdp);
 
             float spendingEffect;
             if (weightedSpendingPercent >= 0f)
@@ -2328,22 +2335,22 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
 
-            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, state.GDP);
+            float infrastructurePercent = PercentOfGdp(decision.InfrastructureSpendingChange, state.NominalGdp);
             country.InfrastructureSpendingGrowthAdjustment = Mathf.Clamp(country.InfrastructureSpendingGrowthAdjustment + InfrastructureGrowthSensitivity * infrastructurePercent, 0f, MaxInfrastructureSpendingBoost);
 
-            float healthcarePercent = PercentOfGdp(decision.HealthcareSpendingChange, state.GDP);
+            float healthcarePercent = PercentOfGdp(decision.HealthcareSpendingChange, state.NominalGdp);
             state.ConsumerConfidence = Mathf.Clamp(state.ConsumerConfidence + HealthcareConfidenceSensitivity * CabinetSystem.EfficiencyFactor(country, CabinetPortfolio.HealthSocialAffairs) * healthcarePercent, MinConfidence, MaxConfidence);   // P2-5.2: EFFICIENCY
 
-            float educationPercent = PercentOfGdp(decision.EducationSpendingChange, state.GDP);
+            float educationPercent = PercentOfGdp(decision.EducationSpendingChange, state.NominalGdp);
             state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EducationConfidenceSensitivity * CabinetSystem.EfficiencyFactor(country, CabinetPortfolio.Education) * educationPercent, MinConfidence, MaxConfidence);   // P2-5.2: EFFICIENCY
 
-            float justicePercent = PercentOfGdp(decision.JusticeSpendingChange, state.GDP);
+            float justicePercent = PercentOfGdp(decision.JusticeSpendingChange, state.NominalGdp);
             country.BaselineCrimeIndex = Mathf.Clamp(country.BaselineCrimeIndex - JusticeCrimeIndexSensitivity * CabinetSystem.EfficiencyFactor(country, CabinetPortfolio.InteriorJustice) * justicePercent, 0f, MaxCrimeIndexPercent);   // P2-5.2: EFFICIENCY
 
-            float energyPercent = PercentOfGdp(decision.EnergySpendingChange, state.GDP);
+            float energyPercent = PercentOfGdp(decision.EnergySpendingChange, state.NominalGdp);
             state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EnergyConfidenceSensitivity * energyPercent, MinConfidence, MaxConfidence);
 
-            float housingPercent = PercentOfGdp(decision.HousingSpendingChange, state.GDP);
+            float housingPercent = PercentOfGdp(decision.HousingSpendingChange, state.NominalGdp);
             country.BaselinePovertyRate = Mathf.Clamp(country.BaselinePovertyRate - HousingPovertyReductionSensitivity * housingPercent, 0f, MaxPovertyRatePercent);
         }
 

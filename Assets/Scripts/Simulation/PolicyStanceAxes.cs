@@ -36,7 +36,7 @@ namespace PoliSim.Simulation
                 {
                     total += line.Amount;
                 }
-                spendingPercentOfGdp = country.State.GDP > 0f ? total / country.State.GDP * 100f : 0f;
+                spendingPercentOfGdp = country.State.NominalGdp > 0f ? total / country.State.NominalGdp * 100f : 0f;
             }
             else
             {

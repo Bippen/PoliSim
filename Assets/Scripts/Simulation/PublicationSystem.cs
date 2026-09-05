@@ -58,7 +58,7 @@ namespace PoliSim.Simulation
                 ReferencePeriodStart = periodEnd.AddMonths(-3).AddDays(1),
                 ReferencePeriodEnd = periodEnd,
                 PublicationDate = SimulationManager.EpochDate,
-                Value = country.State.GDP,
+                Value = country.State.NominalGdp,   // P5-B6: the published GDP is in current prices
                 Status = RevisionStatus.Final
             });
         }
@@ -178,7 +178,7 @@ namespace PoliSim.Simulation
             {
                 case ClosingStat.Unemployment: return state.Unemployment;
                 case ClosingStat.Inflation: return state.Inflation;
-                case ClosingStat.Gdp: return state.GDP;
+                case ClosingStat.Gdp: return state.NominalGdp;
                 case ClosingStat.PovertyRate: return state.PovertyRate;
                 case ClosingStat.Population: return state.Population;
                 case ClosingStat.CrimeIndex: return state.CrimeIndex;

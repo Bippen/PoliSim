@@ -73,7 +73,7 @@ namespace PoliSim.EditorTools
                         for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                         if (year == Years)
                         {
-                            foreach (SpendingLine l in country.SpendingLines) { levelStanding[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); projected[l.Category] = l.ProjectNextYear(); }
+                            foreach (SpendingLine l in country.SpendingLines) { levelStanding[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); projected[l.Category] = l.ProjectNextYear(country.State.Inflation); }
                         }
                         sim.AdvanceTurn(decisions);
                         decisions[player] = PolicyDecision.None();
@@ -92,8 +92,10 @@ namespace PoliSim.EditorTools
                         float levelCommitted = SpendingDrivers.Level(driver, country);
                         float ratioCommitted = seedLevel[l.Category] > 0f ? levelCommitted / seedLevel[l.Category] : 1f;
                         float ratioStanding = seedLevel[l.Category] > 0f ? levelStanding[l.Category] / seedLevel[l.Category] : 1f;
-                        float expectedCommitted = seedAmount[l.Category] * ratioCommitted;
-                        float expectedStanding = seedAmount[l.Category] * ratioStanding;
+                        // P5-B6: the lines carry the year's prices as well - the price level at the last index (the end of the turn's days) over 1 at the seed.
+                        float prices = country.State.PriceLevel;
+                        float expectedCommitted = seedAmount[l.Category] * ratioCommitted * prices;
+                        float expectedStanding = seedAmount[l.Category] * ratioStanding * prices;
                         linesChecked++;
                         bool matchesCommitted = Mathf.Abs(l.Amount / expectedCommitted - 1f) <= Tolerance;
                         bool matchesStanding = Mathf.Abs(l.Amount / expectedStanding - 1f) <= Tolerance;
@@ -105,10 +107,10 @@ namespace PoliSim.EditorTools
                         }
                         if (driver == SpendingDriver.None)
                         {
-                            // No driver: the player's line must be bit-for-bit where the seed put it.
-                            if (BitConverter.SingleToInt32Bits(l.Amount) != BitConverter.SingleToInt32Bits(seedAmount[l.Category]))
+                            // No driver: the player's line is the seed at today's prices and nothing else (P5-B6: bit-for-bit until the book carried prices).
+                            if (Mathf.Abs(l.Amount / (seedAmount[l.Category] * prices) - 1f) > Tolerance)
                             {
-                                Debug.LogError($"INDEXATION: {player} {l.Category} has no driver and still moved: {seedAmount[l.Category]:R} -> {l.Amount:R}.");
+                                Debug.LogError($"INDEXATION: {player} {l.Category} has no driver and reads {l.Amount:F4} against its seed {seedAmount[l.Category]:F4} at the price level {prices:F5}.");
                                 ok = false;
                             }
                             else { held++; }
@@ -125,9 +127,15 @@ namespace PoliSim.EditorTools
                     {
                         if (l.Category == targeted) { continue; }
                         float miss = Mathf.Abs(l.Amount / projected[l.Category] - 1f);
-                        if (SpendingDrivers.Of(l.Category) == SpendingDriver.None || l.Pinned)
+                        if (l.Pinned)
                         {
-                            if (miss > Tolerance) { Debug.LogError($"INDEXATION: {player} {l.Category} projected {projected[l.Category]:F4} for year {Years} and reads {l.Amount:F4}."); ok = false; }
+                            if (miss > Tolerance) { Debug.LogError($"INDEXATION: {player} {l.Category} is pinned, projected {projected[l.Category]:F4} for year {Years} and reads {l.Amount:F4}."); ok = false; }
+                        }
+                        else if (SpendingDrivers.Of(l.Category) == SpendingDriver.None)
+                        {
+                            // P5-B6: the projection carries the standing inflation; the year's days print a moving one, so a no-driver line misses by the
+                            // year's inflation path against its opening rate - a cent on the figure, asserted within 1 %.
+                            if (miss > 0.01f) { Debug.LogError($"INDEXATION: {player} {l.Category} has no driver, projected {projected[l.Category]:F4} for year {Years} and reads {l.Amount:F4} - more than the year's inflation path explains."); ok = false; }
                         }
                         else { worstProjectionMiss = Mathf.Max(worstProjectionMiss, miss); }
                     }
@@ -174,8 +182,8 @@ namespace PoliSim.EditorTools
                             float aiCommitted = SpendingDrivers.Level(SpendingDrivers.Of(aiLine.Category), ai);
                             float aiRatioCommitted = aiSeedLevel > 0f ? aiCommitted / aiSeedLevel : 1f;
                             float aiRatioStanding = aiSeedLevel > 0f ? aiStanding / aiSeedLevel : 1f;
-                            float aiExpectedCommitted = aiSeed * aiRatioCommitted * aiGrowth;
-                            float aiExpectedStanding = aiSeed * aiRatioStanding * aiGrowth;
+                            float aiExpectedCommitted = aiSeed * aiRatioCommitted * aiGrowth * ai.State.PriceLevel;   // P5-B6: prices ride along for the AI too
+                            float aiExpectedStanding = aiSeed * aiRatioStanding * aiGrowth * ai.State.PriceLevel;
                             if (Mathf.Abs(aiLine.Amount / aiExpectedCommitted - 1f) > Tolerance && Mathf.Abs(aiLine.Amount / aiExpectedStanding - 1f) > Tolerance)
                             {
                                 Debug.LogError($"INDEXATION: the AI rule - {ai.Id} {aiLine.Category} reads {aiLine.Amount:F4}; seed x driver x real growth = {aiExpectedCommitted:F4} (driver as committed) or {aiExpectedStanding:F4} (driver as it stood).");
@@ -198,7 +206,7 @@ namespace PoliSim.EditorTools
             {
                 Debug.Log($"INDEXATION: {kv.Key} - the index reads it {string.Join(" / ", kv.Value.OrderBy(s => s, StringComparer.Ordinal))}.");
             }
-            Debug.Log(ok ? $"=== SpendingIndexationDiagnostic: ALL ASSERTIONS PASS ({linesChecked} lines across the six, each at seed x driver; {held} with no driver held bit-for-bit) ===" : "=== SpendingIndexationDiagnostic: FAILED ===");
+            Debug.Log(ok ? $"=== SpendingIndexationDiagnostic: ALL ASSERTIONS PASS ({linesChecked} lines across the six, each at seed x driver x prices; {held} with no driver at the seed x prices) ===" : "=== SpendingIndexationDiagnostic: FAILED ===");
             CheckExit.Finish(ok ? 0 : 1);
         }
     }

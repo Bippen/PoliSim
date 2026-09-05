@@ -47,8 +47,8 @@ namespace PoliSim.Data
         /// <summary>P5-B5: the driver ratio the last index applied (1 = the driver did not move); 0 until the first index. The row's projection carries it one year forward.</summary>
         public float LastDriverRatio;
 
-        /// <summary>P5-B5: the figure this line reads next year if the player leaves it - the amount times the driver's last ratio, the same arithmetic IndexSpendingLines runs for the player (no price term: the book is in constant prices); a pinned line reads itself.</summary>
-        public float ProjectNextYear() => Pinned ? Amount : Amount * (LastDriverRatio > 0f ? LastDriverRatio : 1f);
+        /// <summary>P5-B5/B6: the figure this line reads next year if the player leaves it - the amount times the driver's last ratio times the year's prices at the standing inflation, the same arithmetic IndexSpendingLines runs for the player now that the book is in current prices (P5-B6); a pinned line reads itself.</summary>
+        public float ProjectNextYear(float inflationPercent) => Pinned ? Amount : Amount * (LastDriverRatio > 0f ? LastDriverRatio : 1f) * (1f + Math.Max(-50f, inflationPercent) / 100f);
 
         public SpendingLine() { }
 
