@@ -91,6 +91,7 @@ namespace PoliSim.Data
             var usDollarZone = new CurrencyZone("US Dollar Zone", 3.75f);
             var swedishKronaZone = new CurrencyZone("Swedish Krona Zone", 1.75f);
             var polishZlotyZone = new CurrencyZone("Polish Zloty Zone", 3.75f);
+            polishZlotyZone.SeedMonetaryParameters(Simulation.TaylorRule.DefaultInflationTargetFor(CountryId.Poland), Simulation.TaylorRule.DefaultNeutralRealRate, Simulation.TaylorRule.DefaultInflationGapWeight, Simulation.TaylorRule.DefaultUnemploymentGapWeight);   // P4-C3: the NBP's 2.5 % target is the zone's seed
 
             // GDP levels are illustrative relative scale (roughly proportional to real nominal
             // GDP), not precise figures - the sim treats them as abstract currency units.

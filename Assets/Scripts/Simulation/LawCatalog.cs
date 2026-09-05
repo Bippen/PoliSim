@@ -2185,7 +2185,181 @@ namespace PoliSim.Simulation
                 LrEconToward10 = 0.5f,
                 EnactmentApprovalCost = 0.5f
             },
+
+            // ================================================================================================
+            // P4-C3, THE THIRD CATEGORY (2026-09-05, ruling (a)): THE MONETARY REGIME - ten laws on the central
+            // bank's target, its mandate and its reaction, reaching the CURRENCY ZONE's four Taylor-rule parameters
+            // (StructuralParameter.InflationTarget .. UnemploymentGapWeight; TaylorRule reads the zone). Every one
+            // carries RequiresOwnCurrency: within a parliament's competence only where the country owns its bank
+            // (Sweden, Poland, the USA) - a euro member's House does not reach the ECB's target or mandate (TFEU
+            // Articles 127 and 130), which the browser states instead of offering Enact. Magnitudes are the stepped
+            // rule's bands on the table's scales ([AUTHORED-DRAFT] in size, cited in direction); the tier reads
+            // from the largest scaled delta as for every structural law.
+            // ================================================================================================
+            // DIRECTIONAL: Blanchard, Dell'Ariccia & Mauro (2010, IMF SPN/10/03, "Rethinking Macroeconomic Policy")
+            // and Ball (2014, IMF WP/14/92, "The Case for a Long-Run Inflation Target of Four Percent") argue a
+            // higher target buys room above the zero lower bound. +1.0 pp of target = MODERATE (10 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "inflation_target_increase_act",
+                Name = "Inflation Target Increase Act",
+                Description = "Raises the central bank's announced inflation target by one percentage point, giving the policy rate more room above zero in a downturn.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "Blanchard, Dell'Ariccia & Mauro 2010 (IMF Staff Position Note 10/03); Ball 2014 (IMF WP/14/92) - the case for a higher target.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.InflationTarget, 1f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 1f
+            },
+            // CONFIRMED-DIRECTION: the ECB's 1998 definition of price stability ("below 2 %") and the Bundesbank's
+            // normative 1.5-2 % - a stricter definition sits below the round number. -0.5 pp = MINOR (5 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "price_stability_definition_act",
+                Name = "Price Stability Definition Act",
+                Description = "Writes a stricter definition of price stability into the bank's mandate, lowering the target it steers to by half a point.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "ECB Governing Council, October 1998: price stability as a year-on-year HICP increase below 2 %; the Bundesbank's normative inflation rate of 1.5-2 % in the 1990s.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.InflationTarget, -0.5f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 0.75f
+            },
+            // CONFIRMED: the ECB's 2021 strategy review replaced "below, but close to, 2 %" with a symmetric 2 % target,
+            // a small upward move of the steering point; the Riksbank's 2017 move to CPIF with a 1-3 % variation band
+            // made the symmetry explicit. +0.25 pp = MINOR (2.5 x1). Reads slightly left.
+            new LawDefinition
+            {
+                Id = "symmetric_target_act",
+                Name = "Symmetric Target Act",
+                Description = "Replaces a ceiling-shaped target with a symmetric one, so undershoots count as failures as much as overshoots.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "ECB monetary policy strategy statement, 8 July 2021 (symmetric 2 %); Sveriges Riksbank, September 2017 (CPIF target with a variation band).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.InflationTarget, 0.25f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = -0.25f,
+                EnactmentApprovalCost = 0.25f
+            },
+            // CONFIRMED-DIRECTION: the Federal Reserve's dual mandate (Federal Reserve Reform Act 1977; Full Employment
+            // and Balanced Growth Act 1978) puts employment beside prices in the bank's reaction. +0.5 on the
+            // unemployment-gap weight = MODERATE (10 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "full_employment_mandate_act",
+                Name = "Full Employment Mandate Act",
+                Description = "Adds maximum employment to the bank's statutory objectives beside price stability, so a slack labour market pulls the policy rate down harder.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "Federal Reserve Reform Act of 1977 and the Full Employment and Balanced Growth Act of 1978 (Humphrey-Hawkins) - the dual mandate.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.UnemploymentGapWeight, 0.5f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = -1f,
+                EnactmentApprovalCost = 1f
+            },
+            // CONFIRMED: New Zealand's Reserve Bank of New Zealand (Economic Objective) Amendment Act 2023 removed the
+            // maximum-sustainable-employment objective added in 2018, returning the bank to a single mandate. -0.5 on
+            // the unemployment-gap weight = MODERATE (10 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "single_mandate_act",
+                Name = "Single Mandate Act",
+                Description = "Strikes the employment objective from the bank's statute, leaving price stability as its one goal.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "Reserve Bank of New Zealand (Economic Objective) Amendment Act 2023 - the employment objective repealed in December 2023.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.UnemploymentGapWeight, -0.5f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = 1f,
+                EnactmentApprovalCost = 1f
+            },
+            // CONFIRMED (the literature's two rules): Taylor (1993) weights the inflation gap at 0.5; Taylor (1999)
+            // and the Fed's "balanced approach" variants raise the response, and Clarida, Gali & Gertler (2000, QJE)
+            // find the post-1979 Fed's inflation response above one (the Taylor principle) where the pre-1979 Fed's
+            // was below it. +0.5 on the inflation-gap weight = MODERATE (10 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "taylor_principle_codification_act",
+                Name = "Taylor Principle Codification Act",
+                Description = "Instructs the bank to raise the policy rate more than one-for-one with inflation above target, and to publish the rule it follows.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "Taylor 1993 (Carnegie-Rochester 39) and Taylor 1999; Clarida, Gali & Gertler 2000 (QJE 115) - the inflation response above one after 1979.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.InflationGapWeight, 0.5f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 0.75f
+            },
+            // DIRECTIONAL: estimated policy rules carry interest-rate smoothing (Clarida, Gali & Gertler 2000 report
+            // a smoothing parameter near 0.8), so the within-year response to a gap is a fraction of the long-run
+            // coefficient - a gradualism mandate reads as a smaller weight in a rule evaluated each year. -0.25 on
+            // the inflation-gap weight = MINOR (5 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "gradualism_mandate_act",
+                Name = "Gradualism Mandate Act",
+                Description = "Requires the bank to move the policy rate in measured steps and to look through transitory price shocks, damping its response to the inflation gap.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "Clarida, Gali & Gertler 2000 (QJE 115): interest-rate smoothing near 0.8 in estimated Fed reaction functions; Sack & Wieland 2000 (Journal of Economics and Business) on gradualism.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.InflationGapWeight, -0.25f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = -0.25f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // DIRECTIONAL: the Federal Reserve's August 2020 Statement on Longer-Run Goals adopted flexible average
+            // inflation targeting - inflation "moderately above 2 percent for some time" after shortfalls - which in
+            // a rule evaluated on the current gap reads as a weaker response to overshoots. -0.25 on the
+            // inflation-gap weight = MINOR (5 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "average_inflation_targeting_act",
+                Name = "Average Inflation Targeting Act",
+                Description = "Directs the bank to aim for its target on average over time, tolerating a period above it after a period below.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "Federal Open Market Committee, Statement on Longer-Run Goals and Monetary Policy Strategy, 27 August 2020 (flexible average inflation targeting).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.InflationGapWeight, -0.25f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // DIRECTIONAL: Holston, Laubach & Williams (2017, Journal of International Economics 108) estimate r* for
+            // the US, euro area, UK and Canada falling to about half a percent or below after 2008, and the FOMC's
+            // longer-run federal funds rate projection fell from 4.25 % (2012) to 2.5 % (2019) - a framework review
+            // that adopts a lower neutral rate lowers the whole rule. -0.5 pp of r* = MINOR (5 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "neutral_rate_reassessment_act",
+                Name = "Neutral Rate Reassessment Act",
+                Description = "Mandates a periodic review of the bank's framework that adopts the current estimate of the neutral real rate, lowering the anchor the rule builds on.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "Holston, Laubach & Williams 2017 (JIE 108) - r* estimates near or below 0.5 % after 2008; FOMC Summary of Economic Projections, longer-run rate 4.25 % (Jan 2012) to 2.5 % (2019).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.NeutralRealRate, -0.5f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = -0.25f,
+                EnactmentApprovalCost = 0.25f
+            },
+            // DIRECTIONAL: the 2023-24 reassessment upward - the FOMC's longer-run median rose from 2.5 % to about 3 %
+            // through 2024, and the "higher r*" reading (Summers; the BIS Annual Economic Report 2023, chapter II)
+            // holds that fiscal deficits and investment demand lifted the neutral rate. +0.5 pp of r* = MINOR (5 x1).
+            // Reads right.
+            new LawDefinition
+            {
+                Id = "monetary_normalisation_act",
+                Name = "Monetary Normalisation Act",
+                Description = "Instructs the bank to steer by a higher neutral rate, treating the low-rate decade as the exception rather than the anchor.",
+                Category = LawCategory.MonetaryRegime,
+                Citation = "FOMC Summary of Economic Projections, longer-run rate median 2.5 % (2023) to about 3 % (2024); BIS Annual Economic Report 2023, chapter II, on a higher neutral rate.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.NeutralRealRate, 0.5f) },
+                RequiresOwnCurrency = true,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 0.5f
+            },
         };
+
+        /// <summary>P4-C3 third category, ruling (a) (2026-09-05): whether this law is within the country's parliament's competence -
+        /// every law is, except one that reaches the currency zone's parameters (RequiresOwnCurrency) in a country that shares its
+        /// zone (World.OwnsCurrencyZone false): the ECB's target and mandate are the treaty's, not a member's House's.</summary>
+        public static bool IsWithinCompetence(World world, Country country, LawDefinition law)
+            => law == null || !law.RequiresOwnCurrency || (world != null && world.OwnsCurrencyZone(country));
+
+        /// <summary>The reason a law outside competence is not offered - the browser's line and the bill's refusal.</summary>
+        public const string OutsideCompetenceReason = "TREATY COMPETENCE - the target and the mandate are the currency union's, not this House's";
 
         /// <summary>Looks up a law by its stable Id, or null if no such law exists (e.g. an old save citing a since-removed law - the caller decides how to degrade, matching PolicyWebRenderer/DisplayName's own "missing entry, not a crash" idiom).</summary>
         public static LawDefinition GetById(string lawId)

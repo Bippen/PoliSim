@@ -1285,7 +1285,7 @@ namespace PoliSim.UI
                     break;
                 case PolicyNodeId.InterestRateDecision:
                     lines.Add($"Current rate: {country.CurrencyZone.InterestRate:F2}%");
-                    lines.Add($"Points above Taylor Rule neutral real rate: {country.CurrencyZone.InterestRate - TaylorRule.NeutralRealRate:+0.00;-0.00}");
+                    lines.Add($"Points above Taylor Rule neutral real rate: {country.CurrencyZone.InterestRate - TaylorRule.NeutralRealRate(country):+0.00;-0.00}");
                     lines.Add("Higher-than-neutral rate directly dampens this year's Consumption/Investment (see ApplyNationalAccounts) - Unemployment/Inflation react only indirectly, afterward.");
                     break;
                 case PolicyNodeId.OtherDiscretionarySpending:

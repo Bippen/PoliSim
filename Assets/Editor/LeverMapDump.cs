@@ -101,10 +101,7 @@ namespace PoliSim.EditorTools
             sb.Append("\n## 2. The unreached set - the coverage plan for P4-C3\n\n");
             if (unreached.Count == 0) { sb.Append("Every quantity is reached by at least one lever.\n"); }
             foreach (LeverProbes.Quantity q in unreached) { sb.Append($"- `{q.Name}` ({q.Group})\n"); }
-            sb.Append("\nHeld as constants, reachable by nothing and probed by nothing (stated, not measured): ");
-            sb.Append($"`TaylorRule.InflationTarget` (a per-country constant function: {Inv(TaylorRule.InflationTarget(LeverProbes.Probed))} % for {LeverProbes.Probed}), ");
-            sb.Append($"`TaylorRule.NeutralRealRate` ({Inv(TaylorRule.NeutralRealRate)} %), `TaylorRule.InflationGapWeight` ({Inv(TaylorRule.InflationGapWeight)}), `TaylorRule.UnemploymentGapWeight` ({Inv(TaylorRule.UnemploymentGapWeight)}). ");
-            sb.Append("A monetary-regime law that moves the target or the mandate needs these to become per-country state first.\n");
+            sb.Append("\nThe four Taylor-rule constants (`CurrencyZone.InflationTarget`, `NeutralRealRate`, `InflationGapWeight`, `UnemploymentGapWeight`) are per-currency-zone STATE since P4-C3's third category (2026-09-05), probed above as `Zone.*`: reached by the MonetaryRegime laws where the parliament owns its bank (Sweden, Poland, the USA), unreachable by national law for the euro members - treaty competence, ruling (a).\n");
 
             sb.Append("\n## 3. Each lever, and the quantities it reaches\n");
             string family = null;

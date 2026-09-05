@@ -188,7 +188,7 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float priorGdp = state.GDP;
-            float rateAboveNeutral = interestRate - TaylorRule.NeutralRealRate;
+            float rateAboveNeutral = interestRate - TaylorRule.NeutralRealRate(country);
 
             float consumptionInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * ConsumptionInterestSensitivity);
             float investmentInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * InvestmentInterestSensitivity);
@@ -500,7 +500,7 @@ namespace PoliSim.Simulation
             // PotentialGDP itself still compounds daily as a stat; the next period anchors afresh.
             EconomyState state = country.State;
             float priorGdp = state.GDP;
-            float rateAboveNeutral = interestRate - TaylorRule.NeutralRealRate;
+            float rateAboveNeutral = interestRate - TaylorRule.NeutralRealRate(country);
 
             float consumptionInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * ConsumptionInterestSensitivity);
             float investmentInterestFactor = Mathf.Max(0f, 1f - rateAboveNeutral / 100f * InvestmentInterestSensitivity);
@@ -612,7 +612,7 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
-            float inflationGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country.Id));
+            float inflationGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
             float baseline = country.BaselinePovertyRate
                 + PovertyUnemploymentSensitivity * unemploymentGap
                 + PovertyInflationSensitivity * inflationGap;
@@ -2088,7 +2088,7 @@ namespace PoliSim.Simulation
             float growthEffect = GrowthApprovalSensitivity * growthGap;
 
             float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
-            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country.Id));
+            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
             float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
             float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
             float miseryPenalty = UnemploymentApprovalSensitivity * unemploymentPenaltyGap
@@ -2169,7 +2169,7 @@ namespace PoliSim.Simulation
             float growthEffect = GrowthApprovalSensitivity * growthGap;
 
             float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
-            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country.Id));
+            float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
             float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
             float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
 

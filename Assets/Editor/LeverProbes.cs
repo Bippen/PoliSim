@@ -97,7 +97,7 @@ namespace PoliSim.EditorTools
 
         private static readonly string[] CountryLeverPatterns =
         {
-            "Base", "Baseline", "Level", "Override", "Applied", "MinimumWagePercentOfMedian", "PaidFamilyLeaveWeeks",
+            "Base", "Baseline", "Seed", "Level", "Override", "Applied", "MinimumWagePercentOfMedian", "PaidFamilyLeaveWeeks",
             "SentencingSeverity", "BaseTariffRate", "PartyApprovalRating"
         };
 
@@ -128,6 +128,11 @@ namespace PoliSim.EditorTools
             }
             list.Add(new Quantity { Group = "Fund", Name = "SovereignWealthFund.TotalAssets", Read = c => c.SovereignWealthFund?.TotalAssets ?? 0f });
             list.Add(new Quantity { Group = "Central bank", Name = "CurrencyZone.InterestRate", Read = c => c.CurrencyZone?.InterestRate ?? 0f });
+            // P4-C3 third category (2026-09-05): the zone's monetary parameters, reachable by the MonetaryRegime laws where the parliament owns its bank.
+            list.Add(new Quantity { Group = "Central bank", Name = "Zone.InflationTarget", Read = c => TaylorRule.InflationTarget(c) });
+            list.Add(new Quantity { Group = "Central bank", Name = "Zone.NeutralRealRate", Read = c => TaylorRule.NeutralRealRate(c) });
+            list.Add(new Quantity { Group = "Central bank", Name = "Zone.InflationGapWeight", Read = c => TaylorRule.InflationGapWeight(c) });
+            list.Add(new Quantity { Group = "Central bank", Name = "Zone.UnemploymentGapWeight", Read = c => TaylorRule.UnemploymentGapWeight(c) });
             list.Add(new Quantity { Group = "Central bank", Name = "TaylorRule.GetSuggestedInterestRate", Read = c => TaylorRule.GetSuggestedInterestRate(c) });
             list.Add(new Quantity { Group = "Central bank", Name = "TaylorRule.GetOutputGapPercent", Read = c => TaylorRule.GetOutputGapPercent(c) });
             list.Add(new Quantity { Group = "Central bank", Name = "TaylorRule.GetUnemploymentGapPercent", Read = c => TaylorRule.GetUnemploymentGapPercent(c) });

@@ -99,6 +99,8 @@ namespace PoliSim.EditorTools
                 ok &= VerifyByteIdentical(untouched, Snapshot(country));   // P4-C2
                 ok &= VerifyStructural(sim, world.GetCountry(CountryId.Sweden), LawCategory.LabourInstitutions);   // P4-C3
                 ok &= VerifyStructural(sim, world.GetCountry(CountryId.Germany), LawCategory.FiscalFramework);   // P4-C3, the second category
+                ok &= VerifyStructural(sim, world.GetCountry(CountryId.Sweden), LawCategory.MonetaryRegime);   // P4-C3, the third category: the zone's parameters, Sweden owns its bank
+                ok &= VerifyCompetence(sim, world);   // ruling (a): a euro member's House does not reach the ECB
 
                 Debug.Log(ok
                     ? "COMPOSITION: PASS - all six dials matched their independently-summed composed value " +
@@ -192,6 +194,41 @@ namespace PoliSim.EditorTools
         // P4-C3 (2026-09-04): a structural category composes like the twelve dials. Every law of the category is enacted on a
         // fresh country; every structural parameter must read base plus the independently summed deltas, clamped by the table's
         // own bounds; then every law is repealed and every parameter must be the base again, bit for bit.
+        /// <summary>P4-C3 third category, ruling (a): every MonetaryRegime law is refused for a euro member (IntroduceLawBill false, the zone's
+        /// parameters at their base) and accepted for Sweden, Poland and the USA (true, then withdrawn so nothing pends into the next check).</summary>
+        private static bool VerifyCompetence(SimulationManager sim, World world)
+        {
+            bool ok = true;
+            int monetary = 0;
+            foreach (LawDefinition law in LawCatalog.All)
+            {
+                if (law.Category != LawCategory.MonetaryRegime) { continue; }
+                monetary++;
+                if (!law.RequiresOwnCurrency) { Debug.LogError($"COMPOSITION: P4-C3 - {law.Id} is a monetary-regime law without RequiresOwnCurrency."); ok = false; }
+                foreach (CountryId euro in new[] { CountryId.Germany, CountryId.France, CountryId.Italy })
+                {
+                    Country member = world.GetCountry(euro);
+                    float targetBefore = TaylorRule.InflationTarget(member);
+                    if (sim.IntroduceLawBill(euro, new LawBill { LawId = law.Id, IsRepeal = false }))
+                    {
+                        Debug.LogError($"COMPOSITION: P4-C3 - {euro} introduced {law.Id}; a euro member's House does not reach the ECB (ruling (a)).");
+                        ok = false;
+                    }
+                    if (TaylorRule.InflationTarget(member) != targetBefore) { Debug.LogError($"COMPOSITION: P4-C3 - {euro}'s zone target moved on a refused bill."); ok = false; }
+                }
+            }
+            foreach (CountryId own in new[] { CountryId.Sweden, CountryId.Poland, CountryId.USA })
+            {
+                if (!world.OwnsCurrencyZone(world.GetCountry(own))) { Debug.LogError($"COMPOSITION: P4-C3 - {own} does not own its currency zone."); ok = false; }
+            }
+            if (!world.GetCountry(CountryId.Germany).CurrencyZone.Equals(world.GetCountry(CountryId.France).CurrencyZone)) { Debug.LogError("COMPOSITION: P4-C3 - Germany and France do not share one zone instance."); ok = false; }
+            if (Mathf.Abs(TaylorRule.InflationTarget(world.GetCountry(CountryId.Poland)) - 2.5f) > 1e-6f) { Debug.LogError($"COMPOSITION: P4-C3 - Poland's zone target is {TaylorRule.InflationTarget(world.GetCountry(CountryId.Poland)):F2}, not the NBP's 2.5."); ok = false; }
+            Debug.Log(ok
+                ? $"COMPOSITION: P4-C3 - {monetary} MonetaryRegime laws refused for Germany, France and Italy (treaty competence, ruling (a)); Sweden, Poland and the USA own their zones; Poland's target 2.5."
+                : "COMPOSITION: P4-C3 - competence FAILED (see above).");
+            return ok;
+        }
+
         private static bool VerifyStructural(SimulationManager sim, Country country, LawCategory category)
         {
             var baseBits = new Dictionary<StructuralParameter, int>();

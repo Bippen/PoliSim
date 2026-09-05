@@ -17,7 +17,14 @@ namespace PoliSim.Data
         AverageDebtMaturityYears,
         RiskPremiumSensitivity,
         CollectionEfficiency,
-        GovernmentSpendingRate
+        GovernmentSpendingRate,
+        // P4-C3, the third category (2026-09-05): the monetary regime - four parameters that live on the CURRENCY ZONE, not the
+        // country (TaylorRule reads the zone; the euro members share one). Reached only where the parliament owns its bank
+        // (LawDefinition.RequiresOwnCurrency, World.OwnsCurrencyZone) - ruling (a), treaty competence.
+        InflationTarget,
+        NeutralRealRate,
+        InflationGapWeight,
+        UnemploymentGapWeight
     }
 
     /// <summary>One law's move of one structural parameter, in the parameter's own unit, signed.</summary>
@@ -86,6 +93,16 @@ namespace PoliSim.Data
                 c => c.CollectionEfficiency, c => c.CollectionEfficiencyBase, (c, v) => c.CollectionEfficiency = v),
             new Spec(StructuralParameter.GovernmentSpendingRate, "Baseline spending share", "pts of GDP", 10f, 5f, 40f,
                 c => c.GovernmentSpendingRate, c => c.GovernmentSpendingRateBase, (c, v) => c.GovernmentSpendingRate = v),
+            // P4-C3 third category: scales - a point of target is MODERATE (x10), half a point of weight is MODERATE (x20), half a point of r* MINOR (x10).
+            // Bounds: a target from 0 to 6 % (no bank has announced outside it), r* from -1 to 5, weights 0 to 2 (the Taylor principle's neighbourhood).
+            new Spec(StructuralParameter.InflationTarget, "Inflation target", "pp", 10f, 0f, 6f,
+                c => Simulation.TaylorRule.Zone(c).InflationTarget, c => Simulation.TaylorRule.Zone(c).InflationTargetBase, (c, v) => Simulation.TaylorRule.Zone(c).InflationTarget = v),
+            new Spec(StructuralParameter.NeutralRealRate, "Neutral real rate (r*)", "pp", 10f, -1f, 5f,
+                c => Simulation.TaylorRule.Zone(c).NeutralRealRate, c => Simulation.TaylorRule.Zone(c).NeutralRealRateBase, (c, v) => Simulation.TaylorRule.Zone(c).NeutralRealRate = v),
+            new Spec(StructuralParameter.InflationGapWeight, "Inflation-gap weight", "x", 20f, 0f, 2f,
+                c => Simulation.TaylorRule.Zone(c).InflationGapWeight, c => Simulation.TaylorRule.Zone(c).InflationGapWeightBase, (c, v) => Simulation.TaylorRule.Zone(c).InflationGapWeight = v),
+            new Spec(StructuralParameter.UnemploymentGapWeight, "Unemployment-gap weight", "x", 20f, 0f, 2f,
+                c => Simulation.TaylorRule.Zone(c).UnemploymentGapWeight, c => Simulation.TaylorRule.Zone(c).UnemploymentGapWeightBase, (c, v) => Simulation.TaylorRule.Zone(c).UnemploymentGapWeight = v),
         };
 
         public static Spec Of(StructuralParameter parameter)

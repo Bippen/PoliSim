@@ -63,7 +63,7 @@ namespace PoliSim.UI
         private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade, Laws }
 
         /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum - Nullable&lt;LawCategory&gt; does not satisfy that constraint, so this can't self-derive from LawCategory's members at compile time. <b>The browser rebuild's own finding (2026-08-25): this filter has never once narrowed anything, and that is NOT a mechanism defect - it is a real, reported coupling.</b> LawCategory has exactly one populated member (CrimeJustice), so "All" and "Crime & Justice" render byte-identical lists; the fix for that is more law CATEGORIES, not a UI change. What this enum's shape does cost: it must be hand-extended in lockstep with LawCategory every time a second category ships, because the generic constraint above rules out deriving it automatically. That coupling - not a bug - is the honest cause.</summary>
-        private enum LawBrowserFilter { All, CrimeJustice, LaborMarket, LabourInstitutions, FiscalFramework }
+        private enum LawBrowserFilter { All, CrimeJustice, LaborMarket, LabourInstitutions, FiscalFramework, MonetaryRegime }
 
         /// <summary>Law system MVP slice, browser rebuild (2026-08-25): the status filter/sort dimension the marathon's own stop condition found missing - "the top two rows both un-enacted, no sort-by-status" (CLAUDE.md, run_85g_bill_laws.png). All four values are always offered regardless of LawCategory's population, unlike LawBrowserFilter above - status is a property of ENACTMENT, not of catalog content, so this dimension is never inert the way the category one currently is.</summary>
         private enum LawStatusFilter { All, Enacted, Pending, Available }
@@ -3400,17 +3400,17 @@ namespace PoliSim.UI
             // The rule, term by term - the sum the player can check.
             GUILayout.Space(StatsUnit(6f));
             float inflation = _playerCountry.State.Inflation;
-            float inflationGapTerm = TaylorRule.InflationGapWeight * (inflation - TaylorRule.InflationTarget(PlayerCountryId));
+            float inflationGapTerm = TaylorRule.InflationGapWeight(_playerCountry) * (inflation - TaylorRule.InflationTarget(_playerCountry));
             float unemploymentGapTerm = TaylorRule.GetGapTermPercentagePoints(_playerCountry);
-            float sum = TaylorRule.NeutralRealRate + inflation + inflationGapTerm + unemploymentGapTerm;
+            float sum = TaylorRule.NeutralRealRate(_playerCountry) + inflation + inflationGapTerm + unemploymentGapTerm;
             GUILayout.BeginHorizontal();
-            DrawRuleTerm("NEUTRAL REAL RATE", TaylorRule.NeutralRealRate.ToString("F2", CultureInfo.InvariantCulture));
+            DrawRuleTerm("NEUTRAL REAL RATE", TaylorRule.NeutralRealRate(_playerCountry).ToString("F2", CultureInfo.InvariantCulture));
             DrawRuleOperator("+");
             DrawRuleTerm("INFLATION", inflation.ToString("F2", CultureInfo.InvariantCulture));
             DrawRuleOperator("+");
-            DrawRuleTerm($"INFLATION GAP × {TaylorRule.InflationGapWeight:0.##}", inflationGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
+            DrawRuleTerm($"INFLATION GAP × {TaylorRule.InflationGapWeight(_playerCountry):0.##}", inflationGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
             DrawRuleOperator("+");
-            DrawRuleTerm($"U-GAP × {TaylorRule.UnemploymentGapWeight:0.##}", unemploymentGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
+            DrawRuleTerm($"U-GAP × {TaylorRule.UnemploymentGapWeight(_playerCountry):0.##}", unemploymentGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
             DrawRuleOperator("=");
             DrawRuleTerm(sum < 0f ? "THE RULE · CLAMPED AT 0" : "THE RULE", suggested.ToString("F2", CultureInfo.InvariantCulture), politicalInk);
             GUILayout.FlexibleSpace();
@@ -3420,7 +3420,7 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(8f));
             DrawStatsSectionCaption("THE RULE'S INPUTS · AS READINGS");
             GUILayout.Space(StatsUnit(3f));
-            DrawReadingLane("INFLATION", inflation, "TaylorRule.InflationTarget", TaylorRule.InflationTarget(PlayerCountryId), "%", higherIsBetter: false, span: 3f, neutral: false, stamp: "LIVE");
+            DrawReadingLane("INFLATION", inflation, "TaylorRule.InflationTarget", TaylorRule.InflationTarget(_playerCountry), "%", higherIsBetter: false, span: 3f, neutral: false, stamp: "LIVE");
             DrawReadingLane("UNEMPLOYMENT", _playerCountry.State.Unemployment, "NAIRU", _playerCountry.NaturalUnemploymentRate, "%", higherIsBetter: false, span: 4f, neutral: false, stamp: "LIVE");
             DrawReadingLane("OUTPUT GAP", TaylorRule.GetOutputGapPercent(_playerCountry), "POTENTIAL", 0f, "%", higherIsBetter: true, span: 4f, neutral: true, stamp: "READ · NOT WEIGHED");
 
@@ -6968,6 +6968,27 @@ namespace PoliSim.UI
             }
         }
 
+        private static int? _monetaryRegimeLawCountCache;
+
+        /// <summary>P4-C3, the third category (2026-09-05): the monetary regime's count.</summary>
+        private static int MonetaryRegimeLawCount
+        {
+            get
+            {
+                if (_monetaryRegimeLawCountCache == null)
+                {
+                    int count = 0;
+                    foreach (LawDefinition law in LawCatalog.All)
+                    {
+                        if (law.Category == LawCategory.MonetaryRegime) { count++; }
+                    }
+                    _monetaryRegimeLawCountCache = count;
+                }
+
+                return _monetaryRegimeLawCountCache.Value;
+            }
+        }
+
         private static int? _fiscalFrameworkLawCountCache;
 
         /// <summary>P4-C3: the fourth category's count.</summary>
@@ -7046,18 +7067,20 @@ namespace PoliSim.UI
             // categories that never entered the enum). The summary line below drops its
             // "all CRIME & JUSTICE" clause - the chips carry the per-category counts now.
             GUILayout.BeginHorizontal();
-            float categoryShare = SubTabShare(lawsOuterInnerWidth, 5);   // P4-C3: five chips
+            float categoryShare = SubTabShare(lawsOuterInnerWidth, 6);   // P4-C3: six chips (the third category, 2026-09-05)
             string allChipLabel = $"All - {LawCatalog.All.Count}";
             string crimeChipLabel = $"Crime & Justice - {CrimeJusticeLawCount}";
             string laborChipLabel = $"Labor Market - {LaborMarketLawCount}";
             string institutionsChipLabel = $"Labour Institutions - {LabourInstitutionsLawCount}";   // P4-C3
             string fiscalChipLabel = $"Fiscal Framework - {FiscalFrameworkLawCount}";   // P4-C3
-            float categoryRowHeight = SubTabRowHeight(categoryShare, allChipLabel, crimeChipLabel, laborChipLabel, institutionsChipLabel, fiscalChipLabel);
+            string monetaryChipLabel = $"Monetary Regime - {MonetaryRegimeLawCount}";   // P4-C3, the third category
+            float categoryRowHeight = SubTabRowHeight(categoryShare, allChipLabel, crimeChipLabel, laborChipLabel, institutionsChipLabel, fiscalChipLabel, monetaryChipLabel);
             DrawSubCategoryButton(allChipLabel, LawBrowserFilter.All, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
             DrawSubCategoryButton(crimeChipLabel, LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
             DrawSubCategoryButton(laborChipLabel, LawBrowserFilter.LaborMarket, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
             DrawSubCategoryButton(institutionsChipLabel, LawBrowserFilter.LabourInstitutions, ref _lawBrowserFilter, categoryShare, categoryRowHeight);   // P4-C3
             DrawSubCategoryButton(fiscalChipLabel, LawBrowserFilter.FiscalFramework, ref _lawBrowserFilter, categoryShare, categoryRowHeight);   // P4-C3
+            DrawSubCategoryButton(monetaryChipLabel, LawBrowserFilter.MonetaryRegime, ref _lawBrowserFilter, categoryShare, categoryRowHeight);   // P4-C3, the third category
             GUILayout.EndHorizontal();
             // Free-aspect pass (2026-08-26): the ORDER row's minimum (caption + three measured
             // button floors + the search slot) is MEASURED against the box's inner width, and the
@@ -7144,6 +7167,11 @@ namespace PoliSim.UI
                 }
 
                 if (_lawBrowserFilter == LawBrowserFilter.FiscalFramework && law.Category != LawCategory.FiscalFramework)
+                {
+                    continue;
+                }
+
+                if (_lawBrowserFilter == LawBrowserFilter.MonetaryRegime && law.Category != LawCategory.MonetaryRegime)
                 {
                     continue;
                 }
@@ -7753,6 +7781,7 @@ namespace PoliSim.UI
                 case LawCategory.LaborMarket: return "LABOR MARKET";
                 case LawCategory.LabourInstitutions: return "LABOUR INSTITUTIONS";   // P4-C3
                 case LawCategory.FiscalFramework: return "FISCAL FRAMEWORK";   // P4-C3
+                case LawCategory.MonetaryRegime: return "MONETARY REGIME";   // P4-C3, the third category
                 default: return category.ToString().ToUpperInvariant();
             }
         }
@@ -7771,7 +7800,7 @@ namespace PoliSim.UI
                 return LawCategoryLabel(category);
             }
 
-            return category == LawCategory.LaborMarket ? "LABOR" : category == LawCategory.LabourInstitutions ? "INSTIT." : category == LawCategory.FiscalFramework ? "FISCAL" : "C&J";   // P4-C3
+            return category == LawCategory.LaborMarket ? "LABOR" : category == LawCategory.LabourInstitutions ? "INSTIT." : category == LawCategory.FiscalFramework ? "FISCAL" : category == LawCategory.MonetaryRegime ? "MONET." : "C&J";   // P4-C3
         }
 
         /// <summary>The one place a LawCategory maps to its area color (pass 3, 2026-08-26): with
@@ -7781,7 +7810,7 @@ namespace PoliSim.UI
         /// (LABOR MARKET BILL draws SystemArea.Labor).</summary>
         private static UiPalette.SystemArea LawCategoryArea(LawCategory category)
         {
-            return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : category == LawCategory.FiscalFramework ? UiPalette.SystemArea.Fiscal : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink, the framework the fiscal area's
+            return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : category == LawCategory.FiscalFramework ? UiPalette.SystemArea.Fiscal : category == LawCategory.MonetaryRegime ? UiPalette.SystemArea.Political : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink, the framework the fiscal area's
         }
 
         /// <summary>The magnitude taxonomy's own four tiers (LawCatalog's class doc: MINOR +-3..6,
@@ -8055,6 +8084,13 @@ namespace PoliSim.UI
             // button too and permanently lock whichever law was selected at end-of-game. Only the
             // actual state-changing action needs gating on game-over; browsing a law's detail is
             // informational and has no gameplay effect either way.
+            // P4-C3 third category, ruling (a) (2026-09-05): a law outside this House's competence - a monetary-regime law where the
+            // country shares its currency zone - is not offered; the card says why, in the caption face, and IntroduceLawBill agrees.
+            if (!LawCatalog.IsWithinCompetence(_simulationManager.World, _playerCountry, law))
+            {
+                GUILayout.Label(LawCatalog.OutsideCompetenceReason, _labelStyle, GUILayout.Width(contentWidth));
+                return;
+            }
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && !_isGameOver;
             string actionLabel = enacted ? $"Repeal {law.Name}" : $"Enact {law.Name}";

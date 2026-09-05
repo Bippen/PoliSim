@@ -13,7 +13,10 @@ namespace PoliSim.Data
         /// <summary>P4-C3 (2026-09-04), the first category from the lever map's unreached set: laws that move the natural rate of unemployment - benefit rules, employment protection, bargaining, active programmes.</summary>
         LabourInstitutions,
         /// <summary>P4-C3, the second category: the fiscal framework - debt anchors and brakes, expenditure ceilings, the debt office's mandate, fiscal councils, tax administration - reaching five structural parameters no dial reaches.</summary>
-        FiscalFramework
+        FiscalFramework,
+        /// <summary>P4-C3, the third category (2026-09-05): laws on the central bank's target, mandate and reaction - the zone's
+        /// parameters (StructuralParameter.InflationTarget .. UnemploymentGapWeight), reached only where the parliament owns its bank.</summary>
+        MonetaryRegime
     }
 
     /// <summary>
@@ -118,6 +121,11 @@ namespace PoliSim.Data
         /// twelve dials are. One table (StructuralParameters) rather than a field per parameter. Empty for every law of the two dial
         /// categories.</summary>
         public StructuralDelta[] Structural = System.Array.Empty<StructuralDelta>();
+
+        /// <summary>P4-C3 third category, ruling (a) 2026-09-05: true for a law that reaches the currency zone's parameters. Such a law is
+        /// within a parliament's competence only where the country OWNS its zone (World.OwnsCurrencyZone) - a euro member's House does not
+        /// reach the ECB's target or mandate (TFEU Articles 127 and 130: treaty competence), and the browser says so instead of offering Enact.</summary>
+        public bool RequiresOwnCurrency;
 
         /// <summary>P4-C3: the law's own reading on the economic axis (-1 left … +1 right), used for the NAIRU effect's stance
         /// term because the sign of a NAIRU move does not tell a law's politics - a benefit cut and a training programme both

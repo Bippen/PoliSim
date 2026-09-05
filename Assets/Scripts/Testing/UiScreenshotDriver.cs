@@ -639,7 +639,7 @@ namespace PoliSim.Testing
                             lawCountry.State.ApprovalRating = approvalUntouched;
                             selectedLaw?.SetValue(controller, selectedBefore);
                             // P4-C3 (2026-09-04): one card per structural category on film - the law selected, its EXPECTED EFFECTS line in the parameter's own unit.
-                            foreach ((string lawId, string capture) in new[] { ("hartz_benefit_reform_act", "06h_laws_institutions_card"), ("constitutional_debt_brake_act", "06h_laws_fiscal_card") })
+                            foreach ((string lawId, string capture) in new[] { ("hartz_benefit_reform_act", "06h_laws_institutions_card"), ("constitutional_debt_brake_act", "06h_laws_fiscal_card"), ("full_employment_mandate_act", "06h_laws_monetary_card") })
                             {
                                 selectedLaw?.SetValue(controller, lawId);
                                 ResetScrolls(controller);

@@ -97,9 +97,9 @@ namespace PoliSim.EditorTools
                     if (c.CurrentFedChair == null) { continue; }
                     PolicyPreview p = sim.PreviewTurn(c.Id, PolicyDecision.None());
                     RatePathProjection.Step[] path = RatePathProjection.Project(c, p);
-                    float ruleOnPreview = Mathf.Max(0f, TaylorRule.NeutralRealRate + p.PreviewInflation
-                        + TaylorRule.InflationGapWeight * (p.PreviewInflation - TaylorRule.InflationTarget(c.Id))
-                        + TaylorRule.UnemploymentGapWeight * (p.PreviewNaturalUnemployment - p.PreviewUnemployment));
+                    float ruleOnPreview = Mathf.Max(0f, TaylorRule.NeutralRealRate(c) + p.PreviewInflation
+                        + TaylorRule.InflationGapWeight(c) * (p.PreviewInflation - TaylorRule.InflationTarget(c))
+                        + TaylorRule.UnemploymentGapWeight(c) * (p.PreviewNaturalUnemployment - p.PreviewUnemployment));
                     float ruleNow = TaylorRule.GetSuggestedInterestRate(c);
                     float targetNow = Mathf.Clamp(ruleNow + c.CurrentFedChair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
                     float targetNext = Mathf.Clamp(ruleOnPreview + c.CurrentFedChair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);

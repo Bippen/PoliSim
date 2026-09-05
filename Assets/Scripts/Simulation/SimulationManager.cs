@@ -1426,6 +1426,13 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new law bill (enact or repeal, per bill.IsRepeal) - a no-op (returns false) if one is already pending for this SAME LawId. Mirrors IntroduceTaxProgramBill's own pattern exactly.</summary>
         public bool IntroduceLawBill(CountryId countryId, LawBill bill)
         {
+            // P4-C3 third category, ruling (a) (2026-09-05): a law outside the parliament's competence (a monetary-regime law in a
+            // country that shares its currency zone) is refused here as well as not offered - the browser's line and this gate agree.
+            if (!LawCatalog.IsWithinCompetence(_world, _world?.GetCountry(countryId), LawCatalog.GetById(bill.LawId)))
+            {
+                return false;
+            }
+
             if (!_pendingLawBillsByCountry.TryGetValue(countryId, out var pending))
             {
                 pending = new Dictionary<string, LawBill>();

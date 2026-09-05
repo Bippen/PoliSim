@@ -39,16 +39,25 @@ namespace PoliSim.Simulation
         /// constant of 2 for all six, which sat INSIDE Poland's tolerance band and was not its target - S-24.
         /// A per-country figure is the fix; a per-country table with one authored entry would not be, so
         /// every value here is the institution's own published number.</remarks>
-        public static float InflationTarget(CountryId country) =>
-            country == CountryId.Poland ? 2.5f : 2f;
+        public const float DefaultInflationTarget = 2f;
+        /// <remarks>SOURCED - the NBP's own target (see InflationTarget's remarks).</remarks>
+        public const float DefaultInflationTargetPoland = 2.5f;
+        public static float DefaultInflationTargetFor(CountryId country) =>
+            country == CountryId.Poland ? DefaultInflationTargetPoland : DefaultInflationTarget;
+        /// <summary>P4-C3 third category (2026-09-05): the target is the ZONE'S state now (CurrencyZone.InflationTarget), seeded from the defaults above and reached by the monetary-regime laws where the parliament owns its bank.</summary>
+        public static float InflationTarget(Country country) => Zone(country).InflationTarget;
 
         /// <summary>Assumed neutral real interest rate, in percent.</summary>
         /// <remarks>[AUTHORED-DRAFT], and this one deserves the mark most: the neutral real rate (r*) is UNOBSERVABLE and actively contested - published estimates for these economies have ranged from below zero to above two in the last decade. 2% is the classic Taylor (1993) assumption, kept for that reason and not because anything measures it now.</remarks>
-        public const float NeutralRealRate = 2f;
+        public const float DefaultNeutralRealRate = 2f;
+        /// <summary>P4-C3: the zone's (CurrencyZone.NeutralRealRate), seeded at the default.</summary>
+        public static float NeutralRealRate(Country country) => Zone(country).NeutralRealRate;
 
         /// <summary>Weight on the inflation gap (actual inflation minus target).</summary>
         /// <remarks>SOURCED as the canonical specification: Taylor (1993) sets the coefficient on the inflation gap at 0.5 in the original rule. The weight is the rule's own, not a fit to this model.</remarks>
-        public const float InflationGapWeight = 0.5f;
+        public const float DefaultInflationGapWeight = 0.5f;
+        /// <summary>P4-C3: the zone's (CurrencyZone.InflationGapWeight), seeded at the default.</summary>
+        public static float InflationGapWeight(Country country) => Zone(country).InflationGapWeight;
 
         /// <summary>
         /// Percentage points of suggested rate per percentage point the unemployment rate sits BELOW
@@ -65,7 +74,22 @@ namespace PoliSim.Simulation
         /// chosen: at no-policy the term is +0.05 pp on average with sd 0.2, and 1.0 against the
         /// model-native 0.5/0.7 = 0.71 moves the reading by ~0.06 pp.
         /// </summary>
-        public const float UnemploymentGapWeight = 1.0f;
+        public const float DefaultUnemploymentGapWeight = 1.0f;
+        /// <summary>P4-C3: the zone's (CurrencyZone.UnemploymentGapWeight), seeded at the default.</summary>
+        public static float UnemploymentGapWeight(Country country) => Zone(country).UnemploymentGapWeight;
+
+        /// <summary>The zone the rule reads for this country. A zone from a save older than the four fields is seeded once, here, from the defaults
+        /// (the country's own default target - a euro member's zone gets 2 %, Poland's 2.5 %); a country with no zone (a bare test fixture) reads a private default zone.</summary>
+        private static readonly CurrencyZone FallbackZone = new CurrencyZone("(no zone)", 0f);
+        public static CurrencyZone Zone(Country country)
+        {
+            CurrencyZone zone = country.CurrencyZone ?? FallbackZone;
+            if (!zone.MonetaryParametersSeeded)
+            {
+                zone.SeedMonetaryParameters(DefaultInflationTargetFor(country.Id), DefaultNeutralRealRate, DefaultInflationGapWeight, DefaultUnemploymentGapWeight);
+            }
+            return zone;
+        }
 
         /// <summary>
         /// Output gap as a percentage of potential GDP - the LEVEL gap, positive above trend. Kept
@@ -93,7 +117,7 @@ namespace PoliSim.Simulation
         /// <summary>The rule's cyclical term in percentage points of rate: UnemploymentGapWeight times the gap. What TrajectoryBaselineDump records as Taylor.GapTermPp.</summary>
         public static float GetGapTermPercentagePoints(Country country)
         {
-            return UnemploymentGapWeight * GetUnemploymentGapPercent(country);
+            return UnemploymentGapWeight(country) * GetUnemploymentGapPercent(country);
         }
 
         /// <summary>
@@ -104,9 +128,9 @@ namespace PoliSim.Simulation
         public static float GetSuggestedInterestRate(Country country)
         {
             EconomyState state = country.State;
-            float inflationGap = state.Inflation - InflationTarget(country.Id);
+            float inflationGap = state.Inflation - InflationTarget(country);
 
-            float suggested = NeutralRealRate + state.Inflation + InflationGapWeight * inflationGap + GetGapTermPercentagePoints(country);
+            float suggested = NeutralRealRate(country) + state.Inflation + InflationGapWeight(country) * inflationGap + GetGapTermPercentagePoints(country);
             return Mathf.Max(0f, suggested);
         }
     }
