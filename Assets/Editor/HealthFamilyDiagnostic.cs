@@ -61,7 +61,7 @@ namespace PoliSim.EditorTools
             if (!(starved[1] > untouched[1]) || !(starved[2] > untouched[2])) { Debug.LogError($"HEALTH: the waits with the health line a fifth down ({starved[1]:F1} / {starved[2]:F1}) are not longer than the untouched run's ({untouched[1]:F1} / {untouched[2]:F1})."); ok = false; }
             if (!(starved[3] <= untouched[3])) { Debug.LogError($"HEALTH: coverage with the health line a fifth down ({starved[3]:F2}) is above the untouched run ({untouched[3]:F2})."); ok = false; }
             Debug.Log($"HEALTH: Sweden after {Years} years - untouched: treatable mortality {untouched[0]:F1}, cataract {untouched[1]:F1} d, knee {untouched[2]:F1} d, coverage {untouched[3]:F2} %; "
-                + $"health line cut a fifth in year 1 and pinned (its real value eroding with prices besides): {starved[0]:F1}, {starved[1]:F1} d, {starved[2]:F1} d, {starved[3]:F2} % - quality worse, waits longer, coverage no higher: the couplings move the stated way.");
+                + $"health lines cut through the decision each year (-20 % asked, the seed range deciding): {starved[0]:F1}, {starved[1]:F1} d, {starved[2]:F1} d, {starved[3]:F2} % - quality worse, waits longer, coverage no higher: the couplings move the stated way.");
 
             Debug.Log(ok ? "HEALTH: PASS - the seeds are the spine's, absent stays absent, the couplings move the stated way." : "HEALTH: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
@@ -87,16 +87,14 @@ namespace PoliSim.EditorTools
                 for (int year = 1; year <= years; year++)
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
-                    if (heldShare != 0f && year == 1)
+                    PolicyDecision d = PolicyDecision.None();
+                    if (heldShare != 0f)
                     {
-                        // Cut the health lines once by the share and PIN them: a pinned line holds its nominal figure (IndexSpendingLines skips it), so its real
-                        // value erodes with prices besides - "at least a fifth below the seed" for the whole run. (SpendingLine.SeedAmount is re-indexed every
-                        // year as the seed-range anchor, so it is not the figure to scale from - the first form of this test did and over-funded the run.)
-                        foreach (SpendingLine line in se.SpendingLines)
-                        {
-                            if (HealthFamily.IsHealthLine(line.Category)) { line.Amount *= 1f + heldShare; line.Pinned = true; }
-                        }
+                        // P5-C7: the cut goes through the DECISION (the mechanic's own path - the request is the indexed line, the allocation the player's figure), so the
+                        // Health ministry's effectiveness falls below one and the waits, which read it, lengthen; the seed-range clamp decides how much of the ask lands.
+                        foreach (SpendingLine line in se.SpendingLines) { if (HealthFamily.IsHealthLine(line.Category)) { d.SpendingLineChanges[line.Category] = heldShare * 100f; } }
                     }
+                    decisions[CountryId.Sweden] = d;
                     sim.AdvanceTurn(decisions);
                     EconomyState s = se.State;
                     if (s.TreatableMortality < HealthFamily.MinTreatableMortality || s.TreatableMortality > HealthFamily.MaxTreatableMortality || s.WaitKneeDays > HealthFamily.MaxWaitDays || s.HealthCoverage > se.Health.CoverageCeiling + 1e-3f) { guardsHeld = false; }
