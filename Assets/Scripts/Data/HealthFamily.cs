@@ -64,9 +64,9 @@ namespace PoliSim.Data
         /// HealthFamilyDiagnostic prints the elasticity Poland's 106 against Sweden's 45 IMPLIES on the game's own seeded spending per head beside this
         /// figure, so the two can be read together - never tuned to meet.</remarks>
         public const float QualitySpendingElasticity = 0.5f;
-        /// <remarks>[AUTHORED-DRAFT] - treatable mortality's elasticity to the minister's efficiency against its seed.</remarks>
+        /// <remarks>[AUTHORED-DRAFT] - treatable mortality's elasticity to the Health ministry's EFFECTIVENESS against its seed (P5-C7: allocated / requested x efficiency).</remarks>
         public const float QualityEfficiencyElasticity = 0.3f;
-        /// <remarks>[AUTHORED-DRAFT] - waiting times' elasticity to effectiveness (until P5-C7 lands, real spending per head against its seed stands in).</remarks>
+        /// <remarks>[AUTHORED-DRAFT] - waiting times' elasticity to the Health ministry's effectiveness (P5-C7).</remarks>
         public const float WaitEffectivenessElasticity = 0.5f;
         /// <remarks>CONVENTION - runaway guards on the state, set outside anything the couplings reach; the instruments' bands are the family's STATED ranges (9c), not these.</remarks>
         public const float MinTreatableMortality = 10f, MaxTreatableMortality = 400f, MinWaitDays = 1f, MaxWaitDays = 1000f;
@@ -145,12 +145,9 @@ namespace PoliSim.Data
             return 1f;
         }
 
-        /// <summary>The stand-in for P5-C7's effectiveness until it lands: real spending per head against the seed's.</summary>
-        public static float EffectivenessStandIn(Country country)
-        {
-            HealthSeeds s = country.Health;
-            return s.SpendPerHeadSeed > 0f ? SpendPerHead(country) / s.SpendPerHeadSeed : 1f;
-        }
+        /// <summary>P5-C7 (board 9d): the Health ministry's effectiveness - allocated / requested x the minister's efficiency (Effectiveness.RatioOf);
+        /// before the first turn records one it is the efficiency alone (the seed: allocated = requested). The spending-per-head stand-in is retired.</summary>
+        public static float HealthEffectiveness(Country country) => Effectiveness.RatioOf(country, CabinetPortfolio.HealthSocialAffairs);
 
         public readonly struct Targets
         {
@@ -166,12 +163,13 @@ namespace PoliSim.Data
             float ageCost = Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDriver.AgeCostIndex, country));
             float perHeadRatio = s.SpendPerHeadSeed > 0f ? (healthSpendingReal / heads) / s.SpendPerHeadSeed : 1f;
             float perAgeCostRatio = s.SpendPerAgeCostSeed > 0f ? (healthSpendingReal / ageCost) / s.SpendPerAgeCostSeed : 1f;
-            float efficiencyRatio = s.EfficiencySeed > 0f ? Efficiency(country) / s.EfficiencySeed : 1f;
-            perHeadRatio = Mathf.Max(0.01f, perHeadRatio); perAgeCostRatio = Mathf.Max(0.01f, perAgeCostRatio); efficiencyRatio = Mathf.Max(0.01f, efficiencyRatio);
+            // P5-C7: effectiveness against its seed (at the seed allocated = requested, so the seed's effectiveness is the seed's efficiency).
+            float effectivenessRatio = s.EfficiencySeed > 0f ? HealthEffectiveness(country) / s.EfficiencySeed : 1f;
+            perHeadRatio = Mathf.Max(0.01f, perHeadRatio); perAgeCostRatio = Mathf.Max(0.01f, perAgeCostRatio); effectivenessRatio = Mathf.Max(0.01f, effectivenessRatio);
 
             float coverage = Mathf.Min(s.CoverageCeiling, s.Coverage * Mathf.Pow(perHeadRatio, CoverageElasticity));
-            float tm = s.TreatableMortality * Mathf.Pow(1f / perAgeCostRatio, QualitySpendingElasticity) * Mathf.Pow(1f / efficiencyRatio, QualityEfficiencyElasticity);
-            float waitFactor = Mathf.Pow(1f / perHeadRatio, WaitEffectivenessElasticity);   // C7's effectiveness stands in as spending per head against the seed
+            float tm = s.TreatableMortality * Mathf.Pow(1f / perAgeCostRatio, QualitySpendingElasticity) * Mathf.Pow(1f / effectivenessRatio, QualityEfficiencyElasticity);
+            float waitFactor = Mathf.Pow(1f / effectivenessRatio, WaitEffectivenessElasticity);   // P5-C7: the waits read the ministry's effectiveness
             return new Targets(coverage, Mathf.Clamp(tm, MinTreatableMortality, MaxTreatableMortality), waitFactor);
         }
 

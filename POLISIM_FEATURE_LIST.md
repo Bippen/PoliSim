@@ -746,7 +746,7 @@ otherwise); poverty effect and per-capita income as derived readouts. *Done when
 derived from its drivers (B2's indexation is the request); effectiveness = allocated ÷ requested,
 scaled by the minister's **efficiency** attribute (P2-5), and effectiveness is what the coupling
 table reads for that portfolio's outcomes. The Cabinet and Budget screens show it. *Done when:*
-underfunding a ministry measurably degrades its outcomes through the minister, asserted, filmed.
+underfunding a ministry measurably degrades its outcomes through the minister, asserted, filmed. **→ ✅ BUILT 2026-09-05 (late), `COMPLETED.md` §336, on Design's board 9d (D15 item 4): per portfolio allocated ÷ requested × the minister's efficiency, recorded as the turn resolves (`Effectiveness`, `Country.Effectiveness`; the request is B2's indexed line, the allocation the player's figure); the ratio on the minister's card with 5c's arrow from unity and its decomposition, the state line in words, the Health card quoting the family's three keys; the Budget row's caption PORTFOLIO · EFF ×r (Bad below unity) or the class word where no ministry reads the line; the health family's waits and quality read it (the stand-in retired); `EffectivenessDiagnostic` asserts that underfunding the Health ministry degrades its outcomes through the minister; filmed at 1280 and 2560.**
 
 ## Track D — the D15 ask
 

@@ -3131,6 +3131,7 @@ namespace PoliSim.Simulation
                 PotentialLabourAtLastTurn = country.PotentialLabourAtLastTurn,
                 PriceLevelAtLastIndex = country.PriceLevelAtLastIndex,   // P5-B6
                 Health = country.Health,   // P5-C2: the seeds are immutable after the seed; the preview reads them
+                Effectiveness = new Dictionary<CabinetPortfolio, PortfolioEffectiveness>(country.Effectiveness),   // P5-C7: the preview records into its own copy
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
                 // Seed-spread ruling (2026-08-27): the welfare anchor rides the hand-list too (the
@@ -3715,10 +3716,14 @@ namespace PoliSim.Simulation
             if (country.SpendingLines.Count > 0)
             {
                 IndexSpendingLines(country);   // P5-B2: the driver on every line that has one (the AI's real growth besides); the four growth and pressure calls this replaces are named in its doc
+                // P5-C7 (board 9d): the REQUEST is the indexed line - every line's amount now, before the player's figure lands.
+                var requestedByCategory = new Dictionary<SpendingCategory, float>();
+                foreach (SpendingLine indexed in country.SpendingLines) { requestedByCategory[indexed.Category] = indexed.Amount; }
                 ApplyEnforcementCostPressure(country);
                 ApplySectorSupportCostPressure(country);   // P4-B3: the sector dials' support cost, the same idiom
                 float discretionaryTotalBefore = GetSpendingLineTotal(country, mandatory: false);
                 SpendingLineChangeResult changeResult = ApplySpendingLineChanges(country, decision);
+                Effectiveness.Record(country, requestedByCategory);   // P5-C7: allocated / requested x the minister's efficiency, per portfolio
                 float discretionaryTotalAfter = GetSpendingLineTotal(country, mandatory: false);
                 float mandatoryTotal = GetSpendingLineTotal(country, mandatory: true);
 

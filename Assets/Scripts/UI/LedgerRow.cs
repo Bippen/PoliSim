@@ -177,7 +177,9 @@ namespace PoliSim.UI
             float barFraction = -1f,
             float tickStep = 0f,
             float ghost = float.NaN,
-            string figureSecondLine = null)
+            string figureSecondLine = null,
+            string nameSecondLine = null,
+            Color? nameSecondLineInk = null)
         {
             // Board 9b (D15 item 2, 2026-09-05): `ghost` is the value the line stood at when the year opened - a third tick in TextMuted where the
             // driver's move can be read against the standing tick (ghost → standing the driver's, standing → knob the player's); drawn only when the
@@ -213,6 +215,23 @@ namespace PoliSim.UI
             }
 
             DrawNameCell(nameRect, name, nameStyle, rowInk);
+            if (!string.IsNullOrEmpty(nameSecondLine) && Event.current.type == EventType.Repaint)
+            {
+                // 9d (D15 item 4): 6a's second line under the dial name - on a spending row PORTFOLIO · EFF ×r in the caption face, Bad below unity,
+                // TextMuted otherwise; a line without a ministry keeps its class word. Drawn in the name cell's lower half; no rect moves.
+                GUIStyle captionStyle = EndCaptionStyle(nameStyle);
+                // The resort ladder, measured: the full caption if it fits the name cell, else its last segment (after the final " · "), else its first word -
+                // a caption is shortened, never clipped (the first films: the class word overflowed the 1280 name cell, and a guessed line height was short at 2560).
+                string text = nameSecondLine;
+                if (captionStyle.CalcSize(new GUIContent(text)).x > nameRect.width)
+                {
+                    int dot = text.LastIndexOf(" · ", System.StringComparison.Ordinal);
+                    string tail = dot >= 0 ? text.Substring(dot + 3) : text;
+                    text = captionStyle.CalcSize(new GUIContent(tail)).x <= nameRect.width ? tail : tail.Split(' ')[0];
+                }
+                float lineH = Mathf.Ceil(captionStyle.CalcSize(new GUIContent(text)).y);
+                DrawCell(new Rect(nameRect.x, nameRect.yMax - lineH - 1f, nameRect.width, lineH), text, captionStyle, nameSecondLineInk ?? PoliSimTheme.TextMuted, TextAnchor.UpperLeft);
+            }
 
             if (Event.current.type == EventType.Repaint)
             {

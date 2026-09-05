@@ -8965,8 +8965,11 @@ namespace PoliSim.UI
 
                 GUILayout.BeginVertical();
                 GUILayout.Label($"{minister.Name} ({minister.Philosophy})", _labelStyle);
+                GUILayout.Label(EffectivenessStateLine(portfolio), DeskCaption(7.5f, Effectiveness.RatioOf(_playerCountry, portfolio) < 0.995f ? PoliSimTheme.Bad : PoliSimTheme.TextMuted));   // 9d: the consequence in words
                 GUILayout.Label(minister.Description, _labelStyle);
                 DrawMinisterAttributes(minister);   // P2-5.2
+                DrawEffectivenessReadout(portfolio);   // P5-C7, board 9d: the readout under the attributes, beneath EFFICIENCY
+                if (portfolio == CabinetPortfolio.HealthSocialAffairs) { DrawHealthKeysOnCard(); }   // 9c: the card quotes the family's keys
 
                 // ⚠ A DELIBERATE EXCEPTION TO BEHAVIOUR 5's WORDING, and NOT a precedent. Recorded here
                 // in 2026-08-10's sweep so a future reader neither "fixes" it nor cites it.
@@ -11080,7 +11083,9 @@ namespace PoliSim.UI
                 _sliderThumbStyle,
                 barFraction: standing / groupMax,
                 ghost: spendingLine.LastYearAmount > 0f ? spendingLine.LastYearAmount : float.NaN,   // 9b: the year-open tick
-                figureSecondLine: SpendingDeltaText(spendingLine, hasDraft ? draft : standing));   // 9b: Δ under the figure, measured from the ghost
+                figureSecondLine: SpendingDeltaText(spendingLine, hasDraft ? draft : standing),   // 9b: Δ under the figure, measured from the ghost
+                nameSecondLine: SpendingRowCaption(spendingLine, rangePercent, out Color captionInk),   // 9d: PORTFOLIO · EFF ×r, or the class word
+                nameSecondLineInk: captionInk);
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -11121,6 +11126,21 @@ namespace PoliSim.UI
             Color ink = PoliSimTheme.TextSecondary;
             GUI.Label(new Rect(band.x, band.y, end, band.height), left, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, ink));
             GUI.Label(new Rect(band.xMax - end, band.y, end, band.height), right, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperRight, clipping = TextClipping.Clip }, ink));
+        }
+
+        /// <summary>9d (D15 item 4): the caption under the dial name. A line a ministry reads prints PORTFOLIO · EFF ×r - Bad below unity, TextMuted at or
+        /// above (met is not a verdict); a line no ministry reads keeps its class word with its range - MANDATORY ±15 % · NO MINISTRY READS IT.</summary>
+        private string SpendingRowCaption(SpendingLine line, float rangePercent, out Color ink)
+        {
+            CabinetPortfolio? portfolio = Effectiveness.PortfolioOf(line.Category);
+            if (portfolio == null)
+            {
+                ink = PoliSimTheme.TextMuted;
+                return (line.IsMandatory ? "MANDATORY" : "DISCRETIONARY") + " ±" + rangePercent.ToString("0", CultureInfo.InvariantCulture) + " % · NO MINISTRY READS IT";
+            }
+            float ratio = Effectiveness.RatioOf(_playerCountry, portfolio.Value);
+            ink = ratio < 0.995f ? PoliSimTheme.Bad : PoliSimTheme.TextMuted;
+            return Effectiveness.ShortName(portfolio.Value) + " · EFF ×" + ratio.ToString("0.00", CultureInfo.InvariantCulture);
         }
 
         /// <summary>9b: the row's delta - the figure in force (the draft while drafted, else the standing amount) against the amount the year opened with
