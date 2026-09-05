@@ -733,7 +733,7 @@ as the 65+ share of the cohort substrate; health spending reaches them through t
 the 0–19 cohort reach them. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §326 (the build waits on D15 item 3): `EDUCATION_FAMILY_SPINE.md` - attainment for six (OECD EAG, Eurostat cross-check), students per teacher for six, early leavers for five (the USA absent and stated), PISA and graduation as named fetches with no figure written; the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.**
 
 **P5-C4 — Infrastructure.** Road condition and congestion (WEF/OECD), energy mix by source;
-infrastructure spending and the sector dials reach them. *Done when:* as C2.
+infrastructure spending and the sector dials reach them. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §328 (the build waits on D15 item 3): `INFRASTRUCTURE_FAMILY_SPINE.md` - the WEF GCI 2019 dataset fetched and verified by content, road quality and road connectivity for six (dated 2019), railroad density in the file, road length absent (IRF, paid), congestion to fetch (TomTom); the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.**
 
 **P5-C5 — Environment.** CO₂ per capita split electricity/transport (Eurostat/EDGAR); the energy
 mix and the sector dials reach it. *Done when:* as C2.
