@@ -34,8 +34,10 @@ namespace PoliSim.UI
         private const int Diameter = 120;
         /// <summary>8a: the paper hairline between adjacent wedges, in texture pixels at the 120 px disc.</summary>
         private const float WedgeGap = 1.5f;
-        /// <summary>P5-A1: a wedge prints its share inside when its span is at least this many degrees - the label's width fits the chord at 0.62 r.</summary>
-        private const float InsideLabelMinDegrees = 40f;
+        /// <summary>P5-A1: a wedge prints its share inside when its span is at least this many degrees - the label's width fits the chord at 0.62 r.
+        /// D15 item 1, board 9a (2026-09-05): 45°, not 40° - Design measured "12.3 %" in mono 7.5 at 1280 as 27 px against a 40° chord of 25.4 px (1.6 px over)
+        /// and a 45° chord of 28.5 px (1.5 px to spare); the figure keeps its space everywhere, so the threshold moved rather than the glyphs.</summary>
+        private const float InsideLabelMinDegrees = 45f;
         private static readonly Color BackgroundColor = PoliSimTheme.Card;
         private static readonly Color EmptyColor = PoliSimTheme.BarTrack;
 
@@ -104,8 +106,10 @@ namespace PoliSim.UI
                 GUI.Label(new Rect(textX, y + lineHeight, labelWidth, lineHeight), figure, _figureStyle);
                 y += lineHeight * 2f;
 
-                // The large wedge carries its own share inside, at the wedge's centroid, in the paper's ink.
-                if (_spans[i] >= InsideLabelMinDegrees)
+                // The large wedge carries its own share inside, at the wedge's centroid, in the paper's ink - board 9a (D15 item 1): only where the wedge's
+                // ink clears 4.5:1 against the paper, and never on the hatched OTHER (its paper-and-ink weave has no ground for the glyphs); those ride the legend.
+                bool isOther = slice.Label == "Other" && i == _ordered.Count - 1 && _ordered.Count == UiPalette.MaxCategoricalSeries;
+                if (_spans[i] >= InsideLabelMinDegrees && !isOther && ContrastRatio(BackgroundColor, slice.Color) >= 4.5f)
                 {
                     float a = _midAngles[i] * Mathf.Deg2Rad;
                     Vector2 at = centre + new Vector2(Mathf.Cos(a), Mathf.Sin(a)) * (radius * 0.62f);
@@ -114,6 +118,19 @@ namespace PoliSim.UI
                     GUI.Label(new Rect(Mathf.Round(at.x - size.x * 0.5f), Mathf.Round(at.y - size.y * 0.5f), size.x, size.y), share, _insideStyle);
                 }
             }
+        }
+
+        /// <summary>WCAG 2 contrast ratio of two opaque colours (relative luminance, sRGB), the measure 9a's inside-label rule reads.</summary>
+        private static float ContrastRatio(Color a, Color b)
+        {
+            float la = Luminance(a), lb = Luminance(b);
+            return (Mathf.Max(la, lb) + 0.05f) / (Mathf.Min(la, lb) + 0.05f);
+        }
+
+        private static float Luminance(Color c)
+        {
+            float Lin(float v) => v <= 0.03928f ? v / 12.92f : Mathf.Pow((v + 0.055f) / 1.055f, 2.4f);
+            return 0.2126f * Lin(c.r) + 0.7152f * Lin(c.g) + 0.0722f * Lin(c.b);
         }
 
         private void EnsureStylesInitialized(GUIStyle referenceStyle)

@@ -23338,3 +23338,14 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `bar163_p5c2_RunSimulationBatch.log`, 19 of 19 simulation checks clean (`HealthFamilyDiagnostic` the nineteenth); `bar165_p5c2_RunAllBatch.log`, 32 of 32 clean on the committed tree (`MetaTextCheck` exempts the plate's honesty chips by name - Design's vocabulary with the source line beside it, the coalition page's precedent - and the foot's § became words). The trajectory dump `traj_p5c2` (six files) and the six diffs; `p5c2_1280.log`, `p5c2_2560.log`.
 
+
+## 334. D15 ITEM 1 BUILT — THE PIE'S READ-BACK (board 9a): 8a stands with its leader rule struck; the inside label at 45°, not 40°, and only where the wedge's ink clears 4.5:1 against the paper - never on the hatched OTHER (2026-09-05, late)
+
+**The board** (9a, *"the pie without leaders - 8a's leader rule struck, the read-back and one angle"*): *"deviation accepted in advance · legend keyed by swatch · inside label ≥ 45° (the number), not 40° · disc 120 · ≤8 inks"*. Design measured the angle: "12.3 %" in mono 7.5 at 1280 is 27 px against a 40° chord at 0.62 r of 25.4 px (1.6 px over) and a 45° chord of 28.5 px (1.5 px to spare); the figure keeps its space everywhere (8a's "no figure moves" applied to its glyphs), so the threshold moves rather than the form of the figure. And: *"Inside labels print in paper ink only where the wedge's ink clears 4.5:1 against paper - the hatched OTHER and the rule-tint wedge never label inside; they ride the legend."* Everything else of 8a stands (12-o'clock largest-first clockwise, paper hairlines, ≤8 inks, hatched OTHER past the eighth, no figure moves, the head row's provenance chip, the foot's one caption line) and was built in §313.
+
+**Built** (`PieChartRenderer`): `InsideLabelMinDegrees` 40 → 45 with the board's measurement in its doc; the inside label is drawn only when the wedge is not the hatched OTHER and the WCAG 2 contrast of the paper against the wedge's ink is at least 4.5 (`ContrastRatio`, relative luminance in sRGB - the measure the board names). The legend was already keyed by swatch (one swatch · one name · one share per line, wedge order) since §313; nothing else moved.
+
+**On film:** `04a_demographics_pie` at 1280 and 2560 (`p5a1b_*`). Both runs: 99 captured, 0 failed, no OVERFLOW, clean exits.
+
+**Bar:** `bar166_p5a1b_RunAllBatch.log`, 32 of 32 clean (no simulation code touched); `p5a1b_1280.log`, `p5a1b_2560.log`.
+
