@@ -11078,7 +11078,9 @@ namespace PoliSim.UI
                 _labelStyle,
                 _sliderStyle,
                 _sliderThumbStyle,
-                barFraction: standing / groupMax);
+                barFraction: standing / groupMax,
+                ghost: spendingLine.LastYearAmount > 0f ? spendingLine.LastYearAmount : float.NaN,   // 9b: the year-open tick
+                figureSecondLine: SpendingDeltaText(spendingLine, hasDraft ? draft : standing));   // 9b: Δ under the figure, measured from the ghost
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -11109,17 +11111,25 @@ namespace PoliSim.UI
             GUIStyle face = LedgerRow.CaptionStyle(_labelStyle);
             float end = band.width * (captionShown ? 0.2f : 0.35f);
             string driver = SpendingDrivers.Short(SpendingDrivers.Of(line.Category));
-            string leftFull = line.Pinned ? "PINNED · " + driver
+            string leftFull = line.Pinned ? "PINNED"   // 9b: a driver STATE like NO DRIVER - a word, nowhere else
                 : SpendingDrivers.Of(line.Category) == SpendingDriver.None ? "NO DRIVER"
                 : line.LastDriverRatio > 0f ? driver + " ×" + line.LastDriverRatio.ToString("F3", CultureInfo.InvariantCulture) : driver;
             string leftShort = line.Pinned ? "PINNED" : driver;
             string left = face.CalcSize(new GUIContent(leftFull)).x <= end ? leftFull : leftShort;
             string next = "NEXT " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions);
-            string rightFull = line.LastYearAmount > 0f ? "Δ " + UiFormat.MoneyDelta(line.Amount - line.LastYearAmount, MoneyUnit.Billions) + " · " + next : next;
-            string right = face.CalcSize(new GUIContent(rightFull)).x <= end ? rightFull : next;
+            string right = next;   // 9b: NEXT alone - the delta moved under the figure (SpendingDeltaText)
             Color ink = PoliSimTheme.TextSecondary;
             GUI.Label(new Rect(band.x, band.y, end, band.height), left, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, ink));
             GUI.Label(new Rect(band.xMax - end, band.y, end, band.height), right, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperRight, clipping = TextClipping.Clip }, ink));
+        }
+
+        /// <summary>9b: the row's delta - the figure in force (the draft while drafted, else the standing amount) against the amount the year opened with
+        /// (the ghost tick), signed; zero prints "Δ $0", never a dash (5c: zero is a figure); nothing before the first index (no year-open figure yet).</summary>
+        private static string SpendingDeltaText(SpendingLine line, float figure)
+        {
+            if (line.LastYearAmount <= 0f) { return null; }
+            float delta = figure - line.LastYearAmount;
+            return Mathf.Abs(delta) < 0.0005f ? "Δ $0" : "Δ " + UiFormat.MoneyDelta(delta, MoneyUnit.Billions);
         }
 
         /// <summary>The trailing cell of a spending row: the share of GDP (B3: the unit named).</summary>

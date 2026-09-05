@@ -175,8 +175,14 @@ namespace PoliSim.UI
             GUIStyle sliderStyle,
             GUIStyle thumbStyle,
             float barFraction = -1f,
-            float tickStep = 0f)
+            float tickStep = 0f,
+            float ghost = float.NaN,
+            string figureSecondLine = null)
         {
+            // Board 9b (D15 item 2, 2026-09-05): `ghost` is the value the line stood at when the year opened - a third tick in TextMuted where the
+            // driver's move can be read against the standing tick (ghost → standing the driver's, standing → knob the player's); drawn only when the
+            // two sit ≥ 2 px apart. `figureSecondLine` is the delta under the figure, in the figure cell, caption face, right-aligned - the draft cue
+            // shared while drafted. Rows that pass neither draw exactly as before.
             float scale = Scale(nameStyle);
             Columns(row, nameStyle, NameNeed(name, nameStyle), TrailingNeed(trailingText, figureStyle), FigureNeed(standingText, draftText, figureStyle),
                 out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
@@ -210,7 +216,7 @@ namespace PoliSim.UI
 
             if (Event.current.type == EventType.Repaint)
             {
-                DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive, tickStep);
+                DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive, tickStep, ghost);
                 DrawEndNames(trackRect, trailingText, figureStyle, scale, interactive);
                 // P4-B2: the last row's track and scale, for a caller that draws a range caption into the caption band
                 // beneath it (the band DrawEndNames uses) after this returns - read on the same Repaint, never stored.
@@ -243,7 +249,7 @@ namespace PoliSim.UI
                 GeometryByRow[UiGuardContext.CurrentScreen + " / " + name] = (nameRect, trackRect, figureRect, trailingRect);
             }
 
-            DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk);
+            DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk, figureSecondLine);
 
 
             if (!IsEndNames(trailingText) && Event.current.type == EventType.Repaint) { DrawTrailingUnderFigure(figureRect, trackRect, trailingText, figureStyle, scale, interactive); }   // P5-1: under the rate cell
@@ -385,7 +391,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>The standing tick and the draft hatch band - drawn UNDER the slider so the knob reads as sitting on the track rather than beside it.</summary>
-        private static void DrawTrackFurniture(Rect track, float standing, float draft, float min, float max, float scale, bool interactive, float tickStep)
+        private static void DrawTrackFurniture(Rect track, float standing, float draft, float min, float max, float scale, bool interactive, float tickStep, float ghost = float.NaN)
         {
             float span = Mathf.Max(0.0001f, max - min);
             float standingX = track.x + track.width * Mathf.Clamp01((standing - min) / span);
@@ -452,6 +458,19 @@ namespace PoliSim.UI
 
             // The standing tick: the enacted value, and the thing a draft is read AGAINST. Drawn last of
             // the furniture and taller than the track so it stays visible under the hatch.
+            // 9b: the year-open ghost - the same tick form in TextMuted, under the standing tick, only when the driver moved the line ≥ 2 px along the track.
+            if (!float.IsNaN(ghost))
+            {
+                float ghostX = track.x + track.width * Mathf.Clamp01((ghost - min) / span);
+                if (Mathf.Abs(ghostX - standingX) >= 2f)
+                {
+                    Color ghostPrevious = GUI.color;
+                    GUI.color = PoliSimTheme.TextMuted;
+                    GUI.DrawTexture(new Rect(ghostX - RefTickWidth * scale * 0.5f, track.y - 3f * scale, RefTickWidth * scale, track.height + 6f * scale), Texture2D.whiteTexture);
+                    GUI.color = ghostPrevious;
+                }
+            }
+
             var tickRect = new Rect(
                 standingX - RefTickWidth * scale * 0.5f,
                 track.y - 3f * scale,
@@ -588,12 +607,24 @@ namespace PoliSim.UI
         /// value stays readable as the hard tick on the track, and the hatch band is the change. The pair this
         /// used to print ("standing → draft" in two halves) is what shrank the track the moment a draft appeared.
         /// </summary>
-        private static void DrawFigurePair(Rect rect, string standingText, string draftText, GUIStyle style, Color rowInk)
+        private static void DrawFigurePair(Rect rect, string standingText, string draftText, GUIStyle style, Color rowInk, string secondLine = null)
         {
             bool drafted = !string.IsNullOrEmpty(draftText);
             // P5-1 (board 6a): the pencil's slot at the cell's left is reserved at rest and filled while a draft differs - one draft colour, three carriers (the hatch, the pencil, the figure).
             float scale = Scale(style);
             float slot = RefPencilSlot * scale;
+            Rect figureRect = rect;
+            if (!string.IsNullOrEmpty(secondLine))
+            {
+                // 9b: the figure above, its delta beneath in the caption face - two lines inside the cell the band already made tall enough.
+                GUIStyle caption = EndCaptionStyle(style);
+                float lineH = Mathf.Ceil(caption.CalcSize(new GUIContent(secondLine)).y);   // the caption's own measure - a font-size guess was 2 px short at 2560 on film
+                figureRect = new Rect(rect.x, rect.y, rect.width, Mathf.Max(1f, rect.height - lineH));
+                if (Event.current.type == EventType.Repaint)
+                {
+                    DrawCell(new Rect(rect.x + slot, rect.yMax - lineH, Mathf.Max(1f, rect.width - slot), lineH), secondLine, caption, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.UpperRight);
+                }
+            }
             if (drafted && Event.current.type == EventType.Repaint)
             {
                 Texture2D pencil = IconLibrary.GetChrome("icon_pencil_draft");
@@ -605,7 +636,7 @@ namespace PoliSim.UI
                     GUI.color = previous;
                 }
             }
-            DrawCell(new Rect(rect.x + slot, rect.y, Mathf.Max(1f, rect.width - slot), rect.height), drafted ? draftText : standingText, style, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.MiddleRight);
+            DrawCell(new Rect(figureRect.x + slot, figureRect.y, Mathf.Max(1f, figureRect.width - slot), figureRect.height), drafted ? draftText : standingText, style, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.MiddleRight);
         }
 
         /// <summary>
