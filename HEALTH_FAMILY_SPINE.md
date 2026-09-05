@@ -1,5 +1,7 @@
 # The health family's data spine — P5-C2, the part that does not wait on Design (2026-09-05)
 
+> **BUILT 2026-09-05 (late evening), `COMPLETED.md` §333, on Design's grammar (board 9c).** The seeds below are the family's seeds (`HealthFamily.Seed`), the §6 lines its couplings (`HealthFamily.TargetsFor`), every constant [AUTHORED-DRAFT] as marked; the display is the 9c plate (`GameController.Health.cs`), not the drafted table of §6. The feedbacks proposed in §4 (quality → life expectancy, coverage → approval) are NOT built and wait for their own pass.
+
 **What this is.** P5-C2 (health) is the first society-stat family and the one D15 item 3 asks Design to draw the grammar on. The grammar has not landed (E-17, the D15 paste, is Elias's), so the BUILD - seeded, coupled, displayed as instruments, family explained - waits; the sheet says to land the family's DATA SPINE meanwhile: the seeds sourced for six and the coupling proposed. This document is that spine. **Nothing is built from it**: no field, no seed constant, no coupling line - those land in one pass with the grammar, as a BASELINE family with the trajectory suite before and after.
 
 **Fetched 2026-09-05 from the OECD SDMX API** (sdmx.oecd.org, agency OECD.ELS.HD; the dataflow ids are given without the agency prefix; every value is the latest observation for the country, sex total, as the flow returned it; the raw CSVs are the session's tool-results and the digests are not claimed - a family pass re-fetches and records the digest the day it seeds).

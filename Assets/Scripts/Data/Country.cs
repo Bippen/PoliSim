@@ -139,6 +139,9 @@ namespace PoliSim.Data
         /// <summary>P4-C3 (2026-09-05, the labour institutions' second reach): the seeded benefit rate per point of unemployment; the labour laws that cut benefit levels or duration compose on it.</summary>
         public float BenefitRatePerUnemployedBase;
 
+        /// <summary>P5-C2 (2026-09-05): the health family's seeds and bases (HealthFamily.Seed) - the state it moves is on EconomyState.</summary>
+        public HealthSeeds Health = new HealthSeeds();
+
         /// <summary>P4-C3: record every structural parameter's seeded value as its base. Called once, after seeding; a save carries the bases. P5-B2: also the seed level of every spending line's driver (SpendingLine.DriverReference), so the first year's index counts the seed-to-year-one change.</summary>
         public void CaptureStructuralBases()
         {

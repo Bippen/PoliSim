@@ -141,6 +141,13 @@ namespace PoliSim.Data
         /// recorded ruling takes the seed doc's option 3 - homeownership is the USA's primary
         /// housing metric instead. Where Country.TracksHousingOverburden is false this field parks
         /// at 0 and the model never runs; that absence is the ruling made visible, not a gap.</summary>
+        // ---- P5-C2, THE HEALTH FAMILY (2026-09-05): the four figures the family moves (HealthFamily.AdvanceYear); seeds and bases on Country.Health.
+        // -1 (HealthSeeds.Absent) marks a figure the country's statistics do not publish - a state, never a zero.
+        public float HealthCoverage = -1f;      // % of population covered for core services (OECD HEALTH_PROT TPRIBASI at the seed)
+        public float TreatableMortality = -1f;  // deaths per 100 000, age-standardised (OECD DF_AM TRTM); lower is better
+        public float WaitCataractDays = -1f;    // mean days, specialist to treatment (OECD DF_WAITING CM131_138); absent for DEU FRA USA
+        public float WaitKneeDays = -1f;        // mean days (CM8154); absent for DEU FRA USA
+
         public float HousingOverburden;
 
         /// <summary>ROUND 4 BATCH 3 (C1): homeownership rate, % of HOUSEHOLDS owning (OECD

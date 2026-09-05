@@ -1028,6 +1028,7 @@ namespace PoliSim.Data
             }
 
             foreach (Country c in world.Countries) { c.CaptureStructuralBases(); }   // P4-C3: the seeds above are the bases the structural laws compose on
+            HealthFamily.SeedAll(world);   // P5-C2 (2026-09-05): the health family's seeds and bases, after the lines and the cabinet exist
 
             return world;
         }

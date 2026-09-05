@@ -140,6 +140,9 @@ namespace PoliSim.Data
         public readonly MultiResolutionSeries HousingOverburden = new MultiResolutionSeries();
         public readonly MultiResolutionSeries Homeownership = new MultiResolutionSeries();
         public readonly MultiResolutionSeries HousePriceIndex = new MultiResolutionSeries();
+        /// <summary>P5-C2 (2026-09-05): the health family's two keys with a history the plate's sparklines read.</summary>
+        public readonly MultiResolutionSeries TreatableMortality = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries HealthCoverage = new MultiResolutionSeries();
 
         // ROUND 4 BATCH R4-5 (C5): productivity - the arc's last series.
         public readonly MultiResolutionSeries Productivity = new MultiResolutionSeries();
@@ -188,6 +191,8 @@ namespace PoliSim.Data
             HousingOverburden.Append(date, state.HousingOverburden);
             Homeownership.Append(date, state.Homeownership);
             HousePriceIndex.Append(date, state.HousePriceIndex);
+            TreatableMortality.Append(date, state.TreatableMortality);   // P5-C2
+            HealthCoverage.Append(date, state.HealthCoverage);
             Productivity.Append(date, state.Productivity);
         }
     }

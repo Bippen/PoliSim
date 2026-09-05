@@ -361,6 +361,7 @@ namespace PoliSim.EditorTools
                 ("RevenueBaseDiagnostic", RevenueBaseDiagnostic.Run),   // P5-B3 (2026-09-05): every tax base at its sourced share x the seed's GDP x its driver's ratio, all six; the recession probe shows the employment channel
                 ("PotentialOutputDiagnostic", PotentialOutputDiagnostic.Run),   // P5-B7 (2026-09-05): potential = seed x labour input x productivity index on all six; the derived growth rate; the workforce probe
                 ("PriceLevelDiagnostic", PriceLevelDiagnostic.Run),   // P5-B6 (2026-09-05): the price level compounds at the print, the bases are real x level, the inflation cap is not approached in a century on any of the six
+                ("HealthFamilyDiagnostic", HealthFamilyDiagnostic.Run),   // P5-C2 (2026-09-05): the seeds are the spine's, absent stays absent, the couplings move the figures the stated way, the implied elasticity printed beside the authored one
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for
                 // every party of every country as the player's, so it belongs to this group on the same

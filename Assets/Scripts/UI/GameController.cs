@@ -9123,6 +9123,8 @@ namespace PoliSim.UI
             DrawCohortCaption("EMPLOYMENT · SHARE BY SECTOR · Sector.EmploymentShare", "DERIVED");   // P6-1 (board 8a): the head row is the instrument's - title left, stamp right
             _sectorEmploymentPieChart.Draw(string.Empty, sectorSlices, _labelStyle, "F1", moneyUnit: null);
             GUILayout.Space(10f);
+            DrawHealthFamilyPlate();   // P5-C2 (2026-09-05, board 9c): the health family's plate - the society-stat grammar, family 1 of 6
+            GUILayout.Space(10f);
 
             // 29 SpendingCategory members against an eight-ink cap, so this is a ranked ledger, not a
             // pie. No index into GetCategoricalColor at all - which is the point: the old code walked

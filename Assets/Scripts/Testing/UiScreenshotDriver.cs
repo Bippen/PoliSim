@@ -407,6 +407,14 @@ namespace PoliSim.Testing
                     yield return Capture("04a_demographics_pie");
                     ResetScrolls(controller);
                     yield return Settle();
+                    // P5-C2 (2026-09-05, board 9c): the health family's plate sits under the pie - scroll to where the renderer laid it out.
+                    var plateField = controller.GetType().GetField("_healthPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    float plateY = plateField != null ? ((Rect)plateField.GetValue(controller)).y : 3000f;
+                    ScrollBy(controller, Mathf.Max(0f, plateY - Screen.height * 0.08f));
+                    yield return Settle();
+                    yield return Capture("04b_people_health_plate");
+                    ResetScrolls(controller);
+                    yield return Settle();
                 }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))

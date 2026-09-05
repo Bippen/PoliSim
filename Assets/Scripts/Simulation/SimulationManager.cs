@@ -2566,6 +2566,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyInfrastructureInvestment(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplySectorGrowthEffect(country);
             MacroSystem.ApplyWelfareProgramEffects(country);
+            HealthFamily.AdvanceYear(country);   // P5-C2 (2026-09-05): the family's yearly step - a readout of the year's health line, the age-cost index and the minister; no feedback into the model
 
             // CONTINUOUS TIME PHASE 3: the money already moved, day by day, in AccrueDailyFiscalFlows.
             // What is left at a boundary is what a boundary is actually for - CLOSING the period that
@@ -3129,6 +3130,7 @@ namespace PoliSim.Simulation
                 PotentialProductivityIndex = country.PotentialProductivityIndex,
                 PotentialLabourAtLastTurn = country.PotentialLabourAtLastTurn,
                 PriceLevelAtLastIndex = country.PriceLevelAtLastIndex,   // P5-B6
+                Health = country.Health,   // P5-C2: the seeds are immutable after the seed; the preview reads them
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
                 // Seed-spread ruling (2026-08-27): the welfare anchor rides the hand-list too (the
