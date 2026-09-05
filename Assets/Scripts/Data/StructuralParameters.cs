@@ -24,7 +24,10 @@ namespace PoliSim.Data
         InflationTarget,
         NeutralRealRate,
         InflationGapWeight,
-        UnemploymentGapWeight
+        UnemploymentGapWeight,
+        // P4-C3 (2026-09-05, the labour institutions' second reach): the automatic stabiliser's generosity - benefit cost as % of GDP per
+        // point of unemployment (Country.BenefitRatePerUnemployed), the last Country parameter the lever map listed as unreached.
+        BenefitRatePerUnemployed
     }
 
     /// <summary>One law's move of one structural parameter, in the parameter's own unit, signed.</summary>
@@ -103,6 +106,9 @@ namespace PoliSim.Data
                 c => Simulation.TaylorRule.Zone(c).InflationGapWeight, c => Simulation.TaylorRule.Zone(c).InflationGapWeightBase, (c, v) => Simulation.TaylorRule.Zone(c).InflationGapWeight = v),
             new Spec(StructuralParameter.UnemploymentGapWeight, "Unemployment-gap weight", "x", 20f, 0f, 2f,
                 c => Simulation.TaylorRule.Zone(c).UnemploymentGapWeight, c => Simulation.TaylorRule.Zone(c).UnemploymentGapWeightBase, (c, v) => Simulation.TaylorRule.Zone(c).UnemploymentGapWeight = v),
+            // P4-C3, the labour institutions' second reach: 0.05 % of GDP per point (a quarter of Germany's seeded 0.20) reads MODERATE (x200); bounds 0.02-0.60 hold the six seeds (0.10-0.25) with room either way.
+            new Spec(StructuralParameter.BenefitRatePerUnemployed, "Benefit rate", "% GDP per pp", 200f, 0.02f, 0.6f,   /* the name is short because the card's grid cell is 153 px at the 8 px floor - "Benefit rate per point of unemployment (% of GDP per pp)" overflowed it by 57 px on the first film */
+                c => c.BenefitRatePerUnemployed, c => c.BenefitRatePerUnemployedBase, (c, v) => c.BenefitRatePerUnemployed = v),
         };
 
         public static Spec Of(StructuralParameter parameter)

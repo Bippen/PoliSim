@@ -23300,3 +23300,20 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `bar158_p5c6_RunAllBatch.log`, 32 of 32 clean (a document).
 
+
+## 332. P4-C3 — THE LABOUR INSTITUTIONS' SECOND REACH: the benefit rate per point of unemployment joins the structural table, and the three benefit laws that already move the natural rate now move the benefit bill too; the map's unreached set is one quantity, the health family's (2026-09-05, evening)
+
+**The plan's own line** (§304, the unreached set): *"`BenefitRatePerUnemployed` - a benefit-generosity effect the labour institutions could carry next."* Not a new category: the labour institutions carry it, as the plan foresaw; the instruction *"P4-C3's remaining categories"* is read as that.
+
+**Built.** `StructuralParameter.BenefitRatePerUnemployed` - a seventh Country row in `StructuralParameters` (name *Benefit rate*, unit *% GDP per pp* - the long form "Benefit rate per point of unemployment (% of GDP per pp)" overflowed the card's 153 px grid cell by 57 px at the 8 px floor on the first 1280 film, the harness's OVERFLOW guard caught it, and the name was shortened before the commit; scale 200, so a delta of 0.05 - a quarter of Germany's seeded 0.20 - reads MODERATE; bounds 0.02–0.60 around the six seeds 0.10–0.25; scale [AUTHORED-DRAFT], bounds CONVENTION), its base captured with the others (`Country.BenefitRatePerUnemployedBase`, `CaptureStructuralBases`). Three laws carry a second delta beside their natural-rate one: the Hartz Benefit Reform Act (−0.04: earnings-related Arbeitslosenhilfe became flat Arbeitslosengeld II, so the benefit bill per point of unemployment fell - DIRECTIONAL, the size a draft), the Benefit Duration Reform Act (−0.03: a shorter entitlement pays fewer benefit-years per unemployed person - DIRECTIONAL) and the UI Duration Cut Act (−0.03: 99 weeks back to 26, the EUC outlays ended - CONFIRMED-DIRECTION, the size a draft). The consumer is unchanged: `GetUnemploymentBenefitCost` = rate × unemployment × nominal GDP (P5-B6), so a law that cuts benefits now cuts the automatic stabiliser's bill as well as the natural rate - the two effects a benefit reform has, both on the card's EXPECTED EFFECTS in their own units.
+
+**The proof** (`LawCompositionDiagnostic`, unchanged code, the print grown): *10 LabourInstitutions laws composed 2 parameter(s) (NaturalUnemploymentRate 6,50 -> 2,90; BenefitRatePerUnemployed 0,25 -> 0,15) on Sweden and back to the base bit for bit* - the three deltas sum to −0.10 on Sweden's 0.25
+
+**The map, regenerated** (`LEVER_MAP.md`, `levermap09.log`; the first regeneration (`levermap08`) carried the long name): *82 of 83 quantities reached by at least one lever, 1 UNREACHED* - `Country.BenefitRatePerUnemployed` reads 3 of 130 laws under LAWS REACHING IT, from none; the coverage plan is `EconomyState.DeathRate` alone
+
+**On film:** `06h_laws_institutions_card` re-filmed at 1280 and 2560 (`p4c3ben_*`) - the Hartz card's EXPECTED EFFECTS now two lines, the natural rate in points and the benefit rate in % GDP per pp. Two things the first films caught and the commit fixed: the long label overflowed the 1280 grid cell (above), and the grid's marker printed the −0.04 as "▼ 0" at one decimal - `DrawLawDialCell` now prints a second decimal when there is one ("+0.0#"), so the marker reads −0.04 beside the natural rate's −1.2. The final films (`p4c3ben_1280.log`, `p4c3ben_2560.log`): 98 captured, 0 failed, no OVERFLOW, clean exits; the 1280 card reads *Natural rate of unemployment (pp) ▼ −1.2 · Benefit rate (% GDP per pp) ▼ −0.04* over the two EXPECTED EFFECTS lines and the Hartz citation.
+
+**Left on the row:** the state's `DeathRate` (the health family, P5-C2, when D15's grammar lands - the one unreached quantity) and the dials-only set.
+
+**Bar:** `bar159_p4c3ben_RunSimulationBatch.log`, 18 of 18 simulation checks clean (the composition print above); `bar162_p4c3ben_RunAllBatch.log`, 32 of 32 clean on the committed tree (the edits after bar 159 are the table row's name and the grid marker's format - display strings, which the simulation checks do not read). `levermap09.log`; the two film logs.
+

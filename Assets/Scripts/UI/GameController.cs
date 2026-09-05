@@ -8226,7 +8226,7 @@ namespace PoliSim.UI
             LedgerRow.Cell(new Rect(rect.x, rect.y, rect.width - valueWidth, rect.height), dial.Name, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             string arrow = dial.Delta > 0f ? "▲ " : "▼ ";
             LedgerRow.Cell(new Rect(rect.x + rect.width - valueWidth, rect.y, valueWidth, rect.height),
-                arrow + dial.Delta.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+                arrow + dial.Delta.ToString("+0.0#;-0.0#;0", CultureInfo.InvariantCulture)   /* P4-C3 §332: a second decimal when there is one - the benefit rate's -0.04 printed as "▼ 0" at one decimal on the first film */, _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
         }
 
         /// <summary>

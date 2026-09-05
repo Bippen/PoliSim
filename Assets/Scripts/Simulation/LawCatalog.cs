@@ -1910,7 +1910,7 @@ namespace PoliSim.Simulation
                 Description = "Merges long-term unemployment assistance into a flat, means-tested benefit, tightens the duty to accept work and shortens the insured benefit's duration.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Germany's Hartz IV (2005) - Arbeitslosenhilfe and Sozialhilfe merged into Arbeitslosengeld II, with the Hartz I-III activation and placement reforms of 2003-04 beneath it.",
-                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -1.2f) },
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -1.2f), new StructuralDelta(StructuralParameter.BenefitRatePerUnemployed, -0.04f) /* P4-C3 second reach: Arbeitslosenhilfe (earnings-related) became flat ALG II - the benefit bill per point of unemployment fell; DIRECTIONAL, the size a draft (a fifth of Germany's seeded 0.20) */ },
                 LrEconToward10 = 1f,
                 EnactmentApprovalCost = 2.0f
             },
@@ -1925,7 +1925,7 @@ namespace PoliSim.Simulation
                 Description = "Halves the maximum duration of insured unemployment benefit and makes continued benefit conditional on activation from the first year.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Denmark's labour-market reforms of 1994-99 (benefit duration 9 → 4 years, activation from year one) and the 2010 halving to two years.",
-                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -1.0f) },
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -1.0f), new StructuralDelta(StructuralParameter.BenefitRatePerUnemployed, -0.03f) /* P4-C3 second reach: a shorter entitlement pays fewer benefit-years per unemployed person; DIRECTIONAL, the size a draft */ },
                 LrEconToward10 = 0.5f,
                 EnactmentApprovalCost = 1.5f
             },
@@ -1953,7 +1953,7 @@ namespace PoliSim.Simulation
                 Description = "Ends the extended-benefit tiers and caps insured unemployment at its ordinary duration.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "The expiry of the US Emergency Unemployment Compensation programme (December 2013), which had extended benefits to up to 99 weeks after 2008.",
-                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.4f) },
+                Structural = new[] { new StructuralDelta(StructuralParameter.NaturalUnemploymentRate, -0.4f), new StructuralDelta(StructuralParameter.BenefitRatePerUnemployed, -0.03f) /* P4-C3 second reach: 99 weeks back to 26 - the benefit bill per point of unemployment fell with the weeks; CONFIRMED-DIRECTION (the EUC outlays ended), the size a draft */ },
                 LrEconToward10 = 1f,
                 EnactmentApprovalCost = 1.5f
             },
