@@ -23249,3 +23249,14 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `bar153_p5c4_RunAllBatch.log`, 32 of 32 clean (a document; bar 149 was the same tree before B6 landed).
 
+
+## 329. P5-C5 — THE ENVIRONMENT FAMILY'S DATA SPINE LANDED FROM A FILE: the EDGAR 2024 booklet fetched and verified by content, emissions per capita and power and transport CO₂ for six, the electricity mix to fetch, the coupling proposed and the carbon tax's base sheeted to move here; no build (2026-09-05)
+
+**Fetched and verified.** `EDGAR_2024_GHG_booklet_2024.xlsx` from the JRC (3 960 014 bytes, zip signature, sha256 `769803bb2d3c9535…`) into `PoliSim-captures/sources/`, parsed header-aware from the workbook XML - sheets GHG_per_capita_by_country and GHG_by_sector_and_country (the latter 12 MB, 4 852 rows), EDGAR's own country names ("France and Monaco", "Italy, San Marino and the Holy See"). Populations 2023 from the World Bank API (SP.POP.TOTL) for the per-capita division. Ember's yearly electricity data page refused the fetch (HTTP 403); Eurostat nrg_bal_c and the US EIA are named for the mix.
+
+**Seeded for six** (`ENVIRONMENT_FAMILY_SPINE.md`): greenhouse gases per capita 2023 (t CO₂-eq: USA 17.61, Poland 9.67, Germany 8.26, Italy 6.36, France 5.81, Sweden 4.76 - the headline, widened from CO₂ to all gases because that is the booklet's per-capita sheet, stated); CO₂ from the power industry per capita 2023 (USA 4.35, Poland 3.21, Germany 2.13, Italy 1.43, Sweden 0.56, France 0.35 - the list's "electricity CO₂ per person" in metric tonnes) and from transport (USA 5.08, Poland 1.85, France 1.79, Italy 1.74, Germany 1.68, Sweden 1.26 - the list's "car CO₂ per person"), with the 2022 figures beside them: Germany's and Poland's power emissions fell a quarter and a fifth in one year. **To fetch:** electricity generation by source (the list's "energy sources by type").
+
+**Coupling proposed, `[AUTHORED-DRAFT]`, none built:** the carbon tax lowers the electricity and transport intensities toward a target with a lag (the elasticity a draft, checked on the pass against the six's own spread - Poland against France is the mix, not the tax); the energy and infrastructure lines beside it; the headline derived from the sectors. **Sheeted:** the carbon tax's BASE moves from output to these metrics when C5 lands (P5-B3 left it on output for exactly this reason), so a tax that works erodes its own base. No feedback into output until a damage or trade channel is sourced.
+
+**Bar:** `bar154_p5c5_RunAllBatch.log`, 32 of 32 clean (a document; bar 150 was the same tree before B6 landed).
+

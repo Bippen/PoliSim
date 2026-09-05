@@ -736,7 +736,7 @@ the 0–19 cohort reach them. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09
 infrastructure spending and the sector dials reach them. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §328 (the build waits on D15 item 3): `INFRASTRUCTURE_FAMILY_SPINE.md` - the WEF GCI 2019 dataset fetched and verified by content, road quality and road connectivity for six (dated 2019), railroad density in the file, road length absent (IRF, paid), congestion to fetch (TomTom); the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.**
 
 **P5-C5 — Environment.** CO₂ per capita split electricity/transport (Eurostat/EDGAR); the energy
-mix and the sector dials reach it. *Done when:* as C2.
+mix and the sector dials reach it. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §329 (the build waits on D15 item 3): `ENVIRONMENT_FAMILY_SPINE.md` - the EDGAR 2024 booklet fetched and verified by content, emissions per capita and power and transport CO₂ per capita for six (World Bank population), the electricity mix to fetch (Ember refused, Eurostat and EIA named); the coupling proposed, the carbon tax's base to move here; nothing built.**
 
 **P5-C6 — Immigration and poverty depth.** Migration counts from the cohort substrate's own
 inflow term (already sourced); homelessness only where a comparable series exists (state the gap
