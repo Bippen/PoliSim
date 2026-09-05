@@ -740,7 +740,7 @@ mix and the sector dials reach it. *Done when:* as C2. **→ ◐ SPINE LANDED 20
 
 **P5-C6 — Immigration and poverty depth.** Migration counts from the cohort substrate's own
 inflow term (already sourced); homelessness only where a comparable series exists (state the gap
-otherwise); poverty effect and per-capita income as derived readouts. *Done when:* as C2.
+otherwise); poverty effect and per-capita income as derived readouts. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §331 (the build waits on D15 item 3): `IMMIGRATION_POVERTY_FAMILY_SPINE.md` - Eurostat migr_eipre / ilc_li11 / lfsi_sup_a decoded by index, the OECD HC3.1 homelessness workbook and IDD poverty gap, the DHS OHSS 2022 estimate read out of its PDF, BLS for US underemployment; six of six on every row, two definitions where the sources have two (flow vs stock; Eurostat vs OECD gap), homelessness with its definition and year; the coupling proposed; nothing built.**
 
 **P5-C7 — Department effectiveness (the mechanic).** Each ministry submits a budget request
 derived from its drivers (B2's indexation is the request); effectiveness = allocated ÷ requested,
