@@ -44,6 +44,7 @@ namespace PoliSim.Data
         public float SpendPerHeadSeed;         // real health spending per head at the seed (the ratio is what matters, not the unit)
         public float SpendPerAgeCostSeed;      // real health spending per age-cost unit at the seed
         public float EfficiencySeed = 1f;      // the health minister's efficiency at the seed (0..1)
+        public float DeathRateSeed;            // the crude death rate at the seed (per 1 000), the feedback pass's anchor
         public bool Seeded;
 
         public bool HasWaits => WaitCataract >= 0f && WaitKnee >= 0f;
@@ -70,6 +71,50 @@ namespace PoliSim.Data
         public const float WaitEffectivenessElasticity = 0.5f;
         /// <remarks>CONVENTION - runaway guards on the state, set outside anything the couplings reach; the instruments' bands are the family's STATED ranges (9c), not these.</remarks>
         public const float MinTreatableMortality = 10f, MaxTreatableMortality = 400f, MinWaitDays = 1f, MaxWaitDays = 1000f;
+
+        // ---- THE FEEDBACK PASS (2026-09-06, overnight; the spine's §4 "feedbacks to the model, proposed and NOT built" - built now, one family, its own BASELINE) ----
+        // The family MOVES THE MODEL through three terms, each [AUTHORED-DRAFT] in magnitude and DIRECTIONAL in the literature, each reading the
+        // quality key's RATIO to its seed so a country at its seed adds exactly nothing (the suite's pre-existing fields open only where the ratio moves):
+        /// <remarks>[AUTHORED-DRAFT], DIRECTIONAL - years of life expectancy per unit of ln(seed / treatable mortality): treatable mortality is by construction the mortality timely care averts
+        /// (OECD/Eurostat avoidable-mortality definition; OECD Health at a Glance 2023 reads the life-expectancy gap between countries largely through it). 1.0 means halving treatable
+        /// mortality adds 0.69 years - the small drift the spine asked for.</remarks>
+        public const float LifeExpectancyPerLogQuality = 1.0f;
+        /// <remarks>[AUTHORED-DRAFT], DIRECTIONAL - percentage points of labour-force participation per unit of ln(seed / treatable mortality): ill health is the largest single reason for
+        /// inactivity in the 50–64 band (OECD Sickness, Disability and Work 2010; Eurostat lfsa_igar "own illness or disability" among the inactive). 0.5 means halving treatable mortality
+        /// lifts participation a third of a point.</remarks>
+        public const float ParticipationPerLogQuality = 0.5f;
+        /// <summary>DERIVED, not authored: the crude death rate moves ONE FOR ONE with treatable mortality against its seed - a treatable death is a death, so
+        /// (per 1 000) = seed + (treatable mortality − its seed) ÷ 100. The stated approximation: treatable mortality is age-standardised (the OECD population)
+        /// and the crude rate is not, so the identity is exact only at the seed's age structure. At Sweden's seed that is an elasticity of 45 ÷ 950 = 0.047,
+        /// Poland's 106 ÷ ~1 100 = 0.10 - each country's own, never one figure for six. (A first draft authored 0.15 and called treatable deaths "a sixth" of all
+        /// deaths; the diagnostic's own printout - 45 against 950 - showed that wrong, and the identity replaced it before anything was dumped on it.) Retires
+        /// the "HELD at its sourced seed" of F2's CohortDemographics for THIS one channel - the lever map's last unreached quantity closes here.</summary>
+        public static float DeathRateFor(HealthSeeds s, float treatableMortality)
+            => Mathf.Max(0.5f, s.DeathRateSeed + (treatableMortality - s.TreatableMortality) / 100f);
+
+        /// <summary>The deaths per 1 000 above (or below) the seed's crude rate that the family has written - what the cohort substrate removes from the
+        /// pyramid each year (CohortDemographics.Step), so that the identity Δpopulation = births − deaths + migration closes on DEATHS and the migration
+        /// readings stay the publisher's. Zero at the seed and for a country without the family.</summary>
+        public static float ExcessDeathsPerThousand(Country country)
+        {
+            HealthSeeds s = country.Health;
+            if (s == null || !s.Seeded || s.DeathRateSeed <= 0f) { return 0f; }
+            return country.State.DeathRate - s.DeathRateSeed;
+        }
+
+        /// <summary>ln(seed ÷ treatable mortality now) - positive when care has improved; 0 at the seed; clamped to ±ln 4 as a runaway guard.</summary>
+        public static float QualityLog(Country country)
+        {
+            HealthSeeds s = country.Health;
+            if (s == null || !s.Seeded || s.TreatableMortality <= 0f || country.State.TreatableMortality <= 0f) { return 0f; }
+            return Mathf.Clamp(Mathf.Log(s.TreatableMortality / country.State.TreatableMortality), -1.386f, 1.386f);
+        }
+
+        /// <summary>The life-expectancy term, years, added to MacroSystem.ApplyLifeExpectancy's target.</summary>
+        public static float LifeExpectancyTerm(Country country) => LifeExpectancyPerLogQuality * QualityLog(country);
+
+        /// <summary>The participation term, percentage points, added to MacroSystem.ApplyLaborForceParticipationRate's target.</summary>
+        public static float ParticipationTerm(Country country) => ParticipationPerLogQuality * QualityLog(country);
 
         /// <summary>Seeds every country from the spine's tables and captures its bases. Called once, at the end of WorldFactory.CreateDefault,
         /// after the spending lines and the cabinet exist.</summary>
@@ -99,6 +144,7 @@ namespace PoliSim.Data
             st.WaitKneeDays = s.WaitKnee;
             s.SpendPerHeadSeed = SpendPerHead(country);
             s.SpendPerAgeCostSeed = SpendPerAgeCost(country);
+            s.DeathRateSeed = st.DeathRate;
             s.EfficiencySeed = Efficiency(country);
             s.Seeded = true;
         }
@@ -183,6 +229,8 @@ namespace PoliSim.Data
             Targets t = TargetsFor(country, HealthSpendingReal(country));
             st.HealthCoverage = Mathf.Clamp(st.HealthCoverage + (t.Coverage - st.HealthCoverage) * ReversionPerYear, 0f, s.CoverageCeiling);
             st.TreatableMortality = Mathf.Clamp(st.TreatableMortality + (t.TreatableMortality - st.TreatableMortality) * ReversionPerYear, MinTreatableMortality, MaxTreatableMortality);
+            // The feedback pass: the crude death rate follows treatable mortality against its seed one for one (the one channel that moves F2's held figure).
+            if (s.DeathRateSeed > 0f && s.TreatableMortality > 0f) { st.DeathRate = DeathRateFor(s, st.TreatableMortality); }
             if (s.HasWaits)
             {
                 float cataractTarget = Mathf.Clamp(s.WaitCataract * t.WaitFactor, MinWaitDays, MaxWaitDays);

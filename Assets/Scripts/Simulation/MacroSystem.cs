@@ -727,7 +727,8 @@ namespace PoliSim.Simulation
             float anchor = float.IsNaN(structural) ? state.LaborForceParticipationRate : structural;
             float target = anchor
                 - DiscouragedWorkerSensitivity * unemploymentGap
-                + combinedAdjustment;
+                + combinedAdjustment
+                + HealthFamily.ParticipationTerm(country);   // the health feedback pass (2026-09-06): the working-age population's health, treatable mortality against its seed, points
             state.LaborForceParticipationRate = Mathf.Clamp(
                 state.LaborForceParticipationRate + reversionSpeed * (target - state.LaborForceParticipationRate),
                 0f, MaxLaborForceParticipationPercent);
@@ -895,7 +896,8 @@ namespace PoliSim.Simulation
                 ? LifeExpectancyHealthcareSensitivity * (program.GenerosityLevel / 100f)
                 : 0f);
 
-            float target = country.BaselineLifeExpectancy - LifeExpectancyPovertySensitivity * povertyGap + healthcareLift;
+            float target = country.BaselineLifeExpectancy - LifeExpectancyPovertySensitivity * povertyGap + healthcareLift
+                + HealthFamily.LifeExpectancyTerm(country);   // the health feedback pass (2026-09-06): treatable mortality against its seed, years
             state.LifeExpectancy = Mathf.Clamp(
                 state.LifeExpectancy + reversionSpeed * (target - state.LifeExpectancy),
                 MinLifeExpectancyYears, MaxLifeExpectancyYears);

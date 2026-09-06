@@ -41,7 +41,7 @@ namespace PoliSim.Simulation
     /// <para>⚠ <b>What is derived and what is held, stated.</b> The publisher's projection folds
     /// deaths and its own migration assumption into one survival ratio (D-6), so the substrate
     /// cannot tell a death from an emigrant, and one of the two must be held to read the other.
-    /// `DeathRate` is HELD at its seeded, sourced crude figure — a slow-moving observation; the
+    /// `DeathRate` was HELD at its seeded, sourced crude figure (a slow-moving observation) until the health feedback pass of 2026-09-06, which moves it through ONE channel - treatable mortality against its seed (HealthFamily.DeathRateFor: seed + Δ treatable ÷ 100, derived); otherwise held; the
     /// aging that would raise it is inside the survival ratios the publisher folded with migration
     /// and cannot be read out. The migration readings then close the identity
     /// `Δpopulation = births − deaths + net migration`: `NaturalNetMigrationRate` on the neutral
@@ -127,6 +127,18 @@ namespace PoliSim.Simulation
             float[] next = fertilityMultiplier == 1f && leverMigration == 0f
                 ? neutral
                 : cohorts.AnchoredNext(rates, tThis, tNext, fertilityMultiplier, leverMigration, profile);
+            // The health feedback pass (2026-09-07): treatable deaths above the seed's LEAVE the pyramid - the metric is under-75 by definition, so the excess
+            // is taken from the 5–74 bands in proportion to their size (the substrate has no band-level deaths to weight by; the approximation is stated here).
+            // Without this the identity below booked the higher death rate as migration, which the first dump showed (COMPLETED.md §343).
+            float excessPerThousand = HealthFamily.ExcessDeathsPerThousand(country);
+            if (excessPerThousand != 0f)
+            {
+                if (ReferenceEquals(next, neutral)) { next = (float[])next.Clone(); }
+                float excess = excessPerThousand / 1000f * 0.5f * (startTotal + Sum(next));   // charged on the MID population, where the identity reads deaths (the second dump leaked a tenth of a point per 1 000 into the migration reading with it on the start)
+                float bands = 0f;   // the 5–74 bands: the 0–4 band is left alone so the births reading (that band's inflow) does not read the deaths as fewer births
+                for (int i = 1; i < 15; i++) { bands += next[i]; }
+                if (bands > 0f) { for (int i = 1; i < 15; i++) { next[i] = Mathf.Max(0f, next[i] - excess * next[i] / bands); } }
+            }
             float migrantsIntoBand0 = profile != null ? leverMigration * profile[0] : 0f;
             float births = PopulationCohorts.ImpliedBirths(cohorts.Counts, next, rates, migrantsIntoBand0);
             return new YearStep(cohorts.Counts, next, neutral, births, neutralBirths, leverMigration);
@@ -150,10 +162,13 @@ namespace PoliSim.Simulation
 
             state.NaturalBirthRate = neutralMid > 0f ? step.NeutralBirths / neutralMid * 1000f : 0f;
             state.BirthRate = mid > 0f ? step.Births / mid * 1000f : 0f;
-            // DeathRate is HELD at its sourced seed (the class doc says why); the two migration readings
+            // DeathRate WAS held at its sourced seed; since the health feedback pass (2026-09-06) HealthFamily.AdvanceYear moves it with treatable mortality against its seed - one channel, small, the class doc updated; the two migration readings
             // close the identity Δpopulation = births − deaths + net migration on the neutral and the
             // levered step respectively, so the lever's people are inside NetMigrationRate by construction.
-            float neutralDeaths = state.DeathRate / 1000f * neutralMid;
+            // The neutral step is the publisher's trajectory, so its identity closes on the SEED's death rate; the levered step's closes on the rate the health
+            // family wrote, whose excess deaths the step removed from the pyramid - so both migration readings stay the publisher's (the health pass, 2026-09-07).
+            float seedDeathRate = country.Health != null && country.Health.Seeded && country.Health.DeathRateSeed > 0f ? country.Health.DeathRateSeed : state.DeathRate;
+            float neutralDeaths = seedDeathRate / 1000f * neutralMid;
             float leveredDeaths = state.DeathRate / 1000f * mid;
             float neutralMigration = (Sum(step.Neutral) - startTotal) - step.NeutralBirths + neutralDeaths;
             float leveredMigration = (nextTotal - startTotal) - step.Births + leveredDeaths;

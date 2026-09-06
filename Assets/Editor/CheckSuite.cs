@@ -362,6 +362,7 @@ namespace PoliSim.EditorTools
                 ("PotentialOutputDiagnostic", PotentialOutputDiagnostic.Run),   // P5-B7 (2026-09-05): potential = seed x labour input x productivity index on all six; the derived growth rate; the workforce probe
                 ("PriceLevelDiagnostic", PriceLevelDiagnostic.Run),   // P5-B6 (2026-09-05): the price level compounds at the print, the bases are real x level, the inflation cap is not approached in a century on any of the six
                 ("HealthFamilyDiagnostic", HealthFamilyDiagnostic.Run),   // P5-C2 (2026-09-05): the seeds are the spine's, absent stays absent, the couplings move the figures the stated way, the implied elasticity printed beside the authored one
+                ("HealthFeedbackDiagnostic", HealthFeedbackDiagnostic.Run),   // the health feedback pass (2026-09-06): zero at the seed, both directions, inside the guards
                 ("EffectivenessDiagnostic", EffectivenessDiagnostic.Run),   // P5-C7 (2026-09-05): allocated / requested x efficiency per portfolio; the health family reads it; underfunding degrades the outcomes
                 ("EducationFamilyDiagnostic", EducationFamilyDiagnostic.Run),   // P5-C3 (2026-09-06): the seeds are the spine's, the USA's leavers absent, the distribution holds 100, the couplings move the stated way
                 ("InfrastructureFamilyDiagnostic", InfrastructureFamilyDiagnostic.Run),   // P5-C4 (2026-09-06): the seeds are the spine's, the seed's spending holds the seed's score, the couplings move the stated way

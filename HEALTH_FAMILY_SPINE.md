@@ -75,6 +75,8 @@ The family reads three things the model already has: the health spending line pe
 
 **Feedbacks to the model, proposed and NOT built:** quality → `EconomyState.LifeExpectancy` (a small drift, stated) and coverage → `EconomyState.ApprovalRating` through the existing approval terms - both wait for the pass, both measured against the trajectory suite when they land.
 
+**BUILT 2026-09-06 (overnight), `COMPLETED.md` §343 - the health feedback pass.** Three terms, all from the quality key's ratio to its seed (`HealthFamily.QualityLog`, zero at the seed, clamped to ±ln 4): life expectancy +1.0 year per unit (`LifeExpectancyPerLogQuality`, in `MacroSystem.ApplyLifeExpectancy`'s target), participation +0.5 points per unit (`ParticipationPerLogQuality`, in `ApplyLaborForceParticipationRate`'s target), and the crude death rate at seed + (treatable mortality − seed) ÷ 100 (`HealthFamily.DeathRateFor`, the identity - a treatable death is a death; written in `AdvanceYear`, the one channel that moves F2's held figure). Each `[AUTHORED-DRAFT]` in magnitude, directional in the literature, each stated at the constant. Coverage → approval stays proposed (the §D in §343 says why). The suite: §343 names the fields that opened, per country.
+
 ## 5. Display — waits for D15 item 3
 
 The grammar is Design's (the ask is installed: the People page's society block or the ministry's card, a figure with its unit and source line, its band, its coupling arrows). This document holds the seeds and the couplings so the family lands on the drawn grammar in one pass; it draws nothing.
