@@ -366,6 +366,7 @@ namespace PoliSim.EditorTools
                 ("EducationFamilyDiagnostic", EducationFamilyDiagnostic.Run),   // P5-C3 (2026-09-06): the seeds are the spine's, the USA's leavers absent, the distribution holds 100, the couplings move the stated way
                 ("InfrastructureFamilyDiagnostic", InfrastructureFamilyDiagnostic.Run),   // P5-C4 (2026-09-06): the seeds are the spine's, the seed's spending holds the seed's score, the couplings move the stated way
                 ("EnvironmentFamilyDiagnostic", EnvironmentFamilyDiagnostic.Run),   // P5-C5 (2026-09-06): the seeds are the spine's, the headline is its keys, the carbon tax moves them the stated way
+                ("ImmigrationPovertyFamilyDiagnostic", ImmigrationPovertyFamilyDiagnostic.Run),   // P5-C6 (2026-09-06): the seeds with their two definitions, the couplings by definition, the stated way
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for
                 // every party of every country as the player's, so it belongs to this group on the same

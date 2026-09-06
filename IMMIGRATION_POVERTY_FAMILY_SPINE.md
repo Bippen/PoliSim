@@ -1,5 +1,7 @@
 # The immigration-and-poverty-depth family's data spine — P5-C6 (2026-09-05)
 
+> **BUILT 2026-09-06, `COMPLETED.md` §341, on 9c's grammar inherited by shape.** The tables below are the family's seeds (`MigrationPovertyFamily.Seed`) with their two definitions carried as state; §6's lines its couplings (every constant [AUTHORED-DRAFT]; readouts, no feedback).
+
 **What this is.** P5-C6 (immigration and poverty depth) is the fifth society-stat family in the catalog's order (`SOCIETY_STATS_CATALOG.md` § 5). Its sources are Eurostat (three series, JSON-stat, decoded by index), the OECD (the Affordable Housing Database workbook HC3.1 and the Income Distribution Database dataflow) and the US Department of Homeland Security's Office of Homeland Security Statistics (a PDF report) with the Bureau of Labor Statistics for the US labour figure. This spine seeds what the fetched series cover for six, states the rest absent or differently defined, and proposes the coupling. **Nothing is built from it**; the build waits on the one-grammar rule (D15 item 3) like every family.
 
 **Fetched and verified, 2026-09-05** (all kept in `PoliSim-captures/sources/`):

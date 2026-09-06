@@ -152,6 +152,10 @@ namespace PoliSim.Data
         /// <summary>P5-C5 (2026-09-06): the environment family's two keys.</summary>
         public readonly MultiResolutionSeries PowerCo2PerCapita = new MultiResolutionSeries();
         public readonly MultiResolutionSeries TransportCo2PerCapita = new MultiResolutionSeries();
+        /// <summary>P5-C6 (2026-09-06): the immigration-and-poverty-depth family's keys with a history.</summary>
+        public readonly MultiResolutionSeries IrregularMigrationPer10k = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries PovertyGap = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries HomelessPer10k = new MultiResolutionSeries();
 
         // ROUND 4 BATCH R4-5 (C5): productivity - the arc's last series.
         public readonly MultiResolutionSeries Productivity = new MultiResolutionSeries();
@@ -208,6 +212,9 @@ namespace PoliSim.Data
             RoadConnectivity.Append(date, state.RoadConnectivity);
             PowerCo2PerCapita.Append(date, state.PowerCo2PerCapita);   // P5-C5
             TransportCo2PerCapita.Append(date, state.TransportCo2PerCapita);
+            IrregularMigrationPer10k.Append(date, state.IrregularMigrationPer10k);   // P5-C6
+            PovertyGap.Append(date, state.PovertyGap);
+            HomelessPer10k.Append(date, state.HomelessPer10k);
             Productivity.Append(date, state.Productivity);
         }
     }

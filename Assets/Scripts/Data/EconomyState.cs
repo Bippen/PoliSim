@@ -164,6 +164,12 @@ namespace PoliSim.Data
         public float PowerCo2PerCapita = -1f;      // t CO2 per person, EDGAR Power Industry / WB population, 2023
         public float TransportCo2PerCapita = -1f;  // t CO2 per person, EDGAR Transport / WB population, 2023
 
+        // ---- P5-C6, THE IMMIGRATION-AND-POVERTY-DEPTH FAMILY (2026-09-06): the four figures the family moves (MigrationPovertyFamily.AdvanceYear).
+        public float IrregularMigrationPer10k = -1f;   // the five: Eurostat's FLOW per 10 000 in the year; the USA: the DHS STOCK per 10 000 - two definitions, the seeds say which
+        public float PovertyGap = -1f;                 // % below the 60 % line - Eurostat's median gap (five) or the OECD's (USA)
+        public float Underemployment = -1f;            // % of employment, underemployed part-time
+        public float HomelessPer10k = -1f;             // per 10 000, each country's own definition and year
+
         public float HousingOverburden;
 
         /// <summary>ROUND 4 BATCH 3 (C1): homeownership rate, % of HOUSEHOLDS owning (OECD

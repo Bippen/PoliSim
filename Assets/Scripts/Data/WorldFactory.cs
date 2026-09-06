@@ -1032,6 +1032,7 @@ namespace PoliSim.Data
             EducationFamily.SeedAll(world);   // P5-C3 (2026-09-06)
             InfrastructureFamily.SeedAll(world);   // P5-C4 (2026-09-06)
             EnvironmentFamily.SeedAll(world);   // P5-C5 (2026-09-06)
+            MigrationPovertyFamily.SeedAll(world);   // P5-C6 (2026-09-06)
 
             return world;
         }

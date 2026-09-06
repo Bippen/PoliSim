@@ -439,6 +439,14 @@ namespace PoliSim.Testing
                     yield return Capture("04e_people_environment_plate");
                     ResetScrolls(controller);
                     yield return Settle();
+                    // P5-C6 (2026-09-06): the immigration-and-poverty plate sits under the environment plate.
+                    var migField = controller.GetType().GetField("_migrationPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    float migY = migField != null ? ((Rect)migField.GetValue(controller)).y : 5400f;
+                    ScrollBy(controller, Mathf.Max(0f, migY - Screen.height * 0.08f));
+                    yield return Settle();
+                    yield return Capture("04f_people_migration_plate");
+                    ResetScrolls(controller);
+                    yield return Settle();
                 }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))

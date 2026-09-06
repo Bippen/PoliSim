@@ -2570,6 +2570,7 @@ namespace PoliSim.Simulation
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
             InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
             EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): readouts, no feedback; the carbon tax's base stays on output
+            MigrationPovertyFamily.AdvanceYear(country);   // P5-C6 (2026-09-06): readouts, no feedback
 
             // CONTINUOUS TIME PHASE 3: the money already moved, day by day, in AccrueDailyFiscalFlows.
             // What is left at a boundary is what a boundary is actually for - CLOSING the period that
@@ -3137,6 +3138,7 @@ namespace PoliSim.Simulation
                 Education = country.Education,   // P5-C3: seeds, immutable after the seed
                 Infrastructure = country.Infrastructure,   // P5-C4
                 Environment = country.Environment,   // P5-C5
+                MigrationPoverty = country.MigrationPoverty,   // P5-C6
                 Effectiveness = new Dictionary<CabinetPortfolio, PortfolioEffectiveness>(country.Effectiveness),   // P5-C7: the preview records into its own copy
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),
