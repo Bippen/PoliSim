@@ -288,7 +288,7 @@ namespace PoliSim.UI
                             float cellW = cell.width / row.Segments.Length;
                             for (int i = 0; i < row.Segments.Length && i < row.SegmentLabels.Length; i++)
                             {
-                                string text = row.Segments[i].ToString("0", CultureInfo.InvariantCulture) + " · " + row.SegmentLabels[i];   // whole points: the third of a 319-px band at 1280 holds no decimals
+                                string text = row.Segments[i].ToString(row.High < 20f ? "0.0" : "0", CultureInfo.InvariantCulture) + " · " + row.SegmentLabels[i];   // whole points on a percentage bar (the third of a 319-px band at 1280 holds no decimals); one decimal where the range is small (the environment's tonnes: 0.56 is not "1")
                                 GUIStyle style = i == row.Segments.Length - 1 ? right : left;
                                 PoliSimWidgets.MeasuredLabel(new Rect(cell.x + i * cellW, labelY + StatsUnit(2f), cellW, labelH), text, style);
                             }

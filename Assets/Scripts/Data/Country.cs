@@ -148,6 +148,9 @@ namespace PoliSim.Data
         /// <summary>P5-C4 (2026-09-06): the infrastructure family's seeds and bases (InfrastructureFamily.Seed).</summary>
         public InfrastructureSeeds Infrastructure = new InfrastructureSeeds();
 
+        /// <summary>P5-C5 (2026-09-06): the environment family's seeds and bases (EnvironmentFamily.Seed).</summary>
+        public EnvironmentSeeds Environment = new EnvironmentSeeds();
+
         /// <summary>P5-C7 (2026-09-05, board 9d): this turn's request, allocation and efficiency per portfolio (Effectiveness.Record, from
         /// SimulationManager.ResolveSpendingForTurn); the card's readout, the Budget row's caption and the families read it.</summary>
         public System.Collections.Generic.Dictionary<CabinetPortfolio, PortfolioEffectiveness> Effectiveness = new System.Collections.Generic.Dictionary<CabinetPortfolio, PortfolioEffectiveness>();

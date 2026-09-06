@@ -9133,6 +9133,8 @@ namespace PoliSim.UI
             GUILayout.Space(10f);
             DrawInfrastructureFamilyPlate();   // P5-C4 (2026-09-06): family 3 of 6 on the shared core
             GUILayout.Space(10f);
+            DrawEnvironmentFamilyPlate();   // P5-C5 (2026-09-06): family 4 of 6 on the shared core
+            GUILayout.Space(10f);
 
             // 29 SpendingCategory members against an eight-ink cap, so this is a ranked ledger, not a
             // pie. No index into GetCategoricalColor at all - which is the point: the old code walked

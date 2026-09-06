@@ -160,6 +160,10 @@ namespace PoliSim.Data
         public float RoadQuality = -1f;        // WEF GCR 2019 ROADINF score 0-100, dated 2019
         public float RoadConnectivity = -1f;   // WEF GCR 2019 ROADQUALIDX 0-100
 
+        // ---- P5-C5, THE ENVIRONMENT FAMILY (2026-09-06): the two sector keys the family moves (EnvironmentFamily.AdvanceYear); the headline is derived.
+        public float PowerCo2PerCapita = -1f;      // t CO2 per person, EDGAR Power Industry / WB population, 2023
+        public float TransportCo2PerCapita = -1f;  // t CO2 per person, EDGAR Transport / WB population, 2023
+
         public float HousingOverburden;
 
         /// <summary>ROUND 4 BATCH 3 (C1): homeownership rate, % of HOUSEHOLDS owning (OECD

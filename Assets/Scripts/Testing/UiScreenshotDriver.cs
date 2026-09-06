@@ -431,6 +431,14 @@ namespace PoliSim.Testing
                     yield return Capture("04d_people_infrastructure_plate");
                     ResetScrolls(controller);
                     yield return Settle();
+                    // P5-C5 (2026-09-06): the environment plate sits under the infrastructure plate.
+                    var envField = controller.GetType().GetField("_environmentPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    float envY = envField != null ? ((Rect)envField.GetValue(controller)).y : 4800f;
+                    ScrollBy(controller, Mathf.Max(0f, envY - Screen.height * 0.08f));
+                    yield return Settle();
+                    yield return Capture("04e_people_environment_plate");
+                    ResetScrolls(controller);
+                    yield return Settle();
                 }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))

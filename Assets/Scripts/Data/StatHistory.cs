@@ -149,6 +149,9 @@ namespace PoliSim.Data
         /// <summary>P5-C4 (2026-09-06): the infrastructure family's two keys.</summary>
         public readonly MultiResolutionSeries RoadQuality = new MultiResolutionSeries();
         public readonly MultiResolutionSeries RoadConnectivity = new MultiResolutionSeries();
+        /// <summary>P5-C5 (2026-09-06): the environment family's two keys.</summary>
+        public readonly MultiResolutionSeries PowerCo2PerCapita = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries TransportCo2PerCapita = new MultiResolutionSeries();
 
         // ROUND 4 BATCH R4-5 (C5): productivity - the arc's last series.
         public readonly MultiResolutionSeries Productivity = new MultiResolutionSeries();
@@ -203,6 +206,8 @@ namespace PoliSim.Data
             AttainmentTertiary.Append(date, state.AttainmentTertiary);
             RoadQuality.Append(date, state.RoadQuality);   // P5-C4
             RoadConnectivity.Append(date, state.RoadConnectivity);
+            PowerCo2PerCapita.Append(date, state.PowerCo2PerCapita);   // P5-C5
+            TransportCo2PerCapita.Append(date, state.TransportCo2PerCapita);
             Productivity.Append(date, state.Productivity);
         }
     }
