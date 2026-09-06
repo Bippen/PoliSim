@@ -91,6 +91,7 @@ namespace PoliSim.EditorTools
             // player-facing with the source line's dataflow id and year beside them; not the provenance tag this check hunts.
             ("GameController.Health.cs", "SOURCED"),
             ("GameController.Education.cs", "SOURCED"),   // P5-C3 (2026-09-06): the same honesty chips on the education plate
+            ("GameController.Infrastructure.cs", "SOURCED"),   // P5-C4 (2026-09-06)
             // P4-B1 (2026-09-04): the range-caption catalog is [AUTHORED] game fiction - the desk's own deadpan on every
             // dial's ten bands - and is exempt BY NAME so its satire is not read as meta-text; RangeCaptionCheck holds it
             // to the model's effect signs instead. Nothing else in Assets/Scripts/UI is widened by this row.

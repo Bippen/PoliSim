@@ -146,6 +146,9 @@ namespace PoliSim.Data
         /// <summary>P5-C3 (2026-09-06): the education family's two keys with a history.</summary>
         public readonly MultiResolutionSeries EarlyLeavers = new MultiResolutionSeries();
         public readonly MultiResolutionSeries AttainmentTertiary = new MultiResolutionSeries();
+        /// <summary>P5-C4 (2026-09-06): the infrastructure family's two keys.</summary>
+        public readonly MultiResolutionSeries RoadQuality = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries RoadConnectivity = new MultiResolutionSeries();
 
         // ROUND 4 BATCH R4-5 (C5): productivity - the arc's last series.
         public readonly MultiResolutionSeries Productivity = new MultiResolutionSeries();
@@ -198,6 +201,8 @@ namespace PoliSim.Data
             HealthCoverage.Append(date, state.HealthCoverage);
             EarlyLeavers.Append(date, state.EarlyLeavers);   // P5-C3
             AttainmentTertiary.Append(date, state.AttainmentTertiary);
+            RoadQuality.Append(date, state.RoadQuality);   // P5-C4
+            RoadConnectivity.Append(date, state.RoadConnectivity);
             Productivity.Append(date, state.Productivity);
         }
     }

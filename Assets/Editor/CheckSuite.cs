@@ -364,6 +364,7 @@ namespace PoliSim.EditorTools
                 ("HealthFamilyDiagnostic", HealthFamilyDiagnostic.Run),   // P5-C2 (2026-09-05): the seeds are the spine's, absent stays absent, the couplings move the figures the stated way, the implied elasticity printed beside the authored one
                 ("EffectivenessDiagnostic", EffectivenessDiagnostic.Run),   // P5-C7 (2026-09-05): allocated / requested x efficiency per portfolio; the health family reads it; underfunding degrades the outcomes
                 ("EducationFamilyDiagnostic", EducationFamilyDiagnostic.Run),   // P5-C3 (2026-09-06): the seeds are the spine's, the USA's leavers absent, the distribution holds 100, the couplings move the stated way
+                ("InfrastructureFamilyDiagnostic", InfrastructureFamilyDiagnostic.Run),   // P5-C4 (2026-09-06): the seeds are the spine's, the seed's spending holds the seed's score, the couplings move the stated way
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for
                 // every party of every country as the player's, so it belongs to this group on the same

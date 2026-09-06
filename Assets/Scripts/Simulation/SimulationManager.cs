@@ -2568,6 +2568,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyWelfareProgramEffects(country);
             HealthFamily.AdvanceYear(country);   // P5-C2 (2026-09-05): the family's yearly step - a readout of the year's health line, the age-cost index and the minister; no feedback into the model
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
+            InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
 
             // CONTINUOUS TIME PHASE 3: the money already moved, day by day, in AccrueDailyFiscalFlows.
             // What is left at a boundary is what a boundary is actually for - CLOSING the period that
@@ -3133,6 +3134,7 @@ namespace PoliSim.Simulation
                 PriceLevelAtLastIndex = country.PriceLevelAtLastIndex,   // P5-B6
                 Health = country.Health,   // P5-C2: the seeds are immutable after the seed; the preview reads them
                 Education = country.Education,   // P5-C3: seeds, immutable after the seed
+                Infrastructure = country.Infrastructure,   // P5-C4
                 Effectiveness = new Dictionary<CabinetPortfolio, PortfolioEffectiveness>(country.Effectiveness),   // P5-C7: the preview records into its own copy
                 SpendingLines = ClonePreviewSpendingLines(country.SpendingLines),
                 WelfarePrograms = ClonePreviewWelfarePrograms(country.WelfarePrograms),

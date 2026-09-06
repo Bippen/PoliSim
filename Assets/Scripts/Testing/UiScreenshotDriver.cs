@@ -423,6 +423,14 @@ namespace PoliSim.Testing
                     yield return Capture("04c_people_education_plate");
                     ResetScrolls(controller);
                     yield return Settle();
+                    // P5-C4 (2026-09-06): the infrastructure plate sits under the education plate.
+                    var infraField = controller.GetType().GetField("_infrastructurePlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    float infraY = infraField != null ? ((Rect)infraField.GetValue(controller)).y : 4200f;
+                    ScrollBy(controller, Mathf.Max(0f, infraY - Screen.height * 0.08f));
+                    yield return Settle();
+                    yield return Capture("04d_people_infrastructure_plate");
+                    ResetScrolls(controller);
+                    yield return Settle();
                 }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))

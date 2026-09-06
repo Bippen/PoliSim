@@ -156,6 +156,10 @@ namespace PoliSim.Data
         public float StudentsPerTeacherPrimary = -1f;       // OECD EAG, ISCED 1 - the card's key
         public float StudentsPerTeacherLowerSecondary = -1f; // ISCED 2
 
+        // ---- P5-C4, THE INFRASTRUCTURE FAMILY (2026-09-06): the figures the family moves (InfrastructureFamily.AdvanceYear); seeds on Country.Infrastructure.
+        public float RoadQuality = -1f;        // WEF GCR 2019 ROADINF score 0-100, dated 2019
+        public float RoadConnectivity = -1f;   // WEF GCR 2019 ROADQUALIDX 0-100
+
         public float HousingOverburden;
 
         /// <summary>ROUND 4 BATCH 3 (C1): homeownership rate, % of HOUSEHOLDS owning (OECD
