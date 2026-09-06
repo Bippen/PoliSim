@@ -365,6 +365,7 @@ namespace PoliSim.EditorTools
                 ("HealthFeedbackDiagnostic", HealthFeedbackDiagnostic.Run),   // the health feedback pass (2026-09-06): zero at the seed, both directions, inside the guards
                 ("EffectivenessDiagnostic", EffectivenessDiagnostic.Run),   // P5-C7 (2026-09-05): allocated / requested x efficiency per portfolio; the health family reads it; underfunding degrades the outcomes
                 ("EducationFamilyDiagnostic", EducationFamilyDiagnostic.Run),   // P5-C3 (2026-09-06): the seeds are the spine's, the USA's leavers absent, the distribution holds 100, the couplings move the stated way
+                ("EducationFeedbackDiagnostic", EducationFeedbackDiagnostic.Run),   // the education feedback pass (2026-09-07): zero at the seed, both directions, absent stays zero, inside the guards
                 ("InfrastructureFamilyDiagnostic", InfrastructureFamilyDiagnostic.Run),   // P5-C4 (2026-09-06): the seeds are the spine's, the seed's spending holds the seed's score, the couplings move the stated way
                 ("EnvironmentFamilyDiagnostic", EnvironmentFamilyDiagnostic.Run),   // P5-C5 (2026-09-06): the seeds are the spine's, the headline is its keys, the carbon tax moves them the stated way
                 ("ImmigrationPovertyFamilyDiagnostic", ImmigrationPovertyFamilyDiagnostic.Run),   // P5-C6 (2026-09-06): the seeds with their two definitions, the couplings by definition, the stated way

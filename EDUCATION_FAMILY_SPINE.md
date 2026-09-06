@@ -72,6 +72,8 @@ The family reads: the education spending line per pupil (`SpendingCategory.Educa
 
 **Feedback to the model, proposed and NOT built:** attainment → `Country.ProductivityTrendGrowthRate` (a small, lagged term on the productivity trend P5-B7 seeded), the one channel through which education reaches output - measured against the trajectory suite when it lands, never before.
 
+**BUILT 2026-09-07 (overnight), `COMPLETED.md` §348 - the education feedback pass; the terms and their sourced gaps are §8 below.**
+
 ## 6. Display rows, drafted for the board (the order of the six figures: Sweden, Germany, France, Italy, Poland, USA)
 
 | row | figure | unit | source line (caption mono) | band | arrows to |
@@ -91,3 +93,35 @@ The family reads: the education spending line per pupil (`SpendingCategory.Educa
 **PISA 2022.** The OECD's own tables (Volume I, Annex B1: Tables I.B1.2.1–3, the country means with standard errors) sit behind the www host's bot check (HTTP 403 on the publication page); `webfs.oecd.org/pisa2022/` serves only the microdata (SAS/SPSS student, school and teacher files - the means could be computed from PV1–PV10 with W_FSTUWT, a computation this machine did not attempt without a decoder for .sav); NCES's international-comparison pages returned 404 at the paths tried. **One transcription reached:** Our World in Data's grapher series (sourced to the OECD PISA database), 2022 means: mathematics - Poland 489.0, Sweden 481.8, Germany 474.8, France 473.9, Italy 471.3, USA 464.9; reading - USA 503.9, Poland 488.7, Sweden 487.0, Italy 481.6, Germany 479.8, France 473.9; science - not on OWID. The World Bank (LO.PISA.MAT/REA/SCI) holds 2015 and 2018 only (2018 mathematics: Poland 515.6, Sweden 502.4, Germany 500.0, France 495.4, Italy 486.6, USA 478.2 - agreeing with OWID's 2018 to the tenth, which cross-checks the transcription channel, not the 2022 figures). **Gate: not passed** (one transcription of 2022, no science). **Billed:** OECD PISA 2022 Results (Volume I), Tables I.B1.2.1, I.B1.2.2, I.B1.2.3 - mean score in mathematics, reading, science, all students; or NCES `nces.ed.gov/surveys/pisa/pisa2022/` international tables. The row prints *to fetch* until either lands.
 
 **Graduation rate.** No OECD dataflow under OECD.EDU.IMEP carries a graduation RATE (117 flows listed; the UOE flows hold enrolments, personnel, entrants and finance). Eurostat `educ_uoe_grad01` holds upper-secondary GRADUATES by age (2022, all ages, ISCED 3: Germany 674 026, France 905 768, Italy 556 900, Poland 386 679, Sweden 97 472) and `demo_pjan` the population aged 18 on 1 January 2023 (785 932 / 828 943 / 586 339 / 334 118 / 119 196); the gross ratio (all graduates ÷ one cohort) is 85.8 / 109.3 / 95.0 / 115.7 / 81.8 % - **above 100 for France and Poland**, because the count includes adults and second qualifications, so it is NOT the row's quantity (first-time graduates as % of the population at the typical age, EAG indicator B3) and cannot stand in for it. **Gate: not passed. Billed:** OECD Education at a Glance 2024, Table B3.1 (first-time upper secondary graduation rates), behind the www host; NCES ACGR for the USA is a different definition. The row prints *to fetch*.
+
+## 8. The feedback pass, 2026-09-07 (overnight) — two terms, both DERIVED from the country's own sourced gaps, none authored
+
+**The stock moves only where the leavers move** (§5: one cohort a year at the leavers' level against the seed's), so the USA's stock holds and its terms stay zero, stated on the diagnostic.
+
+**Participation** (`EducationFamily.ParticipationTerm`, points on the 15+ rate, in `MacroSystem.ApplyLaborForceParticipationRate`'s target beside the health term): −(below-upper-secondary share now − seed) ÷ 100 × the country's own activity gap between ISCED 0–2 and ISCED 3–4 × the 25–64 share of the 15+ population from the pyramid. The gap, read at the source:
+
+| country | activity rate 25–64, ISCED 0–2 | ISCED 3–4 | ISCED 5–8 | gap 0–2 → 3–4 (points) | source |
+|---|---|---|---|---|---|
+| Sweden | 78.2 | 88.7 | 93.7 | 10.5 | Eurostat `lfsa_argaed` 2024 |
+| Germany | 69.9 | 85.7 | 90.7 | 15.8 | idem |
+| France | 62.0 | 80.0 | 91.4 | 18.0 | idem |
+| Italy | 60.5 | 78.2 | 87.5 | 17.7 | idem |
+| Poland | 53.6 | 77.9 | 92.8 | 24.3 | idem |
+| USA | 47.4 (less than a high-school diploma) | 56.9 (high-school graduates, no college) | 72.6 (bachelor's and higher) | 9.5 | BLS LNS11327659 / LNS11327660 / LNS11327662, 25+, 2024 monthly means (the OECD's 25–64 table sits behind the www bot check) |
+
+Kept: `PoliSim-captures/sources/eurostat_lfsa_argaed_2024.txt`, `bls_lfpr_by_education_2024.json` (series titles read back at data.bls.gov).
+
+**The productivity trend** (`EducationFamily.ProductivityTrendTerm`, points of trend productivity growth, in `MacroSystem.ApplySectorGrowthEffect`'s ledger under its existing all-sources ceiling, lagged one turn by construction): 100 × ln(W now ÷ W a year ago), W the attainment-weighted index of earnings relative to upper secondary = 100 (`EducationFamily.WageIndex`), clamped ±0.5 a year. The wage gap between attainment levels is read as the marginal-product gap - the Mincer reading, the stated approximation. The relative earnings, read at the source:
+
+| country | below upper secondary | upper secondary or post-secondary non-tertiary | tertiary | source, year |
+|---|---|---|---|---|
+| Sweden | 77.9 | 100.5 | 124.3 | OECD EAG `DSD_EAG_LSO_EA@DF_LSO_EARN_REL_UPPER`, 25–64, all workers, 2024 |
+| Germany | 79.2 | 105.2 | 155.9 | idem, 2024 (the base 100 is upper secondary alone in Germany's row) |
+| France | 89.6 | 100 | 155.8 | **not in the OECD flow** - Eurostat SES 2022 `earn_ses22_16`, mean hourly earnings ISCED 0–2 / 3–4 / 5–8 = 14.60 / 16.30 / 25.40 EUR, enterprises of 10+, B–S excluding O; a different earnings concept, stated |
+| Italy | 76.7 | 100.0 | 139.2 | OECD, 2023 |
+| Poland | 88.2 | 100.2 | 150.9 | OECD, 2024 |
+| USA | 72.5 | 100.0 | 174.4 | OECD, 2024 |
+
+**The cross-check, stated rather than passed:** on the four countries both flows cover, Eurostat's 2022 hourly ratios (below ÷ upper: DE 0.68, IT 0.83, PL 0.85, SE 0.90; tertiary ÷ upper: 1.63, 1.50, 1.76, 1.25) agree with the OECD's in direction on every pair and differ by 4–12 points - annual earnings of all workers against hourly earnings of employees in enterprises of ten or more. The OECD reading is the seed where it exists (one concept for five); France's is Eurostat's, and the row says so. Kept: `oecd_lso_earn_rel_upper_six.csv` (the six filtered from the 114 MB flow), `eurostat_earn_ses22_16_by_attainment.txt`.
+
+**Not built, stated:** PISA and the graduation rate still have no score (§7), so nothing here reads them; the term is the stock's, which is the leavers'.

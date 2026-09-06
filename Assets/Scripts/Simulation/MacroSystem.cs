@@ -728,7 +728,8 @@ namespace PoliSim.Simulation
             float target = anchor
                 - DiscouragedWorkerSensitivity * unemploymentGap
                 + combinedAdjustment
-                + HealthFamily.ParticipationTerm(country);   // the health feedback pass (2026-09-06): the working-age population's health, treatable mortality against its seed, points
+                + HealthFamily.ParticipationTerm(country)   // the health feedback pass (2026-09-06): the working-age population's health, treatable mortality against its seed, points
+                + EducationFamily.ParticipationTerm(country);   // the education feedback pass (2026-09-07): the attainment stock against its seed × the country's own activity gap by attainment, points
             state.LaborForceParticipationRate = Mathf.Clamp(
                 state.LaborForceParticipationRate + reversionSpeed * (target - state.LaborForceParticipationRate),
                 0f, MaxLaborForceParticipationPercent);
@@ -1848,7 +1849,8 @@ namespace PoliSim.Simulation
         {
             float infrastructureAdjustment = ApplyInfrastructureGrowthEffect(country);
             float sectorAdjustment = GetSectorGrowthAdjustment(country);
-            float totalAdjustment = Mathf.Clamp(infrastructureAdjustment + sectorAdjustment, -MaxTotalPotentialGrowthAdjustment, MaxTotalPotentialGrowthAdjustment);
+            float educationAdjustment = EducationFamily.ProductivityTrendTerm(country);   // the education feedback pass (2026-09-07): the attainment stock's last step, as the wage index reads it - under the same ceiling
+            float totalAdjustment = Mathf.Clamp(infrastructureAdjustment + sectorAdjustment + educationAdjustment, -MaxTotalPotentialGrowthAdjustment, MaxTotalPotentialGrowthAdjustment);
             // Q3 (Design B, rulings R-Q3a/b): THE CAUSAL RE-ROOTING. The ledger's sum - base
             // trend plus the two ceilinged adjustments - IS trend productivity growth
             // (infrastructure decay and sector booms are labour-productivity channels), and
