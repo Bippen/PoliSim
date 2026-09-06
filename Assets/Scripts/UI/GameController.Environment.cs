@@ -45,8 +45,11 @@ namespace PoliSim.UI
                     PlateBand.Open, 0f, 5f, s.PowerCo2PerCapita, EnvironmentPeers(x => x.PowerCo2PerCapita), true, new[] { "CARBON TAX ▸", "ENERGY LINE ▸" }, history?.PowerCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
                 new PlateRow("Transport CO2 / head", "t CO2 · TRANSPORT ÷ POPULATION · LOWER ◂", "EDGAR 2024 · TRANSPORT · WB POP · 2023", PlateFigure(s.TransportCo2PerCapita, 2),
                     PlateBand.Open, 0f, 6f, s.TransportCo2PerCapita, EnvironmentPeers(x => x.TransportCo2PerCapita), true, new[] { "CARBON TAX ▸", "INFRASTRUCTURE LINE ▸" }, history?.TransportCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
-                new PlateRow("Electricity by source", "% OF GENERATION", "EMBER · EUROSTAT nrg_bal_c · EIA", "to fetch",
-                    PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "CARBON TAX ▸" }, null, new[] { "TO FETCH" }, false, "A FETCH WITH NO FIGURE · EMBER REFUSED THE FETCH (403)"),
+                e.HasMix
+                    ? new PlateRow("Electricity by source", "% · COAL·GAS·NUCLEAR·HYDRO·WIND·SOLAR·OTHER", "EMBER · EUROSTAT nrg_bal_peh · EIA · 2023", PlateFigure(e.MixShares[0] + e.MixShares[1], 0, "% FOSSIL"),
+                        PlateBand.Distribution, 0f, 100f, -1f, null, true, new[] { "STATIC SEED", "CARBON TAX · OWN PASS" }, null, new[] { "SOURCED", "CROSS-CHECKED" }, false, null, e.MixShares, EnvironmentFamily.MixLabels)
+                    : new PlateRow("Electricity by source", "% OF GENERATION", "EMBER · EUROSTAT nrg_bal_c · EIA", "to fetch",
+                        PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "CARBON TAX ▸" }, null, new[] { "TO FETCH" }, false, "A FETCH WITH NO FIGURE"),
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);

@@ -278,18 +278,35 @@ namespace PoliSim.UI
                         for (int i = 0; row.Segments != null && i < row.Segments.Length; i++)
                         {
                             float w = bar.width * Mathf.Max(0f, row.Segments[i]) / sum;
-                            Color tint = i == 0 ? PoliSimTheme.Tint(ink, 0.35f) : i == 1 ? PoliSimTheme.Tint(ink, 0.65f) : ink;
+                            int n = row.Segments.Length;
+                            Color tint = n <= 3 ? (i == 0 ? PoliSimTheme.Tint(ink, 0.35f) : i == 1 ? PoliSimTheme.Tint(ink, 0.65f) : ink) : PoliSimTheme.Tint(ink, 0.3f + 0.7f * i / Mathf.Max(1, n - 1));   // more than three parts: a graded ladder of one ink
                             PoliSimTheme.Rule(new Rect(sx, bar.y, w, bar.height), tint);
                             if (i > 0) { PoliSimTheme.Rule(new Rect(sx, bar.y - 1f, 1f, bar.height + 2f), PoliSimTheme.Card); }
                             sx += w;
                         }
-                        if (row.Segments != null && row.SegmentLabels != null)
+                        if (row.Segments != null && row.Segments.Length > 3)
+                        {
+                            // More than three parts (the electricity mix, seven): each figure sits under ITS OWN extent, centred, and only where it fits -
+                            // a part too narrow for its figure carries none (the unit line names the order); equal cells under proportional parts read wrong on film.
+                            var mid = new GUIStyle(left) { alignment = TextAnchor.MiddleCenter };
+                            float x = cell.x;
+                            for (int i = 0; i < row.Segments.Length; i++)
+                            {
+                                float w = cell.width * Mathf.Max(0f, row.Segments[i]) / sum;
+                                string figureText = row.Segments[i].ToString(row.High < 20f ? "0.0" : "0", CultureInfo.InvariantCulture);
+                                if (mid.CalcSize(new GUIContent(figureText)).x + 2f <= w) { PoliSimWidgets.MeasuredLabel(new Rect(x, labelY + StatsUnit(2f), w, labelH), figureText, mid); }
+                                x += w;
+                            }
+                        }
+                        else if (row.Segments != null && row.SegmentLabels != null)
                         {
                             float cellW = cell.width / row.Segments.Length;
                             for (int i = 0; i < row.Segments.Length && i < row.SegmentLabels.Length; i++)
                             {
-                                string text = row.Segments[i].ToString(row.High < 20f ? "0.0" : "0", CultureInfo.InvariantCulture) + " · " + row.SegmentLabels[i];   // whole points on a percentage bar (the third of a 319-px band at 1280 holds no decimals); one decimal where the range is small (the environment's tonnes: 0.56 is not "1")
+                                string figureText = row.Segments[i].ToString(row.High < 20f ? "0.0" : "0", CultureInfo.InvariantCulture);   // whole points on a percentage bar; one decimal where the range is small (the environment's tonnes: 0.56 is not "1")
+                                string text = figureText + " · " + row.SegmentLabels[i];
                                 GUIStyle style = i == row.Segments.Length - 1 ? right : left;
+                                if (style.CalcSize(new GUIContent(text)).x > cellW) { text = figureText; }   // a narrow part (seven fuels at 1280) keeps its figure and drops its word; the unit line names the order
                                 PoliSimWidgets.MeasuredLabel(new Rect(cell.x + i * cellW, labelY + StatsUnit(2f), cellW, labelH), text, style);
                             }
                         }

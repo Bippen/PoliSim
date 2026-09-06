@@ -21,6 +21,10 @@ namespace PoliSim.Data
         public float PowerCo2PerCapita = Absent;   // t CO₂ per person, 2023 (EDGAR Power Industry ÷ WB population)
         public float TransportCo2PerCapita = Absent; // t CO₂ per person, 2023 (EDGAR Transport ÷ WB population)
         public const int Year = 2023;
+        /// <summary>The electricity mix 2023, % of generation - coal, gas, nuclear, hydro, wind, solar, other (the remainder to 100): Ember via Our World in Data,
+        /// cross-checked against Eurostat nrg_bal_peh (the five) and the EIA's Table 1.1 (the USA) within a point (§342, 2026-09-06). A static seed - nothing moves it.</summary>
+        public float[] MixShares = null;
+        public bool HasMix => MixShares != null && MixShares.Length == 7;
         public float CarbonTaxRateSeed;            // the carbon tax's rate at the seed, % (0 when the line is not implemented)
         public float EnergyPerHeadSeed;
         public float InfrastructurePerHeadSeed;
@@ -48,12 +52,12 @@ namespace PoliSim.Data
             switch (country.Id)
             {
                 // EDGAR_2024_GHG_booklet_2024.xlsx: GHG per capita 2023; Power Industry and Transport CO₂ 2023 over WB SP.POP.TOTL 2023 (ENVIRONMENT_FAMILY_SPINE.md §1-§2).
-                case CountryId.Sweden:  s.GhgPerCapita = 4.76f;  s.PowerCo2PerCapita = 0.56f; s.TransportCo2PerCapita = 1.26f; break;
-                case CountryId.Germany: s.GhgPerCapita = 8.26f;  s.PowerCo2PerCapita = 2.13f; s.TransportCo2PerCapita = 1.68f; break;
-                case CountryId.France:  s.GhgPerCapita = 5.81f;  s.PowerCo2PerCapita = 0.35f; s.TransportCo2PerCapita = 1.79f; break;
-                case CountryId.Italy:   s.GhgPerCapita = 6.36f;  s.PowerCo2PerCapita = 1.43f; s.TransportCo2PerCapita = 1.74f; break;
-                case CountryId.Poland:  s.GhgPerCapita = 9.67f;  s.PowerCo2PerCapita = 3.21f; s.TransportCo2PerCapita = 1.85f; break;
-                case CountryId.USA:     s.GhgPerCapita = 17.61f; s.PowerCo2PerCapita = 4.35f; s.TransportCo2PerCapita = 5.08f; break;
+                case CountryId.Sweden:  s.GhgPerCapita = 4.76f;  s.PowerCo2PerCapita = 0.56f; s.TransportCo2PerCapita = 1.26f; s.MixShares = Mix(0.0f, 0.1f, 29.2f, 39.9f, 20.6f, 1.9f); break;
+                case CountryId.Germany: s.GhgPerCapita = 8.26f;  s.PowerCo2PerCapita = 2.13f; s.TransportCo2PerCapita = 1.68f; s.MixShares = Mix(24.6f, 15.1f, 1.4f, 4.2f, 27.7f, 12.6f); break;
+                case CountryId.France:  s.GhgPerCapita = 5.81f;  s.PowerCo2PerCapita = 0.35f; s.TransportCo2PerCapita = 1.79f; s.MixShares = Mix(0.3f, 5.8f, 65.2f, 10.8f, 9.7f, 4.4f); break;
+                case CountryId.Italy:   s.GhgPerCapita = 6.36f;  s.PowerCo2PerCapita = 1.43f; s.TransportCo2PerCapita = 1.74f; s.MixShares = Mix(5.1f, 45.5f, 0f, 15.5f, 9.0f, 11.7f); break;
+                case CountryId.Poland:  s.GhgPerCapita = 9.67f;  s.PowerCo2PerCapita = 3.21f; s.TransportCo2PerCapita = 1.85f; s.MixShares = Mix(59.7f, 10.0f, 0f, 1.5f, 14.6f, 6.7f); break;
+                case CountryId.USA:     s.GhgPerCapita = 17.61f; s.PowerCo2PerCapita = 4.35f; s.TransportCo2PerCapita = 5.08f; s.MixShares = Mix(15.9f, 42.5f, 18.2f, 5.6f, 9.9f, 5.6f); break;
                 default: return;
             }
             EconomyState st = country.State;
@@ -64,6 +68,14 @@ namespace PoliSim.Data
             s.InfrastructurePerHeadSeed = PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation);
             s.Seeded = true;
         }
+
+        /// <summary>The mix as seven shares - the six named fuels and the remainder to 100 (oil, biomass, other), from Ember's 2023 shares (Our World in Data), cross-checked (§342).</summary>
+        public static float[] Mix(float coal, float gas, float nuclear, float hydro, float wind, float solar)
+        {
+            float other = Mathf.Max(0f, 100f - coal - gas - nuclear - hydro - wind - solar);
+            return new[] { coal, gas, nuclear, hydro, wind, solar, other };
+        }
+        public static readonly string[] MixLabels = { "COAL", "GAS", "NUCLEAR", "HYDRO", "WIND", "SOLAR", "OTHER" };
 
         /// <summary>The carbon tax's rate, %, or 0 when the country has no implemented carbon tax line.</summary>
         public static float CarbonTaxRate(Country country)

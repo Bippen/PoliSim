@@ -65,3 +65,7 @@ The family reads the infrastructure spending line (`SpendingCategory.Infrastruct
 | Congestion | to fetch | % extra travel time | TomTom Traffic Index | - | connectivity |
 
 "Absent" and "to fetch" print as words in the caption face. Nothing here is built.
+
+## 6. The fetch, 2026-09-06 (overnight) — congestion under the cross-check gate: one source reached, the second refused; the figures recorded, the row keeps the word
+
+The TomTom Traffic Index ranking page (`tomtom.com/traffic-index/ranking/`, 856 KB) embeds its data as JSON: two lists, CITY CENTRE and METRO AREA, per city a congestion level `c` (% extra travel time), an average speed `v`, hours lost at rush hours `tLostRush` and a rank. The largest city per country, city-centre list: Warsaw 51.3 (rank 77), New York 48.8 (rank 102), Rome 45.2 (rank 143), Berlin 44.6 (rank 155), Stockholm 42.8 (rank 180), Paris 40.0 (rank 231); the metro-area list reads lower (Warsaw 41.9, New York 41.3, Rome 41.4, Berlin 40.2, Stockholm 30.9, Paris 35.0). The page carries no year field beside the records; the edition is the live one on the day fetched. **The second source refused:** INRIX's Global Traffic Scorecard returned HTTP 403. **Gate: not passed** (a single source, a web page rather than a file). **Billed:** TomTom Traffic Index 2024 (city-centre congestion level, % extra travel time), INRIX 2024 Global Traffic Scorecard (hours lost per driver). The row prints *to fetch*; connectivity stands in, stated.

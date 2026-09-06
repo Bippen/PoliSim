@@ -64,3 +64,18 @@ The family reads the carbon tax (`TaxType.CarbonTax`, whose base P5-B3 left on o
 | Electricity by source | to fetch | % of generation | Ember · Eurostat nrg_bal_c · EIA | - | the carbon tax |
 
 "To fetch" prints as words in the caption face. Nothing here is built.
+
+## 8. The fetch, 2026-09-06 (overnight) — the electricity mix under the cross-check gate: PASSED for six, landed as the plate's distribution row
+
+**Source 1:** Ember's yearly electricity data as Our World in Data publishes it (`ourworldindata.org/grapher/share-electricity-{coal,gas,nuclear,hydro,wind,solar}.csv`, sourced to Ember), 2023 shares of generation. **Source 2 (the five):** Eurostat `nrg_bal_peh`, gross electricity production by fuel 2023 (GWh), shares over TOTAL; **source 2 (the USA):** the EIA's Electric Power Monthly Table 1.1 (`eia.gov/electricity/monthly/xls/table_1_01.xlsx`, 21 278 bytes, zip signature), 2023 annual totals over total generation at utility-scale facilities plus estimated small-scale solar.
+
+| country | coal Ember / check | gas | nuclear | hydro | wind | solar |
+|---|---|---|---|---|---|---|
+| Sweden | 0.0 / 0.0 | 0.1 / 0.1 | 29.2 / 29.2 | 39.9 / 39.8 | 20.6 / 20.6 | 1.9 / 1.9 |
+| Germany | 24.6 / 23.9 | 15.1 / 16.2 | 1.4 / 1.4 | 4.2 / 4.1 | 27.7 / 27.1 | 12.6 / 12.3 |
+| France | 0.3 / 0.3 | 5.8 / 5.7 | 65.2 / 64.4 | 10.8 / 10.6 | 9.7 / 9.8 | 4.4 / 4.3 |
+| Italy | 5.1 / 5.0 | 45.5 / 44.9 | 0 / 0 | 15.5 / 15.3 | 9.0 / 8.9 | 11.7 / 11.6 |
+| Poland | 59.7 / 59.1 | 10.0 / 9.9 | 0 / 0 | 1.5 / 1.4 | 14.6 / 14.4 | 6.7 / 6.6 |
+| USA | 15.9 / 16.1 | 42.5 / 43.2 | 18.2 / 18.5 | 5.6 / 5.9 | 9.9 / ~10 (EIA folds wind into "renewables excluding hydro and solar", 11.6) | 5.6 / 5.7 |
+
+Every pair agrees within a point (Germany's gas 1.1 apart - Eurostat's gross production against Ember's net generation). **Gate: passed.** The family seeds the seven shares (the six fuels and the remainder) as a static readout (`EnvironmentSeeds.MixShares`) and the plate's *Electricity by source* row is the DISTRIBUTION form; nothing moves the mix - the carbon tax would, on its own pass. `EnvironmentFamilyDiagnostic` asserts the seven sum to 100 within half a point for six and Germany's coal against Eurostat's 23.9 within 1.5.

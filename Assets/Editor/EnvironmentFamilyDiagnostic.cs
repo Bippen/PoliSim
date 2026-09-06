@@ -33,6 +33,15 @@ namespace PoliSim.EditorTools
                 if (Mathf.Abs(c.State.PowerCo2PerCapita - expectedPower[c.Id]) > 1e-4f) { Debug.LogError($"ENVIRONMENT: {c.Id} power CO₂ seeds {c.State.PowerCo2PerCapita}, the spine says {expectedPower[c.Id]}."); ok = false; }
                 if (c.State.TransportCo2PerCapita <= 0f) { Debug.LogError($"ENVIRONMENT: {c.Id} transport CO₂ not seeded."); ok = false; }
             }
+            // §342: the electricity mix - seven shares summing to 100 within half a point for six; Germany's coal share against Eurostat nrg_bal_peh 2023 (124 786 of 522 871 GWh = 23.9 %) within 1.5 points, the cross-check gate's own figure.
+            foreach (Country c in seedWorld.Countries)
+            {
+                if (!expectedGhg.ContainsKey(c.Id)) { continue; }
+                if (!c.Environment.HasMix) { Debug.LogError($"ENVIRONMENT: {c.Id} carries no electricity mix."); ok = false; continue; }
+                float sum = 0f; foreach (float v in c.Environment.MixShares) { sum += v; }
+                if (Mathf.Abs(sum - 100f) > 0.5f) { Debug.LogError($"ENVIRONMENT: {c.Id}'s mix sums to {sum:F2}, not 100."); ok = false; }
+            }
+            if (Mathf.Abs(seedWorld.GetCountry(CountryId.Germany).Environment.MixShares[0] - 23.9f) > 1.5f) { Debug.LogError($"ENVIRONMENT: Germany's coal share {seedWorld.GetCountry(CountryId.Germany).Environment.MixShares[0]:F1} is not within 1.5 points of Eurostat's 23.9."); ok = false; }
             Country seSeed = seedWorld.GetCountry(CountryId.Sweden);
             bool hasCarbonTax = false;
             foreach (TaxLine line in seSeed.TaxLines) { if (line.Type == TaxType.CarbonTax && line.IsImplemented) { hasCarbonTax = true; } }
