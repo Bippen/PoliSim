@@ -10,14 +10,18 @@ namespace PoliSim.UI
     /// grammar for the society stats - drawn on health, inherited by C3-C6"). One row, six cells, in this order: (1) name · unit ·
     /// source line, (2) figure, (3) band - the family's STATED range with the country's own tick and the other five at seed as dots,
     /// (4) reached by - bordered chips naming the dial or term, or 5c's arrow with its signed figure while a draft is live, (5) history -
-    /// a row-end sparkline, Year 0 the dotted baseline, (6) honesty chips. Three band forms: KEY·BOUNDED (a share of a whole - the bar
+    /// a row-end sparkline, Year 0 the dotted baseline, (6) honesty chips. Band forms: KEY·BOUNDED (a share of a whole - the bar
     /// fills to the tick, the ceiling dashed), KEY·OPEN (a level - hairline and ticks, the better end marked), ABSENT (the word on a
-    /// dashed hairline with the reason); a DERIVED row has no band. The plate is one drawing on the People page's society block (9c
-    /// PLACE) and never split. Cell widths 210·120·319·250·56·96 against the board's 1149, scaled to the width in force.
+    /// dashed hairline with the reason), DISTRIBUTION (2a's stacked bar, its segments labelled - P5-C3 drew it first); a DERIVED row has no
+    /// band. The plate is one drawing on the People page's society block (9c PLACE) and never split. Cell widths 210·120·319·250·56·96
+    /// against the board's 1149, scaled to the width in force.
+    ///
+    /// P5-C3 (2026-09-06): the plate's core is shared - <see cref="DrawPlateRows"/> lays out any family's rows; a family is a list of
+    /// <see cref="PlateRow"/>s and, where it has one, an extra row (health's supporting readouts) and an arrow rule for its drafted key.
     /// </summary>
     public partial class GameController
     {
-        private enum PlateBand { Bounded, Open, Absent, None }
+        private enum PlateBand { Bounded, Open, Absent, None, Distribution }
 
         private readonly struct PlateRow
         {
@@ -30,12 +34,16 @@ namespace PoliSim.UI
             public readonly IReadOnlyList<float> Series;
             public readonly string[] Honesty;
             public readonly bool CouplingDraft;
+            public readonly float[] Segments;        // DISTRIBUTION: the stacked bar's parts, in order, summing to High
+            public readonly string[] SegmentLabels;
 
             public PlateRow(string name, string unit, string source, string figure, PlateBand band, float low, float high, float own, float[] peers,
-                bool lowerIsBetter, string[] reachedBy, IReadOnlyList<float> series, string[] honesty, bool couplingDraft, string absentReason = null)
+                bool lowerIsBetter, string[] reachedBy, IReadOnlyList<float> series, string[] honesty, bool couplingDraft, string absentReason = null,
+                float[] segments = null, string[] segmentLabels = null)
             {
                 Name = name; Unit = unit; Source = source; Figure = figure; Band = band; Low = low; High = high; Own = own; Peers = peers;
                 LowerIsBetter = lowerIsBetter; ReachedBy = reachedBy; Series = series; Honesty = honesty; CouplingDraft = couplingDraft; AbsentReason = absentReason;
+                Segments = segments; SegmentLabels = segmentLabels;
             }
         }
 
@@ -114,6 +122,59 @@ namespace PoliSim.UI
                         PlateBand.Absent, 0f, 400f, -1f, null, true, new[] { "NOT SIMULATED — EFFECTIVENESS REACHES QUALITY DIRECTLY" }, null, new[] { "ABSENT · STATED" }, false, "NO COMPARABLE SERIES PUBLISHED · SE IT PL REPORT"),
             };
 
+            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
+            string footText = "SEEDS: OECD SDMX, LATEST OBSERVATION PER COUNTRY, SEX TOTAL · THE OWN TICK IS THIS COUNTRY, THE DOTS ARE THE OTHER FIVE AT SEED · A BAND'S ENDS ARE THE FAMILY'S STATED RANGE, NOT THE DATA'S · ◂ MARKS THE BETTER END · COUPLINGS: THE HEALTH SPINE'S TABLES, DRAFT UNTIL MEASURED";
+            _healthPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
+            {
+                if (!draftLive || !row.Name.StartsWith("Quality")) { return null; }
+                float with = HealthFamily.ProjectTreatableMortality(country, draftHealthSpending);
+                float without = HealthFamily.ProjectTreatableMortality(country, standingHealthSpending);
+                return (with - without, true, "PER 100 000");
+            }, extraRowHeightFor: (nameH, capH, srcH, smallH) => Mathf.Max(capH + smallH + srcH + StatsUnit(8f), nameH + capH + srcH + StatsUnit(8f)),
+            drawExtraRow: (x, y, pad, styles) =>
+            {
+                // Supporting readouts: one row of small figures, borderless between them - moved by the quality key, never coupled.
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH), "Supporting readouts", h.HasSupporting ? styles.Name : styles.NameAbsent);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH), "MOVED BY THE QUALITY KEY · NEVER COUPLED", styles.Caption);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH), "OECD HCQO · DF_PC · DF_AC" + (h.SupportingYear > 0 ? " · " + h.SupportingYear : ""), styles.Source);
+                if (h.HasSupporting)
+                {
+                    float cellW = (x[5] - x[1]) / 5f;
+                    for (int i = 0; i < 5; i++)
+                    {
+                        float sx = x[1] + i * cellW + pad;
+                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f), cellW - pad, styles.CapH), HealthFamily.SupportingNames[i], styles.Caption);
+                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH, cellW - pad, styles.SmallH), PlateFigure(HealthFamily.SupportingNow(country, i), 1), styles.Small);
+                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH + styles.SmallH, cellW - pad, styles.SrcH), HealthFamily.SupportingUnits[i], styles.Source);
+                    }
+                    DrawPlateChips(new Rect(x[5] + pad, y + StatsUnit(4f), x[6] - x[5] - pad * 2f, styles.ExtraH - StatsUnit(8f)), new[] { "SUPPORTING · 5 OF 6" }, styles.Chip, PoliSimTheme.Hairline, bordered: true);
+                }
+                else
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(x[1] + pad, y + StatsUnit(8f), x[5] - x[1] - pad, Mathf.Max(StatsUnit(12f), Mathf.Ceil(DeskCaptionHeight(styles.AbsentWord)))), "absent · THE HCQO FLOWS HOLD NO ROWS FOR THIS COUNTRY", styles.AbsentWord);
+                    DrawPlateChips(new Rect(x[5] + pad, y + StatsUnit(4f), x[6] - x[5] - pad * 2f, styles.ExtraH - StatsUnit(8f)), new[] { "ABSENT · STATED" }, styles.Chip, PoliSimTheme.Hairline, bordered: true);
+                }
+            });
+        }
+
+        /// <summary>The plate's styles and measured heights, handed to a family's extra row.</summary>
+        private readonly struct PlateStyles
+        {
+            public readonly GUIStyle Name, NameAbsent, Caption, Source, Small, Chip, AbsentWord;
+            public readonly float NameH, CapH, SrcH, SmallH, ExtraH;
+            public PlateStyles(GUIStyle name, GUIStyle nameAbsent, GUIStyle caption, GUIStyle source, GUIStyle small, GUIStyle chip, GUIStyle absentWord, float nameH, float capH, float srcH, float smallH, float extraH)
+            {
+                Name = name; NameAbsent = nameAbsent; Caption = caption; Source = source; Small = small; Chip = chip; AbsentWord = absentWord;
+                NameH = nameH; CapH = capH; SrcH = srcH; SmallH = smallH; ExtraH = extraH;
+            }
+        }
+
+        /// <summary>The plate's core (9c): the column head, one six-cell row per <see cref="PlateRow"/>, an optional extra row, the foot. Returns the
+        /// area laid out (the film driver scrolls to it). <paramref name="arrowFor"/> returns, for a row whose key a live draft moves, the delta, whether
+        /// lower is better and the unit - the 5c arrow in the row's own compact form replaces the chips.</summary>
+        private Rect DrawPlateRows(List<PlateRow> rows, Color areaInk, string footText, bool draftLive, System.Func<PlateRow, (float Delta, bool LowerIsBetter, string Unit)?> arrowFor,
+            System.Func<float, float, float, float, float> extraRowHeightFor = null, System.Action<float[], float, float, PlateStyles> drawExtraRow = null)
+        {
             // Geometry: the board's six cells against 1149, scaled to the width in force; the column head is one caption line, a row three.
             float[] share = { 210f / 1149f, 120f / 1149f, 319f / 1149f, 250f / 1149f, 56f / 1149f, 96f / 1149f };
             GUIStyle head = DeskCaption(7.5f, PoliSimTheme.TextMuted);
@@ -126,71 +187,49 @@ namespace PoliSim.UI
             GUIStyle chip = DeskCaption(7f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleCenter);
             GUIStyle absentWord = DeskCaption(9f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleLeft);
             GUIStyle draftChip = DeskCaption(7f, PoliSimTheme.Caution, false, TextAnchor.MiddleCenter);
+            GUIStyle small = DeskCaption(11f, PoliSimTheme.TextPrimary, true, TextAnchor.UpperLeft);
             // Heights are the styles' own measure (DeskCaptionHeight), never a guessed unit: the first films' OVERFLOW guard found fixed heights 1-3 px short at both widths.
             float nameH = Mathf.Ceil(DeskCaptionHeight(name));
             float capH = Mathf.Ceil(DeskCaptionHeight(caption));
             float srcH = Mathf.Ceil(DeskCaptionHeight(source));
             float figH = Mathf.Ceil(DeskCaptionHeight(figure));
-            GUIStyle small = DeskCaption(11f, PoliSimTheme.TextPrimary, true, TextAnchor.UpperLeft);
             float smallH = Mathf.Ceil(DeskCaptionHeight(small));
             GUIStyle foot = DeskCaptionWrapped(6.5f, PoliSimTheme.TextMuted);
-            string footText = "SEEDS: OECD SDMX, LATEST OBSERVATION PER COUNTRY, SEX TOTAL · THE OWN TICK IS THIS COUNTRY, THE DOTS ARE THE OTHER FIVE AT SEED · A BAND'S ENDS ARE THE FAMILY'S STATED RANGE, NOT THE DATA'S · ◂ MARKS THE BETTER END · COUPLINGS: THE HEALTH SPINE'S TABLES, DRAFT UNTIL MEASURED";
             float headHeight = Mathf.Max(StatsUnit(12f), capH + StatsUnit(3f));
             float rowHeight = Mathf.Max(nameH + capH + srcH + StatsUnit(8f), figH + StatsUnit(12f), StatsUnit(38f));
-            float supportingHeight = Mathf.Max(capH + smallH + srcH + StatsUnit(8f), nameH + capH + srcH + StatsUnit(8f));
+            float extraHeight = extraRowHeightFor != null ? extraRowHeightFor(nameH, capH, srcH, smallH) : 0f;
             float pad = StatsUnit(4f);
             float footHeight = Mathf.Ceil(foot.CalcHeight(new GUIContent(footText), Mathf.Max(10f, Screen.width * 0.8f - pad * 2f))) + StatsUnit(4f);
-            float total = headHeight + rows.Count * rowHeight + supportingHeight + footHeight;
+            float total = headHeight + rows.Count * rowHeight + extraHeight + footHeight;
             Rect area = GUILayoutUtility.GetRect(10f, total, GUILayout.ExpandWidth(true));
-            if (Event.current.type != EventType.Repaint) { return; }
-            _healthPlateLastArea = area;
+            if (Event.current.type != EventType.Repaint) { return area; }
 
             float[] x = new float[7];
             x[0] = area.x;
             for (int i = 0; i < 6; i++) { x[i + 1] = x[i] + area.width * share[i]; }
 
-            // The column head
             string[] heads = { "STAT · UNIT · SOURCE LINE", "FIGURE", "BAND · OWN TICK · FIVE PEERS", "REACHED BY · 5c ARROW WHEN A DRAFT IS LIVE", "HISTORY", "HONESTY" };
             for (int i = 0; i < 6; i++) { PoliSimWidgets.MeasuredLabel(new Rect(x[i] + pad, area.y, x[i + 1] - x[i] - pad, headHeight), heads[i], head); }
             PoliSimTheme.Rule(new Rect(area.x, area.y + headHeight - 1f, area.width, 1f), PoliSimTheme.Hairline);
 
-            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
             float y = area.y + headHeight;
             for (int r = 0; r < rows.Count; r++, y += rowHeight)
             {
                 PlateRow row = rows[r];
                 bool absent = row.Band == PlateBand.Absent;
-                // 1 · name · unit · source
-                float line1 = nameH, line2 = capH, line3 = srcH;
-                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, line1), row.Name, absent ? nameAbsent : name);
-                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + line1, x[1] - x[0] - pad, line2), row.Unit, caption);
-                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + line1 + line2, x[1] - x[0] - pad, line3), row.Source, source);
-                // 2 · figure
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, nameH), row.Name, absent ? nameAbsent : name);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + nameH, x[1] - x[0] - pad, capH), row.Unit, caption);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + nameH + capH, x[1] - x[0] - pad, srcH), row.Source, source);
                 PoliSimWidgets.MeasuredLabel(new Rect(x[1] + pad, y + StatsUnit(4f), x[2] - x[1] - pad, Mathf.Max(figH, StatsUnit(22f))), row.Figure, absent ? figureAbsent : figure);
-                // 3 · band
                 var band = new Rect(x[2] + pad, y + StatsUnit(6f), x[3] - x[2] - pad * 2f, rowHeight - StatsUnit(12f));
                 DrawPlateBand(band, row, areaInk, caption);
-                // 4 · reached by
                 var reach = new Rect(x[3] + pad, y + StatsUnit(4f), x[4] - x[3] - pad * 2f, rowHeight - StatsUnit(8f));
-                if (draftLive && row.Name.StartsWith("Quality"))
-                {
-                    float with = HealthFamily.ProjectTreatableMortality(country, draftHealthSpending);
-                    float without = HealthFamily.ProjectTreatableMortality(country, standingHealthSpending);
-                    float delta = with - without;
-                    // 5c's grammar at the row's own height: the shared renderer needs three caption lines the 14-38 px row cannot give, so the cell draws the
-                    // arrow compactly - the signed figure in direction-aware ink (lower is better here, so a fall is Good), the arrow rule's length relative
-                    // to the row's own stated range, pointing the way the figure moves; the scope line beneath. Same figure, same scope, the row's scale.
-                    DrawPlateArrow(reach, delta, lowerIsBetter: true, unit: "PER 100 000", captionStyle: caption, srcHeight: srcH, band: row);
-                }
-                else
-                {
-                    DrawPlateChips(reach, row.ReachedBy, chip, PoliSimTheme.Hairline, bordered: !absent && row.Band != PlateBand.None);
-                }
-                // 5 · history
+                var arrow = arrowFor?.Invoke(row);
+                if (arrow.HasValue) { DrawPlateArrow(reach, arrow.Value.Delta, arrow.Value.LowerIsBetter, arrow.Value.Unit, caption, srcH, row); }
+                else { DrawPlateChips(reach, row.ReachedBy, chip, PoliSimTheme.Hairline, bordered: !absent && row.Band != PlateBand.None); }
                 var spark = new Rect(x[4] + pad, y + (rowHeight - StatsUnit(10f)) * 0.5f, Mathf.Max(8f, x[5] - x[4] - pad * 2f), StatsUnit(10f));
                 if (row.Series != null && row.Series.Count >= 2) { GraphRenderer.DrawSparkline(spark, row.Series, areaInk); }
                 else if (row.Band != PlateBand.None && !absent) { DeskDottedBaseline(spark); }
-                // 6 · honesty
                 var honesty = new Rect(x[5] + pad, y + StatsUnit(4f), x[6] - x[5] - pad * 2f, rowHeight - StatsUnit(8f));
                 var stamps = new List<string>(row.Honesty);
                 if (row.CouplingDraft) { stamps.Add("COUPLING DRAFT"); }
@@ -198,34 +237,19 @@ namespace PoliSim.UI
                 PoliSimTheme.Rule(new Rect(area.x, y + rowHeight - 1f, area.width, 1f), PoliSimTheme.RuleRow);
             }
 
-            // Supporting readouts: one row of small figures, borderless between them - moved by the quality key, never coupled.
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, nameH), "Supporting readouts", h.HasSupporting ? name : nameAbsent);
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + nameH, x[1] - x[0] - pad, capH), "MOVED BY THE QUALITY KEY · NEVER COUPLED", caption);
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + nameH + capH, x[1] - x[0] - pad, srcH), "OECD HCQO · DF_PC · DF_AC" + (h.SupportingYear > 0 ? " · " + h.SupportingYear : ""), source);
-            if (h.HasSupporting)
+            if (drawExtraRow != null && extraHeight > 0f)
             {
-                float cellW = (x[5] - x[1]) / 5f;
-                for (int i = 0; i < 5; i++)
-                {
-                    float sx = x[1] + i * cellW + pad;
-                    PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f), cellW - pad, capH), HealthFamily.SupportingNames[i], caption);
-                    PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + capH, cellW - pad, smallH), PlateFigure(HealthFamily.SupportingNow(country, i), 1), small);
-                    PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + capH + smallH, cellW - pad, srcH), HealthFamily.SupportingUnits[i], source);
-                }
-                DrawPlateChips(new Rect(x[5] + pad, y + StatsUnit(4f), x[6] - x[5] - pad * 2f, supportingHeight - StatsUnit(8f)), new[] { "SUPPORTING · 5 OF 6" }, chip, PoliSimTheme.Hairline, bordered: true);
+                drawExtraRow(x, y, pad, new PlateStyles(name, nameAbsent, caption, source, small, chip, absentWord, nameH, capH, srcH, smallH, extraHeight));
+                y += extraHeight;
             }
-            else
-            {
-                PoliSimWidgets.MeasuredLabel(new Rect(x[1] + pad, y + StatsUnit(8f), x[5] - x[1] - pad, Mathf.Max(StatsUnit(12f), Mathf.Ceil(DeskCaptionHeight(absentWord)))), "absent · THE HCQO FLOWS HOLD NO ROWS FOR THIS COUNTRY", absentWord);
-                DrawPlateChips(new Rect(x[5] + pad, y + StatsUnit(4f), x[6] - x[5] - pad * 2f, supportingHeight - StatsUnit(8f)), new[] { "ABSENT · STATED" }, chip, PoliSimTheme.Hairline, bordered: true);
-            }
-            y += supportingHeight;
             PoliSimTheme.Rule(new Rect(area.x, y - 1f, area.width, 1f), PoliSimTheme.Hairline);
             GUI.Label(new Rect(area.x + pad, y + StatsUnit(2f), area.width - pad * 2f, footHeight - StatsUnit(2f)), footText, foot);
+            return area;
         }
 
         /// <summary>The band cell: BOUNDED fills 2a's one-axis bar to the own tick with the ceiling dashed; OPEN is a hairline with the own tick and the peers as
-        /// dots, the better end marked; ABSENT is the word on a dashed hairline with the reason; a DERIVED row prints the no-band line.</summary>
+        /// dots, the better end marked; ABSENT is the word on a dashed hairline with the reason; DISTRIBUTION is 2a's stacked bar, the segments in three
+        /// tints of the area ink with their labels beneath; a DERIVED row prints the no-band line.</summary>
         private void DrawPlateBand(Rect cell, PlateRow row, Color ink, GUIStyle caption)
         {
             float lineY = cell.y + cell.height * 0.42f;
@@ -240,9 +264,37 @@ namespace PoliSim.UI
                     return;
                 case PlateBand.Absent:
                     DrawDashedRule(new Rect(cell.x, lineY, cell.width, 1f), PoliSimTheme.Hairline, 4f, 3f);
-                    PoliSimWidgets.MeasuredLabel(new Rect(cell.x, cell.y, cell.width * 0.4f, lineY - cell.y), "ABSENT", DeskCaption(9f, PoliSimTheme.TextMuted));
+                    PoliSimWidgets.MeasuredLabel(new Rect(cell.x, cell.y, cell.width * 0.4f, lineY - cell.y), row.Figure == "to fetch" ? "TO FETCH" : "ABSENT", DeskCaption(9f, PoliSimTheme.TextMuted));
                     PoliSimWidgets.MeasuredLabel(new Rect(cell.x, labelY, cell.width, labelH), row.AbsentReason ?? "", left);
                     return;
+                case PlateBand.Distribution:
+                    {
+                        // 2a's stacked bar: the segments fill the whole range in three tints of the area ink, hairlines between; the labels beneath in wedge order.
+                        var bar = new Rect(cell.x, lineY - StatsUnit(4f), cell.width, StatsUnit(9f));
+                        float sum = 0f;
+                        if (row.Segments != null) { foreach (float v in row.Segments) { sum += Mathf.Max(0f, v); } }
+                        sum = Mathf.Max(0.0001f, sum);
+                        float sx = bar.x;
+                        for (int i = 0; row.Segments != null && i < row.Segments.Length; i++)
+                        {
+                            float w = bar.width * Mathf.Max(0f, row.Segments[i]) / sum;
+                            Color tint = i == 0 ? PoliSimTheme.Tint(ink, 0.35f) : i == 1 ? PoliSimTheme.Tint(ink, 0.65f) : ink;
+                            PoliSimTheme.Rule(new Rect(sx, bar.y, w, bar.height), tint);
+                            if (i > 0) { PoliSimTheme.Rule(new Rect(sx, bar.y - 1f, 1f, bar.height + 2f), PoliSimTheme.Card); }
+                            sx += w;
+                        }
+                        if (row.Segments != null && row.SegmentLabels != null)
+                        {
+                            float cellW = cell.width / row.Segments.Length;
+                            for (int i = 0; i < row.Segments.Length && i < row.SegmentLabels.Length; i++)
+                            {
+                                string text = row.Segments[i].ToString("0", CultureInfo.InvariantCulture) + " · " + row.SegmentLabels[i];   // whole points: the third of a 319-px band at 1280 holds no decimals
+                                GUIStyle style = i == row.Segments.Length - 1 ? right : left;
+                                PoliSimWidgets.MeasuredLabel(new Rect(cell.x + i * cellW, labelY + StatsUnit(2f), cellW, labelH), text, style);
+                            }
+                        }
+                        return;
+                    }
             }
 
             float span = Mathf.Max(0.0001f, row.High - row.Low);
@@ -254,8 +306,10 @@ namespace PoliSim.UI
                 PoliSimTheme.Rule(bar, PoliSimTheme.BarTrack);
                 PoliSimTheme.Rule(new Rect(bar.x, bar.y, Mathf.Max(0f, Px(row.Own) - bar.x), bar.height), ink);
                 DrawDashedRule(new Rect(cell.xMax - 1f, bar.y - StatsUnit(2f), 1f, bar.height + StatsUnit(4f)), PoliSimTheme.TextMuted, 2f, 2f);
-                PoliSimWidgets.MeasuredLabel(new Rect(cell.x, labelY + StatsUnit(2f), cell.width * 0.5f, labelH), row.Low.ToString("0", CultureInfo.InvariantCulture), left);
-                PoliSimWidgets.MeasuredLabel(new Rect(cell.x + cell.width * 0.5f, labelY + StatsUnit(2f), cell.width * 0.5f, labelH), row.High.ToString("0", CultureInfo.InvariantCulture) + " · CEILING", right);
+                string lowText = row.Low.ToString("0", CultureInfo.InvariantCulture) + (row.LowerIsBetter ? " ◂ BETTER" : "");
+                string highText = row.High.ToString("0", CultureInfo.InvariantCulture) + (row.LowerIsBetter ? "" : " · CEILING");
+                PoliSimWidgets.MeasuredLabel(new Rect(cell.x, labelY + StatsUnit(2f), cell.width * 0.5f, labelH), lowText, left);
+                PoliSimWidgets.MeasuredLabel(new Rect(cell.x + cell.width * 0.5f, labelY + StatsUnit(2f), cell.width * 0.5f, labelH), highText, right);
             }
             else
             {

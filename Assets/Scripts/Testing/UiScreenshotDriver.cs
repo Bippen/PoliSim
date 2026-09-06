@@ -415,6 +415,14 @@ namespace PoliSim.Testing
                     yield return Capture("04b_people_health_plate");
                     ResetScrolls(controller);
                     yield return Settle();
+                    // P5-C3 (2026-09-06): the education plate sits under the health plate.
+                    var eduField = controller.GetType().GetField("_educationPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    float eduY = eduField != null ? ((Rect)eduField.GetValue(controller)).y : 3600f;
+                    ScrollBy(controller, Mathf.Max(0f, eduY - Screen.height * 0.08f));
+                    yield return Settle();
+                    yield return Capture("04c_people_education_plate");
+                    ResetScrolls(controller);
+                    yield return Settle();
                 }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))

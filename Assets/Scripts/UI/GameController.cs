@@ -8970,6 +8970,7 @@ namespace PoliSim.UI
                 DrawMinisterAttributes(minister);   // P2-5.2
                 DrawEffectivenessReadout(portfolio);   // P5-C7, board 9d: the readout under the attributes, beneath EFFICIENCY
                 if (portfolio == CabinetPortfolio.HealthSocialAffairs) { DrawHealthKeysOnCard(); }   // 9c: the card quotes the family's keys
+                if (portfolio == CabinetPortfolio.Education) { DrawEducationKeysOnCard(); }   // P5-C3: the card quotes the family's keys
 
                 // ⚠ A DELIBERATE EXCEPTION TO BEHAVIOUR 5's WORDING, and NOT a precedent. Recorded here
                 // in 2026-08-10's sweep so a future reader neither "fixes" it nor cites it.
@@ -9127,6 +9128,8 @@ namespace PoliSim.UI
             _sectorEmploymentPieChart.Draw(string.Empty, sectorSlices, _labelStyle, "F1", moneyUnit: null);
             GUILayout.Space(10f);
             DrawHealthFamilyPlate();   // P5-C2 (2026-09-05, board 9c): the health family's plate - the society-stat grammar, family 1 of 6
+            GUILayout.Space(10f);
+            DrawEducationFamilyPlate();   // P5-C3 (2026-09-06): family 2 of 6, 9c's grammar inherited by shape - the distribution form drawn first
             GUILayout.Space(10f);
 
             // 29 SpendingCategory members against an eight-ink cap, so this is a ranked ledger, not a

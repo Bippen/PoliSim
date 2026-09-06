@@ -143,6 +143,9 @@ namespace PoliSim.Data
         /// <summary>P5-C2 (2026-09-05): the health family's two keys with a history the plate's sparklines read.</summary>
         public readonly MultiResolutionSeries TreatableMortality = new MultiResolutionSeries();
         public readonly MultiResolutionSeries HealthCoverage = new MultiResolutionSeries();
+        /// <summary>P5-C3 (2026-09-06): the education family's two keys with a history.</summary>
+        public readonly MultiResolutionSeries EarlyLeavers = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries AttainmentTertiary = new MultiResolutionSeries();
 
         // ROUND 4 BATCH R4-5 (C5): productivity - the arc's last series.
         public readonly MultiResolutionSeries Productivity = new MultiResolutionSeries();
@@ -193,6 +196,8 @@ namespace PoliSim.Data
             HousePriceIndex.Append(date, state.HousePriceIndex);
             TreatableMortality.Append(date, state.TreatableMortality);   // P5-C2
             HealthCoverage.Append(date, state.HealthCoverage);
+            EarlyLeavers.Append(date, state.EarlyLeavers);   // P5-C3
+            AttainmentTertiary.Append(date, state.AttainmentTertiary);
             Productivity.Append(date, state.Productivity);
         }
     }

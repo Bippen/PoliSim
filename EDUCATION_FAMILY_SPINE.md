@@ -1,5 +1,7 @@
 # The education family's data spine — P5-C3, the part that does not wait on Design (2026-09-05)
 
+> **BUILT 2026-09-06, `COMPLETED.md` §338, on Design's grammar (board 9c, inherited by shape).** The seeds below are the family's (`EducationFamily.Seed`), the §5 lines its couplings (`EducationFamily.TargetsFor`, every constant [AUTHORED-DRAFT]); PISA and the graduation rate are FETCHES with no score (ruled 2026-09-06) and their rows print the word; students per teacher is the card's key, not a page row (9c). The feedback proposed in §5 (attainment → the productivity trend) is NOT built.
+
 **What this is.** P5-C3 (education) is the second society-stat family in the catalog's order (`SOCIETY_STATS_CATALOG.md` § 2). Its build - seeded for six, coupled, displayed as instruments, family explained - waits, like health's, on the grammar D15 item 3 asks Design to draw (E-17 not pasted at this writing). This is the family's data spine: the seeds sourced for six where a series exists, absent and stated where it does not, and the coupling proposed. **Nothing is built from it.**
 
 **Fetched 2026-09-05** through the Eurostat JSON-stat API (`Invoke-RestMethod`, decoded by index) and the OECD SDMX API (CSV, parsed header-aware - the label columns carry commas). Every value is the latest observation the flow returned, sex total; the family's pass re-fetches and records digests.

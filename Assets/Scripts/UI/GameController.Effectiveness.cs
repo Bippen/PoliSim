@@ -91,6 +91,22 @@ namespace PoliSim.UI
             DrawCardKey("Wait · knee", h.HasWaits ? PlateFigure(s.WaitKneeDays, 0) + " days" : "absent", h.HasWaits ? "MEAN DAYS · OECD DF_WAITING" : "NO COMPARABLE SERIES PUBLISHED", key, unit);
         }
 
+        /// <summary>P5-C3 (9c's inheritance table: students/teacher is a CARD-ONLY key): the Education minister's card carries the two ratios and the leavers as figure + unit + source.</summary>
+        private void DrawEducationKeysOnCard()
+        {
+            EducationSeeds e = _playerCountry.Education;
+            if (e == null || !e.Seeded) { return; }
+            EconomyState s = _playerCountry.State;
+            GUIStyle head = DeskCaption(7.5f, PoliSimTheme.TextMuted);
+            GUIStyle key = DeskCaption(9f, PoliSimTheme.TextPrimary, true);
+            GUIStyle unit = DeskCaption(7f, PoliSimTheme.TextMuted);
+            GUILayout.Space(3f);
+            GUILayout.Label("EDUCATION · KEYS · FROM THE FAMILY PLATE", head);
+            DrawCardKey("Students per teacher · primary", PlateFigure(s.StudentsPerTeacherPrimary, 1), "ISCED 1 · OECD EAG UOE_NF_PERS_STR", key, unit);
+            DrawCardKey("Students per teacher · lower sec.", PlateFigure(s.StudentsPerTeacherLowerSecondary, 1), "ISCED 2 · OECD EAG", key, unit);
+            DrawCardKey("Early leavers", e.HasEarlyLeavers ? PlateFigure(s.EarlyLeavers, 1, " %") : "absent", e.HasEarlyLeavers ? "OF 18–24 · EUROSTAT edat_lfse_14" : "THE USA IS NOT IN EUROSTAT", key, unit);
+        }
+
         private void DrawCardKey(string name, string figure, string source, GUIStyle key, GUIStyle unit)
         {
             GUILayout.BeginHorizontal();

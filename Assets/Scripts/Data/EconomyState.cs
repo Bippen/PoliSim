@@ -148,6 +148,14 @@ namespace PoliSim.Data
         public float WaitCataractDays = -1f;    // mean days, specialist to treatment (OECD DF_WAITING CM131_138); absent for DEU FRA USA
         public float WaitKneeDays = -1f;        // mean days (CM8154); absent for DEU FRA USA
 
+        // ---- P5-C3, THE EDUCATION FAMILY (2026-09-06): the figures the family moves (EducationFamily.AdvanceYear); seeds on Country.Education.
+        public float AttainmentBelowUpperSecondary = -1f;   // % of 25-64, ISCED 0-2 (OECD EAG)
+        public float AttainmentUpperSecondary = -1f;        // ISCED 3-4
+        public float AttainmentTertiary = -1f;              // ISCED 5-8
+        public float EarlyLeavers = -1f;                    // % of 18-24 (Eurostat edat_lfse_14); the USA absent
+        public float StudentsPerTeacherPrimary = -1f;       // OECD EAG, ISCED 1 - the card's key
+        public float StudentsPerTeacherLowerSecondary = -1f; // ISCED 2
+
         public float HousingOverburden;
 
         /// <summary>ROUND 4 BATCH 3 (C1): homeownership rate, % of HOUSEHOLDS owning (OECD
