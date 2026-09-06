@@ -44,6 +44,11 @@ namespace PoliSim.EditorTools
             if (Mathf.Abs(ratioCut - allocCut * efficiencyCut) > Tolerance) { Debug.LogError($"EFFECTIVENESS: effectiveness {ratioCut:F4} is not allocation {allocCut:F4} x efficiency {efficiencyCut:F4}."); ok = false; }
             if (!(cut[1] > untouched[1]) || !(cut[2] > untouched[2]) || !(cut[0] > untouched[0])) { Debug.LogError($"EFFECTIVENESS: with the Health ministry at {ratioCut:F2} the waits ({cut[1]:F1} / {cut[2]:F1} d) and quality ({cut[0]:F1}) are not worse than untouched ({untouched[1]:F1} / {untouched[2]:F1} d, {untouched[0]:F1})."); ok = false; }
 
+            // (2b) the ruled distinction (2026-09-06): the cut stands, so in year 2 the FLOW is met again (the request re-based on the indexed line) while the LEVEL stays low.
+            if (!(LevelYear2 < 0.99f)) { Debug.LogError($"EFFECTIVENESS: after a standing cut the Health LEVEL in year 2 is {LevelYear2:F4}, not below 1 - the level should carry the shrunken ask."); ok = false; }
+            if (!(FlowYear2 > LevelYear2)) { Debug.LogError($"EFFECTIVENESS: in year 2 the flow {FlowYear2:F4} is not above the level {LevelYear2:F4} - the flow should read the year's ask as met while the level stays low."); ok = false; }
+            Debug.Log($"EFFECTIVENESS: the distinction - year 2 of the standing cut: flow (allocated / requested) {FlowYear2:F3}, level (spending per unit against its seed) {LevelYear2:F3}; the ask was met, the ask has shrunk.");
+
             // (3) a less efficient minister, the same money
             float[] slack = RunSweden(Years, cutShare: 0f, efficiencyOverride: 60f, out float ratioSlack, out _, out float efficiencySlack);
             if (Mathf.Abs(ratioSlack - efficiencySlack) > Tolerance || efficiencySlack > 0.61f) { Debug.LogError($"EFFECTIVENESS: with efficiency set to 60 the ratio is {ratioSlack:F4} (efficiency read {efficiencySlack:F4})."); ok = false; }
@@ -58,6 +63,8 @@ namespace PoliSim.EditorTools
         /// <summary>Sweden for <paramref name="years"/>; a nonzero <paramref name="cutShare"/> asks the decision for that percent on every health line each year (the
         /// player's figure through the mechanic's own path); a positive <paramref name="efficiencyOverride"/> sets the Health minister's efficiency before the run.
         /// Returns treatable mortality and the two waits at the end; the out values are year 1's Health record.</summary>
+        private static float FlowYear2, LevelYear2;   // the cut run's second year: the flow met, the level low (the ruled distinction)
+
         private static float[] RunSweden(int years, float cutShare, float efficiencyOverride, out float ratioYear1, out float allocYear1, out float efficiencyYear1)
         {
             SimulationRandom.Seed(777);
@@ -92,6 +99,7 @@ namespace PoliSim.EditorTools
                     {
                         ratioYear1 = e.Ratio; allocYear1 = e.AllocationRatio; efficiencyYear1 = e.Efficiency;
                     }
+                    if (year == 2 && se.Effectiveness.TryGetValue(CabinetPortfolio.HealthSocialAffairs, out PortfolioEffectiveness e2)) { FlowYear2 = e2.AllocationRatio; LevelYear2 = e2.LevelRatio; }
                 }
                 return new[] { se.State.TreatableMortality, se.State.WaitCataractDays, se.State.WaitKneeDays };
             }

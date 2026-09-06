@@ -17,6 +17,11 @@ namespace PoliSim.Data
         public float Requested;      // the indexed lines' sum this turn, nominal
         public float Allocated;      // the resolved lines' sum this turn, nominal
         public float Efficiency = 1f; // the minister's efficiency, 0..1 (CabinetMinister.Efficiency / 100)
+        /// <summary>Ruled 2026-09-06: THE LEVEL beside the flow - the portfolio's lines against their own seed anchors (SpendingLine.SeedAmount, the seed carried
+        /// forward by prices, drivers and the AI's real growth), i.e. spending per indexed unit against its seed. The FLOW (Ratio) says "met this year's
+        /// ask"; the LEVEL says "the ask has shrunk" - a cut that stands is met from its second year while its level stays low.</summary>
+        public float SeedAnchor;
+        public float LevelRatio => SeedAnchor > 0f ? Allocated / SeedAnchor : 1f;
         public bool Recorded;
 
         public float AllocationRatio => Requested > 0f ? Allocated / Requested : 1f;
@@ -106,6 +111,7 @@ namespace PoliSim.Data
                 if (!fresh.TryGetValue(p.Value, out PortfolioEffectiveness e)) { e = new PortfolioEffectiveness(); fresh[p.Value] = e; }
                 e.Requested += requestedByCategory != null && requestedByCategory.TryGetValue(line.Category, out float requested) ? requested : line.Amount;
                 e.Allocated += line.Amount;
+                e.SeedAnchor += line.SeedAmount;   // the level's denominator (ruled 2026-09-06)
                 e.Recorded = true;
             }
             foreach (KeyValuePair<CabinetPortfolio, PortfolioEffectiveness> kv in fresh) { kv.Value.Efficiency = EfficiencyOf(country, kv.Key); }
@@ -117,6 +123,16 @@ namespace PoliSim.Data
         {
             if (country.Effectiveness != null && country.Effectiveness.TryGetValue(portfolio, out PortfolioEffectiveness e) && e.Recorded) { return e.Ratio; }
             return EfficiencyOf(country, portfolio);
+        }
+
+        /// <summary>Ruled 2026-09-06: the portfolio's LEVEL - its lines' amounts against their seed anchors (spending per indexed unit against its own seed); 1 before
+        /// the first record. Read beside the flow ratio: the flow says whether this year's ask was met, the level whether the ask itself has shrunk or grown.</summary>
+        public static float LevelOf(Country country, CabinetPortfolio portfolio)
+        {
+            if (country.Effectiveness != null && country.Effectiveness.TryGetValue(portfolio, out PortfolioEffectiveness e) && e.Recorded) { return e.LevelRatio; }
+            float amount = 0f, anchor = 0f;
+            foreach (SpendingLine line in country.SpendingLines) { if (PortfolioOf(line.Category) == portfolio) { amount += line.Amount; anchor += line.SeedAmount; } }
+            return anchor > 0f ? amount / anchor : 1f;
         }
 
         /// <summary>The largest departure from unity across the cabinet - the arrow's scale on the card (9d: "against the largest departure in the Cabinet").</summary>

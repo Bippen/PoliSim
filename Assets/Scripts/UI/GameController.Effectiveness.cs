@@ -56,7 +56,12 @@ namespace PoliSim.UI
                 for (int i = 0; i < 3; i++) { float t = (i + 1) / 3f; PoliSimTheme.Rule(new Rect(endX + (below ? t * headSize : -t * headSize) - 0.5f, midY - headSize * (1f - t), 1f, headSize * 2f * (1f - t) + 1f), ratioInk); }
             }
             GUILayout.Label(allocation.ToString("0.000", CultureInfo.InvariantCulture) + " ALLOC ÷ REQ  ×  " + efficiency.ToString("0.00", CultureInfo.InvariantCulture) + " EFFICIENCY", decomposition);
-            GUILayout.Label("UNITY IS THE BASELINE · BELOW = UNDERFUNDED · THE MONEY IS ON THE BUDGET ROW", scope);
+            // Ruled 2026-09-06: the LEVEL beside the flow - spending per indexed unit against its own seed. The flow says "met this year's ask"; the level says
+            // whether the ask itself has shrunk (below 1, Bad), held, or grown (inkText - growth is not Good here either).
+            float level = Effectiveness.LevelOf(country, portfolio);
+            string levelWord = level < 0.995f ? "THE ASK HAS SHRUNK" : level > 1.005f ? "THE ASK HAS GROWN" : "THE ASK HOLDS ITS SEED";
+            GUILayout.Label("LEVEL ×" + level.ToString("0.00", CultureInfo.InvariantCulture) + " · SPENDING PER UNIT AGAINST ITS SEED · " + levelWord, DeskCaption(7.5f, level < 0.995f ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary));
+            GUILayout.Label("UNITY IS THE BASELINE · BELOW = UNDERFUNDED · THE MONEY IS ON THE BUDGET ROW · FLOW = THIS YEAR'S ASK MET · LEVEL = THE ASK AGAINST ITS SEED", scope);
         }
 
         /// <summary>The state line under the minister's name - the consequence in words the coupling table owns; text, not colour (9d).</summary>

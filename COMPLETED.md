@@ -23379,3 +23379,18 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `bar172_p5c7_RunSimulationBatch.log`, 20 of 20 simulation checks clean (`EffectivenessDiagnostic` the twentieth; `HealthFamilyDiagnostic` re-pointed at the decision path); `bar172_p5c7_RunAllBatch.log`, 32 of 32 clean on the committed tree. `traj_p5c7` (six dumps) and the six diffs; `p5c7_1280.log`, `p5c7_2560.log`.
 
+
+## 337. EFFECTIVENESS, RULED — THE FLOW KEPT, THE LEVEL BESIDE IT: allocated ÷ requested × efficiency says "met this year's ask"; spending per unit against its own seed says "the ask has shrunk"; both on the card, the distinction recorded and asserted (2026-09-06)
+
+**The ruling** (Elias, 2026-09-06): *"keep the flow ratio (allocated ÷ requested, minister-scaled) and add the level beside it on the card — spending per unit against its own seed — so the card shows both 'met this year's ask' and 'the ask has shrunk.' Record the distinction."*
+
+**The distinction, recorded.** P5-C7's effectiveness (§336) is a FLOW: this year's allocation against this year's request, where the request is P5-B2's indexed line - last year's allocation carried forward by prices and drivers. A cut that stands is therefore met from its second year: the request re-bases on the shrunken line, allocated equals requested, the flow reads ×1.00 × efficiency, and nothing on the card says the ask itself is smaller than it was. The LEVEL says that: the portfolio's lines against their own SEED ANCHORS (`SpendingLine.SeedAmount` - the seed carried forward by the same prices, drivers and, for an AI budget, real growth - so the ratio is spending per indexed unit against its seed). Flow ×1.00 with level ×0.93 reads "the ask was met; the ask has shrunk 7 % against its seed"; flow ×0.93 with level ×0.93 reads "the ask was cut this year". The quality key of the health family already carried the level through spending per age-cost unit (§333); the card now says it in the ministry's own terms.
+
+**Built.** `PortfolioEffectiveness.SeedAnchor` and `LevelRatio` (allocated ÷ the seed anchors), summed in `Effectiveness.Record` beside the flow; `Effectiveness.LevelOf` (the recorded level, or the lines' own ratio before the first record). On the card (`DrawEffectivenessReadout`) a line under the decomposition: *LEVEL ×r · SPENDING PER UNIT AGAINST ITS SEED · THE ASK HAS SHRUNK / HOLDS ITS SEED / HAS GROWN* - Bad below unity, inkText otherwise (growth is not Good here either); the scope line names both: *FLOW = THIS YEAR'S ASK MET · LEVEL = THE ASK AGAINST ITS SEED*.
+
+**Asserted** (`EffectivenessDiagnostic`, the ruled distinction as its own check): in the run that cuts the health lines through the decision each year, year 2 reads **flow 0.937** (the year's ask partly met - the −20 % ask lands as far as the seed range lets it, so a little is refused each year) against **level 0.869** (the lines against their seed anchors) - the flow above the level, as the distinction requires: this year's ask nearly met, the ask itself shrunk 13 % against its seed; asserted as `LevelYear2 < 0.99` and `FlowYear2 > LevelYear2`, both true.
+
+**On film:** the Cabinet page at 1280 and 2560 (`p5c7b_*`). 99 captured, 0 failed at both widths, no OVERFLOW, clean exits; the Interior card reads *EFFECTIVENESS ×0.70 · 1.000 ALLOC ÷ REQ × 0.70 EFFICIENCY · LEVEL ×1.00 · SPENDING PER UNIT AGAINST ITS SEED · THE ASK HOLDS ITS SEED* on the Year-0 save.
+
+**Bar:** `bar173_p5c7b_RunSimulationBatch.log`, 20 of 20 simulation checks clean; `bar173_p5c7b_RunAllBatch.log`, 32 of 32 clean; `p5c7b_1280.log`, `p5c7b_2560.log`.
+
