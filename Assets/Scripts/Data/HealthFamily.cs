@@ -171,7 +171,7 @@ namespace PoliSim.Data
         /// <summary>The quality anchor the target multiplies: the seed's treatable mortality carried along the sourced trend (seed × TrendIndex). The elasticities
         /// then read spending and effectiveness against THIS anchor, so the world's improvement and the player's are separate terms, as B7 separates the
         /// productivity trend from the cycle.</summary>
-        public static float TrendedAnchor(HealthSeeds s) => Mathf.Max(MinTreatableMortality, s.TreatableMortality * Mathf.Max(0.0001f, s.TrendIndex));   // §364: the anchor is bounded by the same floor as the metric, so once both sit on the guard the deviation is zero rather than the anchor's distance below it
+        public static float TrendedAnchor(HealthSeeds s) => Mathf.Max(MinTreatableMortality, s.TreatableMortality * Mathf.Max(0.0001f, s.TrendIndex));   // §364, kept by ruling as the S-37 class (§366): a guard on the metric needs its twin on the anchor - a bound is a direction as well as a number, and a floor on one side of a difference is an unbounded term on the other
 
         private static void Set(HealthSeeds s, float coverage, float coveragePublic, float ceiling, int coverageYear, float tm, int tmYear,
             float waitCataract, float waitKnee, int waitYear, float[] supporting, int supportingYear)

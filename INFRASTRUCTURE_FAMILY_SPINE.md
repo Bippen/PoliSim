@@ -60,6 +60,8 @@ The family reads the infrastructure spending line (`SpendingCategory.Infrastruct
 
 **REVERTED 2026-09-07 (midday), `COMPLETED.md` §362, as ruled.** The growth term is out; the saturating readout (§7) stays. Sheeted in its place: the LEVEL form - potential × (1 + λ × ln(quality ÷ seed)), a one-time factor that compounds nothing; λ to be read at Calderón & Servén 2004 before anything is typed. RF-2 (the AI's line scaling) opened on the readouts' fix track.
 
+**Read 2026-09-07 (`COMPLETED.md` §366):** their quality index is a principal component of telephone waiting time, power losses and the paved-road share; their coefficient (0.68 points of GROWTH per standard deviation of the index, Table 3 col. 6) is a growth-rate effect on a 1960–2000 panel, and their road-quality indicator alone is not significant (Table 4). No honest mapping from the WEF 1–7 survey score to their index exists, and a growth coefficient cannot be typed as a level - **the level form stays sheeted with that reason.** It is unblocked by a source that reads a survey quality score in output LEVELS, or by a road-length stock series (§5's absent row) their stock index does read.
+
 ## 5. Display rows, drafted (Sweden, Germany, France, Italy, Poland, USA)
 
 | row | figure | unit | source line (caption mono) | band | arrows to |
