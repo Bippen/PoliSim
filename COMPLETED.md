@@ -24676,3 +24676,24 @@ Verbatim: *"the US sequester at 0.5 % stays, tagged as a borrowed calibration to
 **The second seat, sheeted with its cost named.** Potential's labour input (`PotentialOutput.LabourInput`) reads the working-age cohort × participation × (1 − NAIRU); the second seat would read (1 − U) so that a supply rise reaches potential only as it is employed. Its cost: potential is its factors since P5-B7 with the seed potential captured as the seed's GDP (`Country.PotentialGdpSeed`, `PotentialLabourSeed`), and U ≠ NAIRU at every seed - so the change moves the level of potential for six at the seed and re-solves six seed potentials, which reopens B7's family (the premise measured before and after in `POTENTIAL_PREMISE.md`) and, through it, every family measured against a potential since. That is a ruling's size, not a session's, and it stays sheeted with the first seat's measurement as its case.
 
 **Bar:** `RunSimulationBatch` **36 of 36** (`bar232b_jobs2_RunSimulationBatch`, `JobsLagDiagnostic` enrolled) and `RunAllBatch` **33 of 33** (`bar232b_jobs2_RunAllBatch`) on the commit's tree; the red bar before it (`bar232_jobs`, 1 of 36 - the step's place) kept as the measurement it was.
+
+## 392. FT-5 RE-MEASURED BEHIND THE JOBS LAG — the sourced participation term wired through a probe switch, the income-tax multiplier and the unemployment response read against SELMA; nothing landed in the target (2026-09-07, night)
+
+**The ruling:** *"Then FT-5's re-measurement behind it."* FT-5 (§372, reverted §383) is the labour tax's response in participation - SELMA's Frisch elasticity 1 ÷ 8.61 - whose first build read the income-tax multiplier at 1.33 after four years (statutory basis) against SELMA's 0.17, because a participation rise was output the same year through potential with no jobs lag. §391 landed the jobs lag's first seat: a participation change is unemployment on impact, absorbed at 0.40 a year.
+
+**Measured** (`LaborTaxRemeasureProbe`, an Editor probe in no bar; the switch `MacroSystem.LaborTaxTermInTarget` is set for its runs only and is false in play and in every check - `LaborTaxParticipationDiagnostic` asserts the term inert with it false): Sweden the player, an income-tax cut of 5 points from turn 3 and a rise of 5, each against an untouched run, read at L, L+1, L+2 and L+4 on real GDP, unemployment and participation, with the term OUT (the jobs lag alone) and IN (FT-5 behind the jobs lag): 
+
+| run | horizon | real GDP against untouched | output multiplier (statutory) | unemployment against untouched | participation against untouched |
+|---|---|---|---|---|---|
+| term OUT, cut 5 points | L+1 / L+2 / L+4 | +0.35 / +0.47 / +0.54 % | 0.34 / 0.46 / 0.52 | −0.169 / −0.102 / −0.020 | +0.005 / +0.010 / +0.011 |
+| term OUT, rise 5 points | L+1 / L+2 / L+4 | −0.35 / −0.47 / −0.54 % | 0.33 / 0.45 / 0.52 | +0.169 / +0.100 / +0.020 | −0.005 / −0.011 / −0.012 |
+| **term IN, cut 5 points** | L+1 / L+2 / L+4 | +0.35 / +0.61 / **+1.07 %** | 0.34 / **0.59** / 1.03 | +0.078 / **+0.304** / +0.329 | +0.177 / +0.317 / +0.521 |
+| term IN, rise 5 points | L+1 / L+2 / L+4 | −0.35 / −0.63 / −1.12 % | 0.33 / 0.60 / 1.08 | −0.107 / −0.352 / −0.371 | −0.196 / −0.351 / −0.577 |
+
+(The statutory impulse is 1.04 % of GDP; the print's sign column is the probe's own formatting, the figures read as tabulated.)
+
+**Read against the anchors.** With the term OUT a tax cut lowers unemployment (Okun on the demand it adds) and reads a multiplier of 0.46 at two years - the tax channel as it stood. With the term IN, behind the jobs lag, the cut raises participation (+0.32 at two years, +0.52 at four - SELMA's Frisch elasticity), and **unemployment RISES: +0.30 at two years, +0.33 at four** - SELMA's sign, and two thirds of SELMA's +0.48. The output multiplier reads **0.59 at two years** against SELMA's 0.17: still too large, and for the reason §389 named - the new participants reach potential the same year through the labour input (the second seat), so output rises with the labour force while unemployment rises with it. The first seat closed the sign of the unemployment response; the size of the output response is the second seat's to close. Before the jobs lag (§372) the same term read 1.33 at four years with unemployment FALLING; the first seat alone has taken the output multiplier at four years from 1.33 to 1.03 and turned the unemployment response around.
+
+**Nothing landed.** The term stays out of the target; the second seat of FT-7 (potential reading employment) is the remaining piece between this reading and SELMA's, and it is sheeted at its cost (§391). FT-5's row carries the re-measurement.
+
+**Bar:** the probe is an Editor tool in no bar; `RunAllBatch` on the commit's tree - `RunAllBatch` **33 of 33** (`bar233_probes_RunAllBatch`, the probe compiled on it); the probe itself asserts nothing.
