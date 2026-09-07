@@ -24716,3 +24716,140 @@ Verbatim: *"the US sequester at 0.5 % stays, tagged as a borrowed calibration to
 **What it says.** **The NAIRU half is wider, not narrower, with the first seat alone - and it no longer moves the level of inflation.** An ageing country's participation drifts down for centuries; under the first seat that drift is a NEGATIVE supply excess every year - fewer job seekers, a lower unemployment rate - while the NAIRU is the seed's fixed figure and potential still counts the departing participants (the second seat), so unemployment sits a fifth to a quarter of a point below NAIRU in seven or eight years of ten, where §379 read a twentieth to an eighth. The Phillips curve reads it the same way (+0.05 to +0.08 a year at the slope) and the print exceeds expectations by a tenth a year for six - but §385's decaying expectations forget it toward the target, so inflation at year 300 stands at 1.8-2.6 % where it stood at 5-8 %. The drift §379 opened is closed at the level; the gap it measured is now a labour-market fact rather than an inflation fact: six states' unemployment reads below their natural rate as their workforces shrink. Its closing is the second seat's - potential reading employment, so a shrinking labour force is less output rather than less slack - and possibly a natural rate that reads the labour force, which SELMA's does not need because its participation is a choice, not a drift. It stays MEASURED, Elias's, with the second seat.
 
 **Bar:** the probe is an Editor tool in no bar; `RunAllBatch` on the commit's tree - `RunAllBatch` **33 of 33** (`bar234_close3_RunAllBatch`, the residue count's FT-7 reason updated to the second seat on it); `ResidueCheck` reads 0 open.
+
+## 394. FT-7, THE SECOND SEAT LANDED AS RULED — potential's labour input reads employment; six seed potentials re-solved from their factors; B7's family reopened and re-explained per country on the new potentials; the year-100 debt and GDP tables before and after (2026-09-08)
+
+**The ruling:** *"FT-7's second seat, ruled: build it. Potential's labour input reads employment rather than participation at NAIRU; six seed potentials re-solved; B7's family reopened and re-explained per country on the new potentials; the year-100 debt and GDP tables before and after as the headline. Its own BASELINE family — with the suite in budget, or not at all."*
+
+**Built.** `PotentialOutput.LabourInput` is the 20–64 cohort × participation × (1 − U), where it read (1 − NAIRU) since P5-B7 (§322): employment, not employment at the natural rate. **The seed potentials are re-solved** in `Country.CaptureStructuralBases`: `PotentialGdpSeed` = the seed's GDP × (1 − NAIRU) ÷ (1 − U at the seed) - the output the seed's factors would give at the natural rate - and the state's potential is set to it, superseding the typed figure (`WorldFactory`'s `potentialGdp`: the USA's 33 260 against a GDP of 29 000 was a 14.7 % gap that §127 measured as the identity's own fixed point; Sweden's 614 against 620 the other way; the other four were typed equal to GDP). The re-solved seed gaps are the unemployment gaps: USA **+0.52 %** (U 4.50 against a NAIRU of 4.00; the typed seed had stood 14.7 % above GDP), Sweden **+1.63 %** (U 8.00 against 6.50; typed −0.93 %), Germany +0.21 %, France −0.22 %, Italy −0.22 %, Poland +0.42 % (typed equal to GDP). `PotentialPremiseDump` reads the same labour input (it calls `PotentialOutput.LabourInput`) and its header says so; `PotentialOutputDiagnostic`'s identity (seed × labour ratio × trend compound) holds unchanged, since it reads the same function.
+
+**What it does to the mechanism.** A rise in participation is unemployment on impact (the first seat, §391) and now reaches potential only as those participants are employed - the absorption at 0.40 a year is also the rate at which potential takes them up. A recession that raises unemployment lowers potential with it (the labour input falls), so the growth gap Okun reads closes faster and the identity's attractor moves with the cycle - hysteresis in the plain sense, and the reason the suite had to stay in budget: the equivalence bar, the Ramey band and the impact ratchet all read this.
+
+**Asserted** (`PotentialEmploymentDiagnostic`, the simulation bar): the six seed potentials equal GDP × (1 − NAIRU) ÷ (1 − U) to 1e-5 and the state reads them; the labour input falls by exactly (100 − U − 5) ÷ (100 − U) for +5 points of unemployment and rises for −2, for six; Sweden with participation pushed +2 at the top of turn 3: potential **+0.00 %** against the untouched run at the boundary (the labour input +0.00 % - the new participants are unemployed on impact, the first seat's doing) and **+1.02 % nine years on** as the excess is employed; −2: +0.00 % on impact, **−1.00 %** nine years on. Where the natural-rate input moved potential by the full participation share (about 3 %) the same year, this seat moves it by nothing until the jobs exist. PASS. The first bar of this tree went red on the diagnostic's own ordering assertion (it expected the two signs to order on impact; both read zero to second order, which is the mechanism working), corrected before any commit.
+
+**The headline - year 100, before (`p5jobs2`, the tree with the first seat) and after (`p5seat2`):** 
+
+| country | seed gap, typed → re-solved | debt ÷ GDP at year 100: before → after | real GDP at year 100 against the tree before | unemployment at year 100 |
+|---|---|---|---|---|
+| USA | +14.7 % → **+0.5 %** | 141 % → 143 % | **−11.7 %** | 3.49 → 3.41 |
+| Sweden | −0.9 % → **+1.6 %** | 28 % → 29 % | **+4.0 %** | 6.37 → 6.27 |
+| Germany | 0 → +0.2 % | 37 % → 37 % | +0.5 % | 3.31 → 3.29 |
+| France | 0 → −0.2 % | 43 % → 38 % | −0.4 % | 7.48 → 7.48 |
+| Italy | 0 → −0.2 % | 53 % → 38 % | −0.3 % | 7.88 → 7.87 |
+| Poland | 0 → +0.4 % | 16 % → 17 % | +1.0 % | 4.57 → 4.60 |
+
+**The headline's first line is the United States.** Its typed potential (33 260 against a GDP of 29 000) had pulled the identity's output up toward a level its own demand does not produce - §127's fixed point, a 14.5 % gap the identity settled into. With the seed re-solved to the factors, that pull is gone and the identity finds its own level at once: **year 1 reads GDP 26 874 (−7.3 %) and unemployment 8.43 % (from 4.50)**, recovering to the seed's output by year 9 and to 3.85 % unemployment by year 10 - a seed recession where the tree before read −0.3 % and 5.03 %. The level stays 11-13 % lower for the century and beyond (year 500 −13.0 %). That is the identity's missing demand made visible, not the seat's doing, and it is T-3's question (the government-consumption block) in the plainest form it has yet taken; the record says so rather than tuning the seed back. Sweden runs the other way (its typed potential sat below GDP): +4.0 % at year 100, +5.0 % at year 500. The other four move within a per cent. The debt ratios move with the finance ministry's response to the new balances: Italy 53 → 38 %, France 43 → 38 % (both had a re-solved seed gap below zero and a ministry reading a smaller balance shortfall); the USA within 2 points.
+
+**B7's family, reopened and re-explained per country** (`potential03`, `POTENTIAL_PREMISE.md` regenerated; the file as it stood after B7 - `potential02` - is in this record's annex §394a verbatim): at turn 100, potential ÷ seed against labour × productivity ÷ seed (B7's two columns), `potential02` → `potential03`: USA 4.476 / 4.759 → **4.617 / 5.078**; Sweden 2.655 / 2.765 → 2.735 / 3.238; Germany 1.902 / 2.020 → 1.875 / 2.227; France 1.281 / 1.311 → 1.248 / 1.429; Italy 0.691 / 0.697 → 0.634 / 0.742; Poland 10.39 / 10.73 → 10.562 / 12.896. The labour input ÷ seed at turn 100: USA 0.903 → 0.931, Sweden 0.963 → 0.984, Germany 0.746 → 0.749, France 0.767 → 0.755, Italy 0.615 → 0.592, Poland 0.530 → 0.543 - employment where B7 read employment at the natural rate, within three points of it everywhere but Italy and the USA (the NAIRU gap, §393). **Re-explained:** potential still carries exactly its factors (the diagnostic's identity holds), and its level at year 100 is within 3 % of B7's for five (Italy −8 %, the country whose employment fell furthest below its natural-rate reading). What widened is the gap to the Productivity STAT: the stat is output per employed worker and includes the cycle, the index is the trend alone - so where the six run below their natural rates (§393) output per worker runs above trend and the stat outgrows the index; B7 read potential 3-6 % behind labour × productivity at year 100, this tree reads it 9-18 % behind. The premise B7 measured - potential carrying output no worker produces - is closed the other way: potential now carries only the workers it has, and the cyclical part of what they produce is the stat's, not potential's.
+
+**The trajectory family** (`traj_p5seat2_*` against `traj_p5jobs2_*`): all six on the AI rule. The USA's seed recession above; elsewhere unemployment moves by hundredths and consumption's share of GDP not at all; inflation at the targets. 5 of 61 fields byte-identical.
+
+**The harness** (`resp_seat2.log`): **in budget, and the reason the ruling said "or not at all":** the spending dials read 0.512 / 0.845 / 0.529-0.697 quasi and **0.512 / 0.834 / 0.886** cumulative at L / L+1 / L+4 (the +2 % dial; 0.749-0.816 at L+1 and 0.826 at L+4 on the ±10 % dials) - inside Ramey's 0.6-1.0 on every dial, 3 of 3; **the impact ratchet 0.507 held at 0.509**, the closest any tree has come to it, and not lowered. The income-tax dial reads 0.339 / 0.556 / 0.24-0.30 (statutory), the asymmetry of §391 gone at four years (rise 0.24, cut 0.24). The equivalence bar 117 of 117 within 3 %.
+
+**Bar:** `RunSimulationBatch` **37 of 37** (`bar235b_seat2_RunSimulationBatch`, `PotentialEmploymentDiagnostic` enrolled beside B7's `PotentialOutputDiagnostic`, which holds unchanged) and `RunAllBatch` **33 of 33** (`bar235b_seat2_RunAllBatch`) on the commit's tree; the dump, the harness, the premise and the debt probe are `chain235`'s, on a tree differing only in the diagnostic's assertion (Editor code none of them reads). `bar235_seat2` (1 of 37, the assertion) kept as the measurement it was.
+
+### 394a. `POTENTIAL_PREMISE.md` as it stood after P5-B7 (`potential02`, 2026-09-05), verbatim, before FT-7's second seat re-solved the seed potentials and made the labour input employment (2026-09-08). Headings demoted one level; no other byte changed.
+
+## The premise of potential output - measured, no player, 100 turns (P5-B7)
+
+**What set potential growth before P5-B7 (`MacroSystem.ApplySectorGrowthEffect`, measured 2026-09-05 as `potential01`):** `Country.PotentialGrowthRate` = clamp(`Country.BasePotentialGrowthRate` + the infrastructure adjustment + the sector adjustment, 0, 8) - a seeded trend (USA 2.0, Sweden 1.5, Germany 0.8, France 0.8, Italy 0.8, Poland 3.5 % a year) plus two ceilinged policy adjustments, read as trend labour productivity (Q3) and assigned to potential 1:1; `MacroSystem.ApplyPotentialGdpGrowthDaily` compounded `EconomyState.PotentialGDP` at that rate every day. **What it ignored:** the labour input - the 20–64 cohort, participation and the natural rate entered potential nowhere, so a country whose working-age population halved kept its potential output and, since P5-B3, lost its tax base against it. **After P5-B7 (`PotentialOutput`):** potential is its factors - the seed's potential × the labour input's ratio to the seed × a productivity index compounding at the ledger's trend, the trend re-seeded from the sourced series (Eurostat nama_10_lp_ulc, BLS PRS85006092; USA 1.613, Sweden 1.019, Germany 0.938, France 0.513, Italy 0.119, Poland 3.019) - and `Country.PotentialGrowthRate` is derived from them once a turn. The table below is whichever tree ran it; the two runs are kept in `COMPLETED.md` §322 side by side.
+
+**Labour input at the natural rate** = the 20–64 cohort (`SpendingDrivers.Level`, WorkingAge20To64) × `EconomyState.LaborForceParticipationRate` / 100 × (1 − `Country.NaturalUnemploymentRate` / 100). **Labour × productivity** = that input times `EconomyState.Productivity` (the stat, which compounds at the ledger's trend plus the hoarding cycle), both against their seeds - what potential would read if it were built from its factors.
+
+### USA - base trend 1.613 % a year; seed potential 33260, GDP 29000, labour input 117.194 M at the natural rate, productivity 90.83
+
+| turn | potential growth (%) | potential ÷ seed | GDP ÷ seed | 20–64 cohort ÷ seed | participation (%) | labour input ÷ seed | productivity ÷ seed | labour × productivity ÷ seed | debt (% GDP) |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1.722 | 1.017 | 0.998 | 1.002 | 61.859 | 1.001 | 1.014 | 1.015 | 127.676 |
+| 10 | 1.705 | 1.188 | 1.148 | 1.021 | 61.336 | 1.012 | 1.159 | 1.173 | 133.153 |
+| 20 | 1.628 | 1.418 | 1.371 | 1.044 | 61.041 | 1.029 | 1.377 | 1.417 | 131.474 |
+| 30 | 1.369 | 1.648 | 1.572 | 1.045 | 60.388 | 1.02 | 1.627 | 1.659 | 136.152 |
+| 40 | 1.145 | 1.885 | 1.776 | 1.034 | 59.489 | 0.993 | 1.94 | 1.927 | 136.81 |
+| 50 | 1.247 | 2.123 | 2.03 | 1.013 | 58.274 | 0.954 | 2.302 | 2.195 | 136.703 |
+| 60 | 1.462 | 2.423 | 2.333 | 1 | 57.363 | 0.927 | 2.711 | 2.513 | 135.821 |
+| 70 | 1.428 | 2.797 | 2.677 | 0.991 | 56.963 | 0.912 | 3.181 | 2.901 | 136.269 |
+| 80 | 1.596 | 3.248 | 3.063 | 0.985 | 56.681 | 0.902 | 3.735 | 3.369 | 137.993 |
+| 90 | 1.609 | 3.812 | 3.61 | 0.985 | 56.683 | 0.902 | 4.437 | 4.002 | 133.382 |
+| 100 | 1.626 | 4.476 | 4.221 | 0.985 | 56.706 | 0.903 | 5.273 | 4.759 | 129.828 |
+
+### Sweden - base trend 1.019 % a year; seed potential 614.25, GDP 620, labour input 3.677 M at the natural rate, productivity 89.95
+
+| turn | potential growth (%) | potential ÷ seed | GDP ÷ seed | 20–64 cohort ÷ seed | participation (%) | labour input ÷ seed | productivity ÷ seed | labour × productivity ÷ seed | debt (% GDP) |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 1.541 | 1.015 | 0.98 | 1.006 | 65.258 | 1.005 | 1.004 | 1.009 | 36.297 |
+| 10 | 1.418 | 1.152 | 1.105 | 1.05 | 64.752 | 1.041 | 1.1 | 1.145 | 33.02 |
+| 20 | 1.272 | 1.316 | 1.264 | 1.096 | 64.044 | 1.075 | 1.215 | 1.306 | 34.977 |
+| 30 | 0.58 | 1.45 | 1.419 | 1.108 | 63.071 | 1.07 | 1.349 | 1.443 | 36.789 |
+| 40 | 1.057 | 1.584 | 1.538 | 1.122 | 61.463 | 1.056 | 1.499 | 1.582 | 34.787 |
+| 50 | 0.666 | 1.728 | 1.704 | 1.129 | 60.218 | 1.041 | 1.665 | 1.733 | 32.226 |
+| 60 | 0.709 | 1.849 | 1.818 | 1.115 | 58.948 | 1.006 | 1.856 | 1.868 | 32.636 |
+| 70 | 0.789 | 1.998 | 1.955 | 1.108 | 57.892 | 0.982 | 2.08 | 2.044 | 31.564 |
+| 80 | 0.923 | 2.176 | 2.105 | 1.106 | 57.081 | 0.967 | 2.312 | 2.236 | 34.461 |
+| 90 | 0.996 | 2.401 | 2.269 | 1.106 | 56.916 | 0.964 | 2.575 | 2.483 | 32.51 |
+| 100 | 1 | 2.655 | 2.576 | 1.106 | 56.866 | 0.963 | 2.871 | 2.765 | 32.418 |
+
+### Germany - base trend 0.938 % a year; seed potential 4700, GDP 4700, labour input 28.608 M at the natural rate, productivity 94.54
+
+| turn | potential growth (%) | potential ÷ seed | GDP ÷ seed | 20–64 cohort ÷ seed | participation (%) | labour input ÷ seed | productivity ÷ seed | labour × productivity ÷ seed | debt (% GDP) |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0.172 | 1.002 | 1.004 | 0.993 | 60.776 | 0.992 | 1.009 | 1.001 | 63.809 |
+| 10 | 0.228 | 0.993 | 0.999 | 0.929 | 59.156 | 0.904 | 1.102 | 0.997 | 66.445 |
+| 20 | 0.692 | 1.068 | 1.058 | 0.937 | 57.448 | 0.885 | 1.207 | 1.069 | 67.974 |
+| 30 | 0.407 | 1.132 | 1.139 | 0.914 | 56.854 | 0.855 | 1.333 | 1.14 | 66.088 |
+| 40 | 0.643 | 1.201 | 1.161 | 0.894 | 56.14 | 0.826 | 1.467 | 1.211 | 67.345 |
+| 50 | 0.797 | 1.299 | 1.276 | 0.893 | 55.399 | 0.814 | 1.635 | 1.33 | 68.08 |
+| 60 | 0.564 | 1.389 | 1.367 | 0.879 | 54.788 | 0.792 | 1.803 | 1.428 | 70.248 |
+| 70 | 0.576 | 1.471 | 1.447 | 0.86 | 54.005 | 0.764 | 1.998 | 1.527 | 67.343 |
+| 80 | 0.892 | 1.587 | 1.531 | 0.856 | 53.336 | 0.751 | 2.225 | 1.671 | 64.981 |
+| 90 | 0.909 | 1.733 | 1.687 | 0.856 | 53.048 | 0.747 | 2.46 | 1.838 | 66.896 |
+| 100 | 0.927 | 1.902 | 1.857 | 0.856 | 52.998 | 0.746 | 2.708 | 2.02 | 66.116 |
+
+### France - base trend 0.513 % a year; seed potential 3200, GDP 3200, labour input 19.581 M at the natural rate, productivity 86.32
+
+| turn | potential growth (%) | potential ÷ seed | GDP ÷ seed | 20–64 cohort ÷ seed | participation (%) | labour input ÷ seed | productivity ÷ seed | labour × productivity ÷ seed | debt (% GDP) |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 0.567 | 1.006 | 1.018 | 1 | 55.653 | 1.001 | 1.006 | 1.006 | 116.473 |
+| 10 | 0.058 | 1.026 | 1.027 | 0.993 | 54.605 | 0.974 | 1.06 | 1.033 | 126.755 |
+| 20 | -0.042 | 1.028 | 1.042 | 0.973 | 53.068 | 0.928 | 1.114 | 1.034 | 130.8 |
+| 30 | 0.192 | 1.041 | 1.047 | 0.956 | 51.918 | 0.892 | 1.181 | 1.054 | 130.182 |
+| 40 | 0.18 | 1.073 | 1.071 | 0.949 | 51.215 | 0.874 | 1.245 | 1.088 | 127.17 |
+| 50 | -0.104 | 1.074 | 1.086 | 0.92 | 50.241 | 0.831 | 1.315 | 1.093 | 131.532 |
+| 60 | 0.326 | 1.087 | 1.078 | 0.902 | 49.261 | 0.799 | 1.388 | 1.109 | 132.047 |
+| 70 | 0.255 | 1.118 | 1.106 | 0.892 | 48.693 | 0.781 | 1.472 | 1.149 | 131.269 |
+| 80 | 0.47 | 1.158 | 1.142 | 0.885 | 48.241 | 0.768 | 1.541 | 1.184 | 131.386 |
+| 90 | 0.5 | 1.218 | 1.209 | 0.885 | 48.194 | 0.767 | 1.628 | 1.249 | 129.147 |
+| 100 | 0.512 | 1.281 | 1.259 | 0.885 | 48.158 | 0.767 | 1.711 | 1.311 | 131.679 |
+
+### Italy - base trend 0.119 % a year; seed potential 2300, GDP 2300, labour input 15.38 M at the natural rate, productivity 78.2
+
+| turn | potential growth (%) | potential ÷ seed | GDP ÷ seed | 20–64 cohort ÷ seed | participation (%) | labour input ÷ seed | productivity ÷ seed | labour × productivity ÷ seed | debt (% GDP) |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | -0.272 | 0.997 | 1.004 | 0.996 | 48.773 | 0.996 | 1.002 | 0.998 | 137.815 |
+| 10 | -1.095 | 0.922 | 0.913 | 0.941 | 47.244 | 0.911 | 1.006 | 0.917 | 150.56 |
+| 20 | -0.751 | 0.825 | 0.801 | 0.873 | 45.067 | 0.806 | 1.027 | 0.828 | 156.978 |
+| 30 | -0.385 | 0.781 | 0.76 | 0.843 | 43.671 | 0.754 | 1.049 | 0.791 | 154.721 |
+| 40 | -0.327 | 0.761 | 0.746 | 0.818 | 43.315 | 0.726 | 1.061 | 0.77 | 149.961 |
+| 50 | -0.718 | 0.719 | 0.697 | 0.771 | 42.903 | 0.678 | 1.074 | 0.728 | 154.637 |
+| 60 | -0.317 | 0.681 | 0.649 | 0.738 | 41.941 | 0.634 | 1.081 | 0.686 | 159.171 |
+| 70 | -0.073 | 0.672 | 0.641 | 0.727 | 41.499 | 0.619 | 1.091 | 0.675 | 155.984 |
+| 80 | 0.146 | 0.674 | 0.637 | 0.722 | 41.489 | 0.614 | 1.101 | 0.676 | 156.44 |
+| 90 | 0.095 | 0.683 | 0.644 | 0.722 | 41.512 | 0.614 | 1.118 | 0.687 | 157.15 |
+| 100 | 0.127 | 0.691 | 0.654 | 0.722 | 41.531 | 0.615 | 1.133 | 0.697 | 155.795 |
+
+### Poland - base trend 3.019 % a year; seed potential 840, GDP 840, labour input 11.576 M at the natural rate, productivity 54.09
+
+| turn | potential growth (%) | potential ÷ seed | GDP ÷ seed | 20–64 cohort ÷ seed | participation (%) | labour input ÷ seed | productivity ÷ seed | labour × productivity ÷ seed | debt (% GDP) |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | 2.105 | 1.021 | 0.984 | 0.992 | 57.136 | 0.991 | 1.029 | 1.019 | 66.287 |
+| 10 | 2.155 | 1.251 | 1.161 | 0.952 | 55.838 | 0.929 | 1.313 | 1.22 | 70.322 |
+| 20 | 1.171 | 1.471 | 1.391 | 0.871 | 53.291 | 0.811 | 1.782 | 1.445 | 71.782 |
+| 30 | 1.146 | 1.624 | 1.545 | 0.765 | 49.711 | 0.665 | 2.422 | 1.611 | 73.396 |
+| 40 | 2.503 | 1.962 | 1.82 | 0.724 | 47.166 | 0.597 | 3.264 | 1.947 | 71.493 |
+| 50 | 2.367 | 2.525 | 2.347 | 0.698 | 46.688 | 0.57 | 4.413 | 2.516 | 66.753 |
+| 60 | 2.516 | 3.22 | 2.964 | 0.662 | 46.622 | 0.54 | 5.998 | 3.238 | 65.764 |
+| 70 | 2.991 | 4.251 | 3.882 | 0.653 | 46.356 | 0.529 | 8.049 | 4.26 | 66.388 |
+| 80 | 3.019 | 5.735 | 5.196 | 0.654 | 46.391 | 0.53 | 10.969 | 5.817 | 62.948 |
+| 90 | 3.003 | 7.717 | 6.863 | 0.654 | 46.354 | 0.53 | 14.908 | 7.9 | 64.189 |
+| 100 | 3.023 | 10.39 | 9.367 | 0.654 | 46.343 | 0.53 | 20.261 | 10.734 | 63.593 |
+
+**Reading it:** where `potential ÷ seed` runs ahead of `labour × productivity ÷ seed`, potential is carrying output that no worker produces; the debt column is the fiscal book paying for the difference since P5-B3 put the tax bases on the wage bill.

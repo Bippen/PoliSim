@@ -21,12 +21,15 @@ namespace PoliSim.Data
     /// </summary>
     public static class PotentialOutput
     {
-        /// <summary>Employment at the natural rate: the 20–64 cohort × participation × (1 − NAIRU). Units are irrelevant - only ratios are used.</summary>
+        /// <summary>FT-7, the second seat (2026-09-08, §394): EMPLOYMENT - the 20–64 cohort × participation × (1 − the unemployment rate). Before this seat the
+        /// input read (1 − NAIRU), employment at the natural rate, so a rise in participation was potential the same year whatever happened to the jobs
+        /// (§372, §389); now a supply shock reaches potential only as it is employed - the first seat (§391) puts it in unemployment on impact and absorbs it
+        /// at SELMA's rate, and this seat lets potential follow the absorption. Units are irrelevant - only ratios are used.</summary>
         public static float LabourInput(Country country)
         {
             return SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, country)
                    * Mathf.Clamp(country.State.LaborForceParticipationRate, 0f, 100f) / 100f
-                   * Mathf.Clamp(100f - country.NaturalUnemploymentRate, 0f, 100f) / 100f;
+                   * Mathf.Clamp(100f - country.State.Unemployment, 0f, 100f) / 100f;
         }
 
         /// <summary>True when the country carries the seeds this potential is built on (Country.CaptureStructuralBases wrote them).</summary>

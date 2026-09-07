@@ -176,7 +176,11 @@ namespace PoliSim.Data
         {
             foreach (SpendingLine line in SpendingLines) { line.DriverReference = SpendingDrivers.Level(SpendingDrivers.Of(line.Category), this); }
             RevenueBaseSeedGdp = State.GDP;   // P5-B3
-            PotentialGdpSeed = State.PotentialGDP;   // P5-B7: potential is its factors from here on
+            // FT-7, the second seat (2026-09-08, §394): the seed potential is RE-SOLVED from the seed's own factors - the output the seed's employment would
+            // give at the natural rate, GDP × (1 − NAIRU) ÷ (1 − U at the seed) - and supersedes the typed figure (WorldFactory's potentialGdp: the USA's
+            // 33 260 against a GDP of 29 000 was a 14.7 % gap no seed could close, §127). Potential is its factors from here on (P5-B7), from the seed too.
+            PotentialGdpSeed = State.GDP * Math.Min(100f, Math.Max(1f, 100f - NaturalUnemploymentRate)) / Math.Min(100f, Math.Max(1f, 100f - State.Unemployment));
+            State.PotentialGDP = PotentialGdpSeed;
             PotentialLabourSeed = PotentialOutput.LabourInput(this);
             PotentialProductivityIndex = 1f;
             PotentialLabourAtLastTurn = PotentialLabourSeed;

@@ -28,7 +28,7 @@ namespace PoliSim.EditorTools
         {
             CheckExit.ArmLogFold();
             var sb = new StringBuilder();
-            sb.Append("# The premise of potential output - measured, no player, 100 turns (P5-B7)\n\n");
+            sb.Append("# The premise of potential output - measured, no player, 100 turns (P5-B7; re-measured after FT-7's second seat, §394 - the labour input is employment, the seed potentials re-solved)\n\n");
             sb.Append("**What set potential growth before P5-B7 (`MacroSystem.ApplySectorGrowthEffect`, measured 2026-09-05 as `potential01`):** `Country.PotentialGrowthRate` = clamp(`Country.BasePotentialGrowthRate` + the infrastructure adjustment + the sector adjustment, 0, 8) - a seeded trend (USA 2.0, Sweden 1.5, Germany 0.8, France 0.8, Italy 0.8, Poland 3.5 % a year) plus two ceilinged policy adjustments, read as trend labour productivity (Q3) and assigned to potential 1:1; `MacroSystem.ApplyPotentialGdpGrowthDaily` compounded `EconomyState.PotentialGDP` at that rate every day. **What it ignored:** the labour input - the 20–64 cohort, participation and the natural rate entered potential nowhere, so a country whose working-age population halved kept its potential output and, since P5-B3, lost its tax base against it. **After P5-B7 (`PotentialOutput`):** potential is its factors - the seed's potential × the labour input's ratio to the seed × a productivity index compounding at the ledger's trend, the trend re-seeded from the sourced series (Eurostat nama_10_lp_ulc, BLS PRS85006092; USA 1.613, Sweden 1.019, Germany 0.938, France 0.513, Italy 0.119, Poland 3.019) - and `Country.PotentialGrowthRate` is derived from them once a turn. The table below is whichever tree ran it; the two runs are kept in `COMPLETED.md` §322 side by side.\n\n");
             sb.Append("**Labour input at the natural rate** = the 20–64 cohort (`SpendingDrivers.Level`, WorkingAge20To64) × `EconomyState.LaborForceParticipationRate` / 100 × (1 − `Country.NaturalUnemploymentRate` / 100). **Labour × productivity** = that input times `EconomyState.Productivity` (the stat, which compounds at the ledger's trend plus the hoarding cycle), both against their seeds - what potential would read if it were built from its factors.\n\n");
 
@@ -70,7 +70,7 @@ namespace PoliSim.EditorTools
 
             foreach (Country c in world.Countries)
             {
-                sb.Append($"## {c.Id} - base trend {Inv(c.BasePotentialGrowthRate)} % a year; seed potential {Inv(seedPot[c.Id])}, GDP {Inv(seedGdp[c.Id])}, labour input {Inv(seedLab[c.Id])} M at the natural rate, productivity {Inv(seedProd[c.Id])}\n\n");
+                sb.Append($"## {c.Id} - base trend {Inv(c.BasePotentialGrowthRate)} % a year; seed potential {Inv(seedPot[c.Id])}, GDP {Inv(seedGdp[c.Id])}, labour input {Inv(seedLab[c.Id])} M employed, productivity {Inv(seedProd[c.Id])}\n\n");
                 sb.Append("| turn | potential growth (%) | potential ÷ seed | GDP ÷ seed | 20–64 cohort ÷ seed | participation (%) | labour input ÷ seed | productivity ÷ seed | labour × productivity ÷ seed | debt (% GDP) |\n|---|---|---|---|---|---|---|---|---|---|\n");
                 foreach (string l in lines[c.Id]) { sb.Append(l).Append('\n'); }
                 sb.Append('\n');
@@ -83,8 +83,7 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(0);
         }
 
-        /// <summary>The labour input at the natural rate: the 20–64 cohort × participation × (1 − NAIRU).</summary>
-        private static float Labour(Country c)
-            => SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, c) * Mathf.Clamp(c.State.LaborForceParticipationRate, 0f, 100f) / 100f * Mathf.Clamp(100f - c.NaturalUnemploymentRate, 0f, 100f) / 100f;
+        /// <summary>The labour input as the model reads it since FT-7's second seat (§394): employment - the 20–64 cohort × participation × (1 − U). Before §394 this helper read (1 − NAIRU).</summary>
+        private static float Labour(Country c) => PotentialOutput.LabourInput(c);
     }
 }
