@@ -16,6 +16,9 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class DebtPathProbe
     {
+        /// <summary>§388: the line's rate, or 0 where the country does not levy it.</summary>
+        private static float Rate(Country c, TaxType type) { foreach (TaxLine t in c.TaxLines) { if (t.Type == type && t.IsImplemented) { return t.Rate; } } return 0f; }
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -32,7 +35,7 @@ namespace PoliSim.EditorTools
                 var seedGdp = new Dictionary<CountryId, float>();
                 foreach (Country c in world.Countries) { seedGdp[c.Id] = c.State.GDP; }
                 var sb = new StringBuilder();
-                sb.Append("DEBTPATH: year  country   lines/nominalGDP  balance/nominalGDP  debt/nominalGDP  realGDP/seed  unemployment\n");
+                sb.Append("DEBTPATH: year  country   lines/nominalGDP  balance/nominalGDP  debt/nominalGDP  realGDP/seed  unemployment  incomeTax%  VAT%\n");
                 for (int year = 1; year <= 100; year++)
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
@@ -43,7 +46,7 @@ namespace PoliSim.EditorTools
                         float ngdp = Mathf.Max(0.0001f, c.State.NominalGdp);
                         float lines = 0f;
                         foreach (SpendingLine line in c.SpendingLines) { lines += line.Amount; }
-                        sb.Append($"DEBTPATH: {year,4}  {c.Id,-8}  {lines / ngdp,16:F4}  {c.State.Budget / ngdp,18:F4}  {c.State.GovernmentDebt / ngdp,15:F4}  {c.State.GDP / Mathf.Max(0.0001f, seedGdp[c.Id]),12:F3}  {c.State.Unemployment,12:F2}\n");
+                        sb.Append($"DEBTPATH: {year,4}  {c.Id,-8}  {lines / ngdp,16:F4}  {c.State.Budget / ngdp,18:F4}  {c.State.GovernmentDebt / ngdp,15:F4}  {c.State.GDP / Mathf.Max(0.0001f, seedGdp[c.Id]),12:F3}  {c.State.Unemployment,12:F2}  {Rate(c, TaxType.IncomeTax),10:F2}  {Rate(c, TaxType.VAT),5:F2}\n");
                     }
                 }
                 Debug.Log(sb.ToString());

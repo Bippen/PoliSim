@@ -52,6 +52,7 @@ namespace PoliSim.EditorTools
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(world);
+                sim.AiFinanceMinistryEnabled = false;   // §388: this check measures its own rule alone - the ministry's cuts would move the lines it reads
                 sim.PlayerCountryId = player;
                 Country c = world.GetCountry(player);
                 float seedRate = c.LaborTaxRateSeed;

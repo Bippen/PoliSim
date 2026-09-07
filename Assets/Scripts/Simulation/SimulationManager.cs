@@ -631,6 +631,13 @@ namespace PoliSim.Simulation
         /// </summary>
         /// <remarks>[AUTHORED-DRAFT] - the paragraph above gives the reasoning (entitlement reform is politically harder than discretionary change, so the range is narrower); how much narrower is a game figure.</remarks>
         private const float MandatoryPercentChangeRange = 15f;
+        /// <summary>DERIVED - the same constants under a public name: the AI finance ministry (§388) sizes its cuts against the ranges the player's sliders are clamped to, so one constant rules both.</summary>
+        public const float MandatoryPercentChangeRangeForRules = MandatoryPercentChangeRange;
+        /// <summary>DERIVED - see MandatoryPercentChangeRangeForRules.</summary>
+        public const float DiscretionaryPercentChangeRangeForRules = DiscretionaryPercentChangeRange;
+        /// <summary>§388: the AI finance ministry acts for every country the player does not govern. A diagnostic that measures the indexation rule alone
+        /// (LineIndexationDiagnostic, SpendingIndexationDiagnostic) or a tax term's inertness (LaborTaxParticipationDiagnostic) sets this false; play never does.</summary>
+        public bool AiFinanceMinistryEnabled = true;
 
         /// <summary>
         /// Hard floor/ceiling on every SpendingLine's Amount, expressed as a multiple of that line's
@@ -2502,7 +2509,20 @@ namespace PoliSim.Simulation
                     ? d
                     : PolicyDecision.None();
 
+                // THE AI FINANCE MINISTRY (2026-09-07, §387 the page, §388 the build): a country the player does not govern answers last year's closed
+                // balance and its debt ratio with the player's own levers under its sourced rule (AiFinanceMinistry) - written into the decision it was
+                // handed where that decision carries nothing of its own for a line or a tax, then observed for the US trigger's two-year memory.
+                bool aiGovernment = AiFinanceMinistryEnabled && (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id);
+                AiFinanceMinistry.Written ministryWrote = null;
+                if (aiGovernment)
+                {
+                    ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision);
+                    AiFinanceMinistry.Observe(country);
+                }
                 ApplyDomesticPolicy(country, decision, tariffRevenueByCountry[country.Id]);
+                // §388: what the ministry wrote leaves the decision again - a caller (the trajectory dump, a harness) may hand the same object in next turn,
+                // and the first builds re-applied year 2's cuts for a century because it did not.
+                if (ministryWrote != null) { AiFinanceMinistry.Withdraw(decision, ministryWrote); }
 
                 // Political Systems Overhaul Part B (Parliament), Master Sequence step 4: recomputed
                 // for EVERY country every turn (not just the player's - see ParliamentSeats' own doc

@@ -42,6 +42,7 @@ namespace PoliSim.EditorTools
                 {
                     SimulationManager sim = go.AddComponent<SimulationManager>();
                     sim.SetWorld(world);
+                    sim.AiFinanceMinistryEnabled = false;   // §388: this check measures its own rule alone - the ministry's cuts would move the lines it reads
                     sim.PlayerCountryId = player;
                     Country country = world.GetCountry(player);
                     if (country.SpendingLines.Count == 0) { continue; }
@@ -164,6 +165,7 @@ namespace PoliSim.EditorTools
                         {
                             SimulationManager sim2 = go2.AddComponent<SimulationManager>();
                             sim2.SetWorld(w2);
+                            sim2.AiFinanceMinistryEnabled = false;   // §388: this check measures its own rule alone - the ministry's cuts would move the lines it reads
                             sim2.PlayerCountryId = player;
                             Country ai = w2.GetCountry(other.Id);
                             SpendingLine aiLine = ai.SpendingLines[0];

@@ -140,6 +140,11 @@ namespace PoliSim.Data
         /// lines carry the year's real wage growth as the ratio now/then (IndexSpendingLines) - the income index of Socialförsäkringsbalken 58 kap. in the
         /// model's terms. 0 = a save from before: a factor of 1 once.</summary>
         public float RealWageIndexAtLastIndex;
+        /// <summary>The AI finance ministry (§388): the debt ratio at the seed, and at the top of the last two turns - the US rule's trigger reads the ratio above
+        /// its seed and rising two years running (the debt-limit logic). 0 = not yet observed; a save from before the ministry seeds itself on first sight.</summary>
+        public float DebtRatioSeed;
+        public float DebtRatioLastReport;
+        public float DebtRatioReportBefore;
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
         /// <summary>P4-C3 (2026-09-05, the labour institutions' second reach): the seeded benefit rate per point of unemployment; the labour laws that cut benefit levels or duration compose on it.</summary>
@@ -175,6 +180,7 @@ namespace PoliSim.Data
             PotentialLabourAtLastTurn = PotentialLabourSeed;
             PriceLevelAtLastIndex = State.PriceLevel;   // P5-B6
             RealWageIndexAtLastIndex = State.RealWageIndex;   // RF-2 re-formed (§384)
+            DebtRatioSeed = State.DebtToGdpRatio;   // the AI finance ministry (§388)
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
             LaborTaxRateSeed = 0f;   // FT-5
             foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }
