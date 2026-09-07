@@ -24485,16 +24485,16 @@ Five pairs within 0.4 of a point (Germany's the widest, a vintage difference); t
 | § | the decision taken | on re-reading |
 |---|---|---|
 | §369 | the consolidation - documents migrated and deleted, rows closed with reasons, the residue count re-armed with fourteen exclusions | **HOLDS** - every deletion is verbatim in §369/§369a; the count reads what a session could start |
-| §370 | RF-2 applied in the ruled form | **HOLDS as ruled, RECONSIDER the form** - five AI states net creditors within two centuries and Italy at the ceiling; the caseload lines' real cost per head frozen at the seed is the cause; the wage-indexed form is sheeted with a legal anchor, NEEDS ELIAS |
+| §370 | RF-2 applied in the ruled form | **HOLDS as ruled, RECONSIDER the form** - five AI states net creditors within two centuries and Italy at the ceiling; the caseload lines' real cost per head frozen at the seed is the cause; the wage-indexed form is sheeted with a legal anchor, NEEDS ELIAS **→ ruled and re-formed in §384: the law's form landed, the driver-only form reverted.** |
 | §371 | the share line on the chip strip; `Budget` documented and twinned rather than renamed | **HOLDS** - a rename would break every trajectory diff against the record |
-| §372 | FT-5 applied on SELMA's Frisch elasticity for six | **RECONSIDER** - built as recorded and the harness says the income-tax multiplier at L+4 went from 0.56 to 1.33 (statutory basis), away from SELMA's 0.17 and toward the US literature, because a participation rise is output the same year through potential with no jobs lag; SELMA's mechanism needs unemployment to read participation (Okun's specification, T-3) |
+| §372 | FT-5 applied on SELMA's Frisch elasticity for six | **RECONSIDER** - built as recorded and the harness says the income-tax multiplier at L+4 went from 0.56 to 1.33 (statutory basis), away from SELMA's 0.17 and toward the US literature, because a participation rise is output the same year through potential with no jobs lag; SELMA's mechanism needs unemployment to read participation (Okun's specification, T-3) **→ ruled and REVERTED in §383; sheeted behind FT-7.** |
 | §373 | the four fetch rows billed | **HOLDS** - each names the exact series and the reason |
 | §374 | the level form closed as sheeted with its coefficient billed | **HOLDS** - the source exists and is unreachable; nothing typed |
 | §375 | immigration's feedback closed as billed | **HOLDS** - two stock ranges are not a flow |
 | §376 | FT-2 closed by reason; T-3 to Elias with its figures | **HOLDS** - the constant is inside the sourced range and the fix is behind a ruling |
 | §377 | FT-3 applied; a new tax anchors at zero | **HOLDS as stopped** - the recorded form failed the equivalence bar and drifted; not applied; the seed-rate defect landed with its diagnostic; the cyclical form is Elias's |
 | §378 | P4-C3 closed on its done-when; the dials-only laws to Elias | **HOLDS** - zero unreached; the fifth category has no literature to read |
-| §379 | FT-6 measured and proposed, nothing applied | **NEEDS ELIAS** - the hold on inflation is a specification of the macro core |
+| §379 | FT-6 measured and proposed, nothing applied | **NEEDS ELIAS** - the hold on inflation is a specification of the macro core **→ ruled in §385: the decaying-expectations form applied; the NAIRU half stays measured behind FT-7.** |
 
 **Bar:** docs and the errands file; the cheap bar of the item's commit - `RunAllBatch` **33 of 33** (`bar223_shelf_RunAllBatch`): `ResidueCheck` reads **0 open** with FT-6 printed as excluded and not counted, `RatchetSlackCheck` eleven tight.
 
@@ -24566,3 +24566,11 @@ Seed 424242 reads the same within a few points (USA 141 %, Sweden 58 %, Germany 
 **The NAIRU half of §379** - the persistent gap of a tenth of a point below NAIRU that fed half the drift - stays measured, not fixed: its mechanism is FT-7's (unemployment reading the supply side), and this form takes the ratchet out of the reading without touching the gap.
 
 **Bar:** `RunSimulationBatch` **34 of 34** (`bar227_exp_RunSimulationBatch`, `ExpectationsAnchoringDiagnostic` enrolled) and `RunAllBatch` **33 of 33** (`bar227_exp_RunAllBatch`) on the commit's tree. §384's record carried one swallowed identifier (a backtick the shell read as a command); it is restored in this commit.
+
+## 386. THE RESIDUE RE-READ AFTER THE THREE RULINGS; the shelf's marks and the closing section corrected (2026-09-07, evening)
+
+**The residue** (`ResidueCheck`, `bar228_close2_RunAllBatch` and `bar228b_close2_RunAllBatch`, 33 of 33 each, eleven ratchets tight): the first re-read (bar228) counted **one** open row - FT-7, the jobs lag, which the rulings themselves opened: ruling-first, its seat and source named, no recorded recommendation to apply - and the count is honest to say a session could start its measurement; it is named in the exclusions as Elias's with its reason (a specification of Okun and of potential's labour input, ruled not typed), as FT-6 was, and the re-read on bar228b reads **0 open, 384 files scanned**, FT-6 and FT-7 printed as excluded and not counted. FT-7's row also carried three literal apostrophe escapes from its writer; repaired here.
+
+**What the rulings changed on the record.** §380's marks: §370 (RF-2 in the driver-only form, RECONSIDER) is superseded by §384 - the law's form landed; §372 (FT-5, RECONSIDER) is REVERTED in §383 and sheeted behind FT-7; §379 (FT-6, NEEDS ELIAS) is half applied in §385 - the expectations half - with the NAIRU half measured behind FT-7. The closing section: RF-2's RECONSIDER row is gone; FT-6's row reads the NAIRU half only; FT-7 joins Elias's rows as the ruling-first mechanism two rows wait on. The fix-track table carries FT-1..FT-7 and RF-1..RF-2 each with its state.
+
+**Four commits, each on its own green bar, each pushed fast-forward:** §383, §384, §385, this. Two BASELINE families (§384, §385) never in one pass; the revert (§383) proved byte-identical rather than dumped as a family.

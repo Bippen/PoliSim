@@ -45,6 +45,7 @@ namespace PoliSim.EditorTools
             ("T-3", "OWNER ELIAS", "the identity's government-consumption block - trigger fired (C-N5), the six shares sourced (§376); the form of G in the identity is a seed change on six countries and Elias's ruling"),
             ("dials-only laws", "OWNER ELIAS", "whether laws should reach the 31 dials-only quantities, and which - a design call with no literature to read it from (§378)"),
             ("FT-6", "OWNER ELIAS", "the long-horizon inflation drift - measured and three forms proposed (§379); the hold on inflation is a macro-core specification, ruled not typed"),
+            ("FT-7", "OWNER ELIAS", "the jobs lag - unemployment reading the supply side before employment does (§383): a specification of Okun and of potential's labour input, its seat and source named, ruled not typed; FT-5 and FT-6's NAIRU half wait behind it"),
             ("K-1", "CALENDAR", "the seed refresh from Sweden's real result - 13 September 2026"),
         };
 
