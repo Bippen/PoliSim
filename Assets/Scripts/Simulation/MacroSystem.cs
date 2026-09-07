@@ -322,7 +322,9 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
             float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
             float unemploymentChange = -OkunCoefficient * growthGap * sliceFraction;
-            float reversionReference = reversionReferenceUnemployment ?? state.Unemployment;
+            // FT-7 (§391): the reversion pulls the CORE to NAIRU - unemployment less the supply excess, which decays at SELMA's own rate in
+            // ApplySupplyShockToUnemployment. The excess is constant inside a period (it moves at the boundary), so the daily form reads the same figure.
+            float reversionReference = (reversionReferenceUnemployment ?? state.Unemployment) - state.SupplyUnemploymentExcess;
             unemploymentChange += GetWelfareAdjustedReversionSpeed(country) * sliceFraction
                 * (country.NaturalUnemploymentRate - reversionReference);
             unemploymentChange += (GetMinimumWageUnemploymentAdjustment(country)
@@ -369,6 +371,32 @@ namespace PoliSim.Simulation
             });
 
             return Mathf.Clamp(UnemploymentReversionSpeed + adjustment, MinUnemploymentReversionSpeed, 1f);
+        }
+
+        // --- FT-7, the jobs lag (2026-09-07, §391): labour supply arrives before employment ---
+        /// <summary>SOURCED (derived) - the share of a supply shock to unemployment absorbed into employment each year: 1 − θw⁴ with θw the Calvo wage
+        /// parameter of Konjunkturinstitutet's SELMA (Technical Documentation 2024-12-03, Table 14: posterior mean 0.88, mode 0.89, s.d. 0.02, 90 % band
+        /// 0.86-0.91), a wage reset with probability 0.12 a quarter - so 1 − 0.88⁴ = 0.40 a year (the band 0.31-0.45). In SELMA unemployment is the labour force
+        /// in excess of employment and the wage markup answers it (Equation G.9 = A.18b); a rise in participation raises unemployment first and employment
+        /// follows as wages adjust, which is why its labour-income-tax cut reads +0.48 on unemployment over two years (§355).</summary>
+        public const float SupplyAbsorptionPerYear = 0.40f;
+
+        /// <summary>FT-7, the first seat (§391), a BOUNDARY step (once a year, like expectations): the year's change in participation enters unemployment on impact -
+        /// Δp points of the 15+ rate raise the labour force by Δp ÷ p and, with employment unchanged that day, unemployment by Δp × (100 − U) ÷ p points -
+        /// and the accumulated excess is absorbed at SupplyAbsorptionPerYear. Both directions: a fall in participation lowers unemployment on impact and the
+        /// negative excess decays the same way. Zero at the seed; a save from before FT-7 seeds its reference on first sight and moves nothing that year.</summary>
+        public static void ApplySupplyShockToUnemployment(Country country)
+        {
+            EconomyState state = country.State;
+            float p = Mathf.Clamp(state.LaborForceParticipationRate, 1f, 100f);
+            if (country.ParticipationAtLastBoundary <= 0f) { country.ParticipationAtLastBoundary = p; return; }
+            float deltaP = p - country.ParticipationAtLastBoundary;
+            country.ParticipationAtLastBoundary = p;
+            float impact = deltaP * (100f - state.Unemployment) / p;
+            float excessBefore = state.SupplyUnemploymentExcess;
+            float excessAfter = excessBefore * (1f - SupplyAbsorptionPerYear) + impact;
+            state.SupplyUnemploymentExcess = excessAfter;
+            state.Unemployment = Mathf.Clamp(state.Unemployment + (excessAfter - excessBefore), 0f, MaxUnemploymentPercent);
         }
 
         // --- Expectations-augmented Phillips Curve: inflation moves with the unemployment gap ---
@@ -737,6 +765,9 @@ namespace PoliSim.Simulation
         /// (the band 0.094–0.144). The document's own footnote points at Altonji (1986) and MaCurdy (1981) as the micro estimates its prior follows. One figure for six:
         /// SELMA is estimated on Swedish data, and the other five carry it as the class of magnitude, stated.</summary>
         public const float ParticipationElasticityToAfterTaxWage = 0.116f;   // §383: kept for FT-7; the term reads it, the target does not read the term
+        /// <summary>§392: the probe switch for FT-5's re-measurement behind the jobs lag. False by default and in play; LaborTaxRemeasureProbe sets it for its own runs and
+        /// resets it. LaborTaxParticipationDiagnostic asserts the term inert with it false.</summary>
+        public static bool LaborTaxTermInTarget = false;
 
         /// <summary>FT-5: the participation term of the labour tax, in points on the 15+ rate - the elasticity × 100 × ln((100 − t) ÷ (100 − t₀)), t the income-tax
         /// line's rate now and t₀ its rate at the seed (Country.LaborTaxRateSeed), so a rate rise lowers the after-tax wage and participation with it and a cut
@@ -778,7 +809,8 @@ namespace PoliSim.Simulation
                 - DiscouragedWorkerSensitivity * unemploymentGap
                 + combinedAdjustment
                 + HealthFamily.ParticipationTerm(country)   // the health feedback pass (2026-09-06): the working-age population's health, treatable mortality against its seed, points
-                + EducationFamily.ParticipationTerm(country);   // the education feedback pass (2026-09-07): the attainment stock against its seed × the country's own activity gap by attainment, points
+                + EducationFamily.ParticipationTerm(country)   // the education feedback pass (2026-09-07): the attainment stock against its seed × the country's own activity gap by attainment, points
+                + (LaborTaxTermInTarget ? LaborTaxParticipationTerm(country) : 0f);   // §392: FT-5's sourced term, in the target ONLY while a probe sets the switch - false in play and in every check
             // FT-5 REVERTED as ruled (§383): LaborTaxParticipationTerm is NOT in this target. §372 built it and the harness read the income-tax multiplier
             // doubling at four years - away from SELMA, because a participation rise is output the same year through potential with no jobs lag. The term
             // and its sourced elasticity stay in the code, inert, sheeted behind FT-7 (the jobs lag: unemployment reads participation before employment does).

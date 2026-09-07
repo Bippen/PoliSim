@@ -23,6 +23,10 @@ namespace PoliSim.Data
 
         /// <summary>Unemployment rate, as a percentage (e.g. 5.0 = 5.0%).</summary>
         public float Unemployment;
+        /// <summary>FT-7, the first seat (§391): the part of Unemployment that is labour SUPPLY arrived before employment - a change in participation enters here on
+        /// impact and is absorbed into employment at SELMA's rate (MacroSystem.SupplyAbsorptionPerYear). Points of the unemployment rate; signed (a fall in
+        /// participation is a negative excess); zero at the seed. Okun's reversion pulls the core (Unemployment less this) to NAIRU and leaves this to its own decay.</summary>
+        public float SupplyUnemploymentExcess;
 
         /// <summary>Public approval of the government, 0-100.</summary>
         public float ApprovalRating;

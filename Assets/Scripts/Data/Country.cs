@@ -145,6 +145,8 @@ namespace PoliSim.Data
         public float DebtRatioSeed;
         public float DebtRatioLastReport;
         public float DebtRatioReportBefore;
+        /// <summary>FT-7 (§391): the participation rate as it stood at the last boundary, so the jobs lag reads the year's change in labour supply. 0 = not yet seen.</summary>
+        public float ParticipationAtLastBoundary;
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
         /// <summary>P4-C3 (2026-09-05, the labour institutions' second reach): the seeded benefit rate per point of unemployment; the labour laws that cut benefit levels or duration compose on it.</summary>
@@ -181,6 +183,7 @@ namespace PoliSim.Data
             PriceLevelAtLastIndex = State.PriceLevel;   // P5-B6
             RealWageIndexAtLastIndex = State.RealWageIndex;   // RF-2 re-formed (§384)
             DebtRatioSeed = State.DebtToGdpRatio;   // the AI finance ministry (§388)
+            ParticipationAtLastBoundary = State.LaborForceParticipationRate;   // FT-7 (§391)
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
             LaborTaxRateSeed = 0f;   // FT-5
             foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }

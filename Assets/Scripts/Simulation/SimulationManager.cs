@@ -2578,6 +2578,10 @@ namespace PoliSim.Simulation
             // AdvanceDay finishes the boundary day before AdvanceTurn runs, so the DependencyRatio
             // read below completed this period's accumulation. PreviewTurn keeps the turn forms as
             // their only remaining callers, correctly rather than as dead code.
+            // FT-7, the first seat (§391): the year's change in labour supply enters unemployment at the TOP of the boundary - before the spending lines read
+            // the unemployment driver (the labour-market and income-security lines are the new entrants' caseload) and before the Phillips curve reads the print.
+            // The first tree placed it after the indexation and the line-indexation diagnostic caught the split (two lines 1-2 % off their country's factor).
+            MacroSystem.ApplySupplyShockToUnemployment(country);
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             // Phase 1: the DECAY and the sector reversion have already been charged day by day in
@@ -2886,6 +2890,7 @@ namespace PoliSim.Simulation
             ApplyCrimeJusticeDeeperChanges(previewCountry, decision);
             ApplyDemographicPolicyChanges(previewCountry, decision);
             CohortDemographics.ApplyTurn(previewCountry, CohortDemographics.SubstrateYear(CurrentTurn));   // F2 step 4: the year's readings on the clone's own pyramid; nothing commits
+            MacroSystem.ApplySupplyShockToUnemployment(previewCountry);   // FT-7 (§391): the preview reads the same boundary step, in the same place
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             // Phase 1: the preview deliberately keeps the TURN-level forms. It models one whole turn on a
