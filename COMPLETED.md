@@ -23728,4 +23728,28 @@ Read across a row: the real line per head tracks real GDP per head (the USA 4.23
 
 **Bar:** `RunSimulationBatch` **29 of 29** (bar201; `InfrastructureReadoutDiagnostic` after the family's check), `RunAllBatch` **32 of 32** (bar201); the dump `traj_p5rf1_*` on the same bytes.
 
-**Then, and only then, the feedback measured again:** PLACEHOLDER-354-FEEDBACK
+**Then, and only then, the feedback measured again:** measured after this commit, in §359 (the ruling: then and only then).
+
+## 355. FT-1 WITH ITS SWEDISH ANCHOR — the disposable-income term's magnitude proposed against SELMA's two-year multipliers on the current-prices book, the Ramey cumulative column checked at each probe; proposal only, nothing applied (2026-09-07)
+
+**Queue item 8:** *"FT-1 with its Swedish anchor: the disposable-income term's magnitude proposed against SELMA's 0.17/0.21 two-year multipliers on the current-prices book, the Ramey cumulative column checked, proposal only - the first fiscal-transmission row that can now be ruled on a Swedish basis."*
+
+**The anchor** (§345): Konjunkturinstitutet's SELMA, KI-kommentar 2025-12-02 - the average GDP response over two years to a temporary stimulus of 1 % of GDP a quarter for eight quarters, active monetary policy: tax on labour income **0.17**, tax on consumption **0.21** (Almerud & Laun's 2021 calibration read 0.30 and 0.33; the passive-policy variants 0.04 and 0.23). The model's seat is C-N4's `MacroSystem.DisposableIncomeConsumptionDelta` = −MPC × Δ household burden share × GDP, with `MarginalPropensityToConsume` held at 0.67 (D-8, the peer-reviewed two-thirds over the Swedish register bracket of 0.54–0.66, both sourced and both on the constant's own record).
+
+**Measured, before proposing** (`ResponsivenessAuditHarness`, Sweden, seed 777, the constant edited, the harness run, the constant restored - `probe_mpc.out`, `resp_mpc_*.log`; nothing applied): 
+
+| `MarginalPropensityToConsume` | income tax +1 pt: mult L / L+1 / L+4 | VAT +1 pt | two-year average, income tax | spending +2 %: mult L / L+1 / L+4 | Ramey cumulative (impact / L+1 / L+4) |
+|---|---|---|---|---|---|
+| **0.67 (held, D-8)** | 0.397 / 0.542 / 0.642 | 0.397 / 0.540 / 0.630 | **0.47** | 0.564 / 0.771 / 0.915 | 0.499 / 0.569 / 0.614 |
+| 0.60 (the Swedish bracket's top, arXiv 2607.07055) | 0.344 / 0.471 / 0.560 | 0.344 / 0.469 / 0.549 | 0.41 | 0.556 / 0.760 / 0.905 | 0.499 / 0.569 / 0.615 |
+| 0.54 (the bracket's bottom) | 0.304 / 0.416 / 0.494 | 0.304 / 0.414 / 0.484 | 0.36 | 0.556 / 0.760 / 0.905 | 0.499 / 0.569 / 0.615 |
+| 0.27 (what SELMA's 0.17 would take - NOT a sourced value) | 0.140 / 0.191 / 0.227 | 0.140 / 0.190 / 0.223 | **0.17** | 0.556 / 0.760 / 0.905 | 0.499 / 0.569 / 0.615 |
+
+The tax multiplier is linear in the constant to two figures (0.397 ÷ 0.67 = 0.344 ÷ 0.60 = 0.304 ÷ 0.54 = 0.140 ÷ 0.27 ≈ 0.55 at impact); **the spending multiplier is invariant to it** (0.556 at every probe against 0.564 at the held value - the difference is the harness's baseline being read with the constant changed, not the channel), and **the Ramey cumulative column does not move** - the FT-4 breach (0.499 against 0.507) is present at every probe identically, which is the second attribution: it is not the MPC's.
+
+**The comparison, on the two-year basis SELMA uses.** SELMA's quantity is the two-year average response to a temporary two-year stimulus; the harness's nearest reading is the mean of the impact and L+1 columns for a permanent level shift - a different experiment (permanent, not temporary; a level, not a path), so the comparison is a magnitude class, not a digit. On that basis the model reads **0.47** at the held constant against SELMA's **0.17 (labour income) and 0.21 (consumption)**: the model's tax channel is 2.2 to 2.8 times the Swedish estimate. To read 0.17 the constant would have to be **0.27** - half the bottom of the Swedish register bracket (0.54–0.66) and a third below any sourced MPC on the constant's own record. Romer & Romer's exogenous US measure (2–3) sits on the other side by a factor of four to six (R-D8). The model is between the two anchors and nearer the Swedish one.
+
+**The proposal (ruling-first, nothing applied).** **Hold the MPC at 0.67 and do NOT reach SELMA through it.** SELMA's small tax multipliers are not a small consumption response: the commentary's own mechanism section says a labour-income tax cut raises labour supply faster than employment (unemployment +0.48 over two years) and the Riksbank leans against the stimulus - two channels, one of which the model has (the Taylor rule, §330; the harness runs Sweden with its own currency) and one it does not (participation's response to the labour tax). Moving the MPC to 0.27 would buy SELMA's digit by inventing a figure and would move every consumption response in the game with it (the disposable-income term is also the poverty and welfare channels' consumption seat). **What FT-1 should be ruled to, on the Swedish basis:** (a) the MPC stays where its own record puts it, inside the Swedish bracket's class; (b) the gap to SELMA is attributed to the missing labour-supply channel, and if a term is ever built it is participation's response to the labour tax rate (a sourced elasticity would be needed; Eurostat's activity-by-attainment table is not it); (c) the comparison experiment is written into the harness as a fourth table - a temporary two-year stimulus of 1 % of GDP with the two-year average response - so the next reading of SELMA is like against like rather than a magnitude class. Nothing applied; the constant is where D-8 left it.
+
+**Bar:** documents only; the probe runs left the tree as they found it (`git diff --stat` empty on `MacroSystem.cs`, printed in `probe_mpc.out`).
+
