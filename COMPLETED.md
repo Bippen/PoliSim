@@ -23538,3 +23538,51 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 
 **Bar:** `RunSimulationBatch` **27 of 27** (bar196; `EnvironmentFeedbackDiagnostic` after the family's check), `RunAllBatch` **32 of 32** (bar196; `RevenueBaseDiagnostic` now prints a fourth driver on Sweden's lines - "the taxed emissions"); the dump `traj_p5env_*` on the same bytes.
 
+
+## 345. FT-1 TO FT-3, ARTIFACT ONLY — the multiplier table re-measured on the current-prices book, a SWEDISH ANCHOR for FT-1's magnitude read at the source (Konjunkturinstitutet's SELMA multipliers, December 2025), the three proposals refreshed; NOTHING APPLIED (2026-09-07, overnight)
+
+**The queue's fourth item:** *"FT-1 to FT-3, artifact only: measurement tables and sourced proposals refreshed against the current-prices book, applied nothing; take a Swedish anchor for FT-1's magnitude if reachable."* The rows are the feature list's *Fiscal transmission* table; the ruling order (FT-1, then FT-2, then FT-3; never two in one pass) stands.
+
+**The measurement, re-run on the book as it is** (`ResponsivenessAuditHarness`, `resp188.log`, Sweden, seed 777, each dial set once as a permanent level shift; the last table on record was `rd8_audit.log` of 2026-09-01, before the book moved to current prices at §327 and potential to labour × productivity at §322): 
+
+| dial (Sweden, seed 777) | mult L | L+1 | L+4 | Okun L+4 | 2026-09-01 (`rd8_audit.log`) mult L / L+1 / L+4 |
+|---|---|---|---|---|---|
+| Income tax +1 pt | 0.397 | 0.542 | 0.642 | −0.018 | 0.485 / 0.682 / 0.760 |
+| Income tax +5 pt | 0.397 | 0.542 | 0.643 | −0.018 | 0.485 / 0.680 / 0.757 |
+| Income tax −5 pt | 0.397 | 0.543 | 0.645 | −0.018 | 0.485 / 0.685 / 0.766 |
+| VAT +1 pt | 0.397 | 0.540 | 0.630 | −0.012 | 0.485 / 0.682 / 0.760 |
+| VAT +5 pt | 0.396 | 0.539 | 0.629 | −0.012 | 0.485 / 0.680 / 0.756 |
+| Corporate +5 pt | 0.000 | 0.000 | 0.000 | - | 0 / 0 / 0 |
+| Spending +2 % | 0.564 | 0.771 | 0.915 | −0.016 | 0.603 / 0.850 / 0.959 |
+| Spending +10 % | 0.564 | 0.769 | 0.914 | −0.016 | 0.603 / 0.852 / 0.966 |
+| Spending −10 % | 0.564 | 0.775 | 0.917 | −0.016 | 0.603 / 0.850 / 0.959 |
+
+Ramey's own quantities on the +2 % dial: quasi 0.499 / 0.682 / 0.805, **cumulative 0.499 / 0.569 / 0.614** (the enforced column; 2026-09-01: impact 0.507, L+1 0.607, L+4 0.702).
+
+**⚠ A RATCHET BREACH, reported not fixed, and attributed before it is reported.** The harness exits 1 tonight: the cumulative spending multiplier at IMPACT reads **0.499 / 0.500 / 0.497** on the three spending dials against the ratchet of **0.507** ("it got WORSE"), and L+1 (0.569) sits below Ramey's 0.6 where the band binds. **Measured at HEAD before any of tonight's edits** (the working tree stashed, the harness run on commit 1e14a91, `resp_head.log`: 0.499 / 0.682 / 0.805 quasi, 0.499 / 0.569 / 0.614 cumulative - the same digits) - so the slip is not the health feedback's; it belongs to the passes between 2026-09-01 and 1e14a91, of which two moved the book the harness measures in: P5-B7 (§322, potential as labour × productivity) and P5-B6 (§327, current prices - the dGDP columns are now nominal against a nominal impulse). Every tax multiplier fell with it (0.485 → 0.397 at impact). **The ratchet is NOT lowered** (`ResponsivenessAuditHarness.ImpactRatchet` stays 0.507 - "never lower a ratchet"); the harness is not in either bar, so no bar is red, and the breach is this section's finding and the report's: a BASELINE change of two passes ago moved a ruled quantity by 0.008 and the instrument that would have said so at the time was not in the chain. **Proposed, not applied:** the harness joins the simulation bar's chain on every BASELINE pass, so the next slip is caught in the pass that makes it.
+
+**FT-1's Swedish anchor - REACHED, read at the source.** Konjunkturinstitutet, *KI-kommentar 2025-12-02, "Finanspolitiska multiplikatorer i SELMA"* (Tobias Laun; Dnr 2025-471; the PDF kept at `PoliSim-captures/sources/ki_kommentar_2025_multiplikatorer.pdf`, text extracted and read, not recalled). The quantity: the average GDP response over two years to a temporary stimulus of 1 % of GDP a quarter lasting eight quarters, in SELMA (the institute's estimated DSGE model of Sweden), under an active Riksbank (Table 1) and a passive one (Table 2, the rate held nine quarters). The table, transcribed:
+
+| instrument (SELMA, two-year average) | GDP multiplier, active monetary policy | passive | unemployment multiplier, active |
+|---|---|---|---|
+| public consumption | 0.82 | 1.14 | −0.65 |
+| public investment | 0.99 | 1.16 | −0.72 |
+| transfers to households | 0.05 | 0.06 | −0.03 |
+| investment subsidies | 0.93 | 1.37 | −0.65 |
+| **tax on consumption** | **0.21** | 0.23 | +0.15 |
+| tax on capital | 0.07 | 0.09 | −0.05 |
+| **tax on labour income** | **0.17** | 0.04 | +0.48 |
+| employer contributions | 0.05 | 0.03 | −0.09 |
+
+The commentary's own caveats, carried: the results depend on the model's assumptions; Hjelm & Stockhammar (2016) - the time-series estimates for 1980–2015 - are *"generally not statistically distinguishable from zero"*; the Fiscal Policy Council's review finds multipliers varying widely by instrument, cycle and monetary room. Table 4 of the same commentary gives the previous SELMA reading (Almerud & Laun 2021): consumption tax 0.33, labour income tax 0.30, public consumption 1.05 - so even the institute's own two readings differ by half.
+
+**What the anchor says against the model.** The game's tax dials read (income tax and VAT, on the statutory basis, R-D8's denominator) 0.397 / 0.542 / 0.642 (income tax) and 0.397 / 0.540 / 0.630 (VAT) at impact / +1 / +4; SELMA's labour-income and consumption-tax multipliers are 0.17 and 0.21 over two years, Romer & Romer's exogenous US measure 2–3. **The Swedish anchor puts the model ABOVE the Swedish estimate and far below the American one** - which is Batini et al.'s point about country buckets, and the reason a Swedish anchor was asked for rather than the American headline. The tax rows are read in the same book they are measured in (current prices, nominal GDP the denominator; the dGDP columns are the level's, both sides nominal - never across the two books).
+
+**FT-1, the proposal refreshed (nothing applied).** The rate channel is C-N4's (`MacroSystem.DisposableIncomeConsumptionDelta`, −MPC × Δ household burden share × GDP). With a Swedish anchor in hand the magnitude question becomes a MEASURED one: the impact column against 0.17–0.21 (SELMA) and the +4 column against the two-year average. **The proposal is to keep the seat and NOT to move the MPC** - SELMA's small tax multipliers come from labour supply (a labour-income tax cut raises unemployment in the short run, +0.48, because participation rises faster than jobs) and from a Riksbank that leans against the stimulus; the model has the second (the Taylor rule, §330) and now the first's channel (participation, the health pass's term aside, still has no tax term). If a term is ever built here it is participation's response to the labour tax, not a larger MPC. Ruling-first: a line for Elias, no code.
+
+**FT-2, the Okun specification** (`MacroSystem.ApplyOkunsLaw`; Ball, Leigh & Loungani −0.23 to −0.54): the Okun column of the refreshed table is −0.018 (income tax) and −0.016 (spending) at L+4 - an eighth to a tenth of what it read on 2026-09-01 (−0.005 / −0.007), so the book's move changed the growth-gap coefficient too, the landing-year coefficient re-measured at not re-run tonight (the harness's Okun column is the reading; the landing-year diagnostic is a separate run for FT-2's own pass) (`OkunSpecificationDiagnostic`). SELMA's unemployment multipliers (−0.65 on public consumption per 0.82 of GDP, a ratio of −0.8) are a second reading of the same slope for Sweden, above Ball et al.'s band - noted, not adopted. Still ordered after FT-1.
+
+**FT-3, revenue reaches output through the balance only** (§319; Dolls, Fuest & Peichl 2012, 38 % EU / 32 % US stabilisation): unchanged in kind by the book's move - the burden term reads `TaxBases.Base` over GDP at the current and the baseline rates in the SAME book, so the base still cancels. The refreshed measurement is the trajectory suite's, not the harness's: the last BASELINE family that moved revenue from the base (this pass's health feedback, §343, through participation → potential → the bases) moved output through the potential and the balance, not through disposable income - the mirror of C-N4 stands. SELMA's transfer multiplier (0.05) is a warning about the size of what FT-3 would add: the stabiliser's demand effect in a small open economy with an active central bank is small; its point is the balance's cyclicality, which the model already has.
+
+**Bar:** documents only, the section covered by `DocumentClaimCheck` in the next commit's cheap bar; the harness run is `resp188.log` - the Ramey column BREACHED at impact and L+1 (0.499, 0.569), the ratchet 0.507 held and not lowered, the breach attributed to HEAD (`resp_head.log`), reported above.
+
