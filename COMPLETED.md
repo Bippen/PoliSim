@@ -24140,3 +24140,39 @@ The +10 % and −10 % dials read 0.522 / 0.605 / 0.693 and 0.517 / 0.604 / 0.695
 3. **RF-2 next - ruling-first but measured now** (§367): which lines the AI's rule scales with output and by how much per country over a century; the rule proposed bound to B2's drivers; applied on ruling. **FT-5 waits behind RF-2.**
 
 Then continuous on the standing queue and shelf; one commit per item, one green bar, R-SP1 push, one report.
+
+## 367. RF-2, MEASURED — the AI's rule scales EVERY line of a country it governs by the country's real potential growth, on top of the line's driver and prices; by how much per country over a century, what it does to the fiscal path, and what the alternative does; the rule proposed bound to B2's drivers, applied on ruling (2026-09-07)
+
+**The ruling (§366, 3):** *"which lines the AI's rule scales with output and by how much per country over a century; propose the rule bound to B2's drivers; apply on ruling."*
+
+**The rule, read at its source** (`SimulationManager.IndexSpendingLines`): every year, for a country the player does not govern, each line's amount is multiplied by prices (the price level's ratio since the last index) × its driver's ratio (B2: population, the 65+ cohort, the age-cost index, youth, the unemployment rate, …) × **(1 + the country's real potential growth rate)** - the "annual budget its finance ministry would pass", `[AUTHORED-DRAFT]` as a rule since B2 (§314). The player's lines take prices and drivers only. So the answer to "which lines" is **all of them, alike** - the mandatory pension line and the NASA line carry the same growth factor - and "by how much" is the compounded potential growth of the country.
+
+**Measured** (`LineScalingProbe`, Sweden the player, seed 777, `linescale.log`; the third column is the real line over its seed after the driver is divided out, so a line indexed to its driver and prices reads 1.000): 
+
+| country (AI) | real line ÷ (seed × driver) at year 100 - every line alike | real GDP ÷ seed at year 100 | the line's growth against the economy's |
+|---|---|---|---|
+| USA | **4.552** | 4.291 | the lines outgrow output by 6 % in a century (potential runs ahead of actual) |
+| Poland | **10.639** | 9.573 | the lines outgrow output by 11 % |
+| Germany | **1.913** | 1.860 | by 3 % |
+| France | **1.280** | 1.254 | by 2 % |
+| Italy | **0.675** | 0.636 | the lines SHRINK 32 % in real terms - potential growth negative, the rule compounds it downward; output shrinks 36 % |
+| Sweden (the player) | **1.000** | 2.294 | drivers and prices only: the lines hold their real per-driver level while the economy grows 2.3× - the player's G falls to 44 % of its seed share of GDP |
+
+The third column is the compounded potential growth Π(1 + g_t) and nothing else: the mandatory pension line, the education line and the smallest discretionary line of a country all read the same factor. What differs between lines is the driver (the second-to-last column of the probe): the USA's Social Security reads 7.44 real (×1.63 for the 65+ cohort on top of ×4.55), its Education 3.89 (the youth cohort shrinking), its Defense 4.55 (no driver); Sweden's Social Security 1.81 (the 65+ cohort alone), its Labor Market 0.80 (unemployment below the seed). **The rule is one factor on every line; B2's drivers already carry the demography line by line.**
+
+**What it does to the fiscal path, and what the alternative does** (`DebtPathProbe` on the rule as it stands and with the real-growth factor held at 1 for one edit-and-restore run - `probe_rf2.out`, `debtpath_rule.log`, `debtpath_drivers.log`): 
+
+| country | lines ÷ nominal GDP, year 1 → 100, the rule as it stands | debt ÷ GDP, year 1 → 100 | lines ÷ GDP, drivers and prices only | debt ÷ GDP, drivers only |
+|---|---|---|---|---|
+| USA | 0.208 → **0.265** | 1.28 → 1.30 | 0.205 → **0.061** | 1.28 → **−0.08** |
+| Germany | 0.430 → 0.456 | 0.63 → 0.65 | 0.426 → 0.261 | 0.63 → 0.35 |
+| France | 0.455 → 0.518 | 1.16 → 1.33 | 0.452 → 0.421 | 1.16 → 1.17 |
+| Italy | 0.410 → 0.445 | 1.38 → 1.54 | 0.410 → **0.602** | 1.38 → **3.00** |
+| Poland | 0.492 → 0.450 | 0.66 → 0.63 | 0.478 → **0.049** | 0.66 → **−2.36** |
+| Sweden (the player, the same in both) | 0.419 → 0.207 | 0.36 → −0.24 | 0.419 → 0.207 | 0.36 → −0.24 |
+
+(The state's `Budget` field is a running sum that nothing resets - P2-0.4 - so the probe's balance column is not read; the debt ratio is the fiscal path.) **Under the rule as it stands the lines' share of GDP drifts UP three to six points a century** (the §327 finding, now attributed: potential growth compounds ahead of actual output) and the debt ratios hold within a fifth of their seeds. **Under drivers and prices alone - the rule's own doc comment's warning, measured - the AI budgets fall away from their economies:** the USA's lines from 21 % of GDP to 6 %, Poland's from 49 % to 5 %, and the debt goes to nothing and then to a sovereign fund (Poland −236 % of GDP - the "debt to zero" path CLAUDE.md records); Italy runs the other way (its output shrinks with its workforce while its lines hold their real per-driver level), to 60 % of GDP and a debt of 300 %. Neither pure form is a finance ministry. **The player's own country already runs the drivers-only path** (Sweden: lines from 42 % to 21 % of GDP over a century of no decisions, debt to −24 %) - which is the same finding on the player's side and a note for the Budget screen's NEXT column.
+
+**Proposed, nothing applied.** Bind the rule to B2's drivers, and give the lines that have none a stated anchor. **(a)** A line WITH a driver (the caseload lines: pensions on the 65+ cohort, health on the age-cost index, education and family on the youth cohort, labour market on unemployment, housing and justice on population) follows prices × its driver and nothing else, for the AI as for the player - a caseload is a caseload; its real cost per head is the policy, and the AI's rule today raises real provision per head with potential growth on every one of them, which is a policy decision nobody took. **(b)** A line WITHOUT a driver (the pure discretionary block: defence, administration, foreign affairs, energy, transport, the agencies - every `None` in the probe) follows prices × the country's real potential growth, as now: these are the lines a finance ministry sizes against the economy, and holding them at the seed's share of output is what the rule's doc comment meant by "the annual budget its finance ministry would pass". **(c)** The player's lines stay as they are (drivers and prices), with the Budget screen's NEXT column already saying what each line will do; the drivers-only drift of the player's G (42 % → 21 % of GDP over a century of doing nothing) is the player's own to notice, and the note goes to the play-calibration list rather than into a rule. **Measured bounds for the ruling:** the two pure forms above bracket the proposal; the mixed form's path is not measured tonight (it needs the rule written, which is the ruling's to give), and its own BASELINE when applied - every AI line moves. Nothing applied.
+
+**Bar:** the probes are Editor tools in no bar; `RunAllBatch` 32 of 32 on the commit's tree (bar212).
