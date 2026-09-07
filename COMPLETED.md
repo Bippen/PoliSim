@@ -24061,3 +24061,12 @@ Board 7b (2026-09-04) read the return and said the print never arrived: the tran
 | §358 | FT-4's attribution and proposal | **HOLDS, NEEDS ELIAS for the instrument fix** - attribution is measured at three commits; the fix is to the harness (deflate the impulse), not the model, and a ruling on an instrument that carries a ratchet is his. |
 | §359 | the infrastructure feedback after the readout fix | **RECONSIDER** - landed as ruled because the readout holds, but the reused sensitivity is a permanent growth term and the literature's effect is a level; Poland's potential +27 % at a century is the figure to look at; a level re-form is the candidate. |
 
+
+## 361. FOUR RULINGS ON THE MORNING'S REPORT, RECORDED (2026-09-07, midday)
+
+1. **§359 - revert the infrastructure feedback.** The growth term goes; the readout of RF-1 stays. The LEVEL form is sheeted in its place: quality shifts potential's level, never its trend (§362 carries the sheet). **RF-2 opened** on the readouts' fix track: the AI's infrastructure-line scaling - the lines' real growth with output that drifted the readout (§354's probe) - is what to measure and fix, ruling-first.
+2. **§358 - fix the instrument.** `ResponsivenessAuditHarness` deflates its impulse and reads real against real; FT-4 is re-read on the corrected instrument; **the ratchet stays 0.507 throughout** (§363).
+3. **FT-1 - hold the MPC at 0.67.** The gap to SELMA's two-year multipliers is recorded as SELMA's labour-supply channel plus the model's Riksbank offset. **FT-5 opened**, ruling-first: the labour-supply channel - participation's response to the labour tax rate - measured and proposed before anything is built.
+4. **§353 - take the deviation form.** The trend is the difference from what the projection already carries: the death rate and the pyramid's excess deaths read treatable mortality against its TRENDED anchor, not the seed, so the world's improvement (already in the publisher's survival ratios) is not counted twice; the floor guard stays (§364).
+
+Then continuous on the standing queue and shelf.

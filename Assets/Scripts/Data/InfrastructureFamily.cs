@@ -114,18 +114,6 @@ namespace PoliSim.Data
             st.RoadConnectivity = Mathf.Clamp(st.RoadConnectivity + (target - st.RoadConnectivity) * ConnectivityReversionPerYear, MinScore, MaxScore);
         }
 
-        // ---- THE FEEDBACK PASS (2026-09-07, overnight; the spine's §4 "proposed and NOT built" - built now, one family, its own BASELINE) ----
-        /// <summary>Road quality now against its seed, in points of the WEF 0–100 score - zero at the seed, zero without the family. MacroSystem.ApplyInfrastructureGrowthEffect
-        /// reads it as the growth channel's third term at the channel's existing condition-drag sensitivity (0.02 points of trend growth per point), symmetric, under the
-        /// channel's existing combined ceiling - the metric the player sees becomes the channel's visible face, and no magnitude is authored for it (the direction is the
-        /// literature's - Calderón & Servén 2004, infrastructure stock and quality both raise long-run growth; the magnitude is the channel's own, reused, stated).</summary>
-        public static float QualityGapPoints(Country country)
-        {
-            InfrastructureSeeds s = country.Infrastructure;
-            if (s == null || !s.Seeded || s.RoadQuality <= 0f) { return 0f; }
-            return country.State.RoadQuality - s.RoadQuality;
-        }
-
         /// <summary>Next year's road quality for a given nominal infrastructure spending - the 5c arrow while a draft is live.</summary>
         public static float ProjectRoadQuality(Country country, float spendingNominal)
         {

@@ -1780,11 +1780,6 @@ namespace PoliSim.Simulation
         /// and AFTER ApplyCategorySpendingEffects (so the accumulator reflects this turn's spending
         /// change).
         /// </summary>
-        /// <summary>The infrastructure feedback pass (2026-09-07): the family's road quality against its seed at the channel's own condition-drag sensitivity, inside the
-        /// channel's own component cap - public so the diagnostic reads the figure the ledger reads rather than a copy of it.</summary>
-        public static float InfrastructureQualityTerm(Country country)
-            => Mathf.Clamp(InfrastructureConditionDragSensitivity * InfrastructureFamily.QualityGapPoints(country), -MaxInfrastructureConditionDrag, MaxInfrastructureConditionDrag);
-
         public static float ApplyInfrastructureGrowthEffect(Country country)
         {
             float averageCondition = 0f;
@@ -1800,12 +1795,9 @@ namespace PoliSim.Simulation
             float conditionDrag = Mathf.Clamp(
                 -InfrastructureConditionDragSensitivity * Mathf.Max(0f, InfrastructureConditionGrowthThreshold - averageCondition),
                 -MaxInfrastructureConditionDrag, 0f);
-            // The infrastructure feedback (2026-09-07, §359, after RF-1's readout fix): the family's road quality against its seed, at the SAME sensitivity per point and
-            // inside the SAME component cap (symmetric), so the metric on the plate is the channel's visible face. Zero at the seed; the combined ceiling binds the three terms.
-            float qualityTerm = InfrastructureQualityTerm(country);
 
             return Mathf.Clamp(
-                country.InfrastructureSpendingGrowthAdjustment + conditionDrag + qualityTerm,
+                country.InfrastructureSpendingGrowthAdjustment + conditionDrag,
                 -MaxCombinedInfrastructureGrowthAdjustment, MaxCombinedInfrastructureGrowthAdjustment);
         }
 
