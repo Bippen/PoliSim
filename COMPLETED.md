@@ -23656,3 +23656,14 @@ The commentary's own caveats, carried: the results depend on the model's assumpt
 
 **Left on the row:** the coupling stays a readout; the term is billed against (a) a fix to the readout's drift and (b) a sourced elasticity, in that order. The spine's §4 line and the feature list's row say so.
 
+
+## 351. THE IMMIGRATION FEEDBACK — STOPPED, the family not the run: an irregular-migration flow has no sourced bridge to a cohort inflow, and the premise was measured before anything was built (2026-09-07, overnight)
+
+**The queue's second item, fifth family:** *"immigration (flow → cohort inflow term)"*, with the sheet's own rule: *"stop the family, not the run, if a basis cannot be sourced or honestly drafted."*
+
+**What the term would need.** The cohort substrate's inflow is net migration in persons (`CohortDemographics.Step`, the immigration lever's `leverMigration`, spread on the sourced age profile). The family's figure for the five is Eurostat `migr_eipre` - third-country nationals FOUND TO BE ILLEGALLY PRESENT in the year, per 10 000 - an apprehension count, not an arrival count and not a stock change: one person can be found twice, a person found can be removed, and the people never found are not in it. To make it an inflow one needs the share who stay, which has no series of its own.
+
+**The premise, measured** (Eurostat 2024, the five; kept at `PoliSim-captures/sources/eurostat_migr_eipre_2024_total.txt` and `eurostat_migr_eirtn_2024.txt`): found illegally present - Germany 249 155, France 142 190, Italy 108 925, Poland 16 065, Sweden 2 965; returned to a third country following an order to leave (`migr_eirtn`) - 22 005, 16 665, 4 480, 8 530, **13 600**. The naive "retained share" 1 − returned ÷ found reads 0.91 / 0.88 / 0.96 / 0.47 for four countries and **−3.6 for Sweden**, whose returns in the year exceed the people found in it (returns discharge earlier years' orders). A ratio that is negative for one of five is not a per-cohort retention rate and cannot be seeded as one; a figure typed in its place would be an invented one. The USA's figure is a resident STOCK (DHS), whose change IS a net inflow by definition - but that is one country of six with a coupling built on an authored dial elasticity (§341), and a feedback for one country dressed as the family's would misstate what the game does.
+
+**Stopped, therefore, with its bill:** the coupling is honest only with a sourced arrivals-and-stays series - Eurostat's first residence permits (`migr_resfirst`) are LEGAL inflows and already inside the publisher's projected migration; for irregular stays there is no official series for the five, and estimates (Pew Research's unauthorised-population estimates for Europe, 2019, or the EU's Clandestino project, 2008) are one-off studies to be read before anything is built on them. The row keeps its readout couplings (§341); the spine's §6 line is amended to say so; nothing moved.
+

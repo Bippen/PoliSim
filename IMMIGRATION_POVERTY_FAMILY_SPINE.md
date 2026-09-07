@@ -95,6 +95,8 @@ The family reads the Immigration Policy and Border Enforcement dials, the transf
 
 **Feedback to the model, proposed and NOT built:** none in this pass - these are outcome readouts; the poverty RATE already reaches approval and consumption, and the gap adds depth, not a second channel.
 
+**The feedback pass of 2026-09-07 - STOPPED, `COMPLETED.md` §351.** The sheet asked for *flow → the cohort inflow term*; an apprehension count (`migr_eipre`, "found to be illegally present") is not an arrival count, and the only series that would bridge it - returns following an order to leave, `migr_eirtn` - gives a naive retained share of 0.91 / 0.88 / 0.96 / 0.47 for four of the five and **−3.6 for Sweden** (13 600 returned against 2 965 found in 2024, returns discharging earlier years' orders). No figure was typed in its place; the coupling stays a readout until an arrivals-and-stays series exists (billed in §351).
+
 ## 7. Display rows, drafted (Sweden, Germany, France, Italy, Poland, USA)
 
 | row | figure | unit | source line (caption mono) | band | arrows to |
