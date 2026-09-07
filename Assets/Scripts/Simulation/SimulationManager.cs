@@ -3785,8 +3785,9 @@ namespace PoliSim.Simulation
         /// book is in current prices, which is its own BASELINE family (sheeted as P5-B6); until then a price term
         /// here is a real growth term wearing the wrong name.</para>
         ///
-        /// <para>The AI's budget rule, stated: a country the player does not govern has nobody to raise its lines,
-        /// so its lines also grow at the country's real PotentialGrowthRate each year - the annual budget its
+        /// <para>The AI's budget rule, stated (and RE-STATED at RF-2, 2026-09-07, §370: the real-growth factor below applies to a
+        /// DRIVERLESS line only - a line with a B2 driver follows prices × its driver for the AI as for the player): a country the player
+        /// does not govern has nobody to raise its lines, so its DRIVERLESS lines grow at the country's real PotentialGrowthRate each year - the annual budget its
         /// finance ministry would pass - which is what every line did before this pass (§312 measured it: potential
         /// growth exactly, nothing else). The player's own lines take their drivers ONLY: the budget the player set
         /// is still there next year, grown by what its drivers did, and real provision grows only when the player
@@ -3818,7 +3819,13 @@ namespace PoliSim.Simulation
                 line.DriverReference = level;
                 line.LastYearAmount = line.Amount;   // P5-B5: the row's delta against last year reads this
                 line.LastDriverRatio = driverRatio;  // P5-B5: the row's projection carries this forward
-                float factor = prices * driverRatio * realGrowth;
+                // RF-2 (2026-09-07, §370): the real-growth factor applies to a DRIVERLESS line only. A line with a B2 driver is a caseload -
+                // pensions on the 65+ cohort, health on the age-cost index, education on the youth cohort - and its real cost per head is the policy,
+                // not a thing that grows with output on its own; the rule that grew it (§314) raised real provision per head with potential growth on
+                // every line, which §367 measured at ×4.55 for the USA in a century against output ×4.29. A line with no driver is the discretionary
+                // block a finance ministry sizes against the economy, and follows real potential growth as before. The player's lines are unchanged.
+                bool driverless = driver == SpendingDriver.None;
+                float factor = prices * driverRatio * (driverless ? realGrowth : 1f);
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }
                 line.Amount = ClampToSeedRange(line, line.Amount * factor);
