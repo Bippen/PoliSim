@@ -24000,3 +24000,7 @@ Board 7b (2026-09-04) read the return and said the print never arrived: the tran
 === PartyInkHarness: ALL ASSERTIONS PASS (8 inked, 45 uninked by design) ===
 ```
 
+
+## 357. THE PLAY-CALIBRATION LIST, KEPT CURRENT — no entry's mechanism moved in this run (2026-09-07)
+
+**Queue item 10:** *"every entry's 'one thing to look for' re-checked when its mechanism moves."* The twenty entries of §189 are elections mechanisms (the campaign, the media, the ground game, the debate, the scandal table, tactical voting, the office, the staff, reactivity, coalition formation, election night, the chamber). The passes of 2026-09-06/07 (§342–§353) touched the health, education, environment and infrastructure families, the tax bases and the cohort substrate's death accounting - none of the twenty owners (`grep` on each declaration against §346's table: every value the same as at §346). **The twenty "one thing to look for" lines of §346 stand unchanged.** One cross-family note for the day the loop exists: the trend family (§353) moves life expectancy and the pyramid at baseline, so a campaign played over several in-game years now starts from a demography that drifts on its own - entry 20's "between elections, nothing about the chamber moves" is still true of the chamber, not of the electorate behind it.
