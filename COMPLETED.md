@@ -24452,3 +24452,48 @@ Five pairs within 0.4 of a point (Germany's the widest, a vintage difference); t
 **Proposed, nothing applied - NEEDS ELIAS.** Three forms, none typed: **(a)** an anchored-expectations term - expectations adapt toward a weighted mix of the print and the zone's target (the model already carries the target per zone since §330), which is the standard post-1990s specification (Bernanke's "anchored expectations") and would hold inflation near target as long as the gap is small; **(b)** the interest rate into Okun - the rate above neutral raising unemployment through the identity's demand, so the Taylor rule can actually close a gap (this is C-N5's specification question from the other side, and T-3's); **(c)** finding and closing the −0.2 bias at its source (the probe's result decides whether it is a nudge or the growth-gap form). (a) is the smallest and is sourced as a specification; its weight is a magnitude the record does not have. The book's precision (doubles, or a rebasing of the price level) is the SECOND question and is moot if inflation holds: at 2 % the price level is 4e8 at year 1000, inside float range. Until the ruling the 1000-turn horizon is read to the overflow turn, as it has been.
 
 **Bar:** the probe is an Editor tool in no bar; `RunAllBatch` on the commit's tree - `RunAllBatch` **33 of 33** (`bar222_ft6_RunAllBatch`) on the commit's tree; the probe is an Editor tool in no bar.
+
+## 380. THE SHELF, CYCLED TO THE END OF THE QUEUE — ratchets at their floors, the deferral register re-read literally with two triggers fired, the errands and the calibration list verified live, the document set matched, the run's self-ruled sheets marked (2026-09-07, evening)
+
+**Ratchets.** `RatchetSlackCheck` on the evening's cheap bars (bar217b, bar219, bar220c, bar221b, bar222, bar223): eleven reported, eleven tight at the same measured values as §347, §360, §365 and §368; `ResponsivenessAuditHarness.ImpactRatchet` 0.507 held on the corrected instrument through RF-2, FT-5 and FT-3 (0.520–0.523 on every harness run today: `resp_ft4_real`, `resp_ft5`, `resp_ft3`, `resp_ft3b`). Nothing lowered, nothing raised.
+
+**The deferral register, re-read literally, every trigger against the repo:**
+
+| row | trigger | against the repo of 2026-09-07 evening |
+|---|---|---|
+| T-1 per-scenario term accumulation | *the first scenario whose epilogue reads wrong without it* | **NOT FIRED** - no scenario epilogue exists to read wrong |
+| T-2 investment deepening | *a capital stock ships, or I/GDP measures cyclical* | **NOT FIRED** - no capital stock; I/GDP has not been measured cyclical |
+| T-3 the government-consumption block | *the first mechanic that needs the level output gap to mean something* | **FIRED** (C-N5, 2026-08-31) and re-homed to OWNER ELIAS in §376: the six figures sourced on the gate, the block itself his ruling |
+| T-4, T-5, T-6 trade volumes, retaliation, its memory | *pass 6's deferred set* | **NOT FIRED** - pass 6's set has not been re-opened |
+| T-7 the coupling queue Q6–Q10 | *each at its own named trigger; nothing startable until one fires and Elias rules* | **NOT FIRED** - Q6 (HPI ↔ investment) and Q7 (overburden → approval) wait on R4-3, Q8 on R4-1, Q9/Q10 on R4-4; no ruling given |
+| F-1 staff progression | *a campaign the player actually runs* | **NOT FIRED** - `CampaignRun` still UNWIRED, held by C-R4b |
+| F-2 other election types | *a ruling that the game is about more than a parliamentary term* | **NOT FIRED** - not given |
+| F-3 France's constituency model | *a decision that France must be playable* | **NOT FIRED** |
+| F-4 Italy's sub-national stages | *Italy becoming playable* | **NOT FIRED** |
+| F-5 the gap table's nine N/A sections | *nothing* | **NOT FIRED by construction** |
+| F-7 the tax instruments build | *`POLISIM_TAX_SPECLET.md` being RULED* | **NOT FIRED** - E-27 |
+| FT-6 (new this run) | - | **OWNER ELIAS** since §379: measured, three forms proposed |
+
+**The calibration list, verified live** (`COMPLETED.md` §189, twenty entries): the three numbered constants read their listed values in the code - `CampaignPressure.PersuasionPerCompatibilityPoint` 40 000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500 000 - and the named classes of entries 4, 7–20 exist (`PollingSystem.MarginOfErrorPp`, `CoalitionCompatibility.WeightIdeological`, `DerivedRedLines.IdeologicalGap`, `CampaignActions.Resolve`, the W-A4 `Awareness` staging figure which gained its stated reason in the code this run). **Two names are stale and the values are not:** entry 5 names `CampaignCalendar` and the constant lives on `CampaignClock`; entry 16 names `PublicActivity.HalfLifeDays` and the constant is `CampaignReactivity.HalfLifeDays` = 7. The list is a retired record (§189) and is not edited; the two renames are recorded here so a reader grepping the list's names finds the constants.
+
+**Errands.** E-1 (the itanes.it account) and E-3 (the RETURN glance) open, Elias's, unchanged. E-16 and E-17 read done in their own rows (the annex landed and was consumed - §369a; the D15 package sent and answered, the six families built on it) and are moved to the DONE table. E-6 (Italy's IRPEF as text) stays as it was. Nothing was sent, pasted or registered this run: the fetches were reads (Eurostat, the World Bank API, IZA's document server, the OECD SDMX catalogue); FRED and the BEA refused every connection and are named where their figure is billed.
+
+**The document set.** `ls *.md` returns 18; the governing document's table names every one (the five family spines share one row); no file whose job is history; no orphan.
+
+**The run's self-ruled sheets, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §369 | the consolidation - documents migrated and deleted, rows closed with reasons, the residue count re-armed with fourteen exclusions | **HOLDS** - every deletion is verbatim in §369/§369a; the count reads what a session could start |
+| §370 | RF-2 applied in the ruled form | **HOLDS as ruled, RECONSIDER the form** - five AI states net creditors within two centuries and Italy at the ceiling; the caseload lines' real cost per head frozen at the seed is the cause; the wage-indexed form is sheeted with a legal anchor, NEEDS ELIAS |
+| §371 | the share line on the chip strip; `Budget` documented and twinned rather than renamed | **HOLDS** - a rename would break every trajectory diff against the record |
+| §372 | FT-5 applied on SELMA's Frisch elasticity for six | **RECONSIDER** - built as recorded and the harness says the income-tax multiplier at L+4 went from 0.56 to 1.33 (statutory basis), away from SELMA's 0.17 and toward the US literature, because a participation rise is output the same year through potential with no jobs lag; SELMA's mechanism needs unemployment to read participation (Okun's specification, T-3) |
+| §373 | the four fetch rows billed | **HOLDS** - each names the exact series and the reason |
+| §374 | the level form closed as sheeted with its coefficient billed | **HOLDS** - the source exists and is unreachable; nothing typed |
+| §375 | immigration's feedback closed as billed | **HOLDS** - two stock ranges are not a flow |
+| §376 | FT-2 closed by reason; T-3 to Elias with its figures | **HOLDS** - the constant is inside the sourced range and the fix is behind a ruling |
+| §377 | FT-3 applied; a new tax anchors at zero | **HOLDS as stopped** - the recorded form failed the equivalence bar and drifted; not applied; the seed-rate defect landed with its diagnostic; the cyclical form is Elias's |
+| §378 | P4-C3 closed on its done-when; the dials-only laws to Elias | **HOLDS** - zero unreached; the fifth category has no literature to read |
+| §379 | FT-6 measured and proposed, nothing applied | **NEEDS ELIAS** - the hold on inflation is a specification of the macro core |
+
+**Bar:** docs and the errands file; the cheap bar of the item's commit - `RunAllBatch` **33 of 33** (`bar223_shelf_RunAllBatch`): `ResidueCheck` reads **0 open** with FT-6 printed as excluded and not counted, `RatchetSlackCheck` eleven tight.
