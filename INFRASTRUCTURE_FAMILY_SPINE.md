@@ -56,6 +56,8 @@ The family reads the infrastructure spending line (`SpendingCategory.Infrastruct
 
 **BUILT, MEASURED AND STOPPED 2026-09-07 (overnight), `COMPLETED.md` §350 - nothing committed.** Road quality against its seed as the growth channel's third term at the channel's own sensitivity (0.02 points of trend growth per point) passed its diagnostic and then the suite showed why it cannot stand: this family's quality READOUT drifts to its cap of 100 at baseline for four of six within a century (§339's rebuild elasticity against the lines' own real growth), so the term adds half a point of trend growth a year to those four for as long as the cap holds - potential +45 % (Poland) to +19 % (Germany) at 100 turns, Italy −8 %. A reused magnitude on a drifting readout is not an honest draft; the readout's drift is the thing to fix first, and a points-per-point elasticity of growth to road quality is not in the literature this side could read. The coupling stays a readout; the measurement is the record.
 
+**LANDED 2026-09-07 (morning), `COMPLETED.md` §359, after RF-1's readout fix (§354):** the same term (`InfrastructureFamily.QualityGapPoints` × the channel's own 0.02 per point, `MacroSystem.InfrastructureQualityTerm`, ±0.5, inside the 0.75 ceiling), measured again on the saturating readout - potential Poland +26.8 %, the USA +8.6 %, Sweden +6.4 % at a century, Italy −5.5 %; landed as ruled, the magnitude flagged RECONSIDER (a growth term reused from a capped drag; the literature's effect is a level).
+
 ## 5. Display rows, drafted (Sweden, Germany, France, Italy, Poland, USA)
 
 | row | figure | unit | source line (caption mono) | band | arrows to |
