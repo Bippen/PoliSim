@@ -24193,3 +24193,112 @@ The third column is the compounded potential growth Π(1 + g_t) and nothing else
 |---|---|---|
 | §366 | the level form left sheeted rather than typed from Calderón & Servén's growth coefficient; the two reasons stated (a survey score is not a paved-road share; a growth rate is not a level) | **HOLDS** - the ruling said state the mapping or leave it sheeted with the reason, and no mapping could be stated |
 | §367 | the proposal split by driver (caseload lines to their drivers, driverless lines to potential growth) rather than one factor for all | **HOLDS as a proposal** - both pure forms were measured and neither is a finance ministry; the mixed form waits for the ruling and its own BASELINE |
+
+### 369a. `PLAYTEST5_ANNEX_E16.md` — retired 2026-09-07 into this record verbatim (80 lines; headings demoted one level). Elias's Playtest 5 annex (E-16, 2026-09-05): the findings list and the metric list Track C's catalog was built from. Its job was input, and input once consumed is history; the catalog (`SOCIETY_STATS_CATALOG.md`) and the P5 rows point here now.
+
+## Playtest 5 annex — E-16 (2026-09-05)
+
+**What this file is.** The two text artifacts Track C's catalog (P5-C1) waits on, written into
+the repo directly because chat attachments have failed to reach disk four times this month. The
+third artifact — the pie screenshot — is a PNG Elias saves into `PoliSim-captures\Elias Screenshots`
+beside the sixteen already bound; a session selects it by modification time and verifies it by
+content, as before.
+
+---
+
+### 1. Elias's findings, verbatim
+
+> **Statistics:** Looks weird with the pie chart and arrows.
+>
+> **Budget issue:** The spending sliders are as a percentage in reduction or increase, I want to
+> move away from that now. Set numbers on the sliders instead of percentage that normalize after a
+> year. I want cost and revenue to appreciate based on gdp growth or inflation and unemployment and
+> other factors that impact budget which i don't feel it is now. Make sure all spending and tax
+> change sliders have impact on economy or other things, some sliders don't now. I want more welfare
+> factors calculated such as healthcare quality wait times and other things. See list below.
+
+### 2. The metric list, verbatim — REFERENCE MATERIAL, NOT A SPEC
+
+⚠ This is a foreign game's wiki (a US-centric political simulator: counties, Medicare/Medicaid,
+partisan military approval). It is the *breadth* Elias wants, not the *content*. P5-C1's catalog
+maps each row to a sourced equivalent for this game's six countries, or rules it N/A with a reason.
+Nothing here is a figure to seed.
+
+| Category | Metrics as listed |
+|---|---|
+| Economy | Poverty rate; Per-capita income |
+| Education | Graduation rate; Academic score |
+| Poverty | Poverty rate; Poverty effect |
+| Taxation | Low-, Medium-, Upper-income tax rate (% of income) — each rated separately; note the low-income rating of 0.1% at 23%, so the rating curve is steep on the low bracket |
+| Health Care | Health coverage; Retiree health coverage; Private health care quality; Medicare quality; Medicaid quality |
+| Crime | Crime rate |
+| Infrastructure | Road congestion; Roads in poor condition |
+| National Debt | Debt (total); Debt per person |
+| Environment | Electricity CO₂ per person (lbs); Car CO₂ per person (lbs) |
+| Immigration | Illegal immigrant count |
+| Military | Democratic / Republican / Independent approval (partisan opinion, not a metric) |
+| Department Effectiveness | Education, Security, Health, Agriculture, State, Transportation, Energy, Science & Nature — effectiveness = funding received ÷ department's budget request |
+
+**The metric tabs (the underlying simulated stats), as listed:**
+
+- **Population** — voter registration and age demographics; party demographics per county (default
+  5% independents), ancestry demographics, ideology, and turnout.
+- **Education** — academic score, dropout rate and its causes, student/teacher ratios,
+  higher-education attainment, general educational attainment, graduation rate.
+- **Poverty** — poverty rate, unemployment and underemployment, poverty effect, homelessness.
+- **Economy** — per-capita income and an employment breakdown.
+- **Taxes** — tax revenue and its sources (the three bracket rates, plus flat tax,
+  deductions/exemptions, property and school property tax, city income tax as levers).
+- **Health** — coverage by type and by quality, life expectancy, birth/death ratio.
+- **Crime** — police officers, arrest rates, crimes committed, jailed and for what offences,
+  prisoner locations, guns.
+- **Infrastructure** — road length, road quality, road congestion, energy sources by type.
+- **Budget** — revenues, expenditures by category; mandatory (Social Security, Medicare, Medicaid,
+  food stamps) vs discretionary (military, NASA).
+- **Military** — no simulated metric beyond partisan approval.
+- **Immigration** — illegal immigrant count.
+- **Laws** — the status (active/inactive) of every law; 80+ legislation types.
+- **Other** — remainder (environment lives here or in Infrastructure's energy section).
+
+### 3. The mapping rules already ruled (so P5-C1 starts from them, not from scratch)
+
+- **Keep** where a sourced series exists for six countries: OECD wait times, PISA, Eurostat
+  graduation/attainment, Eurostat/EDGAR CO₂, WEF/OECD road quality, the national offices.
+- **Map** the US-specific term to its general form: Medicare/Medicaid → public vs private coverage
+  and quality; illegal immigrant count → irregular migration only where a sourced estimate exists,
+  else absent and stated; Social Security/food stamps → the pension and transfer lines already
+  on the book.
+- **N/A with reason:** counties; partisan military approval; city and school property taxes;
+  anything the six-country frame cannot hold.
+- **Tax brackets** stay behind F4 (the cohort income dimension), where they already wait.
+- **Department effectiveness** is lifted whole as a mechanic: funding received ÷ requested, where
+  the request is P5-B2's indexed line, scaled by the minister's efficiency attribute (P2-5).
+- **Order by gameplay impact:** health → education → infrastructure → environment → immigration
+  and poverty depth → effectiveness, each its own BASELINE family, on the one society-stat grammar
+  D15 item 3 asks Design to draw on health.
+
+
+## 369. PHASE 1 — THE CONSOLIDATION: the queue rebuilt from the repo, the document set reduced to the live files, the residue count re-armed (2026-09-07, afternoon)
+
+**The sheet:** *"Rebuild the queue from the repo, not from any list. Sweep every root document, every §D sheet, every fix-track row, every STOPPED and sheeted item, every 'to fetch' row, every code marker. … The document-set table in the feature list becomes the only list of live files; `ls *.md` must match it at the end with no orphans and no file whose job is 'history.' Re-arm the residue count."*
+
+**The sweep** (every root `.md`, the feature list's 63 rows by their last status marker, the seven fix-track rows, the five spines' fetch rows, the deferral register's 29 rows, and the code's markers - `TODO`/`WIP`/`STUB`/`PLACEHOLDER`/`STOPPED`/`BILLED` and every `[AUTHORED-DRAFT]` with nothing after it):
+
+| class | what the repo holds | disposition |
+|---|---|---|
+| Feature-list rows | 63 rows `P3-…`, `P4-…`, `P5-…`, `P6-…`; 61 close on ✅ or ⏹; **P4-C3** ends on ⏳ (the dials-only set of the lever map), **P5-C3** ends on ⏳ (its feedback landed; its fetch rows owe figures) | P4-C3's dials-only set → the queue (item 10); P5-C3's ⏳ is its fetch rows → item 7 |
+| Fix-track rows | FT-1 HELD (§361); FT-2, FT-3 measured and proposed, ruling-first; FT-4 FIXED (§363); FT-5 open behind RF-2; RF-1 fixed (§354); RF-2 measured and proposed, ruled (§367 → item 4) | FT-2 and FT-3 → the queue (item 10, closed by build on the recorded recommendation, by measurement-and-stop, or by reason); FT-5 → item 6; RF-2 → item 4 |
+| "to fetch" | PISA and graduation (education), congestion (infrastructure), the electricity mix's remainder (environment) - four rows, on the spines and on the plates' UI strings | → item 7, one more attempt each under the gate |
+| Sheeted, not built | the infrastructure level form (§362, §366) | → item 8, one attempt at a level source, then closed as sheeted-with-reason |
+| STOPPED | the immigration feedback (§351); the infrastructure growth term (§350, reverted §362) | immigration → item 9, one attempt at an arrivals-and-stays series; the growth term stays reverted (the level form is its successor) |
+| Code markers | 0 `TODO`/`WIP`/`STUB` outside the check that scans for them; 4 `PLACEHOLDER` (three describe a placeholder honestly - the procedural portrait, the static-volume derivation, the check's own regex; none is a stub); 7 `BILLED` (every one names what is billed and who owes it); 5 `STOPPED` (each a recorded measurement-and-stop); **one `[AUTHORED-DRAFT]` with no reason after it** (`TacticalVotingHarness.Awareness = 0.5`) | the bare draft → the queue (item 10: state its reason or mark it as the staging figure it is) |
+| The deferral register | E-1..E-29 (Owner ELIAS), D-7 and D-8.1 (Design), K-1 (13 September) | excluded by name, each with its reason, in the residue check |
+| Documents | 19 root files after §356; `PLAYTEST5_ANNEX_E16.md` was input consumed by the catalog and the families (its job history) | retired into §369a verbatim and deleted; 18 root files, every one in the table, none with the job "history" |
+
+**Duplicates:** no item was found carried by two documents after §356's charting; the fix-track rows live in the feature list only, the fetch rows on the spines and the plates only, the register in the record only.
+
+**The residue count** (`ResidueCheck`, the cheap suite, reporting - it exits 0 on any number and fails only when it scanned nothing): **31** at the re-arming (`residue02.log`, 379 files scanned): one feature-list row (P4-C3's dials-only set), four fix-track rows (FT-2, FT-3, FT-5, RF-2), eleven "to fetch" lines on three spines, three on the feature list's C3–C5 rows, eleven "to fetch" UI strings across four plate files (the shared core's own comparison among them), and one bare `[AUTHORED-DRAFT]` (`TacticalVotingHarness.Awareness`). Fourteen exclusions printed with their reasons (E-1..E-29 in six rows, D-7, D-8.1, the portrait placeholder, K-1) and one document skipped whole (`POLISIM_TAX_SPECLET.md`, E-27's). The first run read 36; five were the check's own misreadings (a `FIXED` row counted open; two draft tags whose reason sits on the next line) and the spec-let's fetch line, corrected in the check before it was armed.
+
+**The rebuilt queue, in the sheet's order:** 4 RF-2 (apply the caseload/driverless split, its own BASELINE); 5 the Budget-screen share line and the `Budget` field's documentation; 6 FT-5; 7 the four fetch rows; 8 the level form's one attempt; 9 immigration's one attempt; 10 the remaining CODE rows - FT-2, FT-3, P4-C3's dials-only set, the bare draft - in that order. Then the shelf until the residue reads zero.
+
+**Bar:** `RunAllBatch` 33 of 33 (bar214, `ResidueCheck` the thirty-third).

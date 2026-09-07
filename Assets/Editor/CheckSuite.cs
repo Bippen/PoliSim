@@ -250,6 +250,7 @@ namespace PoliSim.EditorTools
             // empty ledger and FAILS, because a slack audit that audited nothing looks exactly like one
             // that found no slack.
 
+            ("ResidueCheck", ResidueCheck.Run),   // the residue count, re-armed 2026-09-07 (§369): open work a session could start, the owner rows excluded by name - reports, never fails on a number
             ("RatchetSlackCheck", RatchetSlackCheck.Run),
         };
 
@@ -395,6 +396,7 @@ namespace PoliSim.EditorTools
                 // exit, so NOTHING compared either bound with its measurement, while the cheap suite's
                 // enrolment printed "0 unreported" because it asked whether the Report call was WRITTEN.
                 // A written call is not an executed one. See RatchetResidency.
+                ("ResidueCheck", ResidueCheck.Run),   // the residue count, re-armed 2026-09-07 (§369): open work a session could start, the owner rows excluded by name - reports, never fails on a number
                 ("RatchetSlackCheck", RatchetSlackCheck.Run),
         };
 
