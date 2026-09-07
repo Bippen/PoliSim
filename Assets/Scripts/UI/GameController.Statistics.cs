@@ -63,15 +63,38 @@ namespace PoliSim.UI
                 // the seed's standing balance, and no year has closed to replace it.
                 lastYear != null
                     ? new HeadlineReading(_simulationManager.CurrentTurn == 0 ? "Balance · last year · the seed" : "Balance · last year", UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions), null, false, history?.BudgetBalanceAnnual)
-                    : new HeadlineReading("Balance · the seed (no year closed)", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, false, null),
+                    : new HeadlineReading("Balance · the seed", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, false, null),
                 new HeadlineReading("Balance · this year · projected", _cachedPreview != null ? UiFormat.MoneyDelta(_cachedPreview.RevenueEstimate - _cachedPreview.SpendingEstimate, MoneyUnit.Billions) : "-",
                     _cachedPreview != null && _cachedPreviewWithoutDraft != null && !Mathf.Approximately(_cachedPreview.RevenueEstimate - _cachedPreview.SpendingEstimate, _cachedPreviewWithoutDraft.RevenueEstimate - _cachedPreviewWithoutDraft.SpendingEstimate)
                         ? "WITH THE DRAFT" : null, true, null),
+                // Item 5 (2026-09-07, §371): the lines' share of GDP - this year against nominal GDP, and NEXT on the lines' own next-year figures over
+                // next year's nominal GDP at potential growth and the printed inflation. §367 measured the player's share falling from 42 % to 21 % over a
+                // century of no decisions (the player's lines take drivers and prices only); this is the figure that says so, once, on the strip.
+                new HeadlineReading("Lines · share of GDP", UiFormat.Number(LinesShareOfGdpPercent(), 1) + "%", "NEXT " + UiFormat.Number(LinesShareOfGdpNextPercent(), 1) + "%", false, null),   // the caption is the chip's width (107 px at 1280, the guard measured): NEXT and the figure; the terms - potential growth, the printed inflation - are in LinesShareOfGdpNextPercent's doc and the record
                 new HeadlineReading("Government debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, false, null),
                 new HeadlineReading("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1) + "%", null, false, history?.DebtToGdpRatio.Quarterly),
                 new HeadlineReading("Revenue · last year", lastYear != null ? UiFormat.Money(lastYear.Revenue, MoneyUnit.Billions) : "-", null, false, null),
                 new HeadlineReading("Spending · last year", lastYear != null ? UiFormat.Money(lastYear.TotalSpending, MoneyUnit.Billions) : "-", null, false, null),
             };
+        }
+
+        /// <summary>Item 5: every spending line's nominal amount summed, over nominal GDP, in per cent.</summary>
+        private float LinesShareOfGdpPercent()
+        {
+            float sum = 0f;
+            foreach (SpendingLine line in _playerCountry.SpendingLines) { sum += line.Amount; }
+            return 100f * sum / Mathf.Max(0.0001f, _playerCountry.State.NominalGdp);
+        }
+
+        /// <summary>Item 5: the same share a year on - each line's own next-year figure (the NEXT column's, SpendingLine.ProjectNextYear) over nominal GDP grown
+        /// at the country's potential growth rate and the printed inflation. A projection on stated terms, not a forecast.</summary>
+        private float LinesShareOfGdpNextPercent()
+        {
+            EconomyState state = _playerCountry.State;
+            float sum = 0f;
+            foreach (SpendingLine line in _playerCountry.SpendingLines) { sum += line.ProjectNextYear(state.Inflation); }
+            float nextNominalGdp = state.NominalGdp * (1f + _playerCountry.PotentialGrowthRate / 100f) * (1f + state.Inflation / 100f);
+            return 100f * sum / Mathf.Max(0.0001f, nextNominalGdp);
         }
 
         /// <summary>The ten headline readings in the tiles' order: the figure with its own unit, the GDP delta and the credit outlook where they exist, and the kept history for every reading that has one (the four that keep none - currency, the debt stock, the rating, the balance - carry null and draw no line rather than an invented one).</summary>

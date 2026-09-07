@@ -31,7 +31,13 @@ namespace PoliSim.Data
         /// settlement is added and nothing resets it. P2-0.4 (2026-09-02): NOT a display figure - the player sees the
         /// closed year's balance (FiscalTurnReport.BudgetBalance, StatHistory.BudgetBalanceAnnual); this field serves the
         /// model's own delta reading (PreviewTurn's net budget impact) and the debt stock's twin bookkeeping.</summary>
+        /// <remarks>⚠ THE NAME IS SHORTER THAN THE THING (item 5, 2026-09-07, §371): this is a RUNNING SUM of every settlement since the seed, never an annual
+        /// balance. Reading it over GDP as a "deficit" reads nonsense (a probe did, §367). The year's balance is FiscalTurnReport.BudgetBalance; the debt is
+        /// GovernmentDebt. Not renamed: it is a trajectory column (every baseline dump names it), and a rename would break every diff against the record.
+        /// RunningBalanceSum is the same field under its honest name, for readers written after this date.</remarks>
         public float Budget;
+        /// <summary>The same field as <see cref="Budget"/> under the name that says what it is - a running sum of settlements since the seed (item 5, §371).</summary>
+        public float RunningBalanceSum => Budget;
 
         /// <summary>Net exports (exports minus imports, after tariff effects) for the most recent turn.</summary>
         public float TradeBalance;

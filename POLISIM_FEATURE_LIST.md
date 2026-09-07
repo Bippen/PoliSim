@@ -393,7 +393,7 @@ start or election night without the player dismissing an interrupt, filmed. **�
 
 **P2-0.4 — Budget balance shows the year, not the cumulative.** The Domestic series becomes annual
 (per fiscal year); cumulative belongs to debt, which already has its own row. *Done when:* filmed,
-and the annual series sums to the debt delta. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §220: the headline and the Budget row read the closed year, `StatHistory.BudgetBalanceAnnual` is the series, and the diagnostic proves the series plus erosion, settlements and clamp sum to the debt delta on every country.**
+and the annual series sums to the debt delta. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §220: the headline and the Budget row read the closed year, `StatHistory.BudgetBalanceAnnual` is the series, and the diagnostic proves the series plus erosion, settlements and clamp sum to the debt delta on every country.** **→ §371 (2026-09-07): the state's `Budget` field itself is the cumulative this row moved the screen off - a running sum of settlements - and is now documented at the field with `RunningBalanceSum` as its honest twin; not renamed, it is a trajectory column.**
 
 ## Track 1 — the frame and the quick wins (every screen)
 
@@ -413,7 +413,7 @@ can be set to any whole percentage point without overshoot. **→ ✅ CLOSED 202
 
 **P2-1.4 — Persistent fiscal header on Budget.** Balance, debt, debt-to-GDP, revenue and spending
 totals visible at all times on the Budget screen, derived, in the chip-strip idiom. *Done when:*
-filmed in scrolled and unscrolled states. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §224: the desk's chip strip became an idiom and the Budget header draws it with five derived fiscal readings above the columns, outside their scroll; filmed at scroll zero, rows and deep at 1280 and 2560.**
+filmed in scrolled and unscrolled states. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §224: the desk's chip strip became an idiom and the Budget header draws it with five derived fiscal readings above the columns, outside their scroll; filmed at scroll zero, rows and deep at 1280 and 2560.** **→ §371 (2026-09-07): a sixth reading, *Lines · share of GDP* - this year over nominal GDP and NEXT at potential growth and the printed inflation - the one figure that says the player's lines fall from 42 % to 21 % of GDP over a century of no decisions (§367).**
 
 ## Track 2 — Budget effects, redesigned
 
