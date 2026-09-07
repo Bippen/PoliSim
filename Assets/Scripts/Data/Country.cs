@@ -125,6 +125,8 @@ namespace PoliSim.Data
         /// <summary>P5-B3 (2026-09-05): the seed's GDP and the seed level of each tax-base driver (TaxBases.Level, indexed by TaxBaseDriver), captured by CaptureStructuralBases; a base is its sourced share of the seed's GDP times its driver's ratio to these. 0 = not yet referenced (consumption is computed by the first day; TaxBases.Base takes it then).</summary>
         public float RevenueBaseSeedGdp;
         public float[] RevenueBaseSeeds = new float[TaxBases.DriverCount];
+        /// <summary>FT-5 (2026-09-07, §372): the income-tax line's rate at the seed - the labour tax the participation term reads its change against; 0 = no such line.</summary>
+        public float LaborTaxRateSeed;
 
         /// <summary>P5-B7 (2026-09-05): potential output's factors - the seed's potential, the seed's labour input (PotentialOutput.LabourInput) and the productivity index that compounds daily at the trend (1 at the seed); the labour input as it stood at the last turn, for the derived growth rate. Captured by CaptureStructuralBases; 0 = a save from before this pass, which keeps the old compounding.</summary>
         public float PotentialGdpSeed;
@@ -169,6 +171,8 @@ namespace PoliSim.Data
             PotentialLabourAtLastTurn = PotentialLabourSeed;
             PriceLevelAtLastIndex = State.PriceLevel;   // P5-B6
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
+            LaborTaxRateSeed = 0f;   // FT-5
+            foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }
             for (int d = 0; d < TaxBases.DriverCount; d++) { RevenueBaseSeeds[d] = TaxBases.Level((TaxBaseDriver)d, this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;
             ComfortableDebtToGdpPercentBase = ComfortableDebtToGdpPercent;

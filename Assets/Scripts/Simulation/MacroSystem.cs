@@ -703,6 +703,27 @@ namespace PoliSim.Simulation
         /// </summary>
         private const float MaxLaborForceParticipationAdjustment = 1.0f;
 
+        /// <summary>FT-5 (2026-09-07, §372) - SOURCED: the elasticity of labour supply (participation, in SELMA's household block there is no hours margin) to the
+        /// after-tax real wage, as the inverse of SELMA's estimated Frisch parameter η: Konjunkturinstitutet, *SELMA Technical Documentation* (2024-10-02),
+        /// Table 14, the Swedish block, "labour disutility" η - prior 8.16, posterior mean 8.61, standard deviation 1.12, 90 % band 6.94–10.62 - so 1 ÷ 8.61 = 0.116
+        /// (the band 0.094–0.144). The document's own footnote points at Altonji (1986) and MaCurdy (1981) as the micro estimates its prior follows. One figure for six:
+        /// SELMA is estimated on Swedish data, and the other five carry it as the class of magnitude, stated.</summary>
+        public const float ParticipationElasticityToAfterTaxWage = 0.116f;
+
+        /// <summary>FT-5: the participation term of the labour tax, in points on the 15+ rate - the elasticity × 100 × ln((100 − t) ÷ (100 − t₀)), t the income-tax
+        /// line's rate now and t₀ its rate at the seed (Country.LaborTaxRateSeed), so a rate rise lowers the after-tax wage and participation with it and a cut
+        /// does the opposite; zero at the seed and for a country without an income-tax line; clamped to ±5 as a runaway guard. This is the channel SELMA's small
+        /// tax multipliers run through (§355): a labour-income tax cut raises labour supply faster than employment.</summary>
+        public static float LaborTaxParticipationTerm(Country country)
+        {
+            if (country.LaborTaxRateSeed <= 0f) { return 0f; }
+            float rate = 0f; bool found = false;
+            foreach (TaxLine line in country.TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { rate = line.Rate; found = true; } }
+            if (!found) { return 0f; }
+            float afterTaxNow = Mathf.Max(1f, 100f - rate), afterTaxSeed = Mathf.Max(1f, 100f - country.LaborTaxRateSeed);
+            return Mathf.Clamp(ParticipationElasticityToAfterTaxWage * 100f * Mathf.Log(afterTaxNow / afterTaxSeed), -5f, 5f);
+        }
+
         public static void ApplyLaborForceParticipationRate(Country country, float reversionSpeed = LaborForceParticipationReversionSpeed)
         {
             EconomyState state = country.State;
@@ -729,7 +750,8 @@ namespace PoliSim.Simulation
                 - DiscouragedWorkerSensitivity * unemploymentGap
                 + combinedAdjustment
                 + HealthFamily.ParticipationTerm(country)   // the health feedback pass (2026-09-06): the working-age population's health, treatable mortality against its seed, points
-                + EducationFamily.ParticipationTerm(country);   // the education feedback pass (2026-09-07): the attainment stock against its seed × the country's own activity gap by attainment, points
+                + EducationFamily.ParticipationTerm(country)   // the education feedback pass (2026-09-07): the attainment stock against its seed × the country's own activity gap by attainment, points
+                + LaborTaxParticipationTerm(country);   // FT-5 (2026-09-07, §372): participation's response to the labour tax rate against its seed, SELMA's elasticity
             state.LaborForceParticipationRate = Mathf.Clamp(
                 state.LaborForceParticipationRate + reversionSpeed * (target - state.LaborForceParticipationRate),
                 0f, MaxLaborForceParticipationPercent);
