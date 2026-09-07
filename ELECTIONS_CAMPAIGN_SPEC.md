@@ -1,5 +1,7 @@
 # Elections & Campaigning System Specification
 
+> **REFERENCE, not a work list (charted 2026-09-07, `COMPLETED.md` §356).** This is the specification every elections item cites by § number (`VoteModel.cs` and the elections harnesses name its sections). It records what the system was specified to be; what was BUILT, ruled or stopped is in `COMPLETED.md`, and what is OPEN is in `POLISIM_FEATURE_LIST.md`. Nothing here is a queue.
+
 ## 1. Core Design Goal
 
 Create a deep but understandable election and campaigning system for a Unity political strategy/simulation game.
