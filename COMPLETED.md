@@ -24853,3 +24853,39 @@ Verbatim: *"the US sequester at 0.5 % stays, tagged as a borrowed calibration to
 | 100 | 3.023 | 10.39 | 9.367 | 0.654 | 46.343 | 0.53 | 20.261 | 10.734 | 63.593 |
 
 **Reading it:** where `potential ÷ seed` runs ahead of `labour × productivity ÷ seed`, potential is carrying output that no worker produces; the debt column is the fiscal book paying for the difference since P5-B3 put the tax bases on the wage bill.
+
+## 395. FT-5's OUTPUT MULTIPLIER AND THE NAIRU GAP, RE-MEASURED BEHIND THE SECOND SEAT — reported against SELMA, nothing tuned (2026-09-08)
+
+**The ruling:** *"Then FT-5's output multiplier and the NAIRU gap re-measured behind it, reported against SELMA, nothing tuned."*
+
+**FT-5's channel** (`LaborTaxRemeasureProbe`, the term in the target for the probe's runs only; Sweden the player, a 5-point income-tax cut and rise at turn 3 against untouched, read at L+1, L+2, L+4): 
+
+| run | output multiplier (statutory), L+1 / L+2 / L+4 | unemployment against untouched, L+1 / L+2 / L+4 | participation against untouched, L+1 / L+2 / L+4 |
+|---|---|---|---|
+| term OUT (the two seats alone), cut 5 points | 0.33 / 0.54 / 0.59 | −0.166 / −0.056 / −0.016 | +0.005 / +0.009 / +0.012 |
+| term OUT, rise 5 points | 0.33 / 0.54 / 0.59 | +0.165 / +0.057 / +0.017 | −0.005 / −0.009 / −0.011 |
+| **term IN (FT-5 behind both seats), cut 5 points** | 0.33 / **0.55** / **0.79** | +0.081 / **+0.285** / +0.343 | +0.177 / +0.317 / +0.523 |
+| term IN, rise 5 points | 0.33 / 0.54 / 0.82 | −0.110 / −0.326 / −0.387 | −0.196 / −0.351 / −0.579 |
+
+(The statutory impulse is 1.02 % of GDP. Before any seat, §372: 1.33 at four years with unemployment FALLING; behind the first seat, §392: 1.03 with unemployment +0.33.)
+
+**Against SELMA** (§355: a labour-income-tax cut at 0.17 of output over two years, unemployment RISING +0.48 points): **the labour-supply side now has SELMA's shape.** A cut raises participation by the Frisch elasticity (+0.32 at two years), the new participants are unemployed on impact and employed at 0.40 a year (unemployment +0.29 at two years, +0.34 at four - SELMA +0.48), and they reach output only as employed: the second seat took the four-year multiplier from 1.03 to **0.79**, the first seat had taken it from 1.33. **What stays apart from SELMA is not the supply side.** At two years the multiplier reads 0.55 with the term in and 0.54 with it out - the whole two-year figure is the DEMAND channel: the tax cut's disposable income through C-N4's consumption term at an MPC of 0.67 (FT-1, held in §361 as the sourced Swedish figure), which SELMA's Ricardian households do not carry. The labour-supply term adds nothing at two years and 0.20 at four. So against SELMA: the sign and two thirds of the size of the unemployment response are the model's now; the output multiplier's remaining 0.4 of a point is FT-1's magnitude, not FT-7's or FT-5's. Nothing tuned.
+
+**The NAIRU gap** (`InflationDriftProbe`, `infldrift3.log`, 300 turns, no player): 
+
+| country | mean U − NAIRU, §379 (no seat) | §393 (first seat) | both seats | below NAIRU, share of turns | inflation at year 300 |
+|---|---|---|---|---|---|
+| USA | −0.13 | −0.21 | **−0.20** | 85 % | 2.09 |
+| Sweden | −0.12 | −0.25 | **−0.25** | 80 % | 2.03 |
+| Germany | −0.11 | −0.21 | **−0.21** | 73 % | 2.02 |
+| France | −0.05 | −0.16 | **−0.16** | 77 % | 1.76 |
+| Italy | −0.05 | −0.18 | **−0.18** | 70 % | 1.97 |
+| Poland | −0.10 | −0.27 | **−0.27** | 79 % | 2.59 |
+
+The wedge inflation − expectations +0.07 to +0.14 a year for six, as in §393; the mean growth gap within 0.04 of zero.
+
+**What it says.** **the second seat does not move the NAIRU gap - and was not going to.** The gap is the participation drift of an ageing country entering unemployment as a negative supply excess (§391) against a natural rate that is the seed's fixed figure; the second seat changed what potential reads (employment), not what unemployment reads. A shrinking labour force is now less output, as the ruling asked, and still reads as less slack. Inflation is unaffected (at the targets under §385). **What would close it is the natural rate itself reading the labour force** - a NAIRU that follows participation and the cohort, as SELMA's does not need to because its participation is a choice, not a demographic drift - and that is a ruling, not a measurement: it re-anchors Okun's reversion, the Phillips curve and the Taylor rule's gap term for six. It stays MEASURED, Elias's.
+
+**Nothing tuned.** The two figures are what the mechanism gives at SELMA's own rates (the Frisch elasticity 1 ÷ 8.61 and the Calvo wage 0.88); no constant was moved to meet SELMA's. FT-5's landing in the target is a ruling on these figures; FT-6's NAIRU half stands as re-read here. The FT-5 and FT-6 rows carried three literal apostrophe escapes from their §392/§393 writers; repaired in this commit.
+
+**Bar:** the probes are Editor tools in no bar; `RunAllBatch` on the commit's tree - `RunAllBatch` **33 of 33** (`bar236_probes2_RunAllBatch`); `ResidueCheck` reads 0 open with FT-7 closed and its exclusion gone.
