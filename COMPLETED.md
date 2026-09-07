@@ -24114,3 +24114,19 @@ The +10 % and −10 % dials read 0.522 / 0.605 / 0.693 and 0.517 / 0.604 / 0.695
 **What it says.** **The ratchet holds on the corrected instrument** - 0.520 at impact against the floor of 0.507, and the "it got WORSE" line is gone (`exit 0`); L+1 sits at 0.604, just inside Ramey's 0.6–1.0 where the band binds, and L+4 at 0.692. The pre-B6 reading is recovered to within a hundredth (0.527 → 0.520 at impact; the remaining difference is B7's two thousandths and the price-level path's own effect on the real balance), so FT-4's attribution stands: the slip was the instrument's cross-book read, the model's transmission did not change at B6, and the impulse the harness now divides by is the real one - 2.543 against the nominal 2.652. The tax rows read 0.407 / 0.556 / 0.661 (income) and 0.407 / 0.554 / 0.647 (VAT), the same tenth above their cross-book reading; FT-1's comparison to SELMA (§355) is unchanged in kind (0.48 on the two-year basis against 0.17 / 0.21). **`ImpactRatchet` is 0.507 as it was**: not lowered, not raised; it discriminates again.
 
 **Bar:** `RunAllBatch` **32 of 32** (bar207, the harness compiled in the Editor assembly); the harness itself `exit 0` on the corrected read (`resp_ft4_real.log`).
+
+## 365. THE SHELF, CYCLED AFTER THE FOUR RULINGS (2026-09-07)
+
+**Ratchets.** `RatchetSlackCheck` on the last cheap bar of the day (bar207): eleven reported, eleven tight, the same values as §347 and §360. `ResponsivenessAuditHarness.ImpactRatchet` 0.507 held throughout the fix and now discriminates again (0.520 measured, §363) - not lowered, not raised.
+
+**The deferral register, re-read literally:** unchanged from §360 except that E-26 (C-C11's recalibration recommendations) now has FT-1 RULED (hold 0.67, §361) and FT-4 FIXED at the instrument (§363) beside it, and FT-5 opened for the channel FT-1's ruling names; E-27's tax spec-let is still charted as awaiting its ruling.
+
+**Errands.** E-1 and E-3 open, unchanged; nothing sent, pasted or registered. **The document set.** 19 root files, every one in the table; the two removed member names that the cheap bar caught in the live documents (§362) are prose now.
+
+**The midday's self-ruled sheets, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §362 | the revert done by restoring the three files to RF-1's commit rather than by `git revert` (which would have removed the §359 record); the level form sheeted with its one source billed rather than a figure typed | **HOLDS** - the dump proves the restoration byte for byte; the record stays as history |
+| §363 | each run's balance and purchases deflated by that run's own price level (not a common deflator) | **HOLDS** - each run's own price level is the deflator its own nominal figures need; a common deflator would leave the stimulus's own price response in the impulse. The pre-B6 reading returned to a hundredth. |
+| §364 | the deviation form applied to the quality log as well as to the death rate and the pyramid (the ruling named the death rate and the excess deaths; the quality log follows the same anchor so that "zero on the trend" holds for every term) | **HOLDS, with the anchor floor as its one addition** - the ruling's "the floor guard stays" met its own consequence (the anchor falling below the guard read as a deficit) and the anchor took the same floor; strikeable, stated. |
