@@ -487,8 +487,13 @@ namespace PoliSim.EditorTools
                     for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
                     sim.AdvanceTurn(year == 1 ? once : nothing);
 
+                    // FT-4 (2026-09-07, §363): the numerator has been REAL GDP since P5-B6 while the balance and the lines were NOMINAL, so every multiplier this
+                    // harness printed after §327 divided across the two books and read the price level compounding through the landing year as a smaller
+                    // multiplier (0.527 → 0.499 at impact, attributed at three commits in §358). The balance and the purchases are deflated here by the run's
+                    // own price level in the year read, so the impulse and the response are both real - the quantity Ramey's band and D-13 (b) mean.
+                    float deflator = Mathf.Max(0.0001f, subject.State.PriceLevel);
                     gdp[year] = subject.State.GDP;
-                    budget[year] = subject.State.Budget;
+                    budget[year] = subject.State.Budget / deflator;
                     unemployment[year] = subject.State.Unemployment;
                     inflation[year] = subject.State.Inflation;
 
@@ -500,7 +505,7 @@ namespace PoliSim.EditorTools
                         if (!line.IsMandatory) { discretionary += line.Amount; }
                     }
 
-                    purchases[year] = discretionary;
+                    purchases[year] = discretionary / deflator;   // FT-4: real purchases, the same deflator as the balance
                 }
             }
             finally

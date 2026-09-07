@@ -24094,3 +24094,23 @@ Then continuous on the standing queue and shelf.
 **The family, explained per country** (`traj_p5dev2_*` against `traj_p5ifbrev_*` - the revert's dump, which equals RF-1's): **53 of 61 fields open** (the same eight untouched). Against the trend-counted form (§353, which the revert's dump still carried) at 100 turns: **the death rate returns to the seed where the metric sits on its guard** - Sweden and France 9.500 exactly (were 9.150 / 9.140), Germany 12.200 (11.670), Poland 10.848 (its anchor 15.2 still above the floor, a genuine deviation of −5), the USA 8.973; life expectancy −1.3 years for Sweden, France, Germany and Italy against the trend-counted path (−0.75 Poland and the USA); participation −0.4 to −0.9 points; **population −3.0 % Sweden, −3.0 % France, −3.4 % Italy, −4.3 % Germany, −4.4 % the USA, −6.5 % Poland** - the double count of §353 removed, the pyramid back on the publisher's path plus the spending deviation's people; GDP −4.6 to −7.9 % against the trend-counted path (the labour that is no longer double-counted). Treatable mortality itself, the readout, is unchanged in kind (on the floor for five at a century, 12.4 for the USA; Italy 12.2 - its spending deviation now reads against the floored anchor). At 500 turns the migration readings and the population growth rate carry the guard's small residuals only. Against §343's world (the pre-trend health pass), what the trend family now changes is the readout and nothing the readout feeds - which is the deviation form's statement.
 
 **Bar:** `RunSimulationBatch` **29 of 29** (bar209), `RunAllBatch` **32 of 32** (bar209); the dump `traj_p5dev2_*` on the same bytes (the first dump of the form, `traj_p5dev_*`, kept as the record of the guard artefact).
+
+## 363. FT-4's INSTRUMENT FIXED, AS RULED — the responsiveness harness deflates its balance and its purchases by the run's own price level and reads real against real; FT-4 re-read on the corrected instrument; the ratchet stays 0.507 (2026-09-07)
+
+**The ruling (§361, 2):** *"fix the instrument: deflate the impulse, read real against real, re-read FT-4; the ratchet stays 0.507 throughout."*
+
+**The fix** (`ResponsivenessAuditHarness.RunCase`): the budget balance and the discretionary purchases each run records are divided by that run's own `EconomyState.PriceLevel` in the year read, so the impulse (−Δ balance at the landing year), the purchase impulse (Δ purchases) and the cumulative sums are all real, in the book the numerator (`State.GDP`, real) has been in since P5-B6. Nothing else in the harness moved; `ImpactRatchet` is 0.507 as it was.
+
+**Re-read** (`resp_ft4_real.log`, Sweden, seed 777): 
+
+| reading | Ramey cumulative: impact / L+1 / L+4 | quasi | impulse(bal) / impulse(G) | income tax +1 pt: mult L / L+1 / L+4 | VAT +1 pt | spending +2 %: mult L / L+1 / L+4 |
+|---|---|---|---|---|---|---|
+| before P5-B6 (`abeebb8`, real against real by construction) | 0.527 / 0.615 / 0.704 | 0.527 / 0.725 / 0.858 | 2.324 / 2.541 | 0.404 / 0.556 / 0.660 | | 0.576 / 0.792 / 0.938 |
+| since P5-B6, the instrument across the books (`1e14a91`, `resp_head`) | 0.499 / 0.569 / 0.614 | 0.499 / 0.682 / 0.805 | 2.346 / 2.652 | 0.397 / 0.542 / 0.642 | 0.397 / 0.540 / 0.630 | 0.564 / 0.771 / 0.915 |
+| **corrected - real against real** (`resp_ft4_real`) | **0.520 / 0.604 / 0.692** | 0.520 / 0.711 / 0.846 | 2.304 / 2.543 | 0.407 / 0.556 / 0.661 | 0.407 / 0.554 / 0.647 | 0.574 / 0.785 / 0.934 |
+
+The +10 % and −10 % dials read 0.522 / 0.605 / 0.693 and 0.517 / 0.604 / 0.695 - the three within five thousandths of each other, as before B6.
+
+**What it says.** **The ratchet holds on the corrected instrument** - 0.520 at impact against the floor of 0.507, and the "it got WORSE" line is gone (`exit 0`); L+1 sits at 0.604, just inside Ramey's 0.6–1.0 where the band binds, and L+4 at 0.692. The pre-B6 reading is recovered to within a hundredth (0.527 → 0.520 at impact; the remaining difference is B7's two thousandths and the price-level path's own effect on the real balance), so FT-4's attribution stands: the slip was the instrument's cross-book read, the model's transmission did not change at B6, and the impulse the harness now divides by is the real one - 2.543 against the nominal 2.652. The tax rows read 0.407 / 0.556 / 0.661 (income) and 0.407 / 0.554 / 0.647 (VAT), the same tenth above their cross-book reading; FT-1's comparison to SELMA (§355) is unchanged in kind (0.48 on the two-year basis against 0.17 / 0.21). **`ImpactRatchet` is 0.507 as it was**: not lowered, not raised; it discriminates again.
+
+**Bar:** `RunAllBatch` **32 of 32** (bar207, the harness compiled in the Editor assembly); the harness itself `exit 0` on the corrected read (`resp_ft4_real.log`).
