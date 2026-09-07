@@ -76,13 +76,27 @@ namespace PoliSim.Data
 
         public static float SpendPerHead(Country country) => SpendingReal(country) / Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDriver.Population, country));
 
-        /// <summary>The year's rebuild of road quality for a given real infrastructure spending: the decay at the seed's spending, more or less with the ratio.</summary>
+        /// <summary>The year's rebuild of road quality for a given real infrastructure spending: the decay at the seed's spending, more or less with the ratio,
+        /// SATURATING toward the score's ceiling (RF-1, 2026-09-07): scaled by (100 − score now) ÷ (100 − seed), which is exactly 1 at the seed's score - so the
+        /// seed's spending holds the seed's score to the digit - and falls toward 0 as the score approaches 100, so more money approaches the ceiling and never sits
+        /// on it (a WEF survey score is bounded; a 7 of 7 is not made better by money). Below the seed the factor exceeds 1: a worse network is cheaper to rebuild,
+        /// which is the same diminishing-returns statement read the other way. RF-1's probe (COMPLETED.md §354) showed the drift to the cap came from the lines'
+        /// own real growth per head (the USA ×4.2, Poland ×13.7 in a century), not from the seed's spending; the form here is the readout's answer to a bounded score.</summary>
         public static float RebuildFor(Country country, float spendingReal)
         {
             InfrastructureSeeds s = country.Infrastructure;
             float heads = Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDriver.Population, country));
             float ratio = s.SpendPerHeadSeed > 0f ? Mathf.Max(0.01f, (spendingReal / heads) / s.SpendPerHeadSeed) : 1f;
-            return s.RoadQuality * QualityDecayPerYear * Mathf.Pow(ratio, RebuildElasticity);
+            return s.RoadQuality * QualityDecayPerYear * Mathf.Pow(ratio, RebuildElasticity) * SaturationFactor(country);
+        }
+
+        /// <summary>RF-1: (MaxScore − score now) ÷ (MaxScore − the seed's score), 1 at the seed, 0 at the ceiling; a seed at the ceiling reads 1 (nothing to saturate).</summary>
+        public static float SaturationFactor(Country country)
+        {
+            InfrastructureSeeds s = country.Infrastructure;
+            float room = MaxScore - s.RoadQuality;
+            if (room <= 0.01f) { return 1f; }
+            return Mathf.Max(0f, MaxScore - country.State.RoadQuality) / room;
         }
 
         /// <summary>The yearly step: quality decays by its share and is rebuilt by spending per head against the seed (the seed's spending holds the seed's score);

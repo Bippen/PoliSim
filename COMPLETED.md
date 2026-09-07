@@ -23696,3 +23696,36 @@ Elias's rulings on the overnight run (§342–§351), each placed where it lives
 
 **Bar:** `RunSimulationBatch` **28 of 28** (bar200; `HealthTrendDiagnostic` after the feedback check), `RunAllBatch` **32 of 32** (bar200); the dump `traj_p5tmt_*` on the same bytes.
 
+
+## 354. RF-1, THE ROAD-QUALITY READOUT — measured why it drifts to its cap (the lines' own real growth per head, not the seed's spending), fixed as a readout that saturates toward the ceiling so the seed's spending holds the seed's score to the digit; byte-identical on every pre-existing field (2026-09-07)
+
+**The ruling (§352, 3):** *"Measure why road quality drifts to its cap at baseline for four of six (the rebuild term outrunning decay at the seed's spending), fix the readout so the seed's spending holds the seed's score over a century, then and only then re-run the feedback measurement."*
+
+**The premise, measured first** (`InfrastructureDriftProbe`, six countries at seed policy for a century, `infradrift.log`) - and the ruling's parenthesis does not hold: **at the seed's spending the rebuild does NOT outrun the decay; it equals it by construction (rebuild = decay × ratio^0.7, ratio 1 at the seed).** What drifts is the ratio itself, because the lines do not stay at the seed's spending:
+
+| year | country | real spending per head ÷ seed | nominal line ÷ seed | price level | population ÷ seed | real GDP per head ÷ seed | road quality |
+|---|---|---|---|---|---|---|---|
+| 50 | USA | 1.98 | 10.05 | 4.60 | 1.10 | 1.89 | 100.00 |
+| 50 | Sweden | 0.82 | 2.18 | 2.18 | 1.22 | 1.32 | 76.65 |
+| 50 | Germany | 1.33 | 6.79 | 5.08 | 1.00 | 1.30 | 92.62 |
+| 50 | France | 1.08 | 5.77 | 5.23 | 1.02 | 1.08 | 87.71 |
+| 50 | Italy | 0.82 | 3.49 | 4.75 | 0.90 | 0.78 | 64.43 |
+| 50 | Poland | 3.16 | 6.44 | 2.43 | 0.84 | 2.92 | 100.00 |
+| 100 | USA | 4.23 | 195.6 | 40.8 | 1.13 | 3.99 | 100.00 |
+| 100 | Sweden | 0.79 | 6.32 | 6.32 | 1.27 | 1.88 | 71.99 |
+| 100 | Germany | 1.97 | 105.4 | 52.0 | 1.03 | 1.92 | 100.00 |
+| 100 | France | 1.32 | 46.5 | 34.6 | 1.02 | 1.29 | 96.61 |
+| 100 | Italy | 0.81 | 16.1 | 22.5 | 0.88 | 0.77 | 61.48 |
+| 100 | Poland | 13.74 | 114.4 | 9.92 | 0.84 | 12.40 | 100.00 |
+
+Read across a row: the real line per head tracks real GDP per head (the USA 4.23 against 3.99, Poland 13.7 against 12.4, Germany 1.97 against 1.92, Italy 0.81 against 0.77) - the AI's budget rule grows the infrastructure lines with output, so a country whose output per head quadruples spends four times as much on roads per head and the survey score climbs to its cap; Sweden's line follows prices alone (nominal ÷ seed = the price level, 6.32 = 6.32) while its population grows 27 %, so its real spending per head FALLS and its score with it (83.9 → 72.0). The readout was telling the truth about the lines; what was wrong is that a bounded survey score (a 7 of 7) was being driven linearly past its meaning.
+
+**The fix, as a readout** (`InfrastructureFamily.RebuildFor`, `SaturationFactor`): the rebuild is scaled by (100 − score now) ÷ (100 − the seed's score) - exactly 1 at the seed's score, so **the seed's spending holds the seed's score to the digit** (asserted for six), falling to 0 at the ceiling so more money approaches 100 and never sits on it, and above 1 below the seed so a worse network is cheaper to rebuild - one diminishing-returns statement read both ways. No elasticity moved (decay 4 %, rebuild 0.7 as §339 had them). Sweden's path is the lines', not the readout's, and is left as the readout reads it.
+
+**Asserted** (`InfrastructureReadoutDiagnostic`, the simulation bar): at the seed's spending the rebuild equals the decay for six (to 1e-5) and the saturation factor is 1; Sweden over twenty years through the decision - untouched **83.06**, the lines cut **64.93**, raised **91.31** (below the ceiling); a century at the seed's spending (each country played with no decisions, so its lines stay at the seed's real level) reaches neither ceiling nor floor - Sweden 81.5, Germany 83.2, France 85.2, Italy 73.1, Poland 74.3, the USA 86.3 at year 100, maxima within a point of the seed. *"INFRASTRUCTURE READOUT: PASS - the seed's spending holds the seed's score; the ceiling is approached, never sat on."* The probe re-run on the same bytes (`infradrift2.log`, the AI growing the five's lines with output) reads at year 100: the USA **94.9** (was 100 at year 50), Poland **94.0** (was 100), Germany 88.9, France 87.5, Italy 68.2, Sweden 81.5 - the lines' growth now buys an approach to the ceiling, not the ceiling.
+
+**Byte-identical on every pre-existing field** (`traj_p5rf1_*` against `traj_p5tmt_*`): **59 of 61 fields byte-identical on every pair; the two that open are `RoadQuality` and `RoadConnectivity`, the family's own readouts (§339), which no pre-existing field reads** - Poland's score at turn 40 is 18.9 points below the linear form's (81.1 against 100), Italy's connectivity 8.3 points off at a century. Nothing else moved, to the byte, on either seed at any horizon.
+
+**Bar:** `RunSimulationBatch` **29 of 29** (bar201; `InfrastructureReadoutDiagnostic` after the family's check), `RunAllBatch` **32 of 32** (bar201); the dump `traj_p5rf1_*` on the same bytes.
+
+**Then, and only then, the feedback measured again:** PLACEHOLDER-354-FEEDBACK
