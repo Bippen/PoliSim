@@ -94,7 +94,7 @@ namespace PoliSim.Data
         /// deaths; the diagnostic's own printout - 45 against 950 - showed that wrong, and the identity replaced it before anything was dumped on it.) Retires
         /// the "HELD at its sourced seed" of F2's CohortDemographics for THIS one channel - the lever map's last unreached quantity closes here.</summary>
         public static float DeathRateFor(HealthSeeds s, float treatableMortality)
-            => Mathf.Max(0.5f, s.DeathRateSeed + (treatableMortality - s.TreatableMortality) / 100f);
+            => Mathf.Max(0.5f, s.DeathRateSeed + (treatableMortality - TrendedAnchor(s)) / 100f);   // §364: the deviation from the trended anchor - the trend's deaths are the projection's already
 
         /// <summary>The deaths per 1 000 above (or below) the seed's crude rate that the family has written - what the cohort substrate removes from the
         /// pyramid each year (CohortDemographics.Step), so that the identity Δpopulation = births − deaths + migration closes on DEATHS and the migration
@@ -106,12 +106,14 @@ namespace PoliSim.Data
             return country.State.DeathRate - s.DeathRateSeed;
         }
 
-        /// <summary>ln(seed ÷ treatable mortality now) - positive when care has improved; 0 at the seed; clamped to ±ln 4 as a runaway guard.</summary>
+        /// <summary>ln(the TRENDED anchor ÷ treatable mortality now) - positive when care is better than the world's own trend would have it (the deviation form,
+        /// §364: the trend is what the publisher's projection already carries, so only the deviation from it is a term); 0 at the seed and 0 on the trend; clamped to
+        /// ±ln 4 as a runaway guard.</summary>
         public static float QualityLog(Country country)
         {
             HealthSeeds s = country.Health;
             if (s == null || !s.Seeded || s.TreatableMortality <= 0f || country.State.TreatableMortality <= 0f) { return 0f; }
-            return Mathf.Clamp(Mathf.Log(s.TreatableMortality / country.State.TreatableMortality), -1.386f, 1.386f);
+            return Mathf.Clamp(Mathf.Log(TrendedAnchor(s) / country.State.TreatableMortality), -1.386f, 1.386f);
         }
 
         /// <summary>The life-expectancy term, years, added to MacroSystem.ApplyLifeExpectancy's target.</summary>
@@ -169,7 +171,7 @@ namespace PoliSim.Data
         /// <summary>The quality anchor the target multiplies: the seed's treatable mortality carried along the sourced trend (seed × TrendIndex). The elasticities
         /// then read spending and effectiveness against THIS anchor, so the world's improvement and the player's are separate terms, as B7 separates the
         /// productivity trend from the cycle.</summary>
-        public static float TrendedAnchor(HealthSeeds s) => s.TreatableMortality * Mathf.Max(0.0001f, s.TrendIndex);
+        public static float TrendedAnchor(HealthSeeds s) => Mathf.Max(MinTreatableMortality, s.TreatableMortality * Mathf.Max(0.0001f, s.TrendIndex));   // §364: the anchor is bounded by the same floor as the metric, so once both sit on the guard the deviation is zero rather than the anchor's distance below it
 
         private static void Set(HealthSeeds s, float coverage, float coveragePublic, float ceiling, int coverageYear, float tm, int tmYear,
             float waitCataract, float waitKnee, int waitYear, float[] supporting, int supportingYear)

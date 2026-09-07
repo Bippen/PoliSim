@@ -11,7 +11,7 @@ namespace PoliSim.EditorTools
     /// the rates are the sourced ones (Sweden −0.02980, Poland −0.01944). (2) The index compounds: after twenty years Sweden's is exp(20 × rate) to 1e-5 and the
     /// anchor is seed × index. (3) Both directions still hold around the trended anchor: the health lines cut through the decision leave treatable mortality HIGHER
     /// than untouched, raised LOWER - the trend and the player's effect are separate terms. (4) The death-rate identity and the pyramid carry the trend: at baseline
-    /// the death rate falls with treatable mortality and the population sits above the publisher's path; the migration reading moves by less than a tenth of the
+    /// the death rate stays at the seed's within the reversion lag and the population stays on the publisher's path (the deviation form, §364); the migration reading moves by less than a tenth of the
     /// death-rate change. (5) The floor (10 per 100 000) is a guard, not a statement: the year it binds at baseline is REPORTED per country over a century.
     /// </summary>
     public static class HealthTrendDiagnostic
@@ -40,8 +40,11 @@ namespace PoliSim.EditorTools
             if (Mathf.Abs(untouched[1] - expectedIndex) > 1e-5f) { Debug.LogError($"HEALTH TREND: Sweden's index after {Years} years is {untouched[1]:R}, not exp(20 × rate) = {expectedIndex:R}."); ok = false; }
             if (!(untouched[0] < 45f)) { Debug.LogError($"HEALTH TREND: Sweden's treatable mortality did not fall at baseline ({untouched[0]:F2} against the seed's 45)."); ok = false; }
             if (!(cut[0] > untouched[0]) || !(raised[0] < untouched[0])) { Debug.LogError($"HEALTH TREND: around the trended anchor the cut ({cut[0]:F2}) and the raise ({raised[0]:F2}) do not bracket untouched ({untouched[0]:F2})."); ok = false; }
-            if (!(untouched[2] < 9.5f)) { Debug.LogError($"HEALTH TREND: the death rate does not carry the trend ({untouched[2]:F3} against the seed's 9.5)."); ok = false; }
-            if (Mathf.Abs(untouched[2] - (9.5f + (untouched[0] - 45f) / 100f)) > 1e-3f) { Debug.LogError($"HEALTH TREND: the death-rate identity broke ({untouched[2]:F4} against seed + Δ treatable ÷ 100 = {9.5f + (untouched[0] - 45f) / 100f:F4})."); ok = false; }
+            // §364, the deviation form: the death rate reads the deviation from the TRENDED anchor (45 × index), not from the seed - at baseline it stays within the
+            // reversion lag of the seed's 9.5 (treatable mortality follows a moving anchor a step behind), and the trend itself moves nothing but the readout.
+            float anchor20 = 45f * untouched[1];
+            if (Mathf.Abs(untouched[2] - (9.5f + (untouched[0] - anchor20) / 100f)) > 1e-3f) { Debug.LogError($"HEALTH TREND: the death-rate identity broke ({untouched[2]:F4} against seed + (treatable − trended anchor) ÷ 100 = {9.5f + (untouched[0] - anchor20) / 100f:F4})."); ok = false; }
+            if (Mathf.Abs(untouched[2] - 9.5f) > 0.05f) { Debug.LogError($"HEALTH TREND: at baseline the death rate left the seed by {untouched[2] - 9.5f:F4} per 1 000 - the trend is being counted, not just the deviation from it."); ok = false; }
             if (Mathf.Abs(cut[4] - untouched[4]) > 0.1f * Mathf.Abs(cut[2] - untouched[2])) { Debug.LogError($"HEALTH TREND: the migration reading moved {cut[4] - untouched[4]:F4} against a death-rate change of {cut[2] - untouched[2]:F4}."); ok = false; }
 
             var floors = new List<string>();
@@ -54,7 +57,7 @@ namespace PoliSim.EditorTools
             Debug.Log($"HEALTH TREND: Sweden after {Years} years - untouched: treatable mortality {untouched[0]:F2} (anchor index {untouched[1]:F4}), death rate {untouched[2]:F3}, population {untouched[3]:F4} M, net migration {untouched[4]:F3}, life expectancy {untouched[5]:F2}; "
                 + $"lines cut (-20 % asked): {cut[0]:F2} / {cut[2]:F3} / {cut[3]:F4} M; raised (+20 %): {raised[0]:F2} / {raised[2]:F3} / {raised[3]:F4} M - the trend and the player's effect are separate terms. "
                 + $"The floor of 10 per 100 000 binds at baseline: {string.Join(", ", floors)} - a guard's binding year, reported, not a statement about care.");
-            Debug.Log(ok ? "HEALTH TREND: PASS - the anchor compounds at the sourced rate, both directions around it, the identity and the pyramid carry it, the floor reported." : "HEALTH TREND: FAILED (see above).");
+            Debug.Log(ok ? "HEALTH TREND: PASS - the anchor compounds at the sourced rate, both directions around it, the identity reads the deviation from it, the floor reported." : "HEALTH TREND: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
         }
 
