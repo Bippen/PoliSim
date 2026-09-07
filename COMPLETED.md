@@ -24697,3 +24697,22 @@ Verbatim: *"the US sequester at 0.5 % stays, tagged as a borrowed calibration to
 **Nothing landed.** The term stays out of the target; the second seat of FT-7 (potential reading employment) is the remaining piece between this reading and SELMA's, and it is sheeted at its cost (§391). FT-5's row carries the re-measurement.
 
 **Bar:** the probe is an Editor tool in no bar; `RunAllBatch` on the commit's tree - `RunAllBatch` **33 of 33** (`bar233_probes_RunAllBatch`, the probe compiled on it); the probe itself asserts nothing.
+
+## 393. THE NAIRU HALF OF §379, RE-READ BEHIND THE JOBS LAG (2026-09-07, night)
+
+**The ruling:** *"and the NAIRU half of §379."* §379 measured the inflation drift as two halves: adaptive expectations remembering shocks (closed by §385's decaying form) and a persistent unemployment gap of −0.05 to −0.13 points below NAIRU for six, which the Phillips curve read as +0.015 to +0.04 a year, with the gap's own source inferred as the level nudges in Okun's law rather than the growth-gap form. §389 named the jobs lag as the mechanism that could re-anchor it, since unemployment never read the supply side.
+
+**Re-read** (`InflationDriftProbe` on the tree with §391's first seat, `infldrift2.log`, the same 300 turns, no player, seed 777): 
+
+| country | mean U − NAIRU, §379 (before) | mean U − NAIRU, after the first seat | below NAIRU, share of turns | inflation − expectations, before → after | inflation at year 300, before → after |
+|---|---|---|---|---|---|
+| USA | −0.13 | **−0.21** | 84 % | +0.058 → +0.101 | 8.1 → **2.08** |
+| Sweden | −0.12 | **−0.25** | 78 % | +0.072 → +0.128 | 6.9 → **2.01** |
+| Germany | −0.11 | **−0.21** | 72 % | +0.072 → +0.119 | 7.9 → **2.05** |
+| France | −0.05 | **−0.16** | 76 % | +0.030 → +0.072 | 5.3 → **1.78** |
+| Italy | −0.05 | **−0.18** | 71 % | +0.064 → +0.111 | 4.9 → **1.98** |
+| Poland | −0.10 | **−0.27** | 81 % | +0.081 → +0.144 | 5.9 → **2.59** |
+
+**What it says.** **The NAIRU half is wider, not narrower, with the first seat alone - and it no longer moves the level of inflation.** An ageing country's participation drifts down for centuries; under the first seat that drift is a NEGATIVE supply excess every year - fewer job seekers, a lower unemployment rate - while the NAIRU is the seed's fixed figure and potential still counts the departing participants (the second seat), so unemployment sits a fifth to a quarter of a point below NAIRU in seven or eight years of ten, where §379 read a twentieth to an eighth. The Phillips curve reads it the same way (+0.05 to +0.08 a year at the slope) and the print exceeds expectations by a tenth a year for six - but §385's decaying expectations forget it toward the target, so inflation at year 300 stands at 1.8-2.6 % where it stood at 5-8 %. The drift §379 opened is closed at the level; the gap it measured is now a labour-market fact rather than an inflation fact: six states' unemployment reads below their natural rate as their workforces shrink. Its closing is the second seat's - potential reading employment, so a shrinking labour force is less output rather than less slack - and possibly a natural rate that reads the labour force, which SELMA's does not need because its participation is a choice, not a drift. It stays MEASURED, Elias's, with the second seat.
+
+**Bar:** the probe is an Editor tool in no bar; `RunAllBatch` on the commit's tree - `RunAllBatch` **33 of 33** (`bar234_close3_RunAllBatch`, the residue count's FT-7 reason updated to the second seat on it); `ResidueCheck` reads 0 open.
