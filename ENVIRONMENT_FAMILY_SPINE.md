@@ -54,6 +54,8 @@ The family reads the carbon tax (`TaxType.CarbonTax`, whose base P5-B3 left on o
 
 **What this family changes elsewhere, sheeted:** the carbon tax's BASE moves from output to the electricity and transport CO₂ metric when C5 lands (P5-B3's reason for leaving it on output), so a tax that works erodes its own base - as a Pigouvian tax does. **Feedback to the model, proposed and NOT built:** none in this pass; the emissions metrics are outcomes and read nothing back into output until a damage or trade channel is sourced.
 
+**BUILT 2026-09-07 (overnight), `COMPLETED.md` §349 - the base moved.** `TaxBaseDriver.Emissions` = (power CO₂ per head + transport CO₂ per head) × population, the fifth tax-base driver; `TaxBases.Of(CarbonTax)` reads it and nothing else moved. The base at the seed is still the sourced share of GDP; what it FOLLOWS is the taxed tonnes, so a tax that works erodes its own base (`EnvironmentFeedbackDiagnostic`: the identity, the erosion under a raise, output's bases untouched). Absent intensities read a level of 0 and the base holds at the seed's real level; a save from before the pass grows its four references to five on first read.
+
 ## 5. Display rows, drafted (Sweden, Germany, France, Italy, Poland, USA)
 
 | row | figure | unit | source line (caption mono) | band | arrows to |

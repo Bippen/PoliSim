@@ -368,6 +368,7 @@ namespace PoliSim.EditorTools
                 ("EducationFeedbackDiagnostic", EducationFeedbackDiagnostic.Run),   // the education feedback pass (2026-09-07): zero at the seed, both directions, absent stays zero, inside the guards
                 ("InfrastructureFamilyDiagnostic", InfrastructureFamilyDiagnostic.Run),   // P5-C4 (2026-09-06): the seeds are the spine's, the seed's spending holds the seed's score, the couplings move the stated way
                 ("EnvironmentFamilyDiagnostic", EnvironmentFamilyDiagnostic.Run),   // P5-C5 (2026-09-06): the seeds are the spine's, the headline is its keys, the carbon tax moves them the stated way
+                ("EnvironmentFeedbackDiagnostic", EnvironmentFeedbackDiagnostic.Run),   // the environment feedback pass (2026-09-07): the carbon base is the taxed CO₂ - the identity, the erosion under a raise, output's bases untouched
                 ("ImmigrationPovertyFamilyDiagnostic", ImmigrationPovertyFamilyDiagnostic.Run),   // P5-C6 (2026-09-06): the seeds with their two definitions, the couplings by definition, the stated way
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for

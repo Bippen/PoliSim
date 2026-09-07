@@ -11,7 +11,7 @@ namespace PoliSim.Data
     ///
     /// THE COUPLINGS ARE READOUTS, NOT FEEDBACK: the family reads the carbon tax's rate against its seed and the energy and infrastructure lines per
     /// head against their seeds, and moves the two sector figures; the headline is derived from them with the other sectors held at their seed
-    /// share. The carbon tax's BASE stays on output (P5-B3) - moving it to these metrics is SHEETED on the row, not built (a revenue change is
+    /// share. The carbon tax's BASE moved to these metrics on 2026-09-07 (TaxBases.Emissions: power and transport CO₂ per head × population; COMPLETED.md §349) - it had stayed on output since P5-B3 (a revenue change is
     /// BASELINE and its own pass).
     /// </summary>
     public sealed class EnvironmentSeeds
@@ -66,6 +66,9 @@ namespace PoliSim.Data
             s.CarbonTaxRateSeed = CarbonTaxRate(country);
             s.EnergyPerHeadSeed = PerHead(country, SpendingCategory.Energy, SpendingCategory.ClimateAndEnvironment);
             s.InfrastructurePerHeadSeed = PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation);
+            // The feedback pass (2026-09-07): the family seeds AFTER Country.CaptureStructuralBases, so the emissions reference the carbon base follows is written here, at the
+            // seed's own level (otherwise the existing first-read rule would anchor it a year late).
+            if (country.RevenueBaseSeeds != null && country.RevenueBaseSeeds.Length > (int)TaxBaseDriver.Emissions) { country.RevenueBaseSeeds[(int)TaxBaseDriver.Emissions] = TaxBases.Level(TaxBaseDriver.Emissions, country); }
             s.Seeded = true;
         }
 

@@ -16,19 +16,22 @@ namespace PoliSim.Data
     /// </summary>
     public enum TaxBaseDriver
     {
-        /// <summary>GDP - D-16's base as it was; corporate and capital income scale with output absent a profit-share series, carbon awaits P5-C5's CO₂, estate and wealth taxes are levied on stocks the model does not carry.</summary>
+        /// <summary>GDP - D-16's base as it was; corporate and capital income scale with output absent a profit-share series, carbon moved to the taxed CO₂ on 2026-09-07 (Emissions), estate and wealth taxes are levied on stocks the model does not carry.</summary>
         Output,
         /// <summary>Employment times the real wage: the 20–64 cohort × participation × (1 − unemployment) × RealWageIndex - the caseload income and payroll taxes are levied on.</summary>
         WageBill,
         /// <summary>Household consumption (the C of the national accounts) - what VAT, sales and excise taxes are levied on.</summary>
         Consumption,
         /// <summary>The housing stock at its price: population × HousePriceIndex - what a property tax is levied on.</summary>
-        Housing
+        Housing,
+        /// <summary>The taxed emissions (the environment feedback pass, 2026-09-07): power and transport CO₂ per head (EnvironmentFamily, EDGAR-seeded, moved by the
+        /// carbon tax and the two lines) times the population - tonnes, what a carbon tax is levied on. A tax that works erodes its own base, as a Pigouvian tax does.</summary>
+        Emissions
     }
 
     public static class TaxBases
     {
-        public const int DriverCount = 4;
+        public const int DriverCount = 5;
 
         /// <summary>The driver per instrument, stated once. A type not listed follows output (D-16's base unchanged).</summary>
         public static TaxBaseDriver Of(TaxType type)
@@ -44,6 +47,8 @@ namespace PoliSim.Data
                     return TaxBaseDriver.Consumption;
                 case TaxType.PropertyTax:
                     return TaxBaseDriver.Housing;
+                case TaxType.CarbonTax:
+                    return TaxBaseDriver.Emissions;   // the environment feedback pass (2026-09-07): off output, onto the taxed CO₂
                 default:
                     return TaxBaseDriver.Output;
             }
@@ -64,6 +69,9 @@ namespace PoliSim.Data
                     return Mathf.Max(0f, s.Consumption);
                 case TaxBaseDriver.Housing:
                     return Mathf.Max(0f, s.Population) * Mathf.Max(0f, s.HousePriceIndex) / 100f;
+                case TaxBaseDriver.Emissions:
+                    // Absent intensities (no family, or a save from before it) read 0, so the base holds at the seed's real level - stated, not invented.
+                    return s.PowerCo2PerCapita > 0f && s.TransportCo2PerCapita > 0f ? (s.PowerCo2PerCapita + s.TransportCo2PerCapita) * Mathf.Max(0f, s.Population) : 0f;
                 default:
                     return Mathf.Max(0f, s.GDP);
             }
@@ -80,10 +88,11 @@ namespace PoliSim.Data
         public static float Base(Country country, TaxType type)
         {
             float share = TaxBaseTable.BaseShareOfGdp(country.Id, type);
-            if (country.RevenueBaseSeedGdp <= 0f || country.RevenueBaseSeeds == null || country.RevenueBaseSeeds.Length < DriverCount)
+            if (country.RevenueBaseSeedGdp <= 0f || country.RevenueBaseSeeds == null)
             {
                 return share * country.State.NominalGdp;   // P5-B6: nominal
             }
+            if (country.RevenueBaseSeeds.Length < DriverCount) { System.Array.Resize(ref country.RevenueBaseSeeds, DriverCount); }   // a save from before a driver was added: its reference is captured on first read
             TaxBaseDriver driver = Of(type);
             float level = Level(driver, country);
             float reference = country.RevenueBaseSeeds[(int)driver];
@@ -101,7 +110,8 @@ namespace PoliSim.Data
         /// <summary>The driver's ratio now against the seed - 1 where the driver has not moved or is not yet referenced.</summary>
         public static float DriverRatio(Country country, TaxType type)
         {
-            if (country.RevenueBaseSeeds == null || country.RevenueBaseSeeds.Length < DriverCount) { return 1f; }
+            if (country.RevenueBaseSeeds == null) { return 1f; }
+            if (country.RevenueBaseSeeds.Length < DriverCount) { System.Array.Resize(ref country.RevenueBaseSeeds, DriverCount); }
             TaxBaseDriver driver = Of(type);
             float reference = country.RevenueBaseSeeds[(int)driver];
             float level = Level(driver, country);
@@ -115,6 +125,7 @@ namespace PoliSim.Data
                 case TaxBaseDriver.WageBill: return "the wage bill";
                 case TaxBaseDriver.Consumption: return "consumption";
                 case TaxBaseDriver.Housing: return "the housing stock at its price";
+                case TaxBaseDriver.Emissions: return "the taxed emissions (power and transport CO₂)";
                 default: return "output";
             }
         }
