@@ -42,6 +42,9 @@ namespace PoliSim.EditorTools
             ("D-7", "DESIGN", "board 2b, the Policy Web drawn to be read - never pasted, Design's to draw"),
             ("D-8.1", "DESIGN", "the party identity marks, 52 of 53 undrawn - original art by silhouette"),
             ("D-1 portraits", "DESIGN", "appointed ministers render the procedural placeholder until the portrait delivery"),
+            ("T-3", "OWNER ELIAS", "the identity's government-consumption block - trigger fired (C-N5), the six shares sourced (§376); the form of G in the identity is a seed change on six countries and Elias's ruling"),
+            ("dials-only laws", "OWNER ELIAS", "whether laws should reach the 31 dials-only quantities, and which - a design call with no literature to read it from (§378)"),
+            ("FT-6", "OWNER ELIAS", "the long-horizon inflation drift - measured and three forms proposed (§379); the hold on inflation is a macro-core specification, ruled not typed"),
             ("K-1", "CALENDAR", "the seed refresh from Sweden's real result - 13 September 2026"),
         };
 
@@ -129,9 +132,14 @@ namespace PoliSim.EditorTools
                     if (lines[i].IndexOf("to fetch", StringComparison.OrdinalIgnoreCase) >= 0 && lines[i].Contains("\"")) { open.Add($"{file}:{i + 1}: a UI string still says \"to fetch\""); }
                 }
             }
+            // The exclusions REMOVE by name (2026-09-07, §376): an open entry whose id is an excluded name is Elias's, Design's or the calendar's -
+            // printed under the exclusions rather than counted. Until this date no scanned row carried an excluded name, so the list was print-only.
+            var excludedOpen = new List<string>();
+            open.RemoveAll(o => { foreach (var e in Excluded) { if (o.StartsWith(e.Name + ":", StringComparison.Ordinal)) { excludedOpen.Add($"{o} - {e.Owner}"); return true; } } return false; });
 
             sb.Append($"    THE EXCLUSIONS, by name ({Excluded.Length}):\n");
             foreach (var e in Excluded) { sb.Append($"      {e.Name,-14} {e.Owner,-12} {e.Reason}\n"); }
+            foreach (string o in excludedOpen) { sb.Append($"      (excluded, not counted) {o}\n"); }
             sb.Append($"    THE RESIDUE: {open.Count} open item(s) a session could start ({scanned} file(s) scanned).\n");
             foreach (string o in open) { sb.Append($"      - {o}\n"); }
             if (open.Count == 0) { sb.Append("    ZERO - no CODE row is startable. This is not \"finished\": the excluded rows above are still open, and they are Elias's, Design's or the calendar's.\n"); }

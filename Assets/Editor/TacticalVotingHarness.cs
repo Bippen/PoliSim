@@ -49,7 +49,7 @@ namespace PoliSim.EditorTools
         private static readonly double[] Result2018 = { 28.26, 17.53, 19.84, 8.00, 8.61, 6.32, 4.41, 5.49 };
 
         private const double Threshold = 0.04;
-        private const double Awareness = 0.5;   // [AUTHORED-DRAFT]
+        private const double Awareness = 0.5;   // [AUTHORED-DRAFT] - the STAGING figure of the tactical layer (W-A4): half the bloc's voters aware of the threshold in the harness's staging; the play-calibration list's entry 13 carries it, and it is not tuned here
         private const int L = 7, MP = 6, KD = 5, M = 2, S = 0, SD = 1;
 
         public static void Run()
