@@ -1274,3 +1274,41 @@ here; the evidence is there.*
   comments included.
 - ⚠ **A document can assert two states of one task at once.** When a live document is edited, search it
   for the task's other mentions before saving.
+
+## The closing section — what is left, whose it is, what each unblocks (2026-09-07, evening; `COMPLETED.md` §381)
+
+**The residue reads zero** (`ResidueCheck`, `bar223_shelf_RunAllBatch`, 33 of 33, 383 files scanned): no CODE row a session could start. That is not "finished". Every row below is open and owned; the count excludes each by name with its reason, and this section is the list the count points at.
+
+### OWNER ELIAS
+
+| row | what it is | what it unblocks |
+|---|---|---|
+| **E-1** (`ERRANDS.md`) | register at `itanes.it`; the 2013 and 2018 waves | F3's per-group loyalty for Italy - the one input the elections model lacks |
+| **E-3** (`ERRANDS.md`) | the RETURN paste to Design and the glance | the seven Swedish marks then the batch, the two Society icons, the valkrets cartogram - all consumed on landing, nothing queued behind them |
+| **E-6** (`ERRANDS.md`) | Italy's IRPEF *scaglioni* as a text a fetch can read | the last open figure of F4's bill |
+| **The §V sitting** and the two felt verdicts (E-2..E-4 of the register) | 54 rows read by a person; decision density and the Trade bill's costs, played | the judgements no harness film can give |
+| **The 20 play-calibration entries** (E-5..E-24; `COMPLETED.md` §189) | constants judged by playing | the loop's feel - each entry says what must not be tuned meanwhile; two of its names are stale and recorded (§380) |
+| **E-25..E-29** | C-C6's basis, C-C11's recalibration lines (FT-1 held, FT-4 fixed), the tax spec-let, C-D2's pool, C-D3's språkrör | F-7's instruments behind E-27; the rest execute as written unless struck |
+| **T-3** (§376) | the identity's government-consumption block - the six P3_S13 shares are in hand, the form of G in the identity is the ruling | P-N5b, Okun on the output gap (FT-2's fix); the level output gap meaning something |
+| **RF-2's form** (§370, RECONSIDER) | the AI's caseload lines' real cost per head frozen at the seed makes five AI states net creditors within two centuries; the wage-indexed form is sheeted with a legal anchor | the AI countries' fiscal path over a century - what the player sees on their screens |
+| **FT-6** (§379) | inflation's hold over the long horizon - a persistent gap below NAIRU ratchets through adaptive expectations; three forms proposed | the 1000-turn horizon read past year ~765; the zone rate off its cap |
+| **Laws for the dials-only set** (§378) | whether laws should reach the 31 dials-only quantities, and which | a fifth law category, or the row stays closed |
+| **The infrastructure level form** (§374) | λ billed - IMF WP/22/95's coefficient, unreachable from a session | the quality-to-output-level feedback, if wanted back |
+| **PISA, the graduation rate, congestion** (§373) | three series billed with the reason a session cannot reach them | three plate rows printing figures instead of BILLED |
+
+### DESIGN
+
+| row | what it is | what it unblocks |
+|---|---|---|
+| **D-7** | board 2b, the Policy Web drawn to be read | the web as a picture rather than a list |
+| **D-8.1** | the party identity marks, 52 of 53 undrawn (the seven Swedish ones first) | the marks are CONSUMED on landing (§158); 13 September needs the seven |
+| **D-8.2..D-8.6, D-E4** | five countries' party colours (a ruling), the valkrets map, election night's paper, the verdict stamp, modal-or-stage, the two Society icons | each its screen's finished face; all eleven D9 rows are answered and the batch waits on E-3 |
+| **D-1 portraits** | appointed ministers render the procedural placeholder | the cabinet's faces |
+
+### CALENDAR
+
+| row | what it is | what it unblocks |
+|---|---|---|
+| **K-1** | the seed refresh from Sweden's real result | **13 September 2026** - the game's Sweden after the election |
+
+Nothing else is open. The strikeable decisions of this run are marked in §380 (HOLDS / RECONSIDER / NEEDS ELIAS); the fix-track table carries FT-1..FT-6 and RF-1..RF-2 each with its state; the shelf's last cycle is §380.

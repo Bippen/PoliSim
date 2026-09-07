@@ -24497,3 +24497,13 @@ Five pairs within 0.4 of a point (Germany's the widest, a vintage difference); t
 | §379 | FT-6 measured and proposed, nothing applied | **NEEDS ELIAS** - the hold on inflation is a specification of the macro core |
 
 **Bar:** docs and the errands file; the cheap bar of the item's commit - `RunAllBatch` **33 of 33** (`bar223_shelf_RunAllBatch`): `ResidueCheck` reads **0 open** with FT-6 printed as excluded and not counted, `RatchetSlackCheck` eleven tight.
+
+## 381. THE RUN'S END — the residue reads zero; what is left is Elias's, Design's or the calendar's, and the governing document's closing section says so (2026-09-07, evening)
+
+**The residue** (`ResidueCheck`, `bar223_shelf_RunAllBatch`, 33 of 33): **0 open item(s) a session could start, 383 files scanned** - the print says so and then says what zero is not: *no CODE row is startable; this is not finished: the excluded rows are still open, and they are Elias's, Design's or the calendar's* - seventeen exclusions by name, each with its reason, FT-6 among them printed as excluded and not counted. The count fell from 31 at the re-arm (§369) to 0 in eleven commits.
+
+**The queue of §369, item by item:** 4 RF-2 applied as ruled and explained (§370, RECONSIDER flagged); 5 the share line and the `Budget` documentation (§371); 6 FT-5 read at the source and applied as strikeable (§372); 7 the four fetch rows billed (§373); 8 the level form closed as sheeted-with-reason (§374); 9 immigration billed (§375); 10 every CODE row - FT-2 by reason with T-3 re-homed and its figures sourced (§376), FT-3 applied as strikeable (§377), P4-C3 closed on its done-when (§378), FT-6 opened by the RF-2 family's 1000-turn dump and measured to a proposal (§379), the one bare `[AUTHORED-DRAFT]` given its reason. The shelf cycled once to the end (§380). Eleven commits, each on its own green bar, each pushed fast-forward.
+
+**What the run found that nobody asked it to** - stated once here, owned in the closing section: the ruled RF-2 form makes the AI states net creditors within two centuries (§370); inflation drifts a point a century for six and the book leaves float range at year ~765 (§379); a household tax absent at the seed cancelled itself in the C term (§377); the seventh chip squeezed the sixth (§371).
+
+**The closing section** is at the end of `POLISIM_FEATURE_LIST.md`: what is left, whose it is, what each unblocks. Nothing else is open.
