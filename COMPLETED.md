@@ -24176,3 +24176,20 @@ The third column is the compounded potential growth Π(1 + g_t) and nothing else
 **Proposed, nothing applied.** Bind the rule to B2's drivers, and give the lines that have none a stated anchor. **(a)** A line WITH a driver (the caseload lines: pensions on the 65+ cohort, health on the age-cost index, education and family on the youth cohort, labour market on unemployment, housing and justice on population) follows prices × its driver and nothing else, for the AI as for the player - a caseload is a caseload; its real cost per head is the policy, and the AI's rule today raises real provision per head with potential growth on every one of them, which is a policy decision nobody took. **(b)** A line WITHOUT a driver (the pure discretionary block: defence, administration, foreign affairs, energy, transport, the agencies - every `None` in the probe) follows prices × the country's real potential growth, as now: these are the lines a finance ministry sizes against the economy, and holding them at the seed's share of output is what the rule's doc comment meant by "the annual budget its finance ministry would pass". **(c)** The player's lines stay as they are (drivers and prices), with the Budget screen's NEXT column already saying what each line will do; the drivers-only drift of the player's G (42 % → 21 % of GDP over a century of doing nothing) is the player's own to notice, and the note goes to the play-calibration list rather than into a rule. **Measured bounds for the ruling:** the two pure forms above bracket the proposal; the mixed form's path is not measured tonight (it needs the rule written, which is the ruling's to give), and its own BASELINE when applied - every AI line moves. Nothing applied.
 
 **Bar:** the probes are Editor tools in no bar; `RunAllBatch` 32 of 32 on the commit's tree (bar212).
+
+## 368. THE SHELF, CYCLED AFTER THE AFTERNOON'S RULINGS (2026-09-07)
+
+**Ratchets.** `RatchetSlackCheck` on the afternoon's bar (bar212): eleven reported, eleven tight, the same values as §347, §360 and §365; the impact ratchet holds at 0.507 on the corrected instrument (§363). Nothing lowered, nothing raised.
+
+**The deferral register, re-read literally:** unchanged from §365; FT-5 stands behind RF-2 as ruled; E-26 carries FT-1 ruled and FT-4 fixed; E-27's tax spec-let awaits its ruling.
+
+**Errands.** E-1 and E-3 open, unchanged; nothing sent, pasted or registered - the World Bank paper was fetched from its public document server (a read).
+
+**The document set.** 19 root files, every one in the table (§356); the probes added today are Editor tools under `Assets/Editor`, not documents.
+
+**The afternoon's self-ruled sheets, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §366 | the level form left sheeted rather than typed from Calderón & Servén's growth coefficient; the two reasons stated (a survey score is not a paved-road share; a growth rate is not a level) | **HOLDS** - the ruling said state the mapping or leave it sheeted with the reason, and no mapping could be stated |
+| §367 | the proposal split by driver (caseload lines to their drivers, driverless lines to potential growth) rather than one factor for all | **HOLDS as a proposal** - both pure forms were measured and neither is a finance ministry; the mixed form waits for the ruling and its own BASELINE |
