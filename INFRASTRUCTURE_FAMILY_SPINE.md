@@ -54,6 +54,8 @@ The family reads the infrastructure spending line (`SpendingCategory.Infrastruct
 
 **Feedback to the model, proposed and NOT built:** road quality → `Country.InfrastructureSpendingGrowthAdjustment` (the channel exists; the metric would become its visible face rather than a second channel) - measured against the trajectory suite when it lands.
 
+**BUILT, MEASURED AND STOPPED 2026-09-07 (overnight), `COMPLETED.md` §350 - nothing committed.** Road quality against its seed as the growth channel's third term at the channel's own sensitivity (0.02 points of trend growth per point) passed its diagnostic and then the suite showed why it cannot stand: this family's quality READOUT drifts to its cap of 100 at baseline for four of six within a century (§339's rebuild elasticity against the lines' own real growth), so the term adds half a point of trend growth a year to those four for as long as the cap holds - potential +45 % (Poland) to +19 % (Germany) at 100 turns, Italy −8 %. A reused magnitude on a drifting readout is not an honest draft; the readout's drift is the thing to fix first, and a points-per-point elasticity of growth to road quality is not in the literature this side could read. The coupling stays a readout; the measurement is the record.
+
 ## 5. Display rows, drafted (Sweden, Germany, France, Italy, Poland, USA)
 
 | row | figure | unit | source line (caption mono) | band | arrows to |
