@@ -107,3 +107,24 @@ The grammar is Design's (the ask is installed: the People page's society block o
 | Supporting · 30-day mortality | five of six | per 100 admissions aged 45+ | OECD HCQO · DF_AC · 2022–23 | - | none |
 
 The order of the six figures in each row is Sweden, Germany, France, Italy, Poland, USA. "Absent" prints as the word, in the caption face, never as a zero or a dash the eye could read as a figure. Nothing here is built; the board corrects it, then the pass builds what the board says.
+
+## 9. The trend, 2026-09-07 (ruled) — the OECD's observed rate of improvement, per country, one vintage, on the seed's anchor
+
+**The ruling:** improvement in treatable mortality CONTINUES rather than saturating, as a SOURCED trend on the seed - the way B7's productivity trend works - never as a raised elasticity. Built in `COMPLETED.md` §353: `HealthSeeds.TreatableMortalityTrendPerYear` (below), `HealthSeeds.TrendIndex` (exp(rate × years since the seed), compounding at the yearly step), `HealthFamily.TrendedAnchor` = seed × index - the anchor the quality target multiplies, so the world's improvement and the player's spending effect are separate terms. The elasticities (§6) are untouched.
+
+**The series** (OECD `DSD_HEALTH_STAT@DF_AM`, measure TRTM, unit DT_10P5HB - deaths per 100 000, age-standardised - sex total; the whole flow fetched 2026-09-07 and filtered locally, `PoliSim-captures/sources/oecd_df_am_all.csv` → `oecd_trtm_six.tsv`); the rate is ln(last ÷ first) ÷ years, one vintage per country:
+
+| country | first year, value | last year, value | rate per year |
+|---|---|---|---|
+| Sweden | 2000, 92 | 2024, 45 | −2.980 % |
+| Germany | 2000, 109 | 2022, 63 | −2.492 % |
+| France | 2000, 78 | 2023, 46 | −2.296 % |
+| Italy | 2003, 79 | 2023, 51 | −2.188 % |
+| Poland | 2000, 169 | 2024, 106 | −1.944 % |
+| USA | 2000, 124 | 2023, 92 | −1.298 % |
+
+Since 2010 the same series runs −2.52 / −1.78 / −1.91 / −1.63 / −1.23 / −0.33 - slower everywhere and nearly flat in the USA; the ruling names one vintage since 2000 and that is the one seeded, with the 2010 reading beside it here for the day the vintage is revisited.
+
+**What it does to the family's own figures:** at baseline the quality anchor falls at the country's rate for as long as the game runs, so treatable mortality reaches the family's floor (`MinTreatableMortality` = 10 per 100 000, a runaway guard) within the century for every country - the year it binds is REPORTED per country by `HealthTrendDiagnostic`, not hidden; the floor is a guard and not a statement about care, and the ruling is that improvement continues, so the guard's binding year is a figure for Elias, not a fix.
+
+**Carried with it, as ruled:** the death-rate identity (seed + Δ treatable ÷ 100) and the pyramid's excess deaths (§343) read the trended figure, so at baseline the crude death rate falls and the pyramid holds more people than the publisher's projection. §353's §D states the double-count risk that follows (the publisher's own projection assumes continued mortality improvement) and takes the ruling as written.

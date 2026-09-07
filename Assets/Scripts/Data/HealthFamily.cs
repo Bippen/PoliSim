@@ -45,6 +45,10 @@ namespace PoliSim.Data
         public float SpendPerAgeCostSeed;      // real health spending per age-cost unit at the seed
         public float EfficiencySeed = 1f;      // the health minister's efficiency at the seed (0..1)
         public float DeathRateSeed;            // the crude death rate at the seed (per 1 000), the feedback pass's anchor
+        // ---- THE TREND FAMILY (2026-09-07, ruling 2 of the overnight review) ----
+        public float TreatableMortalityTrendPerYear;   // SOURCED: the continuous yearly rate of the OECD's own series since 2000 (DF_AM, TRTM), one vintage per country - negative is improvement
+        public int TrendFirstYear, TrendLastYear;      // the vintage's span
+        public float TrendIndex = 1f;                  // exp(rate × years since the seed), compounding at the yearly step - the anchor the quality target multiplies; 1 at the seed
         public bool Seeded;
 
         public bool HasWaits => WaitCataract >= 0f && WaitKnee >= 0f;
@@ -146,8 +150,26 @@ namespace PoliSim.Data
             s.SpendPerAgeCostSeed = SpendPerAgeCost(country);
             s.DeathRateSeed = st.DeathRate;
             s.EfficiencySeed = Efficiency(country);
+            // HEALTH_FAMILY_SPINE.md §9: ln(last ÷ first) ÷ years of the OECD series (deaths per 100 000, age-standardised, total), 2000 (Italy 2003) to the latest published year.
+            switch (country.Id)
+            {
+                case CountryId.Sweden:  Trend(s, -0.02980f, 2000, 2024); break;   // 92 → 45
+                case CountryId.Germany: Trend(s, -0.02492f, 2000, 2022); break;   // 109 → 63
+                case CountryId.France:  Trend(s, -0.02296f, 2000, 2023); break;   // 78 → 46
+                case CountryId.Italy:   Trend(s, -0.02188f, 2003, 2023); break;   // 79 → 51
+                case CountryId.Poland:  Trend(s, -0.01944f, 2000, 2024); break;   // 169 → 106
+                case CountryId.USA:     Trend(s, -0.01298f, 2000, 2023); break;   // 124 → 92
+            }
+            s.TrendIndex = 1f;
             s.Seeded = true;
         }
+
+        private static void Trend(HealthSeeds s, float ratePerYear, int firstYear, int lastYear) { s.TreatableMortalityTrendPerYear = ratePerYear; s.TrendFirstYear = firstYear; s.TrendLastYear = lastYear; }
+
+        /// <summary>The quality anchor the target multiplies: the seed's treatable mortality carried along the sourced trend (seed × TrendIndex). The elasticities
+        /// then read spending and effectiveness against THIS anchor, so the world's improvement and the player's are separate terms, as B7 separates the
+        /// productivity trend from the cycle.</summary>
+        public static float TrendedAnchor(HealthSeeds s) => s.TreatableMortality * Mathf.Max(0.0001f, s.TrendIndex);
 
         private static void Set(HealthSeeds s, float coverage, float coveragePublic, float ceiling, int coverageYear, float tm, int tmYear,
             float waitCataract, float waitKnee, int waitYear, float[] supporting, int supportingYear)
@@ -214,7 +236,7 @@ namespace PoliSim.Data
             perHeadRatio = Mathf.Max(0.01f, perHeadRatio); perAgeCostRatio = Mathf.Max(0.01f, perAgeCostRatio); effectivenessRatio = Mathf.Max(0.01f, effectivenessRatio);
 
             float coverage = Mathf.Min(s.CoverageCeiling, s.Coverage * Mathf.Pow(perHeadRatio, CoverageElasticity));
-            float tm = s.TreatableMortality * Mathf.Pow(1f / perAgeCostRatio, QualitySpendingElasticity) * Mathf.Pow(1f / effectivenessRatio, QualityEfficiencyElasticity);
+            float tm = TrendedAnchor(s) * Mathf.Pow(1f / perAgeCostRatio, QualitySpendingElasticity) * Mathf.Pow(1f / effectivenessRatio, QualityEfficiencyElasticity);   // the trend family: the anchor carries the sourced trend
             float waitFactor = Mathf.Pow(1f / effectivenessRatio, WaitEffectivenessElasticity);   // P5-C7: the waits read the ministry's effectiveness
             return new Targets(coverage, Mathf.Clamp(tm, MinTreatableMortality, MaxTreatableMortality), waitFactor);
         }
@@ -226,6 +248,8 @@ namespace PoliSim.Data
             HealthSeeds s = country.Health;
             if (s == null || !s.Seeded) { return; }
             EconomyState st = country.State;
+            // The trend family: the anchor compounds one year of the sourced rate before the year's target is read (the seed's year is index 1).
+            s.TrendIndex *= Mathf.Exp(s.TreatableMortalityTrendPerYear);
             Targets t = TargetsFor(country, HealthSpendingReal(country));
             st.HealthCoverage = Mathf.Clamp(st.HealthCoverage + (t.Coverage - st.HealthCoverage) * ReversionPerYear, 0f, s.CoverageCeiling);
             st.TreatableMortality = Mathf.Clamp(st.TreatableMortality + (t.TreatableMortality - st.TreatableMortality) * ReversionPerYear, MinTreatableMortality, MaxTreatableMortality);

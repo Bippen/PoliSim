@@ -363,6 +363,7 @@ namespace PoliSim.EditorTools
                 ("PriceLevelDiagnostic", PriceLevelDiagnostic.Run),   // P5-B6 (2026-09-05): the price level compounds at the print, the bases are real x level, the inflation cap is not approached in a century on any of the six
                 ("HealthFamilyDiagnostic", HealthFamilyDiagnostic.Run),   // P5-C2 (2026-09-05): the seeds are the spine's, absent stays absent, the couplings move the figures the stated way, the implied elasticity printed beside the authored one
                 ("HealthFeedbackDiagnostic", HealthFeedbackDiagnostic.Run),   // the health feedback pass (2026-09-06): zero at the seed, both directions, inside the guards
+                ("HealthTrendDiagnostic", HealthTrendDiagnostic.Run),   // the treatable-mortality trend family (2026-09-07): the anchor compounds at the sourced rate, the identity and the pyramid carry it, the floor's binding year reported
                 ("EffectivenessDiagnostic", EffectivenessDiagnostic.Run),   // P5-C7 (2026-09-05): allocated / requested x efficiency per portfolio; the health family reads it; underfunding degrades the outcomes
                 ("EducationFamilyDiagnostic", EducationFamilyDiagnostic.Run),   // P5-C3 (2026-09-06): the seeds are the spine's, the USA's leavers absent, the distribution holds 100, the couplings move the stated way
                 ("EducationFeedbackDiagnostic", EducationFeedbackDiagnostic.Run),   // the education feedback pass (2026-09-07): zero at the seed, both directions, absent stays zero, inside the guards
