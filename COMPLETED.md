@@ -23539,6 +23539,8 @@ Every debt-to-GDP ratio falls, and the two B3 exposed fall the most: Italy from 
 **Bar:** `RunSimulationBatch` **27 of 27** (bar196; `EnvironmentFeedbackDiagnostic` after the family's check), `RunAllBatch` **32 of 32** (bar196; `RevenueBaseDiagnostic` now prints a fourth driver on Sweden's lines - "the taxed emissions"); the dump `traj_p5env_*` on the same bytes.
 
 
+## 344. (Intentionally empty.) The overnight sections of 2026-09-06/07 were numbered as the queue ran - §342, §343, then §345 to §351 - and this number was skipped; ruled closed with this line on 2026-09-07 so that the gap is a record and not a phantom. Nothing was written here and nothing is missing.
+
 ## 345. FT-1 TO FT-3, ARTIFACT ONLY — the multiplier table re-measured on the current-prices book, a SWEDISH ANCHOR for FT-1's magnitude read at the source (Konjunkturinstitutet's SELMA multipliers, December 2025), the three proposals refreshed; NOTHING APPLIED (2026-09-07, overnight)
 
 **The queue's fourth item:** *"FT-1 to FT-3, artifact only: measurement tables and sourced proposals refreshed against the current-prices book, applied nothing; take a Swedish anchor for FT-1's magnitude if reachable."* The rows are the feature list's *Fiscal transmission* table; the ruling order (FT-1, then FT-2, then FT-3; never two in one pass) stands.
@@ -23667,3 +23669,15 @@ The commentary's own caveats, carried: the results depend on the model's assumpt
 
 **Stopped, therefore, with its bill:** the coupling is honest only with a sourced arrivals-and-stays series - Eurostat's first residence permits (`migr_resfirst`) are LEGAL inflows and already inside the publisher's projected migration; for irregular stays there is no official series for the five, and estimates (Pew Research's unauthorised-population estimates for Europe, 2019, or the EU's Clandestino project, 2008) are one-off studies to be read before anything is built on them. The row keeps its readout couplings (§341); the spine's §6 line is amended to say so; nothing moved.
 
+
+## 352. THE OVERNIGHT REVIEW'S RULINGS, RECORDED — §344 closed, the treatable-mortality trend sheeted as a family, the road-quality drift a fix-track row, immigration's feedback held, the impact ratchet's breach filed as FT-4 (2026-09-07, morning)
+
+Elias's rulings on the overnight run (§342–§351), each placed where it lives:
+
+1. **§344 is closed with one line** stating the gap is intentional - a skipped number explained is a record, unexplained a phantom. Done in place.
+2. **Treatable mortality's trend: improvement CONTINUES rather than saturating**, as a SOURCED trend on the seed - the OECD's observed rate since 2000, per country, one vintage (`DF_AM`, TRTM: Sweden −2.98 %/yr, Germany −2.49, France −2.30, Italy −2.19, Poland −1.94, the USA −1.30; `PoliSim-captures/sources/oecd_trtm_six.tsv`) - the way B7's productivity trend works, **never as a raised elasticity**. Its own BASELINE family, sheeted against §333: queue item 6, §353.
+3. **The road-quality readout's drift to its cap is a fix-track row, not a family** (`POLISIM_FEATURE_LIST.md`, *Readouts - the fix track*, RF-1): measure why, fix the readout so the seed's spending holds the seed's score over a century, then and only then re-run §350's feedback measurement; the feedback stays reverted until the readout holds. Queue item 7.
+4. **Immigration's feedback stays STOPPED** until an arrivals-and-stays series is sourced; the apprehension flow stays a readout with its definition on the row (it already prints *FOUND ILLEGALLY PRESENT*). Billed, not worked around.
+5. **The spending impact ratchet's breach (0.499 against 0.507) is FT-4** on the fiscal-transmission fix track, attributed to B6/B7, ruling-first: measure which of the two families moved it and by what path, propose, apply nothing. The ratchet is not lowered.
+
+**Bar:** documents only; `RunAllBatch` 32 of 32 (bar199) on this tree.
