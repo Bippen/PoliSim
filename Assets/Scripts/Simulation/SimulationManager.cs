@@ -2695,7 +2695,8 @@ namespace PoliSim.Simulation
             // Pass 6: NET of the tariff pass-through that actually printed on that day - the closing
             // period's applied term, captured above before the re-plan - so a price-level wedge never
             // enters the rate expectations (see ApplyInflationExpectations). Named, never positional.
-            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: closingAppliedTariffPassThroughPp);
+            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: closingAppliedTariffPassThroughPp,
+                anchorPercent: country.CurrencyZone != null ? country.CurrencyZone.InflationTarget : TaylorRule.DefaultInflationTarget);   // §385: forgotten toward the zone's target
 
             // Step 2: the formula keeps its exact pre-ledger body (the observation gate measured
             // a one-ulp codegen shift when recording lived inside it); the recorder recomputes
@@ -2934,7 +2935,8 @@ namespace PoliSim.Simulation
             float actualGrowthRate = (state.GDP - gdpBeforeThisTurn) / Mathf.Max(gdpBeforeThisTurn, 1f) * 100f;
             MacroSystem.ApplyOkunsLaw(previewCountry, actualGrowthRate);
             float previewAppliedTariffPassThroughPp = MacroSystem.ApplyPhillipsCurveInflation(previewCountry, previewTariffPassThroughPp);
-            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: previewAppliedTariffPassThroughPp);
+            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: previewAppliedTariffPassThroughPp,
+                anchorPercent: previewCountry.CurrencyZone != null ? previewCountry.CurrencyZone.InflationTarget : TaylorRule.DefaultInflationTarget);   // §385: the preview reads the same form
             MacroSystem.ApplyPovertyRate(previewCountry);
             MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
             MacroSystem.ApplyOrganizedCrimeIndex(previewCountry);

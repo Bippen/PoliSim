@@ -419,6 +419,16 @@ namespace PoliSim.Simulation
         /// <summary>How quickly inflation expectations adapt toward realized inflation each turn (0-1).</summary>
         /// <remarks>CONVENTION - a reversion/adaptation speed, the rate at which a gap closes rather than a claim about the world.</remarks>
         private const float ExpectationsAdaptationSpeed = 0.5f;
+        /// <summary>§385 (2026-09-07), AUTHORED-MAPPING from a source: the share of an expectation's distance from the zone's inflation target that closes each
+        /// year, after the adaptive step - "shocks forgotten toward the target". Gürkaynak, Levin &amp; Swanson (FRBSF WP 2006-09; JEEA 2010), Tables 2 and 5: in
+        /// Sweden (1996-2005) far-ahead (10-year) forward inflation compensation shows no significant response to inflation surprises (core CPI −0.33 bp per s.d.,
+        /// t −0.37; headline 0.85, t 1.13; joint p .42) while the one-year rate responds 2.72** - the long-run expectation is anchored; in the pre-target US
+        /// (1998-2005) far-ahead compensation responds 1.42* to a core CPI surprise, MORE than the one-year rate's 0.98 - not anchored. The mapping: here a
+        /// surprise s enters expectations at the adaptation speed (0.5 s) and then decays by this rate a year, so 0.5 × (1 − rate)^10 of it stands in ten-year
+        /// expectations; at 0.25 that is 2.8 % - the anchored reading (0 within the estimate's noise, whose headline point sits at 0.44 of the short response),
+        /// and an order below the US's pre-target unity. One rate for four zones: every zone carries an explicit target today (the Fed's 2 % since 2012, after
+        /// the sample). The band a ruling could move it in: 0.15 leaves 9.8 % after ten years, 0.5 leaves 0.05 %.</summary>
+        public const float ExpectationsAnchoringRate = 0.25f;
 
         /// <summary>Adaptive expectations: next turn's expected inflation moves partway toward this turn's realized inflation. Phase 5: the speed converts through PerDayReversion in the daily wrapper below - the adaptation is a plain reversion, Phase 2's mechanical shape.
         ///
@@ -431,10 +441,16 @@ namespace PoliSim.Simulation
         /// no-wedge print, in [0, MaxInflationPercent] at either bound. The parameter sits SECOND so a
         /// positional call can never bind it to the adaptation speed; every pre-pass-6 caller uses the
         /// one-argument form and is untouched.</summary>
-        public static void ApplyInflationExpectations(EconomyState state, float lookThroughPp = 0f, float adaptationSpeed = ExpectationsAdaptationSpeed)
+        public static void ApplyInflationExpectations(EconomyState state, float lookThroughPp = 0f, float adaptationSpeed = ExpectationsAdaptationSpeed,
+            float? anchorPercent = null, float anchoringRate = ExpectationsAnchoringRate)
         {
             float target = lookThroughPp != 0f ? state.Inflation - lookThroughPp : state.Inflation;
             state.InflationExpectations += (target - state.InflationExpectations) * adaptationSpeed;
+            // §385 (2026-09-07): the decaying-expectations form, as ruled on §379's measurement. After the adaptive step the expectation closes a fixed share
+            // of its distance from the zone's inflation target - a remembered shock is forgotten toward the target at ExpectationsAnchoringRate a year, and
+            // a persistent small gap no longer ratchets the level of inflation for centuries (§379 measured +0.03 to +0.08 a year for six, and the book
+            // leaving float range at year ~765). Named, never positional; a caller without a zone passes nothing and keeps the pre-§385 form exactly.
+            if (anchorPercent.HasValue) { state.InflationExpectations += (anchorPercent.Value - state.InflationExpectations) * anchoringRate; }
         }
 
         // --- Continuous Time Phase 5: the core macro engine's daily forms ---

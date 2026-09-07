@@ -362,6 +362,7 @@ namespace PoliSim.EditorTools
                 ("RevenueBaseDiagnostic", RevenueBaseDiagnostic.Run),   // P5-B3 (2026-09-05): every tax base at its sourced share x the seed's GDP x its driver's ratio, all six; the recession probe shows the employment channel
                 ("LineIndexationDiagnostic", LineIndexationDiagnostic.Run),   // RF-2 (2026-09-07, §370): caseload lines to their drivers, driverless lines to potential growth, the player unchanged, both directions
                 ("LaborTaxParticipationDiagnostic", LaborTaxParticipationDiagnostic.Run),   // FT-5 REVERTED (§383): the sourced term is whole and INERT - the target does not read it; sheeted behind FT-7
+                ("ExpectationsAnchoringDiagnostic", ExpectationsAnchoringDiagnostic.Run),   // §385 (2026-09-07): the target holds exactly, a shock decays at the rate both ways, the long horizon reads near target
                 ("HouseholdBurdenAnchorDiagnostic", HouseholdBurdenAnchorDiagnostic.Run),   // FT-3 (2026-09-07, §377): zero at the seed, the rate both ways, the base cancels by design, a tax absent at the seed anchors at zero
                 ("PotentialOutputDiagnostic", PotentialOutputDiagnostic.Run),   // P5-B7 (2026-09-05): potential = seed x labour input x productivity index on all six; the derived growth rate; the workforce probe
                 ("PriceLevelDiagnostic", PriceLevelDiagnostic.Run),   // P5-B6 (2026-09-05): the price level compounds at the print, the bases are real x level, the inflation cap is not approached in a century on any of the six
