@@ -3811,6 +3811,15 @@ namespace PoliSim.Simulation
             // first (GDP, the bases, the flows, the debt), and the line follows.
             float prices = country.PriceLevelAtLastIndex > 0f ? country.State.PriceLevel / country.PriceLevelAtLastIndex : 1f;
             country.PriceLevelAtLastIndex = country.State.PriceLevel;
+            // RF-2 re-formed as ruled (2026-09-07, §384): an AI country's CASELOAD lines carry the year's REAL WAGE growth on top of prices and their driver -
+            // the ratio of the real wage index now to the index at the last indexation. The legal anchor is Sweden's income pension: Socialförsäkringsbalken
+            // (2010:110) 58 kap. 10-12 §§ define the inkomstindex as the general income development (the relative change in average pensionable income,
+            // 1999 = 100) and 62 kap. 42-43 §§ recalculate every income pension in payment by it each year (följsamhetsindexering); the service lines
+            // (health, education, family, justice) are staff costs that move with wages - Baumol's finding, the reason stated, its paper billed (§384).
+            // The driver-only form (§370) froze a caseload's real cost per head at the seed for a century and made five AI states net creditors; the
+            // pre-RF-2 form grew every line with potential growth, a policy nobody took (§367). This form is the law's: a caseload, at the going wage.
+            float wages = aiBudget && country.RealWageIndexAtLastIndex > 0f ? country.State.RealWageIndex / country.RealWageIndexAtLastIndex : 1f;
+            country.RealWageIndexAtLastIndex = country.State.RealWageIndex;
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);
@@ -3825,7 +3834,7 @@ namespace PoliSim.Simulation
                 // every line, which §367 measured at ×4.55 for the USA in a century against output ×4.29. A line with no driver is the discretionary
                 // block a finance ministry sizes against the economy, and follows real potential growth as before. The player's lines are unchanged.
                 bool driverless = driver == SpendingDriver.None;
-                float factor = prices * driverRatio * (driverless ? realGrowth : 1f);
+                float factor = prices * driverRatio * (driverless ? realGrowth : wages);   // RF-2 re-formed (§384): a caseload at the going real wage, a discretionary line at the economy's growth
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }
                 line.Amount = ClampToSeedRange(line, line.Amount * factor);

@@ -136,6 +136,10 @@ namespace PoliSim.Data
 
         /// <summary>P5-B6 (2026-09-05): the price level as it stood when the spending lines were last indexed, so the lines carry the year's prices as the ratio now/then (IndexSpendingLines). 1 at the seed; 0 = a save from before this pass (the first index takes the level and applies 1).</summary>
         public float PriceLevelAtLastIndex;
+        /// <summary>RF-2 re-formed (2026-09-07, §384): the real wage index as it stood when the spending lines were last indexed, so an AI country's caseload
+        /// lines carry the year's real wage growth as the ratio now/then (IndexSpendingLines) - the income index of Socialförsäkringsbalken 58 kap. in the
+        /// model's terms. 0 = a save from before: a factor of 1 once.</summary>
+        public float RealWageIndexAtLastIndex;
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
         /// <summary>P4-C3 (2026-09-05, the labour institutions' second reach): the seeded benefit rate per point of unemployment; the labour laws that cut benefit levels or duration compose on it.</summary>
@@ -170,6 +174,7 @@ namespace PoliSim.Data
             PotentialProductivityIndex = 1f;
             PotentialLabourAtLastTurn = PotentialLabourSeed;
             PriceLevelAtLastIndex = State.PriceLevel;   // P5-B6
+            RealWageIndexAtLastIndex = State.RealWageIndex;   // RF-2 re-formed (§384)
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
             LaborTaxRateSeed = 0f;   // FT-5
             foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }
