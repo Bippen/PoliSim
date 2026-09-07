@@ -24648,3 +24648,11 @@ Every AI state is inside the 60 % reference by year 100; the United States, unde
 3. **The acceptance test is already on the record:** SELMA's +0.48 on unemployment at two years for the labour-income-tax cut and its 0.17 output multiplier (§355), against the harness's income-tax column; FT-5's term is rewired behind it, whole (§383), and FT-6's NAIRU half is re-read on the probe after it.
 
 **Bar:** docs only; the cheap bar of the item's commit.
+
+## 390. TWO RULINGS ON §388's STRIKEABLE CHOICES, RECORDED AND TAGGED (2026-09-07, night)
+
+Verbatim: *"the US sequester at 0.5 % stays, tagged as a borrowed calibration to be struck on a US source; the safeguards on the headline balance stay, recorded as the deviation from the structural reading until T-3 gives the model an output-gap-adjusted balance."*
+
+**Executed.** `AiFinanceMinistry.UsSequesterPercentOfGdp` carries the ruling at the constant: `[AUTHORED-DRAFT]`, a borrowed calibration, to be struck on a US source (a statutory or CBO figure for a sequester's size as a share of GDP) the day one is read; the three safeguard constants say they read the headline balance and that the law reads the structural one, the deviation recorded until T-3 - the government-consumption block, whose ruling would give the model the output gap an adjusted balance needs. The governing document's Elias row and the closing section say the same: what waits is a US source and T-3, not a ruling.
+
+**Bar:** comments and documents; the cheap bar of the item's commit.

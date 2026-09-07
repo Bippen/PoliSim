@@ -39,13 +39,13 @@ namespace PoliSim.Simulation
         public const float EuHighDebtPercent = 90f;
         /// <summary>SOURCED - Regulation (EU) 2024/1264 (the corrective arm): the minimum annual structural adjustment while the deficit exceeds 3 %, % of GDP.</summary>
         public const float EdpAdjustmentPercentOfGdp = 0.5f;
-        /// <summary>SOURCED - the debt sustainability safeguard above 90 % of GDP: the ratio falls by at least one point a year (Regulation 2024/1263).</summary>
+        /// <summary>SOURCED - the debt sustainability safeguard above 90 % of GDP: the ratio falls by at least one point a year (Regulation 2024/1263). Read here on the HEADLINE balance, ruled to stay (§390): the law reads the structural balance, and the deviation is recorded until T-3 gives the model an output-gap-adjusted balance.</summary>
         public const float DebtSafeguardHighPointsPerYear = 1.0f;
         /// <summary>SOURCED - the debt sustainability safeguard between 60 and 90 % of GDP: at least half a point a year (Regulation 2024/1263).</summary>
         public const float DebtSafeguardMidPointsPerYear = 0.5f;
         /// <summary>SOURCED - the deficit resilience margin, % of GDP (Regulation 2024/1263).</summary>
         public const float ResilienceMarginPercent = 1.5f;
-        /// <summary>SOURCED - the minimum annual adjustment toward the resilience margin, points of GDP a year (Regulation 2024/1263; 0.25 with an extended period, not modelled).</summary>
+        /// <summary>SOURCED - the minimum annual adjustment toward the resilience margin, points of GDP a year (Regulation 2024/1263; 0.25 with an extended period, not modelled). On the headline balance, as the safeguards above (§390).</summary>
         public const float ResilienceAdjustmentPercentOfGdp = 0.4f;
         /// <summary>SOURCED - TSCG Art. 3 (the Fiscal Compact, EP Fact Sheet): the balanced budget below 60 % of debt, % of GDP - the balance a surplus is released toward.</summary>
         public const float EuReleaseTargetBalancePercent = 0f;
@@ -53,7 +53,7 @@ namespace PoliSim.Simulation
         public const float EuLowDebtDeficitLimitPercent = 1.0f;
         /// <summary>SOURCED - Fiscal Responsibility Act of 2023 § 101: the discretionary limits' FY2024 → FY2025 step, per cent a year.</summary>
         public const float UsDiscretionaryCapGrowthPercent = 1.0f;
-        /// <summary>[AUTHORED-DRAFT] - the sequester's size, % of GDP a year, BORROWED from the EU corrective benchmark (§387 says so): 2 U.S.C. § 902 sizes a sequester to the breach of a cap, which this model has no cap to breach.</summary>
+        /// <summary>[AUTHORED-DRAFT] - a BORROWED CALIBRATION, ruled to stay (2026-09-07 night, §390): the sequester's size, % of GDP a year, is the EU corrective benchmark's figure, since 2 U.S.C. § 902 sizes a sequester to the breach of a cap this model has no cap to breach. To be STRUCK on a US source - a statutory or CBO figure for a sequester's size as a share of GDP - the day one is read.</summary>
         public const float UsSequesterPercentOfGdp = 0.5f;
         /// <summary>CONVENTION - a rate rise below this many points is not written (noise).</summary>
         private const float MinRatePoints = 0.01f;
