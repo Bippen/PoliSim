@@ -24039,3 +24039,25 @@ Board 7b (2026-09-04) read the return and said the print never arrived: the tran
 
 **Bar:** documents only; the checkouts left `main` where it was (`probe_ft4.out` prints the branch and commit it returned to).
 
+
+## 360. THE SHELF, CYCLED AGAIN — ratchets at their floors, the deferral register re-read literally, the errands and the document set re-verified, the morning's self-ruled sheets marked (2026-09-07)
+
+**Ratchets.** `RatchetSlackCheck` on the morning's last cheap bar (bar203): eleven ratchets reported, eleven tight - the same eleven as §347 at the same measured values; nothing lowered, nothing raised. `ResponsivenessAuditHarness.ImpactRatchet` stays 0.507 with its breach attributed (§358) to the instrument's cross-book read, not to the model - the ratchet is not lowered and the reading is proposed to be corrected at its source.
+
+**The deferral register, re-read literally** (`COMPLETED.md`, the Owner-ELIAS table, E-1..E-29): E-1 (one paste), E-2 (the sitting), E-3 and E-4 (two felt verdicts) - untouched by anything today; E-5..E-24 (the twenty calibration entries) - §357 says no mechanism moved; E-25 (C-C6's basis ruling) executes as written unless struck; E-26 (C-C11's recalibration recommendations) - **FT-1 (§355) and FT-4 (§358) are now two of them, sourced on the Swedish basis**; E-27 (the two spec-lets) - the tax spec-let is charted as awaiting this ruling (§356); E-28, E-29 unchanged. Nothing on the register was closed by this side; two rows gained a measurement to rule on.
+
+**Errands.** Two rows open without a ✅: E-1 (the itanes.it account) and E-3 (the 2026-09-01 RETURN glance) - both Elias's, both unchanged. Nothing was sent, pasted or registered this morning; the OECD flows were fetched from `sdmx.oecd.org` (reads, not registrations); the checkouts for FT-4 were local.
+
+**The document set.** `ls *.md` returns **19** and the governing document's new table (§356) charts every one of them - the two names that appear in the table's text and not on disk are the retirements it records. `ElectionsData/DATA_BILL.md` is charted off the root where the code's three citations resolve. No name in the feature list dangles that is not stated as history.
+
+**The morning's self-ruled sheets, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §353 | the trend carried into the death-rate identity and the pyramid as ruled; the double count with the publisher's projection stated, the deviation form named as the alternative | **HOLDS as ruled, RECONSIDER the form** - the population column (+2 to +4 % at a century above the publisher's path) is the double count made visible; the deviation form is written on the sheet. |
+| §354 | the readout saturates toward its ceiling rather than reading the line as a share of income; the seed's spending holds the seed's score by construction | **HOLDS** - the measurement corrected the ruling's premise (the drift was the lines', not the seed's spending) and the saturating form keeps the identity the ruling asked for to the digit. |
+| §355 | the MPC held at 0.67; SELMA's gap attributed to the missing labour-supply channel and the Riksbank offset; a like-for-like harness table proposed | **HOLDS** - no sourced MPC reaches SELMA's digit; the proposal names the channel the model lacks rather than a figure. |
+| §356 | two documents retired and deleted, the campaign spec marked reference, the root table re-homed in the governing document | **HOLDS** - no live pointer named the two files; the campaign spec says what it is. |
+| §358 | FT-4's attribution and proposal | **HOLDS, NEEDS ELIAS for the instrument fix** - attribution is measured at three commits; the fix is to the harness (deflate the impulse), not the model, and a ruling on an instrument that carries a ratchet is his. |
+| §359 | the infrastructure feedback after the readout fix | **RECONSIDER** - landed as ruled because the readout holds, but the reused sensitivity is a permanent growth term and the literature's effect is a level; Poland's potential +27 % at a century is the figure to look at; a level re-form is the candidate. |
+
