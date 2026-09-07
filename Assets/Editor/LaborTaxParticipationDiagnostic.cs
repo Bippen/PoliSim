@@ -7,11 +7,11 @@ using UnityEngine;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// FT-5 (2026-09-07, §372): participation's response to the labour tax rate. (1) At the seed the term is exactly zero for six and the seed rate is the
-    /// income-tax line's. (2) The elasticity is the sourced one (1 ÷ 8.61 = 0.116, SELMA's posterior mean). (3) Both directions on Sweden over twenty years
-    /// through the decision: the income tax +5 points → participation LOWER than untouched by about 0.116 × 100 × ln(43/48) = −1.28 points at the target
-    /// (the reversion closes most of it in twenty years); −5 points → HIGHER by about +1.19; the term itself reads those figures exactly. (4) The guard: the term
-    /// stays inside ±5 at ±20 points of tax.
+    /// FT-5, REVERTED as ruled (2026-09-07, §383; built §372). The sourced term stays in the code and this check guards its status: (1) the term itself
+    /// still reads its figures - zero at the seed for six, the elasticity 1 / 8.61, both signs on Sweden at +/-5 points of income tax - so FT-7 (the jobs
+    /// lag) finds it whole; (2) the term is INERT - participation after twenty years is identical to 1e-6 whether the income tax is moved +/-5 points or
+    /// not (potential within 1e-4 relative against the 2 % the term moved it; participation within a hundredth, the tax's disposable-income channel), because the target
+    /// does not read it. A build that wires it back without FT-7 fails here, which is the sheet's fence.
     /// </summary>
     public static class LaborTaxParticipationDiagnostic
     {
@@ -26,27 +26,20 @@ namespace PoliSim.EditorTools
             foreach (Country c in seedWorld.Countries)
             {
                 if (Mathf.Abs(MacroSystem.LaborTaxParticipationTerm(c)) > 1e-6f) { Debug.LogError($"LABOR TAX: {c.Id} carries a nonzero term at the seed ({MacroSystem.LaborTaxParticipationTerm(c):R})."); ok = false; }
-                float rate = 0f; foreach (TaxLine line in c.TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { rate = line.Rate; } }
-                if (Mathf.Abs(c.LaborTaxRateSeed - rate) > 1e-6f) { Debug.LogError($"LABOR TAX: {c.Id}'s seed rate {c.LaborTaxRateSeed} is not its income-tax line's {rate}."); ok = false; }
             }
-            if (Mathf.Abs(MacroSystem.ParticipationElasticityToAfterTaxWage - 1f / 8.61f) > 1e-3f) { Debug.LogError($"LABOR TAX: the elasticity {MacroSystem.ParticipationElasticityToAfterTaxWage:R} is not 1 ÷ 8.61."); ok = false; }
-
+            if (Mathf.Abs(MacroSystem.ParticipationElasticityToAfterTaxWage - 1f / 8.61f) > 1e-3f) { Debug.LogError($"LABOR TAX: the elasticity {MacroSystem.ParticipationElasticityToAfterTaxWage:R} is not 1 / 8.61."); ok = false; }
             float[] untouched = Run(CountryId.Sweden, Years, 0f);
             float[] up = Run(CountryId.Sweden, Years, 5f);
             float[] down = Run(CountryId.Sweden, Years, -5f);
-            // [0] participation, [1] the term, [2] the income tax rate, [3] potential
-            float seedRate = untouched[2];
-            float expectedUp = 0.116f * 100f * Mathf.Log((100f - (seedRate + 5f)) / (100f - seedRate));
-            float expectedDown = 0.116f * 100f * Mathf.Log((100f - (seedRate - 5f)) / (100f - seedRate));
-            if (!(up[0] < untouched[0]) || !(down[0] > untouched[0])) { Debug.LogError($"LABOR TAX: +5 points does not lower participation ({up[0]:F3} vs {untouched[0]:F3}) or −5 does not raise it ({down[0]:F3})."); ok = false; }
-            if (Mathf.Abs(up[1] - expectedUp) > 1e-3f || Mathf.Abs(down[1] - expectedDown) > 1e-3f) { Debug.LogError($"LABOR TAX: the term reads {up[1]:F4} / {down[1]:F4}, expected {expectedUp:F4} / {expectedDown:F4}."); ok = false; }
-            if (Mathf.Abs(untouched[1]) > 1e-6f) { Debug.LogError($"LABOR TAX: untouched Sweden carries a term after {Years} years ({untouched[1]:R}) - the seed rate moved without a decision."); ok = false; }
-            float[] far = Run(CountryId.Sweden, 2, 20f);
-            if (Mathf.Abs(far[1]) > 5f) { Debug.LogError($"LABOR TAX: the term left its ±5 guard at +20 points ({far[1]:F3})."); ok = false; }
-
-            Debug.Log($"LABOR TAX: Sweden after {Years} years - untouched participation {untouched[0]:F3} % at an income tax of {seedRate:F1} %; +5 points: {up[0]:F3} % (term {up[1]:F3}); −5 points: {down[0]:F3} % (term {down[1]:F3}); +20 points for two years: term {far[1]:F3} (guard ±5). "
-                + $"Potential {untouched[3]:F1} / {up[3]:F1} / {down[3]:F1}. The elasticity 0.116 is SELMA's 1 ÷ 8.61.");
-            Debug.Log(ok ? "LABOR TAX: PASS - zero at the seed, both directions, the sourced elasticity, inside the guard." : "LABOR TAX: FAILED (see above).");
+            // [0] participation, [1] the term's own value, [2] potential
+            if (!(up[1] < 0f) || !(down[1] > 0f)) { Debug.LogError($"LABOR TAX: the term does not read both signs ({up[1]:F4} / {down[1]:F4}) - FT-7 would not find it whole."); ok = false; }
+            // the term's channel is the labour input: with the term in the target potential moved 2 % at ±5 points (§372); without it the tax still reaches potential through
+            // disposable income → output → unemployment → the discouraged-worker term → participation → the labour input, measured at 3e-5 relative (§383) - so the fence
+            // is 1e-4 relative on potential (two hundred times below the term's effect, three times above the other channel) and a hundredth on participation
+            if (Mathf.Abs(up[2] - untouched[2]) > 1e-4f * untouched[2] || Mathf.Abs(down[2] - untouched[2]) > 1e-4f * untouched[2]) { Debug.LogError($"LABOR TAX: potential MOVED with the income tax ({untouched[2]:F3} / {up[2]:F3} / {down[2]:F3}) - the term is in the target; FT-5 is REVERTED and sheeted behind FT-7 (§383)."); ok = false; }
+            if (Mathf.Abs(up[0] - untouched[0]) > 0.01f || Mathf.Abs(down[0] - untouched[0]) > 0.01f) { Debug.LogError($"LABOR TAX: participation moved more than a hundredth with the income tax ({untouched[0]:F5} / {up[0]:F5} / {down[0]:F5}) - more than the tax's other channel explains."); ok = false; }
+            Debug.Log($"LABOR TAX (REVERTED, §383): Sweden after {Years} years - participation {untouched[0]:F4} % untouched, {up[0]:F4} % at +5 points, {down[0]:F4} % at -5 points (the term is inert: potential within 1e-4); the term itself reads {up[1]:F3} / {down[1]:F3} (kept whole for FT-7); potential {untouched[2]:F1} / {up[2]:F1} / {down[2]:F1}.");
+            Debug.Log(ok ? "LABOR TAX: PASS - the term is whole and inert; the target does not read it." : "LABOR TAX: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
         }
 
@@ -72,8 +65,7 @@ namespace PoliSim.EditorTools
                     decisions[player] = d;
                     sim.AdvanceTurn(decisions);
                 }
-                float rate = 0f; foreach (TaxLine line in c.TaxLines) { if (line.Type == TaxType.IncomeTax) { rate = line.Rate; } }
-                return new[] { c.State.LaborForceParticipationRate, MacroSystem.LaborTaxParticipationTerm(c), deltaPoints == 0f ? rate : seedRate, c.State.PotentialGDP };
+                return new[] { c.State.LaborForceParticipationRate, MacroSystem.LaborTaxParticipationTerm(c), c.State.PotentialGDP };
             }
             finally { Object.DestroyImmediate(go); }
         }
