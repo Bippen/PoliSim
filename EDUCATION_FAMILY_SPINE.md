@@ -80,13 +80,13 @@ The family reads: the education spending line per pupil (`SpendingCategory.Educa
 |---|---|---|---|---|---|
 | Students per teacher · primary | 12.4 / 15.2 / 18.1 / 10.5 / 13.0 / 13.7 | students per teacher | OECD EAG · UOE_NF_PERS_STR · ISCED 1 · 2023–24 | 8 to 20 | the education line per pupil |
 | Students per teacher · lower secondary | 11.2 / 12.9 / 14.7 / 10.4 / 9.5 / 14.3 | students per teacher | OECD EAG · ISCED 2 | 8 to 20 | the education line per pupil |
-| Academic score | to fetch | PISA mean | OECD PISA 2022 · Vol. I · Annex B1 | 350 to 550 | students per teacher; effectiveness |
+| Academic score | **billed** (§373: the tables are behind the www host and not on the SDMX API; PISA is not among the 1 000+ dataflows `sdmx.oecd.org` lists) | PISA mean | OECD PISA 2022 · Vol. I · Tables I.B1.2.1–3 | 350 to 550 | students per teacher; effectiveness |
 | Early leavers | 6.7 / 13.1 / 7.2 / 8.2 / 4.0 / absent | % of 18–24 | Eurostat edat_lfse_14 · 2025 | 0 to 20 | youth unemployment; the education line |
-| Graduation rate | to fetch | % at typical age | OECD EAG · B3 | 60 to 100 | early leavers |
+| Graduation rate | **billed** (§373: no OECD dataflow carries the first-time rate; the UOE flows hold graduate counts by age, and Eurostat's gross ratio is not the rate) | % at typical age | OECD EAG 2024 · Table B3.1 | 60 to 100 | early leavers |
 | At least upper secondary · 25–64 | 86.0 / 85.9 / 83.9 / 67.0 / 94.9 / 92.3 | % of 25–64 | OECD EAG · LSO_NEAC_DISTR_EA · 2024–25 | 50 to 100 | the stock-flow line |
 | Tertiary · 25–64 | 50.8 / 35.5 / 43.4 / 22.3 / 40.0 / 52.2 | % of 25–64 | OECD EAG · LSO_NEAC_DISTR_EA | 15 to 60 | the stock-flow line |
 
-"To fetch" and "absent" print as words in the caption face, never as figures. Nothing here is built; the board corrects it, then the pass builds what the board says.
+"Billed" and "absent" print as words in the caption face, never as figures (the rows printed "to fetch" until §373 closed them as billed). Nothing here is built; the board corrects it, then the pass builds what the board says.
 
 ## 7. The fetches, 2026-09-06 (overnight) — PISA and the graduation rate under the cross-check gate: neither passed; the figures reached are recorded, the rows keep the word
 

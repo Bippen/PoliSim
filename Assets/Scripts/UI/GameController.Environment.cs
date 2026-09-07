@@ -48,8 +48,8 @@ namespace PoliSim.UI
                 e.HasMix
                     ? new PlateRow("Electricity by source", "% · COAL·GAS·NUCLEAR·HYDRO·WIND·SOLAR·OTHER", "EMBER · EUROSTAT nrg_bal_peh · EIA · 2023", PlateFigure(e.MixShares[0] + e.MixShares[1], 0, "% FOSSIL"),
                         PlateBand.Distribution, 0f, 100f, -1f, null, true, new[] { "STATIC SEED", "CARBON TAX · OWN PASS" }, null, new[] { "SOURCED", "CROSS-CHECKED" }, false, null, e.MixShares, EnvironmentFamily.MixLabels)
-                    : new PlateRow("Electricity by source", "% OF GENERATION", "EMBER · EUROSTAT nrg_bal_c · EIA", "to fetch",
-                        PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "CARBON TAX ▸" }, null, new[] { "TO FETCH" }, false, "A FETCH WITH NO FIGURE"),
+                    : new PlateRow("Electricity by source", "% OF GENERATION", "EMBER · EUROSTAT nrg_bal_peh · EIA 1.1", "billed",
+                        PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "CARBON TAX ▸" }, null, new[] { "BILLED" }, false, "NOT SEEDED FOR THIS COUNTRY · THE SIX ARE"),
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);

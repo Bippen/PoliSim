@@ -264,7 +264,7 @@ namespace PoliSim.UI
                     return;
                 case PlateBand.Absent:
                     DrawDashedRule(new Rect(cell.x, lineY, cell.width, 1f), PoliSimTheme.Hairline, 4f, 3f);
-                    PoliSimWidgets.MeasuredLabel(new Rect(cell.x, cell.y, cell.width * 0.4f, lineY - cell.y), row.Figure == "to fetch" ? "TO FETCH" : "ABSENT", DeskCaption(9f, PoliSimTheme.TextMuted));
+                    PoliSimWidgets.MeasuredLabel(new Rect(cell.x, cell.y, cell.width * 0.4f, lineY - cell.y), row.Figure == "billed" ? "BILLED" : "ABSENT", DeskCaption(9f, PoliSimTheme.TextMuted));
                     PoliSimWidgets.MeasuredLabel(new Rect(cell.x, labelY, cell.width, labelH), row.AbsentReason ?? "", left);
                     return;
                 case PlateBand.Distribution:

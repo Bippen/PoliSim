@@ -46,10 +46,10 @@ namespace PoliSim.UI
             string[] segmentLabels = { "BELOW UPPER", "UPPER SEC.", "TERTIARY" };
             var rows = new List<PlateRow>
             {
-                new PlateRow("Academic score · PISA", "PISA MEAN · HIGHER ◂", "OECD PISA 2022 · VOL. I · ANNEX B1", "to fetch",
-                    PlateBand.Absent, 350f, 550f, -1f, null, false, new[] { "STUDENTS PER TEACHER ▸", "EFFECTIVENESS (C7) ▸" }, null, new[] { "TO FETCH" }, false, "A FETCH WITH NO SCORE · NOT ON THE SDMX API"),
-                new PlateRow("Graduation rate", "% AT TYPICAL AGE · UPPER SEC.", "OECD EAG · INDICATOR B3", "to fetch",
-                    PlateBand.Absent, 60f, 100f, -1f, null, false, new[] { "EARLY LEAVERS ▸" }, null, new[] { "TO FETCH" }, false, "A FETCH WITH NO SCORE · THE FLOWS HOLD COUNTS"),
+                new PlateRow("Academic score · PISA", "PISA MEAN · HIGHER ◂", "OECD PISA 2022 · VOL. I · TABLES I.B1.2.1–3", "billed",
+                    PlateBand.Absent, 350f, 550f, -1f, null, false, new[] { "STUDENTS PER TEACHER ▸", "EFFECTIVENESS (C7) ▸" }, null, new[] { "BILLED" }, false, "BILLED · THE TABLES SIT BEHIND THE WWW HOST, NOT ON THE SDMX API"),
+                new PlateRow("Graduation rate", "% AT TYPICAL AGE · UPPER SEC.", "OECD EAG 2024 · TABLE B3.1", "billed",
+                    PlateBand.Absent, 60f, 100f, -1f, null, false, new[] { "EARLY LEAVERS ▸" }, null, new[] { "BILLED" }, false, "BILLED · NO OECD FLOW HOLDS THE RATE; THE FLOWS HOLD COUNTS"),
                 e.HasEarlyLeavers
                     ? new PlateRow("Early leavers", "% OF 18–24 · LEFT EDUCATION · LOWER ◂", "EUROSTAT edat_lfse_14" + leaversYear, PlateFigure(s.EarlyLeavers, 1, "%"),
                         PlateBand.Bounded, 0f, 20f, s.EarlyLeavers, EducationPeers(x => x.EarlyLeavers), true, new[] { "YOUTH UNEMPLOYMENT ▸", "EDUCATION LINE — PER PUPIL ▸" }, history?.EarlyLeavers.Quarterly, new[] { "SOURCED" }, true)
@@ -60,7 +60,7 @@ namespace PoliSim.UI
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
-            string footText = "SEEDS: OECD EAG AND EUROSTAT, LATEST OBSERVATION PER COUNTRY · THE OWN TICK IS THIS COUNTRY, THE DOTS ARE THE OTHER FIVE AT SEED · THE DISTRIBUTION IS 2a's STACKED BAR, ITS SEGMENTS THE THREE ISCED BANDS · STUDENTS PER TEACHER IS THE CARD'S KEY, NOT A PAGE ROW · TO FETCH AND ABSENT ARE WORDS · COUPLINGS: THE EDUCATION SPINE'S TABLES, DRAFT UNTIL MEASURED";
+            string footText = "SEEDS: OECD EAG AND EUROSTAT, LATEST OBSERVATION PER COUNTRY · THE OWN TICK IS THIS COUNTRY, THE DOTS ARE THE OTHER FIVE AT SEED · THE DISTRIBUTION IS 2a's STACKED BAR, ITS SEGMENTS THE THREE ISCED BANDS · STUDENTS PER TEACHER IS THE CARD'S KEY, NOT A PAGE ROW · BILLED AND ABSENT ARE WORDS · COUPLINGS: THE EDUCATION SPINE'S TABLES, DRAFT UNTIL MEASURED";
             _educationPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
             {
                 if (!row.Name.StartsWith("Early leavers") || !draftLive) { return null; }

@@ -70,9 +70,9 @@ The family reads the infrastructure spending line (`SpendingCategory.Infrastruct
 | Road connectivity | 95.9 / 95.1 / 96.6 / 85.9 / 88.0 / 100 | index 0–100 · 2019 | WEF GCR 2019 · ROADQUALIDX | 70 to 100 | road quality; population |
 | Railroad density | in the file | km per km² · 2016 | WEF GCR 2019 · railroad density | - | none |
 | Road length | absent | km | IRF WRS (paid) | - | none |
-| Congestion | to fetch | % extra travel time | TomTom Traffic Index | - | connectivity |
+| Congestion | **billed** (§373: TomTom's ranking page is one vendor; INRIX's scorecard is a rendered chart with no data in its page - the second source the gate needs is unreachable from a session) | % extra travel time | TomTom Traffic Index 2024 · INRIX Global Traffic Scorecard 2024 | - | connectivity |
 
-"Absent" and "to fetch" print as words in the caption face. Nothing here is built.
+"Absent" and "billed" print as words in the caption face (the congestion row printed "to fetch" until §373). Nothing here is built.
 
 ## 6. The fetch, 2026-09-06 (overnight) — congestion under the cross-check gate: one source reached, the second refused; the figures recorded, the row keeps the word
 

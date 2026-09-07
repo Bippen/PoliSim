@@ -2,7 +2,7 @@
 
 > **BUILT 2026-09-06, `COMPLETED.md` §340, on 9c's grammar inherited by shape.** The per-capita figures below are the family's seeds (`EnvironmentFamily.Seed`), §4's lines its couplings (every constant [AUTHORED-DRAFT]; readouts, no feedback); the electricity mix a fetch row; **the carbon tax's base stays on output - its move to these metrics is SHEETED on the row for its own pass, not built** (a revenue change is BASELINE).
 
-**What this is.** P5-C5 (environment) is the fourth society-stat family in the catalog's order (`SOCIETY_STATS_CATALOG.md` § 4). Its source is a file: the EDGAR 2024 greenhouse-gas booklet (JRC / IEA), with the World Bank's population for the per-capita division and Ember or Eurostat for the electricity mix. This spine seeds what the fetched file covers for six, states the rest absent or to fetch, and proposes the coupling. **Nothing is built from it**; the build waits on the one-grammar rule (D15 item 3).
+**What this is.** P5-C5 (environment) is the fourth society-stat family in the catalog's order (`SOCIETY_STATS_CATALOG.md` § 4). Its source is a file: the EDGAR 2024 greenhouse-gas booklet (JRC / IEA), with the World Bank's population for the per-capita division and Ember or Eurostat for the electricity mix. This spine seeds what the fetched file covers for six, states the rest absent (its one fetch row landed at §342), and proposes the coupling. **Nothing is built from it**; the build waits on the one-grammar rule (D15 item 3).
 
 **Fetched and verified by content, 2026-09-05:** `EDGAR_2024_GHG_booklet_2024.xlsx` from edgar.jrc.ec.europa.eu (3 960 014 bytes, zip signature 50 4B 03 04, sha256 `769803bb2d3c9535…`), kept in `PoliSim-captures/sources/`; parsed header-aware from the workbook's XML (sheets GHG_per_capita_by_country and GHG_by_sector_and_country; EDGAR names the countries "France and Monaco" and "Italy, San Marino and the Holy See"). Populations 2023 from the World Bank API (SP.POP.TOTL): Germany 83.29 M, France 68.37 M, Italy 58.98 M, Poland 36.69 M, Sweden 10.54 M, USA 336.76 M.
 
@@ -63,9 +63,9 @@ The family reads the carbon tax (`TaxType.CarbonTax`, whose base P5-B3 left on o
 | Emissions per person | 4.76 / 8.26 / 5.81 / 6.36 / 9.67 / 17.61 | t CO₂-eq · 2023 | EDGAR 2024 · GHG per capita | 0 to 20 | none (derived) |
 | Electricity CO₂ per person | 0.56 / 2.13 / 0.35 / 1.43 / 3.21 / 4.35 | t CO₂ · 2023 | EDGAR 2024 · Power Industry ÷ WB population | 0 to 5 | the carbon tax; the energy line |
 | Transport CO₂ per person | 1.26 / 1.68 / 1.79 / 1.74 / 1.85 / 5.08 | t CO₂ · 2023 | EDGAR 2024 · Transport ÷ WB population | 0 to 6 | the carbon tax; the infrastructure line |
-| Electricity by source | to fetch | % of generation | Ember · Eurostat nrg_bal_c · EIA | - | the carbon tax |
+| Electricity by source | **landed** (§342, §8: Ember 2023 against Eurostat `nrg_bal_peh` and EIA Table 1.1, every pair within a point) | % of generation, seven parts | Ember (OWID) · Eurostat nrg_bal_peh · EIA 1.1 | - | a readout; the carbon tax on its own pass |
 
-"To fetch" prints as words in the caption face. Nothing here is built.
+The mix row prints its seven figures since §342; an unseeded country would print "billed".
 
 ## 8. The fetch, 2026-09-06 (overnight) — the electricity mix under the cross-check gate: PASSED for six, landed as the plate's distribution row
 
