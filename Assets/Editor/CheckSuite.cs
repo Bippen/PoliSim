@@ -361,7 +361,7 @@ namespace PoliSim.EditorTools
                 ("SpendingIndexationDiagnostic", SpendingIndexationDiagnostic.Run),
                 ("RevenueBaseDiagnostic", RevenueBaseDiagnostic.Run),   // P5-B3 (2026-09-05): every tax base at its sourced share x the seed's GDP x its driver's ratio, all six; the recession probe shows the employment channel
                 ("LineIndexationDiagnostic", LineIndexationDiagnostic.Run),   // RF-2 (2026-09-07, §370): caseload lines to their drivers, driverless lines to potential growth, the player unchanged, both directions
-                ("LaborTaxParticipationDiagnostic", LaborTaxParticipationDiagnostic.Run),   // FT-5 REVERTED (§383): the sourced term is whole and INERT - the target does not read it; sheeted behind FT-7
+                ("LaborTaxParticipationDiagnostic", LaborTaxParticipationDiagnostic.Run),   // FT-5 LANDED (§396): zero at the seed, the sourced elasticity, both directions on participation and unemployment behind the jobs lag, the ±5 guard
                 ("ExpectationsAnchoringDiagnostic", ExpectationsAnchoringDiagnostic.Run),   // §385 (2026-09-07): the target holds exactly, a shock decays at the rate both ways, the long horizon reads near target
                 ("AiFinanceMinistryDiagnostic", AiFinanceMinistryDiagnostic.Run),   // §388 (2026-09-07): inside the ceilings nothing; France cuts and raises; the US waits for two rises then caps and sequesters; the player never; both directions
                 ("JobsLagDiagnostic", JobsLagDiagnostic.Run),   // FT-7 (2026-09-07, §391): zero at the seed, a participation shock raises unemployment on impact by its labour-force share and decays at 0.40 a year, both directions, the reversion reads the core

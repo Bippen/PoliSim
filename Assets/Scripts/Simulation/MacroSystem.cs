@@ -764,10 +764,7 @@ namespace PoliSim.Simulation
         /// Table 14, the Swedish block, "labour disutility" η - prior 8.16, posterior mean 8.61, standard deviation 1.12, 90 % band 6.94–10.62 - so 1 ÷ 8.61 = 0.116
         /// (the band 0.094–0.144). The document's own footnote points at Altonji (1986) and MaCurdy (1981) as the micro estimates its prior follows. One figure for six:
         /// SELMA is estimated on Swedish data, and the other five carry it as the class of magnitude, stated.</summary>
-        public const float ParticipationElasticityToAfterTaxWage = 0.116f;   // §383: kept for FT-7; the term reads it, the target does not read the term
-        /// <summary>§392: the probe switch for FT-5's re-measurement behind the jobs lag. False by default and in play; LaborTaxRemeasureProbe sets it for its own runs and
-        /// resets it. LaborTaxParticipationDiagnostic asserts the term inert with it false.</summary>
-        public static bool LaborTaxTermInTarget = false;
+        public const float ParticipationElasticityToAfterTaxWage = 0.116f;   // §396: in the target, LANDED behind the jobs lag's two seats (§391, §394)
 
         /// <summary>FT-5: the participation term of the labour tax, in points on the 15+ rate - the elasticity × 100 × ln((100 − t) ÷ (100 − t₀)), t the income-tax
         /// line's rate now and t₀ its rate at the seed (Country.LaborTaxRateSeed), so a rate rise lowers the after-tax wage and participation with it and a cut
@@ -810,10 +807,10 @@ namespace PoliSim.Simulation
                 + combinedAdjustment
                 + HealthFamily.ParticipationTerm(country)   // the health feedback pass (2026-09-06): the working-age population's health, treatable mortality against its seed, points
                 + EducationFamily.ParticipationTerm(country)   // the education feedback pass (2026-09-07): the attainment stock against its seed × the country's own activity gap by attainment, points
-                + (LaborTaxTermInTarget ? LaborTaxParticipationTerm(country) : 0f);   // §392: FT-5's sourced term, in the target ONLY while a probe sets the switch - false in play and in every check
-            // FT-5 REVERTED as ruled (§383): LaborTaxParticipationTerm is NOT in this target. §372 built it and the harness read the income-tax multiplier
-            // doubling at four years - away from SELMA, because a participation rise is output the same year through potential with no jobs lag. The term
-            // and its sourced elasticity stay in the code, inert, sheeted behind FT-7 (the jobs lag: unemployment reads participation before employment does).
+                + LaborTaxParticipationTerm(country);   // FT-5 LANDED as ruled (2026-09-08, §396): participation's response to the labour tax against its seed, SELMA's elasticity
+            // FT-5's history in one place: built §372 (the multiplier read 1.33 at four years with unemployment FALLING - a participation rise was output the same
+            // year through potential), REVERTED §383 and sheeted behind the jobs lag; measured behind its first seat §392 (unemployment RISING, +0.30 at two years)
+            // and behind both §395 (0.79 at four years, +0.34); LANDED §396. The residual against SELMA's 0.17 is the consumption channel at the held MPC (FT-1), attributed there.
             state.LaborForceParticipationRate = Mathf.Clamp(
                 state.LaborForceParticipationRate + reversionSpeed * (target - state.LaborForceParticipationRate),
                 0f, MaxLaborForceParticipationPercent);
