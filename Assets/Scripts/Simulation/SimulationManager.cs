@@ -2555,8 +2555,17 @@ namespace PoliSim.Simulation
         /// that follow; what remains in this method is the resolution, the close-out of the period that
         /// just ended, and everything downstream of them that is still turn-shaped.
         /// </summary>
+        /// <summary>§403 (FT-9's decomposition): a measurement seam, null in play. A subscriber is told the name of each boundary checkpoint as the
+        /// country passes it - "open" (the per-country boundary begins: the cohort commit, the zone rate, currency, tariffs and trade have run), "policy"
+        /// (the decision's dials applied), "labour" (the supply shock and the natural rate), "spending" (the lines resolved and their effects),
+        /// "families" (the six yearly readouts), "close" (the fiscal period closed, the Phillips curve, expectations, approval), "events" (the year's
+        /// event landed) - and reads whatever it wants from the country between them. Invocations only: no statement of the boundary is changed,
+        /// and the p5bnd diff against p5nairu proves it (§403), as the numeric-inertness rule requires.</summary>
+        public static System.Action<Country, string> BoundaryLedger;
+
         private void ApplyDomesticPolicy(Country country, PolicyDecision decision, float tariffRevenue)
         {
+            BoundaryLedger?.Invoke(country, "open");
             EconomyState state = country.State;
 
             float totalTaxHike = ApplyTaxRateChanges(country, decision);
@@ -2570,6 +2579,7 @@ namespace PoliSim.Simulation
             // Round 3 item 5, Part B: must run BEFORE CohortDemographics.Apply, same reasoning as
             // ApplyCrimeJusticeDeeperChanges above.
             ApplyDemographicPolicyChanges(country, decision);
+            BoundaryLedger?.Invoke(country, "policy");
             // CONTINUOUS TIME PHASE 4: the demographic rates and population growth have already been
             // charged day by day in AdvanceDay - applying either again here would double-count a full
             // turn's worth on top of the daily steps (Phase 1's exact wording, same reason). The old
@@ -2583,6 +2593,7 @@ namespace PoliSim.Simulation
             // The first tree placed it after the indexation and the line-indexation diagnostic caught the split (two lines 1-2 % off their country's factor).
             MacroSystem.ApplySupplyShockToUnemployment(country);
             MacroSystem.ApplyNaturalRateFromLabourForce(country);   // FT-8 (§398): the natural rate reads the labour force, at the same boundary
+            BoundaryLedger?.Invoke(country, "labour");
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             // Phase 1: the DECAY and the sector reversion have already been charged day by day in
@@ -2591,11 +2602,13 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyInfrastructureInvestment(country, spendingResult.EffectiveDecision);
             MacroSystem.ApplySectorGrowthEffect(country);
             MacroSystem.ApplyWelfareProgramEffects(country);
+            BoundaryLedger?.Invoke(country, "spending");
             HealthFamily.AdvanceYear(country);   // P5-C2 (2026-09-05): the family's yearly step - a readout of the year's health line, the age-cost index and the minister; no feedback into the model
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
             InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
             EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): readouts, no feedback; the carbon tax's base stays on output
             MigrationPovertyFamily.AdvanceYear(country);   // P5-C6 (2026-09-06): readouts, no feedback
+            BoundaryLedger?.Invoke(country, "families");
 
             // CONTINUOUS TIME PHASE 3: the money already moved, day by day, in AccrueDailyFiscalFlows.
             // What is left at a boundary is what a boundary is actually for - CLOSING the period that
@@ -2734,6 +2747,7 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
             MacroSystem.RecordApprovalAttribution(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, approvalBeforeFormula);
 
+            BoundaryLedger?.Invoke(country, "close");
             EconomicEvent economicEvent = EventSystem.TryRollEvent();
             _lastEventsByCountry[country.Id] = economicEvent;
             // Step 2: observed, not recomputed - the ledger records the post-clamp delta the
@@ -2741,6 +2755,7 @@ namespace PoliSim.Simulation
             // edges). Zero deltas are skipped inside RecordEvent.
             float approvalBeforeEvent = country.State.ApprovalRating;
             EventSystem.ApplyEvent(country, economicEvent);
+            BoundaryLedger?.Invoke(country, "events");
             if (economicEvent != null)
             {
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, economicEvent.Name, country.State.ApprovalRating - approvalBeforeEvent);
