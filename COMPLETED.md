@@ -25074,3 +25074,25 @@ no dump is byte-identical (5 of 62 fields, the demographic constants): a BASELIN
 **The harness** (`resp_evd.log`): three readings, recorded together. Before FT-9, with the year's dice on (`resp_nairu2`): the spending dials' impact 0.512 / 0.514 / 0.510 (+2 / +10 / −10 %). After FT-9, dice on (`resp_evd`): 0.507 / 0.509 / 0.505 - **BREACH** on the −10 % dial, 0.505 below the ratchet 0.507. With the dice OFF (`resp_evd_off`, a wrapper probe first, then the harness itself with `EventSystem.Enabled = false` for its runs, `resp_evd2`): 0.510 / 0.511 / 0.507 - at or above the ratchet, no breach, the band 3 of 3 on the cumulative column (0.955 / 0.953 / 0.957 at L+1). The reading of the three: the harness's window has always had a seeded event in it; until FT-9 the shock hit GDP at the boundary and the days' recovery INFLATED the impact reading by three thousandths (0.510–0.514 against the clean 0.507–0.511), and with the shock in the days the same event LOWERS it by two (0.505–0.509). The dial's own impact did not move; the instrument's window did. **So the harness now runs with the year's dice off** - the same idiom as the measurement diagnostics' `AiFinanceMinistryEnabled = false`, through a switch `EventSystem.Enabled` added for it (true in play; inert when true: `p5evd2` against `p5evd` 67 of 67 byte-identical) - a self-taken change of the instrument's conditions, recorded strikeable; **the ratchet 0.507 is untouched and the −10 % dial sits exactly on it**, with no slack, and its basis (a with-events reading, §363) is Elias's to re-base or keep.
 
 **Bar:** `bar249_evd_RunSimulationBatch` 38 of 39 (the new check red for its own hand-landed event, above), `bar250_evd2_RunSimulationBatch` 39 of 39 (simulation total 461.3 s against 452.7 at §403 with one check more), `bar250_evd2_RunAllBatch` 33 of 33, `bar251_evd3_RunAllBatch` 33 of 33 after the harness's switch and the wrapper's removal; `ResidueCheck` 0 open with FT-9's row CLOSED and its exclusion gone. The family dump `p5evd` is the baseline from here.
+
+## 405. THE SHELF, CYCLED AFTER FT-9 — one cycle in §380's form; the register unchanged, the ratchets at their floors with one at its edge, the sheets since §401 marked (2026-09-09, after midnight)
+
+**The ruling:** *"Then the shelf. One commit per item, one green bar, R-SP1 push, one report."*
+
+**Ratchets.** `RatchetSlackCheck` on the night's cheap bars (bar247, bar248, bar249, bar250, bar251): eleven reported, eleven tight at the same measured values as §401 - UNWIRED 2 (Rosatellum.cs, TacticalVoting.cs) and UNREACHABLE 2 unchanged, every other ceiling 0 at 0. `ResponsivenessAuditHarness.ImpactRatchet` 0.507 held and **now sits at its edge**: with the year's dice off (§404) the −10 % spending dial reads 0.507 at impact, the +2 % 0.510, the +10 % 0.511 - at or above, no breach, no slack to give. The simulation bar's budget: simulation total 461.3 s over 39 stages at §404 against 452.7 s over 38 at §403 - the new check's cost, nothing else grew; the cheap bar 37 s.
+
+**The deferral register**, re-read against the repo of 2026-09-09: every row reads as in §401 - T-1, T-2, T-4…T-7, F-1…F-5, F-7 NOT FIRED; T-3 FIRED and Elias's; FT-6 closed into FT-8; FT-8 landed §398 and ratified §399; **FT-9 opened §400, decomposed §403, landed §404** - the fix-track table carries FT-1..FT-9 and RF-1..RF-2, none open.
+
+**The calibration list, the errands, the document set.** The three numbered constants read their listed values (40 000, 26, 500 000); E-1 and E-3 open, Elias's; `ls *.md` returns 18, the governing document's table names every one.
+
+**The run's self-ruled sheets since §401, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §402 | numeric inertness recorded beside the two-books rule | **HOLDS** - applied twice the same night (§403's boundary ledger, §404's events switch), each proved by its dump |
+| §403 | the boundary ledger at seven checkpoints; the decomposition read before the form was typed | **HOLDS** - the events alone carried the jump, in every year it moved; the ruling neither narrowed nor widened |
+| §404 | FT-9 landed: the event's GDP shock armed at the boundary and landed over the year's days; the duration a CONVENTION; the harness on the year's dice off, three readings recorded | **HOLDS, two things strikeable** - the one-year duration (no sourced durations exist) and the harness's switch (the ratchet untouched but at its edge; its with-events basis Elias's to re-base or keep) |
+
+**The residue** reads zero on every bar of the night; the excluded rows are Elias's (T-3, FT-6, the dials-only laws, the E-rows), Design's (D-rows) and the calendar's (K-1, 13 September 2026). Nothing a session could start stands open, and this cycle opened nothing.
+
+**Bar:** documents only; `bar252_shelf2_RunAllBatch`, the cheap bar of this commit, run on this record as written - the commit follows its green.
