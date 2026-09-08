@@ -24983,3 +24983,52 @@ no dump is byte-identical (5 of 62 fields, the demographic constants): a BASELIN
 **No row opened without the reading; with it:** **FT-9 opened, MEASURED, ruling-first (Elias's), excluded from the residue by name:** *Okun's daily form reads the boundary's jump as growth.* The next reading is the jump decomposed by step at the boundary (the event shocks against the trade effects, the spending resolution, the identity's turn form and the ministry's cuts), and then the form is a ruling: an Okun response to the boundary's own jump (a shock raises unemployment on impact, the recovery lowers it back, the year nets to its print), or a jump that should not reach GDP at the boundary at all. Nothing typed.
 
 **Bar:** `bar244_okun2_RunSimulationBatch` 38 of 38 (simulation total 450.3 s), `bar244_okun2_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; `bar245_ft9docs_RunAllBatch` 33 of 33 after FT-9's row and its exclusion, `ResidueCheck` 0 open (FT-9 printed under the exclusions as Elias's). The first chain (`bar243`) was green too and its dump parted - the seam that was not inert, recorded under the instrument.
+
+## 401. THE SHELF, CYCLED — ratchets at their floors, the deferral register re-read against the repo, the calibration list and the document set verified live, the errands unchanged, the run's self-ruled sheets since §380 marked (2026-09-08, evening)
+
+**The ruling:** *"Then continuous on the shelf; one report."* One cycle in §380's form; nothing fired that a session could start, so the cycle closes on the residue at zero.
+
+**Ratchets.** `RatchetSlackCheck` on the day's cheap bars (bar238, bar240, bar241, bar242): eleven reported, eleven tight at the same measured values as §380 - PartyMarkCoverageCheck.UNCONSUMED 0, DeadStateCheck.UNREACHED 0 and WRITE_ONLY 0, ConstantProvenanceCheck.UNMARKED 0, UnwiredSubsystemCheck.UNWIRED 2 (Rosatellum.cs, TacticalVoting.cs - the same two) and UNREACHABLE 2, EvidenceDiscriminationCheck.NO_FAILURE_PATH 0, PlayerReachabilityCheck.UNREACHABLE_TAKEOVER 0, DocumentClaimCheck.MEMBER_GONE 0 and WRONG_OWNER 0, PreWiringPremiseCheck.ASSERTED 0; `ResponsivenessAuditHarness.ImpactRatchet` 0.507 held through §396 and §398 (impact 0.509–0.514 measured; the band 3 of 3 on both). The simulation bar's own budget: 452.7 s at §398 against 457.1 s at §396 with one check more.
+
+**The deferral register, re-read literally, every trigger against the repo of 2026-09-08 evening:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 per-scenario term accumulation | *the first scenario whose epilogue reads wrong without it* | **NOT FIRED** - `ScenarioEvaluator` exists; no scenario epilogue reads wrong |
+| T-2 investment deepening | *a capital stock ships, or I/GDP measures cyclical* | **NOT FIRED** - no capital stock in the scripts; I/GDP not measured cyclical |
+| T-3 the government-consumption block | *the first mechanic that needs the level output gap to mean something* | **FIRED** (C-N5) and Elias's since §376; §394 made its question plain (the USA's seed recession under the re-solved potential) - still his |
+| T-4, T-5, T-6 trade volumes, retaliation, its memory | *pass 6's deferred set* | **NOT FIRED** |
+| T-7 the coupling queue Q6–Q10 | *each at its own named trigger; nothing startable until one fires and Elias rules* | **NOT FIRED** - no ruling given |
+| F-1 staff progression | *a campaign the player actually runs* | **NOT FIRED** - `CampaignRun` reached only through `LiveCampaignSetup`; the two UNWIRED files unchanged |
+| F-2 other election types | *a ruling that the game is about more than a parliamentary term* | **NOT FIRED** |
+| F-3 France's constituency model · F-4 Italy's sub-national stages | *France / Italy becoming playable* | **NOT FIRED** |
+| F-5 the gap table's nine N/A sections | *nothing* | **NOT FIRED by construction** |
+| F-7 the tax instruments build | *`POLISIM_TAX_SPECLET.md` being RULED* | the speclet reads RULED 2026-08-31 (D-3: (c) now, (b) when it runs) and *"neither branch is built yet"*; the instruments wait on E-27 as in §380 - **NOT FIRED** in the sense the register meant (E-27 still open) |
+| FT-6 | - | **CLOSED into FT-8** (§397): the expectations half applied §385, the NAIRU half landed §398 |
+| FT-8 (new this run) | - | **LANDED** §398, the scope departure ratified §399; the remaining tenth of the gap read in §400 |
+
+**The calibration list, verified live** (`COMPLETED.md` §189): `CampaignActions.PersuasionPerCompatibilityPoint` 40 000, `CampaignClock.DefaultPreCampaignWeeks` 26, `CampaignResources.MoneyScale` 500 000 - the three numbered constants read their listed values in the code.
+
+**Errands.** E-1 (the itanes.it account) and E-3 (the RETURN paste) open, Elias's, unchanged since §380; nothing new opened today (the CBO's pages, blocked, are billed inside §398 rather than as an errand: the method was read through two published hands).
+
+**The document set.** `ls *.md` returns 18, the same eighteen as §380; the governing document's table names every one; no orphan.
+
+**The run's self-ruled sheets since §380, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §383 | FT-5 reverted, FT-7 opened as the mechanism it needed | **HOLDS, and then some** - FT-7's two seats landed (§391, §394) and FT-5 landed behind them (§396) |
+| §384 | RF-2 re-formed on the real wage with its legal anchor | **HOLDS** - Socialförsäkringsbalken's income index is the caseload lines' driver; no state a net creditor by the ceiling |
+| §385 | the decaying-expectations form at 0.25 a year, from Gürkaynak-Levin-Swanson | **HOLDS** - inflation at the targets at year 300 in every dump since, the overflow gone |
+| §387–§388 | the AI finance ministry built on the EU framework and the FRA, with three defects fixed by measurement | **HOLDS** - §390's two tags stand: the US sequester 0.5 % borrowed until a US source, the safeguards on the headline balance until T-3 |
+| §391 | FT-7's first seat: unemployment reads Δparticipation on impact, absorbed at 0.40 | **HOLDS, corrected in §398** - the seat's arithmetic was right for the cycle and wrong for demography; the split leaves the pyramid's drift out of it |
+| §392, §393, §395 | FT-5 and the NAIRU gap re-measured, nothing tuned | **HOLDS** - each reading was reported against SELMA as measured |
+| §394 | the second seat: potential's labour input reads employment, six seed potentials re-solved | **HOLDS** - the USA's typed 14.7 % seed gap gone; its seed recession is T-3's question, Elias's |
+| §396 | FT-5 landed; the residual attributed to FT-1's consumption channel | **HOLDS** - the attribution is FT-1's row; the trajectory unchanged where no rate moves |
+| §397 | FT-8 sheeted as the next pass's; the sheet's form | **SUPERSEDED by ruling** - made this pass's; the sheet's arithmetic corrected by the sources (§398) |
+| §398 | the sources correct the sheet; the demographic trend leaves the excess; the natural rate reads the composition; every gap reader on the effective figure | **HOLDS, RATIFIED** (§399) |
+| §400 | the remaining half of the NAIRU gap read through a ledger seam and a probe; FT-9 opened on the reading as Elias's, ruling-first | **HOLDS** - the seam proved inert by the p5okun2 diff after a first seam that parted the dumps (the Mono lesson recorded beside it); the arithmetic closes to the hundredth for six; the row is ruling-first as the ruling required, and its next reading is named |
+
+**The residue** reads zero on bar242 and every bar since the FT-8 row closed; the excluded rows are Elias's (T-3, FT-6, FT-9, the dials-only laws, the E-rows), Design's (D-rows) and the calendar's (K-1, 13 September 2026). Nothing a session could start stands open, and this cycle opened nothing.
+
+**Bar:** documents only; `bar246_shelf_RunAllBatch`, the cheap bar of this commit, run on this record as written - the commit follows its green (the result stands in the log and in the report).
