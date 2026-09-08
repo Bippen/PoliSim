@@ -25032,3 +25032,13 @@ no dump is byte-identical (5 of 62 fields, the demographic constants): a BASELIN
 **The residue** reads zero on bar242 and every bar since the FT-8 row closed; the excluded rows are Elias's (T-3, FT-6, FT-9, the dials-only laws, the E-rows), Design's (D-rows) and the calendar's (K-1, 13 September 2026). Nothing a session could start stands open, and this cycle opened nothing.
 
 **Bar:** documents only; `bar246_shelf_RunAllBatch`, the cheap bar of this commit, run on this record as written - the commit follows its green (the result stands in the log and in the report).
+
+## 402. NUMERIC INERTNESS — the Mono float-precision lesson recorded as standing, beside the two-books rule (2026-09-08)
+
+**The ruling:** *"The Mono float-precision lesson: standing. A byte-inert instrument leaves the play path's expressions untouched; a refactor into locals is a numeric change, caught only by the dump. Record it beside the two-books rule."*
+
+**Recorded.** `CLAUDE.md` carries a new section, *Numeric Inertness*, directly after *Accounting Convention - the book in current prices* (P5-B6), which is where the two-books rule lives. It states the fact (Mono rounds `float` at the store, not at every operator, so `float t1 = a*b*c; float t2 = d*e*f; x = t1 + t2` rounds twice where `x = a*b*c; x += d*e*f` rounds once), the evidence (§400's first Okun ledger: both bars green, every field of the millennium dumps parted), and the rule in three sentences: an instrument leaves the play path's statements as they are and recomputes for its subscriber behind a null check; a refactor into locals is a numeric change and is treated as one - its own family, its own dump diff, its own explanation; inertness is proved by the dump diff against the baseline and never by reading the code. The section says why it sits beside the accounting convention: both are rules about what the model's numbers ARE.
+
+**Where it already applies.** `MacroSystem.OkunLedger` (§400) is built to the rule and its inertness is on record (p5okun2 = p5nairu, 64 of 64). The boundary ledger §403 builds for FT-9's decomposition is built to it too, and proves itself the same way before its reading is trusted.
+
+**Bar:** documents only; the cheap bar of the item's commit - `bar247_inert_RunAllBatch` 33 of 33, `ResidueCheck` 0 open.

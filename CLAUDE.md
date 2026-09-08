@@ -89,6 +89,21 @@ validated in; only the stock's drift carries the bridge. Anyone comparing debt f
 the erosion commit is comparing across a RECALIBRATION BY CONSTRUCTION — the fourth baseline
 discontinuity, listed with the other three at the top of this file.
 
+## Numeric Inertness — a byte-inert instrument leaves the play path's expressions untouched (ruled standing 2026-09-08, `COMPLETED.md` §400, §402)
+
+**Unity's Mono evaluates `float` intermediates at higher precision than `float`.** An expression such as `x = a * b * c; x += d * e * f;`
+rounds to `float` when it is STORED, not at every operator; a refactor into locals - `float t1 = a * b * c; float t2 = d * e * f; x = t1 + t2;` -
+rounds twice where the original rounded once. The two are the same arithmetic on paper and a different trajectory in the run: §400's first
+Okun ledger did exactly this, and the 1000-turn dumps parted from their baseline in every field while both bars stayed green.
+
+**The rule.** A measurement seam, a ledger, a probe hook - anything that must not change the simulation - leaves the play path's statements
+as they are and recomputes what it wants for the subscriber alone, behind a null check. **A refactor into locals is a numeric change**, to be
+treated as one: its own family, its own dump diff, its own explanation. **Inertness is proved by the dump diff against the baseline and never by
+reading the code**: the diff is the only instrument that sees a one-ulp shift compound over a millennium.
+
+This sits beside the accounting convention above because both are rules about what the model's numbers ARE, not about what they should be:
+one book in current prices, one price level joining it to the real block; one arithmetic in the play path, untouched by the instruments that read it.
+
 ## Genre & Scope
 - Turn-based (not real-time). One "turn" = one simulated period (e.g. a quarter or year — exact cadence still TBD).
 - Multiple playable/simulated countries: USA, Sweden, Germany, France, Italy, Poland. `WorldFactory.CreateDefault()` seeds the figures the user specified — policy rates, inflation, and USA/Poland unemployment and USA/Eurozone/Sweden/Poland potential growth — to real mid-2026 data; NAIRU, unspecified unemployment rates, government-spending shares, and starting GDP levels are stylized, directionally-realistic estimates, not researched figures (see comments in `WorldFactory.cs`).
