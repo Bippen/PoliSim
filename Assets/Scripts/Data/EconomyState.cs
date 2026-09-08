@@ -33,6 +33,13 @@ namespace PoliSim.Data
         /// boundary (MacroSystem.ApplyNaturalRateFromLabourForce); read by Okun's reversion, the Phillips curve and the Taylor rule through
         /// Country.EffectiveNaturalUnemploymentRate. Zero at the seed.</summary>
         public float NaturalRateDemographicShift;
+        /// <summary>FT-9 (§404): the year's event, entering GDP over the period's days instead of at the boundary. EventSystem.ApplyEvent arms these - the
+        /// shock in real GDP per day (its percentage of the GDP it hit, spread evenly over EventSystem.ShockDurationDays) and the days left - and
+        /// MacroSystem.ApplyEventShockDaily lands one day's share inside the increment Okun's law reads, so the fall raises unemployment and the
+        /// recovery lowers it and the year nets to its print. Zero when no event is running; AppliedThisPeriod is the sum landed since the event.</summary>
+        public float EventGdpShockPerDay;
+        public int EventGdpShockDaysLeft;
+        public float EventGdpShockAppliedThisPeriod;
 
         /// <summary>Public approval of the government, 0-100.</summary>
         public float ApprovalRating;

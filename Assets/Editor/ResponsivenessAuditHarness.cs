@@ -17,6 +17,7 @@ namespace PoliSim.EditorTools
     /// plainly — that is the finding.</b> Nothing here is fitted, nothing is tuned, and the harness has no
     /// code path that writes to a constant.</para>
     ///
+    /// <para><b>The year's dice are off</b> (§404, FT-9): EventSystem.Enabled is false for the harness's runs, so the multipliers read the dial alone.</para>
     /// <para><b>The experiment.</b> From the Sweden baseline at seed 777, each major fiscal dial is
     /// stepped by a small and a large amount **once, as a permanent level shift**, and the trajectory
     /// compared with an otherwise identical no-policy run. One turn is one year (`DaysPerTurn` = 365), so the horizons are
@@ -151,6 +152,11 @@ namespace PoliSim.EditorTools
         public static void Run()
         {
             CheckExit.ArmLogFold();
+            // §404 (FT-9): the year's dice OFF for the harness's runs - the dials' own effect, with no random shock in the measurement window (the same idiom as
+            // AiFinanceMinistryEnabled in the measurement diagnostics). Until FT-9 an event at the boundary did not enter the days and left the impact reading alone;
+            // with the shock in the daily path the with-events reading fell 0.512/0.514/0.510 → 0.507/0.509/0.505 and the clean reading is 0.510/0.511/0.507 (§404 records
+            // all three). The batch process ends with the harness, which restores the switch. Self-taken, strikeable: the ratchet 0.507 is untouched.
+            EventSystem.Enabled = false;
 
             var dials = new List<Dial>
             {

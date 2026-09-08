@@ -71,6 +71,10 @@ namespace PoliSim.Simulation
         /// measures the realised rate against this figure on the simulation bar. `CabinetSystem.DecisionChancePerTurn` (0.12, its own
         /// constant, which matched this one until P4-D2) stays where it was: the Docket's cadence is not the news's.</summary>
         public const float EventChancePerTurn = 0.40f;
+        /// <summary>FT-9 (§404): the days an event's GDP shock takes to enter the daily path - the period, one year. CONVENTION: the catalogue carries no
+        /// duration per event (each is "the year's event"); a shock is spread evenly over the period the player watches, so it is fully in by the next boundary
+        /// and no two overlap. Sourced durations per event would refine this; none is typed.</summary>
+        public const int ShockDurationDays = SimulationManager.DaysPerTurn;
 
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Event);
 
@@ -431,8 +435,14 @@ namespace PoliSim.Simulation
         };
 
         /// <summary>Rolls whether an event fires this turn; returns null (no event) most of the time.</summary>
+        /// <summary>§404: a diagnostics switch, true in play - a measurement that must read its own mechanism alone (the responsiveness harness reads a fiscal
+        /// dial's multiplier at impact) turns the year's dice off for its runs and back on after, the same idiom as SimulationManager.AiFinanceMinistryEnabled.
+        /// Off, no event rolls and the event stream's dice are not drawn; the other streams are untouched.</summary>
+        public static bool Enabled = true;
+
         public static EconomicEvent TryRollEvent()
         {
+            if (!Enabled) { return null; }
             if (RandomSource.NextDouble() > EventChancePerTurn)
             {
                 return null;
@@ -442,7 +452,10 @@ namespace PoliSim.Simulation
             return EventPool[index];
         }
 
-        /// <summary>Applies a one-time GDP/inflation/approval shock. No-op if economicEvent is null (the common case - no event this turn).</summary>
+        /// <summary>Lands the year's event. The inflation and approval shocks are one-time, at the boundary, as before. The GDP shock is NOT applied here since
+        /// FT-9 (§404): until then it multiplied GDP at the boundary, where Okun's daily form never saw the fall and read the following year's recovery as
+        /// growth above potential - the tenth of the unemployment gap §400 measured. Now the shock is ARMED - its percentage of the GDP it hits, spread evenly
+        /// over ShockDurationDays - and MacroSystem.ApplyEventShockDaily lands it day by day inside the increment Okun reads. No-op if economicEvent is null.</summary>
         public static void ApplyEvent(Country country, EconomicEvent economicEvent)
         {
             if (economicEvent == null)
@@ -451,7 +464,9 @@ namespace PoliSim.Simulation
             }
 
             EconomyState state = country.State;
-            state.GDP = Mathf.Max(MacroSystem.MinGdp, state.GDP * (1f + economicEvent.GdpShockPercent / 100f));
+            state.EventGdpShockPerDay = state.GDP * (economicEvent.GdpShockPercent / 100f) / ShockDurationDays;
+            state.EventGdpShockDaysLeft = ShockDurationDays;
+            state.EventGdpShockAppliedThisPeriod = 0f;
             state.Inflation = Mathf.Clamp(state.Inflation + economicEvent.InflationShockPoints, 0f, MacroSystem.MaxInflationPercent);
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + economicEvent.ApprovalEffect, 0f, 100f);
         }

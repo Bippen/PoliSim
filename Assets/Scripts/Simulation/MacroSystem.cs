@@ -447,6 +447,18 @@ namespace PoliSim.Simulation
             country.State.NaturalRateDemographicShift = composition - country.CompositionNaturalRateAtSeed;
         }
 
+        /// <summary>FT-9 (§404), a DAILY step inside the macro step, before the identity and before Okun reads the day's increment: one day's share of the
+        /// year's event enters GDP. The identity's reversion then acts on the shocked level the same day and the following days carry the recovery, so
+        /// Okun's daily form sees the fall and the recovery both, and the year nets to its print. Nothing when no event is running.</summary>
+        public static void ApplyEventShockDaily(Country country)
+        {
+            EconomyState state = country.State;
+            if (state.EventGdpShockDaysLeft <= 0) { return; }
+            state.GDP = Mathf.Max(MinGdp, state.GDP + state.EventGdpShockPerDay);
+            state.EventGdpShockAppliedThisPeriod += state.EventGdpShockPerDay;
+            state.EventGdpShockDaysLeft--;
+        }
+
         // --- Expectations-augmented Phillips Curve: inflation moves with the unemployment gap ---
 
         /// <summary>How many inflation points move per percentage point of unemployment gap versus NAIRU.</summary>

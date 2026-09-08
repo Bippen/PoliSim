@@ -375,6 +375,7 @@ namespace PoliSim.Simulation
                     // identity exactly as they always did.
                     FiscalPeriod macroPeriod = GetOrSeedFiscalPeriod(country);
                     float gdpBeforeMacroStep = country.State.GDP;
+                    MacroSystem.ApplyEventShockDaily(country);   // FT-9 (§404): the year's event enters here, inside the increment Okun reads - the boundary no longer moves GDP
                     float anchoredPotential = macroPeriod.PotentialGdpAtPeriodOpen > 0f
                         ? macroPeriod.PotentialGdpAtPeriodOpen
                         : country.State.PotentialGDP;
