@@ -154,7 +154,7 @@ namespace PoliSim.Data
         /// shift is measured from. 0 = not yet seen; a save from before seeds it on first sight and reads no shift from that day.</summary>
         public float CompositionNaturalRateAtSeed;
         /// <summary>FT-8 (§398): the natural rate the macro core reads - the seeded figure as the labour-institution laws compose it, plus the labour force's
-        /// demographic shift (EconomyState.NaturalRateDemographicShift). EVERY gap reader reads THIS - Okun's reversion, the Phillips curve, the Taylor rule, and (§398's measurement forced
+        /// demographic shift (EconomyState.NaturalRateDemographicShift). EVERY gap reader reads THIS - a standing rule since §399 (ONE NATURAL RATE: a natural rate two readers disagree on is not one) - Okun's reversion, the Phillips curve, the Taylor rule, and (§398's measurement forced
         /// the rest) the discouraged-worker, poverty, crime, approval, real-wage, hoarding and rating terms; NaturalUnemploymentRate stays the figure the laws compose and the shift is measured from.</summary>
         public float EffectiveNaturalUnemploymentRate => NaturalUnemploymentRate + (State != null ? State.NaturalRateDemographicShift : 0f);
         public float CollectionEfficiencyBase;
