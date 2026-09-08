@@ -331,9 +331,26 @@ namespace PoliSim.Simulation
                 + GetOvertimeUnemploymentAdjustment(country)
                 + GetRetrainingUnemploymentAdjustment(country)
                 + GetSectorUnemploymentAdjustment(country)) * sliceFraction;
+            // §400: the ledger seam. The statements above are the play path, untouched - a first seam that broke them into float locals parted the dumps,
+            // because Mono evaluates float intermediates at higher precision and a local rounds where the original expression did not (§400 records it).
+            // A subscriber gets the three terms recomputed here, and nothing else changes; null in play.
+            if (OkunLedger != null)
+            {
+                OkunLedger(country, -OkunCoefficient * growthGap * sliceFraction,
+                    GetWelfareAdjustedReversionSpeed(country) * sliceFraction * (country.EffectiveNaturalUnemploymentRate - reversionReference),
+                    (GetMinimumWageUnemploymentAdjustment(country) + GetOvertimeUnemploymentAdjustment(country) + GetRetrainingUnemploymentAdjustment(country) + GetSectorUnemploymentAdjustment(country)) * sliceFraction,
+                    sliceFraction);
+            }
 
             state.Unemployment = Mathf.Clamp(state.Unemployment + unemploymentChange, 0f, MaxUnemploymentPercent);
         }
+
+        /// <summary>§400: a measurement seam, null in play. A probe that subscribes receives every application of Okun's law with its three terms -
+        /// the growth term (−coefficient × the growth gap × the slice), the reversion term (the pull of the core to the effective natural rate) and the
+        /// policy adjustments - and the slice (1 ÷ 365 for a day, 1 for a turn form). The play path's statements are untouched by the seam (the terms are
+        /// recomputed for the subscriber alone), so a trajectory with the ledger unsubscribed is byte-identical to one before it existed - asserted by the
+        /// p5okun2 diff against p5nairu in §400, after a first seam that used float locals parted them.</summary>
+        public static System.Action<Country, float, float, float, float> OkunLedger;
 
         /// <summary>Phase 5 daily wrapper. <paramref name="annualizedDailyGrowthPercent"/> is the
         /// day's realized GDP growth times DaysPerTurn - annualized so the gap against the annual
