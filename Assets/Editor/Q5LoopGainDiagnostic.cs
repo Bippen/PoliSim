@@ -65,7 +65,7 @@ namespace PoliSim.EditorTools
             Country c = world.GetCountry(id);
 
             // The impulse: unemployment ImpulsePp below NAIRU, everything else at seed.
-            c.State.Unemployment = c.NaturalUnemploymentRate - ImpulsePp;
+            c.State.Unemployment = c.EffectiveNaturalUnemploymentRate - ImpulsePp;   // FT-8 (§398): the figure the core reads (the seeded one at the seed)
             float uAtOpen = c.State.Unemployment;
 
             // Link 1: the hoarding term itself.
@@ -127,7 +127,7 @@ namespace PoliSim.EditorTools
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(world);
                 Country c = world.GetCountry(id);
-                c.State.Unemployment = c.NaturalUnemploymentRate - impulsePp;
+                c.State.Unemployment = c.EffectiveNaturalUnemploymentRate - impulsePp;   // FT-8 (§398)
 
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country x in world.Countries) { decisions[x.Id] = PolicyDecision.None(); }
@@ -135,7 +135,7 @@ namespace PoliSim.EditorTools
                 for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                 sim.AdvanceTurn(decisions);
 
-                return c.NaturalUnemploymentRate - c.State.Unemployment;
+                return c.EffectiveNaturalUnemploymentRate - c.State.Unemployment;   // FT-8 (§398)
             }
             finally
             {

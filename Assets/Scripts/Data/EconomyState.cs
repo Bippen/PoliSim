@@ -27,6 +27,12 @@ namespace PoliSim.Data
         /// impact and is absorbed into employment at SELMA's rate (MacroSystem.SupplyAbsorptionPerYear). Points of the unemployment rate; signed (a fall in
         /// participation is a negative excess); zero at the seed. Okun's reversion pulls the core (Unemployment less this) to NAIRU and leaves this to its own decay.</summary>
         public float SupplyUnemploymentExcess;
+        /// <summary>FT-8 (§398): the natural rate's demographic shift, in points - the composition rate the pyramid's labour force implies at the sourced rates by age
+        /// (UnemploymentRateByAgeTable) today, less the same at the seed (Country.CompositionNaturalRateAtSeed). An older labour force carries fewer of the young,
+        /// whose rates run three to four times the prime-age rate, so its natural rate is lower (Shimer 1998; the CBO's construction). Written once a year at the
+        /// boundary (MacroSystem.ApplyNaturalRateFromLabourForce); read by Okun's reversion, the Phillips curve and the Taylor rule through
+        /// Country.EffectiveNaturalUnemploymentRate. Zero at the seed.</summary>
+        public float NaturalRateDemographicShift;
 
         /// <summary>Public approval of the government, 0-100.</summary>
         public float ApprovalRating;

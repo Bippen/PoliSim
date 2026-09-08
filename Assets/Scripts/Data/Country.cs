@@ -147,6 +147,16 @@ namespace PoliSim.Data
         public float DebtRatioReportBefore;
         /// <summary>FT-7 (§391): the participation rate as it stood at the last boundary, so the jobs lag reads the year's change in labour supply. 0 = not yet seen.</summary>
         public float ParticipationAtLastBoundary;
+        /// <summary>FT-8 (§398): the participation the pyramid implied at the sourced rates by age (ParticipationRateTable.StructuralRate) as it stood at the last
+        /// boundary - the year's change in it is the demographic trend the supply shock leaves out of the excess. 0 = not yet seen.</summary>
+        public float StructuralParticipationAtLastBoundary;
+        /// <summary>FT-8 (§398): the composition rate (UnemploymentRateByAgeTable.CompositionRate) on the seed's pyramid - the base the natural rate's demographic
+        /// shift is measured from. 0 = not yet seen; a save from before seeds it on first sight and reads no shift from that day.</summary>
+        public float CompositionNaturalRateAtSeed;
+        /// <summary>FT-8 (§398): the natural rate the macro core reads - the seeded figure as the labour-institution laws compose it, plus the labour force's
+        /// demographic shift (EconomyState.NaturalRateDemographicShift). EVERY gap reader reads THIS - Okun's reversion, the Phillips curve, the Taylor rule, and (§398's measurement forced
+        /// the rest) the discouraged-worker, poverty, crime, approval, real-wage, hoarding and rating terms; NaturalUnemploymentRate stays the figure the laws compose and the shift is measured from.</summary>
+        public float EffectiveNaturalUnemploymentRate => NaturalUnemploymentRate + (State != null ? State.NaturalRateDemographicShift : 0f);
         public float CollectionEfficiencyBase;
         public float GovernmentSpendingRateBase;
         /// <summary>P4-C3 (2026-09-05, the labour institutions' second reach): the seeded benefit rate per point of unemployment; the labour laws that cut benefit levels or duration compose on it.</summary>
@@ -188,6 +198,12 @@ namespace PoliSim.Data
             RealWageIndexAtLastIndex = State.RealWageIndex;   // RF-2 re-formed (§384)
             DebtRatioSeed = State.DebtToGdpRatio;   // the AI finance ministry (§388)
             ParticipationAtLastBoundary = State.LaborForceParticipationRate;   // FT-7 (§391)
+            // FT-8 (§398): the two references the natural rate reads the labour force through - the structural participation and the composition rate on the seed's pyramid
+            float structuralAtSeed = Cohorts != null ? ParticipationRateTable.StructuralRate(Id, Cohorts.Counts) : float.NaN;
+            StructuralParticipationAtLastBoundary = float.IsNaN(structuralAtSeed) ? 0f : structuralAtSeed;
+            float compositionAtSeed = Cohorts != null ? UnemploymentRateByAgeTable.CompositionRate(Id, Cohorts.Counts) : float.NaN;
+            CompositionNaturalRateAtSeed = float.IsNaN(compositionAtSeed) ? 0f : compositionAtSeed;
+            State.NaturalRateDemographicShift = 0f;
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
             LaborTaxRateSeed = 0f;   // FT-5
             foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }

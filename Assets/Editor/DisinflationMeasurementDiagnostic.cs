@@ -71,7 +71,7 @@ namespace PoliSim.EditorTools
                 foreach (Country x in world.Countries) { decisions[x.Id] = PolicyDecision.None(); }
 
                 Debug.Log($"DISINFLATION[{label}]: {id} start pi={c.State.Inflation:F2} pie={c.State.InflationExpectations:F2} " +
-                          $"U={c.State.Unemployment:F2} (NAIRU {c.NaturalUnemploymentRate:F2}) rate={c.CurrencyZone.InterestRate:F2}%");
+                          $"U={c.State.Unemployment:F2} (NAIRU {c.EffectiveNaturalUnemploymentRate:F2}) rate={c.CurrencyZone.InterestRate:F2}%");
 
                 for (int turn = 1; turn <= turns; turn++)
                 {
@@ -86,7 +86,7 @@ namespace PoliSim.EditorTools
                     {
                         EconomyState s = c.State;
                         Debug.Log($"DISINFLATION[{label}] t{turn}: pi={s.Inflation:F3} pie={s.InflationExpectations:F3} " +
-                                  $"U={s.Unemployment:F3} gap={c.NaturalUnemploymentRate - s.Unemployment:+0.000;-0.000} " +
+                                  $"U={s.Unemployment:F3} gap={c.EffectiveNaturalUnemploymentRate - s.Unemployment:+0.000;-0.000} " +
                                   $"rate={c.CurrencyZone.InterestRate:F3} Approval={s.ApprovalRating:F2} GDP={s.GDP:F1} PotGDP={s.PotentialGDP:F1}");
                     }
                 }

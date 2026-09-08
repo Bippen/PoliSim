@@ -326,7 +326,7 @@ namespace PoliSim.Simulation
             // ApplySupplyShockToUnemployment. The excess is constant inside a period (it moves at the boundary), so the daily form reads the same figure.
             float reversionReference = (reversionReferenceUnemployment ?? state.Unemployment) - state.SupplyUnemploymentExcess;
             unemploymentChange += GetWelfareAdjustedReversionSpeed(country) * sliceFraction
-                * (country.NaturalUnemploymentRate - reversionReference);
+                * (country.EffectiveNaturalUnemploymentRate - reversionReference);   // FT-8 (§398): the natural rate reads the labour force
             unemploymentChange += (GetMinimumWageUnemploymentAdjustment(country)
                 + GetOvertimeUnemploymentAdjustment(country)
                 + GetRetrainingUnemploymentAdjustment(country)
@@ -389,14 +389,45 @@ namespace PoliSim.Simulation
         {
             EconomyState state = country.State;
             float p = Mathf.Clamp(state.LaborForceParticipationRate, 1f, 100f);
-            if (country.ParticipationAtLastBoundary <= 0f) { country.ParticipationAtLastBoundary = p; return; }
+            float structural = country.Cohorts != null ? ParticipationRateTable.StructuralRate(country.Id, country.Cohorts.Counts) : float.NaN;
+            if (country.ParticipationAtLastBoundary <= 0f)
+            {
+                country.ParticipationAtLastBoundary = p;
+                if (!float.IsNaN(structural)) { country.StructuralParticipationAtLastBoundary = structural; }
+                return;
+            }
             float deltaP = p - country.ParticipationAtLastBoundary;
             country.ParticipationAtLastBoundary = p;
-            float impact = deltaP * (100f - state.Unemployment) / p;
+            // FT-8 (§398), the split. The pyramid's own drift - the year's change in the participation the cohorts imply at the sourced rates by age - is the
+            // demographic trend: people ageing out of (or into) the labour force in the same proportion as everyone else, which moves neither the unemployment
+            // rate nor the excess. The natural rate reads that drift instead, as a composition effect (ApplyNaturalRateFromLabourForce). What is left is the
+            // cyclical part - the discouraged-worker, health, education and tax terms and the reversion's own lag toward the anchor - and it alone arrives jobless.
+            float deltaTrend = 0f;
+            if (!float.IsNaN(structural))
+            {
+                if (country.StructuralParticipationAtLastBoundary > 0f) { deltaTrend = structural - country.StructuralParticipationAtLastBoundary; }
+                country.StructuralParticipationAtLastBoundary = structural;
+            }
+            float impact = (deltaP - deltaTrend) * (100f - state.Unemployment) / p;
             float excessBefore = state.SupplyUnemploymentExcess;
             float excessAfter = excessBefore * (1f - SupplyAbsorptionPerYear) + impact;
             state.SupplyUnemploymentExcess = excessAfter;
             state.Unemployment = Mathf.Clamp(state.Unemployment + (excessAfter - excessBefore), 0f, MaxUnemploymentPercent);
+        }
+
+        /// <summary>FT-8 (§398), a BOUNDARY step beside the supply shock: the natural rate reads the labour force. The composition rate - the unemployment rate
+        /// the pyramid's labour force would show with every age band at its sourced rate (UnemploymentRateByAgeTable: Eurostat une_rt_a 2024 for the five, the BLS
+        /// CPS 2024 for the USA) - is read on today's cohorts and on the seed's, and the difference is the demographic shift of the natural rate, in points: an
+        /// older labour force carries fewer of the young, whose rates run three to four times the prime-age rate, and its natural rate is lower for it. The
+        /// construction is the CBO's - group rates fixed at their source year, shares moving (Aaronson, Hu, Seifoddini and Sullivan 2015; Bok and Petrosky-Nadeau
+        /// 2022) - and the finding is Shimer's (1998): the age composition explains the bulk of the US rate's movement over four decades. Zero at the seed; a save
+        /// from before seeds its base on first sight. Read by Okun's reversion, the Phillips curve and the Taylor rule through Country.EffectiveNaturalUnemploymentRate.</summary>
+        public static void ApplyNaturalRateFromLabourForce(Country country)
+        {
+            float composition = country.Cohorts != null ? UnemploymentRateByAgeTable.CompositionRate(country.Id, country.Cohorts.Counts) : float.NaN;
+            if (float.IsNaN(composition)) { country.State.NaturalRateDemographicShift = 0f; return; }
+            if (country.CompositionNaturalRateAtSeed <= 0f) { country.CompositionNaturalRateAtSeed = composition; }
+            country.State.NaturalRateDemographicShift = composition - country.CompositionNaturalRateAtSeed;
         }
 
         // --- Expectations-augmented Phillips Curve: inflation moves with the unemployment gap ---
@@ -429,7 +460,7 @@ namespace PoliSim.Simulation
         public static float ApplyPhillipsCurveInflation(Country country, float tariffPassThroughPp = 0f)
         {
             EconomyState state = country.State;
-            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;   // FT-8 (§398): the natural rate reads the labour force
             float inflation = state.InflationExpectations - PhillipsCurveSlope * unemploymentGap;
 
             state.Inflation = Mathf.Clamp(inflation, 0f, MaxInflationPercent);
@@ -667,7 +698,7 @@ namespace PoliSim.Simulation
         public static void ApplyPovertyRate(Country country, float reversionSpeed = PovertyReversionSpeed)
         {
             EconomyState state = country.State;
-            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;
             float inflationGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
             float baseline = country.BaselinePovertyRate
                 + PovertyUnemploymentSensitivity * unemploymentGap
@@ -783,7 +814,7 @@ namespace PoliSim.Simulation
         public static void ApplyLaborForceParticipationRate(Country country, float reversionSpeed = LaborForceParticipationReversionSpeed)
         {
             EconomyState state = country.State;
-            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;
             float paidLeaveGap = country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks;
             float retrainingGap = country.RetrainingProgramLevel - NeutralPolicyDialLevel;
 
@@ -925,7 +956,7 @@ namespace PoliSim.Simulation
         public static void ApplyYouthUnemployment(Country country, float reversionSpeed = YouthUnemploymentReversionSpeed)
         {
             EconomyState state = country.State;
-            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;
             float target = country.BaselineYouthUnemploymentRate
                 + YouthUnemploymentCyclicalSensitivity * unemploymentGap
                 - CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.Education);
@@ -1055,7 +1086,7 @@ namespace PoliSim.Simulation
         public static void ApplyGini(Country country, float reversionSpeed = GiniReversionSpeed)
         {
             EconomyState state = country.State;
-            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;
 
             // Seed-spread ruling (2026-08-27): the deviation from the seeded portfolio - the sourced
             // BaselineGini already contains the country's real programs (WelfareEffectDelta).
@@ -1171,7 +1202,7 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
             return Mathf.Clamp(
                 RealWageProductivityPassThrough * (country.ProductivityTrendGrowth + cyclePerTurnPercent)
-                + RealWageTightnessSensitivity * (country.NaturalUnemploymentRate - state.Unemployment)
+                + RealWageTightnessSensitivity * (country.EffectiveNaturalUnemploymentRate - state.Unemployment)
                 - RealWageInflationErosionSensitivity * (state.Inflation - state.InflationExpectations),
                 -MaxRealWageGrowthPerTurnPercent, MaxRealWageGrowthPerTurnPercent);
         }
@@ -1426,7 +1457,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public static float ProductivityCycleGrowthPerTurnPercent(Country country, float unemploymentAtPeriodOpen)
         {
-            return ProductivityHoardingSensitivity * (country.NaturalUnemploymentRate - unemploymentAtPeriodOpen);
+            return ProductivityHoardingSensitivity * (country.EffectiveNaturalUnemploymentRate - unemploymentAtPeriodOpen);
         }
 
         /// <summary>Compounds EconomyState.Productivity - the compounding-class kit (power slice
@@ -1483,7 +1514,7 @@ namespace PoliSim.Simulation
         public static void ApplyCrimeIndex(Country country, float reversionSpeed = CrimeIndexReversionSpeed)
         {
             EconomyState state = country.State;
-            float unemploymentGap = state.Unemployment - country.NaturalUnemploymentRate;
+            float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;
             float organizedCrimeGap = state.OrganizedCrimeIndex - country.BaselineOrganizedCrimeIndex;
             float interiorJusticeCompetenceBias = CabinetSystem.GetCompetenceBias(country, CabinetPortfolio.InteriorJustice);
             float target = country.BaselineCrimeIndex
@@ -2172,7 +2203,7 @@ namespace PoliSim.Simulation
             float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
             float growthEffect = GrowthApprovalSensitivity * growthGap;
 
-            float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
+            float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.EffectiveNaturalUnemploymentRate);
             float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
             float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
             float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
@@ -2253,7 +2284,7 @@ namespace PoliSim.Simulation
             float growthGap = actualGrowthRatePercent - country.PotentialGrowthRate;
             float growthEffect = GrowthApprovalSensitivity * growthGap;
 
-            float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.NaturalUnemploymentRate);
+            float unemploymentPenaltyGap = Mathf.Max(0f, state.Unemployment - country.EffectiveNaturalUnemploymentRate);
             float inflationPenaltyGap = Mathf.Abs(state.Inflation - TaylorRule.InflationTarget(country));
             float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
             float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;

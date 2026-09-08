@@ -50,13 +50,13 @@ namespace PoliSim.EditorTools
                 Country c = world.GetCountry(id);
                 if (impulsePp != 0f)
                 {
-                    c.State.Unemployment = Mathf.Max(0f, c.NaturalUnemploymentRate - impulsePp);
+                    c.State.Unemployment = Mathf.Max(0f, c.EffectiveNaturalUnemploymentRate - impulsePp);
                 }
 
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country x in world.Countries) { decisions[x.Id] = PolicyDecision.None(); }
 
-                Debug.Log($"WAGEBOOM2[{label}]: {id} start U={c.State.Unemployment:F2} (NAIRU {c.NaturalUnemploymentRate:F2}) rate={c.CurrencyZone.InterestRate:F2}%");
+                Debug.Log($"WAGEBOOM2[{label}]: {id} start U={c.State.Unemployment:F2} (NAIRU {c.EffectiveNaturalUnemploymentRate:F2}) rate={c.CurrencyZone.InterestRate:F2}%");
 
                 for (int turn = 1; turn <= turns; turn++)
                 {
@@ -70,7 +70,7 @@ namespace PoliSim.EditorTools
                     if (turn <= 3 || turn % 10 == 0 || turn == turns)
                     {
                         EconomyState s = c.State;
-                        Debug.Log($"WAGEBOOM2[{label}] t{turn}: U={s.Unemployment:F3} gap={c.NaturalUnemploymentRate - s.Unemployment:+0.000;-0.000} " +
+                        Debug.Log($"WAGEBOOM2[{label}] t{turn}: U={s.Unemployment:F3} gap={c.EffectiveNaturalUnemploymentRate - s.Unemployment:+0.000;-0.000} " +
                                   $"π={s.Inflation:F3} πe={s.InflationExpectations:F3} rate={c.CurrencyZone.InterestRate:F3} " +
                                   $"RealWage={s.RealWageIndex:F1} Approval={s.ApprovalRating:F2}");
                     }

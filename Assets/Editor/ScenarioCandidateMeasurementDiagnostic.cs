@@ -147,7 +147,7 @@ namespace PoliSim.EditorTools
                     EconomyState s = c.State;
                     float growth = previousIndex > 0f ? (s.RealWageIndex / previousIndex - 1f) * 100f : 0f;
                     previousIndex = s.RealWageIndex;
-                    float gap = s.Unemployment - c.NaturalUnemploymentRate;
+                    float gap = s.Unemployment - c.EffectiveNaturalUnemploymentRate;
 
                     streakAboveTrend = growth >= c.PotentialGrowthRate + 0.5f ? streakAboveTrend + 1 : 0; bestAboveTrend = Mathf.Max(bestAboveTrend, streakAboveTrend);
                     streakGrowth2 = growth >= 2f ? streakGrowth2 + 1 : 0; bestGrowth2 = Mathf.Max(bestGrowth2, streakGrowth2);

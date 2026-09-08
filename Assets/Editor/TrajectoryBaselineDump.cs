@@ -103,6 +103,9 @@ namespace PoliSim.EditorTools
                         // a B-only NEW field to any pre-R4 diff, which the allowance names.
                         sb.Append(turn).Append(',').Append(country.Id).Append(",Country.EffectiveDebtRate,")
                           .Append(country.EffectiveDebtInterestRate.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
+                        // FT-8 (§398): the natural rate the macro core reads - seed-plus-laws plus the labour force's demographic shift - so the gap is in every dump.
+                        sb.Append(turn).Append(',').Append(country.Id).Append(",Country.EffectiveNaturalRate,")
+                          .Append(country.EffectiveNaturalUnemploymentRate.ToString("R", CultureInfo.InvariantCulture)).Append('\n');
                         // Pass 4 (the Taylor-path gap fix): the rule's own reading, so a before/after
                         // diff carries the suggested-rate trajectory directly - B-only NEW fields to
                         // any pre-pass-4 dump, per the allowance. GapTermPp is the rule's cyclical

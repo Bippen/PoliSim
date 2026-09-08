@@ -2582,6 +2582,7 @@ namespace PoliSim.Simulation
             // the unemployment driver (the labour-market and income-security lines are the new entrants' caseload) and before the Phillips curve reads the print.
             // The first tree placed it after the indexation and the line-indexation diagnostic caught the split (two lines 1-2 % off their country's factor).
             MacroSystem.ApplySupplyShockToUnemployment(country);
+            MacroSystem.ApplyNaturalRateFromLabourForce(country);   // FT-8 (§398): the natural rate reads the labour force, at the same boundary
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(country, decision);
             MacroSystem.ApplyCategorySpendingEffects(country, spendingResult.EffectiveDecision);
             // Phase 1: the DECAY and the sector reversion have already been charged day by day in
@@ -2889,8 +2890,14 @@ namespace PoliSim.Simulation
             ApplyLaborPolicyChanges(previewCountry, decision);
             ApplyCrimeJusticeDeeperChanges(previewCountry, decision);
             ApplyDemographicPolicyChanges(previewCountry, decision);
+            // FT-8 (§398): the rule is read HERE, on the readings as they stand at the top of the turn - the real turn sets the zone rate in
+            // CurrencySystem.ApplyInterestRateChanges before any country's boundary runs. Reading it after the clone's supply shock and natural-rate step
+            // (as the preview did until now, masked because the clone carried no boundary reference) previewed a rate the turn never sets; PreviewParityDiagnostic caught it.
+            float ruleReadingAtOpen = previewCountry.CurrentFedChair != null ? TaylorRule.GetSuggestedInterestRate(previewCountry) : 0f;
+            float blendedAtOpen = previewCountry.CurrentFedChair == null && CurrencySystem.SharesCurrencyZoneWithOthers(previewCountry, _world) ? EurozoneRateSystem.GetBlendedSuggestedRate(_world, previewCountry) : 0f;
             CohortDemographics.ApplyTurn(previewCountry, CohortDemographics.SubstrateYear(CurrentTurn));   // F2 step 4: the year's readings on the clone's own pyramid; nothing commits
             MacroSystem.ApplySupplyShockToUnemployment(previewCountry);   // FT-7 (§391): the preview reads the same boundary step, in the same place
+            MacroSystem.ApplyNaturalRateFromLabourForce(previewCountry);   // FT-8 (§398)
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             // Phase 1: the preview deliberately keeps the TURN-level forms. It models one whole turn on a
@@ -2939,12 +2946,12 @@ namespace PoliSim.Simulation
             if (previewCountry.CurrentFedChair != null)
             {
                 previewedInterestRate = Mathf.Clamp(
-                    TaylorRule.GetSuggestedInterestRate(previewCountry) + previewCountry.CurrentFedChair.RateBias,
+                    ruleReadingAtOpen + previewCountry.CurrentFedChair.RateBias,   // FT-8 (§398): the reading at the top of the turn
                     CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
             }
             else if (CurrencySystem.SharesCurrencyZoneWithOthers(previewCountry, _world))
             {
-                float blended = EurozoneRateSystem.GetBlendedSuggestedRate(_world, previewCountry);
+                float blended = blendedAtOpen;   // FT-8 (§398): the reading at the top of the turn
                 float push = Mathf.Clamp(decision.InterestRateChange, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange);
                 previewedInterestRate = Mathf.Clamp(blended + push, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
             }
@@ -2995,7 +3002,7 @@ namespace PoliSim.Simulation
                 SectorDeltas = SectorDeltasSince(previewCountry, sectorsBefore),   // P4-B3
                 PreviewInflation = state.Inflation,
                 PreviewUnemployment = state.Unemployment,
-                PreviewNaturalUnemployment = previewCountry.NaturalUnemploymentRate,
+                PreviewNaturalUnemployment = previewCountry.EffectiveNaturalUnemploymentRate,   // FT-8 (§398): the figure the rule reads
                 PreviewOutputGapPercent = TaylorRule.GetOutputGapPercent(previewCountry),
                 PreviewRuleRate = TaylorRule.GetSuggestedInterestRate(previewCountry),
                 PreviewedInterestRate = previewedInterestRate,
@@ -3187,6 +3194,12 @@ namespace PoliSim.Simulation
                 // (BaselineTaxRates at C-N4, found only because two film frames differed), and a field added
                 // to Country and not to this hand-list is a defect waiting for its first reader.
                 Cohorts = country.Cohorts?.Clone(),
+                // FT-7/FT-8 (§398): the boundary references ride the hand-list. Found while landing FT-8: the clone carried NO ParticipationAtLastBoundary since
+                // §391, so the preview's supply shock seeded itself and moved nothing that year - the R4-1 clone-escape class, a fifth time. The three references
+                // are copied so the preview's boundary reads the same year the turn will.
+                ParticipationAtLastBoundary = country.ParticipationAtLastBoundary,
+                StructuralParticipationAtLastBoundary = country.StructuralParticipationAtLastBoundary,
+                CompositionNaturalRateAtSeed = country.CompositionNaturalRateAtSeed,
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,

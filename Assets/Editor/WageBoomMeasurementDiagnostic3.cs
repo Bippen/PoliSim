@@ -49,7 +49,7 @@ namespace PoliSim.EditorTools
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(world);
                 Country c = world.GetCountry(id);
-                c.State.Unemployment = Mathf.Max(0f, c.NaturalUnemploymentRate - startImpulsePp);
+                c.State.Unemployment = Mathf.Max(0f, c.EffectiveNaturalUnemploymentRate - startImpulsePp);
 
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country x in world.Countries) { decisions[x.Id] = PolicyDecision.None(); }
@@ -66,7 +66,7 @@ namespace PoliSim.EditorTools
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                     sim.AdvanceTurn(decisions);
 
-                    float gap = c.NaturalUnemploymentRate - c.State.Unemployment;
+                    float gap = c.EffectiveNaturalUnemploymentRate - c.State.Unemployment;
                     consecutiveBelow1pp = gap >= 1f ? consecutiveBelow1pp + 1 : 0;
                     maxConsecutive = Mathf.Max(maxConsecutive, consecutiveBelow1pp);
 
@@ -97,7 +97,7 @@ namespace PoliSim.EditorTools
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(world);
                 Country c = world.GetCountry(id);
-                c.State.Unemployment = Mathf.Max(0f, c.NaturalUnemploymentRate - startImpulsePp);
+                c.State.Unemployment = Mathf.Max(0f, c.EffectiveNaturalUnemploymentRate - startImpulsePp);
 
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country x in world.Countries) { decisions[x.Id] = PolicyDecision.None(); }
@@ -114,7 +114,7 @@ namespace PoliSim.EditorTools
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                     sim.AdvanceTurn(decisions);
 
-                    float gap = c.NaturalUnemploymentRate - c.State.Unemployment;
+                    float gap = c.EffectiveNaturalUnemploymentRate - c.State.Unemployment;
                     consecutiveBelow1pp = gap >= 1f ? consecutiveBelow1pp + 1 : 0;
                     maxConsecutive = Mathf.Max(maxConsecutive, consecutiveBelow1pp);
 

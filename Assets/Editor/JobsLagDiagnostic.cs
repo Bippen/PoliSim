@@ -50,6 +50,20 @@ namespace PoliSim.EditorTools
                     if (Mathf.Abs(country.State.SupplyUnemploymentExcess - excess) > 1e-4f) { Debug.LogError($"JOBS LAG: after {i + 1} boundaries the excess reads {country.State.SupplyUnemploymentExcess:F5}, expected {excess:F5} (0.40 a year)."); ok = false; break; }
                 }
             }
+            // FT-8 (§398): the demographic trend leaves the excess. A boundary on which only the pyramid's structural rate moved - participation following it
+            // exactly, half a point - reads no excess and moves unemployment by nothing; the same half point arriving as a cyclical change reads the §391 impact.
+            {
+                var country = seedWorld.GetCountry(CountryId.Sweden);
+                float structural = ParticipationRateTable.StructuralRate(country.Id, country.Cohorts.Counts);
+                country.State.Unemployment = 6f; country.State.SupplyUnemploymentExcess = 0f;
+                country.StructuralParticipationAtLastBoundary = structural - 0.5f; country.ParticipationAtLastBoundary = 64f; country.State.LaborForceParticipationRate = 64.5f;
+                MacroSystem.ApplySupplyShockToUnemployment(country);
+                if (Mathf.Abs(country.State.SupplyUnemploymentExcess) > 1e-5f || Mathf.Abs(country.State.Unemployment - 6f) > 1e-5f) { Debug.LogError($"JOBS LAG: a purely demographic half point of participation read an excess of {country.State.SupplyUnemploymentExcess:F5} and moved unemployment to {country.State.Unemployment:F5} - the trend is in the excess (FT-8, §398)."); ok = false; }
+                country.StructuralParticipationAtLastBoundary = structural; country.ParticipationAtLastBoundary = 64f; country.State.LaborForceParticipationRate = 64.5f; country.State.SupplyUnemploymentExcess = 0f; country.State.Unemployment = 6f;
+                MacroSystem.ApplySupplyShockToUnemployment(country);
+                float cyclical = 0.5f * (100f - 6f) / 64.5f;
+                if (Mathf.Abs(country.State.SupplyUnemploymentExcess - cyclical) > 1e-4f) { Debug.LogError($"JOBS LAG: the same half point arriving as a cyclical change read {country.State.SupplyUnemploymentExcess:F5}, expected {cyclical:F5}."); ok = false; }
+            }
             if (Mathf.Abs(MacroSystem.SupplyAbsorptionPerYear - (1f - Mathf.Pow(0.88f, 4f))) > 0.005f) { Debug.LogError($"JOBS LAG: the absorption {MacroSystem.SupplyAbsorptionPerYear} is not 1 − 0.88⁴."); ok = false; }
             // (3) the world
             float[] untouched = Run(0f);

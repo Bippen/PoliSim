@@ -640,7 +640,7 @@ namespace PoliSim.UI
             {
                 () => _gdpGraph.Draw("GDP", history.Gdp.Quarterly, projectedGdp, graphLabel, higherIsBetter: true, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), enactmentPositions: enactments, shadowHistory: shadowHistory?.Gdp.Quarterly),
                 () => _unemploymentGraph.Draw("Unemployment", history.Unemployment.Quarterly, projectedUnemployment, graphLabel, higherIsBetter: false, moneyUnit: null,
-                    thresholdValue: _playerCountry.NaturalUnemploymentRate, thresholdLabel: "NAIRU", enactmentPositions: enactments, shadowHistory: shadowHistory?.Unemployment.Quarterly),
+                    thresholdValue: _playerCountry.EffectiveNaturalUnemploymentRate, thresholdLabel: "NAIRU", enactmentPositions: enactments, shadowHistory: shadowHistory?.Unemployment.Quarterly),
                 () => _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.Inflation.Quarterly),
                 () => _approvalGraph.Draw("Approval rating", history.ApprovalRating.Quarterly, projectedApproval, graphLabel, higherIsBetter: true, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.ApprovalRating.Quarterly),
                 () => _povertyGraph.Draw("Poverty rate", history.PovertyRate.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.PovertyRate.Quarterly),

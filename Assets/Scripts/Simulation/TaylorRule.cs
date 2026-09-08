@@ -111,7 +111,7 @@ namespace PoliSim.Simulation
         /// <summary>The gap the rule reads, in percentage points, signed so that POSITIVE means a tight labour market: NAIRU minus the unemployment rate.</summary>
         public static float GetUnemploymentGapPercent(Country country)
         {
-            return country.NaturalUnemploymentRate - country.State.Unemployment;
+            return country.EffectiveNaturalUnemploymentRate - country.State.Unemployment;   // FT-8 (§398): the natural rate reads the labour force
         }
 
         /// <summary>The rule's cyclical term in percentage points of rate: UnemploymentGapWeight times the gap. What TrajectoryBaselineDump records as Taylor.GapTermPp.</summary>

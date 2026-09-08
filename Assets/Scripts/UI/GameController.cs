@@ -3288,7 +3288,7 @@ namespace PoliSim.UI
                     // 2026-08-28: the row family (see the chair branch above), same fixed ordinal.
                     DrawDerivedStatRow($"Independent {GetCentralBankName(PlayerCountryId)} would read", -1f,
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
-                        $"the Fed/ECB rule: inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
+                        $"the Fed/ECB rule: inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
                     // P5-1 (board 6a): the rate change as a ledger row of the family - in points, a tick per quarter-point while the pitch holds.
                     _interestRateChangeInput = DrawDialRow("Policy rate change", 0f, _interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                 }
@@ -3313,7 +3313,7 @@ namespace PoliSim.UI
                         $"{EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}%", "GDP-weighted across the three members", politicalInk);
                     DrawDerivedStatRow($"{_playerCountry.Name}'s own reading", -1f,
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
-                        $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.NaturalUnemploymentRate:F1}%", politicalInk);
+                        $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
                     // P5-1 (board 6a): the rate push as a ledger row of the family.
                     _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                     DrawDerivedStatRow("Eurozone interest rate", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "shared by all three members", politicalInk);
@@ -3421,7 +3421,7 @@ namespace PoliSim.UI
             DrawStatsSectionCaption("THE RULE'S INPUTS · AS READINGS");
             GUILayout.Space(StatsUnit(3f));
             DrawReadingLane("INFLATION", inflation, "TaylorRule.InflationTarget", TaylorRule.InflationTarget(_playerCountry), "%", higherIsBetter: false, span: 3f, neutral: false, stamp: "LIVE");
-            DrawReadingLane("UNEMPLOYMENT", _playerCountry.State.Unemployment, "NAIRU", _playerCountry.NaturalUnemploymentRate, "%", higherIsBetter: false, span: 4f, neutral: false, stamp: "LIVE");
+            DrawReadingLane("UNEMPLOYMENT", _playerCountry.State.Unemployment, "NAIRU", _playerCountry.EffectiveNaturalUnemploymentRate, "%", higherIsBetter: false, span: 4f, neutral: false, stamp: "LIVE");
             DrawReadingLane("OUTPUT GAP", TaylorRule.GetOutputGapPercent(_playerCountry), "POTENTIAL", 0f, "%", higherIsBetter: true, span: 4f, neutral: true, stamp: "READ · NOT WEIGHED");
 
             // The political half: the governor's card and the appointment lever.
