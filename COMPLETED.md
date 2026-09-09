@@ -25348,3 +25348,17 @@ filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 4. **The naming, done** - 130 laws and five categories in the plain register §4.2 asked for.
 
 **Bar:** `bar279_d17_RunAllBatch` 33 of 33, `ResidueCheck` 0 open (`DocumentClaimCheck` reads the request document every run and is green on the new section). Documents only; no code moved for this item.
+
+## 417. THE PACKAGE REGENERATED FOR D17 — every digest computed on disk, the three built boards filmed in one run, and the paste recorded as Elias's E-30 (2026-09-09)
+
+**The ruling:** *"regenerate the package with the fence's readings and the built 10a–10c films by digest, and record it in ERRANDS.md as Elias's paste."*
+
+**The package** (`SEND_PACKAGE.md`, regenerated whole by a generator that hashes each file rather than copying a figure forward - the document's own "computed, not claimed" rule): four documents and three logs, then the films. The request document 140 487 bytes, `COMPLETED.md` 2 645 450, the feature list 178 261, `ERRANDS.md` 17 201 - each with its sha256 on disk, and the errand row written BEFORE the hash was taken so the manifest describes the file it will actually send.
+
+**The films** are one run, not a set assembled from several: `d17_1280`, the full sweep at 1280 after everything built today - 103 captures, 0 failed, **0 OVERFLOW / CLIPPED / ESCAPE**, the capture-identity check green on every frame - and five frames go up, two for the People page (its head, where the `†` sits, and the plate itself), two for the statute book (the list with its one control line, and the pane read down), one for the Riksbank.
+
+**The logs** are chosen so Design can read the numbers rather than take them: `bar276_audit_RunSimulationBatch.log` carries **both** prints the ask quotes - `D16BARS:` (the twelve pairs in oklch) and `PARTYCAUTION:` (§9.2's audit) - and `bar278_rename_RunAllBatch.log` is the cheap bar on the tree as it stands. The film's own log carries the guards.
+
+**The errand.** `ERRANDS.md` carries **E-30, Elias's**: the ask, the manifest, and one line that matters more than the rest - **if Elias made the assignment in the sitting, the shorter path is his ruling recorded here, and D17 is withdrawn the moment it is**: 10d is then built whole, the fence re-run expecting 12 of 12, the `fargkod` citations corrected to name the desk's palette rather than published fact, and §9.2's audit re-run on the two surfaces. The row says so plainly so the errand does not read as a demand for work Design may not owe.
+
+**Bar:** `bar281_package_RunAllBatch` 33 of 33, `ResidueCheck` 0 open. Documents only.
