@@ -25256,3 +25256,31 @@ filmed at 1280 (`p10c4_1280`, 85 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 4. **The three reading lanes keep their existing form** (§5.3's grid is not re-cut). The board's `132 · 78 · 631 · 168 · 62` and its end-labels describe the lanes the desk already draws in that order; re-measuring them was not what the board asked to fix, and `READ · NOT WEIGHED` was already the model the other two follow.
 
 **Bar:** `bar271_10c_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; the film `p10c4_1280` clean at 85 captures. On the way: `bar266` red on `DeadStateCheck` - `DrawRuleOperator` had no callers once the `+` and `=` of the formula row were gone, and the helper was deleted rather than kept alive for a caller that no longer exists.
+
+## 413. D16 §8's ACCEPTANCE BARS AS REAL CHECKS — the fence in oklch, the tab's parity, the at-rest token rule and the waterfall's arithmetic, each asserted on the code the desk draws by (2026-09-09)
+
+**The ruling:** *"Implement §8's acceptance bars as real checks: the twelve within-bloc pairs asserted in oklch, † parity on column boundaries and figure positions, the at-rest token rule, and the waterfall's arithmetic at three input sets."*
+
+### The four, and what each one asserts
+
+`D16AcceptanceCheck` (new, in the simulation bar) makes the four assertions **against the code the drawing uses**, not against a copy of the numbers - three small refactors made that possible, and they are the item's real content:
+
+- **`PlateGrid`** now holds the three grids and the track arithmetic; the plate draws by it and the bar reads it. One set of numbers.
+- **`DeskProvenance`** now carries the at-rest rule as three predicates - `ShowsHonestyColumn`, `ShowsCouplingDraft`, `ShowsGapWord` - which the plate calls at the three decision points and the bar asserts.
+- **`RuleWaterfall.Compute`** is the waterfall's geometry as a pure function; the Riksbank page draws from its output and the bar asserts its arithmetic.
+
+**§8.3, the fence.** **10 of 12 within-bloc pairs clear** on the desk's own palette. The two that do not are the finding: **V ⁄ S at ΔH 0.0° and ΔL 0.060** (the published reds share a hue exactly, and the seating's lightness nudge leaves them a fifth of the fence apart) and **M ⁄ SD at ΔH 7.4° and ΔL 0.060** (two blues). Every other pair clears wide - MP ⁄ C at 12.8°, L ⁄ KD at 30.9°, KD ⁄ M at 51.3°, the reds against the greens above 100°. **This is exactly the collision board 10d's assigned palette was drawn to answer** - §6.4's own text calls the right bloc's failure "gone twice over" - and it is now measured on the palette the record holds, by a check that will say so every bar. Reported, not failed: the ratchet is the count, 10, a floor in the ledger; the run fails when a pair that clears today stops clearing.
+
+**§8.4, the tab's parity.** the first three column boundaries are identical to 1e-3 in both states and **the figure cell is 148.0 px wide in both**; the band pays exactly 90.0 px for a 90.0 px honesty column, so the sixth track is bought from the one track the board says may flex and from nothing else. A boundary that moved, or a figure cell that changed width, fails the run.
+
+**§8.5, the at-rest token rule.** Six assertions on the predicates: SOURCED/DERIVED never at rest and always behind the tab; COUPLING DRAFT exactly when the arrow prints (not without it, not on a row whose coupling is not a draft); the gap word in both states, and never on a row that is not a gap.
+
+**§8.6, the waterfall.** three sets, each summing to the pixel. The sitting's figures (+2.00, +2.00, 0.00, −1.50 → 2.50): positives 520.0 px − cut 195.0 px = 325.0 px against total × 130 = 325.0 px, with one zero term drawn as nothing. A zero term with one cut (+2.00, +1.77, 0.00, −0.12 → 3.65): 490.1 − 15.6 = 474.5 against 474.5. Two negative terms (+2.00, +1.77, −0.12, −0.12 → 3.53): 490.1 − 31.2 = 458.9 against 458.9. The zero term is asserted drawn as nothing rather than as a sliver.
+
+### The four bars that are not assertions of this kind, and are not faked
+
+§8.1 (the seat counts) and §8.2 (the hemicycle's geometry) are **board 10d's**, and 10d is stopped (§409) - asserting them would be asserting a drawing that does not exist. §8.7 (no new hue) is `PartyInkDrawSiteCheck`'s and `ConstantProvenanceCheck`'s ground and already runs every bar; the four D16 tokens added in §410 and §412 are §1's own and are named there. §8.8 (captures at four sizes) is the film, run per board in §410–§412 at 1280; the other three sizes are the next sweep's, not this item's.
+
+**A ratchet, declared and reported.** The fence's clearing count is a floor in the ledger (`D16AcceptanceCheck.FENCE_PAIRS`), so `RatchetSlackCheck` audits it like every other - which it did immediately, failing the first run for a ratchet declared and never reported. That is the sweep working as its own doc says it should.
+
+**Bar:** `bar275_bars_RunSimulationBatch` 41 of 41 (the two new checks among them), `bar275_bars_RunAllBatch` 33 of 33, `ResidueCheck` 0 open. On the way, `RatchetSlackCheck` failed twice and correctly: first for a ratchet declared and never reported to the ledger, then for a floor sitting at 8 under a measurement of 10 - slack on a floor is permission to regress, and the ratchet is at its measurement now.

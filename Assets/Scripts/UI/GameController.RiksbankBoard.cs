@@ -87,31 +87,26 @@ namespace PoliSim.UI
                 ("U-GAP × " + TaylorRule.UnemploymentGapWeight(_playerCountry).ToString("0.##", CultureInfo.InvariantCulture), unemploymentGapTerm),
             };
 
-            float x = area.x;
             float segTop = area.y + StatsUnit(6f);
             float segH = StatsUnit(22f);
             var labels = new List<(float X, string Text, Color Ink, bool Struck)>();
+            // §8.6: the geometry is RuleWaterfall's - the same computation the acceptance bar asserts, so the drawing cannot drift from it.
+            RuleWaterfall.Geometry geometry = RuleWaterfall.Compute(terms, total, scale);
             int positiveIndex = 0;
-            foreach ((string name, float value) in terms)
+            foreach (RuleWaterfall.Segment seg in geometry.Positives)
             {
-                if (value > 0f)
+                if (seg.Zero)
                 {
-                    float w = value * scale;
-                    PoliSimTheme.Rule(new Rect(x, segTop, w, segH), positiveIndex % 2 == 0 ? PoliSimTheme.HairlineStrong : PoliSimTheme.RuleFill);
-                    labels.Add((x, value.ToString("+0.00", CultureInfo.InvariantCulture) + "  " + name, PoliSimTheme.TextMuted, false));
-                    x += w;
-                    positiveIndex++;
+                    labels.Add((area.x + seg.X, "0.00  " + seg.Name, PoliSimTheme.TextMuted, true));
+                    continue;
                 }
-                else if (Mathf.Abs(value) < 0.005f)
-                {
-                    // A zero term is drawn as NOTHING and labelled struck through - never a sliver, never silently absent.
-                    labels.Add((x, "0.00  " + name, PoliSimTheme.TextMuted, true));
-                }
+                PoliSimTheme.Rule(new Rect(area.x + seg.X, segTop, seg.Width, segH), positiveIndex % 2 == 0 ? PoliSimTheme.HairlineStrong : PoliSimTheme.RuleFill);
+                labels.Add((area.x + seg.X, seg.Value.ToString("+0.00", CultureInfo.InvariantCulture) + "  " + seg.Name, PoliSimTheme.TextMuted, false));
+                positiveIndex++;
             }
-            float positiveSum = x;
-            // The negative terms are a cut taken out of the right end, stacked in term order.
-            float cutFrom = area.x + total * scale;
-            if (cutFrom < positiveSum - 0.5f)
+            float positiveSum = area.x + geometry.PositiveSum;
+            float cutFrom = area.x + geometry.CutFrom;
+            if (geometry.CutWidth > 0.5f)
             {
                 PoliSimTheme.Rule(new Rect(cutFrom, segTop, positiveSum - cutFrom, segH), PoliSimTheme.Card);
                 DrawDashedRule(new Rect(cutFrom, segTop, positiveSum - cutFrom, 1f), PoliSimTheme.Bad, 4f, 3f);
@@ -120,9 +115,9 @@ namespace PoliSim.UI
                 {
                     PoliSimWidgets.MeasuredLabel(new Rect(cutFrom, segTop + segH * 0.5f - StatsUnit(5f), positiveSum - cutFrom, StatsUnit(10f)), "TAKEN BACK", cutLabel);
                 }
-                foreach ((string name, float value) in terms)
+                foreach (RuleWaterfall.Segment seg in geometry.Negatives)
                 {
-                    if (value < -0.005f) { labels.Add((cutFrom, value.ToString("0.00", CultureInfo.InvariantCulture) + "  " + name, PoliSimTheme.Bad, false)); }
+                    labels.Add((area.x + seg.X, seg.Value.ToString("0.00", CultureInfo.InvariantCulture) + "  " + seg.Name, PoliSimTheme.Bad, false));
                 }
             }
             // The zero baseline and the total tick.

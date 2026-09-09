@@ -41,6 +41,18 @@ namespace PoliSim.UI
         /// <summary>‡ TWO DEFINITIONS: the sources disagree on what is counted (§3.6).</summary>
         public const string TwoDefinitionGlyph = "‡";
 
+        /// <summary>D16 §2, the at-rest rule as a predicate the draw calls and the bar asserts: the honesty column - SOURCED, DERIVED - exists
+        /// only behind the tab, because those tokens say nothing about a figure you can already see.</summary>
+        public static bool ShowsHonestyColumn(bool provenance) => provenance;
+
+        /// <summary>D16 §2: COUPLING DRAFT prints exactly when 5c's arrow prints on that row - in EITHER state. The apparatus follows its
+        /// subject onto the page and off it, which is why it is not in the honesty column at all.</summary>
+        public static bool ShowsCouplingDraft(bool couplingDraft, bool arrowLive) => couplingDraft && arrowLive;
+
+        /// <summary>D16 §3.7: a gap keeps its word in BOTH states - a mark may replace a word only where the word was a label on something
+        /// already drawn, and a symbol for "we do not have this" reads as decoration.</summary>
+        public static bool ShowsGapWord(bool isGapRow, bool provenance) => isGapRow;
+
         private static void ReadPrefs()
         {
             if (_read) { return; }

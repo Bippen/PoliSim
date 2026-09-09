@@ -226,10 +226,10 @@ namespace PoliSim.UI
             bool prov = DeskProvenance.On;
             string familyName = _plateFamilyName, familyVintage = _plateFamilyVintage, familyPublisher = _plateFamilyPublisher;
             _plateFamilyName = _plateFamilyVintage = _plateFamilyPublisher = null;   // one header per plate: a family that did not set one draws none
-            // D16 §3.2: the board's three grids inside the 1149 sheet's 1119 of content, gap 16. The band (track 3) is the only track that flexes.
-            float[] tracks = prov ? new[] { 296f, 132f, 453f, 40f, 44f, 74f } : new[] { 296f, 132f, 543f, 40f, 44f };
-            float[] gapTracks = { 296f, 132f, 659f };
-            const float Content = 1119f, Gap = 16f;
+            // D16 §3.2: the board's three grids live in PlateGrid, which is also what §8.4's acceptance bar reads - one set of numbers,
+            // drawn and asserted from the same place. The band (track 3) is the only track that flexes.
+            float[] tracks = PlateGrid.For(prov);
+            float[] gapTracks = PlateGrid.GapRow;
 
             GUIStyle name = DeskBody(12.5f, PoliSimTheme.TextPrimary);
             GUIStyle nameAbsent = DeskBody(12.5f, PoliSimTheme.TextMuted);
@@ -273,9 +273,7 @@ namespace PoliSim.UI
             // A gap row's reason is the only prose on the page and it earns its reading size, so the row grows to hold it.
             float gapReasonWidth = 0f, gapRowHeight = rowHeight;
             {
-                float unit = 0f;
-                foreach (float t in gapTracks) { unit += t; }
-                gapReasonWidth = Mathf.Max(10f, (gapTracks[2] / (unit + Gap * (gapTracks.Length - 1))) * Mathf.Max(10f, Screen.width * 0.8f));
+                gapReasonWidth = Mathf.Max(10f, (gapTracks[2] / PlateGrid.Content) * Mathf.Max(10f, Screen.width * 0.8f));
                 foreach (PlateRow r in rows)
                 {
                     if (r.Band != PlateBand.Absent || string.IsNullOrEmpty(r.AbsentReason)) { continue; }
@@ -288,8 +286,8 @@ namespace PoliSim.UI
             Rect area = GUILayoutUtility.GetRect(10f, total, GUILayout.ExpandWidth(true));
             if (Event.current.type != EventType.Repaint) { return area; }
 
-            float[] x = Tracks(area, tracks, Content, Gap);
-            float[] gx = Tracks(area, gapTracks, Content, Gap);
+            float[] x = PlateGrid.Tracks(area, tracks);
+            float[] gx = PlateGrid.Tracks(area, gapTracks);
 
             float y = area.y;
             if (headerHeight > 0f)
@@ -329,21 +327,6 @@ namespace PoliSim.UI
             return area;
         }
 
-        /// <summary>The board's grid arithmetic: tracks and gaps as shares of the content width, so the ratios hold at any window size.</summary>
-        private static float[] Tracks(Rect area, float[] tracks, float content, float gap)
-        {
-            var x = new float[tracks.Length + 1];
-            x[0] = area.x;
-            float cursor = 0f;
-            for (int i = 0; i < tracks.Length; i++)
-            {
-                cursor += tracks[i];
-                x[i + 1] = area.x + area.width * (cursor / content);
-                if (i < tracks.Length - 1) { cursor += gap; }
-            }
-            return x;
-        }
-
         /// <summary>One row of the glance layer: the name, and then four graphics - figure · band · pips · sparkline (D16 §3.3).</summary>
         private void DrawPlateRow(Rect row, float[] x, PlateRow data, Color areaInk, bool prov,
             System.Func<PlateRow, (float Delta, bool LowerIsBetter, string Unit)?> arrowFor,
@@ -379,7 +362,7 @@ namespace PoliSim.UI
             if (arrow.HasValue)
             {
                 DrawPlateArrow(new Rect(bandCell.x, bandCell.y, bandCell.width, row.height - StatsUnit(12f)), arrow.Value.Delta, arrow.Value.LowerIsBetter, arrow.Value.Unit, caption, srcH, data);
-                if (data.CouplingDraft) { DrawPlateChips(new Rect(bandCell.x, bandCell.yMax + StatsUnit(1f), bandCell.width, chipH), new[] { "COUPLING DRAFT" }, draftChip, PoliSimTheme.Caution, bordered: true); }
+                if (DeskProvenance.ShowsCouplingDraft(data.CouplingDraft, true)) { DrawPlateChips(new Rect(bandCell.x, bandCell.yMax + StatsUnit(1f), bandCell.width, chipH), new[] { "COUPLING DRAFT" }, draftChip, PoliSimTheme.Caution, bordered: true); }
             }
             else
             {
@@ -405,7 +388,7 @@ namespace PoliSim.UI
             else if (data.Band != PlateBand.None) { DeskDottedBaseline(spark); }
 
             // 6 · Honesty - PROVENANCE only, because SOURCED and DERIVED qualify nothing you can already see.
-            if (prov && x.Length > 6)
+            if (DeskProvenance.ShowsHonestyColumn(prov) && x.Length > 6)
             {
                 DrawPlateChips(new Rect(x[5] + pad, top, x[6] - x[5] - pad, row.height - StatsUnit(12f)), data.Honesty, chip, PoliSimTheme.Hairline, bordered: true);
             }
