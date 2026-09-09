@@ -68,6 +68,9 @@ namespace PoliSim.UI
         public static readonly Color RuleLight = Hex(0xCFC1A4);
         public static readonly Color EdgeDashed = Hex(0xC2B291);
         public static readonly Color Peer = Hex(0xA79B85);
+        /// <summary>D16 §4.2 / §5.2: the filled magnitude block and the waterfall's alternating second segment - the darker of the two
+        /// hairline inks the board draws a solid run in.</summary>
+        public static readonly Color RuleFill = Hex(0x6F634E);
         /// <summary>§A.2 `borderPaper` — the paper panel edge.</summary>
         public static readonly Color BorderPaper = Hex(0xCBBC9D);
         /// <summary>§A.2 `borderPlate` — the plate / tile edge (the RUNNING status plate, the disabled button).</summary>

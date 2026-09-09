@@ -25232,3 +25232,27 @@ filmed at 1280 (`p10b2_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 5. **`A–Z` is drawn with an en dash** where the board writes `A-Z`; the desk's other ranges use the en dash.
 
 **Bar:** `bar265_10b_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; the film `p10b2_1280` clean at 70 captures. On the way: `bar262` caught four names left behind by the three bands' removal (the scroll reserve's own arithmetic), and `bar263` caught the vote bar drawing a party ink outside S-29's allow-list - the check working exactly as its doc says it should, and the file added with its argument rather than the check loosened.
+
+## 412. D16-3, BOARD 10c BUILT — the Riksbank as rate · verdict · path, and the rule drawn as a waterfall instead of a sum the player has to do (2026-09-09)
+
+**The ruling:** *"build boards 10a–10d the D11 way — verify against the boards, deviations stated."*
+
+### What was built
+
+- **The page is three things** (§5.1): the rate alone at mono 46 under its label; **the verdict** directly beneath - the rule's numeral at mono 26 in Caution, the rule's own ink, then 5c's arrow back to today, the delta, and one line, `ABOVE TODAY · CLOSED AT 0.15 ⁄ YR`; and **the path** taking the rest of the width. *"The rule wants three quarters of a point more than you have"* is the sentence this page exists to say, and it was the fifth numeral in a formula row.
+- **The rule as a waterfall** (§5.2, `DrawRuleWaterfall`): the positive terms in the rule's fixed order, left to right, alternating the two hairline inks at **one fixed scale, 1 point = 130 px, never fitted to the year**; the negative terms as a **cut taken out of the right end** - paper behind a dashed Bad edge, labelled `TAKEN BACK` - and the total tick in the rule's ink with its numeral. The solid ink that remains **is** the answer. A zero term draws nothing and is labelled struck through, because "the inflation gap contributed nothing" is itself a reading.
+- **The prose, where each line went** (§5.4): the governor's paragraph became the label `THE GOVERNOR'S — NOT THE RULE'S` over the three figures it describes; the nomination paragraph became the state line `NO NOMINEE · ESTIMATE DRAWS ON THE DOCKET` under the button; the plot's key moved to the plot's foot; the identifier `TaylorRule.InflationTarget` shows on the lane only behind the tab, the reading itself always; and *"Founded 1668 — the world's oldest central bank still in operation"* is behind the tab too - true, sourced, and not a reading.
+- **The `†` tab** sits on this page's own header, the third of the three pages §2 names.
+
+### Verified against the board
+
+filmed at 1280 (`p10c4_1280`, 85 captures, 0 failed, **0 OVERFLOW / CLIPPED / ESCAPE**, and the capture-identity check green on every frame) and read against the board. The page draws `2.12%` at 46 under `POLICY RATE · LIVE`; `THE RULE READS 3.53%` in Caution with the arrow and `+1.41`, over `ABOVE TODAY · CLOSED AT 0.15 ⁄ YR`; the path at the right with its key at the foot; and the waterfall under `HOW THE RULE GETS TO 3.53 · 1 PT = 130 PX · FIXED` - `+2.00 NEUTRAL REAL` and `+1.77 INFLATION` as two solid runs, the two negative terms as a cut with its dashed edge, the total tick and `3.53` in the rule's ink, and `−0.12 INFLATION GAP × 0.5` and `−0.12 U-GAP × 1` labelled in Bad beneath. **The film did the correcting twice.** The first run wrote three frames that the capture-identity check refused - `07d_politics_federalreserve` carried the token of *no known surface*, the bare desk - because a stray legend label and an unbalanced `EndHorizontal` from the second pass had scrambled the page's layout groups; S-20's own defect class, caught by the guard built for it. The second run left four overflow lines (the delta at 11 px in a 12 px rect, `TAKEN BACK` at 53 px of word in a 30 px cut) and both are measured now. A third pass removed the duplicate page title the tab had introduced.
+
+### Deviations, stated
+
+1. **The waterfall's term labels stack.** The board lays each label under its own segment at the 1149 sheet; at the desk's widths two labels collide, so they are drawn one under the other from their own x. The figures and their order are the board's.
+2. **The rule's clamp keeps a line of its own.** When the terms sum below zero the rule reads 0, and the waterfall would draw a total tick at the origin with no explanation; the line `THE RULE IS CLAMPED AT 0 · THE TERMS SUM TO …` says so in Caution. The board's five terms never sum negative on the sitting's figures, so it does not draw this case.
+3. **A cut narrower than its own word carries no word.** `TAKEN BACK` prints inside the cut only where it fits; where it does not, the dashed Bad edge and the negative term's own label beneath carry it. The film's overflow guard is what set this rule (53.4 px of word in a 30 px cut).
+4. **The three reading lanes keep their existing form** (§5.3's grid is not re-cut). The board's `132 · 78 · 631 · 168 · 62` and its end-labels describe the lanes the desk already draws in that order; re-measuring them was not what the board asked to fix, and `READ · NOT WEIGHED` was already the model the other two follow.
+
+**Bar:** `bar271_10c_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; the film `p10c4_1280` clean at 85 captures. On the way: `bar266` red on `DeadStateCheck` - `DrawRuleOperator` had no callers once the `+` and `=` of the formula row were gone, and the helper was deleted rather than kept alive for a caller that no longer exists.

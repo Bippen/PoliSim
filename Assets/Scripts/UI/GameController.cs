@@ -3247,9 +3247,10 @@ namespace PoliSim.UI
             _federalReserveScrollPosition = GUILayout.BeginScrollView(_federalReserveScrollPosition, false, atTheFloor, GUILayout.Height(scrollHeight));
             _riksbankCaptions.Clear();
 
-            DrawColoredLabel(GetCentralBankName(PlayerCountryId), _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+            DrawPageHeaderWithProvenanceTab(GetCentralBankName(PlayerCountryId), UiPalette.GetAreaColor(UiPalette.SystemArea.Political));   // D16 2: the same tab, the same corner
+            // D16 5.4: the flavour line ("Founded 1668 ...") is true, sourced and never load-bearing - it is not a reading, so it is the tab's.
             string centralBankFlavorText = GetCentralBankFlavorText(PlayerCountryId);
-            if (centralBankFlavorText != null)
+            if (centralBankFlavorText != null && DeskProvenance.On)
             {
                 GUILayout.Label(centralBankFlavorText, _labelStyle);
             }
@@ -3350,7 +3351,6 @@ namespace PoliSim.UI
 
         private void DrawRiksbankPage(FedChair chair, Color politicalInk)
         {
-            DrawStatsSectionCaption("THE RATE · THE RULE · THE GOVERNOR");
             _riksbankRecording = true;
             GUILayout.Space(StatsUnit(4f));
 
@@ -3358,15 +3358,17 @@ namespace PoliSim.UI
             float suggested = TaylorRule.GetSuggestedInterestRate(_playerCountry);
             float chairTarget = Mathf.Clamp(suggested + chair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
 
-            // The rate today, as a numeral, and the graph's legend as its trailing caption.
+            // D16 §5.1 (board 10c, §412): THE PAGE IS THREE THINGS - the rate, the verdict, and the path. The first two take the board's
+            // 330-wide column; the path takes the rest, at the height the three cut captions freed (8c's ruling stands).
+            float riksbankColumn = StatsUnit(330f);
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical();
-            GUILayout.Label(rate.ToString("F2", CultureInfo.InvariantCulture) + "%", DeskNumeral(26f, PoliSimTheme.TextPrimary));
-            GUILayout.Label("POLICY RATE TODAY · LIVE", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
+            GUILayout.BeginVertical(GUILayout.Width(riksbankColumn));
+            GUILayout.Label("POLICY RATE · LIVE", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            GUILayout.Label(rate.ToString("F2", CultureInfo.InvariantCulture) + "%", DeskNumeral(46f, PoliSimTheme.TextPrimary));
+            DrawRiksbankVerdict(rate, suggested, riksbankColumn);
             GUILayout.EndVertical();
-            GUILayout.FlexibleSpace();
-            GUILayout.Label("HISTORY 3 px SOLID · PROJECTION 2 px DASHED · THE RULE DOTTED", DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight), GUILayout.Width(StatsUnit(300f)));
-            GUILayout.EndHorizontal();
+            GUILayout.Space(StatsUnit(24f));
+            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
 
             // One graph: the history, the two projected moves, the band under the preview's year, the rule dotted.
             if (!_hasCachedPreview || _simulationManager.CurrentTurn != _cachedPreviewTurn)
@@ -3381,6 +3383,10 @@ namespace PoliSim.UI
             }
             _interestRateGraph.DrawRatePath("", _playerCountry.History.InterestRate.Quarterly, projected,
                 suggested, "THE RULE'S READING TODAY · " + suggested.ToString("F2", CultureInfo.InvariantCulture), _labelStyle);
+            // §5.4: the key is the plot's, not the page header's - it belongs at the foot of the thing it describes.
+            GUILayout.Label("HISTORY 3 px SOLID · PROJECTION 2 px DASHED · THE RULE DOTTED", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
 
             if (ratePath != null)
             {
@@ -3403,24 +3409,17 @@ namespace PoliSim.UI
             float inflationGapTerm = TaylorRule.InflationGapWeight(_playerCountry) * (inflation - TaylorRule.InflationTarget(_playerCountry));
             float unemploymentGapTerm = TaylorRule.GetGapTermPercentagePoints(_playerCountry);
             float sum = TaylorRule.NeutralRealRate(_playerCountry) + inflation + inflationGapTerm + unemploymentGapTerm;
-            GUILayout.BeginHorizontal();
-            DrawRuleTerm("NEUTRAL REAL RATE", TaylorRule.NeutralRealRate(_playerCountry).ToString("F2", CultureInfo.InvariantCulture));
-            DrawRuleOperator("+");
-            DrawRuleTerm("INFLATION", inflation.ToString("F2", CultureInfo.InvariantCulture));
-            DrawRuleOperator("+");
-            DrawRuleTerm($"INFLATION GAP × {TaylorRule.InflationGapWeight(_playerCountry):0.##}", inflationGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
-            DrawRuleOperator("+");
-            DrawRuleTerm($"U-GAP × {TaylorRule.UnemploymentGapWeight(_playerCountry):0.##}", unemploymentGapTerm.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
-            DrawRuleOperator("=");
-            DrawRuleTerm(sum < 0f ? "THE RULE · CLAMPED AT 0" : "THE RULE", suggested.ToString("F2", CultureInfo.InvariantCulture), politicalInk);
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
+            // D16 §5.2: the five-term row was a sum the player had to do. The waterfall shows the sum AND the shares - one fixed scale,
+            // the terms always in the same order, the negatives a cut taken out of the right end, and the solid ink that remains is the answer.
+            GUILayout.Label("HOW THE RULE GETS TO " + suggested.ToString("F2", CultureInfo.InvariantCulture) + "   ·   1 PT = 130 PX · FIXED", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+            DrawRuleWaterfall(TaylorRule.NeutralRealRate(_playerCountry), inflation, inflationGapTerm, unemploymentGapTerm, sum < 0f ? 0f : sum, StatsUnit(700f));
+            if (sum < 0f) { GUILayout.Label("THE RULE IS CLAMPED AT 0 · THE TERMS SUM TO " + sum.ToString("F2", CultureInfo.InvariantCulture), DeskCaption(7.5f, PoliSimTheme.Caution)); }
 
             // The rule's inputs as readings on centred lanes.
             GUILayout.Space(StatsUnit(8f));
             DrawStatsSectionCaption("THE RULE'S INPUTS · AS READINGS");
             GUILayout.Space(StatsUnit(3f));
-            DrawReadingLane("INFLATION", inflation, "TaylorRule.InflationTarget", TaylorRule.InflationTarget(_playerCountry), "%", higherIsBetter: false, span: 3f, neutral: false, stamp: "LIVE");
+            DrawReadingLane("INFLATION", inflation, DeskProvenance.On ? "TaylorRule.InflationTarget" : "TARGET", TaylorRule.InflationTarget(_playerCountry), "%", higherIsBetter: false, span: 3f, neutral: false, stamp: "LIVE");
             DrawReadingLane("UNEMPLOYMENT", _playerCountry.State.Unemployment, "NAIRU", _playerCountry.EffectiveNaturalUnemploymentRate, "%", higherIsBetter: false, span: 4f, neutral: false, stamp: "LIVE");
             DrawReadingLane("OUTPUT GAP", TaylorRule.GetOutputGapPercent(_playerCountry), "POTENTIAL", 0f, "%", higherIsBetter: true, span: 4f, neutral: true, stamp: "READ · NOT WEIGHED");
 
@@ -3432,6 +3431,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
             GUILayout.Label($"{GetCentralBankHeadTitle(PlayerCountryId)} · {chair.Name}", DeskNumeral(14f, PoliSimTheme.TextPrimary));
             GUILayout.Label(chair.Description, _labelStyle);
+            GUILayout.Label("THE GOVERNOR'S — NOT THE RULE'S", DeskCaption(7f, PoliSimTheme.TextMuted));   // §5.4: the paragraph became this label, over the three figures it describes
             GUILayout.BeginHorizontal();
             DrawRuleTerm("LEAN", chair.Philosophy.ToString().ToUpperInvariant() + " " + chair.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
             GUILayout.Space(StatsUnit(10f));
@@ -3440,7 +3440,6 @@ namespace PoliSim.UI
             DrawRuleTerm("SPEED", FederalReserveSystem.RateAdjustmentSpeed.ToString("0.##", CultureInfo.InvariantCulture) + " ⁄ YR");
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
-            GUILayout.Label("THE LEAN AND THE SPEED ARE THE GOVERNOR'S — THEY SET WHERE THE PATH CLOSES TO AND HOW FAST, NOT WHAT THE RULE READS.", DeskCaption(7.5f, PoliSimTheme.TextMuted));
             GUILayout.EndVertical();
             GUILayout.Space(StatsUnit(14f));
             GUILayout.BeginVertical(GUILayout.Width(StatsUnit(300f)));
@@ -3449,16 +3448,14 @@ namespace PoliSim.UI
             while (!ElectionSystem.IsElectionTurn(termEnds) && termEnds < _simulationManager.CurrentTurn + 64) { termEnds++; }
             bool pending = _fedChairCandidates != null && _fedChairCandidates.Count > 0;
             GUILayout.Label($"TERM ENDS WITH THE ELECTION CYCLE · TURN {termEnds} · {FederalReserveSystem.PoolSize} IN THE POOL", DeskCaption(8f, PoliSimTheme.TextMuted));
-            GUILayout.Label(pending
-                ? "A NAME IS ON THE DESK: THE CANDIDATES ARE BELOW. THE ESTIMATE DRAWS IN THE EFFECTS GRAMMAR (5c) ON THE DOCKET, NOT HERE."
-                : "A NOMINATION IS A DOCKET ITEM; ITS ESTIMATE DRAWS IN THE EFFECTS GRAMMAR (5c) ONCE A NAME IS ON THE DESK — NOT HERE, BECAUSE NOTHING IS DRAFTED.",
-                DeskCaption(7.5f, PoliSimTheme.TextMuted));
             GUI.enabled = pending;
             if (PoliSimWidgets.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
             {
                 _federalReserveScrollPosition.y += Screen.height;   // the candidates are the modal beneath this page
             }
             GUI.enabled = true;
+            // §5.4: the paragraph became a STATE LINE, under the button it describes.
+            GUILayout.Label(pending ? "A NAME IS ON THE DESK · CANDIDATES BELOW" : "NO NOMINEE · ESTIMATE DRAWS ON THE DOCKET", DeskCaption(7f, PoliSimTheme.TextMuted));
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
         }
@@ -3471,13 +3468,6 @@ namespace PoliSim.UI
             GUILayout.Label(figure, DeskNumeral(15f, ink ?? PoliSimTheme.TextPrimary));
             GUILayout.Label(caption, DeskCaption(7.5f, PoliSimTheme.TextMuted));
             GUILayout.EndVertical();
-        }
-
-        private void DrawRuleOperator(string op)
-        {
-            GUILayout.Space(StatsUnit(6f));
-            GUILayout.Label(op, DeskNumeral(15f, PoliSimTheme.TextSecondary));
-            GUILayout.Space(StatsUnit(6f));
         }
 
         /// <summary>
