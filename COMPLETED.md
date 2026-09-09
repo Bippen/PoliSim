@@ -25116,3 +25116,22 @@ no dump is byte-identical (5 of 62 fields, the demographic constants): a BASELIN
 **Kept and tagged.** `EventSystem.ShockDurationDays` stays at the period (365 days): a shock is spread evenly over the year the player watches, fully in by the next boundary, never two overlapping. Its doc now carries the tag in the form §390 gave the US sequester - **[CONVENTION, TAGGED §407: to be struck when the catalogue carries a duration per event]** - so the next hand that types durations into the catalogue (a recession's quarters, a strike's weeks, a harvest's season) finds the constant that yields to them and the record that expects it. FT-9's row says the same. Nothing else changes: the constant's value, the daily step and the diagnostic are §404's.
 
 **Bar:** one doc comment and two rows; the cheap bar of the item's commit - `bar255_duration_RunAllBatch` 33 of 33, `ResidueCheck` 0 open (`ConstantProvenanceCheck` reads the constant's CONVENTION mark as before).
+
+## 408. THE SHELF, CYCLED AFTER THE TWO RULINGS — nothing fired, the register unchanged, the impact ratchet on its new basis, the sheets since §405 marked (2026-09-09)
+
+**The ruling:** *"Record both; then the shelf. One commit per item, one green bar, R-SP1 push, one report."*
+
+**Ratchets.** `RatchetSlackCheck` on the morning's cheap bars (bar253–bar256): eleven reported, eleven tight at their §405 values. `ResponsivenessAuditHarness.ImpactRatchet` now 0.5074 - the −10 % spending dial's own events-off impact at four decimals (+2 % 0.5096, +10 % 0.5113) - a floor on the events-off basis (§406), the dice's three thousandths no longer in it.
+
+**The deferral register, the calibration list, the errands, the document set** read as in §405: T-3 FIRED and Elias's, every other trigger NOT FIRED; the three constants at their listed values; E-1 and E-3 open; eighteen documents, all named. FT-1..FT-9 and RF-1..RF-2 closed; the fix-track table carries two tags to be struck on sources (the US sequester's 0.5 %, §390; the one-year event duration, §407) and one deviation to be lifted with T-3 (the safeguards on the headline balance, §390).
+
+**The run's self-ruled sheets since §405, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §406 | the impact ratchet re-based on the lowest events-off reading, printed at four decimals; the with-events history kept in the doc | **HOLDS** - the value is the record's, not the dice's; still a floor, still retired at 0.6 |
+| §407 | the one-year duration kept and tagged | **HOLDS** - the tag names the hand that strikes it |
+
+**The residue** reads zero on every bar of the morning; the excluded rows are Elias's (T-3, FT-6, the dials-only laws, the E-rows), Design's (D-rows) and the calendar's (K-1, 13 September 2026). Nothing a session could start stands open; this cycle opened nothing.
+
+**Bar:** documents only; `bar256_shelf3_RunAllBatch`, the cheap bar of this commit, run on this record as written - the commit follows its green.
