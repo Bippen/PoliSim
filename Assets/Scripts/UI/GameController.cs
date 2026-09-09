@@ -7618,6 +7618,11 @@ namespace PoliSim.UI
 
             LedgerRow.Cell(new Rect(x, rowRect.y, costWidth - 4f, rowRect.height),
                 law.EnactmentApprovalCost.ToString("F1", CultureInfo.InvariantCulture), _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+            // D16 §4.2 (§415): behind the tab the row gains its citation line - the formal Act name, which is the record. A LINE, not a column.
+            if (DeskProvenance.On && !string.IsNullOrEmpty(law.PlainName))
+            {
+                GUILayout.Label(law.Name, DeskCaption(6.5f, PoliSimTheme.TextMuted));
+            }
             GUILayout.Space(LawRowGap);
         }
 
@@ -7634,9 +7639,10 @@ namespace PoliSim.UI
         /// the row must agree on it.</summary>
         private static string LawRowName(LawRowEntry row)
         {
+            string plain = string.IsNullOrEmpty(row.Law.PlainName) ? row.Law.Name : row.Law.PlainName;   // D16 §4.2 (§415): the plain name is the name at rest
             return row.PendingBill != null
-                ? $"{row.Law.Name} - VOTE IN {row.PendingBill.DaysRemaining}d"
-                : row.Law.Name;
+                ? $"{plain} - VOTE IN {row.PendingBill.DaysRemaining}d"
+                : plain;
         }
 
         private GUIStyle _lawNameStyle;
@@ -7710,11 +7716,12 @@ namespace PoliSim.UI
         {
             switch (category)
             {
+                // D16 §4.2 (§415): the categories in the same plain register as the laws - what the category is ABOUT, not its department's name.
                 case LawCategory.CrimeJustice: return "CRIME & JUSTICE";
-                case LawCategory.LaborMarket: return "LABOR MARKET";
-                case LawCategory.LabourInstitutions: return "LABOUR INSTITUTIONS";   // P4-C3
-                case LawCategory.FiscalFramework: return "FISCAL FRAMEWORK";   // P4-C3
-                case LawCategory.MonetaryRegime: return "MONETARY REGIME";   // P4-C3, the third category
+                case LawCategory.LaborMarket: return "WORK & WAGES";
+                case LawCategory.LabourInstitutions: return "UNIONS & CONTRACTS";   // P4-C3
+                case LawCategory.FiscalFramework: return "THE BUDGET RULES";   // P4-C3
+                case LawCategory.MonetaryRegime: return "THE INTEREST RATE";   // P4-C3, the third category
                 default: return category.ToString().ToUpperInvariant();
             }
         }
@@ -7893,7 +7900,7 @@ namespace PoliSim.UI
             float innerGap = Mathf.Max(_headerStyle.margin.right, _labelStyle.margin.left);
             float nameWidth = Mathf.Max(0f, contentWidth - statusWidth - innerGap);
             GUILayout.BeginHorizontal();
-            DrawLawNameLadder(law.Name, nameWidth);
+            DrawLawNameLadder(string.IsNullOrEmpty(law.PlainName) ? law.Name : law.PlainName, nameWidth);   // §415: the plain name at reading size
             DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(statusWidth));
             GUILayout.EndHorizontal();
 
@@ -8000,7 +8007,11 @@ namespace PoliSim.UI
             GUILayout.Label(law.Description, _labelStyle, GUILayout.Width(contentWidth));
             GUILayout.Space(4f);
             // §4.3 item 7: the citation is the record and returns behind the desk's †.
-            if (DeskProvenance.On) { GUILayout.Label(law.Citation, _labelStyle, GUILayout.Width(contentWidth)); }
+            if (DeskProvenance.On)
+            {
+                if (!string.IsNullOrEmpty(law.PlainName)) { GUILayout.Label(law.Name, DeskCaption(8f, PoliSimTheme.TextSecondary, true)); }   // §415: the formal name is the record
+                GUILayout.Label(law.Citation, _labelStyle, GUILayout.Width(contentWidth));
+            }
             // Playtest 3 cut (2026-08-27): "Enactment cost: 3.5 approval (paid once, on passage)" - the
             // figure a (c) of the selected row's APPROVAL cell, the parenthetical a (b). Cut.
             GUILayout.Space(6f);
@@ -8029,7 +8040,7 @@ namespace PoliSim.UI
             }
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && !_isGameOver;
-            string actionLabel = enacted ? $"Repeal {law.Name}" : $"Enact {law.Name}";
+            string actionLabel = enacted ? "REPEAL THIS LAW ›" : "INTRODUCE AS A BILL ›";   // D16 §4.3 (§415): the button says what pressing it does - the pane's title is already the name
             // Closing gate (2026-08-28): the button takes the labels' own extent and wraps its text -
             // un-widthed, "Enact Cash Bail Abolition Act" asked for its single-line width and was the
             // pane's other over-wide child (see the MAGNITUDE row). The wrapping copy follows its

@@ -25299,3 +25299,31 @@ filmed at 1280 (`p10c4_1280`, 85 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 **The audit's answer.** On the desk as built, **neither surface draws a party ink**, so no party ink is drawn beside Caution or beside the pencil's Draft on either of them. The finding holds on the palette the record carries, where SD is a blue and sits 152.8° of hue from Caution; **it would hold the same way on board 10d's assigned yellow**, because what keeps the two apart is where each is drawn and not what either one is. If the assignment ever lands (§409), this audit is already the check that says so - and the one figure that would change is SD's own row, from 152.8° to Design's measured 4.6°, which is why the row prints the distance rather than a verdict.
 
 **Bar:** `bar276_audit_RunSimulationBatch` 42 of 42 (the audit among them), `bar276_audit_RunAllBatch` 33 of 33, `ResidueCheck` 0 open.
+
+## 415. THE LAW AND CATEGORY RENAMING — 130 laws and five categories in plain language, the formal Act name kept as the record behind the `†` (2026-09-09)
+
+**The ruling:** *"The law and category renaming is ours as both sides agree — take it as its own item."* D16 §4.2 says the same from the other side: *"renaming every category and law to plain language is engineering's, as the request says. `Work & wages` on the board is a demonstration of the register, not a proposed name."*
+
+### The register
+
+**What the law does, in plain language, in the fewest words that still say it.** An Act name tells a player which bill this is; it does not tell them what it does, and a statute book of 130 rows in `X Act` form reads as a list of nouns. `Benefit Duration Reform Act` becomes **`Halve the benefit period`** - the board's own example, and the register the other 129 follow: `Cash Bail Abolition Act` → *Abolish cash bail*, `Three Strikes Law` → *Life on the third felony*, `287(g) Immigration Enforcement Agreements` → *Deputise police for immigration*, `Debt Office Long-Issuance Mandate` → *Issue the debt long*, `Taylor Principle Codification Act` → *Codify the Taylor principle*.
+
+**The formal name is not deleted; it becomes the record.** `LawDefinition.PlainName` is the name the desk shows at rest, and `LawDefinition.Name` keeps the Act name and returns behind the `†` - the row's second line and a line in the pane above the citation paragraph. Both are true, and which one is *the* name is the state the player is in (§4.2). A law added without a plain name falls back to its Act name, so the field cannot leave a row blank.
+
+### What was renamed
+
+- **130 laws**, every one in the catalogue: 50 in crime & justice, 60 across work & wages and the labour institutions, 10 in the budget rules, 10 in the interest rate.
+- **Five categories**, in the same register - what each is ABOUT rather than which department owns it: `Crime & justice` (unchanged, already plain), `Labor Market` → **`Work & wages`**, `Labour Institutions` → **`Unions & contracts`**, `Fiscal Framework` → **`The budget rules`**, `Monetary Regime` → **`The interest rate`**. Both the row token and the category menu draw them.
+
+### Verified
+
+filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ESCAPE**). The statute book reads as a list of things a government can DO: *Abolish cash bail · Decriminalise drug possession · Raise the minimum wage · Extend parental leave · Build a border barrier · Turn prisons to rehabilitation*, each under `CRIME & JUSTICE` or `WORK & WAGES`, and the pane's title is `Abolish cash bail`. **The film found the last place the formal name still spoke at rest:** the CTA read `Enact Cash Bail Abolition Act`, which is the pane's title said twice and in the wrong register - it is `INTRODUCE AS A BILL ›` now, which is D16 §4.3's own wording and says what pressing it does.
+
+### Deviations and what stays
+
+1. **The IDs are untouched.** `LawDefinition.Id`, the enacted-law records and every save that names a law by id are unaffected; this is a display change over a stable key, which is why 130 renames cost no migration.
+2. **The citation paragraph stays as it was**, behind the `†`, with the Act name now printed above it - the paragraph is the law's grounding and was never the name.
+3. **Spelling follows the desk's own hand** (British forms: *Decriminalise*, *Legalise*, *Regularise*, *Normalise*), which is what the rest of the desk's prose uses.
+4. **The catalogue's own comments keep the Act names** they cite; those are engineering's record and not player-facing text.
+
+**Bar:** `bar278_rename_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; the film `p415b_1280` clean at 70 captures. `bar277` was green too, on the pass before the CTA.

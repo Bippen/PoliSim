@@ -96,6 +96,14 @@ namespace PoliSim.Data
         /// an empty field.</summary>
         public string Citation;
 
+        /// <summary>
+        /// D16 §4.2 (2026-09-09, §415), the naming register - engineering's, as the request says and both sides agree: <b>what the law
+        /// does, in plain language</b> ("Halve the benefit period"), which is the name the desk shows at rest. <see cref="Name"/> keeps the
+        /// formal Act name and becomes the record - the row's second line and the pane's line behind the `†`. Both are true; which one is
+        /// THE name is the state the player is in. Null falls back to <see cref="Name"/>, so a law added without one is named, not blank.
+        /// </summary>
+        public string PlainName;
+
         public float PoliceFundingDelta;
         public float SentencingSeverityDelta;
         public float BailReformDelta;

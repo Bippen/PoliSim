@@ -146,7 +146,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "truth_in_sentencing_act",
-                Name = "Truth in Sentencing Act",
+                Name = "Truth in Sentencing Act", PlainName = "Serve the full sentence",
                 Description = "Requires offenders to serve a much larger share of their imposed sentence before parole eligibility, and narrows the discretion judges have to depart from guideline sentences.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US Truth in Sentencing Incentive Grants program (1994 Crime Act), tying federal funding to states requiring violent offenders serve at least 85% of their sentence.",
@@ -157,7 +157,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "cash_bail_reform_act",
-                Name = "Cash Bail Reform Act",
+                Name = "Cash Bail Reform Act", PlainName = "Reform cash bail",
                 Description = "Replaces cash bail with risk-based pretrial release for most non-violent charges, and directs new funding toward the court staff needed to run individualized release hearings.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The broader US pretrial-reform trend toward risk-based release, distinct from and less extreme than this catalog's own full Cash Bail Abolition Act.",
@@ -168,7 +168,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "border_security_act",
-                Name = "Border Security Act",
+                Name = "Border Security Act", PlainName = "Tighten the border",
                 Description = "Expands border enforcement staffing and surveillance infrastructure, and redirects a portion of drug-interdiction resources toward enforcement rather than treatment diversion.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The shape of the US Secure Fence Act (2006) and subsequent staffing/surveillance appropriations, generalized rather than tied to one bill's exact figures.",
@@ -179,7 +179,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "community_policing_initiative",
-                Name = "Community Policing Initiative",
+                Name = "Community Policing Initiative", PlainName = "Fund community policing",
                 Description = "Funds neighborhood policing programs and community liaison officers, paired with stricter enforcement of drug offenses in the areas they cover.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US COPS Office (Community Oriented Policing Services), created by the 1994 Violent Crime Control Act, funding local community-policing programs nationally.",
@@ -202,7 +202,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "three_strikes_law",
-                Name = "Three Strikes Law",
+                Name = "Three Strikes Law", PlainName = "Life on the third felony",
                 Description = "Mandates a lengthy or life sentence for a third serious or violent felony conviction, regardless of the individual circumstances.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "California's 1994 law (25-to-life for any third felony), copied by 20+ US states; narrowed by a 2012 ballot measure (Prop 36) to require the third strike itself be serious/violent.",
@@ -218,7 +218,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "mandatory_minimum_sentencing_act",
-                Name = "Mandatory Minimum Sentencing Act",
+                Name = "Mandatory Minimum Sentencing Act", PlainName = "Set mandatory minimums",
                 Description = "Sets fixed minimum prison terms for a range of offenses that judges cannot depart below regardless of circumstances, with the heaviest minimums attached to drug offenses.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US federal 1986 Anti-Drug Abuse Act (the 100:1 crack/powder cocaine disparity) and France's 'peines plancher' (2007-2014, repealed after evidence found no deterrent effect).",
@@ -236,7 +236,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "first_step_act",
-                Name = "First Step Act",
+                Name = "First Step Act", PlainName = "Shorten federal sentences",
                 Description = "Retroactively reduces some mandatory minimums, expands judges' discretion to depart from sentencing guidelines in qualifying cases, and expands access to rehabilitation programming.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US First Step Act (2018); ~30,000 released early by 2023, with recidivism ~37% lower among those released under it (Council on Criminal Justice).",
@@ -251,7 +251,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "rehabilitation_centered_corrections_model",
-                Name = "Rehabilitation-Centered Corrections Model",
+                Name = "Rehabilitation-Centered Corrections Model", PlainName = "Turn prisons to rehabilitation",
                 Description = "Reorients the corrections system around reintegration rather than punishment - short sentences, open-prison placements, and heavy use of fines and community sanctions over incarceration.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "As a standing model - Germany's constitutional Resozialisierungsgebot (rehabilitation mandate) and Sweden's own tradition before its 2023 reversal.",
@@ -272,7 +272,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "cash_bail_abolition_act",
-                Name = "Cash Bail Abolition Act",
+                Name = "Cash Bail Abolition Act", PlainName = "Abolish cash bail",
                 Description = "Eliminates monetary bail entirely - pretrial release or detention is decided solely on a judge's assessment of flight and public-safety risk.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Illinois' Pretrial Fairness Act, upheld by the state supreme court in July 2023 and effective that September - the first full statewide bail abolition in the US.",
@@ -287,7 +287,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "bail_reform_rollback",
-                Name = "Bail Reform Rollback",
+                Name = "Bail Reform Rollback", PlainName = "Roll back bail reform",
                 Description = "Restores judges' authority to detain a defendant pretrial based on perceived danger to the public, partially reversing an earlier bail-reform law under political pressure.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "New York's 2019 reform was partially rolled back in 2020/2022/2023 after a 2020 NYC murder spike, despite researchers (including the NYCLU) finding no clear causal link to the original reform.",
@@ -307,7 +307,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "drug_decriminalization_act",
-                Name = "Drug Decriminalization Act",
+                Name = "Drug Decriminalization Act", PlainName = "Decriminalise drug possession",
                 Description = "Shifts personal possession of small amounts of all drugs from a criminal matter to a civil one - a fine and a referral to a treatment-and-assessment panel rather than prosecution. Trafficking remains a criminal offense.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Portugal's Law 30/2000 (Lei n. 30/2000), decriminalizing personal drug possession from July 2001 - this dial's standard real-world calibration touchstone (associated with lower HIV transmission and, for many years, below-EU-average drug deaths).",
@@ -327,7 +327,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "germany_cannabis_legalization",
-                Name = "Cannabis Legalization Act",
+                Name = "Cannabis Legalization Act", PlainName = "Legalise cannabis",
                 Description = "Legalizes adult possession and home cultivation of cannabis in limited amounts, plus non-commercial cultivation clubs; commercial retail is deferred to separate pilot programs.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Germany's Cannabisgesetz, effective April 1, 2024, passed by the Scholz coalition; courts had to retroactively review and expunge prior convictions.",
@@ -345,7 +345,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "sweden_zero_tolerance_drug_policy",
-                Name = "Zero-Tolerance Drug Policy",
+                Name = "Zero-Tolerance Drug Policy", PlainName = "Zero tolerance on drugs",
                 Description = "Criminalizes drug use itself, not just possession or sale, and empowers police to compel testing on suspicion of use alone, in pursuit of an explicit national goal of a drug-free society.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Sweden's own regime since 1988, one of the strictest in the EU by the EU drug agency's (EMCDDA) comparative reporting.",
@@ -363,7 +363,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "public_defender_funding_act",
-                Name = "Public Defender & Legal Aid Funding Act",
+                Name = "Public Defender & Legal Aid Funding Act", PlainName = "Fund public defenders",
                 Description = "Substantially increases funding for public defenders and legal aid, reducing attorney caseloads and expanding access to counsel for defendants who cannot afford one.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "As a standing question - the US constitutional right to counsel (Gideon v. Wainwright, 1963) is chronically underfunded; all six seeded countries run their own legal-aid systems facing the same funding-adequacy debate.",
@@ -384,7 +384,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "immigration_detention_expansion_act",
-                Name = "Immigration Detention Expansion Act",
+                Name = "Immigration Detention Expansion Act", PlainName = "Expand immigration detention",
                 Description = "Expands detention capacity and staffing for individuals awaiting immigration proceedings or removal, distinct from physical border-barrier construction.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "US ICE immigration-detention capacity, a routine, contested appropriations line that has expanded and contracted repeatedly across administrations.",
@@ -412,7 +412,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "body_worn_camera_program",
-                Name = "Body-Worn Camera Program",
+                Name = "Body-Worn Camera Program", PlainName = "Put cameras on officers",
                 Description = "Equips police officers with body-worn cameras and funds the storage and review infrastructure the footage requires.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Rapid US adoption after Ferguson (2014). A DC Metro randomized trial (2017) found modest-to-no effect on use of force but materially better evidence and complaint resolution.",
@@ -429,7 +429,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "militarized_police_equipment_program",
-                Name = "Militarized Police Equipment Program",
+                Name = "Militarized Police Equipment Program", PlainName = "Give police military kit",
                 Description = "Transfers surplus military-grade equipment and vehicles to local police departments at little or no cost, expanding their tactical capability.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US DoD 1033 Program (1997 NDAA), restricted by the Obama administration in 2015 after Ferguson, reversed by the Trump administration in 2017.",
@@ -446,7 +446,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "cybercrime_investigation_unit",
-                Name = "Cybercrime Investigation Unit",
+                Name = "Cybercrime Investigation Unit", PlainName = "Open a cybercrime unit",
                 Description = "Establishes a dedicated police unit and funding stream for investigating online fraud, hacking, and digital exploitation offenses.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Every modern police force has built out some form of cybercrime capability over the past two decades, not tied to one single confirmed founding law across all six countries.",
@@ -461,7 +461,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "gang_crime_sentencing_escalation",
-                Name = "Gang Crime Sentencing Escalation",
+                Name = "Gang Crime Sentencing Escalation", PlainName = "Raise gang-crime sentences",
                 Description = "Sharply raises maximum sentences for crimes committed within organized criminal networks and removes reduced sentencing discounts for young offenders in gang cases.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Sweden's Tido Agreement (Oct 2022, in force April 2024): gang-related sentences up to double the previous maximum; 2023 prison sentences up 25% year-on-year.",
@@ -483,7 +483,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "court_backlog_reduction_program",
-                Name = "Court Backlog Reduction Program",
+                Name = "Court Backlog Reduction Program", PlainName = "Clear the court backlog",
                 Description = "Invests in additional judges, court staff, and procedural reform aimed at cutting multi-year case backlogs and excessive trial delays.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Italy's 2001 Pinto Law and its post-COVID EU Recovery Plan (PNRR, 2021+), which made judicial-backlog reduction a large, EU-monitored funding condition.",
@@ -502,7 +502,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "court_interpreter_funding",
-                Name = "Court Interpreter & Translation Funding",
+                Name = "Court Interpreter & Translation Funding", PlainName = "Fund court interpreters",
                 Description = "Funds qualified interpreters and translated materials for non-native speakers in criminal proceedings.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US Court Interpreters Act (1978) and the EU's Directive 2010/64/EU on the right to interpretation and translation, binding on Germany, France, Italy, Sweden, and Poland.",
@@ -518,7 +518,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "victim_witness_support_funding",
-                Name = "Victim & Witness Support Services Funding",
+                Name = "Victim & Witness Support Services Funding", PlainName = "Fund victim support",
                 Description = "Funds victim counseling, court accompaniment, case-status notification services, and protection against witness intimidation.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US Victims of Crime Act (VOCA, 1984) and the EU's Victims' Rights Directive (2012), binding across Germany, France, Italy, Sweden, and Poland.",
@@ -533,7 +533,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "frontex_border_cooperation_agreement",
-                Name = "Frontex Border Cooperation Agreement",
+                Name = "Frontex Border Cooperation Agreement", PlainName = "Join Frontex border patrols",
                 Description = "Deepens funding and operational cooperation with the EU's joint border and coast guard agency for surveillance, patrol, and deportation-flight support.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Frontex (founded 2004), its budget expanded roughly 40x after the 2015 migrant crisis, targeting a 10,000-officer standing corps by 2027.",
@@ -552,7 +552,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "refugee_asylum_fast_track_processing",
-                Name = "Refugee & Asylum Fast-Track Processing",
+                Name = "Refugee & Asylum Fast-Track Processing", PlainName = "Fast-track asylum claims",
                 Description = "Expands staffing and streamlines procedure for asylum claims, reducing detention time and processing backlogs for people awaiting a decision.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "A real, recurring EU migration-policy debate over asylum-system capacity and processing time, not tied to one single confirmed law.",
@@ -572,7 +572,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "sanctuary_city_policy",
-                Name = "Sanctuary City Policy",
+                Name = "Sanctuary City Policy", PlainName = "Make cities sanctuaries",
                 Description = "Bars local police from asking about immigration status or assisting federal immigration enforcement in routine policing.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "A real US policy adopted by hundreds of jurisdictions since the 1980s-2000s, repeatedly contested in court over threatened federal funding cutoffs.",
@@ -588,7 +588,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "prosecutorial_discretion_guidelines",
-                Name = "Prosecutorial Discretion Guidelines",
+                Name = "Prosecutorial Discretion Guidelines", PlainName = "Guide prosecutors\x27 discretion",
                 Description = "Directs prosecutors to deprioritize charging low-level, non-violent offenses - including simple drug possession - freeing capacity for serious crime.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US 'progressive prosecutor' trend (Philadelphia's Larry Krasner, elected 2017; Los Angeles' George Gascon, elected 2020), a documented, politically contested real trend.",
@@ -617,7 +617,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "electronic_monitoring_program",
-                Name = "Electronic Monitoring Program",
+                Name = "Electronic Monitoring Program", PlainName = "Tag offenders electronically",
                 Description = "Substitutes GPS ankle monitoring for a portion of short prison terms or as a release condition, rather than incarceration.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Scope varies by country - France's electronic-monitoring custody alternative (in genuine use since ~2000) versus Germany's narrower post-sentence supervision use (since 2011).",
@@ -636,7 +636,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "restorative_justice_program",
-                Name = "Restorative Justice & Victim-Offender Mediation",
+                Name = "Restorative Justice & Victim-Offender Mediation", PlainName = "Offer restorative justice",
                 Description = "Establishes a formal mediation process between victim and offender that can reduce or substitute for a criminal sentence.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "For Germany - Tater-Opfer-Ausgleich, codified into the Criminal Code (Sec. 46a StGB) in 1994. The others follow the same direction.",
@@ -650,7 +650,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "juvenile_justice_reform",
-                Name = "Juvenile Justice Reform",
+                Name = "Juvenile Justice Reform", PlainName = "Reform juvenile justice",
                 Description = "Raises the age of adult-court jurisdiction and channels youth offenders into a separate, rehabilitation-focused juvenile justice track.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Germany's Jugendgerichtsgesetz (a separate juvenile code since 1953) and the US 'raise the age' state trend (roughly ten states, 2007-2019).",
@@ -669,7 +669,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "hate_crime_sentencing_enhancement",
-                Name = "Hate Crime Sentencing Enhancement",
+                Name = "Hate Crime Sentencing Enhancement", PlainName = "Raise hate-crime sentences",
                 Description = "Adds an additional penalty on top of the underlying offense when the crime is proven to be motivated by bias against the victim's identity.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "For the US - the federal Hate Crimes Sentencing Enhancement Act (1994). For the European five, which typically use a separate hate-speech offense instead.",
@@ -686,7 +686,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "risk_based_pretrial_assessment",
-                Name = "Risk-Based Pretrial Assessment",
+                Name = "Risk-Based Pretrial Assessment", PlainName = "Assess risk before trial",
                 Description = "Replaces cash-bail decisions with an algorithmic risk score for flight and public-safety danger, expanding summons-in-lieu-of-arrest for low-risk defendants.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "New Jersey's 2017 Criminal Justice Reform Act; pretrial jail population fell over 40% in two years, violent crime fell about 44% from 2015 to 2019.",
@@ -705,7 +705,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "mental_health_diversion_courts",
-                Name = "Mental Health Diversion Courts",
+                Name = "Mental Health Diversion Courts", PlainName = "Divert to mental-health courts",
                 Description = "Establishes specialized court dockets that divert defendants with serious mental illness into judicially-supervised treatment instead of standard prosecution.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The first mental health court, Broward County, Florida, 1997, with federal support following via the America's Law Enforcement and Mental Health Project Act (2000).",
@@ -723,7 +723,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "drug_courts_program",
-                Name = "Drug Courts Program",
+                Name = "Drug Courts Program", PlainName = "Open drug courts",
                 Description = "Establishes specialized court dockets that divert eligible non-violent drug offenders into supervised treatment instead of prosecution or incarceration.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "For the US - the first drug court, Miami-Dade County, 1989; roughly 3,000 now operate nationally. The others follow the same direction.",
@@ -744,7 +744,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "strict_drug_classification_equalization_act",
-                Name = "Strict Drug Classification Equalization Act",
+                Name = "Strict Drug Classification Equalization Act", PlainName = "Harden drug classification",
                 Description = "Equalizes the legal treatment and penalties for cannabis with those for harder drugs, removing distinctions in sentencing between drug categories.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Italy's 2006 Fini-Giovanardi law equalized cannabis and hard-drug penalties; struck down by Italy's Constitutional Court in 2014 on procedural grounds.",
@@ -764,7 +764,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "physical_border_barrier_construction",
-                Name = "Physical Border Barrier Construction",
+                Name = "Physical Border Barrier Construction", PlainName = "Build a border barrier",
                 Description = "Constructs a physical steel-and-sensor barrier along the border, paired with a surge in border-guard personnel to block irregular crossings.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Poland's Belarus border wall (built Jan-Jun 2022, 187km, ~$407M), later supplemented by a ~206km electronic sensor layer.",
@@ -783,7 +783,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "schengen_border_reimposition",
-                Name = "Schengen Border Reimposition",
+                Name = "Schengen Border Reimposition", PlainName = "Reimpose Schengen borders",
                 Description = "Reinstates border checks at internal frontiers that would normally be open under a shared free-movement area, citing migration and cross-border crime concerns.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Real and recent - Germany reinstated checks at all nine of its land borders by September 2024, citing migration and serious-crime concerns.",
@@ -800,7 +800,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "amnesty_regularization_program",
-                Name = "Amnesty & Regularization Program",
+                Name = "Amnesty & Regularization Program", PlainName = "Regularise the undocumented",
                 Description = "Grants legal status to undocumented residents who meet defined criteria (length of residence, clean record, employment), rather than pursuing removal.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Several real historical amnesty/regularization programs exist across immigration-receiving countries, not tied to one confirmed law common to the six seeded countries.",
@@ -817,7 +817,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "human_trafficking_task_force",
-                Name = "Human Trafficking Task Force",
+                Name = "Human Trafficking Task Force", PlainName = "Open a trafficking task force",
                 Description = "Funds a dedicated, cross-agency police unit investigating human trafficking and forced-labor networks, coordinating with border authorities on victim identification.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Dedicated anti-trafficking task forces are a common institutional response across many countries; the US TVPA framework (2000) is the closest single anchor.",
@@ -848,7 +848,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "ice_287g_agreements_law",
-                Name = "287(g) Immigration Enforcement Agreements",
+                Name = "287(g) Immigration Enforcement Agreements", PlainName = "Deputise police for immigration",
                 Description = "Authorizes state and local police to enter formal agreements with federal immigration authorities, deputizing officers to identify, detain, and process individuals for immigration violations during routine policing.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US 287(g) program (Immigration and Nationality Act Sec. 287(g), added by IIRIRA 1996), formalizing ICE-local police enforcement agreements; participation expanded sharply from the mid-2000s onward.",
@@ -870,7 +870,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "hot_spot_policing_program",
-                Name = "Hot Spot Policing Program",
+                Name = "Hot Spot Policing Program", PlainName = "Police the hot spots",
                 Description = "Concentrates additional patrol presence and targeted enforcement on the small number of locations and individuals responsible for a disproportionate share of violent crime, rather than spreading resources evenly.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The Kansas City Gun Experiment (1992-93) and Boston's Operation Ceasefire (1996), among the most consistently evidence-backed policing strategies in criminology (Braga et al. meta-analyses).",
@@ -888,7 +888,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "veterans_treatment_courts",
-                Name = "Veterans Treatment Courts",
+                Name = "Veterans Treatment Courts", PlainName = "Open veterans\x27 courts",
                 Description = "Establishes specialized court dockets for justice-involved military veterans, linking eligible defendants to VA benefits, mentorship, and treatment in lieu of standard prosecution.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The first veterans treatment court, Buffalo, New York (2008, Judge Robert Russell); several hundred now operate across the US.",
@@ -907,7 +907,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "financial_crimes_aml_unit",
-                Name = "Financial Crimes & Anti-Money-Laundering Unit",
+                Name = "Financial Crimes & Anti-Money-Laundering Unit", PlainName = "Open a financial-crimes unit",
                 Description = "Establishes a dedicated police and prosecutorial unit investigating money laundering, large-scale fraud, and illicit financial flows, distinct from digital/cybercrime investigation.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US FinCEN (Financial Crimes Enforcement Network, established 1990) and the EU's Anti-Money Laundering Directives (in force since 1991, tightened repeatedly), both funding dedicated financial-crime investigative capacity.",
@@ -927,7 +927,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "stand_your_ground_law",
-                Name = "Stand Your Ground Law",
+                Name = "Stand Your Ground Law", PlainName = "Stand your ground",
                 Description = "Removes the legal duty to retreat before using deadly force in self-defense in any place a person is lawfully present, and grants broad immunity from prosecution when the claim is upheld.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Florida's 2005 Stand Your Ground law, copied in some form by over 30 US states; associated in multiple peer-reviewed studies with more justifiable-homicide rulings and, in several states, higher homicide rates overall.",
@@ -947,7 +947,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "antimafia_asset_confiscation_law",
-                Name = "Anti-Mafia Asset Confiscation Law",
+                Name = "Anti-Mafia Asset Confiscation Law", PlainName = "Confiscate mafia assets",
                 Description = "Empowers courts to seize assets from individuals with proven organized-crime associations even without a criminal conviction, based on a documented mismatch between lawful income and accumulated wealth.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Italy's Rognoni-La Torre law (1982), creating the mafia-association offense and non-conviction-based asset confiscation, strengthened repeatedly since (most recently the 2011 Anti-Mafia Code).",
@@ -985,7 +985,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "federal_bail_reform_preventive_detention_act",
-                Name = "Pretrial Preventive Detention Act",
+                Name = "Pretrial Preventive Detention Act", PlainName = "Detain before trial",
                 Description = "Authorizes courts to detain a defendant before trial based on a finding of danger to the community, not flight risk alone - the first legal basis for denying bail on dangerousness grounds rather than only to secure appearance.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US federal Bail Reform Act of 1984, upheld by the Supreme Court in United States v. Salerno (1987), establishing pretrial detention for dangerousness as constitutional.",
@@ -1004,7 +1004,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "percentage_bail_deposit_program",
-                Name = "Percentage Bail Deposit Program",
+                Name = "Percentage Bail Deposit Program", PlainName = "Take bail as a deposit",
                 Description = "Lets a defendant pay a fraction (typically 10%) of the court-set bail amount directly to the court to secure release, refunded on appearance, rather than paying a commercial bail bondsman's non-refundable premium.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Illinois pioneered the '10 percent bail' cash-deposit program in 1964, since adopted in some form by roughly half of US states.",
@@ -1022,7 +1022,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "drug_free_zone_sentencing_enhancement",
-                Name = "Drug-Free Zone Sentencing Enhancement",
+                Name = "Drug-Free Zone Sentencing Enhancement", PlainName = "Raise sentences near schools",
                 Description = "Imposes an additional mandatory sentence enhancement for drug offenses committed within a defined distance of a school, park, or other designated protected zone.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Widespread US state and federal 'drug-free zone' enhancement laws adopted from the 1970s through the 1990s (New Jersey's 1987 law a frequently cited model; codified federally at 21 U.S.C. Sec. 860).",
@@ -1042,7 +1042,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "counter_narcotics_interdiction_funding_act",
-                Name = "Counter-Narcotics Interdiction Funding Act",
+                Name = "Counter-Narcotics Interdiction Funding Act", PlainName = "Fund narcotics interdiction",
                 Description = "Funds joint military and law-enforcement interdiction operations against drug trafficking and production, including cross-border coordination with source and transit countries.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Plan Colombia (launched 2000), a joint US-Colombia counter-narcotics and interdiction program totaling roughly $10 billion in US aid over two decades.",
@@ -1061,7 +1061,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "national_guard_border_deployment",
-                Name = "National Guard Border Deployment",
+                Name = "National Guard Border Deployment", PlainName = "Send the guard to the border",
                 Description = "Deploys National Guard troops to support border-patrol operations with surveillance, logistics, and infrastructure work, distinct from a standing physical barrier or federal agency staffing increase.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "Repeated US National Guard deployments to the southern border (Operation Jump Start 2006, a 2010 deployment, Operation Guardian Support 2018-19), plus state-level deployments such as Texas's Operation Lone Star since 2021.",
@@ -1081,7 +1081,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "pretrial_services_agency_establishment",
-                Name = "Pretrial Services Agency Establishment",
+                Name = "Pretrial Services Agency Establishment", PlainName = "Open a pretrial services agency",
                 Description = "Establishes a dedicated agency to supervise and support defendants released before trial - court-date reminders, check-ins, and referrals - giving judges a real supervised-release option instead of a binary cash-or-jail choice.",
                 Category = LawCategory.CrimeJustice,
                 Citation = "The US federal Pretrial Services Act of 1982, establishing a pretrial services agency in every federal district, building on the pioneering DC Pretrial Services Agency (established 1968).",
@@ -1116,7 +1116,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "raise_the_wage_act",
-                Name = "Federal Minimum Wage Increase Act",
+                Name = "Federal Minimum Wage Increase Act", PlainName = "Raise the minimum wage",
                 Description = "Roughly doubles the statutory minimum wage in annual steps, lifting the wage floor from the bottom quarter of the wage distribution toward 60% of the median wage.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The US Raise the Wage Act (House-passed 2019, reintroduced 2021/2023), phasing the federal minimum to $15/hr - roughly doubling the federal Kaitz index - with the CBO's 2019 median estimates of ~1.3M jobs cost and ~1.3M people lifted from poverty.",
@@ -1134,7 +1134,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "minimum_wage_indexation_act",
-                Name = "Minimum Wage Indexation Act",
+                Name = "Minimum Wage Indexation Act", PlainName = "Index the minimum wage",
                 Description = "Ties annual minimum-wage upratings to median-wage growth by statutory formula, ending ad-hoc political uprating rounds.",
                 Category = LawCategory.LaborMarket,
                 Citation = "France's SMIC statutory indexation formula (price- and wage-linked, with discretionary coups de pouce on top) and US state indexation amendments (Florida 2004, Colorado 2006).",
@@ -1149,7 +1149,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "subminimum_wage_abolition_act",
-                Name = "Subminimum Wage Abolition Act",
+                Name = "Subminimum Wage Abolition Act", PlainName = "Abolish the subminimum wage",
                 Description = "Phases out tipped, youth and disability subminimum wages so the full statutory floor applies to every covered worker.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Washington DC's Initiative 82 (2022), phasing out the tipped minimum wage by 2027; seven US states already apply the full minimum to tipped workers.",
@@ -1163,7 +1163,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "wage_floor_restraint_act",
-                Name = "Wage Floor Restraint Act",
+                Name = "Wage Floor Restraint Act", PlainName = "Hold the wage floor down",
                 Description = "Freezes the nominal minimum wage and narrows its sectoral coverage, letting the floor erode against the median wage over time.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The UK's abolition of the Wages Councils (Trade Union Reform and Employment Rights Act 1993), removing sectoral minimum-wage floors entirely until the 1998 National Minimum Wage Act restored a statutory floor.",
@@ -1178,7 +1178,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "paid_family_leave_insurance_act",
-                Name = "Paid Family Leave Insurance Act",
+                Name = "Paid Family Leave Insurance Act", PlainName = "Insure paid family leave",
                 Description = "Creates a payroll-funded insurance program paying about twelve weeks of wage replacement for new parents and family caregivers.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The US FAMILY Act model and the enacted state programs it generalizes (California 2002, first in the nation; New Jersey, New York, Washington) - all roughly 8-12 weeks, payroll-insurance funded.",
@@ -1194,7 +1194,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "parental_leave_expansion_act",
-                Name = "Parental Leave Expansion Act",
+                Name = "Parental Leave Expansion Act", PlainName = "Extend parental leave",
                 Description = "Extends paid parental leave toward a Nordic-scale entitlement, with months reserved for each parent to equalize uptake.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Sweden's 480-day parental insurance with three reserved months per parent (2016) and Germany's Elterngeld reform (2007), the explicit redesign of parental benefits as pro-natalist family policy.",
@@ -1210,7 +1210,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "working_time_regulation_act",
-                Name = "Working Time Regulation Act",
+                Name = "Working Time Regulation Act", PlainName = "Regulate working time",
                 Description = "Caps average weekly working hours, mandates daily and weekly rest periods, and sets a paid annual leave minimum.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The EU Working Time Directive (2003/88/EC): a 48-hour average weekly cap, daily/weekly rest requirements, and four weeks' paid annual leave.",
@@ -1224,7 +1224,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "working_hours_deregulation_act",
-                Name = "Working Hours Deregulation Act",
+                Name = "Working Hours Deregulation Act", PlainName = "Deregulate working hours",
                 Description = "Loosens statutory hour caps and lets firm-level agreements override sectoral working-time rules on overtime terms.",
                 Category = LawCategory.LaborMarket,
                 Citation = "France's El Khomri labor law (2016), letting company-level accords set overtime terms below branch agreements - the loosening of the 35-hour framework that drove the Nuit debout protests.",
@@ -1238,7 +1238,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "active_labor_market_programs_act",
-                Name = "Active Labour Market Programs Act",
+                Name = "Active Labour Market Programs Act", PlainName = "Fund back-to-work programmes",
                 Description = "Funds job-search assistance, retraining guarantees and activation requirements at the scale of the strongest real systems.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Denmark's flexicurity active-labor-market system (~2% of GDP on active measures, the OECD's highest) and Germany's Hartz III/IV job-center activation reforms (2003-05).",
@@ -1253,7 +1253,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "skilled_worker_immigration_act",
-                Name = "Skilled Worker Immigration Act",
+                Name = "Skilled Worker Immigration Act", PlainName = "Admit skilled workers",
                 Description = "Opens points-tested work visas, eases credential recognition and lowers salary thresholds for skilled migrants.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Germany's Fachkraefteeinwanderungsgesetz (2020, expanded 2023 with the Chancenkarte points card) and the EU Blue Card framework it builds on.",
@@ -1277,7 +1277,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "universal_child_benefit_act",
-                Name = "Universal Child Benefit Act",
+                Name = "Universal Child Benefit Act", PlainName = "Pay a child benefit to all",
                 Description = "Pays a flat monthly benefit per child to every family, unconditionally, as an explicit pro-natalist and child-poverty measure.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Poland's Rodzina 500+ program (2016, raised to 800+ in 2024): a flat monthly per-child payment, explicitly pro-natalist in its framing, one of Europe's largest family-benefit expansions.",
@@ -1293,7 +1293,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "universal_childcare_act",
-                Name = "Universal Childcare Act",
+                Name = "Universal Childcare Act", PlainName = "Provide childcare for all",
                 Description = "Guarantees subsidized childcare places at a low flat parent fee, universally rather than means-tested.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Quebec's $5-a-day universal childcare (1997, the canonical natural experiment for maternal labor-supply effects) and Sweden's maxtaxa fee cap (2002).",
@@ -1310,7 +1310,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "child_tax_credit_expansion_act",
-                Name = "Child Tax Credit Expansion Act",
+                Name = "Child Tax Credit Expansion Act", PlainName = "Expand the child tax credit",
                 Description = "Expands the per-child tax credit, makes it fully refundable and pays it monthly, reaching the lowest-income families for the first time.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The US American Rescue Plan's 2021 Child Tax Credit expansion ($3,000-3,600, fully refundable, paid monthly July-December 2021), which roughly halved measured child poverty while in force.",
@@ -1324,7 +1324,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "family_benefit_retrenchment_act",
-                Name = "Family Benefit Retrenchment Act",
+                Name = "Family Benefit Retrenchment Act", PlainName = "Cut family benefits",
                 Description = "Caps means-tested family support at two children and freezes child-benefit rates, retrenching family policy for fiscal savings.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The UK's two-child limit on Child Tax Credit/Universal Credit (announced 2015, in force 2017) plus the 2010s child-benefit freezes - the clearest recent retrenchment of a rich-country family-benefit system.",
@@ -1338,7 +1338,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "humanitarian_admissions_expansion_act",
-                Name = "Humanitarian Admissions Expansion Act",
+                Name = "Humanitarian Admissions Expansion Act", PlainName = "Admit more on humanitarian grounds",
                 Description = "Opens group-based humanitarian admission with immediate work rights, bypassing case-by-case asylum queues for a designated displaced population.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The EU's first-ever activation of the Temporary Protection Directive (March 2022) for people fleeing Ukraine: immediate residence and LABOR MARKET ACCESS across the bloc, ~4 million registrations within a year.",
@@ -1353,7 +1353,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "immigration_restriction_act",
-                Name = "Immigration Restriction Act",
+                Name = "Immigration Restriction Act", PlainName = "Restrict immigration",
                 Description = "Tightens asylum criteria, raises income and language thresholds for residence, and ends preferential regional free-movement admission.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Denmark's 2015-2019 restrictive 'paradigm shift' (temporary-protection-first asylum, the 2016 L87 tightening package) and the UK's post-Brexit points system ending EU free movement (2021) - two enacted national restrictions.",
@@ -1368,7 +1368,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "seasonal_guest_worker_program_act",
-                Name = "Seasonal Guest Worker Program Act",
+                Name = "Seasonal Guest Worker Program Act", PlainName = "Admit seasonal guest workers",
                 Description = "Creates capped, employer-sponsored seasonal work visas for agriculture and tourism, with mandatory return and no settlement track.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The US H-2A/H-2B seasonal visa programs and Germany's bilateral seasonal-worker agreements (the 1990s Polish agreements; the 2020 harvest-worker exceptions) - the standard bounded-opening shape.",
@@ -1382,7 +1382,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "apprenticeship_system_act",
-                Name = "Apprenticeship System Act",
+                Name = "Apprenticeship System Act", PlainName = "Build an apprenticeship system",
                 Description = "Establishes a statutory dual apprenticeship system - firm-based training with wage subsidies paired with vocational schooling and recognized credentials.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Germany's Berufsbildungsgesetz (1969, modernized 2005/2020), the statute behind the dual vocational system routinely credited for Germany's low youth unemployment; Switzerland's VET law is the sibling case.",
@@ -1397,7 +1397,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "lifelong_learning_accounts_act",
-                Name = "Lifelong Learning Accounts Act",
+                Name = "Lifelong Learning Accounts Act", PlainName = "Open lifelong-learning accounts",
                 Description = "Gives every worker an individual, portable training account credited annually, spendable on accredited courses at their own initiative.",
                 Category = LawCategory.LaborMarket,
                 Citation = "France's Compte Personnel de Formation (2014, monetized in euros 2018) and Singapore's SkillsFuture credits (2015) - the two flagship individual-training-account systems.",
@@ -1412,7 +1412,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "shorter_workweek_pilot_act",
-                Name = "Shorter Workweek Pilot Act",
+                Name = "Shorter Workweek Pilot Act", PlainName = "Pilot a shorter week",
                 Description = "Grants public-sector workers a right to reduced weekly hours at full pay and funds matched private-sector trials of a shorter week.",
                 Category = LawCategory.LaborMarket,
                 Citation = "For Iceland's 2015-2019 public-sector trials (which led ~86% of the workforce to gain reduced-hours rights by 2021); as a general statutory instrument, the UK's 2022 four-day-week pilot was large but private and voluntary.",
@@ -1436,7 +1436,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "paternity_leave_equalization_act",
-                Name = "Paternity Leave Equalization Act",
+                Name = "Paternity Leave Equalization Act", PlainName = "Equalise paternity leave",
                 Description = "Raises paid paternity leave to full parity with maternity leave, non-transferable between parents and paid at full replacement rate.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Spain's 2021 equalization of paternity and maternity leave at 16 weeks each, non-transferable, 100% pay - the first large economy to reach full parity.",
@@ -1450,7 +1450,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "parental_quota_act",
-                Name = "Parental Leave Quota Act",
+                Name = "Parental Leave Quota Act", PlainName = "Reserve leave for each parent",
                 Description = "Reserves a use-it-or-lose-it share of the parental leave entitlement for each parent, modestly extending the total to fund the reserved weeks.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Norway's 1993 'daddy quota' (the first reserved-weeks scheme, now 15 weeks per parent), the model Sweden's and Iceland's reserved months follow.",
@@ -1464,7 +1464,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "right_to_disconnect_act",
-                Name = "Right to Disconnect Act",
+                Name = "Right to Disconnect Act", PlainName = "Give a right to disconnect",
                 Description = "Obliges employers above a size threshold to negotiate binding rules on out-of-hours contact and email, with working-time enforcement behind them.",
                 Category = LawCategory.LaborMarket,
                 Citation = "France's right-to-disconnect provision (Article 55 of the 2016 El Khomri law, in force 2017), the first national disconnection statute, since echoed in Belgium and Portugal.",
@@ -1480,7 +1480,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "working_time_opt_out_act",
-                Name = "Working Time Opt-Out Act",
+                Name = "Working Time Opt-Out Act", PlainName = "Allow a working-time opt-out",
                 Description = "Lets individual workers sign away the statutory weekly hours cap, making the ceiling advisory wherever employer and worker agree.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The UK's blanket use of the Working Time Directive's Article 22 individual opt-out from the 48-hour cap, the standing exception the European Parliament repeatedly (and unsuccessfully) voted to phase out.",
@@ -1495,7 +1495,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "adequate_minimum_wage_directive_act",
-                Name = "Adequate Minimum Wage Directive Act",
+                Name = "Adequate Minimum Wage Directive Act", PlainName = "Adopt the EU wage directive",
                 Description = "Commits statutory minimum-wage setting to an adequacy framework benchmarked at 60% of the median wage, with regular reference-tested upratings.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The EU Adequate Minimum Wages Directive (2022/2041): a 60%-of-median indicative adequacy reference for members with statutory floors, plus a collective-bargaining-coverage pillar for those without.",
@@ -1513,7 +1513,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "trade_adjustment_assistance_act",
-                Name = "Trade Adjustment Assistance Act",
+                Name = "Trade Adjustment Assistance Act", PlainName = "Help workers displaced by trade",
                 Description = "Funds extended retraining, income support during training, and relocation allowances for workers displaced by trade competition.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The US Trade Adjustment Assistance program (Trade Expansion Act 1962, expanded 1974/2002/2015, lapsed 2022) - the canonical trade-displacement retraining instrument.",
@@ -1527,7 +1527,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "citizenship_modernization_act",
-                Name = "Citizenship Modernization Act",
+                Name = "Citizenship Modernization Act", PlainName = "Modernise citizenship",
                 Description = "Permits dual citizenship, shortens naturalization residence requirements, and eases the path for the second generation born in-country.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Germany's citizenship modernization law (in force June 2024): general dual citizenship and naturalization after five years (three with exceptional integration), replacing the renunciation requirement.",
@@ -1541,7 +1541,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "family_housing_support_act",
-                Name = "Family Housing Support Act",
+                Name = "Family Housing Support Act", PlainName = "Support family housing",
                 Description = "Grants escalating housing subsidies and loan forgiveness per child, tying family-formation support to explicit natalist targets.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Hungary's CSOK housing-subsidy scheme (2015) and the 2019 Family Protection Action Plan (loan forgiveness per child, lifetime income-tax exemption for mothers of four) - the era's most aggressive natalist package.",
@@ -1558,7 +1558,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "flexicurity_package_act",
-                Name = "Flexicurity Package Act",
+                Name = "Flexicurity Package Act", PlainName = "Adopt flexicurity",
                 Description = "Adopts the flexicurity triangle: easier hiring and dismissal, generous transitional support, and guaranteed retraining for every displaced worker.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Denmark's flexicurity model (the 1990s Rasmussen-era labor reforms), the OECD's standing reference case for combining flexible dismissal rules with strong active support.",
@@ -1577,7 +1577,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "demographic_response_package_act",
-                Name = "Demographic Response Package Act",
+                Name = "Demographic Response Package Act", PlainName = "Answer the demographic decline",
                 Description = "Bundles family benefits, leave expansion and managed labor migration into one statutory response to workforce aging.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The aging-response packages every fast-aging economy now legislates in some form: Japan's Children's Future Strategy (2023, 3.6T yen), Germany's Demografiestrategie framework - a real policy genre, not one single statute.",
@@ -1604,7 +1604,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "youth_minimum_wage_act",
-                Name = "Youth Minimum Wage Act",
+                Name = "Youth Minimum Wage Act", PlainName = "Set a youth minimum wage",
                 Description = "Introduces reduced statutory minimum-wage rates for workers under 21, stepped by age, to price young entrants into their first jobs.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The Netherlands' statutory youth minimum wage (age-stepped rates from 15 to the adult floor at 21, softened in 2017/2019 but standing), the canonical differentiated-floor design.",
@@ -1619,7 +1619,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "living_wage_procurement_act",
-                Name = "Living Wage Procurement Act",
+                Name = "Living Wage Procurement Act", PlainName = "Buy only at a living wage",
                 Description = "Requires government contractors and subsidy recipients to pay a living-wage rate above the statutory floor.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Baltimore's 1994 living-wage ordinance (the first) and the ~140 US city/county ordinances that followed; the UK's public-sector London Living Wage adoption is the sibling case.",
@@ -1632,7 +1632,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "wage_theft_enforcement_act",
-                Name = "Wage Theft Enforcement Act",
+                Name = "Wage Theft Enforcement Act", PlainName = "Enforce against wage theft",
                 Description = "Funds wage-and-hour inspection capacity, adds treble damages for unpaid wages, and lets regulators pursue violations without a worker complaint.",
                 Category = LawCategory.LaborMarket,
                 Citation = "California's wage-theft statutes (criminalization 2021, the Private Attorneys General Act) and repeated US DOL Wage and Hour Division enforcement expansions.",
@@ -1646,7 +1646,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "maternity_protection_act",
-                Name = "Maternity Protection Act",
+                Name = "Maternity Protection Act", PlainName = "Protect maternity",
                 Description = "Guarantees a minimum of fourteen weeks' paid maternity leave with dismissal protection and health safeguards, per the international standard.",
                 Category = LawCategory.LaborMarket,
                 Citation = "ILO Maternity Protection Convention C183 (2000): a 14-week paid-leave minimum with cash benefits and dismissal protection, ratified by 43 states.",
@@ -1661,7 +1661,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "carers_leave_act",
-                Name = "Carers' Leave Act",
+                Name = "Carers' Leave Act", PlainName = "Give carers leave",
                 Description = "Adds short statutory paid leave for workers caring for sick relatives, plus protected paternity days at birth.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The EU Work-Life Balance Directive (2019/1158): five days' carers' leave a year and ten working days' paternity leave, transposition due 2022.",
@@ -1674,7 +1674,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "night_work_restriction_act",
-                Name = "Night Work Restriction Act",
+                Name = "Night Work Restriction Act", PlainName = "Restrict night work",
                 Description = "Caps average night-shift hours, mandates health assessments for night workers, and grants transfer rights to day work on medical grounds.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The EU Working Time Directive's night-work provisions (8-hour average cap, health assessments) and ILO Night Work Convention C171 (1990).",
@@ -1687,7 +1687,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "annualized_hours_act",
-                Name = "Annualized Hours Act",
+                Name = "Annualized Hours Act", PlainName = "Count hours over the year",
                 Description = "Lets working-time limits average over a full year by agreement, trading weekly caps for seasonal flexibility.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The Working Time Directive's own 12-month averaging reference period via collective agreement, and the French/German annualization accords (modulation du temps de travail) built on it.",
@@ -1701,7 +1701,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "workfare_activation_act",
-                Name = "Workfare Activation Act",
+                Name = "Workfare Activation Act", PlainName = "Make benefits conditional on work",
                 Description = "Conditions out-of-work benefits on mandatory job search, training participation and work placements, with sanctions for refusal.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Wisconsin Works (1996, the US workfare template) and the UK's Universal Credit conditionality regime - benefit conditionality with mandatory activation.",
@@ -1717,7 +1717,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "remote_work_visa_act",
-                Name = "Remote Work Visa Act",
+                Name = "Remote Work Visa Act", PlainName = "Issue remote-work visas",
                 Description = "Creates a residence visa for foreign employees of foreign firms working remotely, with income thresholds and no local labor-market test.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Estonia's digital-nomad visa (2020, the first), followed by Portugal (2022) and Spain (2023, in the startup law).",
@@ -1730,7 +1730,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "labor_migration_quota_act",
-                Name = "Labor Migration Quota Act",
+                Name = "Labor Migration Quota Act", PlainName = "Cap labour migration",
                 Description = "Imposes annual numerical caps on work-based residence permits, allocated by lottery or priority ranking once the cap binds.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Switzerland's 2014 'against mass immigration' initiative (a constitutional quota mandate) and the US H-1B annual cap with its lottery - two standing quota designs.",
@@ -1756,7 +1756,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "sectoral_wage_boards_act",
-                Name = "Sectoral Wage Boards Act",
+                Name = "Sectoral Wage Boards Act", PlainName = "Set wages by sector board",
                 Description = "Empowers tripartite boards to set binding minimum pay above the statutory floor for named low-wage sectors.",
                 Category = LawCategory.LaborMarket,
                 Citation = "New York's 2015 fast-food wage board (a $15 sectoral floor by administrative order under a 1930s wage-board statute) and Australia's modern-award system of binding sectoral minimums.",
@@ -1769,7 +1769,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "public_sector_family_leave_act",
-                Name = "Public Sector Family Leave Act",
+                Name = "Public Sector Family Leave Act", PlainName = "Extend leave in the public sector",
                 Description = "Grants the government's own workforce paid parental leave first, setting the employer-of-reference standard private mandates later follow.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The US Federal Employee Paid Leave Act (2019): 12 weeks' paid parental leave for ~2 million federal workers, in a country with no general mandate.",
@@ -1783,7 +1783,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "adoption_leave_parity_act",
-                Name = "Adoption Leave Parity Act",
+                Name = "Adoption Leave Parity Act", PlainName = "Match adoption leave to birth leave",
                 Description = "Extends the full paid parental leave entitlement to adoptive and surrogate parents at parity with birth parents.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The UK's statutory adoption leave (Employment Act 2002, aligned to maternity-leave parity in 2015) - the standard parity design.",
@@ -1796,7 +1796,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "telework_rights_act",
-                Name = "Telework Rights Act",
+                Name = "Telework Rights Act", PlainName = "Give a right to telework",
                 Description = "Makes flexible and remote working a day-one statutory right to request, refusable only on enumerated business grounds.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The Netherlands' Flexible Working Act (2016, extended toward telework in 2022) and the UK's day-one right to request flexible working (2024).",
@@ -1809,7 +1809,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "overtime_pay_threshold_act",
-                Name = "Overtime Pay Threshold Act",
+                Name = "Overtime Pay Threshold Act", PlainName = "Raise the overtime threshold",
                 Description = "Raises the salary ceiling under which workers must receive overtime premiums, restoring coverage eroded by inflation.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The US Department of Labor's FLSA overtime-threshold rules (2019's $35,568; 2024's two-step raise toward $58,656, partially enjoined) - the recurring coverage-restoration fight.",
@@ -1823,7 +1823,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "national_retraining_guarantee_act",
-                Name = "National Retraining Guarantee Act",
+                Name = "National Retraining Guarantee Act", PlainName = "Guarantee retraining",
                 Description = "Guarantees mid-career workers a year of funded study at high wage replacement to retrain for shortage occupations.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Sweden's omstallningsstudiestod (2022): up to a year of transition study support at ~80% wage replacement for established workers, the era's largest retraining entitlement.",
@@ -1837,7 +1837,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "parental_benefit_modernization_act",
-                Name = "Parental Benefit Modernization Act",
+                Name = "Parental Benefit Modernization Act", PlainName = "Modernise parental benefit",
                 Description = "Restructures the parental benefit to be part-time compatible, with bonus months when both parents share work and care.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Germany's ElterngeldPlus (2015): benefit months usable alongside part-time work, plus partnership bonus months - the modernization layer on the 2007 Elterngeld.",
@@ -1851,7 +1851,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "family_reunification_act",
-                Name = "Family Reunification Act",
+                Name = "Family Reunification Act", PlainName = "Reunite families",
                 Description = "Grants settled residents a statutory right to bring spouses and minor children, with income and housing conditions harmonized down.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The EU Family Reunification Directive (2003/86/EC), the standing statutory right for third-country nationals across the bloc.",
@@ -1864,7 +1864,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "refugee_work_authorization_act",
-                Name = "Refugee Work Authorization Act",
+                Name = "Refugee Work Authorization Act", PlainName = "Let refugees work",
                 Description = "Grants asylum seekers labor-market access from day one of their claim instead of after a waiting period.",
                 Category = LawCategory.LaborMarket,
                 Citation = "Sweden's day-one work exemption (AT-UND) for asylum seekers, against Germany's 3-month and the USA's 180-day waiting rules - the openness margin is the WAIT, and it is legislated.",
@@ -1877,7 +1877,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "immigration_skills_levy_act",
-                Name = "Immigration Skills Levy Act",
+                Name = "Immigration Skills Levy Act", PlainName = "Levy employers who hire abroad",
                 Description = "Charges employers a levy per sponsored foreign worker and earmarks the proceeds for domestic workforce training.",
                 Category = LawCategory.LaborMarket,
                 Citation = "The UK's Immigration Skills Charge (2017): GBP 1,000 per sponsored worker per year, framed and hypothecated as domestic-skills funding.",
@@ -1906,7 +1906,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "hartz_benefit_reform_act",
-                Name = "Unemployment Benefit Consolidation Act",
+                Name = "Unemployment Benefit Consolidation Act", PlainName = "Consolidate unemployment benefit",
                 Description = "Merges long-term unemployment assistance into a flat, means-tested benefit, tightens the duty to accept work and shortens the insured benefit's duration.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Germany's Hartz IV (2005) - Arbeitslosenhilfe and Sozialhilfe merged into Arbeitslosengeld II, with the Hartz I-III activation and placement reforms of 2003-04 beneath it.",
@@ -1921,7 +1921,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "benefit_duration_reform_act",
-                Name = "Benefit Duration Reform Act",
+                Name = "Benefit Duration Reform Act", PlainName = "Halve the benefit period",
                 Description = "Halves the maximum duration of insured unemployment benefit and makes continued benefit conditional on activation from the first year.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Denmark's labour-market reforms of 1994-99 (benefit duration 9 → 4 years, activation from year one) and the 2010 halving to two years.",
@@ -1935,7 +1935,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "in_work_tax_credit_act",
-                Name = "In-Work Tax Credit Act",
+                Name = "In-Work Tax Credit Act", PlainName = "Credit tax to those in work",
                 Description = "A tax credit on earned income only, widening the gap between wages and benefits so that work pays at the margin.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Sweden's jobbskatteavdrag (2007-), the earned-income tax credit built out in five steps; the US EITC is the older model.",
@@ -1949,7 +1949,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "ui_duration_cut_act",
-                Name = "Unemployment Insurance Duration Act",
+                Name = "Unemployment Insurance Duration Act", PlainName = "Extend unemployment insurance",
                 Description = "Ends the extended-benefit tiers and caps insured unemployment at its ordinary duration.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "The expiry of the US Emergency Unemployment Compensation programme (December 2013), which had extended benefits to up to 99 weeks after 2008.",
@@ -1963,7 +1963,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "employment_protection_reform_act",
-                Name = "Employment Protection Reform Act",
+                Name = "Employment Protection Reform Act", PlainName = "Loosen employment protection",
                 Description = "Lowers severance costs, narrows the grounds on which a dismissal can be reversed and lets firms adjust hours and pay in a downturn.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Spain's labour reform of 2012 (Real Decreto-ley 3/2012) and Italy's Jobs Act (2015), both loosening dismissal rules for open-ended contracts.",
@@ -1977,7 +1977,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "bargaining_decentralisation_act",
-                Name = "Wage Bargaining Reform Act",
+                Name = "Wage Bargaining Reform Act", PlainName = "Reform wage bargaining",
                 Description = "Moves wage-setting from the national round to the sector and the firm, with a coordinating norm set by the exposed sector.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "The Netherlands' Wassenaar Agreement (1982) and Sweden's Industrial Agreement (Industriavtalet, 1997) - wage moderation coordinated on the exposed sector.",
@@ -1991,7 +1991,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "active_labour_market_expansion_act",
-                Name = "Active Labour-Market Programmes Expansion Act",
+                Name = "Active Labour-Market Programmes Expansion Act", PlainName = "Expand back-to-work programmes",
                 Description = "Funds training, subsidised placements and job-search support for the long-term unemployed, with participation a condition of benefit.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Denmark's and Sweden's active labour-market spending, at 1-2 % of GDP the OECD's highest (OECD Employment Database).",
@@ -2005,7 +2005,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "public_employment_service_reform_act",
-                Name = "Public Employment Service Reform Act",
+                Name = "Public Employment Service Reform Act", PlainName = "Reform the employment service",
                 Description = "Merges benefit administration and job placement into one office with caseloads, targets and a duty to place.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "The UK's Jobcentre Plus (2002) and Germany's Hartz III reorganisation of the Bundesagentur für Arbeit (2004).",
@@ -2019,7 +2019,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "working_time_reduction_act",
-                Name = "Statutory Working-Time Reduction Act",
+                Name = "Statutory Working-Time Reduction Act", PlainName = "Cut statutory working time",
                 Description = "Cuts the statutory working week with pay maintained, on the argument that shared hours are shared jobs.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "France's Aubry laws (1998, 2000) - the 35-hour week.",
@@ -2033,7 +2033,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "benefit_generosity_act",
-                Name = "Unemployment Benefit Generosity Act",
+                Name = "Unemployment Benefit Generosity Act", PlainName = "Raise unemployment benefit",
                 Description = "Raises the insured benefit's ceiling and replacement rate and lengthens the period before it tapers.",
                 Category = LawCategory.LabourInstitutions,
                 Citation = "Sweden's permanent raise of the unemployment-insurance ceiling (2022), making the 2020 pandemic increase standing.",
@@ -2057,7 +2057,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "constitutional_debt_brake_act",
-                Name = "Constitutional Debt Brake Act",
+                Name = "Constitutional Debt Brake Act", PlainName = "Write a debt brake into the constitution",
                 Description = "Writes a structural-deficit ceiling into the constitution, with an escape clause for emergencies and a repayment plan when it is used.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Germany's Schuldenbremse (Basic Law Articles 109 and 115, 2009), binding on the federation from 2016 and on the Länder from 2020.",
@@ -2070,7 +2070,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "debt_anchor_act",
-                Name = "Debt Anchor Act",
+                Name = "Debt Anchor Act", PlainName = "Anchor the debt ratio",
                 Description = "Sets a public-debt anchor as a share of GDP and obliges the government to explain to Parliament any drift of more than five points from it.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Sweden's debt anchor (skuldankaret) of 35 % of GDP, in force from 2019 within the fiscal policy framework.",
@@ -2083,7 +2083,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "debt_brake_suspension_act",
-                Name = "Debt Brake Suspension Act",
+                Name = "Debt Brake Suspension Act", PlainName = "Suspend the debt brake",
                 Description = "Invokes the escape clause and exempts a named class of spending from the deficit ceiling for the parliamentary term.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "The Bundestag's emergency-clause resolutions of 2020-22 and the March 2025 amendment exempting defence spending above 1 % of GDP from the brake.",
@@ -2097,7 +2097,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "expenditure_ceiling_act",
-                Name = "Expenditure Ceiling Act",
+                Name = "Expenditure Ceiling Act", PlainName = "Cap expenditure",
                 Description = "Sets a nominal ceiling on central-government spending three years ahead, voted before the budget and binding on it.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Sweden's expenditure ceiling (utgiftstaket), introduced in the 1997 budget reform and part of the fiscal framework since.",
@@ -2111,7 +2111,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "fiscal_council_act",
-                Name = "Independent Fiscal Council Act",
+                Name = "Independent Fiscal Council Act", PlainName = "Appoint a fiscal council",
                 Description = "Establishes an independent council that audits the government's forecasts and its compliance with the fiscal rules, reporting to Parliament.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Sweden's Fiscal Policy Council (Finanspolitiska rådet, 2007) and the UK's Office for Budget Responsibility (2010).",
@@ -2124,7 +2124,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "debt_office_long_issuance_act",
-                Name = "Debt Office Long-Issuance Mandate",
+                Name = "Debt Office Long-Issuance Mandate", PlainName = "Issue the debt long",
                 Description = "Directs the debt office to lengthen the stock's average maturity, trading a higher term premium today for slower repricing.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "The UK Debt Management Office's issuance remit - a gilt stock with an average maturity near 14 years; Sweden's Riksgälden steers its own by a time-to-refixing range.",
@@ -2138,7 +2138,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "short_issuance_savings_act",
-                Name = "Short-Issuance Savings Act",
+                Name = "Short-Issuance Savings Act", PlainName = "Issue the debt short",
                 Description = "Directs the debt office to fund at the short end to cut the interest bill now, accepting faster repricing when rates move.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "The US Treasury's rising bill share after 2020 and Italy's short-dated funding of the early 1990s.",
@@ -2151,7 +2151,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "electronic_invoicing_mandate_act",
-                Name = "Electronic Invoicing Mandate",
+                Name = "Electronic Invoicing Mandate", PlainName = "Mandate electronic invoicing",
                 Description = "Requires every business invoice to pass through the tax authority's exchange system, closing the gap between invoiced and declared sales.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Italy's mandatory B2B e-invoicing through the Sistema di Interscambio (FatturaPA, 2019).",
@@ -2164,7 +2164,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "third_party_reporting_act",
-                Name = "Third-Party Reporting and Withholding Act",
+                Name = "Third-Party Reporting and Withholding Act", PlainName = "Withhold tax at source",
                 Description = "Extends withholding and third-party information reporting to the income the tax authority cannot yet see - platform earnings, rents, capital income.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Denmark's third-party reporting regime, the setting of the 2011 Danish tax-audit experiment.",
@@ -2177,7 +2177,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "tax_amnesty_act",
-                Name = "Tax Amnesty Act",
+                Name = "Tax Amnesty Act", PlainName = "Declare a tax amnesty",
                 Description = "Lets undeclared income and assets be regularised at a flat rate without penalty, for one year.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Italy's scudi fiscali (2001, 2003, 2009) - repatriation amnesties at 2.5-5 %.",
@@ -2202,7 +2202,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "inflation_target_increase_act",
-                Name = "Inflation Target Increase Act",
+                Name = "Inflation Target Increase Act", PlainName = "Raise the inflation target",
                 Description = "Raises the central bank's announced inflation target by one percentage point, giving the policy rate more room above zero in a downturn.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "Blanchard, Dell'Ariccia & Mauro 2010 (IMF Staff Position Note 10/03); Ball 2014 (IMF WP/14/92) - the case for a higher target.",
@@ -2216,7 +2216,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "price_stability_definition_act",
-                Name = "Price Stability Definition Act",
+                Name = "Price Stability Definition Act", PlainName = "Define price stability",
                 Description = "Writes a stricter definition of price stability into the bank's mandate, lowering the target it steers to by half a point.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "ECB Governing Council, October 1998: price stability as a year-on-year HICP increase below 2 %; the Bundesbank's normative inflation rate of 1.5-2 % in the 1990s.",
@@ -2231,7 +2231,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "symmetric_target_act",
-                Name = "Symmetric Target Act",
+                Name = "Symmetric Target Act", PlainName = "Make the target symmetric",
                 Description = "Replaces a ceiling-shaped target with a symmetric one, so undershoots count as failures as much as overshoots.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "ECB monetary policy strategy statement, 8 July 2021 (symmetric 2 %); Sveriges Riksbank, September 2017 (CPIF target with a variation band).",
@@ -2246,7 +2246,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "full_employment_mandate_act",
-                Name = "Full Employment Mandate Act",
+                Name = "Full Employment Mandate Act", PlainName = "Mandate full employment",
                 Description = "Adds maximum employment to the bank's statutory objectives beside price stability, so a slack labour market pulls the policy rate down harder.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "Federal Reserve Reform Act of 1977 and the Full Employment and Balanced Growth Act of 1978 (Humphrey-Hawkins) - the dual mandate.",
@@ -2261,7 +2261,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "single_mandate_act",
-                Name = "Single Mandate Act",
+                Name = "Single Mandate Act", PlainName = "Mandate price stability alone",
                 Description = "Strikes the employment objective from the bank's statute, leaving price stability as its one goal.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "Reserve Bank of New Zealand (Economic Objective) Amendment Act 2023 - the employment objective repealed in December 2023.",
@@ -2277,7 +2277,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "taylor_principle_codification_act",
-                Name = "Taylor Principle Codification Act",
+                Name = "Taylor Principle Codification Act", PlainName = "Codify the Taylor principle",
                 Description = "Instructs the bank to raise the policy rate more than one-for-one with inflation above target, and to publish the rule it follows.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "Taylor 1993 (Carnegie-Rochester 39) and Taylor 1999; Clarida, Gali & Gertler 2000 (QJE 115) - the inflation response above one after 1979.",
@@ -2293,7 +2293,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "gradualism_mandate_act",
-                Name = "Gradualism Mandate Act",
+                Name = "Gradualism Mandate Act", PlainName = "Move the rate gradually",
                 Description = "Requires the bank to move the policy rate in measured steps and to look through transitory price shocks, damping its response to the inflation gap.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "Clarida, Gali & Gertler 2000 (QJE 115): interest-rate smoothing near 0.8 in estimated Fed reaction functions; Sack & Wieland 2000 (Journal of Economics and Business) on gradualism.",
@@ -2309,7 +2309,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "average_inflation_targeting_act",
-                Name = "Average Inflation Targeting Act",
+                Name = "Average Inflation Targeting Act", PlainName = "Target inflation on average",
                 Description = "Directs the bank to aim for its target on average over time, tolerating a period above it after a period below.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "Federal Open Market Committee, Statement on Longer-Run Goals and Monetary Policy Strategy, 27 August 2020 (flexible average inflation targeting).",
@@ -2325,7 +2325,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "neutral_rate_reassessment_act",
-                Name = "Neutral Rate Reassessment Act",
+                Name = "Neutral Rate Reassessment Act", PlainName = "Reassess the neutral rate",
                 Description = "Mandates a periodic review of the bank's framework that adopts the current estimate of the neutral real rate, lowering the anchor the rule builds on.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "Holston, Laubach & Williams 2017 (JIE 108) - r* estimates near or below 0.5 % after 2008; FOMC Summary of Economic Projections, longer-run rate 4.25 % (Jan 2012) to 2.5 % (2019).",
@@ -2341,7 +2341,7 @@ namespace PoliSim.Simulation
             new LawDefinition
             {
                 Id = "monetary_normalisation_act",
-                Name = "Monetary Normalisation Act",
+                Name = "Monetary Normalisation Act", PlainName = "Normalise monetary policy",
                 Description = "Instructs the bank to steer by a higher neutral rate, treating the low-rate decade as the exception rather than the anchor.",
                 Category = LawCategory.MonetaryRegime,
                 Citation = "FOMC Summary of Economic Projections, longer-run rate median 2.5 % (2023) to about 3 % (2024); BIS Annual Economic Report 2023, chapter II, on a higher neutral rate.",

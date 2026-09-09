@@ -26,12 +26,13 @@ namespace PoliSim.UI
 
         private static readonly (LawBrowserFilter Filter, string Label)[] LawCategoryMenu =
         {
+            // D16 §4.2 (§415): the categories in the plain register - what each is about, not the department it belongs to.
             (LawBrowserFilter.All, "All laws"),
             (LawBrowserFilter.CrimeJustice, "Crime & justice"),
-            (LawBrowserFilter.LaborMarket, "Labour market"),
-            (LawBrowserFilter.LabourInstitutions, "Labour institutions"),
-            (LawBrowserFilter.FiscalFramework, "Fiscal framework"),
-            (LawBrowserFilter.MonetaryRegime, "Monetary regime"),
+            (LawBrowserFilter.LaborMarket, "Work & wages"),
+            (LawBrowserFilter.LabourInstitutions, "Unions & contracts"),
+            (LawBrowserFilter.FiscalFramework, "The budget rules"),
+            (LawBrowserFilter.MonetaryRegime, "The interest rate"),
         };
 
         private int LawCategoryCount(LawBrowserFilter filter)
