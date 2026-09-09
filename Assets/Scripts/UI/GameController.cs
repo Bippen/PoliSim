@@ -9105,7 +9105,7 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawDemographicsContent()
         {
-            DrawColoredLabel("People", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            DrawPageHeaderWithProvenanceTab("People", UiPalette.GetAreaColor(UiPalette.SystemArea.Global));   // D16 §2: the desk's one † tab, top-right
             PopulationCohorts cohorts = _playerCountry.Cohorts;
             if (cohorts == null)
             {

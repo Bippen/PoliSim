@@ -125,6 +125,45 @@ namespace PoliSim.UI
             return Inked(style, ink);
         }
 
+        /// <summary>
+        /// D16 §2 and §9.1 (RULED by Elias, 2026-09-09): the desk's `†` PROVENANCE tab - <b>one control for the whole desk</b>, drawn in
+        /// the plate's top-right on the People page, the Laws pages and the Riksbank page, its state persisted (<see cref="DeskProvenance"/>).
+        /// The face is the board's: mono 12, inactive TextMuted on the stock face with the paper border and no bottom edge, active
+        /// TextPrimary on the sheet with a brass inset at the top. It draws the page's title on the same line, so a caller replaces one
+        /// header call with this one and nothing moves sideways.
+        /// </summary>
+        private void DrawPageHeaderWithProvenanceTab(string title, Color titleInk)
+        {
+            GUIStyle titleStyle = new GUIStyle(_headerStyle);
+            GUIStyle glyph = DeskCaption(12f, DeskProvenance.On ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
+            float tabW = glyph.CalcSize(new GUIContent(DeskProvenance.Glyph)).x + StatsUnit(20f);
+            float rowH = Mathf.Max(Mathf.Ceil(titleStyle.CalcHeight(new GUIContent(title), 400f)), StatsUnit(22f));
+            Rect row = GUILayoutUtility.GetRect(10f, rowH, GUILayout.ExpandWidth(true));
+            var tab = new Rect(row.xMax - tabW, row.y + StatsUnit(2f), tabW, rowH - StatsUnit(2f));
+            if (Event.current.type == EventType.Repaint)
+            {
+                Color before = GUI.contentColor;
+                GUI.contentColor = titleInk;
+                GUI.Label(new Rect(row.x, row.y, Mathf.Max(10f, row.width - tabW - StatsUnit(8f)), rowH), title, titleStyle);
+                GUI.contentColor = before;
+                PoliSimTheme.Rule(tab, DeskProvenance.On ? PoliSimTheme.Card : PoliSimTheme.StockOff);
+                PoliSimTheme.Rule(new Rect(tab.x, tab.y, tab.width, 1f), PoliSimTheme.BorderPaper);
+                PoliSimTheme.Rule(new Rect(tab.x, tab.y, 1f, tab.height), PoliSimTheme.BorderPaper);
+                PoliSimTheme.Rule(new Rect(tab.xMax - 1f, tab.y, 1f, tab.height), PoliSimTheme.BorderPaper);
+                if (DeskProvenance.On) { PoliSimTheme.Rule(new Rect(tab.x, tab.y, tab.width, 2f), PoliSimTheme.Brass); }
+                PoliSimWidgets.MeasuredLabel(tab, DeskProvenance.Glyph, glyph);
+            }
+            if (PoliSimWidgets.Button(tab, GUIContent.none, GUIStyle.none)) { DeskProvenance.On = !DeskProvenance.On; }
+        }
+
+        /// <summary>Body type that wraps - D16 §3.5's gap-row reason, the one piece of prose on the People page, at reading size.</summary>
+        private GUIStyle DeskBodyWrapped(float boardPx, Color ink)
+        {
+            GUIStyle style = DeskBody(boardPx, ink, TextAnchor.UpperLeft);
+            style.wordWrap = true;
+            return style;
+        }
+
         /// <summary>A numeral in the display weight (the header style's bold face).</summary>
         private GUIStyle DeskNumeral(float boardPx, Color ink, TextAnchor anchor = TextAnchor.LowerLeft)
         {

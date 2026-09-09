@@ -21,7 +21,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             EducationSeeds e = country.Education;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            DrawCohortCaption($"EDUCATION · SOCIETY · FAMILY 2 OF 6 · {countryName} · {_simulationManager.CurrentDate.Year}", "SOURCED · OECD EAG · EUROSTAT 2023–25");
+            PlateFamily("Education", "2023–25", "SOURCED · OECD EAG · EUROSTAT");
             if (e == null || !e.Seeded)
             {
                 GUILayout.Label("This country carries no education family - the spine covers six, and this is not one of them.", _labelStyle);
@@ -60,7 +60,7 @@ namespace PoliSim.UI
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
-            string footText = "SEEDS: OECD EAG AND EUROSTAT, LATEST OBSERVATION PER COUNTRY · THE OWN TICK IS THIS COUNTRY, THE DOTS ARE THE OTHER FIVE AT SEED · THE DISTRIBUTION IS 2a's STACKED BAR, ITS SEGMENTS THE THREE ISCED BANDS · STUDENTS PER TEACHER IS THE CARD'S KEY, NOT A PAGE ROW · BILLED AND ABSENT ARE WORDS · COUPLINGS: THE EDUCATION SPINE'S TABLES, DRAFT UNTIL MEASURED";
+            string footText = "SEEDS: OECD EAG AND EUROSTAT, LATEST OBSERVATION PER COUNTRY · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS ARE THE OTHER FIVE AT SEED · THE DISTRIBUTION IS 2a's STACKED BAR, ITS SEGMENTS THE THREE ISCED BANDS · STUDENTS PER TEACHER IS THE CARD'S KEY, NOT A PAGE ROW · BILLED AND ABSENT ARE WORDS · COUPLINGS: THE EDUCATION SPINE'S TABLES, DRAFT UNTIL MEASURED";
             _educationPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
             {
                 if (!row.Name.StartsWith("Early leavers") || !draftLive) { return null; }

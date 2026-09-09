@@ -20,7 +20,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             MigrationPovertySeeds m = country.MigrationPoverty;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            DrawCohortCaption($"IMMIGRATION · POVERTY DEPTH · SOCIETY · FAMILY 5 OF 6 · {countryName} · {_simulationManager.CurrentDate.Year}", "SOURCED · EUROSTAT · OECD · DHS · BLS");
+            PlateFamily("Immigration · poverty depth", "2022–24", "SOURCED · EUROSTAT · OECD · DHS · BLS");
             if (m == null || !m.Seeded)
             {
                 GUILayout.Label("This country carries no immigration and poverty family - the spine covers six, and this is not one of them.", _labelStyle);
@@ -37,9 +37,9 @@ namespace PoliSim.UI
             {
                 stock
                     ? new PlateRow("Irregular migration", "PER 10 000 · STOCK · UNAUTHORIZED RESIDENTS", "DHS OHSS · 1 JAN " + m.MigrationYear + " · 10.99 M", PlateFigure(s.IrregularMigrationPer10k, 0),
-                        PlateBand.Open, 0f, 400f, s.IrregularMigrationPer10k, null, true, new[] { "IMMIGRATION POLICY ▸", "BORDER ENFORCEMENT ▸" }, history?.IrregularMigrationPer10k.Quarterly, new[] { "SOURCED", "STOCK" }, true)
+                        PlateBand.Open, 0f, 400f, s.IrregularMigrationPer10k, null, true, new[] { "IMMIGRATION POLICY ▸", "BORDER ENFORCEMENT ▸" }, history?.IrregularMigrationPer10k.Quarterly, new[] { "SOURCED", "STOCK" }, true, flag: DeskProvenance.TwoDefinitionGlyph)
                     : new PlateRow("Irregular migration", "PER 10 000 · FLOW · FOUND ILLEGALLY PRESENT", "EUROSTAT migr_eipre · " + m.MigrationYear, PlateFigure(s.IrregularMigrationPer10k, 1),
-                        PlateBand.Open, 0f, 40f, s.IrregularMigrationPer10k, MigrationPeers(x => x.MigrationIsStock ? -1f : x.IrregularMigrationPer10k), true, new[] { "IMMIGRATION POLICY ▸", "BORDER ENFORCEMENT ▸" }, history?.IrregularMigrationPer10k.Quarterly, new[] { "SOURCED", "FLOW" }, true),
+                        PlateBand.Open, 0f, 40f, s.IrregularMigrationPer10k, MigrationPeers(x => x.MigrationIsStock ? -1f : x.IrregularMigrationPer10k), true, new[] { "IMMIGRATION POLICY ▸", "BORDER ENFORCEMENT ▸" }, history?.IrregularMigrationPer10k.Quarterly, new[] { "SOURCED", "FLOW" }, true, flag: DeskProvenance.TwoDefinitionGlyph),
                 new PlateRow("Poverty gap", gapUnit, (m.PovertyGapIsOecd ? "OECD IDD · PG_INC_DISP · PL_60 · " : "EUROSTAT ilc_li11 · MED_EI · B_60 · ") + m.PovertyGapYear, PlateFigure(s.PovertyGap, 1, "%"),
                     PlateBand.Bounded, 0f, 50f, s.PovertyGap, MigrationPeers(x => x.PovertyGapIsOecd == m.PovertyGapIsOecd ? x.PovertyGap : -1f), true, new[] { "WELFARE GENEROSITY ▸", "MINIMUM WAGE ▸" }, history?.PovertyGap.Quarterly, new[] { "SOURCED", m.PovertyGapIsOecd ? "OECD" : "EUROSTAT" }, true),
                 new PlateRow("Underemployment", "% OF EMPLOYMENT · LOWER ◂" + (stock ? " · 16+ BLS" : " · 20–64"), (stock ? "BLS LNS12032194 ÷ LNS12000000 · " : "EUROSTAT lfsi_sup_a ÷ lfsi_emp_a · ") + m.UnderemploymentYear, PlateFigure(s.Underemployment, 2, "%"),

@@ -61,6 +61,13 @@ namespace PoliSim.UI
         // already in use as bare literals (#C9BA9B in CountrySelectorScreen and SigningScreen).
         /// <summary>§A.2 `ruleRow` — the 1px ledger row separator.</summary>
         public static readonly Color RuleRow = Hex(0xD5C8AB);
+        /// <summary>D16 §1 (2026-09-09), three tokens the desk had no name for and board 10a draws: the family header's hairline, the dashed
+        /// edge of a gap row and an open pip slot, and the peer ink - the short ticks on a band, the peer pips, a sparkline's baseline. Where
+        /// the desk already had a token the desk's value wins (its Good and RuleRow are P2-1.2's and its own, not the board's #2E7048/#DED2B8);
+        /// these three are new names, not new hues by the back door - §8.7's complete set is the party inks plus §1's tokens.</summary>
+        public static readonly Color RuleLight = Hex(0xCFC1A4);
+        public static readonly Color EdgeDashed = Hex(0xC2B291);
+        public static readonly Color Peer = Hex(0xA79B85);
         /// <summary>§A.2 `borderPaper` — the paper panel edge.</summary>
         public static readonly Color BorderPaper = Hex(0xCBBC9D);
         /// <summary>§A.2 `borderPlate` — the plate / tile edge (the RUNNING status plate, the disabled button).</summary>

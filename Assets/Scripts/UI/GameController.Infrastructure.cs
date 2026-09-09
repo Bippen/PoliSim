@@ -19,7 +19,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             InfrastructureSeeds f = country.Infrastructure;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            DrawCohortCaption($"INFRASTRUCTURE · SOCIETY · FAMILY 3 OF 6 · {countryName} · {_simulationManager.CurrentDate.Year}", "SOURCED · WEF GCR 2019 · DATED");
+            PlateFamily("Infrastructure", "2019–24", "SOURCED · WEF GCR · OECD");
             if (f == null || !f.Seeded)
             {
                 GUILayout.Label("This country carries no infrastructure family - the spine covers six, and this is not one of them.", _labelStyle);
@@ -41,7 +41,7 @@ namespace PoliSim.UI
             var rows = new List<PlateRow>
             {
                 new PlateRow("Road quality", "SCORE 0–100 · SURVEY 2018–19 · DATED 2019", "WEF GCR 2019 · ROADINF · RANK " + f.RoadQualityRank + " OF 141", PlateFigure(s.RoadQuality, 1),
-                    PlateBand.Bounded, 50f, 100f, s.RoadQuality, InfrastructurePeers(x => x.RoadQuality), false, new[] { "INFRASTRUCTURE LINE — PER HEAD ▸", "DECAY ▸" }, history?.RoadQuality.Quarterly, new[] { "SOURCED", "DATED 2019" }, true),
+                    PlateBand.Bounded, 50f, 100f, s.RoadQuality, InfrastructurePeers(x => x.RoadQuality), false, new[] { "INFRASTRUCTURE LINE — PER HEAD ▸", "DECAY ▸" }, history?.RoadQuality.Quarterly, new[] { "SOURCED", "DATED 2019" }, true, flag: DeskProvenance.DatedGlyph),
                 new PlateRow("Road connectivity", "INDEX 0–100 · TEN-CITY TRAVEL SPEEDS", "WEF GCR 2019 · ROADQUALIDX", PlateFigure(s.RoadConnectivity, 1),
                     PlateBand.Open, 70f, 100f, s.RoadConnectivity, InfrastructurePeers(x => x.RoadConnectivity), false, new[] { "ROAD QUALITY ▸", "POPULATION ▸" }, history?.RoadConnectivity.Quarterly, new[] { "SOURCED" }, true),
                 new PlateRow("Congestion", "% EXTRA TRAVEL TIME · PER CITY", "TOMTOM INDEX 2024 · INRIX SCORECARD 2024", "billed",
@@ -51,7 +51,7 @@ namespace PoliSim.UI
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure);
-            string footText = "SEEDS: THE WEF GCI 4.0 2019 DATASET, VERIFIED BY CONTENT · THE ROAD-QUALITY SURVEY ENDED WITH THAT EDITION - THE FIGURE IS DATED AND SAYS SO · THE OWN TICK IS THIS COUNTRY, THE DOTS THE OTHER FIVE AT SEED · BILLED AND ABSENT ARE WORDS · COUPLINGS: THE INFRASTRUCTURE SPINE'S TABLES, DRAFT UNTIL MEASURED";
+            string footText = "SEEDS: THE WEF GCI 4.0 2019 DATASET, VERIFIED BY CONTENT · THE ROAD-QUALITY SURVEY ENDED WITH THAT EDITION - THE FIGURE IS DATED AND SAYS SO · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · BILLED AND ABSENT ARE WORDS · COUPLINGS: THE INFRASTRUCTURE SPINE'S TABLES, DRAFT UNTIL MEASURED";
             _infrastructurePlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
             {
                 if (!draftLive || !row.Name.StartsWith("Road quality")) { return null; }

@@ -20,7 +20,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             EnvironmentSeeds e = country.Environment;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            DrawCohortCaption($"ENVIRONMENT · SOCIETY · FAMILY 4 OF 6 · {countryName} · {_simulationManager.CurrentDate.Year}", "SOURCED · EDGAR 2024 · WB 2023");
+            PlateFamily("Environment", "2023–24", "SOURCED · EDGAR · WORLD BANK");
             if (e == null || !e.Seeded)
             {
                 GUILayout.Label("This country carries no environment family - the spine covers six, and this is not one of them.", _labelStyle);
@@ -53,7 +53,7 @@ namespace PoliSim.UI
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);
-            string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE DOTS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE STAYS ON OUTPUT - MOVING IT HERE IS SHEETED, NOT BUILT · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED";
+            string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE STAYS ON OUTPUT - MOVING IT HERE IS SHEETED, NOT BUILT · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED";
             _environmentPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
             {
                 if (!draftLive || !row.Name.StartsWith("Electricity CO2")) { return null; }
