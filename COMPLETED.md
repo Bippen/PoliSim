@@ -25108,3 +25108,11 @@ no dump is byte-identical (5 of 62 fields, the demographic constants): a BASELIN
 **Verdict on the new basis** (`resp_evd4.log`): `resp_evd5.log`, the harness on the re-based constant with every ratchet print at four decimals - *Impact horizons that reached the band (ratchet 0.5074): 0 of 3* · *the impact readings at four decimals, the year's dice off: +2 % 0.5096, +10 % 0.5113, −10 % 0.5074* · *No breach: L+1 and L+4 inside the band on every dial, impact at or above its ratchet.* The −10 % dial sits on the ratchet by construction - the ratchet IS its reading - and the tolerance of 0.0005 below it is the harness's as before.
 
 **Bar:** `bar254b_ratchet3_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; the harness run twice on the way (resp_evd3 to read the four decimals, resp_evd4 on the new constant) and once more on the final tree (resp_evd5).
+
+## 407. THE ONE-YEAR EVENT DURATION — kept as the stated convention, TAGGED until the catalogue carries durations (2026-09-09)
+
+**The ruling:** *"The one-year event duration: keep it as the stated convention, tagged, until the catalogue carries durations."*
+
+**Kept and tagged.** `EventSystem.ShockDurationDays` stays at the period (365 days): a shock is spread evenly over the year the player watches, fully in by the next boundary, never two overlapping. Its doc now carries the tag in the form §390 gave the US sequester - **[CONVENTION, TAGGED §407: to be struck when the catalogue carries a duration per event]** - so the next hand that types durations into the catalogue (a recession's quarters, a strike's weeks, a harvest's season) finds the constant that yields to them and the record that expects it. FT-9's row says the same. Nothing else changes: the constant's value, the daily step and the diagnostic are §404's.
+
+**Bar:** one doc comment and two rows; the cheap bar of the item's commit - `bar255_duration_RunAllBatch` 33 of 33, `ResidueCheck` 0 open (`ConstantProvenanceCheck` reads the constant's CONVENTION mark as before).

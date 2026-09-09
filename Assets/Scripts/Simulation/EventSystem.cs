@@ -71,9 +71,10 @@ namespace PoliSim.Simulation
         /// measures the realised rate against this figure on the simulation bar. `CabinetSystem.DecisionChancePerTurn` (0.12, its own
         /// constant, which matched this one until P4-D2) stays where it was: the Docket's cadence is not the news's.</summary>
         public const float EventChancePerTurn = 0.40f;
-        /// <summary>FT-9 (§404): the days an event's GDP shock takes to enter the daily path - the period, one year. CONVENTION: the catalogue carries no
-        /// duration per event (each is "the year's event"); a shock is spread evenly over the period the player watches, so it is fully in by the next boundary
-        /// and no two overlap. Sourced durations per event would refine this; none is typed.</summary>
+        /// <summary>FT-9 (§404): the days an event's GDP shock takes to enter the daily path - the period, one year. [CONVENTION, TAGGED §407: to be struck when
+        /// the catalogue carries a duration per event.] The catalogue carries none today (each is "the year's event"); a shock is spread evenly over the period
+        /// the player watches, so it is fully in by the next boundary and no two overlap. The hand that types durations into the catalogue - a recession's
+        /// quarters, a strike's weeks, a harvest's season - replaces this constant with the event's own; kept as ruled (2026-09-09) until then.</summary>
         public const int ShockDurationDays = SimulationManager.DaysPerTurn;
 
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.Event);
