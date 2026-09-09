@@ -25566,3 +25566,32 @@ filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 **What stays allowed, stated so the rule is not read wider than it is:** small text - a JSON table, a markdown row, a log line. Text damage is legible where binary damage is not, and for anything carrying figures the stronger habit already applies: generate it, never transcribe it (§419).
 
 **Bar:** `bar299_10d_final_RunAllBatch` 36 of 36, `ResidueCheck` 0 open - the same run, which is the honest bar for a rule and a tool that change no behaviour. `DocumentClaimCheck` reads `CLAUDE.md` every run and is green on the new section.
+
+## 428. THE SHELF, CYCLED AFTER BOTH ASKS CAME BACK AND THE LAST D16 BOARD WAS BUILT — the register with one Design row left and it is a ruling, not a drawing (2026-09-09)
+
+**The ruling:** *"Then the standing list."*
+
+**Ratchets.** `RatchetSlackCheck` on the run's cheap bars: twelve reported, twelve tight - `UNWIRED` 2 and `UNREACHABLE` 2 (`Rosatellum.cs`, `TacticalVoting.cs`, unchanged), `MojibakeCheck.SUSPECT_RUNS` 1 at its measured false positive, every other ceiling 0 at 0. **One floor rose this pass**: `D16AcceptanceCheck.FENCE_PAIRS` **10 → 12** (§423), which is a ratchet tightening on a closed finding rather than a ceiling being lowered. The cheap bar carries **36** checks now against §418's 33: `D18InventoryCheck` (§419), `MojibakeCheck` (§422) and `D18MarkAssignment` (§424).
+
+**The deferral register, re-read.** T-1, T-2, T-4…T-7, F-1…F-5, F-7 NOT FIRED; T-3 FIRED and Elias's; FT-1..FT-9 and RF-1..RF-2 closed. **D16-10d is CLOSED** - the last of the four boards is built, on the record's own palette (§426). **The DESIGN section has one row left that is a drawing and it is not open**: D-7 (board 2b) and D8-3…D8-6 carry their own state, D-1 is measured closed, D18's rows are answered and waiting on a copy, and **D17's remainder is a ruling** - item 2, the eight colours as a proposal, Elias's.
+
+**The errands.** E-1, E-3 and E-6 open as before. **E-30 is DONE** - the board itself records the package content-verified and both asks answered. **E-31 is new and blocking nothing else**: the fifteen cells, by any path that is not a session's context (§424, and now the standing rule of §427). **E-32 is the return**, which asks Design for nothing.
+
+**The calibration list, the constants, the documents.** The three numbered constants read their listed values (40 000, 26, 500 000). `ls *.md` returns **18**, the same eighteen as §418 - `CLAUDE.md` grew a section and `SEND_PACKAGE.md` was regenerated in place; nothing was added or orphaned. `Tools/` gained `pngcheck.pl`, which the new standing rule points at by name.
+
+**The run's self-ruled sheets, marked:**
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §419 | the ask's inventory generated from the checks' own print, guarded by a check that fails when the document and the repo disagree | **HOLDS** - and it paid for itself the hour it ran: 43 marks not 52, two icons never owed, 32 held sprites, four of them "reached" only by a comment |
+| §420 | D18 written around it: one family asked, every other reconciled and NOT asked | **HOLDS** - Design's answer used the generated block as its own source, which is the strongest evidence the form was right |
+| §421, §425 | the package by digest, first as an ask carrying both, then as a return that asks for nothing | **HOLDS** - ⚠ with one thing learned: of twelve artefacts only the four documents reached them. The manifest travels; the files do not |
+| §422 | the mojibake defect repaired and turned into a ratcheted check | **HOLDS** - and it caught the second shape of its own trap (a bare 0xA7) that a hand scan had missed |
+| §423 | D17 item 1 built - the bloc fence inside §256 | **HOLDS** at 12 of 12, with the ceiling question answered at 3.70:1 and the one sign difference recorded |
+| §424 | D18 answered as rules, the art STOPPED on a measured transport failure | **HOLDS** - four of eight corrupt is not a rate to retry against, and the rules reproduce Design's table row for row |
+| §426 | board 10d built whole on the record's palette | **HOLDS** - and the one figure of the board's caption that could not be taken literally is measured on every run rather than asserted |
+| §427 | the transport rule recorded standing | **HOLDS** |
+
+**The residue** reads zero on every bar of the run. The excluded rows are Elias's (T-3, FT-6, **D17 item 2**, the dials-only laws, the E-rows), Design's (D-rows), and the calendar's (K-1, 13 September 2026). **Nothing a session could start stands open.**
+
+**Bar:** `bar299_10d_final_RunAllBatch` 36 of 36, `ResidueCheck` 0 open with D17 item 2 printed under the exclusions as Elias`s. Documents only.
