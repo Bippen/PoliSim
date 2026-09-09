@@ -1,99 +1,61 @@
-# The send package — regenerated 2026-09-09 evening: **TWO ASKS, one paste** (D17, the eight party inks; D18, the full asset request)
+# The send package — regenerated 2026-09-09 night: **A RETURN, NOT AN ASK** (boards 11a and 11b answered, and what they asked back for)
 
-⚠ **THIS PACKAGE CARRIES BOTH ASKS, AND THEY ARE INDEPENDENT.**
+⚠ **NOTHING HERE ASKS DESIGN FOR WORK.** Both asks came back the same night and both are answered:
 
-- **D17 is the RULING item** — the eight Swedish party inks. Section 6.3 of the D16 bundle states an
-  assignment as a ruling by Elias of 2026-09-09, and that ruling is not in this repo (`COMPLETED.md`
-  §409). It asks for one of two things, Design's choice: a separation inside the published hues, or
-  the assignment written as a **proposal for Elias to rule on**. **10d's geometry, gaps, bloc arc and
-  majority tick are accepted as drawn and are not re-asked.**
-- **D18 is the PRODUCTION item** — the full asset request, **generated from the coverage checks rather
-  than recalled**. One family is asked for (the party identity marks, in four runs by chamber); every
-  other family is reconciled against the checks' own print and **not** asked; the costed follow-ups are
-  carried as rows with their state.
-
-**Answer either first.** ⚠ **Answering D18 does not imply the palette question is settled**, and D18
-re-asks nothing D17 has open.
+- **D17 item 1 is BUILT.** The bloc fence lives inside §256 as board 11a stated it: within a bloc, where two
+  parties sit closer than 8.7° in hue, their laddered lightness must differ by at least 0.090, and the smaller
+  by seats moves outward by the deficit. Hue never moves; order never changes. **The fence reads 12 of 12** and
+  its ratchet floor is raised 10 → 12 in the same commit.
+- **Their one print is in the check.** `D16BARS: the eight laddered L, as PartyLaddered emits them` — eight
+  numbers, one line, re-emitted every run, so the question cannot need asking twice.
+- **The ceiling question is closed.** M's upward move leaves it at **3.70:1** against `#EDE4D3` — the lightest of
+  the eight, and every one of them clears 3:1. The 7b consultation mechanism stays unfired.
+- ⚠ **One sign differs, and the repo is why.** Board 11a says *V moves −0.030* on the reasoning that V sits
+  below S. In this repo it does not: the nudge's identical-pair rule had already lifted V off S's ink, so the
+  deficit is paid upward — **V +0.030, M +0.030**. The board's own caveat covers it (the recovered ladder is
+  relative by construction, and an ordering is one of the things it cannot see); **the invariant held**.
+- **D18 is answered as a seed table.** The 43 rows are DERIVED from this repo's seeds by board 11b's four rules
+  and reproduce your table row for row. What is left is a copy: the fifteen cells are delivered files in the
+  design project, and carrying them through a session's own context corrupted four of eight (CRC failures
+  inside `IDAT`). They are awaited as files — E-31, and it is not Design's errand unless you would rather send
+  the pack.
+- **Your call on the tint is taken as ruled**: author the batch in the neutral `#5F6672`, rule 9a scoped rather
+  than overturned. The cells are already neutral, so the fix arrives with the art and changes no call site.
 
 ## What goes in — computed, not claimed, and numbered so a partial paste shows
 
-*Every figure in this table is read off the file on disk at the moment this manifest was written.
-**12 artefacts.** If the paste ends before `12 of 12`, it is incomplete.*
+*Every figure is read off the file on disk at the moment this manifest was written. **7 artefacts.**
+If the paste ends before `7 of 7`, it is incomplete.*
 
-| n of 12 | kind | artifact | bytes | sha256 (on disk) |
+| n of 7 | kind | artifact | bytes | sha256 (on disk) |
 |---|---|---|--:|---|
-| **1 of 12** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 166030 | `eb4b9f9876a4d71b29a845b55f861470ad6414b9563c2eaac8a53389387b689d` |
-| **2 of 12** | document | `COMPLETED.md` | 2670710 | `2b9ca964eecba4e2b41fab66513f30dc63b5eedbbea2c2c76797f4ba06154883` |
-| **3 of 12** | document | `POLISIM_FEATURE_LIST.md` | 179984 | `99efc77581442578f78d043305f1381ed803211f52688a9c510255a2e06c515a` |
-| **4 of 12** | document | `ERRANDS.md` | 17701 | `cce25bffb1581c737bd270676bf36deaf8d60ba8a60738c49a24ef5f7af76c74` |
-| **5 of 12** | log | `logs/bar276_audit_RunSimulationBatch.log` | 1244226 | `d4d6a835a57c652e3cea09c9a9f0b6793f265109aefd1539a5887decc6aeedbc` |
-| **6 of 12** | log | `logs/bar285_d18ask_RunAllBatch.log` | 632903 | `1e80bb9367310832015cb7f7e8a57f47afaf650c6770fc9c2ff0f82d185b7970` |
-| **7 of 12** | log | `logs/d17_1280.log` | 1311827 | `78439f43e01464c6ae041a935687ee18f4f9f9bab8ce594fdcae55037fb3acdd` |
-| **8 of 12** | film | `d17_1280_04_demographics.png` | 494632 | `30c1358d7c4bbef14f635e91a37b2a5e60a88019a1adb5a7233f65ef2aba5247` |
-| **9 of 12** | film | `d17_1280_04b_people_health_plate.png` | 527850 | `283bfbfb7f7032b008fa0767ca1a93d31e2e9cd3418d82e4c8c3649a677d2dca` |
-| **10 of 12** | film | `d17_1280_06f_policylaws_laws.png` | 563358 | `3726ba78f2066627b956fa4b1b0c907b1044613879195ffd075a0ec99fc04ca4` |
-| **11 of 12** | film | `d17_1280_06g_laws_expected_effects.png` | 599878 | `537e3ace571d3e29e8b186f83dbb3ad91b024dc46f2d4c83a2c138e32179baaf` |
-| **12 of 12** | film | `d17_1280_07d_politics_federalreserve.png` | 467034 | `d9b634fb5c75d67ccec829e978ec4509e29abcc605add77b1907b8561f5e3859` |
+| **1 of 7** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 167130 | `0209fc9f3749deaf89876738355b1ac6339a561f79d4d741c8bfde255479256b` |
+| **2 of 7** | document | `COMPLETED.md` | 2683056 | `b9f8524fc3002f2cbde6a8018d6a73b9c1adcc77175bafe4ff77de3a297ebd3f` |
+| **3 of 7** | document | `POLISIM_FEATURE_LIST.md` | 180681 | `5d80dcd27163a41d60b679d0efb443a32a0dbd1f0381943ea83246c52d8523fc` |
+| **4 of 7** | document | `ERRANDS.md` | 20591 | `ed79a4d1ae7ded1fd3c63080ec75ce3ac2de921a9e2409970e7126f065d541c1` |
+| **5 of 7** | log | `logs/bar290_blocfence_RunSimulationBatch.log` | 1264996 | `a440b32ef7bd1fe18b67106d8e7bf91381c49fe94b02ef6d39f4940fbeed0199` |
+| **6 of 7** | log | `logs/bar291_partyink.log` | 32426 | `28b2ac67bed388f06046c4a117e5065e1ce8e543d83db131865c76153cb60926` |
+| **7 of 7** | log | `logs/bar292_d18marks_RunAllBatch.log` | 646173 | `822bb8aebd8ee160c81a356b89dc92d768e09df74e66a55c9db445f307ba0e3c` |
 
-### What each film shows
+### What to read in each log
 
-| n of 12 | film | what it shows |
+| n of 7 | log | what to read |
 |---|---|---|
-| **8 of 12** | `d17_1280_04_demographics.png` | board 10a - the People page at its head: the desk-global `†` in the plate's top-right corner |
-| **9 of 12** | `d17_1280_04b_people_health_plate.png` | board 10a - the plate itself: the name and four graphics, the pips, the reach, the gap rows with their word and reason, the family header |
-| **10 of 12** | `d17_1280_06f_policylaws_laws.png` | board 10b - one control line, the magnitude glyph in every row, the plain names, and the pane in decision order with the vote bar |
-| **11 of 12** | `d17_1280_06g_laws_expected_effects.png` | board 10b - the pane read down: the estimate, the description, the magnitude and dials, the party split |
-| **12 of 12** | `d17_1280_07d_politics_federalreserve.png` | board 10c - rate · verdict · path, and the rule as a waterfall at 1 pt = 130 px with the negatives as a cut |
+| **5 of 7** | `logs/bar290_blocfence_RunSimulationBatch.log` | the fence at 12 of 12 (`D16BARS:`) and the eight laddered L on one line - the print board 11a asked back for |
+| **6 of 7** | `logs/bar291_partyink.log` | the ladder itself: every party seated, nudged and drawn, with the two bloc-fence moves on their own lines |
+| **7 of 7** | `logs/bar292_d18marks_RunAllBatch.log` | D18's 43 rows derived from the seeds - chamber, abbrev, seats, triple, stem - and the fifteen cells reported AWAITING ART |
 
-### Why these logs
+⚠ **No film in this return, and none is owed.** Nothing on a player surface has moved since the five frames sent
+with the ask: the work since is a lightness pass inside the ladder, an Editor check, and documents. Board 10d is
+un-stopped by item 1 and is the next thing to draw on this side; when it is filmed, the films go up then.
 
-| n of 12 | log | what to read in it |
-|---|---|---|
-| **5 of 12** | `logs/bar276_audit_RunSimulationBatch.log` | the fence in oklch (`D16BARS:`) and §9.2's audit (`PARTYCAUTION:`) |
-| **6 of 12** | `logs/bar285_d18ask_RunAllBatch.log` | the cheap bar on the tree this ask was written from: 34 of 34, residue 0, and `D18InventoryCheck` reading the ask's block and the rebuild at one digest |
-| **7 of 12** | `logs/d17_1280.log` | the film run that wrote the five frames |
+## What is left, and whose it is
 
-⚠ **No new film was cut for this package and none was needed.** Nothing on a player surface moved since
-the five frames were taken: the work between them and this manifest is an Editor check, a shell tool, two
-corrected comments and the request document itself. Re-filming to make a package look fresh would be a
-figure with nothing behind it.
+1. **Item 2 — the eight colours as a proposal — is Elias's**, untouched. It supersedes §256 and §279 if taken, and
+   the board states the cost plainly: the `fargkod` citations stop being publishable fact, SD moves from a published
+   blue to a proposed yellow, and §9.2's audit re-runs on the Docket's draft cue and the Budget's pencil face.
+2. **The fifteen cells** (E-31), by any path that is not a session's context.
+3. **Board 10d**, ours to build now that the collision it was drawn to answer is closed on the record's own palette.
 
-## What Design is asked for
-
-### D17 — one of two, Design's choice (the ask is § ⭐ D17 in `CLAUDE_DESIGN_ASSET_REQUEST.md`)
-
-1. **A separation inside the published hues** — the `fargkod` stays the identity, and the two failing
-   pairs clear the fence (ΔH ≥ 8.7° **or** ΔL ≥ 0.08) on lightness or spacing. V ⁄ S needs it on
-   lightness alone, the two published reds sharing a hue exactly.
-2. **The assignment as a PROPOSAL** — the same eight colours or better ones, with their oklch triples and
-   the twelve pairs measured, written as a proposal for Elias to rule on rather than as a ruling already
-   taken, naming what it supersedes and what it costs.
-
-### D18 — one family, four runs, largest first (the ask is § ⭐ D18, beneath D17)
-
-**The 43 party identity marks**, cut by chamber: **France 15 · Italy 14 · Germany 9 · Poland 5.** The
-batch is the generated table in D18's own inventory block — every party, its abbreviation, its seats at
-seed and **the exact stem the build will load it by**. 128×128 RGBA32, authored in the party's own
-colours (rule 9a; **not** white-on-alpha), and a mark has to read two ways: untinted on the campaign
-masthead, and multiplied by the party's laddered ink in the chamber.
-
-⚠ **The palette dependency, on the row it binds:** do not cut 43 marks against a palette that may move.
-D17 is Sweden's eight and **no mark in this batch is Swedish**; these four countries have no published
-colour table at all, which is **D8-2**, still open. The silhouette, the frame, the margins and the stems
-wait on nothing.
-
-**Nothing else is asked.** Stat icons, area icons, ministers' and chair candidates' portraits are complete
-on disk; the sitting governors and the party leaders have no surface that draws them; the audio cues are
-closed by ruling (E-10); 32 delivered sprites nothing can load are **ours to wire, not Design's to cut
-again**. Each of those is a row in D18 with the check's own reading beside it.
-
-## The paste
-
-`ERRANDS.md` carries this as **E-30, Elias's** — one row, one paste, both asks. The documents and logs go
-up as files, the five films as files, and the message is D17's section and D18's section verbatim.
-**Binary artifacts are uploaded, not described**, and nothing in this package summarises in prose what a
-`get_file` can read back.
-
-⚠ **D17 still withdraws itself** the moment Elias's ruling is recorded: 10d is then built whole, the fence
-re-run expecting 12 of 12, the `fargkod` citations corrected to name the desk's palette rather than
-published fact, and §9.2's audit re-run on the two surfaces. **D18 is unaffected either way.**
+**Binary artifacts are uploaded, not described**, and nothing in this return summarises in prose what a `get_file`
+can read back.

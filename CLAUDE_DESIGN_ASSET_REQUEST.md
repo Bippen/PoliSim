@@ -1,5 +1,9 @@
 # Claude Design asset request — PoliSim
 
+## ⭐ STATUS 2026-09-09 (night) — **BOTH ASKS ARE ANSWERED AND NOTHING IS LIVE TO DESIGN.** They came back the same night on two boards. **D17 item 1 is BUILT** (`COMPLETED.md` §423): the bloc fence inside §256 moves the smaller party of a hue-crowded pair outward in laddered lightness by the deficit, the fence reads **12 of 12** and its floor is raised to match; the one print they asked back for is in the check itself, and their ceiling question is answered - M sits at **3.70:1** against the paper, so the consultation mechanism stays unfired. **D18 is answered as a seed table** (§424): 43 rows over 15 cells Design had already cut, the rules built and asserted rather than their table copied. **Two things remain, and neither is Design's**: item 2 - the eight colours as a PROPOSAL - is Elias's to rule on, and the fifteen cells have to be copied into this repo (E-31), which a session cannot do (§424: four of eight files corrupted in transit). The status that stood here this evening is kept beneath, demoted.
+
+### The status as it stood this evening, when both asks were still out
+
 ## ⭐ STATUS 2026-09-09 (evening) — **TWO ASKS ARE LIVE, and they are independent: D17, the RULING item (the eight party inks — a separation inside the published hues, or the assignment written as a proposal), and D18, the PRODUCTION one (the full asset request, generated from the coverage checks rather than recalled). Answer either first. Answering D18 does not imply the palette question is settled, and D18 re-asks nothing D17 has open.** The status that stood here this afternoon is kept beneath, demoted.
 
 ### The status as it stood this afternoon, when D17 was the only live ask
