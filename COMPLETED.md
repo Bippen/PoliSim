@@ -25594,4 +25594,4 @@ filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 
 **The residue** reads zero on every bar of the run. The excluded rows are Elias's (T-3, FT-6, **D17 item 2**, the dials-only laws, the E-rows), Design's (D-rows), and the calendar's (K-1, 13 September 2026). **Nothing a session could start stands open.**
 
-**Bar:** `bar299_10d_final_RunAllBatch` 36 of 36, `ResidueCheck` 0 open with D17 item 2 printed under the exclusions as Elias`s. Documents only.
+**Bar:** `bar299_10d_final_RunAllBatch` 36 of 36, `ResidueCheck` 0 open with D17 item 2 printed under the exclusions as Elias's. Documents only.
