@@ -1,5 +1,15 @@
 # Claude Design asset request — PoliSim
 
+## ⭐ STATUS 2026-09-09 — **D17 IS THE LIVE ASK: the eight party inks, and nothing else — D16's four boards are answered and three of them are BUILT (`COMPLETED.md` §409–§415); board 10d waits on one question about attribution, not about drawing (§ ⭐ D17 below; the package `SEND_PACKAGE.md` regenerated 2026-09-09).**
+
+D16 arrived as `design_handoff_d16_legibility/` and was verified by content: all five anchors present, every board carrying its DECLARED line, every number in the README the board's own. **10a, 10b and 10c are built and filmed** — the People page as the name and four graphics behind one desk-global `†`, the Laws pages as one control line and a pane that reads in decision order, the Riksbank as rate · verdict · path with the rule as a waterfall. §8's four assertable acceptance bars are checks in the suite now, and §9.2's audit is a check that re-answers itself every run.
+
+**10d is the one board not built, and the reason is a records reconciliation.** §6.3 and the board both state that Elias assigned the eight colours by name on 2026-09-09 and that this supersedes the held published-hue constraint. **That assignment is not in this repo's record**, and the standing ruling here is still §256 / §279 of 2026-09-03: Valmyndigheten's published table is the base and the identity, and Design's set is consulted only where ours produces a measured collision. The desk cannot supersede its own ruling on a document's say-so, so the board is stopped whole and nothing of it was half-built.
+
+**What the fence found in the meantime changes the ask.** The twelve within-bloc pairs are asserted in oklch every run now, on the palette the record holds: **ten clear, two do not** — V ⁄ S at ΔH 0.0° and ΔL 0.060, and M ⁄ SD at ΔH 7.4° and ΔL 0.060, against the 8.7° / 0.08 bar. **The collision 10d was drawn to answer is real and measured.** So D17 asks for the answer, in either of the two forms below — Design's choice.
+
+### The D15 status as it stood (2026-09-05)
+
 ## ⭐ STATUS 2026-09-05 — **D15 IS THE LIVE ASK: four items from Playtest 5, reconciled against D14 and against Design's own sighting note of 2026-09-04 (§ ⭐ D15 below; the package `SEND_PACKAGE.md` regenerated 2026-09-05). D14 is answered and built beneath it; its return LANDED AND WAS READ (the board's note "The return of 2026-09-04", nothing asked), so E-15 is done. Sending D15 is Elias's (E-17).** The status that stood here is kept beneath, demoted.
 
 ### The D14 status as it stood (2026-09-04, late evening)
@@ -831,6 +841,44 @@ The debate screen is drawn as a STAGE inside the content sheet, with the exchang
 ledger. It could equally be a MODAL takeover like election night. **The two read very differently for
 a moment the game treats as a set piece**, and this is a design call we should not make by default.
 Prep / midway / verdict are all filmed at four widths if you want to look before answering.
+---
+
+## ⭐ THE ONE LIVE ASK — D17, the eight party inks: a separation inside the published hues, or an assignment written as a proposal (2026-09-09)
+
+⚠ **This is a records reconciliation, not a rejection of the cut.** Design's eight hexes are a careful piece of work and the register they were cut in (oklch L 0.36–0.61, C 0.090–0.120) is the desk's own; nothing here disputes the drawing. What could not be done is adopt them on the attribution given: §6.3 and board 10d state that the assignment is Elias's ruling of 2026-09-09, and **that ruling is not in this repo's record** — the day carries four macro sections (`COMPLETED.md` §405–§408), no D16 request exists in this document, and the last party-colour ruling on file is §279 of 2026-09-03. The desk's own standing rule is that the repo outranks every document, so the board is stopped rather than built on a claim, and this ask is how it un-stops.
+
+⚠ **Only the eight inks wait. Everything else on 10d is accepted as drawn and unaffected**: the seat geometry (nine rows, r 110–220, Ø 9 at 13.3 px tangential pitch, 358 slots dealt in angle order so party boundaries stay radial), the gaps (party 1, bloc 3, nine empty in 358), the bloc arc at r = 238 with its names and counts, **the majority tick at the angle between the 175th and 176th seat** and its reading that the line falls two seats inside the right bloc, the refused devices (§6.5), the roster's shape, and the neutral-register selection (§6.7). When the inks arrive, that geometry is what they are drawn into; it is not being re-asked.
+
+### The two — either one answers it, Design's choice
+
+| n of 2 | item | what is asked | the constraint that binds it | evidence on disk |
+|---|---|---|---|---|
+| **1 of 2** | **A separation achieved INSIDE the published hues** | Keep Valmyndigheten's `fargkod` as the identity — the standing ruling — and clear the fence within it: move lightness, spacing, or both, on the two pairs that fail. **The target is the fence's own bar: a within-bloc pair passes on ΔH ≥ 8.7° OR ΔL ≥ 0.08.** The two that need it are V ⁄ S (a hue distance of zero: the published reds are the same hue, so only lightness can separate them) and M ⁄ SD (ΔH 7.4°, a degree and a third short). | §256's ruling binds the method: the published hue is the identity, and a measured collision moves the smaller party's LIGHTNESS by the least that separates it — never its hue, never the order. A proposal that re-hues a party is proposal 2, not this one. | `PoliSimTheme.PartyHues` (the eight `fargkod` values), `PartyLaddered` (the seating and the nudge that draw), and the fence's own print in the log named in the annex |
+| **2 of 2** | **The assignment, written as a PROPOSAL for Elias to rule on** | The same eight colours, or better ones, offered as a proposal: the eight names, the eight hexes with their oklch triples, the contrast figures, the twelve pairs measured — and **written as a proposal, never as a ruling already taken**. One sentence naming what it supersedes (§256 / §279) and what it costs (the `fargkod` citations stop being publishable fact; a Swedish player looking SD up finds a different colour). Elias rules on it here, the ruling is recorded with its date, and 10d is then built whole in one pass. | ⚠ **The one thing that must not recur:** a board that states a ruling as already given. If Elias gave it in the sitting, this side has no record of it, and the fix is the record, not the assertion. | §6.3 and 10d as they stand (the cut is reusable verbatim as the proposal's body); `COMPLETED.md` §409 for the reconciliation and §413 for the fence |
+
+### The annex — the fence's own readings, and the three built boards
+
+1. **The fence, all twelve pairs, measured in oklch on the palette the record holds** — the check is `D16AcceptanceCheck` and the print is in the log named in `SEND_PACKAGE.md`, by digest. Verbatim:
+
+```
+V  ⁄ S  ΔH   0.0° ΔL  0.060  BELOW THE FENCE     L  ⁄ KD ΔH  30.9° ΔL  0.031  clears
+V  ⁄ MP ΔH 122.3° ΔL  0.009  clears              L  ⁄ M  ΔH  20.4° ΔL  0.118  clears
+V  ⁄ C  ΔH 109.5° ΔL  0.043  clears              L  ⁄ SD ΔH  13.0° ΔL  0.058  clears
+S  ⁄ MP ΔH 122.3° ΔL  0.051  clears              KD ⁄ M  ΔH  51.3° ΔL  0.149  clears
+S  ⁄ C  ΔH 109.5° ΔL  0.103  clears              KD ⁄ SD ΔH  44.0° ΔL  0.089  clears
+MP ⁄ C  ΔH  12.8° ΔL  0.053  clears              M  ⁄ SD ΔH   7.4° ΔL  0.060  BELOW THE FENCE
+```
+
+   Ten of twelve clear. The two that do not are the ask. The count is a ratchet in the suite's ledger (`D16AcceptanceCheck.FENCE_PAIRS`, a floor at 10): a re-cut that breaks a pair which clears today fails the run, so whichever answer comes back is measured the moment it lands.
+
+2. **§9.2's audit, answered on this side** (`PartyInkCautionAudit`, in the bar): on the desk as built, **neither of the two surfaces §9.2 names draws a party ink at all** — `LedgerRow.cs` (the Budget's pencil face and its draft figures) and `GameController.cs` (the Docket's draft cue) both draw a draft ink and no party ink, which is S-29's decidable form of "never adjacent". The measurement is on record too: no party ink on the record's palette sits inside the floor of Caution `#8F6900` or of the pencil's Draft `#BE8A00`; SD reads ΔH 152.8° from Caution here, because the published `fargkod` seats it as a blue. **If the assignment lands, this audit is already the check that re-answers it** at ΔH 4.6°.
+
+3. **The three built boards, filmed at 1280** — the People page (10a), the statute book and its pane (10b), the Riksbank (10c) — by digest in `SEND_PACKAGE.md`. Read them rather than this prose: the deviations each board took are stated in `COMPLETED.md` §410, §411 and §412, and the two worth Design's eye are **10b's money cost, refused** (a law in this model carries no fiscal cost at all, so the row's third cell is the approval cost under a head that says so) and **10b's vote bar drawing the desk's own party table** rather than 10d's eight, which is the same reconciliation as this ask.
+
+4. **The naming, done** — 130 laws and five categories in the plain register §4.2 asked for (`COMPLETED.md` §415): *Abolish cash bail · Raise the minimum wage · Turn prisons to rehabilitation*, with the formal Act name kept as the record behind the `†`. `Work & wages` is a category name now, as demonstrated.
+
+**Binary artifacts are uploaded, not described.** Nothing in this ask summarises in prose what a `get_file` can read back.
+
 ---
 
 ## ⭐ THE ONE LIVE ASK — D15, four items from Playtest 5, reconciled against D14 and Design's sighting note (2026-09-05)

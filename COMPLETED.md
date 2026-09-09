@@ -25327,3 +25327,24 @@ filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 4. **The catalogue's own comments keep the Act names** they cite; those are engineering's record and not player-facing text.
 
 **Bar:** `bar278_rename_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; the film `p415b_1280` clean at 70 captures. `bar277` was green too, on the pass before the CTA.
+
+## 416. D17 OPENED — the eight party inks sent back as a question, with the fence's own readings as its annex: a separation inside the published hues, or an assignment written as a proposal (2026-09-09)
+
+**The ruling:** *"open D17 now, with those measurements as its annex, asking Design for one of two things, their choice: a separation achieved within the published hues (lightness or spacing, the fence's 8.7°/0.08 bar as the target), or a proposed assignment written as a proposal for Elias to rule on — never as a ruling already taken. State plainly that §6.3's attribution could not be found in the record, that this is a records reconciliation and not a rejection of the cut, and that 10d's geometry, gaps, bloc arc and majority tick are accepted and unaffected — it is only the eight inks that wait."*
+
+**Installed** in `CLAUDE_DESIGN_ASSET_REQUEST.md` in the document's own form: a `⭐ STATUS 2026-09-09` header at the head (D15's demoted beneath it as *the status as it stood*), and `⭐ THE ONE LIVE ASK — D17` above D15's section.
+
+### What the ask says
+
+- **Two items, either one answers it, Design's choice.** **1 of 2:** keep the `fargkod` as the identity and clear the fence inside it - lightness, spacing, or both - on the two pairs that fail, with the fence's own bar as the target (ΔH ≥ 8.7° **or** ΔL ≥ 0.08), and with §256's method binding it (the published hue is the identity; a measured collision moves the smaller party's lightness by the least that separates it). **2 of 2:** the same eight colours, or better ones, **written as a proposal for Elias to rule on** - the names, the hexes, the oklch triples, the twelve pairs measured, one sentence naming what it supersedes and what it costs - after which the ruling is recorded here with its date and 10d is built whole in one pass.
+- **The three things stated plainly, as ruled.** That §6.3's attribution could not be found in the record (the day carries §405–§408, no D16 request exists in the request document, the last party-colour ruling on file is §279 of 2026-09-03). That **this is a records reconciliation and not a rejection of the cut** - the eight hexes are careful work, cut in the desk's own register, and nothing here disputes the drawing. And that **only the eight inks wait**: the seat geometry, the gaps, the bloc arc at r = 238, **the majority tick and its reading that the line falls two seats inside the right bloc**, the refused devices, the roster's shape and the neutral-register selection are accepted as drawn and are not re-asked - when the inks arrive, that geometry is what they are drawn into.
+- **The one thing that must not recur**, said once and without heat: a board that states a ruling as already given. If Elias gave it in the sitting, this side has no record of it, and the fix is the record rather than the assertion.
+
+### The annex
+
+1. **All twelve pairs, verbatim from the check's own print** - ten clear, V ⁄ S at ΔH 0.0° / ΔL 0.060 and M ⁄ SD at ΔH 7.4° / ΔL 0.060 below the fence - with the note that the count is a floor in the suite's ledger, so whichever answer comes back is measured the moment it lands.
+2. **§9.2's audit, answered on this side**: neither surface it names draws a party ink at all, and no party ink on the record's palette sits inside the floor of Caution or the pencil's Draft; if the assignment lands, the same check re-answers it at ΔH 4.6°.
+3. **The three built boards, filmed at 1280**, by digest in the package - with the two deviations worth Design's eye named (10b's refused money cost, and 10b's vote bar drawing the desk's own party table).
+4. **The naming, done** - 130 laws and five categories in the plain register §4.2 asked for.
+
+**Bar:** `bar279_d17_RunAllBatch` 33 of 33, `ResidueCheck` 0 open (`DocumentClaimCheck` reads the request document every run and is green on the new section). Documents only; no code moved for this item.
