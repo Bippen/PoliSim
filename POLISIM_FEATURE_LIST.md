@@ -1312,9 +1312,10 @@ here; the evidence is there.*
 | row | what it is | what it unblocks |
 |---|---|---|
 | **D-7** | board 2b, the Policy Web drawn to be read | the web as a picture rather than a list |
-| **D-8.1** | the party identity marks, 52 of 53 undrawn (the seven Swedish ones first) | the marks are CONSUMED on landing (§158); 13 September needs the seven |
+| **D-8.1** → **D18** (§419, §420) | the party identity marks, **carried into D18 and re-cut as four runs by chamber** - the count is no longer written down anywhere: it is emitted from the seeds into D18's generated block and guarded by `D18InventoryCheck`. Sweden's eight and the USA's two resolve; the batch is what is left | four chambers - the seat arc, the legend, the stance rows and the campaign masthead draw a party without an identity in each of them |
 | **D-8.2..D-8.6, D-E4** | five countries' party colours (a ruling), the valkrets map, election night's paper, the verdict stamp, modal-or-stage, the two Society icons | each its screen's finished face; all eleven D9 rows are answered and the batch waits on E-3 |
-| **D-1 portraits** | appointed ministers render the procedural placeholder | the cabinet's faces |
+| **D-1 portraits** | ⚠ **MEASURED CLOSED 2026-09-09 (§420)**: an appointed minister renders a DELIVERED face - `PortraitCoverageCheck` reads 18 of 18 in the cabinet pool and 7 of 7 chair candidates resolving, and the procedural silhouette is reached only for a name added to a pool without art. The row read the other way for as long as it was true and then some | nothing - the faces are on disk; the three sitting turn-0 chairs have no portrait and no surface draws one |
+| **D18** (§419, §420) | the full asset request, generated: one family asked (43 party marks in four runs by chamber), every other family reconciled against the checks' own print and NOT asked, the costed follow-ups carried as rows, and the palette dependency stated on the rows it binds | four chambers' identity; and the document itself, which can no longer go stale without the bar going red |
 | **D17** (§416) | the eight party inks: a separation inside the published hues that clears the fence, or the assignment written as a proposal - Design's choice; 10d's geometry, gaps, bloc arc and majority tick are accepted and not re-asked | board 10d, and the two measured collisions (V ⁄ S ΔH 0.0°, M ⁄ SD ΔH 7.4°) that exist whichever way it is answered |
 
 ### CALENDAR

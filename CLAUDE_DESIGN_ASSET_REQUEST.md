@@ -1,5 +1,9 @@
 # Claude Design asset request — PoliSim
 
+## ⭐ STATUS 2026-09-09 (evening) — **TWO ASKS ARE LIVE, and they are independent: D17, the RULING item (the eight party inks — a separation inside the published hues, or the assignment written as a proposal), and D18, the PRODUCTION one (the full asset request, generated from the coverage checks rather than recalled). Answer either first. Answering D18 does not imply the palette question is settled, and D18 re-asks nothing D17 has open.** The status that stood here this afternoon is kept beneath, demoted.
+
+### The status as it stood this afternoon, when D17 was the only live ask
+
 ## ⭐ STATUS 2026-09-09 — **D17 IS THE LIVE ASK: the eight party inks, and nothing else — D16's four boards are answered and three of them are BUILT (`COMPLETED.md` §409–§415); board 10d waits on one question about attribution, not about drawing (§ ⭐ D17 below; the package `SEND_PACKAGE.md` regenerated 2026-09-09).**
 
 D16 arrived as `design_handoff_d16_legibility/` and was verified by content: all five anchors present, every board carrying its DECLARED line, every number in the README the board's own. **10a, 10b and 10c are built and filmed** — the People page as the name and four graphics behind one desk-global `†`, the Laws pages as one control line and a pane that reads in decision order, the Riksbank as rate · verdict · path with the rule as a waterfall. §8's four assertable acceptance bars are checks in the suite now, and §9.2's audit is a check that re-answers itself every run.
@@ -894,6 +898,96 @@ MP ⁄ C  ΔH  12.8° ΔL  0.053  clears              M  ⁄ SD ΔH   7.4° ΔL 
 ⚠ **D17 above is the RULING item; D18 is the PRODUCTION one, and the two are independent.** Answer
 either first. **Answering D18 does not imply the palette question is settled**, and nothing in D18
 re-asks anything D17 has open.
+
+### What is asked — one family, cut in four runs, largest first
+
+**One family is asked for: the party identity marks.** Every other family the coverage checks cover is
+either complete on disk or closed by a ruling, and **a batch that unblocks nothing is not requested** —
+the whole reconciliation is in *What is NOT asked* below, and every figure in it is generated.
+
+| n of 4 | run | marks | what this run unblocks |
+|---|---|--:|---|
+| **1 of 4** | **France** — the Assemblée nationale, 577 seats | 15 | the French chamber: the seat arc, the legend beside it, the stance rows on a contested bill and the campaign masthead all draw a party without an identity today |
+| **2 of 4** | **Italy** — the Camera, 400 seats | 14 | the Italian chamber, the same four surfaces; fourteen parties, four of them holding a single seat, which is where a mark does most work |
+| **3 of 4** | **Germany** — the Bundestag, 630 seats | 9 | the German chamber; the six parties above 40 seats carry the arc |
+| **4 of 4** | **Poland** — the Sejm, 460 seats | 5 | the Polish chamber, and the smallest run — the one to cut first if you want the pipeline proved before the long ones |
+
+**The batch itself is the generated table below**: every party, its abbreviation, its seats at seed and
+**the exact file stem the game will load it by**. That list is emitted from the seeds, and the stem rule
+`mark_party_<iso2>_<abbrev>` is re-derived against all ten delivered marks on every run — so a file cut
+to a stem in that table is a file the build can load, and nothing here is a filename somebody guessed.
+
+#### The four things every row of this batch carries
+
+| | |
+|---|---|
+| **What draws it** | Three call sites, measured at HEAD: the chamber's shared `HemicycleRenderer.DrawMark` (the seat arc, and the per-party stance rows a contested bill and the Budget draw), the chamber legend's own row, and the campaign masthead. ⚠ **Election night draws no mark today** — its results rows are procedural — so this batch does not unblock the takeover, and §4's old line about "election night's results rows" is stale. |
+| **What stands in today** | In the arc, a solid tile in the party's ink — or in the **neutral**, for the four countries in this batch, none of which has a published colour table on disk. In the legend and on the masthead, **nothing at all**: the row draws without a mark and says so. |
+| **The format** | 128×128 RGBA32 PNG, authored in the party's **own colours**. ⚠ **NOT white-on-alpha.** §5.2's tinted-mask convention governs the icon families (`icon_area_*`, `icon_nav_*`, `icon_stat_*`); a party mark is rule 9a's: **original art recognisable by silhouette, in the party's real colour, never the organisation's registered logo.** The ten delivered marks are the reference for weight and margin. |
+| **⚠ It has to read two ways** | Measured 2026-09-09, and it is not what this repo's own doc comment said until today: the **masthead draws the file untinted**, and the **chamber draws the same file multiplied by the party's laddered ink** — board 6b row 5 asked for the chamber's mark in that ink, and the chamber is the one surface permitted to draw party ink at all. So a mark must survive being flattened to a single ink and still read as itself. **If that is the wrong trade, say so:** the chamber's tint is one call site and it is ours to change. |
+| **Gap, not failure** | The model draws without it and says so on the sheet — §36's discipline, working. **Nothing in this batch is a failure**, and the checks agree: across all five families they report 0 errors. This is where a drawing replaces an honest apology, not where it stops a lie. |
+
+#### ⚠ The dependency, stated on the rows it binds
+
+**This batch touches the palette question, and here is exactly where.** The chamber renders every mark
+*through* a party ink, so what a mark looks like on the arc depends on a palette:
+
+- **Sweden's eight are delivered and unaffected.** They are what **D17** above is about, and no mark in
+  this batch is Swedish.
+- **These four countries have no ink at all.** `PoliSimTheme.HasPartyInk` is false for them — there is
+  no published colour table on disk — so the chamber flattens their marks to the neutral today. That is
+  **D8-2**, still open and still a ruling rather than art.
+
+**So: do not cut 43 marks against a palette that may move.** If a mark's colour is meant to agree with
+the desk's ink for that party, this batch waits on the palette answers and should not be cut until they
+land. If a mark carries the party's **own** identity colour independently of the desk's ink — which is
+how rule 9a reads and how the ten delivered marks were cut — then only the tint above is affected and
+the silhouettes can be cut now. **The silhouette, the 128×128 frame, the margins and the stems do not
+wait on anything.**
+
+### What is NOT asked, and why — the reconciliation, generated
+
+⚠ **Nothing is asked twice.** Each row below is the coverage check's own reading; the numbers are in the
+generated block, not here.
+
+| family | the checks' reading | disposition |
+|---|---|---|
+| **Stat icons** | every `StatNodeId` name resolves, **0 GAPs** | **NOT ASKED — and two of them were never owed.** §4 of this document bills "two `StatNodeId` icons, youth unemployment and life expectancy, when those rows are promoted". They arrived in the ORIGINAL macro stat pack, sat among the sprites with no call site, and resolved the moment the rows were promoted. The bill was a transcription artefact; it is withdrawn. |
+| **Area icons** | every `SystemArea` member resolves as RGBA32 | **NOT ASKED.** Complete. |
+| **Portraits — ministers** | 18 of 18 in the cabinet pool resolve | **NOT ASKED.** ⚠ The register row "D-1 portraits — appointed ministers render the procedural placeholder" is **stale**: an appointed minister renders a delivered face. The procedural silhouette is reached only for a name added to a pool without art. |
+| **Portraits — central-bank candidates** | 7 of 7 resolve | **NOT ASKED.** Complete. |
+| **Portraits — the sitting governors** | 3 sitting chairs, one per playable country, with no portrait | **NOT ASKED, because nothing draws their face.** All three portrait call sites are pool-based; the Riksbank page names the sitting chair and never asks for a portrait. If a board ever puts that face on the page, it is a fresh ask with a stated envelope. |
+| **Portraits — party leaders** | the model holds them (name and office, sourced per party for the 2022 seats) | **NOT ASKED.** No surface draws a leader's face — not the debate, not the campaign. Same rule: a board first, then the ask. |
+| **Audio cues** | 8 cues, 5 files, 3 stand-ins and 1 wired-and-silent | **NOT ASKED — closed by ruling** (E-10, Elias, 2026-09-03): the two AAC-container files are SET ASIDE, no re-export chased, and the stand-ins stay stand-ins and keep being counted as stand-ins on every run. Listed here because the inventory is the whole print, not because anything is owed. |
+| **The delivered-and-held set** | 32 sprites nothing in `Assets/Scripts/` can load | **NOT ASKED — DO NOT RE-CUT.** Delivered work with no way in: the 17 `icon_stat_*` for quantities that have no node, the two trend arrows, the revised badge, the release marker, six chrome names, the four retired archetype emblems and `mark_party_us_lib`. **The wiring is ours.** ⚠ Four of the chrome names were counted as reached until 2026-09-09, on the strength of a comment mentioning them. |
+
+### Carried from the earlier asks — open, and NOT re-asked here
+
+These are already in front of you; D18 does not re-put them. They are listed so this document is the
+whole picture rather than a slice of it.
+
+| row | what it is | state |
+|---|---|---|
+| **D-7** | board 2b, the Policy Web drawn to be read | open since D7; the web renders as a picture already, this would make it read |
+| **D8-2** | five countries' party colours — **a ruling, not art** | open, and the reason the four chambers in this batch flatten to the neutral. ⚠ We will not pick 30 colours by eye for real organisations. |
+| **D8-3** | a drawn valkrets map | open (the campaign map draws procedurally) |
+| **D8-4, D8-5** | election night's paper, and the verdict stamp | open; §A.11's generic procedural treatment stands unless you ask for baked art at the 1h board. Both sit behind the calendar row K-1 (13 September 2026). |
+| **D8-6** | modal or stage — a question, not an asset | open |
+| **the rail's six navigation glyphs, redrawn small-size-first** | **refused at board 1n-r2** (2026-08-28) as a costed follow-up: the captions under the cells answered the sitting's legibility finding | **not requested.** It becomes an ask only if a sitting finds the captioned rail still not enough, and no sitting since has. |
+| **the roster beyond eighteen** | more portfolios means more candidates and a larger portrait batch | flagged 2026-08-25, **not requested**; a future ask for twelve or fifteen is a fresh request, not scope creep against the one delivered. |
+
+### Constraints — standing, restated
+
+- **Delivered sprites and primitives until a board proves a gap.** Nothing here asks for a second way to
+  draw something this desk can already draw.
+- **No new hue without a costed case.** The palette is the desk's, and a colour arrives with the
+  measurement that made it necessary.
+- **Masks are tinted at draw, never baked per party** — for the icon families. ⚠ A party mark is the
+  exception under rule 9a: authored in its own colours, and then flattened by the chamber's ink at one
+  call site, as measured above.
+- **Original art, never a registered logo**, for every identity mark.
+- **Binary artifacts are uploaded, not described** — and this request says so of itself: nothing in it
+  summarises in prose what a `get_file` can read back.
 
 ### The inventory — the checks' own print, not a transcription
 
