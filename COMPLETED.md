@@ -25096,3 +25096,15 @@ no dump is byte-identical (5 of 62 fields, the demographic constants): a BASELIN
 **The residue** reads zero on every bar of the night; the excluded rows are Elias's (T-3, FT-6, the dials-only laws, the E-rows), Design's (D-rows) and the calendar's (K-1, 13 September 2026). Nothing a session could start stands open, and this cycle opened nothing.
 
 **Bar:** documents only; `bar252_shelf2_RunAllBatch`, the cheap bar of this commit, run on this record as written - the commit follows its green.
+
+## 406. THE IMPACT RATCHET RE-BASED ON THE EVENTS-OFF READING — §363's with-events basis recorded as history, the switch kept as the idiom (2026-09-09)
+
+**The ruling:** *"The impact ratchet: re-base on the events-off reading — §363's with-events basis recorded as history, the switch kept as the idiom, the −10 % dial no longer sitting on a figure the dice set."*
+
+**The history, recorded.** `ResponsivenessAuditHarness.ImpactRatchet` was set at 0.507 on 2026-09-01 (its doc) and re-read at §363 on the real-against-real basis, both times with the year's dice on: an event seeded in the harness's window hit GDP at the boundary and the days' recovery read as growth, which §404 measured as three thousandths of impact the dial never had (0.510–0.514 with the dice on against 0.507–0.511 without). The figure the ratchet stood on was the dice's as much as the dial's.
+
+**The basis now.** The harness runs with `EventSystem.Enabled = false` (§404, kept as the idiom - the same as the measurement diagnostics' ministry switch), and prints every spending dial's impact at four decimals beside the verdict, so a ratchet is set on a figure the record can show: `resp_evd3.log`, the dice off: Spending +2 % **0.5096**, Spending +10 % **0.5113**, Spending −10 % **0.5074**. **The ratchet is re-based to the lowest of them, **0.5074** (`ImpactRatchet = 0.5074f`, its comment naming the reading and the date). The ratchet's figure was 0.507 before; the digit that moved is the fourth, and it is the dial's now, not the dice's.** Floor, not ceiling, as before: never lowered to accommodate a regression, retired if the impact ever reaches the band's 0.6; the with-events history stays in its doc beside the new basis.
+
+**Verdict on the new basis** (`resp_evd4.log`): `resp_evd5.log`, the harness on the re-based constant with every ratchet print at four decimals - *Impact horizons that reached the band (ratchet 0.5074): 0 of 3* · *the impact readings at four decimals, the year's dice off: +2 % 0.5096, +10 % 0.5113, −10 % 0.5074* · *No breach: L+1 and L+4 inside the band on every dial, impact at or above its ratchet.* The −10 % dial sits on the ratchet by construction - the ratchet IS its reading - and the tolerance of 0.0005 below it is the harness's as before.
+
+**Bar:** `bar254b_ratchet3_RunAllBatch` 33 of 33, `ResidueCheck` 0 open; the harness run twice on the way (resp_evd3 to read the four decimals, resp_evd4 on the new constant) and once more on the final tree (resp_evd5).

@@ -95,8 +95,14 @@ namespace PoliSim.EditorTools
         /// <para>⚠ **Retired, never raised.** If the impact multiplier ever reaches 0.6 the finding is
         /// resolved and this constant goes; moving it DOWN to accommodate a regression is the move the
         /// whole D-9/D-13 sequence exists to refuse.</para>
+        ///
+        /// <para>§406 (2026-09-09), RE-BASED on the events-off reading. The 0.507 above and §363's re-read stood on runs with the year's dice ON: a
+        /// seeded event in the harness's window hit GDP at the boundary and the days' recovery read as growth, worth three thousandths of impact the dial
+        /// never had (§404: 0.510–0.514 with the dice on, 0.507–0.511 without). Since §404 the harness runs with EventSystem.Enabled = false, and the
+        /// verdict prints every spending dial's impact at four decimals; the ratchet is the lowest of them on that basis, and §406 records the reading it
+        /// was set on. Still a floor, still never lowered, still retired at 0.6. The with-events history stays here as history.</para>
         /// </summary>
-        private const float ImpactRatchet = 0.507f;
+        private const float ImpactRatchet = 0.5074f;   // §406: the lowest events-off impact (Spending −10 %) printed at four decimals on 2026-09-09: 0.5074 (+2 % 0.5096, +10 % 0.5113)
 
         /// <summary>Float slack for the ratchet comparison — the measurement is printed at three decimals
         /// and re-runs land on the same digits, so this only absorbs the last bit.</summary>
@@ -236,6 +242,7 @@ namespace PoliSim.EditorTools
             var statutoryTable = new StringBuilder();
             int statutoryRows = 0;
             var bandBreaches = new List<string>();
+            var impactReadings = new List<string>();   // §406: each spending dial's impact at four decimals, so a ratchet is re-based on a figure the record can show
             int bandChecked = 0;
             int impactInsideBand = 0;
             foreach (Dial dial in dials)
@@ -329,9 +336,10 @@ namespace PoliSim.EditorTools
                         // rather than a ceiling because the finding is a number that is too SMALL: the
                         // run fails if impact slips further below the band, and the ratchet is retired,
                         // never raised, if it ever reaches the floor.
+                        impactReadings.Add(F("{0} {1:F4}", dial.Name.Trim(), cum1));
                         if (cum1 < ImpactRatchet - RatchetTolerance)
                         {
-                            bandBreaches.Add(F("{0} at IMPACT = {1:F3}, below the ratchet {2:F3} - it got WORSE", dial.Name, cum1, ImpactRatchet));
+                            bandBreaches.Add(F("{0} at IMPACT = {1:F3}, below the ratchet {2:F4} - it got WORSE", dial.Name, cum1, ImpactRatchet));
                         }
                         else if (cum1 >= SpendingBandFloor)
                         {
@@ -393,7 +401,7 @@ namespace PoliSim.EditorTools
             sb.Append("    that denominator. A bar on a quantity nobody publishes cannot be checked against anything. All\n");
             sb.Append("    three columns stay printed permanently: the divergence between them is itself information.\n");
             sb.Append(F("    ⚠ STATED PLAINLY, NOT SMOOTHED: on the comparable basis the model reads BELOW the band at impact\n"
-                        + "    ({0:F3} against a {1:F2} floor) and INSIDE it from L+1 onward. The impact horizon is carried as a\n"
+                        + "    ({0:F4} against a {1:F2} floor) and INSIDE it from L+1 onward. The impact horizon is carried as a\n"
                         + "    RATCHET at its measured value - reported every run with its reason, failing if it gets worse,\n"
                         + "    retired if it ever reaches the floor, and never moved down to accommodate a regression.\n",
                         ImpactRatchet, SpendingBandFloor));
@@ -419,8 +427,9 @@ namespace PoliSim.EditorTools
             sb.Append("\n    THE ENFORCED VERDICT (D-13 (b))\n    -------------------------------\n");
             sb.Append(F("    Spending dials checked against Ramey's {0:F2}-{1:F2} on the CUMULATIVE column: {2} of {3}.\n",
                 SpendingBandFloor, SpendingBandCeiling, bandChecked, 3));
-            sb.Append(F("    Impact horizons that reached the band (ratchet {0:F3}): {1} of {2}.\n",
+            sb.Append(F("    Impact horizons that reached the band (ratchet {0:F4}): {1} of {2}.\n",
                 ImpactRatchet, impactInsideBand, bandChecked));
+            sb.Append("    The impact readings at four decimals, the year's dice off (§406): " + string.Join(", ", impactReadings) + "\n");
             if (bandBreaches.Count == 0)
             {
                 sb.Append("    No breach: L+1 and L+4 inside the band on every dial, impact at or above its ratchet.\n");
