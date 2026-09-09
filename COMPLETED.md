@@ -25550,3 +25550,19 @@ filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 **The deviation, stated.** The board's roster carries INK and L·C·H columns beside each party. The legend keeps the columns it has - swatch, mark, name, share bar, seats, percent - because those are the instrument the chamber already ships and the hex-and-oklch pair is provenance, which this desk puts behind the `†` rather than on the sheet (10a's ruling, inherited by 10b and 10c). Nothing about the arc changes with it.
 
 **Bar:** `bar299_10d_final_RunAllBatch` 36 of 36, `ResidueCheck` 0 open, run on the code the films were shot from. Filmed whole at both sizes on the built code: `d16_10d_r3_1280` and `d16_10d_r3_2560`, 103 captures each, 0 failed, no OVERFLOW / CLIPPED / ESCAPE line, capture-identity green on every frame. ⚠ The first 2560 attempt died in Unity's own input update before its first capture (access violation in `InputUpdate`, no drawing on the stack); the re-run is the film above.
+
+## 427. "A SESSION'S CONTEXT IS NOT A BINARY TRANSPORT" — recorded standing, beside the two-books rule and numeric inertness, with the walk that proves a file rather than the look that does not (2026-09-09)
+
+**The ruling:** *"Record 'a session's context is not a binary transport' as a standing rule beside the header-aware-parse and two-books rules."*
+
+**Where it sits.** `CLAUDE.md`, as its own section at the head of the file, immediately after **Numeric Inertness** and two sections after the **Accounting Convention** - the two-books rule. A pointer goes into the `## Conventions` quirks list where the **header-aware parse** lives, so it is beside both of the rules the ruling named: the one about arithmetic that must not move, and the one about a parse that must not shift a column.
+
+**What the rule says.** A binary artifact reaches this repo as a FILE - a delivered pack that is imported, a copy someone makes on disk - never by being retyped through a conversation. `DeliveredAssetCheck` reads deliveries out of their zips precisely because the pack is the unit that can be verified, and every asset this project holds arrived that way. **A session may name what it needs, print the mapping and record the errand; it may not be the courier.**
+
+**The evidence it carries** is §424's own: fifteen delivered PNGs, fetched as base64 and written back, **four of the first eight corrupt** - every one of them with a valid signature, the right dimensions in its header, and a plausible size. The damage was inside the compressed data, where nothing that merely looks at a file would find it.
+
+**And the test that finds it, now a tool rather than a scratch file.** `Tools/pngcheck.pl` walks a PNG's own structure - signature, every chunk's CRC32 recomputed, ends at `IEND` with no trailing bytes. ⚠ **A file that DECODES is not a file that is INTACT**: size, dimensions and a clean header read are all satisfied by a corrupt file, and the CRC is the only thing that is not. The rule points at the tool by name, and the tool is in the repo so the pointer resolves.
+
+**What stays allowed, stated so the rule is not read wider than it is:** small text - a JSON table, a markdown row, a log line. Text damage is legible where binary damage is not, and for anything carrying figures the stronger habit already applies: generate it, never transcribe it (§419).
+
+**Bar:** `bar299_10d_final_RunAllBatch` 36 of 36, `ResidueCheck` 0 open - the same run, which is the honest bar for a rule and a tool that change no behaviour. `DocumentClaimCheck` reads `CLAUDE.md` every run and is green on the new section.

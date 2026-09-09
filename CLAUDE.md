@@ -104,6 +104,28 @@ reading the code**: the diff is the only instrument that sees a one-ulp shift co
 This sits beside the accounting convention above because both are rules about what the model's numbers ARE, not about what they should be:
 one book in current prices, one price level joining it to the real block; one arithmetic in the play path, untouched by the instruments that read it.
 
+## A session's context is not a binary transport (ruled standing 2026-09-09, `COMPLETED.md` §424, §427)
+
+**Bytes that pass through a model's context come out changed, and they come out changed quietly.** §424 carried
+fifteen delivered PNGs out of the design project the only way a session can - read the base64, write it back - and
+**four of the first eight arrived corrupt**. Every one of them still had a valid PNG signature, the right dimensions
+in its header and a plausible size; the damage was inside the compressed image data, where nothing that merely looks
+at a file would find it.
+
+**The rule.** A binary artifact reaches this repo as a FILE - a delivered pack that is imported, a copy someone makes
+on disk - never by being retyped through a conversation. That is not a preference: `DeliveredAssetCheck` reads
+deliveries out of their zips precisely because the pack is the unit that can be verified, and every asset this project
+holds arrived that way. A session may name what it needs, print the mapping, and record the errand; it may not be the
+courier.
+
+**What to do when a binary must be checked.** Walk its own structure and recompute its own checksums - for a PNG:
+the signature, then every chunk's CRC32, then that it ends at `IEND` with no trailing bytes (`Tools/pngcheck.pl` is that walk, and it is the tool the rule points at). ⚠ **A file that DECODES is not a file that is INTACT.** Size, dimensions and a successful
+header read are all satisfied by a corrupt file; the CRC is the only thing that is not.
+
+**Small text is a different case and stays allowed** - a JSON table, a markdown row, a log line. Text damage is
+legible where binary damage is not, and the standing habit for anything that carries figures is stronger anyway:
+generate it, do not transcribe it (§419).
+
 ## Genre & Scope
 - Turn-based (not real-time). One "turn" = one simulated period (e.g. a quarter or year — exact cadence still TBD).
 - Multiple playable/simulated countries: USA, Sweden, Germany, France, Italy, Poland. `WorldFactory.CreateDefault()` seeds the figures the user specified — policy rates, inflation, and USA/Poland unemployment and USA/Eurozone/Sweden/Poland potential growth — to real mid-2026 data; NAIRU, unspecified unemployment rates, government-spending shares, and starting GDP levels are stylized, directionally-realistic estimates, not researched figures (see comments in `WorldFactory.cs`).
@@ -5476,6 +5498,7 @@ this is positive evidence that the 5e UI work did not disturb the simulation.
 ### Two quirks recorded 2026-09-05 (P5, item 4 of the standing sheet)
 
 - **OECD SDMX CSV flows shift columns under a naive read.** `format=csvfilewithlabels` puts a label column beside every code column and the labels contain commas ("… (during same hospital admission, unlinked data)"), so a split on commas reads a confidence bound for a value and a year for a code. Every family's parse is HEADER-AWARE - the column is found by its name (a de-duplicated header: the flows carry "MEASURE" and "Measure" both) and the unit column decides between the two units one file can hold - and the pass that seeds a family asserts the column it read, by name, in its record. The fetched-summary route missed two flows in a list of eighty-six and shuffled the years of a JSON-stat response; list everything and decode by index.
+- **A session's context is not a binary transport** - four of eight PNGs corrupted in transit, valid headers and broken CRCs; see the standing rule of the same name near the head of this file. §424.
 - **A global replace can hit its own helper, and a stack overflow leaves no log line.** P5-B5's parliament helper called itself after a `s///g` over the file that had just inserted it; the simulation bar and the films died with no verdict - the log simply ends mid-check. When a bar ends without its CHECKS line, grep the last edit for self-reference before anything else; and a replace that touches a name being introduced runs once, anchored, never globally.
 - Keep simulation state and logic free of Unity-specific dependencies (`MonoBehaviour`, `GameObject`, etc.) so it can be reasoned about and tested as plain C#.
 - Favor small, explicit, named methods for each macro/feedback/trade/currency rule over one large monolithic update function, so individual rules — and individual pieces of economic theory — can be tuned or replaced independently.
