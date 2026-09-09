@@ -236,6 +236,14 @@ namespace PoliSim.EditorTools
             // why it reports and never repairs.
             ("MojibakeCheck", MojibakeCheck.Run),
 
+            // §424 (2026-09-09): Design's answer to D18, kept as RULES rather than as a copy of their
+            // table. It derives the 43 rows from the seeds and asserts the assignment's own arithmetic -
+            // the triple unique inside a chamber, the top five on distinct silhouettes, the cut ladder
+            // unspent early, the stem matching the rule the delivered marks prove. ⚠ It does NOT fail
+            // while the cells are absent from this repo: an undelivered mark is a gap, as it has been
+            // since `PartyMarkCoverageCheck` was written.
+            ("D18MarkAssignment", D18MarkAssignment.Run),
+
             // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. ⚠ A prose
             // mention used to count as a reference in FOUR name-scanning checks - a commented-out
             // Debug.LogError even counted as a failure path, defeating the sixth sweep with a comment.
