@@ -38,10 +38,19 @@ namespace PoliSim.EditorTools
         private const float HueFloorDegrees = 8.7f;
         private const float LightnessFloor = 0.08f;
 
-        /// <summary>The within-bloc pairs that clear the fence on the desk's own palette today. A RATCHET: never lowered to accommodate a
-        /// regression, and the run fails if it falls. Measured 2026-09-09 on the seated Valmyndigheten table: 10 of 12, with V ⁄ S (ΔH 0.0°, ΔL 0.060) and M ⁄ SD (ΔH 7.4°, ΔL 0.060) below it.</summary>
-        private const int PairsClearingRatchet = 10;
+        /// <summary>The within-bloc pairs that clear the fence on the desk's own palette. A RATCHET: never lowered to accommodate a
+        /// regression, and the run fails if it falls. First measured 2026-09-09 on the seated Valmyndigheten table at 10 of 12, with
+        /// V ⁄ S (ΔH 0.0°, ΔL 0.060) and M ⁄ SD (ΔH 7.4°, ΔL 0.060) below it. ⚠ RAISED TO 12 the same day (§423) when D17 item 1 - Design's
+        /// board 11a - closed both pairs INSIDE §256: `PoliSimTheme`'s bloc fence moves the smaller party of a hue-crowded pair outward in
+        /// lightness by the deficit, so V goes down 0.030 and M up 0.030 and nothing that cleared before stops clearing. A floor is raised
+        /// to what was measured, never to what is hoped for; this one was set to 12 as Design's prediction and the run below is what
+        /// judged it.</summary>
+        private const int PairsClearingRatchet = 12;
 
+        /// <summary>⚠ The two blocs, written here AND read by `PoliSimTheme`'s bloc fence from
+        /// `NationalElection.BlocOf`. Two enumerations of one fact, so the check below asserts they agree
+        /// rather than assuming it - a fence measured over one grouping and enforced over another would
+        /// pass while separating the wrong pairs.</summary>
         private static readonly string[] LeftBloc = { "V", "S", "MP", "C" };
         private static readonly string[] RightBloc = { "L", "KD", "M", "SD" };
 
@@ -50,6 +59,20 @@ namespace PoliSim.EditorTools
             CheckExit.ArmLogFold();
             bool ok = true;
             var sb = new System.Text.StringBuilder();
+
+            // ---- the two blocs, asserted against the grouping the ladder actually reads ------------------------
+            foreach (string[] bloc in new[] { LeftBloc, RightBloc })
+            {
+                int expected = PoliSim.Elections.NationalElection.BlocOf(CountryId.Sweden, bloc[0]);
+                foreach (string abbrev in bloc)
+                {
+                    int actual = PoliSim.Elections.NationalElection.BlocOf(CountryId.Sweden, abbrev);
+                    if (actual == expected) { continue; }
+                    Debug.LogError($"D16BARS: this check groups {abbrev} with {bloc[0]} and NationalElection.BlocOf does not "
+                                   + $"({actual} against {expected}). The fence would be measured over one grouping and enforced over another.");
+                    ok = false;
+                }
+            }
 
             // ---- §8.3 the fence, on the palette the desk holds -------------------------------------------------
             int pairs = 0, clearing = 0;
@@ -82,6 +105,21 @@ namespace PoliSim.EditorTools
                           + "    finding board 10d's assignment was drawn to answer - and that assignment is not in the record (§409). The ratchet below fails\n"
                           + "    the run if this count ever DROPS; closing the gap is a ruling, not a tuning.\n");
             }
+            // ⚠ THE ONE PRINT DESIGN ASKED BACK FOR (board 11a: "the eight laddered L values as PartyLaddered
+            // emits them - eight numbers, one line"). It closes their ceiling question - whether M's upward
+            // move leaves it under 3:1 against the paper - without another round.
+            var ladder = new System.Text.StringBuilder("D16BARS: the eight laddered L, as PartyLaddered emits them —");
+            foreach (string[] bloc in new[] { LeftBloc, RightBloc })
+            {
+                foreach (string abbrev in bloc)
+                {
+                    PoliSimTheme.ToOklch(PoliSimTheme.PartyLaddered(CountryId.Sweden, abbrev), out float l, out float _, out float _);
+                    ladder.Append($" {abbrev} {l:F3}");
+                }
+            }
+
+            sb.Append(ladder.Append('\n').ToString());
+
             RatchetLedger.Report("D16AcceptanceCheck.FENCE_PAIRS", clearing, PairsClearingRatchet, isFloor: true);
             if (clearing < PairsClearingRatchet)
             {

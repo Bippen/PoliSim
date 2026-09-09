@@ -326,6 +326,29 @@ namespace PoliSim.UI
         public const float NudgeTolerance = 0.06f;
         /// <summary>[AUTHORED-DRAFT] the most a nudge may move lightness; a collision that would need more is printed as one the nudge could not fully separate rather than moved past the stated tolerance.</summary>
         public const float NudgeCap = 0.10f;
+
+        // ------------------------------------------------------------------------------------------
+        // D17 ITEM 1 - THE BLOC FENCE (Design's board 11a, 2026-09-09; §423). The nudge above separates
+        // by OKLAB DISTANCE, which is not the criterion board 10d is judged by: D16 §6.4's fence asks
+        // that two inks inside one bloc clear on hue OR on lightness, and a pair can satisfy the nudge
+        // and still fail the fence. That is exactly what happened - V ⁄ S and M ⁄ SD both read ΔL 0.060,
+        // which is one rung of the ladder, against a fence bar of 0.080.
+        //
+        // ⚠ THIS IS NOT A NEW RULING. It is §279's mechanism measured against the fence instead of the
+        // nudge: hue never moves, order never changes, and the SMALLER party by seats moves outward by
+        // exactly the deficit. Design's board recovered the ladder from the fence's own twelve printed
+        // deltas and showed the system solves; the two moves it names are V −0.030 and M +0.030, and
+        // this pass derives them rather than writing them down.
+        // ------------------------------------------------------------------------------------------
+        /// <summary>DERIVED - D16 §6.4's fence, the same hue floor `D16AcceptanceCheck` asserts: below it a pair inside a bloc is not separated by hue and lightness has to carry it.</summary>
+        public const float BlocFenceHueDegrees = 8.7f;
+
+        /// <summary>DERIVED - the fence's 0.080 lightness bar plus a decimal of headroom. ⚠ Board 11a's
+        /// reason, kept because it is the whole argument: the least value that SEPARATES is not the least
+        /// that clears the assertion. A pair measured at 0.080 against a bar of ≥ 0.080 is tied, not
+        /// separated, and the two oklch conversions in play already disagree in the third decimal, so a
+        /// value sitting on the bar is one rounding from a red build against a ratchet with a floor.</summary>
+        public const float BlocFenceLightness = 0.090f;
         private static readonly Dictionary<PoliSim.Data.CountryId, Dictionary<string, Color>> NudgedCache = new Dictionary<PoliSim.Data.CountryId, Dictionary<string, Color>>();
         private static readonly Dictionary<PoliSim.Data.CountryId, List<string>> NudgeLog = new Dictionary<PoliSim.Data.CountryId, List<string>>();
 
@@ -411,6 +434,59 @@ namespace PoliSim.UI
                 }
                 table[abbrev] = moved == 0f ? ink : FromOklab(L, a, b);
             }
+
+            // ---- D17 item 1: the bloc fence, applied to the table the nudge just settled -------------
+            // Read the pairs the fence reads: inside ONE bloc, and only where hue does not already carry
+            // the pair. The parties list is seats-descending, so every j < i is a LARGER party and the
+            // mover is always the smaller one - §279's rule, unchanged. Several passes because moving one
+            // ink can bring it inside the bar of another in the same bloc; it settles in one here.
+            for (int pass = 0; pass < 4; pass++)
+            {
+                bool anyMoved = false;
+                for (int i = 0; i < parties.Count; i++)
+                {
+                    string abbrev = parties[i].Abbrev;
+                    int bloc = PoliSim.Elections.NationalElection.BlocOf(country, abbrev);
+                    if (bloc < 0) { continue; }   // no bloc to be read inside; the fence has nothing to say
+
+                    ToOklch(table[abbrev], out float L, out float _, out float H);
+                    float deficit = 0f;
+                    string against = null;
+                    float againstL = 0f;
+                    for (int j = 0; j < i; j++)
+                    {
+                        string larger = parties[j].Abbrev;
+                        if (PoliSim.Elections.NationalElection.BlocOf(country, larger) != bloc) { continue; }
+                        ToOklch(table[larger], out float lj, out float _, out float hj);
+                        if (Mathf.Abs(Mathf.DeltaAngle(H, hj)) >= BlocFenceHueDegrees) { continue; }   // hue carries it
+                        float short_ = BlocFenceLightness - Mathf.Abs(L - lj);
+                        if (short_ > deficit) { deficit = short_; against = larger; againstL = lj; }
+                    }
+
+                    if (against == null || deficit <= 0.0005f) { continue; }
+
+                    // Outward, away from the larger ink. The identical pair has no order to keep and
+                    // lifts, which is the nudge's own convention one rule up.
+                    float direction = L < againstL ? -1f : 1f;
+                    float applied = Mathf.Clamp01(L + direction * deficit) - L;
+                    if (Mathf.Abs(applied) < 0.0005f)
+                    {
+                        log.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                            "{0}: inside the bloc fence of {1} (ΔL {2:0.000} < {3:0.000}) and lightness is at the paper's end - NOT separated",
+                            abbrev, against, Mathf.Abs(L - againstL), BlocFenceLightness));
+                        continue;
+                    }
+
+                    table[abbrev] = ShiftOklchLightness(table[abbrev], applied);
+                    anyMoved = true;
+                    log.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                        "{0}: bloc fence - ΔL {1:0.000} from {2} (< {3:0.000}, ΔH under {4:0.0}°) → L {5:+0.000;-0.000}",
+                        abbrev, Mathf.Abs(L - againstL), against, BlocFenceLightness, BlocFenceHueDegrees, applied));
+                }
+
+                if (!anyMoved) { break; }
+            }
+
             NudgedCache[country] = table;
             NudgeLog[country] = log;
             AlternativeTaken[country] = taken;
