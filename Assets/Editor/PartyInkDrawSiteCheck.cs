@@ -60,6 +60,12 @@ namespace PoliSim.EditorTools
              "the chamber and its legend are the one surface where a party's IDENTITY is the subject "
              + "rather than the decoration. Behaviour 9 requires the arc and its legend swatch to come "
              + "from the SAME call, which is why both live here rather than agreeing across two files."),
+            ("GameController.LawsBoard.cs",
+             "D16-2 §4.3 (2026-09-09, §411): the vote bar answers \"will it pass\" as the house itself - every seated party at "
+             + "seats / 349 in its own ink, FOR then AGAINST, with the majority tick between them - so party identity IS the "
+             + "subject of the drawing, exactly as it is in the hemicycle. The file is the law pane's own board file and draws "
+             + "NO area accent, which is clause 2 satisfied by construction rather than by inspection: the Laws page's accent "
+             + "(Sectors) is drawn by GameController.cs, a different file."),
         };
 
         public static void Run()

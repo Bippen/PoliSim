@@ -6822,7 +6822,7 @@ namespace PoliSim.UI
             // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
             // px at 720, hidden by the old margin). The campaign stages already size their box this way.
             GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
-            DrawColoredLabel("Policy / Laws", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
+            DrawPageHeaderWithProvenanceTab("Policy / Laws", UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));   // D16 §2: the same tab, the same corner
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 6);
             // Instance #13: one measured row height, shared with the content reserve below.
@@ -7066,79 +7066,8 @@ namespace PoliSim.UI
             // every LawCategory member is populated (1i's five hatched chips were drawn
             // categories that never entered the enum). The summary line below drops its
             // "all CRIME & JUSTICE" clause - the chips carry the per-category counts now.
-            GUILayout.BeginHorizontal();
-            float categoryShare = SubTabShare(lawsOuterInnerWidth, 6);   // P4-C3: six chips (the third category, 2026-09-05)
-            string allChipLabel = $"All - {LawCatalog.All.Count}";
-            string crimeChipLabel = $"Crime & Justice - {CrimeJusticeLawCount}";
-            string laborChipLabel = $"Labor Market - {LaborMarketLawCount}";
-            string institutionsChipLabel = $"Labour Institutions - {LabourInstitutionsLawCount}";   // P4-C3
-            string fiscalChipLabel = $"Fiscal Framework - {FiscalFrameworkLawCount}";   // P4-C3
-            string monetaryChipLabel = $"Monetary Regime - {MonetaryRegimeLawCount}";   // P4-C3, the third category
-            float categoryRowHeight = SubTabRowHeight(categoryShare, allChipLabel, crimeChipLabel, laborChipLabel, institutionsChipLabel, fiscalChipLabel, monetaryChipLabel);
-            DrawSubCategoryButton(allChipLabel, LawBrowserFilter.All, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
-            DrawSubCategoryButton(crimeChipLabel, LawBrowserFilter.CrimeJustice, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
-            DrawSubCategoryButton(laborChipLabel, LawBrowserFilter.LaborMarket, ref _lawBrowserFilter, categoryShare, categoryRowHeight);
-            DrawSubCategoryButton(institutionsChipLabel, LawBrowserFilter.LabourInstitutions, ref _lawBrowserFilter, categoryShare, categoryRowHeight);   // P4-C3
-            DrawSubCategoryButton(fiscalChipLabel, LawBrowserFilter.FiscalFramework, ref _lawBrowserFilter, categoryShare, categoryRowHeight);   // P4-C3
-            DrawSubCategoryButton(monetaryChipLabel, LawBrowserFilter.MonetaryRegime, ref _lawBrowserFilter, categoryShare, categoryRowHeight);   // P4-C3, the third category
-            GUILayout.EndHorizontal();
-            // Free-aspect pass (2026-08-26): the ORDER row's minimum (caption + three measured
-            // button floors + the search slot) is MEASURED against the box's inner width, and the
-            // search slot reflows onto the summary line when the one-row form doesn't fit - at the
-            // 1280x720 floor the one-row minimum (~640px) exceeded the inner width (~585px), and
-            // an overflowing row stretches every ExpandWidth sibling in the box (the "L|"/
-            // "Availabl|" cuts in the floor sweep). The bucket is a pure function of window size,
-            // so Layout and Repaint always agree within a frame.
-            GUIStyle orderButtonProbe = BuildSubTabStyle(true);
-            float orderButtonsWidth = PoliSimWidgets.MeasuredWidth("Magnitude", orderButtonProbe, orderButtonProbe.padding.horizontal + 6f)
-                + PoliSimWidgets.MeasuredWidth("A-Z", orderButtonProbe, orderButtonProbe.padding.horizontal + 6f)
-                + PoliSimWidgets.MeasuredWidth("Cost", orderButtonProbe, orderButtonProbe.padding.horizontal + 6f);
-            float searchLabelWidth = _labelStyle.CalcSize(new GUIContent("SEARCH")).x + 6f;
-            float searchFieldWidth = _labelStyle.fontSize * 7f;
-            bool searchInline = orderButtonsWidth + searchLabelWidth + searchFieldWidth + 40f <= lawsInnerWidth;
-
-            // Playtest 3 cut (2026-08-27): the summary line ("N laws - n in force - p before the
-            // house") was a (c) - its three counts are the "All - N" chip and the "IN FORCE - n" /
-            // "BEFORE THE HOUSE - p" group captions. Cut; the row survives only as the search slot's
-            // reflow home at the narrow floor (the free-aspect measured-fit case) and draws nothing
-            // when the slot fits inline on the ORDER row.
-            if (!searchInline)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                DrawLawSearchSlot(searchLabelWidth, searchFieldWidth);
-                GUILayout.EndHorizontal();
-            }
-
-            // Playtest 3 cut: the "ORDER - STATUS, THEN" caption was a (b) - the fixed primary sort,
-            // learned once - and is cut; the three variant-word buttons stand alone. The width lesson
-            // that put "STATUS, THEN" on the caption rather than on each button still holds: the
-            // buttons carry only the variant word (the second capture caught the board's full
-            // three-phrase labels summing past the panel's width budget at BOTH sizes).
-            GUILayout.BeginHorizontal();
-            DrawSubCategoryButton("Magnitude", LawOrder.Magnitude, ref _lawOrder);
-            DrawSubCategoryButton("A-Z", LawOrder.Alphabetical, ref _lawOrder);
-            DrawSubCategoryButton("Cost", LawOrder.Cost, ref _lawOrder);
-            GUILayout.FlexibleSpace();
-            if (searchInline)
-            {
-                DrawLawSearchSlot(searchLabelWidth, searchFieldWidth);
-            }
-            GUILayout.EndHorizontal();
-
-            // Free-aspect pass (2026-08-26): share-capped like every other chip row - without
-            // maxWidth these four floors are each label's own measured width, and at the 1280x720
-            // floor their sum overran the row ("Availab|" cut at the box edge in the enumeration
-            // capture). SubTabShare/SubTabRowHeight is the sub-tab rows' own established pair.
-            GUILayout.BeginHorizontal();
-            float statusShare = SubTabShare(lawsOuterInnerWidth, 4);
-            float statusRowHeight = SubTabRowHeight(statusShare, "All statuses", "Enacted", "Pending", "Available");
-            DrawSubCategoryButton("All statuses", LawStatusFilter.All, ref _lawStatusFilter, statusShare, statusRowHeight);
-            DrawSubCategoryButton("Enacted", LawStatusFilter.Enacted, ref _lawStatusFilter, statusShare, statusRowHeight);
-            DrawSubCategoryButton("Pending", LawStatusFilter.Pending, ref _lawStatusFilter, statusShare, statusRowHeight);
-            DrawSubCategoryButton("Available", LawStatusFilter.Available, ref _lawStatusFilter, statusShare, statusRowHeight);
-            GUILayout.EndHorizontal();
-            GUILayout.Space(6f);
+            // D16 §4.1 (board 10b, §411): three stacked bands - six category chips, the ORDER row, the four status boxes - become ONE
+            // control line, drawn below the partition because its counts are the partition's. Only the active member of a set is boxed.
 
             // Three partitions, catalog order preserved within each (List<T> guarantees neither a
             // stable sort nor an unstable one, so building three lists in one pass sidesteps the
@@ -7218,6 +7147,9 @@ namespace PoliSim.UI
             _lawPendingRows.Sort(byOrder);
             _lawAvailableRows.Sort(byOrder);
 
+            DrawLawControlLine(lawsInnerWidth, _lawEnactedRows.Count, _lawPendingRows.Count, _lawAvailableRows.Count);
+            GUILayout.Space(6f);
+
             _lawVisibleRows.Clear();
             _lawVisibleRows.AddRange(_lawEnactedRows);
             _lawVisibleRows.AddRange(_lawPendingRows);
@@ -7290,11 +7222,13 @@ namespace PoliSim.UI
             // cannot afford it. Measured now from the chrome actually drawn: the three chip rows (their
             // own measured heights), the reflowed search row when it exists, the column header, the
             // spacings between them, the bottom bar, and the box's own vertical padding.
-            float orderRowHeight = SubTabRowHeight(lawsInnerWidth, "Magnitude", "A-Z", "Cost");
+            // D16 §4.1 (§411): the reserve reads the ONE control line's own measure - the same call the draw makes - plus the reflowed
+            // search row when the line cannot hold it.
+            float controlLineHeight = LawControlLineHeight(lawsInnerWidth, _lawEnactedRows.Count, _lawPendingRows.Count, _lawAvailableRows.Count, out bool searchInline);
             float searchRowHeight = searchInline
                 ? 0f
-                : Mathf.Max(LedgerRow.Height(_labelStyle), UiPalette.BuildTextFieldStyle(_labelStyle.fontSize).CalcHeight(new GUIContent("W"), searchFieldWidth));
-            float lawsChromeHeight = categoryRowHeight + searchRowHeight + orderRowHeight + statusRowHeight
+                : Mathf.Max(LedgerRow.Height(_labelStyle), UiPalette.BuildTextFieldStyle(_labelStyle.fontSize).CalcHeight(new GUIContent("W"), LawControlSearchFieldWidth()));
+            float lawsChromeHeight = controlLineHeight + searchRowHeight
                 + LedgerRow.LawBrowserRowHeight(_labelStyle) + 6f + 2f + 6f   // the column header (one-line since R-C1), the Space(6f)/Space(2f) around it and the Space(6f) under the chips
                 + 6f + LedgerRow.Height(_labelStyle)            // DrawLawBottomBar: Space(6f) + its one line
                 + _boxStyle.padding.vertical + _labelStyle.fontSize * 0.5f;
@@ -7342,6 +7276,8 @@ namespace PoliSim.UI
 
             DrawLawBottomBar(_lawVisibleRows, lawsInnerWidth);
 
+            // D16 4.1: the category list paints LAST so it sits over the rows beneath it - IMGUI has no layer, and draw order is the desk's own answer.
+            DrawLawCategoryMenuIfOpen();
             GUILayout.EndVertical();
         }
 
@@ -7566,15 +7502,14 @@ namespace PoliSim.UI
                 GUI.color = previous;
             }
 
-            float stepWidth = Mathf.Max(4f, _labelStyle.fontSize * 0.35f);
-            float stepGap = stepWidth * 0.3f;
-            float stepsRun = stepWidth * 4f + stepGap * 3f;
-            float stepHeight = rect.height * 0.5f;
-            DrawMagnitudeSteps(new Rect(rect.x + 4f, rect.y + (rect.height - stepHeight) * 0.5f, stepsRun, stepHeight), tier, stepWidth, stepGap);
-
-            LedgerRow.Cell(new Rect(rect.x + stepsRun + 12f, rect.y, rect.width - stepsRun - 16f, rect.height),
-                $"{LawMagnitudeLabel(tier)} - {count} available",
-                _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            // D16 §4.2 (2026-09-09, §411): the band header is a HAIRLINE now - the magnitude glyph it used to carry is in every row,
+            // which is the board's own reason for moving it, so the header can be the same kind of section rule 10a's family header is.
+            string bandText = $"{LawMagnitudeLabel(tier)} - {count} available";
+            float bandTextWidth = _labelStyle.CalcSize(new GUIContent(bandText)).x;
+            LedgerRow.Cell(new Rect(rect.x + 4f, rect.y, Mathf.Min(bandTextWidth, rect.width - 8f), rect.height),
+                bandText, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            float hairX = rect.x + 4f + bandTextWidth + 8f;
+            if (hairX < rect.xMax - 4f) { PoliSimTheme.Rule(new Rect(hairX, rect.y + rect.height * 0.55f, rect.xMax - 4f - hairX, 1f), PoliSimTheme.RuleLight); }
         }
 
         /// <summary>
@@ -7638,6 +7573,14 @@ namespace PoliSim.UI
 
             if (compact)
             {
+                // D16 §4.2: the magnitude glyph is in the ROW now, in the compact variant too - the group rule can be a hairline like 10a's
+                // family rule, and a cost-sorted list still shows magnitude.
+                {
+                    int compactTier = LawMagnitudeTier(law);
+                    float compactStep = Mathf.Max(2f, glyphWidth * 0.34f);
+                    DrawMagnitudeSteps(new Rect(x, rowRect.y + rowRect.height * 0.34f, glyphWidth * 1.6f, rowRect.height * 0.32f), compactTier, compactStep, compactStep * 0.4f);
+                    x += glyphWidth * 1.6f;
+                }
                 // Board 1j: the AVAILABLE row's magnitude lives in the band header above it, so
                 // the name takes that field. Pass 3 (the category cell's return): the compact row
                 // gains the category token too - drawn where the full row's category+magnitude
@@ -7650,8 +7593,8 @@ namespace PoliSim.UI
                 // path (MeasuredLabel, shrink-never-truncate) at full weight; the width it needs comes
                 // from LawRowColumns' name-priority release, not from a wrap (pass 3's wrap-first ladder
                 // was the two-line row's answer at the 1280 floor).
-                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth + magnitudeWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
-                x += nameWidth + magnitudeWidth;
+                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth + magnitudeWidth - glyphWidth * 1.6f - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                x += nameWidth + magnitudeWidth - glyphWidth * 1.6f;
                 if (categoryWidth > 0f)
                 {
                     LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), LawCategoryCellLabel(law.Category, categoryWidth - 4f), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
@@ -7964,8 +7907,14 @@ namespace PoliSim.UI
             DrawColoredLabel(statusLabel, _labelStyle, statusColor, GUILayout.Width(statusWidth));
             GUILayout.EndHorizontal();
 
-            GUILayout.Label(law.Description, _labelStyle, GUILayout.Width(contentWidth));
+            // D16 §4.3 (board 10b, §411): the decision block first - what it costs, whether it passes, and the button, boxed together.
+            BillConcern paneConcern = pendingBill != null
+                ? ParliamentSystem.GetLawBillConcern(_playerCountry, pendingBill)
+                : ParliamentSystem.GetLawBillConcern(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted });
+            DrawLawDecisionBlock(law, enacted, pendingBill, paneConcern, contentWidth);
             GUILayout.Space(4f);
+            DrawLawPaneAction(law, enacted, pendingBill, contentWidth);
+            GUILayout.Space(6f);
 
             // Code-review pass (2026-08-25): the step run's size is now derived from the live font
             // size against the same reference (13px @ 1080p) LedgerRow itself scales from, instead of
@@ -8057,33 +8006,30 @@ namespace PoliSim.UI
                 }
             }
 
-            GUILayout.Label(law.Citation, _labelStyle, GUILayout.Width(contentWidth));
+            // §4.3 item 4: the description sits below the estimate now - a player who has decided does not read past it to act.
+            GUILayout.Label(law.Description, _labelStyle, GUILayout.Width(contentWidth));
+            GUILayout.Space(4f);
+            // §4.3 item 7: the citation is the record and returns behind the desk's †.
+            if (DeskProvenance.On) { GUILayout.Label(law.Citation, _labelStyle, GUILayout.Width(contentWidth)); }
             // Playtest 3 cut (2026-08-27): "Enactment cost: 3.5 approval (paid once, on passage)" - the
             // figure a (c) of the selected row's APPROVAL cell, the parenthetical a (b). Cut.
             GUILayout.Space(6f);
 
             // Board 1j: IF PUT TO THE HOUSE TODAY - the live estimate under its own title, with
             // the per-party stance rows beneath it.
-            GUILayout.Label("IF PUT TO THE HOUSE TODAY", _labelStyle, GUILayout.Width(contentWidth));
-            if (pendingBill != null)
-            {
-                GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth));
-                BillConcern pendingConcern = ParliamentSystem.GetLawBillConcern(_playerCountry, pendingBill);   // P3-A3: the law's own concern
-                DrawBillLiveEstimate(pendingConcern, contentWidth, terse: true);
-                DrawLawPartyStances(pendingConcern, contentWidth);
-            }
-            else
-            {
-                BillConcern concern = ParliamentSystem.GetLawBillConcern(_playerCountry, new LawBill { LawId = law.Id, IsRepeal = enacted });   // P3-A3
-                DrawBillLiveEstimate(concern, contentWidth, terse: true);
-                DrawLawPartyStances(concern, contentWidth);
-            }
+            // §4.3 item 6: the party split, in seat-map order, beneath everything it justifies - the verdict itself is in the decision block.
+            GUILayout.Label("HOW THE HOUSE SPLITS", _labelStyle, GUILayout.Width(contentWidth));
+            if (pendingBill != null) { GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth)); }
+            DrawLawPartyStances(paneConcern, contentWidth);
 
-            // Code-review pass (2026-08-25): `&& !_isGameOver` moved HERE from the tab-wide
-            // GUI.enabled wrapper at the DrawLawsTab call site, which used to disable the row-select
-            // button too and permanently lock whichever law was selected at end-of-game. Only the
-            // actual state-changing action needs gating on game-over; browsing a law's detail is
-            // informational and has no gameplay effect either way.
+            // §4.3: the CTA travels with the decision, so it is drawn in the decision block above - see DrawLawPaneAction.
+        }
+
+        /// <summary>D16 §4.3: the law pane's action - the CTA that travels with the decision, and the competence note that replaces it.
+        /// Code-review pass (2026-08-25): `&& !_isGameOver` lives HERE and not on the tab-wide GUI.enabled wrapper, which used to disable
+        /// the row-select button too and permanently lock whichever law was selected at end-of-game.</summary>
+        private void DrawLawPaneAction(LawDefinition law, bool enacted, LawBill pendingBill, float contentWidth)
+        {
             // P4-C3 third category, ruling (a) (2026-09-05): a law outside this House's competence - a monetary-regime law where the
             // country shares its currency zone - is not offered; the card says why, in the caption face, and IntroduceLawBill agrees.
             if (!LawCatalog.IsWithinCompetence(_simulationManager.World, _playerCountry, law))
