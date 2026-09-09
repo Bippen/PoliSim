@@ -21,15 +21,34 @@ namespace PoliSim.UI
     /// </summary>
     public class HemicycleRenderer
     {
-        private const int MinRows = 4;
-        private const int MaxRows = 24;
-        /// <summary>Dot diameter as a fraction of the ring gap - the rest is air between rings.</summary>
-        private const float DotFill = 0.62f;
-        /// <summary>Centre-to-centre pitch along a ring, in dot diameters.</summary>
-        private const float DotPitch = 1.35f;
-        private const float InnerRadiusFraction = 0.38f;
-        /// <summary>The outer radius cap, in label font sizes - the arc grows with the type, not the sheet.</summary>
-        private const float RadiusInFontSizes = 14f;
+        // ------------------------------------------------------------------------------------------
+        // BOARD 10d (D16-4), BUILT 2026-09-09 (§426). Design drew the chamber at 1× on a 1149-wide
+        // sheet and put the geometry in the caption: Ø 9 everywhere, pitch 13.3, party gap 1, bloc gap
+        // 3, nine rows from r 110 to r 220, the bloc arc at r 238. ⚠ ONE DOT SIZE FOR ALL 349 IS THE
+        // POINT: size would read as importance, so a party is separated by INK, never by area. The
+        // inks are the RECORD's - the published hues, seated, nudged, and separated by §423's bloc
+        // fence - not board 10d's assigned palette, whose ruling is not in the record (§409).
+        //
+        // The unit is the label's own font size, not the sheet's width: the desk scales its type with
+        // the window (D4), the board's 1× is the 17 px label at 1280, and a width-driven unit cannot be
+        // computed at Layout time when the height has to be reserved. The radius is then clamped to the
+        // width it is actually given, so a 640-wide gallery cell draws the same chamber smaller.
+        // ------------------------------------------------------------------------------------------
+        /// <summary>DERIVED - the label font size at 1280×720, where board 10d is drawn at 1×: clamp(round(720 × 0.024), 17, 30) = 17.</summary>
+        private const float BoardUnitFontSize = 17f;
+        private const int BoardRows = 9;
+        private const float BoardInnerRadius = 110f;
+        private const float BoardOuterRadius = 220f;
+        /// <summary>Ø 9 at 1×, every seat, every ring. Board 10d's whole argument.</summary>
+        private const float BoardDotDiameter = 9f;
+        /// <summary>Centre-to-centre along a ring at 1×. The rows are apportioned by radius, so this is what the layout aims at rather than a fixed step; the run prints what it achieved.</summary>
+        private const float BoardSeatPitch = 13.3f;
+        private const float BoardPartyGap = 1f;
+        private const float BoardBlocGap = 3f;
+        private const float BoardBlocArcRadius = 238f;
+        private const float BoardTickInner = 100f;
+        private const float BoardTickOuter = 232f;
+        private const float BoardTickWeight = 2.5f;
 
         /// <summary>Dots drawn on the last Repaint (the harness's tally).</summary>
         public static int LastDotsDrawn { get; private set; }
@@ -39,6 +58,19 @@ namespace PoliSim.UI
         public static int LastDeclaredSeats { get; private set; }
         /// <summary>Rings used on the last Repaint.</summary>
         public static int LastRows { get; private set; }
+
+        /// <summary>The tightest centre-to-centre spacing any ring achieved on the last Repaint, in the
+        /// board's own unit. ⚠ MEASURED, not asserted: board 10d's caption says pitch 13.3 and nine rings
+        /// from 110 to 220 cannot hold 349 seats at that step, so the layout apportions by radius and this
+        /// says what it actually got.</summary>
+        public static float LastPitch { get; private set; }
+
+        /// <summary>The seat that carries the chamber on the last Repaint - what the majority tick marks.</summary>
+        public static int LastMajoritySeat { get; private set; }
+
+        /// <summary>Where the majority line fell, in words, computed from the drawn order rather than
+        /// written down: board 10d's own caption, re-derived every frame because the seats drift.</summary>
+        public static string LastMajorityReading { get; private set; } = string.Empty;
 
         private Texture2D _dotTexture;
 
@@ -75,7 +107,11 @@ namespace PoliSim.UI
         }
 
         /// <summary>The height the arc reserves for a label style - half a disc at the capped radius plus a margin.</summary>
-        private static float ArcHeight(GUIStyle labelStyle) => Mathf.Round(labelStyle.fontSize * RadiusInFontSizes) + 8f;
+        /// <summary>The bloc arc's radius plus a line for its labels - the tallest thing the chamber draws.</summary>
+        private static float ArcHeight(GUIStyle labelStyle) => Mathf.Round(BoardUnit(labelStyle) * (BoardBlocArcRadius + 14f)) + 8f;
+
+        /// <summary>Board 10d's unit: 1 at the 17 px label the 1280 sheet carries, and it grows with the type.</summary>
+        private static float BoardUnit(GUIStyle labelStyle) => labelStyle.fontSize / BoardUnitFontSize;
 
         public void Draw(string title, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle labelStyle)
         {
@@ -92,6 +128,10 @@ namespace PoliSim.UI
 
             List<PoliticalParty> order = ByBlocThenMandates(country, seats);
             var seatColors = new List<Color>(totalSeats);
+            // Board 10d needs more than a colour per seat: the gaps are cut at party and bloc
+            // boundaries, the arc spans a bloc, and the majority tick has to say which bloc it lands in.
+            var seatParty = new List<string>(totalSeats);
+            var seatBloc = new List<int>(totalSeats);
             bool blocsKnown = false;
             var seatsByRank = new int[3];
             foreach (PoliticalParty party in order)
@@ -101,16 +141,28 @@ namespace PoliSim.UI
                 blocsKnown |= bloc >= 0;
                 seatsByRank[BlocRank(bloc)] += count;
                 Color color = PoliSimTheme.PartyLaddered(country, party.Abbrev);
-                for (int j = 0; j < count; j++) { seatColors.Add(color); }
+                for (int j = 0; j < count; j++) { seatColors.Add(color); seatParty.Add(party.Abbrev); seatBloc.Add(BlocRank(bloc)); }
             }
+
+            // BOARD 10d's own reading, computed here rather than in the Repaint so the caption exists on
+            // the Layout pass too: which bloc the majority seat lands in, and how far inside its edge.
+            // ⚠ Re-derived every frame - the seats drift with approval, and a sentence about where the
+            // line falls is exactly the kind that goes wrong by being written down once.
+            LastMajorityReading = MajorityReading(seatBloc, totalSeats);
 
             Rect area = GUILayoutUtility.GetRect(10f, ArcHeight(labelStyle), GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint)
             {
-                DrawArc(area, seatColors, labelStyle);
+                DrawArc(area, seatColors, seatParty, seatBloc, labelStyle);
                 LastDotsDrawn = seatColors.Count;
                 LastChamberSeats = totalSeats;
                 LastDeclaredSeats = PartySystems.ChamberSeats(country);
+            }
+
+            if (!string.IsNullOrEmpty(LastMajorityReading))
+            {
+                GUIStyle reading = CaptionStyle(labelStyle);
+                GUILayout.Label(LastMajorityReading.ToUpperInvariant(), reading);
             }
 
             GUILayout.Space(4f);
@@ -118,70 +170,243 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The rings: the fewest (from four) whose combined arc length seats every mandate at the pitch,
-        /// dots sized from the ring gap; seats per ring in proportion to its radius, the outermost taking
-        /// the rounding remainder. Centred in the area, baseline at its foot.
+        /// <summary>
+        /// BOARD 10d, THE CHAMBER: nine rings from r 110 to r 220 at the board's unit, one Ø 9 dot per
+        /// mandate on every one of them, a gap cut at each party boundary and a wider one at each bloc's,
+        /// the bloc arc outside at r 238, and the majority tick where the 175th seat falls.
+        ///
+        /// <para><b>Sectors, not rings</b> (P3-C5, unchanged): every position is laid out first, ordered
+        /// by angle - left to right across the chamber, inner ring before outer at one angle - and the
+        /// parties' inks are dealt onto that order, so a party owns a contiguous wedge across all nine
+        /// rings. What board 10d adds is the GAP: once each ring knows which party each of its seats
+        /// belongs to, the ring is laid again from scratch with 1 unit of air at a party boundary and 3 at
+        /// a bloc's, taken out of the 180° the ring has to spend.</para>
+        ///
+        /// <para>⚠ <b>The rows are apportioned by radius, not filled at a fixed pitch.</b> Nine rings from
+        /// 110 to 220 hold 345 seats at a literal 13.3 pitch and Sweden returns 349, so a fixed step would
+        /// drop four mandates or need a tenth ring the board does not draw. Seats per ring are therefore
+        /// proportional to the ring's radius (largest remainder, the outermost taking the balance) and the
+        /// pitch lands near the board's figure rather than on it. <see cref="LastPitch"/> carries what it
+        /// actually achieved, so the number is measured on every run rather than asserted here.</para>
         /// </summary>
-        private void DrawArc(Rect area, IReadOnlyList<Color> seatColors, GUIStyle labelStyle)
+        private void DrawArc(Rect area, IReadOnlyList<Color> seatColors, IReadOnlyList<string> seatParty,
+            IReadOnlyList<int> seatBloc, GUIStyle labelStyle)
         {
             int total = seatColors.Count;
-            float outer = Mathf.Min(Mathf.Round(labelStyle.fontSize * RadiusInFontSizes), area.width * 0.5f - 2f);
-            if (outer < 8f) { return; }
-            float inner = outer * InnerRadiusFraction;
-            int rows = MinRows;
-            float gap, dot;
-            while (true)
-            {
-                gap = (outer - inner) / (rows - 1);
-                dot = gap * DotFill;
-                int capacity = 0;
-                for (int r = 0; r < rows; r++) { capacity += Mathf.FloorToInt(Mathf.PI * (inner + r * gap) / (dot * DotPitch)); }
-                if (capacity >= total || rows >= MaxRows) { break; }
-                rows++;
-            }
-            LastRows = rows;
+            if (total <= 0) { return; }
 
+            // The board's unit, clamped to the width it is actually given: the gallery draws this same
+            // chamber in a 640-wide cell and the Parliament page in the whole sheet.
+            float unit = BoardUnit(labelStyle);
+            float widthCap = (area.width * 0.5f - 4f) / BoardOuterRadius;
+            float heightCap = (area.height - 4f) / BoardBlocArcRadius;
+            unit = Mathf.Min(unit, Mathf.Min(widthCap, heightCap));
+            if (unit <= 0.02f) { return; }
+
+            float outer = BoardOuterRadius * unit;
+            float inner = BoardInnerRadius * unit;
+            float dot = BoardDotDiameter * unit;
+            float ringGap = (outer - inner) / (BoardRows - 1);
+            LastRows = BoardRows;
+
+            // ---- seats per ring, proportional to the ring's radius -----------------------------------
             float radiusSum = 0f;
-            for (int r = 0; r < rows; r++) { radiusSum += inner + r * gap; }
-            var perRow = new int[rows];
+            for (int r = 0; r < BoardRows; r++) { radiusSum += inner + r * ringGap; }
+            var perRow = new int[BoardRows];
             int assigned = 0;
-            for (int r = 0; r < rows; r++)
+            for (int r = 0; r < BoardRows; r++)
             {
-                perRow[r] = Mathf.RoundToInt(total * ((inner + r * gap) / radiusSum));
+                perRow[r] = Mathf.RoundToInt(total * ((inner + r * ringGap) / radiusSum));
                 assigned += perRow[r];
             }
-            perRow[rows - 1] += total - assigned;
 
-            // P3-C5 (2026-09-03): SECTORS, not rings. Every seat's position on the rings is laid out first, then the
-            // positions are ordered by angle - left to right across the chamber, inner ring before outer at one
-            // angle - and the parties' inks (already in bloc order, left bloc first, by mandates within it) are
-            // dealt onto that order. A party therefore occupies a contiguous wedge across all the rings, the way
-            // a chamber is drawn, and every mandate is still one dot in its party's ink; the ring geometry, the
-            // pitch and the dot size are unchanged.
-            var positions = new List<(float Angle, int Ring, Vector2 Point)>(total);
-            var baseline = new Vector2(Mathf.Round(area.x + area.width * 0.5f), area.yMax - 4f);
+            perRow[BoardRows - 1] += total - assigned;
+            if (perRow[BoardRows - 1] < 0) { perRow[BoardRows - 1] = 0; }
+
+            // ---- the sector deal: positions by angle, parties dealt onto them ------------------------
+            var slots = new List<(float Angle, int Ring)>(total);
             int laid = 0;
-            for (int r = 0; r < rows && laid < total; r++)
+            for (int r = 0; r < BoardRows && laid < total; r++)
             {
                 int rowSeats = Mathf.Min(perRow[r], total - laid);
-                float radius = inner + r * gap;
                 for (int i = 0; i < rowSeats; i++)
                 {
                     float angle = rowSeats == 1 ? 90f : 180f - (180f / (rowSeats - 1)) * i;
-                    positions.Add((angle, r, PointOnArc(baseline, radius, angle)));
+                    slots.Add((angle, r));
                     laid++;
                 }
             }
-            positions.Sort((p, q) => p.Angle != q.Angle ? q.Angle.CompareTo(p.Angle) : p.Ring.CompareTo(q.Ring));
-            Color previousColor = GUI.color;
-            for (int seat = 0; seat < positions.Count && seat < total; seat++)
+
+            slots.Sort((p, q) => p.Angle != q.Angle ? q.Angle.CompareTo(p.Angle) : p.Ring.CompareTo(q.Ring));
+
+            // ---- each ring re-laid, with the gaps cut out of its own 180° ---------------------------
+            var byRing = new List<int>[BoardRows];
+            for (int r = 0; r < BoardRows; r++) { byRing[r] = new List<int>(); }
+            for (int seat = 0; seat < slots.Count && seat < total; seat++) { byRing[slots[seat].Ring].Add(seat); }
+
+            var baseline = new Vector2(Mathf.Round(area.x + area.width * 0.5f), area.yMax - 4f);
+            var placed = new Vector2[total];
+            var angleOf = new float[total];
+            float minPitch = float.MaxValue;
+
+            for (int r = 0; r < BoardRows; r++)
             {
-                Vector2 point = positions[seat].Point;
-                GUI.color = seatColors[seat];
-                GUI.DrawTexture(new Rect(point.x - dot * 0.5f, point.y - dot * 0.5f, dot, dot), _dotTexture);
+                List<int> ring = byRing[r];
+                if (ring.Count == 0) { continue; }
+
+                float radius = inner + r * ringGap;
+                float gapUnits = 0f;
+                for (int i = 1; i < ring.Count; i++)
+                {
+                    if (seatBloc[ring[i]] != seatBloc[ring[i - 1]]) { gapUnits += BoardBlocGap; }
+                    else if (!string.Equals(seatParty[ring[i]], seatParty[ring[i - 1]], System.StringComparison.Ordinal)) { gapUnits += BoardPartyGap; }
+                }
+
+                // Air is spent in degrees at this ring's own radius, so a 1-unit gap is 1 unit of paper
+                // on every ring rather than 1 degree everywhere.
+                float gapDegrees = Mathf.Min(60f, gapUnits * unit / radius * Mathf.Rad2Deg);
+                float span = 180f - gapDegrees;
+                float pitch = ring.Count > 1 ? span / (ring.Count - 1) : 0f;
+                if (ring.Count > 1) { minPitch = Mathf.Min(minPitch, pitch * Mathf.Deg2Rad * radius); }
+
+                float cursor = 180f;
+                for (int i = 0; i < ring.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        cursor -= pitch;
+                        if (seatBloc[ring[i]] != seatBloc[ring[i - 1]]) { cursor -= BoardBlocGap * unit / radius * Mathf.Rad2Deg; }
+                        else if (!string.Equals(seatParty[ring[i]], seatParty[ring[i - 1]], System.StringComparison.Ordinal)) { cursor -= BoardPartyGap * unit / radius * Mathf.Rad2Deg; }
+                    }
+
+                    int seat = ring[i];
+                    angleOf[seat] = cursor;
+                    placed[seat] = PointOnArc(baseline, radius, cursor);
+                }
             }
+
+            LastPitch = minPitch == float.MaxValue ? 0f : minPitch / unit;
+
+            // ---- the bloc arc, outside the seats ----------------------------------------------------
+            Color previousColor = GUI.color;
+            var blocFrom = new float[3];
+            var blocTo = new float[3];
+            var blocSeats = new int[3];
+            for (int i = 0; i < 3; i++) { blocFrom[i] = float.MinValue; blocTo[i] = float.MaxValue; }
+            for (int seat = 0; seat < total; seat++)
+            {
+                int rank = seatBloc[seat];
+                if (rank < 0 || rank > 2) { continue; }
+                blocSeats[rank]++;
+                blocFrom[rank] = Mathf.Max(blocFrom[rank], angleOf[seat]);
+                blocTo[rank] = Mathf.Min(blocTo[rank], angleOf[seat]);
+            }
+
+            GUIStyle caption = CaptionStyle(labelStyle);
+            for (int rank = 0; rank < 3; rank++)
+            {
+                if (blocSeats[rank] == 0) { continue; }
+
+                GUI.color = PoliSimTheme.HairlineStrong;
+                float arcRadius = BoardBlocArcRadius * unit;
+                // ⚠ Stepped by ARC LENGTH, not by a fixed angle: a fixed step samples the 2560
+                // sheet's larger radius every five pixels and the hairline reads as a dotted line.
+                // Half a pixel of arc between samples draws as one stroke at every size.
+                float step = Mathf.Max(0.02f, 0.5f / arcRadius * Mathf.Rad2Deg);
+                for (float a = blocTo[rank]; a <= blocFrom[rank]; a += step)
+                {
+                    Vector2 point = PointOnArc(baseline, arcRadius, a);
+                    GUI.DrawTexture(new Rect(point.x, point.y, 1f, 1f), Texture2D.whiteTexture);
+                }
+
+                GUI.color = previousColor;
+            }
+
+            // ---- the dots ---------------------------------------------------------------------------
+            for (int seat = 0; seat < total; seat++)
+            {
+                GUI.color = seatColors[seat];
+                GUI.DrawTexture(new Rect(placed[seat].x - dot * 0.5f, placed[seat].y - dot * 0.5f, dot, dot), _dotTexture);
+            }
+
+            GUI.color = previousColor;
+
+            // ---- the bloc labels, AFTER the seats ---------------------------------------------------
+            // ⚠ Drawn last on purpose. The first film of this board had them under the dots: a label sits
+            // at its bloc's mid-angle, which on a half-circle is a diagonal, and a horizontal text box
+            // centred there puts its inner half straight onto the outermost ring.
+            for (int rank = 0; rank < 3; rank++)
+            {
+                if (blocSeats[rank] == 0) { continue; }
+
+                float mid = (blocFrom[rank] + blocTo[rank]) * 0.5f;
+                string text = $"{BlocRankName(rank)} {blocSeats[rank]}";
+                Vector2 size = caption.CalcSize(new GUIContent(text));
+
+                // Pushed out along its own radius by enough to clear the box's own half-width at that
+                // angle, so the label sits outside the arc at every bloc width.
+                float clearance = Mathf.Abs(Mathf.Cos(mid * Mathf.Deg2Rad)) * size.x * 0.5f;
+                Vector2 label = PointOnArc(baseline, BoardBlocArcRadius * unit + 8f * unit + clearance, mid);
+                GUI.Label(new Rect(label.x - size.x * 0.5f, label.y - size.y * 0.5f, size.x, size.y), text, caption);
+            }
+
+            // ---- the majority tick ------------------------------------------------------------------
+            // The seat that carries the chamber, found in the drawn order rather than assumed: the tick
+            // sits between it and the one before, which is where a majority is actually won.
+            int majority = total / 2 + 1;
+            LastMajoritySeat = majority;
+            if (majority >= 1 && majority <= total)
+            {
+                int index = majority - 1;
+                float tickAngle = index > 0 ? (angleOf[index] + angleOf[index - 1]) * 0.5f : angleOf[index];
+                GUI.color = PoliSimTheme.TextPrimary;
+                float weight = Mathf.Max(1f, BoardTickWeight * unit);
+                for (float rr = BoardTickInner * unit; rr <= BoardTickOuter * unit; rr += 0.5f)
+                {
+                    Vector2 point = PointOnArc(baseline, rr, tickAngle);
+                    GUI.DrawTexture(new Rect(point.x - weight * 0.5f, point.y - weight * 0.5f, weight, weight), Texture2D.whiteTexture);
+                }
+
+                GUI.color = previousColor;
+                string tick = $"MAJORITY {majority}";
+                Vector2 size = caption.CalcSize(new GUIContent(tick));
+                Vector2 at = PointOnArc(baseline, (BoardTickOuter + 11f) * unit, tickAngle);
+                GUI.Label(new Rect(at.x - size.x * 0.5f, at.y - size.y * 0.5f, size.x, size.y), tick, caption);
+
+            }
+
             GUI.color = previousColor;
         }
+
+        /// <summary>Which bloc carries the seat that carries the chamber, and how far inside that bloc it
+        /// sits. Walks the drawn order, so it says what the arc shows rather than what a table would.</summary>
+        private static string MajorityReading(IReadOnlyList<int> seatBloc, int totalSeats)
+        {
+            if (totalSeats <= 0 || seatBloc.Count < totalSeats) { return string.Empty; }
+
+            int majority = totalSeats / 2 + 1;
+            var seatsByRank = new int[3];
+            foreach (int rank in seatBloc) { if (rank >= 0 && rank <= 2) { seatsByRank[rank]++; } }
+
+            int cumulative = 0;
+            for (int rank = 0; rank < 3; rank++)
+            {
+                if (seatsByRank[rank] == 0) { continue; }
+                if (majority <= cumulative + seatsByRank[rank])
+                {
+                    int inside = majority - cumulative;
+                    return $"the majority line falls {inside} seat{(inside == 1 ? string.Empty : "s")} inside the {BlocRankName(rank).ToLowerInvariant()}";
+                }
+
+                cumulative += seatsByRank[rank];
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>The bloc's name as the arc labels it.</summary>
+        private static string BlocRankName(int rank) => rank == 0 ? "LEFT BLOC" : rank == 1 ? "UNAFFILIATED" : "RIGHT BLOC";
+
 
         private static void DrawLegend(CountryId country, IReadOnlyDictionary<string, int> seats, List<PoliticalParty> order,
             int totalSeats, bool blocsKnown, int[] seatsByRank, GUIStyle labelStyle)
