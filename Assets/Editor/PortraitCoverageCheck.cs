@@ -118,7 +118,7 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(missing == 0 ? 0 : 1);
         }
 
-        /// <summary>⚠ INTERNAL, not private, since 2026-09-09 (�419): `D18Inventory` reads the same two pools to
+        /// <summary>⚠ INTERNAL, not private, since 2026-09-09 (§419): `D18Inventory` reads the same two pools to
         /// decide which delivered portraits anything can reach. A second reflection read beside this one
         /// would be a second thing to keep pointed at the right field, which is exactly what the EMPTY
         /// ENUMERATION guard above exists to catch late.</summary>

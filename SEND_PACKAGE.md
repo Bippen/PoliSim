@@ -23,7 +23,7 @@ re-asks nothing D17 has open.
 | n of 12 | kind | artifact | bytes | sha256 (on disk) |
 |---|---|---|--:|---|
 | **1 of 12** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 166030 | `eb4b9f9876a4d71b29a845b55f861470ad6414b9563c2eaac8a53389387b689d` |
-| **2 of 12** | document | `COMPLETED.md` | 2669918 | `2e4d9047274e0d0e5411a3f55849909a0b7e5f48ba1dd1f4a5d29e11b05b01c0` |
+| **2 of 12** | document | `COMPLETED.md` | 2670710 | `2b9ca964eecba4e2b41fab66513f30dc63b5eedbbea2c2c76797f4ba06154883` |
 | **3 of 12** | document | `POLISIM_FEATURE_LIST.md` | 179984 | `99efc77581442578f78d043305f1381ed803211f52688a9c510255a2e06c515a` |
 | **4 of 12** | document | `ERRANDS.md` | 17701 | `cce25bffb1581c737bd270676bf36deaf8d60ba8a60738c49a24ef5f7af76c74` |
 | **5 of 12** | log | `logs/bar276_audit_RunSimulationBatch.log` | 1244226 | `d4d6a835a57c652e3cea09c9a9f0b6793f265109aefd1539a5887decc6aeedbc` |
