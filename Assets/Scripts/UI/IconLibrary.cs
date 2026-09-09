@@ -187,9 +187,19 @@ namespace PoliSim.UI
         /// W-G1: this is now the ONLY party art accessor - `GetPartyEmblem` and the fictional archetypes
         /// it served are retired. Rule 9a
         /// governs the art — a mark is ORIGINAL art recognisable by silhouette and real colour,
-        /// never the organisation's registered logo. Like flags and emblems it is authored in its
-        /// own colours: **do not tint it.** Returns null when the file is missing, the same contract
-        /// as everything else here.
+        /// never the organisation's registered logo. Returns null when the file is missing, the same
+        /// contract as everything else here.
+        ///
+        /// ⚠ **THE TINT: the two call sites disagree, and BOTH are deliberate** (measured 2026-09-09,
+        /// §419, while D18's inventory was being generated; this doc comment previously said "do not
+        /// tint it" flatly, and had been overtaken).
+        /// The campaign masthead (`DrawCampaignMasthead`) draws the mark UNTINTED, in its authored colours.
+        /// `HemicycleRenderer.DrawMark` draws it under `PoliSimTheme.PartyLaddered` - the party's own
+        /// laddered ink - because board 6b row 5 asked for the chamber's mark in that ink, and the
+        /// chamber is the one surface permitted to draw party ink at all (`PartyInkDrawSiteCheck`).
+        /// A mark therefore has to read BOTH ways: as authored colour on the campaign masthead, and as
+        /// a silhouette multiplied by one ink in the chamber. **That is a fact about the art, so it is
+        /// D18's to state to Design, not something to settle by editing one of the two call sites.**
         /// </summary>
         public static Texture2D GetPartyMark(string markName)
         {

@@ -52,6 +52,9 @@ namespace PoliSim.EditorTools
             // P2-0.2 (2026-09-02): the office diagnostic scans Assets/Scripts for the retired threshold's names
             // with comments stripped - a name surviving in a comment is history, not a path.
             "OfficeTestDiagnostic",
+            // §419 (2026-09-09): D18's inventory counts a delivered sprite as REACHED when a source file
+            // names its stem, so a stem mentioned in a comment would report art as wired that nothing loads.
+            "D18Inventory",
         };
 
         /// <summary>

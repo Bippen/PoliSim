@@ -28,9 +28,15 @@ namespace PoliSim.UI
         PotentialGrowth, PopulationGrowthRate, DependencyRatio, ConsumerConfidence, BusinessConfidence,
         // §E4, promoted by R-CL4 at C-F1 (2026-08-31): R4-1's two Society rows join the web. APPENDED,
         // never inserted - the enum is persisted nowhere but it is read positionally by films and
-        // censuses, and this project's stream enum carries the same rule for the same reason. ⚠ Neither
-        // has a delivered icon, and that is the POINT: they are the Design ask's own evidence, and
-        // `StatIconCoverageCheck` now reports a missing icon as a GAP rather than failing on it.
+        // censuses, and this project's stream enum carries the same rule for the same reason.
+        //
+        // ⚠ CORRECTED 2026-09-09 (§419, D18's inventory). This comment said "neither has a delivered
+        // icon, and that is the POINT". BOTH RESOLVE, and did from the moment they were promoted:
+        // `icon_stat_youthunemployment` and `icon_stat_lifeexpectancy` arrived in the original macro
+        // stat pack (`be97ebb`) among the sprites that had no call site yet, so the promotion consumed
+        // two files already on disk rather than opening a gap. `StatIconCoverageCheck` reads 0 GAPs,
+        // and the asset request billed two icons that were never owed. The GAP severity R-CL4 set
+        // stays - it is for the NEXT promotion, not for these two.
         YouthUnemployment, LifeExpectancy
     }
 
