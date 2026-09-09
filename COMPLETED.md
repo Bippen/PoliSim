@@ -25135,3 +25135,43 @@ no dump is byte-identical (5 of 62 fields, the demographic constants): a BASELIN
 **The residue** reads zero on every bar of the morning; the excluded rows are Elias's (T-3, FT-6, the dials-only laws, the E-rows), Design's (D-rows) and the calendar's (K-1, 13 September 2026). Nothing a session could start stands open; this cycle opened nothing.
 
 **Bar:** documents only; `bar256_shelf3_RunAllBatch`, the cheap bar of this commit, run on this record as written - the commit follows its green.
+
+## 409. D16 VERIFIED BY CONTENT; §6.3'S PALETTE CLAIM RECONCILED AGAINST THE RECORD — the ruling it asserts is not in the record, so board 10d STOPS; 10a, 10b and 10c are unaffected (2026-09-09)
+
+**The ruling:** *"Design's D16 bundle is at [the Design project]. Verify by content, then build boards 10a–10d the D11 way — verify against the boards, deviations stated. First: reconcile §6.3's palette claim. It asserts a ruling by Elias on 2026-09-09 that supersedes the standing Valmyndigheten-as-identity ruling; establish from the record whether that ruling exists. If it does not, stop that board and report — the other three are unaffected."*
+
+### The bundle, verified by content
+
+It is the Design project's `design_handoff_d16_legibility/` (project `b3dec27b-620b-452a-9783-e8317cbec4d9`): `README.md`, `PoliSim v2 Screens.dc.html`, `support.js`, and the eight party marks under `send/marks/`. Read, not assumed: the board file was fetched (`DesignSync get_file`, the 256 KiB cap reached - `truncated: true`, so the tail below board 8a is cut and every D16 anchor is above the cut, as §10 says) and cut by its id anchors: **all five are present** - `10a` 29 093 chars, `10b` 18 459, `10c` 16 094, `10d` 22 133, `d16-note` 4 383. Each board carries its own DECLARED line, and the numbers the README states are the boards' own: 10a's three grids verbatim (READING `296 · 132 · 543 · 40 · 44`, PROVENANCE `296 · 132 · 453 · 40 · 44 · 74`, gap rows `296 · 132 · 659`), 10b's `520 · 579` proposed against 1149, 10c's `1 PT = 130 PX · FIXED` over a 700 px bar with the four terms `+2.00 · +2.00 · −1.50 · 0.00 → 2.50` and the cut labelled `TAKEN BACK`, 10d's Ø 9 at pitch 13.3 with the majority tick at 175. No number on a board contradicts the README. **One thing the boards say and the README does not:** 10b's DECLARED line reads *"The seat bar uses the eight drawn party inks of 10d"* - a dependency of 10b's vote bar on the stopped board, answered in §411 as a stated deviation (the bar draws the desk's own party table, which is what it already does; the grammar is what 10b changes).
+
+**The marks** (§7, §10): the eight names are the eight already installed by §238 at `Assets/Resources/Art/UI/Emblems/mark_party_se_{v,s,mp,c,l,kd,m,sd}.png`, and §7 asks for no change to them (*"Nothing on disk changes"*) - the bundle carries them so the board file can draw them, not as a delivery. the eight file names are the eight installed at §238 and the bundle asks for no change to them, so nothing on disk moves; the roster that would re-tint them is 10d's and stops with it.
+
+### The claim
+
+§6.3, verbatim: *"**The palette — ⭐ ASSIGNED BY ELIAS, 2026-09-09.** This supersedes the held-published-hue constraint D16-4 was written under. The desk no longer holds Valmyndigheten's `fargkod` as identity. Elias assigned the eight colours by name; **Design supplied the cut, not the choice**"* - with eight hexes (V `#722F30`, S `#A65753`, MP `#618E57`, C `#335825`, L `#5089B5`, KD `#233971`, M `#297497`, SD `#A17E12`), each with an oklch triple and a contrast ratio, and §6.4's fence asserting twelve within-bloc pairs on them.
+
+### The standing ruling, in the record
+
+**§256 (P3-C6, ruled by Elias 2026-09-03):** *"the published hue is the identity; a MEASURED collision (oklab distance below the tolerance) moves the smaller party's lightness by the least that separates it - never its hue, never the order."* **§279 (the fork, ruled by Elias 2026-09-03, built 2026-09-04):** *"Valmyndigheten's published table is the base and the identity; Design's quoted set is recorded as the alternative with its source, consulted only where ours produces a measured collision."* Built and standing in the repo: `PoliSimTheme.PartyHues` (the `fargkod` values, read from the same Valmyndigheten backend the seat counts came from), `PartyHuesAlternative` [AUTHORED-REFERENCE] holding Design's eight with their source, the nudge, and `PartyInkHarness` printing every consultation.
+
+### What the record holds for 2026-09-09
+
+- `COMPLETED.md`'s entries for that date are **§405, §406, §407, §408** - the shelf cycled, the impact ratchet re-based, the event duration tagged, the shelf cycled again. All four are macro or instrument work; none touches colour, parties or the desk's palette.
+- `POLISIM_FEATURE_LIST.md` carries no palette row opened, closed or amended that day; the standing constraints carry no new colour rule.
+- `CLAUDE_DESIGN_ASSET_REQUEST.md` carries **no D16 request at all**, and its last commit is `570d1e3`, 2026-09-04 (E-16). The bundle's own opening says it answers *"request D16 from Elias's sitting of the same day"* - that sitting is not in the repo either.
+- `ERRANDS.md` carries no new GO; the last party-colour GO is E-2, 2026-09-01, for the marks.
+- `git log` for 2026-09-08/09 is the fourteen commits §396–§408, every one macro.
+
+**The finding: no ruling superseding the published-hue identity exists in the record.** The repo outranks every document; a bundle's own assertion that a ruling happened is not that ruling, and §6.3 is the only place it appears. On the record as it stands, Valmyndigheten's `fargkod` is still the identity.
+
+### What stops, and what does not
+
+**Board 10d STOPS whole**, and it is Elias's row from here: its palette is §6.3, its fence (§6.4) asserts those eight inks, its roster (§6.6) prints their hex and oklch as the identity, and its §9.3 asks the desk to stop citing the `fargkod` as published fact. None of that can land while the record says the opposite. Its parts that do NOT depend on the palette - the seat geometry (§6.1), the bloc arc and the majority tick (§6.2), the refusals (§6.5), the neutral-register selection (§6.7) - stop with it rather than landing half a board, because they are one drawing and the board's own DECLARED line covers them together. Excluded from the residue by name as **D16-10d, OWNER ELIAS**.
+
+**10a, 10b and 10c are unaffected and are built in §410–§412.** The only party ink among them is 10b's vote bar and party split, and those draw the desk's own table (`PoliSimTheme`) as they already do - the standing ruling, not §6.3's assignment. Nothing in the three boards reads the palette's identity claim.
+
+**What it would take to unstop 10d:** a ruling from Elias, recorded here. Then the assignment lands as its own family - the eight inks, §6.4's fence re-pointed at them, the roster's hex/oklch columns, §9.3's citation correction, and §9.2's Caution audit re-run on `#A17E12` - and §256/§279 are superseded in the record rather than in a bundle.
+
+**Also read and not acted on** (they follow from the same finding): §9.3's *"`fargkod` citations are now wrong"* is false on the record - the citations are right and stay; and §6.4's *"12 of 12 pass"* is a statement about inks the desk does not hold. The fence itself is built in §413 against the palette the desk **does** hold, which is what §8.3 asks a guard to be.
+
+**Bar:** `bar257_d16rec_RunAllBatch` 33 of 33, `ResidueCheck` 0 open with D16-10d printed under the exclusions as Elias's. Documents and one exclusion line; no code moved for this item.
