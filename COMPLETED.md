@@ -25437,3 +25437,19 @@ filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 **The status header now carries both asks** - D17 the ruling item, D18 the production one, independent, either answerable first, and answering D18 does not settle the palette. The afternoon's D17-only header is kept beneath it, demoted, as the record.
 
 **Bar:** `bar285_d18ask_RunAllBatch` 34 of 34, `ResidueCheck` 0 open. `D18InventoryCheck` green on the block the ask is written around, and `DocumentClaimCheck` green on the new prose. Documents only.
+
+## 421. THE PACKAGE REGENERATED FOR BOTH ASKS — one paste, twelve artefacts numbered n of 12 so a partial paste shows at the glance, and E-30 re-cut as the single row that carries them (2026-09-09)
+
+**The ruling:** *"The package: regenerate once, whole, carrying both asks, the fence's twelve-pair print, the coverage checks' generated inventory, and every film and log by digest. Rows numbered n of N so a partial paste is visible at the sending glance. State at its head that it carries both, that D17 is the ruling item and D18 the production one, that Design may answer either first, and that answering D18 does not imply the palette question is settled. One errand row in `ERRANDS.md` for the single paste, replacing E-30's separate row."*
+
+**Regenerated whole, not edited forward.** `SEND_PACKAGE.md` is written by a generator that reads each artefact off disk and hashes it there - the document's own *computed, not claimed* rule - and this run replaced the D17-only manifest rather than appending to it. **Twelve artefacts, every row numbered n of 12** across the manifest, the film captions and the log table, so a paste that ends early is visible at the sending glance rather than at the reading: four documents, three logs, five films at 1280.
+
+**The head states the four things it was ruled to state**: that the package carries **both**; that **D17 is the RULING item** (the eight inks, one of two forms, Design's choice, 10d's geometry accepted and not re-asked); that **D18 is the PRODUCTION item** (the full asset request, generated from the coverage checks rather than recalled); and that **either may be answered first, with answering D18 implying nothing about the palette**.
+
+**No new film, and the package says why.** Nothing on a player surface moved between the five frames and this manifest - the work since is an Editor check, a shell tool, two corrected comments and the request document itself. Re-filming to make a package look fresh would be a figure with nothing behind it, so the five frames are carried by digest unchanged.
+
+**The evidence chosen so Design can read the numbers rather than take them.** `bar276_audit_RunSimulationBatch.log` carries both prints D17's annex quotes - `D16BARS:` (the twelve pairs in oklch) and `PARTYCAUTION:` (§9.2's audit). `bar285_d18ask_RunAllBatch.log` is the cheap bar on the tree the ask was written from: 34 of 34, residue 0, and **`D18InventoryCheck` reading the ask's own block and a fresh rebuild at one digest**, which is the line that makes D18's figures checkable rather than assertable. The film log carries the guards.
+
+**E-30 re-cut as one row.** Two rows for one paste would be two errands nobody can do separately, so the D17-only row is **replaced** rather than joined: one row, one paste, both asks, with the counts each ask carries and the withdrawal clause kept - **if Elias made the assignment in the sitting, his ruling recorded here withdraws D17 the same day**, 10d is built whole and the fence re-run expecting 12 of 12, **and D18 stands either way**.
+
+**Bar:** `bar286_package2_RunAllBatch` 34 of 34, `ResidueCheck` 0 open. The manifest is regenerated AFTER this record so its digest of `COMPLETED.md` is the file that will be sent - the §417 lesson, applied one document further. Documents only.
