@@ -32,7 +32,7 @@ namespace PoliSim.EditorTools
     /// request document's block and the repo disagree. **The figures in D18 are therefore not claims
     /// about the checks - they ARE the checks, one splice removed.**</para>
     ///
-    /// <para>â  <b>It re-runs the checks rather than re-deriving their facts.</b> A second enumeration of
+    /// <para>⚠ <b>It re-runs the checks rather than re-deriving their facts.</b> A second enumeration of
     /// the same subject is a second thing to keep true, and the first disagreement between them would be
     /// settled by whichever was edited last. The one place this file enumerates anything itself is the
     /// per-country grouping the ask needs (which parties, in which chamber, at what seat count) - and
@@ -107,7 +107,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The drift guard, in the cheap bar: rebuild the body and require the request
-        /// document's generated block to be it. â  A missing block FAILS - the ask is sent to another
+        /// document's generated block to be it. ⚠ A missing block FAILS - the ask is sent to another
         /// party, and an inventory that is simply absent is the same accident as one that is stale.</summary>
         public static void Run()
         {
@@ -165,7 +165,7 @@ namespace PoliSim.EditorTools
                 return;
             }
 
-            sb.Append("    â  THE ASK IS STALE. The repo moved and the document did not - regenerate with Tools/d18_inventory.sh.\n");
+            sb.Append("    ⚠ THE ASK IS STALE. The repo moved and the document did not - regenerate with Tools/d18_inventory.sh.\n");
             sb.Append(FirstDifference(Normalize(inDocument), Normalize(body)));
             Debug.LogError(sb.ToString());
             CheckExit.Finish(1);
@@ -212,7 +212,7 @@ namespace PoliSim.EditorTools
             sb.Append("so a figure here cannot go stale without the build going red.*\n\n");
 
             // ---- 1. party marks -------------------------------------------------------------------
-            sb.Append("#### 1 Â· Party identity marks â `PartyMarkCoverageCheck`\n\n");
+            sb.Append("#### 1 · Party identity marks — `PartyMarkCoverageCheck`\n\n");
             sb.Append(Fenced(Interesting(marks)));
 
             int printedGaps = marks.Count(l => l.StartsWith("  no mark", StringComparison.Ordinal));
@@ -237,7 +237,7 @@ namespace PoliSim.EditorTools
 
                     if (!string.IsNullOrEmpty(party.MarkName))
                     {
-                        // â  The rule is DERIVED here, not declared: every delivered mark must be the name
+                        // ⚠ The rule is DERIVED here, not declared: every delivered mark must be the name
                         // the rule produces, or the rule is wrong and the stems below are unloadable.
                         ruleChecked++;
                         if (!string.Equals(party.MarkName, stem, StringComparison.Ordinal))
@@ -285,7 +285,7 @@ namespace PoliSim.EditorTools
 
             sb.Append($"| **total** | | **{seededTotal}** | **{resolvingTotal}** | **{seededTotal - resolvingTotal}** |\n");
 
-            sb.Append("\n**The batch, party by party** â seats are the seed's own, so the largest are the ones a\n");
+            sb.Append("\n**The batch, party by party** — seats are the seed's own, so the largest are the ones a\n");
             sb.Append("chamber shows most; the stem is the file the game will load once the seed names it:\n\n");
             sb.Append("| country | abbrev | party | seats at seed | stem |\n|---|---|---|--:|---|\n");
             foreach ((CountryId id, string abbrev, string name, int seats, string stem) in
@@ -295,26 +295,26 @@ namespace PoliSim.EditorTools
             }
 
             // ---- 2. portraits ---------------------------------------------------------------------
-            sb.Append("\n#### 2 Â· Portraits â `PortraitCoverageCheck`\n\n");
+            sb.Append("\n#### 2 · Portraits — `PortraitCoverageCheck`\n\n");
             sb.Append(Fenced(Interesting(portraits)));
 
             // ---- 3. stat icons --------------------------------------------------------------------
-            sb.Append("\n#### 3 Â· Stat icons â `StatIconCoverageCheck`\n\n");
+            sb.Append("\n#### 3 · Stat icons — `StatIconCoverageCheck`\n\n");
             sb.Append(Fenced(Interesting(statIcons)));
 
             // ---- 4. area icons --------------------------------------------------------------------
-            sb.Append("\n#### 4 Â· Area icons â `AreaIconCoverageCheck`\n\n");
+            sb.Append("\n#### 4 · Area icons — `AreaIconCoverageCheck`\n\n");
             sb.Append(Fenced(Interesting(areaIcons)));
 
             // ---- 5. audio -------------------------------------------------------------------------
-            sb.Append("\n#### 5 Â· Audio cues â `AudioCueCoverageCheck`\n\n");
+            sb.Append("\n#### 5 · Audio cues — `AudioCueCoverageCheck`\n\n");
             sb.Append(Fenced(audio.Where(l => l.Length > 0 && !l.StartsWith("SELFTEST", StringComparison.Ordinal)).ToList()));
 
             // ---- 6. delivered and held ------------------------------------------------------------
             List<(string Stem, string Folder)> held = Held(out int delivered, out string censusFault);
             if (censusFault != null) { faults.Add(censusFault); }
 
-            sb.Append("\n#### 6 Â· Delivered and held â nothing in `Assets/Scripts/` can load these\n\n");
+            sb.Append("\n#### 6 · Delivered and held — nothing in `Assets/Scripts/` can load these\n\n");
             sb.Append($"*{delivered} sprite(s) under `Assets/Resources/Art/UI/`. A file counts as REACHED when an\n");
             sb.Append("accessor the game calls actually loads it on this run (the texture's own name is taken as the\n");
             sb.Append("key, so no naming rule is duplicated here), or when a source file names its stem as a whole\n");
@@ -330,12 +330,12 @@ namespace PoliSim.EditorTools
 
             // ---- the checks' own exit codes -------------------------------------------------------
             sb.Append("\n**The runs behind this block**: ");
-            sb.Append(string.Join(" Â· ", new[]
+            sb.Append(string.Join(" · ", new[]
             {
                 $"PartyMark {marksCode}", $"Portrait {portraitsCode}", $"StatIcon {statCode}",
                 $"AreaIcon {areaCode}", $"AudioCue {audioCode}",
             }));
-            sb.Append(" â 0 is a clean check; a non-zero code means that family's own bar is red and this\n");
+            sb.Append(" — 0 is a clean check; a non-zero code means that family's own bar is red and this\n");
             sb.Append("inventory is describing a broken build.\n");
 
             if (faults.Count > 0) { fault = string.Join("; ", faults.ToArray()); }
@@ -347,7 +347,7 @@ namespace PoliSim.EditorTools
         // Capture, census and helpers
         // ------------------------------------------------------------------------------------------
 
-        /// <summary>Runs one check and returns every line it logged. â  <see cref="CheckExit.Collect"/> is
+        /// <summary>Runs one check and returns every line it logged. ⚠ <see cref="CheckExit.Collect"/> is
         /// what keeps a check's `Finish` from ending the Editor, and it is nesting-safe precisely so this
         /// can call it from inside a check that is itself being collected.</summary>
         private static List<string> Capture(Action check, out int code)
@@ -483,7 +483,7 @@ namespace PoliSim.EditorTools
             return sb.ToString();
         }
 
-        /// <summary>â  Whole-token, because `ui_btn_paper_canvas` is a PREFIX of `ui_btn_paper_canvas_hover`:
+        /// <summary>⚠ Whole-token, because `ui_btn_paper_canvas` is a PREFIX of `ui_btn_paper_canvas_hover`:
         /// a plain Contains would report the shorter name as reached on the strength of the longer one's
         /// literal, which is the one direction of error a census like this must not make.</summary>
         private static bool NamesToken(string sources, string stem)

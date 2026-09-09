@@ -10,7 +10,7 @@ namespace PoliSim.EditorTools
     /// exit code) and from inside the Editor (where calling <c>EditorApplication.Exit</c> would close
     /// Unity).
     ///
-    /// Ã¢ÂÂ  **That difference is why nine checks existed and none of them ever ran outside a command line.**
+    /// ⚠ **That difference is why nine checks existed and none of them ever ran outside a command line.**
     /// Every one ended in <c>EditorApplication.Exit</c>, which made a menu item impossible to add: the
     /// first person to click it would have quit the Editor. So the only way to invoke any of them was a
     /// command line someone had to remember to type, and remembering is exactly what this project has
@@ -100,12 +100,12 @@ namespace PoliSim.EditorTools
         }
 
         private static string Truncate(string s, int max)
-            => string.IsNullOrEmpty(s) || s.Length <= max ? s : s.Substring(0, max) + "Ã¢ÂÂ¦";
+            => string.IsNullOrEmpty(s) || s.Length <= max ? s : s.Substring(0, max) + "…";
 
         /// <summary>Runs one check without letting it end the process, returning the code it wanted.</summary>
         public static int Collect(Action check)
         {
-            // â  NESTING-SAFE since 2026-09-09 (Â§419). This used to end with `_collecting = false`
+            // ⚠ NESTING-SAFE since 2026-09-09 (§419). This used to end with `_collecting = false`
             // unconditionally, which was correct while only the suite called it - and a trap the moment
             // anything called it from INSIDE a collected check: the inner call would clear the flag, and
             // the outer check's own `Finish` would then take the `EditorApplication.Exit` branch and end
@@ -141,20 +141,20 @@ namespace PoliSim.EditorTools
     /// Runs the project's asset and settings checks together, from a menu item and once per Editor
     /// session.
     ///
-    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> Ã¢ÂÂ <b>the array
-    /// IS the enumeration, and this sentence deliberately does not count it.</b> Ã¢ÂÂ  It used to, and it was
+    /// <para><b>WHAT THIS ENUMERATES</b> (rule 14): the checks named in <see cref="Suite"/> — <b>the array
+    /// IS the enumeration, and this sentence deliberately does not count it.</b> ⚠ It used to, and it was
     /// WRONG: it read "TWENTY-ONE" while the array held twenty-five, and no check in the bar could see it
-    /// because every NAME it mentioned resolved Ã¢ÂÂ only the NUMBER was stale. The run prints the count and
+    /// because every NAME it mentioned resolved — only the NUMBER was stale. The run prints the count and
     /// the names before it starts, which is the generated form of the same fact; the sweep-by-sweep history
     /// of how the list grew is in `COMPLETED.md`. **Per the claim convention (2026-09-01), a count is
-    /// referenced or generated, never transcribed Ã¢ÂÂ in a comment exactly as in a document.** Each check
-    /// carries its own enumeration Ã¢ÂÂ see their doc comments. It does NOT run the simulation diagnostics
+    /// referenced or generated, never transcribed — in a comment exactly as in a document.** Each check
+    /// carries its own enumeration — see their doc comments. It does NOT run the simulation diagnostics
     /// (`AggregationEquivalenceCheck`, `CreditRatingAnchorCheck`, `PublicationCadenceCheck`), which need a
     /// seeded world rather than a project scan, and it does NOT run
-    /// <see cref="ScreenEdgeCheck"/> Ã¢ÂÂ see below.</para>
+    /// <see cref="ScreenEdgeCheck"/> — see below.</para>
     ///
-    /// Ã¢ÂÂ  **`ScreenEdgeCheck` IS DELIBERATELY EXCLUDED FROM THE AUTOMATIC RUN.** It reads whatever PNGs
-    /// happen to be on disk, so on Editor open it would report on a capture set of unknown age Ã¢ÂÂ and a
+    /// ⚠ **`ScreenEdgeCheck` IS DELIBERATELY EXCLUDED FROM THE AUTOMATIC RUN.** It reads whatever PNGs
+    /// happen to be on disk, so on Editor open it would report on a capture set of unknown age — and a
     /// green result from stale captures is worse than no result, because it answers a question about a
     /// build nobody is looking at. It belongs immediately after a capture pass, and has its own menu item
     /// for that.
@@ -193,29 +193,29 @@ namespace PoliSim.EditorTools
             ("ConstantProvenanceCheck", ConstantProvenanceCheck.Run),     // (d) a simulation constant says where it came from - a ratchet at 212
 
             // The coherence audit's FIFTH sweep (2026-09-01): a subsystem the game does not call.
-            // Ã¢ÂÂ  It exists because the other four were green while `TacticalVoting` sat built,
+            // ⚠ It exists because the other four were green while `TacticalVoting` sat built,
             // harness-proven and wired to nothing - `DeadStateCheck` scans PRIVATE declarations and
             // could not see it. Judged at the FILE, not the method: cut per method the first run
             // reported 58 findings, nearly all public helpers inside wired subsystems.
             ("UnwiredSubsystemCheck", UnwiredSubsystemCheck.Run),
 
-            // The coherence audit's SIXTH sweep (2026-09-01): evidence that would pass regardless Ã¢ÂÂ the
+            // The coherence audit's SIXTH sweep (2026-09-01): evidence that would pass regardless — the
             // class with FIVE recorded instances, which makes it this project's dominant failure mode
-            // rather than a coincidence. Ã¢ÂÂ  Its first run found `PublicationCadenceCheck`, registered in
+            // rather than a coincidence. ⚠ Its first run found `PublicationCadenceCheck`, registered in
             // the simulation group below, whose only exit was `Finish(0)`: it reported clean BY
-            // CONSTRUCTION and every run of the bar had counted it. Cheap Ã¢ÂÂ it reads text and builds no
-            // World Ã¢ÂÂ so it belongs with the others here.
+            // CONSTRUCTION and every run of the bar had counted it. Cheap — it reads text and builds no
+            // World — so it belongs with the others here.
             ("EvidenceDiscriminationCheck", EvidenceDiscriminationCheck.Run),
 
             // S-32 (2026-09-01): a delivered screen the player cannot reach is a FAILURE, not a
-            // curiosity. Ã¢ÂÂ  `ElectionNightScreen` Ã¢ÂÂ board 1h Ã¢ÂÂ was built, filmed at four widths and
+            // curiosity. ⚠ `ElectionNightScreen` — board 1h — was built, filmed at four widths and
             // recorded as delivered while the only thing naming it was the capture driver. Every guard
             // stayed green throughout: they check what was DRAWN, never whether a player could have got
             // there.
             ("PlayerReachabilityCheck", PlayerReachabilityCheck.Run),
 
             // The coherence audit's SEVENTH sweep (2026-09-01): a written claim about the code, checked
-            // against the code. Ã¢ÂÂ  `PhantomGuardCheck` and `CommentClaimCheck` scan CODE COMMENTS; nothing
+            // against the code. ⚠ `PhantomGuardCheck` and `CommentClaimCheck` scan CODE COMMENTS; nothing
             // checked a markdown claim, and this project's documents make far more claims about the code
             // than its comments do. Binds on the LIVE documents only - the historical records are correct
             // to name members that have since been deleted.
@@ -229,7 +229,14 @@ namespace PoliSim.EditorTools
             // figure that was true when typed and silently stopped being true.
             ("D18InventoryCheck", D18Inventory.Run),
 
-            // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. Ã¢ÂÂ  A prose
+            // §422 (2026-09-09): text decoded once too few times. ⚠ It exists because a tool edit did it
+            // twice - `Country.cs` carried mangled comments for a day under a green bar, and the second
+            // instance reached the generated block of the document that goes to Design. A RATCHET, not a
+            // rule: its one measured suspect is correct text the rule cannot distinguish, which is also
+            // why it reports and never repairs.
+            ("MojibakeCheck", MojibakeCheck.Run),
+
+            // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. ⚠ A prose
             // mention used to count as a reference in FOUR name-scanning checks - a commented-out
             // Debug.LogError even counted as a failure path, defeating the sixth sweep with a comment.
             // It is a MUTATION PROBE rather than a scan: the subject is the shared stripper, whose right
@@ -237,25 +244,25 @@ namespace PoliSim.EditorTools
             ("CommentImmunityCheck", CommentImmunityCheck.Run),
 
             // S-33's root, guarded (2026-09-01): `ElectionsData/` sits outside `Assets/`, so runtime code
-            // cannot read it Ã¢ÂÂ which is why board 1h, `RegionalVoteModel` and `TacticalVoting` are all
+            // cannot read it — which is why board 1h, `RegionalVoteModel` and `TacticalVoting` are all
             // unreachable. The answer is a GENERATED catalog, and its one risk is drift: the source moving
-            // while the generated file does not. Ã¢ÂÂ  It compares the DIGEST of the input, not a re-parse of
-            // it Ã¢ÂÂ a second parser would be a second thing to keep true.
+            // while the generated file does not. ⚠ It compares the DIGEST of the input, not a re-parse of
+            // it — a second parser would be a second thing to keep true.
 
             // C-0.2 (2026-09-01): its done-when WAS a grep, which means it was a check nobody had
             // written - and it was sized as a READ. A read decays the moment it finishes.
             ("PreWiringPremiseCheck", PreWiringPremiseCheck.Run),
 
-            // S-39 (2026-09-01): a screen we CUT must be told to the person drawing it. Ã¢ÂÂ  This project
+            // S-39 (2026-09-01): a screen we CUT must be told to the person drawing it. ⚠ This project
             // has a great deal of machinery keeping its documents true to its code and NONE keeping an
             // outward-facing ask true to a decision made after it was sent.
             ("DesignNotificationCheck", DesignNotificationCheck.Run),
 
-            // S-29 (2026-09-01): the party-ink constraint as a DRAW-SITE rule. Ã¢ÂÂ  A hue harness cannot
+            // S-29 (2026-09-01): the party-ink constraint as a DRAW-SITE rule. ⚠ A hue harness cannot
             // see it - both clauses are about WHERE a colour is drawn, not what it is.
             ("PartyInkDrawSiteCheck", PartyInkDrawSiteCheck.Run),
 
-            // S-26's defence clause (2026-09-01): the dial midpoint stated ONCE. Ã¢ÂÂ  Registered as a normal
+            // S-26's defence clause (2026-09-01): the dial midpoint stated ONCE. ⚠ Registered as a normal
             // check rather than a ratchet, because its right answer is ZERO and it is AT zero - a ratchet
             // would be a licence for a fifth statement to sit there being counted.
             ("SharedMidpointCheck", SharedMidpointCheck.Run),
@@ -265,12 +272,12 @@ namespace PoliSim.EditorTools
             ("PolicyImpactLedgerCheck", PolicyImpactLedgerCheck.Run),   // P5-B5 (2026-09-05): every PolicyDecision field in a ledger family - the ledger throws at PLAY time otherwise, which the bars never reached (B2 shipped two fields outside one; the film found it)
 
             // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped
-            // discriminating. Ã¢ÂÂ  REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above
+            // discriminating. ⚠ REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above
             // reported to `RatchetLedger` in THIS process, so it must run after them. Run alone it finds an
             // empty ledger and FAILS, because a slack audit that audited nothing looks exactly like one
             // that found no slack.
 
-            ("ResidueCheck", ResidueCheck.Run),   // the residue count, re-armed 2026-09-07 (ÃÂ§369): open work a session could start, the owner rows excluded by name - reports, never fails on a number
+            ("ResidueCheck", ResidueCheck.Run),   // the residue count, re-armed 2026-09-07 (§369): open work a session could start, the owner rows excluded by name - reports, never fails on a number
             ("RatchetSlackCheck", RatchetSlackCheck.Run),
         };
 
@@ -300,28 +307,28 @@ namespace PoliSim.EditorTools
         {
             int code = CheckExit.Collect(ScreenEdgeCheck.Run);
             Debug.Log(code == 0
-                ? "CHECKS: ScreenEdgeCheck clean Ã¢ÂÂ but only for the captures currently on disk."
+                ? "CHECKS: ScreenEdgeCheck clean — but only for the captures currently on disk."
                 : $"CHECKS: ScreenEdgeCheck FAILED ({code}).");
         }
 
         /// <summary>
         /// The three simulation checks, on demand.
         ///
-        /// Ã¢ÂÂ  **THEIR EXCLUSION WAS RECORDED AS "they need a seeded world rather than a project scan",
+        /// ⚠ **THEIR EXCLUSION WAS RECORDED AS "they need a seeded world rather than a project scan",
         /// AND THAT REASON WAS WRONG.** All three run headless: `WorldFactory.CreateDefault()` is a plain
-        /// static call building a `World` in memory Ã¢ÂÂ no Play mode, no scene, no `GameObject`.
+        /// static call building a `World` in memory — no Play mode, no scene, no `GameObject`.
         /// `CreditRatingAnchorCheck` does not build one at all. There was never a capability barrier; the
         /// real one was the same `EditorApplication.Exit` that kept every other check off a menu, and it
         /// is fixed for these three now too.
         ///
         /// <para><b>What genuinely separates them is COST, not capability.</b>
-        /// `AggregationEquivalenceCheck` alone constructs four Worlds and advances them Ã¢ÂÂ a real per-open
+        /// `AggregationEquivalenceCheck` alone constructs four Worlds and advances them — a real per-open
         /// expense where scanning 149 textures is not. So they get their own menu item and stay out of the
-        /// once-per-session run: a stated trade rather than an inherited assumption. Ã¢ÂÂ  **The cost has not
+        /// once-per-session run: a stated trade rather than an inherited assumption. ⚠ **The cost has not
         /// been measured**; if it turns out small they belong in the automatic suite, and this note is the
         /// reason to go and check.</para>
         /// </summary>
-        [MenuItem("PoliSim/Run Simulation Checks (slower Ã¢ÂÂ builds Worlds)")]
+        [MenuItem("PoliSim/Run Simulation Checks (slower — builds Worlds)")]
         private static void RunSimulationChecksFromMenu()
         {
             RunSimulation();
@@ -331,8 +338,8 @@ namespace PoliSim.EditorTools
         /// C-N3 (2026-08-31): **a batchmode entry for the simulation group, so it can actually be part of
         /// the bar.**
         ///
-        /// <para>Ã¢ÂÂ  The group had a menu item and nothing else, which means a check in it could not be run
-        /// by a session or by CI Ã¢ÂÂ it was armed for a human who remembered to click it. That is the same
+        /// <para>⚠ The group had a menu item and nothing else, which means a check in it could not be run
+        /// by a session or by CI — it was armed for a human who remembered to click it. That is the same
         /// failure mode <see cref="RunAllBatch"/> fixed for the nine, and adding `LeverLivenessCheck` to a
         /// menu-only group would have been arming a guard that never fires. The two entries stay
         /// separate: `RunAllBatch` is the cheap once-per-session suite, this one is paid for on
@@ -347,7 +354,7 @@ namespace PoliSim.EditorTools
 
         /// <summary>The simulation group's registration table, hoisted to a field so
         /// <see cref="RatchetResidency"/> can ask WHICH BATCH registers a ratchet-declaring check rather
-        /// than scanning for the answer. Ã¢ÂÂ  It ends with RatchetSlackCheck for the same order-dependent
+        /// than scanning for the answer. ⚠ It ends with RatchetSlackCheck for the same order-dependent
         /// reason the cheap suite does: this group owns two ratchets of its own, and until 2026-09-01 they
         /// reported into a ledger that was built and then discarded at exit, unaudited.</summary>
         private static readonly (string Name, Action Run)[] Simulation = new (string Name, Action Run)[]
@@ -380,18 +387,18 @@ namespace PoliSim.EditorTools
                 // P5-B2 (2026-09-05): the nominal lines follow their drivers exactly, per country - it advances worlds.
                 ("SpendingIndexationDiagnostic", SpendingIndexationDiagnostic.Run),
                 ("RevenueBaseDiagnostic", RevenueBaseDiagnostic.Run),   // P5-B3 (2026-09-05): every tax base at its sourced share x the seed's GDP x its driver's ratio, all six; the recession probe shows the employment channel
-                ("LineIndexationDiagnostic", LineIndexationDiagnostic.Run),   // RF-2 (2026-09-07, ÃÂ§370): caseload lines to their drivers, driverless lines to potential growth, the player unchanged, both directions
-                ("LaborTaxParticipationDiagnostic", LaborTaxParticipationDiagnostic.Run),   // FT-5 LANDED (ÃÂ§396): zero at the seed, the sourced elasticity, both directions on participation and unemployment behind the jobs lag, the ÃÂ±5 guard
-                ("ExpectationsAnchoringDiagnostic", ExpectationsAnchoringDiagnostic.Run),   // ÃÂ§385 (2026-09-07): the target holds exactly, a shock decays at the rate both ways, the long horizon reads near target
-                ("AiFinanceMinistryDiagnostic", AiFinanceMinistryDiagnostic.Run),   // ÃÂ§388 (2026-09-07): inside the ceilings nothing; France cuts and raises; the US waits for two rises then caps and sequesters; the player never; both directions
-                ("JobsLagDiagnostic", JobsLagDiagnostic.Run),   // FT-7 (2026-09-07, ÃÂ§391): zero at the seed, a participation shock raises unemployment on impact by its labour-force share and decays at 0.40 a year, both directions, the reversion reads the core
-                ("PotentialEmploymentDiagnostic", PotentialEmploymentDiagnostic.Run),   // FT-7's second seat (2026-09-08, ÃÂ§394): the seed potential re-solved from the seed's factors, the labour input employment, a supply shock reaching potential only as employed, both directions
-                ("NaturalRateCompositionDiagnostic", NaturalRateCompositionDiagnostic.Run),   // FT-8 (2026-09-08, ÃÂ§398): the natural rate reads the labour force - zero at the seed, the composition base is the hand computation, Okun, the Phillips curve and the Taylor rule read the shift, an older labour force lowers it
-                ("DeskGlyphCoverageCheck", DeskGlyphCoverageCheck.Run),   // D16 ÃÂ§3.6 (2026-09-09, ÃÂ§410): the mono face carries Ã¢ÂÂ , Ã¢ÂÂ and Ã¢ÂÂ¡, or the desk prints a box where a mark should be
-                ("D16AcceptanceCheck", D16AcceptanceCheck.Run),   // D16 ÃÂ§8 (2026-09-09, ÃÂ§413): the four acceptance bars that are assertions - the fence at its ratchet, the tab's parity, the at-rest token rule, the waterfall's arithmetic
-                ("PartyInkCautionAudit", PartyInkCautionAudit.Run),   // D16 ÃÂ§9.2 (2026-09-09, ÃÂ§414): the audit Design put on this side - SD's yellow against Caution on the Docket's draft cue and the Budget's pencil face
-                ("EventShockPathDiagnostic", EventShockPathDiagnostic.Run),   // FT-9 (2026-09-08, ÃÂ§404): an event arms the daily path and leaves GDP untouched at the boundary; the shock lands in full over the period; Okun sees the fall; the events checkpoint moves GDP by nothing
-                ("HouseholdBurdenAnchorDiagnostic", HouseholdBurdenAnchorDiagnostic.Run),   // FT-3 (2026-09-07, ÃÂ§377): zero at the seed, the rate both ways, the base cancels by design, a tax absent at the seed anchors at zero
+                ("LineIndexationDiagnostic", LineIndexationDiagnostic.Run),   // RF-2 (2026-09-07, §370): caseload lines to their drivers, driverless lines to potential growth, the player unchanged, both directions
+                ("LaborTaxParticipationDiagnostic", LaborTaxParticipationDiagnostic.Run),   // FT-5 LANDED (§396): zero at the seed, the sourced elasticity, both directions on participation and unemployment behind the jobs lag, the ±5 guard
+                ("ExpectationsAnchoringDiagnostic", ExpectationsAnchoringDiagnostic.Run),   // §385 (2026-09-07): the target holds exactly, a shock decays at the rate both ways, the long horizon reads near target
+                ("AiFinanceMinistryDiagnostic", AiFinanceMinistryDiagnostic.Run),   // §388 (2026-09-07): inside the ceilings nothing; France cuts and raises; the US waits for two rises then caps and sequesters; the player never; both directions
+                ("JobsLagDiagnostic", JobsLagDiagnostic.Run),   // FT-7 (2026-09-07, §391): zero at the seed, a participation shock raises unemployment on impact by its labour-force share and decays at 0.40 a year, both directions, the reversion reads the core
+                ("PotentialEmploymentDiagnostic", PotentialEmploymentDiagnostic.Run),   // FT-7's second seat (2026-09-08, §394): the seed potential re-solved from the seed's factors, the labour input employment, a supply shock reaching potential only as employed, both directions
+                ("NaturalRateCompositionDiagnostic", NaturalRateCompositionDiagnostic.Run),   // FT-8 (2026-09-08, §398): the natural rate reads the labour force - zero at the seed, the composition base is the hand computation, Okun, the Phillips curve and the Taylor rule read the shift, an older labour force lowers it
+                ("DeskGlyphCoverageCheck", DeskGlyphCoverageCheck.Run),   // D16 §3.6 (2026-09-09, §410): the mono face carries †, ◇ and ‡, or the desk prints a box where a mark should be
+                ("D16AcceptanceCheck", D16AcceptanceCheck.Run),   // D16 §8 (2026-09-09, §413): the four acceptance bars that are assertions - the fence at its ratchet, the tab's parity, the at-rest token rule, the waterfall's arithmetic
+                ("PartyInkCautionAudit", PartyInkCautionAudit.Run),   // D16 §9.2 (2026-09-09, §414): the audit Design put on this side - SD's yellow against Caution on the Docket's draft cue and the Budget's pencil face
+                ("EventShockPathDiagnostic", EventShockPathDiagnostic.Run),   // FT-9 (2026-09-08, §404): an event arms the daily path and leaves GDP untouched at the boundary; the shock lands in full over the period; Okun sees the fall; the events checkpoint moves GDP by nothing
+                ("HouseholdBurdenAnchorDiagnostic", HouseholdBurdenAnchorDiagnostic.Run),   // FT-3 (2026-09-07, §377): zero at the seed, the rate both ways, the base cancels by design, a tax absent at the seed anchors at zero
                 ("PotentialOutputDiagnostic", PotentialOutputDiagnostic.Run),   // P5-B7 (2026-09-05): potential = seed x labour input x productivity index on all six; the derived growth rate; the workforce probe
                 ("PriceLevelDiagnostic", PriceLevelDiagnostic.Run),   // P5-B6 (2026-09-05): the price level compounds at the print, the bases are real x level, the inflation cap is not approached in a century on any of the six
                 ("HealthFamilyDiagnostic", HealthFamilyDiagnostic.Run),   // P5-C2 (2026-09-05): the seeds are the spine's, absent stays absent, the couplings move the figures the stated way, the implied elasticity printed beside the authored one
@@ -403,16 +410,16 @@ namespace PoliSim.EditorTools
                 ("InfrastructureFamilyDiagnostic", InfrastructureFamilyDiagnostic.Run),   // P5-C4 (2026-09-06): the seeds are the spine's, the seed's spending holds the seed's score, the couplings move the stated way
                 ("InfrastructureReadoutDiagnostic", InfrastructureReadoutDiagnostic.Run),   // RF-1 (2026-09-07): the seed's spending holds the seed's score to the digit; a century of the lines' own growth never reaches the ceiling; below the seed the rebuild is stronger
                 ("EnvironmentFamilyDiagnostic", EnvironmentFamilyDiagnostic.Run),   // P5-C5 (2026-09-06): the seeds are the spine's, the headline is its keys, the carbon tax moves them the stated way
-                ("EnvironmentFeedbackDiagnostic", EnvironmentFeedbackDiagnostic.Run),   // the environment feedback pass (2026-09-07): the carbon base is the taxed COÃ¢ÂÂ - the identity, the erosion under a raise, output's bases untouched
+                ("EnvironmentFeedbackDiagnostic", EnvironmentFeedbackDiagnostic.Run),   // the environment feedback pass (2026-09-07): the carbon base is the taxed CO₂ - the identity, the erosion under a raise, output's bases untouched
                 ("ImmigrationPovertyFamilyDiagnostic", ImmigrationPovertyFamilyDiagnostic.Run),   // P5-C6 (2026-09-06): the seeds with their two definitions, the couplings by definition, the stated way
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for
                 // every party of every country as the player's, so it belongs to this group on the same
-                // cost argument as the rest. Ã¢ÂÂ  Its Sweden 2022 assertion is the one in the suite whose
+                // cost argument as the rest. ⚠ Its Sweden 2022 assertion is the one in the suite whose
                 // answer is PUBLIC RECORD rather than the model's own opinion.
                 ("OfficeTestDiagnostic", OfficeTestDiagnostic.Run),
 
-                // C-D1 (2026-08-31): the voter groups as a view over the cohort substrate. Ã¢ÂÂ  Its Sweden
+                // C-D1 (2026-08-31): the voter groups as a view over the cohort substrate. ⚠ Its Sweden
                 // clause weights the 2024 pyramid by SCB's 2014 band rates and checks the result against
                 // SCB's separately-published all-ages figure - two independently sourced things agreeing,
                 // which is the strongest form of check this suite has.
@@ -421,14 +428,14 @@ namespace PoliSim.EditorTools
                 ("StanceModelDiagnostic", StanceModelDiagnostic.Run),   // P3-A2 (2026-09-03): five drafts of one magnitude across the bill categories on the formed government - different splits, a partner that refuses, the USA on its fallbacks.
                 ("PreviewParityDiagnostic", PreviewParityDiagnostic.Run),   // P2-3.4 (2026-09-02): the preview against the real boundary term by term, and the Riksbank path against the rule - a standalone diagnostic no bar ran until now
 
-                // Ã¢ÂÂ  REGISTERED LAST HERE TOO, 2026-09-01, and it closes a hole rather than adding cover.
+                // ⚠ REGISTERED LAST HERE TOO, 2026-09-01, and it closes a hole rather than adding cover.
                 // This group owns two ratchets - CohortAgingStepDiagnostic's runaway count and
                 // PublicationCadenceCheck's reachable-preliminary FLOOR - and the slack audit ran only in
                 // the cheap suite. Both reported into a per-process ledger that was built and discarded at
                 // exit, so NOTHING compared either bound with its measurement, while the cheap suite's
                 // enrolment printed "0 unreported" because it asked whether the Report call was WRITTEN.
                 // A written call is not an executed one. See RatchetResidency.
-                ("ResidueCheck", ResidueCheck.Run),   // the residue count, re-armed 2026-09-07 (ÃÂ§369): open work a session could start, the owner rows excluded by name - reports, never fails on a number
+                ("ResidueCheck", ResidueCheck.Run),   // the residue count, re-armed 2026-09-07 (§369): open work a session could start, the owner rows excluded by name - reports, never fails on a number
                 ("RatchetSlackCheck", RatchetSlackCheck.Run),
         };
 
@@ -446,7 +453,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The simulation group, run once, returning the WORST code any of them wanted. A check
-        /// that throws counts as 1 Ã¢ÂÂ an exception is not a pass. The enumeration is printed BEFORE the run
+        /// that throws counts as 1 — an exception is not a pass. The enumeration is printed BEFORE the run
         /// (the enumeration rule): a group that silently ran three of four would read like a clean run.</summary>
         private static int RunSimulation()
         {
@@ -458,7 +465,7 @@ namespace PoliSim.EditorTools
 
             var names = new string[simulation.Length];
             for (int i = 0; i < simulation.Length; i++) { names[i] = simulation[i].Name; }
-            Debug.Log($"CHECKS: running the {simulation.Length} simulation checks Ã¢ÂÂ {string.Join(", ", names)}.");
+            Debug.Log($"CHECKS: running the {simulation.Length} simulation checks — {string.Join(", ", names)}.");
 
             var failed = new List<string>();
             int worstCode = 0;
@@ -481,7 +488,7 @@ namespace PoliSim.EditorTools
 
             Debug.Log(failed.Count == 0
                 ? $"CHECKS: {simulation.Length} of {simulation.Length} simulation checks clean."
-                : $"CHECKS: {failed.Count} of {simulation.Length} FAILED Ã¢ÂÂ {string.Join(", ", failed)}.");
+                : $"CHECKS: {failed.Count} of {simulation.Length} FAILED — {string.Join(", ", failed)}.");
 
             BarTiming.End(worstCode);
             return worstCode;
@@ -494,13 +501,13 @@ namespace PoliSim.EditorTools
         ///   -executeMethod PoliSim.EditorTools.CheckSuite.RunAllBatch -logFile &lt;path&gt;
         /// </code>
         ///
-        /// Ã¢ÂÂ  **Why this did not exist until 2026-08-31 (C-0.4), and what it cost.** Every check ends in
+        /// ⚠ **Why this did not exist until 2026-08-31 (C-0.4), and what it cost.** Every check ends in
         /// <see cref="CheckExit.Finish"/>, which calls <c>EditorApplication.Exit</c> outside a
-        /// <see cref="CheckExit.Collect"/> Ã¢ÂÂ so the suite could only ever be driven from the Editor, and
+        /// <see cref="CheckExit.Collect"/> — so the suite could only ever be driven from the Editor, and
         /// <see cref="ScheduleOnEditorOpen"/> early-returns under <c>Application.isBatchMode</c>.
         /// Batch runs therefore invoked the nine checks as **nine separate Unity launches**, each paying
         /// the ~40 s domain warm-up, and **two spurious exit-1s in this project's history were traced to
-        /// invoking the wrong entry point** Ã¢ÂÂ a failure mode that exists only because the caller has to
+        /// invoking the wrong entry point** — a failure mode that exists only because the caller has to
         /// remember nine names. Remembering is what this repo has already recorded twice as a failing
         /// mechanism.
         ///
@@ -509,7 +516,7 @@ namespace PoliSim.EditorTools
         /// The exit code is the WORST any check wanted, so a green summary line cannot outrank a red
         /// check.</para>
         ///
-        /// <para>Ã¢ÂÂ  It deliberately carries no <c>[MenuItem]</c>: it ends in
+        /// <para>⚠ It deliberately carries no <c>[MenuItem]</c>: it ends in
         /// <c>EditorApplication.Exit</c>, so the first person to click it would quit the Editor. The
         /// menu equivalent is <b>PoliSim/Run Asset Checks</b>, which runs the identical suite and
         /// returns. The three simulation checks are NOT in it, for the cost reason recorded on
@@ -519,7 +526,7 @@ namespace PoliSim.EditorTools
         {
             var names = new string[Suite.Length];
             for (int i = 0; i < Suite.Length; i++) { names[i] = Suite[i].Name; }
-            Debug.Log($"CHECKS: running all {Suite.Length} in one pass Ã¢ÂÂ {string.Join(", ", names)}.");
+            Debug.Log($"CHECKS: running all {Suite.Length} in one pass — {string.Join(", ", names)}.");
 
             int worst = RunAll(announceClean: true);
             Debug.Log($"CHECKS: suite exiting {worst}.");
@@ -527,7 +534,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>Runs the nine and returns the WORST code any of them wanted (0 = all clean). A check
-        /// that throws counts as 1 Ã¢ÂÂ an exception is not a pass.</summary>
+        /// that throws counts as 1 — an exception is not a pass.</summary>
         private static int RunAll(bool announceClean)
         {
             RatchetResidency.ActiveGroup = RatchetResidency.Group.Cheap;
@@ -564,7 +571,7 @@ namespace PoliSim.EditorTools
 
             if (failed.Count > 0)
             {
-                Debug.LogError($"CHECKS: {failed.Count} of {Suite.Length} FAILED Ã¢ÂÂ {string.Join(", ", failed)}. " +
+                Debug.LogError($"CHECKS: {failed.Count} of {Suite.Length} FAILED — {string.Join(", ", failed)}. " +
                                "Scroll up for the per-check detail.");
             }
             else if (announceClean)
