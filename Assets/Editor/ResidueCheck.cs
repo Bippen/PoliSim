@@ -29,7 +29,7 @@ namespace PoliSim.EditorTools
         /// <summary>The exclusions, by name, each with its reason - the sheet's three owners and nothing else.</summary>
         private static readonly (string Name, string Owner, string Reason)[] Excluded =
         {
-            ("E-1", "OWNER ELIAS", "the itanes.it account and the one paste - sending and registering are Elias's by the §E2 convention"),
+            ("E-1", "OWNER ELIAS", "the one paste - sending is Elias's by the §E2 convention (the itanes.it half of this row closed 2026-09-10, §442: the waves landed and were consumed)"),
             ("E-2", "OWNER ELIAS", "the sitting - a capture is a harness film, not Elias's eyes"),
             ("E-3", "OWNER ELIAS", "felt verdict 1 - a staged save, loaded and played"),
             ("E-4", "OWNER ELIAS", "felt verdict 3 - a staged save, loaded and played"),

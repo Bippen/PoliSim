@@ -25916,3 +25916,27 @@ Italy's Day-3 figure moves from 7.14 to **6.37 pp** - better than the uniform la
 **NOT REACHED - and the ceiling has moved.** C-A1 (§137) named per-group loyalty as the ceiling: one λ of 0.451 anchored that fraction of FdI's result to its 2018 prior by construction. That term is gone - loyalty is now a number per party per band, from sourced surveys - and the surge is still not reached, by 18.3 points instead of 19.0. **What binds now is the SPATIAL layer's persuaded share: 17.82 %.** The per-group blend lets enough of the electorate move (in three bands the whole of it); what it moves toward is what CHES 2024 positions and the Day-1 electorate make of FdI, and 29.27 % needs 54.93 % of the persuadable vote - a factor of 3.08 the campaign layers would have to supply. ⚠ **Those layers do not run in this backtest**: the 2022 case is a prediction without a campaign, so salience and media (C-N1) contribute nothing here, and momentum cannot move a vote by construction (its two call sites feed the polls). The factor is what they would owe; whether a played 2022 campaign could supply it is a question no backtest answers.
 
 **Recorded as a named ceiling, not tuned toward.** No constant moved; `Sharpness` and `MinimumCompatibility` stand at their [AUTHORED-DRAFT] values; the electorates are Day-1's. The strongest validation was not obtained; the model's own honest answer is 10.95 %, and the reason is named at the layer that now binds.
+
+## 446. E-1 CLOSED — the chain from §137 complete to its last link; the six tables before and after; one bar, the push (2026-09-10)
+
+**The ruling:** *"Close E-1 in the errands. One commit per item, one green bar, R-SP1 push, one report."*
+
+**The chain, as §137 drew it and as it now stands.** C-C13's ruling → P-I2 → C-D1 → per-group loyalty → the FdI re-test. §137 measured the ceiling and could not build the fourth link because the one wave available was the one the invariant forbids. E-1 brought the two it allows; §442 verified and cross-tabbed them; §443 derived loyalty per band on the invariant; §444 built the layer where the uniform one stood; §445 re-ran the test. **The last link is built and the answer is NOT REACHED** - 10.95 % against 29.27 - with the ceiling moved from loyalty to persuasion and named there. Nothing was tuned toward it.
+
+**The six tables.** Italy's is in §444, before and after, and the FdI test's in §445. The other five:
+
+| instrument | country | before | after |
+|---|---|--:|--:|
+| `GateReRun` (Day-3, backtest direction) | Germany-8 | 5.36 pp | 5.36 pp - byte-identical table |
+| | Sweden | 1.46 pp | 1.46 pp - byte-identical table |
+| | Poland | 3.15 pp | 3.15 pp - byte-identical table |
+| `VoteShareBacktest` (no loyalty in it) | all six | SE 3.25 · DE 5.78 · PL 6.99 · IT 5.61 · FR 1.16 · US 0.00 | identical, line for line (`e1_after_VoteShareBacktest`) |
+| `SeatAllocationBacktest` | Sweden, Germany, Poland, Italy, the USA stage | unchanged by construction (no loyalty enters seat conversion) | in the simulation bar below |
+
+The gate's verdict is unchanged: PASS WITH STATED SCOPE (Sweden, Germany); Poland improved, low confidence; Italy REGRESSED against Day-1, low confidence, by less than before. France and the USA carry no loyalty (one election each on disk) and were never in the gate.
+
+**E-1 is DONE** in `ERRANDS.md`, the feature list's three mentions closed, and `ResidueCheck`'s exclusion for the row reduced to its paste half. The commits, one per item: §442 `7fd3f38` · §443 `a179d85` · §444 `9843ac0` · §445 `2a1897e` · this record.
+
+**Bar:** `bar315_e1` **37 of 37** cheap checks (`GeneratedCatalogCheck` now guarding three catalogs; `ResidueCheck` 0 open over 411 files; `MojibakeCheck` 1 of 1) and `bar315_e1_sim` **42 of 42** simulation checks, both on the finished tree with every item committed; `LoyaltyHarness`, `GateReRun`, `ItalySurgeCeilingDiagnostic` and `VoteShareBacktest` run green as standalone instruments the same afternoon.
+
+**Push (R-SP1):** fast-forward only, by `push_ff.sh` - fetch, `origin/main` an ancestor of HEAD, `git push origin main` with no force flag, re-fetch, `origin/main == HEAD`. Eight commits went up (`50fb951` through this record); the result line is in the report.

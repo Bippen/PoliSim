@@ -266,7 +266,7 @@ toward it.**
 *Carries: ~~`M-B6` (D-10 (a), `TacticalVoting` wired) · `M-D4` (a live poll, so the tactical layer has polled
 shares to read)~~ — **both discharged 2026-09-02 (`COMPLETED.md` §212): election night applies the tactical
 layer to the campaign's shares, believing the campaign's last tracker; BASELINE for election outcomes, first
-measured at the first counted campaign** · and E-1's ITANES registration is the blocker on per-group loyalty,
+measured at the first counted campaign** · and E-1's ITANES registration WAS the blocker on per-group loyalty (landed 2026-09-10, §442–§445),
 which is Elias's.*
 
 # F4 — The tax instruments
@@ -986,8 +986,7 @@ the ITANES registration, still open.
 - **C-N8 (2026-09-02, §208) — Elias's.** Under D-20 (a) the two grassroots parties, campaigning by doors and posts, make no news and are never booked: 0 interviews, persuasion ~3 000 against millions. Whether §13's interest threshold ladder should let a small party onto the air at all is a design question about §13.
 - **Three first sights, owed to play (2026-09-02)** — the live Campaign HQ from the rail (§205), the first pressed chip on its queue (§207), the first election night that counts a campaign (§206's `ELECTION: counted the campaign's shares` log line). Each is a finding to read, never a tune; the campaign is Sweden's only.
 - **Playtest 2's own three rows for Elias (2026-09-02, the sitting's "Yours", verbatim in P2 above)** — play it again after Track 0 lands (the deficit figure, the single election path, the campaign interrupt are the three things that change first); the Design paste when D10 is installed; the two stat-icon PNGs and the ITANES registration, still open.
-- **`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves. ⚠ **Blocks F3's
-  per-group loyalty**, which is otherwise complete.
+- ~~**`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves.~~ ✅ **DONE 2026-09-10** (§442–§445): the waves landed, per-group loyalty is built for Italy, and the FdI ceiling test re-ran - NOT REACHED (10.95 % against 29.27), the ceiling now the spatial layer's persuaded share.
 - **`ERRANDS.md` E-3** — the one paste: the GO on the seven marks, the derived mandate column, **the two
   stat-icon files** (files, not digests — ⚠ a manifest naming a file is not the file).
 - **The §V sitting** — 54 rows, `sv_index.html`; ⚠ 43 carry no stated question, deliberately.
@@ -1294,7 +1293,7 @@ here; the evidence is there.*
 
 | row | what it is | what it unblocks |
 |---|---|---|
-| **E-1** (`ERRANDS.md`) | register at `itanes.it`; the 2013 and 2018 waves | F3's per-group loyalty for Italy - the one input the elections model lacks |
+| **E-1** (`ERRANDS.md`) | ✅ DONE 2026-09-10 (§442–§445) - the waves landed; per-group loyalty built; the FdI test re-run, NOT REACHED | F3's per-group loyalty for Italy - the one input the elections model lacks |
 | **E-3** (`ERRANDS.md`) | the RETURN paste to Design and the glance | the seven Swedish marks then the batch, the two Society icons, the valkrets cartogram - all consumed on landing, nothing queued behind them |
 | **E-6** (`ERRANDS.md`) | Italy's IRPEF *scaglioni* as a text a fetch can read | the last open figure of F4's bill |
 | **The §V sitting** and the two felt verdicts (E-2..E-4 of the register) | 54 rows read by a person; decision density and the Trade bill's costs, played | the judgements no harness film can give |
