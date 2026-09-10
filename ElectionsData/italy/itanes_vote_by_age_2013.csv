@@ -1,0 +1,27 @@
+# ITANES 2013 - Italian National Election Study, post-election CAPI wave: Chamber vote x six age bands, WEIGHTED counts [SOURCED]
+# source: ITANES (itanes.it), "Itanes 2013 - elezioni politiche 24-25 febbraio 2013", complete dataset behind the portal
+#   registration; downloaded by Elias 2026-09-10 (E-1) as AssetPackArchive/Itanes-2013.zip
+#   (sha256 808c2799c2c16f8185da2d5fc7bba4ec7b51ddf18f90e08c4610efe8675ae2d6); file ITA2013_(itvers2013_11_29).dta,
+#   Stata format 115, 381 variables x 1508 observations. Terms: free for scientific, non-commercial research on
+#   Italian elections, registered account, citation required (recorded COMPLETED.md section 149 and section 442).
+# variables (labels verbatim from the file): d90 "90. MI PUO DIRE PER QUALE PARTITO HA VOTATO ALLA CAMERA?" (the vote);
+#   d1 "POTREBBE DIRMI GENTILMENTE LA SUA ETA ?" (age in years - the banding below; the file's own pre-coded eta6
+#   "18-24/25-34/35-44/45-54/55-64/65 +" agrees on every one of the 1173 rows); weight (the wave's weight variable,
+#   unlabelled double, n 1508, mean 1.0001, range 0.502-2.008).
+# columns: n = unweighted respondents naming a party; weight_sum = their weights summed; the party columns are
+#   WEIGHTED counts (shares = column / weight_sum). d90 codes: FdI 16 "Fratelli D'italia"; PD 3 "Partito Democratico";
+#   M5S 5 "Movimento 5 Stelle Beppegrillo.It"; Lega 13 "Lega Nord"; FI 12 "Il Popolo Della Liberta'" (PdL, the
+#   lineage the model joins FI to); AVS_lineage 2 "Sinistra Ecologia Liberta'" (SEL); other = every other list
+#   (codes 1,4,6-11,14,15,17-23,25). EXCLUDED: 24/26 "Scheda Bianca/Nulla/Non Ha Votato" (33), 27 "Non Indica, Non
+#   Vuole Risponde" (300), missing (1; not asked - did not vote, d86). Nobody under 18.
+# the whole-sample check: weighted FdI 0.67 %, PD 27.59 %, M5S 19.71 %, Lega 1.64 %, PdL 14.05 %, SEL 3.61 % of the
+#   party vote reported, against the official 1.96 / 25.43 / 25.56 / 4.09 / 21.56 / 3.20 - the survey under-reports
+#   M5S and PdL, which is why the model anchors each group to the official national share (GroupLoyaltyModel).
+#   FdI rests on 8 respondents in this wave; its per-band figures are stated with that n.
+band;n;weight_sum;FdI;PD;M5S;Lega;FI;AVS_lineage;other
+18-24;120;91.2832;0.6827;14.6684;30.4010;1.4458;8.0520;2.9317;33.1017
+25-34;155;166.8137;0.0000;34.5374;51.0330;3.0220;25.3107;11.4556;41.4549
+35-44;163;211.6019;1.2851;49.1957;53.7037;2.0682;37.9912;6.4055;60.9525
+45-54;217;214.6541;3.7148;65.1392;48.6937;1.5662;17.8611;7.4898;70.1893
+55-64;228;176.5223;2.1586;57.2076;25.7625;4.9296;24.4272;9.2669;52.7700
+65+;290;315.6057;0.0000;103.8432;22.2987;6.2348;51.6154;4.9798;126.6338

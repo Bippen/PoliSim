@@ -1,0 +1,29 @@
+# ITANES 2018 - Italian National Election Study, release 01, PANEL pre-post (CAWI): Chamber vote x six age bands, counts [SOURCED]
+# source: ITANES (itanes.it), "Itanes 2018 - elezioni politiche 4 marzo 2018", complete dataset behind the portal
+#   registration; downloaded by Elias 2026-09-10 (E-1) as AssetPackArchive/Itanes-2018.zip
+#   (sha256 faf78e46484b933be38119df694780128cbde5aea2de33871445cc172f7542da); file Itanes_2018_release01_panel_pre_post.dta,
+#   Stata format 118, 144 variables x 2573 observations (prepost = 1 for all 2573). Terms as for 2013.
+# WHY THE PANEL AND NOT THE PRE-ELECTORAL FILE: the pre-electoral release (5528 obs) carries only the vote INTENTION
+#   (voto1); the post-electoral vote REPORT exists only in the panel (voto*_post), which is what a cross-tab of the
+#   vote cast needs. WHY votocheck_post AND NOT voto4_post: voto4_post is asked only of respondents who marked a
+#   party symbol (voto3_post 1/3; 617 missing); votocheck_post "Riassumendo, quale tra le seguenti affermazioni
+#   esprime meglio cio che ha fatto in occasione delle elezioni del 4 marzo scorso?" is asked of every voter and
+#   assigns candidate-only voters their party through voto5/voto6 (250 missing = did not vote, voto1_post = 2).
+# UNWEIGHTED, AND NECESSARILY SO: the 2018 release carries NO weight variable in either file (all 144 + 98 names
+#   listed, none is a weight; the pre-electoral questionnaire describes a quota design, dem07 "Area Geografica per
+#   quota"). weight_sum therefore equals n. The age is dem02_post "Eta" (years; dem02 where the post value is missing).
+# columns as the 2013 file. votocheck_post codes: FdI 7 "Ho votato Fratelli d'Italia"; PD 2 "Ho votato Partito
+#   Democratico"; M5S 4 "Ho votato il MoVimento 5 Stelle"; Lega 6 "Ho votato Lega - Salvini Premier"; FI 5 "Ho votato
+#   Forza Italia - Berlusconi Presidente"; AVS_lineage 1 "Ho votato Liberi e Uguali con Pietro Grasso" (LeU); other =
+#   3 Piu Europa, 8 Noi con l'Italia, 9 Insieme, 10 Civica Popolare, 11 "un'altra lista o partito". EXCLUDED: 12 blank
+#   or null (51), 13 did not vote (25), 99 "Preferisco non rispondere" (379), missing (250).
+# the whole-sample check: FdI 4.12 %, PD 18.52 %, M5S 39.13 %, Lega 14.83 %, FI 7.23 %, LeU 6.80 % of the party vote
+#   reported, against the official 4.35 / 18.76 / 32.68 / 17.35 / 14.00 / 3.39 - the web panel over-reports M5S and
+#   LeU and under-reports FI, which is why the model anchors each group to the official national share.
+band;n;weight_sum;FdI;PD;M5S;Lega;FI;AVS_lineage;other
+18-24;56;56.0000;3.0000;9.0000;18.0000;6.0000;4.0000;5.0000;11.0000
+25-34;281;281.0000;10.0000;47.0000;128.0000;36.0000;13.0000;16.0000;31.0000
+35-44;397;397.0000;26.0000;60.0000;171.0000;53.0000;35.0000;22.0000;30.0000
+45-54;483;483.0000;17.0000;75.0000;206.0000;75.0000;32.0000;29.0000;49.0000
+55-64;414;414.0000;10.0000;87.0000;148.0000;71.0000;30.0000;39.0000;29.0000
+65+;237;237.0000;11.0000;68.0000;60.0000;36.0000;21.0000;16.0000;25.0000

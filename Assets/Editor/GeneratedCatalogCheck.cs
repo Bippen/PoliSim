@@ -116,6 +116,7 @@ namespace PoliSim.EditorTools
             // A second check would have been a second thing to keep true for no added coverage.
             failures += CheckProjections(sb);
             failures += CheckValkretsPopulation(sb);
+            failures += CheckItanes(sb);
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -125,6 +126,46 @@ namespace PoliSim.EditorTools
 
             Debug.Log(sb.ToString());
             CheckExit.Finish(0);
+        }
+
+        /// <summary>
+        /// E-1 (2026-09-10): `ItanesVoteByAge` against the two cross-tab files it was generated from, plus the identity
+        /// the catalog exists for - six bands in §137's order, each band's party columns within its weight sum.
+        /// </summary>
+        private static int CheckItanes(StringBuilder sb)
+        {
+            int failures = 0;
+            string root = Directory.GetCurrentDirectory();
+            var sources = new (string Relative, string Recorded)[]
+            {
+                ("ElectionsData/italy/itanes_vote_by_age_2013.csv", ItanesVoteByAge.SourceDigest2013),
+                ("ElectionsData/italy/itanes_vote_by_age_2018.csv", ItanesVoteByAge.SourceDigest2018),
+            };
+            foreach ((string relative, string recorded) in sources)
+            {
+                string path = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path)) { failures++; Debug.LogError($"CATALOG: {relative} is not on disk, so the ITANES catalog cannot be verified."); continue; }
+                string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(path));
+                if (!string.Equals(onDisk, recorded, StringComparison.OrdinalIgnoreCase))
+                {
+                    failures++;
+                    Debug.LogError($"CATALOG: {relative} changed since the ITANES catalog was generated (on disk {onDisk}, recorded {recorded}). Re-run ItanesCatalogGenerator.");
+                }
+            }
+
+            double[][][] waves = { ItanesVoteByAge.Counts2013, ItanesVoteByAge.Counts2018 };
+            double[][] sums = { ItanesVoteByAge.WeightSum2013, ItanesVoteByAge.WeightSum2018 };
+            for (int w = 0; w < 2; w++)
+            {
+                if (waves[w].Length != 6 || sums[w].Length != 6) { failures++; Debug.LogError($"CATALOG: ITANES wave {(w == 0 ? 2013 : 2018)} does not carry six bands."); continue; }
+                for (int g = 0; g < 6; g++)
+                {
+                    double s = 0; foreach (double c in waves[w][g]) { s += c; }
+                    if (s > sums[w][g] * 1.0001 || sums[w][g] <= 0) { failures++; Debug.LogError($"CATALOG: ITANES {(w == 0 ? 2013 : 2018)} band {ItanesVoteByAge.Bands[g]}: party columns {s} against weight sum {sums[w][g]}."); }
+                }
+            }
+            sb.Append($"    ItanesVoteByAge: two sources at their recorded digests, 6 bands x {ItanesVoteByAge.Parties.Length} parties per wave, every band's columns within its weight sum ({failures} fault(s)).\n");
+            return failures;
         }
 
         /// <summary>

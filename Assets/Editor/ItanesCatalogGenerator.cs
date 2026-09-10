@@ -1,0 +1,133 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using UnityEditor;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+
+namespace PoliSim.EditorTools
+{
+    /// <summary>
+    /// E-1 (2026-09-10): the two ITANES cross-tabs - the Chamber vote by the six age bands §137 used, for 2013 and
+    /// 2018 - emitted from `ElectionsData/italy/itanes_vote_by_age_{2013,2018}.csv` into the runtime assembly as
+    /// `ItanesVoteByAge`, the `ElectionsDataCatalogGenerator` idiom: the source's SHA-256 is written into the catalog
+    /// and `GeneratedCatalogCheck` re-derives it every run, so the CSV cannot move while the C# stays.
+    ///
+    /// <para>What is asserted on the way in: six rows in §137's band order, ten columns, every party column summing
+    /// to no more than the row's weight sum, and n and weight_sum positive - a cross-tab that fails any of those is
+    /// not a cross-tab and no catalog is written.</para>
+    /// </summary>
+    public static class ItanesCatalogGenerator
+    {
+        private const string Source2013 = "ElectionsData/italy/itanes_vote_by_age_2013.csv";
+        private const string Source2018 = "ElectionsData/italy/itanes_vote_by_age_2018.csv";
+        private const string OutputRelative = "Assets/Scripts/Elections/Generated/ItanesVoteByAge.cs";
+        private static readonly string[] Bands = { "18-24", "25-34", "35-44", "45-54", "55-64", "65+" };
+        private static readonly string[] Parties = { "FdI", "PD", "M5S", "Lega", "FI", "AVS_lineage", "other" };
+
+        [MenuItem("PoliSim/Generate ITANES Catalog")]
+        public static void Run()
+        {
+            CheckExit.ArmLogFold();
+            string root = Directory.GetCurrentDirectory();
+            try
+            {
+                (double[] n13, double[] w13, double[][] c13, string d13) = Read(Path.Combine(root, Source2013));
+                (double[] n18, double[] w18, double[][] c18, string d18) = Read(Path.Combine(root, Source2018));
+                string text = Emit(n13, w13, c13, d13, n18, w18, c18, d18);
+                File.WriteAllText(Path.Combine(root, OutputRelative), text, new UTF8Encoding(false));
+                Debug.Log($"ITANES: catalog written to {OutputRelative} from {Source2013} ({d13.Substring(0, 12)}…) and {Source2018} ({d18.Substring(0, 12)}…).");
+                CheckExit.Finish(0);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("ITANES: catalog NOT written - " + e.Message);
+                CheckExit.Finish(1);
+            }
+        }
+
+        internal static (double[] N, double[] W, double[][] Counts, string Digest) Read(string path)
+        {
+            if (!File.Exists(path)) { throw new FileNotFoundException(path); }
+            byte[] bytes = File.ReadAllBytes(path);
+            string digest = ElectionsDataCatalogGenerator.Sha256Of(bytes);
+            var n = new List<double>(); var w = new List<double>(); var counts = new List<double[]>();
+            bool header = false;
+            foreach (string raw in File.ReadAllLines(path))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#")) { continue; }
+                if (!header) { header = true; if (line != "band;n;weight_sum;" + string.Join(";", Parties)) { throw new InvalidDataException("unexpected header: " + line); } continue; }
+                string[] cells = line.Split(';');
+                if (cells.Length != 10) { throw new InvalidDataException("expected 10 cells: " + line); }
+                int row = counts.Count;
+                if (row >= Bands.Length || cells[0] != Bands[row]) { throw new InvalidDataException($"row {row} is '{cells[0]}', expected '{(row < Bands.Length ? Bands[row] : "nothing")}'"); }
+                double nn = P(cells[1]); double ww = P(cells[2]);
+                if (nn <= 0 || ww <= 0) { throw new InvalidDataException("n and weight_sum must be positive: " + line); }
+                var c = new double[Parties.Length]; double sum = 0;
+                for (int p = 0; p < Parties.Length; p++) { c[p] = P(cells[3 + p]); sum += c[p]; }
+                if (sum > ww * 1.0001) { throw new InvalidDataException($"party columns ({sum}) exceed weight_sum ({ww}) on {cells[0]}"); }
+                n.Add(nn); w.Add(ww); counts.Add(c);
+            }
+            if (counts.Count != Bands.Length) { throw new InvalidDataException($"{counts.Count} rows, expected {Bands.Length}"); }
+            return (n.ToArray(), w.ToArray(), counts.ToArray(), digest);
+        }
+
+        private static double P(string s) => double.Parse(s.Trim(), NumberStyles.Float, CultureInfo.InvariantCulture);
+
+        private static string Emit(double[] n13, double[] w13, double[][] c13, string d13, double[] n18, double[] w18, double[][] c18, string d18)
+        {
+            var sb = new StringBuilder();
+            sb.Append("// GENERATED by PoliSim.EditorTools.ItanesCatalogGenerator. DO NOT EDIT BY HAND.\n//\n");
+            sb.Append("// Sources: ").Append(Source2013).Append(" (SHA-256 ").Append(d13).Append(")\n");
+            sb.Append("//          ").Append(Source2018).Append(" (SHA-256 ").Append(d18).Append(")\n//\n");
+            sb.Append("// The digests above are what GeneratedCatalogCheck re-derives from the sources every run. The files' own\n");
+            sb.Append("// headers carry the provenance: the ITANES waves Elias downloaded under E-1, the variables used with their\n");
+            sb.Append("// labels, what was excluded, and the whole-sample check against the official returns.\n\n");
+            sb.Append("namespace PoliSim.Elections.Generated\n{\n");
+            sb.Append("    /// <summary>ITANES 2013 and 2018: the Chamber vote by the six age bands of COMPLETED.md §137, as counts\n");
+            sb.Append("    /// (2013 weighted by the wave's own weight; 2018 unweighted - its release carries no weight). Generated,\n");
+            sb.Append("    /// never hand-edited. Shares are counts over the band's weight sum.</summary>\n");
+            sb.Append("    public static class ItanesVoteByAge\n    {\n");
+            sb.Append("        public const string SourceDigest2013 = \"").Append(d13).Append("\";\n");
+            sb.Append("        public const string SourceDigest2018 = \"").Append(d18).Append("\";\n\n");
+            sb.Append("        /// <summary>§137's six bands, in order.</summary>\n");
+            sb.Append("        public static readonly string[] Bands = { ").Append(Quote(Bands)).Append(" };\n\n");
+            sb.Append("        /// <summary>The party columns. FI is the PdL lineage in 2013; AVS_lineage is SEL (2013) and LeU (2018); other is every other list.</summary>\n");
+            sb.Append("        public static readonly string[] Parties = { ").Append(Quote(Parties)).Append(" };\n\n");
+            Block(sb, "N2013", "Unweighted respondents naming a party, per band, 2013.", n13);
+            Block(sb, "WeightSum2013", "Their weights summed, per band, 2013.", w13);
+            Matrix(sb, "Counts2013", "Weighted counts [band][party], 2013.", c13);
+            Block(sb, "N2018", "Respondents naming a party, per band, 2018 (the panel's post-electoral report).", n18);
+            Block(sb, "WeightSum2018", "Equal to N2018: the release carries no weight.", w18);
+            Matrix(sb, "Counts2018", "Counts [band][party], 2018.", c18);
+            sb.Append("    }\n}\n");
+            return sb.ToString();
+        }
+
+        private static string Quote(string[] items) { var q = new List<string>(); foreach (string s in items) { q.Add("\"" + s + "\""); } return string.Join(", ", q); }
+
+        private static void Block(StringBuilder sb, string name, string doc, double[] values)
+        {
+            sb.Append("        /// <summary>").Append(doc).Append("</summary>\n");
+            sb.Append("        public static readonly double[] ").Append(name).Append(" = { ");
+            for (int i = 0; i < values.Length; i++) { sb.Append(values[i].ToString("0.####", CultureInfo.InvariantCulture)).Append(i + 1 < values.Length ? ", " : ""); }
+            sb.Append(" };\n\n");
+        }
+
+        private static void Matrix(StringBuilder sb, string name, string doc, double[][] values)
+        {
+            sb.Append("        /// <summary>").Append(doc).Append("</summary>\n");
+            sb.Append("        public static readonly double[][] ").Append(name).Append(" =\n        {\n");
+            foreach (double[] row in values)
+            {
+                sb.Append("            new double[] { ");
+                for (int i = 0; i < row.Length; i++) { sb.Append(row[i].ToString("0.####", CultureInfo.InvariantCulture)).Append(i + 1 < row.Length ? ", " : ""); }
+                sb.Append(" },\n");
+            }
+            sb.Append("        };\n\n");
+        }
+    }
+}
