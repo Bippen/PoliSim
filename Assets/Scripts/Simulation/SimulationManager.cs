@@ -2607,7 +2607,7 @@ namespace PoliSim.Simulation
             HealthFamily.AdvanceYear(country);   // P5-C2 (2026-09-05): the family's yearly step - a readout of the year's health line, the age-cost index and the minister; no feedback into the model
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
             InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
-            EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): readouts, no feedback; the carbon tax's base stays on output
+            EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): the intensities' yearly step; since §349 (2026-09-07) the carbon tax's base reads them (TaxBaseDriver.Emissions) - the one feedback this family has
             MigrationPovertyFamily.AdvanceYear(country);   // P5-C6 (2026-09-06): readouts, no feedback
             BoundaryLedger?.Invoke(country, "families");
 
