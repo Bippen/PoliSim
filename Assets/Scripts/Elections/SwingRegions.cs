@@ -86,19 +86,6 @@ namespace PoliSim.Elections
         public bool TooCloseToCall => Measured && GapPp <= GapErrorPp;
     }
 
-    /// <summary>One tile of the cartogram: where a valkrets sits on the grid and how it is captioned. Layout only — [AUTHORED-DRAFT], no geography claimed.</summary>
-    public readonly struct MapTile
-    {
-        public readonly string Name;
-        public readonly string Caption;
-        public readonly int Column;
-        public readonly int Row;
-
-        public MapTile(string name, string caption, int column, int row)
-        {
-            Name = name; Caption = caption; Column = column; Row = row;
-        }
-    }
 
     /// <summary>
     /// W-E2 — everything the campaign map draws. PURE DATA (R-N2); contains a
@@ -109,7 +96,6 @@ namespace PoliSim.Elections
     {
         public readonly CampaignSnapshot Campaign;
         public readonly MapRegionReading[] Regions;
-        public readonly MapTile[] Layout;
         public readonly string[] PartyNames;
         public readonly int PlayerPartyIndex;
         /// <summary>What was bought: "" when nothing, else the offer's name; and the per-region sample it gave.</summary>
@@ -119,10 +105,10 @@ namespace PoliSim.Elections
         /// <summary>The two offers that would sharpen this sheet, named with their prices (W-E4's ladder), so the gate points at its key.</summary>
         public readonly string OfferLine;
 
-        public CampaignMapSnapshot(CampaignSnapshot campaign, MapRegionReading[] regions, MapTile[] layout, string[] partyNames,
+        public CampaignMapSnapshot(CampaignSnapshot campaign, MapRegionReading[] regions, string[] partyNames,
             int playerPartyIndex, string pollingBought, int samplePerRegion, DateTime fieldDate, string offerLine)
         {
-            Campaign = campaign; Regions = regions; Layout = layout; PartyNames = partyNames; PlayerPartyIndex = playerPartyIndex;
+            Campaign = campaign; Regions = regions; PartyNames = partyNames; PlayerPartyIndex = playerPartyIndex;
             PollingBought = pollingBought; SamplePerRegion = samplePerRegion; FieldDate = fieldDate; OfferLine = offerLine;
         }
 
@@ -142,49 +128,4 @@ namespace PoliSim.Elections
         }
     }
 
-    /// <summary>
-    /// [AUTHORED-DRAFT] the cartogram: Sweden's 29 valkretsar on a 5 × 10 grid, north at the top,
-    /// laid by hand to read as the country's spine (Norrbotten alone at the top, the two Stockholm
-    /// valkretsar and Gotland to the east, Göteborg and the Västra Götaland four to the west, the
-    /// Skåne four and Malmö at the foot). Positions are a reading aid, not geography, and no
-    /// border is drawn. Names spelled as Valmyndigheten spells them (the 2018 file's keys).
-    /// </summary>
-    public static class SwedenCartogram
-    {
-        public static MapTile[] Layout() => new[]
-        {
-            new MapTile("Norrbottens län", "NORRBOTTEN", 3, 0),
-            new MapTile("Västerbottens län", "VÄSTERBOTTEN", 3, 1),
-            new MapTile("Jämtlands län", "JÄMTLAND", 2, 2),
-            new MapTile("Västernorrlands län", "VÄSTERNORRLAND", 3, 2),
-            new MapTile("Dalarnas län", "DALARNA", 1, 3),
-            new MapTile("Gävleborgs län", "GÄVLEBORG", 2, 3),
-            new MapTile("Värmlands län", "VÄRMLAND", 0, 4),
-            new MapTile("Örebro län", "ÖREBRO", 1, 4),
-            new MapTile("Västmanlands län", "VÄSTMANLAND", 2, 4),
-            new MapTile("Uppsala län", "UPPSALA", 3, 4),
-            new MapTile("Västra Götalands läns norra", "V. GÖTALAND N", 0, 5),
-            new MapTile("Södermanlands län", "SÖDERMANLAND", 2, 5),
-            new MapTile("Stockholms län", "STOCKHOLMS LÄN", 3, 5),
-            new MapTile("Stockholms kommun", "STOCKHOLM", 4, 5),
-            new MapTile("Göteborgs kommun", "GÖTEBORG", 0, 6),
-            new MapTile("Västra Götalands läns västra", "V. GÖTALAND V", 1, 6),
-            new MapTile("Västra Götalands läns östra", "V. GÖTALAND Ö", 2, 6),
-            new MapTile("Östergötlands län", "ÖSTERGÖTLAND", 3, 6),
-            new MapTile("Gotlands län", "GOTLAND", 4, 6),
-            new MapTile("Hallands län", "HALLAND", 0, 7),
-            new MapTile("Västra Götalands läns södra", "V. GÖTALAND S", 1, 7),
-            new MapTile("Jönköpings län", "JÖNKÖPING", 2, 7),
-            new MapTile("Kalmar län", "KALMAR", 3, 7),
-            new MapTile("Skåne läns västra", "SKÅNE V", 0, 8),
-            new MapTile("Kronobergs län", "KRONOBERG", 1, 8),
-            new MapTile("Blekinge län", "BLEKINGE", 2, 8),
-            new MapTile("Malmö kommun", "MALMÖ", 0, 9),
-            new MapTile("Skåne läns södra", "SKÅNE S", 1, 9),
-            new MapTile("Skåne läns norra och östra", "SKÅNE N & Ö", 2, 9),
-        };
-
-        public const int Columns = 5;
-        public const int Rows = 10;
-    }
 }

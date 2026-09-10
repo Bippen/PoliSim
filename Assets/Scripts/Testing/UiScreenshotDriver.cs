@@ -3914,7 +3914,7 @@ namespace PoliSim.Testing
                 yield break;
             }
 
-            MapTile[] layout = SwedenCartogram.Layout();
+
             var readings = new[]
             {
                 ("unbought", "", 0),
@@ -3944,7 +3944,7 @@ namespace PoliSim.Testing
                     regions[r] = SwingRegions.FromPoll(names[r], weights[r], poll);
                 }
 
-                var snapshot = new CampaignMapSnapshot(campaign, regions, layout, Sweden2022Parties, 0, bought, perRegion,
+                var snapshot = new CampaignMapSnapshot(campaign, regions, Sweden2022Parties, 0, bought, perRegion,
                     day.Today.AddDays(-2), offerLine);
                 controller.SetCampaignMapScreen(snapshot);
                 yield return Settle();

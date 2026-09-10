@@ -749,22 +749,89 @@ namespace PoliSim.UI
         /// (SimulationManager.PlayerCampaignLedger). Absent when no live campaign ran to this election, and the
         /// column says so rather than drawing zeros.
         /// </summary>
+        /// <summary>
+        /// Board 13b (D19 item 2, 2026-09-10): the ledger as a BRIDGE - the glance - with the eleven rows in the same fixed
+        /// order beneath it as the read. The bridge is `AttributionBridge`'s geometry painted by `CanvasPaint.Bridge`: baseline
+        /// tick, one step per source in the enum's order (never re-sorted), solid up, dashed-outline down, the level carried
+        /// between steps, the close tick heavier; 1 pp = 20 px at 1×, the range the path's own excursion; a zero term drawn as
+        /// nothing and its abbreviation struck. The move prints once, in Caution when negative. ⚠ Two deviations from 13b,
+        /// stated: the bridge takes the right column's width rather than the 425 the board sets (13a, which lays that column,
+        /// is stopped - §449), and the rows stay on the page beneath the bridge rather than behind a `†`, because the night
+        /// has no provenance tab. Without a ledger the lane is 13a's empty state: paper with a dashed baseline.
+        /// </summary>
         private static void BuildLedger(Transform parent, VoteAttribution.Ledger ledger, string party)
         {
-            Heading(parent, ledger == null ? "WHY — NO CAMPAIGN LEDGER FOR THIS NIGHT" : $"WHY — {party.ToUpperInvariant()}, LINE BY LINE");
             if (ledger == null || ledger.Lines.Count == 0)
             {
-                Row(parent, ledger == null ? "no live campaign was run to this election" : "NO ATTRIBUTION FOR THIS PARTY", "—", 12, PoliSimTheme.TextMuted);
+                Heading(parent, ledger == null ? "WHY — NO CAMPAIGN LEDGER FOR THIS NIGHT" : "WHY — NO ATTRIBUTION FOR THIS PARTY");
+                Paint(parent, "BridgeEmpty", CanvasPaint.DashedBaseline(420, 36, PoliSimTheme.Hex(0xF2EADB), PoliSimTheme.Hairline), 36f);
+                Row(parent, ledger == null ? "no live campaign was run to this election" : "the ledger carries no lines", "—", 11, PoliSimTheme.TextMuted);
                 return;
             }
-            var ordered = new List<KeyValuePair<VoteAttributionSource, double>>(ledger.Lines);
-            ordered.Sort((a, b) => Math.Abs(b.Value).CompareTo(Math.Abs(a.Value)));
-            foreach (KeyValuePair<VoteAttributionSource, double> line in ordered)
+
+            AttributionBridge.Geometry g;
+            try { g = AttributionBridge.Build(ledger); }
+            catch (InvalidOperationException e)
             {
-                if (Math.Abs(line.Value) < 5e-7) { continue; }   // below a hundredth of a pp
-                Row(parent, System.Text.RegularExpressions.Regex.Replace(line.Key.ToString(), "([a-z])([A-Z])", "$1 $2").ToUpperInvariant(),
-                    string.Format(CultureInfo.InvariantCulture, "{0:+0.000;-0.000} pp", line.Value * 100.0), 12, PoliSimTheme.TextPrimary);
+                Heading(parent, $"WHY — {party.ToUpperInvariant()}: THE LINES DO NOT SUM TO THE MOVE");
+                Wrapped(parent, e.Message, 11, PoliSimTheme.Bad);
+                return;
             }
+
+            Heading(parent, string.Format(CultureInfo.InvariantCulture, "WHY — {0} · BASELINE {1:F1} → CLOSE {2:F1} · 1 pp = {3:F0} px",
+                party.ToUpperInvariant(), g.BaselinePoints, g.ClosePoints, AttributionBridge.PixelsPerPoint));
+
+            // The move, once, signed - the one number the player is looking for.
+            Row(parent, "THE MOVE", string.Format(CultureInfo.InvariantCulture, "{0:+0.0;-0.0;0.0} pp", g.MovePoints), 14,
+                g.MovePoints < 0 ? PoliSimTheme.Caution : PoliSimTheme.TextPrimary, bold: true);
+
+            float height = Mathf.Clamp(g.HeightPixels + 8f, 36f, 120f);
+            Paint(parent, "Bridge", CanvasPaint.Bridge(420, Mathf.RoundToInt(height), g, AttributionBridge.PixelsPerPoint, PoliSimTheme.Hex(0xF2EADB),
+                PoliSimTheme.TextPrimary, PoliSimTheme.Caution, PoliSimTheme.Hairline, PoliSimTheme.TextPrimary), height);
+
+            // The abbreviations under their slots - a zero term struck through.
+            var strip = new GameObject("BridgeLabels");
+            strip.transform.SetParent(parent, false);
+            strip.AddComponent<RectTransform>();
+            strip.AddComponent<LayoutElement>().minHeight = 14f;
+            var cells = strip.AddComponent<HorizontalLayoutGroup>();
+            cells.childControlWidth = true; cells.childForceExpandWidth = true; cells.childControlHeight = true; cells.childForceExpandHeight = true;
+            Label(strip.transform, string.Format(CultureInfo.InvariantCulture, "{0:F1}", g.BaselinePoints), PoliSimTheme.TextSecondary, false);
+            foreach (AttributionBridge.Step s in g.Steps) { Label(strip.transform, s.Abbreviation, s.Zero ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary, s.Zero); }
+            Label(strip.transform, string.Format(CultureInfo.InvariantCulture, "{0:F1}", g.ClosePoints), PoliSimTheme.TextPrimary, false);
+
+            // The read: the same eleven, the same order, with their figures.
+            foreach (AttributionBridge.Step s in g.Steps)
+            {
+                Row(parent, s.Abbreviation + "  " + System.Text.RegularExpressions.Regex.Replace(s.Source.ToString(), "([a-z])([A-Z])", "$1 $2").ToUpperInvariant(),
+                    s.Zero ? "0.0" : string.Format(CultureInfo.InvariantCulture, "{0:+0.00;-0.00} pp", s.Points), 11,
+                    s.Zero ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary);
+            }
+        }
+
+        private static void Paint(Transform parent, string name, Texture2D texture, float height)
+        {
+            var art = new GameObject(name);
+            art.transform.SetParent(parent, false);
+            art.AddComponent<RectTransform>();
+            LayoutElement element = art.AddComponent<LayoutElement>();
+            element.minHeight = height; element.preferredHeight = height;
+            RawImage image = art.AddComponent<RawImage>();
+            image.texture = texture;
+            image.raycastTarget = false;
+        }
+
+        private static void Label(Transform parent, string text, Color ink, bool struck)
+        {
+            Text t = CanvasChrome.MakeText(parent, "L", text, PoliSimTheme.Document, 9, ink, TextAnchor.MiddleCenter);
+            t.raycastTarget = false;
+            if (!struck) { return; }
+            var line = new GameObject("Strike");
+            line.transform.SetParent(t.transform, false);
+            Image bar = line.AddComponent<Image>();
+            bar.color = ink; bar.raycastTarget = false;
+            RectTransform rt = bar.rectTransform;
+            rt.anchorMin = new Vector2(0.15f, 0.5f); rt.anchorMax = new Vector2(0.85f, 0.5f); rt.sizeDelta = new Vector2(0f, 1f);
         }
 
         /// <summary>

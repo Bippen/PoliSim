@@ -22,12 +22,23 @@ namespace PoliSim.UI
     /// says what the two offers that would sharpen the sheet cost and buy (W-E4's ladder, the
     /// same `MarginOfErrorPp`).
     ///
-    /// **No geography is claimed.** The grid is `SwedenCartogram.Layout` — a hand-laid reading
-    /// aid, north at the top, no borders, no sprite invented. A drawn map of the valkretsar is a
-    /// line for the Track H Design ask.
+    /// **The arrangement is board 4a's** (2026-09-10, 13b's note 2 - "the ruling is that the arrangement is one"):
+    /// `ValkretsCartogram`'s eleven bands with area = fixed mandates, the same geometry election night draws, so a
+    /// player who learns where Norrbotten sits here finds it there. The hand-laid 5 × 10 grid that stood here since
+    /// W-E2 is gone with it. No border, no sprite: the coastline is carried by the band edges alone.
     /// </summary>
     public partial class GameController
     {
+        /// <summary>The fixed mandates per valkrets the cartogram's areas are - our own column, derived by the statute's
+        /// allocator over the catalog's eligible electorate, as `ValkretsCartogramCheck` holds it against board 4a's.</summary>
+        private static int[] CampaignMapMandates()
+        {
+            long[] eligible = PoliSim.Elections.Generated.SwedishValkretsReturns2022.Eligible;
+            var e = new double[eligible.Length];
+            for (int i = 0; i < e.Length; i++) { e[i] = eligible[i]; }
+            return SeatConversion.FixedSeatsPerRegion(e);
+        }
+
         private CampaignMapSnapshot? _campaignMapScreen;
         private Rect _campaignMapInnerRect;
 
@@ -91,9 +102,17 @@ namespace PoliSim.UI
 
             float gridTop = y + Mathf.Round(4f * uy);
             float gridHeight = Mathf.Max(1f, keyRect.y - Mathf.Round(8f * uy) - gridTop);
-            float gap = Mathf.Round(4f * ux);
-            float tileW = Mathf.Floor((r.width - gap * (SwedenCartogram.Columns - 1)) / SwedenCartogram.Columns);
-            float tileH = Mathf.Floor((gridHeight - gap * (SwedenCartogram.Rows - 1)) / SwedenCartogram.Rows);
+
+            // Board 4a's geometry (13b's note 2, 2026-09-10: "two Swedens in one game is one source too many" - the campaign
+            // map draws the arrangement election night draws). Eleven bands, area = fixed mandates, the band's seats in a
+            // gutter at its left; the frame keeps 4a's aspect inside the room the sheet gives it.
+            float gutter = Mathf.Round(26f * ux);
+            float mapW = Mathf.Min(r.width - gutter, gridHeight * ValkretsCartogram.BoardWidth / ValkretsCartogram.BoardHeight);
+            float mapH = mapW * ValkretsCartogram.BoardHeight / ValkretsCartogram.BoardWidth;
+            float mapX = r.x + gutter + (r.width - gutter - mapW) * 0.5f;
+            float mapY = gridTop + (gridHeight - mapH) * 0.5f;
+            ValkretsCartogram.Layout layout = ValkretsCartogram.Lay(mapW, mapH, CampaignMapMandates(), 8f / 9f * ux);
+            string[] catalogNames = PoliSim.Elections.Generated.SwedishValkretsReturns2022.Names;
 
             // The shade's scale: the player's largest polled share among the measured tiles, so the
             // darkest tile is where the party is strongest and the rest read against it.
@@ -113,11 +132,24 @@ namespace PoliSim.UI
             var byName = new Dictionary<string, int>();
             for (int i = 0; i < s.Regions.Length; i++) { byName[s.Regions[i].Name] = i; }
 
-            foreach (MapTile tile in s.Layout)
+            if (Event.current.type == EventType.Repaint)
             {
-                if (!byName.TryGetValue(tile.Name, out int index)) { continue; }
+                GUIStyle bandStyle = DeskCaption(8f, PoliSimTheme.TextMuted, anchor: TextAnchor.MiddleRight);
+                for (int b = 0; b < layout.BandRows.Count; b++)
+                {
+                    (float by, float bh, int mandates) = layout.BandRows[b];
+                    float left = mapX + ValkretsCartogram.Bands[b].Left * layout.Scale;
+                    PoliSimWidgets.MeasuredLabel(new Rect(left - gutter, mapY + by, gutter - Mathf.Round(4f * ux), bh),
+                        mandates.ToString(CultureInfo.InvariantCulture), bandStyle);
+                }
+            }
+
+            foreach (ValkretsCartogram.Tile tile in layout.Tiles)
+            {
+                if (!byName.TryGetValue(catalogNames[tile.Region], out int index)) { continue; }
                 MapRegionReading reading = s.Regions[index];
-                var rect = new Rect(r.x + tile.Column * (tileW + gap), gridTop + tile.Row * (tileH + gap), tileW, tileH);
+                var rect = new Rect(mapX + tile.X, mapY + tile.Y, tile.W, tile.H);
+                string tileCaption = tile.Level == ValkretsCartogram.Level.Minimal ? ValkretsCartogram.Codes[tile.Region] : ValkretsCartogram.Labels[tile.Region];
 
                 if (Event.current.type == EventType.Repaint)
                 {
@@ -161,16 +193,20 @@ namespace PoliSim.UI
                 float pad = Mathf.Round(3f * ux);
                 float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
                 PoliSimWidgets.MeasuredLabel(new Rect(rect.x + pad, rect.y + pad, rect.width - pad * 2f, captionHeight),
-                    tile.Caption, reading.Measured ? captionOnInk : caption);
+                    tileCaption, reading.Measured ? captionOnInk : caption);
 
                 float figureHeight = Mathf.Ceil(DeskCaptionHeight(reading.Measured ? figure : unknown));
                 var figureRect = new Rect(rect.x + pad, rect.yMax - pad - figureHeight, rect.width - pad * 2f, figureHeight);
                 if (reading.Measured)
                 {
-                    PoliSimWidgets.MeasuredLabel(figureRect,
-                        string.Format(CultureInfo.InvariantCulture, "{0:F0} ±{1:F0}",
-                            100.0 * reading.Poll.Share(s.PlayerPartyIndex), reading.Poll.MarginOfErrorPp(s.PlayerPartyIndex)),
-                        figure);
+                    // 4a's tiles are sized by mandates, so the smallest (Gotland at 2) cannot hold "29 ±10" at 1280: the figure
+                    // falls back to the share alone, then to nothing - a label spilling into the next tile is worse than none.
+                    string full = string.Format(CultureInfo.InvariantCulture, "{0:F0} ±{1:F0}",
+                        100.0 * reading.Poll.Share(s.PlayerPartyIndex), reading.Poll.MarginOfErrorPp(s.PlayerPartyIndex));
+                    string shareOnly = string.Format(CultureInfo.InvariantCulture, "{0:F0}", 100.0 * reading.Poll.Share(s.PlayerPartyIndex));
+                    string shown = figure.CalcSize(new GUIContent(full)).x <= figureRect.width ? full
+                        : figure.CalcSize(new GUIContent(shareOnly)).x <= figureRect.width ? shareOnly : null;
+                    if (shown != null) { PoliSimWidgets.MeasuredLabel(figureRect, shown, figure); }
                 }
                 else
                 {

@@ -122,6 +122,77 @@ namespace PoliSim.UI
             return texture;
         }
 
+        /// <summary>
+        /// Board 13b (D19 item 2, 2026-09-10): the attribution BRIDGE. The baseline tick at the left, one slot per source
+        /// in the fixed order, the close tick at the right (heavier); each step a block from the level before to the level
+        /// after - SOLID when it rises, a DASHED OUTLINE when it falls - and a hairline carrying the level between steps.
+        /// A zero step draws nothing. The vertical scale is the caller's pixels per point (13b: 20 at 1×), the range the
+        /// path's own excursion; the caller sizes the texture from <see cref="Elections.AttributionBridge.Geometry"/>.
+        /// </summary>
+        public static Texture2D Bridge(int width, int height, Elections.AttributionBridge.Geometry g, float pixelsPerPoint, Color paper,
+            Color upInk, Color downInk, Color rule, Color tick)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+            var pixels = new Color32[width * height];
+            Color32 ground = paper;
+            for (int i = 0; i < pixels.Length; i++) { pixels[i] = ground; }
+
+            int slots = g.Steps.Count + 2;                 // the baseline tick, the steps, the close tick
+            float slot = width / (float)slots;
+            float top = 4f, usable = height - 8f;
+            // pixels down from the top; the scale is the board's, and is only ever CLAMPED to the box, never re-fitted upward
+            float scale = (g.HighPoints - g.LowPoints) * pixelsPerPoint > usable ? usable / (float)(g.HighPoints - g.LowPoints) : pixelsPerPoint;
+            float Y(double points) => top + (float)(g.HighPoints - points) * scale;
+
+            // The baseline tick and the close tick, the close heavier.
+            FillRect(pixels, width, height, slot * 0.5f - 1f, Y(g.BaselinePoints) - 5f, 2f, 10f, tick);
+            FillRect(pixels, width, height, width - slot * 0.5f - 1.5f, Y(g.ClosePoints) - 6f, 3f, 12f, tick);
+
+            float levelX = slot * 0.5f;
+            double level = g.BaselinePoints;
+            for (int i = 0; i < g.Steps.Count; i++)
+            {
+                Elections.AttributionBridge.Step s = g.Steps[i];
+                float x0 = slot * (i + 1) + slot * 0.15f, x1 = slot * (i + 2) - slot * 0.15f;
+                // the level carried from the previous edge to this step's left edge
+                FillRect(pixels, width, height, levelX, Y(level) - 0.5f, x0 - levelX, 1f, rule);
+                if (!s.Zero)
+                {
+                    float yFrom = Y(s.From), yTo = Y(s.To);
+                    float yTop = Mathf.Min(yFrom, yTo), h = Mathf.Max(1f, Mathf.Abs(yTo - yFrom));
+                    if (s.Points > 0) { FillRect(pixels, width, height, x0, yTop, x1 - x0, h, upInk); }
+                    else { DashedBox(pixels, width, height, x0, yTop, x1 - x0, h, downInk); }
+                }
+                levelX = s.Zero ? x0 : x1;
+                if (s.Zero) { FillRect(pixels, width, height, x0, Y(level) - 0.5f, x1 - x0, 1f, rule); levelX = x1; }
+                level = s.To;
+            }
+            FillRect(pixels, width, height, levelX, Y(level) - 0.5f, width - slot * 0.5f - levelX, 1f, rule);
+
+            texture.SetPixels32(pixels);
+            texture.Apply(false);
+            return texture;
+        }
+
+        /// <summary>13a's empty state for the WHY lane: paper with a dashed baseline until the close is known.</summary>
+        public static Texture2D DashedBaseline(int width, int height, Color paper, Color rule)
+        {
+            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+            var pixels = new Color32[width * height];
+            Color32 ground = paper;
+            for (int i = 0; i < pixels.Length; i++) { pixels[i] = ground; }
+            for (int x = 0; x < width; x += 8) { FillRect(pixels, width, height, x, height * 0.5f - 0.5f, 4f, 1f, rule); }
+            texture.SetPixels32(pixels);
+            texture.Apply(false);
+            return texture;
+        }
+
+        private static void DashedBox(Color32[] px, int w, int h, float x, float y, float width, float height, Color32 ink)
+        {
+            for (float t = 0; t < width; t += 6f) { float d = Mathf.Min(3f, width - t); FillRect(px, w, h, x + t, y, d, 1f, ink); FillRect(px, w, h, x + t, y + height - 1f, d, 1f, ink); }
+            for (float t = 0; t < height; t += 6f) { float d = Mathf.Min(3f, height - t); FillRect(px, w, h, x, y + t, 1f, d, ink); FillRect(px, w, h, x + width - 1f, y + t, 1f, d, ink); }
+        }
+
         // Painting helpers: y runs top-down in these calls and is flipped into the texture's bottom-up rows.
         private static void Put(Color32[] px, int w, int h, int x, int y, Color32 ink)
         {

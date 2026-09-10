@@ -1,4 +1,17 @@
-# The send package — re-cut 2026-09-10: **ONE ASK (D19) AND THE RETURN (D17 / D18 / 10d), IN ONE PASTE**
+# The send package — re-cut 2026-09-10 (evening): **D19 ANSWERED AND READ — 13b BUILT, 13a STOPPED ON THREE CITATIONS; THE RETURN, AND THREE NOTES BACK**
+
+**Boards 13a and 13b were fetched and verified by content (`COMPLETED.md` §449).** 13b is built (§450): the bridge, in your order
+and at your scale, the eleven rows beneath as the read; the campaign map is on 4a's arrangement as your note 2 asked. **13a is
+STOPPED on this side**, not for its composition - the band counts, k ≈ 1 100 and the four states all check - but for three
+citations the record does not hold: (1) *"V-N1 ratified for full-bleed takeovers on D9 row 7"* - V-N1 is W-E6's flat-paper
+deviation and D9 row 7 is the paper and the stamp; the rule this side holds is the opposite, B8: the interrupt banner survives
+the takeover, ruled and filmed; (2) *"Annex B's 68 × 20 verdict stamp … delivered primitive"* - no such primitive exists; the
+delivered stamps are the 170 × 50 division verdicts, and D-8.5 is still open; (3) *"D9 row 10's counting state, withheld-then-
+together"* - row 10 was the §A.14 chip finding. The banner and the stamp are Elias's to rule; 13a builds the day he does.
+**The Energy boards 12a–12f are not this side's**: they rest on instructions quoted from Elias that reached you directly and are
+in no record here, and 12a, 12b and 12d sit beyond the 256 KiB the board file can be fetched at. Nothing of them is read into a
+plan until the ask exists on this side. **`sweden_outline.svg` is held**: the drawing differs from its manifest row after a
+re-export (9 155 bytes with a C2PA block against a stated 1 795; 1 381 stripped) - please re-issue it with a digest that matches.
 
 **D19 is the ask**: election night as ONE page around the map, the swing and the government, and the attribution ledger
 promoted from a caption block to a readable instrument. **No art is asked.** The page was rebuilt the same day so the
@@ -6,7 +19,7 @@ composition is of real parts - the calls stamped with the count each landed at a
 drawn at the centre** on our own mandate column, the swing like for like against 2022 at every instant, and who governs formed
 on the new chamber with the player's outcome. The whole ask is § ⭐ D19 at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`.
 
-**The ask's own evidence is item 8 below: Elias's screenshot of the played night**, verbatim, verified against its manifest, by
+**Your note says two of the 32 landed last time; the digests below are current.** The ask's own evidence is item 8 below: Elias's screenshot of the played night**, verbatim, verified against its manifest, by
 signature and by CRC walk (§441). The harness's film of the same night before the rebuild follows it as the reproduction.
 **The nine screenshots of the D16 sitting close the manifest** - your D16 note says they are already in your `uploads/`; they are
 listed by digest so both sides can compare, and a digest that matches needs no upload.
@@ -32,10 +45,10 @@ listed by digest so both sides can compare, and a digest that matches needs no u
 
 | n of 32 | kind | artifact | bytes | sha256 (on disk) |
 |---|---|---|--:|---|
-| **1 of 32** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 169615 | `6fedcf15297aa48f979436bbe23b9c7ea779cc1b200a4ceba957df735e18e215` |
-| **2 of 32** | document | `COMPLETED.md` | 2765866 | `ee2ed61c1545c4e708518ebfe4e4d7e5aafe2f62789b29d578b89d24a0459dc4` |
-| **3 of 32** | document | `POLISIM_FEATURE_LIST.md` | 181363 | `0face8efa3d119d604a01c663a4044673f2d87334d9cc4ec780a31ad3cdc40fd` |
-| **4 of 32** | document | `ERRANDS.md` | 21390 | `34a06b9dcb2455308eaf1c4546ad60f7286729edb88fa5edf997dc1c4e7a4e8b` |
+| **1 of 32** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 170487 | `2164eb79add886ba13afcfff8b97f7bf88e6bf9cf3ef882fde8715a39dff53c9` |
+| **2 of 32** | document | `COMPLETED.md` | 2783300 | `1b81eeeabccae3cc4d15e7f21ecb4eb14f76628071431f6627be19af96d8b7d3` |
+| **3 of 32** | document | `POLISIM_FEATURE_LIST.md` | 182216 | `4fafdb0368e6e0abe5d458eb46ee9fdd61693578e32081da7a2aa81e34352006` |
+| **4 of 32** | document | `ERRANDS.md` | 21667 | `f9d64626d4015beda51267dc7c5a77cfa3dc28df4c18454cac194dbb728eddad` |
 | **5 of 32** | log | `logs/bar313_night_final.log` | 709932 | `c3591fb60ebc3ad2d619289b234b62889edfc6117832391f577d34d6ce042886` |
 | **6 of 32** | log | `logs/bar290_blocfence_RunSimulationBatch.log` | 1264996 | `a440b32ef7bd1fe18b67106d8e7bf91381c49fe94b02ef6d39f4940fbeed0199` |
 | **7 of 32** | log | `logs/bar291_partyink.log` | 32426 | `28b2ac67bed388f06046c4a117e5065e1ce8e543d83db131865c76153cb60926` |
