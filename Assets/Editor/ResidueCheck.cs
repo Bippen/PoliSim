@@ -46,6 +46,7 @@ namespace PoliSim.EditorTools
             ("dials-only laws", "OWNER ELIAS", "whether laws should reach the 31 dials-only quantities, and which - a design call with no literature to read it from (§378)"),
             ("FT-6", "OWNER ELIAS", "the long-horizon inflation drift - measured and three forms proposed (§379); the hold on inflation is a macro-core specification, ruled not typed"),
             ("K-1", "CALENDAR", "the seed refresh from Sweden's real result - 13 September 2026"),
+            ("K-2", "CALENDAR", "Svenska kraftnat's report on Sweden's bidding-zone division - 29 January 2027; reporting is not enacting, and only an enacted change moves the seed (§456)"),
         };
 
         /// <summary>Documents that are an excluded owner's in their entirety, with the row that owns them.</summary>

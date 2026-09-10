@@ -1008,6 +1008,7 @@ the ITANES registration, still open.
 ## The calendar's
 
 - **K-1** — the seed refresh from Sweden's real result, **13 September**.
+- **K-2** — Svenska kraftnät's report on changing Sweden's bidding-zone division (the government's commission of 15 May 2025, extended May 2026 to a report on structural congestion, *"första steget i en formell översyn"*), due to the ministry **29 January 2027**. **Defence clause: reporting is not enacting, and only an enacted change moves the seed** - the four zones and their links (`ENERGY_LAYER_SPINE.md` §4) stand until a decision is in force. Added 2026-09-10 (`COMPLETED.md` §456).
 
 ## Standing findings that own no item
 
@@ -1327,5 +1328,6 @@ here; the evidence is there.*
 | row | what it is | what it unblocks |
 |---|---|---|
 | **K-1** | the seed refresh from Sweden's real result | **13 September 2026** - the game's Sweden after the election |
+| **K-2** | Svenska kraftnät's report on Sweden's bidding-zone division - **reporting is not enacting; only an enacted change moves the seed** (§456) | **29 January 2027** - the day to read whether SE1–SE4 and their links change, and nothing before a decision is in force |
 
 Nothing else is open. The strikeable decisions of this run are marked in §380 (HOLDS / RECONSIDER / NEEDS ELIAS); the fix-track table carries FT-1..FT-9 and RF-1..RF-2 each with its state (FT-8 landed §398, FT-9 landed §404); the shelf's last cycle is §380.
