@@ -110,6 +110,30 @@ namespace PoliSim.Elections
             return prior;
         }
 
+        /// <summary>
+        /// Election night item 3 (2026-09-10, V-N3): each valkrets' 2022 COUNT, in <paramref name="partyKeys"/>' order -
+        /// the previous election a first-term night compares against. ⚠ The same catalog the prior is read from, so the
+        /// comparison is against the result the model reproduces seat for seat and not against a second copy of it.
+        /// A party the catalog does not carry reads 0 (it has no 2022 count, which is what a swing must see).
+        /// </summary>
+        public static long[][] Votes2022(IReadOnlyList<string> partyKeys)
+        {
+            if (partyKeys == null || partyKeys.Count == 0) { throw new ArgumentException("no party keys"); }
+
+            int[] column = MapColumns(partyKeys);
+            var votes = new long[Count][];
+            for (int r = 0; r < Count; r++)
+            {
+                votes[r] = new long[partyKeys.Count];
+                for (int p = 0; p < partyKeys.Count; p++)
+                {
+                    if (column[p] >= 0) { votes[r][p] = SwedishValkretsReturns2022.Votes[r][column[p]]; }
+                }
+            }
+
+            return votes;
+        }
+
         /// <summary>A valkrets' eligible electorate — how many people COULD vote there, which is what an
         /// election night's outstanding-votes figure is measured against. ⚠ Distinct from the weight, which
         /// is what was actually cast: the difference is turnout, and conflating them would make a night

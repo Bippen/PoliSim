@@ -5755,15 +5755,53 @@ namespace PoliSim.UI
                 {
                     if (divisions[d].Passed && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
                 }
+                // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
+                // against the seed - Sweden 2022, which the model reproduces seat for seat - per valkrets, so the swing is like for
+                // like at every instant. A later one compares against the previous held election, whose record keeps national
+                // shares and seats only.
+                ElectionRecord earlier = null;
+                for (int i = _playerCountry.ElectionHistory.Count - 2; i >= 0; i--)
+                {
+                    if (_playerCountry.ElectionHistory[i].Method != ElectionMethod.NotImplemented) { earlier = _playerCountry.ElectionHistory[i]; break; }
+                }
+                long[][] previousByConstituency = null;
+                double[] previousShares = null;
+                var previousSeats = new int[keys.Count];
+                string previousLabel;
+                if (earlier == null)
+                {
+                    previousByConstituency = SwedishRegions.Votes2022(keys);
+                    for (int k = 0; k < keys.Count; k++)
+                    {
+                        foreach (PoliticalParty party in parties) { if (party.Abbrev == keys[k]) { previousSeats[k] = party.SeedSeats; break; } }
+                    }
+                    previousLabel = "SWEDEN 2022";
+                }
+                else
+                {
+                    previousShares = new double[keys.Count];
+                    for (int k = 0; k < keys.Count; k++)
+                    {
+                        earlier.Shares.TryGetValue(keys[k], out previousShares[k]);
+                        earlier.Seats.TryGetValue(keys[k], out previousSeats[k]);
+                    }
+                    previousLabel = "THE PREVIOUS ELECTION";
+                }
+
+                // Item 3: who governs - the formation on the chamber the election just set, the same one the verdict was read from.
+                GovernmentFormation.View government = GovernmentFormation.ViewOf(_playerCountry);
+
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 AudioDirector.Fire(AudioCue.ConstituencyDeclares);   // P4-2: the count is in - the night is built at its final minute, so this fires once
                 _electionNight = ElectionNightScreen.Build(
                     state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
-                    System.DateTime.Now, 349, verdict: _pendingElectionVerdict,
+                    System.DateTime.Now, 349, previousLabel: previousLabel, verdict: _pendingElectionVerdict,
                     ledger: _simulationManager.PlayerCampaignLedger, ledgerParty: _simulationManager.PlayerCampaignLedgerParty,   // P2-4.3
                     standingBudget: standingBudget?.Effects,
                     standingBudgetCitation: standingBudget == null ? null
-                        : $"DIVISION No. {standingBudget.Number} · {standingBudget.Date:yyyy-MM-dd} · {standingBudget.Title}");
+                        : $"DIVISION No. {standingBudget.Number} · {standingBudget.Date:yyyy-MM-dd} · {standingBudget.Title}",
+                    previousByConstituency: previousByConstituency, previousShares: previousShares, previousSeats: previousSeats,
+                    government: government, inkCountry: PlayerCountryId);
             }
             catch (System.Exception e)
             {

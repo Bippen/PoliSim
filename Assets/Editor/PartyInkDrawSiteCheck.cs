@@ -66,6 +66,12 @@ namespace PoliSim.EditorTools
              + "subject of the drawing, exactly as it is in the hemicycle. The file is the law pane's own board file and draws "
              + "NO area accent, which is clause 2 satisfied by construction rather than by inspection: the Laws page's accent "
              + "(Sectors) is drawn by GameController.cs, a different file."),
+            ("ElectionNightScreen.cs",
+             "election night items 2-3 (2026-09-10): the valkrets map fills each declared constituency in its WINNER's laddered "
+             + "ink and the government bar draws the cabinet and its supporters in theirs - who won where, and who governs, is "
+             + "party identity as the whole subject, the chamber's own argument. The ink is the chamber's accessor, so the map, the "
+             + "arc and the bar cannot disagree about a colour; the file draws NO area accent (clause 2 by construction). The map's "
+             + "tiles are painted by ValkretsCartogramView, which is handed the colours and names no accessor itself."),
         };
 
         public static void Run()

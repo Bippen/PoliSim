@@ -200,8 +200,81 @@ namespace PoliSim.Elections
                 : new int[parties];
 
             state.Calls = SafeCalls(state, seats, threshold, partyNames, d, blocs);
+            StampLandings(state, votes, valid, eligible, arrivals, seats, threshold, partyNames, d, blocs);
             return state;
         }
+
+        /// <summary>
+        /// **A call is news when it LANDS** (2026-09-10, election night item 1). `ElectionCall.DeclaredAt` has always
+        /// been documented as "how many constituencies had declared when the call became safe", but it was filled with
+        /// the count at the instant asked for - so a night built at its final minute (the played game builds it
+        /// there) stamped every call "at 29 of 29", nine identical lines saying nothing about when anything became
+        /// known. This walks the declarations in arrival order, re-derives the safe calls at every step on the same
+        /// bounds, and stamps each call standing now with the START of its unbroken run of safety.
+        ///
+        /// <para>⚠ The start of the UNBROKEN run, not the first sighting: a claim safe at 6, unsafe at 7 and safe again
+        /// from 9 landed at 9 - what a reader is owed is the moment it became safe for good. The bounds only tighten as
+        /// constituencies declare, so a break should not happen; this is written so it would not lie if one did.</para>
+        /// </summary>
+        private static void StampLandings(NightState state, long[][] votes, long[] valid, long[] eligible, int[] arrivals,
+            int seats, double threshold, string[] partyNames, Func<int, double> divisor, IDictionary<string, int[]> blocs)
+        {
+            if (state.Calls.Count == 0) { return; }
+            int regions = arrivals.Length;
+            int parties = state.CountedVotes.Length;
+
+            var minutes = new List<int>();
+            for (int r = 0; r < regions; r++)
+            {
+                if (arrivals[r] <= state.Minute && !minutes.Contains(arrivals[r])) { minutes.Add(arrivals[r]); }
+            }
+            minutes.Sort();
+
+            var landed = new Dictionary<string, int>();
+            foreach (int minute in minutes)
+            {
+                var step = new NightState { Minute = minute, TotalConstituencies = regions, CountedVotes = new long[parties] };
+                for (int r = 0; r < regions; r++)
+                {
+                    if (arrivals[r] <= minute)
+                    {
+                        step.DeclaredCount++;
+                        step.CountedValid += valid[r];
+                        for (int p = 0; p < parties; p++) { step.CountedVotes[p] += votes[r][p]; }
+                    }
+                    else
+                    {
+                        step.OutstandingEligible += eligible[r];
+                    }
+                }
+
+                var safeNow = new HashSet<string>();
+                foreach (ElectionCall call in SafeCalls(step, seats, threshold, partyNames, divisor, blocs))
+                {
+                    string key = CallKey(call);
+                    safeNow.Add(key);
+                    if (!landed.ContainsKey(key)) { landed[key] = step.DeclaredCount; }
+                }
+
+                var broken = new List<string>();
+                foreach (string key in landed.Keys) { if (!safeNow.Contains(key)) { broken.Add(key); } }
+                foreach (string key in broken) { landed.Remove(key); }
+            }
+
+            for (int i = 0; i < state.Calls.Count; i++)
+            {
+                ElectionCall call = state.Calls[i];
+                if (landed.TryGetValue(CallKey(call), out int at) && at < call.DeclaredAt)
+                {
+                    state.Calls[i] = new ElectionCall(call.Kind, call.Party, call.Bloc, at, call.OfTotal, call.Margin);
+                }
+            }
+
+            // Newest news last is how a night reads; the order the calls LANDED in is the order a reader met them.
+            state.Calls.Sort((a, b) => a.DeclaredAt != b.DeclaredAt ? a.DeclaredAt.CompareTo(b.DeclaredAt) : a.Kind.CompareTo(b.Kind));
+        }
+
+        private static string CallKey(ElectionCall call) => ((int)call.Kind).ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + call.Party.ToString(System.Globalization.CultureInfo.InvariantCulture) + "|" + (call.Bloc ?? string.Empty);
 
         /// <summary>
         /// Every call that is SAFE at this instant — safe meaning it holds at both extremes of what

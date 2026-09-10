@@ -244,6 +244,11 @@ namespace PoliSim.EditorTools
             // since `PartyMarkCoverageCheck` was written.
             ("D18MarkAssignment", D18MarkAssignment.Run),
 
+            // 2026-09-10 (election night item 2): board 4a's cartogram as the sentence it was written as - every tile's area
+            // is k · mandat - held with what it rests on: eleven bands carrying each valkrets once, OUR fixed-seat column equal
+            // row for row to the column the board consumed, and the board's own ladder counts at its own size.
+            ("ValkretsCartogramCheck", ValkretsCartogramCheck.Run),
+
             // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. ⚠ A prose
             // mention used to count as a reference in FOUR name-scanning checks - a commented-out
             // Debug.LogError even counted as a failure path, defeating the sixth sweep with a comment.

@@ -1,5 +1,7 @@
 # Claude Design asset request — PoliSim
 
+## ⭐ STATUS 2026-09-10 — **D19 IS THE LIVE ASK: election night as ONE page around the map, the swing and the government, with the attribution ledger promoted to a readable instrument** (§ ⭐ D19 below). Nothing in it is art. It is asked on real parts: the page was rebuilt the same day (`COMPLETED.md` §437–§439) - the calls stamped with the count at which each landed and collapsed once complete, **board 4a's cartogram drawn at the centre** on our own mandate column (held by `ValkretsCartogramCheck`), the swing like for like against 2022 at every instant, and **who governs** formed on the new chamber with the player's outcome by the office rule. **D18 is closed on both sides** - the fifteen cells landed and the 43 marks are wired (E-31, §429). The package (`SEND_PACKAGE.md`) carries D19 and the unpasted D17/D18 return in one paste; Elias's screenshot of the played night travels with it (E-33). The status that stood here is kept beneath, demoted.
+
 ## ⭐ STATUS 2026-09-09 (night) — **BOTH ASKS ARE ANSWERED AND NOTHING IS LIVE TO DESIGN.** They came back the same night on two boards. **D17 item 1 is BUILT** (`COMPLETED.md` §423): the bloc fence inside §256 moves the smaller party of a hue-crowded pair outward in laddered lightness by the deficit, the fence reads **12 of 12** and its floor is raised to match; the one print they asked back for is in the check itself, and their ceiling question is answered - M sits at **3.70:1** against the paper, so the consultation mechanism stays unfired. **D18 is answered as a seed table** (§424): 43 rows over 15 cells Design had already cut, the rules built and asserted rather than their table copied. **One thing remains, and it is not Design's**: item 2 - the eight colours as a PROPOSAL - is Elias's to rule on. ⭐ **The fifteen cells LANDED 2026-09-10** (E-31 closed, `COMPLETED.md` §429): they came as a delivered pack, the 43 marks are byte-identical to the cells your table assigns, row for row, and they are wired and filmed in all four chambers. The status that stood here this evening is kept beneath, demoted.
 
 ### The status as it stood this evening, when both asks were still out
@@ -896,6 +898,73 @@ MP ⁄ C  ΔH  12.8° ΔL  0.053  clears              M  ⁄ SD ΔH   7.4° ΔL 
 **Binary artifacts are uploaded, not described.** Nothing in this ask summarises in prose what a `get_file` can read back.
 
 ---
+
+## ⭐ D19 — ELECTION NIGHT AS ONE PAGE: the map, the swing and the government, with the ledger made an instrument (2026-09-10)
+
+**The ruling this carries:** *"Election night is a log, not a result."* The played night printed nine identical "will hold
+seats … at 29 of 29" lines and a list of raw counts per constituency, and never said who governs. Three items fixed what the
+page SAYS; this asks you to compose how it READS.
+
+### What the page carries now — built and filmed, so the composition is of real parts (`COMPLETED.md` §437–§439)
+
+| part | what it is | where it comes from |
+|---|---|---|
+| **THE MAP** (item 2) | your **board 4a**, drawn: 29 tiles in the eleven latitude bands, area = fixed mandates (310 of 349), each declared valkrets in its **winner's laddered ink** with the winner's mark on a paper chip, the lead in points, and at FULL the winner's change there against 2022; undeclared = paper with an em dash; the seats each band returns printed at its left | the geometry is yours and is held as a check (`ValkretsCartogramCheck`): every tile's area is k · mandat to a thousandth at four map sizes, and **our derived mandate column equals the column you re-added on 4a, row for row** |
+| **THE SWING** (item 3) | per party, **like for like**: the declared valkretsar now against the same valkretsar in 2022, shown at every instant of the night; on the complete count the seat change against the chamber too | the 2022 seed IS the previous election and the model reproduces it seat for seat - so V-N3 never needed a second election |
+| **WHO GOVERNS** (item 3) | the formation run on the new chamber (W-D3): the outcome by name, the cabinet and who carries it from outside with seats, the investiture the chamber's own rule sets, and **one line for the player by the office rule** - office is cabinet membership, support from outside is not office. Drawn today as a text block and a stand-in bar (cabinet solid, support hatched, the majority tick) | the same formation the game-over verdict reads, so the page and the verdict cannot disagree |
+| **THE CALLS** (item 1) | each call with the constituency count at which it became safe for good, in the order they landed; once the count is complete they collapse to one line per kind ("8 PARTIES HOLD SEATS - called from 8 to 29 of 29", each party at its own count) | the model now stamps when a call LANDED, which its own field was always documented to mean |
+| **WHY** (unchanged) | the campaign's attribution for the player's party, line by line, as a caption block | `VoteAttribution.Ledger` - see item 2 of the ask |
+| **THE ESTIMATE** (unchanged) | board 5c's plate: what the new chamber's first budget carries if it changes nothing | as built at D11 row 3 |
+
+The constituency LIST is gone: a raw count per valkrets said less than the map says, so it yielded to the map whole.
+
+### What is asked — two items, a composition and an instrument
+
+**1 of 2 — Compose election night as ONE page around three things: the map, the swing, the government.** Today it is three
+columns laid by us (the count and the calls · the map · who governs, the ledger and the estimate), and it is functional rather
+than composed. The constraints a composition has to meet, all measured:
+- **The map is width-limited.** 4a's frame is 1080 : 587.6, so at the 1280 frame the map gets ~half the document's width
+  (~540 × 295 px on screen) and leaves height unused beneath it; the tile ladder then puts 22 of the 29 tiles at COMPACT and five at
+  MINIMAL, and the shallow bands (Norrbotten to Uppsala, Halland, Skåne) run as one-line tiles. At 2560 the same page is roomy.
+  **Where should the map sit, and how large, so it is the page's centre at 1280?**
+- **The page has four states** and all are filmed: early (4 of 29 declared, no calls, no government), partial (16 of 29, three
+  calls), called (28 of 29), and final (29 of 29, the calls collapsed, the government formed). The government section is empty
+  until the last valkrets declares - by design, since a government on a projected chamber is a forecast.
+- **The played night has an outcome the staged one does not**: the player's line (IN OFFICE / OUT OF OFFICE) and the game-over
+  sentence on the foot beside CONTINUE. In the film the player is out of office - the chamber forms M+KD+L with SD's support and
+  S in opposition. It is the most consequential line on the page and today it is one bold row.
+- ⚠ **The takeover's hold banner covers the masthead in the played game** (the IMGUI "TIME IS PAUSED" strip draws over the
+  canvas top; present on the 2 September film, not introduced here). Whether the page should clear it or the banner should
+  yield to the takeover is your call.
+- **The government wants a drawing, not a bar.** Our bar is a stand-in so the page is not text only; the chamber's own arc
+  (board 10d) is the obvious grammar, and it is your call whether the night reuses it.
+
+**2 of 2 — Promote the attribution ledger from a caption block to a readable instrument.** What it is, exactly: for the
+player's party, the share at the campaign's baseline and at the close, and **eleven source lines** - the party's own eight
+actions (Rally, Town hall, Door to door, Television ad, Digital ad, Social post, Interview, Policy announcement), the attacks it
+received, everything every other party did as one line (Opponent campaigns), and its earned coverage - in percentage points,
+signed. **The lines sum to the move exactly**: they are Shapley values over the sources, so there is no residual line to hide
+and none to draw. Today it prints as rows of "SOURCE +0.000 pp" under a heading, largest first, and it reads as a footnote.
+**Asked: the instrument** - how the move from baseline to close is read at a glance (the project's nine-term approval ledger
+is the nearest idiom already in the game), at 1280, beside the count it explains.
+
+### What is NOT asked
+
+- **No art.** Every part above draws from delivered sprites and the party marks already in the repo (D18 landed, 53 of 53).
+- **Not the geometry of 4a** - built as drawn. One note back, for the record: **the board states 13 FULL / 15 COMPACT / 1 MINIMAL,
+  and its own rule applied to its own mock gives 16 FULL** - the mock draws Uppsala, Östergötland and Jönköping COMPACT though each
+  clears the FULL rule. We hold the rule; tell us if the count was the intent.
+- **A correction owed to you**: our D9 reply (§146) said "there is no built cartogram". There was one - a uniform 5 × 10 grid in
+  the campaign map (`SwedenCartogram`, since 2026-08-29) - which is why 4a declared its own arrangement. Election night now draws
+  **4a's** arrangement; the campaign map still draws the old grid. Say if it should move to 4a too.
+
+### The annex — what goes with this ask
+
+- **Elias's screenshot of the played night, verbatim** - the ask's own evidence of "a log, not a result". ⚠ Not in this repo when
+  the package was cut; it travels with the paste (E-33).
+- **The same night as the harness filmed it on 2 September**, before items 1-3 (`d11ci1280_e7c_election_night_takeover.png`).
+- **The films after items 1-3**, 1280 and 2560: the board in its five frames (the model's night, and the staged night early,
+  partial, called, final) and the played night's takeover. Named by digest in `SEND_PACKAGE.md`.
 
 ## ⭐ D18 — THE FULL ASSET REQUEST, generated from the coverage checks (2026-09-09)
 

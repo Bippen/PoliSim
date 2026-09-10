@@ -3066,6 +3066,27 @@ namespace PoliSim.Testing
         /// two calls `GameController.ShowElectionNight` makes, so the frame is of the thing a player
         /// reaches rather than of a rehearsal of it.</para>
         /// </summary>
+        /// <summary>Election night items 1-3 (2026-09-10): what a filmed night SAID, one line - each call with the count it landed
+        /// at, the map's tiles by ladder level, and the government formed - so a film is read against its log, not only its frame.</summary>
+        private static void LogNight(string stem, NightState state, string[] parties, ElectionNightScreen screen, GovernmentFormation.View government)
+        {
+            var calls = new System.Text.StringBuilder();
+            foreach (ElectionCall call in state.Calls)
+            {
+                calls.Append(call.Kind).Append(call.Party >= 0 ? ":" + parties[call.Party] : ":" + call.Bloc)
+                    .Append("@").Append(call.DeclaredAt.ToString(CultureInfo.InvariantCulture)).Append(' ');
+            }
+            string map = screen?.Map == null ? "no map"
+                : string.Format(CultureInfo.InvariantCulture, "map {0} full / {1} compact / {2} minimal", screen.Map.LastFull, screen.Map.LastCompact, screen.Map.LastMinimal);
+            string governs = government == null ? "no formation"
+                : government.HasGovernment
+                    ? string.Format(CultureInfo.InvariantCulture, "{0}: cabinet {1} ({2} seats), support {3}, opposed {4} of majority {5}",
+                        government.Outcome, string.Join("+", government.Cabinet.ConvertAll(c => c.Abbrev)), government.CabinetSeats,
+                        string.Join("+", government.Support.ConvertAll(c => c.Abbrev)), government.OpposedSeats, government.Majority)
+                    : "no government: " + government.Reason;
+            Debug.Log($"SHOT: NIGHT {stem} - {state.DeclaredCount} of {state.TotalConstituencies} declared; calls {calls}; {map}; {governs}");
+        }
+
         private IEnumerator CaptureElectionNightFromModel()
         {
             if (!NationalElection.TryPredictShares(CountryId.Sweden, out _))
@@ -3090,9 +3111,22 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // Election night items 1-3 (2026-09-10): the same inputs the played game gives the board - the 2022 count per
+            // valkrets as the previous election, 2022's seats, and the formation run on this count's chamber. No player's
+            // party: the harness predicts the country, it does not play a party in it.
+            var seeded = PartySystems.For(CountryId.Sweden);
+            var previousSeats = new int[keys.Count];
+            for (int k = 0; k < keys.Count; k++)
+            {
+                foreach (PoliticalParty party in seeded) { if (party.Abbrev == keys[k]) { previousSeats[k] = party.SeedSeats; break; } }
+            }
+            GovernmentFormation.View modelGovernment = GovernmentFormation.ViewOf(CountryId.Sweden, keys, modelState.SeatsOnCounted, null);
+
             PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
             ElectionNightScreen modelScreen = ElectionNightScreen.Build(
-                modelState, keys.ToArray(), "SWEDEN", new DateTime(2026, 9, 13, 20, 0, 0), 349);
+                modelState, keys.ToArray(), "SWEDEN", new DateTime(2026, 9, 13, 20, 0, 0), 349, previousLabel: "SWEDEN 2022",
+                previousByConstituency: SwedishRegions.Votes2022(keys), previousSeats: previousSeats,
+                government: modelGovernment, inkCountry: CountryId.Sweden);
             if (modelScreen == null)
             {
                 Debug.LogError("SHOT: F1 - the board did not build for the model frame; nothing filmed.");
@@ -3107,6 +3141,7 @@ namespace PoliSim.Testing
             Debug.Log(string.Format(CultureInfo.InvariantCulture,
                 "SHOT: F1 - board 1h filmed from the MODEL, {0} constituencies declared of {1}.",
                 modelState.DeclaredCount, modelState.TotalConstituencies));
+            LogNight("model", modelState, keys.ToArray(), modelScreen, modelGovernment);
 
             if (modelScreen.Root != null) { UnityEngine.Object.Destroy(modelScreen.Root); }
             yield return null;
@@ -3155,10 +3190,16 @@ namespace PoliSim.Testing
                 // C-D5 (V-N3): the comparison is Sweden 2018, SOURCED - the same
                 // `ElectionNightFilm.Votes2018` the results screen already compares against, so the two
                 // screens cannot disagree about the swing any more than they can about who won.
+                // Items 1-3 (2026-09-10): the staged fixture IS Sweden 2022, so its comparison stays 2018 (sourced, national, on
+                // the complete count only); the formation is run on the fixture's chamber once it is complete.
+                GovernmentFormation.View stagedGovernment = state.Complete
+                    ? GovernmentFormation.ViewOf(CountryId.Sweden, parties, state.SeatsOnCounted, null)
+                    : null;
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 ElectionNightScreen screen = ElectionNightScreen.Build(state, parties, "SWEDEN",
                     new DateTime(2026, 9, 13, 20, 0, 0), 349,
-                    previousVotes: ElectionNightFilm.Votes2018, previousLabel: "SWEDEN 2018");
+                    previousVotes: ElectionNightFilm.Votes2018, previousLabel: "SWEDEN 2018",
+                    government: stagedGovernment, inkCountry: CountryId.Sweden);
                 if (screen == null)
                 {
                     Debug.LogError("SHOT: W-E6 - the board did not build (furniture missing); nothing filmed.");
@@ -3172,6 +3213,7 @@ namespace PoliSim.Testing
                 Debug.Log(string.Format(CultureInfo.InvariantCulture,
                     "SHOT: W-E6 {0} - minute {1}, {2} of {3} declared, {4:N0} votes counted, {5} call(s) safe.",
                     stems[i], minute, state.DeclaredCount, state.TotalConstituencies, state.CountedValid, state.Calls.Count));
+                LogNight(stems[i], state, parties, screen, stagedGovernment);
 
                 // Destroy, not DestroyImmediate: this runs in PLAY mode, where the immediate form tears a
                 // Canvas child out mid-frame and the run ends without reaching its own exit.

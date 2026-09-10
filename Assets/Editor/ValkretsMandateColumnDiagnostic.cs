@@ -25,11 +25,13 @@ namespace PoliSim.EditorTools
     /// 310 fixed seats are DERIVED from it by the statute's own rule, which
     /// <see cref="SeatConversion.FixedSeatsPerRegion"/> implements ("one seat per 310th part of the
     /// national eligible electorate, the remainder by largest surplus"). So the column below is computed
-    /// by the shipping allocator, not read. And <b>`SwingRegions.cs` holds no cell order at all</b>: it
-    /// takes a name and a weight per region from its caller and knows nothing about where a region sits.
-    /// **There is no built cartogram to disagree with.** The order every harness uses is the CSV's own row
-    /// order, which is Valmyndigheten's valkrets numbering 01–29 — and that is a numbering, not a
-    /// geography, so a north-to-south arrangement is Design's to make and ours to have never had.</para>
+    /// by the shipping allocator, not read. ⚠ <b>CORRECTED 2026-09-10 (§438):</b> this paragraph used to say
+    /// `SwingRegions.cs` holds no cell order and that there was no built cartogram, and that went to Design as
+    /// §146's reply. It was false: `SwedenCartogram.Layout()` in that file - a uniform 5 × 10 grid, drawn by the
+    /// campaign map - had existed since §63. Design declared its own arrangement on the claim (board 4a, eleven
+    /// bands), and election night draws 4a's (`ValkretsCartogram`); the old grid stays the campaign map's. The
+    /// order every HARNESS uses is still the CSV's own row order, Valmyndigheten's numbering 01–29 - a numbering,
+    /// not a geography.</para>
     ///
     /// <para>Read-only: it opens one sourced file, calls one shipping function, and prints. It writes
     /// nothing and seeds nothing.</para>

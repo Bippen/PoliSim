@@ -146,6 +146,103 @@ namespace PoliSim.Elections
             return cabinetList.Count > 0;
         }
 
+        /// <summary>
+        /// Election night item 3 (2026-09-10): the formation as a board draws it - which government emerged, its
+        /// parties and their seats, who carries it from outside, the investiture test the chamber's own rule set, and
+        /// where the player's party stands by C-R4's rule (D-5 (a): office is CABINET membership; support is not office).
+        /// </summary>
+        public sealed class View
+        {
+            public bool HasGovernment;
+            public string Reason;
+            public CoalitionOutcomeKind Outcome;
+            public readonly List<(string Abbrev, int Seats)> Cabinet = new List<(string, int)>();
+            public readonly List<(string Abbrev, int Seats)> Support = new List<(string, int)>();
+            public int CabinetSeats;
+            public int SupportedSeats;
+            public int OpposedSeats;
+            public int Majority;
+            public int TotalSeats;
+            public bool NegativeRule;
+            public bool DeclarationsSourced;
+            /// <summary>Null when no player party is given (a film of the night with nobody on the ballot).</summary>
+            public string PlayerParty;
+            public bool PlayerInCabinet;
+            public bool PlayerSupports;
+        }
+
+        /// <summary>The formation on the country's CURRENT chamber - the chamber of record after an election.</summary>
+        public static View ViewOf(Country country)
+        {
+            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] seats, out CoalitionResult result, out bool sourced, out string reason))
+            {
+                return new View { HasGovernment = false, Reason = reason };
+            }
+            return Describe(country.Id, parties, seats, result, sourced, country.PlayerPartyAbbrev);
+        }
+
+        /// <summary>The formation on a chamber given as seats per party abbreviation - what a night's final count
+        /// seats. A seeded party the count does not carry holds no seats in it.</summary>
+        public static View ViewOf(CountryId country, IReadOnlyList<string> abbrevs, IReadOnlyList<int> seatsByAbbrev, string playerParty)
+        {
+            IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
+            if (parties == null || parties.Count == 0) { return new View { HasGovernment = false, Reason = "no party system is seeded for this country" }; }
+            var seats = new int[parties.Count];
+            for (int p = 0; p < parties.Count; p++)
+            {
+                for (int k = 0; k < abbrevs.Count; k++)
+                {
+                    if (string.Equals(abbrevs[k], parties[p].Abbrev, StringComparison.Ordinal)) { seats[p] = seatsByAbbrev[k]; break; }
+                }
+            }
+            if (!TryFormSeats(country, parties, seats, out CoalitionResult result, out bool sourced, out string reason))
+            {
+                return new View { HasGovernment = false, Reason = reason };
+            }
+            return Describe(country, parties, seats, result, sourced, playerParty);
+        }
+
+        private static View Describe(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats, CoalitionResult result,
+            bool sourced, string playerParty)
+        {
+            var view = new View
+            {
+                Outcome = result.Outcome,
+                Majority = result.Majority,
+                NegativeRule = ChamberRules.UsesNegativeParliamentarism(country),
+                DeclarationsSourced = sourced,
+                PlayerParty = string.IsNullOrEmpty(playerParty) ? null : playerParty,
+            };
+            foreach (int s in seats) { view.TotalSeats += s; }
+            if (result.Outcome == CoalitionOutcomeKind.NewElection || result.Outcome == CoalitionOutcomeKind.Collapse)
+            {
+                view.HasGovernment = false;
+                view.Reason = $"no government could be formed from this chamber ({result.Outcome})";
+                return view;
+            }
+
+            view.HasGovernment = true;
+            view.CabinetSeats = result.Government.CabinetSeats;
+            view.SupportedSeats = result.Government.SupportedSeats;
+            view.OpposedSeats = result.Government.OpposedSeats;
+            for (int p = 0; p < parties.Count; p++)
+            {
+                int bit = 1 << p;
+                bool inCabinet = (result.Government.Cabinet & bit) != 0;
+                bool supports = !inCabinet && (result.Government.Support & bit) != 0;
+                if (inCabinet) { view.Cabinet.Add((parties[p].Abbrev, seats[p])); }
+                else if (supports) { view.Support.Add((parties[p].Abbrev, seats[p])); }
+                if (view.PlayerParty != null && string.Equals(parties[p].Abbrev, view.PlayerParty, StringComparison.Ordinal))
+                {
+                    view.PlayerInCabinet = inCabinet;
+                    view.PlayerSupports = supports;
+                }
+            }
+            view.Cabinet.Sort((a, b) => b.Seats.CompareTo(a.Seats));
+            view.Support.Sort((a, b) => b.Seats.CompareTo(a.Seats));
+            return view;
+        }
+
         /// <summary>The formation itself - the chamber's seats, the derived compatibility, the declared red lines and the chamber's own rule - shared by <see cref="Form"/> and <see cref="Cabinet"/>.</summary>
         private static bool TryFormChamber(Country country, out IReadOnlyList<PoliticalParty> parties, out int[] seats,
             out CoalitionResult result, out bool declarationsSourced, out string reason)
@@ -156,19 +253,26 @@ namespace PoliSim.Elections
             if (parties == null || parties.Count == 0) { reason = "no party system is seeded for this country"; return false; }
             int n = parties.Count;
             seats = new int[n];
-            int totalSeats = 0;
             for (int p = 0; p < n; p++)
             {
                 country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held);
                 seats[p] = held;
-                totalSeats += held;
             }
+            return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason);
+        }
+
+        private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
+            out CoalitionResult result, out bool declarationsSourced, out string reason)
+        {
+            result = null; declarationsSourced = false; reason = null;
+            int totalSeats = 0;
+            foreach (int s in seats) { totalSeats += s; }
             if (totalSeats <= 0) { reason = "the chamber holds no seats"; return false; }
             double[,] compatibility = Compatibility(parties);
-            List<RedLine> lines = DeclaredRedLines.For(country.Id, parties);
-            declarationsSourced = DeclaredRedLines.IsSourced(country.Id);
+            List<RedLine> lines = DeclaredRedLines.For(country, parties);
+            declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
-                negativeRule: ChamberRules.UsesNegativeParliamentarism(country.Id));
+                negativeRule: ChamberRules.UsesNegativeParliamentarism(country));
             return true;
         }
 
