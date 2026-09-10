@@ -25885,3 +25885,34 @@ Italy's Day-3 figure moves from 7.14 to **6.37 pp** - better than the uniform la
 
 **What the per-group layer did and did not do, read off the bands.** Every band's blended FdI share is ABOVE the uniform 10.31 except 45–64, where the 2013→2018 loyalty is 71–73 and the band holds it near its 4 % prior (6.5–7.0 %); the under-35s and the over-65s, at loyalty 0–39, move toward the persuaded 17.8 %. Summed by the electorate's structure - with 65+ the largest band at 0.287 - the result is +0.65 pp. The layer moves the electorate where the data says it was persuadable; it does not move what the electorate is persuaded TOWARD, which is the spatial layer's (§445).
 
+
+## 445. THE FdI CEILING TEST RE-RUN WITH PER-GROUP LOYALTY LIVE — NOT REACHED, and the ceiling renamed: it is persuasion now, not loyalty (2026-09-10)
+
+**The ruling:** *"the FdI ceiling test re-run: with per-group loyalty and the media/momentum layers live, is the 4.35 → 29.27 % surge reachable? Reachable is the strongest validation this model can get; unreachable is a named ceiling, recorded as such. Do not tune toward it."*
+
+**The verdict is computed now.** The previous `ItalySurgeCeilingDiagnostic` carried its conclusion as text - *"NOT REACHABLE, and the ceiling is named: PER-GROUP LOYALTY"* - and a conclusion in a string cannot change when the model does. It now blends per group through `PreferenceByGroup`, proves its own per-group arithmetic against the model's (self-test: worst element 2.8e-17, 0 over 1e-12), solves for the persuaded share the per-group blend would need, and decides REACHED (within 0.5 pp), NOT REACHED with the persuasion factor, or UNREACHABLE at any persuasion - from the numbers.
+
+**The measurement:**
+
+| | FdI |
+|---|--:|
+| real 2022 (Eligendo list vote) | 29.27 % |
+| 2018 prior, renormalised over the set | 4.81 % |
+| PERSUADED share (the spatial layer alone) | 17.82 % |
+| BLENDED, uniform loyalty 45.1 (before) | 10.31 % (−18.96 pp) |
+| BLENDED, loyalty per age band, implied 28.2 (now) | **10.95 % (−18.32 pp)** |
+| persuaded share required to land 29.27 % through the per-group blend | 54.93 % |
+| the factor the campaign layers would have to supply | **3.08×** (was 3.29× under the uniform blend) |
+
+| band | weight | FdI 2018 prior | loyalty | blended in band |
+|---|--:|--:|--:|--:|
+| 18–24 | 0.082 | 7.10 % | 38.9 | 11.40 % |
+| 25–34 | 0.124 | 4.39 % | 0.0 | 13.70 % |
+| 35–44 | 0.141 | 7.38 % | 25.8 | 12.59 % |
+| 45–54 | 0.183 | 4.17 % | 73.0 | 6.95 % |
+| 55–64 | 0.183 | 2.76 % | 70.9 | 6.47 % |
+| 65+ | 0.287 | 5.24 % | 0.0 | 14.23 % |
+
+**NOT REACHED - and the ceiling has moved.** C-A1 (§137) named per-group loyalty as the ceiling: one λ of 0.451 anchored that fraction of FdI's result to its 2018 prior by construction. That term is gone - loyalty is now a number per party per band, from sourced surveys - and the surge is still not reached, by 18.3 points instead of 19.0. **What binds now is the SPATIAL layer's persuaded share: 17.82 %.** The per-group blend lets enough of the electorate move (in three bands the whole of it); what it moves toward is what CHES 2024 positions and the Day-1 electorate make of FdI, and 29.27 % needs 54.93 % of the persuadable vote - a factor of 3.08 the campaign layers would have to supply. ⚠ **Those layers do not run in this backtest**: the 2022 case is a prediction without a campaign, so salience and media (C-N1) contribute nothing here, and momentum cannot move a vote by construction (its two call sites feed the polls). The factor is what they would owe; whether a played 2022 campaign could supply it is a question no backtest answers.
+
+**Recorded as a named ceiling, not tuned toward.** No constant moved; `Sharpness` and `MinimumCompatibility` stand at their [AUTHORED-DRAFT] values; the electorates are Day-1's. The strongest validation was not obtained; the model's own honest answer is 10.95 %, and the reason is named at the layer that now binds.
