@@ -113,7 +113,11 @@ namespace PoliSim.UI
                 DrawDashedRule(new Rect(cutFrom, segTop + segH - 1f, positiveSum - cutFrom, 1f), PoliSimTheme.Bad, 4f, 3f);
                 if (cutLabel.CalcSize(new GUIContent("TAKEN BACK")).x <= positiveSum - cutFrom)
                 {
-                    PoliSimWidgets.MeasuredLabel(new Rect(cutFrom, segTop + segH * 0.5f - StatsUnit(5f), positiveSum - cutFrom, StatsUnit(10f)), "TAKEN BACK", cutLabel);
+                    // §433: the rect is the style's OWN measured height, centred in the cut - it was a fixed 10 units, and
+                    // at 1280 the 7.5 caption floors to 9 px and needs 11.2 (found on Poland's film; the label only draws
+                    // where a cut is wide enough to hold it). Same measure the term labels below take (labelH).
+                    float cutH = Mathf.Min(Mathf.Ceil(DeskCaptionHeight(cutLabel)), segH);
+                    PoliSimWidgets.MeasuredLabel(new Rect(cutFrom, segTop + (segH - cutH) * 0.5f, positiveSum - cutFrom, cutH), "TAKEN BACK", cutLabel);
                 }
                 foreach (RuleWaterfall.Segment seg in geometry.Negatives)
                 {

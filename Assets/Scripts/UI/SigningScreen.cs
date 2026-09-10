@@ -345,12 +345,40 @@ namespace PoliSim.UI
             // was (the record carries the alignment and the reason since this row); drawn structurally until D12.
             Transform stances = PlatePanel(plate.transform, "Stances", 1.6f, 240f);   // P3 close: the column shrank under the images at 1280 and every AGAINST row wrapped (canvas clip 89d/89e); the minimum holds the longest row
             PlateCaption(stances, "THE STANCES");   // P3 close: the longer captions wrapped at 1280 (canvas clip 89d/89e); the row says party · seats · side · alignment
-            bool anyReason = false;
+            // ⚠ ONE STATEMENT, ONE ROW (§432, found by filming Italy). The column was sized on Sweden's eight parties,
+            // two texts each; Italy seats fourteen, eight of which say the identical thing - UNDECIDED +0.00, "no
+            // published spendvtax position" - and the twenty-nine texts ran out of the plate at both ends and clipped
+            // their captions. Sides sharing a verdict, an alignment and a non-empty reason are ONE stance and are
+            // written once, the parties listed on its row. A side alone keeps its row exactly as it was, so a chamber
+            // whose reasons all differ (Sweden's) draws the same plate it always did.
+            var groups = new List<List<DivisionSide>>();
+            var groupByKey = new Dictionary<string, List<DivisionSide>>();
             foreach (DivisionSide side in record.Sides)
             {
+                string shortReason = string.IsNullOrEmpty(side.ReasonShort) ? side.Reason : side.ReasonShort;
+                if (string.IsNullOrEmpty(shortReason)) { groups.Add(new List<DivisionSide> { side }); continue; }
+                string key = string.Format(CultureInfo.InvariantCulture, "{0}|{1:+0.00;-0.00}|{2}", side.Side, side.Alignment, shortReason);
+                if (groupByKey.TryGetValue(key, out List<DivisionSide> group)) { group.Add(side); continue; }
+                group = new List<DivisionSide> { side };
+                groupByKey[key] = group;
+                groups.Add(group);
+            }
+
+            bool anyReason = false;
+            foreach (List<DivisionSide> group in groups)
+            {
+                DivisionSide side = group[0];
                 string verdict = side.Side > 0 ? "FOR" : side.Side < 0 ? "AGAINST" : "UNDECIDED";
                 Color ink = side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
-                PlateBody(stances, string.Format(CultureInfo.InvariantCulture, "{0} · {1} · {2}{3}", side.Abbrev, side.Seats, verdict,   // P3 close: "seats" dropped - the AGAINST rows wrapped at 1280
+                string who;
+                if (group.Count == 1) { who = string.Format(CultureInfo.InvariantCulture, "{0} · {1}", side.Abbrev, side.Seats); }
+                else
+                {
+                    var names = new List<string>(group.Count);
+                    foreach (DivisionSide member in group) { names.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}", member.Abbrev, member.Seats)); }
+                    who = string.Join(", ", names);
+                }
+                PlateBody(stances, string.Format(CultureInfo.InvariantCulture, "{0} · {1}{2}", who, verdict,   // P3 close: "seats" dropped - the AGAINST rows wrapped at 1280
                     string.IsNullOrEmpty(side.Reason) ? string.Empty : string.Format(CultureInfo.InvariantCulture, " {0:+0.00;-0.00}", side.Alignment)), ink);
                 string reason = string.IsNullOrEmpty(side.ReasonShort) ? side.Reason : side.ReasonShort;   // the plate takes the short form; the record keeps the full line
                 if (!string.IsNullOrEmpty(reason)) { PlateCaption(stances, reason); anyReason = true; }

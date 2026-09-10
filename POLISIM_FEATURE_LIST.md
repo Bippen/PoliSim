@@ -1004,7 +1004,7 @@ the ITANES registration, still open.
   seven Swedish marks then the batch of forty-five · D-8.2 party colours for five countries · D-8.3 the
   valkrets map (⚠ waits on E-3's mandate column) · D-8.4 election night's paper · D-8.5 the verdict stamp ·
   D-8.6 modal-or-stage · D-E4 the two Society icons. **All eleven D9 rows are answered; the batch waits on
-  E-3.**
+  E-3.** ✅ **D-8.1 is LANDED (2026-09-10, §429): 53 of 53 parties resolve a mark.**
 
 ## The calendar's
 
@@ -1312,7 +1312,7 @@ here; the evidence is there.*
 | row | what it is | what it unblocks |
 |---|---|---|
 | **D-7** | board 2b, the Policy Web drawn to be read | the web as a picture rather than a list |
-| **D-8.1** → **D18** (§419, §420) | the party identity marks, **carried into D18 and re-cut as four runs by chamber** - the count is no longer written down anywhere: it is emitted from the seeds into D18's generated block and guarded by `D18InventoryCheck`. Sweden's eight and the USA's two resolve; the batch is what is left | four chambers - the seat arc, the legend, the stance rows and the campaign masthead draw a party without an identity in each of them |
+| **D-8.1** → **D18** (§419, §420, landed §429) | ✅ **LANDED 2026-09-10 - 53 of 53 parties resolve a mark** (E-31 closed, §429). The row as it stood: the party identity marks, **carried into D18 and re-cut as four runs by chamber** - the count is no longer written down anywhere: it is emitted from the seeds into D18's generated block and guarded by `D18InventoryCheck`. Sweden's eight and the USA's two resolve; the batch is what is left | four chambers - the seat arc, the legend, the stance rows and the campaign masthead draw a party without an identity in each of them |
 | **D-8.2..D-8.6, D-E4** | five countries' party colours (a ruling), the valkrets map, election night's paper, the verdict stamp, modal-or-stage, the two Society icons | each its screen's finished face; all eleven D9 rows are answered and the batch waits on E-3 |
 | **D-1 portraits** | ⚠ **MEASURED CLOSED 2026-09-09 (§420)**: an appointed minister renders a DELIVERED face - `PortraitCoverageCheck` reads 18 of 18 in the cabinet pool and 7 of 7 chair candidates resolving, and the procedural silhouette is reached only for a name added to a pool without art. The row read the other way for as long as it was true and then some | nothing - the faces are on disk; the three sitting turn-0 chairs have no portrait and no surface draws one |
 | **D18** (§419, §420, answered §424, landed §429) | ✅ **LANDED 2026-09-10 - E-31 closed.** Design's board 11b made the batch a seed table over fifty neutral cells already cut: 43 rows, 15 distinct cells, the hatched half unspent for D8-2. The fifteen arrived as a delivered pack and were copied to the 43 stems disk to disk; every destination is byte-identical to the cell the rules assign it (checked against the rules and against Design's own table, all 43), every PNG passes the CRC walk. The seeds are wired and `D18MarkAssignment` asserts the wiring against the derived rules; coverage 53 of 53 both ways; filmed in all four chambers at 1280 and 2560. §430 fixed the two bloc devices a chamber with no blocs exposed | four chambers' identity - drawn now |
