@@ -25830,3 +25830,32 @@ All ten are in `SEND_PACKAGE.md` by path, bytes and digest: the election-night s
 **As data, guarded.** The CSVs carry weighted counts (2018's are counts) so shares are re-derivable; `ItanesCatalogGenerator` emits them into the runtime assembly as `Generated.ItanesVoteByAge` with both sources' SHA-256, asserting six bands in §137's order and every band's party columns within its weight sum, and `GeneratedCatalogCheck` re-derives both digests and the band identity every run - the third generated catalog under the same guard. The chicken-and-egg the first catalog recorded bit again: the check referencing the type had to stand aside for the one run that generated it.
 
 **Bar:** `GeneratedCatalogCheck` alone: two sources at their recorded digests, 6 bands × 7 parties per wave, 0 faults. The full bar runs at the pass's end (§446).
+
+## 443. PER-GROUP LOYALTY DERIVED — 2013→2018 inside each of the six age bands, on `LoyaltyModel`'s non-circularity invariant, from the two cross-tabs anchored to the official returns of the same two elections (2026-09-10)
+
+**The ruling:** *"per-group loyalty derived from the two cross-tabs on LoyaltyModel's non-circularity invariant — 2013→2018 predicting 2022, the backtest direction, exactly as the invariant demands."*
+
+**The invariant, inherited whole.** `GroupLoyaltyModel` applies `LoyaltyModel.PartyLoyalty` cell by cell to two group-by-party matrices - T−2's and T−1's - and is never given the target. For the 2022 backtest those are 2013 and 2018, and the surveys ARE the 2013 and 2018 waves, so there is no 2022 input to hand in by mistake; `ItanesGroupLoyalty.Build` takes the case's official T−2 and T−1 vectors and nothing later. Zero authored constants: the formula's inputs are two sourced elections and two sourced surveys.
+
+**The one operation done to the surveys, and why.** §442 recorded that the two waves' national marginals sit off the official returns in different directions by mode. A loyalty read off the surveys' own levels would therefore score the change of survey MODE between 2013 (CAPI) and 2018 (web panel) as voter movement - M5S "doubling" from 19.7 to 39.1 when it moved 25.6 → 32.7. `GroupLoyaltyModel.AnchoredGroupShares` takes from each survey **only the distribution across bands** - a band's propensity for a party relative to the whole sample - and anchors it to the official national share of the same wave: `share_g,i = official_i × survey_g,i ⁄ survey_all,i`. Under the survey's own band weights the anchored bands average back to the official share exactly (asserted to 1e-9; measured 3.6e-15), so the per-group derivation cannot drift from the per-party one nationally and differs only inside the groups, which is the point. ⚠ The anchor is each wave's OWN official result - never the target's.
+
+**The group weights** are the six bands' shares of Italy's eligible population over the seeded pyramid (`PopulationPyramids`, Eurostat 1 January 2024; `CohortVoterGroups.SixBandShares`, the 15–19 band apportioned two-fifths as `For` does), because no turnout by age is sourced for Italy: 0.082 · 0.124 · 0.141 · 0.183 · 0.183 · 0.287. A 2024 stock stands in for 2022's - the nearest sourced pyramid, two years off, stated.
+
+**The derivation, as the harness prints it** (loyalty per band, 2013→2018; `*` = fewer than three weighted 2013 respondents in that cell):
+
+| band | weight | n 2013 | n 2018 | FdI | PD | M5S | Lega | FI | AzIV | AVS |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| 18–24 | 0.082 | 120 | 56 | 38.9* | 91.0 | 62.2 | 31.6* | 97.8 | 0.0 | 63.9* |
+| 25–34 | 0.124 | 155 | 281 | 0.0* | 88.8 | 95.9 | 30.2 | 38.5 | 0.0 | 46.7 |
+| 35–44 | 0.141 | 163 | 397 | 25.8* | 71.4 | 91.5 | 15.6* | 62.0 | 0.0 | 97.0 |
+| 45–54 | 0.183 | 217 | 483 | 73.0 | 56.2 | 82.6 | 10.0* | 99.5 | 0.0 | 96.9 |
+| 55–64 | 0.183 | 228 | 414 | 70.9* | 71.3 | 63.4 | 34.8 | 66.1 | 0.0 | 98.9 |
+| 65+ | 0.287 | 290 | 237 | 0.0* | 95.8 | 43.3 | 27.8 | 68.4 | 0.0 | 41.5 |
+| **uniform (T−2→T−1)** | | | | 45.1 | 73.8 | 78.2 | 23.6 | 64.9 | 0.0 | 94.4 |
+| **implied by the bands** | | | | **28.2** | 82.1 | 73.3 | 24.8 | 72.0 | 0.0 | 73.5 |
+
+**What the bands say that one number could not.** FdI's 2013 vote sat in 45–64 and nowhere under 35 in a sample where it had 8 respondents; its 2018 vote is spread across every band. So its loyalty is 0 in 25–34 and 65+ (nobody there had the habit - `LoyaltyModel`'s own rule, asserted) and 70–73 in 45–64, and the T−1-vote-weighted mean of the bands is **28.2 against the uniform 45.1**: per group, FdI is *more* persuadable than the uniform figure let it be, which is the direction §137's mechanism predicted. M5S's loyalty falls with age (95.9 at 25–34, 43.3 at 65+) and PD's rises (56.2 at 45–54, 95.8 at 65+) - the two gradients §137 saw in 2022, present in 2013→2018 already.
+
+**⚠ The thin cells are the data's, and they are marked rather than smoothed.** Seven of FdI's and Lega's forty-two band figures rest on fewer than three weighted 2013 respondents; the harness stars each. Nothing is imputed: a 0 is the sample's 0, and what it costs the backtest is item 3's to measure, not this item's to hide.
+
+**Asserted in `LoyaltyHarness`** (green, 4 new assertions): the anchor identity for both waves; six bands with positive electorate weights summing to one; every loyalty in [0, 100]; the unseen-in-2013 cells at exactly 0.

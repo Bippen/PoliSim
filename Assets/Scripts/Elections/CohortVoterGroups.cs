@@ -188,6 +188,25 @@ namespace PoliSim.Elections
         public static double EligiblePopulation(PopulationCohorts cohorts, int votingAge)
             => InEligibleRange(cohorts, votingAge, 999, votingAge);
 
+        /// <summary>The six age bands of `COMPLETED.md` §137 - the bands the ITANES cross-tabs and the per-group loyalty
+        /// use: 18–24 · 25–34 · 35–44 · 45–54 · 55–64 · 65+.</summary>
+        public static readonly (int FromAge, int ToAge)[] SixBands = { (18, 24), (25, 34), (35, 44), (45, 54), (55, 64), (65, 999) };
+
+        /// <summary>E-1 (2026-09-10): each of the six bands' share of the eligible population over a pyramid - the weights
+        /// the per-group blend aggregates with where no turnout by age is sourced. The 15–19 band is apportioned as
+        /// `For` apportions it (two fifths, ages 18 and 19), the one named approximation.</summary>
+        public static double[] SixBandShares(PopulationCohorts cohorts, int votingAge)
+        {
+            double eligible = EligiblePopulation(cohorts, votingAge);
+            var shares = new double[SixBands.Length];
+            if (eligible <= 0.0) { return shares; }
+            for (int b = 0; b < SixBands.Length; b++)
+            {
+                shares[b] = InEligibleRange(cohorts, SixBands[b].FromAge, SixBands[b].ToAge, votingAge) / eligible;
+            }
+            return shares;
+        }
+
         private static double InEligibleRange(PopulationCohorts cohorts, int fromAge, int toAge, int votingAge)
         {
             int from = Math.Max(fromAge, votingAge);

@@ -106,6 +106,8 @@ namespace PoliSim.EditorTools
                 }
             }
 
+            failures += PerGroupItaly(sb);
+
             sb.Append("\n---- NOT COMPUTABLE, stated (the done-when's 'all six' shortfall) ----\n");
             sb.Append("  USA and FRANCE: only ONE election each is on disk (2024). Volatility needs two\n");
             sb.Append("  elections before the one modelled, so both are BILLED: the USA needs 2020 + 2016\n");
@@ -115,6 +117,81 @@ namespace PoliSim.EditorTools
             sb.Append($"\n=== LoyaltyHarness: {(failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED")} ===\n");
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// E-1 landed (2026-09-10, §443): Italy's loyalty PER AGE BAND, 2013→2018 - the BACKTEST direction, exactly as
+        /// the invariant demands - from the ITANES cross-tabs anchored to the official returns of the same two elections.
+        /// Asserts what the construction promises: the anchored bands average back to the official share under the
+        /// survey's own band weights (to 1e-9), six bands with positive electorate weights summing to one, every loyalty
+        /// in [0, 100], and a party the survey never sees in a band scoring 0 there. Prints the thin cells' n beside them.
+        /// </summary>
+        private static int PerGroupItaly(StringBuilder sb)
+        {
+            int failures = 0;
+            Series italy = default;
+            foreach (Series s in BuildSeries()) { if (s.Country == "ITALY") { italy = s; } }
+
+            ItanesGroupLoyalty.Inputs g = ItanesGroupLoyalty.Build(italy.Parties, italy.T2, italy.T1);
+            var ci = System.Globalization.CultureInfo.InvariantCulture;
+
+            sb.Append("\n---- ITALY, PER AGE BAND (E-1: ITANES 2013 -> 2018, anchored to the official returns; BACKTEST direction) ----\n");
+            sb.Append("  band    weight   n13   n18 ");
+            foreach (string p in italy.Parties) { sb.Append(string.Format(ci, "{0,8}", p)); }
+            sb.Append("\n");
+            for (int b = 0; b < g.Bands.Length; b++)
+            {
+                sb.Append(string.Format(ci, "  {0,-6} {1,6:F3} {2,5:F0} {3,5:F0} ", g.Bands[b], g.GroupWeights[b], g.N2013[b], g.N2018[b]));
+                for (int p = 0; p < italy.Parties.Length; p++)
+                {
+                    bool thin = g.Column[p] >= 0 && g.Counts2013[b][p] < 3.0 && italy.T2[p] > 0.0;
+                    sb.Append(string.Format(ci, "{0,7:F1}{1}", g.LoyaltyByGroup[b][p], thin ? "*" : " "));
+                }
+                sb.Append("\n");
+            }
+            sb.Append("  * fewer than three weighted 2013 respondents in that cell - the figure is that thin\n");
+
+            double[] uniform = LoyaltyModel.PartyLoyalties(italy.T1, italy.T2);
+            double[] implied = GroupLoyaltyModel.ImpliedPartyLoyalty(g.LoyaltyByGroup, g.T1ByGroup, g.GroupWeights);
+            sb.Append("  party   uniform(T-2->T-1)   implied by the bands (T-1-vote-weighted mean)\n");
+            for (int p = 0; p < italy.Parties.Length; p++)
+            {
+                sb.Append(string.Format(ci, "  {0,-6} {1,12:F1} {2,26:F1}\n", italy.Parties[p], uniform[p], implied[p]));
+            }
+
+            // The anchor identity: survey-weighted band shares reproduce the official share.
+            double worst = 0.0;
+            for (int p = 0; p < italy.Parties.Length; p++)
+            {
+                double w13 = 0, s13 = 0, w18 = 0, s18 = 0;
+                for (int b = 0; b < g.Bands.Length; b++)
+                {
+                    w13 += PoliSim.Elections.Generated.ItanesVoteByAge.WeightSum2013[b]; s13 += PoliSim.Elections.Generated.ItanesVoteByAge.WeightSum2013[b] * g.T2ByGroup[b][p];
+                    w18 += PoliSim.Elections.Generated.ItanesVoteByAge.WeightSum2018[b]; s18 += PoliSim.Elections.Generated.ItanesVoteByAge.WeightSum2018[b] * g.T1ByGroup[b][p];
+                }
+                worst = Math.Max(worst, Math.Abs(s13 / w13 - italy.T2[p]));
+                worst = Math.Max(worst, Math.Abs(s18 / w18 - italy.T1[p]));
+            }
+            failures += Assert("per-group: the anchored bands average back to the official share under the survey's band weights (both waves)",
+                worst < 1e-9, $"worst deviation {worst:E2} pp");
+
+            double wsum = 0; bool positive = true;
+            foreach (double w in g.GroupWeights) { wsum += w; positive &= w > 0; }
+            failures += Assert("per-group: six bands with positive electorate weights summing to one",
+                g.Bands.Length == 6 && positive && Math.Abs(wsum - 1.0) < 1e-9, $"{g.Bands.Length} bands, sum {wsum:F6}");
+
+            bool inRange = true; bool zeroWhereUnseen = true;
+            for (int b = 0; b < g.Bands.Length; b++)
+            {
+                for (int p = 0; p < italy.Parties.Length; p++)
+                {
+                    inRange &= g.LoyaltyByGroup[b][p] >= 0.0 && g.LoyaltyByGroup[b][p] <= 100.0;
+                    if (g.Column[p] >= 0 && g.Counts2013[b][p] == 0.0 && italy.T2[p] > 0.0) { zeroWhereUnseen &= g.LoyaltyByGroup[b][p] == 0.0; }
+                }
+            }
+            failures += Assert("per-group: every loyalty in [0, 100]", inRange, "all cells");
+            failures += Assert("per-group: a party the 2013 survey never saw in a band scores 0 there (LoyaltyModel's own rule)", zeroWhereUnseen, "FdI in 25-34 and 65+");
+            return failures;
         }
 
         private static Series[] BuildSeries()
