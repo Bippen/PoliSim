@@ -25158,7 +25158,7 @@ It is the Design project's `design_handoff_d16_legibility/` (project `b3dec27b-6
 
 - `COMPLETED.md`'s entries for that date are **§405, §406, §407, §408** - the shelf cycled, the impact ratchet re-based, the event duration tagged, the shelf cycled again. All four are macro or instrument work; none touches colour, parties or the desk's palette.
 - `POLISIM_FEATURE_LIST.md` carries no palette row opened, closed or amended that day; the standing constraints carry no new colour rule.
-- `CLAUDE_DESIGN_ASSET_REQUEST.md` carries **no D16 request at all**, and its last commit is `570d1e3`, 2026-09-04 (E-16). The bundle's own opening says it answers *"request D16 from Elias's sitting of the same day"* - that sitting is not in the repo either.
+- `CLAUDE_DESIGN_ASSET_REQUEST.md` carries **no D16 request at all**, and its last commit is `570d1e3`, 2026-09-04 (E-16). The bundle's own opening says it answers *"request D16 from Elias's sitting of the same day"* - that sitting is not in the repo either. ⭐ *(2026-09-10: the sitting's nine screenshots LANDED - verified against their manifest, by signature and by CRC walk, and bound shot by shot to 10a-10d in §441.)*
 - `ERRANDS.md` carries no new GO; the last party-colour GO is E-2, 2026-09-01, for the marks.
 - `git log` for 2026-09-08/09 is the fourteen commits §396–§408, every one macro.
 
@@ -25758,3 +25758,45 @@ Neither screen reads a party mark (the only consumers of `MarkName` are `Hemicyc
 **D19** heads `CLAUDE_DESIGN_ASSET_REQUEST.md`: what the page now carries (the map, the swing, who governs, the calls, the ledger and the estimate, each with where it comes from), and **two items**: (1) compose election night as ONE page around the map, the swing and the government, with the constraints measured - the map width-limited at ~540 × 295 px at 1280, four filmed states, the player's outcome as the page's most consequential line, the takeover's hold banner over the masthead (present on the 2 September film), and the government wanting a drawing rather than our stand-in bar; (2) **the ledger as an instrument** - the share at baseline and close and the eleven source lines, Shapley values that sum to the move exactly, so there is no residual to hide or draw. **What is NOT asked**: art (none is needed), and 4a's geometry - with the ladder count note and §146's correction said back.
 
 **The package** (`SEND_PACKAGE.md`) is cut as ONE paste carrying D19 and the E-32 return, which was never pasted: the §421 form, one paste, the return's content kept whole beneath the ask. **⚠ The screenshot is not in this repo.** No image arrived with the ruling and none newer than 4 September is on disk (`Elias Screenshots\`, Pictures, Downloads, Desktop searched). It is named in the manifest as the one artefact Elias carries with the paste (E-33), and the harness's own film of the same night before items 1-3 (`d11ci1280_e7c_election_night_takeover.png`) is annexed beside it as the before-frame - **not in its place**.
+
+## 441. E-33 CLOSED — THE TEN SCREENSHOTS LANDED AND VERIFIED: the election-night shot bound to D19 as the picture that caused the ask, the nine D16 sitting shots bound to the record that only ever referenced them, and all ten in the package (2026-09-10)
+
+**The ruling:** *"E-33's screenshot and the nine D16 sitting shots are on disk in Elias Screenshots\ with a MANIFEST.sha256 beside them — verify each against the manifest and by content (signature, CRC walk), bind the election-night shot to D19's annex as the picture that caused the ask, bind the nine to the D16 record where they were only ever referenced, and add all ten to the package manifest. Close E-33."*
+
+**How they arrived.** Not as loose files: one zip, `Elias Screenshots\Elias_Screenshots_0909_0910.zip` (3 161 117 bytes, 14:44), holding `shots/` - the ten PNGs and `MANIFEST.sha256` beside them inside the archive. The zip tests clean (`unzip -t`, no errors) and was extracted in place to `Elias Screenshots\shots\`, the zip kept.
+
+**Verified three ways, ten of ten:**
+- **Against the manifest** - `sha256sum -c MANIFEST.sha256`: 10 OK.
+- **Signature** - every file opens with `89 50 4E 47 0D 0A 1A 0A`.
+- **CRC walk** - `Tools/pngcheck.pl` (every chunk's CRC32 recomputed, ends at `IEND`, no trailing bytes): **broken 0**.
+- **And by content, read as pixels** - each shows what its name says and what the record needs it to show (below).
+
+### The election-night shot — D19's annex, the picture that caused the ask
+
+| file | px | bytes | SHA-256 |
+|---|---|--:|---|
+| `2026-09-10_election_night.png` | 1804 × 889 | 166 225 | `707663df9fb5d264…` |
+
+A PLAYED night (its budget plate cites *DIVISION No. 11 · 2028-01-22 · Annual budget bill*), complete - "29 OF 29 CONSTITUENCIES DECLARED" - and it is the ruling of §437-§440 in one frame: **nine call rows, eight "will hold seats" and "S is the largest party", every one "at 29 of 29"**; THE CONSTITUENCIES as raw counts ("822,512 counted" …, "and 17 more"); "SWING - no previous election is on hand to compare against"; and nowhere on the page who governs. **It is now D19's annex item one**, named in the request by path and digest as the evidence the ask answers, with the harness's 2 September film of the same state (`d11ci1280_e7c_election_night_takeover.png`) beside it as the reproduction, and the rebuilt films after.
+
+### The nine D16 sitting shots — bound to the record that referenced them
+
+§409 recorded that D16's bundle answers *"request D16 from Elias's sitting of the same day"* and that **"that sitting is not in the repo either"**; Design's own note (`d16-note`, "D16 · READ 2026-09-09") lists what it read: *"All nine of Elias's 2026-09-09 screenshots are in uploads/ and were read as pixels … Parliament, the compass with its party list, the Riksbank page, the Laws browser, the environment + immigration families, the health + education families, the Docket empty state, the International pair page, and Statistics ⁄ Domestic's lower half."* The nine files are those nine, one for one:
+
+| file | px | bytes | SHA-256 | what it shows | bound to |
+|---|---|--:|---|---|---|
+| `2026-09-09_people_health_education.png` | 1636 × 753 | 530 777 | `5ee77d9cb0f63a8f…` | Health (family 1 of 6) and Education (2 of 6), the pre-10a rows: source lines, bands, "reached by", HONESTY chips | **10a** - the People page read at a glance (§410) |
+| `2026-09-09_people_environment_immigration.png` | 1630 × 635 | 447 718 | `da89f2ec66825665…` | Environment (4 of 6) and Immigration · poverty depth (5 of 6), the same grammar | **10a** (§410) |
+| `2026-09-09_laws_browser.png` | 1611 × 359 | 270 138 | `1c1fd051cf764c93…` | the statute book's three control rows over the list (categories, sort, status) and the pane's head | **10b** - the statute book, controls demoted (§411) |
+| `2026-09-09_riksbank.png` | 1645 × 680 | 462 074 | `0bfa2404c7c38aaf…` | the Riksbank page before 10c, the rule as a sum: **2.00 + 2.00 + 0.00 + −1.50 = 2.50** | **10c** (§412) - these ARE the four terms 10c drew its waterfall with ("+2.00 · +2.00 · −1.50 · 0.00 → 2.50", §409), so the board's figures are this frame's |
+| `2026-09-09_docket_empty.png` | 1688 × 582 | 223 750 | `b63172944e581731…` | Decisions - "No pending decisions." | read in `d16-note`; the Docket appears on **10c** ("NO NOMINEE · ESTIMATE DRAWS ON THE DOCKET") and in **§9.2's audit** of the Docket's draft cue (run as §414) |
+| `2026-09-09_parliament.png` | 1625 × 466 | 304 917 | `d41e524dbaed7019…` | the hemicycle before 10d: 349 dots, crowded same-bloc inks, "THE LEFT BLOC · 173 SEATS" | **10d** - separating a party at dot size (§426) |
+| `2026-09-09_compass_parties.png` | 1684 × 714 | 263 341 | `c653941a0af78887…` | the compass with Sweden's party list (drawn in grey), the cabinet ring M+KD+L 103 seats, the CHES pairs | **10d** - its roster (§6.6) redraws this party list; the note reads it as "the compass with its party list" |
+| `2026-09-09_international_pair.png` | 1650 × 543 | 290 500 | `a9425a609eb22725…` | the Sweden ⁄ France pair page: eight readings each side, NO TRADE LINK, the stance blends | read in `d16-note` only - **no D16 board names it**; it is part of the one theme the note draws from the nine ("the pages explain themselves in prose before they draw") |
+| `2026-09-09_statistics_domestic_lower.png` | 1634 × 695 | 360 984 | `32f9a47c7d2e7850…` | Statistics ⁄ Domestic's lower half: sector shares, the live series "No data yet", the counterfactual sentence, Society gauges | read in `d16-note` only - **no D16 board names it**; the same theme |
+
+§409 carries a dated pointer to this section where it says the sitting is not in the repo.
+
+### The package, and the errand
+
+All ten are in `SEND_PACKAGE.md` by path, bytes and digest: the election-night shot at the head of D19's annex, the nine as the D16 sitting group. ⚠ Design's note says the nine already sit in its `uploads/`; they are listed so both sides can compare digests rather than re-send - a digest that matches needs no upload. **E-33 is DONE**: the screenshot is on disk, verified, bound and in the manifest, and E-32 no longer depends on anything carried by hand.
