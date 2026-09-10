@@ -4,7 +4,7 @@
 is meant to be struck, amended or approved on its own; §7 is a recommendation and is strikeable whole.
 The precedent is C-C12's `POLISIM_TAX_SPECLET.md` (E-27) and C-C13: the spec-let is ruled before any code.
 
-**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455); **stage 2's build is the next energy code and has not started.** The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
+**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455) and **stage 2's build landed after it (§457): `EnergyLayer`, `EnergyLayerData`, `EnergyLayerCheck`, `EnergyLayerDump` → `ENERGY_LAYER_PREMISE.md` - readouts, the family's writer unchanged until stage 3.** Stage 3 (EN-3) is the next energy code. The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
 
 **What this document is not.** `ENERGY_SYSTEM_ADAPTED.md` is the concept adapted to this game; the
 concept itself is an external research summary. **No figure from either is a datum.** Every number in
@@ -272,10 +272,18 @@ from, and that is its whole standing.
 | 7 | the ministry | **2** | stage 5 |
 | 8 | events, state-triggered, duration-bearing; the §407 tag struck | **1** | stage 4's S8 |
 
-**Stage 2 after 2026-09-10:** the sourcing is done in one session rather than two (§455 - the
+**Stage 2 after 2026-09-10:** the sourcing done in one session rather than two (§455 - the
 Eurostat, Ember, EIA, eSett, energy-charts, ICAP, Pink Sheet and Svenska kraftnät rows all answered
-this machine; only IRENA and the ERAA factors did not); what remains of stage 2 is the build, one
-session, against the spine's five gates (`ENERGY_LAYER_SPINE.md` §11).
+this machine; only IRENA and the ERAA factors did not), and **the build done the same night (§457)**
+against the spine's five gates - stage 2 took one session where three were sized. Two things carried
+into it by ruling: the thermal-capacity disagreement is resolved by naming a definition (the office of
+record's), never by averaging three; the EDGAR residual is per country by method (main-activity
+electricity derived; main-activity heat the known part; refineries and the factor gap the remainder,
+printed with its sign; autoproducers in industry's book). **One deviation from S4, stated:** the power
+figure's writer does not change hands at stage 2 - the derivation is asserted as an identity at the
+seed and printed on the plate, and the family's elasticity keeps moving the figure until stage 3's
+dispatch gives the carbon tax its mechanism; retiring the elasticity a stage early would have left
+the tax with no effect on power.
 
 **Total: fourteen to seventeen sessions**, none of which starts before this document is ruled, and
 none of stages 3–8 before the stage before it has its own BASELINE explained per country. Each stage

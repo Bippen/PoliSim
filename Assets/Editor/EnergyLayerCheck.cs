@@ -1,0 +1,156 @@
+using System;
+using System.Globalization;
+using System.Text;
+using PoliSim.Data;
+using PoliSim.Data.Generated;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+
+namespace PoliSim.EditorTools
+{
+    /// <summary>
+    /// Stage 2 of the energy track, its five gates (ENERGY_LAYER_SPINE.md §11; POLISIM_ENERGY_SPECLET.md §2 and S15; built §457).
+    ///
+    /// <para>1 THE FLEET - six countries × seven labels from the office of record, Ember beside each; nuclear, wind and solar agree
+    /// within ten per cent or a gigawatt (the classes every source defines alike) or the run fails; the other labels are TAGGED
+    /// definition-divergent where they do not, counted and printed, never averaged. 2 THE BLOCKS - base + mid + peak equals the series
+    /// for every zone; Poland's balance factor printed. 3 THE LINKS - with the links infinite the four zones' balances sum to the merged
+    /// zone's (the identity); at the NTC the required flows and which link binds are printed - the price ordering is stage 3's and is
+    /// not asserted here. 4 THE SINGLE BOOK - derived + residual equals the family's seed exactly, per country, with the residual's
+    /// composition printed; the derived mix equals the family's static seed within the fold's tolerance. 5 THE CATALOG - the arrays'
+    /// shapes (their digests are GeneratedCatalogCheck's).</para>
+    /// </summary>
+    public static class EnergyLayerCheck
+    {
+        /// <remarks>CONVENTION - §342's "within a point" widened to the fold's own measured gap (Germany's gas: Eurostat's G3000 16.2 against Ember's 15.1); named here rather than silently passed.</remarks>
+        private const float ShareTolerancePoints = 1.5f;
+        /// <remarks>CONVENTION - the agreement asked of the classes every source defines alike: ten per cent or one gigawatt, whichever is larger.</remarks>
+        private const double CapacityAgreementRelative = 0.10, CapacityAgreementMw = 1000.0;
+        /// <remarks>CONVENTION - the block identity's slack: the catalog carries integer MW and tenth-GWh figures.</remarks>
+        private const double BlockIdentityRelative = 0.002;
+
+        /// <summary>
+        /// The one place the office of record and every other source disagree on a class they otherwise define alike, resolved by
+        /// naming what each counts rather than by averaging: Eurostat lists Germany's last three reactors as 4 205 MW INSTALLED at the
+        /// end of 2023 (its decommissioned column reads 0 - the plants stand), Ember and ENTSO-E list 0 because the Atomgesetz ended
+        /// their operation on 15 April 2023. The record's stock is kept; the layer carries them CLOSED BY LAW - installed, unavailable -
+        /// and stage 3's availability for them is zero. Enumerated so the exception is visible, with its statute.
+        /// </summary>
+        internal static readonly (CountryId Country, string Label, string Reason)[] ClosedByLaw =
+        {
+            (CountryId.Germany, "nuclear", "Atomgesetz: the last three reactors ceased operation on 15 April 2023; Eurostat still lists 4 205 MW installed at year end, decommissioned 0"),
+        };
+
+        internal static string ClosedByLawReason(CountryId country, string label)
+        {
+            foreach ((CountryId c, string l, string reason) in ClosedByLaw) { if (c == country && l == label) { return reason; } }
+            return null;
+        }
+
+        public static void Run()
+        {
+            CheckExit.ArmLogFold();
+            var sb = new StringBuilder();
+            int failures = 0;
+            sb.Append("=== THE ENERGY LAYER, STAGE 2: the five gates ===\n");
+
+            World world = WorldFactory.CreateDefault();
+            int covered = 0, divergent = 0;
+
+            // ---- gate 1 and gate 4's mix half: the fleet against Ember, the derived mix against the family's seed
+            sb.Append("\n    1. THE FLEET (MW; record | Ember) and the derived mix against the family's static seed\n");
+            foreach (Country c in world.Countries)
+            {
+                if (!EnergyLayer.Has(c.Id)) { continue; }
+                covered++;
+                if (c.Environment == null || !c.Environment.Seeded) { EnvironmentFamily.Seed(c); }
+                sb.Append(F("    {0,-8}", c.Id));
+                for (int l = 0; l < EnergyLayerData.Labels.Length; l++)
+                {
+                    string label = EnergyLayerData.Labels[l];
+                    double r = EnergyLayer.CapacityMw(c.Id, l), e = EnergyLayer.CapacityEmberMw(c.Id, l);
+                    bool agree = Math.Abs(r - e) <= Math.Max(CapacityAgreementMw, CapacityAgreementRelative * Math.Max(r, e));
+                    bool strict = label == "nuclear" || label == "wind" || label == "solar";
+                    string closed = ClosedByLawReason(c.Id, label);
+                    if (!agree && strict && closed == null) { failures++; Debug.LogError($"ENERGY: {c.Id} {label} capacity {r:0} against Ember's {e:0} - a class every source defines alike, and they do not agree."); }
+                    if (!agree && !strict) { divergent++; }
+                    sb.Append(F(" {0}={1:0}|{2:0}{3}", label, r, e, agree ? "" : (closed != null ? " CLOSED-BY-LAW" : (strict ? " FAIL" : " ~DIVERGENT"))));
+                }
+                float[] derived = EnergyLayer.DerivedMix(c.Id);
+                float[] seed = c.Environment.MixShares;
+                float gap = seed != null ? EnergyLayer.MaxShareGap(derived, seed) : 999f;
+                if (gap > ShareTolerancePoints) { failures++; Debug.LogError($"ENERGY: {c.Id}'s derived mix departs from the family's seed by {gap:0.0} points (tolerance {ShareTolerancePoints})."); }
+                sb.Append(F("\n             derived mix {0} | seed {1} | max gap {2:0.0} pt {3}\n", Join(derived), seed == null ? "-" : Join(seed), gap, gap <= ShareTolerancePoints ? "ok" : "FAIL"));
+            }
+            if (covered != 6) { failures++; Debug.LogError($"ENERGY: the layer covers {covered} of the world's countries; six were built."); }
+            sb.Append(F("    {0} label(s) tagged DIVERGENT across the six - definitions (net maximum with reserve, nameplate, net summer), printed side by side, never averaged.\n", divergent));
+            foreach ((CountryId cc, string label, string reason) in ClosedByLaw) { sb.Append(F("    CLOSED BY LAW: {0} {1} - {2}.\n", cc, label, reason)); }
+
+            // ---- gate 2: the blocks
+            sb.Append("\n    2. THE BLOCKS (GWh): base + mid + peak against the series\n");
+            double zoneSum = 0, seEnergy = 0;
+            for (int i = 0; i < EnergyLayer.ZoneCount; i++)
+            {
+                EnergyLayer.Blocks b = EnergyLayer.BlocksAt(i);
+                double gap = Math.Abs(b.BlocksGwh - b.EnergyGwh) / Math.Max(1.0, b.EnergyGwh);
+                if (gap > BlockIdentityRelative) { failures++; Debug.LogError($"ENERGY: {b.Zone}'s blocks sum to {b.BlocksGwh:0.0} GWh against the series' {b.EnergyGwh:0.0}."); }
+                if (b.Scale <= 0 || b.Scale > 1.0000001) { failures++; Debug.LogError($"ENERGY: {b.Zone}'s balance factor {b.Scale} is outside (0, 1]."); }
+                sb.Append(F("    {0,-4} base {1,10:0.0} + mid {2,9:0.0} + peak {3,8:0.0} = {4,10:0.0} vs {5,10:0.0} ({6:0.000}%) peak {7:0} h at {8:0} MW · max {9:0} MW{10}\n",
+                    b.Zone, b.BaseGwh, b.MidAboveBaseGwh, b.PeakAboveBaseGwh, b.BlocksGwh, b.EnergyGwh, 100 * gap, b.PeakHours, b.PeakMeanMw, b.MaxMw, b.Scale < 1 ? F(" · BALANCE FACTOR {0:0.0000} (inland demand {1:0} GWh)", b.Scale, b.InlandDemandGwh) : ""));
+                if (b.Country == "SE" && b.Zone != "SE") { zoneSum += b.EnergyGwh; }
+                if (b.Zone == "SE") { seEnergy = b.EnergyGwh; }
+            }
+            sb.Append(F("    Sweden's four zones sum to {0:0.0} GWh of settlement consumption against {1:0.0} of load ({2:+0.0;-0.0} %) - eSett does not settle the network's losses.\n", zoneSum, seEnergy, 100 * (zoneSum - seEnergy) / seEnergy));
+
+            // ---- gate 3: the links
+            sb.Append("\n    3. THE LINKS: the chain SE1 → SE2 → SE3 → SE4, flows positive southward (MW)\n");
+            foreach (EnergyLayer.Block block in new[] { EnergyLayer.Block.Peak, EnergyLayer.Block.Mid, EnergyLayer.Block.Base })
+            {
+                EnergyLayer.LinkFlow[] open = EnergyLayer.Flows(block, true);
+                double merged = EnergyLayer.MergedSurplusMw(block);
+                double lastPlusSe4 = open[open.Length - 1].FlowMw + EnergyLayer.ZoneSurplusMw("SE4", block);
+                if (Math.Abs(lastPlusSe4 - merged) > 1e-6) { failures++; Debug.LogError($"ENERGY: with the links infinite the four zones do not clear as one in the {block} block ({lastPlusSe4} against {merged})."); }
+                EnergyLayer.LinkFlow[] ntc = EnergyLayer.Flows(block, false);
+                sb.Append(F("    {0,-4} merged balance {1,7:0} MW;", block, merged));
+                foreach (EnergyLayer.LinkFlow f in ntc) { sb.Append(F(" {0}→{1} {2,6:0} / {3:0} ({4:0}%){5}", f.From, f.To, f.FlowMw, f.CapacityMw, 100 * f.Utilisation, f.Binding ? " BINDS" : "")); }
+                sb.Append('\n');
+            }
+            sb.Append("    Identity held: the merged zone's balance equals the chain's last cumulative flow plus SE4's own. ⚠ A proxy on annual-average supply with ONE exit (SE4): the interconnectors out of SE1, SE2 and SE3 to Norway, Finland and Denmark are outside the chain, so a surplus that leaves through them here reads as southward flow - which link binds in dispatch, and SE4's price above SE1's, are stage 3's clearing.\n");
+            if (EnergyLayerData.LinkFrom.Length != 6) { failures++; Debug.LogError($"ENERGY: {EnergyLayerData.LinkFrom.Length} links in the catalog; six directed links were sourced."); }
+
+            // ---- gate 4: the single book
+            sb.Append("\n    4. THE SINGLE BOOK (kt CO₂): derived + residual = the family's seed, per country\n");
+            foreach (Country c in world.Countries)
+            {
+                if (!EnergyLayer.Has(c.Id)) { continue; }
+                EnergyLayer.Co2 d = EnergyLayer.Decomposition(c.Id, c.Environment.PowerCo2PerCapita);
+                double identity = Math.Abs(d.DerivedKt + d.ResidualKt - d.SeedTotalKt);
+                if (identity > 1e-6 * Math.Max(1.0, d.SeedTotalKt)) { failures++; Debug.LogError($"ENERGY: {c.Id}'s derived + residual ({d.DerivedKt + d.ResidualKt}) is not the seed ({d.SeedTotalKt})."); }
+                if (d.DerivedKt <= 0) { failures++; Debug.LogError($"ENERGY: {c.Id}'s derived combustion is {d.DerivedKt} kt - a fleet with no fuel."); }
+                sb.Append(F("    {0,-8} seed {1,9:0} = derived {2,9:0} ({3,4:0.0} %) + residual {4,8:0} [known heat {5,7:0} + remainder {6,8:0}] · autoproducers {7,7:0} kt in industry's book\n",
+                    c.Id, d.SeedTotalKt, d.DerivedKt, 100 * d.DerivedShare, d.ResidualKt, d.MainHeatKt, d.RemainderKt, d.AutoproducerKt));
+            }
+            sb.Append("    The residual is PER COUNTRY BY METHOD (seed − derived), its known heat part named and the remainder (refineries, other energy industries, EDGAR's factors against the IPCC defaults) printed with its sign.\n");
+
+            // ---- gate 5: the catalog's shapes
+            int failuresBefore = failures;
+            if (EnergyLayerData.Countries.Length != 6 || EnergyLayerData.Labels.Length != 7) { failures++; }
+            if (EnergyLayerData.CapacityRecordMw.Length != 6 || EnergyLayerData.CapacityRecordMw[0].Length != 7 || EnergyLayerData.GenerationRecordGwh.Length != 6) { failures++; }
+            if (EnergyLayerData.Zones.Length != 10 || EnergyLayerData.EnergyGwh.Length != 10 || EnergyLayerData.Scale.Length != 10) { failures++; }
+            if (EnergyLayerData.SwedishZones.Length != 4 || EnergyLayerData.ZoneProductionGwh.Length != 4) { failures++; }
+            if (EnergyLayerData.Co2Kt.Length != 6 || EnergyLayerData.Co2Kt[0].Length != 3 || EnergyLayerData.Co2Kt[0][0].Length != 6 || EnergyLayerData.PopulationM.Length != 6) { failures++; }
+            if (failures > failuresBefore) { Debug.LogError("ENERGY: the catalog's arrays are not the shapes the layer reads (6 countries × 7 labels; 10 zones; 4 Swedish zones; 6 × 3 × 6 combustion)."); }
+            sb.Append(F("\n    5. THE CATALOG: {0} countries × {1} labels, {2} zones, {3} Swedish zones, {4} links, {5}×{6}×{7} combustion cells - digests are GeneratedCatalogCheck's.\n",
+                EnergyLayerData.Countries.Length, EnergyLayerData.Labels.Length, EnergyLayerData.Zones.Length, EnergyLayerData.SwedishZones.Length, EnergyLayerData.LinkFrom.Length,
+                EnergyLayerData.Co2Kt.Length, EnergyLayerData.Co2Kt[0].Length, EnergyLayerData.Co2Kt[0][0].Length));
+
+            sb.Append(failures == 0 ? "\n=== EnergyLayerCheck: ALL ASSERTIONS PASS ===\n" : $"\n=== EnergyLayerCheck: {failures} FAILURE(S) ===\n");
+            if (failures > 0) { Debug.LogError(sb.ToString()); CheckExit.Finish(1); return; }
+            Debug.Log(sb.ToString());
+            CheckExit.Finish(0);
+        }
+
+        private static string Join(float[] shares) { var parts = new string[shares.Length]; for (int i = 0; i < shares.Length; i++) { parts[i] = shares[i].ToString("0.0", CultureInfo.InvariantCulture); } return string.Join("/", parts); }
+        private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
+    }
+}

@@ -53,7 +53,15 @@ namespace PoliSim.UI
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);
-            string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE IS THE TAXED CO₂ - POWER AND TRANSPORT PER HEAD × POPULATION · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED";
+            // The energy layer's stage 2 (2026-09-10): the single book made visible where the figure is - the power figure's decomposition at the seed,
+            // read off the fleet's own combustion. A readout; the layer writes nothing.
+            string energyFoot = "";
+            if (EnergyLayer.Has(country.Id))
+            {
+                EnergyLayer.Co2 decomposition = EnergyLayer.Decomposition(country.Id, e.PowerCo2PerCapita);
+                energyFoot = $" · THE ENERGY LAYER AT THE {EnergyLayer.Year} SEED: THE POWER PLANTS' OWN COMBUSTION IS {decomposition.DerivedShare * 100f:0} % OF THE POWER FIGURE, THE REST HEAT PLANTS, CHP HEAT AND REFINERIES · THE FLEET AND THE LOAD ARE STATIC UNTIL DISPATCH";
+            }
+            string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE IS THE TAXED CO₂ - POWER AND TRANSPORT PER HEAD × POPULATION · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED" + energyFoot;
             _environmentPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
             {
                 if (!draftLive || !row.Name.StartsWith("Electricity CO2")) { return null; }

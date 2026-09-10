@@ -249,6 +249,11 @@ namespace PoliSim.EditorTools
             // row for row to the column the board consumed, and the board's own ladder counts at its own size.
             ("ValkretsCartogramCheck", ValkretsCartogramCheck.Run),
 
+            // 2026-09-10 (the energy track's stage 2, §457): the physical layer's five gates - the fleet against Ember with the definition
+            // named, the blocks' identity, the links' identity with the links infinite, the single book (derived + residual = the family's
+            // seed, per country), the catalog's shapes. It builds a default World to read the family's seeds off it rather than re-typing them.
+            ("EnergyLayerCheck", EnergyLayerCheck.Run),
+
             // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. ⚠ A prose
             // mention used to count as a reference in FOUR name-scanning checks - a commented-out
             // Debug.LogError even counted as a failure path, defeating the sixth sweep with a comment.

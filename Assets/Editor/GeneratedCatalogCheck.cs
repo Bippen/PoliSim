@@ -117,6 +117,7 @@ namespace PoliSim.EditorTools
             failures += CheckProjections(sb);
             failures += CheckValkretsPopulation(sb);
             failures += CheckItanes(sb);
+            failures += CheckEnergy(sb);
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -165,6 +166,40 @@ namespace PoliSim.EditorTools
                 }
             }
             sb.Append($"    ItanesVoteByAge: two sources at their recorded digests, 6 bands x {ItanesVoteByAge.Parties.Length} parties per wave, every band's columns within its weight sum ({failures} fault(s)).\n");
+            return failures;
+        }
+
+        /// <summary>
+        /// Stage 2 of the energy track (2026-09-10, §457): `EnergyLayerData` against the six files under `EnergyData/` it was generated
+        /// from - each at its recorded digest, each with as many data rows as the catalog's arrays hold.
+        /// </summary>
+        private static int CheckEnergy(StringBuilder sb)
+        {
+            int failures = 0;
+            string root = Directory.GetCurrentDirectory();
+            var sources = new (string Relative, string Recorded, int Rows)[]
+            {
+                (EnergyCatalogGenerator.FleetSource, EnergyLayerData.FleetDigest, EnergyLayerData.Countries.Length * EnergyLayerData.Labels.Length),
+                (EnergyCatalogGenerator.BlocksSource, EnergyLayerData.LoadBlocksDigest, EnergyLayerData.Zones.Length),
+                (EnergyCatalogGenerator.ZonesSource, EnergyLayerData.ZonesDigest, EnergyLayerData.SwedishZones.Length),
+                (EnergyCatalogGenerator.LinksSource, EnergyLayerData.LinksDigest, EnergyLayerData.LinkFrom.Length),
+                (EnergyCatalogGenerator.CombustionSource, EnergyLayerData.CombustionDigest, EnergyLayerData.Countries.Length * EnergyLayerData.CombustionLabels.Length * EnergyLayerData.CombustionClasses.Length),
+                (EnergyCatalogGenerator.CountrySource, EnergyLayerData.CountryDigest, EnergyLayerData.PopulationM.Length),
+            };
+            foreach ((string relative, string recorded, int rows) in sources)
+            {
+                string path = Path.Combine(root, relative.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(path)) { failures++; Debug.LogError($"CATALOG: {relative} is not on disk, so the energy catalog cannot be verified."); continue; }
+                string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(path));
+                if (!string.Equals(onDisk, recorded, StringComparison.OrdinalIgnoreCase))
+                {
+                    failures++;
+                    Debug.LogError($"CATALOG: {relative} changed since the energy catalog was generated (on disk {onDisk}, recorded {recorded}). Re-run EnergyCatalogGenerator - and read the diff first: a derived data file changing means a source or the prep script changed, which is an event somebody explains.");
+                }
+                int dataRows = EnergyCatalogGenerator.DataRows(path);
+                if (dataRows != rows) { failures++; Debug.LogError($"CATALOG: {relative} holds {dataRows} data row(s) and the energy catalog's array holds {rows}."); }
+            }
+            sb.Append($"    EnergyLayerData: six sources at their recorded digests, {EnergyLayerData.Countries.Length} countries × {EnergyLayerData.Labels.Length} labels, {EnergyLayerData.Zones.Length} load zones, {EnergyLayerData.LinkFrom.Length} links, {EnergyLayerData.CombustionClasses.Length} combustion classes ({failures} fault(s)).\n");
             return failures;
         }
 
