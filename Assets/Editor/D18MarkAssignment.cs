@@ -30,13 +30,15 @@ namespace PoliSim.EditorTools
     /// chambers have no ink to be identical - it waits for the day D8-2 lands and produces a collision.</item>
     /// </list>
     ///
-    /// <para>⚠ <b>This check does not fail while the art is absent.</b> The cells are delivered files in
-    /// the design project and have not reached this repo (see `COMPLETED.md` §424 for why the attempt to
-    /// carry them through a session's own context was stopped: four of eight arrived with broken CRCs).
-    /// Until they land, every row prints as AWAITING ART, which is the `PartyMarkCoverageCheck`
-    /// precedent - an undelivered mark is a GAP, not a broken build. What DOES fail here is the
-    /// assignment's own arithmetic: a duplicate triple, a top five that repeats a silhouette, a cut
-    /// spent early, or a stem that does not match the naming rule the delivered marks prove.</para>
+    /// <para><b>THE BATCH HAS LANDED (2026-09-09, §429)</b>, so what this check guards has changed with
+    /// it. It was written while the cells were still in the design project - §424, after four of eight
+    /// files corrupted in transit - and it then reported every row as AWAITING ART rather than failing,
+    /// on the `PartyMarkCoverageCheck` precedent that an undelivered mark is a gap. The fifteen cells
+    /// arrived as a verified bundle and the 43 destinations were written from them, so the check now
+    /// asserts the landing instead: **every seed names the stem the rules derive**, in both directions -
+    /// a seed that names nothing is as wrong as one that names the wrong thing - alongside the
+    /// assignment's own arithmetic (a duplicate triple, a top five that repeats a silhouette, a cut
+    /// spent early, a stem that does not match the naming rule the delivered marks prove).</para>
     /// </summary>
     public static class D18MarkAssignment
     {
@@ -52,6 +54,16 @@ namespace PoliSim.EditorTools
         private const string Fill = "solid";
 
         private const string CellFolder = "Assets/Resources/Art/UI/Emblems";
+
+        /// <summary>The four chambers this batch covers. ⚠ NOT "whichever parties have no mark": that
+        /// definition was empty the moment the cells landed, and a check that reports it verified nothing
+        /// is worse than no check. These four are the chambers with **no sourced ink** - board 11b's own
+        /// scope - so their marks are the neutral cell vocabulary. Sweden's eight and the USA's two are
+        /// drawn art under rule 9a, carry their own seated colour, and are not in this batch.</summary>
+        private static readonly CountryId[] BatchChambers =
+        {
+            CountryId.France, CountryId.Italy, CountryId.Germany, CountryId.Poland,
+        };
 
         public readonly struct Row
         {
@@ -85,18 +97,14 @@ namespace PoliSim.EditorTools
             faults = new List<string>();
             var rows = new List<Row>();
 
-            foreach (CountryId country in Enum.GetValues(typeof(CountryId)))
+            foreach (CountryId country in BatchChambers)
             {
-                var pending = new List<PoliticalParty>();
-                foreach (PoliticalParty party in PartySystems.For(country))
+                var pending = new List<PoliticalParty>(PartySystems.For(country));
+                if (pending.Count == 0)
                 {
-                    if (string.IsNullOrEmpty(party.MarkName) || IconLibrary.GetPartyMark(party.MarkName) == null)
-                    {
-                        pending.Add(party);
-                    }
+                    faults.Add(country + " is named as a batch chamber and seeds no parties");
+                    continue;
                 }
-
-                if (pending.Count == 0) { continue; }
 
                 // ⚠ A STABLE sort, not OrderByDescending on a fresh list: four Italian parties hold one
                 // seat each and three French ones do, and the seed's order is the only tie-break that
@@ -143,12 +151,33 @@ namespace PoliSim.EditorTools
 
             if (rows.Count == 0)
             {
-                // Not a pass. Either every chamber is covered - in which case this check has nothing to
-                // say and should be retired - or the enumeration broke.
-                Debug.LogError("D18MARKS: no chamber needs a mark, so this check VERIFIED NOTHING. Either the "
-                               + "batch has landed and this check is spent, or PartySystems returned nothing.");
+                Debug.LogError("D18MARKS: the four batch chambers seed no parties at all, so this check "
+                               + "VERIFIED NOTHING.");
                 CheckExit.Finish(1);
                 return;
+            }
+
+            // ---- the wiring: every seed names the stem the rules derive ------------------------------
+            // ⚠ This is the assertion the landing made possible, and the one that matters from here: the
+            // files are named by a rule, the seeds are named by a rule, and if the two ever part, a mark
+            // silently stops resolving. Checked in both directions - a seed that names nothing after the
+            // batch landed is as wrong as one that names the wrong thing.
+            foreach (Row row in rows)
+            {
+                string seeded = null;
+                foreach (PoliticalParty party in PartySystems.For(row.Country))
+                {
+                    if (string.Equals(party.Abbrev, row.Abbrev, StringComparison.Ordinal)) { seeded = party.MarkName; break; }
+                }
+
+                if (string.IsNullOrEmpty(seeded))
+                {
+                    faults.Add($"{row.Country} {row.Abbrev} names no mark and the batch has landed - it should name {row.Stem}");
+                }
+                else if (!string.Equals(seeded, row.Stem, StringComparison.Ordinal))
+                {
+                    faults.Add($"{row.Country} {row.Abbrev} is seeded as '{seeded}' and the rules derive '{row.Stem}'");
+                }
             }
 
             // ---- rule 2: the triple is unique inside its own chamber ------------------------------------
@@ -223,12 +252,16 @@ namespace PoliSim.EditorTools
                 cells[row.Cell] = n + 1;
             }
 
+            // ⚠ The DESTINATIONS are what is asked about, not the sources. The fifteen cells are the
+            // bundle's own files and stay in the design project; what has to exist here is one landed
+            // mark per row, resolving through the same accessor the game draws with.
             string folder = Path.Combine(Directory.GetCurrentDirectory(), CellFolder.Replace('/', Path.DirectorySeparatorChar));
             int present = 0;
-            foreach (KeyValuePair<string, int> cell in cells)
+            var absent = new List<string>();
+            foreach (Row row in rows)
             {
-                bool onDisk = File.Exists(Path.Combine(folder, cell.Key + ".png"));
-                if (onDisk) { present++; }
+                if (File.Exists(Path.Combine(folder, row.Stem + ".png"))) { present++; }
+                else { absent.Add(row.Stem); }
             }
 
             var chambers = new SortedDictionary<string, int>(StringComparer.Ordinal);
@@ -241,7 +274,7 @@ namespace PoliSim.EditorTools
             sb.Append($"    {rows.Count} row(s) across {chambers.Count} chamber(s): ");
             foreach (KeyValuePair<string, int> chamber in chambers) { sb.Append($"{chamber.Key} {chamber.Value} · "); }
 
-            sb.Append($"\n    {cells.Count} distinct cell(s) carry them; {present} of those are in {CellFolder}.\n");
+            sb.Append($"\n    {cells.Count} distinct cell(s) carry them; {present} of {rows.Count} destination(s) are in {CellFolder}.\n");
             sb.Append($"    the naming rule re-derived against {verified} delivered mark(s).\n\n");
             sb.Append("    chamber   abbrev  seats  triple                      stem\n");
             foreach (Row row in rows)
@@ -249,15 +282,16 @@ namespace PoliSim.EditorTools
                 sb.Append(string.Format(System.Globalization.CultureInfo.InvariantCulture,
                     "    {0,-9} {1,-7} {2,5}  {3,-27} {4}{5}\n",
                     row.Country, row.Abbrev, row.Seats, row.Silhouette + " · " + row.Cut + " · " + Fill,
-                    row.Stem, present == cells.Count ? string.Empty : "  AWAITING ART"));
+                    row.Stem, absent.Contains(row.Stem) ? "  AWAITING ART" : string.Empty));
             }
 
-            if (present < cells.Count)
+            if (absent.Count > 0)
             {
-                sb.Append($"\n    ⚠ AWAITING ART: {cells.Count - present} of {cells.Count} cells are not in this repo. "
-                          + "They are delivered files in the design\n      project (`send/marks/`); what has not happened "
-                          + "is the copy. REPORTED, not failed - the\n      PartyMarkCoverageCheck precedent: an "
-                          + "undelivered mark is a gap, and the row says so.\n");
+                // ⚠ REPORTED here and FAILED next door. Once a seed names a mark, an absent file is an
+                // ERROR in PartyMarkCoverageCheck - a claimed mark that does not resolve - so this check
+                // says which rows and lets the check that owns that verdict deliver it.
+                sb.Append($"\n    ⚠ AWAITING ART: {absent.Count} of {rows.Count} destination(s) are not on disk - "
+                          + string.Join(", ", absent.ToArray()) + "\n");
             }
 
             foreach (string fault in faults) { sb.Append("    ⚠ FAULT  ").Append(fault).Append('\n'); }

@@ -25595,3 +25595,54 @@ filmed at 1280 (`p415b_1280`, 70 captures, 0 failed, **0 OVERFLOW / CLIPPED / ES
 **The residue** reads zero on every bar of the run. The excluded rows are Elias's (T-3, FT-6, **D17 item 2**, the dials-only laws, the E-rows), Design's (D-rows), and the calendar's (K-1, 13 September 2026). **Nothing a session could start stands open.**
 
 **Bar:** `bar299_10d_final_RunAllBatch` 36 of 36, `ResidueCheck` 0 open with D17 item 2 printed under the exclusions as Elias's. Documents only.
+
+## 429. E-31 CLOSED — D18's batch LANDED: 43 marks in four chambers, byte-identical to the cell the rules assign each of them, the check re-pointed from a pending batch to the wiring, and coverage green in both directions (2026-09-10)
+
+**The ruling:** *"Re-point the assignment check now that the batch has landed: it should assert the wired marks against the derived rules rather than describe a pending batch. Re-run coverage both ways, film the affected screens at 1280 and 2560, close E-31, and report what arrived intact."*
+
+**How it landed - as a pack, not through a context.** The fifteen cells reached this repo the way §424 and §427 said art has to: as a delivered bundle, `PoliSim v2 Design Progressd17.zip` (in `AssetPackArchive/` from 2026-09-09 22:38; `design_handoff_d18_marks/send/marks/`, beside Design's own `d18_mark_assignment.json`). The 43 destinations under `Assets/Resources/Art/UI/Emblems/` were written from that zip disk to disk; nothing passed through a session's context.
+
+**What arrived intact, measured four ways, every one of them 43 of 43:**
+
+| the question | how it was answered | result |
+|---|---|---|
+| is the pack itself sound | `unzip -t` over all 20 entries | no errors |
+| is every PNG whole | `Tools/pngcheck.pl` - every chunk's CRC32 recomputed, ends at `IEND`, no trailing bytes - over the 15 cells and the 43 destinations | **broken: 0** on both |
+| is each destination a copy of *a* cell | SHA-256 of every destination against the fifteen cells hashed out of the zip | 43 matched, 0 unmatched |
+| is it a copy of *the right* cell | the byte-derived map (destination → cell) against the map the RULES derive (`D18MarkAssignment`'s table) and against Design's `d18_mark_assignment.json` | **all three identical, row for row** - §424 spot-checked eight rows; this compares all 43 |
+
+Every destination is 128×128 RGBA32 in the neutral `#5F6672` (PartyMarkCoverageCheck reads each through `IconLibrary.GetPartyMark`, the accessor the game draws with), and fifteen distinct cells carry the 43, 1 to 4 copies each, exactly as the rules spend them.
+
+**The check, re-pointed.** `D18MarkAssignment` was written while the cells were still in the design project and it reported every row AWAITING ART rather than failing. That definition - "the parties with no mark" - went empty the moment the batch landed, and a check that enumerates an empty set verifies nothing. It now enumerates **the four batch chambers by name** (France, Italy, Germany, Poland: the chambers with no sourced ink, board 11b's own scope) and asserts, in addition to the assignment's arithmetic it always held, **the wiring**: every seed's `MarkName` equals the stem the rules derive, in both directions - a seed that names nothing after the landing fails as surely as one that names the wrong mark. A destination absent from disk is reported by name here and failed next door, in `PartyMarkCoverageCheck`, which owns that verdict.
+
+**Coverage, both ways.** Seed → file: **53 seeded parties, 53 with a resolving mark, 0 without one** (Sweden 8, USA 2, and the 43). File → seed: **0 delivered-but-unconsumed** at a ceiling of 0. `DeliveredAssetCheck` learned the one new shape the pack has - a source that lands under other names - and does not take it on trust: each of the fifteen cells is hashed out of the zip and a byte-identical file is REQUIRED under `Assets/`, so a pack that was verified and then not copied still reports MISSING. The D18 inventory spliced into the request document regenerated to match (`D18InventoryCheck` green): 53 of 53, nothing owed.
+
+**Proved by mutation, not by reading.** The new assertion was neutered-in-reverse for one run: Poland's TD re-seeded as `mark_party_pl_ko` - a mark that EXISTS, so `PartyMarkCoverageCheck` would resolve it and pass - and `D18MarkAssignment.Run` alone exited **1** naming it: *"Poland TD is seeded as 'mark_party_pl_ko' and the rules derive 'mark_party_pl_td'"*, with the naming rule failing on the same row. The seed file was restored and hashed back to its pre-probe SHA-256 (`bc780678…`). Log: `probe_e31_wiring.log`.
+
+**Films.** All four batch chambers filmed whole at both sizes on the finished code, one chain: `e31b_fr_1280`, `e31b_fr_2560`, `e31b_it_1280`, `e31b_it_2560`, `e31b_ge_1280`, `e31b_ge_2560` at **101 captured, 0 failed** each, `e31b_po_1280` and `e31b_po_2560` at **103, 0 failed**; capture-identity green on every frame, no MISMATCH, no ESCAPE, and the only OVERFLOW / text-clip lines are the two findings below. On Politics → Parliament each chamber draws its majority label alone at the top of the arc and every legend row carries its own neutral silhouette; at 2560 France's top five read square, disc, hex, wedge, keystone - the five distinct silhouettes rule 3 requires. Sweden, the chamber the batch does not touch, re-filmed as the regression control: `d18_se_r2_1280`, 103 captured, 0 failed.
+
+**⚠ TWO FINDINGS THE FILMS SURFACED, NEITHER THIS BATCH'S, NEITHER FIXED HERE.** No earlier Italy or Poland film is among the recent capture logs, so there is no before to diff against; three of the eight exited 1 on the harness's own error fold:
+- **Italy, the signing screen (89d/89e), both sizes:** the division plate's stance column holds fourteen parties and OVERFLOWS its plate - rows run up over the "staged division" title and down past the plate's rule - and its caption clips (`preferredHeight 22.8 > rect 16.0` at 1280, 24.2 at 2560, on "spendvtax 2.0 → +0.60 · nearer than t…").
+- **Poland 1280, the central-bank board (07c deep, 07d ×3):** "TAKEN BACK" needs 11.2 px tall in a 10.0 px rect at 9 px. 2560 is clean.
+Neither screen reads a party mark (the only consumers of `MarkName` are `HemicycleRenderer` and the campaign masthead) and §430's change touches only the bloc devices, so both predate this work; they are recorded here to be taken up, not absorbed into E-31.
+
+**What E-31 unblocked.** Every call site that draws a party mark resolves one now in France, Italy, Germany and Poland; the one filmed here is the chamber's legend (Politics → Parliament), where each of the 43 draws its own neutral silhouette beside its name. The campaign masthead is the other call site and is reached only in a played campaign, which these films do not stage - it reads the same accessor, so it resolves what the coverage check resolves.
+
+## 430. THE CHAMBER WITH NO BLOCS — two defects France exposed the first time its chamber was filmed with marks, both in 10d's bloc devices (2026-09-10)
+
+**Found by filming, not by a check.** Sweden's chamber is the one 10d was built and filmed on (§426), and Sweden has sourced blocs. France has none - every one of its fifteen units is UNAFFILIATED - so the whole chamber is one bloc, and two of 10d's devices said something about a bloc that was not there:
+
+1. **The bloc label collided with the majority label.** A single bloc's mid-angle is 90°, which is exactly where the majority tick carries its own label: "UNAFFILIATED 577" printed over "MAJORITY 289". It also only repeated the page header.
+2. **The majority reading was true and empty.** "THE MAJORITY LINE FALLS 289 SEATS INSIDE THE UNAFFILIATED" is arithmetic about a bloc that is the whole chamber.
+
+**Fixed where the renderer already knows it.** `HemicycleRenderer` already computed `blocsKnown` for the legend's bloc headers; the bloc labels and the majority reading now take the same flag. The arc stays as the chamber's outer rule and the tick and its label stay - those are the chamber's, not a bloc's. A chamber with sourced blocs takes the old path unchanged, which Sweden's re-film shows: `d18_se_r2_1280`, 103 captured, 0 failed.
+
+**Noted and NOT changed:** the legend draws its mark flush against the party name, with no gap, in every chamber - Sweden's film shows the same. That is the legend's standing layout, not something the batch introduced; recorded here so it is not mistaken for one.
+
+## 431. THE FILM NO LONGER NEEDS THE FOCUS — three France films hung in a row because play mode stops ticking when the Editor loses the foreground (2026-09-10)
+
+**The finding.** Three consecutive France films hung at the Budget screen (after 26, 28 and 25 captures) while the pre-fix France film of the night before ran through in five minutes. Nothing in the Budget sweep is country-specific, and the hangs fell on different shots. The measurement that settled it: during the third hang Unity sat at **0.2 s of CPU per 10 s**, its window minimized and Chrome in the foreground, the log trickling one `FRAME:` line a minute and never reaching `entering WaitForEndOfFrame` - where the good run logged eight in 24 seconds and captured. Restoring the window alone did not resume it. `ProjectSettings` carries `runInBackground: 0`, and with it off play mode stops ticking whenever the Editor loses focus. The overnight films ran through only because nobody clicked anywhere else.
+
+**The fix is the harness's, not the game's.** `UiScreenshotCapture.AttachDriver` sets `Application.runInBackground = true` for the film's play session and logs `SHOT: runInBackground forced on for the film`; the shipping PlayerSettings value is untouched (`git status ProjectSettings/` clean after the films). The first film on it - France 1280, with Chrome holding the foreground throughout - ran through: 101 captured, 0 failed, in about five minutes. ⚠ A **minimized** Editor draws no Game View at all, so the fix covers "not focused", not "minimized"; a film still wants its window left on screen.
+
+**Bar:** `bar308_e31_final` 36 of 36 on the finished tree (after the probe, recompiled), `ResidueCheck` 0 open. `D18MarkAssignment`: 43 rows across four chambers, 15 distinct cells, **43 of 43 destinations on disk**, the wiring asserted, the naming rule re-derived against 53 delivered marks. `PartyMarkCoverageCheck`: 53 of 53, 0 unconsumed. `DeliveredAssetCheck`: 0 missing, the fifteen cells each matched byte for byte under `Assets/`. The films and the probe above ran on this code; `ProjectSettings/` untouched.

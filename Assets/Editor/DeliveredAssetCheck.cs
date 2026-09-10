@@ -94,6 +94,43 @@ namespace PoliSim.EditorTools
         };
 
         /// <summary>
+        /// ⚠ **A SOURCE THAT LANDS UNDER OTHER NAMES.** D18's bundle (2026-09-09) ships fifteen neutral
+        /// cells whose whole purpose is to be copied to 43 destination names - `mark_party_&lt;iso&gt;_&lt;slug&gt;` -
+        /// so not one of them is ever in `Assets/` under its own. A pack like that is not a regression and
+        /// it is not "reference material" either: the bytes ARE deliverables, they simply arrive wearing a
+        /// different name.
+        ///
+        /// <para>The allowance is therefore not a word. Each exempted entry is hashed out of the zip and
+        /// a byte-identical file is REQUIRED to exist under `Assets/`; the count of matches is logged. An
+        /// entry that landed nowhere still reports MISSING, so a bundle that was verified and then not
+        /// copied cannot pass as "consumed elsewhere". Per (pack, entry), with the pack's own words.</para>
+        /// </summary>
+        private static readonly Dictionary<string, Dictionary<string, string>> ConsumedUnderOtherNames =
+            new Dictionary<string, Dictionary<string, string>>
+        {
+            {
+                "PoliSim v2 Design Progressd17.zip", new Dictionary<string, string>
+                {
+                    { "mark_cell_square_none_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_disc_none_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_hex_none_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_wedge_none_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_keystone_none_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_square_bar_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_disc_bar_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_hex_bar_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_wedge_bar_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_keystone_bar_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_square_notch_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_disc_notch_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_hex_notch_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_wedge_notch_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                    { "mark_cell_keystone_notch_solid.png", "D18 cell - copied to its destination stems (§429)" },
+                }
+            },
+        };
+
+        /// <summary>
         /// Names ChromeManifest.txt rules superseded (its '!'-prefixed rows): delivered once, later
         /// replaced by the v2.0 chrome set, and REMOVED from Assets/ by the Track 3 ruling. Read from
         /// the manifest itself rather than duplicated here, so this allowance cannot drift from the
@@ -168,6 +205,39 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(rootGaps + archiveGaps == 0 ? 0 : 1);
         }
 
+        /// <summary>How many files under `Assets/` are byte-identical to this zip entry. ⚠ Compares the
+        /// BYTES, not the name and not the size: the whole point of the exemption above is that the name
+        /// is different, and §427's rule is that a file which merely looks right is not a file that is
+        /// right. Reads the entry once into memory - these are 8 KB PNGs - and walks the same asset index
+        /// the check already built.</summary>
+        private static int CountIdenticalCopies(ZipArchiveEntry entry)
+        {
+            byte[] wanted;
+            using (Stream source = entry.Open())
+            using (var buffer = new MemoryStream())
+            {
+                source.CopyTo(buffer);
+                wanted = buffer.ToArray();
+            }
+
+            int copies = 0;
+            string root = Path.Combine(Directory.GetCurrentDirectory(), "Assets");
+            if (!Directory.Exists(root)) { return 0; }
+
+            foreach (string path in Directory.GetFiles(root, "*" + Path.GetExtension(entry.Name), SearchOption.AllDirectories))
+            {
+                var info = new FileInfo(path);
+                if (info.Length != wanted.Length) { continue; }
+
+                byte[] have = File.ReadAllBytes(path);
+                bool same = true;
+                for (int i = 0; i < have.Length; i++) { if (have[i] != wanted[i]) { same = false; break; } }
+                if (same) { copies++; }
+            }
+
+            return copies;
+        }
+
         /// <summary>Reports one zip, returning how many of its asset entries are absent under Assets/.</summary>
         private static int Report(string zipPath, Dictionary<string, string> assetsByName, HashSet<string> superseded, bool isAtRoot)
         {
@@ -204,6 +274,23 @@ namespace PoliSim.EditorTools
                         {
                             Debug.Log($"  rmvd {label}: {entry.Name} - {answer}");
                             supd++;
+                            continue;
+                        }
+
+                        if (ConsumedUnderOtherNames.TryGetValue(label, out Dictionary<string, string> consumed)
+                            && consumed.TryGetValue(entry.Name, out string why))
+                        {
+                            int copies = CountIdenticalCopies(entry);
+                            if (copies > 0)
+                            {
+                                Debug.Log($"  used {label}: {entry.Name} - {why}; {copies} byte-identical file(s) under Assets/");
+                                supd++;
+                                continue;
+                            }
+
+                            Debug.Log($"  MISSING {label}: {entry.Name} - claimed as consumed under other names "
+                                      + "and NO byte-identical file exists under Assets/. The bundle was read and not copied.");
+                            missing++;
                             continue;
                         }
 

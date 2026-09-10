@@ -293,6 +293,15 @@ namespace PoliSim.EditorTools
                 return;
             }
 
+            // ⚠ THE FILM MUST NOT NEED THE FOCUS (2026-09-10, E-31's films). ProjectSettings carries
+            // runInBackground 0, and with it off play mode stops ticking the moment the Editor loses focus:
+            // three France films hung at the Budget screen in one morning while Chrome held the foreground -
+            // the log trickling a FRAME line a minute, Unity at 0.2 s of CPU per 10 s, never reaching
+            // WaitForEndOfFrame. The overnight films ran through only because nobody clicked anywhere.
+            // Set for the film's play session only; the shipping PlayerSettings value is not touched.
+            Application.runInBackground = true;
+            Debug.Log("SHOT: runInBackground forced on for the film - play mode keeps ticking without the Editor's focus.");
+
             string label = Arg("-shotlabel=", "run");
             var go = new GameObject("UiScreenshotDriver");
             UiScreenshotDriver driver = go.AddComponent<UiScreenshotDriver>();

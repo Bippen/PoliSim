@@ -148,12 +148,12 @@ namespace PoliSim.UI
             // the Layout pass too: which bloc the majority seat lands in, and how far inside its edge.
             // ⚠ Re-derived every frame - the seats drift with approval, and a sentence about where the
             // line falls is exactly the kind that goes wrong by being written down once.
-            LastMajorityReading = MajorityReading(seatBloc, totalSeats);
+            LastMajorityReading = blocsKnown ? MajorityReading(seatBloc, totalSeats) : string.Empty;
 
             Rect area = GUILayoutUtility.GetRect(10f, ArcHeight(labelStyle), GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint)
             {
-                DrawArc(area, seatColors, seatParty, seatBloc, labelStyle);
+                DrawArc(area, seatColors, seatParty, seatBloc, blocsKnown, labelStyle);
                 LastDotsDrawn = seatColors.Count;
                 LastChamberSeats = totalSeats;
                 LastDeclaredSeats = PartySystems.ChamberSeats(country);
@@ -190,7 +190,7 @@ namespace PoliSim.UI
         /// actually achieved, so the number is measured on every run rather than asserted here.</para>
         /// </summary>
         private void DrawArc(Rect area, IReadOnlyList<Color> seatColors, IReadOnlyList<string> seatParty,
-            IReadOnlyList<int> seatBloc, GUIStyle labelStyle)
+            IReadOnlyList<int> seatBloc, bool blocsKnown, GUIStyle labelStyle)
         {
             int total = seatColors.Count;
             if (total <= 0) { return; }
@@ -335,7 +335,12 @@ namespace PoliSim.UI
             // ⚠ Drawn last on purpose. The first film of this board had them under the dots: a label sits
             // at its bloc's mid-angle, which on a half-circle is a diagonal, and a horizontal text box
             // centred there puts its inner half straight onto the outermost ring.
-            for (int rank = 0; rank < 3; rank++)
+            //
+            // ⚠ AND ONLY WHERE THE BLOCS ARE REAL (§430, found by filming France). With one bloc the
+            // label is "UNAFFILIATED 577" at the arc's mid-angle - which repeats the page header and
+            // lands on the majority tick's own label, since a single bloc's midpoint is 90°. The arc
+            // stays as the chamber's outer rule; the label is a bloc device and goes with the blocs.
+            for (int rank = 0; blocsKnown && rank < 3; rank++)
             {
                 if (blocSeats[rank] == 0) { continue; }
 
@@ -379,7 +384,10 @@ namespace PoliSim.UI
         }
 
         /// <summary>Which bloc carries the seat that carries the chamber, and how far inside that bloc it
-        /// sits. Walks the drawn order, so it says what the arc shows rather than what a table would.</summary>
+        /// sits. Walks the drawn order, so it says what the arc shows rather than what a table would.
+        /// ⚠ Called only where the blocs are SOURCED: with every party unaffiliated the sentence reads
+        /// "289 seats inside the unaffiliated", which is arithmetic about a bloc that is the whole
+        /// chamber - true, and empty.</summary>
         private static string MajorityReading(IReadOnlyList<int> seatBloc, int totalSeats)
         {
             if (totalSeats <= 0 || seatBloc.Count < totalSeats) { return string.Empty; }
