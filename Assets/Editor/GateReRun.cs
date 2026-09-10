@@ -52,20 +52,28 @@ namespace PoliSim.EditorTools
             public readonly int[] RegionalColumns;   // catalog column per party (1-based after name), -1 = absent
             public readonly string AvailabilityCatalog;
             public readonly int[] AvailabilityColumns;
+            /// <summary>E-1 (2026-09-10): true where a per-group loyalty source exists for this case - today Italy, the
+            /// ITANES cross-tabs. The per-group blend then REPLACES the uniform one as the case's figure (the ruling: built
+            /// where the uniform per-party loyalty stands), and both are printed; it is not the better of the two.</summary>
+            public readonly bool PerGroupLoyalty;
 
             public Case(string name, string[] partyNames, VoteModel.PartyPoint[] parties, double[] actualPct,
                 double[] priorPct, double[] t1Pct, double[] t2Pct, VoteModel.Electorate day1, double wEcon,
                 double day1Mad, double day2Mad, double coverage,
                 string regionalCatalog = null, int[] regionalColumns = null,
-                string availabilityCatalog = null, int[] availabilityColumns = null)
+                string availabilityCatalog = null, int[] availabilityColumns = null, bool perGroupLoyalty = false)
             {
                 Name = name; PartyNames = partyNames; Parties = parties; ActualPct = actualPct;
                 PriorPct = priorPct; T1Pct = t1Pct; T2Pct = t2Pct; Day1 = day1; WEcon = wEcon;
                 Day1Mad = day1Mad; Day2Mad = day2Mad; Coverage = coverage;
                 RegionalCatalog = regionalCatalog; RegionalColumns = regionalColumns;
                 AvailabilityCatalog = availabilityCatalog; AvailabilityColumns = availabilityColumns;
+                PerGroupLoyalty = perGroupLoyalty;
             }
         }
+
+        /// <summary>The per-group inputs for a case that has them - one construction, shared with the ceiling diagnostic.</summary>
+        internal static ItanesGroupLoyalty.Inputs GroupInputs(Case c) => ItanesGroupLoyalty.Build(c.PartyNames, c.T2Pct, c.T1Pct);
 
         public static void Run()
         {
@@ -92,6 +100,24 @@ namespace PoliSim.EditorTools
 
                 double best = madLoyalty;
                 string bestLabel = "§8 derived";
+                double[] shownLoyalty = loyalty;
+
+                // E-1 (2026-09-10): where a per-group source exists, §8 runs per group and that IS the case's figure.
+                // ⚠ Not min-selected against the uniform one - a choice on the target would be a fit.
+                if (c.PerGroupLoyalty)
+                {
+                    ItanesGroupLoyalty.Inputs g = GroupInputs(c);
+                    double[] withGroups = PreferenceModel.PreferenceByGroup(ToCompatScale(national), g.T1ByGroup, g.LoyaltyByGroup, g.GroupWeights);
+                    double madGroups = VoteModel.MeanAbsoluteDeviationPp(withGroups, actual);
+                    sb.Append(string.Format(CultureInfo.InvariantCulture,
+                        "\n  {0}: national {1:F2} | +§8 uniform per party {2:F2} | +§8 PER GROUP {3:F2} pp ({4} age bands, ITANES 2013/2018 anchored) - the per-group figure is the case's\n",
+                        c.Name, madNational, madLoyalty, madGroups, g.Bands.Length));
+                    withLoyalty = withGroups;
+                    madLoyalty = madGroups;
+                    best = madGroups;
+                    bestLabel = "§8 per group";
+                    shownLoyalty = GroupLoyaltyModel.ImpliedPartyLoyalty(g.LoyaltyByGroup, g.T1ByGroup, g.GroupWeights);
+                }
 
                 if (c.RegionalCatalog != null)
                 {
@@ -108,21 +134,21 @@ namespace PoliSim.EditorTools
                             c.Name, madNational, madLoyalty, madBoth, regions.Length));
                     }
                 }
-                else
+                else if (!c.PerGroupLoyalty)
                 {
                     sb.Append(string.Format(CultureInfo.InvariantCulture,
                         "\n  {0}: national {1:F2} | +§8 {2:F2} pp (no regional catalog on file)\n",
                         c.Name, madNational, madLoyalty));
                 }
 
-                sb.Append("    party   actual   model   dev    loyalty\n");
+                sb.Append(c.PerGroupLoyalty ? "    party   actual   model   dev    loyalty (implied by the bands)\n" : "    party   actual   model   dev    loyalty\n");
                 double[] shown = best == madLoyalty ? withLoyalty : national;
                 for (int i = 0; i < c.PartyNames.Length; i++)
                 {
                     sb.Append(string.Format(CultureInfo.InvariantCulture,
                         "    {0,-6} {1,6:F2}  {2,6:F2} {3,7:+0.00;-0.00;0.00}  {4,6:F1}\n",
                         c.PartyNames[i], 100 * actual[i], 100 * shown[i],
-                        100 * (shown[i] - actual[i]), loyalty[i]));
+                        100 * (shown[i] - actual[i]), shownLoyalty[i]));
                 }
 
                 bool improved = best < c.Day1Mad;
@@ -295,7 +321,8 @@ namespace PoliSim.EditorTools
                     new[] { 4.35, 18.76, 32.68, 17.35, 14.00, 0.0, 3.39 },
                     new[] { 4.35, 18.76, 32.68, 17.35, 14.00, 0.0, 3.39 },
                     new[] { 1.96, 25.43, 25.56, 4.09, 21.56, 0.0, 3.20 },
-                    new VoteModel.Electorate(4.25, 7.00, 1.00, 4.00), 0.79, 5.61, 6.69, 53.0),
+                    new VoteModel.Electorate(4.25, 7.00, 1.00, 4.00), 0.79, 5.61, 6.69, 53.0,
+                    perGroupLoyalty: true),   // E-1: the ITANES 2013/2018 cross-tabs, §443
             };
         }
 

@@ -25859,3 +25859,29 @@ All ten are in `SEND_PACKAGE.md` by path, bytes and digest: the election-night s
 **⚠ The thin cells are the data's, and they are marked rather than smoothed.** Seven of FdI's and Lega's forty-two band figures rest on fewer than three weighted 2013 respondents; the harness stars each. Nothing is imputed: a 0 is the sample's 0, and what it costs the backtest is item 3's to measure, not this item's to hide.
 
 **Asserted in `LoyaltyHarness`** (green, 4 new assertions): the anchor identity for both waves; six bands with positive electorate weights summing to one; every loyalty in [0, 100]; the unseen-in-2013 cells at exactly 0.
+
+## 444. THE PER-GROUP LAYER BUILT WHERE THE UNIFORM PER-PARTY LOYALTY STANDS — §8 run inside each age band and summed by the electorate's structure, Italy's gate figure on it, [AUTHORED-DRAFT]-free (2026-09-10)
+
+**The ruling:** *"the per-group layer built where the uniform per-party loyalty stands, [AUTHORED-DRAFT]-free since every figure is now sourced."*
+
+**The layer.** `PreferenceModel.PreferenceByGroup(compatibility, priorByGroup, loyaltyByGroup, groupWeights)` = Σ_g w_g · `Preference(compatibility, prior_g, loyalty_g)`, the weights normalised. It is §8's blend run inside each group with the group's own prior (where its vote sat at T−1) and its own loyalty per party, and the groups summed by their share of the electorate; the compatibility is the same in every group because the spatial layer has no per-group positions. A single group with weight 1 is exactly the uniform `Preference`, which this generalises rather than replaces: a country without group data passes one group. **Zero authored constants** - the layer adds no number of its own; every input is sourced (§442) or derived from sourced inputs (§443).
+
+**Where it stands.** `GateReRun`'s Italy case carries `perGroupLoyalty: true`; for such a case the per-group blend IS the case's figure - printed beside the uniform one, never min-selected against it, because choosing the better of two on the target would be a fit. The loyalty column shows the per-party figure the bands imply. The three other cases and the live game path (`NationalElection`, Sweden, play direction) keep the uniform layer, since no per-group source exists for them; the mechanism is general and the data is Italy's.
+
+**The Italy backtest table, before and after** (2022 target; loyalty from 2013→2018; Day-1 5.61 pp):
+
+| party | actual | before (uniform) | dev | loyalty | after (per group) | dev | implied loyalty |
+|---|--:|--:|--:|--:|--:|--:|--:|
+| FdI | 29.27 | 10.31 | −18.96 | 45.1 | **10.95** | **−18.32** | 28.2 |
+| PD | 21.45 | 16.20 | −5.25 | 73.8 | 17.87 | −3.58 | 82.1 |
+| M5S | 17.38 | 28.01 | +10.62 | 78.2 | 25.67 | +8.29 | 73.3 |
+| Lega | 9.90 | 13.02 | +3.11 | 23.6 | 12.69 | +2.79 | 24.8 |
+| FI | 9.14 | 11.37 | +2.23 | 64.9 | 11.84 | +2.71 | 72.0 |
+| AzIV | 8.76 | 17.78 | +9.01 | 0.0 | 17.28 | +8.52 | 0.0 |
+| AVS | 4.10 | 3.32 | −0.78 | 94.4 | 3.70 | −0.40 | 73.5 |
+| **MAD** | | **7.14** | | | **6.37** | | |
+
+Italy's Day-3 figure moves from 7.14 to **6.37 pp** - better than the uniform layer by 0.77, still above Day-1's 5.61, so the gate row still reads REGRESSED ** LOW CONFIDENCE ** (coverage 53 %), and the gate's verdict is unchanged: PASS WITH STATED SCOPE on Sweden and Germany. Six of seven parties move toward the result; FI moves 0.5 pp away. **The other three countries' tables are byte-identical before and after** (Germany-8 5.36, Sweden 1.46, Poland 3.15 pp), and `VoteShareBacktest` - which carries no loyalty at all - is unchanged by construction and re-run to say so (§446).
+
+**What the per-group layer did and did not do, read off the bands.** Every band's blended FdI share is ABOVE the uniform 10.31 except 45–64, where the 2013→2018 loyalty is 71–73 and the band holds it near its 4 % prior (6.5–7.0 %); the under-35s and the over-65s, at loyalty 0–39, move toward the persuaded 17.8 %. Summed by the electorate's structure - with 65+ the largest band at 0.287 - the result is +0.65 pp. The layer moves the electorate where the data says it was persuadable; it does not move what the electorate is persuaded TOWARD, which is the spatial layer's (§445).
+

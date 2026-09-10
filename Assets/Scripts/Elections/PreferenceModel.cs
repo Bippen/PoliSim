@@ -102,6 +102,40 @@ namespace PoliSim.Elections
         /// probability mass: what one party fails to hold is redistributed by the persuasion term
         /// rather than vanishing.
         /// </summary>
+        /// <summary>
+        /// **§8 PER VOTER GROUP** (E-1 landed, 2026-09-10): the blend run inside each group with the group's own prior
+        /// and its own loyalty per party, and the groups summed by their share of the electorate. Spec §5/§8 make
+        /// loyalty a per-group attribute; until the ITANES cross-tabs this repo had one group. The compatibility is the
+        /// same in every group - the spatial layer has no per-group positions - so what differs by group is where its
+        /// vote already sat and how much of it stays.
+        ///
+        /// <para><c>result = Σ_g w_g · Preference(compatibility, prior_g, loyalty_g)</c>, with the weights normalised.
+        /// A single group with weight 1 is exactly <see cref="Preference(double[], double[], double[])"/>, which is
+        /// the uniform layer this generalises rather than replaces: a country without group data passes one group.</para>
+        /// </summary>
+        public static double[] PreferenceByGroup(double[] compatibility, double[][] priorByGroup, double[][] loyaltyByGroup, double[] groupWeights)
+        {
+            if (priorByGroup == null || loyaltyByGroup == null || groupWeights == null
+                || priorByGroup.Length == 0 || priorByGroup.Length != loyaltyByGroup.Length || priorByGroup.Length != groupWeights.Length)
+            {
+                throw new ArgumentException("one prior vector, one loyalty vector and one weight per group");
+            }
+
+            double weightSum = 0.0;
+            foreach (double w in groupWeights) { if (w < 0.0) { throw new ArgumentException("a group weight cannot be negative"); } weightSum += w; }
+            if (weightSum <= 0.0) { throw new ArgumentException("group weights must sum to a positive number"); }
+
+            var result = new double[compatibility.Length];
+            for (int g = 0; g < priorByGroup.Length; g++)
+            {
+                if (groupWeights[g] <= 0.0) { continue; }
+                double[] group = Preference(compatibility, priorByGroup[g], loyaltyByGroup[g]);
+                for (int i = 0; i < result.Length; i++) { result[i] += groupWeights[g] / weightSum * group[i]; }
+            }
+
+            return result;
+        }
+
         public static double[] Preference(double[] compatibility, double[] priorShares, double[] loyaltyPerParty)
         {
             if (priorShares == null || priorShares.Length != compatibility.Length)
