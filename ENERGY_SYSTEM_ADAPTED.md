@@ -15,7 +15,9 @@ uploaded 2026-09-11 by its own dating - the day after the install date, which is
 statement and is kept as written). Should it land, it goes under `PoliSim-captures/sources/` with
 its digest, and this line changes to say so. **Stage 1 is `POLISIM_ENERGY_SPECLET.md`** - the
 collision map, the sourcing bill with every series named, the sizing, and the strikeable design -
-awaiting Elias's ruling. **No figure here is a datum**; every number in this document is an
+**RULED 2026-09-10 as recommended (`COMPLETED.md` §454)**; stage 2's sourcing landed the same night as
+`ENERGY_LAYER_SPINE.md` (§455), its build not started. Design's energy-map prototype is recorded against
+the spec-let's §3 as evidence, not a build item (§452). **No figure here is a datum**; every number in this document is an
 illustration and the spec-let says so of each.
 
 ---

@@ -4,7 +4,7 @@
 is meant to be struck, amended or approved on its own; §7 is a recommendation and is strikeable whole.
 The precedent is C-C12's `POLISIM_TAX_SPECLET.md` (E-27) and C-C13: the spec-let is ruled before any code.
 
-**Status: AWAITING RULING (opened 2026-09-10, `COMPLETED.md` §451).**
+**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455); **stage 2's build is the next energy code and has not started.** The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
 
 **What this document is not.** `ENERGY_SYSTEM_ADAPTED.md` is the concept adapted to this game; the
 concept itself is an external research summary. **No figure from either is a datum.** Every number in
@@ -127,6 +127,27 @@ capacities** between SE1–SE2, SE2–SE3, SE3–SE4 (ENTSO-E 11.1.A *Forecasted
 Svk's published NTC values **[PROVISIONAL]**). Without the third the four zones clear as one and the
 whole point - SE4's price above SE1's - is absent; **stage 2 does not land Sweden's four without it.**
 
+**Evidence on the record, not a build item (2026-09-10, `COMPLETED.md` §452).** Design has drawn an
+*Energy map — interactive prototype* (`Energy Map Prototype.dc.html` at the root of the Design project,
+read whole): Sweden's outline with Gotland and Öland, the trunks in one ink at three weights
+(400 ⁄ 275 ⁄ 220 kV), the four elområden as bands (*"AREAS REAL · BOUNDARIES DRAWN AS PARALLELS,
+APPROXIMATE"*), and the three snitt as dashed Caution cuts labelled SNITT 1 · SNITT 2 · SNITT 4; five
+overlays (GRID · BOTTLENECKS · SUPPLY · DEMAND · WEATHER); every hover tagged illustrative
+(*"TRANSMISSION NOT IN THE GAME · ILLUSTRATIVE"*, *"NO LOAD BY REGION IN THE GAME · ILLUSTRATIVE"*,
+*"SITE PUBLIC · CAPACITY AGGREGATED, ILLUSTRATIVE"*). The board's own foot: *"The geometry never moves
+between overlays — an overlay changes ink and lines only (12e's rule). Gutters stay lit under every
+overlay; the active one is full ink. A price prints in Caution only where its cut is full. Sites and
+cities are public; capacities, loads, flows and weather are illustrative until the columns each overlay
+names exist. Per the spec-let, this map is deferred until D12 row 1's map lands — the prototype exists
+to see the toggle, not to pre-empt the ruling."* **Its figures are illustrations** - the cut capacities
+it draws (3 300 ⁄ 7 300 ⁄ 5 400) are not data here; the sourced figures are in
+`ENERGY_LAYER_SPINE.md` §4. Two consequences, ruled: **(i) S15 is reinforced** - the three snitt ARE the
+SE1–SE4 constraints, so the transfer capacities decide whether Sweden has zones at all, and the map is
+unreadable without them; **(ii) the instrument-first ruling stands** - one country of six with a map is
+a Sweden view, not the subsystem's home page, and the other five would have nothing to draw. **The
+board's invariant is kept for whenever it is built: geometry never moves between overlays, and a price
+prints in Caution only where its cut is full.**
+
 **The other five run as one zone each, and the screen says so.** Germany-Luxembourg is one bidding
 zone in fact; France one; Poland one. **Italy has seven zones and the USA three interconnections
 with RTO markets inside them** - both are named future items in `ENERGY_SYSTEM_ADAPTED.md` §4 and
@@ -157,6 +178,19 @@ Baltics, the Alps, Iberia, Canada) is **a net import series per country** from t
 | 16 | electricity's weight in the price index | Eurostat `prc_hicp_inw` (HICP item weights, COICOP 04.5.1 electricity); BLS CPI relative importance (electricity) | [PROVISIONAL]; stage 4 only |
 | 17 | electrification trend of transport | Eurostat `road_eqs_carpda` (passenger cars by motor energy) for the stock share; EIA AEO for the USA | [PROVISIONAL]; else the term is zero and stated |
 | 18 | emission factors by fuel | IPCC 2006 Guidelines default factors (Vol. 2, Table 2.2) - the factors EDGAR itself applies | public; cited by table |
+
+**The outcome of the sourcing, 2026-09-10 (`ENERGY_LAYER_SPINE.md`, §455), row by row:** 1 verified
+again (the seeds equal Ember 2023 to the decimal) · 2–7 fetched by API for five, on disk with digests · 8
+**substituted** - the hourly load came from energy-charts.info's republication of ENTSO-E (five
+countries) and from eSett's open data (SE1–SE4, the settlement authority); ENTSO-E stays the source of
+record and the account is optional · 9 fetched three ways (Eurostat, Ember, energy-charts), the thermal
+divergence recorded; per-zone capacity BILLED with an apportionment fallback · 10 **verified from
+Svenska kraftnät's own documents** (the capacity-map text and the 2024-09-30 report's "maximal
+tilldelad NTC 2021–2023") · 11 BILLED (the ERAA page reached, the factors inside its PDFs) · 12 fetched
+(EIA-930 both halves, EIA-860 2023, EPM 6.02 a/b, EPA 4.2.A) · 13 **BILLED** (irena.org 403 on page and
+PDF) · 14 struck as paid; its substitutes fetched (Pink Sheet 2023, `nrg_pc_203`) · 15 **verified** (ICAP's
+Allowance Price Explorer API: €85.51 secondary, €83.60 auctions, 2023) · 16 Eurostat fetched, BLS billed ·
+17 Eurostat fetched, EIA AEO billed · 18 the IPCC chapter fetched and its Table 2.2 read.
 
 **The gate on every row is §342's:** two independent sources within a point, or the row prints
 BILLED with the series named and the reason. Nothing from the concept document appears in this
@@ -238,6 +272,11 @@ from, and that is its whole standing.
 | 7 | the ministry | **2** | stage 5 |
 | 8 | events, state-triggered, duration-bearing; the §407 tag struck | **1** | stage 4's S8 |
 
+**Stage 2 after 2026-09-10:** the sourcing is done in one session rather than two (§455 - the
+Eurostat, Ember, EIA, eSett, energy-charts, ICAP, Pink Sheet and Svenska kraftnät rows all answered
+this machine; only IRENA and the ERAA factors did not); what remains of stage 2 is the build, one
+session, against the spine's five gates (`ENERGY_LAYER_SPINE.md` §11).
+
 **Total: fourteen to seventeen sessions**, none of which starts before this document is ruled, and
 none of stages 3–8 before the stage before it has its own BASELINE explained per country. Each stage
 is one commit family and one green simulation bar.
@@ -250,6 +289,10 @@ Eurostat rows are reachable today by API, the ENTSO-E rows need an account that 
 register (`ERRANDS.md` E-34), and the Sweden links (S15) decide whether stage 2 lands four zones or
 one. If the links cannot be sourced, Sweden runs as one zone with its four named - honestly absent -
 and the four wait, exactly as Italy's seven and the USA's three do.
+
+**Ruled as recommended, 2026-09-10 (§454).** The links were sourced the same night (S15's condition
+met: Svenska kraftnät's own figures, `ENERGY_LAYER_SPINE.md` §4), so stage 2 lands Sweden's four zones,
+not one.
 
 **What this ruling does NOT foreclose:** the geographic map (D12 row 1), an R&D system (refused by
 name with its trigger), Italy's and the USA's zone structures, cascading-failure modelling, the
