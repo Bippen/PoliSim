@@ -25939,4 +25939,4 @@ The gate's verdict is unchanged: PASS WITH STATED SCOPE (Sweden, Germany); Polan
 
 **Bar:** `bar315_e1` **37 of 37** cheap checks (`GeneratedCatalogCheck` now guarding three catalogs; `ResidueCheck` 0 open over 411 files; `MojibakeCheck` 1 of 1) and `bar315_e1_sim` **42 of 42** simulation checks, both on the finished tree with every item committed; `LoyaltyHarness`, `GateReRun`, `ItalySurgeCeilingDiagnostic` and `VoteShareBacktest` run green as standalone instruments the same afternoon.
 
-**Push (R-SP1):** fast-forward only, by `push_ff.sh` - fetch, `origin/main` an ancestor of HEAD, `git push origin main` with no force flag, re-fetch, `origin/main == HEAD`. Eight commits went up (`50fb951` through this record); the result line is in the report.
+**Push (R-SP1):** fast-forward only, by `push_ff.sh` - fetch, `origin/main` an ancestor of HEAD, `git push origin main` with no force flag, re-fetch, `origin/main == HEAD`. Nine commits went up, `5fc888f..48aa605` (`50fb951` through this record): `origin/main == HEAD 48aa605` on the re-fetch. This sentence corrected in the commit after, which the same procedure carried.
