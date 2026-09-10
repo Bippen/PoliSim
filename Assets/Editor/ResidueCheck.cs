@@ -44,7 +44,6 @@ namespace PoliSim.EditorTools
             ("T-3", "OWNER ELIAS", "the identity's government-consumption block - trigger fired (C-N5), the six shares sourced (§376); the form of G in the identity is a seed change on six countries and Elias's ruling"),
             ("dials-only laws", "OWNER ELIAS", "whether laws should reach the 31 dials-only quantities, and which - a design call with no literature to read it from (§378)"),
             ("FT-6", "OWNER ELIAS", "the long-horizon inflation drift - measured and three forms proposed (§379); the hold on inflation is a macro-core specification, ruled not typed"),
-            ("D17 item 2", "OWNER ELIAS", "the eight party colours as a PROPOSAL (board 11a) - supersedes §256 and §279 if taken, and the fargkod citations stop being publishable fact (§425)"),
             ("K-1", "CALENDAR", "the seed refresh from Sweden's real result - 13 September 2026"),
         };
 

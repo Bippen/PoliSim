@@ -258,6 +258,12 @@ namespace PoliSim.UI
         /// party of the pair, seated by the same arithmetic, before it moves lightness, takes it only if it clears the
         /// tolerance against every larger ink already drawn, and prints which it did. A party absent here has no
         /// alternative and takes the lightness nudge as before. Never read by a draw site directly.
+        ///
+        /// <para>⭐ <b>RULED PERMANENT 2026-09-10 (COMPLETED.md §447).</b> Elias saw the laddered hemicycle and ruled the
+        /// published hue plus the lightness rule (§256, §279, the bloc fence of §423) the permanent answer. Design's
+        /// eight-colour ASSIGNMENT of board 11a (D17 item 2) is closed as not taken and filed in §447 as the alternative it
+        /// always was; it is deliberately NOT a second table here - nothing would consult it. This table stays what §279 made
+        /// it: Design's board 6b set, consulted only at a measured collision.</para>
         /// </summary>
         private static readonly Dictionary<string, int> PartyHuesAlternative = new Dictionary<string, int>
         {

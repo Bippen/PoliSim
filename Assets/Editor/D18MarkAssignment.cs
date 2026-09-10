@@ -26,8 +26,10 @@ namespace PoliSim.EditorTools
     /// <item><b>The triple is unique within the chamber</b> - silhouette · cut · fill.</item>
     /// <item><b>The cut ladder advances only when the silhouettes are spent</b>: none → bar → notch →
     /// split → spine. The cleanest face goes to the biggest party.</item>
-    /// <item><b>The hatched fill stays unspent.</b> It is the identical-ink device, and these four
-    /// chambers have no ink to be identical - it waits for the day D8-2 lands and produces a collision.</item>
+    /// <item><b>The hatched fill stays unspent - and waits on nothing</b> (ruled 2026-09-10, §447). It is
+    /// the identical-ink device; these four chambers have no ink to be identical, and with the palette
+    /// ruled permanent and the bloc fence at 12 of 12 there is no colour day left that could produce a
+    /// collision. Unspent is its standing state, not a pending one.</item>
     /// </list>
     ///
     /// <para><b>THE BATCH HAS LANDED (2026-09-09, §429)</b>, so what this check guards has changed with
@@ -50,7 +52,8 @@ namespace PoliSim.EditorTools
         private static readonly string[] Cuts = { "none", "bar", "notch", "split", "spine" };
 
         /// <summary>⚠ SOLID only. The hatched half of every cell exists and is deliberately unspent -
-        /// rule 4. A run that starts spending it is answering a collision that does not exist yet.</summary>
+        /// rule 4, and since §447 permanently: a run that starts spending it is answering a collision the
+        /// standing palette ruling says cannot arise.</summary>
         private const string Fill = "solid";
 
         private const string CellFolder = "Assets/Resources/Art/UI/Emblems";

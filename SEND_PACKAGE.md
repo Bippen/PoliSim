@@ -20,6 +20,10 @@ listed by digest so both sides can compare, and a digest that matches needs no u
 - ⭐ **D18 has LANDED**: the 43 marks are byte-identical to the cells your table assigns, row for row (checked against your
   `d18_mark_assignment.json` and the rules), wired and filmed; **53 of 53 parties resolve a mark.** Your neutral-tint call is taken.
 - **Board 10d is BUILT** on the record's palette (§426); chambers with no sourced blocs draw the majority label alone (§430).
+- ⭐ **D17 is CLOSED, with thanks (§447, 2026-09-10).** Elias saw the laddered hemicycle and ruled the published hue plus the
+  lightness rule the permanent answer. **The mechanism you proposed on board 11a - the fence in laddered lightness inside
+  the published hues - is what shipped, at 12 of 12.** The eight-colour assignment was not needed; it is filed with its
+  source as the alternative it always was. The hatched half of the fifty-cell sheet stays unspent and waits on nothing.
 
 ## What goes in — computed, not claimed, and numbered so a partial paste shows
 
@@ -28,10 +32,10 @@ listed by digest so both sides can compare, and a digest that matches needs no u
 
 | n of 32 | kind | artifact | bytes | sha256 (on disk) |
 |---|---|---|--:|---|
-| **1 of 32** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 169064 | `98f41503daf99053b0e1c0583c859f405347cce32ead3a605b1b4bb7b815010a` |
-| **2 of 32** | document | `COMPLETED.md` | 2738690 | `a9c2dec2aabbbca67750e5572e2ea148906dc1bdc9e0d1fd9edd90b883beb701` |
-| **3 of 32** | document | `POLISIM_FEATURE_LIST.md` | 181031 | `1aebe8230371544ec25329e877da91bd976eda2529e0a80028d1e4c6d4faf227` |
-| **4 of 32** | document | `ERRANDS.md` | 20895 | `96e9cf1b1165b28c5a813b7a71689609f4d41029711fa3f02928325c871bb35f` |
+| **1 of 32** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 169615 | `6fedcf15297aa48f979436bbe23b9c7ea779cc1b200a4ceba957df735e18e215` |
+| **2 of 32** | document | `COMPLETED.md` | 2765866 | `ee2ed61c1545c4e708518ebfe4e4d7e5aafe2f62789b29d578b89d24a0459dc4` |
+| **3 of 32** | document | `POLISIM_FEATURE_LIST.md` | 181363 | `0face8efa3d119d604a01c663a4044673f2d87334d9cc4ec780a31ad3cdc40fd` |
+| **4 of 32** | document | `ERRANDS.md` | 21390 | `34a06b9dcb2455308eaf1c4546ad60f7286729edb88fa5edf997dc1c4e7a4e8b` |
 | **5 of 32** | log | `logs/bar313_night_final.log` | 709932 | `c3591fb60ebc3ad2d619289b234b62889edfc6117832391f577d34d6ce042886` |
 | **6 of 32** | log | `logs/bar290_blocfence_RunSimulationBatch.log` | 1264996 | `a440b32ef7bd1fe18b67106d8e7bf91381c49fe94b02ef6d39f4940fbeed0199` |
 | **7 of 32** | log | `logs/bar291_partyink.log` | 32426 | `28b2ac67bed388f06046c4a117e5065e1ce8e543d83db131865c76153cb60926` |
@@ -102,7 +106,6 @@ listed by digest so both sides can compare, and a digest that matches needs no u
 ## What is left, and whose it is
 
 1. **D19** - yours, the composition and the instrument.
-2. **D17 item 2 - the eight colours as a proposal - is Elias's**, untouched.
-3. Nothing else is open between us.
+2. Nothing else is open between us - D17 is closed (above).
 
 **Binary artifacts are uploaded, not described**, and nothing here summarises in prose what a `get_file` can read back.
