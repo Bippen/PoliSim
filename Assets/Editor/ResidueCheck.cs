@@ -39,6 +39,7 @@ namespace PoliSim.EditorTools
             ("E-27", "OWNER ELIAS", "the two spec-lets (POLISIM_TAX_SPECLET.md among them) - ruled before any code"),
             ("E-28", "OWNER ELIAS", "C-D2's pool resolution - a design question, not a measurement"),
             ("E-29", "OWNER ELIAS", "C-D3's språkrör answer, if he wants the call rather than the record's"),
+            ("E-34", "OWNER ELIAS", "the energy spec-let (POLISIM_ENERGY_SPECLET.md) - ruled before any code; the ENTSO-E account and the source docx are his (§451)"),
             ("D-7", "DESIGN", "board 2b, the Policy Web drawn to be read - never pasted, Design's to draw"),
             ("D-1 portraits", "DESIGN", "appointed ministers render the procedural placeholder until the portrait delivery"),
             ("T-3", "OWNER ELIAS", "the identity's government-consumption block - trigger fired (C-N5), the six shares sourced (§376); the form of G in the identity is a seed change on six countries and Elias's ruling"),
@@ -51,6 +52,8 @@ namespace PoliSim.EditorTools
         private static readonly Dictionary<string, string> ExcludedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "POLISIM_TAX_SPECLET.md", "E-27 (OWNER ELIAS) - the spec-let is ruled before any code; its fetch and its bills wait on that ruling" },
+            { "POLISIM_ENERGY_SPECLET.md", "E-34 (OWNER ELIAS) - the energy spec-let is ruled before any code; its fetches and its bills wait on that ruling (§451)" },
+            { "ENERGY_SYSTEM_ADAPTED.md", "E-34 (OWNER ELIAS) - reference-and-plan for the energy track; nothing in it is built until the spec-let is ruled (§451)" },
         };
 
         private static readonly Regex RowHead = new Regex(@"^\*\*([A-Z][A-Z0-9]*-[A-Z0-9]+) — ", RegexOptions.Multiline);
