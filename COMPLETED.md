@@ -25966,3 +25966,28 @@ The gate's verdict is unchanged: PASS WITH STATED SCOPE (Sweden, Germany); Polan
 **Bar:** `bar316_d17` **37 of 37** on the finished tree - `ResidueCheck` 0 open with the exclusions printed **16 by name** (D17 item 2 gone), `MojibakeCheck` 1 of 1, `DocumentClaimCheck` green. The two document-reading checks were re-run on the final text after the request document's D17 section and the manifest were written (both green); no simulation code moved, so the simulation bar of §446 (42 of 42) stands.
 
 **Push (R-SP1):** one commit, fast-forward only by `push_ff.sh` - fetch, `origin/main` an ancestor of HEAD, `git push origin main` with no force flag, re-fetch, `origin/main == HEAD`; the result line is in the report. ⚠ One slip on the way: a `-CSD` one-liner filling the bar line above wrote its `§` twice-encoded - the trap the quirks file names - and was repaired from a script file before the package was cut; the document checks were run again after.
+
+## 448. DESIGN'S CONSOLIDATED SPRITE PACK VERIFIED BY CONTENT — 61 of 62 files match their manifest, none of them is new to disk, one piece of geometry fails its own digest and is held; the pack registered in the delivered-asset check in three classes (2026-09-10)
+
+**What arrived.** `AssetPackArchive/PoliSim v2 Design Progress09-10.zip` (481 584 bytes, SHA-256 `8a885c29…`, `unzip -t` clean): `design_sprites/` with its own `MANIFEST.md` - *"Every image asset Design has produced as a FILE for PoliSim, in one folder, pinned by SHA-256 … 62 files - 2 stat icon · 50 mark cell · 8 party mark · 1 chrome · 1 geometry."* The same folder is in the Design project as `design_sprites/`.
+
+**Verified by content, file by file.**
+
+| family | files | manifest digest | against the repo |
+|---|--:|---|---|
+| the 8 Swedish party marks | 8 | all match | **byte-identical** to `Emblems/mark_party_se_*.png` |
+| the 15 cells the assignment spends | 15 | all match | byte-identical to the d17 pack's fifteen, and each to its 43 destinations (§429's map, re-proved) |
+| the 35 cells it does not spend (25 hatched, the split and spine cuts of all five silhouettes) | 35 | all match; every PNG passes the CRC walk (`pngcheck.pl`, 60 of 60 broken 0), 128 × 128 RGBA, the single ink `#5F6672` with the shape in the alpha as the manifest states | not on disk, and deliberately so (below) |
+| the 2 stat icons | 2 | match | **byte-identical** to `Stats/icon_stat_lifeexpectancy.png` and `icon_stat_youthunemployment.png` - what is installed IS Design's canonical re-cut #2 |
+| `chrome/ui_hatch_draft.svg` | 1 | matches | byte-identical to `Chrome/Source/ui_hatch_draft.svg` (§E5 closed, as the manifest says) |
+| `geometry/sweden_outline.svg` | 1 | **MISMATCH** | not on disk |
+
+**⚠ The one that does not verify.** The manifest states `sweden_outline.svg` at 1 795 bytes, `47b684a1…`; the file in the pack is **9 155 bytes** and carries an embedded C2PA manifest (`xmlns:c2pa`, a `<metadata>` block of signed provenance). Stripping that block gives 1 381 bytes, not 1 795, so the path content differs from what was hashed too - the file was re-exported after its manifest row was written. **Not imported.** It is the geometry of a board (12f) this repo has not read, and a file that fails its own manifest is not a file to build on; both are said back to Design: re-issue with a digest that matches, and the board it belongs to.
+
+**Nothing to import.** Every file that verifies is either already installed byte for byte or held by rule: the 35 unspent cells stay in the pack because a mark under `Emblems/` that no seed claims is `PartyMarkCoverageCheck.UNCONSUMED` above its ceiling of 0 - the hatched half permanently unspent since §447, the split/spine cuts never reached by the ladder (the largest chamber spends three cuts). The pack is therefore complete as an ARCHIVE the moment it lands, which is the convention's meaning of that folder.
+
+**Registered so the bar stays honest.** `DeliveredAssetCheck` re-checks every archived pack against `Assets/`, and this one would have read *REGRESSION: 36 NOT imported*. It now carries the pack in three classes, each logged per entry: the fifteen consumed cells under the existing *consumed under other names* rule (a byte-identical copy REQUIRED under `Assets/`, counted each run); and a new **held in pack** class - per pack, per predicate, with the reason - for the 35 cells and the outline. ⚠ A held entry is not a licence: the check falls through to the ordinary comparison the moment the base name appears under `Assets/`.
+
+**Two things the manifest says that this pass records and does not act on.** (1) *"Boards 12a–12f and 13a–13b draw from delivered primitives + inline SVG/CSS and produced no sprite"* - eight boards this repo has never seen, on the Design project's `PoliSim v2 Screens.dc.html`; by their numbering they are the answer to D19 (§440), and reading them is its own item, not this one. (2) *"D16 README §7 was wrong; corrected in the D18 bundle §5"* - the cells are single-ink with the shape in the alpha, not white-on-alpha; measured here on `mark_cell_disc_bar_hatched.png` (top ink `#5f6672`, 54 alpha levels) and true.
+
+**Bar:** `bar317_dp0910` **37 of 37** with the pack in the archive: `DeliveredAssetCheck` reads the pack as **15 used · 36 held · 0 missing** ("0 missing from archived packs"); `PartyMarkCoverageCheck` 53 of 53 with 0 unconsumed; THE RESIDUE: 0 open item(s) a session could start (411 file(s) scanned).

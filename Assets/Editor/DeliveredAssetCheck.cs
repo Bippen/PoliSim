@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -94,6 +95,32 @@ namespace PoliSim.EditorTools
         };
 
         /// <summary>
+        /// ⚠ **HELD IN THE PACK, deliberately not imported** (2026-09-10, §448) - a third class beside reference material
+        /// and removed-on-answer. Design's consolidated sprite pack carries every image it ever cut as a FILE, including
+        /// the 35 mark cells the assignment does not spend (the 25 hatched, and the split/spine cuts of all five
+        /// silhouettes) and one piece of geometry ahead of its board. Importing an unspent mark would put a file under
+        /// `Emblems/` that no seed claims - `PartyMarkCoverageCheck.UNCONSUMED` at its ceiling of 0 - so the honest state
+        /// is IN THE PACK, verified by content, with the reason it stays there. Per (pack, predicate), each skip logged.
+        /// ⚠ A held entry is not a licence: if its base name turns up under `Assets/` the entry is no longer held and the
+        /// check falls through to the ordinary comparison.
+        /// </summary>
+        private static readonly Dictionary<string, (Func<string, bool> Matches, string Reason)[]> HeldInPack =
+            new Dictionary<string, (Func<string, bool>, string)[]>
+        {
+            {
+                "PoliSim v2 Design Progress09-10.zip", new (Func<string, bool>, string)[]
+                {
+                    (n => n.StartsWith("mark_cell_", StringComparison.Ordinal) && n.EndsWith("_hatched.png", StringComparison.Ordinal),
+                        "the hatched half of the fifty-cell sheet - unspent by rule 4, and since §447 permanently (the palette ruled, the fence at 12 of 12, no identical-ink collision left to answer); an imported unclaimed mark would fail the unconsumed ceiling"),
+                    (n => n.StartsWith("mark_cell_", StringComparison.Ordinal) && (n.EndsWith("_split_solid.png", StringComparison.Ordinal) || n.EndsWith("_spine_solid.png", StringComparison.Ordinal)),
+                        "the split and spine cuts - rule 3's ladder never reached them (the largest chamber spends three cuts); held for a chamber that needs a fourth"),
+                    (n => n == "sweden_outline.svg",
+                        "board 12f's geometry, delivered AHEAD of its board being read (§448): it FAILS its own manifest (9 155 bytes with a C2PA block against a stated 1 795; stripped 1 381, so the content differs too) - held until Design re-issues it with a digest that matches, and its board is built"),
+                }
+            },
+        };
+
+        /// <summary>
         /// ⚠ **A SOURCE THAT LANDS UNDER OTHER NAMES.** D18's bundle (2026-09-09) ships fifteen neutral
         /// cells whose whole purpose is to be copied to 43 destination names - `mark_party_&lt;iso&gt;_&lt;slug&gt;` -
         /// so not one of them is ever in `Assets/` under its own. A pack like that is not a regression and
@@ -108,6 +135,28 @@ namespace PoliSim.EditorTools
         private static readonly Dictionary<string, Dictionary<string, string>> ConsumedUnderOtherNames =
             new Dictionary<string, Dictionary<string, string>>
         {
+            {
+                // 2026-09-10 (§448): Design's consolidated sprite pack re-ships the same fifteen cells; they verify against
+                // the same 43 destinations by bytes, exactly as the d17 pack's do.
+                "PoliSim v2 Design Progress09-10.zip", new Dictionary<string, string>
+                {
+                    { "mark_cell_square_none_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_disc_none_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_hex_none_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_wedge_none_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_keystone_none_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_square_bar_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_disc_bar_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_hex_bar_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_wedge_bar_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_keystone_bar_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_square_notch_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_disc_notch_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_hex_notch_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_wedge_notch_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                    { "mark_cell_keystone_notch_solid.png", "D18 cell - copied to its destination stems (§429); re-shipped in the consolidated pack" },
+                }
+            },
             {
                 "PoliSim v2 Design Progressd17.zip", new Dictionary<string, string>
                 {
@@ -292,6 +341,20 @@ namespace PoliSim.EditorTools
                                       + "and NO byte-identical file exists under Assets/. The bundle was read and not copied.");
                             missing++;
                             continue;
+                        }
+
+                        if (HeldInPack.TryGetValue(label, out (Func<string, bool> Matches, string Reason)[] held))
+                        {
+                            bool wasHeld = false;
+                            foreach ((Func<string, bool> matches, string reason) in held)
+                            {
+                                if (!matches(entry.Name)) { continue; }
+                                Debug.Log($"  held {label}: {entry.Name} - {reason}");
+                                supd++;
+                                wasHeld = true;
+                                break;
+                            }
+                            if (wasHeld) { continue; }
                         }
 
                         Debug.Log($"  MISSING {label}: {entry.Name}");
