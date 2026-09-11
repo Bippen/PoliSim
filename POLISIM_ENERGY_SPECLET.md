@@ -4,7 +4,7 @@
 is meant to be struck, amended or approved on its own; §7 is a recommendation and is strikeable whole.
 The precedent is C-C12's `POLISIM_TAX_SPECLET.md` (E-27) and C-C13: the spec-let is ruled before any code.
 
-**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455) and **stage 2's build landed after it (§457): `EnergyLayer`, `EnergyLayerData`, `EnergyLayerCheck`, `EnergyLayerDump` → `ENERGY_LAYER_PREMISE.md` - readouts, the family's writer unchanged until stage 3.** Stage 3 (EN-3) is the next energy code. The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
+**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455) and **stage 2's build landed after it (§457): `EnergyLayer`, `EnergyLayerData`, `EnergyLayerCheck`, `EnergyLayerDump` → `ENERGY_LAYER_PREMISE.md` - readouts, the family's writer unchanged until stage 3.** **Stage 3 (EN-3) LANDED 2026-09-11 (§458–§460): `EnergyMarket` clears every block of every zone; the power figure's writer is the dispatch and the S4 deviation is closed; its own BASELINE family (`traj_en3`).** Stage 4 (EN-4) is the next energy code. The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
 
 **What this document is not.** `ENERGY_SYSTEM_ADAPTED.md` is the concept adapted to this game; the
 concept itself is an external research summary. **No figure from either is a datum.** Every number in
@@ -284,6 +284,30 @@ figure's writer does not change hands at stage 2 - the derivation is asserted as
 seed and printed on the plate, and the family's elasticity keeps moving the figure until stage 3's
 dispatch gives the carbon tax its mechanism; retiring the elasticity a stage early would have left
 the tax with no effect on power.
+
+**Stage 3 after 2026-09-11 (§458–§460):** done in one session where two to three were sized. Three
+refinements of S6, each stated in the code and the record: (i) **a fleet is not one plant** - each fossil
+category's dependable capacity is offered in 200 tranches spread ± 25 % `[AUTHORED-DRAFT]` around its
+mean cost, because an annual merit order over one plant per category is winner-take-all and no
+calibration can reach an interior share; (ii) **the trough decile's output is inflexible** - what a
+category produced in the lowest-load decile runs in every block (heat-led CHP, minimum loads,
+contracts) and the merit order runs above it, `[AUTHORED-DRAFT]` as a rule with the level the record's;
+(iii) **where Eurostat's fuel grouping does not carry a category's own 2023 output** (France's and
+Italy's coal plants sit in the multi-fuel groups - 19 and 36 MW under "coal" against 0.5 and 2.1 GW of
+output) the dependable capacity is the output's own peak level, the definition kept and the shortfall
+named. **The seed calibration** solves one adder per non-dominant fossil category (the dominant fuel's
+adder is zero, so the price level is that fuel's own cost) until the seed dispatch reproduces 2023's
+coal / gas / oil shares within a point - it reaches the thousandth for the five with a fleet. **Sweden's
+price** is the water value proxied by Germany's and Poland's block prices weighted by SE4's capacity to
+each (`CONVENTION`; Norway, Finland and Denmark are outside the six); its hydro runs at its 2023 block
+levels and the reservoir dispatch is the open follow-up. **The S4 deviation is closed**: the writer
+changed hands in this pass, the family's power elasticity retired (and the energy line's with it - a
+field cannot have two writers), transport's couplings untouched. **The per-head figure is the 2023
+system's per head** - the dispatch's CO₂ plus the residual over the SEED population, because the fleet
+and the load are the 2023 system's until a stage grows them and a fixed total over a population that
+halves would read as a doubling nobody built; the base, per head × population, follows the population
+as the family's coupling always had it (the first baseline dump caught the alternative: Poland's figure
+rose 28 % in a century of population decline with nothing burned).
 
 **Total: fourteen to seventeen sessions**, none of which starts before this document is ruled, and
 none of stages 3–8 before the stage before it has its own BASELINE explained per country. Each stage

@@ -17,7 +17,9 @@ its digest, and this line changes to say so. **Stage 1 is `POLISIM_ENERGY_SPECLE
 collision map, the sourcing bill with every series named, the sizing, and the strikeable design -
 **RULED 2026-09-10 as recommended (`COMPLETED.md` §454)**; stage 2's sourcing landed the same night as
 `ENERGY_LAYER_SPINE.md` (§455) and its build after it (§457: the physical layer as readouts,
-`ENERGY_LAYER_PREMISE.md` its presentation); stage 3, the market layer, is next (EN-3). Design's energy-map prototype is recorded against
+`ENERGY_LAYER_PREMISE.md` its presentation); stage 3 (EN-3) built 2026-09-11 (§458–§460: the clearing,
+Sweden's zones against the NTCs, the power figure written by the dispatch); stage 4, the fiscal layer,
+is next (EN-4). Design's energy-map prototype is recorded against
 the spec-let's §3 as evidence, not a build item (§452). **No figure here is a datum**; every number in this document is an
 illustration and the spec-let says so of each.
 
