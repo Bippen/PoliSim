@@ -181,11 +181,22 @@ The clearing's blocks are hours: the trough decile (base), the middle eight (mid
 
 | block | water value | SE1 balance MW | SE2 | SE3 | SE4 | snitt 1 flow / NTC | snitt 2 | snitt 4 | prices SE1 · SE2 · SE3 · SE4 |
 |---|---|---|---|---|---|---|---|---|---|
-| base | 75.0 | 577 | 2,547 | 231 | -3,380 | 577 / 3,300 (17 %) | 3,125 / 7,300 (43 %) | 3,356 / 5,600 (60 %) | 75.0 · 75.0 · 75.0 · 75.0 |
-| mid | 86.3 | 998 | 3,728 | -1,564 | -3,167 | 998 / 3,300 (30 %) | 4,726 / 7,300 (65 %) | 3,162 / 5,600 (56 %) | 86.3 · 86.3 · 86.3 · 86.3 |
-| peak | 99.3 | 1,779 | 4,925 | -3,217 | -3,455 | 1,779 / 3,300 (54 %) | 6,704 / 7,300 (92 %) | 3,487 / 5,600 (62 %) | 99.3 · 99.3 · 99.3 · 99.3 |
+| base | 75.0 | 577 | 2,547 | 231 | -3,380 | 577 / 3,300 (17 %) | 3,125 / 7,300 (43 %) | 3,356 / 5,600 (60 %) | 19.9 · 19.9 · 20.0 · 36.6 |
+| mid | 86.3 | 998 | 3,728 | -1,564 | -3,167 | 998 / 3,300 (30 %) | 4,726 / 7,300 (65 %) | 3,162 / 5,600 (56 %) | 37.0 · 37.1 · 47.6 · 61.2 |
+| peak | 99.3 | 1,779 | 4,925 | -3,217 | -3,455 | 1,779 / 3,300 (54 %) | 6,704 / 7,300 (92 %) | 3,487 / 5,600 (62 %) | 83.4 · 83.4 · 116.3 · 122.5 |
 
 **Snitt 4's answer.** base: 3,356 MW of 5,600 = SE4's own deficit 943 + transit to the continent 2,438 (the chain's unbalance -24 MW, losses and rounding, never priced) - EXPORT, not congestion, on the block average. mid: 3,162 MW of 5,600 = SE4's own deficit 1,312 + transit to the continent 1,855 (the chain's unbalance -5 MW, losses and rounding, never priced) - EXPORT, not congestion, on the block average. peak: 3,487 MW of 5,600 = SE4's own deficit 2,214 + transit to the continent 1,241 (the chain's unbalance 32 MW, losses and rounding, never priced) - EXPORT, not congestion, on the block average. The §457 proxy read 10 785 MW through snitt 4 in the base block because its chain had one exit; the exchange with Norway, Finland and Denmark out of SE1–SE3 is in the balances now, and what crosses snitt 4 is SE4's own deficit plus the transit to Denmark, Germany, Poland and Lithuania. Hourly congestion is not claimed by a block average.
+
+**The reservoir dispatch (EN-3b).** Each zone's uncongested price is its own 2023 day-ahead price on the exchange, folded onto the model's blocks (energy-charts.info's republication of Nord Pool's series; the seed carries three block means per zone), carried by the price level and coupled to the continental proxy above by the zone's measured share of its moves; the proxy itself - what EN-3 cleared every zone at - stands in the table's water-value column as the measure of what it cost.
+
+| zone | seed price base · mid · peak €/MWh | load-weighted | coupling to the continent (β, DERIVED) | reservoir capacity GWh (Energiföretagen) |
+|---|---|---|---|---|
+| SE1 | 19.9 · 37.0 · 83.4 | 43.9 | 0.30 | 14,804 |
+| SE2 | 19.9 · 37.1 · 83.4 | 43.9 | 0.30 | 15,677 |
+| SE3 | 20.0 · 47.6 · 116.3 | 57.7 | 0.60 | 2,846 |
+| SE4 | 36.6 · 61.2 · 122.5 | 70.0 | 0.82 | 220 |
+
+The exchange's own 2023 blocks for the two markets the proxy is made of - Germany 72.8 · 93.5 · 131.1 (load-weighted 98.3), Poland 80.2 · 111.0 · 148.1 (115.1) - against the market's seed prices above: the adders calibrate the fossil shares, not the prices, and the peak blocks run low (EN-3c, evidence). Sweden's reservoirs together 33,547 GWh; the balance against the seed's cycle is carried on the state and a deficit raises the water value at the slope `EnergyMarket.ReservoirDeficitSlope` (authored; the piece a fill-and-price record replaces). The shiftable hydro of the fossil countries (Italy 0.677, Germany 0.239 of the year's hydro; France, Poland and the USA BILLED) moves between the base and the peak block when a policy moves the peak–base spread off the seed's, and not before.
 
 ## 6. The fiscal layer at the seed - the retail stack per class and the two ledgers (EN-4)
 
@@ -206,12 +217,12 @@ The stack per kWh in THE BOOK'S DOLLARS (the game keeps every country's book in 
 
 | class | consumption GWh | wholesale | supply margin (FITTED) | network | policy levies | environmental tax | VAT (implied rate) | total (the components' sum) | Eurostat's stated total (EUR) | bill |
 |---|---|---|---|---|---|---|---|---|---|---|
-| households | 39,550 | 0.0944 | -0.0068 | 0.0824 | 0.0002 | 0.0364 | 0.0517 (25.0 %) | **0.2584** | 0.2390 | 10.22 |
-| nonhousehold | 83,743 | 0.0944 | -0.0188 | 0.0288 | 0.0002 | 0.0005 | 0.0263 (25.0 %) | **0.1315** | 0.1216 | 8.81 (pre-VAT) |
+| households | 39,550 | 0.0591 | +0.0286 | 0.0824 | 0.0002 | 0.0364 | 0.0517 (25.0 %) | **0.2584** | 0.2390 | 10.22 |
+| nonhousehold | 83,743 | 0.0591 | +0.0166 | 0.0288 | 0.0002 | 0.0005 | 0.0263 (25.0 %) | **0.1315** | 0.1216 | 8.81 (pre-VAT) |
 
-**System cost, as far as the model states it (bn):** fossil variable cost 0.00 = fuel and O&M 0.00 + ETS 0.00 + carbon tax 0.00 (the statutory rate per tonne on the dispatch's own CO₂; EN-4c) + fitted adders 0.00; wholesale outlay 11.64, of which 11.64 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 5.67; support 1.10 = levy 0.03 + budget line 1.07.
+**System cost, as far as the model states it (bn):** fossil variable cost 0.00 = fuel and O&M 0.00 + ETS 0.00 + carbon tax 0.00 (the statutory rate per tonne on the dispatch's own CO₂; EN-4c) + fitted adders 0.00; wholesale outlay 7.28, of which 7.28 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 5.67; support 1.10 = levy 0.03 + budget line 1.07.
 
-**Incidence (bn):** paid - households 10.22, non-households 8.81, taxpayers 1.07 = 20.10; received - generators 11.64, suppliers -1.84, networks 5.67, the support scheme 1.10, the state's electricity taxes 3.53 = 20.10; gap 0.0E+000. The state's net 2.46. Congestion rent 0.000.
+**Incidence (bn):** paid - households 10.22, non-households 8.81, taxpayers 1.07 = 20.10; received - generators 7.28, suppliers 2.52, networks 5.67, the support scheme 1.10, the state's electricity taxes 3.53 = 20.10; gap 0.0E+000. The state's net 2.46. Congestion rent 0.986.
 
 ### Germany (USD per kWh, the book's dollars; bills in billions of dollars; the country's own currency is EUR)
 
@@ -262,4 +273,4 @@ The stack per kWh in THE BOOK'S DOLLARS (the game keeps every country's book in 
 
 ## 7. What this layer does not do yet
 
-The fleet does not invest or retire; the load does not grow (so the bills' share of a growing GDP drifts down - the missing load growth, stated); hydro runs at its 2023 levels (the reservoir dispatch is EN-3b, and Sweden's price is the water value proxied by the two connected markets this model clears); the neighbours outside the six are an exogenous exchange; the energy screen is a later stage's. The carbon tax reaches the power figure through the dispatch and the bills through the stack, and since EN-4c its rate has one meaning - the country's currency per tonne of CO₂, the statutory figure at the seed - read alike by the dispatch and the budget; which tonnes the statutes actually cover (ETS installations exempt, heating fuels taxed) is EN-4d's.
+The fleet does not invest or retire; the load does not grow (so the bills' share of a growing GDP drifts down - the missing load growth, stated); the reservoirs' seed fill and the water value's answer to a deficit have no source yet (the slope is authored and armed by probe; a dry year is stage 8's event); the neighbours outside the six are an exogenous exchange; the energy screen is a later stage's. The carbon tax reaches the power figure through the dispatch and the bills through the stack, and since EN-4c its rate has one meaning - the country's currency per tonne of CO₂, the statutory figure at the seed - read alike by the dispatch and the budget; which tonnes the statutes actually cover (ETS installations exempt, heating fuels taxed) is EN-4d's.

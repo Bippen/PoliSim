@@ -64,6 +64,20 @@ namespace PoliSim.Data
             return EnergyLayerData.NationalPerMarketCurrency[i] / Math.Max(1e-9, EnergyLayerData.UsdPerMarketCurrency[i]);
         }
 
+        // ---- EN-3b: the reservoir dispatch's data ----------------------------------------------------------------
+        /// <summary>The hydro file's row for a zone (SE1–SE4, DE, PL), or −1.</summary>
+        public static int HydroZoneIndex(string zone) => Array.IndexOf(EnergyLayerData.HydroZones, zone);
+        /// <summary>A Swedish zone's 2023 day-ahead price in a block, EUR/MWh - the seed water value (the exchange's, on the model's blocks).</summary>
+        public static double SeedZonePrice(string zone, int block) => EnergyLayerData.HydroPriceBlock[HydroZoneIndex(zone)][block];
+        /// <summary>The share of a continental price move the zone carried in 2023 - DERIVED from the year's hours.</summary>
+        public static double ZoneBetaToProxy(string zone) => EnergyLayerData.HydroBetaToProxy[HydroZoneIndex(zone)];
+        /// <summary>The zone's reservoir energy capacity, GWh (Energiföretagen); 0 where none is carried.</summary>
+        public static double ReservoirCapacityGwh(string zone) => EnergyLayerData.ReservoirCapacityGwh[HydroZoneIndex(zone)];
+        /// <summary>Sweden's reservoirs together, GWh - the four zones' capacities summed.</summary>
+        public static double SwedenReservoirCapacityGwh() { double s = 0; foreach (string z in SwedenZones) { s += ReservoirCapacityGwh(z); } return s; }
+        /// <summary>The share of a country's yearly hydro energy a reservoir operator can move between the blocks (0 where unsourced, BILLED).</summary>
+        public static double HydroShiftableShare(CountryId id) { int i = Index(id); return i < 0 ? 0.0 : EnergyLayerData.HydroShiftableShare[i]; }
+
         /// <summary>The country's ISO currency code, for a figure presented in its own currency (a tax line's rate per tonne).</summary>
         public static string CurrencyCode(CountryId id)
         {

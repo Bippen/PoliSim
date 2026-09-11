@@ -93,7 +93,7 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    snitt 4, {0}: {1:F0} of {2:F0} MW = SE4's own deficit {3:F0} + transit to Denmark, Germany, Poland and Lithuania {4:F0} (the chain's unbalance {5:F0}, losses and rounding) - {6}\n", EnergyLayerData.DispatchBlocks[b], snitt4.FlowMw[b], snitt4.CapacityMw[b], own, transit, unbalance, snitt4.Binding[b] ? "CONGESTION on the block average" : "EXPORT, not congestion, on the block average"));
             }
             double rent = 0; foreach (EnergyMarket.LinkResult l in rse.Links) { rent += l.RentPerYear; }
-            sb.Append(F("    congestion rent over the year on the three snitt: {0:N0} (the currency's units × MWh) - zero where no block binds.\n", rent));
+            sb.Append(F("    congestion rent over the year on the three snitt: {0:N0} (the currency's units × MWh) - the carried flows times the zones' price differences: the exchange's 2023 zonal spreads since EN-3b, the chain's split where a block binds.\n", rent));
 
             // (5) no clamp; the scarcity term
             sb.Append("\n    5. NO CLAMP, AND THE SCARCITY TERM (a probe with offers of its own)\n");

@@ -332,6 +332,8 @@ country's currency per tonne and the market's costs are in euro; §460's Polish 
 wrong unit and stands corrected (coal 0.862 → 0.858, gas 0.111 → 0.115, the peak price 97.1 → 99.9 €/MWh for twenty zloty per tonne, €4.40); the book's own reading of a point - a share of
 GDP on the emissions base - and the dispatch's were two readings of one line, opened ruling-first as EN-4c - **and ruled the same day (§464): the rate IS the country's currency per tonne of CO₂, the statutory figure at the seed (1 330 SEK, 30 EUR, 44.6 EUR; zero where no tax exists distinct from the ETS), revenue = rate × the taxed tonnes, the coverage bridge re-solved to hold the anchors. Which tonnes the statutes cover is EN-4d.**
 
+**The reservoir dispatch after 2026-09-11 (EN-3b, §466):** S2's storage is no longer abstracted - Sweden's zones clear at the exchange's own 2023 prices on the model's blocks with a measured coupling to the continent, the reservoirs are carried with Energiföretagen's capacities, and the shiftable hydro of Italy and Germany answers a policy's move of the block spread; the proxy's cost was measured at 87.3 against 43.9–70.0 €/MWh load-weighted. What stays open is named: the seed fill and the deficit slope have no source, and the market's own seed prices run low against the exchange (EN-3c).
+
 **Total: fourteen to seventeen sessions**, none of which starts before this document is ruled, and
 none of stages 3–8 before the stage before it has its own BASELINE explained per country. Each stage
 is one commit family and one green simulation bar.

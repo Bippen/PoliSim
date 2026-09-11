@@ -41,6 +41,8 @@ namespace PoliSim.Data
         public float[] RetailVatRate;
         /// <summary>EN-4: the seed dispatch's load-weighted wholesale price, the book's dollars per kWh - the wholesale the margins were fitted against.</summary>
         public float RetailWholesaleSeed;
+        /// <summary>EN-3b: the congestion rent the seed clearing earns on the zonal links, billions of dollars - Sweden's, once the zones clear at the exchange's own 2023 prices; the seed's network tariff already contains 2023's capacity fees, so only the rent ABOVE this is credited to the next year's network component (EnergyLedger.CreditFor).</summary>
+        public float EnergyCongestionRentSeed;
         public bool Seeded;
     }
 
@@ -134,6 +136,7 @@ namespace PoliSim.Data
             EconomyState st = country.State;
             float rate = CarbonTaxRate(country);
             if (s.PowerFromDispatch) { st.PowerCo2PerCapita = Mathf.Clamp(EnergyMarket.PowerCo2PerHead(country, rate), MinIntensity, MaxIntensity); }
+            EnergyMarket.AdvanceReservoir(country);   // EN-3b (2026-09-11): the reservoirs' balance for the year - inflow less the hydro dispatched; Sweden's, the one system whose capacity is carried
             float transportTarget = TransportTargetFor(country, rate, PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
             st.TransportCo2PerCapita = Mathf.Clamp(st.TransportCo2PerCapita + (transportTarget - st.TransportCo2PerCapita) * ReversionPerYear, MinIntensity, MaxIntensity);
         }

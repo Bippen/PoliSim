@@ -196,6 +196,7 @@ namespace PoliSim.Data
         public float EnergyIndustryBillGdpShare = -1f;      // that bill as % of nominal GDP - the level the channel differences
         public float EnergyIndustryBillShareChange = 0f;    // its change against last year, points of GDP - read by MacroSystem.ApplyCategorySpendingEffects (cost up = confidence down)
         public float EnergyCongestionRent = 0f;    // the year's congestion rent on the zonal links, billions (Sweden's; 0 where no link binds) - credited to next year's network component (Regulation (EU) 2019/943 Article 19)
+        public float HydroReservoirBalanceGwh = 0f;   // EN-3b: the reservoirs' cumulative balance since the seed, GWh - inflow (the 2023 hydro energy, scaled by an event) less the hydro dispatched; Sweden's (the one system whose capacity is carried); a deficit raises the water value (EnergyMarket)
 
         // ---- P5-C6, THE IMMIGRATION-AND-POVERTY-DEPTH FAMILY (2026-09-06): the four figures the family moves (MigrationPovertyFamily.AdvanceYear).
         public float IrregularMigrationPer10k = -1f;   // the five: Eurostat's FLOW per 10 000 in the year; the USA: the DHS STOCK per 10 000 - two definitions, the seeds say which

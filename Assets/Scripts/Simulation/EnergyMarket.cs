@@ -106,10 +106,26 @@ namespace PoliSim.Simulation
             public double DerivedCo2Mt;
             public double[] Adders;
             public double MaxCalibrationGap;
+            /// <summary>EN-3b: the hydro moved between the blocks by the reservoir operator, MW per block (base, mid, peak; energy-conserving), and the energy moved, GWh - zero at the seed, zero where the shiftable share is unsourced.</summary>
+            public readonly double[] HydroShiftMw = new double[3];
+            public double HydroShiftedGwh;
+            /// <summary>EN-3b, Sweden only: the reservoir deficit the water value was raised for this turn - the shortfall against the seed's cycle over the capacity (0 in balance).</summary>
+            public double ReservoirDeficitShare;
         }
+
+        /// <remarks>[AUTHORED-DRAFT] (EN-3b, 2026-09-11) - the water value's rise per unit of reservoir DEFICIT SHARE (the shortfall against the seed's cycle over the reservoirs' capacity): 1 means a deficit equal to the whole store doubles the value of the water that is left. No series on this machine links fill to price; the form is linear and stated, the slope the piece a source replaces (Nord Pool's 2022–2023 fill-and-price record would fix it). Zero deficit at the seed, so the seed is untouched.</remarks>
+        public const float ReservoirDeficitSlope = 1.0f;
+        /// <remarks>CONVENTION - the hydro shift stops when the peak–base price spread is back within this of the seed's, currency per MWh: the tranche resolution's own step.</remarks>
+        public const float SpreadTolerance = 0.5f;
+        /// <remarks>CONVENTION - bisection rounds for the hydro shift.</remarks>
+        public const int ShiftRounds = 14;
 
         private static readonly Dictionary<CountryId, double[]> AdderCache = new Dictionary<CountryId, double[]>();
         private static readonly Dictionary<CountryId, double> GapCache = new Dictionary<CountryId, double>();
+        private static readonly Dictionary<CountryId, double> SeedSpreadCache = new Dictionary<CountryId, double>();
+        private static double _swedenDeficitShare;   // set per turn by BeginTurn from Sweden's reservoir balance; 0 outside a turn
+        /// <summary>A probe's knob on the reservoirs' inflow (1 = the 2023 hydro energy): ReservoirDispatchDiagnostic scales it to make a deficit and read the water value's answer. Never set by the game (a dry-year EVENT is stage 8's).</summary>
+        public static double ProbeInflowScale = 1.0;
         private static double[] _waterValue;   // set per turn by BeginTurn; null outside a turn
         private static double[] _waterValueSeed;   // the seed's, computed once (WaterValueAtSeed)
 
@@ -237,10 +253,10 @@ namespace PoliSim.Simulation
             return r;
         }
 
-        private static double MustRun(CountryId id, int zone, int block)
+        private static double MustRun(CountryId id, int zone, int block, double hydroShiftMw = 0.0)
         {
             double[] level = EnergyLayerData.DispatchLevelMw[zone][block];
-            return level[Nuclear] * NuclearAvailability(id) + level[Hydro] + level[Wind] + level[Solar] + level[Firm];
+            return level[Nuclear] * NuclearAvailability(id) + level[Hydro] + hydroShiftMw + level[Wind] + level[Solar] + level[Firm];   // EN-3b: the reservoir operator's shift on the block's hydro
         }
 
         private static double[] Costs(CountryId id, double priceIndex, double taxDelta, double[] adders)
@@ -266,10 +282,10 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>A country's block: the resource-driven output and the fossil floors are must-run; the merit order serves the rest with the flexible capacity; the floors are added back to the dispatch.</summary>
-        private static BlockResult ClearCountryBlock(CountryId id, int zone, int block, double[] mc, double[] caps, double[] floors)
+        private static BlockResult ClearCountryBlock(CountryId id, int zone, int block, double[] mc, double[] caps, double[] floors, double hydroShiftMw = 0.0)
         {
             double floorSum = 0; for (int k = 0; k < FossilCount; k++) { floorSum += floors[k]; }
-            BlockResult r = ClearBlock(EnergyLayerData.DispatchDemandMw[zone][block], MustRun(id, zone, block) + floorSum, mc, caps, CurtailmentOffer, FleetSpread, Tranches);
+            BlockResult r = ClearBlock(EnergyLayerData.DispatchDemandMw[zone][block], MustRun(id, zone, block, hydroShiftMw) + floorSum, mc, caps, CurtailmentOffer, FleetSpread, Tranches);
             for (int k = 0; k < FossilCount; k++) { r.FossilMw[k] += floors[k]; }
             // CONVENTION: a block with no flexible dispatch but a running fossil floor is priced by that floor's cheapest tranche - the inflexible fleet's own
             // lowest cost - not by the curtailment offer, which is the price only when nothing fossil runs at all.
@@ -299,27 +315,84 @@ namespace PoliSim.Simulation
 
         private static Result ClearAt(CountryId id, double priceIndex, double taxDelta, double[] waterValue)
         {
-            var result = new Result { Country = id, Adders = Adders(id), MaxCalibrationGap = GapCache.TryGetValue(id, out double gap) ? gap : double.NaN };
-            double[] mc = Costs(id, priceIndex, taxDelta, result.Adders);
+            double[] adders = Adders(id);
+            double[] mc = Costs(id, priceIndex, taxDelta, adders);
             double[] caps = Caps(id);
-            if (id == CountryId.Sweden) { ClearSweden(result, mc, caps, waterValue ?? _waterValue ?? WaterValueAtSeed()); }
-            else
+            if (id == CountryId.Sweden)
             {
-                int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(id));
-                double[] floors = Floors(id);
-                result.ZoneNames = new[] { EnergyLayer.Code(id) };
-                result.Zones = new[] { new BlockResult[3] };
-                for (int b = 0; b < 3; b++)
-                {
-                    BlockResult r = ClearCountryBlock(id, zone, b, mc, caps, floors);
-                    r.Zone = result.ZoneNames[0]; r.Block = b; result.Zones[0][b] = r;
-                    Accumulate(result, id, zone, b, r);
-                }
+                var result = NewResult(id, adders);
+                ClearSweden(result, mc, caps, waterValue ?? _waterValue ?? WaterValueAtSeed(), priceIndex);
+                return result;
+            }
+            // EN-3b (2026-09-11): THE RESERVOIR OPERATOR'S SHIFT. The seed's peak–base price spread is the shadow of what the blocks do not see (river flows, weekly
+            // cycles, minimum flows) - the observed 2023 allocation is the operator's optimum under them, and the model keeps it. When a policy moves the spread
+            // away from the seed's, the SHIFTABLE hydro (the year's hydro energy less run-of-river and pumped, EnergyLayer.HydroShiftableShare) moves between the
+            // base and the peak block, energy-conserving, until the spread is back within the tolerance or the shiftable energy or the turbines bind. Zero at the
+            // seed by construction; zero where the share is unsourced (BILLED).
+            Result unshifted = ClearCountry(id, adders, mc, caps, 0.0);
+            double share = EnergyLayer.HydroShiftableShare(id);
+            if (share <= 0.0) { return unshifted; }
+            // the spread is compared in the SEED's prices (P5-B6): a price level that doubles every cost doubles the nominal spread and moves no water
+            double seedSpread = SeedSpread(id);
+            double spread = Spread(unshifted) / priceIndex;
+            if (Math.Abs(spread - seedSpread) <= SpreadTolerance) { return unshifted; }
+            int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(id));
+            double hoursBase = EnergyLayerData.DispatchHours[zone][0], hoursPeak = EnergyLayerData.DispatchHours[zone][2];
+            double hydroBase = EnergyLayerData.DispatchLevelMw[zone][0][Hydro], hydroPeak = EnergyLayerData.DispatchLevelMw[zone][2][Hydro];
+            double hydroCap = EnergyLayer.CapacityMw(id, Array.IndexOf(EnergyLayerData.Labels, "hydro"));
+            double annualHydroGwh = 0; for (int b = 0; b < 3; b++) { annualHydroGwh += EnergyLayerData.DispatchLevelMw[zone][b][Hydro] * EnergyLayerData.DispatchHours[zone][b] / 1000.0; }
+            double shiftableMwPeak = share * annualHydroGwh * 1000.0 / hoursPeak;   // the shiftable energy as peak-block MW
+            // the peak's change in MW is the variable; the base's is the energy-conserving mirror; the bounds are the turbines and the water
+            double toPeakMax = Math.Min(Math.Min(shiftableMwPeak, Math.Max(0.0, hydroCap - hydroPeak)), hydroBase * hoursBase / hoursPeak);
+            double toBaseMax = Math.Min(Math.Min(shiftableMwPeak, hydroPeak), Math.Max(0.0, hydroCap - hydroBase) * hoursBase / hoursPeak);
+            double lo = spread > seedSpread ? 0.0 : -toBaseMax, hi = spread > seedSpread ? toPeakMax : 0.0;
+            Result best = unshifted; double bestGap = Math.Abs(spread - seedSpread);
+            for (int round = 0; round < ShiftRounds; round++)
+            {
+                double mid = 0.5 * (lo + hi);
+                Result trial = ClearCountry(id, adders, mc, caps, mid);
+                double s = Spread(trial) / priceIndex, gap = Math.Abs(s - seedSpread);
+                if (gap < bestGap) { best = trial; bestGap = gap; }
+                if (gap <= SpreadTolerance) { break; }
+                if (s > seedSpread) { lo = mid; } else { hi = mid; }   // more hydro at the peak lowers the spread
+            }
+            return best;
+        }
+
+        private static Result NewResult(CountryId id, double[] adders) => new Result { Country = id, Adders = adders, MaxCalibrationGap = GapCache.TryGetValue(id, out double gap) ? gap : double.NaN };
+
+        /// <summary>A country's three blocks with a reservoir shift of <paramref name="peakShiftMw"/> MW onto the peak block, mirrored off the base block energy for energy.</summary>
+        private static Result ClearCountry(CountryId id, double[] adders, double[] mc, double[] caps, double peakShiftMw)
+        {
+            var result = NewResult(id, adders);
+            int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(id));
+            double[] floors = Floors(id);
+            double baseShiftMw = -peakShiftMw * EnergyLayerData.DispatchHours[zone][2] / EnergyLayerData.DispatchHours[zone][0];
+            result.HydroShiftMw[0] = baseShiftMw; result.HydroShiftMw[2] = peakShiftMw;
+            result.HydroShiftedGwh = Math.Abs(peakShiftMw) * EnergyLayerData.DispatchHours[zone][2] / 1000.0;
+            result.ZoneNames = new[] { EnergyLayer.Code(id) };
+            result.Zones = new[] { new BlockResult[3] };
+            for (int b = 0; b < 3; b++)
+            {
+                BlockResult r = ClearCountryBlock(id, zone, b, mc, caps, floors, result.HydroShiftMw[b]);
+                r.Zone = result.ZoneNames[0]; r.Block = b; result.Zones[0][b] = r;
+                Accumulate(result, id, zone, b, r, result.HydroShiftMw[b]);
             }
             return result;
         }
 
-        private static void Accumulate(Result result, CountryId id, int zone, int block, BlockResult r)
+        private static double Spread(Result r) => r.Zones[0][2].Price - r.Zones[0][0].Price;
+
+        /// <summary>The seed's peak–base price spread, the shadow of the constraints the blocks do not see - solved once from the unshifted seed clearing.</summary>
+        public static double SeedSpread(CountryId id)
+        {
+            if (SeedSpreadCache.TryGetValue(id, out double s)) { return s; }
+            double[] adders = Adders(id);
+            Result seed = ClearCountry(id, adders, Costs(id, 1.0, 0.0, adders), Caps(id), 0.0);
+            s = Spread(seed); SeedSpreadCache[id] = s; return s;
+        }
+
+        private static void Accumulate(Result result, CountryId id, int zone, int block, BlockResult r, double hydroShiftMw = 0.0)
         {
             int ci = EnergyLayer.Index(id);
             double hours = EnergyLayerData.DispatchHours[zone][block];
@@ -331,7 +404,7 @@ namespace PoliSim.Simulation
                 result.DerivedCo2Mt += gwh * EnergyLayerData.EmissionFactorTPerMwh[ci][k] * EnergyLayerData.MainShare[ci][k] / 1000.0;   // GWh × t/MWh = kt; /1000 = Mt
             }
             result.AnnualGwh[Nuclear] += level[Nuclear] * NuclearAvailability(id) * hours / 1000.0;
-            result.AnnualGwh[Hydro] += level[Hydro] * hours / 1000.0;
+            result.AnnualGwh[Hydro] += (level[Hydro] + hydroShiftMw) * hours / 1000.0;   // EN-3b: the shift moves energy between blocks, the year's sum unchanged
             result.AnnualGwh[Wind] += level[Wind] * hours / 1000.0;
             result.AnnualGwh[Solar] += level[Solar] * hours / 1000.0;
             result.AnnualGwh[Firm] += level[Firm] * hours / 1000.0;
@@ -342,8 +415,25 @@ namespace PoliSim.Simulation
         public static void BeginTurn(World world)
         {
             Country de = world.GetCountry(CountryId.Germany), pl = world.GetCountry(CountryId.Poland);
-            if (de == null || pl == null) { _waterValue = null; return; }
+            if (de == null || pl == null) { _waterValue = null; _swedenDeficitShare = 0.0; return; }
             _waterValue = WaterValueOf(Clear(de, EnvironmentFamily.CarbonTaxRate(de)), Clear(pl, EnvironmentFamily.CarbonTaxRate(pl)));
+            // EN-3b: the reservoirs' standing - a deficit against the seed's cycle raises the water value this turn
+            Country se = world.GetCountry(CountryId.Sweden);
+            double capacity = EnergyLayer.SwedenReservoirCapacityGwh();
+            _swedenDeficitShare = se != null && capacity > 0 ? Math.Max(0.0, -se.State.HydroReservoirBalanceGwh) / capacity : 0.0;
+        }
+
+        /// <summary>EN-3b: the reservoirs' yearly balance - the inflow (the 2023 hydro energy, scaled by an event's inflow factor) less the hydro dispatched (the 2023 levels, until a stage moves them) - cumulative from zero at the seed, bounded by the capacity either way (a surplus above the store spills; a deficit below it is an empty store). Sweden's, the one system whose capacity is carried; nothing elsewhere.</summary>
+        public static void AdvanceReservoir(Country country)
+        {
+            if (country.Id != CountryId.Sweden) { return; }
+            double capacity = EnergyLayer.SwedenReservoirCapacityGwh();
+            if (capacity <= 0) { return; }
+            double hydroGwh = 0;
+            foreach (string z in EnergyLayer.SwedenZones) { int zone = EnergyLayer.ZoneIndex(z); for (int b = 0; b < 3; b++) { hydroGwh += EnergyLayerData.DispatchLevelMw[zone][b][Hydro] * EnergyLayerData.DispatchHours[zone][b] / 1000.0; } }
+            double inflow = hydroGwh * ProbeInflowScale, use = hydroGwh;
+            double balance = country.State.HydroReservoirBalanceGwh + inflow - use;
+            country.State.HydroReservoirBalanceGwh = (float)Math.Max(-capacity, Math.Min(capacity, balance));
         }
 
         private static double[] WaterValueOf(Result rde, Result rpl)
@@ -364,12 +454,19 @@ namespace PoliSim.Simulation
         public static void EndTurn() { _waterValue = null; }
         public static bool HasWaterValue => _waterValue != null;
         /// <summary>A new world begins with no turn state: WorldFactory calls it before the families seed, so nothing of an earlier world's last turn (a diagnostic's, a finished game's) stands when the next one is built. The calibration is the catalog's and stays.</summary>
-        public static void ResetTurnState() { _waterValue = null; ProbeLinkCapacityScale = 1.0; }
+        public static void ResetTurnState() { _waterValue = null; _swedenDeficitShare = 0.0; ProbeLinkCapacityScale = 1.0; ProbeInflowScale = 1.0; }
 
         /// <summary>A probe's knob on the Swedish links' capacities (1 = the dated NTCs): EnergyLedgerDiagnostic scales them down to make a snitt bind and read the rent and its credit. Never set by the game.</summary>
         public static double ProbeLinkCapacityScale = 1.0;
 
-        private static void ClearSweden(Result result, double[] mc, double[] caps, double[] waterValue)
+        /// <summary>
+        /// Sweden's four zones. EN-3b (2026-09-11): each zone's uncongested price in a block is ITS OWN 2023 price on the exchange (EnergyLayer.SeedZonePrice - the
+        /// day-ahead series folded onto the model's blocks) carried by the price level, plus the zone's measured share of the continental move (EnergyLayer.ZoneBetaToProxy,
+        /// the OLS slope of the zone's hours on the 615/600-weighted German-Polish price in 2023) times the proxy's move from its seed - and raised by the reservoirs'
+        /// deficit share at the slope stated above. At the seed the zones clear at the exchange's figures; before EN-3b every zone cleared at the proxy itself, 87 €/MWh
+        /// load-weighted against the exchange's 44–70 (§466). The chain's binding rule stands above it as before.
+        /// </summary>
+        private static void ClearSweden(Result result, double[] mc, double[] caps, double[] waterValue, double priceIndex)
         {
             string[] chain = EnergyLayer.SwedenZones;
             int n = chain.Length;
@@ -378,12 +475,19 @@ namespace PoliSim.Simulation
             result.WaterValue = new double[3];
             result.ChainUnbalanceMw = new double[3];
             result.Links = new LinkResult[n - 1];
+            result.ReservoirDeficitShare = _swedenDeficitShare;
+            double[] seedProxy = WaterValueAtSeed();
             for (int k = 0; k < n - 1; k++) { result.Links[k] = new LinkResult { From = chain[k], To = chain[k + 1] }; }
             for (int z = 0; z < n; z++) { result.Zones[z] = new BlockResult[3]; }
             for (int b = 0; b < 3; b++)
             {
                 double water = waterValue[b];
-                result.WaterValue[b] = water;
+                result.WaterValue[b] = water;   // the continental proxy, kept for the record and the coupling
+                var own = new double[n];
+                for (int z = 0; z < n; z++)
+                {
+                    own[z] = (EnergyLayer.SeedZonePrice(chain[z], b) * priceIndex + EnergyLayer.ZoneBetaToProxy(chain[z]) * (water - seedProxy[b] * priceIndex)) * (1.0 + ReservoirDeficitSlope * _swedenDeficitShare);
+                }
                 // each zone's own balance: consumption + external export served by its own supply; Sweden's fossil caps are its national tiny fleet, put in SE3's zone (Stockholm) - the only zone with thermal capacity of note
                 var surplus = new double[n];
                 for (int z = 0; z < n; z++)
@@ -398,7 +502,7 @@ namespace PoliSim.Simulation
                 }
                 // the chain: cumulative surplus from the north is the flow each link must carry; a link that cannot BINDS and splits the price
                 double cumulative = 0;
-                var price = new double[n]; for (int z = 0; z < n; z++) { price[z] = water; }
+                var price = new double[n]; for (int z = 0; z < n; z++) { price[z] = own[z]; }
                 for (int k = 0; k < n - 1; k++)
                 {
                     cumulative += surplus[k];
@@ -554,6 +658,6 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Forget the calibration (a diagnostic that re-seeds the world calls it).</summary>
-        public static void ResetCalibration() { AdderCache.Clear(); GapCache.Clear(); _waterValueSeed = null; }
+        public static void ResetCalibration() { AdderCache.Clear(); GapCache.Clear(); SeedSpreadCache.Clear(); _waterValueSeed = null; }
     }
 }

@@ -78,6 +78,11 @@ namespace PoliSim.UI
                     // EN-4: the fiscal layer's lines the plate carries - the industrial bill (the confidence channel's quantity) and the congestion rent with its rule
                     energyFoot += $" · THE FISCAL LAYER: INDUSTRY'S ELECTRICITY BILL {s.EnergyIndustryBill:N1} BN, {s.EnergyIndustryBillGdpShare:0.00} % OF GDP ({(s.EnergyIndustryBillShareChange >= 0f ? "+" : "")}{s.EnergyIndustryBillShareChange:0.000} THIS YEAR) · CONGESTION RENT {s.EnergyCongestionRent:N2} BN, CREDITED TO NEXT YEAR'S NETWORK COMPONENT";
                 }
+                if (EnergyLayer.SwedenReservoirCapacityGwh() > 0 && country.Id == CountryId.Sweden)
+                {
+                    // EN-3b: the reservoirs' balance against the seed's cycle - the one storage this game does not abstract away
+                    energyFoot += $" · THE RESERVOIRS: BALANCE {(s.HydroReservoirBalanceGwh >= 0f ? "+" : "")}{s.HydroReservoirBalanceGwh / 1000f:0.0} TWh OF {EnergyLayer.SwedenReservoirCapacityGwh() / 1000.0:0.0} TWh · A DEFICIT RAISES THE WATER VALUE";
+                }
             }
             string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE IS THE TAXED CO₂ - POWER AND TRANSPORT PER HEAD × POPULATION · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED" + energyFoot;
             _environmentPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>

@@ -231,7 +231,35 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    {0,-8} {1} per kWh (the book's dollars) · wholesale {2:F4} · margins households {3:+0.0000;-0.0000} non-households {4:+0.0000;-0.0000} (FITTED) · VAT implied {5:F1} % / {6:F1} % · totals {7:F4} / {8:F4} = the components' sum (Eurostat's stated totals within {9:F4} of it in the source's currency) · bills {10:F1} + {11:F1} bn, budget support {12:F2} bn · paid {13:F2} = received {14:F2} (gap {15:E1})\n",
                     c.Id, PoliSim.Simulation.EnergyLedger.BookCurrency, book.WholesalePerKwh, c.Environment.RetailMargin[0], c.Environment.RetailMargin[1], 100 * c.Environment.RetailVatRate[0], 100 * c.Environment.RetailVatRate[1], book.Classes[0].Total, book.Classes[1].Total, statedResidual, book.PaidHouseholds, book.PaidNonHouseholds, book.PaidTaxpayers, book.PaidTotal, book.ReceivedTotal, book.Gap));
             }
-            sb.Append(F("    {0} fitted parameters in the fiscal layer - the supply margins - so {1} in the energy layer in all, each named; a negative margin is printed, not hidden: Sweden's, both classes (the water-value proxy above Sweden's own 2023 energy component - EN-3b's evidence) and Poland's households' (the 2023 household price freeze, compensated to the suppliers off the bill).\n", fittedMargins, fitted + fittedMargins));
+            sb.Append(F("    {0} fitted parameters in the fiscal layer - the supply margins - so {1} in the energy layer in all, each named; a negative margin is printed, not hidden: Poland's households' (the 2023 household price freeze, compensated to the suppliers off the bill); Sweden's turned positive when EN-3b priced its zones at the exchange's 2023 figures.\n", fittedMargins, fitted + fittedMargins));
+
+            // ---- gate 10 (EN-3b, §466): Sweden's zones clear at the exchange's 2023 prices at the seed, the coupling and the reservoirs sourced, the hydro shift zero at the seed
+            sb.Append("\n    10. THE RESERVOIR DISPATCH (EN-3b): the seed water value is the exchange's 2023 zonal price by block, the coupling measured, the reservoirs' capacity sourced, no hydro shifted at the seed\n");
+            {
+                PoliSim.Simulation.EnergyMarket.Result swz = PoliSim.Simulation.EnergyMarket.ClearAtSeed(CountryId.Sweden);
+                for (int z = 0; z < swz.ZoneNames.Length; z++)
+                {
+                    string zone = swz.ZoneNames[z];
+                    double beta = EnergyLayer.ZoneBetaToProxy(zone), cap = EnergyLayer.ReservoirCapacityGwh(zone);
+                    if (!(beta > 0.0) || beta > 1.0) { failures++; Debug.LogError($"ENERGY: {zone}'s coupling to the continent is {beta} - outside (0, 1]."); }
+                    if (!(cap > 0.0)) { failures++; Debug.LogError($"ENERGY: {zone} carries no reservoir capacity."); }
+                    for (int b = 0; b < 3; b++)
+                    {
+                        double sourced = EnergyLayer.SeedZonePrice(zone, b);
+                        if (!swz.Links[Math.Min(z, swz.Links.Length - 1)].Binding[b] && Math.Abs(swz.Zones[z][b].Price - sourced) > 1e-6) { failures++; Debug.LogError($"ENERGY: {zone} clears the {EnergyLayerData.DispatchBlocks[b]} block at {swz.Zones[z][b].Price:F3} at the seed, not the exchange's {sourced:F3}."); }
+                    }
+                    sb.Append(F("    {0}  seed price {1:F1} / {2:F1} / {3:F1} €/MWh (load-weighted {4:F1}) · coupling to the continent {5:F2} · reservoir {6:N0} GWh\n", zone, swz.Zones[z][0].Price, swz.Zones[z][1].Price, swz.Zones[z][2].Price, EnergyLayerData.HydroPriceLoadWeighted[EnergyLayer.HydroZoneIndex(zone)], beta, cap));
+                }
+                sb.Append(F("    the proxy EN-3 cleared every zone at: {0:F1} / {1:F1} / {2:F1} €/MWh - the measure of what it cost (§466); Sweden's reservoirs together {3:N0} GWh\n", swz.WaterValue[0], swz.WaterValue[1], swz.WaterValue[2], EnergyLayer.SwedenReservoirCapacityGwh()));
+                foreach (Country c in world.Countries)
+                {
+                    if (!EnergyLayer.Has(c.Id) || c.Id == CountryId.Sweden) { continue; }
+                    PoliSim.Simulation.EnergyMarket.Result r = PoliSim.Simulation.EnergyMarket.ClearAtSeed(c.Id);
+                    double share = EnergyLayer.HydroShiftableShare(c.Id);
+                    if (Math.Abs(r.HydroShiftedGwh) > 1e-6) { failures++; Debug.LogError($"ENERGY: {c.Id} shifts {r.HydroShiftedGwh:F3} GWh of hydro at the seed - the seed allocation is the observed one and moves nothing."); }
+                    sb.Append(F("    {0,-8} shiftable share {1:F3}{2} · seed spread peak − base {3:F1} €/MWh · shifted at the seed {4:F3} GWh\n", c.Id, share, share > 0 ? "" : " (BILLED - no shift)", r.Zones[0][2].Price - r.Zones[0][0].Price, r.HydroShiftedGwh));
+                }
+            }
 
             // ---- gate 9 (EN-5, §465): the pass-through's weight is sourced and positive for six, and the seed passes nothing
             sb.Append("\n    9. THE PASS-THROUGH (EN-5): electricity's weight in the price index per country, and nothing passed at the seed\n");

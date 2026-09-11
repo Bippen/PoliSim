@@ -109,7 +109,16 @@ namespace PoliSim.Simulation
             FitMargins(country);
             EnergyMarket.Result r = EnergyMarket.ClearAtSeed(country.Id);
             Book b = Compute(country, r, 1.0, EnvironmentFamily.CarbonTaxRate(country), 0.0);
+            s.EnergyCongestionRentSeed = (float)b.CongestionRent;   // EN-3b: the seed's own rent is inside the seed's network tariff; only the rent above it is credited
             Write(country, b, first: true);
+        }
+
+        /// <summary>The network credit the coming year carries, billions: the rent the last year earned ABOVE the seed's - the seed's rent carried by the price level, nominal with nominal (P5-B6), since the seed's tariff already contains 2023's capacity fees at 2023's prices - times the rule's share. Zero at the seed and wherever the links earn no more in real terms than they did in 2023.</summary>
+        public static double CreditFor(Country country)
+        {
+            EnvironmentSeeds s = country.Environment;
+            double seedRent = s != null ? s.EnergyCongestionRentSeed : 0.0;
+            return Math.Max(0.0, country.State.EnergyCongestionRent - seedRent * Math.Max(0.0001f, country.State.PriceLevel)) * CongestionRentCreditShare;
         }
 
         /// <summary>The fit itself - a function of the catalog and the seed dispatch alone, so a save from before this layer refits to the same figures.</summary>
@@ -169,7 +178,7 @@ namespace PoliSim.Simulation
             if (s.RetailMargin == null || s.RetailMargin.Length != ClassCount) { FitMargins(country); }   // a save from before this layer
             float rate = EnvironmentFamily.CarbonTaxRate(country);
             EnergyMarket.Result r = EnergyMarket.Clear(country, rate);
-            double credit = Math.Max(0.0, country.State.EnergyCongestionRent) * CongestionRentCreditShare;   // last year's rent, billions
+            double credit = CreditFor(country);   // last year's rent above the seed's, billions (EN-3b: the seed's rent is inside the seed's tariff)
             Book b = Compute(country, r, Math.Max(0.0001f, country.State.PriceLevel), rate, credit);
             Write(country, b, first: false);
         }

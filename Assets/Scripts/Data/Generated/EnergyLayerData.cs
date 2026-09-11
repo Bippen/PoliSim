@@ -561,5 +561,38 @@ namespace PoliSim.Data.Generated
         /// <summary>Electricity's weight in the consumer price index per country, per mille of the all-items basket, 2023 - Eurostat prc_hicp_inw COICOP CP0451 for the five, the BLS CPI-U relative importance (December 2023) for the USA; the household retail price's change relative to the general price level times this weight is the year's pass-through to Inflation (EnergyPassThrough).</summary>
         public static readonly double[] RetailPriceIndexWeightPerMille = { 29.63, 28.21, 33.15, 23.87, 70.5, 24.28 };
 
+        public const string HydroDigest = "7a272901e07c45f9260205769d6d98a1efce86359b6007cdf945f73ac081c939";
+        /// <summary>The zones of the hydro file: Sweden's four, then Germany and Poland (the continental proxy's own 2023 block means, for the record).</summary>
+        public static readonly string[] HydroZones = { "SE1", "SE2", "SE3", "SE4", "DE", "PL" };
+        /// <summary>The 2023 day-ahead price by [hydro zone][block], EUR/MWh, on the model's own load blocks (P10 / P90 of the hourly national load) - energy-charts.info's republication of the exchange's series; Sweden's zones' seed water value, Germany's and Poland's the measure of the market's seed prices.</summary>
+        public static readonly double[][] HydroPriceBlock =
+        {
+            new double[] { 19.94, 37.04, 83.41 },
+            new double[] { 19.94, 37.05, 83.41 },
+            new double[] { 19.99, 47.58, 116.29 },
+            new double[] { 36.58, 61.21, 122.45 },
+            new double[] { 72.83, 93.48, 131.06 },
+            new double[] { 80.24, 111.02, 148.09 },
+        };
+
+        /// <summary>The same price load-weighted over the year by [hydro zone], EUR/MWh.</summary>
+        public static readonly double[] HydroPriceLoadWeighted = { 43.92, 43.92, 57.68, 69.95, 98.31, 115.1 };
+
+        /// <summary>The share of a continental move a zone carried in 2023 by [hydro zone] - the OLS slope of the zone's hourly price on the 615/600-weighted DE-LU/PL hourly price, DERIVED; 1 for DE and PL themselves.</summary>
+        public static readonly double[] HydroBetaToProxy = { 0.3039, 0.3039, 0.6003, 0.817, 1, 1 };
+
+        /// <summary>The reservoirs' energy capacity by [hydro zone], GWh - Energiföretagen's weekly report (GWh over fill per cent; national 100 % = 33.7 TWh); 0 for DE and PL (not carried).</summary>
+        public static readonly double[] ReservoirCapacityGwh = { 14804, 15677, 2846, 220, 0, 0 };
+
+        public const string HydroFleetDigest = "4030cda729d8f1be42124df6e42cc7a604cbbc08d0fe64f0c2fc8e6fd2241cca";
+        /// <summary>The share of the year's hydro energy a reservoir operator can move between the load blocks, per country - (hydro − run-of-river − pumped) / (hydro − pumped) from Eurostat nrg_inf_epcrw 2023; 1 for Sweden (regulated rivers); 0 where the run-of-river row is a reporting hole (France, Poland) or absent (the USA), BILLED.</summary>
+        public static readonly double[] HydroShiftableShare = { 0.2385, 0, 0.6774, 0, 1, 0 };
+
+        /// <summary>Run-of-river hydro capacity per country, MW (Eurostat nrg_inf_epcrw RA110ROR; 0 where unreported).</summary>
+        public static readonly double[] HydroRunOfRiverMw = { 4269, 0, 6112, 0, 0, 0 };
+
+        /// <summary>Pumped-storage capacity per country, MW (Eurostat nrg_inf_epcrw RA130) - a store, not an inflow.</summary>
+        public static readonly double[] HydroPumpedMw = { 5345, 1728, 3970, 1423, 0, 0 };
+
     }
 }

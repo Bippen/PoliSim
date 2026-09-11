@@ -37,6 +37,11 @@ namespace PoliSim.EditorTools
         internal static readonly string[] RetailClasses = { "households", "nonhousehold" };
         /// <summary>EN-5: electricity's weight in each country's consumer price index, per mille (Eurostat prc_hicp_inw CP0451; BLS relative importance for the USA).</summary>
         internal const string PriceIndexWeightSource = "EnergyData/price_index_weights_2023.csv";
+        /// <summary>EN-3b: Sweden's zones' 2023 day-ahead price by load block, each zone's coupling to the continental proxy, the reservoirs' capacity; Germany's and Poland's own block means for the record.</summary>
+        internal const string HydroSource = "EnergyData/hydro_2023.csv";
+        internal static readonly string[] HydroZones = { "SE1", "SE2", "SE3", "SE4", "DE", "PL" };
+        /// <summary>EN-3b: the hydro fleets' storage character per country - run-of-river and pumped capacity, the shiftable share.</summary>
+        internal const string HydroFleetSource = "EnergyData/hydro_fleet_2023.csv";
         private const string OutputRelative = "Assets/Scripts/Data/Generated/EnergyLayerData.cs";
         internal static readonly string[] DispatchBlocks = { "base", "mid", "peak" };
         internal static readonly string[] DispatchCategories = { "coal", "gas", "oil", "nuclear", "hydro", "wind", "solar", "firm" };
@@ -140,7 +145,14 @@ namespace PoliSim.EditorTools
                 (List<string[]> weights, string dWeights) = Read(Path.Combine(root, PriceIndexWeightSource), "country;electricity_per_mille;source");
                 if (weights.Count != Countries.Length) { throw new InvalidDataException($"price index weights: {weights.Count} rows, expected {Countries.Length}"); }
                 for (int i = 0; i < weights.Count; i++) { if (weights[i][0] != Countries[i]) { throw new InvalidDataException($"price index weight row {i}: {weights[i][0]}, expected {Countries[i]}"); } if (P(weights[i][1]) <= 0) { throw new InvalidDataException($"price index weight for {Countries[i]} is not positive"); } }
-                string text = Emit(capR, capE, genR, genE, blocks, zones, links, fuel, co2, country, dFleet, dBlocks, dZones, dLinks, dComb, dCountry, dispatch, costs, external, dDispatch, dCosts, dExternal, retail, dRetail, weights, dWeights);
+                // EN-3b: the reservoir dispatch's two files
+                (List<string[]> hydro, string dHydro) = Read(Path.Combine(root, HydroSource), "zone;price_base;price_mid;price_peak;price_load_weighted;hours;beta_to_proxy;reservoir_capacity_gwh");
+                if (hydro.Count != HydroZones.Length) { throw new InvalidDataException($"hydro: {hydro.Count} rows, expected {HydroZones.Length}"); }
+                for (int i = 0; i < hydro.Count; i++) { if (hydro[i][0] != HydroZones[i]) { throw new InvalidDataException($"hydro row {i}: {hydro[i][0]}, expected {HydroZones[i]}"); } }
+                (List<string[]> hydroFleet, string dHydroFleet) = Read(Path.Combine(root, HydroFleetSource), "country;hydro_mw;run_of_river_mw;pumped_mw;shiftable_share;status");
+                if (hydroFleet.Count != Countries.Length) { throw new InvalidDataException($"hydro fleet: {hydroFleet.Count} rows, expected {Countries.Length}"); }
+                for (int i = 0; i < hydroFleet.Count; i++) { if (hydroFleet[i][0] != Countries[i]) { throw new InvalidDataException($"hydro fleet row {i}: {hydroFleet[i][0]}, expected {Countries[i]}"); } double sh = P(hydroFleet[i][4]); if (sh < 0 || sh > 1) { throw new InvalidDataException($"hydro fleet: {Countries[i]}'s shiftable share {sh} is outside [0, 1]"); } }
+                string text = Emit(capR, capE, genR, genE, blocks, zones, links, fuel, co2, country, dFleet, dBlocks, dZones, dLinks, dComb, dCountry, dispatch, costs, external, dDispatch, dCosts, dExternal, retail, dRetail, weights, dWeights, hydro, dHydro, hydroFleet, dHydroFleet);
                 File.WriteAllText(Path.Combine(root, OutputRelative), text, new UTF8Encoding(false));
                 Debug.Log($"ENERGY: catalog written to {OutputRelative} from six files under EnergyData/ ({dFleet.Substring(0, 12)}…, {dBlocks.Substring(0, 12)}…, {dZones.Substring(0, 12)}…, {dLinks.Substring(0, 12)}…, {dComb.Substring(0, 12)}…, {dCountry.Substring(0, 12)}…).");
                 CheckExit.Finish(0);
@@ -185,7 +197,8 @@ namespace PoliSim.EditorTools
 
         private static string Emit(double[][] capR, double[][] capE, double[][] genR, double[][] genE, List<string[]> blocks, List<string[]> zones, List<string[]> links, double[][][] fuel, double[][][] co2, List<string[]> country,
             string dFleet, string dBlocks, string dZones, string dLinks, string dComb, string dCountry,
-            List<string[]> dispatch, List<string[]> costs, List<string[]> external, string dDispatch, string dCosts, string dExternal, List<string[]> retail, string dRetail, List<string[]> weights, string dWeights)
+            List<string[]> dispatch, List<string[]> costs, List<string[]> external, string dDispatch, string dCosts, string dExternal, List<string[]> retail, string dRetail, List<string[]> weights, string dWeights,
+            List<string[]> hydro, string dHydro, List<string[]> hydroFleet, string dHydroFleet)
         {
             var sb = new StringBuilder();
             sb.Append("// GENERATED by PoliSim.EditorTools.EnergyCatalogGenerator. DO NOT EDIT BY HAND.\n//\n");
@@ -352,6 +365,22 @@ namespace PoliSim.EditorTools
             sb.Append("        public const string PriceIndexWeightDigest = \"").Append(dWeights).Append("\";\n");
             var wPm = new double[Countries.Length]; for (int i = 0; i < weights.Count; i++) { wPm[i] = P(weights[i][1]); }
             Block(sb, "RetailPriceIndexWeightPerMille", "Electricity's weight in the consumer price index per country, per mille of the all-items basket, 2023 - Eurostat prc_hicp_inw COICOP CP0451 for the five, the BLS CPI-U relative importance (December 2023) for the USA; the household retail price's change relative to the general price level times this weight is the year's pass-through to Inflation (EnergyPassThrough).", wPm);
+            // EN-3b (2026-09-11): the reservoir dispatch
+            sb.Append("        public const string HydroDigest = \"").Append(dHydro).Append("\";\n");
+            sb.Append("        /// <summary>The zones of the hydro file: Sweden's four, then Germany and Poland (the continental proxy's own 2023 block means, for the record).</summary>\n");
+            sb.Append("        public static readonly string[] HydroZones = { ").Append(Quote(HydroZones)).Append(" };\n");
+            var hPrice = New2(HydroZones.Length, 3); var hLw = new double[HydroZones.Length]; var hBeta = new double[HydroZones.Length]; var hCap = new double[HydroZones.Length];
+            for (int i = 0; i < hydro.Count; i++) { string[] r = hydro[i]; hPrice[i][0] = P(r[1]); hPrice[i][1] = P(r[2]); hPrice[i][2] = P(r[3]); hLw[i] = P(r[4]); hBeta[i] = P(r[6]); hCap[i] = P(r[7]); }
+            Matrix(sb, "HydroPriceBlock", "The 2023 day-ahead price by [hydro zone][block], EUR/MWh, on the model's own load blocks (P10 / P90 of the hourly national load) - energy-charts.info's republication of the exchange's series; Sweden's zones' seed water value, Germany's and Poland's the measure of the market's seed prices.", hPrice);
+            Block(sb, "HydroPriceLoadWeighted", "The same price load-weighted over the year by [hydro zone], EUR/MWh.", hLw);
+            Block(sb, "HydroBetaToProxy", "The share of a continental move a zone carried in 2023 by [hydro zone] - the OLS slope of the zone's hourly price on the 615/600-weighted DE-LU/PL hourly price, DERIVED; 1 for DE and PL themselves.", hBeta);
+            Block(sb, "ReservoirCapacityGwh", "The reservoirs' energy capacity by [hydro zone], GWh - Energiföretagen's weekly report (GWh over fill per cent; national 100 % = 33.7 TWh); 0 for DE and PL (not carried).", hCap);
+            sb.Append("        public const string HydroFleetDigest = \"").Append(dHydroFleet).Append("\";\n");
+            var hShare = new double[Countries.Length]; var hRor = new double[Countries.Length]; var hPump = new double[Countries.Length];
+            for (int i = 0; i < hydroFleet.Count; i++) { string[] r = hydroFleet[i]; hRor[i] = P(r[2]); hPump[i] = P(r[3]); hShare[i] = P(r[4]); }
+            Block(sb, "HydroShiftableShare", "The share of the year's hydro energy a reservoir operator can move between the load blocks, per country - (hydro − run-of-river − pumped) / (hydro − pumped) from Eurostat nrg_inf_epcrw 2023; 1 for Sweden (regulated rivers); 0 where the run-of-river row is a reporting hole (France, Poland) or absent (the USA), BILLED.", hShare);
+            Block(sb, "HydroRunOfRiverMw", "Run-of-river hydro capacity per country, MW (Eurostat nrg_inf_epcrw RA110ROR; 0 where unreported).", hRor);
+            Block(sb, "HydroPumpedMw", "Pumped-storage capacity per country, MW (Eurostat nrg_inf_epcrw RA130) - a store, not an inflow.", hPump);
             sb.Append("    }\n}\n");
             return sb.ToString();
         }

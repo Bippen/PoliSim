@@ -120,7 +120,9 @@ namespace PoliSim.EditorTools
                 bool anyBinds = false; foreach (EnergyMarket.LinkResult l in bound.Links) { for (int b = 0; b < 3; b++) { anyBinds |= l.Binding[b]; } }
                 EnergyLedger.Book year = EnergyLedger.Compute(se, bound, priceIndex, rate, 0.0);
                 if (!anyBinds || !(year.CongestionRent > 0)) { ok = false; Debug.LogError($"ENERGY LEDGER: at a third of the NTCs no snitt binds or the rent is not positive ({year.CongestionRent:F4} bn)."); }
-                if (before.CongestionRent != 0.0) { ok = false; Debug.LogError($"ENERGY LEDGER: Sweden shows a congestion rent at the dated NTCs ({before.CongestionRent:F4} bn) - §460 read snitt 4 as export."); }
+                // EN-3b (§466): the zones clear at the exchange's own 2023 prices, whose differences are 2023's congestion on the hour - so the carried flows earn a rent at the dated NTCs without a block binding; the probe's binding adds to it
+                if (!(before.CongestionRent > 0.0)) { ok = false; Debug.LogError($"ENERGY LEDGER: Sweden shows no congestion rent at the dated NTCs ({before.CongestionRent:F4} bn) - the zones' sourced price differences should earn one on the carried flows (EN-3b)."); }
+                if (!(year.CongestionRent > before.CongestionRent)) { ok = false; Debug.LogError($"ENERGY LEDGER: a binding snitt did not raise the rent above the dated NTCs' ({year.CongestionRent:F4} against {before.CongestionRent:F4} bn)."); }
                 EnergyLedger.Book next = EnergyLedger.Compute(se, open, priceIndex, rate, year.CongestionRent * EnergyLedger.CongestionRentCreditShare);
                 double totalCons = 0; int sci = EnergyLayer.Index(CountryId.Sweden); for (int k = 0; k < EnergyLedger.ClassCount; k++) { totalCons += EnergyLayerData.RetailConsumptionGwh[sci][k]; }
                 double expectedCredit = year.CongestionRent * 1000.0 / totalCons;
@@ -155,7 +157,7 @@ namespace PoliSim.EditorTools
                     if (Math.Abs(b2.Classes[k].Network - 2 * b1.Classes[k].Network) > 1e-9 || Math.Abs(b2.Classes[k].Policy - 2 * b1.Classes[k].Policy) > 1e-9 || Math.Abs(b2.Classes[k].TaxEnv - 2 * b1.Classes[k].TaxEnv) > 1e-9 || Math.Abs(b2.Classes[k].Margin - 2 * b1.Classes[k].Margin) > 1e-9)
                     { ok = false; Debug.LogError($"ENERGY LEDGER: at a doubled price level {b2.Classes[k].Class}' nominal components do not double."); }
                 }
-                sb.Append(F("    households: network {0:F4} → {1:F4}, levies {2:F4} → {3:F4}, tax {4:F4} → {5:F4}, margin {6:F4} → {7:F4}, wholesale {8:F4} → {9:F4} (the fuel half doubles, the fitted adders do not - the market's own B6, §460)\n",
+                sb.Append(F("    households: network {0:F4} → {1:F4}, levies {2:F4} → {3:F4}, tax {4:F4} → {5:F4}, margin {6:F4} → {7:F4}, wholesale {8:F4} → {9:F4} (every cost doubles, the fitted adders with them since EN-5; the tax's points above the seed and the ceiling do not - the market's own B6, §460, §465)\n",
                     b1.Classes[0].Network, b2.Classes[0].Network, b1.Classes[0].Policy, b2.Classes[0].Policy, b1.Classes[0].TaxEnv, b2.Classes[0].TaxEnv, b1.Classes[0].Margin, b2.Classes[0].Margin, b1.WholesalePerKwh, b2.WholesalePerKwh));
             }
 
@@ -186,9 +188,12 @@ namespace PoliSim.EditorTools
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
                 var outcome = new Outcome();
+                var creditBefore = new Dictionary<CountryId, double>();
                 for (int year = 1; year <= years; year++)
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                    // the credit the coming boundary will carry - last year's rent above the seed's - read BEFORE the turn writes this year's rent (EN-3b: Sweden's zones earn a standing rent)
+                    foreach (Country k in world.Countries) { if (EnergyLayer.Has(k.Id)) { creditBefore[k.Id] = EnergyLedger.CreditFor(k); } }
                     PolicyDecision d = PolicyDecision.None();
                     if (extraPoints != 0f) { d.TaxRateOverrides[TaxType.CarbonTax] = seedRate + extraPoints; }
                     decisions[player] = d;
@@ -199,12 +204,12 @@ namespace PoliSim.EditorTools
                     {
                         if (!EnergyLayer.Has(k.Id)) { continue; }
                         float rk = EnvironmentFamily.CarbonTaxRate(k);
-                        EnergyLedger.Book bk = EnergyLedger.Compute(k, EnergyMarket.Clear(k, rk), Math.Max(0.0001f, k.State.PriceLevel), rk, 0.0);
+                        EnergyLedger.Book bk = EnergyLedger.Compute(k, EnergyMarket.Clear(k, rk), Math.Max(0.0001f, k.State.PriceLevel), rk, creditBefore[k.Id]);
                         outcome.MaxGap = Math.Max(outcome.MaxGap, Math.Abs(bk.Gap));
                         if (Math.Abs(bk.Gap) > 1e-9 * Math.Max(1.0, bk.PaidTotal)) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s book does not close in year {year} (gap {bk.Gap:E2})."); }
                         if (year == years)
                         {
-                            // the single book: the stored figures against the stack recomputed (no rent in any country at the dated NTCs, so the credit is 0)
+                            // the single book: the stored figures against the stack recomputed with the credit the boundary carried
                             double g = Math.Max(Math.Abs(k.State.EnergyHouseholdPrice - bk.Classes[0].Total) / Math.Max(1e-6, bk.Classes[0].Total), Math.Abs(k.State.EnergyIndustryPrice - bk.Classes[1].PreVat) / Math.Max(1e-6, bk.Classes[1].PreVat));
                             g = Math.Max(g, Math.Abs(k.State.EnergyIndustryBill - bk.Classes[1].Bill) / Math.Max(1e-6, bk.Classes[1].Bill));
                             outcome.RecomputeGapMax = Math.Max(outcome.RecomputeGapMax, g);

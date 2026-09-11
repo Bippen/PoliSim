@@ -193,6 +193,9 @@ namespace PoliSim.EditorTools
                 (EnergyCatalogGenerator.RetailSource, EnergyLayerData.RetailDigest, EnergyLayerData.Countries.Length * EnergyLayerData.RetailClasses.Length),
                 // EN-5 (2026-09-11): the price-index weights
                 (EnergyCatalogGenerator.PriceIndexWeightSource, EnergyLayerData.PriceIndexWeightDigest, EnergyLayerData.Countries.Length),
+                // EN-3b (2026-09-11): the reservoir dispatch's two files
+                (EnergyCatalogGenerator.HydroSource, EnergyLayerData.HydroDigest, EnergyLayerData.HydroZones.Length),
+                (EnergyCatalogGenerator.HydroFleetSource, EnergyLayerData.HydroFleetDigest, EnergyLayerData.Countries.Length),
             };
             foreach ((string relative, string recorded, int rows) in sources)
             {
