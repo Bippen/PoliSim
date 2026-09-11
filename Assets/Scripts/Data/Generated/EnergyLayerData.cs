@@ -247,7 +247,7 @@ namespace PoliSim.Data.Generated
 
         // ---- EN-3 (2026-09-11): the market layer - the clearing's blocks as hours, the 2023 levels per category, the merit order's inputs
         public const string DispatchDigest = "75de340d1e143b142c752d4100fc01c3c5460ce8e328ba485461d9404f80d78c";
-        public const string CostsDigest = "21a63b7e8b93ead7dd9f5db791f885a0b8e48b5078fd39250eea8f4824ba19d4";
+        public const string CostsDigest = "fb8a262fde4190ab774c0092892a684fb6a009037dd8ca8b9d41caf2a8dbaa15";
         public const string ExternalLinksDigest = "4a52f2ca14c510645f46a055ad14f1fe50e62f818826d5cb1b52ab9f02ed8edc";
         /// <summary>The clearing's three blocks as hours - the trough decile, the middle eight, the top decile of the load (S3's P90 cut and its mirror).</summary>
         public static readonly string[] DispatchBlocks = { "base", "mid", "peak" };
@@ -460,6 +460,12 @@ namespace PoliSim.Data.Generated
         /// <summary>The carbon price the fleet already pays, per country, currency per tonne - the EU ETS 2023 secondary mean for the five (ICAP), 0 for the USA.</summary>
         public static readonly double[] EtsPerT = { 85.51, 85.51, 85.51, 85.51, 85.51, 0 };
 
+        /// <summary>The country's currency per unit of the market's (EUR for the five, USD for the USA): 1 for the euro members and the USA, the ECB 2023 reference rates for the krona and the zloty - the bridge for a tax line's points, which are the country's currency.</summary>
+        public static readonly double[] NationalPerMarketCurrency = { 1, 1, 1, 4.542, 11.4788, 1 };
+
+        /// <summary>The BOOK's dollars per unit of the market's currency - the game keeps every country's book in US dollars - the ECB 2023 reference rate USD/EUR for the five, 1 for the USA; the fiscal layer's stack and ledgers are in the book's dollars through it.</summary>
+        public static readonly double[] UsdPerMarketCurrency = { 1.0813, 1.0813, 1.0813, 1.0813, 1.0813, 1 };
+
         /// <summary>Sweden's interconnectors - the zone.</summary>
         public static readonly string[] ExternalLinkZone = { "SE1", "SE1", "SE2", "SE2", "SE3", "SE3", "SE3", "SE4", "SE4", "SE4", "SE4" };
         /// <summary>... the neighbour.</summary>
@@ -469,6 +475,87 @@ namespace PoliSim.Data.Generated
 
         /// <summary>Capacity into Sweden, MW.</summary>
         public static readonly double[] ExternalLinkInMw = { 1100, 700, 600, 250, 715, 1200, 2145, 1700, 600, 700, 600 };
+
+        // ---- EN-4 (2026-09-11): the retail stack's seed - 2023 consumption and price components per customer class
+        public const string RetailDigest = "d7d4c0bb5aee80f9cd040254d6c247e80491e1ac32b497480d366567e526981c";
+        /// <summary>The customer classes: households (Eurostat band DC; EIA residential) and non-households (band IC; the other EIA sectors).</summary>
+        public static readonly string[] RetailClasses = { "households", "nonhousehold" };
+        /// <summary>2023 consumption by [country][class], GWh (Eurostat nrg_cb_e; EIA EPA 2.2).</summary>
+        public static readonly double[][] RetailConsumptionGwh =
+        {
+            new double[] { 131454, 342043 },
+            new double[] { 150736.3, 256597.9 },
+            new double[] { 63413, 223948.3 },
+            new double[] { 28807, 118774.6 },
+            new double[] { 39550, 83743 },
+            new double[] { 1450025.2, 2424228.2 },
+        };
+
+        /// <summary>The energy-and-supply component per kWh by [country][class] (Eurostat NRG_SUP; the USA's all-in price) - the dispatch's wholesale plus a FITTED supply margin at the seed.</summary>
+        public static readonly double[][] RetailEnergySupply =
+        {
+            new double[] { 0.1992, 0.1349 },
+            new double[] { 0.136, 0.2057 },
+            new double[] { 0.2359, 0.1623 },
+            new double[] { 0.054, 0.0998 },
+            new double[] { 0.0811, 0.07 },
+            new double[] { 0.16, 0.107 },
+        };
+
+        /// <summary>The network component per kWh (Eurostat NETC; 0 for the USA, BILLED).</summary>
+        public static readonly double[][] RetailNetwork =
+        {
+            new double[] { 0.0937, 0.0548 },
+            new double[] { 0.0659, 0.0252 },
+            new double[] { 0.0492, 0.0214 },
+            new double[] { 0.0542, 0.042 },
+            new double[] { 0.0762, 0.0266 },
+            new double[] { 0, 0 },
+        };
+
+        /// <summary>The policy levies per kWh - renewable + capacity + other charges (Eurostat TAX_RNW + TAX_CAP + OTH).</summary>
+        public static readonly double[][] RetailPolicy =
+        {
+            new double[] { 0.0291, 0.0151 },
+            new double[] { 0.0062, 0.0018 },
+            new double[] { 0.0251, 0.0412 },
+            new double[] { 0.0161, 0.0209 },
+            new double[] { 0.0002, 0.0002 },
+            new double[] { 0, 0 },
+        };
+
+        /// <summary>Environmental and nuclear taxes per kWh (Eurostat TAX_ENV + TAX_NUC).</summary>
+        public static readonly double[][] RetailTaxEnv =
+        {
+            new double[] { 0.0205, 0.0205 },
+            new double[] { 0.0011, 0.0006 },
+            new double[] { 0.016, 0.011 },
+            new double[] { 0.0457, 0.0538 },
+            new double[] { 0.0337, 0.0005 },
+            new double[] { 0, 0 },
+        };
+
+        /// <summary>VAT per kWh at the seed (Eurostat VAT); the runtime carries the rate it implies on the pre-VAT stack.</summary>
+        public static readonly double[][] RetailVat =
+        {
+            new double[] { 0.065, 0.0428 },
+            new double[] { 0.0346, 0.0442 },
+            new double[] { 0.0309, 0.0368 },
+            new double[] { 0.0391, 0.0498 },
+            new double[] { 0.0478, 0.0243 },
+            new double[] { 0, 0 },
+        };
+
+        /// <summary>The all-in price per kWh (the components' sum).</summary>
+        public static readonly double[][] RetailTotal =
+        {
+            new double[] { 0.4075, 0.2681 },
+            new double[] { 0.2438, 0.2775 },
+            new double[] { 0.3571, 0.2728 },
+            new double[] { 0.209, 0.2664 },
+            new double[] { 0.239, 0.1216 },
+            new double[] { 0.16, 0.107 },
+        };
 
     }
 }

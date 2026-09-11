@@ -112,8 +112,10 @@ namespace PoliSim.EditorTools
             double mc1 = EnergyMarket.MarginalCost(CountryId.Poland, EnergyMarket.Coal, 1.0, 0.0, 0.0), mc2 = EnergyMarket.MarginalCost(CountryId.Poland, EnergyMarket.Coal, 2.0, 0.0, 0.0), mcTax = EnergyMarket.MarginalCost(CountryId.Poland, EnergyMarket.Coal, 1.0, 10.0, 0.0);
             if (Math.Abs(mc2 - 2 * mc1) > 1e-6) { ok = false; Debug.LogError($"ENERGY MARKET: at a doubled price level Poland's coal costs {mc2} against {mc1} - the nominal half should double exactly."); }
             int pl = EnergyLayer.Index(CountryId.Poland);
-            if (Math.Abs((mcTax - mc1) - 10.0 * EnergyMarket.CarbonTaxPointPerTonne * EnergyLayerData.EmissionFactorTPerMwh[pl][0]) > 1e-6) { ok = false; Debug.LogError("ENERGY MARKET: ten points of carbon tax do not add ten units per tonne on the emission factor."); }
-            sb.Append(F("\n    6. B6: Poland's coal at the seed {0:F2}, at a doubled price level {1:F2} (x2), with ten points of tax {2:F2} (+{3:F2} = 10 × {4:F4} t/MWh)\n", mc1, mc2, mcTax, mcTax - mc1, EnergyLayerData.EmissionFactorTPerMwh[pl][0]));
+            // §461: the points are zloty per tonne and the cost is in euro - ten points add ten zloty over the ECB rate per tonne on the emission factor
+            double plnPerEur = EnergyLayerData.NationalPerMarketCurrency[pl];
+            if (Math.Abs((mcTax - mc1) - 10.0 * EnergyMarket.CarbonTaxPointPerTonne / plnPerEur * EnergyLayerData.EmissionFactorTPerMwh[pl][0]) > 1e-6) { ok = false; Debug.LogError("ENERGY MARKET: ten points of carbon tax do not add ten zloty per tonne, in euro, on the emission factor."); }
+            sb.Append(F("\n    6. B6: Poland's coal at the seed {0:F2}, at a doubled price level {1:F2} (x2), with ten points of tax {2:F2} (+{3:F2} = 10 zloty ÷ {5:F4} PLN/EUR × {4:F4} t/MWh)\n", mc1, mc2, mcTax, mcTax - mc1, EnergyLayerData.EmissionFactorTPerMwh[pl][0], plnPerEur));
 
             sb.Append(ok ? "\n=== EnergyMarketDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== EnergyMarketDiagnostic: FAILED (see above) ===\n");
             if (ok) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }

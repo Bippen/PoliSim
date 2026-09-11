@@ -184,8 +184,16 @@ namespace PoliSim.Data
         public float RoadConnectivity = -1f;   // WEF GCR 2019 ROADQUALIDX 0-100
 
         // ---- P5-C5, THE ENVIRONMENT FAMILY (2026-09-06): the two sector keys the family moves (EnvironmentFamily.AdvanceYear); the headline is derived.
-        public float PowerCo2PerCapita = -1f;      // t CO2 per person, EDGAR Power Industry / WB population, 2023
+        public float PowerCo2PerCapita = -1f;      // t CO2 per person, EDGAR Power Industry / WB population, 2023 - written by the energy market's dispatch since EN-3 (2026-09-11)
         public float TransportCo2PerCapita = -1f;  // t CO2 per person, EDGAR Transport / WB population, 2023
+
+        // ---- EN-4, THE ENERGY LAYER'S FISCAL FIGURES (2026-09-11): the retail stack's two prices and the bills the ledger books (EnergyLedger.AdvanceYear); nominal, in the book's dollars like every figure here.
+        public float EnergyHouseholdPrice = -1f;   // the household all-in retail price per kWh - wholesale + supply margin + network + policy levies + environmental tax + VAT
+        public float EnergyIndustryPrice = -1f;    // the non-household retail price per kWh before recoverable VAT
+        public float EnergyIndustryBill = -1f;     // non-households' electricity bill, billions, before recoverable VAT - the quantity whose change reaches BusinessConfidence (the retired energy-line proxy's slot)
+        public float EnergyIndustryBillGdpShare = -1f;      // that bill as % of nominal GDP - the level the channel differences
+        public float EnergyIndustryBillShareChange = 0f;    // its change against last year, points of GDP - read by MacroSystem.ApplyCategorySpendingEffects (cost up = confidence down)
+        public float EnergyCongestionRent = 0f;    // the year's congestion rent on the zonal links, billions (Sweden's; 0 where no link binds) - credited to next year's network component (Regulation (EU) 2019/943 Article 19)
 
         // ---- P5-C6, THE IMMIGRATION-AND-POVERTY-DEPTH FAMILY (2026-09-06): the four figures the family moves (MigrationPovertyFamily.AdvanceYear).
         public float IrregularMigrationPer10k = -1f;   // the five: Eurostat's FLOW per 10 000 in the year; the USA: the DHS STOCK per 10 000 - two definitions, the seeds say which

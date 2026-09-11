@@ -35,6 +35,12 @@ namespace PoliSim.Data
         public float PowerPopulationSeedM;
         /// <summary>EN-3: the power figure is written by the dispatch (true for the six the energy layer covers).</summary>
         public bool PowerFromDispatch;
+        /// <summary>EN-4: the retail stack's FITTED supply margins at the seed, by customer class (households, non-households), the book's dollars per kWh - Eurostat's energy-and-supply component less the seed dispatch's load-weighted wholesale price; the two fitted parameters of the fiscal layer per country, stated.</summary>
+        public float[] RetailMargin;
+        /// <summary>EN-4: the VAT rate the seed's components imply, by class - VAT over the pre-VAT stack - so VAT follows the stack it is levied on.</summary>
+        public float[] RetailVatRate;
+        /// <summary>EN-4: the seed dispatch's load-weighted wholesale price, the book's dollars per kWh - the wholesale the margins were fitted against.</summary>
+        public float RetailWholesaleSeed;
         public bool Seeded;
     }
 
@@ -75,6 +81,8 @@ namespace PoliSim.Data
             if (country.RevenueBaseSeeds != null && country.RevenueBaseSeeds.Length > (int)TaxBaseDriver.Emissions) { country.RevenueBaseSeeds[(int)TaxBaseDriver.Emissions] = TaxBases.Level(TaxBaseDriver.Emissions, country); }
             // EN-3 (2026-09-11): the power figure's residual by method, so the dispatch reproduces the seed exactly at year 0 and writes the figure from then on
             EnergyMarket.SeedResidual(country);
+            // EN-4 (2026-09-11): the retail stack's fitted margins and the seed bills, so the ledger reproduces Eurostat's components at year 0
+            EnergyLedger.Seed(country);
             s.Seeded = true;
         }
 

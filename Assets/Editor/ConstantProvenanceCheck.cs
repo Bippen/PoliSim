@@ -61,6 +61,7 @@ namespace PoliSim.EditorTools
             "sourced", "source:", "[verified]", "[provisional]", "[estimated]", "http", "oecd", "eurostat",
             "imf", "scb", "riksbank", "bea", "aer ", "journal", "20 06", "et al",
             "authored-draft", "authored draft",
+            "fitted",   // §461 (2026-09-11): FITTED - solved from data at the seed, with its basis and the count of free parameters stated beside it (the energy market's adders; a reference read off a fitted model's response)
             "derived", "computed from", "read off",
             "convention", "gameplay", "a bound", "bounds", "clamp", "epsilon", "scale factor",
             "not a researched figure", "not researched", "arbitrary", "ceiling", "floor",

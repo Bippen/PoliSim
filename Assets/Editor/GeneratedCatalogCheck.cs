@@ -189,6 +189,8 @@ namespace PoliSim.EditorTools
                 (EnergyCatalogGenerator.DispatchSource, EnergyLayerData.DispatchDigest, EnergyLayerData.Zones.Length * EnergyLayerData.DispatchBlocks.Length),
                 (EnergyCatalogGenerator.CostsSource, EnergyLayerData.CostsDigest, EnergyLayerData.Countries.Length * EnergyLayerData.CostCategories.Length),
                 (EnergyCatalogGenerator.ExternalLinksSource, EnergyLayerData.ExternalLinksDigest, EnergyLayerData.ExternalLinkZone.Length),
+                // EN-4 (2026-09-11): the retail seed
+                (EnergyCatalogGenerator.RetailSource, EnergyLayerData.RetailDigest, EnergyLayerData.Countries.Length * EnergyLayerData.RetailClasses.Length),
             };
             foreach ((string relative, string recorded, int rows) in sources)
             {

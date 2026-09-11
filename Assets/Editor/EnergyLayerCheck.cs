@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using PoliSim.Data;
@@ -172,6 +173,65 @@ namespace PoliSim.EditorTools
             PoliSim.Simulation.EnergyMarket.BlockResult negative = PoliSim.Simulation.EnergyMarket.ClearBlock(100.0, 150.0, probeOffers, probeCaps, -5.0);
             if (Math.Abs(negative.Price + 5.0) > 1e-9) { failures++; Debug.LogError($"ENERGY: a block whose lowest offer is −5 priced {negative.Price} - a clamp."); }
             sb.Append(F("    no clamp: a surplus block at a lowest offer of −5 prices {0:F1} (the ceiling {1:F0}, the onset {2:F2}).\n", negative.Price, PoliSim.Simulation.EnergyMarket.MaxClearingPrice, PoliSim.Simulation.EnergyMarket.ScarcityOnset));
+
+            // ---- gate 7 (§461): the fitted parameters counted, and the out-of-sample response with them fixed
+            sb.Append("\n    7. FITTED, COUNTED, AND THE RESPONSE: the adders fixed at the seed, a carbon-price step of " + PoliSim.Simulation.EnergyMarket.ResponseStepPoints.ToString("0", CultureInfo.InvariantCulture) + " points\n");
+            int fitted = 0;
+            foreach (Country c in world.Countries)
+            {
+                if (!EnergyLayer.Has(c.Id)) { continue; }
+                List<string> names = PoliSim.Simulation.EnergyMarket.FittedParameters(c.Id);
+                fitted += names.Count;
+                int expectedCount = c.Id == CountryId.Sweden ? 0 : PoliSim.Simulation.EnergyMarket.FittedParametersPerCountryWithFleet;
+                if (names.Count != expectedCount) { failures++; Debug.LogError($"ENERGY: {c.Id} has {names.Count} fitted parameter(s) ({string.Join(", ", names)}); the count stated is {expectedCount}. A parameter appeared or vanished - state it."); }
+                if (c.Id == CountryId.Sweden) { sb.Append("    Sweden   FITTED: none (no dispatchable fossil fleet)\n"); continue; }
+                (double coalA, double coalB, double gasA, double gasB, double peakA, double peakB) = PoliSim.Simulation.EnergyMarket.Response(c.Id, PoliSim.Simulation.EnergyMarket.ResponseStepPoints);
+                bool responds = coalB < coalA && gasB > gasA && peakB > peakA;
+                if (!responds) { failures++; Debug.LogError($"ENERGY: {c.Id} does not respond to the step - coal {coalA:F3} → {coalB:F3}, gas {gasA:F3} → {gasB:F3}, peak price {peakA:F1} → {peakB:F1}. A model that reproduces its seed year is not yet a model that responds."); }
+                if (c.Id == CountryId.Poland)
+                {
+                    bool onReference = Math.Abs((coalA - coalB) - PoliSim.Simulation.EnergyMarket.ReferenceCoalDrop) <= PoliSim.Simulation.EnergyMarket.ReferenceShareSlack
+                        && Math.Abs((gasB - gasA) - PoliSim.Simulation.EnergyMarket.ReferenceGasRise) <= PoliSim.Simulation.EnergyMarket.ReferenceShareSlack
+                        && Math.Abs((peakB - peakA) - PoliSim.Simulation.EnergyMarket.ReferencePeakPriceRise) <= PoliSim.Simulation.EnergyMarket.ReferencePriceSlack;
+                    if (!onReference) { failures++; Debug.LogError($"ENERGY: Poland's response to twenty points left its reference - coal −{coalA - coalB:F3} (reference {PoliSim.Simulation.EnergyMarket.ReferenceCoalDrop:F3}), gas +{gasB - gasA:F3} ({PoliSim.Simulation.EnergyMarket.ReferenceGasRise:F3}), peak +{peakB - peakA:F1} ({PoliSim.Simulation.EnergyMarket.ReferencePeakPriceRise:F1}). The model changed; explain it and move the reference deliberately."); }
+                }
+                sb.Append(F("    {0,-8} FITTED: {1} · coal {2:F3} → {3:F3} · gas {4:F3} → {5:F3} · peak price {6:F1} → {7:F1}{8}\n", c.Id, string.Join(", ", names), coalA, coalB, gasA, gasB, peakA, peakB, c.Id == CountryId.Poland ? " (the reference)" : ""));
+            }
+            sb.Append(F("    {0} fitted parameters in the market - the adders - and nothing else in that class is fitted; sourced, derived, authored and convention figures each carry their mark.\n", fitted));
+
+            // ---- gate 8 (EN-4, §464): the retail stack reproduces Eurostat's components at the seed, the fitted margins counted, the book closes
+            sb.Append("\n    8. THE FISCAL LAYER AT THE SEED: the stack's total against Eurostat's, the two fitted margins per country, the incidence identity\n");
+            int fittedMargins = 0;
+            foreach (Country c in world.Countries)
+            {
+                if (!EnergyLayer.Has(c.Id)) { continue; }
+                if (c.Environment == null || !c.Environment.Seeded) { EnvironmentFamily.Seed(c); }
+                int ci = EnergyLayer.Index(c.Id);
+                double usd = EnergyLayerData.UsdPerMarketCurrency[ci];   // the book's dollars per unit of the sources' currency
+                List<string> margins = PoliSim.Simulation.EnergyLedger.FittedParameters(c.Id);
+                fittedMargins += margins.Count;
+                if (margins.Count != PoliSim.Simulation.EnergyLedger.FittedParametersPerCountry) { failures++; Debug.LogError($"ENERGY: {c.Id}'s ledger has {margins.Count} fitted parameter(s); the count stated is {PoliSim.Simulation.EnergyLedger.FittedParametersPerCountry}."); }
+                PoliSim.Simulation.EnergyMarket.Result r = PoliSim.Simulation.EnergyMarket.ClearAt(c.Id, 1.0, 0.0);
+                PoliSim.Simulation.EnergyLedger.Book book = PoliSim.Simulation.EnergyLedger.Compute(c, r, 1.0, EnvironmentFamily.CarbonTaxRate(c), 0.0);
+                double statedResidual = 0;
+                for (int k = 0; k < PoliSim.Simulation.EnergyLedger.ClassCount; k++)
+                {
+                    // the stack's total is its components' sum; Eurostat's STATED total differs from the sum of its published components by the source's rounding (within 0.0003 €/kWh, the generator's own gate) - printed, never substituted
+                    double expected = PoliSim.Simulation.EnergyLedger.SeedTotalPerKwh(ci, k) * usd;
+                    statedResidual = Math.Max(statedResidual, Math.Abs(EnergyLayerData.RetailTotal[ci][k] - PoliSim.Simulation.EnergyLedger.SeedTotalPerKwh(ci, k)));
+                    if (Math.Abs(book.Classes[k].Total - expected) > 1e-6 * Math.Max(1.0, expected)) { failures++; Debug.LogError($"ENERGY: {c.Id} {book.Classes[k].Class}: the seed stack totals {book.Classes[k].Total:F6} against the components' {expected:F6} per kWh - a component is not reproduced."); }
+                    // the fitted margin is a float on the seeds: the sum returns the component to float precision
+                    if (Math.Abs(book.Classes[k].Wholesale + book.Classes[k].Margin - EnergyLayerData.RetailEnergySupply[ci][k] * usd) > 1e-6) { failures++; Debug.LogError($"ENERGY: {c.Id} {book.Classes[k].Class}: wholesale + margin is not the energy-and-supply component at the seed."); }
+                    if (Math.Abs(book.Classes[k].Vat - EnergyLayerData.RetailVat[ci][k] * usd) > 1e-6) { failures++; Debug.LogError($"ENERGY: {c.Id} {book.Classes[k].Class}: the implied VAT rate does not return Eurostat's VAT component at the seed."); }
+                }
+                if (Math.Abs(book.Gap) > 1e-9 * Math.Max(1.0, book.PaidTotal)) { failures++; Debug.LogError($"ENERGY: {c.Id}'s incidence ledger does not close at the seed - paid {book.PaidTotal:F6}, received {book.ReceivedTotal:F6} bn."); }
+                if (Math.Abs(book.CongestionRent) > 1e-12 && c.Id != CountryId.Sweden) { failures++; Debug.LogError($"ENERGY: {c.Id} reports a congestion rent with no zonal links."); }
+                if (Math.Abs(book.LevyScale - (book.LevyRevenue > 0 ? 1.0 : 0.0)) > 1e-12) { failures++; Debug.LogError($"ENERGY: {c.Id}'s levy scale is {book.LevyScale} at the seed - the budget line is on its path there."); }
+                if (c.State.EnergyHouseholdPrice < 0f || Math.Abs(c.State.EnergyHouseholdPrice - book.Classes[0].Total) > 1e-5 * Math.Max(1.0, book.Classes[0].Total)) { failures++; Debug.LogError($"ENERGY: {c.Id}'s state carries a household price of {c.State.EnergyHouseholdPrice} at the seed against the stack's {book.Classes[0].Total} - the presented figure is not the stored one."); }
+                sb.Append(F("    {0,-8} {1} per kWh (the book's dollars) · wholesale {2:F4} · margins households {3:+0.0000;-0.0000} non-households {4:+0.0000;-0.0000} (FITTED) · VAT implied {5:F1} % / {6:F1} % · totals {7:F4} / {8:F4} = the components' sum (Eurostat's stated totals within {9:F4} of it in the source's currency) · bills {10:F1} + {11:F1} bn, budget support {12:F2} bn · paid {13:F2} = received {14:F2} (gap {15:E1})\n",
+                    c.Id, PoliSim.Simulation.EnergyLedger.BookCurrency, book.WholesalePerKwh, c.Environment.RetailMargin[0], c.Environment.RetailMargin[1], 100 * c.Environment.RetailVatRate[0], 100 * c.Environment.RetailVatRate[1], book.Classes[0].Total, book.Classes[1].Total, statedResidual, book.PaidHouseholds, book.PaidNonHouseholds, book.PaidTaxpayers, book.PaidTotal, book.ReceivedTotal, book.Gap));
+            }
+            sb.Append(F("    {0} fitted parameters in the fiscal layer - the supply margins - so {1} in the energy layer in all, each named; a negative margin is printed, not hidden: Sweden's, both classes (the water-value proxy above Sweden's own 2023 energy component - EN-3b's evidence) and Poland's households' (the 2023 household price freeze, compensated to the suppliers off the bill).\n", fittedMargins, fitted + fittedMargins));
 
             sb.Append(failures == 0 ? "\n=== EnergyLayerCheck: ALL ASSERTIONS PASS ===\n" : $"\n=== EnergyLayerCheck: {failures} FAILURE(S) ===\n");
             if (failures > 0) { Debug.LogError(sb.ToString()); CheckExit.Finish(1); return; }

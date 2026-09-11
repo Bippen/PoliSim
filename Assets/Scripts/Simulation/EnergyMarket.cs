@@ -54,6 +54,23 @@ namespace PoliSim.Simulation
         /// <remarks>CONVENTION - tranches per category, the supply curve's resolution: a share moves in steps of one tranche's energy, and 200 keeps the largest fleet's step (Germany's coal, 160 MW over the mid block's hours) under the calibration's point.</remarks>
         public const int Tranches = 200;
 
+        /// <summary>
+        /// THE FITTED PARAMETERS, COUNTED (§461). The calibration adders are FITTED: one per non-dominant fossil category with a fleet, solved at the seed
+        /// against EnergyData/dispatch_levels_2023.csv so the seed dispatch reproduces 2023's coal / gas / oil shares of the fossil total - Germany 2
+        /// (gas, oil), France 2 (coal, oil), Italy 2 (coal, oil), Poland 2 (gas, oil), the USA 2 (coal, oil), Sweden 0: TEN free parameters, and no
+        /// other quantity in this class is fitted. Everything else is sourced, derived, authored or a convention and says which. A model that
+        /// reproduces its seed year is not yet a model that responds: EnergyLayerCheck's gate 7 holds the out-of-sample response - the adders fixed,
+        /// a carbon-price step must move coal down, gas up and the peak price up by the amount the merit order gives, Poland's twenty points the
+        /// reference read off the first landing.
+        /// </summary>
+        public const int FittedParametersPerCountryWithFleet = 2;   // FITTED, counted: the non-dominant fossil categories with a fleet (read off the calibration: 2 for each of the five, 0 for Sweden)
+        /// <remarks>FITTED-REFERENCE, read off `bar334_en4` (2026-09-11, §461): Poland's response to twenty points of carbon tax at the seed - twenty ZLOTY per tonne, €4.40 - with the adders fixed: coal's share of the fossil total down 0.004, gas's up 0.004, the peak price up 2.8 €/MWh - the amount the merit order gives. (§460's first reading, 0.016 / 0.016 / 12.1, priced the points as euro; the unit error the standing check found.) A change here is a change of the model, to be explained.</remarks>
+        public const float ReferenceCoalDrop = 0.004f, ReferenceGasRise = 0.004f, ReferencePeakPriceRise = 2.8f;
+        /// <remarks>CONVENTION - the response reference's slack: two thousandths of a share and one currency unit per MWh; the tranche resolution's own step.</remarks>
+        public const float ReferenceShareSlack = 0.002f, ReferencePriceSlack = 1.0f;
+        /// <remarks>CONVENTION - the carbon-price step of the standing response check, in the line's points (currency per tonne).</remarks>
+        public const float ResponseStepPoints = 20f;
+
         /// <remarks>CONVENTION - the indices of EnergyLayerData.DispatchCategories, asserted against the catalog at first use.</remarks>
         public const int Coal = 0, Gas = 1, Oil = 2, Nuclear = 3, Hydro = 4, Wind = 5, Solar = 6, Firm = 7;
         /// <remarks>CONVENTION - the merit order's categories are the first three.</remarks>
@@ -94,6 +111,7 @@ namespace PoliSim.Simulation
         private static readonly Dictionary<CountryId, double[]> AdderCache = new Dictionary<CountryId, double[]>();
         private static readonly Dictionary<CountryId, double> GapCache = new Dictionary<CountryId, double>();
         private static double[] _waterValue;   // set per turn by BeginTurn; null outside a turn
+        private static double[] _waterValueSeed;   // the seed's, computed once (WaterValueAtSeed)
 
         // ---- the catalog, by country and category ----------------------------------------------------------
         private static int CostIndex(int category) => category;   // coal, gas, oil are the first three of both lists
@@ -145,12 +163,21 @@ namespace PoliSim.Simulation
         /// <summary>The marginal cost of a fossil category, currency per MWh: (fuel / efficiency + O&M) carried by the price level, plus (the ETS price carried + the tax's points above the seed) on the emission factor, plus the calibration adder. Infinite where the country has no such plant.</summary>
         public static double MarginalCost(CountryId id, int category, double priceIndex, double taxPointsAboveSeed, double adder)
         {
+            (double fuelVom, double ets, double tax) = CostParts(id, category, priceIndex, taxPointsAboveSeed);
+            return double.IsInfinity(fuelVom) ? double.PositiveInfinity : fuelVom + ets + tax + adder;
+        }
+
+        /// <summary>The marginal cost's parts, currency per MWh - fuel and O&amp;M carried by the price level; the ETS carried; the tax's points above the seed on the emission factor - ONE formula the clearing and the ledger both read. Fuel is infinite where the country has no such plant.</summary>
+        public static (double FuelVom, double Ets, double Tax) CostParts(CountryId id, int category, double priceIndex, double taxPointsAboveSeed)
+        {
             int ci = EnergyLayer.Index(id); int k = CostIndex(category);
             double efficiency = EnergyLayerData.Efficiency[ci][k];
-            if (efficiency <= 0) { return double.PositiveInfinity; }
-            double fuel = EnergyLayerData.FuelPerMwhTh[ci][k] / efficiency + EnergyLayerData.VomPerMwh[ci][k];
-            double carbon = (EnergyLayerData.EtsPerT[ci] * priceIndex + taxPointsAboveSeed * CarbonTaxPointPerTonne) * EnergyLayerData.EmissionFactorTPerMwh[ci][k];
-            return fuel * priceIndex + carbon + adder;
+            if (efficiency <= 0) { return (double.PositiveInfinity, 0.0, 0.0); }
+            double fuel = (EnergyLayerData.FuelPerMwhTh[ci][k] / efficiency + EnergyLayerData.VomPerMwh[ci][k]) * priceIndex;
+            double ef = EnergyLayerData.EmissionFactorTPerMwh[ci][k];
+            // the tax's points are the country's currency per tonne; the market's costs are in euro for the five (dollars for the USA) - the ECB rate bridges the krona's and the zloty's points (§463: the first landing added zloty points to euro costs)
+            double taxInMarketCurrency = taxPointsAboveSeed * CarbonTaxPointPerTonne / Math.Max(1e-6, EnergyLayerData.NationalPerMarketCurrency[ci]);
+            return (fuel, EnergyLayerData.EtsPerT[ci] * priceIndex * ef, taxInMarketCurrency * ef);
         }
 
         /// <summary>
@@ -264,13 +291,18 @@ namespace PoliSim.Simulation
             return ClearAt(country.Id, priceIndex, taxDelta);
         }
 
-        /// <summary>Clear at an explicit price index and tax delta (the calibration and the probes use the seed's: 1 and 0).</summary>
-        public static Result ClearAt(CountryId id, double priceIndex, double taxDelta)
+        /// <summary>Clear at an explicit price index and tax delta (the calibration and the probes use the seed's: 1 and 0); Sweden at the turn's water value where a turn has set one, the seed's otherwise.</summary>
+        public static Result ClearAt(CountryId id, double priceIndex, double taxDelta) => ClearAt(id, priceIndex, taxDelta, null);
+
+        /// <summary>The SEED clearing - price index 1, the tax at its seed, and Sweden at the SEED's water value whatever turn state stands: the seed fits (the residual, the retail margins) and the seed gates read this, so a stale turn value from an earlier world in the same process cannot reach a seed figure (EN-4's first simulation bar found it: the ledger diagnostic ran after the market's ten-year worlds and fitted Sweden's margins against their last water value).</summary>
+        public static Result ClearAtSeed(CountryId id) => ClearAt(id, 1.0, 0.0, WaterValueAtSeed());
+
+        private static Result ClearAt(CountryId id, double priceIndex, double taxDelta, double[] waterValue)
         {
             var result = new Result { Country = id, Adders = Adders(id), MaxCalibrationGap = GapCache.TryGetValue(id, out double gap) ? gap : double.NaN };
             double[] mc = Costs(id, priceIndex, taxDelta, result.Adders);
             double[] caps = Caps(id);
-            if (id == CountryId.Sweden) { ClearSweden(result, mc, caps); }
+            if (id == CountryId.Sweden) { ClearSweden(result, mc, caps, waterValue ?? _waterValue ?? WaterValueAtSeed()); }
             else
             {
                 int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(id));
@@ -306,21 +338,38 @@ namespace PoliSim.Simulation
         }
 
         // ---- Sweden -------------------------------------------------------------------------------------------
-        /// <summary>Set once per turn by the boundary: the water value Sweden's uncongested zones clear at - Germany's and Poland's block prices at their current rates, weighted by SE4's capacity to each (615 and 600 MW). Null outside a turn: the price then falls to the curtailment offer and the dump says so.</summary>
+        /// <summary>Set once per turn by the boundary: the water value Sweden's uncongested zones clear at - Germany's and Poland's block prices at their current rates, weighted by SE4's capacity to each (615 and 600 MW). Null outside a turn: the SEED's water value then stands (the same two markets at price index 1 and their seed rates), so a seed fit (EN-4's margins) reads the seed's price and not the curtailment offer.</summary>
         public static void BeginTurn(World world)
         {
             Country de = world.GetCountry(CountryId.Germany), pl = world.GetCountry(CountryId.Poland);
             if (de == null || pl == null) { _waterValue = null; return; }
-            Result rde = Clear(de, EnvironmentFamily.CarbonTaxRate(de)), rpl = Clear(pl, EnvironmentFamily.CarbonTaxRate(pl));
+            _waterValue = WaterValueOf(Clear(de, EnvironmentFamily.CarbonTaxRate(de)), Clear(pl, EnvironmentFamily.CarbonTaxRate(pl)));
+        }
+
+        private static double[] WaterValueOf(Result rde, Result rpl)
+        {
             double wde = 615.0, wpl = 600.0;   // Svenska kraftnät's capacity-map text: SE4 → Germany 615 MW, SE4 → Poland 600 MW (EnergyData/external_links_se.csv)
-            _waterValue = new double[3];
-            for (int b = 0; b < 3; b++) { _waterValue[b] = (rde.Zones[0][b].Price * wde + rpl.Zones[0][b].Price * wpl) / (wde + wpl); }
+            var water = new double[3];
+            for (int b = 0; b < 3; b++) { water[b] = (rde.Zones[0][b].Price * wde + rpl.Zones[0][b].Price * wpl) / (wde + wpl); }
+            return water;
+        }
+
+        /// <summary>The seed's water value - Germany's and Poland's seed clearings weighted as BeginTurn weights them; what Sweden clears at outside a turn.</summary>
+        public static double[] WaterValueAtSeed()
+        {
+            if (_waterValueSeed == null) { _waterValueSeed = WaterValueOf(ClearAt(CountryId.Germany, 1.0, 0.0), ClearAt(CountryId.Poland, 1.0, 0.0)); }
+            return _waterValueSeed;
         }
 
         public static void EndTurn() { _waterValue = null; }
         public static bool HasWaterValue => _waterValue != null;
+        /// <summary>A new world begins with no turn state: WorldFactory calls it before the families seed, so nothing of an earlier world's last turn (a diagnostic's, a finished game's) stands when the next one is built. The calibration is the catalog's and stays.</summary>
+        public static void ResetTurnState() { _waterValue = null; ProbeLinkCapacityScale = 1.0; }
 
-        private static void ClearSweden(Result result, double[] mc, double[] caps)
+        /// <summary>A probe's knob on the Swedish links' capacities (1 = the dated NTCs): EnergyLedgerDiagnostic scales them down to make a snitt bind and read the rent and its credit. Never set by the game.</summary>
+        public static double ProbeLinkCapacityScale = 1.0;
+
+        private static void ClearSweden(Result result, double[] mc, double[] caps, double[] waterValue)
         {
             string[] chain = EnergyLayer.SwedenZones;
             int n = chain.Length;
@@ -333,7 +382,7 @@ namespace PoliSim.Simulation
             for (int z = 0; z < n; z++) { result.Zones[z] = new BlockResult[3]; }
             for (int b = 0; b < 3; b++)
             {
-                double water = _waterValue != null ? _waterValue[b] : CurtailmentOffer;
+                double water = waterValue[b];
                 result.WaterValue[b] = water;
                 // each zone's own balance: consumption + external export served by its own supply; Sweden's fossil caps are its national tiny fleet, put in SE3's zone (Stockholm) - the only zone with thermal capacity of note
                 var surplus = new double[n];
@@ -354,7 +403,7 @@ namespace PoliSim.Simulation
                 {
                     cumulative += surplus[k];
                     LinkResult link = result.Links[k];
-                    double cap = cumulative >= 0 ? EnergyLayer.LinkCapacityMw(chain[k], chain[k + 1]) : EnergyLayer.LinkCapacityMw(chain[k + 1], chain[k]);
+                    double cap = ProbeLinkCapacityScale * (cumulative >= 0 ? EnergyLayer.LinkCapacityMw(chain[k], chain[k + 1]) : EnergyLayer.LinkCapacityMw(chain[k + 1], chain[k]));
                     link.FlowMw[b] = cumulative; link.CapacityMw[b] = cap;
                     link.Binding[b] = Math.Abs(cumulative) > cap;
                     if (link.Binding[b])
@@ -432,6 +481,29 @@ namespace PoliSim.Simulation
 
         private static double SeedShare(CountryId id, int zone, int category, double[] adders, double[] caps, double[] floors) => SeedShares(id, zone, adders, caps, floors)[category];
 
+        /// <summary>The fitted parameters of a country, by name - the categories whose adder the calibration solved (the dominant category and any without a fleet are pinned at zero and are not parameters).</summary>
+        public static List<string> FittedParameters(CountryId id)
+        {
+            var names = new List<string>();
+            if (id == CountryId.Sweden) { return names; }
+            double[] target = SeedTargets(id); double[] caps = Caps(id);
+            int dominant = 0; for (int k = 1; k < FossilCount; k++) { if (target[k] > target[dominant]) { dominant = k; } }
+            for (int k = 0; k < FossilCount; k++)
+            {
+                if (k == dominant || double.IsInfinity(MarginalCost(id, k, 1.0, 0.0, 0.0)) || caps[k] <= 0) { continue; }
+                names.Add(EnergyLayerData.CostCategories[k] + " adder");
+            }
+            return names;
+        }
+
+        /// <summary>The out-of-sample response at the seed: the adders fixed, the carbon price stepped - coal's and gas's shares of the fossil total and the peak price, before and after.</summary>
+        public static (double CoalBefore, double CoalAfter, double GasBefore, double GasAfter, double PeakBefore, double PeakAfter) Response(CountryId id, double stepPoints)
+        {
+            Result a = ClearAtSeed(id), b = ClearAt(id, 1.0, stepPoints, WaterValueAtSeed());
+            double fa = a.AnnualGwh[Coal] + a.AnnualGwh[Gas] + a.AnnualGwh[Oil], fb = b.AnnualGwh[Coal] + b.AnnualGwh[Gas] + b.AnnualGwh[Oil];
+            return (fa > 0 ? a.AnnualGwh[Coal] / fa : 0, fb > 0 ? b.AnnualGwh[Coal] / fb : 0, fa > 0 ? a.AnnualGwh[Gas] / fa : 0, fb > 0 ? b.AnnualGwh[Gas] / fb : 0, a.Zones[0][2].Price, b.Zones[0][2].Price);
+        }
+
         /// <summary>2023's shares of the fossil total, coal / gas / oil, from the levels - the calibration's targets.</summary>
         public static double[] SeedTargets(CountryId id)
         {
@@ -448,7 +520,7 @@ namespace PoliSim.Simulation
         {
             EnvironmentSeeds s = country.Environment;
             if (s == null || !EnergyLayer.Has(country.Id)) { return; }
-            Result seed = ClearAt(country.Id, 1.0, 0.0);
+            Result seed = ClearAtSeed(country.Id);
             s.PowerPopulationSeedM = Math.Max(0.0001f, country.State.Population);   // millions
             s.PowerResidualMt = (float)(s.PowerCo2PerCapita * s.PowerPopulationSeedM - seed.DerivedCo2Mt);   // per head × million people = Mt
             s.PowerFromDispatch = true;
@@ -482,6 +554,6 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Forget the calibration (a diagnostic that re-seeds the world calls it).</summary>
-        public static void ResetCalibration() { AdderCache.Clear(); GapCache.Clear(); }
+        public static void ResetCalibration() { AdderCache.Clear(); GapCache.Clear(); _waterValueSeed = null; }
     }
 }
