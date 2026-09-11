@@ -53,6 +53,17 @@ namespace PoliSim.UI
                     : new PlateRow("Electricity by source", "% OF GENERATION", "EMBER · EUROSTAT nrg_bal_peh · EIA 1.1", "billed",
                         PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "CARBON TAX ▸" }, null, new[] { "BILLED" }, false, "NOT SEEDED FOR THIS COUNTRY · THE SIX ARE"),
             };
+            // EN-4 (2026-09-11): the fiscal layer's two prices, presented as the state carries them (the single book) - the stack the ledger writes each year
+            if (EnergyLayer.Has(country.Id) && s.EnergyHouseholdPrice >= 0f)
+            {
+                // the book's dollars per kWh, like every money figure on these screens; the sources' euro and krona and zloty rows reach it through the catalog's ECB 2023 rates
+                string unit = PoliSim.Simulation.EnergyLedger.BookCurrency + " PER kWh";
+                const float perKwhHigh = 0.5f;
+                rows.Add(new PlateRow("Electricity price, households", unit + " · WHOLESALE + MARGIN + NETWORK + LEVIES + TAX + VAT", "EUROSTAT nrg_pc_204 · EIA · 2023 · THIS YEAR'S STACK", PlateFigure(s.EnergyHouseholdPrice, 2),
+                    PlateBand.Open, 0f, perKwhHigh, s.EnergyHouseholdPrice, null, true, new[] { "CARBON TAX ▸", "ENERGY LINE ▸", "DISPATCH ▸" }, null, new[] { "DERIVED" }, false));
+                rows.Add(new PlateRow("Electricity price, industry", unit + " · EXCLUDING RECOVERABLE VAT", "EUROSTAT nrg_pc_205 · EIA · 2023 · THIS YEAR'S STACK", PlateFigure(s.EnergyIndustryPrice, 2),
+                    PlateBand.Open, 0f, perKwhHigh, s.EnergyIndustryPrice, null, true, new[] { "CARBON TAX ▸", "ENERGY LINE ▸", "BUSINESS CONFIDENCE ▸" }, null, new[] { "DERIVED" }, false));
+            }
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);
             // The energy layer's stage 2 (2026-09-10): the single book made visible where the figure is - the power figure's decomposition at the seed,
@@ -62,6 +73,11 @@ namespace PoliSim.UI
             {
                 EnergyLayer.Co2 decomposition = EnergyLayer.Decomposition(country.Id, e.PowerCo2PerCapita);
                 energyFoot = $" · THE ENERGY LAYER AT THE {EnergyLayer.Year} SEED: THE POWER PLANTS' OWN COMBUSTION IS {decomposition.DerivedShare * 100f:0} % OF THE POWER FIGURE, THE REST HEAT PLANTS, CHP HEAT AND REFINERIES · THE FLEET AND THE LOAD ARE STATIC UNTIL DISPATCH";
+                if (s.EnergyIndustryBill >= 0f)
+                {
+                    // EN-4: the fiscal layer's lines the plate carries - the industrial bill (the confidence channel's quantity) and the congestion rent with its rule
+                    energyFoot += $" · THE FISCAL LAYER: INDUSTRY'S ELECTRICITY BILL {s.EnergyIndustryBill:N1} BN, {s.EnergyIndustryBillGdpShare:0.00} % OF GDP ({(s.EnergyIndustryBillShareChange >= 0f ? "+" : "")}{s.EnergyIndustryBillShareChange:0.000} THIS YEAR) · CONGESTION RENT {s.EnergyCongestionRent:N2} BN, CREDITED TO NEXT YEAR'S NETWORK COMPONENT";
+                }
             }
             string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE IS THE TAXED CO₂ - POWER AND TRANSPORT PER HEAD × POPULATION · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED" + energyFoot;
             _environmentPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>

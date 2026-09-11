@@ -1031,6 +1031,7 @@ namespace PoliSim.Data
             HealthFamily.SeedAll(world);   // P5-C2 (2026-09-05): the health family's seeds and bases, after the lines and the cabinet exist
             EducationFamily.SeedAll(world);   // P5-C3 (2026-09-06)
             InfrastructureFamily.SeedAll(world);   // P5-C4 (2026-09-06)
+            PoliSim.Simulation.EnergyMarket.ResetTurnState();   // EN-4 (2026-09-11): a new world carries none of an earlier world's turn state - the seed fits below must read the seed's own water value
             EnvironmentFamily.SeedAll(world);   // P5-C5 (2026-09-06)
             MigrationPovertyFamily.SeedAll(world);   // P5-C6 (2026-09-06)
 

@@ -309,6 +309,29 @@ halves would read as a doubling nobody built; the base, per head × population, 
 as the family's coupling always had it (the first baseline dump caught the alternative: Poland's figure
 rose 28 % in a century of population decline with nothing burned).
 
+**Stage 4 after 2026-09-11 (§461–§463):** the fiscal half done in one session where two were
+sized; S8 (the HICP pass-through) is its own pass still, opened as EN-5. What landed against row 4's
+text, and where it deviates: (i) **the retail stack is decomposed per class** (households, non-households)
+into wholesale + a FITTED supply margin + network + policy levies + environmental tax + VAT - the
+wholesale from the dispatch, the rest Eurostat's 2023 components (`ENERGY_LAYER_SPINE.md` §6) carried by
+the price level, VAT at the implied rate; it reproduces the components at the seed and is written to
+the state each year and presented as written (the single-book rider). The margins are the layer's second
+set of fitted parameters, two per country - Germany +0.117 / +0.047, France +0.057 / +0.132, Italy +0.156 / +0.077, Poland −0.031 / +0.018, Sweden −0.007 / −0.019, the USA +0.135 / +0.082 $ per kWh in the book's dollars, households / non-households - counted with the market's ten
+adders by the check. (ii) **The two ledgers close to the unit** every year: system cost as far as the
+model states it, incidence by payer and receiver. (iii) **Support schemes ride the book's existing energy
+line**, not appended `SpendingCategory` members - no source on this machine splits a country's schemes
+into lines with drivers - with the levy as the bill-financed half moving one for one against the line's
+deviation from its indexed path (P5-B2 on the line, P5-B3 on the levy); the appended members wait for
+their sources. (iv) **The congestion rent's rule** is Article 19(2)–(3) of Regulation 2019/943: credited
+to next year's network component per kWh; armed by probe, since no snitt binds at the dated NTCs. (v)
+**`EnergySpendingChange` is retired from BusinessConfidence** - the industrial bill's change as a share of
+GDP replaces it at the proxy's own sensitivity - and stays on the approval formulas; the Energy sector's
+row is NOT derived from the system cost (the sector table's seeds and the P4-B3 dials read it and no
+source fixes the share) - a deviation stated. (vi) **The unit finding:** the carbon tax's points are the
+country's currency per tonne and the market's costs are in euro; §460's Polish reference was read in the
+wrong unit and stands corrected (coal 0.862 → 0.858, gas 0.111 → 0.115, the peak price 97.1 → 99.9 €/MWh for twenty zloty per tonne, €4.40); the book's own reading of a point - a share of
+GDP on the emissions base - and the dispatch's are two readings of one line, opened ruling-first as EN-4c.
+
 **Total: fourteen to seventeen sessions**, none of which starts before this document is ruled, and
 none of stages 3–8 before the stage before it has its own BASELINE explained per country. Each stage
 is one commit family and one green simulation bar.

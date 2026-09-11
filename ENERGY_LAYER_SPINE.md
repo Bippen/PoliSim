@@ -132,6 +132,8 @@ The two agree on snitt 1 and 2 and differ on snitt 4 (6 200 ⁄ 2 500 against 5 
 
 The USA's retail stack is BILLED - EIA's Electric Power Monthly Table 5.6.A carries average retail price by sector, not its components; the components exist in EIA-861 (revenue by class) and are the build's fetch if wanted.
 
+**Built 2026-09-11 (EN-4, `COMPLETED.md` §463):** these components are the seed of `EnergyLedger`'s stack - `EnergyData/retail_2023.csv` carries them per class with the 2023 consumption (`nrg_cb_e`/EIA), the policy levies as renewable + capacity + nuclear + other, and the USA's EIA averages with its components BILLED. The wholesale is the dispatch's and the supply margin is what Eurostat's energy-and-supply component leaves above it - FITTED, printed with its sign in `ENERGY_LAYER_PREMISE.md` §6: Germany +0.117 / +0.047, France +0.057 / +0.132, Italy +0.156 / +0.077, Poland −0.031 / +0.018, Sweden −0.007 / −0.019, the USA +0.135 / +0.082 $ per kWh in the book's dollars, households / non-households. Eurostat's stated totals differ from the sum of their published components by up to 0.0001 €/kWh (Italy's and Poland's rows) - the stack's total is its parts' sum, the stated total printed beside it.
+
 ## 7. Electricity's weight in the price index — stage 4's pass-through, sourced (S8)
 
 Eurostat `prc_hicp_inw`, 2023, per mille of the HICP basket: **electricity (CP0451)** DE 29.63 · FR 28.21 · IT 33.15 · PL 23.87 · **SE 70.50**; all household energy (CP045) 55.03 · 60.40 · 64.44 · 85.38 · 82.96. Sweden's electricity weight is two and a half times Germany's - the pass-through will be, too. The USA's relative importance of electricity in the CPI (BLS) is BILLED - not reached tonight.

@@ -2389,9 +2389,14 @@ namespace PoliSim.Simulation
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
         internal const float JusticeCrimeIndexSensitivity = 0.02f;
 
-        /// <summary>BusinessConfidence gained per percentage-point-of-GDP spent on energy - lower/stabler energy costs for businesses, distinct from Education's own BusinessConfidence nudge.</summary>
+        /// <summary>
+        /// BusinessConfidence LOST per point of GDP the industrial electricity bill rises by (EconomyState.EnergyIndustryBillShareChange, written by EnergyLedger.AdvanceYear) -
+        /// the cost firms bear, read directly. EN-4 (2026-09-11) retired the proxy this constant served before - confidence gained per point of GDP of ENERGY SPENDING
+        /// change - because the fiscal layer books the bill itself now; the magnitude is the proxy's own, the sign reversed (a cost up is confidence down). Silent
+        /// where no ledger covers the country (the change reads 0).
+        /// </summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
-        internal const float EnergyConfidenceSensitivity = 0.0015f;
+        public const float EnergyConfidenceSensitivity = 0.0015f;   // public since EN-4: the ledger's diagnostic sums the channel's own contribution with it
 
         /// <summary>PovertyRate baseline points reduced (permanently, off Country.BaselinePovertyRate) per percentage-point-of-GDP spent on housing - HUD-style baseline federal housing support, smaller than the dedicated player-adjustable WelfareProgramType.HousingAssistance's own sensitivity since this is a much narrower, less-targeted budget line.</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism; the number itself is a game figure no cited study fixes.</remarks>
@@ -2492,8 +2497,8 @@ namespace PoliSim.Simulation
             float justicePercent = PercentOfGdp(decision.JusticeSpendingChange, state.NominalGdp);
             country.BaselineCrimeIndex = Mathf.Clamp(country.BaselineCrimeIndex - JusticeCrimeIndexSensitivity * CabinetSystem.EfficiencyFactor(country, CabinetPortfolio.InteriorJustice) * justicePercent, 0f, MaxCrimeIndexPercent);   // P2-5.2: EFFICIENCY
 
-            float energyPercent = PercentOfGdp(decision.EnergySpendingChange, state.NominalGdp);
-            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence + EnergyConfidenceSensitivity * energyPercent, MinConfidence, MaxConfidence);
+            // EN-4 (2026-09-11): the energy line's proxy is retired - the industrial electricity bill's change as a share of GDP (the fiscal layer's own figure) is what firms bear
+            state.BusinessConfidence = Mathf.Clamp(state.BusinessConfidence - EnergyConfidenceSensitivity * state.EnergyIndustryBillShareChange, MinConfidence, MaxConfidence);
 
             float housingPercent = PercentOfGdp(decision.HousingSpendingChange, state.NominalGdp);
             country.BaselinePovertyRate = Mathf.Clamp(country.BaselinePovertyRate - HousingPovertyReductionSensitivity * housingPercent, 0f, MaxPovertyRatePercent);

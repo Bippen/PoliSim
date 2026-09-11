@@ -187,6 +187,77 @@ The clearing's blocks are hours: the trough decile (base), the middle eight (mid
 
 **Snitt 4's answer.** base: 3,356 MW of 5,600 = SE4's own deficit 943 + transit to the continent 2,438 (the chain's unbalance -24 MW, losses and rounding, never priced) - EXPORT, not congestion, on the block average. mid: 3,162 MW of 5,600 = SE4's own deficit 1,312 + transit to the continent 1,855 (the chain's unbalance -5 MW, losses and rounding, never priced) - EXPORT, not congestion, on the block average. peak: 3,487 MW of 5,600 = SE4's own deficit 2,214 + transit to the continent 1,241 (the chain's unbalance 32 MW, losses and rounding, never priced) - EXPORT, not congestion, on the block average. The §457 proxy read 10 785 MW through snitt 4 in the base block because its chain had one exit; the exchange with Norway, Finland and Denmark out of SE1–SE3 is in the balances now, and what crosses snitt 4 is SE4's own deficit plus the transit to Denmark, Germany, Poland and Lithuania. Hourly congestion is not claimed by a block average.
 
-## 6. What this layer does not do yet
+## 6. The fiscal layer at the seed - the retail stack per class and the two ledgers (EN-4)
 
-The fleet does not invest or retire; the load does not grow; hydro runs at its 2023 levels (the reservoir dispatch is the open follow-up, and Sweden's price is the water value proxied by the two connected markets this model clears); the neighbours outside the six are an exogenous exchange; the retail stack, the two ledgers and the pass-through to inflation are stage 4's. The carbon tax reaches the power figure through the dispatch now - the family's power elasticity is retired; the plate's mix row is this year's dispatch; the energy screen is stage 6's.
+The stack per kWh in THE BOOK'S DOLLARS (the game keeps every country's book in US dollars; Eurostat's euro rows reach it at the ECB 2023 rate 1.0813 USD/EUR, and the stated total is printed beside in the source's own currency): the wholesale is the seed dispatch load-weighted over the blocks (Sweden: over the zones at the seed's water value); the SUPPLY MARGIN is FITTED - Eurostat's energy-and-supply component less that wholesale - and is printed with its sign; network, levies and environmental tax are Eurostat's 2023 components (`nrg_pc_204`/`nrg_pc_205`, bands DC/IC; the USA EIA's averages, components BILLED); VAT is the rate the components imply. Non-households bear the pre-VAT price. The budget-financed support is the book's energy spending line; the bill-financed support is the levy; Germany's book carries no energy line (the KTF is outside the Bundeshaushalt).
+
+### USA (USD per kWh, the book's dollars; bills in billions of dollars; the country's own currency is USD)
+
+| class | consumption GWh | wholesale | supply margin (FITTED) | network | policy levies | environmental tax | VAT (implied rate) | total (the components' sum) | Eurostat's stated total (USD) | bill |
+|---|---|---|---|---|---|---|---|---|---|---|
+| households | 1,450,025 | 0.0254 | +0.1346 | 0.0000 | 0.0000 | 0.0000 | 0.0000 (0.0 %) | **0.1600** | 0.1600 | 232.00 |
+| nonhousehold | 2,424,228 | 0.0254 | +0.0816 | 0.0000 | 0.0000 | 0.0000 | 0.0000 (0.0 %) | **0.1070** | 0.1070 | 259.39 (pre-VAT) |
+
+**System cost, as far as the model states it (bn):** fossil variable cost 66.29 = fuel and O&M 70.02 + ETS 0.00 + carbon tax 0.00 (the point-per-tonne convention, at the standing rate) + fitted adders -3.74; wholesale outlay 98.35, of which 32.07 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 0.00; support 50.00 = levy 0.00 + budget line 50.00.
+
+**Incidence (bn):** paid - households 232.00, non-households 259.39, taxpayers 50.00 = 541.40; received - generators 98.35, suppliers 393.04, networks 0.00, the support scheme 50.00, the state's electricity taxes 0.00 = 541.40; gap 0.0E+000. The state's net -50.00. Congestion rent 0.000.
+
+### Sweden (USD per kWh, the book's dollars; bills in billions of dollars; the country's own currency is SEK)
+
+| class | consumption GWh | wholesale | supply margin (FITTED) | network | policy levies | environmental tax | VAT (implied rate) | total (the components' sum) | Eurostat's stated total (EUR) | bill |
+|---|---|---|---|---|---|---|---|---|---|---|
+| households | 39,550 | 0.0944 | -0.0068 | 0.0824 | 0.0002 | 0.0364 | 0.0517 (25.0 %) | **0.2584** | 0.2390 | 10.22 |
+| nonhousehold | 83,743 | 0.0944 | -0.0188 | 0.0288 | 0.0002 | 0.0005 | 0.0263 (25.0 %) | **0.1315** | 0.1216 | 8.81 (pre-VAT) |
+
+**System cost, as far as the model states it (bn):** fossil variable cost 0.00 = fuel and O&M 0.00 + ETS 0.00 + carbon tax 0.00 (the point-per-tonne convention, at the standing rate) + fitted adders 0.00; wholesale outlay 11.64, of which 11.64 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 5.67; support 1.10 = levy 0.03 + budget line 1.07.
+
+**Incidence (bn):** paid - households 10.22, non-households 8.81, taxpayers 1.07 = 20.10; received - generators 11.64, suppliers -1.84, networks 5.67, the support scheme 1.10, the state's electricity taxes 3.53 = 20.10; gap 0.0E+000. The state's net 2.46. Congestion rent 0.000.
+
+### Germany (USD per kWh, the book's dollars; bills in billions of dollars; the country's own currency is EUR)
+
+| class | consumption GWh | wholesale | supply margin (FITTED) | network | policy levies | environmental tax | VAT (implied rate) | total (the components' sum) | Eurostat's stated total (EUR) | bill |
+|---|---|---|---|---|---|---|---|---|---|---|
+| households | 131,454 | 0.0987 | +0.1167 | 0.1013 | 0.0315 | 0.0222 | 0.0703 (19.0 %) | **0.4406** | 0.4075 | 57.92 |
+| nonhousehold | 342,043 | 0.0987 | +0.0472 | 0.0593 | 0.0163 | 0.0222 | 0.0463 (19.0 %) | **0.2899** | 0.2681 | 83.33 (pre-VAT) |
+
+**System cost, as far as the model states it (bn):** fossil variable cost 18.17 = fuel and O&M 7.12 + ETS 10.99 + carbon tax 0.00 (the point-per-tonne convention, at the standing rate) + fitted adders 0.06; wholesale outlay 46.72, of which 28.55 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 33.59; support 9.72 = levy 9.72 + budget line 0.00.
+
+**Incidence (bn):** paid - households 57.92, non-households 83.33, taxpayers 0.00 = 141.25; received - generators 46.72, suppliers 31.48, networks 33.59, the support scheme 9.72, the state's electricity taxes 19.74 = 141.25; gap 2.8E-014. The state's net 19.74. Congestion rent 0.000.
+
+### France (USD per kWh, the book's dollars; bills in billions of dollars; the country's own currency is EUR)
+
+| class | consumption GWh | wholesale | supply margin (FITTED) | network | policy levies | environmental tax | VAT (implied rate) | total (the components' sum) | Eurostat's stated total (EUR) | bill |
+|---|---|---|---|---|---|---|---|---|---|---|
+| households | 150,736 | 0.0902 | +0.0568 | 0.0713 | 0.0067 | 0.0012 | 0.0374 (16.5 %) | **0.2636** | 0.2438 | 39.74 |
+| nonhousehold | 256,598 | 0.0902 | +0.1322 | 0.0272 | 0.0019 | 0.0006 | 0.0478 (18.9 %) | **0.3001** | 0.2775 | 64.73 (pre-VAT) |
+
+**System cost, as far as the model states it (bn):** fossil variable cost 2.94 = fuel and O&M 2.18 + ETS 0.92 + carbon tax 0.00 (the point-per-tonne convention, at the standing rate) + fitted adders -0.17; wholesale outlay 36.76, of which 33.82 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 17.73; support 21.74 = levy 1.51 + budget line 20.23.
+
+**Incidence (bn):** paid - households 39.74, non-households 64.73, taxpayers 20.23 = 124.70; received - generators 36.76, suppliers 42.48, networks 17.73, the support scheme 21.74, the state's electricity taxes 5.99 = 124.70; gap 1.4E-014. The state's net -14.24. Congestion rent 0.000.
+
+### Italy (USD per kWh, the book's dollars; bills in billions of dollars; the country's own currency is EUR)
+
+| class | consumption GWh | wholesale | supply margin (FITTED) | network | policy levies | environmental tax | VAT (implied rate) | total (the components' sum) | Eurostat's stated total (EUR) | bill |
+|---|---|---|---|---|---|---|---|---|---|---|
+| households | 63,413 | 0.0989 | +0.1562 | 0.0532 | 0.0271 | 0.0173 | 0.0334 (9.5 %) | **0.3861** | 0.3571 | 24.49 |
+| nonhousehold | 223,948 | 0.0989 | +0.0766 | 0.0231 | 0.0445 | 0.0119 | 0.0398 (15.6 %) | **0.2949** | 0.2728 | 57.12 (pre-VAT) |
+
+**System cost, as far as the model states it (bn):** fossil variable cost 14.96 = fuel and O&M 9.24 + ETS 4.31 + carbon tax 0.00 (the point-per-tonne convention, at the standing rate) + fitted adders 1.41; wholesale outlay 28.41, of which 13.45 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 8.56; support 12.56 = levy 11.70 + budget line 0.86.
+
+**Incidence (bn):** paid - households 24.49, non-households 57.12, taxpayers 0.86 = 82.47; received - generators 28.41, suppliers 27.07, networks 8.56, the support scheme 12.56, the state's electricity taxes 5.88 = 82.47; gap 1.4E-014. The state's net 5.02. Congestion rent 0.000.
+
+### Poland (USD per kWh, the book's dollars; bills in billions of dollars; the country's own currency is PLN)
+
+| class | consumption GWh | wholesale | supply margin (FITTED) | network | policy levies | environmental tax | VAT (implied rate) | total (the components' sum) | Eurostat's stated total (EUR) | bill |
+|---|---|---|---|---|---|---|---|---|---|---|
+| households | 28,807 | 0.0898 | -0.0314 | 0.0586 | 0.0174 | 0.0494 | 0.0423 (23.0 %) | **0.2261** | 0.2090 | 6.51 |
+| nonhousehold | 118,775 | 0.0898 | +0.0181 | 0.0454 | 0.0226 | 0.0582 | 0.0538 (23.0 %) | **0.2880** | 0.2664 | 27.81 (pre-VAT) |
+
+**System cost, as far as the model states it (bn):** fossil variable cost 11.32 = fuel and O&M 4.94 + ETS 6.44 + carbon tax 0.00 (the point-per-tonne convention, at the standing rate) + fitted adders -0.06; wholesale outlay 13.25, of which 1.93 above the fossil variable cost pays the fleet's fixed costs and the non-fossil fleet (not modelled); network revenue 7.08; support 4.80 = levy 3.19 + budget line 1.61.
+
+**Incidence (bn):** paid - households 6.51, non-households 27.81, taxpayers 1.61 = 35.93; received - generators 13.25, suppliers 1.25, networks 7.08, the support scheme 4.80, the state's electricity taxes 9.55 = 35.93; gap 7.1E-015. The state's net 7.94. Congestion rent 0.000.
+
+
+## 7. What this layer does not do yet
+
+The fleet does not invest or retire; the load does not grow (so the bills' share of a growing GDP drifts down - the missing load growth, stated); hydro runs at its 2023 levels (the reservoir dispatch is EN-3b, and Sweden's price is the water value proxied by the two connected markets this model clears); the neighbours outside the six are an exogenous exchange; the pass-through to inflation and the energy screen are later stages'. The carbon tax reaches the power figure through the dispatch and the bills through the stack; the budget's carbon revenue and the dispatch's point-per-tonne reading are two readings of one line, reconciled by a ruling, not here.

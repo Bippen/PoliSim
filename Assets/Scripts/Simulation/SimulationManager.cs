@@ -2611,6 +2611,7 @@ namespace PoliSim.Simulation
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
             InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
             EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): the intensities' yearly step; since §349 (2026-09-07) the carbon tax's base reads them (TaxBaseDriver.Emissions) - the one feedback this family has
+            EnergyLedger.AdvanceYear(country);   // EN-4 (2026-09-11): the retail stack and the two ledgers at this year's dispatch; the industrial bill's change reaches BusinessConfidence next boundary (MacroSystem.ApplyCategorySpendingEffects)
             MigrationPovertyFamily.AdvanceYear(country);   // P5-C6 (2026-09-06): readouts, no feedback
             BoundaryLedger?.Invoke(country, "families");
 
