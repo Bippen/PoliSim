@@ -267,7 +267,7 @@ namespace PoliSim.Simulation
                     double multiplier = 1.0 - EnergyMarket.FleetSpread + EnergyMarket.FleetSpread * f;
                     double weightedMw = Math.Min(mw, floor) + flexible * multiplier;   // the floor at the mean, the flexible part at its tranches' mean
                     double gwh = weightedMw * hours / 1000.0;
-                    fuelVom += gwh * partFuel; etsAndTax += gwh * partEts; adder += gwh * r.Adders[k];
+                    fuelVom += gwh * partFuel; etsAndTax += gwh * partEts; adder += gwh * r.Adders[k] * priceIndex;   // EN-5: the adder carries the price level like every cost (EnergyMarket.MarginalCost)
                     _ = partTax;   // the tax above the seed is inside the merit order; the ledger books the whole tax at the standing rate from the CO₂ (Compute), not the delta twice
                 }
             }
@@ -279,6 +279,11 @@ namespace PoliSim.Simulation
             double gdp = Math.Max(0.0001f, st.NominalGdp);
             float share = (float)(100.0 * b.Classes[NonHouseholds].Bill / gdp);
             float previous = first || st.EnergyIndustryBillGdpShare < 0f ? share : st.EnergyIndustryBillGdpShare;
+            // EN-5: the household price at the seed's prices, and its change against last year - the part of electricity's move the general price level does not already carry
+            float real = (float)(b.Classes[Households].Total / Math.Max(1e-6, b.PriceIndex));
+            float previousReal = first || st.EnergyHouseholdPriceReal <= 0f ? real : st.EnergyHouseholdPriceReal;
+            st.EnergyHouseholdPriceRealChange = previousReal > 0f ? (real / previousReal - 1f) * 100f : 0f;
+            st.EnergyHouseholdPriceReal = real;
             st.EnergyHouseholdPrice = (float)b.Classes[Households].Total;
             st.EnergyIndustryPrice = (float)b.Classes[NonHouseholds].PreVat;
             st.EnergyIndustryBill = (float)b.Classes[NonHouseholds].Bill;

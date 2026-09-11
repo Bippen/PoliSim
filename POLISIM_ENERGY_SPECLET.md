@@ -310,7 +310,7 @@ as the family's coupling always had it (the first baseline dump caught the alter
 rose 28 % in a century of population decline with nothing burned).
 
 **Stage 4 after 2026-09-11 (§461–§463):** the fiscal half done in one session where two were
-sized; S8 (the HICP pass-through) is its own pass still, opened as EN-5. What landed against row 4's
+sized; S8 (the HICP pass-through) is its own pass still, opened as EN-5. **S8 landed the same day as its own pass (§465):** the household price's change relative to the general price level times electricity's sourced index weight (Eurostat `prc_hicp_inw` CP0451; the BLS CPI-U relative importance for the USA) is a price-level term on the Phillips map that expectations look through - stage 4 complete, two passes, one day. What landed against row 4's
 text, and where it deviates: (i) **the retail stack is decomposed per class** (households, non-households)
 into wholesale + a FITTED supply margin + network + policy levies + environmental tax + VAT - the
 wholesale from the dispatch, the rest Eurostat's 2023 components (`ENERGY_LAYER_SPINE.md` §6) carried by

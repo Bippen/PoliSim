@@ -19,11 +19,16 @@ namespace PoliSim.Simulation
         public float UnemploymentBenefitCost;
         public float InterestOnDebt;
         public float TariffRevenue;
-        /// <summary>Pass 6 (2026-08-27): the tariff pass-through that ACTUALLY printed over the period
-        /// that just closed, in inflation points (FiscalPeriod.AppliedTariffPassThroughPp on the boundary
-        /// day) - the change in the tariff take the previous boundary planned, as a price-level term for
-        /// one year, net of the [0, MaxInflationPercent] clamp. The Trade stats line reads it.</summary>
+        /// <summary>Pass 6 (2026-08-27): the tariff pass-through the previous boundary PLANNED for the period
+        /// that just closed, in inflation points (FiscalPeriod.PlannedTariffPassThroughPp) - the change in the
+        /// tariff take, as a price-level term for one year. The Trade stats line reads it. EN-5 (2026-09-11):
+        /// the planned figure, not the applied one, because the applied print now carries two level terms
+        /// that cannot be split after the clamp - see PriceLevelTermsAppliedPp.</summary>
         public float TariffPassThroughPp;
+        /// <summary>EN-5 (2026-09-11): the electricity pass-through the previous boundary planned for the period that just closed, inflation points (FiscalPeriod.PlannedEnergyPassThroughPp) - the household price's change relative to the general price level times its index weight.</summary>
+        public float EnergyPassThroughPp;
+        /// <summary>EN-5: what of the two level terms together ACTUALLY printed on the boundary day (FiscalPeriod.AppliedPriceLevelTermsPp) - net of the [0, MaxInflationPercent] clamp; the expectations step looks through this figure.</summary>
+        public float PriceLevelTermsAppliedPp;
         public float WelfareCost;
         public float SwfContribution;
         public float SwfReturns;
@@ -394,7 +399,7 @@ namespace PoliSim.Simulation
                     // Pass 6: the period's tariff pass-through rides the level map for the whole
                     // period (a price-LEVEL stance planned at the boundary); what actually printed
                     // is kept on the period so the boundary's expectations step can look through it.
-                    macroPeriod.AppliedTariffPassThroughPp = MacroSystem.ApplyPhillipsCurveInflation(country, macroPeriod.PlannedTariffPassThroughPp);
+                    macroPeriod.AppliedPriceLevelTermsPp = MacroSystem.ApplyPhillipsCurveInflation(country, macroPeriod.PlannedTariffPassThroughPp + macroPeriod.PlannedEnergyPassThroughPp);   // EN-5: the electricity pass-through rides the same level map
                     MacroSystem.ApplyPriceLevelDaily(country);   // P5-B6: the price level compounds at the inflation just printed - the book's prices
                     // Expectations deliberately absent here - a boundary stance; see MacroSystem's
                     // Phase 5 block comment for the measured failure of the daily form.
@@ -743,13 +748,20 @@ namespace PoliSim.Simulation
             /// no guard.</summary>
             public float PlannedTariffPassThroughPp;
 
-            /// <summary>Pass 6: what of the planned pass-through ACTUALLY printed on the latest day
-            /// (ApplyPhillipsCurveInflation's return - the clamped print with the term minus the clamped
-            /// print without it). The boundary reads the closing day's value into the FiscalTurnReport and
-            /// into ApplyInflationExpectations' look-through, so a cut whose negative wedge floors the
-            /// print at 0 cannot ratchet expectations. Overwritten daily; nothing reads it between the
-            /// boundary and the next day, so ResetAccrual leaves it alone.</summary>
-            public float AppliedTariffPassThroughPp;
+            /// <summary>EN-5 (2026-09-11): the electricity pass-through planned for this period - electricity's weight in the
+            /// consumer price index times the household retail price's change relative to the general price level over the
+            /// year the boundary just wrote (EnergyPassThrough.Planned), in inflation points, read every day by the Phillips
+            /// level map beside the tariff term. Zero where no ledger covers the country; zero to the noise at no policy.</summary>
+            public float PlannedEnergyPassThroughPp;
+
+            /// <summary>Pass 6: what of the planned level terms ACTUALLY printed on the latest day
+            /// (ApplyPhillipsCurveInflation's return - the clamped print with the terms minus the clamped
+            /// print without them; the tariff and, since EN-5, the electricity pass-through together). The
+            /// boundary reads the closing day's value into the FiscalTurnReport and into
+            /// ApplyInflationExpectations' look-through, so a cut whose negative wedge floors the print at 0
+            /// cannot ratchet expectations. Overwritten daily; nothing reads it between the boundary and the
+            /// next day, so ResetAccrual leaves it alone.</summary>
+            public float AppliedPriceLevelTermsPp;
 
             /// <summary>
             /// GetFiscalReactionMultiplier as it stood when this period opened, held FIXED for its whole
@@ -2642,7 +2654,9 @@ namespace PoliSim.Simulation
                 UnemploymentBenefitCost = period.AccruedUnemploymentBenefitCost,
                 InterestOnDebt = period.AccruedInterestOnDebt,
                 TariffRevenue = period.AccruedTariffRevenue,
-                TariffPassThroughPp = period.AppliedTariffPassThroughPp,
+                TariffPassThroughPp = period.PlannedTariffPassThroughPp,   // EN-5: the planned tariff term (the applied print carries two terms now - PriceLevelTermsAppliedPp)
+                EnergyPassThroughPp = period.PlannedEnergyPassThroughPp,
+                PriceLevelTermsAppliedPp = period.AppliedPriceLevelTermsPp,
                 WelfareCost = period.AccruedWelfareCost,
                 SwfContribution = period.AccruedSwfContribution,
                 SwfReturns = period.AccruedSwfReturns,
@@ -2676,7 +2690,7 @@ namespace PoliSim.Simulation
             // day, and the take it planned - both captured before the re-plan below overwrites the
             // period. The expectations step runs AFTER the re-plan and must look through the CLOSING
             // period's term, not the coming one's (the ordering trap, named).
-            float closingAppliedTariffPassThroughPp = period.AppliedTariffPassThroughPp;
+            float closingAppliedPriceLevelTermsPp = period.AppliedPriceLevelTermsPp;   // EN-5: the tariff and electricity terms together, as they printed
             float closingPlannedTariffRevenue = RealPlannedTariffRevenue(period, country);   // P5-B6: real against real
 
             // Open the next period. The SWF return is drawn ONCE here and accrued daily - see
@@ -2704,6 +2718,9 @@ namespace PoliSim.Simulation
                 : 0f;
             period.PlannedTariffRevenueReal = tariffRevenue;
             period.PlannedTariffRevenue = tariffRevenue * country.State.PriceLevel;   // P5-B6: the take is computed on real trade; the book is nominal
+            // EN-5 (2026-09-11): the electricity pass-through for the coming period - the household price the ledger wrote above (the families ran before
+            // this re-plan), relative to the general price level, in the index's weight; a price-level term the expectations step looks through
+            period.PlannedEnergyPassThroughPp = EnergyPassThrough.Planned(country);
 
             // Read AFTER 121 days of accrual have finished moving the debt stock, so the stance the next
             // period adopts responds to the debt the country actually ended this one with - the same
@@ -2738,7 +2755,7 @@ namespace PoliSim.Simulation
             // Pass 6: NET of the tariff pass-through that actually printed on that day - the closing
             // period's applied term, captured above before the re-plan - so a price-level wedge never
             // enters the rate expectations (see ApplyInflationExpectations). Named, never positional.
-            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: closingAppliedTariffPassThroughPp,
+            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: closingAppliedPriceLevelTermsPp,
                 anchorPercent: country.CurrencyZone != null ? country.CurrencyZone.InflationTarget : TaylorRule.DefaultInflationTarget);   // §385: forgotten toward the zone's target
 
             // Step 2: the formula keeps its exact pre-ledger body (the observation gate measured
@@ -2902,6 +2919,9 @@ namespace PoliSim.Simulation
                 : 0f;
 
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
+            // EN-5: the electricity pass-through this turn's carbon-tax draft would plan - the clone's household price at its drafted rate against
+            // the standing real price, in the index's weight (EnergyPassThrough.PlannedForPreview) - so the preview's inflation reads the same form the boundary will
+            float previewEnergyPassThroughPp = EnergyPassThrough.PlannedForPreview(previewCountry);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
             ApplyMinimumWageChange(previewCountry, decision);
             ApplyCrimePolicyChanges(previewCountry, decision);
@@ -2986,8 +3006,8 @@ namespace PoliSim.Simulation
 
             float actualGrowthRate = (state.GDP - gdpBeforeThisTurn) / Mathf.Max(gdpBeforeThisTurn, 1f) * 100f;
             MacroSystem.ApplyOkunsLaw(previewCountry, actualGrowthRate);
-            float previewAppliedTariffPassThroughPp = MacroSystem.ApplyPhillipsCurveInflation(previewCountry, previewTariffPassThroughPp);
-            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: previewAppliedTariffPassThroughPp,
+            float previewAppliedPriceLevelTermsPp = MacroSystem.ApplyPhillipsCurveInflation(previewCountry, previewTariffPassThroughPp + previewEnergyPassThroughPp);   // EN-5: both level terms
+            MacroSystem.ApplyInflationExpectations(state, lookThroughPp: previewAppliedPriceLevelTermsPp,
                 anchorPercent: previewCountry.CurrencyZone != null ? previewCountry.CurrencyZone.InflationTarget : TaylorRule.DefaultInflationTarget);   // §385: the preview reads the same form
             MacroSystem.ApplyPovertyRate(previewCountry);
             MacroSystem.ApplyLaborForceParticipationRate(previewCountry);
@@ -4302,9 +4322,10 @@ namespace PoliSim.Simulation
                 // reports - so turn 1 accrues the seed rates' take rather than a period of nothing.
                 PlannedTariffRevenueReal = TradeSystem.ComputeTariffRevenue(country, _world),
                 PlannedTariffRevenue = TradeSystem.ComputeTariffRevenue(country, _world) * country.State.PriceLevel,   // P5-B6: nominal
-                // Pass 6: no previous boundary, so no tariff change to pass through.
+                // Pass 6: no previous boundary, so no tariff change to pass through; EN-5: nor an electricity year written yet.
                 PlannedTariffPassThroughPp = 0f,
-                AppliedTariffPassThroughPp = 0f,
+                PlannedEnergyPassThroughPp = 0f,
+                AppliedPriceLevelTermsPp = 0f,
                 PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
                 GdpAtPeriodOpen = country.State.GDP,
                 UnemploymentAtPeriodOpen = country.State.Unemployment,

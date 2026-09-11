@@ -557,5 +557,9 @@ namespace PoliSim.Data.Generated
             new double[] { 0.16, 0.107 },
         };
 
+        public const string PriceIndexWeightDigest = "fa4e87b69f037a6e224d1c7f5bada0318a9ea6a86e5e17abe1f7f6254ed91c60";
+        /// <summary>Electricity's weight in the consumer price index per country, per mille of the all-items basket, 2023 - Eurostat prc_hicp_inw COICOP CP0451 for the five, the BLS CPI-U relative importance (December 2023) for the USA; the household retail price's change relative to the general price level times this weight is the year's pass-through to Inflation (EnergyPassThrough).</summary>
+        public static readonly double[] RetailPriceIndexWeightPerMille = { 29.63, 28.21, 33.15, 23.87, 70.5, 24.28 };
+
     }
 }

@@ -233,6 +233,17 @@ namespace PoliSim.EditorTools
             }
             sb.Append(F("    {0} fitted parameters in the fiscal layer - the supply margins - so {1} in the energy layer in all, each named; a negative margin is printed, not hidden: Sweden's, both classes (the water-value proxy above Sweden's own 2023 energy component - EN-3b's evidence) and Poland's households' (the 2023 household price freeze, compensated to the suppliers off the bill).\n", fittedMargins, fitted + fittedMargins));
 
+            // ---- gate 9 (EN-5, §465): the pass-through's weight is sourced and positive for six, and the seed passes nothing
+            sb.Append("\n    9. THE PASS-THROUGH (EN-5): electricity's weight in the price index per country, and nothing passed at the seed\n");
+            foreach (Country c in world.Countries)
+            {
+                if (!EnergyLayer.Has(c.Id)) { continue; }
+                float weight = PoliSim.Simulation.EnergyPassThrough.WeightFraction(c.Id);
+                if (!(weight > 0f) || weight > 0.2f) { failures++; Debug.LogError($"ENERGY: {c.Id}'s electricity weight in the price index is {weight} - not a sourced per-mille figure."); }
+                if (c.State.EnergyHouseholdPriceRealChange != 0f || PoliSim.Simulation.EnergyPassThrough.Planned(c) != 0f) { failures++; Debug.LogError($"ENERGY: {c.Id} passes {PoliSim.Simulation.EnergyPassThrough.Planned(c)} pp at the seed - a seed with no year written passes nothing."); }
+                sb.Append(F("    {0,-8} electricity {1:F2} per mille of the basket ({2}) · at the seed the real price {3:F4} $/kWh, change 0, pass-through 0\n", c.Id, weight * PoliSim.Simulation.EnergyPassThrough.PerMille, c.Id == CountryId.USA ? "BLS CPI-U relative importance, December 2023" : "Eurostat prc_hicp_inw CP0451 2023", c.State.EnergyHouseholdPriceReal));
+            }
+
             sb.Append(failures == 0 ? "\n=== EnergyLayerCheck: ALL ASSERTIONS PASS ===\n" : $"\n=== EnergyLayerCheck: {failures} FAILURE(S) ===\n");
             if (failures > 0) { Debug.LogError(sb.ToString()); CheckExit.Finish(1); return; }
             Debug.Log(sb.ToString());

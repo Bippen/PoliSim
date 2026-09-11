@@ -189,6 +189,8 @@ namespace PoliSim.Data
 
         // ---- EN-4, THE ENERGY LAYER'S FISCAL FIGURES (2026-09-11): the retail stack's two prices and the bills the ledger books (EnergyLedger.AdvanceYear); nominal, in the book's dollars like every figure here.
         public float EnergyHouseholdPrice = -1f;   // the household all-in retail price per kWh - wholesale + supply margin + network + policy levies + environmental tax + VAT
+        public float EnergyHouseholdPriceReal = -1f;        // EN-5: the same price at the seed's prices (nominal over the price level at the write) - what the pass-through differences
+        public float EnergyHouseholdPriceRealChange = 0f;   // EN-5: its change against last year, % - electricity's move relative to the general price level; × the index weight = the year's pass-through to Inflation (EnergyPassThrough)
         public float EnergyIndustryPrice = -1f;    // the non-household retail price per kWh before recoverable VAT
         public float EnergyIndustryBill = -1f;     // non-households' electricity bill, billions, before recoverable VAT - the quantity whose change reaches BusinessConfidence (the retired energy-line proxy's slot)
         public float EnergyIndustryBillGdpShare = -1f;      // that bill as % of nominal GDP - the level the channel differences

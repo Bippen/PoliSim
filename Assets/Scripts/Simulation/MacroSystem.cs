@@ -475,10 +475,11 @@ namespace PoliSim.Simulation
         /// ApplyOkunsLaw) keeps this gap from growing without bound, so inflation settling back down
         /// is a consequence of that rather than a separate correction here.
         ///
-        /// Pass 6 (2026-08-27): <paramref name="tariffPassThroughPp"/> is the period's tariff
-        /// pass-through - the change in the tariff take the boundary planned, as inflation points for
-        /// the year it lands (FiscalPeriod.PlannedTariffPassThroughPp; TradeCosts.ImportPricePassThrough).
-        /// A price-LEVEL term added to the level map inside the SAME [0, MaxInflationPercent] clamp -
+        /// Pass 6 (2026-08-27): <paramref name="priceLevelTermsPp"/> is the period's PRICE-LEVEL terms - the tariff
+        /// pass-through, the change in the tariff take the boundary planned, as inflation points for
+        /// the year it lands (FiscalPeriod.PlannedTariffPassThroughPp; TradeCosts.ImportPricePassThrough), and since
+        /// EN-5 (2026-09-11) the electricity pass-through beside it (FiscalPeriod.PlannedEnergyPassThroughPp; EnergyPassThrough) -
+        /// price-LEVEL terms added to the level map inside the SAME [0, MaxInflationPercent] clamp -
         /// rule 11 by folding, audited against BOTH bounds. The base print is computed exactly as
         /// before and the term is a second, guarded statement, so the no-tariff-change path is
         /// bit-identical. Returns the contribution that ACTUALLY printed (the clamped print with the
@@ -486,7 +487,7 @@ namespace PoliSim.Simulation
         /// ApplyInflationExpectations looks through at the boundary: a cut whose negative wedge floors
         /// the print at 0 must not read as a ratchet in expectations, and the PLANNED figure would.
         /// </summary>
-        public static float ApplyPhillipsCurveInflation(Country country, float tariffPassThroughPp = 0f)
+        public static float ApplyPhillipsCurveInflation(Country country, float priceLevelTermsPp = 0f)
         {
             EconomyState state = country.State;
             float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;   // FT-8 (§398): the natural rate reads the labour force
@@ -494,10 +495,10 @@ namespace PoliSim.Simulation
 
             state.Inflation = Mathf.Clamp(inflation, 0f, MaxInflationPercent);
 
-            if (tariffPassThroughPp != 0f)
+            if (priceLevelTermsPp != 0f)
             {
                 float basePrint = state.Inflation;
-                state.Inflation = Mathf.Clamp(inflation + tariffPassThroughPp, 0f, MaxInflationPercent);
+                state.Inflation = Mathf.Clamp(inflation + priceLevelTermsPp, 0f, MaxInflationPercent);
                 return state.Inflation - basePrint;
             }
 

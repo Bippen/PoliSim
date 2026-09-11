@@ -136,7 +136,7 @@ The USA's retail stack is BILLED - EIA's Electric Power Monthly Table 5.6.A carr
 
 ## 7. Electricity's weight in the price index — stage 4's pass-through, sourced (S8)
 
-Eurostat `prc_hicp_inw`, 2023, per mille of the HICP basket: **electricity (CP0451)** DE 29.63 · FR 28.21 · IT 33.15 · PL 23.87 · **SE 70.50**; all household energy (CP045) 55.03 · 60.40 · 64.44 · 85.38 · 82.96. Sweden's electricity weight is two and a half times Germany's - the pass-through will be, too. The USA's relative importance of electricity in the CPI (BLS) is BILLED - not reached tonight.
+Eurostat `prc_hicp_inw`, 2023, per mille of the HICP basket: **electricity (CP0451)** DE 29.63 · FR 28.21 · IT 33.15 · PL 23.87 · **SE 70.50**; all household energy (CP045) 55.03 · 60.40 · 64.44 · 85.38 · 82.96. Sweden's electricity weight is two and a half times Germany's - the pass-through will be, too. The USA's relative importance of electricity in the CPI: **BLS, December 2023, CPI-U, Electricity 2.428 % = 24.28 per mille** - paid 2026-09-11 through web.archive.org (bls.gov answers 403 to this client); ⚠ the table's two columns are CPI-U and CPI-W, not two years. **Built as EN-5 (§465):** `Tools/energy_index_prep.pl` → `EnergyData/price_index_weights_2023.csv` → `EnergyLayerData.RetailPriceIndexWeightPerMille`, read by `EnergyPassThrough`.
 
 ## 8. Electrification of transport — the cross-term of spec-let §2.1, sourced for five
 

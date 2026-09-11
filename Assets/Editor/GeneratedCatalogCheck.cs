@@ -191,6 +191,8 @@ namespace PoliSim.EditorTools
                 (EnergyCatalogGenerator.ExternalLinksSource, EnergyLayerData.ExternalLinksDigest, EnergyLayerData.ExternalLinkZone.Length),
                 // EN-4 (2026-09-11): the retail seed
                 (EnergyCatalogGenerator.RetailSource, EnergyLayerData.RetailDigest, EnergyLayerData.Countries.Length * EnergyLayerData.RetailClasses.Length),
+                // EN-5 (2026-09-11): the price-index weights
+                (EnergyCatalogGenerator.PriceIndexWeightSource, EnergyLayerData.PriceIndexWeightDigest, EnergyLayerData.Countries.Length),
             };
             foreach ((string relative, string recorded, int rows) in sources)
             {
