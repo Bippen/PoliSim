@@ -431,6 +431,7 @@ namespace PoliSim.EditorTools
                 ("EnvironmentFeedbackDiagnostic", EnvironmentFeedbackDiagnostic.Run),   // the environment feedback pass (2026-09-07): the carbon base is the taxed CO₂ - the identity, the erosion under a raise, output's bases untouched
                 ("EnergyMarketDiagnostic", EnergyMarketDiagnostic.Run),   // EN-3 (2026-09-11): the dispatch writes the power figure - the identity at the seed, the calibration, Poland from coal to gas under a raise, Sweden's zones against the NTCs, no clamp, B6
                 ("EnergyLedgerDiagnostic", EnergyLedgerDiagnostic.Run),   // EN-4 (2026-09-11): the retail stack and the two ledgers - Eurostat reproduced at the seed, the book closes every year, Poland's raise reaches the bills and the confidence channel, the support line moves the levy, a binding snitt's rent is credited, the single book holds, B6
+                ("CarbonTaxUnitDiagnostic", CarbonTaxUnitDiagnostic.Run),   // EN-4c (2026-09-11): the carbon tax's rate is the country's currency per tonne - the statutory seeds, revenue = rate × taxed tonnes, the coverage bridge re-solved to the anchors, one stored rate one presented rate one meaning, Sweden's raise through the decision, B6
                 ("ImmigrationPovertyFamilyDiagnostic", ImmigrationPovertyFamilyDiagnostic.Run),   // P5-C6 (2026-09-06): the seeds with their two definitions, the couplings by definition, the stated way
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for

@@ -1325,6 +1325,14 @@ namespace PoliSim.UI
             foreach (TaxLine line in country.TaxLines)
             {
                 if (line.Type != type) continue;
+                if (line.IsPerTonne)
+                {
+                    // EN-4c: a price per tonne, presented as stored - the country's currency per tonne of CO₂; the revenue is the rate times the taxed tonnes
+                    lines.Add(line.IsImplemented ? $"Current rate: {line.Rate:F0} {EnergyLayer.CurrencyCode(country.Id)} per tonne of CO2" : "Not currently implemented.");
+                    lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per 1% of the dial's range ({line.MaxRate:F0} {EnergyLayer.CurrencyCode(country.Id)} per tonne) raised this year");
+                    lines.Add($"Revenue: the rate x the taxed CO2 - power and transport, {TaxBases.Level(TaxBaseDriver.Emissions, country):F1} Mt today (x{TaxBases.DriverRatio(country, line.Type):F3} of the seed) - feeds Budget/DebtToGdp");
+                    return true;
+                }
                 lines.Add(line.IsImplemented ? $"Current rate: {line.Rate:F1}%" : "Not currently implemented.");
                 lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised this year");
                 lines.Add($"Revenue base: ~{TaxBaseTable.BaseShareOfGdp(country.Id, line.Type) * 100f:F0}% of GDP at the seed, following {TaxBases.Name(TaxBases.Of(line.Type))} (x{TaxBases.DriverRatio(country, line.Type):F3} today) x rate (feeds Budget/DebtToGdp)");

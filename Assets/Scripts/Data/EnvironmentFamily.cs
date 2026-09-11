@@ -46,8 +46,14 @@ namespace PoliSim.Data
 
     public static class EnvironmentFamily
     {
-        /// <remarks>[AUTHORED-DRAFT] - the TRANSPORT intensity's fall per point of carbon tax above the seed's rate (a tenth of a percent of the intensity per point); the power half retired at EN-3, dispatch being the tax's mechanism there.</remarks>
-        public const float CarbonTaxElasticityPerPoint = 0.004f;
+        /// <remarks>
+        /// [AUTHORED-DRAFT], the chain stated (EN-4c, 2026-09-11 - the tax's unit is the country's currency per tonne now, so the elasticity is per BOOK DOLLAR per tonne above the seed's rate):
+        /// one dollar per tonne of CO₂ is 2.32 kg CO₂ per litre of petrol × $1 = 0.232 US cents per litre, 0.137 % of a $1.70 litre (the 2023 European pump price in dollars);
+        /// the long-run price elasticity of fuel demand is −0.31 (Havranek, Irsova and Janda 2012, the meta-analysis corrected for publication bias, Energy Economics 34);
+        /// so a dollar per tonne lowers transport fuel use, and the transport intensity with it, by 0.137 × 0.31 = 0.042 per cent. The pump price and the one-to-one pass-through
+        /// are the authored parts. Before EN-4c the constant was 0.004 per point of a unit-less 0–100 dial. The power half retired at EN-3, dispatch being the tax's mechanism there.
+        /// </remarks>
+        public const float TransportElasticityPerDollarPerTonne = 0.00042f;
         /// <remarks>[AUTHORED-DRAFT] - the transport intensity's elasticity to real infrastructure spending per head against its seed (rail and public transport).</remarks>
         public const float TransportInfrastructureElasticity = 0.1f;
         /// <remarks>[AUTHORED-DRAFT] - a yearly reversion toward the targets; the spine notes Poland's power emissions fell a fifth in one year, so the band holds that speed.</remarks>
@@ -94,7 +100,7 @@ namespace PoliSim.Data
         }
         public static readonly string[] MixLabels = { "COAL", "GAS", "NUCLEAR", "HYDRO", "WIND", "SOLAR", "OTHER" };
 
-        /// <summary>The carbon tax's rate, %, or 0 when the country has no implemented carbon tax line.</summary>
+        /// <summary>The carbon tax's rate - the country's currency per tonne of CO₂ (EN-4c) - or 0 when the country has no implemented carbon tax line.</summary>
         public static float CarbonTaxRate(Country country)
         {
             foreach (TaxLine line in country.TaxLines) { if (line.Type == TaxType.CarbonTax && line.IsImplemented) { return Mathf.Max(0f, line.Rate); } }
@@ -110,11 +116,12 @@ namespace PoliSim.Data
             return real / Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDriver.Population, country));
         }
 
-        /// <summary>The transport intensity's target: the seed times (1 − e × the carbon tax's points above its seed), floored, times the infrastructure term.</summary>
+        /// <summary>The transport intensity's target: the seed times (1 − e × the carbon tax's dollars per tonne above its seed), floored, times the infrastructure term. The rate is the country's currency per tonne; the ECB rate takes the change into the book's dollars the elasticity is stated in.</summary>
         public static float TransportTargetFor(Country country, float carbonTaxRate, float infrastructurePerHead)
         {
             EnvironmentSeeds s = country.Environment;
-            float taxFactor = Mathf.Max(0.1f, 1f - CarbonTaxElasticityPerPoint * (carbonTaxRate - s.CarbonTaxRateSeed));
+            float dollarsPerTonneAboveSeed = (float)((carbonTaxRate - s.CarbonTaxRateSeed) / EnergyLayer.NationalPerUsd(country.Id));
+            float taxFactor = Mathf.Max(0.1f, 1f - TransportElasticityPerDollarPerTonne * dollarsPerTonneAboveSeed);
             float infraRatio = s.InfrastructurePerHeadSeed > 0f ? Mathf.Max(0.01f, infrastructurePerHead / s.InfrastructurePerHeadSeed) : 1f;
             return Mathf.Clamp(s.TransportCo2PerCapita * taxFactor * Mathf.Pow(1f / infraRatio, TransportInfrastructureElasticity), MinIntensity, MaxIntensity);
         }

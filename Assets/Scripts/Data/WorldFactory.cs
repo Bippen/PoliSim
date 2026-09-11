@@ -197,24 +197,36 @@ namespace PoliSim.Data
             italy.BasePotentialGrowthRate = italy.PotentialGrowthRate;
             poland.BasePotentialGrowthRate = poland.PotentialGrowthRate;
 
+            // THE CARBON TAX'S RATE IS THE COUNTRY'S CURRENCY PER TONNE OF CO₂ (EN-4c, ruled 2026-09-11, COMPLETED.md §464) - the statutory
+            // 2023 figure, sourced, or zero where no carbon tax distinct from the EU ETS exists:
+            //   Sweden  1 330 SEK/t - the general level of the koldioxidskatt for 2023 (Elias's figure, ruled; the Government Offices' "Sweden's carbon tax"
+            //           page, fetched 2026-09-11, carries the design and the 2026 level of 1 520 SEK; the 2023 page itself was not reached from this machine).
+            //   Germany 30 EUR/t - Brennstoffemissionshandelsgesetz § 10 (2) Nr. 3: the fixed certificate price 1 Jan–31 Dec 2023 (gesetze-im-internet.de, fetched).
+            //   France  44.6 EUR/t - the composante carbone of the TICPE/TICGN/TICC since 2018 (loi de finances pour 2018, art. 16; frozen since); the
+            //           ministry's fiscalité-carbone page (fetched) carries the 2014–2017 steps 7 → 14.5 → 22 → 30.5 and the LTECV trajectory; the 2018 text not reached.
+            //   Italy   0 - no carbon tax distinct from the ETS (the accise price energy, not CO₂).   Poland 0 - no carbon tax at the model's resolution (its
+            //           environmental emission fee prices CO₂ at a fraction of a zloty per tonne; the Ministry of Climate's annual notices sit behind ISAP, unreachable here).
+            //   USA     0 - no federal carbon tax (the state programmes are cap-and-trade, outside the federal perimeter).
+            // ⚠ The taxed tonnes are the model's two sectors (power and transport, §349); the statutes exempt ETS installations and tax heating fuels the model
+            // does not carry - EN-4d's, named in §464. An unimplemented line seeds at 0, not a placeholder.
             SeedTaxLines(usa, incomeTax: 37f, corporateTax: 21f, vat: 0f, vatImplemented: false,
                 payrollTax: 15.3f, capitalGainsTax: 20f, salesTax: 7f, salesTaxImplemented: true,
-                estateTax: 40f, estateTaxImplemented: true, carbonTax: 5f, carbonTaxImplemented: false);
+                estateTax: 40f, estateTaxImplemented: true, carbonTax: 0f, carbonTaxImplemented: false);
             SeedTaxLines(germany, incomeTax: 45f, corporateTax: 30f, vat: 19f, vatImplemented: true,
                 payrollTax: 38.7f, capitalGainsTax: 25f, salesTax: 0f, salesTaxImplemented: false,
-                estateTax: 20f, estateTaxImplemented: false, carbonTax: 5f, carbonTaxImplemented: false);
+                estateTax: 20f, estateTaxImplemented: false, carbonTax: 30f, carbonTaxImplemented: true);
             SeedTaxLines(france, incomeTax: 45f, corporateTax: 25f, vat: 20f, vatImplemented: true,
                 payrollTax: 68f, capitalGainsTax: 30f, salesTax: 0f, salesTaxImplemented: false,
-                estateTax: 20f, estateTaxImplemented: false, carbonTax: 5f, carbonTaxImplemented: false);
+                estateTax: 20f, estateTaxImplemented: false, carbonTax: 44.6f, carbonTaxImplemented: true);
             SeedTaxLines(italy, incomeTax: 43f, corporateTax: 24f, vat: 22f, vatImplemented: true,
                 payrollTax: 30f, capitalGainsTax: 26f, salesTax: 0f, salesTaxImplemented: false,
-                estateTax: 20f, estateTaxImplemented: false, carbonTax: 5f, carbonTaxImplemented: false);
+                estateTax: 20f, estateTaxImplemented: false, carbonTax: 0f, carbonTaxImplemented: false);
             SeedTaxLines(poland, incomeTax: 32f, corporateTax: 19f, vat: 23f, vatImplemented: true,
                 payrollTax: 35f, capitalGainsTax: 19f, salesTax: 0f, salesTaxImplemented: false,
-                estateTax: 20f, estateTaxImplemented: false, carbonTax: 5f, carbonTaxImplemented: false);
+                estateTax: 20f, estateTaxImplemented: false, carbonTax: 0f, carbonTaxImplemented: false);
             SeedTaxLines(sweden, incomeTax: 52f, corporateTax: 20.6f, vat: 25f, vatImplemented: true,
                 payrollTax: 31.4f, capitalGainsTax: 30f, salesTax: 0f, salesTaxImplemented: false,
-                estateTax: 20f, estateTaxImplemented: false, carbonTax: 30f, carbonTaxImplemented: true);
+                estateTax: 20f, estateTaxImplemented: false, carbonTax: 1330f, carbonTaxImplemented: true);
 
             // CollectionEfficiency = target real-world tax-to-GDP / implied revenue-to-GDP from the
             // default portfolio above (sum of Rate * BaseShareOfGdp over implemented lines) - see
@@ -244,12 +256,21 @@ namespace PoliSim.Data
             // decimal (SE 42.04, DE 40.81, FR 45.22, IT 42.49, PL 37.51) - so the T1 primaries do not move;
             // the RESPONSE family does. USA unchanged: F-B (Elias, 2026-09-01) keeps the federal perimeter
             // and the uniform stand-in bases, so its value still reads as an efficiency below 1.
+            //
+            // EN-4c (2026-09-11, COMPLETED.md §464): the carbon line's revenue is its statutory rate per tonne × the taxed tonnes in the book's dollars,
+            // so the IMPLIED revenue-to-GDP of three portfolios changed and the bridge is RE-SOLVED by D-16's own arithmetic to hold the anchored
+            // quantity (Implied × CE) to the second decimal: Sweden's old line (30 % of the 0.1 stand-in = 3.0000 % of GDP) goes out and the statutory
+            // 0.3931 comes in (1 330 SEK/t × 19.44 Mt = 25.86 bn SEK = 2.436 bn USD over 620; the diagnostic's read at the seed); Germany's line,
+            // unimplemented before, adds 0.2202 (30 EUR/t × 318.98 Mt = 9.57 bn EUR = 10.35 bn USD over 4 700); France's adds 0.2226 (44.6 EUR/t ×
+            // 147.72 Mt = 6.59 bn EUR = 7.12 bn USD over 3 200). Italy, Poland and the USA: no carbon revenue before or after - unchanged. The tariff
+            // decrement is re-taken on the new theoretical revenue. CarbonTaxUnitDiagnostic asserts the anchors (SE 42.04, DE 40.81, FR 45.22, IT 42.49,
+            // PL 37.51): implied 39.3203 × 1.0692 = 42.041, 35.7612 × 1.1413 = 40.814, 38.5423 × 1.1731 = 45.214.
             usa.CollectionEfficiency = 0.6119f;    // 0.6129 (18.0 / 29.37, federal-only, UNIFORM bases) - 0.0010
-            germany.CollectionEfficiency = 1.1483f; // 1.1508 (40.9 [Eurostat flag p] / 35.5410 sourced) - 0.0024 (4.075 / 1670.4)
-            france.CollectionEfficiency = 1.1800f;  // 1.1822 (45.3 / 38.3197 sourced) - 0.0022 (2.685 / 1226.2)
+            germany.CollectionEfficiency = 1.1413f; // EN-4c: 1.1437 (40.9 / 35.7608) - 0.0024 (4.075 / 1680.8); D-16: 1.1483 = 1.1508 (40.9 [Eurostat flag p] / 35.5410 sourced) - 0.0024 (4.075 / 1670.4)
+            france.CollectionEfficiency = 1.1731f;  // EN-4c: 1.1753 (45.3 / 38.5426) - 0.0022 (2.685 / 1233.4); D-16: 1.1800 = 1.1822 (45.3 / 38.3197 sourced) - 0.0022 (2.685 / 1226.2)
             italy.CollectionEfficiency = 1.2363f;   // 1.2366 (42.5 / 34.3689 sourced) - 0.0003 (0.240 / 790.5)
             poland.CollectionEfficiency = 1.3086f;  // 1.3117 (37.6 / 28.6659 sourced) - 0.0031 (0.735 / 240.8)
-            sweden.CollectionEfficiency = 1.0026f;  // 1.0065 (42.2 / 41.9274 sourced) - 0.0039 (1.010 / 259.9)
+            sweden.CollectionEfficiency = 1.0692f;  // EN-4c: 1.0733 (42.2 / 39.3172) - 0.0041 (1.010 / 243.8); D-16: 1.0026 = 1.0065 (42.2 / 41.9274 sourced) - 0.0039 (1.010 / 259.9)
 
             // Fiscal reaction function's per-country comfort anchor (see "Fiscal Reaction Function" in
             // CLAUDE.md) - reuses each country's own seeded starting debt-to-GDP ratio from the
@@ -1096,6 +1117,13 @@ namespace PoliSim.Data
                 new TaxLine(TaxType.CarbonTax, carbonTax, carbonTaxImplemented),
                 new TaxLine(TaxType.StampDuty, ModestStampDutyRate, isImplemented: false),
             });
+
+            // EN-4c: the carbon line's dial runs to TaxTypeRateRanges.CarbonTaxMax dollars per tonne in the COUNTRY's currency (rounded to ten):
+            // 300 USD → 3 180 SEK, 1 260 PLN, 280 EUR, 300 USD at the ECB 2023 rates the energy layer's catalog carries.
+            foreach (TaxLine line in country.TaxLines)
+            {
+                if (line.Type == TaxType.CarbonTax) { line.RateCeiling = (float)(System.Math.Round(TaxTypeRateRanges.CarbonTaxMax * EnergyLayer.NationalPerUsd(country.Id) / 10.0) * 10.0); }
+            }
 
             country.BaselineTaxRates.Clear();
             foreach (TaxLine line in country.TaxLines) { country.BaselineTaxRates[line.Type] = line.Rate; }

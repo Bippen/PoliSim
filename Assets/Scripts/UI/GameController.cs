@@ -5508,6 +5508,13 @@ namespace PoliSim.UI
             return _minimumWageInput ?? fallbackLevel;
         }
 
+        /// <summary>A tax rate as the row prints it: a percentage to two decimals, or - the carbon tax (EN-4c) - the country's currency per tonne of CO₂ to the unit, the stored figure itself. InvariantCulture, for the reason the row states.</summary>
+        private string TaxRateText(TaxLine line, float rate)
+        {
+            if (line.IsPerTonne) { return rate.ToString("F0", CultureInfo.InvariantCulture) + " " + EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t CO2"; }
+            return rate.ToString("F2", CultureInfo.InvariantCulture) + "%";
+        }
+
         /// <summary>The Trade tab's General Base Tariff Rate draft (an absolute target, matching TaxLine.Rate - see _tariffRateInput's own doc comment), or <paramref name="fallbackRate"/> (Country.BaseTariffRate) if the player hasn't touched it.</summary>
         private float GetTariffRateInput(float fallbackRate) => _tariffRateInput ?? fallbackRate;
 
@@ -10333,8 +10340,8 @@ namespace PoliSim.UI
                 // InvariantCulture, deliberately. UiFormat pins money for this reason and its doc comment
                 // names the exact string this machine's sv-SE locale produced ("$29,0T"); a rate printed
                 // beside a pinned money figure must not disagree with it about what a decimal point is.
-                taxLine.IsImplemented ? taxLine.Rate.ToString("F2", CultureInfo.InvariantCulture) + "%" : "—",   // P5-1 (board 6a): the Implement button and the verdict carry the state; a status word in a figure column cost the track its reach
-                hasDraft ? draftRate.ToString("F2", CultureInfo.InvariantCulture) + "%" : null,
+                taxLine.IsImplemented ? TaxRateText(taxLine, taxLine.Rate) : "—",   // P5-1 (board 6a): the Implement button and the verdict carry the state; a status word in a figure column cost the track its reach
+                hasDraft ? TaxRateText(taxLine, draftRate) : null,
                 taxLine.IsImplemented ? UiFormat.Money(estimatedRevenue, MoneyUnit.Billions) : "-",
                 taxLine.IsImplemented && pendingBill == null,   // P5-1 (board 6a): PENDING - the knob says it cannot be moved; the row stays drawn and counted
                 _labelStyle,

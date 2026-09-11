@@ -1,0 +1,179 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using PoliSim.Data;
+using PoliSim.Simulation;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+
+namespace PoliSim.EditorTools
+{
+    /// <summary>
+    /// EN-4c (2026-09-11), the carbon tax's unit - ruled: the rate is the country's currency per tonne of CO₂, the statutory meaning; revenue is
+    /// rate × the taxed tonnes; one stored rate, one presented rate, one meaning. It builds and advances worlds, so it belongs to the simulation
+    /// group. (1) THE SEEDS: Sweden 1 330 SEK, Germany 30 EUR, France 44.6 EUR per tonne, implemented; Italy, Poland and the USA 0, unimplemented;
+    /// each line's dial ceiling is the 300-dollar bound in its own currency. (2) REVENUE = RATE × TAXED TONNES for the three, in the book's dollars
+    /// through the ECB rate, and the Budget's estimate is the same accessor. (3) THE ANCHOR HELD: the coverage bridge was re-solved so Implied × CE
+    /// - D-16's anchored revenue-to-GDP - stands to the second decimal for the five. (4) ONE MEANING: the seed's references (the C-N4 baseline, the
+    /// family's seed rate) are the line's own figure; the dispatch at the seed rate is the seed dispatch; a full dial is one hundred political
+    /// points. (5) THE MECHANISM: Sweden raised fifty dollars per tonne through the decision, ten years, against untouched - the carbon revenue
+    /// higher by the rate's ratio less the base's erosion, the transport intensity lower by the elasticity's chain, the approval term charged the
+    /// dial's per cent. (6) B6: a rate per tonne does not read the price level - the revenue in dollars at price index 2 is the revenue at 1.
+    /// </summary>
+    public static class CarbonTaxUnitDiagnostic
+    {
+        private const int Years = 10;
+        private const float RaiseUsdPerTonne = 50f;
+
+        private static readonly (CountryId Id, float Rate, bool Implemented)[] Seeds =
+        {
+            (CountryId.Sweden, 1330f, true), (CountryId.Germany, 30f, true), (CountryId.France, 44.6f, true),
+            (CountryId.Italy, 0f, false), (CountryId.Poland, 0f, false), (CountryId.USA, 0f, false),
+        };
+
+        /// <summary>D-16's anchored revenue-to-GDP (Implied × CE, %), WorldFactory's own comment table.</summary>
+        private static readonly (CountryId Id, float Anchor)[] Anchors = { (CountryId.Sweden, 42.04f), (CountryId.Germany, 40.81f), (CountryId.France, 45.22f), (CountryId.Italy, 42.49f), (CountryId.Poland, 37.51f) };
+
+        public static void Run()
+        {
+            CheckExit.ArmLogFold();
+            bool ok = true;
+            var sb = new StringBuilder();
+            sb.Append("=== CARBON TAX UNIT (EN-4c): the country's currency per tonne of CO₂ - the statutory seeds, revenue = rate × taxed tonnes, the anchor held, one meaning ===\n");
+
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            EnergyMarket.BeginTurn(world);
+
+            // (1) the seeds
+            sb.Append("\n    1. THE SEEDS: the statutory rate per tonne, the line's own currency, the dial's ceiling\n");
+            foreach ((CountryId id, float rate, bool implemented) in Seeds)
+            {
+                Country c = world.GetCountry(id);
+                TaxLine line = Find(c);
+                if (line == null) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id} has no carbon tax line."); continue; }
+                if (Mathf.Abs(line.Rate - rate) > 1e-4f || line.IsImplemented != implemented) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s line reads {line.Rate} ({(line.IsImplemented ? "implemented" : "unimplemented")}); the statutory seed is {rate} ({(implemented ? "implemented" : "unimplemented")})."); }
+                double natPerUsd = EnergyLayer.NationalPerUsd(id);
+                float ceiling = Mathf.Round((float)(TaxTypeRateRanges.CarbonTaxMax * natPerUsd) / 10f) * 10f;
+                if (Mathf.Abs(line.MaxRate - ceiling) > 1e-3f) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s dial ceiling is {line.MaxRate}, not {TaxTypeRateRanges.CarbonTaxMax} dollars per tonne in its currency ({ceiling})."); }
+                sb.Append(F("    {0,-8} {1,7:F1} {2}/t CO₂ {3} · ceiling {4:F0} {2}/t ({5:F0} USD/t) · {6:F2} {2} per USD\n", id, line.Rate, EnergyLayer.CurrencyCode(id), line.IsImplemented ? "IMPLEMENTED" : "unimplemented, 0 - no carbon tax distinct from the ETS", line.MaxRate, TaxTypeRateRanges.CarbonTaxMax, natPerUsd));
+            }
+
+            // (2) revenue = rate × taxed tonnes
+            sb.Append("\n    2. REVENUE = RATE × TAXED TONNES (the book's dollars through the ECB rate; the Budget's estimate is the same accessor)\n");
+            foreach ((CountryId id, float rate, bool implemented) in Seeds)
+            {
+                Country c = world.GetCountry(id); TaxLine line = Find(c);
+                float tonnesMt = TaxBases.Level(TaxBaseDriver.Emissions, c);
+                double expected = rate * tonnesMt / 1000.0 / EnergyLayer.NationalPerUsd(id);
+                float revenue = implemented ? TaxBases.Revenue(c, line) : 0f;
+                if (implemented && Math.Abs(revenue - expected) > 1e-6 * Math.Max(1.0, expected)) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s carbon revenue is {revenue:F4} bn against rate × tonnes {expected:F4}."); }
+                if (!implemented && TaxBases.Revenue(c, line) != 0f) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s unimplemented line at rate 0 yields revenue."); }
+                sb.Append(F("    {0,-8} taxed CO₂ {1:F2} Mt (power {2:F2} + transport {3:F2} t/head × {4:F1} M) × {5:F1} {6}/t = {7:F3} bn {6} = {8:F3} bn USD = {9:F3} % of GDP\n",
+                    id, tonnesMt, c.State.PowerCo2PerCapita, c.State.TransportCo2PerCapita, c.State.Population, rate, EnergyLayer.CurrencyCode(id), rate * tonnesMt / 1000.0, revenue, 100.0 * revenue / Math.Max(1f, c.State.NominalGdp)));
+            }
+
+            // (3) the anchor held
+            sb.Append("\n    3. THE ANCHOR HELD: Implied × CE (revenue-to-GDP, %) against D-16's table - the bridge re-solved for the three whose carbon line changed\n");
+            foreach ((CountryId id, float anchor) in Anchors)
+            {
+                Country c = world.GetCountry(id);
+                double implied = 0; foreach (TaxLine l in c.TaxLines) { if (l.IsImplemented && l.Type != TaxType.Tariffs) { implied += TaxBases.Revenue(c, l); } }
+                double impliedPct = 100.0 * implied / Math.Max(1f, c.State.NominalGdp);
+                double anchored = impliedPct * c.CollectionEfficiency;
+                if (Math.Abs(anchored - anchor) > 0.011) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s Implied × CE is {anchored:F3} against the anchored {anchor:F2} - the coverage bridge was not re-solved to hold it."); }
+                sb.Append(F("    {0,-8} implied {1:F4} % × CE {2:F4} = {3:F3} (anchor {4:F2})\n", id, impliedPct, c.CollectionEfficiency, anchored, anchor));
+            }
+
+            // (4) one stored rate, one presented rate, one meaning
+            sb.Append("\n    4. ONE MEANING: the seed's references are the line's own figure; the dispatch at the seed rate is the seed dispatch; a full dial is one hundred political points\n");
+            foreach (Country c in world.Countries)
+            {
+                TaxLine line = Find(c); if (line == null) { continue; }
+                float baseline = c.BaselineTaxRates.TryGetValue(TaxType.CarbonTax, out float b) ? b : float.NaN;
+                if (Mathf.Abs(baseline - line.Rate) > 1e-6f) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s C-N4 baseline carries {baseline} against the line's {line.Rate}."); }
+                float familySeed = c.Environment != null ? c.Environment.CarbonTaxRateSeed : 0f;
+                float expectedSeed = line.IsImplemented ? line.Rate : 0f;
+                if (Mathf.Abs(familySeed - expectedSeed) > 1e-6f) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s environment seed carries {familySeed} against the line's {expectedSeed}."); }
+                if (Mathf.Abs(line.PointsOf(line.MaxRate) - 100f) > 1e-4f) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s full dial is {line.PointsOf(line.MaxRate)} political points, not 100."); }
+                if (EnergyLayer.Has(c.Id))
+                {
+                    EnergyMarket.Result atRate = EnergyMarket.Clear(c, EnvironmentFamily.CarbonTaxRate(c)), atSeed = EnergyMarket.ClearAtSeed(c.Id);
+                    if (Math.Abs(atRate.DerivedCo2Mt - atSeed.DerivedCo2Mt) > 1e-9) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s dispatch at the seed rate is not the seed dispatch."); }
+                }
+                sb.Append(F("    {0,-8} line {1:F1} · baseline {2:F1} · family seed {3:F1} · full dial = {4:F0} points · a {5:F0} {6}/t raise = {7:F1} points\n", c.Id, line.Rate, baseline, familySeed, line.PointsOf(line.MaxRate), RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(c.Id), EnergyLayer.CurrencyCode(c.Id), line.PointsOf((float)(RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(c.Id)))));
+            }
+
+            // (5) the mechanism: Sweden raised fifty dollars per tonne
+            sb.Append(F("\n    5. THE MECHANISM: Sweden's rate raised {0:F0} dollars per tonne ({1:F0} SEK/t) through the decision, ten years, against untouched\n", RaiseUsdPerTonne, RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(CountryId.Sweden)));
+            Outcome untouched = RunCountry(CountryId.Sweden, Years, 0f);
+            Outcome raised = RunCountry(CountryId.Sweden, Years, (float)(RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(CountryId.Sweden)));
+            double rateRatio = raised.Rate / Math.Max(1e-6, untouched.Rate), revenueRatio = raised.Revenue / Math.Max(1e-6, untouched.Revenue);
+            if (!(revenueRatio > 1.0) || !(revenueRatio <= rateRatio + 1e-6)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's carbon revenue rose x{revenueRatio:F4} against a rate x{rateRatio:F4} - it should rise, and by no more than the rate (the base erodes)."); }
+            if (!(raised.Transport < untouched.Transport)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's transport intensity did not fall under the raise ({raised.Transport:F4} against {untouched.Transport:F4})."); }
+            double expectedTransportFactor = 1.0 - EnvironmentFamily.TransportElasticityPerDollarPerTonne * RaiseUsdPerTonne;
+            double observedFactor = raised.TransportTarget / Math.Max(1e-9, untouched.TransportTarget);
+            if (Math.Abs(observedFactor - expectedTransportFactor) > 1e-4) { ok = false; Debug.LogError($"CARBON TAX UNIT: the transport target's factor under the raise is {observedFactor:F5}, not 1 − e × dollars ({expectedTransportFactor:F5})."); }
+            float politicalPoints = raised.PointsCharged;
+            sb.Append(F("    untouched: rate {0:F0} SEK/t, revenue {1:F3} bn USD, transport {2:F4} t/head (target {3:F4}); raised: rate {4:F0}, revenue {5:F3} (x{6:F4} against the rate x{7:F4}), transport {8:F4} (target {9:F4}; factor {10:F5} = 1 − {11:F5} × {12:F0}); the hike charged {13:F1} political points ({14:F1} % of the dial) to approval at {15:F2} per point\n",
+                untouched.Rate, untouched.Revenue, untouched.Transport, untouched.TransportTarget, raised.Rate, raised.Revenue, revenueRatio, rateRatio, raised.Transport, raised.TransportTarget, observedFactor, EnvironmentFamily.TransportElasticityPerDollarPerTonne, RaiseUsdPerTonne, politicalPoints, politicalPoints, MacroSystem.TaxHikeApprovalSensitivity));
+
+            // (6) B6
+            sb.Append("\n    6. B6: a rate per tonne reads the tonnes, not the price level\n");
+            {
+                Country se = world.GetCountry(CountryId.Sweden); TaxLine line = Find(se);
+                float at1 = TaxBases.Revenue(se, line);
+                float level = se.State.PriceLevel; se.State.PriceLevel = 2f;
+                float at2 = TaxBases.Revenue(se, line);
+                se.State.PriceLevel = level;
+                if (Math.Abs(at1 - at2) > 1e-9) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's carbon revenue changed with the price level alone ({at1} → {at2}) - a rate per tonne on the same tonnes is the same money."); }
+                sb.Append(F("    Sweden's carbon revenue at price index 1: {0:F3} bn; at 2 with the same tonnes: {1:F3} bn - the same nominal money, half the share of a doubled nominal GDP: an unindexed rate per tonne erodes as excise does (Sweden's own CPI indexation of the rate is not carried - named in §464)\n", at1, at2));
+            }
+
+            sb.Append(ok ? "\n=== CarbonTaxUnitDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== CarbonTaxUnitDiagnostic: FAILED (see above) ===\n");
+            if (ok) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
+            CheckExit.Finish(ok ? 0 : 1);
+        }
+
+        private sealed class Outcome { public double Rate, Revenue, Transport, TransportTarget; public float PointsCharged; }
+
+        private static Outcome RunCountry(CountryId player, int years, float raiseNationalPerTonne)
+        {
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("CARBONTAXUNIT");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                sim.PlayerCountryId = player;
+                Country c = world.GetCountry(player);
+                TaxLine line = Find(c);
+                float seedRate = line.Rate;
+                var outcome = new Outcome { PointsCharged = line.PointsOf(raiseNationalPerTonne) };
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                for (int year = 1; year <= years; year++)
+                {
+                    for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                    PolicyDecision d = PolicyDecision.None();
+                    if (raiseNationalPerTonne != 0f) { d.TaxRateOverrides[TaxType.CarbonTax] = seedRate + raiseNationalPerTonne; }
+                    decisions[player] = d;
+                    sim.AdvanceTurn(decisions);
+                }
+                outcome.Rate = line.Rate;
+                outcome.Revenue = TaxBases.Revenue(c, line);
+                outcome.Transport = c.State.TransportCo2PerCapita;
+                outcome.TransportTarget = EnvironmentFamily.TransportTargetFor(c, EnvironmentFamily.CarbonTaxRate(c), EnvironmentFamily.PerHead(c, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
+                return outcome;
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        private static TaxLine Find(Country c) { foreach (TaxLine l in c.TaxLines) { if (l.Type == TaxType.CarbonTax) { return l; } } return null; }
+        private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
+    }
+}

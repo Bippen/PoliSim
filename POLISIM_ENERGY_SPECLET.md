@@ -330,7 +330,7 @@ row is NOT derived from the system cost (the sector table's seeds and the P4-B3 
 source fixes the share) - a deviation stated. (vi) **The unit finding:** the carbon tax's points are the
 country's currency per tonne and the market's costs are in euro; §460's Polish reference was read in the
 wrong unit and stands corrected (coal 0.862 → 0.858, gas 0.111 → 0.115, the peak price 97.1 → 99.9 €/MWh for twenty zloty per tonne, €4.40); the book's own reading of a point - a share of
-GDP on the emissions base - and the dispatch's are two readings of one line, opened ruling-first as EN-4c.
+GDP on the emissions base - and the dispatch's were two readings of one line, opened ruling-first as EN-4c - **and ruled the same day (§464): the rate IS the country's currency per tonne of CO₂, the statutory figure at the seed (1 330 SEK, 30 EUR, 44.6 EUR; zero where no tax exists distinct from the ETS), revenue = rate × the taxed tonnes, the coverage bridge re-solved to hold the anchors. Which tonnes the statutes cover is EN-4d.**
 
 **Total: fourteen to seventeen sessions**, none of which starts before this document is ruled, and
 none of stages 3–8 before the stage before it has its own BASELINE explained per country. Each stage

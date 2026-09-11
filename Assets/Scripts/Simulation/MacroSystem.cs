@@ -158,7 +158,7 @@ namespace PoliSim.Simulation
                 // base inside a period fails the turn-vs-daily equivalence bar, and the seed's share reads the bases' secular trend as a permanent tax.
                 if (atBaseline && !country.BaselineTaxRates.TryGetValue(line.Type, out rate)) { rate = 0f; }
 
-                share += rate / 100f * TaxBases.Base(country, line.Type) / Mathf.Max(1f, country.State.NominalGdp);   // P5-B3/B6: the nominal base over nominal GDP - a real share
+                share += TaxBases.RevenueAtRate(country, line.Type, rate) / Mathf.Max(1f, country.State.NominalGdp);   // P5-B3/B6: the nominal revenue at that rate over nominal GDP - a real share; EN-4c: the carbon line is rate per tonne × tonnes through the same accessor
             }
 
             return share;
@@ -2106,7 +2106,7 @@ namespace PoliSim.Simulation
 
         /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
-        internal const float TaxHikeApprovalSensitivity = 1.5f;
+        public const float TaxHikeApprovalSensitivity = 1.5f;
 
         /// <summary>Approval points per percentage-point-of-GDP of (multiplier-weighted) net discretionary spending change.</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>

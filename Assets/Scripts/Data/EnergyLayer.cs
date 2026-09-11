@@ -56,6 +56,26 @@ namespace PoliSim.Data
         public static int Index(CountryId id) { string c = Code(id); return c == null ? -1 : Array.IndexOf(EnergyLayerData.Countries, c); }
         public static bool Has(CountryId id) => Index(id) >= 0;
 
+        /// <summary>The country's currency per BOOK dollar (the ECB 2023 reference rates: 10.62 SEK, 4.20 PLN, 0.925 EUR; 1 for the USA and for a country the catalog does not cover) - the bridge a tax line's national-currency figure crosses into the book, which is in US dollars for every country (EN-4c).</summary>
+        public static double NationalPerUsd(CountryId id)
+        {
+            int i = Index(id);
+            if (i < 0) { return 1.0; }
+            return EnergyLayerData.NationalPerMarketCurrency[i] / Math.Max(1e-9, EnergyLayerData.UsdPerMarketCurrency[i]);
+        }
+
+        /// <summary>The country's ISO currency code, for a figure presented in its own currency (a tax line's rate per tonne).</summary>
+        public static string CurrencyCode(CountryId id)
+        {
+            switch (id)
+            {
+                case CountryId.Sweden: return "SEK";
+                case CountryId.Poland: return "PLN";
+                case CountryId.Germany: case CountryId.France: case CountryId.Italy: return "EUR";
+                default: return "USD";
+            }
+        }
+
         // ---- the fleet -------------------------------------------------------------------------------------------
         public static double CapacityMw(CountryId id, int label) => EnergyLayerData.CapacityRecordMw[Index(id)][label];
         public static double CapacityEmberMw(CountryId id, int label) => EnergyLayerData.CapacityEmberMw[Index(id)][label];

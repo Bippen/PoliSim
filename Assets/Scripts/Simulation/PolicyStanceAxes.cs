@@ -23,6 +23,7 @@ namespace PoliSim.Simulation
             foreach (TaxLine taxLine in country.TaxLines)
             {
                 if (!taxLine.IsImplemented) continue;
+                if (taxLine.IsPerTonne) continue;   // EN-4c: a price per tonne of CO₂ is not a rate on a base; averaging 1 330 kronor with percentages would read as a tax state of 100
                 taxSum += taxLine.Rate;
                 taxCount++;
             }

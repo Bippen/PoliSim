@@ -138,7 +138,7 @@ namespace PoliSim.Simulation
                 {
                     continue;
                 }
-                direction += kvp.Value - standing.Rate;
+                direction += standing.PointsOf(kvp.Value - standing.Rate);   // EN-4c: the carbon tax in the political scale (per cent of its dial), the percentages as they are
             }
 
             foreach (KeyValuePair<SpendingCategory, float> kvp in SpendingPercentChangesOf(country, bill))
@@ -415,7 +415,7 @@ namespace PoliSim.Simulation
                 }
 
                 float clampedRate = Mathf.Clamp(kvp.Value, line.MinRate, line.MaxRate);
-                float hike = clampedRate - line.Rate;
+                float hike = line.PointsOf(clampedRate - line.Rate);   // EN-4c: the political scale
                 if (hike > 0f)
                 {
                     totalHike += hike;
@@ -463,8 +463,8 @@ namespace PoliSim.Simulation
                 return 0f;
             }
 
-            float standingEffective = standing.IsImplemented ? standing.Rate : 0f;
-            float billEffective = bill.IsAdd ? standing.Rate : 0f;
+            float standingEffective = standing.IsImplemented ? standing.PointsOf(standing.Rate) : 0f;   // EN-4c: the political scale (the carbon tax's rate as the per cent of its dial)
+            float billEffective = bill.IsAdd ? standing.PointsOf(standing.Rate) : 0f;
             return billEffective - standingEffective;
         }
 
@@ -829,8 +829,8 @@ namespace PoliSim.Simulation
             {
                 TaxLine standing = FindTaxLine(country, kvp.Key);
                 if (standing == null || !standing.IsImplemented) { continue; }
-                // Taxation → redistribution ("0 = strongly favors redistribution"): a rise moves toward 0, a cut toward 10.
-                concern.Add(StanceAxis.Redistribution, -(kvp.Value - standing.Rate));
+                // Taxation → redistribution ("0 = strongly favors redistribution"): a rise moves toward 0, a cut toward 10. EN-4c: the political scale.
+                concern.Add(StanceAxis.Redistribution, -standing.PointsOf(kvp.Value - standing.Rate));
             }
             foreach (KeyValuePair<SpendingCategory, float> kvp in SpendingPercentChangesOf(country, bill))
             {

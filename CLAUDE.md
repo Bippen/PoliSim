@@ -348,9 +348,15 @@ independently, instead of one generic "tax rate":
   country except the USA (which has none); `SalesTax` is the reverse (only the USA, at 7%); `EstateTax`
   is only implemented for the USA (40%, the real top federal marginal rate — the `EstateTax`
   `BaseShareOfGdp` of 0.02 is what keeps its overall revenue contribution small, per its narrow real
-  tax base, not the rate itself); `CarbonTax` is only implemented for Sweden (30%, a deliberately
-  "notably high" abstraction of Sweden's real famously-high carbon price, not a literal researched
-  rate). `ExciseTax`, `PropertyTax`, `WealthTax`, and `StampDuty` start inactive for every country with
+  tax base, not the rate itself); **`CarbonTax` is not a percentage (EN-4c, ruled 2026-09-11, `COMPLETED.md` §464): its
+  rate is the COUNTRY'S CURRENCY PER TONNE OF CO₂, the statutory 2023 figure - Sweden 1 330 SEK, Germany 30 EUR
+  (BEHG § 10), France 44.6 EUR (the composante carbone) implemented; Italy, Poland and the USA 0, unimplemented
+  (no carbon tax distinct from the ETS). Its revenue is rate × the taxed tonnes (`TaxBases.RevenueAtRate`: power and
+  transport CO₂ per head × population, into the book's dollars by the ECB rate), the dispatch reads the same
+  points above the seed, and the approval and stance terms read it through `TaxLine.PointsOf` (one per cent of
+  the dial per point). The share-of-GDP reading it carried before the model had priceable emissions is retired;
+  the coverage bridge was re-solved for the three (SE 1.0692, DE 1.1413, FR 1.1731) so the anchored primaries hold.**
+  `ExciseTax`, `PropertyTax`, `WealthTax`, and `StampDuty` start inactive for every country with
   one uniform illustrative placeholder rate each (8%, 1%, 1.5%, 1% respectively) — present so the
   player can implement them, matching that no country (including the USA) starts with an active
   general `WealthTax`, the same as the real world in 2026.
@@ -399,7 +405,7 @@ shift is reachable in one turn, not gradually over dozens:
 | `WealthTax` | 5% |
 | `ExciseTax` | 30% |
 | `StampDuty` | 30% |
-| `CarbonTax` | 100% (unchanged — kept at the original generic bound, not given a narrower one) |
+| `CarbonTax` | **300 US dollars per tonne of CO₂** (EN-4c, 2026-09-11) - each country's line carries it in its own currency (`TaxLine.RateCeiling`, rounded to ten: 3 180 SEK, 1 260 PLN, 280 EUR, 300 USD); the old 0–100 bound had no unit |
 
 These are gameplay-tuning bounds, not precise legal maxima. Re-validated in the standalone harness
 with a stress scenario ramping `IncomeTax`/`CorporateTax`/`PayrollTax` up from their seed values and

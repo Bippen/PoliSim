@@ -41,7 +41,7 @@ namespace PoliSim.Simulation
         public const float ScarcityOnset = 0.9f;
         /// <remarks>CONVENTION - the lowest offer on every curve at stage 3: no support scheme bids below zero yet, so no clamp exists and a negative offer prices a block negative the day one does.</remarks>
         public const float CurtailmentOffer = 0f;
-        /// <remarks>CONVENTION - one point of the carbon tax's rate reads as one unit of the country's currency per tonne of CO₂; the line states no unit (POLISIM_ENERGY_SPECLET.md §2.1), and this is the reading the dispatch takes.</remarks>
+        /// <remarks>SOURCED by ruling (EN-4c, 2026-09-11, COMPLETED.md §464) - the carbon tax's rate IS the country's currency per tonne of CO₂, the statutory meaning; one point of the line is one unit of that currency per tonne, and the budget's revenue reads the same rate on the same tonnes (TaxBases.RevenueAtRate). Before the ruling this was the dispatch's own convention against a line that stated no unit.</remarks>
         public const float CarbonTaxPointPerTonne = 1f;
         /// <remarks>CONVENTION - the calibration's tolerance on each fossil category's share of the fossil total: one point, §342's "within a point"; the tranche resolution below is chosen so a single tranche's flip moves a share by less.</remarks>
         public const float CalibrationTolerance = 0.01f;

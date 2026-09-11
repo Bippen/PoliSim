@@ -3404,7 +3404,7 @@ namespace PoliSim.Simulation
                 }
 
                 float clampedRate = Mathf.Clamp(requestedRate, taxLine.MinRate, taxLine.MaxRate);
-                float hike = clampedRate - taxLine.Rate;
+                float hike = taxLine.PointsOf(clampedRate - taxLine.Rate);   // EN-4c: the carbon tax's currency-per-tonne change enters the approval term as the per cent of its dial it spans
                 if (hike > 0f)
                 {
                     totalTaxHike += hike;

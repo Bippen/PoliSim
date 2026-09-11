@@ -32,9 +32,9 @@ namespace PoliSim.Simulation
     /// own costs (fuel and O&amp;M, the ETS, the carbon tax, the fitted adders), the wholesale outlay above it (the inframarginal rent that pays the
     /// fleet's fixed costs and the non-fossil fleet, not modelled), the network's revenue as its cost, the support scheme's cost. INCIDENCE: who
     /// pays - households, non-households, taxpayers - and who receives - generators, suppliers, networks, the support scheme, the state's
-    /// electricity taxes; the two sides close to the unit, the book's own identity. The carbon tax's payment on power is booked under EnergyMarket's
-    /// point-per-tonne CONVENTION and named so; the budget's carbon revenue is the book's (TaxBases, P5-B3) - two readings of one line, reconciled
-    /// by a ruling, not here.</para>
+    /// electricity taxes; the two sides close to the unit, the book's own identity. The carbon tax's payment on power is booked at the line's
+    /// statutory rate per tonne on the dispatch's own CO₂ - since EN-4c (2026-09-11) the one meaning the budget's revenue reads too (TaxBases.RevenueAtRate);
+    /// the statutes' exemption of ETS installations is EN-4d's, named in the record.</para>
     ///
     /// <para><b>What reaches the model (the BASELINE move).</b> The energy line's BusinessConfidence proxy is retired: the industrial electricity
     /// bill's change as a share of GDP is what firms bear, and MacroSystem reads it at the proxy's own sensitivity, the sign reversed. THE SINGLE

@@ -25,7 +25,8 @@ namespace PoliSim.Data
         /// <summary>The housing stock at its price: population × HousePriceIndex - what a property tax is levied on.</summary>
         Housing,
         /// <summary>The taxed emissions (the environment feedback pass, 2026-09-07): power and transport CO₂ per head (EnvironmentFamily, EDGAR-seeded, moved by the
-        /// carbon tax and the two lines) times the population - tonnes, what a carbon tax is levied on. A tax that works erodes its own base, as a Pigouvian tax does.</summary>
+        /// carbon tax and the two lines) times the population - tonnes, what a carbon tax is levied on. A tax that works erodes its own base, as a Pigouvian tax does.
+        /// Since EN-4c (2026-09-11) the carbon line's revenue is its rate per tonne times this level directly (TaxBases.RevenueAtRate); the driver ratio still reads it.</summary>
         Emissions
     }
 
@@ -105,7 +106,25 @@ namespace PoliSim.Data
         }
 
         /// <summary>The instrument's revenue before the coverage bridge: rate × base. ONE ACCESSOR, READ BY EVERY REVENUE SITE (the turn, the household burden, the Budget's estimates, the diagnostics), as D-16's was.</summary>
-        public static float Revenue(Country country, TaxLine line) => line.Rate / 100f * Base(country, line.Type);
+        public static float Revenue(Country country, TaxLine line) => RevenueAtRate(country, line.Type, line.Rate);
+
+        /// <summary>
+        /// The revenue an instrument yields at a given rate, the book's dollars. A percentage tax: rate ÷ 100 × its base. THE CARBON TAX (EN-4c, ruled
+        /// 2026-09-11): the rate is the country's currency per tonne of CO₂ and the revenue is RATE × THE TAXED TONNES - the emissions level (power and
+        /// transport CO₂ per head × the population, Mt) - brought into the book's dollars by the ECB rate; the share-of-GDP reading the line carried
+        /// before the model had priceable emissions is retired. The taxed tonnes are the model's two sectors (§349); the statutes' coverage differs
+        /// (ETS installations exempt, heating fuels taxed) and that is EN-4d's, named in the record.
+        /// </summary>
+        public static float RevenueAtRate(Country country, TaxType type, float rate)
+        {
+            if (type == TaxType.CarbonTax)
+            {
+                float taxedMt = Level(TaxBaseDriver.Emissions, country);   // per head × millions of people = Mt
+                double nationalBillions = rate * taxedMt / 1000.0;         // currency per tonne × Mt = millions; billions = ÷ 1000
+                return (float)(nationalBillions / EnergyLayer.NationalPerUsd(country.Id));
+            }
+            return rate / 100f * Base(country, type);
+        }
 
         /// <summary>The driver's ratio now against the seed - 1 where the driver has not moved or is not yet referenced.</summary>
         public static float DriverRatio(Country country, TaxType type)
