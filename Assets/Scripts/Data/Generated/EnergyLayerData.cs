@@ -245,5 +245,230 @@ namespace PoliSim.Data.Generated
         /// <summary>Inland demand 2023 per country, GWh (Eurostat nrg_cb_e; the USA's EIA net generation).</summary>
         public static readonly double[] CountryInlandDemandGwh = { 499271, 445822.2, 305607.6, 157922, 132879, 4256676 };
 
+        // ---- EN-3 (2026-09-11): the market layer - the clearing's blocks as hours, the 2023 levels per category, the merit order's inputs
+        public const string DispatchDigest = "75de340d1e143b142c752d4100fc01c3c5460ce8e328ba485461d9404f80d78c";
+        public const string CostsDigest = "21a63b7e8b93ead7dd9f5db791f885a0b8e48b5078fd39250eea8f4824ba19d4";
+        public const string ExternalLinksDigest = "4a52f2ca14c510645f46a055ad14f1fe50e62f818826d5cb1b52ab9f02ed8edc";
+        /// <summary>The clearing's three blocks as hours - the trough decile, the middle eight, the top decile of the load (S3's P90 cut and its mirror).</summary>
+        public static readonly string[] DispatchBlocks = { "base", "mid", "peak" };
+        /// <summary>The dispatch's categories: the three fossil ones in merit order, then the resource-driven and the firm (must-run) output.</summary>
+        public static readonly string[] DispatchCategories = { "coal", "gas", "oil", "nuclear", "hydro", "wind", "solar", "firm" };
+        /// <summary>Hours in each block by [zone][block] (the zones in Zones' order).</summary>
+        public static readonly double[][] DispatchHours =
+        {
+            new double[] { 876, 7008, 876 },
+            new double[] { 876, 7008, 876 },
+            new double[] { 876, 7008, 876 },
+            new double[] { 876, 7008, 876 },
+            new double[] { 876, 7008, 876 },
+            new double[] { 876, 7000, 875 },
+            new double[] { 876, 7007, 876 },
+            new double[] { 876, 7007, 876 },
+            new double[] { 876, 7007, 876 },
+            new double[] { 876, 7007, 876 },
+        };
+
+        /// <summary>The block's demand by [zone][block], MW - the total generation level in the block's hours (consumption + net export + losses + pumping).</summary>
+        public static readonly double[][] DispatchDemandMw =
+        {
+            new double[] { 33002.5, 49992.9, 65790.8 },
+            new double[] { 44328.3, 54277.1, 67825.8 },
+            new double[] { 16205.6, 26039.9, 37735.3 },
+            new double[] { 12972.3, 17489.1, 22069.2 },
+            new double[] { 12929.4, 17748.5, 22281.2 },
+            new double[] { 360287.5, 448536.2, 622041.1 },
+            new double[] { 1762.6, 2838.9, 4121 },
+            new double[] { 3716.3, 5542.7, 7018.1 },
+            new double[] { 6936.4, 8332.4, 9774.4 },
+            new double[] { 669.1, 1083.4, 1194.9 },
+        };
+
+        /// <summary>The 2023 output level by [zone][block][category], MW, in the block's hours.</summary>
+        public static readonly double[][][] DispatchLevelMw =
+        {
+            new double[][]
+            {
+                new double[] { 7672.4, 2543.6, 916.7, 279.3, 2693.7, 12737.7, 992.9, 5166.2 },
+                new double[] { 12365.1, 4324.6, 898.9, 767.8, 3403.1, 15707.5, 7060.7, 5465.3 },
+                new double[] { 20094.1, 8510.1, 927.2, 1257.6, 4211.8, 20774.6, 4059.7, 5955.7 },
+            },
+            new double[][]
+            {
+                new double[] { 27.9, 1421.2, 171.2, 32818.8, 4624.1, 4206.8, 597.4, 460.9 },
+                new double[] { 58.8, 2883.5, 178.1, 36041.7, 6165.8, 5703, 2786.6, 459.8 },
+                new double[] { 502.8, 7484.1, 310.6, 42825, 9461.1, 5034.6, 1690.4, 517.2 },
+            },
+            new double[][]
+            {
+                new double[] { 1023.2, 5844.3, 744.1, 0, 3147.5, 2373.4, 457.2, 2615.8 },
+                new double[] { 1348.5, 10678.8, 729.3, 0, 4543.1, 2691.5, 2848.8, 3199.9 },
+                new double[] { 2058.7, 18065, 854.2, 0, 5832.5, 2705.2, 4349.1, 3870.4 },
+            },
+            new double[][]
+            {
+                new double[] { 8132, 1073.7, 328.8, 0, 217.6, 2325.7, 666.3, 228.3 },
+                new double[] { 10866.2, 1376.1, 345.5, 0, 404.8, 2538.3, 1717.7, 240.6 },
+                new double[] { 15376.2, 2107.3, 392.6, 0, 628.9, 2614.6, 687.4, 262.2 },
+            },
+            new double[][]
+            {
+                new double[] { 0, 0.1, 0, 4689.5, 4729, 3045.2, 102, 363.6 },
+                new double[] { 0, 0.3, 0, 5293.3, 7475.7, 4004.6, 170.8, 803.8 },
+                new double[] { 0, 0.2, 0, 6147.5, 10702.6, 3914.5, 23.2, 1493.3 },
+            },
+            new double[][]
+            {
+                new double[] { 54548.5, 139677.2, 543.6, 82825.8, 21922.8, 51103.3, 1644, 8022.4 },
+                new double[] { 76114.3, 181559.6, 725.8, 88503.1, 27835.1, 48210.6, 16318.1, 9269.5 },
+                new double[] { 121066.7, 283109.4, 1076.7, 93619.3, 38947.4, 33988.5, 37478.3, 12754.8 },
+            },
+            new double[][]
+            {
+                new double[] { 0, 0, 0, 0, 1241.2, 513.6, 0.8, 7 },
+                new double[] { 0, 0, 0, 0, 2153.7, 663.5, 1.2, 20.4 },
+                new double[] { 0, 0, 0, 0, 3393.7, 687.9, 0, 39.4 },
+            },
+            new double[][]
+            {
+                new double[] { 0, 0, 0, 0, 2310.4, 1328.8, 6.4, 70.6 },
+                new double[] { 0, 0, 0, 0, 3778.3, 1637.3, 9.2, 118 },
+                new double[] { 0, 0, 0, 0, 5417.4, 1404.6, 0.7, 195.3 },
+            },
+            new double[][]
+            {
+                new double[] { 0, 0, 0, 4701.3, 1111.5, 833.7, 98.8, 191.1 },
+                new double[] { 0, 0, 0, 5303, 1346, 1066.6, 148.1, 468.7 },
+                new double[] { 0, 0, 0, 6168.6, 1587.3, 1046.6, 10, 962 },
+            },
+            new double[][]
+            {
+                new double[] { 0, 0, 0, 0, 72.8, 475, 48, 73.3 },
+                new double[] { 0, 0, 0, 0, 193.5, 663.1, 83.7, 143.1 },
+                new double[] { 0, 0, 0, 0, 256.7, 659.5, 11.6, 267.1 },
+            },
+        };
+
+        /// <summary>Sweden's zones: settlement consumption by [zone][block], MW, on the national block hours; -1 for the countries (their demand row is the balance).</summary>
+        public static readonly double[][] ZoneConsumptionBlockMw =
+        {
+            new double[] { -1, -1, -1 },
+            new double[] { -1, -1, -1 },
+            new double[] { -1, -1, -1 },
+            new double[] { -1, -1, -1 },
+            new double[] { -1, -1, -1 },
+            new double[] { -1, -1, -1 },
+            new double[] { 1009.5, 1270.2, 1572.8 },
+            new double[] { 1193.7, 1711.1, 2348.5 },
+            new double[] { 6103.7, 9019.5, 12578.4 },
+            new double[] { 1611.7, 2395.5, 3408.4 },
+        };
+
+        /// <summary>Sweden's zones: the exogenous external export by [zone][block], MW, positive out of Sweden (energy-charts cbpf apportioned by the interconnectors); 0 for the countries.</summary>
+        public static readonly double[][] ZoneExternalExportMw =
+        {
+            new double[] { 0, 0, 0 },
+            new double[] { 0, 0, 0 },
+            new double[] { 0, 0, 0 },
+            new double[] { 0, 0, 0 },
+            new double[] { 0, 0, 0 },
+            new double[] { 0, 0, 0 },
+            new double[] { 175.7, 570.5, 769 },
+            new double[] { -24.9, 103.9, -255.2 },
+            new double[] { 601.5, 877.1, 412.8 },
+            new double[] { 2437.6, 1854.6, 1241.3 },
+        };
+
+        /// <summary>The merit order's categories.</summary>
+        public static readonly string[] CostCategories = { "coal", "gas", "oil" };
+        /// <summary>Fuel price 2023 by [country][cost category], the country's currency per MWh of fuel (NCV) - the file's header names each series.</summary>
+        public static readonly double[][] FuelPerMwhTh =
+        {
+            new double[] { 10.86, 45.85, 18.88 },
+            new double[] { 22.9, 45.85, 40.07 },
+            new double[] { 22.9, 45.85, 43.38 },
+            new double[] { 17.32, 45.85, 19.1 },
+            new double[] { 22.9, 45.85, 17.27 },
+            new double[] { 8.99, 12.7, 57.8 },
+        };
+
+        /// <summary>Implied electrical efficiency by [country][cost category], DERIVED from the balance (0 where the country has no such plant).</summary>
+        public static readonly double[][] Efficiency =
+        {
+            new double[] { 0.3989, 0.6315, 0.4114 },
+            new double[] { 0.3877, 0.6742, 0.393 },
+            new double[] { 0.3501, 0.602, 0.3292 },
+            new double[] { 0.5061, 0.6622, 0.4326 },
+            new double[] { 0.9169, 0.9726, 0.7327 },
+            new double[] { 0.3181, 0.4503, 0.3905 },
+        };
+
+        /// <summary>Emission factor by [country][cost category], t CO2 per MWh of electricity, DERIVED (IPCC 2006 defaults over the balance).</summary>
+        public static readonly double[][] EmissionFactorTPerMwh =
+        {
+            new double[] { 0.8946, 0.3198, 1.444 },
+            new double[] { 0.8783, 0.2995, 0.9854 },
+            new double[] { 0.9726, 0.3355, 0.8986 },
+            new double[] { 0.6878, 0.305, 0.9051 },
+            new double[] { 0.3714, 0.2076, 0.9553 },
+            new double[] { 1.0831, 0.4485, 0.8295 },
+        };
+
+        /// <summary>Variable O&M by [country][cost category], currency per MWh (EIA AEO2023 Table 1).</summary>
+        public static readonly double[][] VomPerMwh =
+        {
+            new double[] { 4.68, 1.94, 4.68 },
+            new double[] { 4.68, 1.94, 4.68 },
+            new double[] { 4.68, 1.94, 4.68 },
+            new double[] { 4.68, 1.94, 4.68 },
+            new double[] { 4.68, 1.94, 4.68 },
+            new double[] { 5.06, 2.1, 5.06 },
+        };
+
+        /// <summary>Dependable share of installed capacity by [country][cost category] - [AUTHORED-DRAFT] 0.85, the ERAA row billed.</summary>
+        public static readonly double[][] Availability =
+        {
+            new double[] { 0.85, 0.85, 0.85 },
+            new double[] { 0.85, 0.85, 0.85 },
+            new double[] { 0.85, 0.85, 0.85 },
+            new double[] { 0.85, 0.85, 0.85 },
+            new double[] { 0.85, 0.85, 0.85 },
+            new double[] { 0.85, 0.85, 0.85 },
+        };
+
+        /// <summary>The main-activity producers' share of the category's generation by [country][cost category] - EDGAR's 1A1 basis.</summary>
+        public static readonly double[][] MainShare =
+        {
+            new double[] { 0.9706, 0.7032, 0.0617 },
+            new double[] { 0.9, 0.8255, 0.7831 },
+            new double[] { 1, 0.8126, 0.1957 },
+            new double[] { 0.9809, 0.5347, 0.3616 },
+            new double[] { 1, 0.7987, 0.5026 },
+            new double[] { 0.9933, 0.9412, 0.6686 },
+        };
+
+        /// <summary>Lignite's share of the coal input by [country][cost category] (the coal row; 0 elsewhere).</summary>
+        public static readonly double[][] LigniteShare =
+        {
+            new double[] { 0.7093, 0.7093, 0.7093 },
+            new double[] { 0, 0, 0 },
+            new double[] { 0, 0, 0 },
+            new double[] { 0.329, 0.329, 0.329 },
+            new double[] { 0, 0, 0 },
+            new double[] { 0.0542, 0.0542, 0.0542 },
+        };
+
+        /// <summary>The carbon price the fleet already pays, per country, currency per tonne - the EU ETS 2023 secondary mean for the five (ICAP), 0 for the USA.</summary>
+        public static readonly double[] EtsPerT = { 85.51, 85.51, 85.51, 85.51, 85.51, 0 };
+
+        /// <summary>Sweden's interconnectors - the zone.</summary>
+        public static readonly string[] ExternalLinkZone = { "SE1", "SE1", "SE2", "SE2", "SE3", "SE3", "SE3", "SE4", "SE4", "SE4", "SE4" };
+        /// <summary>... the neighbour.</summary>
+        public static readonly string[] ExternalLinkNeighbour = { "Finland", "Norway", "Norway (NO3)", "Norway (NO4)", "Denmark (DK1)", "Finland", "Norway (NO1)", "Denmark (DK2)", "Germany", "Lithuania", "Poland" };
+        /// <summary>Capacity out of Sweden, MW (Svenska kraftnat's capacity-map text).</summary>
+        public static readonly double[] ExternalLinkOutMw = { 1500, 600, 1000, 300, 715, 1200, 2095, 1300, 615, 700, 600 };
+
+        /// <summary>Capacity into Sweden, MW.</summary>
+        public static readonly double[] ExternalLinkInMw = { 1100, 700, 600, 250, 715, 1200, 2145, 1700, 600, 700, 600 };
+
     }
 }

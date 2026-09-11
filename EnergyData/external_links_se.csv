@@ -1,0 +1,13 @@
+# external_links_se.csv - Sweden's interconnectors by zone, MW out of Sweden / into Sweden, read off Svenska kraftnät's 'Information karta överföringskapacitet' (svk_textforklaring_karta_overforingskapacitet.pdf, sha256 5b5241379b9659b2...). The apportionment key of the exchange in dispatch_levels_2023.csv; the exchange itself is exogenous (the neighbours are outside the six).
+zone;neighbour;out_mw;in_mw
+SE1;Finland;1500;1100
+SE1;Norway;600;700
+SE2;Norway (NO3);1000;600
+SE2;Norway (NO4);300;250
+SE3;Denmark (DK1);715;715
+SE3;Finland;1200;1200
+SE3;Norway (NO1);2095;2145
+SE4;Denmark (DK2);1300;1700
+SE4;Germany;615;600
+SE4;Lithuania;700;700
+SE4;Poland;600;600

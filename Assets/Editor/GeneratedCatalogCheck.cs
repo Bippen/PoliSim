@@ -185,6 +185,10 @@ namespace PoliSim.EditorTools
                 (EnergyCatalogGenerator.LinksSource, EnergyLayerData.LinksDigest, EnergyLayerData.LinkFrom.Length),
                 (EnergyCatalogGenerator.CombustionSource, EnergyLayerData.CombustionDigest, EnergyLayerData.Countries.Length * EnergyLayerData.CombustionLabels.Length * EnergyLayerData.CombustionClasses.Length),
                 (EnergyCatalogGenerator.CountrySource, EnergyLayerData.CountryDigest, EnergyLayerData.PopulationM.Length),
+                // EN-3 (2026-09-11): the market layer's three
+                (EnergyCatalogGenerator.DispatchSource, EnergyLayerData.DispatchDigest, EnergyLayerData.Zones.Length * EnergyLayerData.DispatchBlocks.Length),
+                (EnergyCatalogGenerator.CostsSource, EnergyLayerData.CostsDigest, EnergyLayerData.Countries.Length * EnergyLayerData.CostCategories.Length),
+                (EnergyCatalogGenerator.ExternalLinksSource, EnergyLayerData.ExternalLinksDigest, EnergyLayerData.ExternalLinkZone.Length),
             };
             foreach ((string relative, string recorded, int rows) in sources)
             {
@@ -199,7 +203,7 @@ namespace PoliSim.EditorTools
                 int dataRows = EnergyCatalogGenerator.DataRows(path);
                 if (dataRows != rows) { failures++; Debug.LogError($"CATALOG: {relative} holds {dataRows} data row(s) and the energy catalog's array holds {rows}."); }
             }
-            sb.Append($"    EnergyLayerData: six sources at their recorded digests, {EnergyLayerData.Countries.Length} countries × {EnergyLayerData.Labels.Length} labels, {EnergyLayerData.Zones.Length} load zones, {EnergyLayerData.LinkFrom.Length} links, {EnergyLayerData.CombustionClasses.Length} combustion classes ({failures} fault(s)).\n");
+            sb.Append($"    EnergyLayerData: nine sources at their recorded digests, {EnergyLayerData.Countries.Length} countries × {EnergyLayerData.Labels.Length} labels, {EnergyLayerData.Zones.Length} load zones × {EnergyLayerData.DispatchBlocks.Length} dispatch blocks, {EnergyLayerData.LinkFrom.Length} links, {EnergyLayerData.ExternalLinkZone.Length} interconnectors, {EnergyLayerData.CombustionClasses.Length} combustion classes, {EnergyLayerData.CostCategories.Length} cost categories ({failures} fault(s)).\n");
             return failures;
         }
 
