@@ -160,11 +160,11 @@ namespace PoliSim.Simulation
             return gwh;
         }
 
-        /// <summary>The marginal cost of a fossil category, currency per MWh: (fuel / efficiency + O&M) carried by the price level, plus (the ETS price carried + the tax's points above the seed) on the emission factor, plus the calibration adder. Infinite where the country has no such plant.</summary>
+        /// <summary>The marginal cost of a fossil category, currency per MWh: (fuel / efficiency + O&M) carried by the price level, plus (the ETS price carried + the tax's points above the seed) on the emission factor, plus the calibration adder - CARRIED BY THE PRICE LEVEL TOO since EN-5 (2026-09-11): the adder is the shadow of costs the blocks do not see (contracts, heat-led CHP, ramping, location), and a cost is nominal with nominal (P5-B6); held in seed currency it eroded in real terms and drifted the fossil shares and the real wholesale a little each year, which EN-5's B6 probe measured (§465). Infinite where the country has no such plant.</summary>
         public static double MarginalCost(CountryId id, int category, double priceIndex, double taxPointsAboveSeed, double adder)
         {
             (double fuelVom, double ets, double tax) = CostParts(id, category, priceIndex, taxPointsAboveSeed);
-            return double.IsInfinity(fuelVom) ? double.PositiveInfinity : fuelVom + ets + tax + adder;
+            return double.IsInfinity(fuelVom) ? double.PositiveInfinity : fuelVom + ets + tax + adder * priceIndex;
         }
 
         /// <summary>The marginal cost's parts, currency per MWh - fuel and O&amp;M carried by the price level; the ETS carried; the tax's points above the seed on the emission factor - ONE formula the clearing and the ledger both read. Fuel is infinite where the country has no such plant.</summary>
