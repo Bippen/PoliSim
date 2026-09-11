@@ -2474,6 +2474,9 @@ namespace PoliSim.Simulation
         /// </summary>
         public void AdvanceTurn(Dictionary<CountryId, PolicyDecision> decisions)
         {
+            // EN-3 (2026-09-11): the water value Sweden's zones clear at this turn - Germany's and Poland's block prices at their current rates - fixed
+            // once at the top of the boundary, before any family's yearly step reads a clearing.
+            EnergyMarket.BeginTurn(_world);
             // F2 step 4: the year the days just read is COMMITTED to the pyramid first, with the levers
             // as they stood through it - before this turn's decisions move them (a lever changed at the
             // boundary reaches the substrate from the next year's first day, the Phase 4 timing shift).

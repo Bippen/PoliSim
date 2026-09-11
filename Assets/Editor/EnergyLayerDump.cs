@@ -88,7 +88,40 @@ namespace PoliSim.EditorTools
                 sb.Append(F("| {0} | {1:0.00} | {2:0.00} | {3:N0} | {4:N0} | {5:0.0} | {6:N0} | {7:N0} | {8:N0} | {9:N0} | {10:N0} · {11:N0} · {12:N0} |\n", c.Id, c.Environment.PowerCo2PerCapita, EnergyLayer.PopulationM(c.Id), d.SeedTotalKt, d.DerivedKt, 100 * d.DerivedShare, d.ResidualKt, d.MainHeatKt, d.RemainderKt, d.AutoproducerKt,
                     EnergyLayer.DerivedKtByLabel(c.Id, 0), EnergyLayer.DerivedKtByLabel(c.Id, 1), EnergyLayer.DerivedKtByLabel(c.Id, 2)));
             }
-            sb.Append("\n## 5. What this layer does not do yet\n\nNo dispatch (stage 3), so no price, no scarcity, no import bill; the fleet does not invest or retire; the load does not grow; the carbon tax reaches the power figure through the family's own elasticity, as before, until the merit order exists to replace it. The Environment plate's foot prints the derived share so the single book is visible where the figure is; the energy screen is stage 6's.\n");
+            // ---- EN-3 (2026-09-11): the market layer at the seed
+            sb.Append("\n## 5. The market at the seed (EN-3) - one clearing per block per zone\n\n");
+            sb.Append("The clearing's blocks are hours: the trough decile (base), the middle eight (mid), the top decile (peak) of the load. The merit order runs over fuel ÷ efficiency + O&M, carried by the price level, plus (the ETS price + the carbon tax's points above the seed) × the emission factor, plus the seed's CALIBRATION ADDER - solved once so the seed dispatch reproduces 2023's coal / gas / oil shares of the fossil total (the shadow of what three blocks do not see: must-run contracts, heat-led CHP, ramping, location) and printed here. Germany's reactors dispatch at zero (CLOSED BY LAW). The price is the marginal unit's cost, lifted by the scarcity term above " + PoliSim.Simulation.EnergyMarket.ScarcityOnset.ToString("0.00", CultureInfo.InvariantCulture) + " of the dependable capacity toward the ceiling of " + PoliSim.Simulation.EnergyMarket.MaxClearingPrice.ToString("N0", CultureInfo.InvariantCulture) + " (ACER's harmonised maximum); nothing is clamped, and the lowest offer on every curve is " + PoliSim.Simulation.EnergyMarket.CurtailmentOffer.ToString("0", CultureInfo.InvariantCulture) + " until a support scheme bids below it.\n\n");
+            sb.Append("| country | block | hours | demand MW | must-run MW | residual MW | coal · gas · oil MW | marginal cost coal · gas · oil | price | scarcity | curtailed | unserved |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n");
+            PoliSim.Simulation.EnergyMarket.ResetCalibration();
+            PoliSim.Simulation.EnergyMarket.BeginTurn(world);
+            foreach (Country c in world.Countries)
+            {
+                if (!EnergyLayer.Has(c.Id) || c.Id == CountryId.Sweden) { continue; }
+                PoliSim.Simulation.EnergyMarket.Result r = PoliSim.Simulation.EnergyMarket.Clear(c, EnvironmentFamily.CarbonTaxRate(c));
+                int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(c.Id));
+                for (int b = 0; b < 3; b++)
+                {
+                    PoliSim.Simulation.EnergyMarket.BlockResult br = r.Zones[0][b];
+                    sb.Append(F("| {0} | {1} | {2:N0} | {3:N0} | {4:N0} | {5:N0} | {6:N0} · {7:N0} · {8:N0} | {9:F1} · {10:F1} · {11} | **{12:F1}** | {13:F1} | {14:N0} | {15:N0} |\n", c.Id, EnergyLayerData.DispatchBlocks[b], EnergyLayerData.DispatchHours[zone][b], br.DemandMw, br.MustRunMw, br.ResidualMw, br.FossilMw[0], br.FossilMw[1], br.FossilMw[2], br.MarginalCost[0], br.MarginalCost[1], double.IsInfinity(br.MarginalCost[2]) ? "-" : br.MarginalCost[2].ToString("F1", CultureInfo.InvariantCulture), br.Price, br.Scarcity, br.CurtailedMw, br.UnservedMw));
+                }
+                double fossil = r.AnnualGwh[0] + r.AnnualGwh[1] + r.AnnualGwh[2]; double[] target = PoliSim.Simulation.EnergyMarket.SeedTargets(c.Id);
+                sb.Append(F("| | **{0} year** | | | | | fossil shares {1:F3} · {2:F3} · {3:F3} (2023: {4:F3} · {5:F3} · {6:F3}) | adders {7:F1} · {8:F1} · {9:F1} | | | derived CO₂ {10:F1} Mt + residual {11:F1} = {12:F3} t/head | |\n", c.Id, fossil > 0 ? r.AnnualGwh[0] / fossil : 0, fossil > 0 ? r.AnnualGwh[1] / fossil : 0, fossil > 0 ? r.AnnualGwh[2] / fossil : 0, target[0], target[1], target[2], r.Adders[0], r.Adders[1], r.Adders[2], r.DerivedCo2Mt, c.Environment.PowerResidualMt, (r.DerivedCo2Mt + c.Environment.PowerResidualMt) / Math.Max(0.0001f, c.State.Population)));
+            }
+            Country sweden = world.GetCountry(CountryId.Sweden);
+            PoliSim.Simulation.EnergyMarket.Result rse = PoliSim.Simulation.EnergyMarket.Clear(sweden, EnvironmentFamily.CarbonTaxRate(sweden));
+            sb.Append("\n**Sweden's four zones, on coincident hours, against the dated NTCs** - each zone's balance is its settlement consumption plus its exogenous external export (energy-charts' exchange by neighbour, apportioned by the interconnectors) less its own supply; the water value is Germany's and Poland's block price weighted by SE4's capacity to each; a link that cannot carry the required flow BINDS and splits the price.\n\n| block | water value | SE1 balance MW | SE2 | SE3 | SE4 | snitt 1 flow / NTC | snitt 2 | snitt 4 | prices SE1 · SE2 · SE3 · SE4 |\n|---|---|---|---|---|---|---|---|---|---|\n");
+            for (int b = 0; b < 3; b++)
+            {
+                sb.Append(F("| {0} | {1:F1} | {2:N0} | {3:N0} | {4:N0} | {5:N0} |", EnergyLayerData.DispatchBlocks[b], rse.WaterValue[b], rse.Zones[0][b].MustRunMw - rse.Zones[0][b].DemandMw, rse.Zones[1][b].MustRunMw - rse.Zones[1][b].DemandMw, rse.Zones[2][b].MustRunMw - rse.Zones[2][b].DemandMw, rse.Zones[3][b].MustRunMw - rse.Zones[3][b].DemandMw));
+                foreach (PoliSim.Simulation.EnergyMarket.LinkResult l in rse.Links) { sb.Append(F(" {0:N0} / {1:N0} ({2:F0} %){3} |", l.FlowMw[b], l.CapacityMw[b], 100 * Math.Abs(l.FlowMw[b]) / l.CapacityMw[b], l.Binding[b] ? " **BINDS**" : "")); }
+                sb.Append(F(" {0:F1} · {1:F1} · {2:F1} · {3:F1} |\n", rse.Zones[0][b].Price, rse.Zones[1][b].Price, rse.Zones[2][b].Price, rse.Zones[3][b].Price));
+            }
+            int se4z = EnergyLayer.ZoneIndex("SE4");
+            sb.Append("\n**Snitt 4's answer.** ");
+            for (int b = 0; b < 3; b++) { sb.Append(F("{0}: {1:N0} MW of {2:N0} = SE4's own deficit {3:N0} + transit to the continent {4:N0} (the chain's unbalance {5:N0} MW, losses and rounding, never priced) - {6}. ", EnergyLayerData.DispatchBlocks[b], rse.Links[2].FlowMw[b], rse.Links[2].CapacityMw[b], EnergyLayerData.ZoneConsumptionBlockMw[se4z][b] - rse.Zones[3][b].MustRunMw, EnergyLayerData.ZoneExternalExportMw[se4z][b], rse.ChainUnbalanceMw[b], rse.Links[2].Binding[b] ? "CONGESTION on the block average" : "EXPORT, not congestion, on the block average")); }
+            sb.Append("The §457 proxy read 10 785 MW through snitt 4 in the base block because its chain had one exit; the exchange with Norway, Finland and Denmark out of SE1–SE3 is in the balances now, and what crosses snitt 4 is SE4's own deficit plus the transit to Denmark, Germany, Poland and Lithuania. Hourly congestion is not claimed by a block average.\n");
+
+            sb.Append("\n## 6. What this layer does not do yet\n\nThe fleet does not invest or retire; the load does not grow; hydro runs at its 2023 levels (the reservoir dispatch is the open follow-up, and Sweden's price is the water value proxied by the two connected markets this model clears); the neighbours outside the six are an exogenous exchange; the retail stack, the two ledgers and the pass-through to inflation are stage 4's. The carbon tax reaches the power figure through the dispatch now - the family's power elasticity is retired; the plate's mix row is this year's dispatch; the energy screen is stage 6's.\n");
 
             File.WriteAllText(outPath, sb.ToString(), new UTF8Encoding(false));
             Debug.Log($"ENERGY: wrote {Path.GetFullPath(outPath)}.");

@@ -144,6 +144,35 @@ namespace PoliSim.EditorTools
                 EnergyLayerData.Countries.Length, EnergyLayerData.Labels.Length, EnergyLayerData.Zones.Length, EnergyLayerData.SwedishZones.Length, EnergyLayerData.LinkFrom.Length,
                 EnergyLayerData.Co2Kt.Length, EnergyLayerData.Co2Kt[0].Length, EnergyLayerData.Co2Kt[0][0].Length));
 
+            // ---- gate 6 (EN-3, 2026-09-11): the market layer at the seed - pure clearings, no turn advanced
+            sb.Append("\n    6. THE MARKET AT THE SEED (EN-3): the calibration, the identity through the new writer, Germany's reactors, snitt 4's answer, no clamp\n");
+            PoliSim.Simulation.EnergyMarket.ResetCalibration();
+            foreach (Country c in world.Countries)
+            {
+                if (!EnergyLayer.Has(c.Id)) { continue; }
+                PoliSim.Simulation.EnergyMarket.Result r = PoliSim.Simulation.EnergyMarket.ClearAt(c.Id, 1.0, 0.0);
+                double[] target = PoliSim.Simulation.EnergyMarket.SeedTargets(c.Id);
+                if (c.Id != CountryId.Sweden && (double.IsNaN(r.MaxCalibrationGap) || r.MaxCalibrationGap > PoliSim.Simulation.EnergyMarket.CalibrationTolerance)) { failures++; Debug.LogError($"ENERGY: {c.Id}'s seed dispatch misses 2023's fossil shares by {r.MaxCalibrationGap:F4}."); }
+                if (c.Id == CountryId.Germany && r.AnnualGwh[PoliSim.Simulation.EnergyMarket.Nuclear] > 0) { failures++; Debug.LogError("ENERGY: Germany's reactors dispatch above zero - CLOSED BY LAW (§457)."); }
+                double written = c.Environment.PowerFromDispatch ? (r.DerivedCo2Mt + c.Environment.PowerResidualMt) / Math.Max(0.0001f, c.State.Population) : double.NaN;
+                if (double.IsNaN(written) || Math.Abs(written - c.Environment.PowerCo2PerCapita) > 1e-4) { failures++; Debug.LogError($"ENERGY: {c.Id}'s dispatch + residual writes {written:F5} t/head at the seed against the family's seed {c.Environment.PowerCo2PerCapita:F5}."); }
+                double fossil = r.AnnualGwh[0] + r.AnnualGwh[1] + r.AnnualGwh[2];
+                sb.Append(F("    {0,-8} coal/gas/oil of fossil {1:F3}/{2:F3}/{3:F3} (2023 {4:F3}/{5:F3}/{6:F3}) · adders {7:F1}/{8:F1}/{9:F1} · derived {10:F1} + residual {11:F1} Mt = {12:F4} t/head · prices {13:F0}/{14:F0}/{15:F0}\n",
+                    c.Id, fossil > 0 ? r.AnnualGwh[0] / fossil : 0, fossil > 0 ? r.AnnualGwh[1] / fossil : 0, fossil > 0 ? r.AnnualGwh[2] / fossil : 0, target[0], target[1], target[2], r.Adders[0], r.Adders[1], r.Adders[2], r.DerivedCo2Mt, c.Environment.PowerResidualMt, written, r.Zones[0][0].Price, r.Zones[0][1].Price, r.Zones[0][2].Price));
+            }
+            PoliSim.Simulation.EnergyMarket.Result se = PoliSim.Simulation.EnergyMarket.ClearAt(CountryId.Sweden, 1.0, 0.0);
+            int se4 = EnergyLayer.ZoneIndex("SE4");
+            for (int b = 0; b < 3; b++)
+            {
+                PoliSim.Simulation.EnergyMarket.LinkResult snitt4 = se.Links[2];
+                double own = EnergyLayerData.ZoneConsumptionBlockMw[se4][b] - se.Zones[3][b].MustRunMw, transit = EnergyLayerData.ZoneExternalExportMw[se4][b];
+                sb.Append(F("    snitt 4, {0}: {1:F0} of {2:F0} MW = SE4's own deficit {3:F0} + transit export {4:F0} → {5}; snitt 1 {6:F0}/{7:F0}, snitt 2 {8:F0}/{9:F0}\n", EnergyLayerData.DispatchBlocks[b], snitt4.FlowMw[b], snitt4.CapacityMw[b], own, transit, snitt4.Binding[b] ? "CONGESTION" : "EXPORT, not congestion", se.Links[0].FlowMw[b], se.Links[0].CapacityMw[b], se.Links[1].FlowMw[b], se.Links[1].CapacityMw[b]));
+            }
+            double[] probeOffers = { 30.0, 50.0, double.PositiveInfinity }; double[] probeCaps = { 100.0, 100.0, 0.0 };
+            PoliSim.Simulation.EnergyMarket.BlockResult negative = PoliSim.Simulation.EnergyMarket.ClearBlock(100.0, 150.0, probeOffers, probeCaps, -5.0);
+            if (Math.Abs(negative.Price + 5.0) > 1e-9) { failures++; Debug.LogError($"ENERGY: a block whose lowest offer is −5 priced {negative.Price} - a clamp."); }
+            sb.Append(F("    no clamp: a surplus block at a lowest offer of −5 prices {0:F1} (the ceiling {1:F0}, the onset {2:F2}).\n", negative.Price, PoliSim.Simulation.EnergyMarket.MaxClearingPrice, PoliSim.Simulation.EnergyMarket.ScarcityOnset));
+
             sb.Append(failures == 0 ? "\n=== EnergyLayerCheck: ALL ASSERTIONS PASS ===\n" : $"\n=== EnergyLayerCheck: {failures} FAILURE(S) ===\n");
             if (failures > 0) { Debug.LogError(sb.ToString()); CheckExit.Finish(1); return; }
             Debug.Log(sb.ToString());

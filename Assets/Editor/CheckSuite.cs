@@ -429,6 +429,7 @@ namespace PoliSim.EditorTools
                 ("InfrastructureReadoutDiagnostic", InfrastructureReadoutDiagnostic.Run),   // RF-1 (2026-09-07): the seed's spending holds the seed's score to the digit; a century of the lines' own growth never reaches the ceiling; below the seed the rebuild is stronger
                 ("EnvironmentFamilyDiagnostic", EnvironmentFamilyDiagnostic.Run),   // P5-C5 (2026-09-06): the seeds are the spine's, the headline is its keys, the carbon tax moves them the stated way
                 ("EnvironmentFeedbackDiagnostic", EnvironmentFeedbackDiagnostic.Run),   // the environment feedback pass (2026-09-07): the carbon base is the taxed CO₂ - the identity, the erosion under a raise, output's bases untouched
+                ("EnergyMarketDiagnostic", EnergyMarketDiagnostic.Run),   // EN-3 (2026-09-11): the dispatch writes the power figure - the identity at the seed, the calibration, Poland from coal to gas under a raise, Sweden's zones against the NTCs, no clamp, B6
                 ("ImmigrationPovertyFamilyDiagnostic", ImmigrationPovertyFamilyDiagnostic.Run),   // P5-C6 (2026-09-06): the seeds with their two definitions, the couplings by definition, the stated way
 
                 // D-5 (a) (2026-08-31): the office test. It builds a World and forms a government for

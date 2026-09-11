@@ -35,6 +35,8 @@ namespace PoliSim.UI
             float other = Mathf.Max(0f, ghg - s.PowerCo2PerCapita - s.TransportCo2PerCapita);
             float[] segments = { s.PowerCo2PerCapita, s.TransportCo2PerCapita, other };
             string[] segmentLabels = { "POWER", "TRANSPORT", "THE REST AT SEED" };
+            // EN-3 (2026-09-11): the mix the plate draws is this year's dispatch (the seed is the calibration target); the seed itself where no dispatch covers the country
+            float[] dispatchedMix = e.PowerFromDispatch ? PoliSim.Simulation.EnergyMarket.MixSharesNow(country) : e.MixShares;
             var rows = new List<PlateRow>
             {
                 new PlateRow("Emissions per person", "t CO2-eq · ALL GASES · LOWER ◂", "EDGAR 2024 · GHG PER CAPITA · 2023 · DERIVED", PlateFigure(ghg, 2),
@@ -42,12 +44,12 @@ namespace PoliSim.UI
                 new PlateRow("… the split", "t CO2-eq · POWER · TRANSPORT · THE REST", "EDGAR 2024 · BY SECTOR · 2023", PlateFigure(ghg, 2),
                     PlateBand.Distribution, 0f, Mathf.Max(0.01f, ghg), s.PowerCo2PerCapita, null, true, new[] { "READOUT · THE KEYS' OWN SHARES" }, null, new[] { "DERIVED" }, false, null, segments, segmentLabels),
                 new PlateRow("Electricity CO2 / head", "t CO2 · POWER ÷ POPULATION · LOWER ◂", "EDGAR 2024 · POWER · WB POP · 2023", PlateFigure(s.PowerCo2PerCapita, 2),
-                    PlateBand.Open, 0f, 5f, s.PowerCo2PerCapita, EnvironmentPeers(x => x.PowerCo2PerCapita), true, new[] { "CARBON TAX ▸", "ENERGY LINE ▸" }, history?.PowerCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
+                    PlateBand.Open, 0f, 5f, s.PowerCo2PerCapita, EnvironmentPeers(x => x.PowerCo2PerCapita), true, new[] { "CARBON TAX ▸", "DISPATCH ▸" }, history?.PowerCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
                 new PlateRow("Transport CO2 / head", "t CO2 · TRANSPORT ÷ POPULATION · LOWER ◂", "EDGAR 2024 · TRANSPORT · WB POP · 2023", PlateFigure(s.TransportCo2PerCapita, 2),
                     PlateBand.Open, 0f, 6f, s.TransportCo2PerCapita, EnvironmentPeers(x => x.TransportCo2PerCapita), true, new[] { "CARBON TAX ▸", "INFRASTRUCTURE LINE ▸" }, history?.TransportCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
                 e.HasMix
-                    ? new PlateRow("Electricity by source", "% · COAL·GAS·NUCLEAR·HYDRO·WIND·SOLAR·OTHER", "EMBER · EUROSTAT nrg_bal_peh · EIA · 2023", PlateFigure(e.MixShares[0] + e.MixShares[1], 0, "% FOSSIL"),
-                        PlateBand.Distribution, 0f, 100f, -1f, null, true, new[] { "STATIC SEED", "CARBON TAX · OWN PASS" }, null, new[] { "SOURCED", "CROSS-CHECKED" }, false, null, e.MixShares, EnvironmentFamily.MixLabels)
+                    ? new PlateRow("Electricity by source", "% · COAL·GAS·NUCLEAR·HYDRO·WIND·SOLAR·OTHER", "THIS YEAR'S DISPATCH · SEEDED EMBER · EUROSTAT · EIA · 2023", PlateFigure(dispatchedMix[0] + dispatchedMix[1], 0, "% FOSSIL"),
+                        PlateBand.Distribution, 0f, 100f, -1f, null, true, new[] { "CARBON TAX ▸", "DISPATCHED YEARLY" }, null, new[] { "DERIVED" }, false, null, dispatchedMix, EnvironmentFamily.MixLabels)
                     : new PlateRow("Electricity by source", "% OF GENERATION", "EMBER · EUROSTAT nrg_bal_peh · EIA 1.1", "billed",
                         PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "CARBON TAX ▸" }, null, new[] { "BILLED" }, false, "NOT SEEDED FOR THIS COUNTRY · THE SIX ARE"),
             };

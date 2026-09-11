@@ -51,7 +51,9 @@ namespace PoliSim.EditorTools
             if (!guardsHeld) { Debug.LogError("ENVIRONMENT: an intensity left its runaway guard in twenty years at no policy."); ok = false; }
             if (!headlineHeld) { Debug.LogError("ENVIRONMENT: the headline fell below the sum of its sector keys."); ok = false; }
             float[] taxed = RunSweden(Years, taxDeltaPoints: 20f, out _, out _);
-            if (!(taxed[0] < untouched[0]) || !(taxed[1] < untouched[1]) || !(taxed[2] < untouched[2])) { Debug.LogError($"ENVIRONMENT: with the carbon tax up twenty points, power {taxed[0]:F3} / transport {taxed[1]:F3} / headline {taxed[2]:F3} are not below untouched {untouched[0]:F3} / {untouched[1]:F3} / {untouched[2]:F3}."); ok = false; }
+            // EN-3 (2026-09-11): Sweden's power figure is written by the dispatch, and Sweden has no dispatchable fossil fleet (its fossil thermal is heat-led CHP), so a carbon tax cannot lower
+            // it - the figure HOLDS; transport and the headline still fall through the readout coupling. Where the coal is, Poland, EnergyMarketDiagnostic proves the mechanism.
+            if (!(taxed[0] <= untouched[0] + 1e-6f) || !(taxed[1] < untouched[1]) || !(taxed[2] < untouched[2])) { Debug.LogError($"ENVIRONMENT: with the carbon tax up twenty points, power {taxed[0]:F3} / transport {taxed[1]:F3} / headline {taxed[2]:F3} are not below untouched {untouched[0]:F3} / {untouched[1]:F3} / {untouched[2]:F3}."); ok = false; }
 
             Debug.Log($"ENVIRONMENT: seeds - greenhouse gases and power and transport CO₂ per person for six (EDGAR 2024, 2023), the electricity mix a fetch. Sweden after {Years} years - untouched: power {untouched[0]:F2} t, transport {untouched[1]:F2} t, headline {untouched[2]:F2} t; "
                 + $"carbon tax raised twenty points through the decision: {taxed[0]:F2} t, {taxed[1]:F2} t, {taxed[2]:F2} t - lower: the couplings move the stated way. The tax's revenue base is the taxed CO₂ since 2026-09-07 (EnvironmentFeedbackDiagnostic).");

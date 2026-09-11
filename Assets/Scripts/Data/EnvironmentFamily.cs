@@ -1,3 +1,4 @@
+using PoliSim.Simulation;
 using UnityEngine;
 
 namespace PoliSim.Data
@@ -7,12 +8,13 @@ namespace PoliSim.Data
     /// lower ◂ · power / transport split → DISTRIBUTION of the key (stacked bar under it) · generation by source → DISTRIBUTION - the family picks
     /// one"), from the spine `ENVIRONMENT_FAMILY_SPINE.md` (the EDGAR 2024 booklet, verified by content; World Bank populations for the per-head
     /// division). Per country: greenhouse gases per capita 2023 (the headline, all gases), CO₂ from the power industry and from transport per capita
-    /// 2023. The electricity mix is a FETCH with no figure (Ember refused the fetch; Eurostat nrg_bal_c and the EIA are named).
+    /// 2023. The electricity mix seeded 2023 (Ember, cross-checked §342) is the energy layer's calibration target; the plate shows the dispatched one.
     ///
-    /// THE COUPLINGS ARE READOUTS, NOT FEEDBACK: the family reads the carbon tax's rate against its seed and the energy and infrastructure lines per
-    /// head against their seeds, and moves the two sector figures; the headline is derived from them with the other sectors held at their seed
-    /// share. The carbon tax's BASE moved to these metrics on 2026-09-07 (TaxBases.Emissions: power and transport CO₂ per head × population; COMPLETED.md §349) - it had stayed on output since P5-B3 (a revenue change is
-    /// BASELINE and its own pass).
+    /// THE WRITERS, SINCE EN-3 (2026-09-11): the POWER figure is written by the energy market's dispatch (EnergyMarket - the fossil generation's CO₂
+    /// at each category's factor and main-activity share, plus the seed residual of heat plants, CHP heat and refineries, over the population); the
+    /// family's power elasticity is retired. The TRANSPORT figure keeps its readout couplings - the carbon tax's rate against its seed and the
+    /// infrastructure line per head against its seed. The headline is derived from the two with the other sectors held at their seed share. The
+    /// carbon tax's BASE moved to these metrics on 2026-09-07 (TaxBases.Emissions: power and transport CO₂ per head × population; COMPLETED.md §349).
     /// </summary>
     public sealed class EnvironmentSeeds
     {
@@ -22,21 +24,24 @@ namespace PoliSim.Data
         public float TransportCo2PerCapita = Absent; // t CO₂ per person, 2023 (EDGAR Transport ÷ WB population)
         public const int Year = 2023;
         /// <summary>The electricity mix 2023, % of generation - coal, gas, nuclear, hydro, wind, solar, other (the remainder to 100): Ember via Our World in Data,
-        /// cross-checked against Eurostat nrg_bal_peh (the five) and the EIA's Table 1.1 (the USA) within a point (§342, 2026-09-06). A static seed - nothing moves it.</summary>
+        /// cross-checked against Eurostat nrg_bal_peh (the five) and the EIA's Table 1.1 (the USA) within a point (§342, 2026-09-06). The seed the dispatch is calibrated to (EnergyLayerCheck); the plate draws the dispatched mix.</summary>
         public float[] MixShares = null;
         public bool HasMix => MixShares != null && MixShares.Length == 7;
         public float CarbonTaxRateSeed;            // the carbon tax's rate at the seed, % (0 when the line is not implemented)
-        public float EnergyPerHeadSeed;
         public float InfrastructurePerHeadSeed;
+        /// <summary>EN-3: the power figure's residual by method at the seed, Mt - the seed per head × the population less the seed dispatch's own CO₂ (heat plants, CHP heat, refineries, the factor gap); held constant.</summary>
+        public float PowerResidualMt;
+        /// <summary>EN-3: the population the seed dispatch was divided by, millions - the per-head figure is the 2023 SYSTEM's per head until a stage grows the fleet and the load with the country (the system scales with the population meanwhile; the base per head × population follows it).</summary>
+        public float PowerPopulationSeedM;
+        /// <summary>EN-3: the power figure is written by the dispatch (true for the six the energy layer covers).</summary>
+        public bool PowerFromDispatch;
         public bool Seeded;
     }
 
     public static class EnvironmentFamily
     {
-        /// <remarks>[AUTHORED-DRAFT] - the sector intensities' fall per point of carbon tax above the seed's rate (a tenth of a percent of the intensity per point); checked against the six's own spread - Poland's 3.21 t against France's 0.35 is the mix, not the tax.</remarks>
+        /// <remarks>[AUTHORED-DRAFT] - the TRANSPORT intensity's fall per point of carbon tax above the seed's rate (a tenth of a percent of the intensity per point); the power half retired at EN-3, dispatch being the tax's mechanism there.</remarks>
         public const float CarbonTaxElasticityPerPoint = 0.004f;
-        /// <remarks>[AUTHORED-DRAFT] - the power intensity's elasticity to real energy spending per head against its seed (the energy line buys the transition).</remarks>
-        public const float PowerEnergyLineElasticity = 0.15f;
         /// <remarks>[AUTHORED-DRAFT] - the transport intensity's elasticity to real infrastructure spending per head against its seed (rail and public transport).</remarks>
         public const float TransportInfrastructureElasticity = 0.1f;
         /// <remarks>[AUTHORED-DRAFT] - a yearly reversion toward the targets; the spine notes Poland's power emissions fell a fifth in one year, so the band holds that speed.</remarks>
@@ -64,11 +69,12 @@ namespace PoliSim.Data
             st.PowerCo2PerCapita = s.PowerCo2PerCapita;
             st.TransportCo2PerCapita = s.TransportCo2PerCapita;
             s.CarbonTaxRateSeed = CarbonTaxRate(country);
-            s.EnergyPerHeadSeed = PerHead(country, SpendingCategory.Energy, SpendingCategory.ClimateAndEnvironment);
             s.InfrastructurePerHeadSeed = PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation);
             // The feedback pass (2026-09-07): the family seeds AFTER Country.CaptureStructuralBases, so the emissions reference the carbon base follows is written here, at the
             // seed's own level (otherwise the existing first-read rule would anchor it a year late).
             if (country.RevenueBaseSeeds != null && country.RevenueBaseSeeds.Length > (int)TaxBaseDriver.Emissions) { country.RevenueBaseSeeds[(int)TaxBaseDriver.Emissions] = TaxBases.Level(TaxBaseDriver.Emissions, country); }
+            // EN-3 (2026-09-11): the power figure's residual by method, so the dispatch reproduces the seed exactly at year 0 and writes the figure from then on
+            EnergyMarket.SeedResidual(country);
             s.Seeded = true;
         }
 
@@ -96,32 +102,25 @@ namespace PoliSim.Data
             return real / Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDriver.Population, country));
         }
 
-        public readonly struct Targets
-        {
-            public readonly float Power, Transport;
-            public Targets(float power, float transport) { Power = power; Transport = transport; }
-        }
-
-        /// <summary>The intensities' targets: the seed times (1 − e × the carbon tax's points above its seed), floored, times the spending terms.</summary>
-        public static Targets TargetsFor(Country country, float carbonTaxRate, float energyPerHead, float infrastructurePerHead)
+        /// <summary>The transport intensity's target: the seed times (1 − e × the carbon tax's points above its seed), floored, times the infrastructure term.</summary>
+        public static float TransportTargetFor(Country country, float carbonTaxRate, float infrastructurePerHead)
         {
             EnvironmentSeeds s = country.Environment;
             float taxFactor = Mathf.Max(0.1f, 1f - CarbonTaxElasticityPerPoint * (carbonTaxRate - s.CarbonTaxRateSeed));
-            float energyRatio = s.EnergyPerHeadSeed > 0f ? Mathf.Max(0.01f, energyPerHead / s.EnergyPerHeadSeed) : 1f;
             float infraRatio = s.InfrastructurePerHeadSeed > 0f ? Mathf.Max(0.01f, infrastructurePerHead / s.InfrastructurePerHeadSeed) : 1f;
-            float power = Mathf.Clamp(s.PowerCo2PerCapita * taxFactor * Mathf.Pow(1f / energyRatio, PowerEnergyLineElasticity), MinIntensity, MaxIntensity);
-            float transport = Mathf.Clamp(s.TransportCo2PerCapita * taxFactor * Mathf.Pow(1f / infraRatio, TransportInfrastructureElasticity), MinIntensity, MaxIntensity);
-            return new Targets(power, transport);
+            return Mathf.Clamp(s.TransportCo2PerCapita * taxFactor * Mathf.Pow(1f / infraRatio, TransportInfrastructureElasticity), MinIntensity, MaxIntensity);
         }
 
+        /// <summary>The yearly step. POWER: the dispatch writes it (EN-3) - no reversion, the year's clearing is the year's figure. TRANSPORT: its target under the readout couplings, reverted toward at the family's rate.</summary>
         public static void AdvanceYear(Country country)
         {
             EnvironmentSeeds s = country.Environment;
             if (s == null || !s.Seeded) { return; }
             EconomyState st = country.State;
-            Targets t = TargetsFor(country, CarbonTaxRate(country), PerHead(country, SpendingCategory.Energy, SpendingCategory.ClimateAndEnvironment), PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
-            st.PowerCo2PerCapita = Mathf.Clamp(st.PowerCo2PerCapita + (t.Power - st.PowerCo2PerCapita) * ReversionPerYear, MinIntensity, MaxIntensity);
-            st.TransportCo2PerCapita = Mathf.Clamp(st.TransportCo2PerCapita + (t.Transport - st.TransportCo2PerCapita) * ReversionPerYear, MinIntensity, MaxIntensity);
+            float rate = CarbonTaxRate(country);
+            if (s.PowerFromDispatch) { st.PowerCo2PerCapita = Mathf.Clamp(EnergyMarket.PowerCo2PerHead(country, rate), MinIntensity, MaxIntensity); }
+            float transportTarget = TransportTargetFor(country, rate, PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
+            st.TransportCo2PerCapita = Mathf.Clamp(st.TransportCo2PerCapita + (transportTarget - st.TransportCo2PerCapita) * ReversionPerYear, MinIntensity, MaxIntensity);
         }
 
         /// <summary>The headline, derived: the seed's greenhouse gases per capita with the two sector figures' moves carried through and the other sectors held at their seed share.</summary>
@@ -133,12 +132,12 @@ namespace PoliSim.Data
             return Mathf.Max(0f, s.GhgPerCapita - (s.PowerCo2PerCapita - st.PowerCo2PerCapita) - (s.TransportCo2PerCapita - st.TransportCo2PerCapita));
         }
 
-        /// <summary>Next year's power intensity for a given carbon tax rate - the 5c arrow while a tax draft is live.</summary>
+        /// <summary>Next year's power intensity for a given carbon tax rate - the 5c arrow while a tax draft is live: the dispatch at that rate (EN-3), the standing figure where no dispatch covers the country.</summary>
         public static float ProjectPowerCo2(Country country, float carbonTaxRate)
         {
-            Targets t = TargetsFor(country, carbonTaxRate, PerHead(country, SpendingCategory.Energy, SpendingCategory.ClimateAndEnvironment), PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
-            float now = country.State.PowerCo2PerCapita;
-            return Mathf.Clamp(now + (t.Power - now) * ReversionPerYear, MinIntensity, MaxIntensity);
+            EnvironmentSeeds s = country.Environment;
+            if (s == null || !s.PowerFromDispatch) { return country.State.PowerCo2PerCapita; }
+            return Mathf.Clamp(EnergyMarket.PowerCo2PerHead(country, carbonTaxRate), MinIntensity, MaxIntensity);
         }
     }
 }
