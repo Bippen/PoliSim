@@ -1019,6 +1019,10 @@ namespace PoliSim.Data
                 // into the static table - the substrate becomes mutable the moment the aging step lands,
                 // and a shared array would age every other game with this one.
                 country.Cohorts = PopulationPyramids.For(country.Id);
+                // F4-1 (2026-09-12): the pyramid's INCOME dimension - one log-normal per band, derived from the publisher's
+                // mean and median per age band (the generated catalog off ElectionsData/income). A readout: nothing in
+                // EconomyState derives from it; F4-2's schedules and PN-2's payment readout are its readers.
+                Generated.CohortIncomeSeeds.Apply(country.Cohorts, country.Id);
                 // F2 step 4 (2026-09-02): the pyramid IS the demography now. The seed is the 2024 stock;
                 // the game opens in 2026, so the seed is walked two neutral years along the publisher's
                 // own trajectory, and the eight demographic scalars the constructor above seeded (the

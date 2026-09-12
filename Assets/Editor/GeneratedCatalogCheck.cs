@@ -118,6 +118,7 @@ namespace PoliSim.EditorTools
             failures += CheckValkretsPopulation(sb);
             failures += CheckItanes(sb);
             failures += CheckEnergy(sb);
+            failures += CheckCohortIncome(sb);
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -166,6 +167,44 @@ namespace PoliSim.EditorTools
                 }
             }
             sb.Append($"    ItanesVoteByAge: two sources at their recorded digests, 6 bands x {ItanesVoteByAge.Parties.Length} parties per wave, every band's columns within its weight sum ({failures} fault(s)).\n");
+            return failures;
+        }
+
+        /// <summary>
+        /// F4-1 (2026-09-12): `CohortIncomeSeeds` against the one file it was generated from, plus the catalog's own shape - six
+        /// countries, 21 entries each, a positive median and sigma on every cohort from 15 up and zeros below, the anchor present.
+        /// </summary>
+        private static int CheckCohortIncome(StringBuilder sb)
+        {
+            int failures = 0;
+            string path = Path.Combine(Directory.GetCurrentDirectory(), CohortIncomeSeeds.SourcePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path)) { Debug.LogError($"CATALOG: {CohortIncomeSeeds.SourcePath} is not on disk, so the income catalog cannot be verified."); return 1; }
+            string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(path));
+            if (!string.Equals(onDisk, CohortIncomeSeeds.SourceDigest, StringComparison.OrdinalIgnoreCase))
+            {
+                failures++;
+                Debug.LogError($"CATALOG: {CohortIncomeSeeds.SourcePath} changed since the income catalog was generated (on disk {onDisk}, recorded {CohortIncomeSeeds.SourceDigest}). Re-run CohortIncomeCatalogGenerator - and read the diff first: a sourced file changing is an event somebody explains.");
+            }
+            int countries = 0;
+            foreach (KeyValuePair<CountryId, float[]> e in CohortIncomeSeeds.Median)
+            {
+                countries++;
+                if (!CohortIncomeSeeds.Sigma.TryGetValue(e.Key, out float[] sigma) || e.Value.Length != PopulationCohorts.CohortCount || sigma.Length != PopulationCohorts.CohortCount)
+                {
+                    failures++; Debug.LogError($"CATALOG: the income catalog's {e.Key} does not carry {PopulationCohorts.CohortCount} medians and sigmas."); continue;
+                }
+                for (int i = 0; i < PopulationCohorts.CohortCount; i++)
+                {
+                    bool below15 = i * PopulationCohorts.CohortWidth < 15;
+                    bool ok = below15 ? (e.Value[i] == 0f && sigma[i] == 0f) : (e.Value[i] > 0f && sigma[i] > 0f && !float.IsInfinity(sigma[i]));
+                    if (ok) { continue; }
+                    failures++;
+                    Debug.LogError($"CATALOG: the income catalog's {e.Key} cohort {PopulationCohorts.Label(i)} reads median {e.Value[i]} sigma {sigma[i]} - {(below15 ? "a cohort below 15 must carry no dimension" : "a cohort from 15 up must carry a positive median and sigma")}.");
+                }
+                if (!CohortIncomeSeeds.AnchorMean.ContainsKey(e.Key) || !CohortIncomeSeeds.Unit.ContainsKey(e.Key)) { failures++; Debug.LogError($"CATALOG: the income catalog's {e.Key} has no anchor or unit."); }
+            }
+            if (countries != 6) { failures++; Debug.LogError($"CATALOG: the income catalog carries {countries} countries, not six."); }
+            sb.Append($"    CohortIncomeSeeds: the source at its recorded digest, {countries} countries × {PopulationCohorts.CohortCount} cohorts, medians and sigmas positive from 15 up and zero below.\n");
             return failures;
         }
 

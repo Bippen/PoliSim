@@ -14,7 +14,7 @@ tariff is a *formula* (§32a EStG), France's is a *quotient familial*, Italy's i
 bracket table represents any of them.
 
 ⚠ **The trigger, so this row is re-readable a month from now:** P-I2 reaches the point where the cohort
-substrate carries an income dimension. Not a date. **The pyramids, the aging step and the anchor have landed, and F2's steps 4–5 with them** (§195, §199; this sentence read "stages 1 and 2" until §474 corrected its count); the substrate is currently **sex-blind and income-blind**, so the trigger has NOT fired - **and the pass that fires it is scheduled: F4-1, the income dimension as a readout (`POLISIM_BACKLOG_PLAN.md`, §474).**
+substrate carries an income dimension. Not a date. **The pyramids, the aging step and the anchor have landed, and F2's steps 4–5 with them** (§195, §199; this sentence read "stages 1 and 2" until §474 corrected its count); the substrate was sex-blind and income-blind until 2026-09-12 - **the trigger FIRED at F4-1 (`COMPLETED.md` §479): every pyramid carries one log-normal per five-year cohort, derived from the publisher's mean and median (Eurostat `ilc_di03`, the CPS's PINC-01), a READOUT nothing in `EconomyState` reads yet.** The sex dimension stays absent. What this row now waits on is its own build - F4-2 (S2(b) pluggable schedules), the plan's S3a, the first BASELINE family of the tax chain.
 
 ⚠ **One thing this ruling does NOT foreclose, and one it does.** It does not foreclose sourcing: §3's
 five billed countries can be sourced at any time, and that work is not wasted whichever branch runs. It

@@ -43,6 +43,37 @@ namespace PoliSim.Data
         /// <summary>Millions of persons per band, index 0 = ages 0–4.</summary>
         public float[] Counts = new float[CohortCount];
 
+        /// <summary>
+        /// F4-1 (2026-09-12, the backlog plan's S2; DS-2 ruled (c)): **the income dimension** - one log-normal per
+        /// band, index-aligned with <see cref="Counts"/>: the band's median income in the source's own unit and
+        /// year (`IncomeUnit`, income year 2023) and the log-normal's sigma, DERIVED from the publisher's mean and
+        /// median (sigma² = 2 ln(mean ÷ median)); seeded by `Generated.CohortIncomeSeeds.Apply` from the catalog the
+        /// generator emits off `ElectionsData/income/income_by_age_2024.csv`. **0 and 0 below 15**: no income
+        /// dimension, and <see cref="HasIncome"/> reads it so - not a NaN, which a JSON save would carry as text.
+        ///
+        /// <para>⚠ <b>A READOUT, and nothing reads it yet but the substrate diagnostic.</b> Nothing in
+        /// `EconomyState` derives from it (the trajectory family is byte-identical - DS-2b: `Gini` stays a
+        /// calibrated gate with its writer unchanged until a schedule reads the distribution). The readers it
+        /// exists for are F4-2's tax schedules and PN-2's payment readout; the aging step leaves it in place - a
+        /// band's shape is the band's, whoever is in it this year - which is the sub-band assumption the
+        /// generator states (a five-year cohort inside a wider published band carries the band's shape).</para>
+        ///
+        /// <para>⚠ <b>Two concepts, never compared across.</b> Eurostat's is equivalised net HOUSEHOLD income per
+        /// person; the CPS's is total money income per PERSON 15+ with income, before tax. `IncomeConcept` carries
+        /// the source's own words; the shape (mean ÷ median) is what a reader may compare, the levels are in the
+        /// source's unit and are converted by the reader that needs to, with its reason.</para>
+        /// </summary>
+        public float[] IncomeMedian = new float[CohortCount];
+        public float[] IncomeSigma = new float[CohortCount];
+        public string IncomeUnit = "";
+        public string IncomeConcept = "";
+
+        /// <summary>DERIVED: whether the band carries an income dimension (15+ once seeded; never below 15).</summary>
+        public bool HasIncome(int index) => IncomeMedian != null && index >= 0 && index < IncomeMedian.Length && IncomeMedian[index] > 0f;
+
+        /// <summary>DERIVED: the band's mean income from its log-normal, median × exp(sigma² / 2) - the publisher's own mean, recovered; 0 where there is no dimension.</summary>
+        public float IncomeMean(int index) => HasIncome(index) ? IncomeMedian[index] * Mathf.Exp(0.5f * IncomeSigma[index] * IncomeSigma[index]) : 0f;
+
         public PopulationCohorts() { }
 
         public PopulationCohorts(float[] counts)
@@ -55,7 +86,15 @@ namespace PoliSim.Data
             Counts = (float[])counts.Clone();
         }
 
-        public PopulationCohorts Clone() => new PopulationCohorts(Counts);
+        public PopulationCohorts Clone()
+        {
+            var copy = new PopulationCohorts(Counts);
+            // F4-1: the dimension travels with the pyramid - a clone without it would read as "no income" and pass HasIncome silently.
+            copy.IncomeMedian = IncomeMedian == null ? new float[CohortCount] : (float[])IncomeMedian.Clone();
+            copy.IncomeSigma = IncomeSigma == null ? new float[CohortCount] : (float[])IncomeSigma.Clone();
+            copy.IncomeUnit = IncomeUnit; copy.IncomeConcept = IncomeConcept;
+            return copy;
+        }
 
         /// <summary>DERIVED: the population as the cohorts themselves state it, in millions.</summary>
         public float Total
