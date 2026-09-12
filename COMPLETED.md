@@ -26746,3 +26746,55 @@ Sweden's row reads **0,735** at 1280 (was 22 054 in units: 3 330 ÷ 151 px ÷ 30
 **What is unchanged, stated.** The rate's readout (§260), the statute's carry (§471), the political scale of a change (`TaxLine.PointsOf` - the same hundredth of the ceiling, which is why the grain is that hundredth), every rate-in-points row's step and reach, the trajectory suite (a UI pass: the dump reads no slider). The Policy Web's node panel draws the same row through the same call and inherits the grain; its reach is reported, never judged, as before.
 
 **Bar:** `bar396_en8` **38 of 38** on the tree this record reads - residue 10 (EN-8 ✅ by its marker), 12 ratchets tight.
+
+## 485. THE STANDING LIST, CYCLED AFTER S-D20 AND EN-8 — the residue at ten, the Design ask out on our side, the calendar's row due today, the two passes' own sheets marked (2026-09-13)
+
+**The ruling:** *"the standing list after each landed pass"* (§474); *"Then the standing list"* (§483's ruling).
+
+**Ratchets.** `RatchetSlackCheck` on this cycle's bar: **12 reported, 12 tight** (`bar396_en8`), the ledger printed whole rather than recalled:
+
+| ratchet | measured | ceiling | verdict |
+|---|---|---|---|
+| `PartyMarkCoverageCheck.UNCONSUMED` | 0 | 0 | tight |
+| `DeadStateCheck.UNREACHED` | 0 | 0 | tight |
+| `DeadStateCheck.WRITE_ONLY` | 0 | 0 | tight |
+| `ConstantProvenanceCheck.UNMARKED` | 0 | 0 | tight |
+| `UnwiredSubsystemCheck.UNWIRED` | 2 | 2 | tight |
+| `UnwiredSubsystemCheck.UNREACHABLE` | 2 | 2 | tight |
+| `EvidenceDiscriminationCheck.NO_FAILURE_PATH` | 0 | 0 | tight |
+| `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` | 0 | 0 | tight |
+| `DocumentClaimCheck.MEMBER_GONE` | 0 | 0 | tight |
+| `DocumentClaimCheck.WRONG_OWNER` | 0 | 0 | tight |
+| `MojibakeCheck.SUSPECT_RUNS` | 1 | 1 | tight |
+| `PreWiringPremiseCheck.ASSERTED` | 0 | 0 | tight |
+
+The cheap bar is **38** and the simulation group **47**; neither pass ran a family (S-D20 wrote documents; EN-8 is a UI pass - the dump reads no slider), so no trajectory label moved.
+
+**The residue** reads **10** (`bar396_en8`, 433 files scanned; EN-8 ✅ by its marker at §484): F4-2, F4-3, F4-4, PN-1, PN-2, PN-3, EN-7, CL-2, CL-3, CL-4. The exclusions stay **19** by name (Elias's, Design's and the calendar's rows, printed above the count). **What moved in the rows' readiness:** D20 is out on our side (E-35, sending Elias's) and Design's round-trip now overlaps the three families the plan sequenced; the tax chain's next pass is F4-2 (the plan's S3a), the pension chain's PN-1 (S5), the campaign's CL-2 (S-C2), each on its sheet; EN-7 (stage 5) waits on §378 - Elias's, the dials-only laws - with its page strip standing.
+
+**The deferral register, re-read literally after S-D20 and EN-8:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 .. T-7 | as at §480 | **NOT FIRED** (T-3 FIRED, Elias's) - a document ask and a slider's grain read nothing of the model |
+| **T-8 EN-3c** | *stage 5's fleet reads its inframarginal rent; the three folds fetched first* | **NOT FIRED** - the page prints the rent (§481); nothing reads it; D20's batch 1 asks a composition, not a coupling |
+| F-1 .. F-5, F-7 | the elections' deferred set | **NOT FIRED** - as at §478 |
+| D-3's trigger | fired §479 | **FIRED**; F4-2 sequenced |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The errands, the calendar, the documents.** E-3 and E-6 open as before; **E-35 opened at §483** (Paste D20 - one paste of 48 artefacts, sending Elias's by the §E2 convention), **E-32 withdrawn** into the done table as superseded, its content carried whole beneath D20. **K-1 is TODAY, 13 September 2026 - the calendar's row** (the seed refresh from Sweden's real result), not a session's to take; K-2 on 29 January 2027. `ls *.md` returns **23**, `Tools/` holds **15**; the three numbered constants read their listed values (`CampaignPressure.PersuasionPerCompatibilityPoint` 40000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500000, read off the code by this record's script (the first run of that script read the doc comment's spaced "40 000" as 40 - corrected against the declaration before the bar)); no file added by the two passes (documents, and four runtime files edited: `TaxLine.cs`, `LedgerRow.cs`, `GameController.cs`, `UiScreenshotDriver.cs`). Save format **10**, untouched.
+
+**This cycle's self-ruled sheets, marked** (§483's and §484's):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §483 | Design's board 14a (2026-09-11, drawn from the spec-let before the build) taken as its answer to the spec-let's board ask; batch 1 written as a reconciliation against it | **HOLDS** - 14a asserts no instruction the record lacks; the D11 way is the reading the ruling named |
+| §483 | 12a–12f and the redirect note each STOPPED as a board on the instruction it rests on; no instruction recorded as Elias's; 12a/12b/12d beyond the cap NOT READ and said so | **AS RULED** (DS-5) |
+| §483 | batch 4 dissolved - the page's rows draw no icon, nothing declared, the generated block unchanged | **HOLDS** - "a batch that unblocks nothing is not requested"; declaring nodes for figures nothing draws an icon for is queued art |
+| §483 | ONE paste with E-32's unpasted content beneath; E-32 withdrawn as superseded | **HOLDS** - the D12-under-D13 precedent (E-11); nothing asked twice |
+| §483 | the rail cell asked as a question, declared only if the board says the page needs it | **AS RULED** (DS-4b) |
+| §484 | the grain as the ceiling's hundredth rounded to ten, never under ten - on the line, in the row's unit | **HOLDS** - the same hundredth `PointsOf` reads; every film's Budget verdict under the bound at both widths |
+| §484 | a linear track kept, the log scale not taken; the step printed under the name on 9d's second line | **HOLDS, with one re-cut** - the first proof frame printed "30 SEK/t STEPS" and the 1280 name cell (73 px) took the ladder down to the bare number; the line was cut to "BY 30 SEK/t" and re-filmed before the record was written |
+| §484 | one sweep frame added (`05a_budget_tax_rows`) so the row's printed step is on film | **HOLDS** - the 05b precedent; the row was below the fold in every frame the sweep had |
+
+**Bar:** `bar396_en8` **38 of 38** on the tree this record reads - residue 10, 12 ratchets tight; `bar398_shelf` **38 of 38** after this record was written from that reading (residue 10, 12 tight), the two checks that read the documents among the thirty-eight.
