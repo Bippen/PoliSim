@@ -47,6 +47,7 @@ namespace PoliSim.EditorTools
             ("FT-6", "OWNER ELIAS", "the long-horizon inflation drift - measured and three forms proposed (§379); the hold on inflation is a macro-core specification, ruled not typed"),
             ("K-1", "CALENDAR", "the seed refresh from Sweden's real result - 13 September 2026"),
             ("K-2", "CALENDAR", "Svenska kraftnat's report on Sweden's bidding-zone division - 29 January 2027; reporting is not enacting, and only an enacted change moves the seed (§456)"),
+            ("OP-1", "OWNER ELIAS", "losing office - continue in opposition or end the run: a sheet, not a build, answerable only after a campaign is played (DS-6, §474)"),
         };
 
         /// <summary>Documents that are an excluded owner's in their entirety, with the row that owns them.</summary>

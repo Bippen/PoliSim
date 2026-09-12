@@ -4,7 +4,7 @@
 is meant to be struck, amended or approved on its own; §7 is a recommendation and is strikeable whole.
 The precedent is C-C12's `POLISIM_TAX_SPECLET.md` (E-27) and C-C13: the spec-let is ruled before any code.
 
-**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455) and **stage 2's build landed after it (§457): `EnergyLayer`, `EnergyLayerData`, `EnergyLayerCheck`, `EnergyLayerDump` → `ENERGY_LAYER_PREMISE.md` - readouts, the family's writer unchanged until stage 3.** **Stage 3 (EN-3) LANDED 2026-09-11 (§458–§460): `EnergyMarket` clears every block of every zone; the power figure's writer is the dispatch and the S4 deviation is closed; its own BASELINE family (`traj_en3`).** Stage 4 (EN-4) is the next energy code. The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
+**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written - **S14 amended 2026-09-12 (DS-4, §474)**, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455) and **stage 2's build landed after it (§457): `EnergyLayer`, `EnergyLayerData`, `EnergyLayerCheck`, `EnergyLayerDump` → `ENERGY_LAYER_PREMISE.md` - readouts, the family's writer unchanged until stage 3.** **Stage 3 (EN-3) LANDED 2026-09-11 (§458–§460): `EnergyMarket` clears every block of every zone; the power figure's writer is the dispatch and the S4 deviation is closed; its own BASELINE family (`traj_en3`).** Stage 4 (EN-4) is the next energy code. The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
 
 **What this document is not.** `ENERGY_SYSTEM_ADAPTED.md` is the concept adapted to this game; the
 concept itself is an external research summary. **No figure from either is a datum.** Every number in
@@ -253,9 +253,7 @@ from, and that is its whole standing.
   inflation except by the typed constant it was meant to replace.
 - **S13. No energy quantity is daily.** The clearing is annual at the turn boundary; a shock within
   the year enters the daily GDP path over its duration by FT-9 and nothing else. Stated on the screen.
-- **S14. The screen after stages 2–5, on Design's board, once the redirect is recorded** (2.3).
-  Until then a diagnostic dump (`EnergyLayerDump`, the `BUDGET_PREMISE.md` pattern) is the only
-  presentation - readable, generated, never a figure typed.
+- **S14. ~~The screen after stages 2–5, on Design's board, once the redirect is recorded~~ AMENDED 2026-09-12 (DS-4, `COMPLETED.md` §474): the page ships STRUCTURALLY FIRST in the v3 grammar, the board second, read the D11 way against the built page** (2.3). Elias: *"Structural ship first in the v3 grammar, the board second, read the D11 way against a built page. The D19 way worked: real parts make a better ask than a description does. I ruled S14 and I am amending it."* Its home: the Sectors page now, the rail cell asked in D20 and taken only if the page proves it needs one (DS-4b). As it stood, a diagnostic dump (`EnergyLayerDump`, the `BUDGET_PREMISE.md` pattern) was the only presentation until the redirect was recorded - readable, generated, never a figure typed; the dump stays the record's presentation beside the page (EN-6).
 - **S15. Do not start stage 2 before the Sweden transfer capacities are in hand** (3.2). Four zones
   without the links between them is one zone drawn four times.
 
@@ -267,8 +265,8 @@ from, and that is its whole standing.
 | 2 | the physical layer: sourcing six countries (rows 2–6, 8–12, 18) then the fleet, the blocks, Sweden's four zones, the derived mix and power CO₂ with the EDGAR residual; `EnergyLayerDump`; its BASELINE against §404's dump; the §2.1 gates | **3** (two sourcing - the Eurostat rows are one session by API, ENTSO-E/EIA/Svk one with accounts - one build) | S1–S5, S15; the ENTSO-E account (Elias's, an errand) |
 | 3 | the market layer: variable costs (rows 13–15), merit order, transfer constraints, scarcity, negative prices, congestion rent | **2–3** | stage 2 |
 | 4 | the fiscal layer: the two ledgers, the retail stack seeded and checked against row 7, support lines appended and indexed, the Energy sector row derived, `EnergySpendingChange` retired; **then, its own pass**, the HICP pass-through (S8) | **2 + 1** | stage 3; S7 then S8 |
-| 5 | policy and laws: the five dials mapped onto the instruments, a law category reaching the energy parameters | **2** | stage 4; the §378 ruling on dials-only laws (shared) |
-| 6 | the screen, on the boards once recorded and verified | **1–2** | Elias records the redirect; Design's boards read the D11 way |
+| 5 | policy and laws: the five dials mapped onto the instruments, the ONE law category reaching the energy parameters - **its own item, cited (§378 ruled 2026-09-12, §474: "the wider dials-only set follows P4-C3's one-category-per-session pattern and does not block stage 5")** | **2** | stage 4 (landed); EN-7 |
+| 6 | the screen - **structural first (S14 as amended, DS-4), then Design's board read the D11 way against the built page** | **1–2** | stage 4 (landed); EN-6, then D20's answer |
 | 7 | the ministry | **2** | stage 5 |
 | 8 | events, state-triggered, duration-bearing; the §407 tag struck | **1** | stage 4's S8 |
 

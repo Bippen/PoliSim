@@ -26413,3 +26413,35 @@ France, Italy and the USA have no exchange fold on this machine (`energy_hydro_p
 | §472 | EN-3c as a trigger row with a defence clause, T-8 | **AS RULED** |
 
 **Bar:** `bar371_en3c` **38 of 38** on the tree this record reads - the residue zero, 12 ratchets tight; `bar372_shelf` **38 of 38** after this record was written from that reading, the two checks that read the documents among the thirty-eight..
+
+## 474. THE TEN SHEETS, RULED — the four-item plan installed as a document, its rulings applied to the two spec-lets, its rows opened in the register (2026-09-12)
+
+**What was put to Elias.** A plan over four backlog items - individual tax rates by bracket, pension age and average pension payment, the energy tab, the election-and-campaign prototype - and the one Design ask they share (D20), written in plan mode on the measured tree (three read-only sweeps and a design check; nothing built). Its findings in one breath: the tax item is blocked by D-3's trigger and by nothing else once S7 is struck, and the income dimension can land as a byte-identical readout because nothing reads it until a schedule does; the pension payment needs no lever (the line is headcount × benefit, RF-2-indexed) and the age is the one new lever, on `CarbonRateStatute`'s precedent; the energy page's every instrument is landed but S14 as ruled forbids a structural ship and stage 5 waits on §378; the campaign loop's 26-week pre-campaign and its eight verbs are built but never run (`SimulationManager.AdvanceCampaign` returns before the campaign start), so three of the twenty unjudged constants cannot be judged at all, the rule is lose-only, and "who is the player" was never ruled. The plan is `POLISIM_BACKLOG_PLAN.md`, installed at the root and charted.
+
+**The rulings, verbatim (Elias, 2026-09-12):**
+
+- **DS-1 — strike S7.** *"Its premise died at C-N4/§345/FT-5; a stale ruling that blocks live work is worse than none."*
+- **DS-2 — (c).** *"Log-normal per band from ilc_di03's mean ÷ median, with national deciles printed as a cross-check, never fitted to them."*
+- **DS-2b — the gate.** *"Gini stays a calibrated gate with its writer unchanged; S2 must land byte-identical or it is not a readout. Gini becoming derived is its own family, later."*
+- **DS-2c — uniform shift.** *"One dial shifts every rate; per-bracket rows come with the schedule row's grammar, not before."*
+- **DS-2d — one line, two layers.** *"S5's constraint holds (one revenue figure per TaxType, so the decompositions don't change shape) and S6's intent holds (kommunal + statlig are two real instruments). Both, not either."*
+- **DS-3 — statute + dial**, *"on CarbonRateStatute's precedent: one rule per country with its paragraph, stepped at the boundary, a passed bill's figure wins."*
+- **DS-3b — the fraction, stated.** *"Snapping to the band would make a two-year reform invisible, which is the opposite of what the lever is for."*
+- **DS-3c — state the seam now.** *"Potential's 20–64 window is printed as a deviation; re-forming labour input to Σ(band × rate) is its own family after B3, because it re-solves six seed potentials (§394's precedent) and must not ride inside a pension pass."*
+- **DS-3d — the Budget group.** *"The pension line is a budget line; a seventh society family would split one fact across two homes."*
+- **DS-4 — amend S14.** *"Structural ship first in the v3 grammar, the board second, read the D11 way against a built page. The D19 way worked: real parts make a better ask than a description does. I ruled S14 and I am amending it."*
+- **DS-4b** — *"the Sectors page now, the rail cell asked in D20 and taken only if the page proves it needs one."*
+- **DS-5 — half taken.** *"Open the energy ask on our side: yes. Recording 12a–12f's four revisions as my instructions: no — I did not give them, and I do not record instructions I did not give (the §6.3 precedent). The boards are Design's answer to our D19 and are legitimate as such: read them the D11 way, and any board asserting an instruction the record does not hold stops that board, not the set — exactly as 10d did. Note in the return that D12 row 1 is built, so the prototype's stated condition is satisfied or misnamed."*
+- **DS-6 — keep D-5 (a) lose-only, build the picker.** *"The player is a party leader with a seated party (R-CL1); the picker ships. 'Win' is the stamp's text — seat change plus in-government. Open a sheet, not a build: whether losing office should continue play in opposition rather than end the run — a real design question, answerable only after a campaign is played."*
+- **DS-7** — *"(b), confirmed, after S-C3."*
+- **DS-8** — *"keep B8's banner; a text chip from primitives now, D-8.5's art later."*
+- **DS-9** — *"confirmed, after Sweden is played."*
+- **DS-10** — *"build, [AUTHORED-DRAFT] rate, every party equal, the seven responses as HQ chips."*
+- **§378** — *"build the law category stage 5 needs, cited, as its own item; the wider dials-only set follows P4-C3's one-category-per-session pattern and does not block stage 5."*
+- **The order:** *"Then run the sequence as planned. S1 and S-C1 proceed immediately — neither waits on anything above. One family per pass, one commit per item, one green bar, R-SP1 push, the standing list after each landed pass."*
+
+**What each ruling changed in the registers, this commit.** `POLISIM_TAX_SPECLET.md`: S7 STRUCK with the reason; the trigger sentence's stage count corrected (F2's steps 3–5 landed since it was written; the trigger itself stands unfired); S2 read as (b) by D-3; S4 carries DS-2c; S6 carries DS-2d (one line, two layers). `POLISIM_ENERGY_SPECLET.md`: S14 AMENDED in Elias's words; stage 6's row reads structural first; stage 5's dependency on §378 replaced by the ruling (the one law category as its own item); S14's home per DS-4b. `POLISIM_FEATURE_LIST.md`: F4 re-pointed at the plan's four rows (F4-1 the income readout, F4-2 the schedules, F4-3 Sweden's re-seed, F4-4 the schedule row); PN-1 the pension age, PN-2 the payment readout, PN-3 the potential window's re-form (its own family, after PN-1); EN-6 the energy page structural, EN-7 stage 5 with its one law category; CL-1 the pre-campaign reachable, CL-2 the loop's closures and the party picker, CL-3 the play protocol, CL-4 D-23 (b); OP-1 (Elias's) the opposition question; D20 opened in Design's section with DS-5's half; the root chart gains the plan document. `ResidueCheck` excludes OP-1 by name. Nothing of the plan's code is built here.
+
+**The residue after this commit** counts the plan's startable rows by design - they are what the sequence runs; the standing list reads them down as each lands.
+
+**Bar:** `bar373_rulings` **38 of 38** on the tree with the plan installed and the registers amended - `ResidueCheck`: 13 open item(s) a session could start (429 file(s) scanned). (the plan's own rows, by design; OP-1 excluded as Elias's), the ratchets untouched; `bar374_rulings` **38 of 38** after this line was written from that reading.

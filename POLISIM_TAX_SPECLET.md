@@ -4,6 +4,7 @@
 meant to be struck, amended or approved on its own.
 **Status: RULED 2026-08-31 (Elias, D-3): (c) NOW, (b) WHEN IT RUNS.** Neither branch is built yet, and
 the branch that will be built when it runs is **(b) pluggable schedules** — not (a)'s bracket table.
+**Status 2026-09-12 (`COMPLETED.md` §474): the sheets ruled - S7 STRUCK; the income dimension lands first as a readout (F4-1), then the schedules (F4-2), Sweden as one line with two layers (F4-3), the row (F4-4); the order is `POLISIM_BACKLOG_PLAN.md`.**
 
 ⚠ **Why (c) is not a deferral in disguise.** The item is **blocked on D-4 whichever branch is chosen**:
 **a bracket schedule applied to a single average income is arithmetically identical to a flat rate**, so
@@ -13,8 +14,7 @@ tariff is a *formula* (§32a EStG), France's is a *quotient familial*, Italy's i
 bracket table represents any of them.
 
 ⚠ **The trigger, so this row is re-readable a month from now:** P-I2 reaches the point where the cohort
-substrate carries an income dimension. Not a date. **P-I2 stages 1 and 2 have landed** (the pyramids and
-the aging step); the substrate is currently **sex-blind and income-blind**, so the trigger has NOT fired.
+substrate carries an income dimension. Not a date. **The pyramids, the aging step and the anchor have landed, and F2's steps 4–5 with them** (§195, §199; this sentence read "stages 1 and 2" until §474 corrected its count); the substrate is currently **sex-blind and income-blind**, so the trigger has NOT fired - **and the pass that fires it is scheduled: F4-1, the income dimension as a readout (`POLISIM_BACKLOG_PLAN.md`, §474).**
 
 ⚠ **One thing this ruling does NOT foreclose, and one it does.** It does not foreclose sourcing: §3's
 five billed countries can be sourced at any time, and that work is not wasted whichever branch runs. It
@@ -101,7 +101,7 @@ will misrepresent the other three. **This is the single most important thing in 
 - **S2. ⚠ S1 is NOT sufficient for Germany, France or Italy.** Either (a) accept an approximation for
   those three and **say so on the screen**, in the `[AUTHORED-DRAFT]` idiom, or (b) give `TaxLine` a
   pluggable schedule with three implementations. (a) is cheap and honest; (b) is correct and is a
-  sizeable build. **This is the first thing to rule on.**
+  sizeable build. **This is the first thing to rule on.** **Ruled (b) by D-3; the schedule's form is `POLISIM_BACKLOG_PLAN.md` F4-2.**
 - **S3. Revenue needs an income DISTRIBUTION, which this model does not have.** A bracket schedule
   applied to a single average income is arithmetically identical to a flat rate at the average's bracket
   — i.e. building S1 without a distribution buys nothing. The distribution comes from **the cohort
@@ -109,17 +109,15 @@ will misrepresent the other three. **This is the single most important thing in 
   DOWNSTREAM of the cohort spec-let, not parallel to it.**
 - **S4. Player granularity: the player moves a bracket's RATE, not its threshold**, in the first
   version. Thresholds are indexed data that real governments move rarely and by formula, and making them
-  draggable multiplies the design surface for very little play.
+  draggable multiplies the design surface for very little play. **DS-2c (§474): one dial shifts every rate; per-bracket rows come with the schedule row's grammar, not before.**
 - **S5. Mapping onto the existing budget decompositions.** Today's revenue lines are per `TaxType`; a
   bracketed instrument still reports one revenue figure per `TaxType`, so **the decompositions need no
   change**. This is a deliberate constraint on S1: any design that changes the revenue line's shape also
   changes the fiscal ledger, the debt attribution and the budget screens, and is a much larger item.
 - **S6. Sweden's blended 52 is retired at this build**, replaced by kommunal + statlig as two
   instruments. ⚠ **BASELINE**: it changes seeded revenue and therefore every Swedish trajectory. The
-  family must be explained per country under the full sim-math bar.
-- **S7. Do not build S1–S6 while the tax multiplier is zero.** C-C11's R-C11a is the prerequisite: a
-  detailed instrument with no output channel is detail without consequence. **Strike this line if Elias
-  wants the instruments first as data work.**
+  family must be explained per country under the full sim-math bar. **DS-2d (§474): one line, two layers - S5's one revenue figure per `TaxType` holds and S6's two real instruments hold; "both, not either" (F4-3).**
+- **S7. ~~Do not build S1–S6 while the tax multiplier is zero.~~ STRUCK 2026-09-12 (DS-1, `COMPLETED.md` §474):** *"Its premise died at C-N4/§345/FT-5; a stale ruling that blocks live work is worse than none."* C-N4 built the disposable-income term (§126), §345 reached SELMA's anchor, FT-5 added the labour-supply channel (§372, §396) - the multiplier is not zero. As it stood: *C-C11's R-C11a is the prerequisite: a detailed instrument with no output channel is detail without consequence.*
 
 ---
 

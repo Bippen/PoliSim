@@ -286,7 +286,7 @@ The five billed countries' sourcing can proceed at any time and is **not wasted 
 > the OASDI wage base (the SSA's own Federal Register notice, $184,500 for 2026), CSG/CRDS (URSSAF's 2026
 > table) and Poland's levy and contributions (the Sejm's consolidated acts via its ELI API) are SOURCED;
 > Italy's Gazzetta PDF turned out to be scanned, so Italy alone stays billed — `ERRANDS.md` E-6 is the ask. Germany's formula and France's quotient confirm the spec-let's
-> warning against brackets-as-data. Nothing built: F4 waits on the income dimension.
+> warning against brackets-as-data. Nothing built: F4 waits on the income dimension - **which is scheduled (§474): F4-1 the readout → F4-2 the schedules → F4-3 Sweden → F4-4 the row; the sheets ruled, the order `POLISIM_BACKLOG_PLAN.md`.**
 
 *Carries: `M-B7` (D-11 (c)) and, adjacent, `D-16`'s landing — see the appendix.*
 
@@ -352,7 +352,7 @@ In order of what a player would notice first:
 > runtime catalog of the 16 Länder's valid votes (`land_votes_2025.csv` is on disk; the Sweden catalog's
 > generator is the shape, ~2 h), and **a personality cast for real German parties — a characterisation,
 > Elias's to rule (D-22, open), not a draft to type overnight.** Sweden's cast was authored under W-C1
-> and has run for a week; a second one lands the same way or not at all.
+> and has run for a week; a second one lands the same way or not at all. **DS-9 (§474): confirmed, after Sweden is played - `POLISIM_BACKLOG_PLAN.md` S-C5.**
 4. **The play-calibration list**, once the loop is playable — its constants are judged by playing, which is
    Elias's, and the list exists for exactly that sitting.
 
@@ -990,8 +990,35 @@ the ITANES registration, still open.
 
 **EN-5 — Stage 4's second pass, the HICP pass-through (S8).** ✅ **LANDED 2026-09-11, `COMPLETED.md` §465:** the household retail price the ledger writes enters `Inflation` through electricity's sourced weight in the consumer price index - Eurostat `prc_hicp_inw` CP0451 2023 for the five (DE 29.63 · FR 28.21 · IT 33.15 · PL 23.87 · SE 70.50 per mille) and the BLS CPI-U relative importance of December 2023 for the USA (24.28, reached through the archive) - as the weight times the price's change RELATIVE to the general price level (`EnergyPassThrough`; the nominal stack already rides the level), a price-level term on the Phillips map beside the tariff term that expectations look through, planned at the boundary from the year the ledger just wrote, read by the preview in the same form; zero at the seed and to the noise at no policy. `EnergyPassThroughDiagnostic` (the simulation group, 46) and `EnergyLayerCheck` gate 9. BASELINE `traj_en5_*` against `traj_en4c_*`: two mechanisms - the adders now carry the price level (the B6 correction the pass found; `PowerCo2PerCapita` +8.8 % relative at a century for Germany, +0.24 t for the USA, where their real erosion had drifted the fossil shares) and the pass-through's own hundredths of a point a year (the AI ministry's levy moves, Sweden's import-price channel) compounding into Poland's price level 68 % apart at a millennium and a Swedish electricity year of +0.54 pp at t544; 7 of 73 fields byte-identical.
 
+**F4-1 — The income dimension, a readout (F2-I; P-I2's next step).** ⏳ Opened 2026-09-12 (`COMPLETED.md` §474; `POLISIM_BACKLOG_PLAN.md` S2): a per-band income distribution on `PopulationCohorts`, seeded from Eurostat `ilc_di03`'s mean and median per age band (a log-normal's σ pinned by mean ÷ median - DERIVED), the US from CPS ASEC PINC-01 / HINC-02, Sweden's SCB class table as the shape's validation (printed, not fitted), the national deciles printed as a cross-check, never fitted (DS-2); `Gini` a calibrated gate with its writer unchanged (DS-2b); a cohort-income diagnostic; nothing on `EconomyState`. **Lands byte-identical or it is not a readout** (`traj_f2i` against `traj_en4e`). Depends on S1's sourcing. Fires D-3's trigger.
+
+**F4-2 — The pluggable schedules (S2(b), S1, S5).** ⏳ Opened 2026-09-12 (§474; the plan's S3a): a schedule on `TaxLine` - flat (the default), a bracket table (PL, US, SE statlig), §32a's formula (DE), the barème per part (FR), three layers (IT - flat + BILLED until E-6); revenue integrated over F4-1's bands, still one figure per `TaxType` (S5); the bridge re-solved so revenue at seed is today's to the cent; the one dial a uniform shift (DS-2c); the household burden the average effective rate. **BASELINE** (`traj_f4s2`). Depends on F4-1; S7 struck (DS-1).
+
+**F4-3 — Sweden's blended 52 retired: one line, two layers.** ⏳ Opened 2026-09-12 (§474; the plan's S4): kommunal + statlig as one `IncomeTax` line carrying a two-layer schedule, two rates on the row (DS-2d); Sweden's bridge re-solved. **BASELINE** (`traj_f4s6`; five countries byte-identical, Sweden explained). Depends on F4-2.
+
+**F4-4 — The schedule row.** ⏳ Opened 2026-09-12 (§474; the plan's S3b): per-bracket rates as rows of the D13 slider family; the formula, the barème and the three layers drawn beside a bracket table on D20's grammar (structurally if D20 is unanswered). Films only. Depends on F4-2 (F4-3 for Sweden); D20's batch 2.
+
+**PN-1 — The pension age: statute + dial.** ⏳ Opened 2026-09-12 (§474; the plan's S5): a pension statute on `CarbonRateStatute`'s pattern - one rule per country with its paragraph (Sweden's riktålder, SFB 2 kap. 10 a–d §§; SGB VI § 235; CSS L161-17-2; DL 201/2011 art. 24; Poland fixed; the SSA's table), stepped at the boundary before any override, a passed bill's figure wins (DS-3); the Pensions driver the cohort at or above the age with the sub-band fraction stated (DS-3b); the straddled bands' participation rates moved by a response BILLED to named evaluations else `[AUTHORED-DRAFT]`; FT-7/FT-8 downstream; the health 65/80 and the dependency ratio's definition untouched; potential's 20–64 window printed as a deviation (DS-3c); a dial row + ten captions in the Budget's Pensions group (DS-3d); a pension-age diagnostic. **BASELINE** (`traj_pens1`). Depends on S1's sourcing; independent of the tax chain, ordered by the one-family rule only.
+
+**PN-2 — The pension payment, a readout.** ⏳ Opened 2026-09-12 (§474; the plan's S6): average benefit = the Pensions line ÷ pensioner headcount (no lever - the line is headcount × benefit, RF-2-indexed); the replacement rate = benefit ÷ the wage index's level; a seed gate against OECD's replacement rate / the average pension (within tolerance or DIVERGENT); a plate row on 9c in the Pensions group's projection caption. Byte-identical (`traj_pens2`). Depends on PN-1.
+
+**PN-3 — Potential's labour input re-formed to the bands.** ⏳ Opened 2026-09-12 (DS-3c, §474): labour input = Σ(band × participation rate) in place of the 20–64 window, six seed potentials re-solved (§394's precedent) - **its own family, after PN-1, never inside a pension pass.**
+
+**EN-6 — The energy page, structural.** ⏳ Opened 2026-09-12 (DS-4, §474; the plan's S-E1, §4): one page per country on the Sectors page (DS-4b), instruments first (§452) - the price with its decomposition, the rule on the price, the fleet as a distribution, SE1–SE4 as a small multiple, the water value and the reservoirs, the two ledgers as bridges (a generic bridge beneath the election-night one), the instruments with their honesty tags, the ABSENT rows; new stat nodes under a ratchet ceiling; films at 1280 and 2560 × six. Then Design's board (D20 batch 1) read the D11 way against it. Depends on nothing but S1's turn.
+
+**EN-7 — Energy stage 5: the dials onto the instruments, the one law category.** ⏳ Opened 2026-09-12 (§378 ruled, §474; the plan's S-E2): the five energy dials mapped onto the four instruments (S9), the one law category reaching the energy parameters, cited, as its own item - the wider dials-only set follows P4-C3's pattern and does not block it. A family only if a seeded dial position is not neutral - measured by the dump. Depends on EN-6.
+
+**CL-1 — The pre-campaign made reachable.** ⏳ Opened 2026-09-12 (§474; the plan's S-C1): the campaign window opens at the pre-campaign start (`SimulationManager.AdvanceCampaign` returns before it today, so the 26 weeks and the eight verbs never run); the run steps pre-campaign days; the eight verbs priced from the constants that exist; the AI parties' pre-campaign reproduces their day-0 staging - asserted digest-identical at the campaign start, so every harness digest holds; the record's start date; save replay over the longer window. No family (no player in the dump). **Proceeds now.** Makes entries 5, 14 and 15 of the play-calibration list judgeable.
+
+**CL-2 — The loop's closures.** ⏳ Opened 2026-09-12 (§474; the plan's S-C2): a region picker for local acts (a cartogram tile sets the next act's region); the debate announced on the HQ from the calendar; live scandals at an `[AUTHORED-DRAFT]` rate, every party equal, the seven responses as HQ chips (DS-10); the party picker at country selection (DS-6, R-CL1 - the largest-party stand-in retired). Depends on CL-1.
+
+**CL-3 — The play protocol.** ⏳ Opened 2026-09-12 (§474; the plan's S-C3): a staged save at the pre-campaign's first day; a play sheet - §346's "one thing to look for" beside each of the twenty constants; the persisted queue as the record of the play; the two felt-verdict saves re-cut; the seed stated (K-1 refreshes the 2022 prior). Then Elias plays - E-2..E-24 are his. Depends on CL-1, CL-2 and K-1.
+
+**CL-4 — D-23 (b): polling day on the calendar's date.** ⏳ Opened 2026-09-12 (DS-7 confirmed, §474; the plan's S-C4): the election inside the election turn on the second Sunday of September; AI countries stay on the turn, stated. Depends on CL-3 having been played once.
+
 ## Elias's, unchanged
 
+- **OP-1 — losing office: continue in opposition, or end the run?** Opened 2026-09-12 (DS-6, `COMPLETED.md` §474) as a sheet, not a build: *"a real design question, answerable only after a campaign is played."* D-5 (a) stands - lose-only - until then; "win" is the stamp's text, seat change plus in-government.
 - **The nine `[GAP]` seed figures** in `COMPLETED.md` §188 (the seed-data overhaul, retired 2026-09-02) —
   each named there with what would source it. **Elias's to source, never to invent**; a `[GAP]` stays a
   gap until a citation lands beside it.
@@ -1015,6 +1042,7 @@ the ITANES registration, still open.
 
 ## Design's
 
+- **D20 — the next ask, one paste** (opened 2026-09-12, DS-5 half taken, `COMPLETED.md` §474): the energy page's board on the built page (EN-6, batch 1), the schedule row's grammar on the sourced shapes (F4-4, batch 2), the pension family's statutory mark (PN-1, batch 3), the generated asset rows after EN-6 declares its nodes (batch 4); the reconciliation head says D12 row 1 is built (the prototype's condition satisfied or misnamed), that boards 12a–12f are Design's answer to D19 read the D11 way (a board asserting an instruction the record does not hold stops that board, not the set - no instruction is recorded as Elias's), that D19 item 1 stands on DS-8 (B8 kept, a text chip now); assembled at the plan's S-D20 after EN-6; the paste carries E-32's unpasted content beneath; sending Elias's.
 - **The two stat icons**, once the convention lands. Plus the standing board list: D-7 board 2b · D-8.1 the
   seven Swedish marks then the batch of forty-five · D-8.2 party colours for five countries · D-8.3 the
   valkrets map (✅ DRAWN 2026-09-10 from board 4a on election night, §438 - the mandate column was ours all along) · D-8.4 election night's paper · D-8.5 the verdict stamp ·
@@ -1286,6 +1314,7 @@ mistaking for done**, and every consolidation pass so far has found both again.
 | `POTENTIAL_PREMISE.md` | the premise of potential output, measured before and after P5-B7 | frozen |
 | `LEVER_MAP.md` | GENERATED by `LeverMapDump`: every quantity and what reaches it; the unreached set is P4-C3's coverage plan | regenerated |
 | `COUNTRY_CENTROIDS.md` | the six countries' centroids and the map's adjacency (board 6b row 1) | frozen |
+| `POLISIM_BACKLOG_PLAN.md` | the four-item sequence (taxes by bracket, pension age and payment, the energy page, the campaign loop) and D20, with the ten sheets ruled (§474); re-read, not re-typed - a session that lands a row marks it there in the same commit | shrinks as rows land |
 
 Retired 2026-09-07 into §356 and deleted: `CLAUDE_DESIGN_BOARD_1I_NOTE.md` (a courtesy note superseded by seven later packages), `E12_PARTYINK_PRINT.md` (the ink print, its return answered). Retired 2026-09-07 (afternoon) into §369a and deleted: `PLAYTEST5_ANNEX_E16.md` (Elias's Playtest 5 annex - input consumed by the catalog and the six families, so its job was history). Off the root and charted here so the code's citations resolve: `ElectionsData/DATA_BILL.md` (the elections data bill, cited by `CampaignAiHarness` and `LiveCampaignSetup`) lives beside the CSVs it bills. One name in a code comment matches no file and says so itself: `Country.cs` cites *"COMPLETED.md section 12 (was STEP_A_LIVE_VALUE_AUDIT.md, consolidated 2026-08-02)"* - history stated as history.
 
