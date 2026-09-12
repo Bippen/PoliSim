@@ -26374,3 +26374,42 @@ France, Italy and the USA have no exchange fold on this machine (`energy_hydro_p
 **What the deferral leaves standing.** The market's seed prices run a quarter to a third low at the peak block in the two folded markets (Germany's load-weighted −7.0 €/MWh, Poland's −32.0 against the exchange; §470's table), the adders calibrate the fossil shares and not the price, and the retail stack is whole regardless because the fitted margin closes it to Eurostat's total (§463). The dump's §5 note prints the exchange's figures beside the model's every chain; `ResidueCheck` no longer counts the row (⏹ closes it); the standing list's deferral table carries T-8 with its trigger and its clause, re-read literally against the repo at every cycle like the seven before it.
 
 **Bar:** `bar370_en3c` **38 of 38** on the tree with the row rewritten and this record - `ResidueCheck`: 0 open item(s) a session could start (428 file(s) scanned). - no simulation code touched; `bar371_en3c` **38 of 38** after this line was written from that reading.
+
+## 473. THE STANDING LIST, CYCLED AFTER THE CARBON RATE'S STATUTES AND EN-3c's DEFERRAL — the residue at zero, a trigger row added to the register (2026-09-12)
+
+**The ruling:** *"Then the standing list."*
+
+**Ratchets.** `RatchetSlackCheck` on this cycle's bars: **12 reported, 12 tight** (`bar371_en3c`) - `UNWIRED` 2 and `UNREACHABLE` 2 (`Rosatellum.cs`, `TacticalVoting.cs`, unchanged), `MojibakeCheck.SUSPECT_RUNS` 1 at its measured false positive, every other ceiling 0 at 0; no floor moved and no ceiling was raised. The cheap bar is **38** checks and the simulation group **47**, as at §469; no check was added (R-N5 - `CarbonTaxUnitDiagnostic` grew a section, not a check).
+
+**The residue** reads **zero** (`ResidueCheck`, `bar371_en3c`: 0 open item(s) a session could start (428 file(s) scanned).): EN-4e is ✅ (§471) and EN-3c is ⏹ - a trigger row now, closed to the count by its marker and open in the deferral register below. No CODE row a session could start: the two rulings of the morning are both taken, EN-4e built and EN-3c parked on a trigger. The excluded rows are Elias's (the E-rows, T-3, FT-6, the dials-only laws, E-34's remainder), Design's (D-7, D-1 portraits) and the calendar's (K-1 tomorrow, K-2) - as at §469, unchanged.
+
+**The deferral register, re-read literally, every trigger against the repo of 2026-09-12:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 per-scenario term accumulation | *the first scenario whose epilogue reads wrong without it* | **NOT FIRED** - no scenario epilogue exists to read wrong |
+| T-2 investment deepening | *a capital stock ships, or I/GDP measures cyclical* | **NOT FIRED** - no capital stock; I/GDP has not been measured cyclical |
+| T-3 the government-consumption block | *the first mechanic that needs the level output gap to mean something* | **FIRED** (C-N5) and OWNER ELIAS since §376 - the six figures sourced, the block his ruling |
+| T-4, T-5, T-6 trade volumes, retaliation, its memory | *pass 6's deferred set* | **NOT FIRED** - pass 6's set has not been re-opened |
+| T-7 the coupling queue Q6–Q10 | *each at its own named trigger* | **NOT FIRED** - Q6/Q7 wait on R4-3, Q8 on R4-1, Q9/Q10 on R4-4; no ruling given |
+| **T-8 EN-3c, the market's price calibration** (new, §472) | *stage 5's fleet reads its inframarginal rent; precondition: the three missing folds fetched (EPEX FR, GME's PUN, an EIA hub); defence clause: a fetched fold is not a read rent* | **NOT FIRED** - no stage reads the rent (`EnergyMarket` carries no investment or retirement rule; the ledger prints the rent as "not modelled"); the three folds are not on disk (`EnergyData/hydro_2023.csv` carries DE-LU and PL alone) |
+| F-1…F-5, F-7 | *the elections' deferred set* | **NOT FIRED** - as at §469 |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The exclusion list** - 18 by name, unchanged since §469; the residue's two names of that cycle are gone from the count by their own markers, not by exclusion.
+
+**The errands, the calendar, the documents.** E-3 and E-6 open as before; E-1, E-33 done, E-34 ruled. **K-1 is tomorrow, 13 September 2026** - the seed refresh from Sweden's real result; K-2 on 29 January 2027 with its defence clause (§456), which T-8 now echoes in form. `ls *.md` returns **22**, `Tools/` holds **13**, the three numbered constants read their listed values (`PersuasionPerCompatibilityPoint` 40 000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500 000) - all as at §469; one runtime file added (`Assets/Scripts/Data/CarbonRateStatute.cs`), named in `CLAUDE.md`'s carbon paragraph.
+
+**This cycle's self-ruled sheets, marked** (the records since §469):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §471 | the carbon ceiling carried by the price level for all six (the dial's real reach) | **HOLDS on this bar** - a nominal ceiling was the same B6 class the ruling named; strikeable |
+| §471 | the BEHG's 2026 corridor carried at its floor, 55 | **HOLDS** - the law guarantees the floor; the ceiling, 65, is named as the alternative |
+| §471 | the schedule on the energy layer's own clock (2023 + turns), not the substrate's 2026 epoch | **HOLDS** - the seed is 2023's statutory figure by §464's ruling; re-seeding 2026's floor would re-make it |
+| §471 | after the schedule, the last legislated figure carried by the level (the ETS's own convention) | **HOLDS** - the law sets no figure from 2027; a nominal hold would have been the artefact class the ruling named |
+| §471 | the UI drops a committed carbon draft after a turn | **HOLDS** - without it a passed bill's old figure would have undone the indexation at the next bill |
+| §471 | the reservoir coupling read in the probe's year (from §467, re-read) | **HOLDS** |
+| §472 | EN-3c as a trigger row with a defence clause, T-8 | **AS RULED** |
+
+**Bar:** `bar371_en3c` **38 of 38** on the tree this record reads - the residue zero, 12 ratchets tight; `bar372_shelf` **38 of 38** after this record was written from that reading, the two checks that read the documents among the thirty-eight..
