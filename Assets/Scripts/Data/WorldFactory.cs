@@ -1128,7 +1128,8 @@ namespace PoliSim.Data
             });
 
             // EN-4c: the carbon line's dial runs to TaxTypeRateRanges.CarbonTaxMax dollars per tonne in the COUNTRY's currency (rounded to ten):
-            // 300 USD → 3 180 SEK, 1 260 PLN, 280 EUR, 300 USD at the ECB 2023 rates the energy layer's catalog carries.
+            // 300 USD → 3 180 SEK, 1 260 PLN, 280 EUR, 300 USD at the ECB 2023 rates the energy layer's catalog carries - in the SEED's prices; since EN-4e (§471)
+            // the ceiling carries the price level at every boundary (CarbonRateStatute), and the rate itself moves as each country's statute moves it.
             foreach (TaxLine line in country.TaxLines)
             {
                 if (line.Type == TaxType.CarbonTax) { line.RateCeiling = (float)(System.Math.Round(TaxTypeRateRanges.CarbonTaxMax * EnergyLayer.NationalPerUsd(country.Id) / 10.0) * 10.0); }

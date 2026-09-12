@@ -359,7 +359,13 @@ independently, instead of one generic "tax rate":
   approval and stance terms read it through `TaxLine.PointsOf` (one per cent of the dial per point). The share-of-GDP
   reading it carried before the model had priceable emissions is retired; the coverage bridge was re-solved for the
   three so the anchored primaries hold (SE 1.0692, DE 1.1413, FR 1.1731 under EN-4c; SE 1.0725, DE 1.1452, FR 1.1742
-  under EN-4d). Sweden's statutory indexation of its rate (2 kap. 1 b §) is not carried - EN-4e, a known divergence.**
+  under EN-4d). **The rate moves by statute between decisions (EN-4e, ruled and built 2026-09-12, §471; `CarbonRateStatute`):**
+  Sweden's recalculated at every boundary by the year's price ratio rounded to four decimals (2 kap. 1 b §), Germany's on
+  the BEHG's legislated schedule (§ 10 Abs. 2: 45 EUR 2024, 55 EUR 2025, the 2026 corridor's floor 55) and then carried by
+  the price level as the ETS price is, France's held nominal as its tariffs are written; the step runs before any override,
+  so a passed bill's figure wins. The three sites that compare the rate to a reference read it in the SEED's prices - the
+  transport coupling, the household burden's baseline, the political scale through a ceiling that carries the level for all
+  six - so a frozen rate's erosion is shown, not hidden (B6).**
   `ExciseTax`, `PropertyTax`, `WealthTax`, and `StampDuty` start inactive for every country with
   one uniform illustrative placeholder rate each (8%, 1%, 1.5%, 1% respectively) — present so the
   player can implement them, matching that no country (including the USA) starts with an active

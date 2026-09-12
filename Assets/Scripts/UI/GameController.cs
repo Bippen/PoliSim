@@ -184,6 +184,9 @@ namespace PoliSim.UI
         // cleared by ResetPolicyInputs after Advance Turn: once committed, TaxLine.Rate already
         // equals whatever was in here, so the slider keeps showing the same (now-persisted) value.
         private readonly Dictionary<TaxType, float> _taxRateInputs = new Dictionary<TaxType, float>();
+        // EN-4e (§471): the carbon line's rate the turn started with. Its statute moves the rate at the boundary (CarbonRateStatute), so a committed
+        // carbon draft - equal to this figure - is dropped after the turn and the slider follows the law; a changed, unpassed draft survives.
+        private float? _carbonRateBeforeTurn;
 
         private Vector2 _parliamentScrollPosition;
 
@@ -5422,6 +5425,8 @@ namespace PoliSim.UI
 
             // P2-4.3: the estimate the decision carried, snapshotted before the turn moves the preview on.
             _effectsAtTurnEnd = _hasCachedPreview && _cachedPreviewTurn == _simulationManager.CurrentTurn ? new List<EffectArrow>(_cachedPreviewEffects) : null;
+            _carbonRateBeforeTurn = null;
+            foreach (TaxLine line in _playerCountry.TaxLines) { if (line.IsPerTonne) { _carbonRateBeforeTurn = line.Rate; } }   // EN-4e: see ResetPolicyInputs
             _simulationManager.AdvanceTurn(decisions);
 
             // C-C9 (P-G1): the counterfactual advances in lockstep, one turn for one turn, so the two
@@ -5617,6 +5622,10 @@ namespace PoliSim.UI
             // back. Only InterestRateChange stays a genuine this-turn delta (Federal Reserve/Eurozone
             // exemption - never gated), so it's the only one still reset here.
             _interestRateChangeInput = 0f;
+            // EN-4e (§471): the one exception - the carbon line moves by statute between decisions, so a draft that equals the rate the turn started
+            // with (committed by a passed bill, or never moved) is dropped and the slider shows the law's figure; a changed, unpassed draft is kept.
+            if (_carbonRateBeforeTurn.HasValue && _taxRateInputs.TryGetValue(TaxType.CarbonTax, out float carbonDraft) && Mathf.Approximately(carbonDraft, _carbonRateBeforeTurn.Value)) { _taxRateInputs.Remove(TaxType.CarbonTax); }
+            _carbonRateBeforeTurn = null;
         }
 
         /// <summary>

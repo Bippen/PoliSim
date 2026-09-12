@@ -111,6 +111,12 @@ namespace PoliSim.Data
     /// the approval and stance terms read it through <see cref="PointsOf"/> - one per cent of the dial's range
     /// per point, as it was when the dial had no unit - so a tax that is a price per tonne and taxes that are
     /// percentages share one political scale.</para>
+    ///
+    /// <para><b>The rate moves by statute between decisions (EN-4e, ruled 2026-09-12, §471).</b> At every boundary, before any override,
+    /// CarbonRateStatute moves the carbon line as its country's law does - Sweden's recalculated by the year's price ratio (2 kap. 1 b §),
+    /// Germany's on the BEHG's schedule then carried by the price level, France's held nominal as its tariffs are written - and carries every
+    /// country's <see cref="RateCeiling"/> by the year's prices so the dial's reach and the political scale stay real. A stored rate is still
+    /// the figure as presented; what changed is that the figure has a lawful path of its own when nobody moves it.</para>
     /// </summary>
     [Serializable]
     public class TaxLine
@@ -119,7 +125,7 @@ namespace PoliSim.Data
         public float Rate;
         public bool IsImplemented;
 
-        /// <summary>EN-4c: this line's own ceiling where the type's bound is not in the line's unit - the carbon tax's dollars-per-tonne bound converted into the country's currency (WorldFactory.SeedTaxLines); 0 = the type's bound. Persisted with the line.</summary>
+        /// <summary>EN-4c: this line's own ceiling where the type's bound is not in the line's unit - the carbon tax's dollars-per-tonne bound converted into the country's currency at the SEED's prices (WorldFactory.SeedTaxLines), carried by the price level at every boundary since EN-4e (CarbonRateStatute.AdvanceYear); 0 = the type's bound. Persisted with the line.</summary>
         public float RateCeiling;
 
         /// <summary>True for the one instrument whose rate is a price per tonne rather than a percentage of a base.</summary>

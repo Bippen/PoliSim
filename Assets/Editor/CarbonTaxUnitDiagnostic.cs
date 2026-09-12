@@ -22,6 +22,11 @@ namespace PoliSim.EditorTools
     /// points. (5) THE MECHANISM: Sweden raised fifty dollars per tonne through the decision, ten years, against untouched - the carbon revenue
     /// higher by the rate's ratio less the base's erosion, the transport intensity lower by the elasticity's chain, the approval term charged the
     /// dial's per cent. (6) B6: a rate per tonne does not read the price level - the revenue in dollars at price index 2 is the revenue at 1.
+    /// (7) THE STATUTES (EN-4e, ruled 2026-09-12, §471): at no policy for ten years Sweden's rate is the seed times the product of the years'
+    /// price ratios rounded to four decimals (2 kap. 1 b §), its real rate the seed's and the transport coupling's real term nil; Germany's rate
+    /// follows the BEHG's schedule (45, 55, 55) and then carries the level; France's 44.6 stands nominal, its real rate falls and the coupling's
+    /// tax factor rises above one; every ceiling carries the level; Poland's unimplemented line stays 0. The raise in (5) is applied once, in
+    /// year 1, and indexes thereafter as the law indexes it - the factor is read in REAL dollars.
     /// </summary>
     public static class CarbonTaxUnitDiagnostic
     {
@@ -123,12 +128,17 @@ namespace PoliSim.EditorTools
             if (!(revenueRatio > 1.0) || !(revenueRatio <= rateRatio + 1e-6)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's carbon revenue rose x{revenueRatio:F4} against a rate x{rateRatio:F4} - it should rise, and by no more than the rate (the base erodes)."); }
             if (!(raised.Transport < untouched.Transport)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's transport intensity did not fall under the raise ({raised.Transport:F4} against {untouched.Transport:F4})."); }
             if (Math.Abs(raised.Power - untouched.Power) > 1e-5 * Math.Max(1e-6, untouched.Power)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's power intensity moved under the raise ({untouched.Power:F5} → {raised.Power:F5}) - the fleet is exempt of the tax (EN-4d)."); }
-            double expectedTransportFactor = 1.0 - EnvironmentFamily.TransportElasticityPerDollarPerTonne * RaiseUsdPerTonne;
-            double observedFactor = raised.TransportTarget / Math.Max(1e-9, untouched.TransportTarget);
-            if (Math.Abs(observedFactor - expectedTransportFactor) > 1e-4) { ok = false; Debug.LogError($"CARBON TAX UNIT: the transport target's factor under the raise is {observedFactor:F5}, not 1 − e × dollars ({expectedTransportFactor:F5})."); }
+            // EN-4e: the raise was applied once, at year 1's boundary, in that year's prices, and indexed since (Sweden's statute) - so the real raise is the
+            // nominal raise over the price level at the raise; the coupling reads real dollars, and the factor is read against the seed at the same infrastructure term
+            double expectedRealDollars = RaiseUsdPerTonne / Math.Max(0.0001, raised.PriceLevelAtRaise);
+            if (Math.Abs(raised.RealDollarsAboveSeed - expectedRealDollars) > 0.15) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's real raise reads {raised.RealDollarsAboveSeed:F3} dollars per tonne after ten indexed years against {expectedRealDollars:F3} (the nominal {RaiseUsdPerTonne:F0} over the level at the raise, {raised.PriceLevelAtRaise:F4})."); }
+            double expectedTransportFactor = 1.0 - EnvironmentFamily.TransportElasticityPerDollarPerTonne * raised.RealDollarsAboveSeed;
+            double observedFactor = raised.TaxFactor;
+            if (Math.Abs(observedFactor - expectedTransportFactor) > 1e-5) { ok = false; Debug.LogError($"CARBON TAX UNIT: the transport target's tax factor under the raise is {observedFactor:F5}, not 1 − e × real dollars ({expectedTransportFactor:F5})."); }
+            if (Math.Abs(untouched.RealDollarsAboveSeed) > 0.05) { ok = false; Debug.LogError($"CARBON TAX UNIT: untouched Sweden's real rate drifted {untouched.RealDollarsAboveSeed:F3} dollars per tonne from its seed - the statute's indexation should hold it (EN-4e)."); }
             float politicalPoints = raised.PointsCharged;
-            sb.Append(F("    untouched: rate {0:F0} SEK/t, revenue {1:F3} bn USD, transport {2:F4} t/head (target {3:F4}); raised: rate {4:F0}, revenue {5:F3} (x{6:F4} against the rate x{7:F4}), transport {8:F4} (target {9:F4}; factor {10:F5} = 1 − {11:F5} × {12:F0}); power {16:F4} → {17:F4} t/head (held: the fleet pays the ETS, not the tax - EN-4d); the hike charged {13:F1} political points ({14:F1} % of the dial) to approval at {15:F2} per point\n",
-                untouched.Rate, untouched.Revenue, untouched.Transport, untouched.TransportTarget, raised.Rate, raised.Revenue, revenueRatio, rateRatio, raised.Transport, raised.TransportTarget, observedFactor, EnvironmentFamily.TransportElasticityPerDollarPerTonne, RaiseUsdPerTonne, politicalPoints, politicalPoints, MacroSystem.TaxHikeApprovalSensitivity, untouched.Power, raised.Power));
+            sb.Append(F("    untouched: rate {0:F0} SEK/t (indexed by statute from 1330; real {18:F1} in the seed's prices), revenue {1:F3} bn USD, transport {2:F4} t/head (target {3:F4}); raised once in year 1 by {12:F0} dollars and indexed since: rate {4:F0} (real {19:F1}), revenue {5:F3} (x{6:F4} against the rate x{7:F4}), transport {8:F4} (target {9:F4}; the tax factor {10:F5} = 1 − {11:F5} × {20:F2} real dollars, the raise over the level at the raise {21:F4}); power {16:F4} → {17:F4} t/head (held: the fleet pays the ETS, not the tax - EN-4d); the hike charged {13:F1} political points ({14:F1} % of the dial) to approval at {15:F2} per point\n",
+                untouched.Rate, untouched.Revenue, untouched.Transport, untouched.TransportTarget, raised.Rate, raised.Revenue, revenueRatio, rateRatio, raised.Transport, raised.TransportTarget, observedFactor, EnvironmentFamily.TransportElasticityPerDollarPerTonne, RaiseUsdPerTonne, politicalPoints, politicalPoints, MacroSystem.TaxHikeApprovalSensitivity, untouched.Power, raised.Power, untouched.RealRate, raised.RealRate, raised.RealDollarsAboveSeed, raised.PriceLevelAtRaise));
 
             // (6) B6
             sb.Append("\n    6. B6: a rate per tonne reads the tonnes, not the price level\n");
@@ -139,7 +149,39 @@ namespace PoliSim.EditorTools
                 float at2 = TaxBases.Revenue(se, line);
                 se.State.PriceLevel = level;
                 if (Math.Abs(at1 - at2) > 1e-9) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's carbon revenue changed with the price level alone ({at1} → {at2}) - a rate per tonne on the same tonnes is the same money."); }
-                sb.Append(F("    Sweden's carbon revenue at price index 1: {0:F3} bn; at 2 with the same tonnes: {1:F3} bn - the same nominal money, half the share of a doubled nominal GDP: an unindexed rate per tonne erodes as excise does (Sweden's statutory indexation of the rate - lag (1994:1776) om skatt på energi, 2 kap. 1 b § - is not carried: a known divergence, its own row EN-4e)\n", at1, at2));
+                sb.Append(F("    Sweden's carbon revenue at price index 1: {0:F3} bn; at 2 with the same tonnes: {1:F3} bn - the same nominal money, half the share of a doubled nominal GDP: an unindexed rate per tonne erodes as excise does - which is why the rate moves by statute between decisions since EN-4e (7 below): Sweden's indexed, Germany's scheduled, France's nominal and shown eroding\n", at1, at2));
+            }
+
+            // (7) the statutes (EN-4e): one world at no policy, ten years, every country's carbon line read at each boundary
+            sb.Append("\n    7. THE STATUTES (EN-4e): at no policy for ten years - Sweden indexed by the year's price ratio to four decimals, Germany on the BEHG's schedule then carried by the level, France nominal, the ceilings carried, the zero-rate lines untouched\n");
+            {
+                StatuteRun run = RunStatutes(Years);
+                Country se = run.World.GetCountry(CountryId.Sweden), de = run.World.GetCountry(CountryId.Germany), fr = run.World.GetCountry(CountryId.France), pl = run.World.GetCountry(CountryId.Poland);
+                TaxLine seLine = Find(se), deLine = Find(de), frLine = Find(fr), plLine = Find(pl);
+                // Sweden: the seed times the product of the rounded ratios; the real rate the seed's within the rounding; the ceiling by the unrounded level
+                double expectedSe = 1330.0 * run.RoundedRatioProduct[CountryId.Sweden];
+                if (Math.Abs(seLine.Rate - expectedSe) > 1e-3 * expectedSe) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's rate after {Years} years is {seLine.Rate:F2} against the seed times the rounded ratios' product {expectedSe:F2} (2 kap. 1 b §)."); }
+                double seReal = CarbonRateStatute.RealRate(seLine.Rate, se.State.PriceLevel);
+                if (Math.Abs(seReal - 1330.0) > 1330.0 * 5e-4 * Years) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's real rate after {Years} years is {seReal:F2} SEK/t in the seed's prices against 1330 - the indexation should hold it within the four-decimal rounding."); }
+                double seCeilingExpected = 3180.0 * se.State.PriceLevel;
+                if (Math.Abs(seLine.RateCeiling - seCeilingExpected) > 1e-3 * seCeilingExpected) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's ceiling reads {seLine.RateCeiling:F1} against 3180 carried by the level ({seCeilingExpected:F1})."); }
+                // Germany: 45 (2024), 55 (2025), 55 (2026, the corridor's floor), then the last figure carried by the level
+                double[] deExpected = { 45.0, 55.0, 55.0 };
+                for (int y = 1; y <= 3; y++) { if (Math.Abs(run.Rate[CountryId.Germany][y] - deExpected[y - 1]) > 1e-4) { ok = false; Debug.LogError($"CARBON TAX UNIT: Germany's rate after boundary {y} is {run.Rate[CountryId.Germany][y]:F2} against the BEHG's {deExpected[y - 1]:F0} for {CarbonRateStatute.SeedYear + y}."); } }
+                double deAfter = 55.0 * run.PriceLevelAtBoundary[CountryId.Germany][Years] / run.PriceLevelAtBoundary[CountryId.Germany][3];
+                if (Math.Abs(deLine.Rate - deAfter) > 1e-3 * deAfter) { ok = false; Debug.LogError($"CARBON TAX UNIT: Germany's rate after {Years} years is {deLine.Rate:F3} against the last legislated 55 carried by the level since 2026 ({deAfter:F3})."); }
+                // France: nominal, the real rate below the seed, the coupling's tax factor above one (the erosion the book shows)
+                if (Math.Abs(frLine.Rate - 44.6f) > 1e-6) { ok = false; Debug.LogError($"CARBON TAX UNIT: France's rate moved to {frLine.Rate} - the composante carbone is a nominal amount, fixed since 2018."); }
+                double frFactor = EnvironmentFamily.TransportTargetFor(fr, frLine.Rate, fr.Environment.InfrastructurePerHeadSeed) / EnvironmentFamily.TransportTargetFor(fr, 44.6f * fr.State.PriceLevel, fr.Environment.InfrastructurePerHeadSeed);
+                if (!(fr.State.PriceLevel > 1.0f) || !(frFactor > 1.0)) { ok = false; Debug.LogError($"CARBON TAX UNIT: France's frozen rate should read as a real erosion - the coupling's tax factor is {frFactor:F5} at a price level of {fr.State.PriceLevel:F4}."); }
+                // the zero-rate lines: untouched, their ceilings carried
+                if (plLine.IsImplemented || plLine.Rate != 0f) { ok = false; Debug.LogError($"CARBON TAX UNIT: Poland's unimplemented line moved ({plLine.Rate}, {(plLine.IsImplemented ? "implemented" : "unimplemented")}) - a zero-rate country is unaffected."); }
+                double plCeilingExpected = 1260.0 * pl.State.PriceLevel;
+                if (Math.Abs(plLine.RateCeiling - plCeilingExpected) > 1e-3 * plCeilingExpected) { ok = false; Debug.LogError($"CARBON TAX UNIT: Poland's ceiling reads {plLine.RateCeiling:F1} against 1260 carried by the level ({plCeilingExpected:F1}) - the dial's reach indexes for all six."); }
+                sb.Append(F("    Sweden   {0:F0} → {1:F1} SEK/t over {2} boundaries (the rounded ratios' product {3:F5}; the level {4:F5}) - real {5:F1} in the seed's prices; the ceiling 3180 → {6:F0}\n", 1330.0, seLine.Rate, Years, run.RoundedRatioProduct[CountryId.Sweden], se.State.PriceLevel, seReal, seLine.RateCeiling));
+                sb.Append(F("    Germany  30 → {0:F0} ({1}) → {2:F0} ({3}) → {4:F0} ({5}, the corridor's floor) → {6:F2} after {7} years (55 carried by the level since 2027, the ETS's own convention) - real {8:F1}\n", run.Rate[CountryId.Germany][1], CarbonRateStatute.SeedYear + 1, run.Rate[CountryId.Germany][2], CarbonRateStatute.SeedYear + 2, run.Rate[CountryId.Germany][3], CarbonRateStatute.SeedYear + 3, deLine.Rate, Years, CarbonRateStatute.RealRate(deLine.Rate, de.State.PriceLevel)));
+                sb.Append(F("    France   44.6 held nominal; real {0:F2} EUR/t at a price level of {1:F4}; the transport coupling's tax factor {2:F5} (above one: the erosion, shown)\n", CarbonRateStatute.RealRate(frLine.Rate, fr.State.PriceLevel), fr.State.PriceLevel, frFactor));
+                sb.Append(F("    Poland   0, unimplemented, untouched; its ceiling 1260 → {0:F0} PLN/t (the dial's reach in the year's prices, all six)\n", plLine.RateCeiling));
             }
 
             sb.Append(ok ? "\n=== CarbonTaxUnitDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== CarbonTaxUnitDiagnostic: FAILED (see above) ===\n");
@@ -147,7 +189,48 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(ok ? 0 : 1);
         }
 
-        private sealed class Outcome { public double Rate, Revenue, Transport, TransportTarget, Power; public float PointsCharged; }
+        private sealed class Outcome { public double Rate, Revenue, Transport, TransportTarget, Power, RealRate, RealDollarsAboveSeed, TaxFactor, PriceLevelAtRaise; public float PointsCharged; }
+
+        private sealed class StatuteRun
+        {
+            public World World;
+            public readonly Dictionary<CountryId, double[]> Rate = new Dictionary<CountryId, double[]>(), PriceLevelAtBoundary = new Dictionary<CountryId, double[]>();
+            public readonly Dictionary<CountryId, double> RoundedRatioProduct = new Dictionary<CountryId, double>();
+        }
+
+        /// <summary>One world at no policy: every country's carbon rate and price level read after each boundary, and the product of the boundaries' price ratios rounded as Sweden's statute rounds them.</summary>
+        private static StatuteRun RunStatutes(int years)
+        {
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("CARBONSTATUTE");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                sim.PlayerCountryId = CountryId.Sweden;
+                var run = new StatuteRun { World = world };
+                foreach (Country c in world.Countries) { run.Rate[c.Id] = new double[years + 1]; run.PriceLevelAtBoundary[c.Id] = new double[years + 1]; run.RoundedRatioProduct[c.Id] = 1.0; TaxLine l = Find(c); run.Rate[c.Id][0] = l != null ? l.Rate : 0; run.PriceLevelAtBoundary[c.Id][0] = c.State.PriceLevel; }
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                var before = new Dictionary<CountryId, float>();
+                for (int year = 1; year <= years; year++)
+                {
+                    for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                    foreach (Country k in world.Countries) { before[k.Id] = k.PriceLevelAtLastIndex; }   // the reference the statute reads at this boundary
+                    sim.AdvanceTurn(decisions);
+                    foreach (Country k in world.Countries)
+                    {
+                        TaxLine l = Find(k); run.Rate[k.Id][year] = l != null ? l.Rate : 0; run.PriceLevelAtBoundary[k.Id][year] = k.PriceLevelAtLastIndex;   // the level the boundary indexed at
+                        double ratio = before[k.Id] > 0f ? k.PriceLevelAtLastIndex / before[k.Id] : 1.0;
+                        run.RoundedRatioProduct[k.Id] *= Math.Round(ratio, CarbonRateStatute.JamforelsetalDecimals);
+                    }
+                }
+                return run;
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
 
         private static Outcome RunCountry(CountryId player, int years, float raiseNationalPerTonne)
         {
@@ -170,11 +253,17 @@ namespace PoliSim.EditorTools
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                     PolicyDecision d = PolicyDecision.None();
-                    if (raiseNationalPerTonne != 0f) { d.TaxRateOverrides[TaxType.CarbonTax] = seedRate + raiseNationalPerTonne; }
+                    // EN-4e: the raise is applied ONCE, at year 1's boundary, in that boundary's prices; thereafter the statute indexes it as it indexes the seed
+                    if (raiseNationalPerTonne != 0f && year == 1) { d.TaxRateOverrides[TaxType.CarbonTax] = seedRate * CarbonRateStatute.YearRatio(c) + raiseNationalPerTonne; }
                     decisions[player] = d;
                     sim.AdvanceTurn(decisions);
+                    if (year == 1) { outcome.PriceLevelAtRaise = c.PriceLevelAtLastIndex; }
                 }
                 outcome.Rate = line.Rate;
+                outcome.RealRate = CarbonRateStatute.RealRate(line.Rate, c.State.PriceLevel);
+                outcome.RealDollarsAboveSeed = (outcome.RealRate - c.Environment.CarbonTaxRateSeed) / EnergyLayer.NationalPerUsd(c.Id);
+                float infra = EnvironmentFamily.PerHead(c, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation);
+                outcome.TaxFactor = EnvironmentFamily.TransportTargetFor(c, line.Rate, infra) / Math.Max(1e-9, EnvironmentFamily.TransportTargetFor(c, c.Environment.CarbonTaxRateSeed * c.State.PriceLevel, infra));   // against the seed in today's prices at the same infrastructure term
                 outcome.Revenue = TaxBases.Revenue(c, line);
                 outcome.Transport = c.State.TransportCo2PerCapita;
                 outcome.Power = c.State.PowerCo2PerCapita;

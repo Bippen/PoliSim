@@ -2584,6 +2584,7 @@ namespace PoliSim.Simulation
             BoundaryLedger?.Invoke(country, "open");
             EconomyState state = country.State;
 
+            CarbonRateStatute.AdvanceYear(country, CurrentTurn);   // EN-4e (§471): the carbon rate moves as its statute moves it, before any override - a passed bill's figure wins; a left dial gets the law's
             float totalTaxHike = ApplyTaxRateChanges(country, decision);
             ApplyWelfareGenerosityChanges(country, decision);
             ApplyMinimumWageChange(country, decision);
@@ -2918,6 +2919,7 @@ namespace PoliSim.Simulation
                     * 100f * (previewTariffRevenue - StandingPlannedTariffRevenue(countryId)) / Mathf.Max(gdpBeforeThisTurn, 1f)
                 : 0f;
 
+            CarbonRateStatute.AdvanceYear(previewCountry, CurrentTurn);   // EN-4e: the preview's boundary reads the same statute the turn will (the clone's own lines and reference)
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
             // EN-5: the electricity pass-through this turn's carbon-tax draft would plan - the clone's household price at its drafted rate against
             // the standing real price, in the index's weight (EnergyPassThrough.PlannedForPreview) - so the preview's inflation reads the same form the boundary will

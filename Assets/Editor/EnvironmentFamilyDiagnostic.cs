@@ -81,7 +81,9 @@ namespace PoliSim.EditorTools
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                     PolicyDecision d = PolicyDecision.None();
-                    if (taxDeltaPoints != 0f) { d.TaxRateOverrides[TaxType.CarbonTax] = EnvironmentFamily.CarbonTaxRate(se) + (year == 1 ? taxDeltaPoints : 0f); }   // an override, not a delta: the rate asked for, held thereafter
+                    // an override, not a delta: the rate asked for in year 1 - the seed as the statute will have indexed it at this boundary plus the raise (EN-4e: the statute steps before the override, so an
+                    // override of the pre-index figure plus twenty would CUT below the indexed path when the year's inflation exceeds 1.5 per cent - the first run read it so); thereafter the statute's
+                    if (taxDeltaPoints != 0f && year == 1) { d.TaxRateOverrides[TaxType.CarbonTax] = EnvironmentFamily.CarbonTaxRate(se) * CarbonRateStatute.YearRatio(se) + taxDeltaPoints; }
                     decisions[CountryId.Sweden] = d;
                     sim.AdvanceTurn(decisions);
                     EconomyState s = se.State;

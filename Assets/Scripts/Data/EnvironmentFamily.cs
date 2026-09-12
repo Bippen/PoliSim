@@ -29,7 +29,7 @@ namespace PoliSim.Data
         /// cross-checked against Eurostat nrg_bal_peh (the five) and the EIA's Table 1.1 (the USA) within a point (§342, 2026-09-06). The seed the dispatch is calibrated to (EnergyLayerCheck); the plate draws the dispatched mix.</summary>
         public float[] MixShares = null;
         public bool HasMix => MixShares != null && MixShares.Length == 7;
-        public float CarbonTaxRateSeed;            // the carbon tax's rate at the seed, the country's currency per tonne (0 when the line is not implemented) - the transport coupling's reference
+        public float CarbonTaxRateSeed;            // the carbon tax's rate at the seed, the country's currency per tonne in the SEED's prices (0 when the line is not implemented) - the transport coupling's reference, compared against the standing rate deflated by the price level (EN-4e)
         public float InfrastructurePerHeadSeed;
         /// <summary>EN-3: the power figure's residual by method at the seed, Mt - the seed per head × the population less the seed dispatch's own CO₂ (heat plants, CHP heat, refineries, the factor gap); held constant.</summary>
         public float PowerResidualMt;
@@ -120,11 +120,11 @@ namespace PoliSim.Data
             return real / Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDriver.Population, country));
         }
 
-        /// <summary>The transport intensity's target: the seed times (1 − e × the carbon tax's dollars per tonne above its seed), floored, times the infrastructure term. The rate is the country's currency per tonne; the ECB rate takes the change into the book's dollars the elasticity is stated in.</summary>
+        /// <summary>The transport intensity's target: the seed times (1 − e × the carbon tax's REAL dollars per tonne above its seed), floored, times the infrastructure term. The rate is the country's currency per tonne, read in the seed's prices (EN-4e, §471: the nominal figure over the price level - an indexed rate at no policy is no real change, a nominal-fixed one erodes and the intensity rises with it; before this the coupling read the nominal figure and a rate that eroded read as unchanged, the B6 artefact); the ECB rate takes the change into the book's dollars the elasticity is stated in.</summary>
         public static float TransportTargetFor(Country country, float carbonTaxRate, float infrastructurePerHead)
         {
             EnvironmentSeeds s = country.Environment;
-            float dollarsPerTonneAboveSeed = (float)((carbonTaxRate - s.CarbonTaxRateSeed) / EnergyLayer.NationalPerUsd(country.Id));
+            float dollarsPerTonneAboveSeed = (float)((CarbonRateStatute.RealRate(carbonTaxRate, country.State.PriceLevel) - s.CarbonTaxRateSeed) / EnergyLayer.NationalPerUsd(country.Id));
             float taxFactor = Mathf.Max(0.1f, 1f - TransportElasticityPerDollarPerTonne * dollarsPerTonneAboveSeed);
             float infraRatio = s.InfrastructurePerHeadSeed > 0f ? Mathf.Max(0.01f, infrastructurePerHead / s.InfrastructurePerHeadSeed) : 1f;
             return Mathf.Clamp(s.TransportCo2PerCapita * taxFactor * Mathf.Pow(1f / infraRatio, TransportInfrastructureElasticity), MinIntensity, MaxIntensity);

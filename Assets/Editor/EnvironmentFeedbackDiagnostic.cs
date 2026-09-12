@@ -75,7 +75,7 @@ namespace PoliSim.EditorTools
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                     PolicyDecision d = PolicyDecision.None();
-                    if (extraPoints != 0f) { d.TaxRateOverrides[TaxType.CarbonTax] = seedRate + extraPoints; }
+                    if (extraPoints != 0f && year == 1) { d.TaxRateOverrides[TaxType.CarbonTax] = seedRate + extraPoints; }   // once, in year 1; Poland's rule is nominal-fixed (EN-4e), so the raised figure then stands
                     decisions[player] = d;
                     sim.AdvanceTurn(decisions);
                 }

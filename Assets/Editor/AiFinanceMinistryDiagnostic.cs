@@ -114,7 +114,13 @@ namespace PoliSim.EditorTools
                 var decisions2 = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world2.Countries) { decisions2[k.Id] = PolicyDecision.None(); }
                 for (int year = 1; year <= Turns; year++) { for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim2.AdvanceDay(); } sim2.AdvanceTurn(decisions2); }
-                foreach (TaxLine t in sweden.TaxLines) { if (Mathf.Abs(t.Rate - seedRates[t.Type]) > 1e-6f) { Debug.LogError($"FINMIN: the player's {t.Type} rate moved ({seedRates[t.Type]} → {t.Rate}) - the ministry read the player."); ok = false; } }
+                foreach (TaxLine t in sweden.TaxLines)
+                {
+                    // EN-4e (§471): the carbon line moves by STATUTE between decisions - Sweden's is indexed by the year's price ratio - so the ministry's
+                    // hands-off is read on the REAL rate for that line (the seed within the four-decimal rounding's drift), the nominal figure for every other
+                    if (t.IsPerTonne) { float real = CarbonRateStatute.RealRate(t.Rate, sweden.State.PriceLevel); if (Mathf.Abs(real - seedRates[t.Type]) > seedRates[t.Type] * 5e-4f * Turns) { Debug.LogError($"FINMIN: the player's {t.Type} real rate moved ({seedRates[t.Type]} → {real}) beyond the statute's own indexation - the ministry read the player."); ok = false; } continue; }
+                    if (Mathf.Abs(t.Rate - seedRates[t.Type]) > 1e-6f) { Debug.LogError($"FINMIN: the player's {t.Type} rate moved ({seedRates[t.Type]} → {t.Rate}) - the ministry read the player."); ok = false; }
+                }
                 if (sweden.DebtRatioLastReport != 0f) { Debug.LogError("FINMIN: the ministry observed the player's debt ratio."); ok = false; }
             }
             finally { Object.DestroyImmediate(go2); }

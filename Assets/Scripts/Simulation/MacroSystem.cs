@@ -157,6 +157,9 @@ namespace PoliSim.Simulation
                 // The base is read at today's level on BOTH sides and cancels by design - FT-3 measured the seed-share anchor and STOPPED (§377): a live
                 // base inside a period fails the turn-vs-daily equivalence bar, and the seed's share reads the bases' secular trend as a permanent tax.
                 if (atBaseline && !country.BaselineTaxRates.TryGetValue(line.Type, out rate)) { rate = 0f; }
+                // EN-4e (§471): a per-tonne line's baseline is a nominal amount at the SEED's prices; the burden compares it at today's - the seed rate carried by the
+                // price level - so Sweden's statutory indexation reads as no change of burden, France's frozen 44.6 as a real cut, Germany's schedule as the real rise it is
+                if (atBaseline && line.IsPerTonne) { rate *= Mathf.Max(0.0001f, country.State.PriceLevel); }
 
                 share += TaxBases.RevenueAtRate(country, line.Type, rate) / Mathf.Max(1f, country.State.NominalGdp);   // P5-B3/B6: the nominal revenue at that rate over nominal GDP - a real share; EN-4c: the carbon line is rate per tonne × tonnes through the same accessor
             }
