@@ -34,13 +34,12 @@ namespace PoliSim.Simulation
             return WeightFraction(country.Id) * country.State.EnergyHouseholdPriceRealChange;
         }
 
-        /// <summary>The same term for a PREVIEW clone: the household price the clone's own carbon tax rate would produce this year (the ledger's pure book on the clone) against the standing real price - the boundary's own expression, so the preview and the turn read one form.</summary>
+        /// <summary>The same term for a PREVIEW clone: the household price the clone's own state would produce this year (the ledger's pure book on the clone - its price level, its energy line, the dispatch; the carbon tax line no longer reaches the stack, EN-4d) against the standing real price - the boundary's own expression, so the preview and the turn read one form.</summary>
         public static float PlannedForPreview(Country preview)
         {
             if (preview.Environment == null || !preview.Environment.Seeded || !EnergyLayer.Has(preview.Id) || preview.State.EnergyHouseholdPriceReal <= 0f) { return 0f; }
-            float rate = EnvironmentFamily.CarbonTaxRate(preview);
             double priceIndex = Math.Max(0.0001f, preview.State.PriceLevel);
-            EnergyLedger.Book book = EnergyLedger.Compute(preview, EnergyMarket.Clear(preview, rate), priceIndex, rate, EnergyLedger.CreditFor(preview));
+            EnergyLedger.Book book = EnergyLedger.Compute(preview, EnergyMarket.Clear(preview), priceIndex, EnergyLedger.CreditFor(preview));
             double real = book.Classes[EnergyLedger.Households].Total / priceIndex;
             float change = (float)((real / preview.State.EnergyHouseholdPriceReal - 1.0) * 100.0);
             return WeightFraction(preview.Id) * change;

@@ -9,7 +9,8 @@ namespace PoliSim.UI
     /// all gases, DERIVED from the sector keys); the power / transport split → the DISTRIBUTION of the key under it (the stacked bar: power, transport,
     /// the rest at seed); power and transport CO₂ per person → KEY·OPEN lower ◂; generation by source → a FETCH row (the family picks the stacked bar,
     /// never a pie). Home: the People page's society block (the catalog's Environment block), the plate whole under infrastructure. While a carbon-tax
-    /// draft is live on the Budget's tax rows, 5c's arrow paints on the power row.
+    /// draft is live on the Budget's tax rows, 5c's arrow paints on the TRANSPORT row - since EN-4d (2026-09-11) the fleet pays the ETS and is exempt of
+    /// the national carbon tax, so the power row and the price rows no longer answer the draft; the transport row does.
     /// </summary>
     public partial class GameController
     {
@@ -44,14 +45,14 @@ namespace PoliSim.UI
                 new PlateRow("… the split", "t CO2-eq · POWER · TRANSPORT · THE REST", "EDGAR 2024 · BY SECTOR · 2023", PlateFigure(ghg, 2),
                     PlateBand.Distribution, 0f, Mathf.Max(0.01f, ghg), s.PowerCo2PerCapita, null, true, new[] { "READOUT · THE KEYS' OWN SHARES" }, null, new[] { "DERIVED" }, false, null, segments, segmentLabels),
                 new PlateRow("Electricity CO2 / head", "t CO2 · POWER ÷ POPULATION · LOWER ◂", "EDGAR 2024 · POWER · WB POP · 2023", PlateFigure(s.PowerCo2PerCapita, 2),
-                    PlateBand.Open, 0f, 5f, s.PowerCo2PerCapita, EnvironmentPeers(x => x.PowerCo2PerCapita), true, new[] { "CARBON TAX ▸", "DISPATCH ▸" }, history?.PowerCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
+                    PlateBand.Open, 0f, 5f, s.PowerCo2PerCapita, EnvironmentPeers(x => x.PowerCo2PerCapita), true, new[] { "DISPATCH ▸", "THE ETS PRICE, NOT THE CARBON TAX" }, history?.PowerCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
                 new PlateRow("Transport CO2 / head", "t CO2 · TRANSPORT ÷ POPULATION · LOWER ◂", "EDGAR 2024 · TRANSPORT · WB POP · 2023", PlateFigure(s.TransportCo2PerCapita, 2),
                     PlateBand.Open, 0f, 6f, s.TransportCo2PerCapita, EnvironmentPeers(x => x.TransportCo2PerCapita), true, new[] { "CARBON TAX ▸", "INFRASTRUCTURE LINE ▸" }, history?.TransportCo2PerCapita.Quarterly, new[] { "SOURCED" }, true),
                 e.HasMix
                     ? new PlateRow("Electricity by source", "% · COAL·GAS·NUCLEAR·HYDRO·WIND·SOLAR·OTHER", "THIS YEAR'S DISPATCH · SEEDED EMBER · EUROSTAT · EIA · 2023", PlateFigure(dispatchedMix[0] + dispatchedMix[1], 0, "% FOSSIL"),
-                        PlateBand.Distribution, 0f, 100f, -1f, null, true, new[] { "CARBON TAX ▸", "DISPATCHED YEARLY" }, null, new[] { "DERIVED" }, false, null, dispatchedMix, EnvironmentFamily.MixLabels)
+                        PlateBand.Distribution, 0f, 100f, -1f, null, true, new[] { "DISPATCHED YEARLY", "THE ETS PRICE, NOT THE CARBON TAX" }, null, new[] { "DERIVED" }, false, null, dispatchedMix, EnvironmentFamily.MixLabels)
                     : new PlateRow("Electricity by source", "% OF GENERATION", "EMBER · EUROSTAT nrg_bal_peh · EIA 1.1", "billed",
-                        PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "CARBON TAX ▸" }, null, new[] { "BILLED" }, false, "NOT SEEDED FOR THIS COUNTRY · THE SIX ARE"),
+                        PlateBand.Absent, 0f, 100f, -1f, null, false, new[] { "NO DISPATCH FOR THIS COUNTRY" }, null, new[] { "BILLED" }, false, "NOT SEEDED FOR THIS COUNTRY · THE SIX ARE"),
             };
             // EN-4 (2026-09-11): the fiscal layer's two prices, presented as the state carries them (the single book) - the stack the ledger writes each year
             if (EnergyLayer.Has(country.Id) && s.EnergyHouseholdPrice >= 0f)
@@ -60,9 +61,9 @@ namespace PoliSim.UI
                 string unit = PoliSim.Simulation.EnergyLedger.BookCurrency + " PER kWh";
                 const float perKwhHigh = 0.5f;
                 rows.Add(new PlateRow("Electricity price, households", unit + " · WHOLESALE + MARGIN + NETWORK + LEVIES + TAX + VAT", "EUROSTAT nrg_pc_204 · EIA · 2023 · THIS YEAR'S STACK", PlateFigure(s.EnergyHouseholdPrice, 2),
-                    PlateBand.Open, 0f, perKwhHigh, s.EnergyHouseholdPrice, null, true, new[] { "CARBON TAX ▸", "ENERGY LINE ▸", "DISPATCH ▸" }, null, new[] { "DERIVED" }, false));
+                    PlateBand.Open, 0f, perKwhHigh, s.EnergyHouseholdPrice, null, true, new[] { "ENERGY LINE ▸", "DISPATCH ▸" }, null, new[] { "DERIVED" }, false));
                 rows.Add(new PlateRow("Electricity price, industry", unit + " · EXCLUDING RECOVERABLE VAT", "EUROSTAT nrg_pc_205 · EIA · 2023 · THIS YEAR'S STACK", PlateFigure(s.EnergyIndustryPrice, 2),
-                    PlateBand.Open, 0f, perKwhHigh, s.EnergyIndustryPrice, null, true, new[] { "CARBON TAX ▸", "ENERGY LINE ▸", "BUSINESS CONFIDENCE ▸" }, null, new[] { "DERIVED" }, false));
+                    PlateBand.Open, 0f, perKwhHigh, s.EnergyIndustryPrice, null, true, new[] { "ENERGY LINE ▸", "BUSINESS CONFIDENCE ▸" }, null, new[] { "DERIVED" }, false));
             }
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);
@@ -84,12 +85,13 @@ namespace PoliSim.UI
                     energyFoot += $" · THE RESERVOIRS: BALANCE {(s.HydroReservoirBalanceGwh >= 0f ? "+" : "")}{s.HydroReservoirBalanceGwh / 1000f:0.0} TWh OF {EnergyLayer.SwedenReservoirCapacityGwh() / 1000.0:0.0} TWh · A DEFICIT RAISES THE WATER VALUE";
                 }
             }
-            string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE IS THE TAXED CO₂ - POWER AND TRANSPORT PER HEAD × POPULATION · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED" + energyFoot;
+            string footText = "SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 · THE HEADLINE IS ALL GASES, THE KEYS CO₂ · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE AT SEED · THE CARBON TAX'S BASE IS THE TAXED CO₂ - TRANSPORT PER HEAD × POPULATION; THE POWER FLEET PAYS THE ETS AND IS EXEMPT OF THE TAX BY STATUTE · COUPLINGS: THE ENVIRONMENT SPINE'S TABLES, DRAFT UNTIL MEASURED" + energyFoot;
             _environmentPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
             {
-                if (!draftLive || !row.Name.StartsWith("Electricity CO2")) { return null; }
-                float with = EnvironmentFamily.ProjectPowerCo2(country, draftedRate);
-                float without = EnvironmentFamily.ProjectPowerCo2(country, standingRate);
+                // EN-4d: the draft's arrow on the transport row - next year's figure at the drafted rate against next year's at the standing one
+                if (!draftLive || !row.Name.StartsWith("Transport CO2")) { return null; }
+                float with = EnvironmentFamily.ProjectTransportCo2(country, draftedRate);
+                float without = EnvironmentFamily.ProjectTransportCo2(country, standingRate);
                 return (with - without, true, "t");
             });
         }

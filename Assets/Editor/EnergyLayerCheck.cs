@@ -175,7 +175,7 @@ namespace PoliSim.EditorTools
             sb.Append(F("    no clamp: a surplus block at a lowest offer of −5 prices {0:F1} (the ceiling {1:F0}, the onset {2:F2}).\n", negative.Price, PoliSim.Simulation.EnergyMarket.MaxClearingPrice, PoliSim.Simulation.EnergyMarket.ScarcityOnset));
 
             // ---- gate 7 (§461): the fitted parameters counted, and the out-of-sample response with them fixed
-            sb.Append("\n    7. FITTED, COUNTED, AND THE RESPONSE: the adders fixed at the seed, a carbon-price step of " + PoliSim.Simulation.EnergyMarket.ResponseStepPoints.ToString("0", CultureInfo.InvariantCulture) + " points\n");
+            sb.Append("\n    7. FITTED, COUNTED, AND THE RESPONSE: the adders fixed at the seed, an ETS-price step of " + PoliSim.Simulation.EnergyMarket.ResponseStepEtsPerT.ToString("0", CultureInfo.InvariantCulture) + " per tonne in the market's currency (EN-4d: the fleet's carbon price is the ETS; the national tax does not reach it)\n");
             int fitted = 0;
             foreach (Country c in world.Countries)
             {
@@ -185,7 +185,7 @@ namespace PoliSim.EditorTools
                 int expectedCount = c.Id == CountryId.Sweden ? 0 : PoliSim.Simulation.EnergyMarket.FittedParametersPerCountryWithFleet;
                 if (names.Count != expectedCount) { failures++; Debug.LogError($"ENERGY: {c.Id} has {names.Count} fitted parameter(s) ({string.Join(", ", names)}); the count stated is {expectedCount}. A parameter appeared or vanished - state it."); }
                 if (c.Id == CountryId.Sweden) { sb.Append("    Sweden   FITTED: none (no dispatchable fossil fleet)\n"); continue; }
-                (double coalA, double coalB, double gasA, double gasB, double peakA, double peakB) = PoliSim.Simulation.EnergyMarket.Response(c.Id, PoliSim.Simulation.EnergyMarket.ResponseStepPoints);
+                (double coalA, double coalB, double gasA, double gasB, double peakA, double peakB) = PoliSim.Simulation.EnergyMarket.Response(c.Id, PoliSim.Simulation.EnergyMarket.ResponseStepEtsPerT);
                 bool responds = coalB < coalA && gasB > gasA && peakB > peakA;
                 if (!responds) { failures++; Debug.LogError($"ENERGY: {c.Id} does not respond to the step - coal {coalA:F3} → {coalB:F3}, gas {gasA:F3} → {gasB:F3}, peak price {peakA:F1} → {peakB:F1}. A model that reproduces its seed year is not yet a model that responds."); }
                 if (c.Id == CountryId.Poland)
@@ -193,7 +193,7 @@ namespace PoliSim.EditorTools
                     bool onReference = Math.Abs((coalA - coalB) - PoliSim.Simulation.EnergyMarket.ReferenceCoalDrop) <= PoliSim.Simulation.EnergyMarket.ReferenceShareSlack
                         && Math.Abs((gasB - gasA) - PoliSim.Simulation.EnergyMarket.ReferenceGasRise) <= PoliSim.Simulation.EnergyMarket.ReferenceShareSlack
                         && Math.Abs((peakB - peakA) - PoliSim.Simulation.EnergyMarket.ReferencePeakPriceRise) <= PoliSim.Simulation.EnergyMarket.ReferencePriceSlack;
-                    if (!onReference) { failures++; Debug.LogError($"ENERGY: Poland's response to twenty points left its reference - coal −{coalA - coalB:F3} (reference {PoliSim.Simulation.EnergyMarket.ReferenceCoalDrop:F3}), gas +{gasB - gasA:F3} ({PoliSim.Simulation.EnergyMarket.ReferenceGasRise:F3}), peak +{peakB - peakA:F1} ({PoliSim.Simulation.EnergyMarket.ReferencePeakPriceRise:F1}). The model changed; explain it and move the reference deliberately."); }
+                    if (!onReference) { failures++; Debug.LogError($"ENERGY: Poland's response to the ETS step left its reference - coal −{coalA - coalB:F3} (reference {PoliSim.Simulation.EnergyMarket.ReferenceCoalDrop:F3}), gas +{gasB - gasA:F3} ({PoliSim.Simulation.EnergyMarket.ReferenceGasRise:F3}), peak +{peakB - peakA:F1} ({PoliSim.Simulation.EnergyMarket.ReferencePeakPriceRise:F1}). The model changed; explain it and move the reference deliberately."); }
                 }
                 sb.Append(F("    {0,-8} FITTED: {1} · coal {2:F3} → {3:F3} · gas {4:F3} → {5:F3} · peak price {6:F1} → {7:F1}{8}\n", c.Id, string.Join(", ", names), coalA, coalB, gasA, gasB, peakA, peakB, c.Id == CountryId.Poland ? " (the reference)" : ""));
             }
@@ -212,7 +212,7 @@ namespace PoliSim.EditorTools
                 fittedMargins += margins.Count;
                 if (margins.Count != PoliSim.Simulation.EnergyLedger.FittedParametersPerCountry) { failures++; Debug.LogError($"ENERGY: {c.Id}'s ledger has {margins.Count} fitted parameter(s); the count stated is {PoliSim.Simulation.EnergyLedger.FittedParametersPerCountry}."); }
                 PoliSim.Simulation.EnergyMarket.Result r = PoliSim.Simulation.EnergyMarket.ClearAt(c.Id, 1.0, 0.0);
-                PoliSim.Simulation.EnergyLedger.Book book = PoliSim.Simulation.EnergyLedger.Compute(c, r, 1.0, EnvironmentFamily.CarbonTaxRate(c), 0.0);
+                PoliSim.Simulation.EnergyLedger.Book book = PoliSim.Simulation.EnergyLedger.Compute(c, r, 1.0, 0.0);
                 double statedResidual = 0;
                 for (int k = 0; k < PoliSim.Simulation.EnergyLedger.ClassCount; k++)
                 {

@@ -29,12 +29,13 @@ namespace PoliSim.Simulation
     /// reduces network tariffs) and Svenska kraftnät's practice with its capacity fees. Zero where no block binds, as at the seed.</para>
     ///
     /// <para><b>The two ledgers.</b> SYSTEM COST as far as this model states it: the fossil dispatch's variable cost at the dispatched tranches'
-    /// own costs (fuel and O&amp;M, the ETS, the carbon tax, the fitted adders), the wholesale outlay above it (the inframarginal rent that pays the
+    /// own costs (fuel and O&amp;M, the ETS, the fitted adders), the wholesale outlay above it (the inframarginal rent that pays the
     /// fleet's fixed costs and the non-fossil fleet, not modelled), the network's revenue as its cost, the support scheme's cost. INCIDENCE: who
     /// pays - households, non-households, taxpayers - and who receives - generators, suppliers, networks, the support scheme, the state's
-    /// electricity taxes; the two sides close to the unit, the book's own identity. The carbon tax's payment on power is booked at the line's
-    /// statutory rate per tonne on the dispatch's own CO₂ - since EN-4c (2026-09-11) the one meaning the budget's revenue reads too (TaxBases.RevenueAtRate);
-    /// the statutes' exemption of ETS installations is EN-4d's, named in the record.</para>
+    /// electricity taxes; the two sides close to the unit, the book's own identity. THE CARBON TAX'S PAYMENT ON POWER IS NONE (EN-4d, ruled
+    /// 2026-09-11, §467): ETS-covered plant is exempt of the national carbon tax by statute so the two prices do not stack, applied here at sector
+    /// level for want of an installation register (EnergyMarket's class doc states the deviation); before the ruling this ledger booked the statutory
+    /// rate on the dispatch's own CO₂, a payment the statute does not levy, which §464 had named.</para>
     ///
     /// <para><b>What reaches the model (the BASELINE move).</b> The energy line's BusinessConfidence proxy is retired: the industrial electricity
     /// bill's change as a share of GDP is what firms bear, and MacroSystem reads it at the proxy's own sensitivity, the sign reversed. THE SINGLE
@@ -76,8 +77,8 @@ namespace PoliSim.Simulation
             public double WholesalePerKwh;
             public ClassStack[] Classes;
             // ---- system cost
-            public double FuelVomCost, EtsCost, CarbonTaxCost, AdderCost, WholesaleOutlay, NetworkRevenue, LevyRevenue, BudgetSupport;
-            public double FossilVariableCost => FuelVomCost + EtsCost + CarbonTaxCost + AdderCost;
+            public double FuelVomCost, EtsCost, AdderCost, WholesaleOutlay, NetworkRevenue, LevyRevenue, BudgetSupport;
+            public double FossilVariableCost => FuelVomCost + EtsCost + AdderCost;
             /// <summary>The wholesale outlay above the fossil variable cost - what pays the fleet's fixed costs and the non-fossil fleet; not modelled, printed.</summary>
             public double InframarginalRent => WholesaleOutlay - FossilVariableCost;
             public double SupportCost => LevyRevenue + BudgetSupport;
@@ -108,7 +109,7 @@ namespace PoliSim.Simulation
             if (s == null || !EnergyLayer.Has(country.Id)) { return; }
             FitMargins(country);
             EnergyMarket.Result r = EnergyMarket.ClearAtSeed(country.Id);
-            Book b = Compute(country, r, 1.0, EnvironmentFamily.CarbonTaxRate(country), 0.0);
+            Book b = Compute(country, r, 1.0, 0.0);
             s.EnergyCongestionRentSeed = (float)b.CongestionRent;   // EN-3b: the seed's own rent is inside the seed's network tariff; only the rent above it is credited
             Write(country, b, first: true);
         }
@@ -170,21 +171,20 @@ namespace PoliSim.Simulation
         }
 
         // ---- the year ---------------------------------------------------------------------------------------
-        /// <summary>The yearly step: this year's book at the standing rate, last year's congestion rent credited, written to the state; the industrial bill's share of GDP and its change for MacroSystem's channel.</summary>
+        /// <summary>The yearly step: this year's book at this year's dispatch, last year's congestion rent credited, written to the state; the industrial bill's share of GDP and its change for MacroSystem's channel.</summary>
         public static void AdvanceYear(Country country)
         {
             EnvironmentSeeds s = country.Environment;
             if (s == null || !s.Seeded || !EnergyLayer.Has(country.Id)) { return; }
             if (s.RetailMargin == null || s.RetailMargin.Length != ClassCount) { FitMargins(country); }   // a save from before this layer
-            float rate = EnvironmentFamily.CarbonTaxRate(country);
-            EnergyMarket.Result r = EnergyMarket.Clear(country, rate);
+            EnergyMarket.Result r = EnergyMarket.Clear(country);
             double credit = CreditFor(country);   // last year's rent above the seed's, billions (EN-3b: the seed's rent is inside the seed's tariff)
-            Book b = Compute(country, r, Math.Max(0.0001f, country.State.PriceLevel), rate, credit);
+            Book b = Compute(country, r, Math.Max(0.0001f, country.State.PriceLevel), credit);
             Write(country, b, first: false);
         }
 
-        /// <summary>This year's book for a clearing already made - pure: the state is read (the price level is passed, the spending line is read), never written.</summary>
-        public static Book Compute(Country country, EnergyMarket.Result r, double priceIndex, float carbonTaxRate, double congestionCreditBillions)
+        /// <summary>This year's book for a clearing already made - pure: the state is read (the price level is passed, the spending line is read), never written. The carbon tax line is not read (EN-4d).</summary>
+        public static Book Compute(Country country, EnergyMarket.Result r, double priceIndex, double congestionCreditBillions)
         {
             EnvironmentSeeds s = country.Environment;
             int ci = EnergyLayer.Index(country.Id);
@@ -229,11 +229,9 @@ namespace PoliSim.Simulation
             b.PaidNonHouseholds = b.Classes[NonHouseholds].Bill;
             b.PaidTaxpayers = b.BudgetSupport;
 
-            // the system cost: the fossil dispatch at the dispatched tranches' own costs
-            double taxDelta = carbonTaxRate - s.CarbonTaxRateSeed;
-            FossilCosts(country.Id, r, priceIndex, taxDelta, out double fuelVom, out double ets, out double adder);
+            // the system cost: the fossil dispatch at the dispatched tranches' own costs; no carbon-tax line - ETS-covered plant is exempt of it (EN-4d)
+            FossilCosts(country.Id, r, priceIndex, out double fuelVom, out double ets, out double adder);
             b.FuelVomCost = fuelVom * usd / 1e6; b.EtsCost = ets * usd / 1e6; b.AdderCost = adder * usd / 1e6;   // GWh × market currency per MWh = 1e3 per GWh; bn = / 1e6; into dollars
-            b.CarbonTaxCost = Math.Max(0f, carbonTaxRate) * EnergyMarket.CarbonTaxPointPerTonne * r.DerivedCo2Mt / 1000.0 / nat * usd;   // points (national per tonne) × Mt = millions; bn = / 1000; national → market → dollars
 
             // congestion rent this year, billions of dollars
             if (r.Links != null) { double rent = 0; foreach (EnergyMarket.LinkResult l in r.Links) { rent += l.RentPerYear; } b.CongestionRent = rent * usd / 1e9; }
@@ -258,14 +256,14 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The fossil dispatch's variable cost by part, GWh × currency per MWh (the market's currency), at the dispatched tranches' own costs: a category dispatched to a fraction f of its flexible capacity ran its cheapest tranches, whose mean is (1 − spread) + spread × f of the category's mean; the floors run at the mean.</summary>
-        private static void FossilCosts(CountryId id, EnergyMarket.Result r, double priceIndex, double taxDelta, out double fuelVom, out double etsAndTax, out double adder)
+        private static void FossilCosts(CountryId id, EnergyMarket.Result r, double priceIndex, out double fuelVom, out double ets, out double adder)
         {
-            fuelVom = 0; etsAndTax = 0; adder = 0;
+            fuelVom = 0; ets = 0; adder = 0;
             if (id == CountryId.Sweden) { return; }   // no dispatched fossil fleet (EnergyMarket.ClearSweden)
             int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(id));
             for (int k = 0; k < EnergyMarket.FossilCount; k++)
             {
-                (double partFuel, double partEts, double partTax) = EnergyMarket.CostParts(id, k, priceIndex, taxDelta);
+                (double partFuel, double partEts) = EnergyMarket.CostParts(id, k, priceIndex, r.EtsRisePerT);   // the ETS at the rise the clearing was made at (a probe's; 0 in the game)
                 if (double.IsInfinity(partFuel)) { continue; }
                 double floor = EnergyMarket.MustRunFossilMw(id, k), cap = Math.Max(0.0, EnergyMarket.DependableMw(id, k) - floor);
                 for (int bl = 0; bl < 3; bl++)
@@ -276,8 +274,7 @@ namespace PoliSim.Simulation
                     double multiplier = 1.0 - EnergyMarket.FleetSpread + EnergyMarket.FleetSpread * f;
                     double weightedMw = Math.Min(mw, floor) + flexible * multiplier;   // the floor at the mean, the flexible part at its tranches' mean
                     double gwh = weightedMw * hours / 1000.0;
-                    fuelVom += gwh * partFuel; etsAndTax += gwh * partEts; adder += gwh * r.Adders[k] * priceIndex;   // EN-5: the adder carries the price level like every cost (EnergyMarket.MarginalCost)
-                    _ = partTax;   // the tax above the seed is inside the merit order; the ledger books the whole tax at the standing rate from the CO₂ (Compute), not the delta twice
+                    fuelVom += gwh * partFuel; ets += gwh * partEts; adder += gwh * r.Adders[k] * priceIndex;   // EN-5: the adder carries the price level like every cost (EnergyMarket.MarginalCost)
                 }
             }
         }

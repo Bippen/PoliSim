@@ -14,9 +14,11 @@ namespace PoliSim.EditorTools
     /// rate × the taxed tonnes; one stored rate, one presented rate, one meaning. It builds and advances worlds, so it belongs to the simulation
     /// group. (1) THE SEEDS: Sweden 1 330 SEK, Germany 30 EUR, France 44.6 EUR per tonne, implemented; Italy, Poland and the USA 0, unimplemented;
     /// each line's dial ceiling is the 300-dollar bound in its own currency. (2) REVENUE = RATE × TAXED TONNES for the three, in the book's dollars
-    /// through the ECB rate, and the Budget's estimate is the same accessor. (3) THE ANCHOR HELD: the coverage bridge was re-solved so Implied × CE
+    /// through the ECB rate, and the Budget's estimate is the same accessor - TRANSPORT's tonnes since EN-4d (ruled 2026-09-11, §467): the
+    /// ETS-covered power fleet is exempt of the national carbon tax by statute, applied at sector level for want of an installation register. (3) THE ANCHOR HELD: the coverage bridge was re-solved so Implied × CE
     /// - D-16's anchored revenue-to-GDP - stands to the second decimal for the five. (4) ONE MEANING: the seed's references (the C-N4 baseline, the
-    /// family's seed rate) are the line's own figure; the dispatch at the seed rate is the seed dispatch; a full dial is one hundred political
+    /// family's seed rate) are the line's own figure; the dispatch does not read the tax (EN-4d) - at the seed it is the seed dispatch and a raise
+    /// leaves it where it stands; a full dial is one hundred political
     /// points. (5) THE MECHANISM: Sweden raised fifty dollars per tonne through the decision, ten years, against untouched - the carbon revenue
     /// higher by the rate's ratio less the base's erosion, the transport intensity lower by the elasticity's chain, the approval term charged the
     /// dial's per cent. (6) B6: a rate per tonne does not read the price level - the revenue in dollars at price index 2 is the revenue at 1.
@@ -62,7 +64,7 @@ namespace PoliSim.EditorTools
             }
 
             // (2) revenue = rate × taxed tonnes
-            sb.Append("\n    2. REVENUE = RATE × TAXED TONNES (the book's dollars through the ECB rate; the Budget's estimate is the same accessor)\n");
+            sb.Append("\n    2. REVENUE = RATE × TAXED TONNES (the book's dollars through the ECB rate; the Budget's estimate is the same accessor) - transport's tonnes since EN-4d: the ETS-covered fleet is exempt of the tax\n");
             foreach ((CountryId id, float rate, bool implemented) in Seeds)
             {
                 Country c = world.GetCountry(id); TaxLine line = Find(c);
@@ -71,12 +73,14 @@ namespace PoliSim.EditorTools
                 float revenue = implemented ? TaxBases.Revenue(c, line) : 0f;
                 if (implemented && Math.Abs(revenue - expected) > 1e-6 * Math.Max(1.0, expected)) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s carbon revenue is {revenue:F4} bn against rate × tonnes {expected:F4}."); }
                 if (!implemented && TaxBases.Revenue(c, line) != 0f) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s unimplemented line at rate 0 yields revenue."); }
-                sb.Append(F("    {0,-8} taxed CO₂ {1:F2} Mt (power {2:F2} + transport {3:F2} t/head × {4:F1} M) × {5:F1} {6}/t = {7:F3} bn {6} = {8:F3} bn USD = {9:F3} % of GDP\n",
+                // EN-4d: the taxed tonnes are transport's alone - the power fleet pays the ETS and is exempt of the tax by statute (sector level)
+                if (Math.Abs(tonnesMt - c.State.TransportCo2PerCapita * c.State.Population) > 1e-4 * Math.Max(1.0, tonnesMt)) { ok = false; Debug.LogError($"CARBON TAX UNIT: {id}'s taxed tonnes are {tonnesMt:F3} Mt against transport's {c.State.TransportCo2PerCapita * c.State.Population:F3} - the power fleet's tonnes are in the base (EN-4d exempts them)."); }
+                sb.Append(F("    {0,-8} taxed CO₂ {1:F2} Mt (transport {3:F2} t/head × {4:F1} M; power's {2:F2} t/head pays the ETS, exempt of the tax - EN-4d) × {5:F1} {6}/t = {7:F3} bn {6} = {8:F3} bn USD = {9:F3} % of GDP\n",
                     id, tonnesMt, c.State.PowerCo2PerCapita, c.State.TransportCo2PerCapita, c.State.Population, rate, EnergyLayer.CurrencyCode(id), rate * tonnesMt / 1000.0, revenue, 100.0 * revenue / Math.Max(1f, c.State.NominalGdp)));
             }
 
             // (3) the anchor held
-            sb.Append("\n    3. THE ANCHOR HELD: Implied × CE (revenue-to-GDP, %) against D-16's table - the bridge re-solved for the three whose carbon line changed\n");
+            sb.Append("\n    3. THE ANCHOR HELD: Implied × CE (revenue-to-GDP, %) against D-16's table - the bridge re-solved for the three whose carbon line changed (EN-4c), and again under EN-4d for the power share taken out of the base\n");
             foreach ((CountryId id, float anchor) in Anchors)
             {
                 Country c = world.GetCountry(id);
@@ -88,7 +92,7 @@ namespace PoliSim.EditorTools
             }
 
             // (4) one stored rate, one presented rate, one meaning
-            sb.Append("\n    4. ONE MEANING: the seed's references are the line's own figure; the dispatch at the seed rate is the seed dispatch; a full dial is one hundred political points\n");
+            sb.Append("\n    4. ONE MEANING: the seed's references are the line's own figure; the dispatch does not read the tax (EN-4d) - at the seed it is the seed dispatch, and a raise leaves it; a full dial is one hundred political points\n");
             foreach (Country c in world.Countries)
             {
                 TaxLine line = Find(c); if (line == null) { continue; }
@@ -100,8 +104,13 @@ namespace PoliSim.EditorTools
                 if (Mathf.Abs(line.PointsOf(line.MaxRate) - 100f) > 1e-4f) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s full dial is {line.PointsOf(line.MaxRate)} political points, not 100."); }
                 if (EnergyLayer.Has(c.Id))
                 {
-                    EnergyMarket.Result atRate = EnergyMarket.Clear(c, EnvironmentFamily.CarbonTaxRate(c)), atSeed = EnergyMarket.ClearAtSeed(c.Id);
-                    if (Math.Abs(atRate.DerivedCo2Mt - atSeed.DerivedCo2Mt) > 1e-9) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s dispatch at the seed rate is not the seed dispatch."); }
+                    EnergyMarket.Result atRate = EnergyMarket.Clear(c), atSeed = EnergyMarket.ClearAtSeed(c.Id);
+                    if (Math.Abs(atRate.DerivedCo2Mt - atSeed.DerivedCo2Mt) > 1e-9) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s dispatch this turn is not the seed dispatch."); }
+                    // EN-4d: a raise of the line leaves the dispatch where it stands - the fleet's carbon price is the ETS, and the tax reaches transport
+                    float held = line.Rate; line.Rate = held + 100f;
+                    EnergyMarket.Result atRaised = EnergyMarket.Clear(c);
+                    line.Rate = held;
+                    if (Math.Abs(atRaised.DerivedCo2Mt - atSeed.DerivedCo2Mt) > 1e-9) { ok = false; Debug.LogError($"CARBON TAX UNIT: {c.Id}'s dispatch moved under a carbon tax raise ({atSeed.DerivedCo2Mt:F4} → {atRaised.DerivedCo2Mt:F4} Mt) - ETS-covered plant is exempt of the tax (EN-4d)."); }
                 }
                 sb.Append(F("    {0,-8} line {1:F1} · baseline {2:F1} · family seed {3:F1} · full dial = {4:F0} points · a {5:F0} {6}/t raise = {7:F1} points\n", c.Id, line.Rate, baseline, familySeed, line.PointsOf(line.MaxRate), RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(c.Id), EnergyLayer.CurrencyCode(c.Id), line.PointsOf((float)(RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(c.Id)))));
             }
@@ -113,12 +122,13 @@ namespace PoliSim.EditorTools
             double rateRatio = raised.Rate / Math.Max(1e-6, untouched.Rate), revenueRatio = raised.Revenue / Math.Max(1e-6, untouched.Revenue);
             if (!(revenueRatio > 1.0) || !(revenueRatio <= rateRatio + 1e-6)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's carbon revenue rose x{revenueRatio:F4} against a rate x{rateRatio:F4} - it should rise, and by no more than the rate (the base erodes)."); }
             if (!(raised.Transport < untouched.Transport)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's transport intensity did not fall under the raise ({raised.Transport:F4} against {untouched.Transport:F4})."); }
+            if (Math.Abs(raised.Power - untouched.Power) > 1e-5 * Math.Max(1e-6, untouched.Power)) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's power intensity moved under the raise ({untouched.Power:F5} → {raised.Power:F5}) - the fleet is exempt of the tax (EN-4d)."); }
             double expectedTransportFactor = 1.0 - EnvironmentFamily.TransportElasticityPerDollarPerTonne * RaiseUsdPerTonne;
             double observedFactor = raised.TransportTarget / Math.Max(1e-9, untouched.TransportTarget);
             if (Math.Abs(observedFactor - expectedTransportFactor) > 1e-4) { ok = false; Debug.LogError($"CARBON TAX UNIT: the transport target's factor under the raise is {observedFactor:F5}, not 1 − e × dollars ({expectedTransportFactor:F5})."); }
             float politicalPoints = raised.PointsCharged;
-            sb.Append(F("    untouched: rate {0:F0} SEK/t, revenue {1:F3} bn USD, transport {2:F4} t/head (target {3:F4}); raised: rate {4:F0}, revenue {5:F3} (x{6:F4} against the rate x{7:F4}), transport {8:F4} (target {9:F4}; factor {10:F5} = 1 − {11:F5} × {12:F0}); the hike charged {13:F1} political points ({14:F1} % of the dial) to approval at {15:F2} per point\n",
-                untouched.Rate, untouched.Revenue, untouched.Transport, untouched.TransportTarget, raised.Rate, raised.Revenue, revenueRatio, rateRatio, raised.Transport, raised.TransportTarget, observedFactor, EnvironmentFamily.TransportElasticityPerDollarPerTonne, RaiseUsdPerTonne, politicalPoints, politicalPoints, MacroSystem.TaxHikeApprovalSensitivity));
+            sb.Append(F("    untouched: rate {0:F0} SEK/t, revenue {1:F3} bn USD, transport {2:F4} t/head (target {3:F4}); raised: rate {4:F0}, revenue {5:F3} (x{6:F4} against the rate x{7:F4}), transport {8:F4} (target {9:F4}; factor {10:F5} = 1 − {11:F5} × {12:F0}); power {16:F4} → {17:F4} t/head (held: the fleet pays the ETS, not the tax - EN-4d); the hike charged {13:F1} political points ({14:F1} % of the dial) to approval at {15:F2} per point\n",
+                untouched.Rate, untouched.Revenue, untouched.Transport, untouched.TransportTarget, raised.Rate, raised.Revenue, revenueRatio, rateRatio, raised.Transport, raised.TransportTarget, observedFactor, EnvironmentFamily.TransportElasticityPerDollarPerTonne, RaiseUsdPerTonne, politicalPoints, politicalPoints, MacroSystem.TaxHikeApprovalSensitivity, untouched.Power, raised.Power));
 
             // (6) B6
             sb.Append("\n    6. B6: a rate per tonne reads the tonnes, not the price level\n");
@@ -129,7 +139,7 @@ namespace PoliSim.EditorTools
                 float at2 = TaxBases.Revenue(se, line);
                 se.State.PriceLevel = level;
                 if (Math.Abs(at1 - at2) > 1e-9) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's carbon revenue changed with the price level alone ({at1} → {at2}) - a rate per tonne on the same tonnes is the same money."); }
-                sb.Append(F("    Sweden's carbon revenue at price index 1: {0:F3} bn; at 2 with the same tonnes: {1:F3} bn - the same nominal money, half the share of a doubled nominal GDP: an unindexed rate per tonne erodes as excise does (Sweden's own CPI indexation of the rate is not carried - named in §464)\n", at1, at2));
+                sb.Append(F("    Sweden's carbon revenue at price index 1: {0:F3} bn; at 2 with the same tonnes: {1:F3} bn - the same nominal money, half the share of a doubled nominal GDP: an unindexed rate per tonne erodes as excise does (Sweden's statutory indexation of the rate - lag (1994:1776) om skatt på energi, 2 kap. 1 b § - is not carried: a known divergence, its own row EN-4e)\n", at1, at2));
             }
 
             sb.Append(ok ? "\n=== CarbonTaxUnitDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== CarbonTaxUnitDiagnostic: FAILED (see above) ===\n");
@@ -137,7 +147,7 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(ok ? 0 : 1);
         }
 
-        private sealed class Outcome { public double Rate, Revenue, Transport, TransportTarget; public float PointsCharged; }
+        private sealed class Outcome { public double Rate, Revenue, Transport, TransportTarget, Power; public float PointsCharged; }
 
         private static Outcome RunCountry(CountryId player, int years, float raiseNationalPerTonne)
         {
@@ -167,6 +177,7 @@ namespace PoliSim.EditorTools
                 outcome.Rate = line.Rate;
                 outcome.Revenue = TaxBases.Revenue(c, line);
                 outcome.Transport = c.State.TransportCo2PerCapita;
+                outcome.Power = c.State.PowerCo2PerCapita;
                 outcome.TransportTarget = EnvironmentFamily.TransportTargetFor(c, EnvironmentFamily.CarbonTaxRate(c), EnvironmentFamily.PerHead(c, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
                 return outcome;
             }

@@ -8,8 +8,8 @@ namespace PoliSim.Simulation
     /// <summary>
     /// THE ENERGY MARKET, STAGE 3 - ONE CLEARING PER BLOCK PER ZONE (EN-3, 2026-09-11; POLISIM_ENERGY_SPECLET.md S5-S6 ruled §454; the
     /// data ENERGY_LAYER_SPINE.md §5 and EnergyData/dispatch_levels_2023.csv, variable_costs_2023.csv). A merit order over variable cost -
-    /// fuel over efficiency, plus the ETS carbon price and the carbon tax's points above its seed on the emission factor, plus variable O&M -
-    /// serves each block's residual demand after the resource-driven output (nuclear at the record's availability, hydro, wind, solar and the
+    /// fuel over efficiency, plus the ETS carbon price on the emission factor, plus variable O&M (the national carbon tax does not reach the
+    /// fleet - EN-4d, below) - serves each block's residual demand after the resource-driven output (nuclear at the record's availability, hydro, wind, solar and the
     /// firm plants at their 2023 levels), constrained by each fossil category's dependable capacity; the area price is the marginal unit's
     /// cost, a scarcity term rises as the residual approaches the dependable capacity, and NO PRICE IS CLAMPED: the lowest offer on every
     /// curve is the curtailment offer, and a negative one prices a block negative the day a support scheme bids one.
@@ -26,7 +26,19 @@ namespace PoliSim.Simulation
     /// carries, per country and fossil category, a CALIBRATION ADDER (currency per MWh) solved once at the seed so that the seed dispatch
     /// reproduces 2023's shares of coal, gas and oil in the fossil total - the shadow of the constraints the blocks do not see (must-run
     /// contracts, heat-led CHP, ramping, location). The adders are printed by the dump and held constant; what moves the dispatch afterwards
-    /// is the carbon tax's points above the seed, the price level (nominal with nominal, P5-B6) and nothing else until later stages.</para>
+    /// is the price level (nominal with nominal, P5-B6), the reservoirs and the hydro shift (EN-3b) and, for a probe, the ETS price - the
+    /// player's carbon tax does not (EN-4d) - and nothing else until later stages.</para>
+    ///
+    /// <para><b>EN-4d (ruled 2026-09-11, COMPLETED.md §467): THE FLEET PAYS THE ETS, NOT THE NATIONAL CARBON TAX.</b> Sweden's koldioxidskatt
+    /// exempts fuel used to produce taxable electricity and fuel used in an installation that surrenders EU allowances (lag (1994:1776) om skatt
+    /// på energi, 6 a kap. 1 §, 100 per cent of the carbon tax); Germany's BEHG is the non-ETS instrument by construction and its § 7 Abs. 5 orders
+    /// "Doppelbelastungen infolge des Einsatzes von Brennstoffen in einer dem EU-Emissionshandel unterliegenden Anlage" avoided beforehand; France's
+    /// composante carbone leaves installations under the quota regime at the taxes in force on 31 December 2013. The statutes' own reason is one:
+    /// the ETS already prices those tonnes and the two must not stack. THE DEVIATION, STATED: this model keeps no installation register, so the
+    /// exemption is applied at SECTOR level - the whole power sector is ETS-covered and pays no carbon tax, the whole transport sector pays it -
+    /// where the statutes exempt per installation (a heat plant outside the ETS pays the tax in law; here it sits in the power figure's residual
+    /// and is exempted with the fleet). The carbon lever the merit order answers is therefore the ETS price - exogenous here, the 2023 mean carried
+    /// by the price level - and a probe steps it (ProbeEtsRisePerT) so the fleet's response, the bills' and the pass-through's can still be read.</para>
     ///
     /// <para><b>The writer changes hands here (S4's deviation closed).</b> The environment family's power figure is written by this dispatch:
     /// the fossil generation times each category's emission factor times its main-activity share, plus the country's seed residual (heat
@@ -41,8 +53,6 @@ namespace PoliSim.Simulation
         public const float ScarcityOnset = 0.9f;
         /// <remarks>CONVENTION - the lowest offer on every curve at stage 3: no support scheme bids below zero yet, so no clamp exists and a negative offer prices a block negative the day one does.</remarks>
         public const float CurtailmentOffer = 0f;
-        /// <remarks>SOURCED by ruling (EN-4c, 2026-09-11, COMPLETED.md §464) - the carbon tax's rate IS the country's currency per tonne of CO₂, the statutory meaning; one point of the line is one unit of that currency per tonne, and the budget's revenue reads the same rate on the same tonnes (TaxBases.RevenueAtRate). Before the ruling this was the dispatch's own convention against a line that stated no unit.</remarks>
-        public const float CarbonTaxPointPerTonne = 1f;
         /// <remarks>CONVENTION - the calibration's tolerance on each fossil category's share of the fossil total: one point, §342's "within a point"; the tranche resolution below is chosen so a single tranche's flip moves a share by less.</remarks>
         public const float CalibrationTolerance = 0.01f;
         /// <remarks>CONVENTION - the calibration adder's search bound, currency per MWh, either sign; a category that needs the bound is reported by the check as uncalibrated.</remarks>
@@ -60,16 +70,16 @@ namespace PoliSim.Simulation
         /// (gas, oil), France 2 (coal, oil), Italy 2 (coal, oil), Poland 2 (gas, oil), the USA 2 (coal, oil), Sweden 0: TEN free parameters, and no
         /// other quantity in this class is fitted. Everything else is sourced, derived, authored or a convention and says which. A model that
         /// reproduces its seed year is not yet a model that responds: EnergyLayerCheck's gate 7 holds the out-of-sample response - the adders fixed,
-        /// a carbon-price step must move coal down, gas up and the peak price up by the amount the merit order gives, Poland's twenty points the
-        /// reference read off the first landing.
+        /// an ETS-price step must move coal down, gas up and the peak price up by the amount the merit order gives, Poland's twenty euro the
+        /// reference read off the landing (EN-4d: the ETS is the fleet's carbon price; the national tax's twenty zloty were the reference before it).
         /// </summary>
         public const int FittedParametersPerCountryWithFleet = 2;   // FITTED, counted: the non-dominant fossil categories with a fleet (read off the calibration: 2 for each of the five, 0 for Sweden)
-        /// <remarks>FITTED-REFERENCE, read off `bar334_en4` (2026-09-11, §461): Poland's response to twenty points of carbon tax at the seed - twenty ZLOTY per tonne, €4.40 - with the adders fixed: coal's share of the fossil total down 0.004, gas's up 0.004, the peak price up 2.8 €/MWh - the amount the merit order gives. (§460's first reading, 0.016 / 0.016 / 12.1, priced the points as euro; the unit error the standing check found.) A change here is a change of the model, to be explained.</remarks>
-        public const float ReferenceCoalDrop = 0.004f, ReferenceGasRise = 0.004f, ReferencePeakPriceRise = 2.8f;
+        /// <remarks>FITTED-REFERENCE, read off `bar351_en4d` (2026-09-12, §467): Poland's response to an ETS-price step of twenty euro per tonne at the seed, with the adders fixed: coal's share of the fossil total down 0.019, gas's up 0.019, the peak price up 12.6 €/MWh - the amount the merit order gives. (§461's reference, 0.004 / 0.004 / 2.8, was the national tax's twenty zloty - €4.40 - which EN-4d took out of the merit order.) A change here is a change of the model, to be explained.</remarks>
+        public const float ReferenceCoalDrop = 0.019f, ReferenceGasRise = 0.019f, ReferencePeakPriceRise = 12.6f;
         /// <remarks>CONVENTION - the response reference's slack: two thousandths of a share and one currency unit per MWh; the tranche resolution's own step.</remarks>
         public const float ReferenceShareSlack = 0.002f, ReferencePriceSlack = 1.0f;
-        /// <remarks>CONVENTION - the carbon-price step of the standing response check, in the line's points (currency per tonne).</remarks>
-        public const float ResponseStepPoints = 20f;
+        /// <remarks>CONVENTION - the ETS-price step of the standing response check and of the diagnostics' probes: the market's currency per tonne in the seed's prices (euro for the five, dollars for the USA), carried by the price level like the ETS price itself.</remarks>
+        public const float ResponseStepEtsPerT = 20f;
 
         /// <remarks>CONVENTION - the indices of EnergyLayerData.DispatchCategories, asserted against the catalog at first use.</remarks>
         public const int Coal = 0, Gas = 1, Oil = 2, Nuclear = 3, Hydro = 4, Wind = 5, Solar = 6, Firm = 7;
@@ -111,6 +121,8 @@ namespace PoliSim.Simulation
             public double HydroShiftedGwh;
             /// <summary>EN-3b, Sweden only: the reservoir deficit the water value was raised for this turn - the shortfall against the seed's cycle over the capacity (0 in balance).</summary>
             public double ReservoirDeficitShare;
+            /// <summary>EN-4d: the ETS-price rise this clearing was made at, the market's currency per tonne in the seed's prices - 0 in the game, a probe's step in the diagnostics; the ledger's system-cost line reads it back.</summary>
+            public double EtsRisePerT;
         }
 
         /// <remarks>[AUTHORED-DRAFT] (EN-3b, 2026-09-11) - the water value's rise per unit of reservoir DEFICIT SHARE (the shortfall against the seed's cycle over the reservoirs' capacity): 1 means a deficit equal to the whole store doubles the value of the water that is left. No series on this machine links fill to price; the form is linear and stated, the slope the piece a source replaces (Nord Pool's 2022–2023 fill-and-price record would fix it). Zero deficit at the seed, so the seed is untouched.</remarks>
@@ -126,6 +138,10 @@ namespace PoliSim.Simulation
         private static double _swedenDeficitShare;   // set per turn by BeginTurn from Sweden's reservoir balance; 0 outside a turn
         /// <summary>A probe's knob on the reservoirs' inflow (1 = the 2023 hydro energy): ReservoirDispatchDiagnostic scales it to make a deficit and read the water value's answer. Never set by the game (a dry-year EVENT is stage 8's).</summary>
         public static double ProbeInflowScale = 1.0;
+        /// <summary>A probe's knob on the ETS price (EN-4d): the market's currency per tonne, in the seed's prices, added to the ETS price of every fleet that pays one (the five; the USA's catalog row is 0 and is left alone) - the diagnostics step it to read the fleet's response, the bills' and the pass-through's, since the national carbon tax no longer reaches the fleet. Never set by the game: the ETS price is exogenous until a stage gives it a path.</summary>
+        public static double ProbeEtsRisePerT = 0.0;
+        /// <summary>The probe's scope (EN-4d): null steps every fleet that pays an ETS price; a country restricts the step to that fleet alone, so a diagnostic can read one fleet's move against the others untouched - a probe's isolation, not a claim about the ETS, which is one price for the five. Never set by the game.</summary>
+        public static CountryId? ProbeEtsRiseOnly = null;
         private static double[] _waterValue;   // set per turn by BeginTurn; null outside a turn
         private static double[] _waterValueSeed;   // the seed's, computed once (WaterValueAtSeed)
 
@@ -176,25 +192,26 @@ namespace PoliSim.Simulation
             return gwh;
         }
 
-        /// <summary>The marginal cost of a fossil category, currency per MWh: (fuel / efficiency + O&M) carried by the price level, plus (the ETS price carried + the tax's points above the seed) on the emission factor, plus the calibration adder - CARRIED BY THE PRICE LEVEL TOO since EN-5 (2026-09-11): the adder is the shadow of costs the blocks do not see (contracts, heat-led CHP, ramping, location), and a cost is nominal with nominal (P5-B6); held in seed currency it eroded in real terms and drifted the fossil shares and the real wholesale a little each year, which EN-5's B6 probe measured (§465). Infinite where the country has no such plant.</summary>
-        public static double MarginalCost(CountryId id, int category, double priceIndex, double taxPointsAboveSeed, double adder)
+        /// <summary>The marginal cost of a fossil category, currency per MWh: (fuel / efficiency + O&M) carried by the price level, plus the ETS price (the catalog's 2023 mean plus a probe's rise, carried) on the emission factor, plus the calibration adder - CARRIED BY THE PRICE LEVEL TOO since EN-5 (2026-09-11): the adder is the shadow of costs the blocks do not see (contracts, heat-led CHP, ramping, location), and a cost is nominal with nominal (P5-B6); held in seed currency it eroded in real terms and drifted the fossil shares and the real wholesale a little each year, which EN-5's B6 probe measured (§465). The national carbon tax is not here (EN-4d, the class doc). Infinite where the country has no such plant.</summary>
+        public static double MarginalCost(CountryId id, int category, double priceIndex, double etsRisePerT, double adder)
         {
-            (double fuelVom, double ets, double tax) = CostParts(id, category, priceIndex, taxPointsAboveSeed);
-            return double.IsInfinity(fuelVom) ? double.PositiveInfinity : fuelVom + ets + tax + adder * priceIndex;
+            (double fuelVom, double ets) = CostParts(id, category, priceIndex, etsRisePerT);
+            return double.IsInfinity(fuelVom) ? double.PositiveInfinity : fuelVom + ets + adder * priceIndex;
         }
 
-        /// <summary>The marginal cost's parts, currency per MWh - fuel and O&amp;M carried by the price level; the ETS carried; the tax's points above the seed on the emission factor - ONE formula the clearing and the ledger both read. Fuel is infinite where the country has no such plant.</summary>
-        public static (double FuelVom, double Ets, double Tax) CostParts(CountryId id, int category, double priceIndex, double taxPointsAboveSeed)
+        /// <summary>The marginal cost's parts, currency per MWh - fuel and O&amp;M carried by the price level; the ETS price plus the rise a probe asks for, carried, on the emission factor - ONE formula the clearing and the ledger both read. Fuel is infinite where the country has no such plant.</summary>
+        public static (double FuelVom, double Ets) CostParts(CountryId id, int category, double priceIndex, double etsRisePerT)
         {
             int ci = EnergyLayer.Index(id); int k = CostIndex(category);
             double efficiency = EnergyLayerData.Efficiency[ci][k];
-            if (efficiency <= 0) { return (double.PositiveInfinity, 0.0, 0.0); }
+            if (efficiency <= 0) { return (double.PositiveInfinity, 0.0); }
             double fuel = (EnergyLayerData.FuelPerMwhTh[ci][k] / efficiency + EnergyLayerData.VomPerMwh[ci][k]) * priceIndex;
             double ef = EnergyLayerData.EmissionFactorTPerMwh[ci][k];
-            // the tax's points are the country's currency per tonne; the market's costs are in euro for the five (dollars for the USA) - the ECB rate bridges the krona's and the zloty's points (§463: the first landing added zloty points to euro costs)
-            double taxInMarketCurrency = taxPointsAboveSeed * CarbonTaxPointPerTonne / Math.Max(1e-6, EnergyLayerData.NationalPerMarketCurrency[ci]);
-            return (fuel, EnergyLayerData.EtsPerT[ci] * priceIndex * ef, taxInMarketCurrency * ef);
+            return (fuel, (EnergyLayerData.EtsPerT[ci] + etsRisePerT) * priceIndex * ef);
         }
+
+        /// <summary>The ETS rise a country's fleet clears at this turn: the probe's, where the fleet pays an ETS price at all (the five) and the probe's scope includes it; 0 for the USA's, whose catalog row is 0.</summary>
+        public static double ProbeEtsRiseFor(CountryId id) => EnergyLayerData.EtsPerT[EnergyLayer.Index(id)] > 0 && (!ProbeEtsRiseOnly.HasValue || ProbeEtsRiseOnly.Value == id) ? ProbeEtsRisePerT : 0.0;
 
         /// <summary>
         /// ONE CLEARING: the block's demand less the resource-driven output is the residual; the fossil categories serve it in merit order up
@@ -259,10 +276,10 @@ namespace PoliSim.Simulation
             return level[Nuclear] * NuclearAvailability(id) + level[Hydro] + hydroShiftMw + level[Wind] + level[Solar] + level[Firm];   // EN-3b: the reservoir operator's shift on the block's hydro
         }
 
-        private static double[] Costs(CountryId id, double priceIndex, double taxDelta, double[] adders)
+        private static double[] Costs(CountryId id, double priceIndex, double etsRisePerT, double[] adders)
         {
             var mc = new double[FossilCount];
-            for (int k = 0; k < FossilCount; k++) { mc[k] = MarginalCost(id, k, priceIndex, taxDelta, adders[k]); }
+            for (int k = 0; k < FossilCount; k++) { mc[k] = MarginalCost(id, k, priceIndex, etsRisePerT, adders[k]); }
             return mc;
         }
 
@@ -299,24 +316,26 @@ namespace PoliSim.Simulation
         }
 
         // ---- the country ------------------------------------------------------------------------------------
-        /// <summary>Clear a country for a carbon tax rate: its single zone, or Sweden's four along the chain.</summary>
-        public static Result Clear(Country country, float carbonTaxRate)
-        {
-            double priceIndex = Math.Max(0.0001f, country.State.PriceLevel);
-            double taxDelta = carbonTaxRate - (country.Environment != null ? country.Environment.CarbonTaxRateSeed : 0f);
-            return ClearAt(country.Id, priceIndex, taxDelta);
-        }
+        /// <summary>Clear a country this turn - at its price level, with the ETS probe's rise where one stands: its single zone, or Sweden's four along the chain. The national carbon tax does not enter (EN-4d: the fleet pays the ETS and is exempt of the tax).</summary>
+        public static Result Clear(Country country) => ClearAt(country.Id, Math.Max(0.0001f, country.State.PriceLevel), ProbeEtsRiseFor(country.Id));
 
-        /// <summary>Clear at an explicit price index and tax delta (the calibration and the probes use the seed's: 1 and 0); Sweden at the turn's water value where a turn has set one, the seed's otherwise.</summary>
-        public static Result ClearAt(CountryId id, double priceIndex, double taxDelta) => ClearAt(id, priceIndex, taxDelta, null);
+        /// <summary>Clear at an explicit price index and ETS rise (the calibration and the probes use the seed's: 1 and 0); Sweden at the turn's water value where a turn has set one, the seed's otherwise.</summary>
+        public static Result ClearAt(CountryId id, double priceIndex, double etsRisePerT) => ClearAt(id, priceIndex, etsRisePerT, null);
 
-        /// <summary>The SEED clearing - price index 1, the tax at its seed, and Sweden at the SEED's water value whatever turn state stands: the seed fits (the residual, the retail margins) and the seed gates read this, so a stale turn value from an earlier world in the same process cannot reach a seed figure (EN-4's first simulation bar found it: the ledger diagnostic ran after the market's ten-year worlds and fitted Sweden's margins against their last water value).</summary>
+        /// <summary>The SEED clearing - price index 1, the ETS at its catalog price, and Sweden at the SEED's water value whatever turn state stands: the seed fits (the residual, the retail margins) and the seed gates read this, so a stale turn value from an earlier world in the same process cannot reach a seed figure (EN-4's first simulation bar found it: the ledger diagnostic ran after the market's ten-year worlds and fitted Sweden's margins against their last water value).</summary>
         public static Result ClearAtSeed(CountryId id) => ClearAt(id, 1.0, 0.0, WaterValueAtSeed());
 
-        private static Result ClearAt(CountryId id, double priceIndex, double taxDelta, double[] waterValue)
+        private static Result ClearAt(CountryId id, double priceIndex, double etsRisePerT, double[] waterValue)
+        {
+            Result cleared = ClearAtCore(id, priceIndex, etsRisePerT, waterValue);
+            cleared.EtsRisePerT = etsRisePerT;
+            return cleared;
+        }
+
+        private static Result ClearAtCore(CountryId id, double priceIndex, double etsRisePerT, double[] waterValue)
         {
             double[] adders = Adders(id);
-            double[] mc = Costs(id, priceIndex, taxDelta, adders);
+            double[] mc = Costs(id, priceIndex, etsRisePerT, adders);
             double[] caps = Caps(id);
             if (id == CountryId.Sweden)
             {
@@ -411,12 +430,12 @@ namespace PoliSim.Simulation
         }
 
         // ---- Sweden -------------------------------------------------------------------------------------------
-        /// <summary>Set once per turn by the boundary: the water value Sweden's uncongested zones clear at - Germany's and Poland's block prices at their current rates, weighted by SE4's capacity to each (615 and 600 MW). Null outside a turn: the SEED's water value then stands (the same two markets at price index 1 and their seed rates), so a seed fit (EN-4's margins) reads the seed's price and not the curtailment offer.</summary>
+        /// <summary>Set once per turn by the boundary: the water value Sweden's uncongested zones clear at - Germany's and Poland's block prices this turn (their price levels; the ETS probe where one stands), weighted by SE4's capacity to each (615 and 600 MW). Null outside a turn: the SEED's water value then stands (the same two markets at price index 1), so a seed fit (EN-4's margins) reads the seed's price and not the curtailment offer.</summary>
         public static void BeginTurn(World world)
         {
             Country de = world.GetCountry(CountryId.Germany), pl = world.GetCountry(CountryId.Poland);
             if (de == null || pl == null) { _waterValue = null; _swedenDeficitShare = 0.0; return; }
-            _waterValue = WaterValueOf(Clear(de, EnvironmentFamily.CarbonTaxRate(de)), Clear(pl, EnvironmentFamily.CarbonTaxRate(pl)));
+            _waterValue = WaterValueOf(Clear(de), Clear(pl));
             // EN-3b: the reservoirs' standing - a deficit against the seed's cycle raises the water value this turn
             Country se = world.GetCountry(CountryId.Sweden);
             double capacity = EnergyLayer.SwedenReservoirCapacityGwh();
@@ -454,7 +473,7 @@ namespace PoliSim.Simulation
         public static void EndTurn() { _waterValue = null; }
         public static bool HasWaterValue => _waterValue != null;
         /// <summary>A new world begins with no turn state: WorldFactory calls it before the families seed, so nothing of an earlier world's last turn (a diagnostic's, a finished game's) stands when the next one is built. The calibration is the catalog's and stays.</summary>
-        public static void ResetTurnState() { _waterValue = null; _swedenDeficitShare = 0.0; ProbeLinkCapacityScale = 1.0; ProbeInflowScale = 1.0; }
+        public static void ResetTurnState() { _waterValue = null; _swedenDeficitShare = 0.0; ProbeLinkCapacityScale = 1.0; ProbeInflowScale = 1.0; ProbeEtsRisePerT = 0.0; ProbeEtsRiseOnly = null; }
 
         /// <summary>A probe's knob on the Swedish links' capacities (1 = the dated NTCs): EnergyLedgerDiagnostic scales them down to make a snitt bind and read the rent and its credit. Never set by the game.</summary>
         public static double ProbeLinkCapacityScale = 1.0;
@@ -600,10 +619,10 @@ namespace PoliSim.Simulation
             return names;
         }
 
-        /// <summary>The out-of-sample response at the seed: the adders fixed, the carbon price stepped - coal's and gas's shares of the fossil total and the peak price, before and after.</summary>
-        public static (double CoalBefore, double CoalAfter, double GasBefore, double GasAfter, double PeakBefore, double PeakAfter) Response(CountryId id, double stepPoints)
+        /// <summary>The out-of-sample response at the seed: the adders fixed, the ETS price stepped by <paramref name="stepEtsPerT"/> (the market's currency per tonne) - coal's and gas's shares of the fossil total and the peak price, before and after.</summary>
+        public static (double CoalBefore, double CoalAfter, double GasBefore, double GasAfter, double PeakBefore, double PeakAfter) Response(CountryId id, double stepEtsPerT)
         {
-            Result a = ClearAtSeed(id), b = ClearAt(id, 1.0, stepPoints, WaterValueAtSeed());
+            Result a = ClearAtSeed(id), b = ClearAt(id, 1.0, stepEtsPerT, WaterValueAtSeed());
             double fa = a.AnnualGwh[Coal] + a.AnnualGwh[Gas] + a.AnnualGwh[Oil], fb = b.AnnualGwh[Coal] + b.AnnualGwh[Gas] + b.AnnualGwh[Oil];
             return (fa > 0 ? a.AnnualGwh[Coal] / fa : 0, fb > 0 ? b.AnnualGwh[Coal] / fb : 0, fa > 0 ? a.AnnualGwh[Gas] / fa : 0, fb > 0 ? b.AnnualGwh[Gas] / fb : 0, a.Zones[0][2].Price, b.Zones[0][2].Price);
         }
@@ -631,15 +650,15 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// The family's power figure for a carbon tax rate: the dispatch's CO₂ plus the seed residual, over the SEED population, t per head. The
+        /// The family's power figure this turn: the dispatch's CO₂ plus the seed residual, over the SEED population, t per head. The
         /// fleet and the load are the 2023 system's until a stage grows them, so the figure is that system's per head - the system scales with the
-        /// country meanwhile (a total that stayed fixed while a population halved would read as a doubling nobody built), and the tax base, per
-        /// head × population, follows the population as the family's coupling always had it.
+        /// country meanwhile (a total that stayed fixed while a population halved would read as a doubling nobody built). The carbon tax does not
+        /// reach it (EN-4d): the fleet's carbon price is the ETS, and the tax's base is transport's tonnes.
         /// </summary>
-        public static float PowerCo2PerHead(Country country, float carbonTaxRate)
+        public static float PowerCo2PerHead(Country country)
         {
             EnvironmentSeeds s = country.Environment;
-            Result r = Clear(country, carbonTaxRate);
+            Result r = Clear(country);
             double population = Math.Max(0.0001f, s.PowerPopulationSeedM);
             return (float)Math.Max(0.0, (r.DerivedCo2Mt + s.PowerResidualMt) / population);
         }
@@ -647,7 +666,7 @@ namespace PoliSim.Simulation
         /// <summary>The mix as the dispatch makes it this year - the seven labels' shares, %, for the plate's distribution row.</summary>
         public static float[] MixSharesNow(Country country)
         {
-            Result r = Clear(country, EnvironmentFamily.CarbonTaxRate(country));
+            Result r = Clear(country);
             double total = 0; foreach (double g in r.AnnualGwh) { total += g; }
             var shares = new float[7];
             if (total <= 0) { return shares; }

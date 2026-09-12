@@ -207,8 +207,13 @@ namespace PoliSim.Data
             //   Italy   0 - no carbon tax distinct from the ETS (the accise price energy, not CO₂).   Poland 0 - no carbon tax at the model's resolution (its
             //           environmental emission fee prices CO₂ at a fraction of a zloty per tonne; the Ministry of Climate's annual notices sit behind ISAP, unreachable here).
             //   USA     0 - no federal carbon tax (the state programmes are cap-and-trade, outside the federal perimeter).
-            // ⚠ The taxed tonnes are the model's two sectors (power and transport, §349); the statutes exempt ETS installations and tax heating fuels the model
-            // does not carry - EN-4d's, named in §464. An unimplemented line seeds at 0, not a placeholder.
+            // THE TAXED TONNES ARE TRANSPORT'S (EN-4d, ruled 2026-09-11, COMPLETED.md §467): the statutes exempt ETS-covered plant of the national carbon tax
+            // so the two prices do not stack - Sweden's LSE 6 a kap. 1 § (fuel for taxable electricity and fuel in an installation surrendering allowances,
+            // 100 per cent), Germany's BEHG § 7 Abs. 5 (double burdens from fuels used in an EU-ETS installation to be avoided beforehand; the BEHG is the
+            // non-ETS instrument by construction, so its 30 EUR seed stands as it is), France's composante carbone (installations under the quota regime stay
+            // at the taxes in force on 31 December 2013; the ministry's page, the code article not reached). No installation register exists in this model,
+            // so the exemption is applied at SECTOR level (TaxBases.Emissions, EnergyMarket's class doc state the deviation); heating fuels the model does not
+            // carry stay outside. An unimplemented line seeds at 0, not a placeholder.
             SeedTaxLines(usa, incomeTax: 37f, corporateTax: 21f, vat: 0f, vatImplemented: false,
                 payrollTax: 15.3f, capitalGainsTax: 20f, salesTax: 7f, salesTaxImplemented: true,
                 estateTax: 40f, estateTaxImplemented: true, carbonTax: 0f, carbonTaxImplemented: false);
@@ -266,11 +271,15 @@ namespace PoliSim.Data
             // decrement is re-taken on the new theoretical revenue. CarbonTaxUnitDiagnostic asserts the anchors (SE 42.04, DE 40.81, FR 45.22, IT 42.49,
             // PL 37.51): implied 39.3203 × 1.0692 = 42.041, 35.7612 × 1.1413 = 40.814, 38.5423 × 1.1731 = 45.214.
             usa.CollectionEfficiency = 0.6119f;    // 0.6129 (18.0 / 29.37, federal-only, UNIFORM bases) - 0.0010
-            germany.CollectionEfficiency = 1.1413f; // EN-4c: 1.1437 (40.9 / 35.7608) - 0.0024 (4.075 / 1680.8); D-16: 1.1483 = 1.1508 (40.9 [Eurostat flag p] / 35.5410 sourced) - 0.0024 (4.075 / 1670.4)
-            france.CollectionEfficiency = 1.1731f;  // EN-4c: 1.1753 (45.3 / 38.5426) - 0.0022 (2.685 / 1233.4); D-16: 1.1800 = 1.1822 (45.3 / 38.3197 sourced) - 0.0022 (2.685 / 1226.2)
+            // EN-4d (2026-09-11, §467): the carbon line's tonnes are transport's alone, so the three implemented lines' implied revenue-to-GDP falls by the
+            // power share of the seed's carbon take - Sweden 0.393 % × 0.56 / 1.82 = 0.121 (implied 39.3203 → 39.1994), Germany 0.220 % × 2.13 / 3.81 = 0.123
+            // (35.7612 → 35.6382), France 0.223 % × 0.35 / 2.14 = 0.036 (38.5423 → 38.5058) - and the bridge is re-solved to hold the anchors:
+            // 39.1994 × 1.0725 = 42.041, 35.6382 × 1.1452 = 40.813, 38.5058 × 1.1742 = 45.214 (CarbonTaxUnitDiagnostic asserts within 0.011).
+            germany.CollectionEfficiency = 1.1452f; // EN-4d: 1.1476 (40.9 / 35.6382) - 0.0024; EN-4c: 1.1437 (40.9 / 35.7608) - 0.0024 (4.075 / 1680.8); D-16: 1.1483 = 1.1508 (40.9 [Eurostat flag p] / 35.5410 sourced) - 0.0024 (4.075 / 1670.4)
+            france.CollectionEfficiency = 1.1742f;  // EN-4d: 1.1764 (45.3 / 38.5058) - 0.0022; EN-4c: 1.1753 (45.3 / 38.5426) - 0.0022 (2.685 / 1233.4); D-16: 1.1800 = 1.1822 (45.3 / 38.3197 sourced) - 0.0022 (2.685 / 1226.2)
             italy.CollectionEfficiency = 1.2363f;   // 1.2366 (42.5 / 34.3689 sourced) - 0.0003 (0.240 / 790.5)
             poland.CollectionEfficiency = 1.3086f;  // 1.3117 (37.6 / 28.6659 sourced) - 0.0031 (0.735 / 240.8)
-            sweden.CollectionEfficiency = 1.0692f;  // EN-4c: 1.0733 (42.2 / 39.3172) - 0.0041 (1.010 / 243.8); D-16: 1.0026 = 1.0065 (42.2 / 41.9274 sourced) - 0.0039 (1.010 / 259.9)
+            sweden.CollectionEfficiency = 1.0725f;  // EN-4d: 1.0766 (42.2 / 39.1994) - 0.0041; EN-4c: 1.0733 (42.2 / 39.3172) - 0.0041 (1.010 / 243.8); D-16: 1.0026 = 1.0065 (42.2 / 41.9274 sourced) - 0.0039 (1.010 / 259.9)
 
             // Fiscal reaction function's per-country comfort anchor (see "Fiscal Reaction Function" in
             // CLAUDE.md) - reuses each country's own seeded starting debt-to-GDP ratio from the

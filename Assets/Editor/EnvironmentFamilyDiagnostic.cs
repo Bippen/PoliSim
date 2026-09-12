@@ -10,8 +10,9 @@ namespace PoliSim.EditorTools
     /// P5-C5 (2026-09-06): the environment family's proof. (1) The seeds are the spine's EDGAR 2023 figures for six (greenhouse gases, power and
     /// transport CO₂ per person), the headline at the seed equal to the seed; no figure exists for the electricity mix. (2) Sweden at no policy for
     /// twenty years: both intensities inside their guards and the headline never below the sum of its sector keys. (3) Sweden with its carbon tax
-    /// raised twenty points through the decision against the untouched run: power and transport CO₂ per person LOWER and the headline lower - the
-    /// couplings move the stated way; the carbon tax's own revenue base is the taxed CO₂ since the feedback pass of 2026-09-07 (EnvironmentFeedbackDiagnostic proves that move).
+    /// raised twenty points through the decision against the untouched run: transport CO₂ per person LOWER and the headline lower, power HELD (Sweden
+    /// has no dispatchable fossil fleet, and since EN-4d, §467, the national carbon tax reaches no fleet - the ETS is the fleet's carbon price) - the
+    /// couplings move the stated way; the carbon tax's own revenue base is the taxed CO₂ since the feedback pass of 2026-09-07, transport's since EN-4d (EnvironmentFeedbackDiagnostic proves both moves).
     /// </summary>
     public static class EnvironmentFamilyDiagnostic
     {
@@ -52,11 +53,12 @@ namespace PoliSim.EditorTools
             if (!headlineHeld) { Debug.LogError("ENVIRONMENT: the headline fell below the sum of its sector keys."); ok = false; }
             float[] taxed = RunSweden(Years, taxDeltaPoints: 20f, out _, out _);
             // EN-3 (2026-09-11): Sweden's power figure is written by the dispatch, and Sweden has no dispatchable fossil fleet (its fossil thermal is heat-led CHP), so a carbon tax cannot lower
-            // it - the figure HOLDS; transport and the headline still fall through the readout coupling. Where the coal is, Poland, EnergyMarketDiagnostic proves the mechanism.
+            // it - the figure HOLDS; transport and the headline still fall through the readout coupling. Since EN-4d (§467) no fleet reads the national carbon tax at all: the fleet's
+            // carbon price is the ETS, and EnergyMarketDiagnostic proves the mechanism where the coal is, Poland, by stepping that price.
             if (!(taxed[0] <= untouched[0] + 1e-6f) || !(taxed[1] < untouched[1]) || !(taxed[2] < untouched[2])) { Debug.LogError($"ENVIRONMENT: with the carbon tax up twenty points, power {taxed[0]:F3} / transport {taxed[1]:F3} / headline {taxed[2]:F3} are not below untouched {untouched[0]:F3} / {untouched[1]:F3} / {untouched[2]:F3}."); ok = false; }
 
             Debug.Log($"ENVIRONMENT: seeds - greenhouse gases and power and transport CO₂ per person for six (EDGAR 2024, 2023), the electricity mix a fetch. Sweden after {Years} years - untouched: power {untouched[0]:F2} t, transport {untouched[1]:F2} t, headline {untouched[2]:F2} t; "
-                + $"carbon tax raised twenty points through the decision: {taxed[0]:F2} t, {taxed[1]:F2} t, {taxed[2]:F2} t - lower: the couplings move the stated way. The tax's revenue base is the taxed CO₂ since 2026-09-07 (EnvironmentFeedbackDiagnostic).");
+                + $"carbon tax raised twenty points through the decision: {taxed[0]:F2} t (held), {taxed[1]:F2} t, {taxed[2]:F2} t - transport and the headline lower: the couplings move the stated way. The tax's revenue base is the taxed CO₂ since 2026-09-07, transport's tonnes since EN-4d (EnvironmentFeedbackDiagnostic).");
             Debug.Log(ok ? "ENVIRONMENT: PASS - the seeds are the spine's, the headline is its keys, the couplings move the stated way." : "ENVIRONMENT: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
         }

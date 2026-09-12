@@ -24,9 +24,12 @@ namespace PoliSim.Data
         Consumption,
         /// <summary>The housing stock at its price: population × HousePriceIndex - what a property tax is levied on.</summary>
         Housing,
-        /// <summary>The taxed emissions (the environment feedback pass, 2026-09-07): power and transport CO₂ per head (EnvironmentFamily, EDGAR-seeded, moved by the
-        /// carbon tax and the two lines) times the population - tonnes, what a carbon tax is levied on. A tax that works erodes its own base, as a Pigouvian tax does.
-        /// Since EN-4c (2026-09-11) the carbon line's revenue is its rate per tonne times this level directly (TaxBases.RevenueAtRate); the driver ratio still reads it.</summary>
+        /// <summary>The taxed emissions (the environment feedback pass, 2026-09-07): CO₂ per head (EnvironmentFamily, EDGAR-seeded) times the population - tonnes, what a
+        /// carbon tax is levied on. A tax that works erodes its own base, as a Pigouvian tax does. Since EN-4c (2026-09-11) the carbon line's revenue is its rate per
+        /// tonne times this level directly (TaxBases.RevenueAtRate); the driver ratio still reads it. SINCE EN-4d (2026-09-11, §467) THE LEVEL IS TRANSPORT'S TONNES:
+        /// the national carbon tax covers transport and non-ETS combustion, and the power fleet - ETS-covered - is exempt of it by statute (Sweden's LSE 6 a kap. 1 §,
+        /// Germany's BEHG § 7 Abs. 5, France's composante carbone; the reason in each: the ETS prices those tonnes and the two do not stack). No installation register
+        /// exists here, so the exemption is applied at SECTOR level - the deviation, stated in EnergyMarket's class doc. Heating fuels the model does not carry stay outside.</summary>
         Emissions
     }
 
@@ -72,7 +75,8 @@ namespace PoliSim.Data
                     return Mathf.Max(0f, s.Population) * Mathf.Max(0f, s.HousePriceIndex) / 100f;
                 case TaxBaseDriver.Emissions:
                     // Absent intensities (no family, or a save from before it) read 0, so the base holds at the seed's real level - stated, not invented.
-                    return s.PowerCo2PerCapita > 0f && s.TransportCo2PerCapita > 0f ? (s.PowerCo2PerCapita + s.TransportCo2PerCapita) * Mathf.Max(0f, s.Population) : 0f;
+                    // EN-4d: transport's tonnes alone - the power fleet pays the ETS and is exempt of the national carbon tax (sector level; the deviation stated above).
+                    return s.TransportCo2PerCapita > 0f ? s.TransportCo2PerCapita * Mathf.Max(0f, s.Population) : 0f;
                 default:
                     return Mathf.Max(0f, s.GDP);
             }
@@ -110,10 +114,10 @@ namespace PoliSim.Data
 
         /// <summary>
         /// The revenue an instrument yields at a given rate, the book's dollars. A percentage tax: rate ÷ 100 × its base. THE CARBON TAX (EN-4c, ruled
-        /// 2026-09-11): the rate is the country's currency per tonne of CO₂ and the revenue is RATE × THE TAXED TONNES - the emissions level (power and
-        /// transport CO₂ per head × the population, Mt) - brought into the book's dollars by the ECB rate; the share-of-GDP reading the line carried
-        /// before the model had priceable emissions is retired. The taxed tonnes are the model's two sectors (§349); the statutes' coverage differs
-        /// (ETS installations exempt, heating fuels taxed) and that is EN-4d's, named in the record.
+        /// 2026-09-11): the rate is the country's currency per tonne of CO₂ and the revenue is RATE × THE TAXED TONNES - the emissions level, Mt - brought
+        /// into the book's dollars by the ECB rate; the share-of-GDP reading the line carried before the model had priceable emissions is retired. The
+        /// taxed tonnes are TRANSPORT's since EN-4d (2026-09-11, §467): the power fleet is ETS-covered and exempt of the tax by statute, applied at sector
+        /// level (TaxBaseDriver.Emissions states the sources and the deviation); heating fuels the model does not carry stay outside.
         /// </summary>
         public static float RevenueAtRate(Country country, TaxType type, float rate)
         {
@@ -144,7 +148,7 @@ namespace PoliSim.Data
                 case TaxBaseDriver.WageBill: return "the wage bill";
                 case TaxBaseDriver.Consumption: return "consumption";
                 case TaxBaseDriver.Housing: return "the housing stock at its price";
-                case TaxBaseDriver.Emissions: return "the taxed emissions (power and transport CO₂)";
+                case TaxBaseDriver.Emissions: return "the taxed emissions (transport CO₂; the power fleet pays the ETS and is exempt)";
                 default: return "output";
             }
         }

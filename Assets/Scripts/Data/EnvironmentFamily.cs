@@ -14,7 +14,9 @@ namespace PoliSim.Data
     /// at each category's factor and main-activity share, plus the seed residual of heat plants, CHP heat and refineries, over the population); the
     /// family's power elasticity is retired. The TRANSPORT figure keeps its readout couplings - the carbon tax's rate against its seed and the
     /// infrastructure line per head against its seed. The headline is derived from the two with the other sectors held at their seed share. The
-    /// carbon tax's BASE moved to these metrics on 2026-09-07 (TaxBases.Emissions: power and transport CO₂ per head × population; COMPLETED.md §349).
+    /// carbon tax's BASE moved to these metrics on 2026-09-07 (TaxBases.Emissions; COMPLETED.md §349) and, since EN-4d (2026-09-11, §467), is
+    /// TRANSPORT's tonnes alone: the national carbon tax covers transport and non-ETS combustion, and the power fleet - ETS-covered - is exempt of
+    /// it by statute, applied at sector level (EnergyMarket's class doc). The tax reaches transport; the ETS reaches the fleet.
     /// </summary>
     public sealed class EnvironmentSeeds
     {
@@ -27,7 +29,7 @@ namespace PoliSim.Data
         /// cross-checked against Eurostat nrg_bal_peh (the five) and the EIA's Table 1.1 (the USA) within a point (§342, 2026-09-06). The seed the dispatch is calibrated to (EnergyLayerCheck); the plate draws the dispatched mix.</summary>
         public float[] MixShares = null;
         public bool HasMix => MixShares != null && MixShares.Length == 7;
-        public float CarbonTaxRateSeed;            // the carbon tax's rate at the seed, % (0 when the line is not implemented)
+        public float CarbonTaxRateSeed;            // the carbon tax's rate at the seed, the country's currency per tonne (0 when the line is not implemented) - the transport coupling's reference
         public float InfrastructurePerHeadSeed;
         /// <summary>EN-3: the power figure's residual by method at the seed, Mt - the seed per head × the population less the seed dispatch's own CO₂ (heat plants, CHP heat, refineries, the factor gap); held constant.</summary>
         public float PowerResidualMt;
@@ -128,14 +130,14 @@ namespace PoliSim.Data
             return Mathf.Clamp(s.TransportCo2PerCapita * taxFactor * Mathf.Pow(1f / infraRatio, TransportInfrastructureElasticity), MinIntensity, MaxIntensity);
         }
 
-        /// <summary>The yearly step. POWER: the dispatch writes it (EN-3) - no reversion, the year's clearing is the year's figure. TRANSPORT: its target under the readout couplings, reverted toward at the family's rate.</summary>
+        /// <summary>The yearly step. POWER: the dispatch writes it (EN-3) - no reversion, the year's clearing is the year's figure; the carbon tax does not reach it (EN-4d). TRANSPORT: its target under the readout couplings, reverted toward at the family's rate.</summary>
         public static void AdvanceYear(Country country)
         {
             EnvironmentSeeds s = country.Environment;
             if (s == null || !s.Seeded) { return; }
             EconomyState st = country.State;
             float rate = CarbonTaxRate(country);
-            if (s.PowerFromDispatch) { st.PowerCo2PerCapita = Mathf.Clamp(EnergyMarket.PowerCo2PerHead(country, rate), MinIntensity, MaxIntensity); }
+            if (s.PowerFromDispatch) { st.PowerCo2PerCapita = Mathf.Clamp(EnergyMarket.PowerCo2PerHead(country), MinIntensity, MaxIntensity); }
             EnergyMarket.AdvanceReservoir(country);   // EN-3b (2026-09-11): the reservoirs' balance for the year - inflow less the hydro dispatched; Sweden's, the one system whose capacity is carried
             float transportTarget = TransportTargetFor(country, rate, PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
             st.TransportCo2PerCapita = Mathf.Clamp(st.TransportCo2PerCapita + (transportTarget - st.TransportCo2PerCapita) * ReversionPerYear, MinIntensity, MaxIntensity);
@@ -150,12 +152,14 @@ namespace PoliSim.Data
             return Mathf.Max(0f, s.GhgPerCapita - (s.PowerCo2PerCapita - st.PowerCo2PerCapita) - (s.TransportCo2PerCapita - st.TransportCo2PerCapita));
         }
 
-        /// <summary>Next year's power intensity for a given carbon tax rate - the 5c arrow while a tax draft is live: the dispatch at that rate (EN-3), the standing figure where no dispatch covers the country.</summary>
-        public static float ProjectPowerCo2(Country country, float carbonTaxRate)
+        /// <summary>Next year's TRANSPORT intensity for a given carbon tax rate - the 5c arrow while a tax draft is live (EN-4d moved it from the power row: the fleet pays the ETS and the tax reaches transport): one year's reversion toward the target at that rate, the infrastructure term as it stands.</summary>
+        public static float ProjectTransportCo2(Country country, float carbonTaxRate)
         {
             EnvironmentSeeds s = country.Environment;
-            if (s == null || !s.PowerFromDispatch) { return country.State.PowerCo2PerCapita; }
-            return Mathf.Clamp(EnergyMarket.PowerCo2PerHead(country, carbonTaxRate), MinIntensity, MaxIntensity);
+            if (s == null || !s.Seeded) { return country.State.TransportCo2PerCapita; }
+            float target = TransportTargetFor(country, carbonTaxRate, PerHead(country, SpendingCategory.InfrastructureAndDevelopment, SpendingCategory.Transportation));
+            float now = country.State.TransportCo2PerCapita;
+            return Mathf.Clamp(now + (target - now) * ReversionPerYear, MinIntensity, MaxIntensity);
         }
     }
 }

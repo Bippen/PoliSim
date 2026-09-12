@@ -106,7 +106,8 @@ namespace PoliSim.Data
     /// <para><b>The carbon tax's rate is not a percentage (EN-4c, ruled 2026-09-11).</b> It is the country's
     /// CURRENCY PER TONNE OF CO₂ - Sweden's 1 330 SEK, Germany's 30 EUR, France's 44.6 EUR at the 2023 seed -
     /// one stored rate, one presented rate, one meaning: the statutory one. Its revenue is rate × the taxed
-    /// tonnes (TaxBases.RevenueAtRate), the dispatch reads the same points above the seed (EnergyMarket), and
+    /// tonnes (TaxBases.RevenueAtRate) - TRANSPORT's tonnes since EN-4d (2026-09-11, §467: the ETS-covered power
+    /// fleet is exempt of the tax by statute, applied at sector level, and the dispatch does not read the tax) - and
     /// the approval and stance terms read it through <see cref="PointsOf"/> - one per cent of the dial's range
     /// per point, as it was when the dial had no unit - so a tax that is a price per tonne and taxes that are
     /// percentages share one political scale.</para>

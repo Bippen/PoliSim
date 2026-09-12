@@ -8,11 +8,12 @@ namespace PoliSim.EditorTools
 {
     /// <summary>
     /// The environment feedback pass (2026-09-07): the carbon tax's base is the taxed CO₂. (1) The driver: TaxBases.Of(CarbonTax) is Emissions, its level at
-    /// the seed is (power + transport CO₂ per head) × population for six, and the captured reference equals it. (2) The identity: after twenty years the
-    /// carbon base's driver ratio IS the emissions level over its seed, for a country with an implemented carbon tax (Poland since EN-3; Sweden before). (3) The erosion:
-    /// Poland with the tax raised twenty points through the decision against untouched - the intensities LOWER (power through the dispatch, EN-3; transport through the
-    /// readout coupling), the driver ratio LOWER, and the carbon revenue rising LESS than the rate did (rate × base, the base eroding). (4) Output's own bases are
-    /// untouched by the move: the corporate line's driver is still output.
+    /// the seed is TRANSPORT CO₂ per head × population for six (EN-4d, ruled 2026-09-11, §467: the ETS-covered power fleet is exempt of the national carbon tax
+    /// by statute, applied at sector level; before it the level was power + transport), and the captured reference equals it. (2) The identity: after twenty years
+    /// the carbon base's driver ratio IS the emissions level over its seed, for a country with an implemented carbon tax (Poland since EN-3; Sweden before). (3) The
+    /// erosion: Poland with the tax raised twenty points through the decision against untouched - transport LOWER through the readout coupling, POWER HELD (the tax
+    /// does not reach the fleet; its carbon price is the ETS), the driver ratio LOWER, and the carbon revenue rising LESS than the rate did (rate × base, the base
+    /// eroding). (4) Output's own bases are untouched by the move: the corporate line's driver is still output.
     /// </summary>
     public static class EnvironmentFeedbackDiagnostic
     {
@@ -30,8 +31,8 @@ namespace PoliSim.EditorTools
             {
                 if (!c.Environment.Seeded) { continue; }
                 float level = TaxBases.Level(TaxBaseDriver.Emissions, c);
-                float expected = (c.State.PowerCo2PerCapita + c.State.TransportCo2PerCapita) * c.State.Population;
-                if (level <= 0f || Mathf.Abs(level - expected) > 1e-4f * Mathf.Max(1f, expected)) { Debug.LogError($"ENVIRONMENT FEEDBACK: {c.Id}'s emissions level at the seed is {level:F4}, not (power + transport) × population = {expected:F4}."); ok = false; }
+                float expected = c.State.TransportCo2PerCapita * c.State.Population;   // EN-4d: transport's tonnes alone
+                if (level <= 0f || Mathf.Abs(level - expected) > 1e-4f * Mathf.Max(1f, expected)) { Debug.LogError($"ENVIRONMENT FEEDBACK: {c.Id}'s emissions level at the seed is {level:F4}, not transport × population = {expected:F4} (the power fleet is exempt of the tax, EN-4d)."); ok = false; }
                 if (c.RevenueBaseSeeds == null || c.RevenueBaseSeeds.Length < TaxBases.DriverCount || Mathf.Abs(c.RevenueBaseSeeds[(int)TaxBaseDriver.Emissions] - level) > 1e-4f * Mathf.Max(1f, level)) { Debug.LogError($"ENVIRONMENT FEEDBACK: {c.Id}'s captured emissions reference is not the seed's level."); ok = false; }
             }
 
@@ -41,15 +42,16 @@ namespace PoliSim.EditorTools
             float[] raised = Run(CountryId.Poland, Years, 20f);
             // [0] power, [1] transport, [2] driver ratio, [3] identity ratio (level now / seed), [4] carbon revenue, [5] carbon rate
             if (Mathf.Abs(untouched[2] - untouched[3]) > 1e-4f || Mathf.Abs(raised[2] - raised[3]) > 1e-4f) { Debug.LogError($"ENVIRONMENT FEEDBACK: the carbon base's driver ratio ({untouched[2]:F5} / {raised[2]:F5}) is not the emissions level over its seed ({untouched[3]:F5} / {raised[3]:F5})."); ok = false; }
-            if (!(raised[0] < untouched[0]) || !(raised[1] < untouched[1]) || !(raised[2] < untouched[2])) { Debug.LogError($"ENVIRONMENT FEEDBACK: the raise does not lower the intensities ({raised[0]:F3} / {raised[1]:F3} vs {untouched[0]:F3} / {untouched[1]:F3}) and the base ratio ({raised[2]:F4} vs {untouched[2]:F4})."); ok = false; }
+            // EN-4d: the tax reaches transport and the base; the power figure is the dispatch's, whose carbon price is the ETS - it holds under the raise
+            if (Mathf.Abs(raised[0] - untouched[0]) > 1e-5f * Mathf.Max(1e-6f, untouched[0]) || !(raised[1] < untouched[1]) || !(raised[2] < untouched[2])) { Debug.LogError($"ENVIRONMENT FEEDBACK: the raise must hold power and lower transport and the base - power {untouched[0]:F4} → {raised[0]:F4}, transport {untouched[1]:F3} → {raised[1]:F3}, the base ratio {untouched[2]:F4} → {raised[2]:F4}."); ok = false; }
             float rateRatio = raised[5] / Mathf.Max(0.0001f, untouched[5]);
             float revenueRatio = raised[4] / Mathf.Max(0.0001f, untouched[4]);
             if (!(revenueRatio < rateRatio) || !(revenueRatio > 1f)) { Debug.LogError($"ENVIRONMENT FEEDBACK: the carbon revenue rose x{revenueRatio:F4} against a rate x{rateRatio:F4} - the base did not erode as the tax worked, or the tax lost revenue outright."); ok = false; }
 
             Debug.Log($"ENVIRONMENT FEEDBACK: Poland after {Years} years - untouched: power {untouched[0]:F3} t, transport {untouched[1]:F3} t, carbon base x{untouched[2]:F4} of its seed, revenue {untouched[4]:F3} at {untouched[5]:F0} %; "
-                + $"the tax raised twenty points through the decision: {raised[0]:F3} t, {raised[1]:F3} t, base x{raised[2]:F4}, revenue {raised[4]:F3} at {raised[5]:F0} % - the rate x{rateRatio:F3}, the revenue x{revenueRatio:F3}: the base erodes as the tax works. "
-                + "The driver ratio is the emissions level over its seed to 1e-4; output's own bases are untouched by the move.");
-            Debug.Log(ok ? "ENVIRONMENT FEEDBACK: PASS - the carbon base is the taxed CO₂: the identity holds, the base erodes under a raise, output's bases stand." : "ENVIRONMENT FEEDBACK: FAILED (see above).");
+                + $"the tax raised twenty points through the decision: power {raised[0]:F3} t (held - the fleet pays the ETS, not the tax; EN-4d), transport {raised[1]:F3} t, base x{raised[2]:F4}, revenue {raised[4]:F3} at {raised[5]:F0} - the rate x{rateRatio:F3}, the revenue x{revenueRatio:F3}: the base erodes as the tax works. "
+                + "The driver ratio is the emissions level over its seed to 1e-4; the base is transport's tonnes (EN-4d); output's own bases are untouched by the move.");
+            Debug.Log(ok ? "ENVIRONMENT FEEDBACK: PASS - the carbon base is the taxed CO₂, transport's since EN-4d: the identity holds, the base erodes under a raise, power holds, output's bases stand." : "ENVIRONMENT FEEDBACK: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
         }
 

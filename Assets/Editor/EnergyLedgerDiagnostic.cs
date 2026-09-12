@@ -13,8 +13,9 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// EN-4 (2026-09-11), the fiscal layer's proof - it builds and advances worlds, so it belongs to the simulation group. (1) THE SEED: for six,
     /// the stack reproduces Eurostat's components per class to the unit, the state's presented prices are the stored ones, the incidence book
-    /// closes. (2) THE MECHANISM: Poland, its carbon tax raised twenty points through the decision, ten years, against untouched - the household
-    /// price HIGHER, the industrial bill HIGHER, the confidence channel's cumulative contribution LOWER, the book closing every year in both runs.
+    /// closes. (2) THE MECHANISM: Poland, its fleet's ETS price stepped twenty euro per tonne (a probe on that fleet alone - since EN-4d, §467, the
+    /// national carbon tax does not reach ETS-covered plant), ten years, against untouched - the household price HIGHER, the industrial bill HIGHER,
+    /// the confidence channel's cumulative contribution LOWER, the fleet's ETS payment HIGHER, the book closing every year in both runs.
     /// (3) THE SUPPORT LINE: France's energy line raised a billion takes the levy down a billion (taxpayers up, the bills down, the scheme's cost
     /// unchanged); cut a billion, up; raised past the whole levy, the levy floors at zero and the rest is taxpayer support with no retail effect.
     /// (4) CONGESTION: Sweden's links scaled to a third of their NTCs - a snitt binds, the rent is positive, and the next year's network component
@@ -45,7 +46,7 @@ namespace PoliSim.EditorTools
                 if (!EnergyLayer.Has(c.Id)) { continue; }
                 int ci = EnergyLayer.Index(c.Id); double usd = EnergyLayerData.UsdPerMarketCurrency[ci];   // the book's dollars per unit of the sources' currency
                 EnergyMarket.Result r = EnergyMarket.ClearAtSeed(c.Id);
-                EnergyLedger.Book b = EnergyLedger.Compute(c, r, 1.0, EnvironmentFamily.CarbonTaxRate(c), 0.0);
+                EnergyLedger.Book b = EnergyLedger.Compute(c, r, 1.0, 0.0);
                 for (int k = 0; k < EnergyLedger.ClassCount; k++)
                 {
                     EnergyLedger.ClassStack st = b.Classes[k];
@@ -63,15 +64,15 @@ namespace PoliSim.EditorTools
             }
 
             // (2) the mechanism, Poland
-            sb.Append("\n    2. THE MECHANISM: Poland, its carbon tax line implemented at 5, then up twenty points through the decision, ten years, against untouched\n");
+            sb.Append(F("\n    2. THE MECHANISM: Poland, its fleet's ETS price stepped {0:F0} EUR/t (a probe on that fleet alone; EN-4d: the national carbon tax does not reach ETS-covered plant), ten years, against untouched\n", EnergyMarket.ResponseStepEtsPerT));
             Outcome untouched = RunCountry(CountryId.Poland, Years, 0f, ref ok);
-            Outcome raised = RunCountry(CountryId.Poland, Years, 20f, ref ok);
+            Outcome raised = RunCountry(CountryId.Poland, Years, EnergyMarket.ResponseStepEtsPerT, ref ok);
             if (!(raised.HouseholdPrice > untouched.HouseholdPrice)) { ok = false; Debug.LogError($"ENERGY LEDGER: Poland's household price did not rise under the raise ({raised.HouseholdPrice:F5} against {untouched.HouseholdPrice:F5})."); }
             if (!(raised.IndustryBill > untouched.IndustryBill)) { ok = false; Debug.LogError($"ENERGY LEDGER: Poland's industrial bill did not rise under the raise ({raised.IndustryBill:F4} against {untouched.IndustryBill:F4})."); }
             if (!(raised.ChannelSum < untouched.ChannelSum)) { ok = false; Debug.LogError($"ENERGY LEDGER: the confidence channel's cumulative contribution did not fall under the raise ({raised.ChannelSum:E3} against {untouched.ChannelSum:E3})."); }
-            if (!(raised.CarbonTaxCost > untouched.CarbonTaxCost)) { ok = false; Debug.LogError("ENERGY LEDGER: the carbon tax's payment on power did not rise under the raise."); }
-            sb.Append(F("    untouched: households {0:F4}, industry {1:F4} USD/kWh, industrial bill {2:F2} bn ({3:F3} % of GDP), channel Σ {4:E2}, carbon tax on power {5:F3} bn, wholesale {6:F4}; raised: households {7:F4}, industry {8:F4}, bill {9:F2} ({10:F3} %), channel Σ {11:E2}, carbon tax {12:F3}, wholesale {13:F4} - the book closed in every year of both runs (largest gap {14:E1})\n",
-                untouched.HouseholdPrice, untouched.IndustryPrice, untouched.IndustryBill, untouched.BillShare, untouched.ChannelSum, untouched.CarbonTaxCost, untouched.Wholesale, raised.HouseholdPrice, raised.IndustryPrice, raised.IndustryBill, raised.BillShare, raised.ChannelSum, raised.CarbonTaxCost, raised.Wholesale, Math.Max(untouched.MaxGap, raised.MaxGap)));
+            if (!(raised.EtsCost > untouched.EtsCost)) { ok = false; Debug.LogError("ENERGY LEDGER: the fleet's ETS payment did not rise under the step."); }
+            sb.Append(F("    untouched: households {0:F4}, industry {1:F4} USD/kWh, industrial bill {2:F2} bn ({3:F3} % of GDP), channel Σ {4:E2}, the fleet's ETS cost {5:F3} bn, wholesale {6:F4}; stepped: households {7:F4}, industry {8:F4}, bill {9:F2} ({10:F3} %), channel Σ {11:E2}, ETS cost {12:F3}, wholesale {13:F4} - the book closed in every year of both runs (largest gap {14:E1})\n",
+                untouched.HouseholdPrice, untouched.IndustryPrice, untouched.IndustryBill, untouched.BillShare, untouched.ChannelSum, untouched.EtsCost, untouched.Wholesale, raised.HouseholdPrice, raised.IndustryPrice, raised.IndustryBill, raised.BillShare, raised.ChannelSum, raised.EtsCost, raised.Wholesale, Math.Max(untouched.MaxGap, raised.MaxGap)));
 
             // (3) the support line, France
             sb.Append("\n    3. THE SUPPORT LINE: France's energy line moved off its indexed path, the levy the other way\n");
@@ -83,13 +84,13 @@ namespace PoliSim.EditorTools
                 if (line == null) { ok = false; Debug.LogError("ENERGY LEDGER: France carries no energy line."); }
                 else
                 {
-                    float rate = EnvironmentFamily.CarbonTaxRate(fr); double priceIndex = Math.Max(0.0001f, fr.State.PriceLevel);
-                    EnergyMarket.Result r = EnergyMarket.Clear(fr, rate);
-                    EnergyLedger.Book path = EnergyLedger.Compute(fr, r, priceIndex, rate, 0.0);
+                    double priceIndex = Math.Max(0.0001f, fr.State.PriceLevel);
+                    EnergyMarket.Result r = EnergyMarket.Clear(fr);
+                    EnergyLedger.Book path = EnergyLedger.Compute(fr, r, priceIndex, 0.0);
                     float seedAmount = line.Amount;
-                    line.Amount = seedAmount + 1f; EnergyLedger.Book up = EnergyLedger.Compute(fr, r, priceIndex, rate, 0.0);
-                    line.Amount = seedAmount - 1f; EnergyLedger.Book down = EnergyLedger.Compute(fr, r, priceIndex, rate, 0.0);
-                    line.Amount = seedAmount + 50f; EnergyLedger.Book past = EnergyLedger.Compute(fr, r, priceIndex, rate, 0.0);
+                    line.Amount = seedAmount + 1f; EnergyLedger.Book up = EnergyLedger.Compute(fr, r, priceIndex, 0.0);
+                    line.Amount = seedAmount - 1f; EnergyLedger.Book down = EnergyLedger.Compute(fr, r, priceIndex, 0.0);
+                    line.Amount = seedAmount + 50f; EnergyLedger.Book past = EnergyLedger.Compute(fr, r, priceIndex, 0.0);
                     line.Amount = seedAmount;
                     // one for one PRE-VAT: the levy is inside households' VAT base, so the bills move by the levy's change plus the VAT on households' share of it - and the state's VAT receipts move with them (the first run of this probe asserted the bills alone and read −1.11 for −1.00: the VAT on the levy)
                     double tol = 1e-6;
@@ -111,19 +112,19 @@ namespace PoliSim.EditorTools
             sb.Append("\n    4. CONGESTION RENT AND ITS CREDIT: Sweden's links at a third of their NTCs (a probe), the rent read, the next year's network component lower by it\n");
             {
                 Country se = world.GetCountry(CountryId.Sweden);
-                float rate = EnvironmentFamily.CarbonTaxRate(se); double priceIndex = Math.Max(0.0001f, se.State.PriceLevel);
-                EnergyMarket.Result open = EnergyMarket.Clear(se, rate);
-                EnergyLedger.Book before = EnergyLedger.Compute(se, open, priceIndex, rate, 0.0);
+                double priceIndex = Math.Max(0.0001f, se.State.PriceLevel);
+                EnergyMarket.Result open = EnergyMarket.Clear(se);
+                EnergyLedger.Book before = EnergyLedger.Compute(se, open, priceIndex, 0.0);
                 EnergyMarket.ProbeLinkCapacityScale = 1.0 / 3.0;
-                EnergyMarket.Result bound = EnergyMarket.Clear(se, rate);
+                EnergyMarket.Result bound = EnergyMarket.Clear(se);
                 EnergyMarket.ProbeLinkCapacityScale = 1.0;
                 bool anyBinds = false; foreach (EnergyMarket.LinkResult l in bound.Links) { for (int b = 0; b < 3; b++) { anyBinds |= l.Binding[b]; } }
-                EnergyLedger.Book year = EnergyLedger.Compute(se, bound, priceIndex, rate, 0.0);
+                EnergyLedger.Book year = EnergyLedger.Compute(se, bound, priceIndex, 0.0);
                 if (!anyBinds || !(year.CongestionRent > 0)) { ok = false; Debug.LogError($"ENERGY LEDGER: at a third of the NTCs no snitt binds or the rent is not positive ({year.CongestionRent:F4} bn)."); }
                 // EN-3b (§466): the zones clear at the exchange's own 2023 prices, whose differences are 2023's congestion on the hour - so the carried flows earn a rent at the dated NTCs without a block binding; the probe's binding adds to it
                 if (!(before.CongestionRent > 0.0)) { ok = false; Debug.LogError($"ENERGY LEDGER: Sweden shows no congestion rent at the dated NTCs ({before.CongestionRent:F4} bn) - the zones' sourced price differences should earn one on the carried flows (EN-3b)."); }
                 if (!(year.CongestionRent > before.CongestionRent)) { ok = false; Debug.LogError($"ENERGY LEDGER: a binding snitt did not raise the rent above the dated NTCs' ({year.CongestionRent:F4} against {before.CongestionRent:F4} bn)."); }
-                EnergyLedger.Book next = EnergyLedger.Compute(se, open, priceIndex, rate, year.CongestionRent * EnergyLedger.CongestionRentCreditShare);
+                EnergyLedger.Book next = EnergyLedger.Compute(se, open, priceIndex, year.CongestionRent * EnergyLedger.CongestionRentCreditShare);
                 double totalCons = 0; int sci = EnergyLayer.Index(CountryId.Sweden); for (int k = 0; k < EnergyLedger.ClassCount; k++) { totalCons += EnergyLayerData.RetailConsumptionGwh[sci][k]; }
                 double expectedCredit = year.CongestionRent * 1000.0 / totalCons;
                 for (int k = 0; k < EnergyLedger.ClassCount; k++)
@@ -149,15 +150,14 @@ namespace PoliSim.EditorTools
             sb.Append("\n    6. B6: Poland's stack at the seed dispatch, price index 1 against 2\n");
             {
                 Country pl = world.GetCountry(CountryId.Poland);
-                float rate = EnvironmentFamily.CarbonTaxRate(pl);
                 EnergyMarket.Result r1 = EnergyMarket.ClearAt(pl.Id, 1.0, 0.0), r2 = EnergyMarket.ClearAt(pl.Id, 2.0, 0.0);
-                EnergyLedger.Book b1 = EnergyLedger.Compute(pl, r1, 1.0, rate, 0.0), b2 = EnergyLedger.Compute(pl, r2, 2.0, rate, 0.0);
+                EnergyLedger.Book b1 = EnergyLedger.Compute(pl, r1, 1.0, 0.0), b2 = EnergyLedger.Compute(pl, r2, 2.0, 0.0);
                 for (int k = 0; k < EnergyLedger.ClassCount; k++)
                 {
                     if (Math.Abs(b2.Classes[k].Network - 2 * b1.Classes[k].Network) > 1e-9 || Math.Abs(b2.Classes[k].Policy - 2 * b1.Classes[k].Policy) > 1e-9 || Math.Abs(b2.Classes[k].TaxEnv - 2 * b1.Classes[k].TaxEnv) > 1e-9 || Math.Abs(b2.Classes[k].Margin - 2 * b1.Classes[k].Margin) > 1e-9)
                     { ok = false; Debug.LogError($"ENERGY LEDGER: at a doubled price level {b2.Classes[k].Class}' nominal components do not double."); }
                 }
-                sb.Append(F("    households: network {0:F4} → {1:F4}, levies {2:F4} → {3:F4}, tax {4:F4} → {5:F4}, margin {6:F4} → {7:F4}, wholesale {8:F4} → {9:F4} (every cost doubles, the fitted adders with them since EN-5; the tax's points above the seed and the ceiling do not - the market's own B6, §460, §465)\n",
+                sb.Append(F("    households: network {0:F4} → {1:F4}, levies {2:F4} → {3:F4}, tax {4:F4} → {5:F4}, margin {6:F4} → {7:F4}, wholesale {8:F4} → {9:F4} (every cost doubles - the fitted adders with them since EN-5, the ETS with the level; the ceiling does not - the market's own B6, §460, §465; the national carbon tax is not in the stack since EN-4d)\n",
                     b1.Classes[0].Network, b2.Classes[0].Network, b1.Classes[0].Policy, b2.Classes[0].Policy, b1.Classes[0].TaxEnv, b2.Classes[0].TaxEnv, b1.Classes[0].Margin, b2.Classes[0].Margin, b1.WholesalePerKwh, b2.WholesalePerKwh));
             }
 
@@ -168,14 +168,15 @@ namespace PoliSim.EditorTools
 
         private sealed class Outcome
         {
-            public double HouseholdPrice, IndustryPrice, IndustryBill, BillShare, ChannelSum, CarbonTaxCost, Wholesale, MaxGap, RecomputeGapMax;
+            public double HouseholdPrice, IndustryPrice, IndustryBill, BillShare, ChannelSum, EtsCost, Wholesale, MaxGap, RecomputeGapMax;
         }
 
-        private static Outcome RunCountry(CountryId player, int years, float extraPoints, ref bool ok)
+        private static Outcome RunCountry(CountryId player, int years, float etsStepPerT, ref bool ok)
         {
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
-            World world = WorldFactory.CreateDefault();
+            World world = WorldFactory.CreateDefault();   // resets the probes (ResetTurnState) - the step is set after it
+            EnergyMarket.ProbeEtsRisePerT = etsStepPerT; EnergyMarket.ProbeEtsRiseOnly = player;   // EN-4d: the probe on the player's fleet alone, from the top of year 1's turn (the ETS is set at the turn's top, as BeginTurn reads it)
             var go = new GameObject("ENERGYLEDGER");
             try
             {
@@ -183,8 +184,6 @@ namespace PoliSim.EditorTools
                 sim.SetWorld(world);
                 sim.PlayerCountryId = player;
                 Country c = world.GetCountry(player);
-                foreach (TaxLine line in c.TaxLines) { if (line.Type == TaxType.CarbonTax && !line.IsImplemented) { line.IsImplemented = true; line.Rate = 5f; } }   // as EnergyMarketDiagnostic stages it
-                float seedRate = EnvironmentFamily.CarbonTaxRate(c);
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
                 var outcome = new Outcome();
@@ -194,17 +193,13 @@ namespace PoliSim.EditorTools
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
                     // the credit the coming boundary will carry - last year's rent above the seed's - read BEFORE the turn writes this year's rent (EN-3b: Sweden's zones earn a standing rent)
                     foreach (Country k in world.Countries) { if (EnergyLayer.Has(k.Id)) { creditBefore[k.Id] = EnergyLedger.CreditFor(k); } }
-                    PolicyDecision d = PolicyDecision.None();
-                    if (extraPoints != 0f) { d.TaxRateOverrides[TaxType.CarbonTax] = seedRate + extraPoints; }
-                    decisions[player] = d;
                     sim.AdvanceTurn(decisions);
                     outcome.ChannelSum += -MacroSystem.EnergyConfidenceSensitivity * c.State.EnergyIndustryBillShareChange;
                     // the book closes every year, for every covered country
                     foreach (Country k in world.Countries)
                     {
                         if (!EnergyLayer.Has(k.Id)) { continue; }
-                        float rk = EnvironmentFamily.CarbonTaxRate(k);
-                        EnergyLedger.Book bk = EnergyLedger.Compute(k, EnergyMarket.Clear(k, rk), Math.Max(0.0001f, k.State.PriceLevel), rk, creditBefore[k.Id]);
+                        EnergyLedger.Book bk = EnergyLedger.Compute(k, EnergyMarket.Clear(k), Math.Max(0.0001f, k.State.PriceLevel), creditBefore[k.Id]);
                         outcome.MaxGap = Math.Max(outcome.MaxGap, Math.Abs(bk.Gap));
                         if (Math.Abs(bk.Gap) > 1e-9 * Math.Max(1.0, bk.PaidTotal)) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s book does not close in year {year} (gap {bk.Gap:E2})."); }
                         if (year == years)
@@ -216,13 +211,12 @@ namespace PoliSim.EditorTools
                         }
                     }
                 }
-                float rate = EnvironmentFamily.CarbonTaxRate(c);
-                EnergyLedger.Book last = EnergyLedger.Compute(c, EnergyMarket.Clear(c, rate), Math.Max(0.0001f, c.State.PriceLevel), rate, 0.0);
+                EnergyLedger.Book last = EnergyLedger.Compute(c, EnergyMarket.Clear(c), Math.Max(0.0001f, c.State.PriceLevel), 0.0);
                 outcome.HouseholdPrice = c.State.EnergyHouseholdPrice; outcome.IndustryPrice = c.State.EnergyIndustryPrice; outcome.IndustryBill = c.State.EnergyIndustryBill; outcome.BillShare = c.State.EnergyIndustryBillGdpShare;
-                outcome.CarbonTaxCost = last.CarbonTaxCost; outcome.Wholesale = last.WholesalePerKwh;
+                outcome.EtsCost = last.EtsCost; outcome.Wholesale = last.WholesalePerKwh;
                 return outcome;
             }
-            finally { UnityEngine.Object.DestroyImmediate(go); }
+            finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ProbeEtsRisePerT = 0.0; EnergyMarket.ProbeEtsRiseOnly = null; }
         }
 
         private static string BindingText(EnergyMarket.Result r)

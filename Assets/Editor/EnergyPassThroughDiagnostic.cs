@@ -14,11 +14,12 @@ namespace PoliSim.EditorTools
     /// EN-5 (2026-09-11), the energy track's S8 - the retail electricity price reaches Inflation through a sourced index weight. It builds and
     /// advances worlds, so it belongs to the simulation group. (1) THE WEIGHTS: six, sourced, per mille. (2) NOTHING PASSES AT NO POLICY: ten
     /// years for six, the largest planned term printed and bounded - a stack that indexes with the level it is measured against passes only the
-    /// fitted adders' real erosion. (3) THE MECHANISM: Poland's carbon tax raised fifty dollars per tonne through the decision - the year after the
-    /// raise the planned term equals the weight times the household price's real change, the inflation print is higher than untouched by about
-    /// that term, and expectations look through it (their difference a fraction of the term). (4) THE RIKSBANK'S PATH: Germany's raise reaches
-    /// Sweden's household price through the water value and prints on Sweden's inflation through Sweden's own weight - what a German carbon year
-    /// does to a Swedish print, named. (5) B6: a doubled price level with the same real stack passes nothing but the adders' erosion.
+    /// fitted adders' real erosion. (3) THE MECHANISM: Poland's fleet's ETS price stepped fifty dollars per tonne (a probe on that fleet alone -
+    /// since EN-4d, §467, the national carbon tax does not reach ETS-covered plant) - the year of the step the planned term equals the weight times
+    /// the household price's real change, the inflation print is higher than untouched by about that term, and expectations look through it
+    /// (their difference a fraction of the term). (4) THE RIKSBANK'S PATH: Germany's fleet's ETS step reaches Sweden's household price through
+    /// the water value and prints on Sweden's inflation through Sweden's own weight - what a German carbon year does to a Swedish print, named.
+    /// (5) B6: a doubled price level with the same real stack passes nothing but the adders' erosion.
     /// </summary>
     public static class EnergyPassThroughDiagnostic
     {
@@ -63,13 +64,13 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    {0,-8} first year {1:+0.0000;-0.0000} pp; largest over ten years {2:+0.0000;-0.0000} pp in year {3} with the levy at {4:F3} of its path (the AI ministry's own line moves reach the bill - the mechanism, not noise); real household price {5:F4} → {6:F4} $/kWh\n", id, first, worst, worstYear, untouched.LevyScale[id][Math.Max(1, worstYear)], untouched.RealPrice[id][1], untouched.RealPrice[id][Years]));
             }
 
-            // (3) the mechanism: Poland raised fifty dollars per tonne in year 1
-            float plnRaise = (float)(RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(CountryId.Poland));
-            sb.Append(F("\n    3. THE MECHANISM: Poland's carbon tax line implemented at 5 then raised {0:F0} dollars per tonne ({1:F0} PLN/t) through the decision in year 1, against untouched\n", RaiseUsdPerTonne, plnRaise));
-            Outcome raised = RunWorld(CountryId.Poland, Years, CountryId.Poland, plnRaise);
+            // (3) the mechanism: Poland's fleet's ETS price stepped fifty dollars per tonne from the top of year 1 - in the MARKET's currency, euro (EN-4d: the ETS is the fleet's carbon price; the national tax's zloty do not reach it)
+            float eurStep = (float)(RaiseUsdPerTonne / EnergyLayerData.UsdPerMarketCurrency[EnergyLayer.Index(CountryId.Poland)]);
+            sb.Append(F("\n    3. THE MECHANISM: Poland's fleet's ETS price stepped {0:F0} dollars per tonne ({1:F1} EUR/t, the market's currency) from the top of year 1 and held - a probe on that fleet alone - against untouched\n", RaiseUsdPerTonne, eurStep));
+            Outcome raised = RunWorld(CountryId.Poland, Years, CountryId.Poland, eurStep);
             {
                 CountryId pl = CountryId.Poland;
-                // the raise lands at the boundary of year 1: the ledger writes year 1's price at the new rate, the boundary plans the term, year 2 prints it
+                // the step stands at the top of year 1's turn: the ledger writes year 1's price at the stepped ETS, the boundary plans the term, year 2 prints it
                 float term = raised.Term[pl][1], realChange = raised.RealChange[pl][1];
                 float expected = EnergyPassThrough.WeightFraction(pl) * realChange;
                 if (Math.Abs(term - expected) > 1e-6f) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: Poland's planned term {term:F6} is not the weight times the real change ({expected:F6})."); }
@@ -82,20 +83,21 @@ namespace PoliSim.EditorTools
                     untouched.RealPrice[pl][1], raised.RealPrice[pl][1], realChange, term, EnergyPassThrough.WeightFraction(pl), raised.Inflation[pl][2], untouched.Inflation[pl][2], printGap, expectationsGap, raised.Term[pl][2]));
             }
 
-            // (4) the Riksbank's path: Germany's raise reaches Sweden
+            // (4) the Riksbank's path: Germany's fleet's ETS step reaches Sweden
             float eurRaise = (float)(RaiseUsdPerTonne * EnergyLayer.NationalPerUsd(CountryId.Germany));
-            sb.Append(F("\n    4. THE RIKSBANK'S PATH: Germany raises {0:F0} EUR/t in year 1 - Sweden's water value, household price and inflation print\n", eurRaise));
+            sb.Append(F("\n    4. THE RIKSBANK'S PATH: Germany's fleet's ETS price stepped {0:F0} EUR/t from the top of year 1 (a probe on that fleet alone) - Sweden's water value, household price and inflation print\n", eurRaise));
             Outcome germanRaise = RunWorld(CountryId.Germany, Years, CountryId.Germany, eurRaise);
             {
                 CountryId se = CountryId.Sweden, de = CountryId.Germany;
-                // the water value is set at the TOP of a turn from the other countries' standing rates (EnergyMarket.BeginTurn), so Germany's raise in year 1
-                // reaches Sweden's clearing in year 2's turn, Sweden's book at year 2's boundary, and Sweden's print in year 3 - a year behind Germany's own
-                float seTerm = germanRaise.Term[se][2] - untouched.Term[se][2], seChange = germanRaise.RealChange[se][2] - untouched.RealChange[se][2];
-                if (!(seChange > 0f) || !(seTerm > 0f)) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: Germany's raise did not reach Sweden's household price (real change {seChange:F4} %, term {seTerm:F5} pp against untouched)."); }
-                float sePrintGap = germanRaise.Inflation[se][3] - untouched.Inflation[se][3];
-                if (!(sePrintGap > 0f)) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: Sweden's year-3 print did not rise under Germany's raise ({sePrintGap:F5} pp)."); }
-                sb.Append(F("    Germany: real household price {0:+0.00;-0.00} % in year 1, term {1:+0.0000;-0.0000} pp; Sweden, a year behind (the water value is set at the top of the turn): water value {2:F1} → {3:F1} €/MWh (base block, year 2), real household price {4:+0.00;-0.00} % against untouched, term {5:+0.0000;-0.0000} pp at a weight of {6:F2} per mille; Sweden's year-3 inflation {7:F3} against {8:F3} ({9:+0.0000;-0.0000} pp), the Riksbank's rate {10:F2} against {11:F2} % at year 3's close\n",
-                    germanRaise.RealChange[de][1], germanRaise.Term[de][1], untouched.WaterValueBase[2], germanRaise.WaterValueBase[2], seChange, seTerm, EnergyPassThrough.WeightFraction(se) * EnergyPassThrough.PerMille, germanRaise.Inflation[se][3], untouched.Inflation[se][3], sePrintGap, germanRaise.PolicyRate[se][3], untouched.PolicyRate[se][3]));
+                // the water value is set at the TOP of a turn from the two markets' clearings (EnergyMarket.BeginTurn), and the ETS step stands at the top of year 1's
+                // turn as an exogenous price would, so Germany's fleet and Sweden's water value move in the SAME year - year 1's book, year 2's print. (The year's
+                // lag EN-5's first form read came from the tax decision's placement after the top of the turn, not from the market: §465's "a year behind".)
+                float seTerm = germanRaise.Term[se][1] - untouched.Term[se][1], seChange = germanRaise.RealChange[se][1] - untouched.RealChange[se][1];
+                if (!(seChange > 0f) || !(seTerm > 0f)) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: Germany's ETS step did not reach Sweden's household price (real change {seChange:F4} %, term {seTerm:F5} pp against untouched)."); }
+                float sePrintGap = germanRaise.Inflation[se][2] - untouched.Inflation[se][2];
+                if (!(sePrintGap > 0f)) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: Sweden's year-2 print did not rise under Germany's ETS step ({sePrintGap:F5} pp)."); }
+                sb.Append(F("    Germany: real household price {0:+0.00;-0.00} % in year 1, term {1:+0.0000;-0.0000} pp; Sweden, the same year (the ETS stands at the top of the turn, where the water value is set): water value {2:F1} → {3:F1} €/MWh (base block, year 1), real household price {4:+0.00;-0.00} % against untouched, term {5:+0.0000;-0.0000} pp at a weight of {6:F2} per mille; Sweden's year-2 inflation {7:F3} against {8:F3} ({9:+0.0000;-0.0000} pp), the Riksbank's rate {10:F2} against {11:F2} % at year 2's close\n",
+                    germanRaise.RealChange[de][1], germanRaise.Term[de][1], untouched.WaterValueBase[1], germanRaise.WaterValueBase[1], seChange, seTerm, EnergyPassThrough.WeightFraction(se) * EnergyPassThrough.PerMille, germanRaise.Inflation[se][2], untouched.Inflation[se][2], sePrintGap, germanRaise.PolicyRate[se][2], untouched.PolicyRate[se][2]));
             }
 
             // (5) B6
@@ -104,15 +106,14 @@ namespace PoliSim.EditorTools
                 SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
                 World w = WorldFactory.CreateDefault(); EnergyMarket.BeginTurn(w);
                 var at1 = new Dictionary<CountryId, double>();
-                foreach (Country c in w.Countries) { if (EnergyLayer.Has(c.Id)) { at1[c.Id] = EnergyLedger.Compute(c, EnergyMarket.ClearAt(c.Id, 1.0, 0.0), 1.0, EnvironmentFamily.CarbonTaxRate(c), 0.0).Classes[0].Total; } }
+                foreach (Country c in w.Countries) { if (EnergyLayer.Has(c.Id)) { at1[c.Id] = EnergyLedger.Compute(c, EnergyMarket.ClearAt(c.Id, 1.0, 0.0), 1.0, 0.0).Classes[0].Total; } }
                 // the water value is Germany's and Poland's clearing at THEIR price level - double theirs before Sweden's book at index 2 is read, as a turn would
                 foreach (Country c in w.Countries) { c.State.PriceLevel = 2f; }
                 EnergyMarket.BeginTurn(w);
                 foreach (Country c in w.Countries)
                 {
                     if (!EnergyLayer.Has(c.Id)) { continue; }
-                    float rate = EnvironmentFamily.CarbonTaxRate(c);
-                    double real2 = EnergyLedger.Compute(c, EnergyMarket.ClearAt(c.Id, 2.0, 0.0), 2.0, rate, 0.0).Classes[0].Total / 2.0;
+                    double real2 = EnergyLedger.Compute(c, EnergyMarket.ClearAt(c.Id, 2.0, 0.0), 2.0, 0.0).Classes[0].Total / 2.0;
                     float change = (float)((real2 / at1[c.Id] - 1.0) * 100.0), term = EnergyPassThrough.WeightFraction(c.Id) * change;
                     if (Math.Abs(term) > NoPolicyBoundPp) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: {c.Id} at a doubled price level passes {term:F4} pp - more than the ceiling's erosion can explain."); }
                     sb.Append(F("    {0,-8} real household price at index 1: {1:F4}; at index 2 deflated: {2:F4} ({3:+0.000;-0.000} %) → {4:+0.00000;-0.00000} pp\n", c.Id, at1[c.Id], real2, change, term));
@@ -134,12 +135,13 @@ namespace PoliSim.EditorTools
             public readonly float[] WaterValueBase = new float[Years + 1];
         }
 
-        /// <summary>A world advanced <paramref name="years"/> turns with the player's carbon line implemented at 5 (where unimplemented) and, where <paramref name="raiser"/> is set, raised by <paramref name="raiseNational"/> in year 1 and held; per country and year: the planned term, the real change, the real price, the print, the expectations, the policy rate.</summary>
-        private static Outcome RunWorld(CountryId player, int years, CountryId? raiser, float raiseNational)
+        /// <summary>A world advanced <paramref name="years"/> turns with, where <paramref name="stepped"/> is set, that country's fleet's ETS price stepped by <paramref name="etsStepPerT"/> (the market's currency) from the top of year 1 and held - the probe EN-4d left the diagnostics, the national carbon tax no longer reaching the fleet; per country and year: the planned term, the real change, the real price, the print, the expectations, the policy rate.</summary>
+        private static Outcome RunWorld(CountryId player, int years, CountryId? stepped, float etsStepPerT)
         {
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
-            World world = WorldFactory.CreateDefault();
+            World world = WorldFactory.CreateDefault();   // resets the probes - the step is set after it
+            if (stepped.HasValue) { EnergyMarket.ProbeEtsRisePerT = etsStepPerT; EnergyMarket.ProbeEtsRiseOnly = stepped; }
             var go = new GameObject("ENERGYPASSTHROUGH");
             try
             {
@@ -148,19 +150,11 @@ namespace PoliSim.EditorTools
                 sim.PlayerCountryId = player;
                 var run = new Outcome();
                 foreach (Country c in world.Countries) { if (EnergyLayer.Has(c.Id)) { run.Countries.Add(c.Id); foreach (var d in new[] { run.Term, run.RealChange, run.RealPrice, run.Inflation, run.Expectations, run.PolicyRate, run.LevyScale }) { d[c.Id] = new float[years + 1]; } } }
-                Country actor = raiser.HasValue ? world.GetCountry(raiser.Value) : null;
-                float seedRate = 0f;
-                if (actor != null)
-                {
-                    foreach (TaxLine line in actor.TaxLines) { if (line.Type == TaxType.CarbonTax && !line.IsImplemented) { line.IsImplemented = true; line.Rate = 5f; } }   // the staging the market diagnostics use
-                    seedRate = EnvironmentFamily.CarbonTaxRate(actor);
-                }
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
                 for (int year = 1; year <= years; year++)
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
-                    if (actor != null) { PolicyDecision d = PolicyDecision.None(); d.TaxRateOverrides[TaxType.CarbonTax] = seedRate + raiseNational; decisions[actor.Id] = d; }
                     sim.AdvanceTurn(decisions);
                     foreach (CountryId id in run.Countries)
                     {
@@ -171,15 +165,14 @@ namespace PoliSim.EditorTools
                         run.Inflation[id][year] = c.State.Inflation;
                         run.Expectations[id][year] = c.State.InflationExpectations;
                         run.PolicyRate[id][year] = c.CurrencyZone != null ? c.CurrencyZone.InterestRate : 0f;
-                        float rk = EnvironmentFamily.CarbonTaxRate(c);
-                        run.LevyScale[id][year] = (float)EnergyLedger.Compute(c, EnergyMarket.Clear(c, rk), Math.Max(0.0001f, c.State.PriceLevel), rk, 0.0).LevyScale;
+                        run.LevyScale[id][year] = (float)EnergyLedger.Compute(c, EnergyMarket.Clear(c), Math.Max(0.0001f, c.State.PriceLevel), 0.0).LevyScale;
                     }
-                    EnergyMarket.Result se = EnergyMarket.Clear(world.GetCountry(CountryId.Sweden), EnvironmentFamily.CarbonTaxRate(world.GetCountry(CountryId.Sweden)));
+                    EnergyMarket.Result se = EnergyMarket.Clear(world.GetCountry(CountryId.Sweden));
                     run.WaterValueBase[year] = (float)se.WaterValue[0];
                 }
                 return run;
             }
-            finally { UnityEngine.Object.DestroyImmediate(go); }
+            finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ProbeEtsRisePerT = 0.0; EnergyMarket.ProbeEtsRiseOnly = null; }
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
