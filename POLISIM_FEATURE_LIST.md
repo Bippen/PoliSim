@@ -1348,4 +1348,4 @@ here; the evidence is there.*
 | **K-1** | the seed refresh from Sweden's real result | **13 September 2026** - the game's Sweden after the election |
 | **K-2** | Svenska kraftnät's report on Sweden's bidding-zone division - **reporting is not enacting; only an enacted change moves the seed** (§456) | **29 January 2027** - the day to read whether SE1–SE4 and their links change, and nothing before a decision is in force |
 
-Nothing else is open. The strikeable decisions of this run are marked in §380 (HOLDS / RECONSIDER / NEEDS ELIAS); the fix-track table carries FT-1..FT-9 and RF-1..RF-2 each with its state (FT-8 landed §398, FT-9 landed §404); the shelf's last cycle is §380.
+Nothing else is open. The strikeable decisions of this run are marked in §380 (HOLDS / RECONSIDER / NEEDS ELIAS); the fix-track table carries FT-1..FT-9 and RF-1..RF-2 each with its state (FT-8 landed §398, FT-9 landed §404); the shelf's last cycle is §469 (2026-09-12; §436 and §380 before it).

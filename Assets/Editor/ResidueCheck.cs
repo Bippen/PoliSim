@@ -57,7 +57,8 @@ namespace PoliSim.EditorTools
             { "ENERGY_SYSTEM_ADAPTED.md", "E-34 (OWNER ELIAS) - reference-and-plan for the energy track; its provenance line waits on the source docx (§451)" },
         };
 
-        private static readonly Regex RowHead = new Regex(@"^\*\*([A-Z][A-Z0-9]*-[A-Z0-9]+) — ", RegexOptions.Multiline);
+        /// <remarks>A row id is `XX-N` or `XX-Nx` - one lowercase suffix letter for a row opened beside its parent (EN-3b, EN-4d); until 2026-09-12 (§469) the head stopped at the digits and read a lettered row's marker as its parent's, naming EN-3 for EN-3c.</remarks>
+        private static readonly Regex RowHead = new Regex(@"^\*\*([A-Z][A-Z0-9]*-[A-Z0-9]+[a-z]?) — ", RegexOptions.Multiline);
         private static readonly Regex FixRow = new Regex(@"^\| ((?:FT|RF)-\d+) \|(.*)$", RegexOptions.Multiline);
 
         public static void Run()
