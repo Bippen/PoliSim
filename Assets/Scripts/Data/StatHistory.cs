@@ -152,6 +152,13 @@ namespace PoliSim.Data
         /// <summary>P5-C5 (2026-09-06): the environment family's two keys.</summary>
         public readonly MultiResolutionSeries PowerCo2PerCapita = new MultiResolutionSeries();
         public readonly MultiResolutionSeries TransportCo2PerCapita = new MultiResolutionSeries();
+
+        /// <summary>EN-6 (2026-09-12): the energy page's five sparklines - the book's two prices, the industry bill's share, Sweden's congestion rent and reservoir balance. Additive: no dump column, no save bump.</summary>
+        public readonly MultiResolutionSeries EnergyHouseholdPrice = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries EnergyIndustryPrice = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries EnergyIndustryBillGdpShare = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries EnergyCongestionRent = new MultiResolutionSeries();
+        public readonly MultiResolutionSeries HydroReservoirBalanceGwh = new MultiResolutionSeries();
         /// <summary>P5-C6 (2026-09-06): the immigration-and-poverty-depth family's keys with a history.</summary>
         public readonly MultiResolutionSeries IrregularMigrationPer10k = new MultiResolutionSeries();
         public readonly MultiResolutionSeries PovertyGap = new MultiResolutionSeries();
@@ -212,6 +219,11 @@ namespace PoliSim.Data
             RoadConnectivity.Append(date, state.RoadConnectivity);
             PowerCo2PerCapita.Append(date, state.PowerCo2PerCapita);   // P5-C5
             TransportCo2PerCapita.Append(date, state.TransportCo2PerCapita);
+            EnergyHouseholdPrice.Append(date, state.EnergyHouseholdPrice);   // EN-6
+            EnergyIndustryPrice.Append(date, state.EnergyIndustryPrice);
+            EnergyIndustryBillGdpShare.Append(date, state.EnergyIndustryBillGdpShare);
+            EnergyCongestionRent.Append(date, state.EnergyCongestionRent);
+            HydroReservoirBalanceGwh.Append(date, state.HydroReservoirBalanceGwh);
             IrregularMigrationPer10k.Append(date, state.IrregularMigrationPer10k);   // P5-C6
             PovertyGap.Append(date, state.PovertyGap);
             HomelessPer10k.Append(date, state.HomelessPer10k);

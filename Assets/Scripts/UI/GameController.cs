@@ -10547,6 +10547,8 @@ namespace PoliSim.UI
             }
 
             DrawTierBreakdownAfterRows();   // P4-B2: the sectors bill's breakdown, after the forty rows
+            GUILayout.Space(14f);
+            DrawEnergyPlate();   // EN-6 (2026-09-12): the energy page, structural, under the Sectors page (DS-4b) - instruments first
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }

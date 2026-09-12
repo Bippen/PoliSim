@@ -524,6 +524,26 @@ namespace PoliSim.Testing
                         yield return Settle();
                     }
 
+                    // EN-6 (2026-09-12): the energy page sits under the forty sector rows on the Sectors page - the plate's own
+                    // laid-out area, scrolled to the way the People plates are, four plates filmed in one frame where they fit.
+                    if (stem == "06c_policylaws_sectors")
+                    {
+                        var energyField = controller.GetType().GetField("_energyPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                        float energyY = energyField != null ? ((Rect)energyField.GetValue(controller)).y : 3600f;
+                        ScrollBy(controller, Mathf.Max(0f, energyY - Screen.height * 0.06f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(stem + "_energy");
+                        ScrollBy(controller, Mathf.Max(0f, energyY + Screen.height * 0.50f));
+                        yield return Settle();
+                        yield return Capture(stem + "_energy_mid");
+                        ScrollBy(controller, Mathf.Max(0f, energyY + Screen.height * 1.06f));
+                        yield return Settle();
+                        yield return Capture(stem + "_energy_lower");
+                        ResetScrolls(controller);
+                        yield return Settle();
+                    }
+
                     // P4-1 (2026-09-03): the readout pair on the TAX ledger, where the rows sit above the fold - the Income Tax
                     // draft moved +5 points, the same frame again, the geometry compared, the draft put back.
                     if (stem == "05a_budget_tax")

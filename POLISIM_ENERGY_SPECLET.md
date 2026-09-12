@@ -266,7 +266,7 @@ from, and that is its whole standing.
 | 3 | the market layer: variable costs (rows 13–15), merit order, transfer constraints, scarcity, negative prices, congestion rent | **2–3** | stage 2 |
 | 4 | the fiscal layer: the two ledgers, the retail stack seeded and checked against row 7, support lines appended and indexed, the Energy sector row derived, `EnergySpendingChange` retired; **then, its own pass**, the HICP pass-through (S8) | **2 + 1** | stage 3; S7 then S8 |
 | 5 | policy and laws: the five dials mapped onto the instruments, the ONE law category reaching the energy parameters - **its own item, cited (§378 ruled 2026-09-12, §474: "the wider dials-only set follows P4-C3's one-category-per-session pattern and does not block stage 5")** | **2** | stage 4 (landed); EN-7 |
-| 6 | the screen - **structural first (S14 as amended, DS-4), then Design's board read the D11 way against the built page** | **1–2** | stage 4 (landed); EN-6, then D20's answer |
+| 6 | the screen - **structural first (S14 as amended, DS-4), then Design's board read the D11 way against the built page** - **the structural page LANDED 2026-09-12 (EN-6, `COMPLETED.md` §481)**; the board is D20's | **1–2** | stage 4 (landed); ~~EN-6~~ landed, then D20's answer |
 | 7 | the ministry | **2** | stage 5 |
 | 8 | events, state-triggered, duration-bearing; the §407 tag struck | **1** | stage 4's S8 |
 
