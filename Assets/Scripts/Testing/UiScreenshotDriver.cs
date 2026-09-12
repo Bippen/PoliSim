@@ -3264,6 +3264,56 @@ namespace PoliSim.Testing
 
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
 
+            // CL-1 (2026-09-12): the run-up is reachable. Drive the day path to the pre-campaign's first day, open
+            //    the HQ through the branch the rail's cell takes, film it, queue an office and a pollster live, step
+            //    one day and film what they came to. Filmed here because this mode drives the controller-shaped day
+            //    path; the staged -shotcampaign film stays the film of the screen's three readings.
+            int daysToRunUp = 0;
+            while (sim.PlayerPreCampaign == null && sim.PlayerCampaign == null && daysToRunUp < MaxStateSearchDays)
+            {
+                bool boundaryBefore = sim.AdvanceDay();
+                sim.AdvanceCountryDayTick(_countryId);
+                daysToRunUp++;
+                if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
+            }
+            if (sim.PlayerPreCampaign != null && sim.PlayerCampaign == null)
+            {
+                InvokeNoArg(controller, "OpenLiveCampaign");
+                yield return Settle();
+                Claim("imgui");
+                yield return Capture("cl1_runup_hq_opened");
+                // A role the party's staging does not already hold - the stand-in's party (the largest seeded) stages a
+                // manager and a pollster, so a pollster would be refused "already on the roster" and the film would show
+                // a refusal where it means to show a hire.
+                StaffRole hireRole = StaffRole.Pollster;
+                foreach (StaffRole candidate in CampaignStaff.TheFive) { if (!sim.PlayerPreCampaign.HasRole(candidate)) { hireRole = candidate; break; } }
+                sim.QueueCampaignDecision(CampaignActionKind.EstablishOffice, -1, null, CampaignOffices.OpenCost, out string officeRefusal);
+                sim.QueueCampaignDecision(CampaignActionKind.RecruitStaff, -1, null, CampaignStaff.SalaryPerDay, out string hireRefusal, role: (int)hireRole);
+                if (officeRefusal != null || hireRefusal != null)
+                {
+                    Debug.LogError($"SHOT: CL-1 - the run-up refused a priced verb: {officeRefusal ?? hireRefusal}");
+                    _failed++;
+                }
+                yield return Settle();
+                yield return Capture("cl1_runup_hq_queued");
+                {
+                    bool boundaryBefore = sim.AdvanceDay();
+                    sim.AdvanceCountryDayTick(_countryId);
+                    if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
+                }
+                yield return Settle();
+                yield return Capture("cl1_runup_hq_stepped");
+                Debug.Log($"SHOT: CL-1 - the run-up began {(sim.CampaignRecord != null ? sim.CampaignRecord.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "?")} after {daysToRunUp} day(s); HQ filmed on run-up day {sim.PlayerPreCampaign.Day} with an office and a {hireRole} queued and stepped; chest {sim.PlayerPreCampaign.Money:F0}, {sim.PlayerPreCampaign.PlannedOffices.Count} planned office(s), {sim.PlayerPreCampaign.Hired.Count} hired");
+                InvokeNoArg(controller, "CloseLiveCampaign");
+                SetPrivateField(controller, "_onDesk", true);
+                yield return Settle();
+            }
+            else
+            {
+                Debug.LogError($"SHOT: CL-1 - no run-up began for {_countryId} within {MaxStateSearchDays} days; the pre-campaign HQ is NOT filmed.");
+                _failed++;
+            }
+
             // 0. P2-0.3: the campaign's opening is an interrupt. Drive the day path until the sim has begun
             //    the player's campaign, then let the controller's own Update meet it: the banner must name
             //    it, HQ must have opened itself, and the clock must not move until it is acknowledged.

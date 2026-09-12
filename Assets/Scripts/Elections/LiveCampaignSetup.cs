@@ -68,7 +68,7 @@ namespace PoliSim.Elections
         /// until §17's dynamic generation exists).
         /// </summary>
         public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
-            bool onVoteModelCompatibility = false, int playerParty = -1, Func<int, AiDecision[]> playerScript = null)
+            bool onVoteModelCompatibility = false, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null)
         {
             if (country == CountryId.Sweden)
             {
@@ -91,7 +91,7 @@ namespace PoliSim.Elections
                         compatibilityOverride[p] = k >= 0 ? compatibility[k] : 0.0;
                     }
                 }
-                setup = Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript);
+                setup = Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome);
                 return true;
             }
             setup = default;
@@ -101,7 +101,7 @@ namespace PoliSim.Elections
 
         /// <summary>Sweden 2026 on the 2022 returns - the staging `CampaignAiHarness` has run since W-C1, from the runtime tables.</summary>
         public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
-            double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null)
+            double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null)
         {
             if (!PartySystems.TryHistory(CountryId.Sweden, out double[] shares2022, out double[] shares2018))
             {
@@ -139,9 +139,16 @@ namespace PoliSim.Elections
                 AiPersonality personality = SwedenPersonalities[p];
                 // C-R4b step 4b: the player's party plays the HQ's queue (a scripted party, W-C2's seam);
                 // every other party, and the player's until a script is given, is its cast personality.
-                parties[p] = new CampaignRun.PartySetup(SwedenParties[p], personality, FlatCredibility, WarChest, match, Volunteers,
-                    CandidateFor(personality, SwedenParties[p]), OfficesFor(personality, regions), OfficeOperationsPerDay,
-                    StaffFor(personality), TelevisionBuysFor(personality), p == playerParty ? playerScript : null);
+                // CL-1 (2026-09-12): the player's party brings its PRE-campaign's outcome to day 0 - the chest as the run-up
+                // left it, the offices it planned and the staff it hired beside the staging's, the buys it prepared into the
+                // plan. Every other party's day 0 IS its staging (its run-up, authored once). An idle run-up reproduces the
+                // staging exactly, which CampaignClockHarness 7a asserts on the campaign's own decision digest.
+                PreCampaignRun.Outcome? brought = p == playerParty ? playerOutcome : null;
+                parties[p] = new CampaignRun.PartySetup(SwedenParties[p], personality, FlatCredibility,
+                    brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
+                    CandidateFor(personality, SwedenParties[p]), brought.HasValue ? brought.Value.Offices : OfficesFor(personality, regions), OfficeOperationsPerDay,
+                    brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
+                    p == playerParty ? playerScript : null);
             }
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[SwedenParties.Length]);
             var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[SwedenParties.Length], isInternal: true);

@@ -127,8 +127,14 @@ namespace PoliSim.UI
 
         private CampaignSnapshot? BuildLiveCampaignSnapshot()
         {
-            if (_simulationManager == null || _playerCountry == null || _simulationManager.PlayerCampaign == null) { return null; }
+            if (_simulationManager == null || _playerCountry == null) { return null; }
+            if (_simulationManager.PlayerCampaign == null && _simulationManager.PlayerPreCampaign == null) { return null; }
             double perceived = PerceivedPerformance.Perceived(_playerCountry, null).Index;
+            // CL-1: the run-up fills the same screen from the pre-campaign's state until the campaign opens on its outcome.
+            if (_simulationManager.PlayerCampaign == null)
+            {
+                return LiveCampaignSnapshot.BuildPreCampaign(_simulationManager.PlayerPreCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord);
+            }
             return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord);
         }
 
@@ -177,8 +183,13 @@ namespace PoliSim.UI
         /// <summary>The rail's CAMPAIGN cell: drawn only while a campaign runs for the player's party; a click opens the live HQ (or, if it is open, returns to the Desk).</summary>
         private void DrawRailCampaignCell(float cell, List<KeyValuePair<string, Rect>> cells)
         {
-            if (_simulationManager == null || _playerCountry == null || _simulationManager.PlayerCampaign == null) { return; }
-            if (LiveCampaignSnapshot.PlayerPartyIndex(_simulationManager.PlayerCampaign, _playerCountry) < 0) { return; }
+            if (_simulationManager == null || _playerCountry == null) { return; }
+            // CL-1: present through the run-up too - the pre-campaign is where the preparation verbs live, and a cell that
+            // appeared only on the campaign's first day would leave the 26 weeks before it unreachable, as they were.
+            bool live = _simulationManager.PlayerCampaign != null
+                ? LiveCampaignSnapshot.PlayerPartyIndex(_simulationManager.PlayerCampaign, _playerCountry) >= 0
+                : _simulationManager.PlayerPreCampaign != null && !_simulationManager.PlayerPreCampaign.Finished && _simulationManager.PlayerPartyIndexForCampaign() >= 0;
+            if (!live) { return; }
             UiPalette.SystemArea area = UiPalette.SystemArea.Political;
             bool selected = _liveCampaignOpen;
             Color areaInk = UiPalette.GetAreaColor(area);
@@ -642,12 +653,88 @@ namespace PoliSim.UI
                     y += rowHeight;
                 }
             }
+            // CL-1: what the run-up's last stepped day came to - each decision done at its price or refused with its
+            // reason, from the run's own log. A refusal the player never sees is a chip that lied.
+            if (s.Notes != null && s.Notes.Length > 0)
+            {
+                GUIStyle noteStyle = DeskCaption(8.5f, PoliSimTheme.TextMuted);
+                float noteHeight = Mathf.Ceil(DeskCaptionHeight(noteStyle));
+                for (int i = 0; i < s.Notes.Length && i < 2; i++)
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, noteHeight), s.Notes[i], noteStyle);
+                    y += noteHeight;
+                }
+                y += Mathf.Round(2f * uy);
+            }
             // C-R4b step 4b: the player's hand. On the LIVE HQ a row of chips queues an action for the
             // day the run steps next, at the action's own smallest outlay (§35's price list is the action
             // screen's); a local act goes to the region where the party's organisation is strongest.
             // The interview (C-R4b 4c) is a REQUEST: its booking is the outlets' to give on the day (W-B9),
             // and a queued interview no outlet books is skipped by the run, the rest of the queue standing.
-            if (_liveCampaignOpen && _simulationManager != null && _simulationManager.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished)
+            bool campaignLive = _liveCampaignOpen && _simulationManager != null && _simulationManager.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished;
+            bool runUpLive = _liveCampaignOpen && _simulationManager != null && _simulationManager.PlayerCampaign == null
+                && _simulationManager.PlayerPreCampaign != null && !_simulationManager.PlayerPreCampaign.Finished;
+            if (runUpLive)
+            {
+                // CL-1: the run-up's verbs. Row one the preparation verbs at the price the model carries, the four the
+                // model cannot price drawn and REFUSED (their reasons printed beneath, from the run itself - never a chip
+                // that quietly does nothing); row two the five hires, each dimmed once the role is on the roster.
+                PreCampaignRun.State pre = _simulationManager.PlayerPreCampaign;
+                GUIStyle chipCaption = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
+                float chipHeight = Mathf.Ceil(DeskCaptionHeight(chipCaption)) + Mathf.Round(6f * uy);
+                float gap = Mathf.Round(4f * ux);
+                float x = r.x;
+                CampaignActionKind[] verbs =
+                {
+                    CampaignActionKind.EstablishOffice, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising,
+                    CampaignActionKind.Fundraise, CampaignActionKind.DevelopPolicy, CampaignActionKind.TrainCandidate, CampaignActionKind.SetStrategy,
+                };
+                string[] verbCaptions = { "OFFICE", "POLL", "TV BUY", "FUNDRAISE", "POLICY", "TRAIN", "STRATEGY" };
+                for (int i = 0; i < verbs.Length; i++)
+                {
+                    bool priced = PreCampaignRun.Refusal(verbs[i]) == null;
+                    float w = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(verbCaptions[i])).x) + Mathf.Round(12f * ux);
+                    if (x + w > r.xMax) { break; }
+                    if (DrawDeskChipButton(new Rect(x, y, w, chipHeight), verbCaptions[i], chipCaption, selected: false, disabled: !priced) && priced)
+                    {
+                        _simulationManager.QueueCampaignDecision(verbs[i], -1, null, PreCampaignRun.Price(pre, verbs[i]), out string refusal);
+                        if (refusal != null) { Debug.Log("CAMPAIGN QUEUE: " + refusal); }
+                    }
+                    x += w + gap;
+                }
+                y += chipHeight + Mathf.Round(4f * uy);
+                x = r.x;
+                string[] hireCaptions = { "MANAGER", "MEDIA", "POLLSTER", "FIELD", "DIGITAL" };
+                for (int i = 0; i < CampaignStaff.TheFive.Length && i < hireCaptions.Length; i++)
+                {
+                    StaffRole role = CampaignStaff.TheFive[i];
+                    bool open = !pre.HasRole(role);
+                    string caption = "HIRE " + hireCaptions[i];
+                    float w = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(caption)).x) + Mathf.Round(12f * ux);
+                    if (x + w > r.xMax) { break; }
+                    if (DrawDeskChipButton(new Rect(x, y, w, chipHeight), caption, chipCaption, selected: false, disabled: !open) && open)
+                    {
+                        _simulationManager.QueueCampaignDecision(CampaignActionKind.RecruitStaff, -1, null, CampaignStaff.SalaryPerDay, out string refusal, role: (int)role);
+                        if (refusal != null) { Debug.Log("CAMPAIGN QUEUE: " + refusal); }
+                    }
+                    x += w + gap;
+                }
+                float clearWidthRunUp = Mathf.Ceil(chipCaption.CalcSize(new GUIContent("CLEAR")).x) + Mathf.Round(12f * ux);
+                if (x + clearWidthRunUp <= r.xMax && DrawDeskChipButton(new Rect(x, y, clearWidthRunUp, chipHeight), "CLEAR", chipCaption, selected: false, disabled: false))
+                {
+                    _simulationManager.ClearCampaignQueue();
+                }
+                y += chipHeight + Mathf.Round(4f * uy);
+                GUIStyle reasonStyle = DeskCaption(8.5f, PoliSimTheme.TextMuted);
+                float reasonHeight = Mathf.Ceil(DeskCaptionHeight(reasonStyle));
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
+                    "REFUSED · FUNDRAISE: " + PreCampaignRun.Refusal(CampaignActionKind.Fundraise).ToUpperInvariant(), reasonStyle);
+                y += reasonHeight;
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
+                    "POLICY, TRAIN, STRATEGY: NO PRICE IN THE MODEL AND NO SEAM IN THE RUN", reasonStyle);
+                y += reasonHeight + Mathf.Round(4f * uy);
+            }
+            if (campaignLive)
             {
                 GUIStyle chipCaption = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
                 float chipHeight = Mathf.Ceil(DeskCaptionHeight(chipCaption)) + Mathf.Round(6f * uy);
@@ -772,8 +859,11 @@ namespace PoliSim.UI
             float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
             float y = r.y + Mathf.Round(6f * uy);
 
-            int total = Mathf.Max(1, s.Calendar.TotalCampaignDays);
-            float progress = Mathf.Clamp01(s.CampaignDay / (float)total);
+            // CL-1: through the run-up the strip counts the pre-campaign's days and names the day the campaign opens.
+            bool runUp = s.Phase == CampaignPhase.PreCampaign;
+            int total = Mathf.Max(1, runUp ? 7 * s.Calendar.PreCampaignWeeks : s.Calendar.TotalCampaignDays);
+            int dayIndex = runUp ? Mathf.Max(0, (int)(s.Today - s.Calendar.PreCampaignStart).TotalDays) : s.CampaignDay;
+            float progress = Mathf.Clamp01(dayIndex / (float)total);
             var track = new Rect(r.x, y + Mathf.Round(3f * uy), r.width * 0.42f, Mathf.Round(8f * uy));
             if (Event.current.type == EventType.Repaint)
             {
@@ -787,11 +877,18 @@ namespace PoliSim.UI
 
             float textLeft = track.xMax + Mathf.Round(12f * ux);
             PoliSimWidgets.MeasuredLabel(new Rect(textLeft, y, Mathf.Max(1f, r.xMax - textLeft), captionHeight),
-                string.Format(CultureInfo.InvariantCulture,
-                    "CAMPAIGN DAY {0} OF {1} · OPENED {2} · POLLING DAY {3}",
-                    s.CampaignDay, total,
-                    s.Calendar.CampaignStart.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(),
-                    s.Calendar.ElectionDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()),
+                runUp
+                    ? string.Format(CultureInfo.InvariantCulture,
+                        "RUN-UP DAY {0} OF {1} · OPENED {2} · THE CAMPAIGN OPENS {3} · POLLING DAY {4}",
+                        dayIndex, total,
+                        s.Calendar.PreCampaignStart.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(),
+                        s.Calendar.CampaignStart.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(),
+                        s.Calendar.ElectionDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant())
+                    : string.Format(CultureInfo.InvariantCulture,
+                        "CAMPAIGN DAY {0} OF {1} · OPENED {2} · POLLING DAY {3}",
+                        s.CampaignDay, total,
+                        s.Calendar.CampaignStart.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(),
+                        s.Calendar.ElectionDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()),
                 caption);
 
             PoliSimWidgets.MeasuredLabel(

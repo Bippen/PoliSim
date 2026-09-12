@@ -49,7 +49,7 @@ namespace PoliSim.Persistence
         // persisted World graph (R-CL1). Same reasoning as the 2 -> 3 bump: an absent party is not a
         // harmless default, it is a DIFFERENT game state - "this save was played without a party" -
         // and selection would silently seat one on load. Older saves refused plainly; no migration.
-        public const int CurrentSaveVersion = 8;   // 5: F2 step 4 (the substrate is the demography); 6: C-R4b step 3 (the player campaign's replay record); 7: EN-4c (the carbon tax's rate is the country's currency per tonne - a saved 30 would read as 30 kronor); 8: EN-4d (the taxed tonnes are transport's - a saved emissions reference of power + transport would read the carbon base at a fraction of itself on load, and the saved fiscal path was run on the wider base)
+        public const int CurrentSaveVersion = 9;   // 9: CL-1 (2026-09-12) - the run-up on the campaign record (PreCampaignDays, PreCampaignDaysStepped, a queued hire's Role); 5: F2 step 4 (the substrate is the demography); 6: C-R4b step 3 (the player campaign's replay record); 7: EN-4c (the carbon tax's rate is the country's currency per tonne - a saved 30 would read as 30 kronor); 8: EN-4d (the taxed tonnes are transport's - a saved emissions reference of power + transport would read the carbon base at a fraction of itself on load, and the saved fiscal path was run on the wider base)
 
         /// <summary>
         /// One settings object, built fresh per call (JsonSerializerSettings is mutable; sharing a

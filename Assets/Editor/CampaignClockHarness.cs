@@ -135,6 +135,72 @@ namespace PoliSim.EditorTools
                 && sweden.CampaignDaysElapsed(sweden.ElectionDate) == sweden.TotalCampaignDays,
                 $"0 .. {sweden.TotalCampaignDays}");
 
+            // 7. CL-1 (2026-09-12): the pre-campaign, stepped for the player's party alone on the campaign's own staging
+            //    (`PreCampaignRun`). 7a is the load-bearing one: a run-up in which nothing is queued leaves the campaign's
+            //    Setup identical - proven on the campaign's own decision digest at seed 777, the proof every other campaign
+            //    harness stands on - so wiring the run-up moved no digest anywhere.
+            {
+                // The same staging call twice - the AI harness's own (its staged scandal included) - once plain and once
+                // handed the idle run-up's outcome for party 0; the digest must not move.
+                var stagedScandals = new[] { (30, 0, new Scandal(ScandalKind.Corruption, ScandalSeverity.Major, 0.5)) };
+                CampaignRun.Setup staging = LiveCampaignSetup.Sweden(stagedScandals, out _);
+                PreCampaignRun.State idle = PreCampaignRun.Begin(staging, 0, new System.Random(7));
+                while (!idle.Finished) { PreCampaignRun.StepDay(idle, null); }
+                PreCampaignRun.Outcome idleOutcome = PreCampaignRun.Finish(idle);
+                CampaignRun.Setup withIdle = LiveCampaignSetup.Sweden(stagedScandals, out _, playerParty: 0, playerOutcome: idleOutcome);
+                CampaignRun.Result control = CampaignAiHarness.RunSeeded(staging, 777);
+                CampaignRun.Result idleRun = CampaignAiHarness.RunSeeded(withIdle, 777);
+                failures += Assert(sb, "7a. an idle run-up leaves the campaign's decision digest byte-identical (seed 777)",
+                    control.Digest == idleRun.Digest,
+                    $"{idle.TotalDays} days stepped; chest {idleOutcome.Money:F0} against the staging's {staging.Parties[0].StartingMoney:F0}; {idleOutcome.Offices.Length} offices, {idleOutcome.Staff.Length} staff, {idleOutcome.TelevisionBuys} buys");
+                failures += Assert(sb, "7b. the run-up is the calendar's 26 weeks and ends the day before the campaign opens",
+                    idle.TotalDays == 7 * CampaignCalendar.DefaultPreCampaignWeeks && staging.Calendar.PreCampaignStart.AddDays(idle.TotalDays) == staging.Calendar.CampaignStart,
+                    $"{idle.TotalDays} days, {staging.Calendar.PreCampaignStart:yyyy-MM-dd} .. {staging.Calendar.CampaignStart:yyyy-MM-dd}");
+
+                PreCampaignRun.State busy = PreCampaignRun.Begin(staging, 0, new System.Random(7));
+                int region = PreCampaignRun.NextOfficeRegion(busy);
+                // A role the party's staging does NOT already hold (party 0's cast hires a manager and a pollster on day 0).
+                StaffRole hireRole = StaffRole.Pollster;
+                foreach (StaffRole candidate in CampaignStaff.TheFive) { if (!busy.HasRole(candidate)) { hireRole = candidate; break; } }
+                var day0 = new List<PreCampaignRun.Decision>
+                {
+                    new PreCampaignRun.Decision(CampaignActionKind.RecruitStaff, role: (int)hireRole),
+                    new PreCampaignRun.Decision(CampaignActionKind.EstablishOffice, region),
+                };
+                PreCampaignRun.StepDay(busy, day0);
+                while (!busy.Finished) { PreCampaignRun.StepDay(busy, null); }
+                PreCampaignRun.Outcome busyOutcome = PreCampaignRun.Finish(busy);
+                double expectedChest = staging.Parties[0].StartingMoney - (busy.TotalDays - 1) * CampaignStaff.SalaryPerDay;
+                failures += Assert(sb, $"7c. a {hireRole} hired on day 0 costs the salary on every later run-up day; an office planned costs nothing until the campaign opens",
+                    Math.Abs(busyOutcome.Money - expectedChest) < 1e-6 && Array.IndexOf(busyOutcome.Staff, hireRole) >= 0
+                    && Array.IndexOf(busyOutcome.Offices, region) >= 0 && busy.Log.Count == 2 && busy.Log[0].Refusal == null && busy.Log[1].Refusal == null,
+                    $"chest {busyOutcome.Money:F0} against {expectedChest:F0}; staff {string.Join("/", busyOutcome.Staff)}; offices {busyOutcome.Offices.Length} (region {region} in); log {busy.Log.Count}");
+
+                PreCampaignRun.State refused = PreCampaignRun.Begin(staging, 0, new System.Random(7));
+                var four = new List<PreCampaignRun.Decision>
+                {
+                    new PreCampaignRun.Decision(CampaignActionKind.Fundraise), new PreCampaignRun.Decision(CampaignActionKind.DevelopPolicy),
+                    new PreCampaignRun.Decision(CampaignActionKind.TrainCandidate), new PreCampaignRun.Decision(CampaignActionKind.SetStrategy),
+                };
+                PreCampaignRun.StepDay(refused, four);
+                int refusals = 0;
+                foreach (PreCampaignRun.Entry e in refused.Log) { if (e.Refusal != null) { refusals++; } }
+                failures += Assert(sb, "7d. fundraise, policy, training and strategy are refused with a reason, the chest untouched",
+                    refusals == 4 && refused.Log.Count == 4 && Math.Abs(refused.Money - staging.Parties[0].StartingMoney) < 1e-9,
+                    $"{refusals} refused of {refused.Log.Count}; chest {refused.Money:F0}");
+
+                var onePoll = new List<PreCampaignRun.Decision> { new PreCampaignRun.Decision(CampaignActionKind.CommissionPolling) };
+                PreCampaignRun.State polled = PreCampaignRun.Begin(staging, 0, new System.Random(11));
+                PreCampaignRun.StepDay(polled, onePoll);
+                PreCampaignRun.State polledAgain = PreCampaignRun.Begin(staging, 0, new System.Random(11));
+                PreCampaignRun.StepDay(polledAgain, onePoll);
+                failures += Assert(sb, "7e. a poll costs the internal house's fee, reads the prior within the house's error, and replays to the same digest",
+                    polled.PollsBought == 1 && Math.Abs(polled.Money - (staging.Parties[0].StartingMoney - staging.InternalHouse.Cost)) < 1e-6
+                    && polled.LatestPoll.HasValue && polled.Digest.ToString() == polledAgain.Digest.ToString()
+                    && Math.Abs(polled.LatestPoll.Value.Share(0) - staging.PriorShares[0]) < 0.10,
+                    $"chest {polled.Money:F0}; share(0) {(polled.LatestPoll.HasValue ? polled.LatestPoll.Value.Share(0) : double.NaN):F3} against prior {staging.PriorShares[0]:F3}; digest {polled.Digest.Length} chars");
+            }
+
             sb.Append($"\n=== CampaignClockHarness: {(failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED")} ===\n");
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);

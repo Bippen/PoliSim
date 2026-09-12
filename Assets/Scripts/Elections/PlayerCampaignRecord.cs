@@ -19,10 +19,18 @@ namespace PoliSim.Elections
     {
         /// <summary>The election boundary this campaign runs up to (the first day of the election turn).</summary>
         public DateTime ElectionDate;
-        /// <summary>The campaign's first day (`CampaignCalendar.CampaignStart` for that boundary).</summary>
+        /// <summary>The window's first day: the PRE-campaign's (CL-1, `CampaignCalendar.PreCampaignStart`) when a run-up ran; the campaign's own on a record from before CL-1 or a load straight into the campaign. The strip prints it.</summary>
         public DateTime StartDate;
         /// <summary>Days stepped so far - `CampaignRun.State.Day` at the save.</summary>
         public int DaysStepped;
+        /// <summary>
+        /// CL-1 (2026-09-12): the run-up's length in days (7 × the calendar's pre-campaign weeks) and how many of them were
+        /// stepped - the replay re-steps the run-up first, then the campaign. 0 and 0 on a record from before CL-1: no run-up,
+        /// the campaign as it was. The run-up's queue lives in <see cref="Queue"/> under NEGATIVE days, counted back from the
+        /// campaign's first (−1 is the day before it), so the campaign's own days stay 0-based and untouched.
+        /// </summary>
+        public int PreCampaignDays;
+        public int PreCampaignDaysStepped;
         /// <summary>The three campaign streams' draw counts the moment the campaign began - the replay's rewind point.</summary>
         public Dictionary<SimulationRandom.Stream, int> DrawCountsAtStart = new Dictionary<SimulationRandom.Stream, int>();
 
@@ -52,6 +60,8 @@ namespace PoliSim.Elections
         public int RegionIndex = -1;
         public int Issue = -1;
         public double Spend;
+        /// <summary>CL-1: the role a RecruitStaff decision fills (a `StaffRole` as an int), −1 for every other kind. A NEGATIVE <see cref="Day"/> is a pre-campaign day.</summary>
+        public int Role = -1;
 
         /// <summary>The decision as the run resolves it - the spec's hours, the label from the region or "national".</summary>
         public AiDecision ToDecision(CampaignRun.Setup setup)

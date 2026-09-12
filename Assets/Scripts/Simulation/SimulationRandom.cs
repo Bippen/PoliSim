@@ -110,7 +110,15 @@ namespace PoliSim.Simulation
             ///
             /// ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2: the election system is unwired).
             /// </summary>
-            ElectionNight = 11
+            ElectionNight = 11,
+
+            /// <summary>
+            /// CL-1 (2026-09-12): the player's PRE-campaign polls (`PreCampaignRun`) - its own stream so the run-up cannot
+            /// move a single draw of the campaign's three, which is what lets the staging at the campaign's first day be
+            /// asserted identical to the harness's (`CampaignClockHarness` 7a). Appended, never inserted, by this enum's
+            /// own rule; rewound and re-stepped on load like the three (`SimulationManager.RestoreCampaign`).
+            /// </summary>
+            PreCampaign = 12
         }
 
         private static int? _masterSeed;

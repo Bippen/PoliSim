@@ -41,11 +41,13 @@ namespace PoliSim.Elections
 
         /// <summary>§19's perceived economy index (0–100) — what the electorate reacts to, not the truth.</summary>
         public readonly double PerceivedEconomyIndex;
+        /// <summary>CL-1: what the run-up's last stepped day came to - each decision done at its price or refused with its reason; empty for a campaign day.</summary>
+        public readonly string[] Notes;
 
         public CampaignSnapshot(string partyName, string markKey, string countryName, CampaignPhase phase,
             DateTime today, CampaignCalendar calendar, ResourcePool resources, double moneyAtCampaignStart,
             Poll latestPoll, string[] partyNames, int playerPartyIndex, double[] momentumPp,
-            QueuedAction[] queue, StaffMember[] staff, RegionalOffice[] offices, double perceivedEconomyIndex)
+            QueuedAction[] queue, StaffMember[] staff, RegionalOffice[] offices, double perceivedEconomyIndex, string[] notes = null)
         {
             PartyName = partyName; MarkKey = markKey; CountryName = countryName; Phase = phase;
             Today = today; Calendar = calendar; Resources = resources;
@@ -53,6 +55,7 @@ namespace PoliSim.Elections
             PartyNames = partyNames; PlayerPartyIndex = playerPartyIndex; MomentumPp = momentumPp;
             Queue = queue; Staff = staff; Offices = offices;
             PerceivedEconomyIndex = perceivedEconomyIndex;
+            Notes = notes ?? new string[0];
         }
 
         public int DaysUntilElection => Calendar.DaysUntilElection(Today);

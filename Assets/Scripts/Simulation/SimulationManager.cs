@@ -2129,6 +2129,16 @@ namespace PoliSim.Simulation
         /// <summary>What the save carries of the campaign - see <see cref="Elections.PlayerCampaignRecord"/>. Null when no campaign has begun.</summary>
         public Elections.PlayerCampaignRecord CampaignRecord { get; private set; }
 
+        /// <summary>
+        /// CL-1 (2026-09-12): the player's PRE-campaign, stepped for the player's party alone between the calendar's
+        /// `PreCampaignStart` and `CampaignStart` (<see cref="Elections.PreCampaignRun"/>); null outside the run-up and once the
+        /// campaign has opened on its outcome. The AI parties' run-up is their staging - nothing of theirs moves before day 0.
+        /// </summary>
+        public Elections.PreCampaignRun.State PlayerPreCampaign { get; private set; }
+
+        /// <summary>CL-1: the run-up's one stream - the polls the player buys before the campaign; never the campaign's three.</summary>
+        private const SimulationRandom.Stream PreCampaignStream = SimulationRandom.Stream.PreCampaign;
+
         /// <summary>The first day of the given turn - the election boundary when that turn is an election turn.</summary>
         public static System.DateTime TurnBoundary(int turn) => EpochDate.AddDays((long)DaysPerTurn * turn);
 
@@ -2147,28 +2157,45 @@ namespace PoliSim.Simulation
         /// <summary>
         /// Called once per day after the date has advanced: begins the player's campaign on its first
         /// day and steps it through today; finishes it on the day after its last. Idle outside the
-        /// window and for a country with no staged campaign.
+        /// window and for a country with no staged campaign. CL-1 (2026-09-12): the window opens at the
+        /// PRE-campaign's first day - the run-up is stepped by <see cref="AdvancePreCampaign"/> for the
+        /// player's party alone, and the campaign opens on its outcome.
         /// </summary>
         private void AdvanceCampaign()
         {
             if (!PlayerCountryId.HasValue) { return; }
             Elections.CampaignCalendar calendar = CurrentCampaignCalendar();
-            if (CurrentDate < calendar.CampaignStart || CurrentDate >= calendar.ElectionDate)
+            if (CurrentDate < calendar.PreCampaignStart || CurrentDate >= calendar.ElectionDate)
             {
-                // Outside the window. A finished campaign's result stays readable until the next
-                // window opens; the running state is dropped once its election has passed.
-                // Strictly AFTER the boundary day: the election is counted on the boundary day's own
-                // AdvanceTurn (the controller's CheckElection reads PlayerCampaign and the Result then).
-                if (PlayerCampaign != null && CurrentDate > PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; }
+                // Outside the window - which opens at the PRE-campaign's first day since CL-1. A finished
+                // campaign's result stays readable until the next window opens; the running state is dropped
+                // once its election has passed. Strictly AFTER the boundary day: the election is counted on the
+                // boundary day's own AdvanceTurn (the controller's CheckElection reads PlayerCampaign and the Result then).
+                if (PlayerCampaign != null && CurrentDate > PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; PlayerPreCampaign = null; }
                 return;
             }
+            if (CurrentDate < calendar.CampaignStart) { AdvancePreCampaign(calendar); return; }
             if (PlayerCampaign == null || PlayerCampaign.Setup.Calendar.ElectionDate != calendar.ElectionDate)
             {
-                // The record first: the player's script reads its queue, so the Setup closes over it.
-                var record = new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0 };
+                // CL-1: a run-up that reached this day is finished first (a load can land here with days unstepped),
+                // and its outcome is what the player's party brings to day 0. The record is the run-up's own when one
+                // ran; otherwise (a load straight into the campaign, a record from before CL-1) a fresh one - and the
+                // record first either way: the player's script reads its queue, so the Setup closes over it.
+                Elections.PreCampaignRun.Outcome? brought = null;
+                if (PlayerPreCampaign != null && PlayerPreCampaign.Calendar.ElectionDate == calendar.ElectionDate && CampaignRecord != null)
+                {
+                    while (!PlayerPreCampaign.Finished)
+                    {
+                        Elections.PreCampaignRun.StepDay(PlayerPreCampaign, PreCampaignDecisionsFor(CampaignRecord, PlayerPreCampaign, PlayerPreCampaign.Day));
+                        CampaignRecord.PreCampaignDaysStepped = PlayerPreCampaign.Day;
+                    }
+                    brought = Elections.PreCampaignRun.Finish(PlayerPreCampaign);
+                }
+                Elections.PlayerCampaignRecord record = brought.HasValue ? CampaignRecord
+                    : new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0 };
                 if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                         out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
-                        playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record)))
+                        playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record), playerOutcome: brought))
                 {
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
@@ -2178,6 +2205,10 @@ namespace PoliSim.Simulation
                 PlayerCampaignResult = null;
                 PlayerCampaign = Elections.CampaignRun.Begin(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi),
                     SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
+                if (brought.HasValue)
+                {
+                    UnityEngine.Debug.Log($"CAMPAIGN: the run-up's outcome opens the campaign for {PlayerCountryId.Value} - chest {brought.Value.Money:F0}, {brought.Value.Offices.Length} office(s), {brought.Value.Staff.Length} staff, {brought.Value.TelevisionBuys} buy(s) planned; digest {brought.Value.Digest.Length} chars");
+                }
             }
             if (PlayerCampaign.Day == 0) { UnityEngine.Debug.Log($"CAMPAIGN: began {calendar.CampaignStart:yyyy-MM-dd} for {PlayerCountryId.Value}, polling day {calendar.ElectionDate:yyyy-MM-dd} ({PlayerCampaign.TotalDays} days)"); }
             int todayIndex = (int)(CurrentDate - calendar.CampaignStart).TotalDays;
@@ -2191,6 +2222,52 @@ namespace PoliSim.Simulation
                 PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); RecordCampaignLedger();
                 UnityEngine.Debug.Log($"CAMPAIGN: finished {PlayerCampaign.TotalDays} days for {PlayerCountryId.Value}; final shares " + string.Join(" ", System.Array.ConvertAll(PlayerCampaignResult.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
             }
+        }
+
+        /// <summary>
+        /// CL-1: the run-up's day - the player's pre-campaign begun on the calendar's `PreCampaignStart` from the campaign's
+        /// own staging (read, not run: no AI party moves before the campaign), then stepped through today on the record's
+        /// queue. A country with no staged campaign has no run-up either, for the same reason it has no campaign.
+        /// </summary>
+        private void AdvancePreCampaign(Elections.CampaignCalendar calendar)
+        {
+            if (PlayerPreCampaign == null || PlayerPreCampaign.Calendar.ElectionDate != calendar.ElectionDate)
+            {
+                int me = PlayerPartyIndexForCampaign();
+                if (me < 0) { return; }
+                if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
+                        out Elections.CampaignRun.Setup staged, out _, onVoteModelCompatibility: true, playerParty: me))
+                {
+                    return;
+                }
+                var record = new Elections.PlayerCampaignRecord
+                {
+                    ElectionDate = calendar.ElectionDate, StartDate = calendar.PreCampaignStart, DaysStepped = 0,
+                    PreCampaignDays = 7 * calendar.PreCampaignWeeks, PreCampaignDaysStepped = 0,
+                };
+                System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> atStart = SimulationRandom.CaptureDrawCounts();
+                record.DrawCountsAtStart[PreCampaignStream] = atStart.TryGetValue(PreCampaignStream, out int n0) ? n0 : 0;
+                CampaignRecord = record;
+                PlayerCampaign = null;
+                PlayerCampaignResult = null;
+                PlayerPreCampaign = Elections.PreCampaignRun.Begin(staged, me, SimulationRandom.For(PreCampaignStream));
+                UnityEngine.Debug.Log($"CAMPAIGN: the run-up began {calendar.PreCampaignStart:yyyy-MM-dd} for {PlayerCountryId.Value} - {PlayerPreCampaign.TotalDays} days to the campaign's opening on {calendar.CampaignStart:yyyy-MM-dd}, polling day {calendar.ElectionDate:yyyy-MM-dd}");
+            }
+            int todayIndex = (int)(CurrentDate - calendar.PreCampaignStart).TotalDays;
+            while (PlayerPreCampaign.Day <= todayIndex && !PlayerPreCampaign.Finished)
+            {
+                Elections.PreCampaignRun.StepDay(PlayerPreCampaign, PreCampaignDecisionsFor(CampaignRecord, PlayerPreCampaign, PlayerPreCampaign.Day));
+                CampaignRecord.PreCampaignDaysStepped = PlayerPreCampaign.Day;
+            }
+        }
+
+        /// <summary>The record's queue for one run-up day, as the run-up steps it - keyed by the NEGATIVE day counted back from the campaign's first.</summary>
+        private static System.Collections.Generic.List<Elections.PreCampaignRun.Decision> PreCampaignDecisionsFor(Elections.PlayerCampaignRecord record, Elections.PreCampaignRun.State pre, int day)
+        {
+            var list = new System.Collections.Generic.List<Elections.PreCampaignRun.Decision>();
+            if (record == null || pre == null) { return list; }
+            foreach (Elections.QueuedDecisionRecord q in record.QueuedFor(day - pre.TotalDays)) { list.Add(new Elections.PreCampaignRun.Decision(q.Kind, q.RegionIndex, q.Role)); }
+            return list;
         }
 
         // ---- C-R4b step 4b: the player's hand on the campaign - a queue the party plays ----------------
@@ -2257,14 +2334,29 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// Queue a decision for the NEXT campaign day (the day the run will step next). Refused when no
-        /// campaign runs, when the kind is not legal in that day's phase, or when the player's party is
-        /// not in the campaign - and the refusal is the return value, so the screen can say why.
+        /// Queue a decision for the NEXT day the run will step - a campaign day, or (CL-1) a run-up day, whose queue is keyed
+        /// by the negative day counted back from the campaign's first. Refused when nothing runs, when the kind is not legal
+        /// in that day's phase, when the run-up has no price for it (`PreCampaignRun.Refusal` - the four the model cannot
+        /// price), or when the player's party is not in the campaign - and the refusal is the return value, so the screen
+        /// can say why. `role` is the role a hire fills; an office queued with no region goes to the largest electorate
+        /// without one (the picker is the plan's S-C2).
         /// </summary>
-        public bool QueueCampaignDecision(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal)
+        public bool QueueCampaignDecision(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal, int role = -1)
         {
             refusal = null;
-            if (PlayerCampaign == null || CampaignRecord == null) { refusal = "no campaign is running"; return false; }
+            if ((PlayerCampaign == null && PlayerPreCampaign == null) || CampaignRecord == null) { refusal = "no campaign is running"; return false; }
+            if (PlayerCampaign == null)
+            {
+                if (PlayerPreCampaign.Finished) { refusal = "the run-up is over - the campaign opens tomorrow"; return false; }
+                if (PlayerPartyIndexForCampaign() < 0) { refusal = "your party is not in this campaign"; return false; }
+                if (!Elections.CampaignLegality.IsLegal(kind, Elections.CampaignPhase.PreCampaign)) { refusal = $"{kind} is not legal in the PreCampaign phase"; return false; }
+                string standing = Elections.PreCampaignRun.Refusal(kind);
+                if (standing != null) { refusal = $"{kind}: {standing}"; return false; }
+                if (kind == Elections.CampaignActionKind.EstablishOffice && regionIndex < 0) { regionIndex = Elections.PreCampaignRun.NextOfficeRegion(PlayerPreCampaign); }
+                if (regionIndex >= PlayerPreCampaign.Staged.Regions.Length) { refusal = "no such region"; return false; }
+                CampaignRecord.Queue.Add(new Elections.QueuedDecisionRecord { Day = PlayerPreCampaign.Day - PlayerPreCampaign.TotalDays, Kind = kind, RegionIndex = regionIndex, Issue = -1, Role = role, Spend = spend });
+                return true;
+            }
             if (PlayerCampaign.Finished) { refusal = "the campaign is over"; return false; }
             if (PlayerPartyIndexForCampaign() < 0) { refusal = "your party is not in this campaign"; return false; }
             int day = PlayerCampaign.Day;
@@ -2275,12 +2367,12 @@ namespace PoliSim.Simulation
             return true;
         }
 
-        /// <summary>Empties the next campaign day's queue.</summary>
+        /// <summary>Empties the next day's queue - the campaign's, or (CL-1) the run-up's.</summary>
         public void ClearCampaignQueue()
         {
-            if (PlayerCampaign == null || CampaignRecord == null) { return; }
-            int day = PlayerCampaign.Day;
-            CampaignRecord.Queue.RemoveAll(q => q.Day == day);
+            if (CampaignRecord == null) { return; }
+            if (PlayerCampaign != null) { int day = PlayerCampaign.Day; CampaignRecord.Queue.RemoveAll(q => q.Day == day); return; }
+            if (PlayerPreCampaign != null) { int preDay = PlayerPreCampaign.Day - PlayerPreCampaign.TotalDays; CampaignRecord.Queue.RemoveAll(q => q.Day == preDay); }
         }
 
         /// <summary>
@@ -2294,12 +2386,38 @@ namespace PoliSim.Simulation
         {
             CampaignRecord = record;
             PlayerCampaign = null;
+            PlayerPreCampaign = null;
             PlayerCampaignResult = null;
-            if (record == null || !PlayerCountryId.HasValue || record.DaysStepped <= 0) { return; }
+            if (record == null || !PlayerCountryId.HasValue) { return; }
+            if (record.DaysStepped <= 0 && record.PreCampaignDaysStepped <= 0) { return; }
             var calendar = new Elections.CampaignCalendar(record.ElectionDate);
+            int me = PlayerPartyIndexForCampaign();
+            // CL-1: the run-up first - its one stream rewound to its count at the run-up's start, the same days re-stepped on
+            // the same queue; its outcome is then what the campaign's replay hands the player's party, as the original run did.
+            Elections.PreCampaignRun.Outcome? brought = null;
+            if (record.PreCampaignDays > 0 && record.PreCampaignDaysStepped > 0 && me >= 0
+                && Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
+                    out Elections.CampaignRun.Setup staged, out _, onVoteModelCompatibility: true, playerParty: me))
+            {
+                var preRewound = new System.Collections.Generic.Dictionary<SimulationRandom.Stream, int>(savedCounts);
+                if (record.DrawCountsAtStart.TryGetValue(PreCampaignStream, out int preAtStart)) { preRewound[PreCampaignStream] = preAtStart; }
+                SimulationRandom.RestoreState(masterSeed, preRewound);
+                PlayerPreCampaign = Elections.PreCampaignRun.Begin(staged, me, SimulationRandom.For(PreCampaignStream));
+                for (int i = 0; i < record.PreCampaignDaysStepped && !PlayerPreCampaign.Finished; i++)
+                {
+                    Elections.PreCampaignRun.StepDay(PlayerPreCampaign, PreCampaignDecisionsFor(record, PlayerPreCampaign, PlayerPreCampaign.Day));
+                }
+                if (PlayerPreCampaign.Finished) { brought = Elections.PreCampaignRun.Finish(PlayerPreCampaign); }
+                UnityEngine.Debug.Log($"CAMPAIGN REPLAY: {record.PreCampaignDaysStepped} run-up day(s) re-stepped for {PlayerCountryId.Value} toward {record.ElectionDate:yyyy-MM-dd}");
+            }
+            if (record.DaysStepped <= 0)
+            {
+                AssertReplayLandedOn(savedCounts, record.PreCampaignDaysStepped, new[] { PreCampaignStream });
+                return;
+            }
             if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                     out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
-                    playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record)))
+                    playerParty: me, playerScript: PlayerScriptOver(record), playerOutcome: brought))
             {
                 return;
             }
@@ -2313,15 +2431,24 @@ namespace PoliSim.Simulation
                 SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
             for (int i = 0; i < record.DaysStepped && !PlayerCampaign.Finished; i++) { Elections.CampaignRun.StepDay(PlayerCampaign); }
             if (PlayerCampaign.Finished) { PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); RecordCampaignLedger(); }
-            System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> after = SimulationRandom.CaptureDrawCounts();
             UnityEngine.Debug.Log($"CAMPAIGN REPLAY: {record.DaysStepped} day(s) re-stepped for {PlayerCountryId.Value} toward {record.ElectionDate:yyyy-MM-dd}");
-            foreach (SimulationRandom.Stream stream in CampaignStreams)
+            AssertReplayLandedOn(savedCounts, record.DaysStepped, CampaignStreams);
+        }
+
+        /// <summary>
+        /// The replay's own check: every named stream ends at the draw count the save recorded. A mismatch is logged as an
+        /// error and the campaign is still restored, because a warned campaign beats a vanished one.
+        /// </summary>
+        private static void AssertReplayLandedOn(System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> savedCounts, int days, SimulationRandom.Stream[] streams)
+        {
+            System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> after = SimulationRandom.CaptureDrawCounts();
+            foreach (SimulationRandom.Stream stream in streams)
             {
                 int expected = savedCounts.TryGetValue(stream, out int e) ? e : 0;
                 int actual = after.TryGetValue(stream, out int a) ? a : 0;
                 if (actual != expected)
                 {
-                    UnityEngine.Debug.LogError($"CAMPAIGN REPLAY: stream {stream} ended at draw {actual} against the save's {expected} after {record.DaysStepped} day(s) - the replay did not reproduce the campaign the save left, which means something outside the campaign drew from a campaign stream, or the staging changed under the save.");
+                    UnityEngine.Debug.LogError($"CAMPAIGN REPLAY: stream {stream} ended at draw {actual} against the save's {expected} after {days} day(s) - the replay did not reproduce the campaign the save left, which means a decision or a stream changed between the save and this build");
                 }
             }
         }
