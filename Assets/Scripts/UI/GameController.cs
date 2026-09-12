@@ -10356,7 +10356,11 @@ namespace PoliSim.UI
                 _labelStyle,
                 _labelStyle,
                 _sliderStyle,
-                _sliderThumbStyle);
+                _sliderThumbStyle,
+                // EN-8 (2026-09-12): a per-tonne rate steps and reaches in its ceiling's hundredth (TaxLine.DialGrain), a rate in
+                // points in whole points as before; the coarse step is printed under the name in the currency the figure uses.
+                grain: taxLine.DialGrain,
+                grainUnit: taxLine.IsPerTonne ? EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t" : null);
 
             if (taxLine.IsImplemented)
             {

@@ -26715,3 +26715,34 @@ France, Italy and the USA have no exchange fold on this machine (`energy_hydro_p
 **Two notes for the return, beyond the reading.** (1) 14a reads *"ENERGY_SYSTEM_ADAPTED.md read whole"* - Design holds the source this repo knows only through the spec-let; E-34's open question (where the source docx is) may be answered by that file, and it is Elias's to say. (2) `sweden_outline.svg` stays held (§448) with 12f, its board.
 
 **Bar:** `bar393_d20` **38 of 38** on the tree this record reads - residue 11 (the shelf that follows reads the number), 12 ratchets tight; `D18InventoryCheck` the block unchanged against the repo, `DesignNotificationCheck` and `DocumentClaimCheck` clean, `MojibakeCheck` clean; the package cut last, after this line.
+
+## 484. EN-8 LANDED — the carbon row's step in its own grain: a rate per tonne rests on its ceiling's hundredth, the reach guard judges every row in its grain, the step printed under the name; every film's Budget verdict back under the bound (2026-09-13)
+
+**The ruling:** *"EN-8 rides after S-D20, its own row with its figures."*
+
+**The finding, re-read on the tree.** §478 opened the row from CL-1's interrupt film: the Budget's Carbon Tax row at **21 028 units per pixel at 1280 and 7 145 at 2560** against the whole-unit bound (`cl1c_int1280`, `cl1c_int2560`). It was never the interrupt film's alone: since EN-4c put the rate in the country's currency per tonne (§466) with a ceiling in the thousands carried by the level (§471), every sweep film of a country with a per-tonne rate has exited 1 on the same guard - §481 said so for its six films (`en6e_sweden_1280` read 22 054 on `05r_budget_rest`, `en6e_sweden_2560` 7 494, `en6e_germany_1280` 2 001; Italy's and Poland's rows are not interactive and recorded nothing). The guard was right and the row was wrong: a track of 151 px cannot rest on every krona of 3 330, and no track could - a whole krona per tonne was never the resolution the row meant, the way a whole point is the resolution a 0–100 rate row means.
+
+**The form: a grain, on the line, in the row's own unit.** `TaxLine.DialGrain` - **the ceiling's hundredth rounded to ten, never under ten** (`Math.Max(10, Round(MaxRate ÷ 100 ÷ 10) × 10)`): the resolution a 0–100 rate row has, in the row's unit. A rate in points keeps grain 1 (every ledger row draws exactly as before). Sweden's ceiling (3 150 kr at the seed, 3 330 in the rest frame) gives **30 kr per tonne**; the euro countries' (about 300 €) and the USA's (300 $) give the floor, **10**; Italy's and Poland's carbon rows are not live and record no reach (their films' worst Budget row is a welfare line, at 0,702). The grain is a STEP, not a rounding: the statute's figure stands at its own value between decisions (§471); only the player's DRAFT snaps, in grains from zero. `LedgerRow.Draw` takes `grain` (default 1) and `grainUnit`: the pixel reach is recorded **in grains** (`unitsPerPixel ÷ grain`), the step is `StepFor(reach) × grain` - P2-1.3's adaptive rule unchanged, a tenth, a half or a whole GRAIN as the track allows - and a row whose grain is coarser than one prints its step under its name in the caption face, 9d's second line (*"BY 30 SEK/t"* on Sweden's row at 1280, *"BY 15 SEK/t"* at 2560 where the wider track carries a half-grain; *"BY 5 EUR/t"* on Germany's), the resort ladder as 9d left it - and the ladder is why the line is that short: the first proof frame printed "30 SEK/t STEPS", the 1280 name cell (73 px) took it down to the bare number, and a line the cell cannot hold is a line the row does not say. The carbon row passes both; the driver's verdict now reads grains and says what a grain is. The alternative §478 named - a log scale - is not taken: a linear track keeps the statute's tick and the ceiling legible against each other, and the tax rows are `LedgerRow`s, not `DrawDialRow` dials, so `DialLabelCheck` and `RangeCaptionCheck` do not reach them (the register's row named them; they never applied to a tax row).
+
+**Films** (every figure parsed from the logs; the reach is the worst Budget row's, in grains per pixel):
+
+| film | Budget rows drawn | worst Budget row (grains per pixel) | the row | its track | the runner's exit |
+|---|---|---|---|---|---|
+| `en8_sweden_1280` | 12 | **0,735** | 05r_budget_rest / Carbon Tax | 151 px | 0 |
+| `en8_sweden_2560` | 12 | **0,250** | 05r_budget_rest / Carbon Tax | 445 px | 0 |
+| `en8_germany_1280` | 12 | **0,477** | 05t_budget_turn0 / Payroll Tax | 157 px | 0 |
+| `en8_france_1280` | 12 | **0,477** | 05t_budget_turn0 / Payroll Tax | 157 px | 0 |
+| `en8_italy_1280` | 10 | **0,477** | 05t_budget_turn0 / Payroll Tax | 157 px | 0 |
+| `en8_poland_1280` | 10 | **0,477** | 05t_budget_turn0 / Payroll Tax | 157 px | 0 |
+| `en8_usa_1280` | 12 | **0,477** | 05t_budget_turn0 / Payroll Tax | 157 px | 0 |
+| `en8_int1280` | 6 | **0,701** | 05t_budget_turn0 / Carbon Tax | 151 px | 1 - the edge guard's standing e7a line (NOT FLUSH at zero margin, §478), not the reach |
+| `en8_int2560` | 6 | **0,238** | 05t_budget_turn0 / Carbon Tax | 445 px | 0 |
+| `en8r_sweden_1280` | 36 | **0,735** | 05r_budget_rest / Carbon Tax | 151 px | 0 |
+| `en8r_sweden_2560` | 36 | **0,250** | 05r_budget_rest / Carbon Tax | 445 px | 0 |
+| `en8r_germany_1280` | 36 | **0,477** | 05t_budget_turn0 / Payroll Tax | 157 px | 0 |
+
+Sweden's row reads **0,735** at 1280 (was 22 054 in units: 3 330 ÷ 151 px ÷ 30) and **0,250** at 2560 (was 7 494); the worst Budget row on any of the twelve films is **0,735** (`en8_sweden_1280`, 05r_budget_rest / Carbon Tax). **No film trips the guard.** The interrupt film at 1280 keeps the exit its record named (§478: the e7a dead-space line, the finding that stays a finding); at 2560 it exits 0 for the first time since EN-4c. The sweep filmed the row's reach but not its caption - the Carbon Tax row sits below the tax tab's fold - so the driver gains one frame, `05a_budget_tax_rows`, the tab scrolled to its last rows (the 05b precedent, P5-B5) and the scroll put back: `en8r_sweden_1280` shows *"BY 30 SEK/t"* under the name, `en8r_sweden_2560` *"BY 15 SEK/t"* (the wider track carries a half-grain), `en8r_germany_1280` *"BY 5 EUR/t"* - read off the frames, the ladder unshortened.
+
+**What is unchanged, stated.** The rate's readout (§260), the statute's carry (§471), the political scale of a change (`TaxLine.PointsOf` - the same hundredth of the ceiling, which is why the grain is that hundredth), every rate-in-points row's step and reach, the trajectory suite (a UI pass: the dump reads no slider). The Policy Web's node panel draws the same row through the same call and inherits the grain; its reach is reported, never judged, as before.
+
+**Bar:** `bar396_en8` **38 of 38** on the tree this record reads - residue 10 (EN-8 ✅ by its marker), 12 ratchets tight.

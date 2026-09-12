@@ -47,7 +47,10 @@ namespace PoliSim.UI
         public const float SnapStep = 0.1f;
 
         /// <summary>P2-1.3: a whole unit - the bound the film holds every Budget row to. A row whose track covers more
-        /// than one unit per pixel cannot rest on every whole value, however it snaps.</summary>
+        /// than one unit per pixel cannot rest on every whole value, however it snaps. EN-8 (2026-09-12): the unit is the
+        /// row's own GRAIN - a whole point for a rate in points, the ceiling's hundredth for a rate per tonne
+        /// (<see cref="PoliSim.Data.TaxLine.DialGrain"/>) - so the reach is recorded in grains and the bound holds every row
+        /// to the same sentence: every resting value is reachable without overshoot.</summary>
         public const float WholeUnit = 1f;
 
         /// <summary>The step a track can carry: as fine as its pixels allow and never finer than what a whole unit needs
@@ -60,8 +63,8 @@ namespace PoliSim.UI
             return WholeUnit;
         }
 
-        /// <summary>P2-1.3: the range each pixel of a drawn track covers, per row name, recorded only while the capture
-        /// harness is armed. A whole point is reachable without overshoot when this does not exceed <see cref="SnapStep"/>;
+        /// <summary>P2-1.3: the range each pixel of a drawn track covers - in the row's GRAIN since EN-8 (a point, or a
+        /// per-tonne row's ceiling's hundredth) - per row name, recorded only while the capture harness is armed. A whole point is reachable without overshoot when this does not exceed <see cref="SnapStep"/>;
         /// the driver reads the worst at its exit.</summary>
         public static readonly System.Collections.Generic.Dictionary<string, float> ReachByRow = new System.Collections.Generic.Dictionary<string, float>();
 
@@ -179,7 +182,9 @@ namespace PoliSim.UI
             float ghost = float.NaN,
             string figureSecondLine = null,
             string nameSecondLine = null,
-            Color? nameSecondLineInk = null)
+            Color? nameSecondLineInk = null,
+            float grain = 1f,
+            string grainUnit = null)
         {
             // Board 9b (D15 item 2, 2026-09-05): `ghost` is the value the line stood at when the year opened - a third tick in TextMuted where the
             // driver's move can be read against the standing tick (ghost → standing the driver's, standing → knob the player's); drawn only when the
@@ -188,6 +193,14 @@ namespace PoliSim.UI
             float scale = Scale(nameStyle);
             Columns(row, nameStyle, NameNeed(name, nameStyle), TrailingNeed(trailingText, figureStyle), FigureNeed(standingText, draftText, figureStyle),
                 out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
+
+            // EN-8 (2026-09-12): the reach and the step in the row's own GRAIN - 1 for a rate in points (every row before
+            // this), the ceiling's hundredth for a rate per tonne - so a carbon row in kronor per tonne rests on and reaches
+            // every grain the way a rate row reaches every point. Computed here, before the name cell, because a coarse
+            // step is printed under the name (below) and the snap (further down) reads the same figure.
+            grain = grain > 0f ? grain : 1f;
+            float unitsPerPixel = trackRect.width > 0f ? (max - min) / trackRect.width / grain : float.PositiveInfinity;
+            float step = StepFor(unitsPerPixel) * grain;
 
             Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
 
@@ -215,14 +228,24 @@ namespace PoliSim.UI
             }
 
             DrawNameCell(nameRect, name, nameStyle, rowInk);
-            if (!string.IsNullOrEmpty(nameSecondLine) && Event.current.type == EventType.Repaint)
+            // EN-8: a row whose grain is coarser than one prints its step under its name in the caption face - the second line
+            // 9d gave the spending rows - so a coarse step is stated on the row, never discovered by dragging. A caller's own
+            // second line wins; the step line is drawn only where the caller named the unit it is in. "BY 30 SEK/t": the first
+            // proof frame printed "30 SEK/t STEPS" and the 1280 name cell (73 px) took the ladder down to the bare number, so
+            // the line is cut to what that cell holds - the verb, the step, the unit.
+            string secondLine = nameSecondLine;
+            if (string.IsNullOrEmpty(secondLine) && grain > 1f && !string.IsNullOrEmpty(grainUnit))
+            {
+                secondLine = "BY " + step.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " " + grainUnit;
+            }
+            if (!string.IsNullOrEmpty(secondLine) && Event.current.type == EventType.Repaint)
             {
                 // 9d (D15 item 4): 6a's second line under the dial name - on a spending row PORTFOLIO · EFF ×r in the caption face, Bad below unity,
                 // TextMuted otherwise; a line without a ministry keeps its class word. Drawn in the name cell's lower half; no rect moves.
                 GUIStyle captionStyle = EndCaptionStyle(nameStyle);
                 // The resort ladder, measured: the full caption if it fits the name cell, else its last segment (after the final " · "), else its first word -
                 // a caption is shortened, never clipped (the first films: the class word overflowed the 1280 name cell, and a guessed line height was short at 2560).
-                string text = nameSecondLine;
+                string text = secondLine;
                 if (captionStyle.CalcSize(new GUIContent(text)).x > nameRect.width)
                 {
                     int dot = text.LastIndexOf(" · ", System.StringComparison.Ordinal);
@@ -252,8 +275,7 @@ namespace PoliSim.UI
             // P2-1.3 (2026-09-02): FINER STEP - the draft snaps to SnapStep, so a whole point is a value the
             // thumb can rest on rather than one it passes through; and the film records the range each pixel
             // covers, which is the reach a whole point needs (the driver fails a run where it exceeds the snap).
-            float unitsPerPixel = trackRect.width > 0f ? (max - min) / trackRect.width : float.PositiveInfinity;
-            float step = StepFor(unitsPerPixel);
+            // EN-8: `unitsPerPixel` and `step` are computed above the name cell, in the row's grain.
             if (interactive && !Mathf.Approximately(result, draft))
             {
                 result = Mathf.Clamp(Mathf.Round(result / step) * step, min, max);

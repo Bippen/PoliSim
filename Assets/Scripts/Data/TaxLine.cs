@@ -131,6 +131,20 @@ namespace PoliSim.Data
         /// <summary>True for the one instrument whose rate is a price per tonne rather than a percentage of a base.</summary>
         public bool IsPerTonne => Type == TaxType.CarbonTax;
 
+        /// <summary>
+        /// EN-8 (2026-09-12): **the dial's grain, in the row's own unit** - the value the slider's step is built from and the
+        /// unit the film's reach guard holds the track to. A rate in points rests on every whole point (grain 1, as every
+        /// ledger row always has). A rate PER TONNE runs to a ceiling in the thousands of the country's currency (§466: the
+        /// book's dollars per tonne converted; Sweden's 3 150 kr, carried by the level since §471), so a whole krona per
+        /// tonne was never a resting value one track could reach - CL-1's interrupt film read 21 units per pixel at 1280
+        /// against a bound of one (§478). The grain is the ceiling's hundredth rounded to ten and never under ten: the
+        /// resolution a 0–100 rate row has, in the row's own unit, printed on the row (LedgerRow's second line).
+        /// ⚠ A grain is a STEP, not a rounding of the rate: a statute's figure (the koldioxidskatt's indexed rate) stands at
+        /// its own value between decisions; only the player's DRAFT moves in grains. It follows the ceiling, so it moves
+        /// with the level the way the ceiling does.
+        /// </summary>
+        public float DialGrain => IsPerTonne ? Math.Max(10f, (float)(Math.Round(MaxRate / 100f / 10f) * 10f)) : 1f;
+
         /// <summary>A rate change in the POLITICAL scale the approval and stance terms read: a percentage tax's points as they are; the carbon tax's currency-per-tonne change as the per cent of its dial's range it spans (EN-4c) - the scale the dial had when it ran 0–100 without a unit, kept so the terms' authored sensitivities keep their meaning.</summary>
         public float PointsOf(float delta) => IsPerTonne ? delta * 100f / Math.Max(1e-6f, MaxRate) : delta;
 

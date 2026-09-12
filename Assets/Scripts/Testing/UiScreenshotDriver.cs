@@ -562,6 +562,14 @@ namespace PoliSim.Testing
                             AssertLedgerGeometryStable(restGeometry, stem);
                             if (had) { taxInputs[TaxType.IncomeTax] = before; } else { taxInputs.Remove(TaxType.IncomeTax); }
                             yield return Settle();
+                            // EN-8 (2026-09-13): the same tab scrolled to its last rows, so the Carbon Tax row - the one row whose step is
+                            // coarser than a point - is on film with its step printed under its name (the 9d second line; "BY 30 SEK/t"
+                            // on Sweden's row at 1280). The 05b precedent (P5-B5): scrolled, filmed, the scroll put back.
+                            ScrollBy(controller, 2000f);
+                            yield return Settle();
+                            yield return Capture(stem + "_rows");
+                            ScrollBy(controller, 0f);
+                            yield return Settle();
                         }
                         else
                         {
@@ -1681,6 +1689,8 @@ namespace PoliSim.Testing
             _finishCalled = true;
             // P2-1.3 (2026-09-02): every ledger row the film drew recorded the range a pixel of its track covers;
             // a whole point is reachable without overshoot only when that does not exceed the row's snap.
+            // EN-8 (2026-09-12): the range is recorded in the row's GRAIN (a point; a per-tonne row's ceiling's hundredth,
+            // TaxLine.DialGrain), so the Carbon Tax row in kronor per tonne is judged on the resolution its own row prints.
             if (_reachByCapture.Count > 0)
             {
                 string worstName = null;
@@ -1700,13 +1710,13 @@ namespace PoliSim.Testing
                 string worstGeometry = worstAnyName != null && PoliSim.UI.LedgerRow.GeometryByRow.TryGetValue(worstAnyName, out (Rect Name, Rect Track, Rect Figure, Rect Trailing) g)
                     ? $" Track {g.Track.width:0} px, name {g.Name.width:0}, figure {g.Figure.width:0}, trailing {g.Trailing.width:0}, row {g.Name.x:0}..{g.Trailing.xMax:0}."
                     : string.Empty;   // P5-1: the worst row's widths, so a floor is measured rather than guessed
-                Debug.Log($"SHOT: slider reach, every ledger row - worst {worstAny:0.000} units per pixel ({worstAnyName}).{worstGeometry}");
+                Debug.Log($"SHOT: slider reach, every ledger row - worst {worstAny:0.000} grains per pixel ({worstAnyName}; a grain is a point, or a per-tonne row's ceiling's hundredth).{worstGeometry}");
                 bool reachable = worstName == null || worst <= PoliSim.UI.LedgerRow.WholeUnit;
-                string reach = $"SHOT: slider reach on the Budget - {_reachByCapture.Count} ledger row(s) drawn in the captured frames, worst Budget row {worst:0.000} units per pixel ({worstName}) against the whole-unit bound of {PoliSim.UI.LedgerRow.WholeUnit:0.###} (the step adapts to the track: {PoliSim.UI.LedgerRow.StepFor(worst):0.###} on that row).";
+                string reach = $"SHOT: slider reach on the Budget - {_reachByCapture.Count} ledger row(s) drawn in the captured frames, worst Budget row {worst:0.000} grains per pixel ({worstName}) against the whole-grain bound of {PoliSim.UI.LedgerRow.WholeUnit:0.###} (the step adapts to the track: {PoliSim.UI.LedgerRow.StepFor(worst):0.###} grain on that row; a grain is a point, or a per-tonne row's ceiling's hundredth).";
                 if (reachable) { Debug.Log(reach); }
                 else
                 {
-                    Debug.LogError(reach + " A whole point is NOT reachable without overshoot on that row - lengthen the track.");
+                    Debug.LogError(reach + " A whole grain is NOT reachable without overshoot on that row - lengthen the track or coarsen the row's grain.");
                     exitCode = System.Math.Max(exitCode, 1);
                 }
             }
