@@ -1,0 +1,131 @@
+geo,country,age_class,mean,median,unit,concept,source
+DE,Germany,TOTAL,31856,27619,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_LT6,30373,26757,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y6-11,31125,26911,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y12-17,30227,25990,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_LT16,30685,26677,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y16-24,28176,25221,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y16-64,33642,29536,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_GE16,32075,27874,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_LT18,30575,26594,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y18-24,27816,25056,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y18-64,33762,29667,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_GE18,32129,27915,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y25-49,33775,29766,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y25-54,34196,30000,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y50-64,35726,30908,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y55-64,35509,30600,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_LT60,32986,28821,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_GE60,29044,25052,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_LT65,33052,28851,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_GE65,27378,24000,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_LT75,32462,28170,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+DE,Germany,Y_GE75,26316,23700,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,TOTAL,29297,25557,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_LT6,28933,24872,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y6-11,26786,23210,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y12-17,26063,21953,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_LT16,27350,23497,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y16-24,25851,22926,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y16-64,30366,26625,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_GE16,29732,25985,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_LT18,27170,23353,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y18-24,25862,23177,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y18-64,30556,26832,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_GE18,29852,26112,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y25-49,30566,27325,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y25-54,30667,27291,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y50-64,32438,27480,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y55-64,33103,27652,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_LT60,29269,25851,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_GE60,29369,24993,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_LT65,29667,25927,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_GE65,27929,24470,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_LT75,29500,25732,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+FR,France,Y_GE75,27442,24172,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,TOTAL,23651,20605,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_LT6,21758,18654,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y6-11,21097,18402,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y12-17,19945,18058,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_LT16,21114,18590,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y16-24,21180,18914,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y16-64,23815,21093,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_GE16,24037,20964,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_LT18,20812,18369,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y18-24,21858,19755,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y18-64,23980,21218,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_GE18,24160,21088,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y25-49,23414,20866,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y25-54,23490,20964,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y50-64,25330,22383,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y55-64,26142,23029,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_LT60,22960,20352,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_GE60,25146,21238,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_LT65,23344,20581,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_GE65,24606,20646,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_LT75,23846,20800,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+IT,Italy,Y_GE75,22294,19477,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,TOTAL,12964,11921,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_LT6,13271,11986,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y6-11,12512,11703,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y12-17,11814,10732,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_LT16,12619,11617,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y16-24,11712,10751,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y16-64,13423,12416,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_GE16,13031,11983,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_LT18,12487,11444,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y18-24,11800,10915,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y18-64,13489,12470,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_GE18,13070,12038,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y25-49,13888,12708,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y25-54,13885,12690,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y50-64,13320,12473,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y55-64,13027,12378,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_LT60,13289,12266,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_GE60,12070,11107,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_LT65,13258,12259,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_GE65,11815,10906,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_LT75,13095,12036,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+PL,Poland,Y_GE75,11436,10740,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,TOTAL,29338,26915,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_LT6,26530,24950,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y6-11,27100,25632,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y12-17,27360,25672,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_LT16,27010,25368,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y16-24,25931,23833,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y16-64,30501,28826,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_GE16,29859,27328,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_LT18,27016,25368,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y18-24,25568,23337,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y18-64,30647,28981,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_GE18,29948,27383,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y25-49,29243,27900,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y25-54,30050,28618,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y50-64,35258,33909,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y55-64,35841,34422,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_LT60,29205,27501,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_GE60,29710,25252,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_LT65,29697,27870,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_GE65,27957,23729,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_LT75,29827,27829,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+SE,Sweden,Y_GE75,25211,21356,EUR,equivalised net income per person (household income over the OECD-modified scale),Eurostat ilc_di03 2024 (income year 2023) sex T
+US,United States,Y_GE15,63510,42220,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y15-64,66830,46490,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y15-24,24210,16960,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y25-34,61860,48000,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y25-29,54430,43780,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y30-34,68650,51900,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y35-44,78410,56070,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y35-39,77540,55560,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y40-44,79320,56760,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y45-54,84060,58160,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y45-49,84370,57570,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y50-54,83750,58670,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y55-64,74080,50460,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y55-59,77940,52700,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y60-64,70410,46810,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y_GE65,52740,32060,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y65-74,57400,35220,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y65-69,59370,36000,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y70-74,55020,34300,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races
+US,United States,Y_GE75,46110,29090,USD,total money income per person 15+ with income (not equivalised; the household table HINC-02 is the other concept),US Census CPS ASEC 2024 PINC-01 (income year 2023) both sexes all races

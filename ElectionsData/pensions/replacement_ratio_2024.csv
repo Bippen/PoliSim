@@ -1,0 +1,6 @@
+geo,country,aggregate_replacement_ratio,source
+DE,Germany,0.49,Eurostat ilc_pnp3 2024 sex T (the median individual gross pension of 65-74 over the median gross earnings of 50-59)
+FR,France,0.61,Eurostat ilc_pnp3 2024 sex T (the median individual gross pension of 65-74 over the median gross earnings of 50-59)
+IT,Italy,0.79,Eurostat ilc_pnp3 2024 sex T (the median individual gross pension of 65-74 over the median gross earnings of 50-59)
+PL,Poland,0.6,Eurostat ilc_pnp3 2024 sex T (the median individual gross pension of 65-74 over the median gross earnings of 50-59)
+SE,Sweden,0.59,Eurostat ilc_pnp3 2024 sex T (the median individual gross pension of 65-74 over the median gross earnings of 50-59)

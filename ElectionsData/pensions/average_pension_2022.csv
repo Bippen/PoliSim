@@ -1,0 +1,11 @@
+geo,country,pension_type,expenditure_mio_eur,beneficiaries,average_eur_per_year,source
+DE,Germany,old-age pensions (old-age + anticipated + partial),364356.91,19860928,18345,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts OLD+AOLD+PART) over spr_pns_ben (persons, sex T, all schemes), 2022"
+DE,Germany,all pension types,462194.48,23507818,19661,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts TOTAL) over spr_pns_ben (persons, sex T, all schemes), 2022"
+FR,France,old-age pensions (old-age + anticipated + partial),324367.32,17040084,19036,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts OLD+AOLD+PART) over spr_pns_ben (persons, sex T, all schemes), 2022"
+FR,France,all pension types,393151.24,20556173,19126,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts TOTAL) over spr_pns_ben (persons, sex T, all schemes), 2022"
+IT,Italy,old-age pensions (old-age + anticipated + partial),249397.00,12426492,20070,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts OLD+AOLD (PART not reported)) over spr_pns_ben (persons, sex T, all schemes), 2022"
+IT,Italy,all pension types,309254.00,15694751,19704,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts TOTAL) over spr_pns_ben (persons, sex T, all schemes), 2022"
+PL,Poland,old-age pensions (old-age + anticipated + partial),53916.32,8143281,6621,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts OLD+AOLD+PART) over spr_pns_ben (persons, sex T, all schemes), 2022"
+PL,Poland,all pension types,66799.09,10505618,6358,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts TOTAL) over spr_pns_ben (persons, sex T, all schemes), 2022"
+SE,Sweden,old-age pensions (old-age + anticipated + partial),54271.18,2520552,21531,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts OLD+AOLD (PART not reported)) over spr_pns_ben (persons, sex T, all schemes), 2022"
+SE,Sweden,all pension types,58792.05,2818737,20858,"Eurostat spr_exp_pens (MIO_EUR, means-tested and not; parts TOTAL) over spr_pns_ben (persons, sex T, all schemes), 2022"
