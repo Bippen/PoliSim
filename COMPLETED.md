@@ -26664,3 +26664,36 @@ France, Italy and the USA have no exchange fold on this machine (`energy_hydro_p
 
 
 **Bar:** `bar385_en6`, `bar386_en6`, `bar387_en6`, `bar389_en6` **38 of 38** on the code at each of its four film passes (`MetaTextCheck` clean over the new plate file with its allowlist row); the twelve films 61 captured, 0 failed each; `bar391_en6` **38 of 38** on the tree this record reads - **residue 11** (EN-6 closed by its marker), 12 ratchets tight, `DocumentClaimCheck` 0 MEMBER_GONE and 0 WRONG_OWNER. A UI pass: no diagnostic touched, no family.
+
+## 482. THE STANDING LIST, CYCLED AFTER EN-6 — the residue at eleven, the energy chain's page landed and its ask next, the page's own sheets marked (2026-09-12)
+
+**The ruling:** *"the standing list after each landed pass"* (§474).
+
+**Ratchets.** `RatchetSlackCheck` on this pass's bars: **12 reported, 12 tight** (`bar391_en6`) - `UNWIRED` 2 and `UNREACHABLE` 2 as named at §476, `DeadStateCheck` 0 and 0 (the page's cache fields are read every draw), `PlayerReachabilityCheck` 0 (the page is a section of a reachable page, not a takeover), `StatIconCoverageCheck` at its count (no node declared - S-D20's), `AreaIconCoverageCheck` clean (no new area - the rail cell is D20's to ask), `MojibakeCheck.SUSPECT_RUNS` 1 at its measured false positive, every other ceiling 0 at 0. The cheap bar is **38** and the simulation group **47**: a UI pass, no diagnostic touched, no family (the plan's row: films only).
+
+**The residue** reads **11** (`bar391_en6`: EN-6 ✅ by its marker): F4-2..F4-4, PN-1..PN-3, EN-7, EN-8, CL-2..CL-4. The exclusions stay 19 by name. **What moved in the rows' readiness:** S-D20 (the one Design ask, D20) has real parts to carry now - a built page to compose against, the D19 way - and is the next pass; EN-7 (stage 5) waits on S-E1's landing only for its page strip, which exists.
+
+**The deferral register, re-read literally after EN-6:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 .. T-7 | as at §480 | **NOT FIRED** (T-3 FIRED, Elias's) - a page reads the state and the clearing; it writes nothing |
+| **T-8 EN-3c** | *stage 5's fleet reads its inframarginal rent; the three folds fetched first* | **NOT FIRED - and the page now PRINTS the rent** (the system-cost bridge's last step, "RENT, PRINTED - NOTHING READS IT"), which is the defence clause drawn: a printed rent is not a read rent |
+| F-1 .. F-5, F-7 | the elections' deferred set | **NOT FIRED** - as at §478 |
+| D-3's trigger | fired §479 | **FIRED**; F4-2 sequenced |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The errands, the calendar, the documents.** E-3 and E-6 open as before. **K-1 is tomorrow, 13 September 2026**; K-2 on 29 January 2027. `ls *.md` returns **23**, `Tools/` holds **15**; the three numbered constants read their listed values; one runtime file added (`Assets/Scripts/UI/GameController.Energy.cs`), one editor allowlist row (`MetaTextCheck`), five histories. Save format **10**, untouched by this pass.
+
+**This cycle's self-ruled sheets, marked** (§481's):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §481 | the page as four plates under the Sectors page, instruments first, no map | **AS RULED** (DS-4b, §452) |
+| §481 | the rule on the price in TWO forms - the merit order for the five, the reservoir dispatch for Sweden's zones - each saying which priced the block | **HOLDS, and it is a finding**: Sweden's zones carry no fossil offer, and a row that assumed the merit order drew "OIL SETS IT" over a reservoir price on its first film |
+| §481 | the two ledgers as bridges on the election night's painter, the geometry generalised BENEATH the ledger's `Build` | **HOLDS** - one painter, two books; the night's bridge arithmetically unchanged (its Build composes the same steps and calls the same arithmetic) |
+| §481 | the stat nodes deferred to S-D20 with the inventory's regeneration | **HOLDS** - `D18InventoryCheck` holds the block to the repo; declaring apart from regenerating would fail the bar for no coverage |
+| §481 | the stacks in cents beside the book's figure | **HOLDS** - the parts must read; the book's unit stays the caption's |
+| §481 | the clearing cached per turn and country, the other five's clearings for the peer ticks | **HOLDS** - a merit order per frame was the alternative |
+
+**Bar:** `bar391_en6` **38 of 38** on the tree this record reads - residue 11, 12 ratchets tight; `bar392_shelf` **38 of 38** after this record was written from that reading (residue 11, 12 tight), the two checks that read the documents among the thirty-eight.
