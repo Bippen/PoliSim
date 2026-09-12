@@ -26542,3 +26542,39 @@ France, Italy and the USA have no exchange fold on this machine (`energy_hydro_p
 
 
 **Bar:** `bar377_cl1` **38 of 38** on the code (the compile and the cheap suite; residue 13, the record not yet written); `bar378_cl1_sim` **47 of 47** (the trajectory suite verified by digest, 0 failed); `harness_cl1_clock2` **19 of 19**, `harness_cl1_ai` (digest `854ed57927e38bc2`, unchanged) and `harness_cl1_action` ALL ASSERTIONS PASS; the films `cl1c_int1280` and `cl1c_int2560` 12 captured, 0 failed; `bar379_cl1` **38 of 38** on the tree this record reads - **residue 12** (CL-1 closed by its marker), 12 ratchets tight, `DocumentClaimCheck` 0 MEMBER_GONE and 0 WRONG_OWNER.
+
+## 478. THE STANDING LIST, CYCLED AFTER CL-1 — the residue at twelve then thirteen, one finding the film surfaced opened as a row, the first sheet of the campaign chain marked (2026-09-12)
+
+**The ruling:** *"the standing list after each landed pass"* (§474).
+
+**Ratchets.** `RatchetSlackCheck` on this pass's bars: **12 reported, 12 tight** (`bar379_cl1`) - `UNWIRED` 2 (`Rosatellum.cs` entire; `TacticalVoting.cs` a wired type with its two entry points uncalled), `UNREACHABLE` 2 (`ElectoralCollege.cs`, `Rosatellum.cs`), `DeadStateCheck` 0 and 0 (every field CL-1 added is read - the record's `StartDate`, write-only since C-R4b, is read by the strip now), `PlayerReachabilityCheck` 0 (the run-up's HQ is reached through the rail's cell, the same branch as the campaign's), `MojibakeCheck.SUSPECT_RUNS` 1 at its measured false positive, every other ceiling 0 at 0; no floor moved and no ceiling was raised. The cheap bar is **38** checks and the simulation group **47**; no check was added - `CampaignClockHarness` grew a section (R-N5's form), the film grew three frames.
+
+**The residue** reads **12** on `bar379_cl1` (CL-1 ✅ by its marker) and **13** after this record: one row opened, below. The rows: F4-1..F4-4, PN-1..PN-3, EN-6, EN-7, CL-2..CL-4 - the plan's, by design - and EN-8. The exclusions stay 19 by name.
+
+**The finding the film surfaced, opened as a row - EN-8.** The interrupt film's `05t_budget_turn0` frame trips the slider-reach guard on the Budget's Carbon Tax row: **21 028 units per pixel at 1280 and 7 145 at 2560 against the whole-unit bound** (`cl1c_int1280`, `cl1c_int2560`). The same frame read 0.635 on 2026-09-10 (`d19_played_1280`, before EN-4c). The cause is EN-4c's unit: the carbon rate is kr per tonne since §466, its ceiling the level-carried real figure (§471), so the row's one track spans a range in thousands of kronor - a whole unit is unreachable by construction, which is the guard's finding, and it is not the slider's reading (§260 built the readout so the value is legible) but its STEP. Not a CL-1 defect (the pass touched no ledger row), not fixed here (a slider's step under a per-tonne unit is the Budget row's own family - the step adapts to the track, and a track of thousands needs a coarser step or a log scale, a choice with a caption), and not left silent: **EN-8** opened in the register with the two figures, the film labels and the guard's own words. The interrupt film's runner exits 1 at both widths on it; the driver's own count is 12 captured, 0 failed.
+
+**The deferral register, re-read literally after CL-1:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 .. T-8 | as at §476 | **NOT FIRED** (T-3 FIRED, Elias's) - CL-1 touched no scenario, capital, trade, coupling or energy fold |
+| **F-1** staff progression | *a campaign the player actually runs* | **NOT FIRED, one step nearer**: the run-up is reachable and the eight verbs are on a player's screen - three of them refused with their reason; the trigger still needs Elias to play (S-C3, CL-3). ⚠ A hire in the run-up is a role and a salary, as W-B5 built it; §37's progression stays deferred by this row |
+| F-2..F-5, F-7 | the elections' deferred set | **NOT FIRED** - as at §476 |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The errands, the calendar, the documents.** E-3 and E-6 open as before; nothing new owed. **K-1 is tomorrow, 13 September 2026**; K-2 on 29 January 2027. `ls *.md` returns **23**, `Tools/` holds **15**; the three numbered constants read their listed values (`PersuasionPerCompatibilityPoint` 40 000, `DefaultPreCampaignWeeks` 26 - **on a player's screen for the first time**, entry 5 of the play-calibration list is judgeable, `MoneyScale` 500 000); one runtime file added (`Assets/Scripts/Elections/PreCampaignRun.cs`), named in the CL-1 row and §477 - `CLAUDE.md` carries no campaign paragraph to extend, and none is invented for it. Save format **9**.
+
+**This cycle's self-ruled sheets, marked** (§477's; §474's are Elias's and are not re-marked):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §477 | the run-up as its own stepper for the player's party, not a longer calendar on `CampaignRun`; the AI parties' run-up IS their staging | **HOLDS on the harness's own proof** (7a: the digest byte-identical with an idle run-up) - and it is the only form under which "every harness digest holds" could be asserted rather than hoped |
+| §477 | four verbs refused with their reason on the screen (no donor model; no price; no seam) rather than priced with an invented figure | **HOLDS** - the standing rule against invented constants, applied to a chip; strikeable one verb at a time when a source or a seam lands (a donor model is C-D2's bill) |
+| §477 | the office's opening paid on the campaign's day 0 by `Begin`, not in the run-up | **HOLDS** - D-1 (c)'s affordability rule then applies to the player's plan exactly as to the cast's; paying twice was the alternative |
+| §477 | the run-up's poll conducted on the prior with its own stream | **HOLDS** - the electorate has not moved before the campaign; a stream of its own is what keeps 7a true |
+| §477 | the run-up opens WITHOUT a clock hold; the campaign's opening interrupt stands | **HOLDS, strikeable** - the run-up is governing time with the HQ available; whether its first day deserves an announcement is a play question for S-C3's sheet |
+| §477 | the run-up's queue under NEGATIVE days on the one record | **HOLDS** - the campaign's days stay 0-based and every existing reader is untouched; a second queue would have been a second replay |
+| §477 | an office queued with no region goes to the largest electorate without one | **HOLDS until S-C2** - CL-2's picker replaces the rule, as the campaign's one-region rule is replaced |
+| §477 | the "last count" poll when none is bought | **HOLDS** - the screen never reads a null poll, and the caption says what it is |
+
+**Bar:** `bar379_cl1` **38 of 38** on the tree this record reads - residue 12, 12 ratchets tight; `bar380_shelf` **38 of 38** after this record was written from that reading - **residue 13** (EN-8 open by its marker), 12 tight, the two checks that read the documents among the thirty-eight.
