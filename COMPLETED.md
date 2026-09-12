@@ -26609,3 +26609,36 @@ France, Italy and the USA have no exchange fold on this machine (`energy_hydro_p
 **Save format** 9 → 10: the pyramid's shape changed (four fields); a save from before is refused by the gate with its message, as every bump is.
 
 **Bar:** `bar381_f41` **38 of 38** on the code (the compile, `GeneratedCatalogCheck` holding the new catalog to its file; residue 13, the record not yet written); `bar382_f41_sim` **47 of 47** with the substrate diagnostic's income section printing the six countries; `traj_f2i` dumped and six diffs 76 of 76 byte-identical; `bar383_f41` **38 of 38** on the tree this record reads - **residue 12** (F4-1 closed by its marker), 12 ratchets tight, `DocumentClaimCheck` 0 MEMBER_GONE and 0 WRONG_OWNER.
+
+## 480. THE STANDING LIST, CYCLED AFTER F4-1 — the residue at twelve, the tax chain's trigger fired and its first family next, the readout's own sheets marked (2026-09-12)
+
+**The ruling:** *"the standing list after each landed pass"* (§474).
+
+**Ratchets.** `RatchetSlackCheck` on this pass's bars: **12 reported, 12 tight** (`bar381_f41`, `bar383_f41`) - `UNWIRED` 2 and `UNREACHABLE` 2 as named at §476 (the generated `CohortIncomeSeeds` is named by `WorldFactory` from its first commit, so no ceiling was asked to move for it - the projections catalog's precedent, kept), `DeadStateCheck` 0 and 0 (the four fields the pyramid gained are public and read by the diagnostic and the clone), `ConstantProvenanceCheck` 0 (the catalog carries no authored constant - the one number in it that is not the publisher's is the 15-year floor, which is the substrate's own band edge), `MojibakeCheck.SUSPECT_RUNS` 1 at its measured false positive, every other ceiling 0 at 0. The cheap bar is **38** and the simulation group **47** - R-N5 held: the income section lives in `CohortSubstrateDiagnostic`, and `GeneratedCatalogCheck` grew a clause, not a check.
+
+**The residue** reads **12** (`bar383_f41`: F4-1 ✅ by its marker): F4-2..F4-4, PN-1..PN-3, EN-6, EN-7, EN-8, CL-2..CL-4. The exclusions stay 19 by name. **What moved in the rows' readiness:** F4-2 reads *"F4-1 landed §479 - the dimension is on every pyramid"* and is the tax chain's next pass - S3a, the plan's first BASELINE family (B1); the tax spec-let's D-3 trigger reads FIRED, with the sex dimension still absent and said so.
+
+**The deferral register, re-read literally after F4-1:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 .. T-8 | as at §478 | **NOT FIRED** (T-3 FIRED, Elias's) - a readout on the pyramid touches no scenario, capital, trade, coupling or energy fold; the six diffs say so in 456 series |
+| F-1 .. F-5, F-7 | the elections' deferred set | **NOT FIRED** - as at §478 |
+| **D-3's trigger** (the tax spec-let's own) | *the cohort substrate carries an income dimension* | **FIRED at §479** - stated on the spec-let; the row it unblocks is F4-2, sequenced |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The errands, the calendar, the documents.** E-3 and E-6 open as before. **K-1 is tomorrow, 13 September 2026**; K-2 on 29 January 2027. `ls *.md` returns **23**, `Tools/` holds **15**; the three numbered constants read their listed values; two files added - `Assets/Editor/CohortIncomeCatalogGenerator.cs` and the generated `Assets/Scripts/Data/Generated/CohortIncomeSeeds.cs` (its digest line names the file it was built from). Save format **10** - two bumps in one evening (CL-1's 9, F4-1's 10), each for a shape change and each stated.
+
+**This cycle's self-ruled sheets, marked** (§479's):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §479 | the income section as a section of the substrate diagnostic, not a `CohortIncomeDiagnostic` the plan named | **HOLDS** - R-N5's form (a section, not a check); the plan named a shape, the rule names the home |
+| §479 | a cohort inside a wider published band carries the band's shape, mapped by the cohort's midpoint; 65–74 carries the 65+ aggregate's | **HOLDS, stated** - the source's resolution; a finer one is an authored figure; strikeable if Eurostat publishes 65–74 |
+| §479 | 0 and 0 below 15 (no dimension), not NaN | **HOLDS** - a JSON save carries NaN as text; `HasIncome` reads the zero |
+| §479 | the catalog emitted into the RUNTIME assembly in its first commit | **HOLDS** - its consumer (`WorldFactory`) exists in the same commit; the projections catalog waited only because its first consumer was editor-side |
+| §479 | every comparison against a publisher a FINDING (the mixture's mean, its Gini, the deciles, SCB's and the CPS's tables); what fails is the catalog not being what it says | **HOLDS on the ruling** - DS-2 (c) and DS-2b; the Gini's −5.3 (Sweden), −4.1 (Italy), −3.4 (Poland) are the log-normal's tail, printed, and the next reader (F4-2) reads the shape knowing it |
+| §479 | the SCB open class at its lower bound, the mean a floor | **HOLDS** - a midpoint for an open class is an authored figure; a floor says what it is |
+| §479 | save format 10 | **AS THE RULE SAYS** - a shape change bumps |
+
+**Bar:** `bar383_f41` **38 of 38** on the tree this record reads - residue 12, 12 ratchets tight; `bar384_shelf` **38 of 38** after this record was written from that reading (residue 12, 12 tight), the two checks that read the documents among the thirty-eight.
