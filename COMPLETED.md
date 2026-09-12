@@ -26476,3 +26476,37 @@ France, Italy and the USA have no exchange fold on this machine (`energy_hydro_p
 **The plan's S1 row** is marked landed; F4-1, PN-1 and PN-2 point at their folders. S-C1 (CL-1) is next, as ruled.
 
 **Bar:** `bar375_s1` (cheap) - **38 of 38 clean**; `ResidueCheck` REPORTED residue 13, unchanged (the plan's startable rows, by design); `DocumentClaimCheck` 0 MEMBER_GONE and 0 WRONG_OWNER against the record and the two amended documents; `GeneratedCatalogCheck` every digest held (the new folders declare no catalog yet); `MojibakeCheck` clean over the two new perl tools; `RatchetSlackCheck` 12 reported, 12 tight, `MojibakeCheck.SUSPECT_RUNS` 1 at its measured false positive. No family: nothing in the runtime reads a byte of it.
+
+## 476. THE STANDING LIST, CYCLED AFTER S1 — the residue at the plan's thirteen, one exclusion added, the calendar one day from K-1 (2026-09-12)
+
+**The ruling:** *"the standing list after each landed pass"* (§474).
+
+**Ratchets.** `RatchetSlackCheck` on this pass's bar: **12 reported, 12 tight** (`bar375_s1`) - `UNWIRED` 2 (`Rosatellum.cs` entire; `TacticalVoting.cs` a wired type with its two entry points uncalled) and `UNREACHABLE` 2 (`ElectoralCollege.cs`, `Rosatellum.cs`) - the two classes named apart from now on, per §475's correction; `MojibakeCheck.SUSPECT_RUNS` 1 at its measured false positive, every other ceiling 0 at 0; no floor moved and no ceiling was raised. The cheap bar is **38** checks and the simulation group **47**, as at §473; no check was added - S1 added two tools under `Tools/` (scanned by `MojibakeCheck`, clean) and no code.
+
+**The residue** reads **13** (`ResidueCheck`, `bar375_s1`: 13 open item(s) a session could start (429 file(s) scanned)) - F4-1..F4-4, PN-1..PN-3, EN-6, EN-7, CL-1..CL-4: the plan's rows, by design, as §474 said they would; S1 is a session of the plan and not a row, so landing it moves nothing in the count. **What S1 moved instead is the rows' readiness:** F4-1, PN-1 and PN-2 read *"Depends on S1's sourcing"* no longer - their sources are on disk by digest. The next to move the count are S-C1 (CL-1, proceeds now), S2 (F4-1) and S-E1 (EN-6). **The exclusions are 19 by name** - 18 as at §473 plus **OP-1** (DS-6, §474: losing office → opposition or the end of the run, a sheet answerable only after a campaign is played) - all Elias's, Design's or the calendar's.
+
+**The deferral register, re-read literally, every trigger against the repo of 2026-09-12 after S1:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1, T-2 | *a scenario epilogue that reads wrong* / *a capital stock, or I/GDP cyclical* | **NOT FIRED** - as at §473; S1 touched no scenario and no capital |
+| T-3 | *the level output gap* | **FIRED** and OWNER ELIAS since §376, unchanged |
+| T-4..T-7 | pass 6's set; the coupling queue | **NOT FIRED** - no ruling given |
+| T-8 EN-3c | *stage 5's fleet reads its rent; the three folds fetched first; a fetched fold is not a read rent* | **NOT FIRED** - `EnergyData/` holds the ten files it held at §472 and no EPEX FR, PUN or EIA fold; EN-7 (stage 5) is a row, not a build |
+| **F-1** staff progression | *a campaign the player actually runs* | **NOT FIRED, and the row now says why honestly** (§475): satisfiable since §205–§207, unobserved - it fires at S-C3 when Elias plays, and S-C1 is what makes the pre-campaign part of that play |
+| F-2..F-5, F-7 | the elections' deferred set | **NOT FIRED** - as at §469; DS-9 (§474) put D-22 after the first play, which F-4's *"Italy playable"* and F-3's *"France playable"* stand behind |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The errands, the calendar, the documents.** E-3 and E-6 open as before; nothing new is owed - S1's fetches were the session's own and needed no paste (⚠ the four code articles that refuse this machine are BILLED in the pensions README, not errands: each is stated through the authority that publishes it, and no fetch of Elias's is asked). **K-1 is tomorrow, 13 September 2026** - the seed refresh from Sweden's real result; the plan's S-C3 names it as the seed the first play states. K-2 on 29 January 2027 with its defence clause. `ls *.md` returns **23** (`POLISIM_BACKLOG_PLAN.md` joined at §474), `Tools/` holds **15** (`income_prep.pl`, `pension_prep.pl` joined at §475), the three numbered constants read their listed values (`PersuasionPerCompatibilityPoint` 40 000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500 000); no runtime file was added since §473. Two data folders joined `ElectionsData/` (`income/`, `pensions/`) with READMEs; nothing in `Assets/` names them yet, which is what "nothing reads it" means and what `GeneratedCatalogCheck` will hold once something does.
+
+**This cycle's self-ruled sheets, marked** (the records since §473; §474's are Elias's and are not re-marked):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §475 | the pension payment's gate as TWO sourced figures - Eurostat's aggregate replacement ratio and ESSPROS's average benefit per beneficiary (expenditure over beneficiaries) - in place of the plan's "`spr_exp_pens` / SCB's average pension"; SCB's own figure not fetched, ESSPROS carrying Sweden | **HOLDS** - the ESSPROS figure is `spr_exp_pens` as the plan named it, made a per-head figure by its sister table; PN-2 picks which of old-age-only or every-type its line is before it gates |
+| §475 | a part a country does not report (the partial pension, Italy and Sweden) named in the row and left out, never filled | **HOLDS** - the nobody-transcribes rule applied to a gap |
+| §475 | the two income concepts (Eurostat equivalised household, CPS person) carried side by side with the concept on every row; the SHAPE read from each, the levels never compared | **HOLDS** - F4-1 reads mean ÷ median per band, which is concept-invariant to first order; strikeable if F4-1's Gini gate says otherwise |
+| §475 | the four refusing code articles stated through their publishing authorities, BILLED | **HOLDS** - the row's sentence is the authority's, not memory's |
+| §475 | the plan corrected on its own line rather than the shelf's gloss | **HOLDS** - the check's print is the instrument; a document that disagrees with it is the thing to fix |
+
+**Bar:** `bar375_s1` **38 of 38** on the tree this record reads - the residue 13, 12 ratchets tight; `bar376_shelf` **38 of 38** after this record was written from that reading (residue 13, 12 tight), the two checks that read the documents among the thirty-eight.
