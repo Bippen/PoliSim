@@ -224,6 +224,7 @@ namespace PoliSim.EditorTools
 
             foreach (string zipPath in Directory.GetFiles(projectRoot, "*.zip", SearchOption.TopDirectoryOnly))
             {
+                if (IsOutboundPaste(zipPath)) { continue; }
                 rootZips++;
                 rootGaps += Report(zipPath, assetsByName, superseded, isAtRoot: true);
             }
@@ -241,6 +242,7 @@ namespace PoliSim.EditorTools
             {
                 foreach (string zipPath in Directory.GetFiles(archive, "*.zip", SearchOption.TopDirectoryOnly))
                 {
+                    if (IsOutboundPaste(zipPath)) { continue; }
                     archiveGaps += Report(zipPath, assetsByName, superseded, isAtRoot: false);
                 }
             }
@@ -252,6 +254,31 @@ namespace PoliSim.EditorTools
             Debug.Log($"=== Delivered assets: {rootGaps} missing from {rootZips} root zip(s), " +
                 $"{archiveGaps} missing from archived packs ===");
             CheckExit.Finish(rootGaps + archiveGaps == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// 2026-09-13 (§486): a zip that carries `SEND_PACKAGE.md` at its root is OUR paste to Design - the D20 bundle cut as one
+        /// archive at Elias's ask, films and screenshots the manifest lists - not a delivery from Design, and nothing in it is an
+        /// asset the game loads. It is skipped by that one signature and said so; every other zip is a delivered pack and is judged.
+        /// </summary>
+        private static bool IsOutboundPaste(string zipPath)
+        {
+            try
+            {
+                using (ZipArchive zip = ZipFile.OpenRead(zipPath))
+                {
+                    foreach (ZipArchiveEntry entry in zip.Entries)
+                    {
+                        if (entry.FullName == "SEND_PACKAGE.md")
+                        {
+                            Debug.Log($"  {Path.GetFileName(zipPath)}: an OUTBOUND paste bundle (SEND_PACKAGE.md at its root) - not a delivery, not judged.");
+                            return true;
+                        }
+                    }
+                }
+            }
+            catch (Exception e) { Debug.Log($"  {Path.GetFileName(zipPath)}: could not be opened to read its root ({e.Message}) - judged as a delivery."); }
+            return false;
         }
 
         /// <summary>How many files under `Assets/` are byte-identical to this zip entry. ⚠ Compares the

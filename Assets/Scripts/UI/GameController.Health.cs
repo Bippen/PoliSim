@@ -42,14 +42,18 @@ namespace PoliSim.UI
             public readonly string UnitGlyph;
             /// <summary>D16 §3.6: `◇` DATED (this row's vintage is older than its family's) or `‡` TWO DEFINITIONS, after the name. Null draws none.</summary>
             public readonly string Flag;
+            /// <summary>Board 15a (2026-09-13): a DISTRIBUTION row drawn on a SHARED scale - its parts fill the lane only to their sum's share of
+            /// <see cref="High"/>, so two stacks passed the same High read against each other (the larger fills the lane, the smaller stops short).
+            /// False (every row before 15a) scales the parts to their own sum, the lane always full.</summary>
+            public readonly bool ScaleToHigh;
 
             public PlateRow(string name, string unit, string source, string figure, PlateBand band, float low, float high, float own, float[] peers,
                 bool lowerIsBetter, string[] reachedBy, IReadOnlyList<float> series, string[] honesty, bool couplingDraft, string absentReason = null,
-                float[] segments = null, string[] segmentLabels = null, string unitGlyph = null, string flag = null)
+                float[] segments = null, string[] segmentLabels = null, string unitGlyph = null, string flag = null, bool scaleToHigh = false)
             {
                 Name = name; Unit = unit; Source = source; Figure = figure; Band = band; Low = low; High = high; Own = own; Peers = peers;
                 LowerIsBetter = lowerIsBetter; ReachedBy = reachedBy; Series = series; Honesty = honesty; CouplingDraft = couplingDraft; AbsentReason = absentReason;
-                Segments = segments; SegmentLabels = segmentLabels; UnitGlyph = unitGlyph; Flag = flag;
+                Segments = segments; SegmentLabels = segmentLabels; UnitGlyph = unitGlyph; Flag = flag; ScaleToHigh = scaleToHigh;
             }
         }
 
@@ -479,10 +483,12 @@ namespace PoliSim.UI
                 float sum = 0f;
                 if (row.Segments != null) { foreach (float v in row.Segments) { sum += Mathf.Max(0f, v); } }
                 sum = Mathf.Max(0.0001f, sum);
+                // 15a: a row on a shared scale fills the lane only to its sum's share of High; every other row fills it
+                float denom = row.ScaleToHigh ? Mathf.Max(sum, row.High) : sum;
                 float sx = axisX;
                 for (int i = 0; row.Segments != null && i < row.Segments.Length; i++)
                 {
-                    float w = axisW * Mathf.Max(0f, row.Segments[i]) / sum;
+                    float w = axisW * Mathf.Max(0f, row.Segments[i]) / denom;
                     int n = row.Segments.Length;
                     Color tint = n <= 3 ? (i == 0 ? PoliSimTheme.Tint(ink, 0.35f) : i == 1 ? PoliSimTheme.Tint(ink, 0.65f) : ink) : PoliSimTheme.Tint(ink, 0.3f + 0.7f * i / Mathf.Max(1, n - 1));
                     PoliSimTheme.Rule(new Rect(sx, cell.y + 4f * u, w, 5f * u), tint);
@@ -497,7 +503,7 @@ namespace PoliSim.UI
                 float lx = axisX;
                 for (int i = 0; row.Segments != null && i < row.Segments.Length; i++)
                 {
-                    float w = axisW * Mathf.Max(0f, row.Segments[i]) / sum;
+                    float w = axisW * Mathf.Max(0f, row.Segments[i]) / denom;
                     string figureText = row.Segments[i].ToString(row.High < 20f ? "0.0" : "0", CultureInfo.InvariantCulture);
                     if (segment.CalcSize(new GUIContent(figureText)).x + 2f <= w) { PoliSimWidgets.MeasuredLabel(new Rect(lx, segY, w, segH), figureText, segment); }
                     lx += w;
