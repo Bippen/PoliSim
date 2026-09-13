@@ -27056,3 +27056,59 @@ The reading: a family that lands the drag lands the drag's compounding; a hundre
 **What is not built here, sequenced.** The row (F4-4, board 15b) rides on this: the curve sampled from `TaxSchedule.MarginalRate`, the average effective rate at the mean income from `AverageEffectiveRateAtMeanIncome`, the sub-rows' per-bracket dials with the bill that carries them. F4-3 retires Sweden's blended 52. Italy waits on E-6. The cohort incomes' concept (equivalised disposable) is F4-1's finding, unchanged.
 
 **Bar:** `bar406_f42` **38 of 38** and `bar407_f42_sim` **48 of 48** (the trajectory suite verified by digest; `TaxScheduleDiagnostic` and the re-formed `LaborTaxParticipationDiagnostic` among them) on the code; `traj_f4s2` dumped at two seeds and three horizons and diffed against `traj_f2i` six times, 8 of 76 fields byte-identical per file (the ones nothing moves), the rest the family's; `bar410_f42` **38 of 38** on the tree this record reads - residue 10 (F4-2 ✅ by its marker), 12 ratchets tight.
+
+## 489. PN-1, THE STATUTE LAYER — the pension age as its law moves it: one rule per country with its paragraph and its dated path, verified against the CSV it was read from; the indexed class two countries and Sweden's path published six years out, which sharpens 15c's third mark; the driver deferred as the BASELINE half (2026-09-13)
+
+**The ruling** (2026-09-13): *"PN-1 stops at the same boundary: statute layer built and verified against the CSV, the pensions driver deferred as the BASELINE half. Record the indexed class as two countries, and that SFB 2 kap. 10 c § publishes the riktålder six years out - an indexed rule has a short dated path, which sharpens 15c's third-mark ask."* DS-3 (§474): *statute + dial, on CarbonRateStatute's precedent*; DS-3b, DS-3c, DS-3d as ruled and untouched here (the fraction inside a band, potential's seam and the Budget home are the driver's, deferred with it).
+
+**What was built** (`Assets/Scripts/Data/PensionAgeStatute.cs`, new; `Assets/Editor/PensionAgeDiagnostic.cs`, new, in the simulation group; one sentence on the Policy Web's Social Security node, `PolicyWebRenderer`):
+
+| country | the rule | the paragraph | the path as the model reads it | dated to |
+|---|---|---|---|---|
+| Sweden | INDEXED - the riktålder | SFB (2010:110) 2 kap. 10 a–10 c §§ (lag 2019:649): 65 + two thirds of the gain in remaining life expectancy at 65 since 1994, rounded to whole years, in force the sixth year after its calculation | 67 from 2026 (Pensionsmyndigheten: 67 through 2032) | **2032** - 10 c §'s six years; 2033 is a date with no figure |
+| Italy | INDEXED - ISTAT every two years | DL 201/2011 art. 24 | 67 through 2026, 67 y 1 m in 2027, 67 y 3 m in 2028 (INPS) | **2028** - then a date with no figure |
+| Germany | SCHEDULED | SGB VI § 35 · § 235 Abs. 2 | 66 y 4 m in 2026 (the 1960 cohort), 66 y 6 m 2027, 66 y 8 m 2028, 66 y 10 m 2029, 67 from 2031 (the 1964 cohort) | known throughout |
+| France | SCHEDULED | CSS L161-17-2 (loi 2023-270) | 62 y 9 m in 2026, 63 from 2028, 63 y 3 m 2029, 63 y 6 m 2030, 63 y 9 m 2031, 64 from 2033 (the 1969 cohort) | known throughout |
+| USA | SCHEDULED | Social Security Act § 216(l), 42 U.S.C. 416(l)(1) | 66 y 10 m in 2026 (born 1959), 67 from 2027 (born 1960 and later) | known throughout |
+| Poland | FIXED | ustawa o emeryturach i rentach z FUS art. 24 ust. 1 | 65 (men; the women's 60 is the deviation the one-age model states) | known throughout |
+
+**The age in force in a year, derived and stated.** A scheduled statute writes its table by BIRTH YEAR; the model reads the age in force in a calendar year as the age of the cohort whose retirement falls in it (born b, retiring at a, in force from b + a). Germany's steps between the two the CSV quotes (65 for 1946, 66 y 10 m for 1963) are the statute's own table, read off the file this pass: *1959 14 66 2 · 1960 16 66 4 · 1961 18 66 6 · 1962 20 66 8 · 1963 22 66 10* (`de_sgb6_235.html`). France's and the USA's cohorts are the CSV's own sentences. **The indexed class is two countries**, Sweden and Italy, and no other - the diagnostic asserts it. **An indexed rule has a short dated path**: Socialförsäkringsbalken 2 kap. 10 c § makes a year's riktålder apply the sixth year after its calculation, so the figure is published six years out and no further - Sweden's path is dated to 2032, Italy's to 2028, and a year beyond the horizon reads as a date with no figure (`PensionAgeStatute.IsDated`). That is what board 15c's third mark draws: on an indexed row the later ticks carry a year and a "?" - the year is known, the figure is not - and the ask is sharpened: Sweden's ticks are dated for six years, not "recalculated" in general.
+
+**Verified against the CSV** (`PensionAgeDiagnostic`, in the simulation group): `ElectionsData/pensions/statutory_ages.csv` is parsed at run time and per country the rule's kind, its headline figure and its source file must be the CSV's; the indexed class must be Sweden and Italy alone; every path must end where its statute says (Germany 67 in 2031, France 64 in 2033, the USA 67 in 2027, Poland flat, Sweden dated to 2032, Italy to 2028); the age in force after the path is the last figure; Germany 2026 reads 66 y 4 m and France 62 y 9 m. Its print:
+
+```
+=== PENSION AGE (PN-1): the statute layer against its CSV - the rule kinds, the headline figures, the indexed class of two, the dated paths ===
+    1. THE RULES AGAINST THE CSV - kind and headline figure per country
+    Sweden   LifeExpectancyIndexed  headline 67       CSV: LifeExpectancyIndexed  67   · Socialförsäkringsbalken (2010:110) 2 kap. 10 a–10 c §§ (lag 2019:649) · se_sfb_2010_110.html · se_pensionsmyndigheten_riktalder.html
+    Germany  Scheduled              headline 67       CSV: Scheduled              67   · SGB VI § 35 · § 235 Abs. 2 · de_sgb6_35.html · de_sgb6_235.html
+    France   Scheduled              headline 64       CSV: Scheduled              64   · code de la sécurité sociale L161-17-2 (loi n° 2023-270) · fr_service_public_F14043.html
+    Italy    LifeExpectancyIndexed  headline 67       CSV: LifeExpectancyIndexed  67   · decreto-legge 201/2011 art. 24 (the ISTAT adjustment every two years) · it_inps_2027_2028.html
+    Poland   Fixed                  headline 65       CSV: Fixed                  65   · ustawa o emeryturach i rentach z FUS art. 24 ust. 1 (65 for men; the women's 60 is the deviation the one-age model states) · pl_arslege_art24.html
+    USA      Scheduled              headline 67       CSV: Scheduled              67   · Social Security Act § 216(l), 42 U.S.C. 416(l)(1) · us_42usc416.html
+    2. THE INDEXED CLASS - the countries whose statute recalculates the age from life expectancy
+    2 of 6: Sweden, Italy
+    3. THE DATED PATHS - an indexed rule's horizon, a schedule's end year
+    Sweden   path ends 2026 at 67 · dated to 2032 · SFB 2 kap. 10 c §: in force the sixth year after its calculation - dated six years out
+    Germany  path ends 2031 at 67 · known throughout · § 235 Abs. 2: the 1964 cohort reaches 67 in 2031
+    France   path ends 2033 at 64 · known throughout · L161-17-2: the 1969 cohort reaches 64 in 2033
+    Italy    path ends 2028 at 67 y 3 m · dated to 2028 · art. 24 DL 201/2011: 67 y 3 m in 2028, the last figure INPS has published
+    Poland   path ends 2026 at 65 · known throughout · art. 24 ust. 1: fixed
+    USA      path ends 2027 at 67 · known throughout · 416(l)(1): those born 1960 attain 67 in 2027
+    4. THE PATH, 2026 TO 2036 - the age in force each year; ? where the statute has published no figure for the year
+    year    Sweden      Germany     France      Italy       Poland      USA         
+    2026    67          66 y 4 m    62 y 9 m    67          65          66 y 10 m   
+    2027    67          66 y 6 m    62 y 9 m    67 y 1 m    65          67          
+    2028    67          66 y 8 m    63          67 y 3 m    65          67          
+    2029    67          66 y 10 m   63 y 3 m    67 y 3 m ?  65          67          
+    2030    67          66 y 10 m   63 y 6 m    67 y 3 m ?  65          67          
+    2031    67          67          63 y 9 m    67 y 3 m ?  65          67          
+    2032    67          67          63 y 9 m    67 y 3 m ?  65          67          
+    2033    67 ?        67          64          67 y 3 m ?  65          67          
+    2034    67 ?        67          64          67 y 3 m ?  65          67          
+    2035    67 ?        67          64          67 y 3 m ?  65          67          
+    2036    67 ?        67          64          67 y 3 m ?  65          67
+```
+
+**Deferred, by ruling, and stated.** The pensions DRIVER is the BASELINE half - the age reaching the headcount the pension line multiplies (`SpendingDrivers`), the participation rates of the bands the age crosses, the dependency ratio, potential's 20–64 seam (DS-3c) - and with it the DIAL: a lever that reaches nothing in the model is a dead lever, so DS-3's "statute + dial" lands its statute here and its dial with the driver. Nothing in the model reads the age: the trajectory is a readout by construction, and the dumps say so - `traj_pn1` against `traj_f4s2` byte-identical across every field at every seed and horizon (s777 t100: 76 of 76 · s777 t500: 76 of 76 · s777 t1000: 76 of 76 · s424242 t100: 76 of 76 · s424242 t500: 76 of 76 · s424242 t1000: 76 of 76). The one runtime reader is the Policy Web's Social Security node, which prints the statute's sentence as the carbon rate's node prints its (EN-4e): *"Between decisions the pension age moves as the law moves it: …"*. Board 15c rides on this layer and draws the path; its knob is the statute's figure until the driver gives it a lever.
+
+**Bar:** `bar408_pn1` **38 of 38** and `bar409_pn1_sim` **49 of 49** on the code (`PensionAgeDiagnostic` among them, its first run failing on a semicolon - the CSV names a rule's two files in one cell, the check now reads each); `traj_pn1` dumped at two seeds and three horizons and diffed against `traj_f4s2` six times, 76 of 76 fields byte-identical each time; `bar413_pn1` **38 of 38** on the tree this record reads - residue 10, 12 ratchets tight.

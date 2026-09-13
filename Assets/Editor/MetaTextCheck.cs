@@ -100,6 +100,10 @@ namespace PoliSim.EditorTools
             ("TaxSchedule.cs", "EStG"),
             ("TaxSchedule.cs", "Rev. Proc."),
             ("TaxSchedule.cs", "Skatteverket"),
+            // PN-1 (2026-09-13): the pension statutes' paragraphs - "2 kap. 10 a–10 c §§", "SGB VI § 35", "§ 216(l)" - the laws' own names on the node's sentence
+            ("PensionAgeStatute.cs", "Socialförsäkringsbalken"),
+            ("PensionAgeStatute.cs", "SGB VI"),
+            ("PensionAgeStatute.cs", "Social Security Act"),
             ("GameController.ImmigrationPoverty.cs", "SOURCED"),   // P5-C6 (2026-09-06)
             // P4-B1 (2026-09-04): the range-caption catalog is [AUTHORED] game fiction - the desk's own deadpan on every
             // dial's ten bands - and is exempt BY NAME so its satire is not read as meta-text; RangeCaptionCheck holds it

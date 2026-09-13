@@ -1383,6 +1383,12 @@ namespace PoliSim.UI
                 lines.Add($"Current amount: {UiFormat.Money(line.Amount, MoneyUnit.Billions)} ({(line.IsMandatory ? "Mandatory" : "Discretionary")})"
                           + (folded ? $" - this country's {DisplayName.Spaced(line.Category.ToString())} line, folded onto this node" : ""));
                 lines.Add($"Approval multiplier: {GetApprovalMultiplier(category):F1}x (Mandatory baseline is {MacroSystem.MandatorySpendingApprovalMultiplier:F1}x, the strongest)");
+                if (category == SpendingCategory.SocialSecurity && PensionAgeStatute.Has(country.Id))
+                {
+                    // PN-1 (2026-09-13): the pension age's statute, one rule per country - the sentence the carbon rate's node prints for its statute (EN-4e);
+                    // the age reaches nothing in the model yet (the driver is the BASELINE half, deferred by ruling) - it is printed as the law's own figure
+                    lines.Add("Between decisions the pension age moves as the law moves it: " + PensionAgeStatute.Caption(country.Id));
+                }
                 return true;
             }
             lines.Add("No SpendingLine of this category exists for this country.");
