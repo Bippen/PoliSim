@@ -34,6 +34,8 @@ namespace PoliSim.Data
     {
         /// <summary>Requested absolute Rate per TaxType - only meaningful for a TaxType the country currently has implemented (see this class's own doc comment).</summary>
         public Dictionary<TaxType, float> TaxLines = new Dictionary<TaxType, float>();
+        /// <summary>F4-4 (2026-09-13): the requested rate per sub-row of a statute's schedule (`TaxLine.BracketRates`' shape) - −1 where the statute's figure stands; only the income tax carries one.</summary>
+        public Dictionary<TaxType, float[]> BracketRates = new Dictionary<TaxType, float[]>();
         public Dictionary<SpendingCategory, float> SpendingPercentChanges = new Dictionary<SpendingCategory, float>();
         /// <summary>P5-B2: nominal amounts the bill sets outright, and pins it toggles - see PolicyDecision's fields of the same names.</summary>
         public Dictionary<SpendingCategory, float> SpendingNominalTargets = new Dictionary<SpendingCategory, float>();

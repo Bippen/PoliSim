@@ -106,6 +106,8 @@ namespace PoliSim.Persistence
     public class UiDraftState
     {
         public Dictionary<TaxType, float> TaxRateInputs = new Dictionary<TaxType, float>();
+        /// <summary>F4-4 (2026-09-13): the income tax's sub-row drafts by sub-row index - the rate without the lever's shift.</summary>
+        public Dictionary<int, float> BracketRateInputs = new Dictionary<int, float>();
         public Dictionary<WelfareProgramType, float> WelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();
         public Dictionary<SectorType, float> SectorSubsidyInputs = new Dictionary<SectorType, float>();
         public Dictionary<SectorType, float> SectorRegulationInputs = new Dictionary<SectorType, float>();

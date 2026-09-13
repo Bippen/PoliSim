@@ -1335,6 +1335,11 @@ namespace PoliSim.UI
                     return true;
                 }
                 lines.Add(line.IsImplemented ? $"Current rate: {line.Rate:F1}%" : "Not currently implemented.");
+                if (line.Type == TaxType.IncomeTax && TaxSchedule.Responds(country.Id))
+                {
+                    // F4-2 / F4-4 (2026-09-13): the statute's shape behind the lever - what a point of the dial does is the statute's answer
+                    lines.Add($"The statute: {TaxSchedule.KindWord(TaxSchedule.Of(country.Id).Kind)} - the dial shifts every taxed band by its points; the yield is {TaxSchedule.YieldNow(country, line, line.Rate):F1}% of income against {country.IncomeTaxSeedAer:F1}% at the seed, the effective rate {TaxBases.EffectiveRate(country, line):F1}%.");
+                }
                 lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised this year");
                 lines.Add($"Revenue base: ~{TaxBaseTable.BaseShareOfGdp(country.Id, line.Type) * 100f:F0}% of GDP at the seed, following {TaxBases.Name(TaxBases.Of(line.Type))} (x{TaxBases.DriverRatio(country, line.Type):F3} today) x rate (feeds Budget/DebtToGdp)");
                 return true;

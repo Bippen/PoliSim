@@ -127,9 +127,35 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>F4-4: the line's rates after a bill's figures - the bill's where it carries one (clamped 0–100), the standing one elsewhere, −1 the statute's.</summary>
+        public static float[] MergedBracketRates(float[] standing, float[] requested)
+        {
+            int n = Mathf.Max(standing?.Length ?? 0, requested?.Length ?? 0);
+            var merged = new float[n];
+            for (int i = 0; i < n; i++)
+            {
+                float s = standing != null && i < standing.Length ? standing[i] : -1f;
+                float r = requested != null && i < requested.Length ? requested[i] : -1f;
+                merged[i] = r >= 0f ? Mathf.Clamp(r, 0f, 100f) : s;
+            }
+            return merged;
+        }
+
+        /// <summary>F4-4: the effective rate's move a bill's sub-row figures would make, in points - what they add to the bill's direction and its redistribution reading.</summary>
+        private static float BracketRateMove(Country country, BudgetBill bill, TaxLine standing)
+        {
+            if (standing == null || !standing.IsImplemented || !bill.BracketRates.TryGetValue(standing.Type, out float[] requested) || requested == null) { return 0f; }
+            TaxLine hypothetical = standing.Clone();
+            hypothetical.BracketRates = MergedBracketRates(standing.BracketRates, requested);
+            if (bill.TaxLines.TryGetValue(standing.Type, out float lever)) { hypothetical.Rate = Mathf.Clamp(lever, standing.MinRate, standing.MaxRate); }
+            float leverAlone = bill.TaxLines.TryGetValue(standing.Type, out float l2) ? TaxSchedule.EffectiveRate(country, standing, Mathf.Clamp(l2, standing.MinRate, standing.MaxRate)) : TaxBases.EffectiveRate(country, standing);
+            return TaxBases.EffectiveRate(country, hypothetical) - leverAlone;
+        }
+
         public static float GetBillDirection(Country country, BudgetBill bill)
         {
             float direction = 0f;
+            foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates) { direction += BracketRateMove(country, bill, FindTaxLine(country, kvp.Key)); }   // F4-4: the sub-rows' points
 
             foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
             {
@@ -422,6 +448,18 @@ namespace PoliSim.Simulation
                 }
 
                 line.Rate = clampedRate;
+            }
+
+            // F4-4 (2026-09-13): the sub-rows' own rates - a band's, a ramp's end, the flat layer's - the bill's figure where it carries one, the standing
+            // figure elsewhere; the hike they add is the effective rate's move in points (the statute's yield, TaxBases.EffectiveRate), the lever's scale
+            foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates)
+            {
+                TaxLine line = FindTaxLine(country, kvp.Key);
+                if (line == null || !line.IsImplemented || kvp.Value == null) { continue; }
+                float before = TaxBases.EffectiveRate(country, line);
+                line.BracketRates = MergedBracketRates(line.BracketRates, kvp.Value);
+                float after = TaxBases.EffectiveRate(country, line);
+                if (after > before) { totalHike += after - before; }
             }
 
             foreach (KeyValuePair<WelfareProgramType, float> kvp in bill.WelfarePrograms)
@@ -825,6 +863,7 @@ namespace PoliSim.Simulation
         public static BillConcern GetBudgetBillConcern(Country country, BudgetBill bill)
         {
             var concern = new BillConcern { Direction = GetBillDirection(country, bill) };
+            foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates) { concern.Add(StanceAxis.Redistribution, -BracketRateMove(country, bill, FindTaxLine(country, kvp.Key))); }   // F4-4: the sub-rows' points
             foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
             {
                 TaxLine standing = FindTaxLine(country, kvp.Key);

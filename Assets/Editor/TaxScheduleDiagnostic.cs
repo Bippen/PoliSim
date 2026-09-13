@@ -136,6 +136,34 @@ namespace PoliSim.EditorTools
                 if (id == CountryId.Italy && Math.Abs(ratio - 1.0) > 1e-9) { ok = false; Debug.LogError($"TAX SCHEDULE: Italy's ratio moved to {ratio} - a billed shape must stay one."); }
             }
 
+            // (7) F4-4: Germany's ramps against § 32a's own arithmetic at every zone end, and one sub-row moved on its own dial
+            sb.Append("\n    7. THE SUB-ROWS (F4-4) - Germany's ramps against the formula at the zone ends; Poland's upper band raised 32 → 37 on its own dial\n");
+            {
+                Country de = world.GetCountry(CountryId.Germany);
+                TaxSchedule.Statute s = TaxSchedule.Of(CountryId.Germany);
+                foreach (double x in new[] { s.FormulaZone2End, s.FormulaZone3End, s.FormulaZone4End, 400000.0 })
+                {
+                    double ramps = TaxSchedule.Tax(s, x, 0, 1.0), formula = TaxSchedule.StatuteFormulaTax(s, x);
+                    sb.Append(F("    Germany  at {0:N0} EUR: the ramps {1:N2}, § 32a {2:N2} - {3:+0.00;-0.00} EUR\n", x, ramps, formula, ramps - formula));
+                    if (Math.Abs(ramps - formula) > 1.0) { ok = false; Debug.LogError($"TAX SCHEDULE: Germany's ramps read {ramps:F2} at {x:N0} against the formula's {formula:F2} - more than a euro apart."); }
+                }
+                List<TaxSchedule.SubRow> rows = TaxSchedule.SubRows(s);
+                sb.Append(F("    Germany  sub-rows: {0} - ramp ends DERIVED {1:F2} % and {2:F2} %, the entry rate {3:F0} %\n", rows.Count, TaxSchedule.DeRampEnd2, TaxSchedule.DeRampEnd3, TaxSchedule.DeEntryRate));
+                Country pl = world.GetCountry(CountryId.Poland);
+                TaxLine line = Find(pl);
+                List<TaxSchedule.SubRow> plRows = TaxSchedule.SubRows(TaxSchedule.Of(CountryId.Poland));
+                int upper = -1; for (int i = 0; i < plRows.Count; i++) { if (plRows[i].Kind == TaxSubRowKind.Band && Math.Abs(plRows[i].StatuteRate - 32) < 1e-6) { upper = i; } }
+                var overrides = new float[plRows.Count]; for (int i = 0; i < overrides.Length; i++) { overrides[i] = -1f; }
+                overrides[upper] = 37f;
+                TaxLine moved = line.Clone(); moved.BracketRates = overrides;
+                double ratioMoved = TaxSchedule.YieldRatio(pl, moved, moved.Rate);
+                double shareAbove = TaxSchedule.IncomeShareAbove(pl, 120000, 1.0);
+                sb.Append(F("    Poland   the 32 % band at 37 %: ratio {0:F4} (the band's share of income {1:P2} × 5 points over a seed yield of {2:F2} % says {3:F4}); the lever untouched, the other band untouched\n", ratioMoved, shareAbove, pl.IncomeTaxSeedAer, 1 + 5 * shareAbove / pl.IncomeTaxSeedAer));
+                if (ratioMoved <= 1.0 || Math.Abs(ratioMoved - (1 + 5 * shareAbove / pl.IncomeTaxSeedAer)) > 0.01) { ok = false; Debug.LogError($"TAX SCHEDULE: Poland's upper band at 37 reads a ratio of {ratioMoved:F4} - not the band's own share."); }
+                double untouched = TaxSchedule.YieldRatio(pl, line, line.Rate);
+                if (Math.Abs(untouched - 1.0) > 1e-9) { ok = false; Debug.LogError($"TAX SCHEDULE: the standing line moved after a clone's sub-row was set ({untouched})."); }
+            }
+
             Debug.Log(sb.ToString());
             Debug.Log(ok ? "=== TaxScheduleDiagnostic: ALL ASSERTIONS PASS ===" : "=== TaxScheduleDiagnostic: FAILED ===");
             CheckExit.Finish(ok ? 0 : 1);

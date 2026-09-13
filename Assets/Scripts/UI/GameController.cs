@@ -184,6 +184,11 @@ namespace PoliSim.UI
         // cleared by ResetPolicyInputs after Advance Turn: once committed, TaxLine.Rate already
         // equals whatever was in here, so the slider keeps showing the same (now-persisted) value.
         private readonly Dictionary<TaxType, float> _taxRateInputs = new Dictionary<TaxType, float>();
+        /// <summary>F4-4 / board 15b (2026-09-13): the income tax's SUB-ROW drafts, by sub-row index (`TaxSchedule.SubRows`) - the rate the player set on a band's
+        /// own dial, without the lever's shift; they ride the same budget bill as the lever (`BudgetBill.BracketRates`) and are kept the way `_taxRateInputs` is.</summary>
+        private readonly Dictionary<int, float> _bracketRateInputs = new Dictionary<int, float>();
+        /// <summary>The income tax row's track rect on the last Repaint - the schedule rows beneath it lay their curve in the same column.</summary>
+        private Rect _incomeTaxTrackRect;
         // EN-4e (§471): the carbon line's rate the turn started with. Its statute moves the rate at the boundary (CarbonRateStatute), so a committed
         // carbon draft - equal to this figure - is dropped after the turn and the slider follows the law; a changed, unpassed draft survives.
         private float? _carbonRateBeforeTurn;
@@ -892,6 +897,7 @@ namespace PoliSim.UI
             return new UiDraftState
             {
                 TaxRateInputs = new Dictionary<TaxType, float>(_taxRateInputs),
+                BracketRateInputs = new Dictionary<int, float>(_bracketRateInputs),
                 WelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>(_welfareGenerosityInputs),
                 SectorSubsidyInputs = new Dictionary<SectorType, float>(_sectorSubsidyInputs),
                 SectorRegulationInputs = new Dictionary<SectorType, float>(_sectorRegulationInputs),
@@ -946,6 +952,8 @@ namespace PoliSim.UI
         private void RestoreUiDrafts(UiDraftState ui)
         {
             _taxRateInputs.Clear();
+            _bracketRateInputs.Clear();
+            if (ui.BracketRateInputs != null) { foreach (KeyValuePair<int, float> kvp in ui.BracketRateInputs) { _bracketRateInputs[kvp.Key] = kvp.Value; } }
             _welfareGenerosityInputs.Clear();
             _sectorSubsidyInputs.Clear();
             _sectorRegulationInputs.Clear();
@@ -10169,6 +10177,14 @@ namespace PoliSim.UI
                     continue;
                 }
                 bill.TaxLines[taxLine.Type] = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+                // F4-4: the sub-rows' figures ride the same bill - the drafted rate per sub-row, −1 where the statute's (or the standing own) figure stands
+                if (taxLine.Type == TaxType.IncomeTax && _bracketRateInputs.Count > 0 && TaxSchedule.Responds(_playerCountry.Id))
+                {
+                    int count = TaxSchedule.SubRows(TaxSchedule.Of(_playerCountry.Id)).Count;
+                    var requested = new float[count];
+                    for (int i = 0; i < count; i++) { requested[i] = _bracketRateInputs.TryGetValue(i, out float draft) ? draft : -1f; }
+                    bill.BracketRates[taxLine.Type] = requested;
+                }
             }
 
             foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
@@ -10325,6 +10341,7 @@ namespace PoliSim.UI
             // by this TaxType's own TaxTypeRateRanges - not a small per-turn delta, so a meaningful
             // policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one bill.
             float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+            bool schedule = taxLine.Type == TaxType.IncomeTax && TaxSchedule.Of(_playerCountry.Id).Kind != TaxScheduleKind.Flat;   // F4-4: the statute's row and its sub-rows
 
             // Only an IMPLEMENTED line can have a pending rate change - an unimplemented one is changed
             // by its own standalone Implement/Remove bill above, not by this slider, so it must never
@@ -10360,11 +10377,187 @@ namespace PoliSim.UI
                 // EN-8 (2026-09-12): a per-tonne rate steps and reaches in its ceiling's hundredth (TaxLine.DialGrain), a rate in
                 // points in whole points as before; the coarse step is printed under the name in the currency the figure uses.
                 grain: taxLine.DialGrain,
-                grainUnit: taxLine.IsPerTonne ? EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t" : null);
+                grainUnit: taxLine.IsPerTonne ? EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t" : null,
+                // F4-4 / board 15b: the statute's kind under the name; the average effective rate at the mean income under the figure - the row's one figure
+                figureSecondLine: schedule ? "AER " + TaxSchedule.AverageEffectiveRateAtMeanIncome(_playerCountry, taxLine, draftRate).ToString("0.0", CultureInfo.InvariantCulture) : null,   // the average effective rate at the mean income, in the figure cell's 52 px at 1280
+                nameSecondLine: schedule ? TaxSchedule.KindWord(TaxSchedule.Of(_playerCountry.Id).Kind) : null);
+            if (schedule && Event.current.type == EventType.Repaint) { _incomeTaxTrackRect = LedgerRow.LastTrackRect; }
 
             if (taxLine.IsImplemented)
             {
                 _taxRateInputs[taxLine.Type] = newRate;
+            }
+            if (schedule) { GUILayout.Space(4f); DrawTaxScheduleRows(taxLine, pendingBill); }
+        }
+
+        /// <summary>
+        /// F4-4 / board 15b (2026-09-13): THE SCHEDULE ROW - one grammar, six honest shapes. Under the income tax's own D13 row (the lever, the one
+        /// dial that shifts every taxed band), the statute is drawn as it is: the marginal rate over income as a CURVE in the track column (x the
+        /// tariff's own currency to its top threshold × 1.5, y 0–50 % fixed on every row so a steep country looks steep), then one SUB-ROW per band -
+        /// its NAME the threshold span in mono (a name is not a control: the player moves a RATE and never a threshold, by construction), its dial
+        /// the rate alone on the same 0–50 as the curve, the exempt band and a levy under another act drawn without a dial. A formula's ramps carry
+        /// the statute's coefficients as a citation line and their dial is the zone's END rate; the barème's parts and the CSG/CRDS split are the
+        /// row's own lines; Sweden's two layers are two sub-rows; Italy's layers are BILLED and say so. The sub-rows' drafts ride the same budget
+        /// bill as the lever (`BuildBudgetBillFromDrafts`), draw the same draft cue, and the parent row's PENDING covers them.
+        /// </summary>
+        private void DrawTaxScheduleRows(TaxLine taxLine, TaxProgramBill pendingBill)
+        {
+            Country country = _playerCountry;
+            TaxSchedule.Statute statute = TaxSchedule.Of(country.Id);
+            if (statute.Kind == TaxScheduleKind.Flat) { return; }
+            float rowH = LedgerRow.Height(_labelStyle);
+            GUIStyle mono = DeskCaption(7.5f, PoliSimTheme.TextMuted);
+            GUIStyle monoInk = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
+            float capH = Mathf.Ceil(DeskCaptionHeight(mono));
+
+            if (statute.Kind == TaxScheduleKind.ThreeLayerBilled)
+            {
+                // 10a's BILLED row: the word, a dashed band, the reason at reading size
+                Rect billedRow = GUILayoutUtility.GetRect(10f, rowH, GUILayout.ExpandWidth(true));
+                LedgerFamilyColumns(billedRow, out Rect bLedger, out Rect bVerdict, out Rect bAction);
+                if (Event.current.type == EventType.Repaint)
+                {
+                    LedgerRow.Cell(new Rect(bLedger.x, bLedger.y, bLedger.width * 0.3f, bLedger.height), "IRPEF · LAYERS", DeskCaption(9f, PoliSimTheme.TextMuted), PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+                    DrawDashedRule(new Rect(bLedger.x + bLedger.width * 0.3f, bLedger.center.y, bLedger.width * 0.4f, 1f), PoliSimTheme.Hairline, 4f, 3f);
+                    LedgerRow.Cell(new Rect(bLedger.x + bLedger.width * 0.7f, bLedger.y, bLedger.width * 0.3f, bLedger.height), "BILLED", DeskCaption(9f, PoliSimTheme.TextMuted, true), PoliSimTheme.TextMuted, TextAnchor.MiddleRight);
+                    LedgerRow.Cell(new Rect(bVerdict.x, bVerdict.y, bAction.xMax - bVerdict.x, bVerdict.height), "UNTIL A STATUTE WITH A TEXT LAYER LANDS", mono, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+                }
+                return;
+            }
+
+            bool live = taxLine.IsImplemented && pendingBill == null;
+            float standingShift = taxLine.Rate - TaxSchedule.RateSeedOf(taxLine);
+            float draftLever = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+            float draftShift = draftLever - TaxSchedule.RateSeedOf(taxLine);
+            double thresholdScale = TaxSchedule.ThresholdScale(country);
+            List<TaxSchedule.SubRow> rows = TaxSchedule.SubRows(statute);
+            float[] draftOverrides = DraftBracketRates(taxLine, rows.Count);
+            bool anyDraft = !Mathf.Approximately(draftShift, standingShift) || _bracketRateInputs.Count > 0;
+
+            // ---- the curve: the marginal rate over income, the standing statute solid, the draft dashed where it differs ----------------
+            GUIStyle footFace = DeskCaptionWrapped(6.5f, PoliSimTheme.TextMuted);
+            string footText = (statute.CitationLine ?? "X: THE TARIFF'S OWN CURRENCY, TO ITS TOP THRESHOLD × 1.5");
+            // the foot's height is measured at a width no wider than the band it is drawn in (the band is 37 % of the window at 1280; 36 % wraps at least as much)
+            float footH = Mathf.Ceil(footFace.CalcHeight(new GUIContent(footText), Mathf.Max(10f, Screen.width * 0.36f))) + StatsUnit(2f);
+            float curveH = StatsUnit(44f) + capH + footH;
+            Rect curveRow = GUILayoutUtility.GetRect(10f, curveH, GUILayout.ExpandWidth(true));
+            LedgerFamilyColumns(curveRow, out Rect cLedger, out Rect cVerdict, out Rect cAction);
+            if (Event.current.type == EventType.Repaint)
+            {
+                // the same columns the ledger row above laid its track in - its track rect, read on the same Repaint (LedgerRow.LastTrackRect); the name and figure cells either side
+                Rect trackRect = _incomeTaxTrackRect;
+                if (trackRect.width <= 0f) { trackRect = new Rect(cLedger.x + cLedger.width * 0.3f, cLedger.y, cLedger.width * 0.45f, cLedger.height); }
+                var nameRect = new Rect(cLedger.x, cLedger.y, Mathf.Max(10f, trackRect.x - cLedger.x), cLedger.height);
+                var figureRect = new Rect(trackRect.xMax, cLedger.y, Mathf.Max(10f, cLedger.xMax - trackRect.xMax), cLedger.height);
+                var plot = new Rect(trackRect.x, curveRow.y + StatsUnit(2f), trackRect.width, StatsUnit(40f));
+                double ceiling = TaxSchedule.AxisCeiling(statute) * thresholdScale;
+                PoliSimTheme.Rule(new Rect(plot.x, plot.yMax, plot.width, 1f), PoliSimTheme.Hairline);
+                PoliSimTheme.Rule(new Rect(plot.x - 0.5f, plot.y, 1f, plot.height), PoliSimTheme.Hairline);
+                // y 0–50 % on every row; the 25 % rule as a dotted guide
+                DrawDashedRule(new Rect(plot.x, plot.y + plot.height * 0.5f, plot.width, 1f), PoliSimTheme.RuleLight, 2f, 4f);
+                LedgerRow.Cell(new Rect(nameRect.x, plot.y, nameRect.width, capH), "MARGINAL RATE", monoInk, PoliSimTheme.TextSecondary, TextAnchor.UpperLeft);
+                LedgerRow.Cell(new Rect(nameRect.x, plot.y + capH, nameRect.width, capH), statute.Kind == TaxScheduleKind.QuotientBareme ? "PER PART · 0–50" : "Y 0–50 %", mono, PoliSimTheme.TextMuted, TextAnchor.UpperLeft);
+                LedgerRow.Cell(new Rect(figureRect.x, plot.y, figureRect.width, capH), "50 %", mono, PoliSimTheme.TextMuted, TextAnchor.UpperRight);
+                LedgerRow.Cell(new Rect(figureRect.x, plot.yMax - capH, figureRect.width, capH), "0", mono, PoliSimTheme.TextMuted, TextAnchor.LowerRight);
+                const int samples = 96;
+                float lastX = 0f, lastY = 0f, lastXd = 0f, lastYd = 0f;
+                for (int i = 0; i <= samples; i++)
+                {
+                    double income = ceiling * i / samples;
+                    float standingRate = (float)TaxSchedule.MarginalRate(statute, income, standingShift, thresholdScale, taxLine.BracketRates);
+                    float draftRate = (float)TaxSchedule.MarginalRate(statute, income, draftShift, thresholdScale, draftOverrides);
+                    float x = plot.x + plot.width * i / samples;
+                    float y = plot.yMax - plot.height * Mathf.Clamp01(standingRate / 50f);
+                    float yd = plot.yMax - plot.height * Mathf.Clamp01(draftRate / 50f);
+                    if (i > 0)
+                    {
+                        DrawSegment(lastX, lastY, x, y, PoliSimTheme.TextPrimary, 1.5f);
+                        if (anyDraft && (Mathf.Abs(yd - y) > 0.5f || Mathf.Abs(lastYd - lastY) > 0.5f)) { DrawSegment(lastXd, lastYd, x, yd, PoliSimTheme.Caution, 1f); }
+                    }
+                    lastX = x; lastY = y; lastXd = x; lastYd = yd;
+                }
+                // the thresholds as ticks with their figures; a figure that would sit on the previous one is dropped and its tick kept (Germany's two ramps start 5 450 € apart)
+                float lastLabelRight = float.NegativeInfinity;
+                foreach (TaxSchedule.SubRow r in rows)
+                {
+                    if (r.Kind == TaxSubRowKind.FlatLayer || r.From <= 0 || double.IsInfinity(r.From)) { continue; }
+                    float tx = plot.x + plot.width * (float)System.Math.Min(1.0, r.From * thresholdScale / ceiling);
+                    PoliSimTheme.Rule(new Rect(tx - 0.5f, plot.yMax - StatsUnit(3f), 1f, StatsUnit(6f)), PoliSimTheme.TextMuted);
+                    string tick = ((long)System.Math.Round(r.From * thresholdScale)).ToString("N0", CultureInfo.InvariantCulture);
+                    float tw = mono.CalcSize(new GUIContent(tick)).x;
+                    float labelLeft = Mathf.Clamp(tx - tw * 0.5f, plot.x, plot.xMax - tw);
+                    if (labelLeft < lastLabelRight + 3f) { continue; }
+                    LedgerRow.Cell(new Rect(labelLeft, plot.yMax + StatsUnit(2f), tw, capH), tick, mono, PoliSimTheme.TextMuted, TextAnchor.UpperCenter);
+                    lastLabelRight = labelLeft + tw;
+                }
+                // the citation line under the curve, wrapped to the band's width (the coefficients verbatim are longer than any lane at 1280)
+                GUI.Label(new Rect(plot.x, plot.yMax + StatsUnit(2f) + capH, cAction.xMax - plot.x, footH), footText, footFace);
+            }
+
+            // ---- the sub-rows: one per band, the dial on the rate alone, the name a span nobody can drag -----------------------------------
+            double[] standingRates = TaxSchedule.EffectiveRowRates(statute, taxLine.BracketRates, standingShift);
+            double[] draftRates = TaxSchedule.EffectiveRowRates(statute, draftOverrides, draftShift);
+            for (int i = 0; i < rows.Count; i++)
+            {
+                TaxSchedule.SubRow r = rows[i];
+                Rect fullRow = GUILayoutUtility.GetRect(10f, rowH, GUILayout.ExpandWidth(true));
+                LedgerFamilyColumns(fullRow, out Rect ledgerRect, out Rect verdictRect, out Rect actionRect);
+                string span = SubRowName(statute, r, thresholdScale);
+                string trailing = r.Kind == TaxSubRowKind.Ramp ? "RAMP FROM " + (r.StatuteStart + standingShift).ToString("0.#", CultureInfo.InvariantCulture) + " % · THE DIAL IS THE END"
+                    : r.Kind == TaxSubRowKind.FlatLayer ? "THE MUNICIPAL LAYER · EVERY KRONA"
+                    : r.Kind == TaxSubRowKind.Levy ? "ANOTHER ACT · NOT A BRACKET"
+                    : r.Kind == TaxSubRowKind.Exempt ? (statute.ExemptNote ?? "EXEMPT") : "0–50 ON THE CURVE'S OWN Y";
+                bool interactive = live && r.Adjustable;
+                float standing = (float)standingRates[i], draft = (float)draftRates[i];
+                bool hasDraft = interactive && !Mathf.Approximately(draft, standing);
+                float result = LedgerRow.Draw(ledgerRect, span, standing, draft, 0f, 50f,
+                    r.Kind == TaxSubRowKind.Exempt ? "—" : standing.ToString("F2", CultureInfo.InvariantCulture) + "%",
+                    hasDraft ? draft.ToString("F2", CultureInfo.InvariantCulture) + "%" : null,
+                    trailing, interactive, _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle);
+                if (interactive && !Mathf.Approximately(result, draft))
+                {
+                    // the dial moved: the override is the rate without the lever's shift; back at the statute's figure the draft is dropped
+                    float wanted = result - draftShift;
+                    if (Mathf.Abs(wanted - (float)r.StatuteRate) < 0.005f) { _bracketRateInputs.Remove(i); } else { _bracketRateInputs[i] = Mathf.Clamp(wanted, 0f, 100f); }
+                }
+                if (Event.current.type == EventType.Repaint && i == 0)
+                {
+                    LedgerRow.Cell(new Rect(verdictRect.x, verdictRect.y, actionRect.xMax - verdictRect.x, verdictRect.height), "ONE BILL FOR THE DIAL AND THE SUB-ROWS", mono, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+                }
+            }
+        }
+
+        /// <summary>The line's own rates as drafted: the standing overrides with the sub-row drafts on top, −1 where the statute's rate stands.</summary>
+        private float[] DraftBracketRates(TaxLine taxLine, int count)
+        {
+            var rates = new float[count];
+            for (int i = 0; i < count; i++)
+            {
+                rates[i] = taxLine.BracketRates != null && i < taxLine.BracketRates.Length ? taxLine.BracketRates[i] : -1f;
+                if (_bracketRateInputs.TryGetValue(i, out float draft)) { rates[i] = draft; }
+            }
+            return rates;
+        }
+
+        /// <summary>A sub-row's name: the threshold span in the tariff's own currency at this boundary's prices, mono - "12 349 – 17 799 EUR".</summary>
+        private static string SubRowName(TaxSchedule.Statute statute, TaxSchedule.SubRow r, double thresholdScale)
+        {
+            if (r.Kind == TaxSubRowKind.FlatLayer) { return "EVERY " + (statute.Currency == "SEK" ? "KRONA" : statute.Currency); }
+            string from = ((long)System.Math.Round(r.From * thresholdScale)).ToString("N0", CultureInfo.InvariantCulture);
+            if (double.IsInfinity(r.To)) { return "OVER " + from; }
+            string to = ((long)System.Math.Round(r.To * thresholdScale)).ToString("N0", CultureInfo.InvariantCulture);
+            return from + " – " + to;
+        }
+
+        /// <summary>A hairline segment between two points, drawn as short rules along its length.</summary>
+        private static void DrawSegment(float x0, float y0, float x1, float y1, Color ink, float thickness)
+        {
+            float dx = x1 - x0, dy = y1 - y0;
+            int steps = Mathf.Max(1, Mathf.CeilToInt(Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy))));
+            for (int i = 0; i <= steps; i++)
+            {
+                float t = steps == 0 ? 0f : (float)i / steps;
+                PoliSimTheme.Rule(new Rect(x0 + dx * t - thickness * 0.5f, y0 + dy * t - thickness * 0.5f, thickness, thickness), ink);
             }
         }
 

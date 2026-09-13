@@ -133,6 +133,11 @@ namespace PoliSim.Data
         /// the schedule's yield ratio, one at the seed by construction. Captured with the structural bases; 0 in a save from before, read as the line's rate.</summary>
         public float RateSeed;
 
+        /// <summary>F4-4 / board 15b (2026-09-13): the line's OWN rate per sub-row of its statute (`TaxSchedule.SubRows`), set by a passed budget bill's
+        /// figures - a band's rate, a ramp's END rate, the flat layer's rate; −1 (or a missing entry) means the statute's own figure stands. The
+        /// uniform shift (the lever's distance from <see cref="RateSeed"/>) lands on top. Null on every line but the income tax's with a statute.</summary>
+        public float[] BracketRates;
+
         /// <summary>True for the one instrument whose rate is a price per tonne rather than a percentage of a base.</summary>
         public bool IsPerTonne => Type == TaxType.CarbonTax;
 
@@ -180,7 +185,7 @@ namespace PoliSim.Data
         /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - TaxLine.Rate is mutated by ApplyTaxRateChanges, so the preview needs its own copies, not shared references.</summary>
         public TaxLine Clone()
         {
-            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling, RateSeed = RateSeed };
+            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling, RateSeed = RateSeed, BracketRates = BracketRates == null ? null : (float[])BracketRates.Clone() };
         }
     }
 }

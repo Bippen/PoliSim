@@ -27112,3 +27112,53 @@ The reading: a family that lands the drag lands the drag's compounding; a hundre
 **Deferred, by ruling, and stated.** The pensions DRIVER is the BASELINE half - the age reaching the headcount the pension line multiplies (`SpendingDrivers`), the participation rates of the bands the age crosses, the dependency ratio, potential's 20–64 seam (DS-3c) - and with it the DIAL: a lever that reaches nothing in the model is a dead lever, so DS-3's "statute + dial" lands its statute here and its dial with the driver. Nothing in the model reads the age: the trajectory is a readout by construction, and the dumps say so - `traj_pn1` against `traj_f4s2` byte-identical across every field at every seed and horizon (s777 t100: 76 of 76 · s777 t500: 76 of 76 · s777 t1000: 76 of 76 · s424242 t100: 76 of 76 · s424242 t500: 76 of 76 · s424242 t1000: 76 of 76). The one runtime reader is the Policy Web's Social Security node, which prints the statute's sentence as the carbon rate's node prints its (EN-4e): *"Between decisions the pension age moves as the law moves it: …"*. Board 15c rides on this layer and draws the path; its knob is the statute's figure until the driver gives it a lever.
 
 **Bar:** `bar408_pn1` **38 of 38** and `bar409_pn1_sim` **49 of 49** on the code (`PensionAgeDiagnostic` among them, its first run failing on a semicolon - the CSV names a rule's two files in one cell, the check now reads each); `traj_pn1` dumped at two seeds and three horizons and diffed against `traj_f4s2` six times, 76 of 76 fields byte-identical each time; `bar413_pn1` **38 of 38** on the tree this record reads - residue 10, 12 ratchets tight.
+
+## 490. BOARD 15b BUILT — F4-4, the schedule row: one grammar, six honest shapes under the income tax's own row - the marginal rate over income as a curve in the track column, one sub-row per band named by its threshold with a dial on the rate alone, a formula's ramps with their coefficients and an end-rate dial, the parts and the levy as the row's own lines, Italy's layers billed; the sub-rows' figures ride the budget bill (2026-09-13)
+
+**The ruling** (2026-09-13): *"Then 15b on F4-2."* Board 15b (Design, 2026-09-13, D20 batch 2), read the D11 way at §486 and taken whole; DS-2c (§474): *"One dial shifts every rate; per-bracket rows come with the schedule row's grammar, not before."* The plan's S3b; F4-4's row.
+
+**The board, built** (`TaxSchedule` extended; `GameController.DrawTaxScheduleRows`; `TaxLine.BracketRates`; `BudgetBill.BracketRates`; `ParliamentSystem`; the drafts in `UiDraftState`; save format 12):
+
+| the board's device | built as |
+|---|---|
+| the row is a D13 row whose track is a CURVE: the marginal rate over income, x the tariff's own currency to its top threshold × 1.5, y 0–50 % fixed on every row | under the income tax's ledger row a curve strip in the same track column (the parent row's own track rect, read on the same Repaint), the marginal rate sampled at 96 points from `TaxSchedule.MarginalRate` - the standing statute solid, the DRAFT (the lever's shift and the sub-rows' drafts) dashed in Caution where it departs; the thresholds as ticks with their figures at this boundary's prices; y 0–50 with a dotted 25 % guide; no shared x axis across currencies, said in the name cell |
+| the one figure: the average effective rate at the model's average wage; one dial that shifts every rate uniformly (DS-2c) | the lever's row keeps its rate as the figure and gains the AER at the mean income as the figure's second line ("AER 32.4 % AT THE MEAN", `AverageEffectiveRateAtMeanIncome`, at the draft) and the statute's kind under the name (TWO LAYERS · FORMULA · PER PART · BRACKETS · LAYERS · BILLED); the dial is the lever as before - its distance from the seeded rate the shift on every taxed band |
+| a player moves a RATE and never a threshold; the sub-rows are one per bracket; each sub-row's NAME is its threshold in mono, its DIAL D13's slider on the rate alone, 0–50 on the same y as the curve | `TaxSchedule.SubRows`: one sub-row per band - the exempt band, each band, a ramp, Sweden's flat municipal layer, Poland's levy - drawn as ledger rows whose name is the span in the statute's currency ("12 348 – 17 799 EUR", "OVER 277 825 EUR", "EVERY KRONA"), whose dial is the rate on 0–50, whose standing figure is the statute's rate (or the line's own) plus the lever's shift, whose draft cue is 9b's; the exempt band and the levy draw no dial; a sub-row's draft is the rate without the lever's shift, dropped when it returns to the statute's figure |
+| the parent row's one dial and the sub-rows' dials draw the same draft cue and one PENDING button covers the row | the sub-rows draw no verdict or action cells; the first sub-row's verdict lane says so ("ONE DIAL SHIFTS EVERY RATE · A SUB-ROW MOVES ITS OWN · ONE BILL"); the drafts ride `BuildBudgetBillFromDrafts` as `BudgetBill.BracketRates` beside the lever's figure; a passed bill sets `TaxLine.BracketRates` (−1 the statute's), the bill's direction and its redistribution reading count the sub-rows' points as the effective rate's move (`ParliamentSystem.BracketRateMove`); the drafts are captured, restored and cleared with the lever's |
+| a FORMULA's ramps print the statute's coefficients as a citation line, verbatim; the ramp's dial is the zone's END rate; what the class recomputes is the class's | Germany's § 32a is read as ramps whose END rates are DERIVED from its coefficients (23.97 % at 17 799 €, 42 % at 69 878 €; the entry rate 14 %); a sub-row's dial moves a zone's end and the next ramp's start follows it; the ramps' integral is the formula's within a euro at every zone end (the diagnostic's section 7 asserts it); the coefficients' citation line is printed under the curve verbatim, and "SPLITTING: twice the tariff on half" is named there as not drawn |
+| PER PART prints the axis as REVENU PAR PART and a × PARTS chip; the CSG/CRDS split a supporting flat row, not a bracket | the curve's name cell reads MARGINAL RATE · REVENU PAR PART; the CSG/CRDS line is the citation line under the curve (urssaf 2fd04556), not a bracket; the parts are one per person (the incomes are per person) and the row says so through the kind word |
+| LAYERS (Italy) and anything unsourced draw 10a's BILLED row | Italy's row is IRPEF · LAYERS — a dashed band — BILLED, with the reason at the row's end; Sweden's state brackets, unsourced in the paste the board read, are sourced in the model (the spec-let's §2, now the README's section) and drawn as the state band of the two layers - the board's dashed curve is not needed |
+| a credit that makes a tax-free band (Poland's 3 600 zł) is DERIVED and says so under the curve | the exempt band's note ("TAX-FREE BY THE 3 600 zł CREDIT · DERIVED") is the exempt sub-row's trailing text; the solidarity levy is its own sub-row without a dial ("ANOTHER ACT · NOT A BRACKET"); the USA's exempt band names the standard deduction and Table 3 |
+
+**What deviates from the board, and why.** (1) The lever's figure stays the line's rate, with the AER at the mean income as the figure's second line, because the lever IS the rate the political scale and the AI ministry read (F4-2) - the board's "one figure" is on the row, under the rate it explains. (2) Sweden's state brackets are drawn sourced, not dashed: the paste Design read lacked the file, the model does not. (3) The curve is drawn from the statute as built (the class's marginal rate), so a moved ramp end redraws the ramp - what the board called the class's recomputation, printed as the draft curve. (4) The ×PARTS chip is the kind word PER PART and the parts are one; a household of more parts is F4-3's or later, not drawn.
+
+**The diagnostic's new section** (`TaxScheduleDiagnostic` 7, `bar412_15b_sim`):
+
+```
+    7. THE SUB-ROWS (F4-4) - Germany's ramps against the formula at the zone ends; Poland's upper band raised 32 → 37 on its own dial
+    Germany  at 17,799 EUR: the ramps 1,034.87, § 32a 1,034.87 - +0.00 EUR
+    Germany  at 69,878 EUR: the ramps 18,213.06, § 32a 18,213.06 - +0.00 EUR
+    Germany  at 277,825 EUR: the ramps 105,550.80, § 32a 105,550.87 - -0.07 EUR
+    Germany  at 400,000 EUR: the ramps 160,529.55, § 32a 160,529.62 - -0.07 EUR
+    Germany  sub-rows: 5 - ramp ends DERIVED 23.97 % and 42.00 %, the entry rate 14 %
+    Poland   the 32 % band at 37 %: ratio 1.0074 (the band's share of income 0.90 % × 5 points over a seed yield of 6.12 % says 1.0074); the lever untouched, the other band untouched
+```
+
+**Films** (eight, `-shotstop=05a_budget_tax_rows`; every figure parsed from the logs):
+
+| film | captured | overflow | clipped | worst Budget row (grains per pixel) | the runner's exit |
+|---|---|---|---|---|---|
+| `b15b_sweden_1280` | 29 | 0 | 0 | 0,735 | 1 - see the log |
+| `b15b_germany_1280` | 29 | 0 | 0 | 0,477 | 1 - see the log |
+| `b15b_france_1280` | 29 | 0 | 0 | 0,477 | 1 - see the log |
+| `b15b_italy_1280` | 29 | 0 | 0 | 0,477 | 1 - see the log |
+| `b15b_poland_1280` | 29 | 0 | 0 | 0,477 | 1 - see the log |
+| `b15b_usa_1280` | 29 | 0 | 0 | 0,477 | 1 - see the log |
+| `b15b_sweden_2560` | 29 | 0 | 0 | 0,250 | 1 - see the log |
+| `b15b_germany_2560` | 29 | 0 | 0 | 0,146 | 1 - see the log |
+
+The frames were read: Sweden's row carries the curve with its skiktgräns tick, the municipal layer's sub-row and the state band's; Germany's the ramps with the coefficients under the curve and four end-rate dials; Poland's the derived tax-free band, the two bands and the levy row; the USA's seven bands over the deduction; France's the parts axis and the CSG line; Italy's the billed row. The USA's 1280 film keeps BR-1's exit (the Defense row's reach, §486).
+
+**Save format 12** - the income line carries its own rates per sub-row and the drafts their sub-row entries.
+
+**Bar:** `bar411_15b` **38 of 38** and `bar412_15b_sim` **49 of 49** on the code (the trajectory suite verified by digest; `TaxScheduleDiagnostic` with its seventh section); the eight films' guards as tabled; `bar418_15b` **38 of 38** on the tree this record reads - residue 9 (F4-4 ✅ by its marker), 12 ratchets tight.
