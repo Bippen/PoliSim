@@ -26848,3 +26848,54 @@ The frames were read: Sweden's rule row prints its three blocks under their name
 **15b and 15c, sequenced, not built here.** 15b draws the schedule row as a D13 row whose track is the marginal-rate curve sampled from the schedule class - the class is F4-2's (the plan's S3a, the first tax family), so 15b rides on F4-2 and closes F4-4 (S3b); the board marks Sweden's statlig brackets unsourced in the paste and Italy's layers billed to E-6, both true. 15c draws the statutory mark on the pension dial row - the row is PN-1's (S5, the second family), so 15c rides on PN-1. Both boards read clean the D11 way (no instruction the record lacks; nothing a sprite) and are recorded as answered on their rows.
 
 **Bar:** `bar404_15a` **38 of 38** on the tree this record reads - residue 11 (BR-1 opened by this record), 12 ratchets tight; `DeliveredAssetCheck` naming the outbound bundle it skips, `MetaTextCheck` clean on the foot's equation.
+
+## 487. THE STANDING LIST, CYCLED AFTER BOARD 15a — the residue at eleven (BR-1 opened by the film), D20 answered and its first board built, its other two boards waiting on the families they ride, the pass's own sheets marked (2026-09-13)
+
+**The ruling:** *"the standing list after each landed pass"* (§474).
+
+**Ratchets.** `RatchetSlackCheck` on this cycle's bar: **12 reported, 12 tight** (`bar404_15a`), the ledger printed whole rather than recalled:
+
+| ratchet | measured | ceiling | verdict |
+|---|---|---|---|
+| `PartyMarkCoverageCheck.UNCONSUMED` | 0 | 0 | tight |
+| `DeadStateCheck.UNREACHED` | 0 | 0 | tight |
+| `DeadStateCheck.WRITE_ONLY` | 0 | 0 | tight |
+| `ConstantProvenanceCheck.UNMARKED` | 0 | 0 | tight |
+| `UnwiredSubsystemCheck.UNWIRED` | 2 | 2 | tight |
+| `UnwiredSubsystemCheck.UNREACHABLE` | 2 | 2 | tight |
+| `EvidenceDiscriminationCheck.NO_FAILURE_PATH` | 0 | 0 | tight |
+| `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` | 0 | 0 | tight |
+| `DocumentClaimCheck.MEMBER_GONE` | 0 | 0 | tight |
+| `DocumentClaimCheck.WRONG_OWNER` | 0 | 0 | tight |
+| `MojibakeCheck.SUSPECT_RUNS` | 1 | 1 | tight |
+| `PreWiringPremiseCheck.ASSERTED` | 0 | 0 | tight |
+
+The cheap bar is **38** and the simulation group **47**; the pass ran no family (a UI pass over the energy page - the dump reads no plate), so no trajectory label moved.
+
+**The residue** reads **11** (`bar404_15a`, 433 files scanned; BR-1 opened by §486's film - the USA's Defense row's reach, a standing defect the carbon row masked; a board built on a landed row closes no row): F4-2, F4-3, F4-4, PN-1, PN-2, PN-3, EN-7, BR-1, CL-2, CL-3, CL-4. The exclusions stay **19** by name (Elias's, Design's and the calendar's rows, printed above the count). **What moved in the rows' readiness:** D20 is ANSWERED (boards 15a–15c, §486) and its first board is built; F4-4 now has its board (15b) and waits only on F4-2's class - the tax chain's next pass (S3a) closes two rows at once with S3b; PN-1 has its mark (15c) and builds it with the dial (S5); CL-2 (S-C2) stands as before; EN-7 (stage 5) waits on §378 - Elias's, the dials-only laws.
+
+**The deferral register, re-read literally after S-D20 and EN-8:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 .. T-7 | as at §480 | **NOT FIRED** (T-3 FIRED, Elias's) - a page's composition reads nothing of the model |
+| **T-8 EN-3c** | *stage 5's fleet reads its inframarginal rent; the three folds fetched first* | **NOT FIRED** - the page prints the rent (§481) and 15a keeps it printed (the system-cost bridge's last step); nothing reads it |
+| F-1 .. F-5, F-7 | the elections' deferred set | **NOT FIRED** - as at §478 |
+| D-3's trigger | fired §479 | **FIRED**; F4-2 sequenced |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The errands, the calendar, the documents.** E-3 and E-6 open as before; **E-35 SENT and ANSWERED 2026-09-13** (§486: the paste's 48 artefacts in the project's `uploads/D20_paste/`, the three boards back the same day). **K-1 is TODAY, 13 September 2026 - the calendar's row** (the seed refresh from Sweden's real result), not a session's to take; K-2 on 29 January 2027. `ls *.md` returns **23**, `Tools/` holds **15**; the three numbered constants read their listed values (`CampaignPressure.PersuasionPerCompatibilityPoint` 40000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500000, read off the code by this record's script); no file added by the pass (three files edited: `GameController.Energy.cs`, `GameController.Health.cs`, `DeliveredAssetCheck.cs`; one archive in the gitignored `AssetPackArchive`, the D20 paste as one zip). Save format **10**, untouched.
+
+**This cycle's self-ruled sheets, marked** (§486's):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §486 | board 15a taken whole - no instruction the record lacks, 14a's inventions struck by the board itself, the rail cell NO | **HOLDS** - the D11 way; DS-4b as ruled |
+| §486 | the head and the body as two rows of one plate rather than one folded row | **HOLDS** - the plate core draws one extra row; the peers' ticks are the Open band the core already draws |
+| §486 | the legend line in the plate foot, not the plate head | **HOLDS** - D16 §3.4 keeps the header's right text the vintage alone at rest |
+| §486 | the REACHES chips in PROVENANCE, as 9c has them, not at rest | **HOLDS** - one state rule for the chips across every plate |
+| §486 | `PlateRow.ScaleToHigh` as an opt-in, default off | **HOLDS** - no other plate's row moved; the two stacks alone share a scale |
+| §486 | `DeliveredAssetCheck` skips a zip with `SEND_PACKAGE.md` at its root | **HOLDS** - a paste is not a delivery; the check names the skip; every other zip judged as before |
+| §486 | the re-derivation with the clearing's own weights (seed MW × hours) after the first film read 73 against 58 | **HOLDS** - a foot that does not reproduce its head is not a check |
+
+**Bar:** `bar404_15a` **38 of 38** on the tree this record reads - residue 11, 12 ratchets tight; `bar405_shelf` **38 of 38** after this record was written from that reading (residue 11, 12 tight), the two checks that read the documents among the thirty-eight.
