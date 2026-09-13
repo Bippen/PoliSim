@@ -54,6 +54,8 @@ namespace PoliSim.Data
             public PensionAgeRule Kind;
             /// <summary>The paragraph, as the register cites it.</summary>
             public string Paragraph;
+            /// <summary>Board 15c: the citation in the form the row's trailing cell holds at 1280 (the act's short name and its article); the paragraph verbatim is the Policy Web's.</summary>
+            public string Citation;
             /// <summary>The statute's headline figure - the CSV's `current_age_years` (a schedule's end, an indexed rule's current figure, a fixed rule's number).</summary>
             public float Headline;
             /// <summary>The dated path from the seed year: the age in force from each year it changes; the last point holds until <see cref="DatedTo"/>.</summary>
@@ -74,17 +76,17 @@ namespace PoliSim.Data
 
         private static readonly Dictionary<CountryId, Rule> Rules = new Dictionary<CountryId, Rule>
         {
-            { CountryId.Sweden, new Rule { Country = CountryId.Sweden, Kind = PensionAgeRule.LifeExpectancyIndexed, Paragraph = "Socialförsäkringsbalken (2010:110) 2 kap. 10 a–10 c §§ (lag 2019:649)",
+            { CountryId.Sweden, new Rule { Country = CountryId.Sweden, Kind = PensionAgeRule.LifeExpectancyIndexed, Paragraph = "Socialförsäkringsbalken (2010:110) 2 kap. 10 a–10 c §§ (lag 2019:649)", Citation = "SFB 2 kap. 10 a–10 c",
                 Headline = 67f, Path = new[] { new PathPoint(2026, 67f) }, DatedTo = 2026 + RiktalderYearsAhead, SourceFile = "se_sfb_2010_110.html · se_pensionsmyndigheten_riktalder.html" } },
-            { CountryId.Germany, new Rule { Country = CountryId.Germany, Kind = PensionAgeRule.Scheduled, Paragraph = "SGB VI § 35 · § 235 Abs. 2",
+            { CountryId.Germany, new Rule { Country = CountryId.Germany, Kind = PensionAgeRule.Scheduled, Paragraph = "SGB VI § 35 · § 235 Abs. 2", Citation = "SGB VI 35 · 235 Abs. 2",
                 Headline = 67f, Path = new[] { new PathPoint(2026, Months(66, 4)), new PathPoint(2027, Months(66, 6)), new PathPoint(2028, Months(66, 8)), new PathPoint(2029, Months(66, 10)), new PathPoint(2031, 67f) }, DatedTo = int.MaxValue, SourceFile = "de_sgb6_35.html · de_sgb6_235.html" } },
-            { CountryId.France, new Rule { Country = CountryId.France, Kind = PensionAgeRule.Scheduled, Paragraph = "code de la sécurité sociale L161-17-2 (loi n° 2023-270)",
+            { CountryId.France, new Rule { Country = CountryId.France, Kind = PensionAgeRule.Scheduled, Paragraph = "code de la sécurité sociale L161-17-2 (loi n° 2023-270)", Citation = "CSS L161-17-2",
                 Headline = 64f, Path = new[] { new PathPoint(2026, Months(62, 9)), new PathPoint(2028, 63f), new PathPoint(2029, Months(63, 3)), new PathPoint(2030, Months(63, 6)), new PathPoint(2031, Months(63, 9)), new PathPoint(2033, 64f) }, DatedTo = int.MaxValue, SourceFile = "fr_service_public_F14043.html" } },
-            { CountryId.Italy, new Rule { Country = CountryId.Italy, Kind = PensionAgeRule.LifeExpectancyIndexed, Paragraph = "decreto-legge 201/2011 art. 24 (the ISTAT adjustment every two years)",
+            { CountryId.Italy, new Rule { Country = CountryId.Italy, Kind = PensionAgeRule.LifeExpectancyIndexed, Paragraph = "decreto-legge 201/2011 art. 24 (the ISTAT adjustment every two years)", Citation = "DL 201/2011 art. 24",
                 Headline = 67f, Path = new[] { new PathPoint(2026, 67f), new PathPoint(2027, Months(67, 1)), new PathPoint(2028, Months(67, 3)) }, DatedTo = 2028, SourceFile = "it_inps_2027_2028.html" } },
-            { CountryId.Poland, new Rule { Country = CountryId.Poland, Kind = PensionAgeRule.Fixed, Paragraph = "ustawa o emeryturach i rentach z FUS art. 24 ust. 1 (65 for men; the women's 60 is the deviation the one-age model states)",
+            { CountryId.Poland, new Rule { Country = CountryId.Poland, Kind = PensionAgeRule.Fixed, Paragraph = "ustawa o emeryturach i rentach z FUS art. 24 ust. 1 (65 for men; the women's 60 is the deviation the one-age model states)", Citation = "FUS art. 24 ust. 1",
                 Headline = 65f, Path = new[] { new PathPoint(2026, 65f) }, DatedTo = int.MaxValue, SourceFile = "pl_arslege_art24.html" } },
-            { CountryId.USA, new Rule { Country = CountryId.USA, Kind = PensionAgeRule.Scheduled, Paragraph = "Social Security Act § 216(l), 42 U.S.C. 416(l)(1)",
+            { CountryId.USA, new Rule { Country = CountryId.USA, Kind = PensionAgeRule.Scheduled, Paragraph = "Social Security Act § 216(l), 42 U.S.C. 416(l)(1)", Citation = "SSA 216(l)",
                 Headline = 67f, Path = new[] { new PathPoint(2026, Months(66, 10)), new PathPoint(2027, 67f) }, DatedTo = int.MaxValue, SourceFile = "us_42usc416.html" } },
         };
 

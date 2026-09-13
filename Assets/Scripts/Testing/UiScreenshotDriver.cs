@@ -607,6 +607,14 @@ namespace PoliSim.Testing
                             ScrollBy(controller, 0f);
                             if (hadBefore) { spendingInputs[SpendingCategory.Education] = before; } else { spendingInputs.Remove(SpendingCategory.Education); }
                             yield return Settle();
+                            // Board 15c (2026-09-13): the same tab scrolled past the summary block to its FIRST row - Social Security, the pension
+                            // line - so the statutory mark beneath it (PN-1's path on the track, the years, the "?" tick past an indexed horizon) is
+                            // on film with the row it belongs to. The offset is the summary block's height at 1280, scaled with the screen.
+                            ScrollBy(controller, 470f * Screen.height / 720f);
+                            yield return Settle();
+                            yield return Capture(stem + "_pension");
+                            ScrollBy(controller, 0f);
+                            yield return Settle();
                         }
                         else
                         {

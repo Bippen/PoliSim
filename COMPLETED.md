@@ -27162,3 +27162,39 @@ The frames were read: Sweden's row carries the curve with its skiktgräns tick, 
 **Save format 12** - the income line carries its own rates per sub-row and the drafts their sub-row entries.
 
 **Bar:** `bar411_15b` **38 of 38** and `bar412_15b_sim` **49 of 49** on the code (the trajectory suite verified by digest; `TaxScheduleDiagnostic` with its seventh section); the eight films' guards as tabled; `bar418_15b` **38 of 38** on the tree this record reads - residue 9 (F4-4 ✅ by its marker), 12 ratchets tight.
+
+## 491. BOARD 15c BUILT — the statutory mark: the law's path on the pension line's own row, the years above the track, the citation under the figure, NEXT and NO LEVER in the band; the driver and the dial still deferred (2026-09-13)
+
+**The ruling** (2026-09-13): *"Then 15b on F4-2, 15c on PN-1."* Board 15c (Design, 2026-09-13, D20 batch 3), read the D11 way at §486; DS-3 and DS-3d (§474): the statute on `CarbonRateStatute`'s pattern, the row in the Budget group; §489's deferral of the pensions driver - and with it the dial - as the BASELINE half, so the board's lever half is built without its lever.
+
+**The board, built** (`GameController.DrawPensionAgeRow`, under the Social Security line of the spending tab; `PensionAgeStatute.Rule.Citation`):
+
+| the board's device | built as |
+|---|---|
+| a D13 dial row in the Budget's pension group, the knob the figure that stands this year | a `LedgerRow` on the spending family's own columns (the row above draws on the full row, and so does this one), the track 60–70, the knob `PensionAgeStatute.AgeInForce` for the calendar year, non-interactive; the figure the statute's own form ("67", "66 y 10 m", "62 y 9 m") |
+| THE STATUTORY MARK - the law's path on the track beside the figure, in the third tint, with its years; no glyph | a tick (D13's `ui_slider_tick`, TextMuted) at every future statutory value on the rule's dated path, its year ABOVE the track; a dotted hairline from the knob to the next step; a year that would print over the one before it is dropped and the last always prints (Germany's four steps sit two months apart) |
+| an INDEXED rule dated only to its horizon; the third mark a date with no figure | Sweden's path is one point (67) dated to 2032 by SFB 2 kap. 10 c §, Italy's three to 2028; past the horizon a half-tint tick stands beyond the last known age and prints "2033 ?" / "2029 ?" - the year known, the figure not |
+| the kind as 9c's chip; the paragraph on the row | the kind under the name (INDEXED · RIKTÅLDER, INDEXED · ISTAT, SCHEDULED, FIXED); the citation in its short form as the row's trailing line, under the figure (`Rule.Citation`: SFB 2 kap. 10 a–10 c, SGB VI 35 · 235 Abs. 2, CSS L161-17-2, DL 201/2011 art. 24, FUS art. 24 ust. 1, SSA 216(l)); the paragraph verbatim stays the Policy Web node's and the diagnostic's |
+| the caption band: the carbon row's sentence at the driver end, NEXT at the other | the band carries NEXT (the next step's figure and year; "NEXT 2033 · NO FIGURE YET" past an indexed horizon; "A BILL ONLY" for Poland) and NO LEVER, left-aligned, stopping short of the citation's reach; the carbon row's sentence is the Policy Web node's (§489) - with the citation under the figure the band at 1280 holds no more |
+| the override state: a passed bill's figure as the knob, the statute's as a ghost tick, the hairline from the ghost | NOT drawn - the driver is deferred by ruling and with it the bill that would set an age; the row says NO LEVER and the day the driver lands, the override is the row's next commit |
+
+**What the first films found, and what changed** (five findings on the 1280 frames: three from the first chain, one from the third, one from the fourth): (1) the paragraph verbatim overran the trailing cell in four countries (France by 25 px, Sweden and Italy by 92, Poland by 347) - the citation's short form replaced it on the row; (2) the row was drawn on the tax family's narrower column split and its track fell 200 px short of the Social Security track above it - it draws on the full row now, as the spending rows do; (3) the years under the ticks printed over the band's sentence - they moved above the track, the band keeps NEXT and NO LEVER, and the sentence went back to the Policy Web node where §489 put it. A fourth, not a finding but a fact: the frame the driver stops at (`05b_budget_spending_rows_dragged`) scrolls past the mandatory rows, so the pension row was not on the first films at all; the driver gained `05b_budget_spending_pension` - the spending tab scrolled past its summary block to its first row. The third chain's frames then showed Poland's band clipped to "NO L": its citation, the longest of the six, took the band's right end - the citation lost its "men's 65" gloss (the paragraph verbatim keeps it) and the fixed rule's band lost its redundant NO NEXT; the fourth chain filmed all eight again - and its France frame clipped the same way ("NO LE"): the caption mono runs six pixels a character at 1280, so the two longest citations (France's with its loi, the USA's with its U.S.C. cite) were cut to the article and a fifth chain filmed those two rows again; the other six films are the fourth chain's, taken on a tree that differs from the committed one by those two literals alone, each drawn on its own country's row.
+
+**Films** (eight, `-shotstop=05b_budget_spending_pension`; every figure parsed from the logs):
+
+| film | captured | overflow | clipped | worst Budget row (grains per pixel) | the runner's exit |
+|---|---|---|---|---|---|
+| `b15c_sweden_1280` | 35 | 0 | 0 | 0,735 | 0 |
+| `b15c_germany_1280` | 35 | 0 | 0 | 0,598 | 0 |
+| `b15c_france_1280` | 35 | 0 | 0 | 0,477 | 0 |
+| `b15c_italy_1280` | 35 | 0 | 0 | 0,477 | 0 |
+| `b15c_poland_1280` | 35 | 0 | 0 | 0,477 | 0 |
+| `b15c_usa_1280` | 35 | 0 | 0 | 1,518 | 1 - the reach guard on 05b_budget_spending / Defense |
+| `b15c_sweden_2560` | 35 | 0 | 0 | 0,250 | 0 |
+| `b15c_italy_2560` | 35 | 0 | 0 | 0,146 | 0 |
+
+The frames were read (`05b_budget_spending_pension`, the spending tab scrolled to its first row): the pension row sits under Social Security on the same columns - its track spans the Social Security track's width, its knob the age in force (Sweden 67, Germany 66 y 10 m, France 63 y 3 m, Italy 67 y 3 m, Poland 65, the USA 67 - past its schedule's end, so no mark and "NO NEXT · FLAT FROM HERE"), the year above each tick ("2031" on Germany's last step; "2033 ?" and "2029 ?" past the two indexed horizons, on a half-tint tick beyond the knob), the band "NEXT 2033 · NO FIGURE YET · NO LEVER" / "NEXT 67 · 2031 · NO LEVER" / "NEXT 2029 · NO FIGURE YET · NO LEVER" / "NEXT 63 y 6 m · 2030 · NO LEVER" / "A BILL ONLY · NO LEVER", the citation's short form under the figure, the kind under the name. Germany's four steps two months apart draw as a cluster of ticks by the knob with one year printed, as designed.
+
+**Not touched.** The pensions driver, the dependency ratio, the participation rates, potential's window: PN-1's BASELINE half, deferred by the ruling of 2026-09-13; `PensionAgeDiagnostic` unchanged; no trajectory moves (a UI pass - the cheap bar and the films are its bar).
+
+**Bar:** `bar414_15c` **38 of 38** on the first code, `bar415_15c`, `bar416_15c` and `bar417_15c` **38 of 38** after each fix (the first three chains' films read for their findings, the fourth and fifth chains' films clean - 8 of 8 captured, 0 overflow, 0 clipped); `bar418_15c_rec` **38 of 38** on the tree this record reads - residue 9, 12 of 12 ratchets tight.
