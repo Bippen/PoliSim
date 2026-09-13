@@ -57,6 +57,12 @@ $116,896 plus 35 %; over $768,700: $206,583.50 plus 37 %.
 *Standard deduction (§ 3.14):* married filing jointly **$32,200**; the other filing statuses follow in
 the same section.
 
+**Table 3 whole, and the single filer's deduction — read from the same file 2026-09-13 (F4-2, the table the model reads: the
+incomes are per person).** Verbatim: *Over $256,225 but not over $640,600: $58,448 plus 35% of the excess over $256,225; Over
+$640,600: $192,979.25 plus 37% of the excess over $640,600.* § 3.14 (1), the same table: *Unmarried Individuals (other than
+Surviving Spouses and Heads of Households) (§ 1(j)(2)(C)) $16,100*. The model folds the deduction in as the exempt band: its
+brackets in gross income are $16,100 + each of Table 3's thresholds.
+
 **The OASDI wage base — discharged 2026-09-02 (`usa/fr-2025-19763_cola_2026.pdf`, the Social Security
 Administration's notice *Cost-of-Living Increase and Other Determinations for 2026*, 90 FR, 3 November
 2025, fetched from govinfo.gov via the Federal Register API — ssa.gov itself still 403s a batch fetch).**
@@ -98,6 +104,13 @@ an error page; the Gazzetta Ufficiale's article endpoint returns an 11 KB shell;
 issue PDF of Legge 207/2024 (Supplemento ordinario n. 43 of 31 December 2024, 25.6 MB) is SCANNED —
 `pdftotext` yields 85 KB of front matter and no law text — so it needs OCR, which is not a tool here.
 The ask is a primary PDF with a text layer or a page that renders without a browser — a real errand.
+
+## Sweden — the two layers (no file in this folder; sourced in `POLISIM_TAX_SPECLET.md` §2)
+
+Kommunal skattesats, national average **32.38 %** (SCB, *Kommunalskatterna 2026*); statlig inkomstskatt **20 %** above the
+brytpunkt, skiktgräns **643 000 kr** (Skatteverket, *Belopp och procent 2026*). The model (F4-2, 2026-09-13) reads them as
+one line with two layers (DS-2d): the municipal rate on every krona, the state rate on the income above the skiktgräns; the
+grundavdrag is not modelled and the skiktgräns is read on the whole income - stated, not hidden.
 
 ## Digests (`sha256sum`, first 16 hex, at fetch)
 

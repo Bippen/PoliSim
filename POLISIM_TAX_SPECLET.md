@@ -4,6 +4,8 @@
 meant to be struck, amended or approved on its own.
 **Status: RULED 2026-08-31 (Elias, D-3): (c) NOW, (b) WHEN IT RUNS.** Neither branch is built yet, and
 the branch that will be built when it runs is **(b) pluggable schedules** — not (a)'s bracket table.
+**Status 2026-09-13 (`COMPLETED.md` §488): F4-2 LANDED - the schedules as their statutes' shapes over the cohort incomes converted into each statute's currency, one dial shifting every taxed band, the response a ratio that is one at the seed; the row (F4-4, board 15b) and Sweden's two figures (F4-3) next.**
+
 **Status 2026-09-12 (`COMPLETED.md` §474): the sheets ruled - S7 STRUCK; the income dimension lands first as a readout (F4-1), then the schedules (F4-2), Sweden as one line with two layers (F4-3), the row (F4-4); the order is `POLISIM_BACKLOG_PLAN.md`.**
 
 ⚠ **Why (c) is not a deferral in disguise.** The item is **blocked on D-4 whichever branch is chosen**:

@@ -26899,3 +26899,160 @@ The cheap bar is **38** and the simulation group **47**; the pass ran no family 
 | §486 | the re-derivation with the clearing's own weights (seed MW × hours) after the first film read 73 against 58 | **HOLDS** - a foot that does not reproduce its head is not a check |
 
 **Bar:** `bar404_15a` **38 of 38** on the tree this record reads - residue 11, 12 ratchets tight; `bar405_shelf` **38 of 38** after this record was written from that reading (residue 11, 12 tight), the two checks that read the documents among the thirty-eight.
+
+## 488. F4-2 LANDED — the income tax as its statute's own shape: five sourced tariffs over the cohort incomes converted into the statute's currency, one dial shifting every taxed band and no exempt one, the response folded into the revenue engine as a ratio that is one at the seed by construction; the first tax family, its drag explained (2026-09-13)
+
+**The ruling** (2026-09-13): *"The patch is abandoned - it never reached a disk and its five commits are unbarred by their own admission. Build F4-2 and PN-1 fresh on the working copy, carrying its three findings as requirements rather than as code: (1) the schedule must convert incomes into the statute's own currency - SEK and PLN statutes against EUR-seeded incomes put every earner under the first threshold and the schedule reads as built while inert; (2) a uniform shift must not touch an exempt band - shifting Sweden's 0% band multiplied the yield 4.28×; (3) the response is a ratio against the schedule's own yield at the seed, so revenue at seed is today's figure to the cent by construction and an integration bug cannot move a seeded budget."* The plan's S3a (§474; DS-1 struck S7, DS-2c the uniform shift, DS-2d Sweden's two layers).
+
+**What was built** (`Assets/Scripts/Data/TaxSchedule.cs`, new; `TaxLine.RateSeed`; `Country.IncomeTaxSeedAer`; `TaxBases.RevenueAtRate` and the new `TaxBases.EffectiveRate`; two readers in `MacroSystem`; save format 11; `Assets/Editor/TaxScheduleDiagnostic.cs`, new, in the simulation group):
+
+| the statute | the shape as the model reads it | its currency and indexation | the source |
+|---|---|---|---|
+| Sweden | TWO LAYERS: the municipal rate 32.38 % on every krona, the state rate 20 % above the skiktgräns 643 000 kr (the grundavdrag not modelled - stated) | SEK; the skiktgräns indexed (the KPI rule) - the price level | SCB *Kommunalskatterna 2026*, Skatteverket *Belopp och procent 2026* - the spec-let's §2, and now a section of `ElectionsData/tax/README.md` |
+| Germany | THE FORMULA: § 32a EStG 2026 as written - the Grundfreibetrag 12 348 €, two quadratic ramps to 17 799 and 69 878 €, 42 % to 277 825 €, 45 % above, the coefficients verbatim; an indexed year's tariff is the seed's on the deflated income scaled back | EUR; the tariff's periodic revisions read as the price level - an approximation, stated | `germany/estg_32a.html` 053bfcfc |
+| France | THE BARÈME PER PART: 0 · 11 · 30 · 41 · 45 % at 11 600 · 29 579 · 84 577 · 181 917 € per part; one part per person (the incomes are per person) | EUR; indexed yearly - the price level | `france/economie_gouv_fr_tranches.html` 964f5bee, `service_public_F1419.html` 741a32d7 |
+| Italy | THREE LAYERS BILLED (E-6): the line stays flat and says so; its ratio is one always | EUR | no primary text with a text layer on disk |
+| Poland | THE TABLE: 12 % from 30 000 zł (the 3 600 zł credit folded into a tax-free band - DERIVED, 3 600 ÷ 12 %), 32 % above 120 000 zł; the 4 % solidarity levy above 1 000 000 zł (art. 30h, another act) a separate term the shift does not touch | PLN; the thresholds NOMINAL - unchanged since 2022 | `poland/podatki_gov_pl_stawki.html` 6426b64c, the Sejm's consolidated act eca28a1b |
+| USA | THE TABLE: Rev. Proc. 2025-32 § 1(j)(2) Table 3 (unmarried individuals) whole - 10 · 12 · 22 · 24 · 32 · 35 · 37 % - with § 3.14's single-filer deduction $16 100 folded in as the exempt band | USD; indexed (chained CPI) - the price level | `usa/rp-25-32.pdf` e9ada115 - Table 3's two upper rows and the $16 100 read off the file this pass and quoted in the README |
+
+**The three requirements, as built.** (1) `TaxSchedule.StatutePerIncomeUnit`: the cohort incomes are the publisher's - EUR for the EU five (EU-SILC, F4-1), USD for the USA - and every income is converted at the catalog's ECB reference rates (`EnergyLayer.NationalPerUsd`: 11.479 SEK and 4.542 PLN per euro) before a threshold is compared. The diagnostic prints the share of income above the first taxed threshold both ways: Sweden 1.15 % above the skiktgräns converted, **0.000 % unconverted**; Poland 49.52 % above 30 000 zł converted, **0.405 % unconverted** - the inert reading the patch had, on the record. (2) `TaxSchedule.Tax`: the uniform shift is added to every band whose statutory rate is above zero and to no other - a 0 % band is an exemption, not a rate; the diagnostic probes an income inside every exempt band at +5 (Germany 10 000 €, France 10 000 €, Poland 20 000 zł, the USA $15 000: 0 → 0) and Sweden's state band below the skiktgräns (500 000 kr: the change is the municipal layer's five points alone), and bounds the yield ratio by the shift's own arithmetic (1 + shift × layers ⁄ seed yield; **Sweden's ratio at +5 is 1.155**, the patch's 4.28× is what the exemption rule prevents). (3) `TaxSchedule.YieldRatio`: the average effective rate the statute yields at the lever's position, over the cohorts' incomes and the thresholds as they stand at this boundary, divided by the yield at the seed (`Country.IncomeTaxSeedAer`, captured with the structural bases) - the revenue engine multiplies its anchored figure (the seeded rate × the sourced base, D-16) by it, and **the ratio is one at the seed exactly** (the yield now is rounded to the float the seed yield is stored as): six countries' revenue equal to the anchored figure to the fourth decimal in the diagnostic's own print, Italy's ratio one by construction.
+
+**Two figures for one statute, decided here and stated.** The revenue reads the RATIO - a five-point rise of Poland's two bracket rates yields some forty per cent more, as the real PIT would, because the statute's yield (6.1 % of income) is small against its rates; that is the schedule's own elasticity and the reason F4 exists. The terms that read "the income tax rate" as a share of income - the household burden, the Gini term, the labour-supply term (FT-5) - read `TaxBases.EffectiveRate`: the seeded rate moved by the POINTS the statute's yield moved (seed + yield now − yield at the seed), so a five-point rise of every taxed band moves a household's rate by the taxed share of income times five (Sweden +5.06, Germany +3.07, France +3.06, Poland +2.48, the USA +3.77), which is what its share of income taxed does. The first cut scaled the seeded rate by the ratio instead, and the same five points moved Poland's rate by twelve; the seeded rate is the anchored figure on the sourced base, not a yield, and is moved in points, never scaled. A point of the lever is a point of the tariff, and its political scale (`PointsOf`) is unchanged.
+
+**What the incomes are, stated.** The EU-SILC figure is equivalised disposable income per person and the CPS figure total money income per person; a tariff written for taxable individual income is applied to them as the model's one income proxy (F4-1's two concepts, carried as two). The ratio construction is what makes that honest: only the shape's RESPONSE enters, never its level. Sweden's shape is the two layers already, not the state table alone the plan's row named: a state-only shape makes a five-point lever move a twenty-five per cent revenue move (five on the one taxed band's twenty); F4-3 retires the blended 52 into the layers' own figures and re-solves the bridge, and DS-2d's "one line, two layers" is read here as the shape and there as the figures.
+
+**What the checks found on the way, and what changed.** The first simulation bar overran forty minutes: the daily participation term read the ratio every day for every country and the integration behind it (21 cohorts × 200 quantile points) is a boundary figure - `TaxSchedule.Memo` on the country now holds the yields by lever position for one boundary (the at-last-index level and wage index are the stamp), and the bar is back at ten minutes. `MetaTextCheck` refused the statutes' section signs in the source lines ("§ 32a EStG", "§ 1(j)(2)") - the laws' own names, allowed by the authority beside them, since the schedule row prints that line (15b). FT-5's harness (`LaborTaxParticipationDiagnostic`, §396) expected a five-point lever move to be a five-point move of the rate and an untouched lever to carry a zero term forever; under a statute the term's input is the effective rate, so the harness now computes its expectation from the effective rate the run ends at, and an untouched lever carries the drag's term (Sweden: the lever's five points move the effective rate 52.00 → 46.99 on a cut and 57.15 on a rise; untouched, 52.067 after eight years, the term −0.016). The FT-5 mechanism is unchanged.
+
+**The diagnostic's own print** (`bar407_f42_sim`, the run this record's family was dumped from):
+
+```
+=== TAX SCHEDULE (F4-2): the income tax as its statute's shape - the incomes in the statute's currency, the exempt bands untouched by the shift, the ratio one at the seed ===
+    1. THE STATUTES - the shape, the currency, the first taxed threshold, the 40-44 cohort's median income converted (requirement 1)
+    Sweden   TwoLayer         SEK · first taxed threshold 643,000 SEK · 11.479 SEK per income unit (EUR) · 40-44 median 27,900 EUR = 320,259 SEK · SCB Kommunalskatterna 2026 · Skatteverket Belopp och procent 2026 (spec-let §2)
+    Germany  Formula          EUR · first taxed threshold 12,348 EUR · 1.000 EUR per income unit (EUR) · 40-44 median 29,766 EUR = 29,766 EUR · § 32a EStG 2026 · gesetze-im-internet · 053bfcfc
+    France   QuotientBareme   EUR · first taxed threshold 11,600 EUR · 1.000 EUR per income unit (EUR) · 40-44 median 27,325 EUR = 27,325 EUR · barème 2026 · economie.gouv.fr 964f5bee · service-public F1419 741a32d7
+    Italy    ThreeLayerBilled EUR · first taxed threshold 0 EUR · 1.000 EUR per income unit (EUR) · 40-44 median 20,866 EUR = 20,866 EUR · TUIR art. 11 · BILLED (E-6): no primary text with a text layer on disk
+    Poland   BracketTable     PLN · first taxed threshold 30,000 PLN · 4.542 PLN per income unit (EUR) · 40-44 median 12,708 EUR = 57,720 PLN · art. 27 ust. 1 PIT · podatki.gov.pl 6426b64c · Sejm ELI eca28a1b · art. 30h
+    USA      BracketTable     USD · first taxed threshold 16,100 USD · 1.000 USD per income unit (USD) · 40-44 median 56,760 USD = 56,760 USD · Rev. Proc. 2025-32 § 1(j)(2) Table 3 · § 3.14 · irs.gov e9ada115
+    2. REQUIREMENT 1 - the share of aggregate income above the first taxed threshold, in the statute's currency; beside it the share the UNCONVERTED incomes would give
+    Sweden   above 643,000 SEK: 1.15 % of income   (unconverted it would read 0.000 %)
+    Germany  above 12,348 EUR: 61.48 % of income   (unconverted it would read 61.479 %)
+    France   above 11,600 EUR: 61.13 % of income   (unconverted it would read 61.133 %)
+    Italy    does not respond (flat) - no threshold to compare
+    Poland   above 30,000 PLN: 49.52 % of income   (unconverted it would read 0.405 %)
+    USA      above 16,100 USD: 75.40 % of income   (unconverted it would read 75.396 %)
+    3. REQUIREMENT 3 - the yield ratio at the seed, the schedule's revenue against the anchored figure (the seeded rate × the sourced base)
+    Sweden   seed rate 52.00 % · seed AER 32.609 % · ratio 1.000000000 · revenue 64.4155 bn against the anchored 64.4155 bn · effective 52.00 %
+    Germany  seed rate 45.00 % · seed AER 16.548 % · ratio 1.000000000 · revenue 490.0455 bn against the anchored 490.0455 bn · effective 45.00 %
+    France   seed rate 45.00 % · seed AER 10.631 % · ratio 1.000000000 · revenue 310.1760 bn against the anchored 310.1760 bn · effective 45.00 %
+    Italy    seed rate 43.00 % · seed AER 0.000 % · ratio 1.000000000 · revenue 246.3599 bn against the anchored 246.3599 bn · effective 43.00 %
+    Poland   seed rate 32.00 % · seed AER 6.123 % · ratio 1.000000000 · revenue 37.7933 bn against the anchored 37.7933 bn · effective 32.00 %
+    USA      seed rate 37.00 % · seed AER 12.894 % · ratio 1.000000000 · revenue 4,292.0000 bn against the anchored 4,292.0000 bn · effective 37.00 %
+    4. REQUIREMENT 2 - a +5 shift: the tax inside the exempt band, the yield ratio, its bound 1 + shift × layers ⁄ seed AER (Sweden's 4.28× was the patch's)
+    Sweden   tax at 500,000 SEK: 161,900.00 → 186,900.00 (the exempt band's change 0.00) · ratio at +5 1.1551 · bound 1.3067
+    Germany  tax at 10,000 EUR: 0.00 → 0.00 (the exempt band's change 0.00) · ratio at +5 1.1858 · bound 1.3022
+    France   tax at 10,000 EUR: 0.00 → 0.00 (the exempt band's change 0.00) · ratio at +5 1.2875 · bound 1.4703
+    Poland   tax at 20,000 PLN: 0.00 → 0.00 (the exempt band's change 0.00) · ratio at +5 1.4044 · bound 1.8165
+    USA      tax at 15,000 USD: 0.00 → 0.00 (the exempt band's change 0.00) · ratio at +5 1.2924 · bound 1.3878
+    5. THE FIGURE - the average effective rate at the mean income (15b) and over the distribution; +5 on the lever moves the effective rate by
+    Sweden   mean income 337,721 SEK · AER at the mean 32.38 % · AER over the distribution 32.61 % · lever 52.00 → 57.06 % effective (+5.06 points)
+    Germany  mean income 31,765 EUR · AER at the mean 14.86 % · AER over the distribution 16.55 % · lever 45.00 → 48.07 % effective (+3.07 points)
+    France   mean income 29,552 EUR · AER at the mean 6.68 % · AER over the distribution 10.63 % · lever 45.00 → 48.06 % effective (+3.06 points)
+    Italy    mean income 23,676 EUR · AER at the mean 43.00 % · AER over the distribution 0.00 % · lever 43.00 → 48.00 % effective (+5.00 points)
+    Poland   mean income 58,809 PLN · AER at the mean 5.88 % · AER over the distribution 6.12 % · lever 32.00 → 34.48 % effective (+2.48 points)
+    USA      mean income 61,529 USD · AER at the mean 8.46 % · AER over the distribution 12.89 % · lever 37.00 → 40.77 % effective (+3.77 points)
+    6. THE DRAG - the yield ratio after 10 years at no policy: bracket creep, real where the statute indexes its thresholds (SE · DE · FR · US), nominal where it does not (PL); Italy one
+    Sweden   incomes ×1.2621 · thresholds ×1.1812 · lever 52.00 (seed 52.00) · ratio 1.0030 (CREEP - the statute takes more of a grown income) · effective 52.10 %
+    Germany  incomes ×1.2590 · thresholds ×1.2063 · lever 45.00 (seed 45.00) · ratio 1.0247 (CREEP - the statute takes more of a grown income) · effective 45.41 %
+    France   incomes ×1.2743 · thresholds ×1.2400 · lever 45.00 (seed 45.00) · ratio 1.0276 (CREEP - the statute takes more of a grown income) · effective 45.29 %
+    Italy    incomes ×1.1454 · thresholds ×1.1972 · lever 43.00 (seed 43.00) · ratio 1.0000 (FLAT) · effective 43.00 %
+    Poland   incomes ×1.4936 · thresholds ×1.0000 · lever 34.41 (seed 32.00) · ratio 1.7277 (THE AI MOVED THE LEVER) · effective 36.46 %
+    USA      incomes ×1.2591 · thresholds ×1.1547 · lever 37.00 (seed 37.00) · ratio 1.0530 (CREEP - the statute takes more of a grown income) · effective 37.68 %
+```
+
+**The family - B1, `traj_f4s2` against `traj_f2i`, two seeds, three horizons, 76 fields.** Every country's path moves except where the statute does not respond, and the dumps say why in one word: DRAG. At no policy the thresholds of four statutes follow the price level while the incomes grow with the real wage as well, so the statute takes a little more of a grown income each year (Sweden +0.3 % of yield in ten years, Germany +2.5 %, France +2.8 %, the USA +5.3 %); Poland's thresholds stand nominal while its incomes grew 49 % in ten years, so its yield grew 73 % - and the AI finance ministry, which moves the lever by the EU rule, now moves a lever whose revenue answers with the statute's elasticity. The income tax's revenue path therefore rises above the flat line's, the budget improves first, the terms that read the effective rate take a little disposable income, and over a century the paths compound apart; Italy's own line is byte-identical (the flat shape's ratio is one) and its panel moves only through the world it trades in. The panel at 100 turns, seed 424242:
+
+```
+== PANEL (end relative, B vs A)
+field                               USA     Sweden    Germany     France      Italy     Poland
+GDP                             -3.793%    -1.799%    -2.006%    -0.575%    -0.267%    -4.145%
+Inflation                       +4.474%    +5.166%    +6.056%    +4.264%    -0.029%    -0.185%
+Unemployment                    -3.609%    -2.181%    -4.695%    -1.637%    +0.067%    -0.009%
+Budget                         +15.862%    +0.924%    +0.442%   +11.283%    +8.787%  -114.201%
+GovernmentDebt                 -15.299%    -0.857%    -0.381%    -6.905%    -2.579%  +109.347%
+DebtToGDP                             -          -          -          -          -          -
+PriceLevel                      +7.032%    +4.736%    +9.521%    +4.520%    -0.037%   +21.594%
+PowerCo2PerCapita               +0.000%    +0.000%    +0.000%    +0.000%    +0.000%    +0.000%
+TransportCo2PerCapita           -0.283%    +0.065%    -0.956%    -1.292%    +0.060%    -4.757%
+EnergyHouseholdPrice            +7.032%    +7.221%    +9.521%    +1.980%    -0.037%   +11.175%
+EnergyIndustryPrice             +7.032%    +9.299%    +9.521%    +3.706%    -0.037%   +11.029%
+EnergyIndustryBillGdpShare      +3.942%    +6.268%    +2.047%    -0.204%    +0.268%    -4.740%
+BusinessConfidence              +0.391%    +0.240%    +0.535%    +0.338%    -0.008%    +1.276%
+Investment                      -3.809%    -2.003%    -1.901%    -0.666%    -0.701%    -2.955%
+ApprovalRating                  +1.572%    +0.746%    +3.140%    +5.353%    +0.283%    -2.967%
+== 79 of 456 (country,field) series byte-identical
+```
+
+seed 777:
+
+```
+== PANEL (end relative, B vs A)
+field                               USA     Sweden    Germany     France      Italy     Poland
+GDP                             -3.558%    -1.738%    -2.269%    -0.801%    -0.284%    -4.599%
+Inflation                       +5.043%    +5.970%    +6.449%    +3.529%    -0.088%    -0.191%
+Unemployment                    -2.998%    -2.166%    -5.041%    -1.299%    +0.033%    +0.096%
+Budget                         +15.184%    -0.644%    +1.440%   +30.792%    +4.957%  -118.400%
+GovernmentDebt                 -14.644%    +0.599%    -1.249%   -18.956%    -1.299%  +113.148%
+DebtToGDP                             -          -          -          -          -          -
+PriceLevel                      +7.162%    +4.769%    +9.466%    +4.513%    -0.035%   +21.421%
+PowerCo2PerCapita               +0.000%    +0.000%    +0.000%    +0.000%    +0.000%    +0.000%
+TransportCo2PerCapita           -1.976%    +0.059%    -0.859%    -1.166%    +0.067%    -4.543%
+EnergyHouseholdPrice            +7.162%    +7.224%    +9.466%    +2.151%    -0.035%   +11.369%
+EnergyIndustryPrice             +7.162%    +9.299%    +9.466%    +3.756%    -0.035%   +11.228%
+EnergyIndustryBillGdpShare      +3.689%    +6.169%    +2.322%    +0.077%    +0.285%    -3.979%
+BusinessConfidence              +0.395%    +0.249%    +0.534%    +0.332%    -0.005%    +1.258%
+Investment                      -3.584%    -1.944%    -2.180%    -0.913%    -0.727%    -3.455%
+ApprovalRating                  +2.974%    +1.552%    +5.413%    +4.518%    -0.015%    -1.908%
+== 79 of 456 (country,field) series byte-identical
+```
+
+and at 1 000 turns, seed 777 - where every path that runs a debt to many times GDP has run away in both dumps, and the two runaways differ:
+
+```
+== PANEL (end relative, B vs A)
+field                               USA     Sweden    Germany     France      Italy     Poland
+GDP                             -7.456%    -2.272%   +16.495%    -1.231%    -0.107%    +0.246%
+Inflation                       +0.075%    +0.477%    -0.421%    +0.860%    +0.115%    +0.068%
+Unemployment                    -0.083%    +0.212%    +0.321%    -0.139%    -0.032%    -0.234%
+Budget                         +20.573%   -13.941%  -157.673%   -26.990%    -0.973%   -58.180%
+GovernmentDebt                 -20.573%   +13.941%  +157.673%   +26.990%    +0.973%   +58.180%
+DebtToGDP                             -          -          -          -          -          -
+PriceLevel                     +17.944%   +18.777%   +23.327%   +23.700%    -0.015%   +23.300%
+PowerCo2PerCapita               +0.000%    +0.000%    +0.000%    +0.000%    +0.000%    +0.000%
+TransportCo2PerCapita           -1.530%    -0.052%    -6.467%    -3.017%    +0.018%    -4.668%
+EnergyHouseholdPrice           +17.944%    +9.119%   +23.327%    -2.409%    -0.015%   -10.337%
+EnergyIndustryPrice            +17.944%    +9.077%   +23.327%   +11.313%    -0.015%   -10.337%
+EnergyIndustryBillGdpShare      +8.057%    -6.031%   -14.160%    -8.892%    +0.107%   -27.460%
+BusinessConfidence              +0.966%    +1.199%    +1.487%    +1.681%    -0.007%    +1.461%
+Investment                      -6.563%    -1.095%   +18.189%    +0.396%    -0.148%    +1.713%
+ApprovalRating                  +5.593%    +2.599%   +11.204%    +5.696%    -0.072%    +6.846%
+== 79 of 456 (country,field) series byte-identical
+```
+
+Poland's own path, the strongest drag (seed 777, the book's billions): the budget better for thirty years on the statute's yield, then the two runaways part - the deficit past a year's GDP in both by turn 100.
+
+| turn | Budget A (f2i) | Budget B (f4s2) | Debt A | Debt B |
+|---|---|---|---|---|
+| 1 | -58.7656059 | -58.7656059 | 554.365967 | 554.365967 |
+| 10 | -148.639145 | -113.971405 | 644.240234 | 609.570862 |
+| 30 | -779.250366 | -596.720642 | 1274.85254 | 1092.3208 |
+| 60 | -2983.10352 | -3028.27319 | 3478.69922 | 3523.86743 |
+| 100 | -10676.2881 | -23317.0078 | 11171.87 | 23812.6016 |
+
+The reading: a family that lands the drag lands the drag's compounding; a hundred-year path with a runaway debt is not a forecast in either dump (the AI ministry's rule holds every state under sixty per cent by year 100 only where it can, §388). What the seed anchors - every figure at turn 1 - is identical to the cent, which is requirement (3) in the dump's own words.
+
+**Save format 11** - the income line carries its seeded rate and the country the statute's seed yield; a save from before reads the line's rate as the seed's and takes the reference on first read.
+
+**What is not built here, sequenced.** The row (F4-4, board 15b) rides on this: the curve sampled from `TaxSchedule.MarginalRate`, the average effective rate at the mean income from `AverageEffectiveRateAtMeanIncome`, the sub-rows' per-bracket dials with the bill that carries them. F4-3 retires Sweden's blended 52. Italy waits on E-6. The cohort incomes' concept (equivalised disposable) is F4-1's finding, unchanged.
+
+**Bar:** `bar406_f42` **38 of 38** and `bar407_f42_sim` **48 of 48** (the trajectory suite verified by digest; `TaxScheduleDiagnostic` and the re-formed `LaborTaxParticipationDiagnostic` among them) on the code; `traj_f4s2` dumped at two seeds and three horizons and diffed against `traj_f2i` six times, 8 of 76 fields byte-identical per file (the ones nothing moves), the rest the family's; `bar410_f42` **38 of 38** on the tree this record reads - residue 10 (F4-2 ✅ by its marker), 12 ratchets tight.

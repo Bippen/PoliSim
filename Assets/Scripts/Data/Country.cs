@@ -128,6 +128,14 @@ namespace PoliSim.Data
         /// <summary>FT-5 (2026-09-07, §372): the income-tax line's rate at the seed - the labour tax the participation term reads its change against; 0 = no such line.</summary>
         public float LaborTaxRateSeed;
 
+        /// <summary>F4-2 (2026-09-13): the average effective rate the income-tax STATUTE yields at the seed - the denominator of
+        /// <see cref="TaxSchedule.YieldRatio"/>, captured with the structural bases so the ratio is one at the seed by construction;
+        /// 0 where the shape does not respond or the cohorts carry no income, and in a save from before (then taken on first read).</summary>
+        public float IncomeTaxSeedAer;
+
+        /// <summary>F4-2: the yield ratio's memo for the current boundary (not saved; rebuilt on first read) - see <see cref="TaxSchedule.Memo"/>.</summary>
+        [System.NonSerialized] public TaxSchedule.Memo ScheduleMemo;
+
         /// <summary>P5-B7 (2026-09-05): potential output's factors - the seed's potential, the seed's labour input (PotentialOutput.LabourInput) and the productivity index that compounds daily at the trend (1 at the seed); the labour input as it stood at the last turn, for the derived growth rate. Captured by CaptureStructuralBases; 0 = a save from before this pass, which keeps the old compounding.</summary>
         public float PotentialGdpSeed;
         public float PotentialLabourSeed;
@@ -207,6 +215,9 @@ namespace PoliSim.Data
             RevenueBaseSeeds = new float[TaxBases.DriverCount];
             LaborTaxRateSeed = 0f;   // FT-5
             foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }
+            // F4-2: the seeded rate on the income line is the shift's origin, and the statute's yield over the seed's cohorts is the ratio's denominator
+            foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax) { line.RateSeed = line.Rate; } }
+            IncomeTaxSeedAer = (float)TaxSchedule.AverageEffectiveRate(this, 0.0, 1.0, 1.0);
             for (int d = 0; d < TaxBases.DriverCount; d++) { RevenueBaseSeeds[d] = TaxBases.Level((TaxBaseDriver)d, this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;
             ComfortableDebtToGdpPercentBase = ComfortableDebtToGdpPercent;

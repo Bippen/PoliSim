@@ -94,6 +94,12 @@ namespace PoliSim.EditorTools
             ("GameController.Infrastructure.cs", "SOURCED"),   // P5-C4 (2026-09-06)
             ("GameController.Environment.cs", "SOURCED"),   // P5-C5 (2026-09-06)
             ("GameController.Energy.cs", "SOURCED"),   // EN-6 (2026-09-12): the energy page's honesty chips
+            // F4-2 (2026-09-13): a statute's own citation carries the section sign as part of the law's name - "§ 32a EStG", "§ 1(j)(2)" - and is
+            // the source line the schedule row prints (board 15b); it is the law's paragraph, not a record's section, and is allowed by the
+            // authority's name beside it
+            ("TaxSchedule.cs", "EStG"),
+            ("TaxSchedule.cs", "Rev. Proc."),
+            ("TaxSchedule.cs", "Skatteverket"),
             ("GameController.ImmigrationPoverty.cs", "SOURCED"),   // P5-C6 (2026-09-06)
             // P4-B1 (2026-09-04): the range-caption catalog is [AUTHORED] game fiction - the desk's own deadpan on every
             // dial's ten bands - and is exempt BY NAME so its satire is not read as meta-text; RangeCaptionCheck holds it

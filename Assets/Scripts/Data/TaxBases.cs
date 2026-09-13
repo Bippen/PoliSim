@@ -112,6 +112,15 @@ namespace PoliSim.Data
         /// <summary>The instrument's revenue before the coverage bridge: rate × base. ONE ACCESSOR, READ BY EVERY REVENUE SITE (the turn, the household burden, the Budget's estimates, the diagnostics), as D-16's was.</summary>
         public static float Revenue(Country country, TaxLine line) => RevenueAtRate(country, line.Type, line.Rate);
 
+        /// <summary>F4-2 (2026-09-13): the flat-equivalent rate a line stands at - for the income tax under a statute that responds, the seeded rate
+        /// times the schedule's yield ratio at this lever position (`TaxSchedule.EffectiveRate`); every other line its own rate. The burden and
+        /// labour-supply terms read this, never the lever, so a shift that leaves an exempt band exempt is felt as the statute yields it.</summary>
+        public static float EffectiveRate(Country country, TaxLine line)
+        {
+            if (line == null) { return 0f; }
+            return line.Type == TaxType.IncomeTax ? TaxSchedule.EffectiveRate(country, line, line.Rate) : line.Rate;
+        }
+
         /// <summary>
         /// The revenue an instrument yields at a given rate, the book's dollars. A percentage tax: rate ÷ 100 × its base. THE CARBON TAX (EN-4c, ruled
         /// 2026-09-11): the rate is the country's currency per tonne of CO₂ and the revenue is RATE × THE TAXED TONNES - the emissions level, Mt - brought
@@ -126,6 +135,14 @@ namespace PoliSim.Data
                 float taxedMt = Level(TaxBaseDriver.Emissions, country);   // per head × millions of people = Mt
                 double nationalBillions = rate * taxedMt / 1000.0;         // currency per tonne × Mt = millions; billions = ÷ 1000
                 return (float)(nationalBillions / EnergyLayer.NationalPerUsd(country.Id));
+            }
+            if (type == TaxType.IncomeTax && TaxSchedule.Responds(country.Id))
+            {
+                // F4-2 (2026-09-13): the statute's shape as ONE ratio against its own yield at the seed - the anchored figure (the seeded rate × the sourced
+                // base) is kept and the schedule scales it; one at the seed by construction, so a seeded budget cannot move by an integration error
+                TaxLine line = null;
+                foreach (TaxLine l in country.TaxLines) { if (l.Type == TaxType.IncomeTax) { line = l; break; } }
+                if (line != null) { return TaxSchedule.RateSeedOf(line) / 100f * Base(country, type) * (float)TaxSchedule.YieldRatio(country, line, rate); }
             }
             return rate / 100f * Base(country, type);
         }

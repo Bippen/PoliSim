@@ -838,7 +838,7 @@ namespace PoliSim.Simulation
         {
             if (country.LaborTaxRateSeed <= 0f) { return 0f; }
             float rate = 0f; bool found = false;
-            foreach (TaxLine line in country.TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { rate = line.Rate; found = true; } }
+            foreach (TaxLine line in country.TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { rate = TaxBases.EffectiveRate(country, line); found = true; } }   // F4-2: the statute's yield, not the lever
             if (!found) { return 0f; }
             float afterTaxNow = Mathf.Max(1f, 100f - rate), afterTaxSeed = Mathf.Max(1f, 100f - country.LaborTaxRateSeed);
             return Mathf.Clamp(ParticipationElasticityToAfterTaxWage * 100f * Mathf.Log(afterTaxNow / afterTaxSeed), -5f, 5f);
@@ -1132,7 +1132,7 @@ namespace PoliSim.Simulation
             {
                 if (line.IsImplemented && line.Type == TaxType.IncomeTax)
                 {
-                    incomeTaxRate = line.Rate;
+                    incomeTaxRate = TaxBases.EffectiveRate(country, line);   // F4-2: the statute's yield, not the lever
                     break;
                 }
             }

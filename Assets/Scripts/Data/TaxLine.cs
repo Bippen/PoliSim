@@ -128,6 +128,11 @@ namespace PoliSim.Data
         /// <summary>EN-4c: this line's own ceiling where the type's bound is not in the line's unit - the carbon tax's dollars-per-tonne bound converted into the country's currency at the SEED's prices (WorldFactory.SeedTaxLines), carried by the price level at every boundary since EN-4e (CarbonRateStatute.AdvanceYear); 0 = the type's bound. Persisted with the line.</summary>
         public float RateCeiling;
 
+        /// <summary>F4-2 (2026-09-13): the rate this line was SEEDED at - the origin the schedule's uniform shift is measured from (the lever's distance
+        /// from it, in points, shifts every taxed band of the statute), and the anchor the revenue engine keeps: revenue = this rate × the sourced base ×
+        /// the schedule's yield ratio, one at the seed by construction. Captured with the structural bases; 0 in a save from before, read as the line's rate.</summary>
+        public float RateSeed;
+
         /// <summary>True for the one instrument whose rate is a price per tonne rather than a percentage of a base.</summary>
         public bool IsPerTonne => Type == TaxType.CarbonTax;
 
@@ -175,7 +180,7 @@ namespace PoliSim.Data
         /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - TaxLine.Rate is mutated by ApplyTaxRateChanges, so the preview needs its own copies, not shared references.</summary>
         public TaxLine Clone()
         {
-            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling };
+            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling, RateSeed = RateSeed };
         }
     }
 }

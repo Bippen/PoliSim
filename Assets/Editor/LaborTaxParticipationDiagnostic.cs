@@ -36,15 +36,20 @@ namespace PoliSim.EditorTools
             float[] untouched = Run(0f);
             float[] cut = Run(-5f);
             float[] rise = Run(5f);
-            // per run: [0] participation L+2, [1] unemployment L+2, [2] potential L+4, [3] the term at the end, [4] the seed rate
+            // per run: [0] participation L+2, [1] unemployment L+2, [2] potential L+4, [3] the term at the end, [4] the seed rate, [5] the EFFECTIVE rate at the end
+            // F4-2 (2026-09-13): the term reads the effective rate - the seeded rate times the statute's yield ratio (TaxBases.EffectiveRate) - so a 5-point
+            // move of the LEVER is a 5-point shift of every taxed band of the statute, and the flat-equivalent rate moves as the statute yields; the
+            // expectation is the term's own formula on that effective rate, and an untouched lever carries the drag's term, not zero by assumption
             float seedRate = untouched[4];
-            float expectedCut = 0.116f * 100f * Mathf.Log((100f - (seedRate - 5f)) / (100f - seedRate));
-            float expectedRise = 0.116f * 100f * Mathf.Log((100f - (seedRate + 5f)) / (100f - seedRate));
+            float expectedCut = 0.116f * 100f * Mathf.Log((100f - cut[5]) / (100f - seedRate));
+            float expectedRise = 0.116f * 100f * Mathf.Log((100f - rise[5]) / (100f - seedRate));
+            float expectedUntouched = 0.116f * 100f * Mathf.Log((100f - untouched[5]) / (100f - seedRate));
             if (!(cut[0] > untouched[0]) || !(rise[0] < untouched[0])) { Debug.LogError($"LABOR TAX: participation two years on does not answer the rate both ways (cut {cut[0]:F3}, untouched {untouched[0]:F3}, rise {rise[0]:F3})."); ok = false; }
             if (!(cut[1] > untouched[1]) || !(rise[1] < untouched[1])) { Debug.LogError($"LABOR TAX: unemployment two years on does not RISE on a cut and fall on a rise (cut {cut[1]:F3}, untouched {untouched[1]:F3}, rise {rise[1]:F3}) - the jobs lag is not carrying the new participants."); ok = false; }
             if (!(cut[2] > untouched[2]) || !(rise[2] < untouched[2])) { Debug.LogError($"LABOR TAX: potential four years on does not answer the rate both ways (cut {cut[2]:F1}, untouched {untouched[2]:F1}, rise {rise[2]:F1})."); ok = false; }
             if (Mathf.Abs(cut[3] - expectedCut) > 1e-3f || Mathf.Abs(rise[3] - expectedRise) > 1e-3f) { Debug.LogError($"LABOR TAX: the term reads {cut[3]:F4} / {rise[3]:F4}, expected {expectedCut:F4} / {expectedRise:F4}."); ok = false; }
-            if (Mathf.Abs(untouched[3]) > 1e-6f) { Debug.LogError($"LABOR TAX: untouched Sweden carries a term after {Turns} years ({untouched[3]:R})."); ok = false; }
+            if (Mathf.Abs(untouched[3] - expectedUntouched) > 1e-3f) { Debug.LogError($"LABOR TAX: untouched Sweden's term after {Turns} years reads {untouched[3]:R}, not the drag's {expectedUntouched:R} (effective {untouched[5]:F3} against the seed's {seedRate:F3})."); ok = false; }
+            Debug.Log($"LABOR TAX (F4-2): the lever's 5 points move Sweden's effective rate {seedRate:F2} → {cut[5]:F2} on a cut and → {rise[5]:F2} on a rise (the statute's answer to a point of the tariff); untouched, the drag leaves it at {untouched[5]:F3} after {Turns} years, the term {untouched[3]:F4}.");
             float[] far = Run(20f);
             if (Mathf.Abs(far[3]) > 5f) { Debug.LogError($"LABOR TAX: the term left its ±5 guard at +20 points ({far[3]:F3})."); ok = false; }
 
@@ -68,7 +73,7 @@ namespace PoliSim.EditorTools
                 float seedRate = c.LaborTaxRateSeed;
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
                 foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
-                var result = new float[5]; result[4] = seedRate;
+                var result = new float[6]; result[4] = seedRate;
                 for (int year = 1; year <= Turns; year++)
                 {
                     for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
@@ -80,6 +85,7 @@ namespace PoliSim.EditorTools
                     if (year == Landing + 4) { result[2] = c.State.PotentialGDP; }
                 }
                 result[3] = MacroSystem.LaborTaxParticipationTerm(c);
+                foreach (TaxLine line in c.TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { result[5] = TaxBases.EffectiveRate(c, line); } }
                 return result;
             }
             finally { Object.DestroyImmediate(go); }
