@@ -27312,3 +27312,15 @@ Proven in the other direction on a tree whose mark read `DatedTo + 1` again (`pr
 **Not touched.** No trajectory moves - a readout on the statute (a new method the model's turn does not call) and the Budget's drawing (the grain changes where a draft snaps, not a figure the turn computes); the pensions driver stays deferred by ruling.
 
 **Bar:** `bar426_sp1` **38 of 38** on the first code (its films read for the step printed on a row that needed none and for the overprinted name), `bar427_sp2` **38 of 38** on the final code; `bar428_sp_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
+
+## 494. THE D20 RETURN ASSEMBLED — the three boards as built with their deviations, and the statutory mark's two cases asked back: a rule that publishes a window, and one that publishes nothing (2026-09-14)
+
+**The ruling** (Elias, 2026-09-14): *"Record with PN-1: the indexed class is two countries, not one, and SFB 2 kap. 10 c § publishes each riktålder six years ahead — so an indexed rule has a short dated path that stops where the law stops. That sharpens 15c's third-mark ask; put both cases to Design in the return (a rule that publishes a window, and one that publishes nothing)."*
+
+**What was owed, stated.** §489 recorded the indexed class and the six-year window as ruled on 2026-09-13; the return that puts the two cases to Design was not assembled when 15c was built (§491) - D20's status said "nothing is live" and no paste existed. Assembling it found case B on the built row: the row printed the horizon's year as NEXT once the calendar passed it, which §493 fixed structurally before this return describes it.
+
+**The return** (`CLAUDE_DESIGN_ASSET_REQUEST.md`, a status at the head and the section ⭐ THE D20 RETURN above D20): the three boards as built, each deviation carried from its record (15a's four, §486; 15b's four, §490; 15c's three, §491 and §493); the third mark as two cases with the statutes, what each publishes ahead, what the row draws today and the one question each - case A, a WINDOW (Sweden's riktålder six years out by 2 kap. 10 c §, Italy's ISTAT adjustment two years out by art. 24: how a window's last tick reads against a schedule's, which the law closes where an indexed rule merely stops publishing); case B, NOTHING for the year in force (the same two once the calendar passes the window - Italy from 2029, the films' year; Sweden from 2033: how a knob that is itself a carried figure reads beside the law's own, and whether a path is drawn at all); what is not asked; the carried rows; the annex. **Nothing else is asked**: no glyph, no figure, the override state waits for the driver by ruling.
+
+**The paste** (`SEND_PACKAGE.md`, cut last, after this record's bar line): ONE paste - the documents (the request, the errands, the record, the feature list, the pension statutes' README and CSV) and the frames of both cases and the three boards, every digest read off the file on disk. **E-36 opened: sending is Elias's.**
+
+**Bar:** `bar429_ret_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
