@@ -12,7 +12,7 @@
 |---|---|---|--:|---|
 | **1 of 23** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 208475 | `613f4dddf55ba762b6d3b4d3f48ef13a01b12478ccad2a49298d684e51ed1638` |
 | **2 of 23** | document | `ERRANDS.md` | 23960 | `d2b9cce72a870bd7bd80fe198916b52509a7545d0948140891c15bda5dd1aac3` |
-| **3 of 23** | document | `COMPLETED.md` | 3146774 | `510f7b4fc5db25bbc17ad71c76e8120a8003bb9b62efd6765a1c452eda243481` |
+| **3 of 23** | document | `COMPLETED.md` | 3156041 | `49fea54ae158e96427765dad2d11f9df7597b73a02ea22688613c801a579a9f7` |
 | **4 of 23** | document | `POLISIM_FEATURE_LIST.md` | 222155 | `4de1f0270162d62f66130c354165ef417570c697dfbcc53937580b5aa84b296a` |
 | **5 of 23** | document | `ElectionsData/pensions/README.md` | 5856 | `a9e6526c08a60d9a2fb32fda89d1de97475cceecfbfa1d697f7bb27ad55982b2` |
 | **6 of 23** | data | `ElectionsData/pensions/statutory_ages.csv` | 2835 | `ef7bb488d563ba788dcd158e3bbcb2ce88f18b526243802446e72e0b72ad98fd` |

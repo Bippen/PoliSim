@@ -27324,3 +27324,67 @@ Proven in the other direction on a tree whose mark read `DatedTo + 1` again (`pr
 **The paste** (`SEND_PACKAGE.md`, cut last, after this record's bar line): ONE paste - the documents (the request, the errands, the record, the feature list, the pension statutes' README and CSV) and the frames of both cases and the three boards, every digest read off the file on disk. **E-36 opened: sending is Elias's.**
 
 **Bar:** `bar429_ret_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
+
+## 495. THE STANDING LIST, CYCLED AFTER THE BATCH OF §488–§494 — the residue at 7 (F4-2, F4-4, CL-2 and BR-1 closed; PN-1's statute and mark landed with its driver held), EN-7 next by §474's own ruling, the D20 return out on our side, three corrections to the records, the batch's sheets marked (2026-09-14)
+
+**The ruling:** *"the standing list after each landed pass"* (§474); 2026-09-14: *"work the open chains to their ends, continuously. One commit per item, one green bar per commit, R-SP1 push, decisions sheeted and self-taken, one report at end of budget."*
+
+**The batch** (seven records, seven commits, each on its own bar): F4-2 §488 (`def8a73`), PN-1's statute layer §489 (`314a4cb`), board 15b and F4-4 §490 (`a7fbb59`), board 15c §491 (`8c727ae`) - the four of 2026-09-13; CL-2 §492 (`15f1643`), the spending tab's pass with BR-1 §493 (`b198648`), the D20 return §494 (`157da13`) - 2026-09-14, after the session that built the first four ran out of usage with CL-2 filmed once and uncommitted. The abandoned patch's three findings stand in the code as requirements, asserted by `TaxScheduleDiagnostic` (§488): the incomes in the statute's own currency; a uniform shift never touching an exempt band; the response a ratio against the statute's own yield at the seed.
+
+**Ratchets.** `RatchetSlackCheck` on this cycle's bar: **12 reported, 12 tight** (`bar429_ret_rec`), the ledger printed whole:
+
+| ratchet | measured | ceiling | verdict |
+|---|---|---|---|
+| `PartyMarkCoverageCheck.UNCONSUMED` | 0 | 0 | tight |
+| `DeadStateCheck.UNREACHED` | 0 | 0 | tight |
+| `DeadStateCheck.WRITE_ONLY` | 0 | 0 | tight |
+| `ConstantProvenanceCheck.UNMARKED` | 0 | 0 | tight |
+| `UnwiredSubsystemCheck.UNWIRED` | 2 | 2 | tight |
+| `UnwiredSubsystemCheck.UNREACHABLE` | 2 | 2 | tight |
+| `EvidenceDiscriminationCheck.NO_FAILURE_PATH` | 0 | 0 | tight |
+| `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` | 0 | 0 | tight |
+| `DocumentClaimCheck.MEMBER_GONE` | 0 | 0 | tight |
+| `DocumentClaimCheck.WRONG_OWNER` | 0 | 0 | tight |
+| `MojibakeCheck.SUSPECT_RUNS` | 1 | 1 | tight |
+| `PreWiringPremiseCheck.ASSERTED` | 0 | 0 | tight |
+
+The cheap bar is **38** and the simulation group **49** (`bar424_cl2_sim`, 49 of 49). Two families were dumped in the batch - `traj_f4s2` (F4-2, the first tax family, diffed against `traj_f2i`) and `traj_pn1` (byte-identical to it) - and no label moved after them: 15b, 15c, CL-2, the spending tab's pass and the return are surfaces, a campaign and a readout on the statute that the trajectory suite does not run.
+
+**The residue** reads **7** (`bar429_ret_rec`, 437 files scanned): F4-3, PN-1, PN-2, PN-3, EN-7, CL-3, CL-4. The exclusions stay **19** by name. **What moved in the rows' readiness:** F4-4 and BR-1 are closed and CL-2 is closed; **EN-7 is the next pass and needs no ruling** - §474 ruled §378 for stage 5 (*"build the law category stage 5 needs, cited, as its own item; the wider dials-only set follows P4-C3's one-category-per-session pattern and does not block stage 5"*), and §485's and §487's "EN-7 (stage 5) waits on §378 - Elias's" read the wider set's question as stage 5's (corrected below); F4-3 (Sweden's two layers as one line, B3) is the tax chain's next family; PN-1 holds its BASELINE half - the driver - by the ruling of 2026-09-13, and PN-2 (its headcount is the driver's) and PN-3 wait behind it; CL-3 (the play protocol) waits on K-1 - Sweden's real result - and CL-4 on the play.
+
+**The deferral register, re-read literally after the batch:**
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1 .. T-7 | as at §480 | **NOT FIRED** (T-3 FIRED, Elias's) - the schedule reads the cohort incomes, the pension statute the calendar, the campaign its own streams |
+| **T-8 EN-3c** | *stage 5's fleet reads its inframarginal rent; the three folds fetched first* | **NOT FIRED** - the page prints the rent and nothing reads it; EN-7's plan keeps the ownership term and any investment rule absent for this reason |
+| F-1 | *a campaign the player actually runs* | **NOT FIRED** - CL-2 closed the loop's gaps; the play is Elias's (CL-3's protocol, E-2..E-24 his) |
+| F-2 .. F-5, F-7 | the elections' deferred set | **NOT FIRED** - as at §478 |
+| D-3's trigger | fired §479 | **FIRED and BUILT** - F4-2 §488 |
+| PN-1's driver | *the BASELINE half, by ruling* | **HELD** - the ruling of 2026-09-13; the row's mark built (§491, §493), its lever waits |
+| FT-1…FT-9, RF-1, RF-2 | the fix track | **closed**, as at §469 |
+
+**The errands, the calendar, the documents.** **E-36 opened** (§494: paste the D20 return - sending is Elias's); E-3 and E-6 open as before; E-35 SENT and ANSWERED, every board of its answer built. **K-1's date, 13 September 2026, has passed** - the seed refresh from Sweden's real result is the calendar's row, not a session's to take, and stays open; K-2 on 29 January 2027. **RS-1 opened for Elias** (§492: who replaces a candidate who resigns). `ls *.md` returns **23**, `Tools/` holds **15**; the three numbered constants read their listed values (`CampaignPressure.PersuasionPerCompatibilityPoint` 40000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500000) and a fourth joined the play sheet (`Scandals.LiveRatePerPartyDay` = 1.0 / 80.0, `[AUTHORED-DRAFT]`, the twenty-first entry beside the twenty), read off the code by this record's script. Save format **13** (CL-2's answers on the campaign record).
+
+**Three corrections to the records, stated rather than edited in place.** (1) **§490's films table** gives every film's exit as "1 - see the log": those codes were read from the first 15b chain's output (`chain_15b.out`, exit 1 on its findings), while the logs on disk and every other figure in the table are the second chain's (`chain_15b_b.out`), where **all eight exited 0**. (2) **§485 and §487** say EN-7 waits on §378 as Elias's - §474 had ruled it for stage 5; only the wider dials-only set is his question. (3) **§491** recorded the USA film's exit on BR-1 as a standing figure where the ruling of 2026-09-13 had said to fix BR-1 in the pass that next touched that surface - §491 was that pass; §493 carried the fix and says so.
+
+**This batch's self-ruled sheets, marked** (§488–§494's):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §488 | the yield ratio memoised per boundary (`TaxSchedule.Memo`) | **HOLDS** - the ratio moves only with the boundary's prices and wages; the simulation bar back at ten minutes |
+| §488 | the effective rate moved in POINTS by the statute (seed + yield now − yield at the seed), never scaled by the ratio | **HOLDS** - the scaled form moved Poland's rate twelve points for five; the seeded rate is an anchored figure, not a yield |
+| §488 | FT-5's harness re-formed on the effective rate | **HOLDS** - the labour-supply term reads the rate a household faces; the mechanism unchanged |
+| §490 | the lever's figure kept as the rate, the AER at the mean income as its second line; Sweden's state brackets drawn sourced; the draft curve redrawn from the statute; PER PART as the kind word | **HOLDS** - each stated to Design in the return (§494) |
+| §491 | the pension row on the full row, the years above the track, the citation's short form on the row and the paragraph on the Policy Web node | **HOLDS** - the first films' findings; stated in the return |
+| §492 | the answers in their own list on the record, not the action queue | **HOLDS** - the class closed, not the one site; the round trip asserts the answer on the loaded record |
+| §492 | no live story on the final day, for any party | **HOLDS** - every story the player's party gets has a morning; every party drawn on the same days; 8g proven broken |
+| §492 | SACRIFICE STAFF takes the most recently hired; RESIGN refused with its reason | **HOLDS** - a rule, not a figure, for the one; no replacement candidate is cast for the other (RS-1, Elias's) |
+| §492 | the party picker taken with the three named closures; a scenario started through the pick | **HOLDS** - DS-6 and the row carry it; the scenario path was the stand-in's last player route |
+| §492 | the map's pick keyed to its campaign and cleared on a load; the evidence's one line the instinct's named constant | **HOLDS** - a load's outcome cannot depend on the session's history; the 0.6 cut was a figure the model does not hold |
+| §493 | a spending row's grain the range's hundredth on a 1-2-5 step, never under a billion; the step printed only where coarser than a billion | **HOLDS** - rows of a hundred billion or less snap as before; the "BY $1B" noise cut on film |
+| §493 | a wrapped name measured and drawn in the room above its caption line; the instrument fixed first | **HOLDS** - the instrument flagged it on film before the ladder moved |
+| §493 | the undated mark names this year once the calendar passes the horizon, the band CARRIED FROM | **HOLDS** - structural; its composition asked of Design (§494) |
+| §494 | the return poses the two cases against the row's structural state, asks nothing else | **HOLDS** - as ruled |
+
+**Bar:** `bar429_ret_rec` **38 of 38** on the tree this record reads - residue 7, 12 ratchets tight; `bar430_shelf` **38 of 38** after this record was written from that reading (residue 7, 12 tight).
