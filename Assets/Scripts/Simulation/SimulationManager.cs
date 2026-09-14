@@ -3404,6 +3404,11 @@ namespace PoliSim.Simulation
                 // turn showed one. A preview that disagrees with the turn it previews is the one thing
                 // `EstimateBudgetBill` exists to prevent.
                 BaselineTaxRates = new Dictionary<TaxType, float>(country.BaselineTaxRates),
+                // §497: the dial costs' trackers - the R4-1 clone-escape class a fourth time: a clone with zero trackers re-applied every
+                // standing dial's whole cost on top of lines that already carried it, so the preview overstated spending off neutral
+                AppliedJusticeEnforcementCost = country.AppliedJusticeEnforcementCost,
+                AppliedBorderEnforcementCost = country.AppliedBorderEnforcementCost,
+                AppliedSectorSupportCost = country.AppliedSectorSupportCost,
 
                 // P-I2 stage 1: the pyramid, CLONED. Nothing reads it on the preview path yet, so this line
                 // buys nothing today - it is here because the clone-escape class has now cost this pass twice
@@ -4076,6 +4081,8 @@ namespace PoliSim.Simulation
             // pre-RF-2 form grew every line with potential growth, a policy nobody took (§367). This form is the law's: a caseload, at the going wage.
             float wages = aiBudget && country.RealWageIndexAtLastIndex > 0f ? country.State.RealWageIndex / country.RealWageIndexAtLastIndex : 1f;
             country.RealWageIndexAtLastIndex = country.State.RealWageIndex;
+            // §497: the lines the dial costs land on - each tracker rides its own line's index below
+            SpendingLine justiceCostLine = JusticeCostLine(country), borderCostLine = BorderCostLine(country), sectorCostLine = SectorCostLine(country);
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);
@@ -4094,8 +4101,23 @@ namespace PoliSim.Simulation
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }
                 line.Amount = ClampToSeedRange(line, line.Amount * factor);
+                // §497: the amount just indexed carries last year's applied dial cost at this year's index, so the tracker rides the same factor -
+                // left unindexed, the next boundary's difference (target - tracker) re-applied the index's share of the cost every year, and a
+                // dial held off neutral compounded its line past its target. Zero at no policy.
+                if (line == justiceCostLine) { country.AppliedJusticeEnforcementCost *= factor; }
+                if (line == borderCostLine) { country.AppliedBorderEnforcementCost *= factor; }
+                if (line == sectorCostLine) { country.AppliedSectorSupportCost *= factor; }
             }
         }
+
+        /// <summary>§497: the line the justice dials' cost lands on - Justice, else PublicServices (the one lookup the pressure and the index share).</summary>
+        private static SpendingLine JusticeCostLine(Country country) => FindSpendingLine(country, SpendingCategory.Justice) ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+
+        /// <summary>§497: the line border enforcement's cost lands on - HomelandSecurity, else Migration, else PublicServices.</summary>
+        private static SpendingLine BorderCostLine(Country country) => FindSpendingLine(country, SpendingCategory.HomelandSecurity) ?? FindSpendingLine(country, SpendingCategory.Migration) ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+
+        /// <summary>§497: the line the sector dials' support cost lands on - Commerce, else PublicServices.</summary>
+        private static SpendingLine SectorCostLine(Country country) => FindSpendingLine(country, SpendingCategory.Commerce) ?? FindSpendingLine(country, SpendingCategory.PublicServices);
 
         /// <summary>First SpendingLine matching category, or null if the country has none - a plain linear search, matching this file's existing no-LINQ style.</summary>
         private static SpendingLine FindSpendingLine(Country country, SpendingCategory category)
@@ -4144,7 +4166,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private void ApplyEnforcementCostPressure(Country country)
         {
-            float gdp = country.State.GDP;
+            float gdp = country.State.NominalGdp;   // §497: the lines are in current prices (P5-B6); a target on real GDP crossed the two books
             float justiceTarget = gdp / 100f * (
                     CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint * (country.PoliceFundingLevel - CrimeJusticeCouplings.NeutralDialLevel)
                   + CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint * (country.JudicialFundingLevel - CrimeJusticeCouplings.NeutralDialLevel))
@@ -4153,17 +4175,14 @@ namespace PoliSim.Simulation
             float borderTarget = gdp / 100f * CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint
                 * (country.BorderEnforcementLevel - CrimeJusticeCouplings.NeutralDialLevel);
 
-            SpendingLine justiceLine = FindSpendingLine(country, SpendingCategory.Justice)
-                ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+            SpendingLine justiceLine = JusticeCostLine(country);
             if (justiceLine != null)
             {
                 justiceLine.Amount = ClampToSeedRange(justiceLine, justiceLine.Amount + (justiceTarget - country.AppliedJusticeEnforcementCost));
                 country.AppliedJusticeEnforcementCost = justiceTarget;
             }
 
-            SpendingLine borderLine = FindSpendingLine(country, SpendingCategory.HomelandSecurity)
-                ?? FindSpendingLine(country, SpendingCategory.Migration)
-                ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+            SpendingLine borderLine = BorderCostLine(country);
             if (borderLine != null)
             {
                 borderLine.Amount = ClampToSeedRange(borderLine, borderLine.Amount + (borderTarget - country.AppliedBorderEnforcementCost));
@@ -4181,8 +4200,7 @@ namespace PoliSim.Simulation
         private void ApplySectorSupportCostPressure(Country country)
         {
             float target = SectorCouplings.SupportCostTarget(country);
-            SpendingLine line = FindSpendingLine(country, SpendingCategory.Commerce)
-                ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+            SpendingLine line = SectorCostLine(country);
             if (line != null)
             {
                 line.Amount = ClampToSeedRange(line, line.Amount + (target - country.AppliedSectorSupportCost));

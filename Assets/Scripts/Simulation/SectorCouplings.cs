@@ -45,7 +45,7 @@ namespace PoliSim.Simulation
             float total = 0f;
             foreach (Sector sector in country.Sectors)
             {
-                total += SupportCost(country.State.GDP, sector.SubsidyLevel, sector.TaxCreditLevel, sector.ResearchGrantsLevel);
+                total += SupportCost(country.State.NominalGdp, sector.SubsidyLevel, sector.TaxCreditLevel, sector.ResearchGrantsLevel);   // §497: the line is nominal (P5-B6)
             }
             return total;
         }

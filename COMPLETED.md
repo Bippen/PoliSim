@@ -27444,3 +27444,49 @@ and asserts the property the pass lacked: **960 of 960** unmoved cases - incomes
 **Not touched.** Every other schedule (the bracket tables, the barème, the two layers) did the same arithmetic in the same order across §490 and is unchanged here; no sub-row UI, no bill, no save field moved.
 
 **Bar:** `bar431_f44` **38 of 38**, `bar432_f44_sim` **49 of 49** on the restoration, `bar433_sent` **38 of 38** and `bar434_sent_sim` **50 of 50** with the sentinel first; `bar435_f44_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
+
+## 497. THE APPLIED-COST IDIOM UNDER THE INDEXED BOOK — the three dial costs' trackers ride their line's index, cross the preview clone, and take their targets on the nominal book; measured on the USA, proven broken, byte-identical at no policy (2026-09-14)
+
+**The rulings:** *"measure the premise before fixing it"*; *"never compare across the two books"*; *"prove every guard both directions"*.
+
+**What was found, and where.** Reading EN-7's seam - the sector dials' support cost, which stage 5 routes onto the energy line - against the code: three dial costs land on spending lines by the same applied-difference idiom (P4-B3's sector support on Commerce, the crime six's justice and border enforcement on Justice and HomelandSecurity; `ApplySectorSupportCostPressure`, `ApplyEnforcementCostPressure`), each a stateless target composed with its line through a tracker on the country so a boundary applies only what moved. Three escapes, all zero at no policy (every dial at its neutral 50 and the prison rate flat at its baseline in the no-policy dump), none measured before:
+
+1. **The index.** Since P5-B2 `IndexSpendingLines` scales each line's whole amount - the applied dial cost inside it included - while the tracker stayed at last year's figure, so the next boundary's difference (target − tracker) re-applied the index's share of the cost every year and a dial held off neutral compounded its line past its target.
+2. **The clone.** `ClonePreviewCountry` carried none of the three trackers, so a preview's boundary re-applied every standing dial's whole cost on top of lines that already carried it - the R4-1 clone-escape class a fourth time.
+3. **The two books.** Both targets read real GDP (`State.GDP`) while the lines are nominal since P5-B6, and the Sectors screen's own cost line reads nominal GDP.
+
+**The fix** (`SimulationManager.IndexSpendingLines`, `JusticeCostLine` / `BorderCostLine` / `SectorCostLine`, `ClonePreviewCountry`, `ApplyEnforcementCostPressure`; `SectorCouplings.SupportCostTarget`). Each tracker rides its own line's factor in the same pass that indexes the line (a pinned line indexes neither); the landing lookups are one helper each, shared by the pressure and the index; the clone copies the three trackers; the targets read `NominalGdp`.
+
+**Measured** (`AppliedCostIdiomDiagnostic`, simulation group - the USA, whose book carries all three lines; the dials set to 80 as passed bills would leave them, the private seams called by reflection so nothing but the idiom moves between the readings):
+
+```
+    1. THE INDEX - a price level up 5 %, then the next boundary: the dial cost inside each line against its target
+       Justice (police funding 80)            inside the line 54.810 bn, target 54.810 (last year's 52.200, the line's index ×1.0500; an unindexed tracker would leave 2.610 extra) - +0.000
+       HomelandSecurity (border 80)           inside the line 27.405 bn, target 27.405 (last year's 26.100, the line's index ×1.0669; an unindexed tracker would leave 1.747 extra) - +0.000
+       Commerce (manufacturing subsidy 80)    inside the line 27.405 bn, target 27.405 (last year's 26.100, the line's index ×1.0669; an unindexed tracker would leave 1.747 extra) - +0.000
+    2. THE CLONE - the preview's copy carries trackers 54.810 / 27.405 / 27.405 bn; a boundary on it moved the three lines by +0.000 / +0.000 / +0.000 bn
+```
+
+**Proven in the other direction** (`idiom_broken`: the trackers unindexed and off the clone again) - the diagnostic FAILED on all four:
+
+```
+    APPLIED COST: Justice (police funding 80) carries 57,420 bn of dial cost against a target of 54,810 - 2,610 bn off.
+    APPLIED COST: HomelandSecurity (border 80) carries 29,152 bn of dial cost against a target of 27,405 - 1,747 bn off.
+    APPLIED COST: Commerce (manufacturing subsidy 80) carries 29,152 bn of dial cost against a target of 27,405 - 1,747 bn off.
+    APPLIED COST: a boundary on the preview's copy re-applied the standing dial costs (26,580 / 27,405 / 4,990 bn) - the trackers did not cross the clone.
+```
+
+**No policy, byte-identical** (`traj_idiom` against `traj_pn1`; the sentinel passes in the simulation bar, **51 of 51**):
+
+| seed | horizon | fields byte-identical (`idiom` vs `pn1`) |
+|---|---|---|
+| 777 | 100 | **76 of 76** |
+| 777 | 500 | **76 of 76** |
+| 777 | 1000 | **76 of 76** |
+| 424242 | 100 | **76 of 76** |
+| 424242 | 500 | **76 of 76** |
+| 424242 | 1000 | **76 of 76** |
+
+**Not touched.** The targets' own coefficients (`[AUTHORED-DRAFT]` since P4-B3 and the crime passes), the clamp's rule (a bound that binds still loses the un-achieved remainder, as the enforcement doc states), every other line writer.
+
+**Bar:** `bar436_idiom` **38 of 38** and `bar437_idiom_sim` **51 of 51** on the code; `bar438_idiom_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
