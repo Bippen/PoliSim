@@ -46,14 +46,17 @@ namespace PoliSim.UI
             /// <see cref="High"/>, so two stacks passed the same High read against each other (the larger fills the lane, the smaller stops short).
             /// False (every row before 15a) scales the parts to their own sum, the lane always full.</summary>
             public readonly bool ScaleToHigh;
+            /// <summary>EN-7a (2026-09-14): draw the reached-by chips under a row that has NO band (in PROVENANCE, as every row's chips). The draw skipped
+            /// every PlateBand.None row, so the energy page's instrument chips - recorded built at §486 - never drew; opt-in, so no other plate moves.</summary>
+            public readonly bool ChipsWithoutBand;
 
             public PlateRow(string name, string unit, string source, string figure, PlateBand band, float low, float high, float own, float[] peers,
                 bool lowerIsBetter, string[] reachedBy, IReadOnlyList<float> series, string[] honesty, bool couplingDraft, string absentReason = null,
-                float[] segments = null, string[] segmentLabels = null, string unitGlyph = null, string flag = null, bool scaleToHigh = false)
+                float[] segments = null, string[] segmentLabels = null, string unitGlyph = null, string flag = null, bool scaleToHigh = false, bool chipsWithoutBand = false)
             {
                 Name = name; Unit = unit; Source = source; Figure = figure; Band = band; Low = low; High = high; Own = own; Peers = peers;
                 LowerIsBetter = lowerIsBetter; ReachedBy = reachedBy; Series = series; Honesty = honesty; CouplingDraft = couplingDraft; AbsentReason = absentReason;
-                Segments = segments; SegmentLabels = segmentLabels; UnitGlyph = unitGlyph; Flag = flag; ScaleToHigh = scaleToHigh;
+                Segments = segments; SegmentLabels = segmentLabels; UnitGlyph = unitGlyph; Flag = flag; ScaleToHigh = scaleToHigh; ChipsWithoutBand = chipsWithoutBand;
             }
         }
 
@@ -371,7 +374,7 @@ namespace PoliSim.UI
             else
             {
                 DrawPlateBand(bandCell, data, areaInk, caption);
-                if (prov && data.ReachedBy != null && data.Band != PlateBand.None)
+                if (prov && data.ReachedBy != null && (data.Band != PlateBand.None || data.ChipsWithoutBand))
                 {
                     DrawPlateChips(new Rect(bandCell.x, bandCell.yMax + StatsUnit(3f), bandCell.width, chipH), data.ReachedBy, chip, PoliSimTheme.Hairline, bordered: true);
                 }

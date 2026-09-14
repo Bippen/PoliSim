@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Text;
 using PoliSim.Data;
 using PoliSim.Data.Generated;
@@ -21,6 +22,10 @@ namespace PoliSim.EditorTools
     /// (4) CONGESTION: Sweden's links scaled to a third of their NTCs - a snitt binds, the rent is positive, and the next year's network component
     /// is lower by the rent over the consumption, both classes alike, the book closing. (5) THE SINGLE BOOK: after the ten years, recomputing the
     /// stack at the standing rate returns the state's stored figures. (6) B6: at a doubled price level the stack's nominal components double.
+    /// (7) EN-7a: the Energy sector's subsidy at 80 through the boundary's own pressures - France's and the USA's cost on the energy line and out of
+    /// the other sectors' support target (the USA's Commerce unmoved; its price unmoved, no levy), the levy down one for one; Germany (no energy line)
+    /// its cost left in that target; Poland's regulation twenty points either side of its anchor moving the pre-tax ratio by exactly (1 − k × gap)
+    /// with suppliers' receipts unchanged; every class's seeded components positive at Regulation 0 and 100 in all six; the size, all six.
     /// </summary>
     public static class EnergyLedgerDiagnostic
     {
@@ -159,6 +164,124 @@ namespace PoliSim.EditorTools
                 }
                 sb.Append(F("    households: network {0:F4} → {1:F4}, levies {2:F4} → {3:F4}, tax {4:F4} → {5:F4}, margin {6:F4} → {7:F4}, wholesale {8:F4} → {9:F4} (every cost doubles - the fitted adders with them since EN-5, the ETS with the level; the ceiling does not - the market's own B6, §460, §465; the national carbon tax is not in the stack since EN-4d)\n",
                     b1.Classes[0].Network, b2.Classes[0].Network, b1.Classes[0].Policy, b2.Classes[0].Policy, b1.Classes[0].TaxEnv, b2.Classes[0].TaxEnv, b1.Classes[0].Margin, b2.Classes[0].Margin, b1.WholesalePerKwh, b2.WholesalePerKwh));
+            }
+
+            // (7) EN-7a: the Energy sector's dials onto the instruments
+            sb.Append("\n    7. EN-7a: THE SUBSIDY ON THE ENERGY LINE (retail intervention), THE REGULATION GAP MOVING THE PRE-TAX RATIO (market liberalisation)\n");
+            {
+                const BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+                MethodInfo energyPressure = typeof(SimulationManager).GetMethod("ApplyEnergySupportCostPressure", instance);
+                MethodInfo sectorPressure = typeof(SimulationManager).GetMethod("ApplySectorSupportCostPressure", instance);
+                if (energyPressure == null || sectorPressure == null) { ok = false; Debug.LogError("ENERGY LEDGER: the support pressures were not found by reflection - EN-7a is UNVERIFIED."); }
+                else
+                {
+                    // France: an energy line and a levy, no sector-support line · the USA: an energy line, no levy, Commerce (the double-booking guard) · Germany: no energy line
+                    foreach (CountryId id in new[] { CountryId.France, CountryId.USA, CountryId.Germany })
+                    {
+                        SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
+                        World w = WorldFactory.CreateDefault(); EnergyMarket.BeginTurn(w);
+                        var go = new GameObject("EN7A");
+                        try
+                        {
+                            SimulationManager sim = go.AddComponent<SimulationManager>();
+                            sim.SetWorld(w);
+                            Country k = w.GetCountry(id);
+                            SpendingLine energyLine = SectorCouplings.EnergyLine(k), supportLine = SectorCouplings.SupportLine(k);
+                            Sector energy = null; foreach (Sector s in k.Sectors) { if (s.Type == SectorType.Energy) { energy = s; } }
+                            double priceIndex = Math.Max(0.0001f, k.State.PriceLevel);
+                            EnergyMarket.Result r = EnergyMarket.Clear(k);
+                            EnergyLedger.Book before = EnergyLedger.Compute(k, r, priceIndex, 0.0);
+                            float energy0 = energyLine != null ? energyLine.Amount : 0f, support0 = supportLine != null ? supportLine.Amount : 0f;
+                            double sectorTarget0 = SectorCouplings.SupportCostTarget(k);
+                            energy.SubsidyLevel = 80f;
+                            energyPressure.Invoke(sim, new object[] { k });
+                            sectorPressure.Invoke(sim, new object[] { k });
+                            EnergyLedger.Book after = EnergyLedger.Compute(k, r, priceIndex, 0.0);
+                            double target = SectorCouplings.EnergySupportCostTarget(k);
+                            double subsidyCost = SectorCouplings.SupportCost(k.State.NominalGdp, 80f, SectorCouplings.NeutralDialLevel, SectorCouplings.NeutralDialLevel);
+                            double lineMove = energyLine != null ? energyLine.Amount - energy0 : 0.0, supportMove = supportLine != null ? supportLine.Amount - support0 : 0.0;
+                            double sectorMove = SectorCouplings.SupportCostTarget(k) - sectorTarget0;
+                            string landing = supportLine != null ? F("{0} {1:+0.000;-0.000}", supportLine.Category, supportMove) : "no sector-support line in this book";
+                            if (energyLine != null)
+                            {
+                                bool clampedHigh = energyLine.Amount >= energyLine.SeedAmount * 2.999f;
+                                bool levyOneForOne = Math.Abs((before.LevyRevenue - after.LevyRevenue) - Math.Min(lineMove, before.LevyRevenue)) <= 1e-6 * Math.Max(1.0, before.LevyRevenue);
+                                bool noLevyNoPrice = before.LevyRevenue > 0.0 || Math.Abs(after.Classes[0].Total - before.Classes[0].Total) <= 1e-12;
+                                if (Math.Abs(target - subsidyCost) > 1e-4 || (!clampedHigh && Math.Abs(lineMove - target) > 1e-3 * Math.Max(1.0, target))
+                                    || Math.Abs(sectorMove) > 1e-4 || Math.Abs(supportMove) > 1e-4 || !levyOneForOne || !noLevyNoPrice)
+                                { ok = false; Debug.LogError($"ENERGY LEDGER: {id}'s subsidy at 80 did not land on its energy line alone, one for one - target {target:F4} against the cost {subsidyCost:F4}, line +{lineMove:F4}, the other sectors' target +{sectorMove:F4}, {landing}, levy {before.LevyRevenue:F4} → {after.LevyRevenue:F4}, households' price {before.Classes[0].Total:F6} → {after.Classes[0].Total:F6}."); }
+                                sb.Append(F("    {0,-8} subsidy 80: the cost {1:F3} bn on the energy line (moved {2:+0.000;-0.000}); the other sectors' support target {3:+0.000;-0.000}, {4}; levy {5:F3} → {6:F3} bn{7}, households' price {8:F5} → {9:F5}/kWh; the book closes ({10:E1})\n",
+                                    id, target, lineMove, sectorMove, landing, before.LevyRevenue, after.LevyRevenue, before.LevyRevenue > 0.0 ? F(" (scale {0:F3})", after.LevyScale) : " - no levy in the stack to displace, no retail effect", before.Classes[0].Total, after.Classes[0].Total, after.Gap));
+                            }
+                            else
+                            {
+                                if (Math.Abs(target) > 1e-9 || Math.Abs(sectorMove - subsidyCost) > 1e-3 * Math.Max(1.0, subsidyCost) || Math.Abs(after.LevyScale - before.LevyScale) > 1e-12)
+                                { ok = false; Debug.LogError($"ENERGY LEDGER: {id} has no energy line but its subsidy did not stay in the other sectors' support target - energy target {target:F4}, that target +{sectorMove:F4} against the cost {subsidyCost:F4}, levy scale {before.LevyScale} → {after.LevyScale}."); }
+                                sb.Append(F("    {0,-8} subsidy 80: no energy line - the cost {1:F3} bn stays in the other sectors' support target (moved {2:+0.000;-0.000}; {3}); the levy scale unchanged at {4:F3}\n",
+                                    id, subsidyCost, sectorMove, landing, after.LevyScale));
+                            }
+                            if (Math.Abs(after.Gap) > 1e-9 * Math.Max(1.0, after.PaidTotal)) { ok = false; Debug.LogError($"ENERGY LEDGER: {id}'s book does not close with the subsidy at 80 (gap {after.Gap:E2})."); }
+                        }
+                        finally { UnityEngine.Object.DestroyImmediate(go); }
+                    }
+                }
+
+                // the regulation gap: Poland 20 points below and above its anchor - the pre-tax ratio (non-households ÷ households) by exactly (1 ∓ k × 0.2);
+                // on a world at its seed, where each class's stack is the catalog's (the rule is sized on the seeded components)
+                SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
+                World seedWorld = WorldFactory.CreateDefault(); EnergyMarket.BeginTurn(seedWorld);
+                Country pl = seedWorld.GetCountry(CountryId.Poland);
+                Sector plEnergy = null; foreach (Sector s in pl.Sectors) { if (s.Type == SectorType.Energy) { plEnergy = s; } }
+                double plIndex = Math.Max(0.0001f, pl.State.PriceLevel);
+                EnergyMarket.Result plR = EnergyMarket.Clear(pl);
+                float anchor = plEnergy.BaselineRegulationLevel, level0 = plEnergy.RegulationLevel;
+                EnergyLedger.Book atAnchor = EnergyLedger.Compute(pl, plR, plIndex, 0.0);
+                plEnergy.RegulationLevel = anchor - 20f; EnergyLedger.Book freer = EnergyLedger.Compute(pl, plR, plIndex, 0.0);
+                plEnergy.RegulationLevel = anchor + 20f; EnergyLedger.Book tighter = EnergyLedger.Compute(pl, plR, plIndex, 0.0);
+                plEnergy.RegulationLevel = level0;
+                double PreTax(EnergyLedger.ClassStack st) => st.Wholesale + st.Margin + st.Network;
+                double ratio0 = PreTax(atAnchor.Classes[1]) / PreTax(atAnchor.Classes[0]), ratioFree = PreTax(freer.Classes[1]) / PreTax(freer.Classes[0]), ratioTight = PreTax(tighter.Classes[1]) / PreTax(tighter.Classes[0]);
+                double k7 = EnergyLedger.LiberalisationSplitPerGap;
+                bool receipts = Math.Abs(freer.ToSuppliers - atAnchor.ToSuppliers) <= 1e-9 * Math.Max(1.0, atAnchor.ToSuppliers) && Math.Abs(tighter.ToSuppliers - atAnchor.ToSuppliers) <= 1e-9 * Math.Max(1.0, atAnchor.ToSuppliers);
+                bool directions = freer.Classes[1].Margin < atAnchor.Classes[1].Margin && freer.Classes[0].Margin > atAnchor.Classes[0].Margin && tighter.Classes[1].Margin > atAnchor.Classes[1].Margin && tighter.Classes[0].Margin < atAnchor.Classes[0].Margin;
+                bool proportion = Math.Abs(ratioFree / ratio0 - (1.0 - k7 * 0.2)) <= 1e-6 && Math.Abs(ratioTight / ratio0 - (1.0 + k7 * 0.2)) <= 1e-6;
+                if (!receipts || !directions || !proportion || EnergyLedger.LiberalisationGap(pl) != 0.0)
+                { ok = false; Debug.LogError($"ENERGY LEDGER: Poland's regulation gap did not move the ratio as the rule states - suppliers {atAnchor.ToSuppliers:F6} / {freer.ToSuppliers:F6} / {tighter.ToSuppliers:F6}, ratio {ratio0:F6} / {ratioFree:F6} / {ratioTight:F6} against × {1.0 - k7 * 0.2:F3} / × {1.0 + k7 * 0.2:F3}, the seed's gap {EnergyLedger.LiberalisationGap(pl)}."); }
+                foreach (EnergyLedger.Book bk in new[] { freer, tighter }) { if (Math.Abs(bk.Gap) > 1e-9 * Math.Max(1.0, bk.PaidTotal)) { ok = false; Debug.LogError($"ENERGY LEDGER: Poland's book does not close under a regulation gap (gap {bk.Gap:E2})."); } }
+                sb.Append(F("    Poland   regulation 20 below its anchor {0:F1}: non-households' margin {1:F5} → {2:F5}, households' {3:F5} → {4:F5}/kWh, suppliers' receipts {5:F6} → {6:F6} bn; the pre-tax ratio (non-households ÷ households) {7:F4} → {8:F4} (× {9:F4}), 20 above {10:F4} (× {11:F4})\n",
+                    anchor, atAnchor.Classes[1].Margin, freer.Classes[1].Margin, atAnchor.Classes[0].Margin, freer.Classes[0].Margin, atAnchor.ToSuppliers, freer.ToSuppliers, ratio0, ratioFree, ratioFree / ratio0, ratioTight, ratioTight / ratio0));
+
+                // every covered country at both ends of the dial: each class's energy-and-supply and pre-tax price above zero; the size, liberalised to 0 from each anchor
+                var sizes = new List<string>();
+                double lowestEnergy = double.MaxValue; string lowestAt = "";
+                foreach (Country k in seedWorld.Countries)
+                {
+                    if (!EnergyLayer.Has(k.Id)) { continue; }
+                    Sector e = null; foreach (Sector s in k.Sectors) { if (s.Type == SectorType.Energy) { e = s; } }
+                    double idx = Math.Max(0.0001f, k.State.PriceLevel);
+                    EnergyMarket.Result kr = EnergyMarket.Clear(k);
+                    EnergyLedger.Book a = EnergyLedger.Compute(k, kr, idx, 0.0);
+                    float keep = e.RegulationLevel;
+                    foreach (float end in new[] { 0f, 100f })
+                    {
+                        e.RegulationLevel = end;
+                        EnergyLedger.Book z = EnergyLedger.Compute(k, kr, idx, 0.0);
+                        for (int c = 0; c < EnergyLedger.ClassCount; c++)
+                        {
+                            double energyAndSupply = z.Classes[c].Wholesale + z.Classes[c].Margin;
+                            if (energyAndSupply < lowestEnergy) { lowestEnergy = energyAndSupply; lowestAt = F("{0} {1} at Regulation {2:F0}", k.Id, z.Classes[c].Class, end); }
+                            if (!(energyAndSupply > 0.0) || !(PreTax(z.Classes[c]) > 0.0)) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s {z.Classes[c].Class} price is not positive at Regulation {end} - energy and supply {energyAndSupply:F5}, pre-tax {PreTax(z.Classes[c]):F5}."); }
+                        }
+                        if (end == 0f)
+                        {
+                            double ra = PreTax(a.Classes[1]) / PreTax(a.Classes[0]), rz = PreTax(z.Classes[1]) / PreTax(z.Classes[0]);
+                            sizes.Add(F("{0} {1:F1} → 0: ratio {2:F3} → {3:F3} ({4:+0.0;-0.0} %)", k.Id, e.BaselineRegulationLevel, ra, rz, 100.0 * (rz / ra - 1.0)));
+                        }
+                    }
+                    e.RegulationLevel = keep;
+                }
+                sb.Append(F("    at Regulation 0 and 100 in all six, the lowest energy-and-supply component {0:F5}/kWh ({1}) - every class's price positive\n", lowestEnergy, lowestAt));
+                sb.Append("    full liberalisation from each anchor (the size is the model's; Steiner's table 9, the industrial-to-residential ratio: unbundling −0.051, third-party access −0.035, a wholesale pool −0.114, against a constant of 0.528): " + string.Join(" · ", sizes) + "\n");
             }
 
             sb.Append(ok ? "\n=== EnergyLedgerDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== EnergyLedgerDiagnostic: FAILED (see above) ===\n");

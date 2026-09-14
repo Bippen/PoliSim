@@ -48,6 +48,15 @@ namespace PoliSim.Simulation
         public const int Households = 0, NonHouseholds = 1, ClassCount = 2;
         /// <remarks>CONVENTION - the redistribution rule where a zonal link binds: the whole of the year's congestion rent is credited to the next year's network component, per kWh, both classes alike (Regulation (EU) 2019/943 Article 19(2)-(3): the residual income reduces network tariffs; Svenska kraftnät's capacity fees). No share retained.</remarks>
         public const float CongestionRentCreditShare = 1f;
+        /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, SOURCED DIRECTION OF THE RATIO - EN-7a (2026-09-14): market liberalisation's proportional move of the ratio of
+        /// non-households' to households' seeded pre-tax price (energy and supply plus network) per unit of the Energy sector's regulation gap below its seeded
+        /// anchor (a gap of 1 is a hundred dial points): the ratio becomes ratio × (1 − this × gap). The direction is Steiner (2000), OECD Economics Department
+        /// Working Paper 238, table 9 - in the regression of the industrial-to-residential price ratio, unbundling of generation from transmission (−0.051,
+        /// z −2.43), third-party access (−0.035, z −1.76) and a wholesale pool (−0.114, z −3.86) lower it, against a constant of 0.528 - "the benefits of
+        /// reform are disproportionately realised by industrial consumers" (§53). The paper does NOT say who pays: residential consumers are "less likely to
+        /// be affected by these reforms" (§53) and it declines to measure cross-subsidy (note 39). So the closure - suppliers' receipts unchanged, households'
+        /// margin carrying what non-households' loses - is the model's, and so is the size: a hundred-point dial is not her binary reform indicators.</remarks>
+        public const double LiberalisationSplitPerGap = 0.3;
         /// <remarks>CONVENTION - the fitted parameters of this class, counted: two supply margins per country, one per customer class - and nothing else here is fitted.</remarks>
         public const int FittedParametersPerCountry = 2;
 
@@ -204,11 +213,14 @@ namespace PoliSim.Simulation
             double levyNominal = seedLevy * priceIndex;
             b.LevyScale = levyNominal > 0 ? Math.Max(0.0, 1.0 - b.SupportDeviation / levyNominal) : 0.0;
 
+            // EN-7a: market liberalisation - the Energy sector's regulation gap below its seeded anchor; exactly zero at the seed (the level is the anchor)
+            double liberalisation = LiberalisationGap(country);
             for (int c = 0; c < ClassCount; c++)
             {
                 var st = new ClassStack { Class = EnergyLayerData.RetailClasses[c], ConsumptionGwh = EnergyLayerData.RetailConsumptionGwh[ci][c] };
                 st.Wholesale = b.WholesalePerKwh;
                 st.Margin = s.RetailMargin[c] * priceIndex;
+                if (liberalisation != 0.0) { st.Margin += LiberalisationShiftPerKwh(ci, c, liberalisation, usd, priceIndex); }   // a branch: the seed's arithmetic untouched
                 st.Network = Math.Max(0.0, EnergyLayerData.RetailNetwork[ci][c] * usd * priceIndex - b.NetworkCreditPerKwh);
                 st.Policy = EnergyLayerData.RetailPolicy[ci][c] * usd * priceIndex * b.LevyScale;
                 st.TaxEnv = EnergyLayerData.RetailTaxEnv[ci][c] * usd * priceIndex;
@@ -236,6 +248,43 @@ namespace PoliSim.Simulation
             // congestion rent this year, billions of dollars
             if (r.Links != null) { double rent = 0; foreach (EnergyMarket.LinkResult l in r.Links) { rent += l.RentPerYear; } b.CongestionRent = rent * usd / 1e9; }
             return b;
+        }
+
+        /// <summary>EN-7a: the Energy sector's regulation gap below its seeded anchor, a hundred dial points to one - positive where the market is
+        /// liberalised past its seed, negative where it is regulated harder; 0 with no energy sector or at the anchor.</summary>
+        public static double LiberalisationGap(Country country)
+        {
+            foreach (Sector sector in country.Sectors)
+            {
+                if (sector.Type == SectorType.Energy) { return (sector.BaselineRegulationLevel - sector.RegulationLevel) / 100.0; }
+            }
+            return 0.0;
+        }
+
+        /// <summary>EN-7a: one class's supply-margin shift per kWh, the book's dollars - sized so the ratio of non-households' to households' seeded pre-tax price
+        /// (energy and supply plus network, at this year's prices) becomes ratio × (1 − <see cref="LiberalisationSplitPerGap"/> × gap) with suppliers' receipts
+        /// unchanged: non-households lose x per kWh and households gain x × q, q their consumption ratio. From (N − x) / (H + x·q) = R·(1 − kg) with N = R·H,
+        /// x = R·H·kg / (1 + R·(1 − kg)·q). The first form moved a share of non-households' price and divided the same money over households' smaller
+        /// consumption - Poland's households' energy component went below zero past Regulation 83 (the review measured it); in this form both classes' seeded
+        /// pre-tax prices stay positive for every |kg| below 1, and the ratio's move is the same proportion in every country.</summary>
+        public static double LiberalisationShiftPerKwh(int ci, int c, double gap, double usd, double priceIndex)
+        {
+            double n = EnergyLayerData.RetailEnergySupply[ci][NonHouseholds] + EnergyLayerData.RetailNetwork[ci][NonHouseholds];
+            double h = EnergyLayerData.RetailEnergySupply[ci][Households] + EnergyLayerData.RetailNetwork[ci][Households];
+            double qh = EnergyLayerData.RetailConsumptionGwh[ci][Households], qn = EnergyLayerData.RetailConsumptionGwh[ci][NonHouseholds];
+            if (!(h > 0.0) || !(qh > 0.0)) { return 0.0; }
+            double ratio = n / h, q = qn / qh, kg = LiberalisationSplitPerGap * gap;
+            double x = ratio * h * kg / (1.0 + ratio * (1.0 - kg) * q) * usd * priceIndex;
+            return c == NonHouseholds ? -x : x * q;
+        }
+
+        /// <summary>EN-7a: whether the country's retail stack carries a policy levy for the Energy subsidy to displace (the USA's components are billed - none).</summary>
+        public static bool HasPolicyLevy(CountryId id)
+        {
+            int ci = EnergyLayer.Index(id);
+            if (ci < 0) { return false; }
+            for (int c = 0; c < ClassCount; c++) { if (EnergyLayerData.RetailPolicy[ci][c] > 0.0) { return true; } }
+            return false;
         }
 
         /// <summary>The load-weighted price over the blocks (and Sweden's zones), the market's currency per MWh.</summary>

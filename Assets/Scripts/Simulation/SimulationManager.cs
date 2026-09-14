@@ -120,6 +120,9 @@ namespace PoliSim.Simulation
         /// else. <see cref="PreviewedInterestRate"/> is the rate the previewed year ran at.
         /// </summary>
         public float PreviewInflation;
+        /// <summary>EN-7a (2026-09-14): the electricity pass-through the preview planned, inflation points - read after the clone's spending resolves, so a
+        /// standing or drafted Energy subsidy's levy cut is in it as the boundary's plan will be; read by EnergyPassThroughDiagnostic's parity section.</summary>
+        public float PreviewEnergyPassThroughPp;
         public float PreviewUnemployment;
         public float PreviewNaturalUnemployment;
         public float PreviewOutputGapPercent;
@@ -3095,9 +3098,6 @@ namespace PoliSim.Simulation
 
             CarbonRateStatute.AdvanceYear(previewCountry, CurrentTurn);   // EN-4e: the preview's boundary reads the same statute the turn will (the clone's own lines and reference)
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
-            // EN-5: the electricity pass-through this turn's carbon-tax draft would plan - the clone's household price at its drafted rate against
-            // the standing real price, in the index's weight (EnergyPassThrough.PlannedForPreview) - so the preview's inflation reads the same form the boundary will
-            float previewEnergyPassThroughPp = EnergyPassThrough.PlannedForPreview(previewCountry);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
             ApplyMinimumWageChange(previewCountry, decision);
             ApplyCrimePolicyChanges(previewCountry, decision);
@@ -3115,6 +3115,11 @@ namespace PoliSim.Simulation
             MacroSystem.ApplySupplyShockToUnemployment(previewCountry);   // FT-7 (§391): the preview reads the same boundary step, in the same place
             MacroSystem.ApplyNaturalRateFromLabourForce(previewCountry);   // FT-8 (§398)
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
+            // EN-5: the electricity pass-through the clone's own year would plan - its household price against the standing real price, in the index's
+            // weight (EnergyPassThrough.PlannedForPreview). EN-7a: read HERE, after the clone's spending resolves, as the boundary plans after its pressures
+            // and ledger - read before, it missed the Energy subsidy's move of the energy line (the levy it displaces) and the sector draft, which the clone
+            // takes only at ApplySectorPolicyChanges.
+            float previewEnergyPassThroughPp = EnergyPassThrough.PlannedForPreview(previewCountry);
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             // Phase 1: the preview deliberately keeps the TURN-level forms. It models one whole turn on a
             // throwaway clone WITHOUT advancing any days, so the daily methods would never be called on it
@@ -3217,6 +3222,7 @@ namespace PoliSim.Simulation
                 SwfReturnsEstimate = swfReturns,
                 SectorDeltas = SectorDeltasSince(previewCountry, sectorsBefore),   // P4-B3
                 PreviewInflation = state.Inflation,
+                PreviewEnergyPassThroughPp = previewEnergyPassThroughPp,   // EN-7a
                 PreviewUnemployment = state.Unemployment,
                 PreviewNaturalUnemployment = previewCountry.EffectiveNaturalUnemploymentRate,   // FT-8 (§398): the figure the rule reads
                 PreviewOutputGapPercent = TaylorRule.GetOutputGapPercent(previewCountry),
@@ -3409,6 +3415,7 @@ namespace PoliSim.Simulation
                 AppliedJusticeEnforcementCost = country.AppliedJusticeEnforcementCost,
                 AppliedBorderEnforcementCost = country.AppliedBorderEnforcementCost,
                 AppliedSectorSupportCost = country.AppliedSectorSupportCost,
+                AppliedEnergySupportCost = country.AppliedEnergySupportCost,   // EN-7a
 
                 // P-I2 stage 1: the pyramid, CLONED. Nothing reads it on the preview path yet, so this line
                 // buys nothing today - it is here because the clone-escape class has now cost this pass twice
@@ -3990,6 +3997,7 @@ namespace PoliSim.Simulation
                 foreach (SpendingLine indexed in country.SpendingLines) { requestedByCategory[indexed.Category] = indexed.Amount; }
                 ApplyEnforcementCostPressure(country);
                 ApplySectorSupportCostPressure(country);   // P4-B3: the sector dials' support cost, the same idiom
+                ApplyEnergySupportCostPressure(country);   // EN-7a: the Energy sector's subsidy on the energy line, where the levy rule reads it
                 float discretionaryTotalBefore = GetSpendingLineTotal(country, mandatory: false);
                 SpendingLineChangeResult changeResult = ApplySpendingLineChanges(country, decision);
                 Effectiveness.Record(country, requestedByCategory);   // P5-C7: allocated / requested x the minister's efficiency, per portfolio
@@ -4082,7 +4090,7 @@ namespace PoliSim.Simulation
             float wages = aiBudget && country.RealWageIndexAtLastIndex > 0f ? country.State.RealWageIndex / country.RealWageIndexAtLastIndex : 1f;
             country.RealWageIndexAtLastIndex = country.State.RealWageIndex;
             // §497: the lines the dial costs land on - each tracker rides its own line's index below
-            SpendingLine justiceCostLine = JusticeCostLine(country), borderCostLine = BorderCostLine(country), sectorCostLine = SectorCostLine(country);
+            SpendingLine justiceCostLine = JusticeCostLine(country), borderCostLine = BorderCostLine(country), sectorCostLine = SectorCostLine(country), energyCostLine = EnergyCostLine(country);
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);
@@ -4107,6 +4115,7 @@ namespace PoliSim.Simulation
                 if (line == justiceCostLine) { country.AppliedJusticeEnforcementCost *= factor; }
                 if (line == borderCostLine) { country.AppliedBorderEnforcementCost *= factor; }
                 if (line == sectorCostLine) { country.AppliedSectorSupportCost *= factor; }
+                if (line == energyCostLine) { country.AppliedEnergySupportCost *= factor; }
             }
         }
 
@@ -4116,8 +4125,11 @@ namespace PoliSim.Simulation
         /// <summary>§497: the line border enforcement's cost lands on - HomelandSecurity, else Migration, else PublicServices.</summary>
         private static SpendingLine BorderCostLine(Country country) => FindSpendingLine(country, SpendingCategory.HomelandSecurity) ?? FindSpendingLine(country, SpendingCategory.Migration) ?? FindSpendingLine(country, SpendingCategory.PublicServices);
 
-        /// <summary>§497: the line the sector dials' support cost lands on - Commerce, else PublicServices.</summary>
-        private static SpendingLine SectorCostLine(Country country) => FindSpendingLine(country, SpendingCategory.Commerce) ?? FindSpendingLine(country, SpendingCategory.PublicServices);
+        /// <summary>§497: the line the sector dials' support cost lands on - Commerce, else PublicServices (SectorCouplings.SupportLine, which the Sectors page shares; SC-1: the USA's book only).</summary>
+        private static SpendingLine SectorCostLine(Country country) => SectorCouplings.SupportLine(country);
+
+        /// <summary>EN-7a: the line the Energy sector's subsidy lands on - the book's energy line, or none (Germany).</summary>
+        private static SpendingLine EnergyCostLine(Country country) => SectorCouplings.EnergyLine(country);
 
         /// <summary>First SpendingLine matching category, or null if the country has none - a plain linear search, matching this file's existing no-LINQ style.</summary>
         private static SpendingLine FindSpendingLine(Country country, SpendingCategory category)
@@ -4156,9 +4168,9 @@ namespace PoliSim.Simulation
         /// dial cost composes with the five existing line writers (growth, pressure, player
         /// changes) instead of overwriting them. ClampToSeedRange applies like every other line
         /// mutation; if it binds (the USA's small federal Justice line saturates at 3x seed under
-        /// extreme SWEEPING-law stacks), the tracker still records the REQUESTED target, so the
-        /// un-achieved remainder is honestly lost to the line's own bound - bounded and explained,
-        /// never silently re-applied. Amount only, never SeedAmount, per the pressure methods'
+        /// extreme SWEEPING-law stacks), the tracker records the move the line TOOK (EN-7a,
+        /// <see cref="ApplyCostOnLine"/> - it recorded the requested target until a clamped dial
+        /// returned to neutral was measured leaving its line off path). Amount only, never SeedAmount, per the pressure methods'
         /// own reconciliation rule. Runs inside ResolveSpendingForTurn (boundary-resident: dials
         /// change only at boundaries via law composition, and the period plan idiom carries the
         /// cost through the daily accrual automatically). Old saves carry Applied* = 0 and
@@ -4176,18 +4188,27 @@ namespace PoliSim.Simulation
                 * (country.BorderEnforcementLevel - CrimeJusticeCouplings.NeutralDialLevel);
 
             SpendingLine justiceLine = JusticeCostLine(country);
-            if (justiceLine != null)
-            {
-                justiceLine.Amount = ClampToSeedRange(justiceLine, justiceLine.Amount + (justiceTarget - country.AppliedJusticeEnforcementCost));
-                country.AppliedJusticeEnforcementCost = justiceTarget;
-            }
+            if (justiceLine != null) { ApplyCostOnLine(justiceLine, justiceTarget, ref country.AppliedJusticeEnforcementCost); }
 
             SpendingLine borderLine = BorderCostLine(country);
-            if (borderLine != null)
-            {
-                borderLine.Amount = ClampToSeedRange(borderLine, borderLine.Amount + (borderTarget - country.AppliedBorderEnforcementCost));
-                country.AppliedBorderEnforcementCost = borderTarget;
-            }
+            if (borderLine != null) { ApplyCostOnLine(borderLine, borderTarget, ref country.AppliedBorderEnforcementCost); }
+        }
+
+        /// <summary>
+        /// The applied-difference idiom's one step, shared by the four dial costs: the line moves by what the target asks beyond what the tracker says the
+        /// line already carries, clamped to its seed range like every line mutation, and the tracker records THE MOVE THE LINE TOOK (the part of it the
+        /// asked move explains). EN-7a (2026-09-14, review-found and measured): until then the tracker recorded the REQUESTED target, so a bound that bound
+        /// kept its un-achieved remainder out on the way up and took it off the line on the way down - a dial returned to neutral left its line below
+        /// its path for good (Italy's energy line at Subsidy 100 and back: floored at 0.2 x its path, the policy levy above its seed with no policy in
+        /// force). Now a clamped cost gives back only what it added, and a remainder the bound held is asked again at the next boundary, landing only if
+        /// the line has room by then. Zero asked (every dial at neutral), zero moved: the old arithmetic to the bit.
+        /// </summary>
+        private static void ApplyCostOnLine(SpendingLine line, float target, ref float applied)
+        {
+            float asked = target - applied;
+            float before = line.Amount;
+            line.Amount = ClampToSeedRange(line, line.Amount + asked);
+            applied += Mathf.Clamp(line.Amount - before, Mathf.Min(0f, asked), Mathf.Max(0f, asked));
         }
 
         /// <summary>
@@ -4201,11 +4222,21 @@ namespace PoliSim.Simulation
         {
             float target = SectorCouplings.SupportCostTarget(country);
             SpendingLine line = SectorCostLine(country);
-            if (line != null)
-            {
-                line.Amount = ClampToSeedRange(line, line.Amount + (target - country.AppliedSectorSupportCost));
-                country.AppliedSectorSupportCost = target;
-            }
+            if (line != null) { ApplyCostOnLine(line, target, ref country.AppliedSectorSupportCost); }
+        }
+
+        /// <summary>
+        /// EN-7a (2026-09-14): the Energy sector's SUBSIDY as retail intervention's money side - its cost (`SectorCouplings.EnergySupportCostTarget`)
+        /// composed onto the book's energy line through <see cref="Country.AppliedEnergySupportCost"/>, the idiom the other dial costs use (§497's form:
+        /// the tracker rides the line's index). The line's move above its indexed path is what EN-4's levy rule reads (`EnergyLedger.Compute`), so the
+        /// subsidy takes the policy levy down one for one and past the whole levy is taxpayers' support with no retail effect. Zero at the neutral 50;
+        /// no line (Germany), nothing here - the subsidy's cost stays in the other sectors' target (`SectorCouplings.SupportCostTarget`).
+        /// </summary>
+        private void ApplyEnergySupportCostPressure(Country country)
+        {
+            SpendingLine line = EnergyCostLine(country);
+            if (line == null) { return; }
+            ApplyCostOnLine(line, SectorCouplings.EnergySupportCostTarget(country), ref country.AppliedEnergySupportCost);
         }
 
 

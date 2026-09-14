@@ -564,6 +564,17 @@ namespace PoliSim.Testing
                     // laid-out area, scrolled to the way the People plates are, four plates filmed in one frame where they fit.
                     if (stem == "06c_policylaws_sectors")
                     {
+                        // EN-7a (2026-09-14): the Energy sector's cost sentence - where its subsidy lands, what the line carries, and SC-1's unbooked support
+                        var energyCostField = controller.GetType().GetField("_energySectorCostLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                        float energyCostY = energyCostField != null ? ((Rect)energyCostField.GetValue(controller)).y : 0f;
+                        if (energyCostY > 0f)
+                        {
+                            ScrollBy(controller, Mathf.Max(0f, energyCostY - Screen.height * 0.45f));
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(stem + "_energy_sector_cost");
+                        }
+                        else { Debug.LogError("SHOT: the Energy sector's cost sentence was never laid out - 06c_policylaws_sectors_energy_sector_cost not filmed."); }
                         var energyField = controller.GetType().GetField("_energyPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                         float energyY = energyField != null ? ((Rect)energyField.GetValue(controller)).y : 3600f;
                         ScrollBy(controller, Mathf.Max(0f, energyY - Screen.height * 0.06f));
@@ -576,6 +587,17 @@ namespace PoliSim.Testing
                         ScrollBy(controller, Mathf.Max(0f, energyY + Screen.height * 1.06f));
                         yield return Settle();
                         yield return Capture(stem + "_energy_lower");
+                        // EN-7a (2026-09-14): the instruments plate in PROVENANCE, where the chips that say what each instrument reaches draw
+                        // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
+                        _provenanceToRestore = DeskProvenance.On;
+                        DeskProvenance.On = true;
+                        ScrollBy(controller, Mathf.Max(0f, energyY + Screen.height * 1.6f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(stem + "_energy_instruments_provenance");
+                        DeskProvenance.On = _provenanceToRestore.Value;
+                        _provenanceToRestore = null;
+                        yield return Settle();
                         ResetScrolls(controller);
                         yield return Settle();
                     }
@@ -1728,9 +1750,13 @@ namespace PoliSim.Testing
         }
 
         /// <summary>Instance rather than static (was static until the country-leak fix) so it can set <see cref="_finishCalled"/> - Start's own <c>finally</c> reads that guard to tell a normal exit from one it had to force itself.</summary>
+        /// <summary>EN-7a: the viewer's PROVENANCE setting a frame switched on, while that frame is out - Finish restores it, so a run that ends on the frame leaves the preference as it found it.</summary>
+        private bool? _provenanceToRestore;
+
         private void Finish(int exitCode)
         {
             _finishCalled = true;
+            if (_provenanceToRestore.HasValue) { DeskProvenance.On = _provenanceToRestore.Value; _provenanceToRestore = null; }
             // P2-1.3 (2026-09-02): every ledger row the film drew recorded the range a pixel of its track covers;
             // a whole point is reachable without overshoot only when that does not exceed the row's snap.
             // EN-8 (2026-09-12): the range is recorded in the row's GRAIN (a point; a per-tonne row's ceiling's hundredth,

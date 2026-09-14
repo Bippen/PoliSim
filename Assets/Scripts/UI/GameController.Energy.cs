@@ -38,6 +38,9 @@ namespace PoliSim.UI
         /// <summary>Where the energy plate was laid out last frame - the film driver scrolls to it (06c_policylaws_sectors_energy).</summary>
         private Rect _energyPlateLastArea;
 
+        /// <summary>EN-7a: where the Energy sector's cost sentence was laid out last frame - the film driver scrolls to it (06c_policylaws_sectors_energy_sector_cost).</summary>
+        private Rect _energySectorCostLastArea;
+
         private int _energyCacheTurn = -1;
         private CountryId _energyCacheCountry;
         private EnergyMarket.Result _energyResult;
@@ -134,7 +137,7 @@ namespace PoliSim.UI
                 new PlateRow("Industry's electricity bill", "% OF GDP · NON-HOUSEHOLDS' CONSUMPTION × THEIR PRICE", "THE BOOK · THIS YEAR", PlateFigure(s.EnergyIndustryBillGdpShare, 2, " %"),
                     PlateBand.Open, 0f, 4f, s.EnergyIndustryBillGdpShare, null, true, new[] { "BUSINESS CONFIDENCE ▸", "PRICE LEVEL ▸" }, history?.EnergyIndustryBillGdpShare.Quarterly, new[] { "DERIVED" }, false),
                 // 15a: the wholesale row is the rule row's HEAD - the figure and the five peers' ticks; the three blocks that follow are its body
-                new PlateRow("Wholesale price", marketUnit + " · LOAD-WEIGHTED OVER THE BLOCKS · LOWER ◂", "THIS COUNTRY'S TICK · THE OTHER FIVE'S OWN CLEARINGS · SEEDED ENTSO-E · EIA · " + EnergyLayer.Year, PlateFigure((float)wholesalePerMwh, 1),
+                new PlateRow("Wholesale price", marketUnit + " · LOAD-WEIGHTED OVER THE BLOCKS · LOWER ◂", "OWN TICK · OTHER FIVE'S CLEARINGS · ENTSO-E · EIA · " + EnergyLayer.Year, PlateFigure((float)wholesalePerMwh, 1),
                     PlateBand.Open, 0f, 250f, (float)wholesalePerMwh, peers.ToArray(), true, new[] { "THE RULE ROW BELOW IS ITS BODY", "THE ETS PRICE, NOT THE CARBON TAX" }, null, new[] { "DERIVED" }, false),
             };
             string foot1 = "THE STACKS, LEFT TO RIGHT: WHOLESALE · MARGIN · NETWORK · LEVIES · ENV. TAX · VAT, ON ONE SCALE · THE SINGLE BOOK: EVERY MONEY FIGURE IN " + EnergyLedger.BookCurrency + " AS THE STATE CARRIES IT; THE MARKET CLEARS IN ITS OWN CURRENCY AND THE CATALOG'S 2023 RATES REACH THE BOOK · THE OTHER FIVE'S TICKS ARE THEIR OWN CLEARINGS THIS TURN";
@@ -206,19 +209,40 @@ namespace PoliSim.UI
             var instruments = new List<PlateRow>();
             instruments.Add(etsSeed > 0
                 ? new PlateRow("ETS price", (usa ? "USD" : "EUR") + " PER TONNE · THE " + EnergyLayer.Year + " MEAN CARRIED BY THE PRICE LEVEL", "EEX · THE CATALOG · NO PATH", PlateFigure((float)((etsSeed + r.EtsRisePerT) * priceIndex), 1),
-                    PlateBand.None, 0f, 0f, 0f, null, true, new[] { "NO PATH · " + EnergyLayer.Year + " MEAN CARRIED BY THE LEVEL", "THE FLEET'S CARBON COST, NOT THE TAX'S" }, null, new[] { "SOURCED" }, false)
+                    PlateBand.None, 0f, 0f, 0f, null, true, new[] { "NO PATH · " + EnergyLayer.Year + " MEAN CARRIED BY THE LEVEL", "THE FLEET'S CARBON COST, NOT THE TAX'S" }, null, new[] { "SOURCED" }, false, chipsWithoutBand: true)
                 : new PlateRow("ETS price", "PER TONNE", "NO EMISSIONS TRADING FOR " + countryUpper, "absent",
                     PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE FLEET PAYS NO CARBON PRICE" }, null, new[] { "ABSENT · STATED" }, false, "THE ROW IS ZERO BY THE CATALOG · A FEDERAL CARBON PRICE DOES NOT EXIST"));
-            instruments.Add(book.LevyScale > 0 || !(country.Id == CountryId.Germany)
-                ? new PlateRow("The energy line's levy", "× THE SEEDED LEVIES · THE LINE'S SCALE THIS YEAR", "THE BUDGET'S ENERGY LINE · THE LEDGER", PlateFigure((float)book.LevyScale, 2),
-                    PlateBand.None, 0f, 0f, 0f, null, true, new[] { "ENERGY LINE ▸", "HOUSEHOLDS' PRICE ▸" }, null, new[] { "DERIVED" }, false)
-                : new PlateRow("The energy line's levy", "× THE SEEDED LEVIES", "NO ENERGY LINE FOR " + countryUpper, "absent",
-                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LEVIES STAND AT THEIR SEED" }, null, new[] { "ABSENT · STATED" }, false, "THE CLIMATE FUND SITS OFF THE BUDGET · NO LINE TO SCALE"));
+            // EN-7a (2026-09-14): the Energy sector's five dials ARE the four instruments - retail intervention (the subsidy's money side on the energy
+            // line, the levy the other way), market liberalisation (the regulation gap splitting the supply margin), investment planning and state
+            // ownership (absent: the fleet neither invests nor changes hands, and the rent an ownership share would read is printed, never read),
+            // research grants descriptive - with the two carbon prices beside them; each row's chips say what it reaches
+            if (!SectorCouplings.HasEnergyLine(country))
+            {
+                instruments.Add(new PlateRow("Retail intervention", "× THE SEEDED LEVIES", "NO ENERGY LINE FOR " + countryUpper, "absent",
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LEVIES STAND AT THEIR SEED" }, null, new[] { "ABSENT · STATED" }, false, "THE CLIMATE FUND SITS OFF THE BUDGET · THE SUBSIDY DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT"));
+            }
+            else if (!EnergyLedger.HasPolicyLevy(country.Id))
+            {
+                // the review's finding: the USA's line carries the subsidy but its retail components are billed - no levy, so no retail effect, and a 0.00 read as a levy displaced
+                instruments.Add(new PlateRow("Retail intervention", "× THE SEEDED LEVIES", "NO POLICY LEVY IN THE STACK FOR " + countryUpper, "absent",
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "SUBSIDY DIAL ▸ ENERGY LINE" }, null, new[] { "ABSENT · STATED" }, false, "THE RETAIL COMPONENTS ARE BILLED · THE SUBSIDY'S COST LANDS ON THE ENERGY LINE WITH NO RETAIL EFFECT"));
+            }
+            else
+            {
+                instruments.Add(new PlateRow("Retail intervention", "× THE SEEDED LEVIES · CUT ONE FOR ONE BY THE SUBSIDY", "THE ENERGY SECTOR'S SUBSIDY DIAL · THE BUDGET'S ENERGY LINE", PlateFigure((float)book.LevyScale, 2),
+                    PlateBand.None, 0f, 0f, 0f, null, true, new[] { "SUBSIDY DIAL ▸ ENERGY LINE", "LEVY ▸ HOUSEHOLDS' PRICE" }, null, new[] { "DERIVED" }, false, chipsWithoutBand: true));
+            }
+            instruments.Add(new PlateRow("Market liberalisation", "POINTS BELOW THE SEED'S REGULATION · MARGIN TO HOUSEHOLDS", "THE ENERGY SECTOR'S REGULATION DIAL · STEINER, OECD 2000", PlateFigure((float)(EnergyLedger.LiberalisationGap(country) * 100.0), 0),
+                PlateBand.None, 0f, 0f, 0f, null, true, new[] { "REGULATION DIAL ▸ MARGIN SPLIT", "INDUSTRY'S BILL ▸", "HOUSEHOLDS' PRICE ▸" }, null, new[] { "DECLARED" }, false, chipsWithoutBand: true));
+            instruments.Add(new PlateRow("Investment planning", "THE TAX CREDITS DIAL", "THE FLEET DOES NOT INVEST OR RETIRE", "absent",
+                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "NOTHING IN THE LAYER TO REACH" }, null, new[] { "ABSENT · STATED" }, false, "NO INVESTMENT RULE - THE FLEET IS THE SEED'S · THE DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT"));
+            instruments.Add(new PlateRow("State ownership", "THE NATIONALIZATION / DEREGULATION DIAL", "NO OWNERSHIP TERM IN THE LEDGERS", "absent",
+                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE SECTOR ROW STILL READS IT" }, null, new[] { "ABSENT · STATED" }, false, "A STATE SHARE OF THE GENERATORS' RECEIPTS WOULD READ THE RENT THE PAGE PRINTS AND NOTHING READS · THE DIAL STILL MOVES THE SECTOR'S OUTPUT AND EMPLOYMENT"));
+            instruments.Add(new PlateRow("Research grants", "THE RESEARCH GRANTS DIAL", "NO RESEARCH MECHANIC", "—",
+                PlateBand.None, 0f, 0f, 0f, null, true, new[] { "DESCRIPTIVE · THE SECTOR ROW ONLY" }, null, new[] { "ABSENT · STATED" }, false, chipsWithoutBand: true));
             instruments.Add(new PlateRow("Carbon tax", "THE NATIONAL RATE PER TONNE", "THE TAX LEDGER · " + countryUpper, PlateFigure(EnvironmentFamily.CarbonTaxRate(country), 0),
-                PlateBand.None, 0f, 0f, 0f, null, true, new[] { "REACHES TRANSPORT, NOT THE FLEET", "ENVIRONMENT ▸" }, null, new[] { "SOURCED" }, false));
-            instruments.Add(new PlateRow("The sector dials", "SUBSIDY · REGULATION · THE ENERGY SECTOR'S FIVE", "THE ROWS ABOVE THIS PLATE", "—",
-                PlateBand.None, 0f, 0f, 0f, null, true, new[] { "DESCRIPTIVE UNTIL THEIR STAGE MAPS THEM ONTO THE INSTRUMENTS" }, null, new[] { "ABSENT · STATED" }, false));
-            string foot4 = "THE INSTRUMENTS STAY ROWS - WHAT EACH REACHES IS ITS CHIP · THIS PAGE HOLDS NO DECISION OF ITS OWN: ITS LEVERS ARE BUDGET ROWS (THE LEVY, THE CARBON TAX) AND, WHEN THE ENERGY LAWS LAND, LAWS ROWS - SO NO RAIL CELL · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
+                PlateBand.None, 0f, 0f, 0f, null, true, new[] { "REACHES TRANSPORT, NOT THE FLEET", "ENVIRONMENT ▸" }, null, new[] { "SOURCED" }, false, chipsWithoutBand: true));
+            string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THESE INSTRUMENTS - SET ON THE SECTORS PAGE ABOVE, NO SIXTH CONTROL · WHAT EACH REACHES IS ITS CHIP · THE LEVERS ARE THE SECTOR DIALS AND BUDGET ROWS (THE ENERGY LINE, THE CARBON TAX) AND, WHEN THE ENERGY LAWS LAND, LAWS ROWS - SO NO RAIL CELL · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
             DrawPlateRows(instruments, areaInk, foot4, false, row => null);
         }
 
@@ -588,7 +612,7 @@ namespace PoliSim.UI
             {
                 AttributionBridge.Step step = g.Steps[i];
                 PoliSimWidgets.MeasuredLabel(new Rect(box.x + slotW * (i + 1), labelY, slotW, styles.CapH),
-                    step.Abbreviation + " " + step.Points.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture), slotLabel);
+                    step.Abbreviation + " " + step.Points.ToString(Math.Abs(step.Points) >= 100.0 ? "+0;-0;0" : "+0.0;-0.0;0", CultureInfo.InvariantCulture), slotLabel);   // EN-7a: a hundred and up in whole billions - "SUPPLIERS -408.2" overflowed its slot at 1280
             }
             PoliSimWidgets.MeasuredLabel(new Rect(box.x + slotW * (slots - 1), labelY, slotW, styles.CapH), g.ClosePoints.ToString("0.0", CultureInfo.InvariantCulture), slotLabel);
             return box;

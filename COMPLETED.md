@@ -27490,3 +27490,113 @@ and asserts the property the pass lacked: **960 of 960** unmoved cases - incomes
 **Not touched.** The targets' own coefficients (`[AUTHORED-DRAFT]` since P4-B3 and the crime passes), the clamp's rule (a bound that binds still loses the un-achieved remainder, as the enforcement doc states), every other line writer.
 
 **Bar:** `bar436_idiom` **38 of 38** and `bar437_idiom_sim` **51 of 51** on the code; `bar438_idiom_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
+
+## 498. EN-7a LANDED — energy stage 5's first half: the Energy sector's five dials ARE the four instruments - the subsidy on the energy line displacing the levy, regulation moving the pre-tax ratio, investment planning and state ownership absent, research grants descriptive; a four-lens review's findings fixed (the four dial-cost trackers record the move their line took, the preview plans the electricity term after spending, the liberalisation rule re-formed on the ratio, the USA's absent levy), SC-1 measured and stated (2026-09-14)
+
+**The rulings:** S9 (ruled §454) - *"The Energy sector's five dials ARE the four instruments (2.2's mapping); no sixth control is added to the densest sub-screen in the game. Research Grants stays descriptive and says so."* The mapping (`POLISIM_ENERGY_SPECLET.md` 2.2) - *"Nationalization/Deregulation = state ownership; Subsidy = retail intervention's money side; Regulation = market liberalisation (0 light – 100 heavy inverted); Tax Credits = investment planning's incentive; Research Grants stays descriptive."* §474 - *"build the law category stage 5 needs, cited, as its own item"*: so stage 5 is two items, this one and EN-7b (the law category), each its own bar, dump and record. The standing rules: *"measure the premise before fixing it"*, *"prove every guard both directions"*, *"never invent a figure"*.
+
+**What was built.**
+- **Subsidy → retail intervention's money side.** The Energy sector's subsidy cost - the same `[AUTHORED-DRAFT]` percentage of GDP per point as every sector's (`SectorCouplings.EnergySupportCostTarget`) - lands on the book's energy line through its own tracker (`Country.AppliedEnergySupportCost`, indexed with the line and copied on the preview clone - §497's form), and out of the other sectors' support target, so it never sits on two lines. EN-4's landed rule then reads the line's move above its indexed path: the policy levy falls one for one, and past the whole levy the cost is taxpayers' support with no retail effect. No new constant. Germany's book carries no energy line (the climate fund sits off the budget), so its subsidy's cost stays in the other sectors' target; the USA's line carries the cost but its retail components are billed - no levy in the stack, so no retail effect, and the page says so.
+- **Regulation → market liberalisation, inverted.** A gap below the Energy sector's seeded regulation anchor (zero at the seed in all six, the level and its anchor seeded together) moves the ratio of non-households' to households' seeded pre-tax price to ratio × (1 − 0.3 × gap), suppliers' receipts unchanged (`EnergyLedger.LiberalisationShiftPerKwh`, a branch at gap 0). The direction of the RATIO is Steiner (2000), OECD Economics Department Working Paper 238, table 9 (unbundling −0.051, third-party access −0.035, a wholesale pool −0.114 against a constant of 0.528; *"the benefits of reform are disproportionately realised by industrial consumers"*, §53); who pays is not in the paper, so the closure is the model's, and so is the size (`LiberalisationSplitPerGap` 0.3, `[AUTHORED-DRAFT]`).
+- **Tax Credits → investment planning, ABSENT, stated** (the fleet neither invests nor retires); **Nationalization/Deregulation → state ownership, ABSENT in the ledgers, stated** (a state share of the generators' receipts would read the inframarginal rent the page prints and nothing reads - T-8 - and the spec-let keeps the dial's sector effect until stage 4 derives that row); **Research Grants descriptive, and says so.**
+- **The surfaces.** The energy page's instruments plate is the four instruments beside the two carbon prices, each with its reach as chips or its absence and reason; chips on a row with no band now draw by a per-row opt-in (`PlateRow.ChipsWithoutBand`) - §486 recorded them built, but the draw skipped every band-less row, so they never drew. The Sectors page's Energy block says where the subsidy lands and what the line carries. A film frame in PROVENANCE (`06c_policylaws_sectors_energy_instruments_provenance`) and one of the Sectors page's Energy cost sentence (`06c_policylaws_sectors_energy_sector_cost`).
+
+**The first run's premise was false, and what it measured.** Section 7's Germany branch asserted the subsidy's cost "stays on Commerce". The first ledger run failed on the untouched tree:
+
+```
+ENERGY LEDGER: Germany has no energy line but its subsidy did not stay on Commerce - energy target 0,0000, landing +0,0000 against 4,2300, levy scale 1 → 1.
+```
+
+**SC-1, measured.** No book but the USA's carries a Commerce line, and none carries PublicServices - the sector dials' support cost (P4-B3, 4 September) lands on `Commerce ?? PublicServices`, so in Sweden, Germany, Italy, Poland and France it has been booked on no line since P4-B3 landed (the generic seeds that carried PublicServices were retired on 1 September, `c3ee020`). The Sectors page printed a "support standing" cost that no budget carried. It is stated now where the cost is printed; where it should land is a ruling - a statute budget's Business-and-industry line is the natural home, but the lines' seed-relative clamp ([0.2, 3] × the line) would hold most of a dial at its ceiling out, so the fix is a rule, not a relabel. Opened ruling-first, Elias's.
+
+**The review** (a workflow: four lenses - the two books and neutrality, dynamics and ordering, conformance with the rulings, the surfaces and the check - each finding given to two skeptics told to refute it). Nine confirmed, two split; all eleven acted on:
+1. *The Germany branch* (confirmed; the run had already shown it) - the branch measures the target the subsidy joins, not a landing that does not exist.
+2. *The tracker recorded the REQUESTED target* (confirmed) - so a clamped dial returned to neutral left its line off path for good; on the energy line, the levy above its seed with no policy in force. The enforcement doc had chosen it (*"the tracker still records the REQUESTED target, so the un-achieved remainder is honestly lost"*); the round trip it did not consider takes the remainder off the line on the way down. **Fixed as a class: all four trackers** now record the move their line took (`SimulationManager.ApplyCostOnLine`); a remainder the bound held is asked again at the next boundary and lands only if the line has room. Zero asked, zero moved: the old arithmetic to the bit (the dump below).
+3. *"Stays on Commerce"* on the page and the Sectors sentence (confirmed) - gone; the true statements in their place.
+4. *The preview planned the electricity term before the clone's spending resolved* (confirmed) - it missed the subsidy's move of the line; reading the code for the fix found it also missed the sector draft, which the clone takes only after that line. Planned after spending resolves, as the boundary does; the term exposed on the preview (`PolicyPreview.PreviewEnergyPassThroughPp`).
+5. *The USA has no levy* (confirmed) - an absent row with its reason, and the Sectors sentence says no retail effect.
+6. *France's "not on Commerce" check was vacuous* (confirmed; France has no Commerce line) - the USA joins section 7, the one book with an energy line and Commerce.
+7. *The Sectors page printed the unclamped cost and an unconditional claim* (confirmed) - it prints what the line carries (the tracker, which item 2 made the carried figure).
+8. *Section 7 reached the pressures only by reflection* (confirmed) - `AppliedCostIdiomDiagnostic` extended to the fourth tracker (the index, the clone) and a round trip on three lines.
+9. *The PROVENANCE frame switched the viewer's saved setting off, and a `-shotstop` on it left it on* (confirmed) - kept and restored, by `Finish` when a run ends on the frame.
+10. *Steiner does not source the household leg* (split; one skeptic read the paper and could not refute it) - the paper finds residential consumers *"less likely to be affected by these reforms"* and declines to measure cross-subsidy (note 39). Relabelled: the ratio's direction sourced, the closure the model's; the table's statistics are z, not t. Table 8's descriptive row came out of the PDF with its columns scrambled, so its "mean 0.543" is no longer cited - the constant 0.528 is.
+11. *The first form priced Poland's households' energy component below zero past Regulation 83, and moved Poland's ratio 3.5 times as far as Germany's for the same gap* (split) - the form moved a share of non-households' price and divided the same money over households' consumption, a quarter of Poland's non-households'. First run: `Poland 52.5 → 0: ratio 1.311 → 0.596 (-54.5 %)`. Re-formed on the ratio - both classes positive at every dial position, the same proportional move in every country. Not a tuning: the constant is the same 0.3, and the size moved because the form did.
+
+**Measured** (`EnergyLedgerDiagnostic` 7, `AppliedCostIdiomDiagnostic`, `EnergyPassThroughDiagnostic` 6 - the simulation group):
+
+```
+    7. EN-7a: THE SUBSIDY ON THE ENERGY LINE (retail intervention), THE REGULATION GAP MOVING THE PRE-TAX RATIO (market liberalisation)
+    France   subsidy 80: the cost 2.880 bn on the energy line (moved +2.880); the other sectors' support target +0.000, no sector-support line in this book; levy 1.510 → 0.000 bn (scale 0.000), households' price 0.26362 → 0.25581/kWh; the book closes (1.4E-014)
+    USA      subsidy 80: the cost 26.100 bn on the energy line (moved +26.100); the other sectors' support target +0.000, Commerce +0.000; levy 0.000 → 0.000 bn - no levy in the stack to displace, no retail effect, households' price 0.16000 → 0.16000/kWh; the book closes (0.0E+000)
+    Germany  subsidy 80: no energy line - the cost 4.230 bn stays in the other sectors' support target (moved +4.230; no sector-support line in this book); the levy scale unchanged at 1.000
+    Poland   regulation 20 below its anchor 52.5: non-households' margin 0.01812 → 0.01660, households' -0.03141 → -0.02517/kWh, suppliers' receipts 1.246880 → 1.246880 bn; the pre-tax ratio (non-households ÷ households) 1.3105 → 1.2319 (× 0.9400), 20 above 1.3892 (× 1.0600)
+    at Regulation 0 and 100 in all six, the lowest energy-and-supply component 0.04583/kWh (Poland households at Regulation 100) - every class's price positive
+    full liberalisation from each anchor (the size is the model's; Steiner's table 9, the industrial-to-residential ratio: unbundling −0.051, third-party access −0.035, a wholesale pool −0.114, against a constant of 0.528): USA 37.5 → 0: ratio 0.669 → 0.594 (-11.3 %) · Sweden 41.7 → 0: ratio 0.614 → 0.537 (-12.5 %) · Germany 17.3 → 0: ratio 0.648 → 0.614 (-5.2 %) · France 30.6 → 0: ratio 1.144 → 1.039 (-9.2 %) · Italy 27.4 → 0: ratio 0.644 → 0.591 (-8.2 %) · Poland 52.5 → 0: ratio 1.311 → 1.104 (-15.7 %)
+```
+
+```
+    1. THE INDEX - a price level up 5 %, then the next boundary: the dial cost inside each line against its target
+       Justice (police funding 80)            inside the line 54.810 bn, target 54.810 (last year's 52.200, the line's index ×1.0500; an unindexed tracker would leave 2.610 extra) - +0.000
+       HomelandSecurity (border 80)           inside the line 27.405 bn, target 27.405 (last year's 26.100, the line's index ×1.0669; an unindexed tracker would leave 1.747 extra) - +0.000
+       Commerce (manufacturing subsidy 80)    inside the line 27.405 bn, target 27.405 (last year's 26.100, the line's index ×1.0669; an unindexed tracker would leave 1.747 extra) - +0.000
+       Energy (energy subsidy 80)             inside the line 27.405 bn, target 27.405 (last year's 26.100, the line's index ×1.0669; an unindexed tracker would leave 1.747 extra) - +0.000
+    2. THE CLONE - the preview's copy carries trackers 54.810 / 27.405 / 27.405 / 27.405 bn; a boundary on it moved the four lines by +0.000 / +0.000 / +0.000 / +0.000 bn
+    3. THE ROUND TRIP - each dial at 100 for a boundary (the line's bound holding part of the cost), then back to 50: the line against its path
+       USA Justice (police funding 100)           path 40.000 bn · asked 87.000 · at 100 the line 120.000 (bound 120.000, the tracker 80.000 = the move 80.000) · back at 50 the line 40.000, the tracker 0.000 - +0.0000 off its path
+       USA Commerce (seven sectors' subsidy 100)  path 16.000 bn · asked 304.500 · at 100 the line 48.000 (bound 48.000, the tracker 32.000 = the move 32.000) · back at 50 the line 16.000, the tracker 0.000 - +0.0000 off its path
+       Italy Energy (energy subsidy 100)          path 0.860 bn · asked 3.450 · at 100 the line 2.579 (bound 2.579, the tracker 1.719 = the move 1.719) · back at 50 the line 0.860, the tracker 0.000 - +0.0000 off its path
+```
+
+```
+    6. THE PREVIEW READS THE TURN: France's Energy subsidy at 80 standing into year 2's boundary, against untouched - the preview's planned term and the boundary's
+    France   untouched: preview +0.00000 pp, boundary +0.00000; subsidy 80: preview -0.08361, boundary -0.08361 (the levy scale 1.000 → 0.000) - the preview moved -0.08361, the boundary -0.08361
+```
+
+**Proven in the other direction** - three probes, each run on its own diagnostic and restored: A (the subsidy's line route off, the liberalisation branch off, the Commerce exclusion inverted), B (the trackers back to the requested target, the energy tracker unindexed and off the clone), C (the preview's term planned where it was):
+
+```
+    ENERGY LEDGER: France's subsidy at 80 did not land on its energy line alone, one for one - target 2,8800 against the cost 2,8800, line +0,0000, the other sectors' target +2,8800, no sector-support line in this book, levy 1,5100 → 1,5100, households' price 0,263621 → 0,263621.
+    ENERGY LEDGER: USA's subsidy at 80 did not land on its energy line alone, one for one - target 26,1000 against the cost 26,1000, line +0,0000, the other sectors' target +26,1000, Commerce +26.100, levy 0,0000 → 0,0000, households' price 0,160000 → 0,160000.
+    ENERGY LEDGER: Germany has no energy line but its subsidy did not stay in the other sectors' support target - energy target 0,0000, that target +0,0000 against the cost 4,2300, levy scale 1 → 1.
+    ENERGY LEDGER: Poland's regulation gap did not move the ratio as the rule states - suppliers 1,246880 / 1,246880 / 1,246880, ratio 1,310536 / 1,310536 / 1,310536 against × 0,940 / × 1,060, the seed's gap 0.
+    APPLIED COST: Energy (energy subsidy 80) carries 29,152 bn of dial cost against a target of 27,405 - 1,747 bn off.
+    APPLIED COST: a boundary on the preview's copy re-applied the standing dial costs (0,000 / 0,000 / 0,000 / 27,405 bn) - the trackers did not cross the clone.
+    APPLIED COST: USA Justice (police funding 100) did not return to its path - 33,0000 against 40,0000 (-7,0000 off), the tracker 0,0000 after, 87,0000 at the ceiling against a move of 80,0000.
+    APPLIED COST: USA Commerce (seven sectors' subsidy 100) did not return to its path - 3,2000 against 16,0000 (-12,8000 off), the tracker 0,0000 after, 304,5000 at the ceiling against a move of 32,0000.
+    APPLIED COST: Italy Energy (energy subsidy 100) did not return to its path - 0,1719 against 0,8597 (-0,6877 off), the tracker 0,0000 after, 3,4500 at the ceiling against a move of 1,7194.
+    ENERGY PASS-THROUGH: the preview's term moved 0,00000 pp under France's Energy subsidy at 80, the boundary's -0,08361 - the preview does not read the subsidy's route.
+```
+
+**No policy, byte-identical** - every dial at its neutral seat and the regulation level at its anchor, the dump runs no decision (the first form's dump and the one after the review, against `traj_pn1`; the sentinel green in the simulation bar, **51 of 51** after the review - the first run's bar was **1 of 51 FAILED**, the false Germany premise; cheap bar **38 of 38**):
+
+| seed | horizon | `en7a` (the first form) vs `pn1` | `en7ar1` (after the review) vs `pn1` |
+|---|---|---|---|
+| 777 | 100 | **76 of 76** | **76 of 76** |
+| 777 | 500 | **76 of 76** | **76 of 76** |
+| 777 | 1000 | **76 of 76** | **76 of 76** |
+| 424242 | 100 | **76 of 76** | **76 of 76** |
+| 424242 | 500 | **76 of 76** | **76 of 76** |
+| 424242 | 1000 | **76 of 76** | **76 of 76** |
+
+Not a family: no seeded dial position is off neutral (the family rule, `POLISIM_BACKLOG_PLAN.md` S-E2), and the dump says so. The baseline label stays `f4s2`.
+
+**The films, and what the first ones said that was not read.** The first chain's six films exited 1 and the frames were read by eye; the harness's own verdict - the overflow guard - named five texts, and the reading caught only the three new captions: "THIS COUNTRY'S TICK · THE OTHER FIVE'S OWN CLEARINGS · SEEDED ENTSO-E · EIA · 2023" · "× THE SEEDED LEVIES · THE SUBSIDY'S COST ON THE ENERGY LINE TAKES THEM DOWN ONE FOR ONE" · "POINTS BELOW THE SEEDED REGULATION · MARGIN MOVES FROM INDUSTRY TO HOUSEHOLDS AS IT RISES" · "THE ENERGY SECTOR'S REGULATION DIAL · THE DIRECTION: STEINER, OECD 2000" · "SUPPLIERS -408.2". The other two were older: board 15a's wholesale source line and the USA's incidence bridge slot (§486), never measured before because the source line draws only in PROVENANCE and no film had put the page in it. Worse, the first film ended on the new PROVENANCE frame by `-shotstop`, exited before switching the viewer's setting back, and left it on in the editor's saved preferences - every later film started in PROVENANCE: the review's ninth finding, in practice before it was found. Fixed in this pass as BR-1's rule says (the pass that touches the surface): the captions cut to fit, the wholesale source line shortened, a bridge slot past a hundred in whole billions; the setting restored at `Finish`, and the saved value put back to 0, the value the first film found. After the fixes, a film per country's case at 1280 and two at 2560, each starting and ending with the setting at 0:
+
+| film | shots | overflow |
+|---|---|---|
+| `en7ar2_sweden_1280` | 67, 0 failed | none |
+| `en7ar2_germany_1280` | 67, 0 failed | none |
+| `en7ar2_italy_1280` | 67, 0 failed | none |
+| `en7ar2_usa_1280` | 67, 0 failed | none |
+| `en7ar2_sweden_2560` | 67, 0 failed | none |
+| `en7ar2_germany_2560` | 67, 0 failed | none |
+
+Read on the frames: Sweden's plate 4 in PROVENANCE draws the levy scale 1.00 as DERIVED with its two chips, market liberalisation 0 DECLARED with three, the absent rows' reasons in the chips' column, and every caption inside its column; Germany's retail-intervention row absent with the climate fund's reason, and its Sectors block saying the subsidy's cost stays with the other sectors' support and that no line in the budget books it (SC-1); the USA's row absent with "THE RETAIL COMPONENTS ARE BILLED", its Sectors sentence "no policy levy in the retail price to displace, so no retail effect", and no SC-1 line (its book carries Commerce); Italy's plate in READING - figures and bands only, the captions and chips PROVENANCE's alone.
+
+**Decisions taken, strikeable.** (1) Stage 5 as two items (§474's "its own item"). (2) The regulation gap measured from the seeded anchor, not from 50 (the seed-spread ruling; from 50 would make six seeds non-neutral - Elias's if wanted). (3) The subsidy's route through EN-4's landed levy rule, no new constant. (4) The four trackers record the move their line took (item 2) - the enforcement doc's choice overturned by measurement; to strike it, `ApplyCostOnLine`'s last line is `applied = target`. (5) The liberalisation rule on the ratio with the closure the model's (items 10-11). (6) Tax Credits, Nationalization and Research Grants absent or descriptive, each stated. (7) SC-1 stated on the Sectors page, the landing ruling-first.
+
+**Stale text corrected in the registers.** `POLISIM_FEATURE_LIST.md`'s two rows still asking whether laws should reach the dials-only set (answered by §474); `POLISIM_ENERGY_SPECLET.md`'s "both are Elias's" on stage 5's law category and its P4-B3 row ("reconciled at stage 4"); the EN-7 row and the plan's S-E2 row.
+
+**Not touched.** The clamp's rule itself; the sector support target's coefficients; where SC-1's cost should land; EN-7b, whose sourcing landed the same evening outside the tree (the electricity-tax statutes of the five and the EU floor, every quote checked against its saved file by a second reader) - it carries a measured premise to its own record: Poland's statutory excise is about two per cent of Eurostat's environmental-tax component, so a law that scales that component as "the electricity tax" would scale levies nobody has named.
+
+**Bar:** `bar443_en7a_r2` **38 of 38** and `bar444_en7a_r2_sim` **51 of 51** on the code; `bar445_rec498` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight..

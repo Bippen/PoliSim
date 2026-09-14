@@ -11001,6 +11001,26 @@ namespace PoliSim.UI
 
             DrawColoredLabel($"Cost of this draft {UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions)}/yr · support standing {UiFormat.Money(standingCost, MoneyUnit.Billions)}/yr",
                 _labelStyle, costDelta > 0f ? PoliSimTheme.Bad : costDelta < 0f ? PoliSimTheme.Good : PoliSimTheme.TextSecondary);
+            bool energyLine = sector.Type == SectorType.Energy && SectorCouplings.HasEnergyLine(_playerCountry);
+            if (sector.Type == SectorType.Energy)
+            {
+                // EN-7a: the subsidy is retail intervention's money side - where its cost lands decides what it does; the figure is what the line carries
+                // (the tracker records the move the line took, so a bound that holds part of the cost is not printed as landed)
+                string carried = UiFormat.Money(_playerCountry.AppliedEnergySupportCost, MoneyUnit.Billions);
+                string subsidy = !energyLine ? "No energy line in this budget: the subsidy's cost stays with the other sectors' support"
+                    : EnergyLedger.HasPolicyLevy(_playerCountry.Id) ? $"The energy line carries {carried}/yr of the subsidy, displacing the policy levy one for one until none is left"
+                    : $"The energy line carries {carried}/yr of the subsidy - no policy levy in the retail price to displace, so no retail effect";
+                DrawColoredLabel(subsidy + " · regulation below its seeded level moves supply margin from industry to households", _labelStyle, PoliSimTheme.TextMuted);
+                if (Event.current.type == EventType.Repaint) { _energySectorCostLastArea = GUILayoutUtility.GetLastRect(); }
+            }
+            if (SectorCouplings.SupportLine(_playerCountry) == null)
+            {
+                // SC-1 (2026-09-14, measured): no line in this book carries the sector dials' support - said where the cost is printed, until it is ruled
+                DrawColoredLabel(energyLine
+                        ? "No spending line in this budget carries the tax credits' and research grants' cost - it is not booked"
+                        : "No spending line in this budget carries sector support - the cost above is not booked",
+                    _labelStyle, PoliSimTheme.TextMuted);
+            }
 
             // The plate is RESERVED at rest and drawn into on a move - the same height either way - so a drag never grows
             // the sector and never shifts the rows beneath it (P4-1's invariant; the first film moved five rows by 129 px).

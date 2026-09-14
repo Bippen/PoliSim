@@ -19,7 +19,9 @@ namespace PoliSim.EditorTools
     /// the household price's real change, the inflation print is higher than untouched by about that term, and expectations look through it
     /// (their difference a fraction of the term). (4) THE RIKSBANK'S PATH: Germany's fleet's ETS step reaches Sweden's household price through
     /// the water value and prints on Sweden's inflation through Sweden's own weight - what a German carbon year does to a Swedish print, named.
-    /// (5) B6: a doubled price level with the same real stack passes nothing but the adders' erosion.
+    /// (5) B6: a doubled price level with the same real stack passes nothing but the adders' erosion. (6) EN-7a, THE PREVIEW READS THE TURN: France
+    /// (the player, so no AI ministry moves its lines) with its Energy subsidy at 80 standing into a boundary, against untouched - the preview's planned
+    /// term moves by what the boundary's plan moves (the levy the subsidy displaces), within a tenth; read before the clone's spending resolved, it moved by nothing.
     /// </summary>
     public static class EnergyPassThroughDiagnostic
     {
@@ -122,6 +124,19 @@ namespace PoliSim.EditorTools
                 EnergyMarket.ResetTurnState();
             }
 
+            // (6) EN-7a: the preview's term against the boundary's, for a standing Energy subsidy
+            sb.Append("\n    6. THE PREVIEW READS THE TURN: France's Energy subsidy at 80 standing into year 2's boundary, against untouched - the preview's planned term and the boundary's\n");
+            {
+                (float Preview, float Turn, float Levy) at50 = PreviewAgainstTurn(50f), at80 = PreviewAgainstTurn(80f);
+                float dPreview = at80.Preview - at50.Preview, dTurn = at80.Turn - at50.Turn;
+                bool moved = dTurn < 0f;
+                bool agrees = Math.Abs(dPreview - dTurn) <= 0.1f * Math.Abs(dTurn) + 1e-5f;
+                if (!moved) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: France's Energy subsidy at 80 did not lower the boundary's planned term ({at50.Turn:F5} → {at80.Turn:F5} pp) - the parity case tests nothing."); }
+                else if (!agrees) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: the preview's term moved {dPreview:F5} pp under France's Energy subsidy at 80, the boundary's {dTurn:F5} - the preview does not read the subsidy's route."); }
+                sb.Append(F("    France   untouched: preview {0:+0.00000;-0.00000} pp, boundary {1:+0.00000;-0.00000}; subsidy 80: preview {2:+0.00000;-0.00000}, boundary {3:+0.00000;-0.00000} (the levy scale {4:F3} → {5:F3}) - the preview moved {6:+0.00000;-0.00000}, the boundary {7:+0.00000;-0.00000}\n",
+                    at50.Preview, at50.Turn, at80.Preview, at80.Turn, at50.Levy, at80.Levy, dPreview, dTurn));
+            }
+
             sb.Append(ok ? "\n=== EnergyPassThroughDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== EnergyPassThroughDiagnostic: FAILED (see above) ===\n");
             if (ok) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
             CheckExit.Finish(ok ? 0 : 1);
@@ -173,6 +188,34 @@ namespace PoliSim.EditorTools
                 return run;
             }
             finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ProbeEtsRisePerT = 0.0; EnergyMarket.ProbeEtsRiseOnly = null; }
+        }
+
+        /// <summary>EN-7a: France as the player, one year advanced, its Energy subsidy set to <paramref name="subsidy"/> as a passed bill leaves it, a second year of
+        /// days - then the preview's planned term, the boundary, and the boundary's own plan (the term it wrote) with the levy scale it wrote it at.</summary>
+        private static (float Preview, float Turn, float Levy) PreviewAgainstTurn(float subsidy)
+        {
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("ENERGYPREVIEWPARITY");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                sim.PlayerCountryId = CountryId.France;
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                sim.AdvanceTurn(decisions);
+                Country fr = world.GetCountry(CountryId.France);
+                foreach (Sector s in fr.Sectors) { if (s.Type == SectorType.Energy) { s.SubsidyLevel = subsidy; } }
+                for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                float preview = sim.PreviewTurn(CountryId.France, PolicyDecision.None()).PreviewEnergyPassThroughPp;
+                sim.AdvanceTurn(decisions);
+                float levy = (float)EnergyLedger.Compute(fr, EnergyMarket.Clear(fr), Math.Max(0.0001f, fr.State.PriceLevel), 0.0).LevyScale;
+                return (preview, EnergyPassThrough.Planned(fr), levy);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);

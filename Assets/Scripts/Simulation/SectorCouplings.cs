@@ -39,15 +39,55 @@ namespace PoliSim.Simulation
               + ResearchGrantsBudgetCostPercentOfGdpPerPoint * (researchGrants - NeutralDialLevel));
         }
 
-        /// <summary>The country's whole support target: every sector's cost at its standing dials, summed.</summary>
+        /// <summary>The country's support target on the sector-support line (<see cref="SupportLine"/>): every sector's cost at its standing dials, summed - less the Energy
+        /// sector's SUBSIDY where the book carries an energy line, which is retail intervention's money side and lands there (EN-7a,
+        /// <see cref="EnergySupportCostTarget"/>).</summary>
         public static float SupportCostTarget(Country country)
         {
             float total = 0f;
+            bool energyLine = HasEnergyLine(country);
             foreach (Sector sector in country.Sectors)
             {
+                if (energyLine && sector.Type == SectorType.Energy)
+                {
+                    total += SupportCost(country.State.NominalGdp, NeutralDialLevel, sector.TaxCreditLevel, sector.ResearchGrantsLevel);   // EN-7a: the subsidy term is the energy line's
+                    continue;
+                }
                 total += SupportCost(country.State.NominalGdp, sector.SubsidyLevel, sector.TaxCreditLevel, sector.ResearchGrantsLevel);   // §497: the line is nominal (P5-B6)
             }
             return total;
+        }
+
+        /// <summary>
+        /// EN-7a (2026-09-14; S9: *"Subsidy = retail intervention's money side"*): the Energy sector's subsidy cost, on the book's energy line -
+        /// the same percentage of GDP per point as every sector's subsidy, zero at the neutral 50, and zero where the book carries no energy line
+        /// (Germany - the climate fund sits off the budget, so the subsidy's cost stays in <see cref="SupportCostTarget"/> with the other sectors').
+        /// </summary>
+        public static float EnergySupportCostTarget(Country country)
+        {
+            if (!HasEnergyLine(country)) { return 0f; }
+            foreach (Sector sector in country.Sectors)
+            {
+                if (sector.Type == SectorType.Energy) { return SupportCost(country.State.NominalGdp, sector.SubsidyLevel, NeutralDialLevel, NeutralDialLevel); }
+            }
+            return 0f;
+        }
+
+        /// <summary>Whether the book carries an energy spending line (every covered country but Germany).</summary>
+        public static bool HasEnergyLine(Country country) => EnergyLine(country) != null;
+
+        /// <summary>EN-7a: the book's energy spending line, the one the Energy sector's subsidy lands on - or null (Germany).</summary>
+        public static SpendingLine EnergyLine(Country country) => LineOf(country, SpendingCategory.Energy);
+
+        /// <summary>The line the sector dials' support cost lands on - Commerce, else PublicServices - the one lookup the boundary's pressure, the index
+        /// and the Sectors page share. SC-1 (2026-09-14, measured): only the USA's book carries either, so in the other five the support cost is booked on
+        /// no line (the statute budgets that replaced the generic seeds on 1 September carry neither; P4-B3 landed after them) - ruling-first.</summary>
+        public static SpendingLine SupportLine(Country country) => LineOf(country, SpendingCategory.Commerce) ?? LineOf(country, SpendingCategory.PublicServices);
+
+        private static SpendingLine LineOf(Country country, SpendingCategory category)
+        {
+            foreach (SpendingLine line in country.SpendingLines) { if (line.Category == category) { return line; } }
+            return null;
         }
     }
 }
