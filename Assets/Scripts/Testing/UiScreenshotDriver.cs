@@ -1754,9 +1754,9 @@ namespace PoliSim.Testing
                 string worstGeometry = worstAnyName != null && PoliSim.UI.LedgerRow.GeometryByRow.TryGetValue(worstAnyName, out (Rect Name, Rect Track, Rect Figure, Rect Trailing) g)
                     ? $" Track {g.Track.width:0} px, name {g.Name.width:0}, figure {g.Figure.width:0}, trailing {g.Trailing.width:0}, row {g.Name.x:0}..{g.Trailing.xMax:0}."
                     : string.Empty;   // P5-1: the worst row's widths, so a floor is measured rather than guessed
-                Debug.Log($"SHOT: slider reach, every ledger row - worst {worstAny:0.000} grains per pixel ({worstAnyName}; a grain is a point, or a per-tonne row's ceiling's hundredth).{worstGeometry}");
+                Debug.Log($"SHOT: slider reach, every ledger row - worst {worstAny:0.000} grains per pixel ({worstAnyName}; a grain is a point, a per-tonne row's ceiling's hundredth, or a spending row's range's hundredth on a 1-2-5 step).{worstGeometry}");
                 bool reachable = worstName == null || worst <= PoliSim.UI.LedgerRow.WholeUnit;
-                string reach = $"SHOT: slider reach on the Budget - {_reachByCapture.Count} ledger row(s) drawn in the captured frames, worst Budget row {worst:0.000} grains per pixel ({worstName}) against the whole-grain bound of {PoliSim.UI.LedgerRow.WholeUnit:0.###} (the step adapts to the track: {PoliSim.UI.LedgerRow.StepFor(worst):0.###} grain on that row; a grain is a point, or a per-tonne row's ceiling's hundredth).";
+                string reach = $"SHOT: slider reach on the Budget - {_reachByCapture.Count} ledger row(s) drawn in the captured frames, worst Budget row {worst:0.000} grains per pixel ({worstName}) against the whole-grain bound of {PoliSim.UI.LedgerRow.WholeUnit:0.###} (the step adapts to the track: {PoliSim.UI.LedgerRow.StepFor(worst):0.###} grain on that row; a grain is a point, a per-tonne row's ceiling's hundredth, or a spending row's range's hundredth on a 1-2-5 step).";
                 if (reachable) { Debug.Log(reach); }
                 else
                 {

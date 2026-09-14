@@ -106,6 +106,32 @@ namespace PoliSim.EditorTools
                 sb.Append('\n');
             }
             if (PensionAgeStatute.IsDated(CountryId.Sweden, 2033)) { ok = false; Debug.LogError("PENSION AGE: Sweden's 2033 reads dated - the six-year horizon is not enforced."); }
+
+            // (5) board 15c's undated mark: the first year without a published figure, never a year already past - the row printed the horizon's
+            // year as NEXT once the calendar had passed it (Italy in 2029, on the films' own calendar) until this was asserted
+            sb.Append("\n    5. THE UNDATED MARK - the year the row's \"?\" names: the first year without a published figure, never one already past\n");
+            int marksChecked = 0;
+            for (int year = PensionAgeStatute.SeedYear; year <= PensionAgeStatute.SeedYear + 20; year++)
+            {
+                foreach (CountryId id in order)
+                {
+                    PensionAgeStatute.Rule r = PensionAgeStatute.Of(id);
+                    int? mark = PensionAgeStatute.UndatedMarkYear(id, year);
+                    bool isIndexed = r.Kind == PensionAgeRule.LifeExpectancyIndexed;
+                    if (isIndexed != mark.HasValue) { ok = false; Debug.LogError($"PENSION AGE: {id} in {year} - an undated mark exactly when the rule is indexed, and {(isIndexed ? "none was given" : "one was given")}."); continue; }
+                    if (!mark.HasValue) { continue; }
+                    marksChecked++;
+                    if (mark.Value < year) { ok = false; Debug.LogError($"PENSION AGE: {id} in {year} marks {mark.Value} as its undated year - a year already past."); }
+                    if (mark.Value > year && !PensionAgeStatute.IsDated(id, year)) { ok = false; Debug.LogError($"PENSION AGE: {id} in {year} has no published figure for the year itself, but the mark names {mark.Value}."); }
+                    if (mark.Value == year && PensionAgeStatute.IsDated(id, year)) { ok = false; Debug.LogError($"PENSION AGE: {id} in {year} marks the year undated though its figure is published."); }
+                    if (!PensionAgeStatute.IsDated(id, year) && Math.Abs(PensionAgeStatute.AgeInForce(id, year) - PensionAgeStatute.AgeInForce(id, r.DatedTo)) > 1e-6f) { ok = false; Debug.LogError($"PENSION AGE: {id} in {year} - an undated year's age in force is not the last published figure, carried."); }
+                }
+            }
+            sb.Append(F("    {0} marks checked, {1} to {2}: Sweden 2030 ? {3}, 2040 ? {4} · Italy 2027 ? {5}, 2029 ? {6}, 2040 ? {7} (the knob carrying {8} and {9})\n",
+                marksChecked, PensionAgeStatute.SeedYear, PensionAgeStatute.SeedYear + 20,
+                PensionAgeStatute.UndatedMarkYear(CountryId.Sweden, 2030), PensionAgeStatute.UndatedMarkYear(CountryId.Sweden, 2040),
+                PensionAgeStatute.UndatedMarkYear(CountryId.Italy, 2027), PensionAgeStatute.UndatedMarkYear(CountryId.Italy, 2029), PensionAgeStatute.UndatedMarkYear(CountryId.Italy, 2040),
+                PensionAgeStatute.Format(PensionAgeStatute.AgeInForce(CountryId.Sweden, 2040)), PensionAgeStatute.Format(PensionAgeStatute.AgeInForce(CountryId.Italy, 2040))));
             if (Math.Abs(PensionAgeStatute.AgeInForce(CountryId.Germany, 2026) - (66f + 4f / 12f)) > 1e-6f) { ok = false; Debug.LogError("PENSION AGE: Germany's age in force in 2026 is not 66 y 4 m (the 1960 cohort's)."); }
             if (Math.Abs(PensionAgeStatute.AgeInForce(CountryId.France, 2026) - (62f + 9f / 12f)) > 1e-6f) { ok = false; Debug.LogError("PENSION AGE: France's age in force in 2026 is not 62 y 9 m."); }
 

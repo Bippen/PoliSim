@@ -109,6 +109,19 @@ namespace PoliSim.Data
             return age;
         }
 
+        /// <summary>
+        /// Board 15c's third mark, the year it names: for an indexed rule, the first year its statute has published no figure for, and never a
+        /// year already past - the year after the horizon while the calendar is inside it, THIS year once the calendar has passed it (the age in
+        /// force is then the last published figure, carried, and <see cref="IsDated"/> says so). Null for a schedule or a fixed rule, whose
+        /// every year is known.
+        /// </summary>
+        public static int? UndatedMarkYear(CountryId id, int year)
+        {
+            Rule r = Of(id);
+            if (r == null || r.Kind != PensionAgeRule.LifeExpectancyIndexed) { return null; }
+            return Math.Max(r.DatedTo + 1, year);
+        }
+
         /// <summary>The next point on the path after a year, or null where the path has no later point (a schedule at its end, a fixed rule, an indexed rule at its horizon).</summary>
         public static PathPoint? NextStep(CountryId id, int year)
         {

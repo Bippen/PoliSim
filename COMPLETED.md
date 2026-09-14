@@ -27275,3 +27275,40 @@ The frames were read: the chamber of eight largest first with IN THE CABINET on 
 **Registers.** The feature list's CL-2 row closed with this record; the plan's S-C2 row marked; a question opened for Elias (who replaces a candidate who resigns); the live rate entered beside the twenty play-calibration entries as the twenty-first.
 
 **Bar:** `bar419_cl2` and `bar421_cl2` **38 of 38** on the two earlier trees (the first films read for their findings; the second chain read by the review), `bar423_cl2` **38 of 38** on the final code with `bar424_cl2_sim` **49 of 49**; `bar425_cl2_rec` **38 of 38** on the tree this record reads - residue 8, 12 of 12 ratchets tight.
+
+## 493. THE SPENDING TAB'S PASS — board 15c's undated mark past an indexed rule's horizon, BR-1 riding with it as ruled, and a wrapped name that ran under its caption (2026-09-14)
+
+**The ruling** (2026-09-13, re-issued 2026-09-14): *"BR-1 stands open with its figures — the USA 1280 film exits 1 on the Defense row at 1,518 grains per pixel, and §481's attribution to the carbon row alone was one reading hiding behind another. Fix it in the pass that next touches that surface, not as its own errand."*
+
+**Stated first: the pass that next touched the surface was §491, and it did not fix BR-1.** Board 15c drew the pension row on the spending tab's own columns - BR-1's surface - and its record carried the USA 1280 film's exit on the Defense row as a standing figure (1,518). That was the pass the ruling named. This one is the next, and it carries the fix.
+
+**What this pass found on the surface, and why it is a pass.** Preparing the D20 return's second case (a rule that publishes nothing) against the built row: once the calendar passes an indexed rule's horizon, 15c's row printed the horizon's year as NEXT and put the "?" on a year already behind the knob - "NEXT 2029 · NO FIGURE YET" in 2029 for Italy, on the films' own calendar, and the same for Sweden from 2033 (`DrawPensionAgeRow` took the mark from `DatedTo + 1` whatever the year). A game started in 2026 reaches either inside seven years.
+
+**The undated mark** (`PensionAgeStatute.UndatedMarkYear`; `DrawPensionAgeRow`). For an indexed rule the mark names the first year the statute has published no figure for and never a year already past: the year after the horizon while the calendar is inside it, THIS year once the calendar has passed it - the knob then carries the last published figure (the model computes no life expectancy, and the age in force past the path is its last figure, as §489's diagnostic asserts) and the band says **CARRIED FROM** the horizon. Asserted, not drawn only: `PensionAgeDiagnostic` section 5 checks every indexed mark from 2026 to 2046 - never past, this year exactly when this year's figure is unpublished, the carried figure the last published one:
+
+```
+    42 marks checked, 2026 to 2046: Sweden 2030 ? 2033, 2040 ? 2040 · Italy 2027 ? 2029, 2029 ? 2029, 2040 ? 2040 (the knob carrying 67 and 67 y 3 m)
+```
+
+Proven in the other direction on a tree whose mark read `DatedTo + 1` again (`probe_sp1_mark`): **30** failure lines, from *PENSION AGE: Italy in 2030 marks 2029 as its undated year - a year already past.* and *PENSION AGE: Sweden in 2034 marks 2033 as its undated year - a year already past.*; restored, section 5 passes. On film at 1280: Italy's row in 2029 - the knob at 67 y 3 m, the tick "2029 ?", the band CARRIED FROM 2028 · NO LEVER; Sweden's inside its window - the tick "2033 ?", the band NEXT 2033 · NO FIGURE YET · NO LEVER.
+
+**BR-1 - the spending rows take a grain** (`GameController.SpendingGrain`; `LedgerRow.LastGrain` / `LastStep`; `DrawSpendingLineInstruments`). EN-8's device on the spending rows: a row's grain in dollars billions is its track's range's hundredth rounded up to a 1-2-5 step, never under one billion, so every row rests on and reaches every grain on any track of a hundred pixels or more. A range of a hundred billion or less keeps the grain of one and snaps exactly as it did; a wider range snaps in its grain. The step is stated on the row where it is coarser than a billion - at the caption band's left end ahead of the driver ("BY $5B · NO DRIVER" on the USA's Defense), since 9d's caption holds the name's second line; the first cut printed the step wherever the grain passed one, and Italy's Social Security (a range just over a hundred billion: grain two, step one) read "BY $1B" for a step no coarser than before - cut to the coarser-than-a-billion rule on the same films. **The reach:** the USA's 1280 sweep read **1,518** grains per pixel on Defense (`b15c_usa_1280`); every film of this pass reads under the bound, and Defense is no longer the worst row anywhere.
+
+**A defect the pass's own film showed, fixed where it lives** (`LedgerRow.DrawNameCell`). On the USA's rows frame "Veterans Affairs Discretionary" wrapped to three lines and 9d's caption printed over the third (the same on §491's film - it predates this pass). The overflow guard measured a wrapped name against the whole name cell, caption area included, so it could not see it. **The instrument first:** a wrapped name is measured against the room above the caption line; the film on that tree (`probe_sp2a_usa_1280`, the ladder unchanged) flagged `"Veterans Benefits (Mand.)" needs 57,3 tall in 49,0 at 17px (over by 8,3)`; `"Veterans Affairs Discretionary" needs 57,3 tall in 49,0 at 17px (over by 8,3)` - 10 OVERFLOW lines across its frames. **Then the fix:** the ladder's two rungs choose and draw in that room, so a name that needs three lines there takes the reduced size's two; the films read 0 overflows.
+
+**Films** (eight, `-shotstop=05b_budget_spending_pension`, the frames §491 filmed; every figure parsed from the logs):
+
+| film | captured | failed | overflow | escapes | worst Budget row (grains per pixel) | the runner's exit |
+|---|---|---|---|---|---|---|
+| `sp2_sweden_1280` | 37 | 0 | 0 | 0 | 0,735 (05r_budget_rest / Carbon Tax) | 0 |
+| `sp2_germany_1280` | 37 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `sp2_france_1280` | 37 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `sp2_italy_1280` | 37 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `sp2_poland_1280` | 37 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `sp2_usa_1280` | 37 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `sp2_usa_2560` | 37 | 0 | 0 | 0 | 0,146 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `sp2_italy_2560` | 37 | 0 | 0 | 0 | 0,146 (05t_budget_turn0 / Payroll Tax) | 0 |
+
+**Not touched.** No trajectory moves - a readout on the statute (a new method the model's turn does not call) and the Budget's drawing (the grain changes where a draft snaps, not a figure the turn computes); the pensions driver stays deferred by ruling.
+
+**Bar:** `bar426_sp1` **38 of 38** on the first code (its films read for the step printed on a row that needed none and for the overprinted name), `bar427_sp2` **38 of 38** on the final code; `bar428_sp_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.

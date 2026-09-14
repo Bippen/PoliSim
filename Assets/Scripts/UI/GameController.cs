@@ -11358,6 +11358,7 @@ namespace PoliSim.UI
             // draft is the standing amount, which is why a slider left where it stands stores nothing.
             float min = standing * (1f - rangePercent / 100f);
             float max = standing * (1f + rangePercent / 100f);
+            float grain = SpendingGrain(min, max);   // BR-1
             Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
 
             float result = LedgerRow.Draw(
@@ -11379,7 +11380,8 @@ namespace PoliSim.UI
                 ghost: spendingLine.LastYearAmount > 0f ? spendingLine.LastYearAmount : float.NaN,   // 9b: the year-open tick
                 figureSecondLine: SpendingDeltaText(spendingLine, hasDraft ? draft : standing),   // 9b: Δ under the figure, measured from the ghost
                 nameSecondLine: SpendingRowCaption(spendingLine, rangePercent, out Color captionInk),   // 9d: PORTFOLIO · EFF ×r, or the class word
-                nameSecondLineInk: captionInk);
+                nameSecondLineInk: captionInk,
+                grain: grain);   // BR-1: the step in the row's grain; the step is stated at the band's left end (9d holds the name's second line)
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -11405,7 +11407,8 @@ namespace PoliSim.UI
         /// the age in force this year (`PensionAgeStatute.AgeInForce`), the law's path a row of D13's tick sprite at each future statutory
         /// value with its year ABOVE the track (the caption band beneath is the row's, and the first film printed the years over its
         /// sentence), joined to the knob by a dotted hairline; an INDEXED rule's path is dated only to its horizon and the next year prints a
-        /// "?" tick - the year known, the figure not (Sweden's six years by SFB 2 kap. 10 c §, Italy's to 2028); a SCHEDULED rule's path ends
+        /// "?" tick - the year known, the figure not (Sweden's six years by SFB 2 kap. 10 c §, Italy's to 2028), and once the calendar has passed the
+        /// horizon the "?" names this year and the band says CARRIED FROM the horizon (`PensionAgeStatute.UndatedMarkYear`); a SCHEDULED rule's path ends
         /// where the statute says; a FIXED rule prints no path and says only a bill moves it. The kind is 9c's chip under the name, the
         /// citation the row's trailing line (its short form, under the figure), the caption band NEXT and NO LEVER (the carbon row's sentence is
         /// the Policy Web node's - with the citation under the figure the band at 1280 holds no more). ⚠ The row is NOT a lever: the pensions driver is the BASELINE half, deferred by ruling with
@@ -11446,12 +11449,13 @@ namespace PoliSim.UI
                 if (p.Year <= year) { continue; }
                 marks.Add((X(p.Age), p.Year.ToString(CultureInfo.InvariantCulture), true));
             }
-            if (rule.Kind == PensionAgeRule.LifeExpectancyIndexed)
+            int? undated = PensionAgeStatute.UndatedMarkYear(country.Id, year);
+            if (undated.HasValue)
             {
-                // the third mark: the year after the horizon is a date with no figure - the tick stands past the last known age and says "?"
-                int horizonNext = rule.DatedTo + 1;
+                // the third mark: the first year the statute has published no figure for - the year after the horizon, or this year once the
+                // calendar has passed it (the knob then carries the last published figure) - never a year already past
                 float lastAge = PensionAgeStatute.AgeInForce(country.Id, rule.DatedTo);
-                marks.Add((X(lastAge) + tickW * 3f, horizonNext.ToString(CultureInfo.InvariantCulture) + " ?", false));
+                marks.Add((X(lastAge) + tickW * 3f, undated.Value.ToString(CultureInfo.InvariantCulture) + " ?", false));
             }
             if (marks.Count > 0)
             {
@@ -11493,7 +11497,10 @@ namespace PoliSim.UI
                 PensionAgeStatute.PathPoint? next = PensionAgeStatute.NextStep(country.Id, year);
                 string bandText = rule.Kind == PensionAgeRule.Fixed ? "A BILL ONLY · NO LEVER"
                     : next.HasValue ? "NEXT " + PensionAgeStatute.Format(next.Value.Age) + " · " + next.Value.Year.ToString(CultureInfo.InvariantCulture) + " · NO LEVER"
-                    : rule.Kind == PensionAgeRule.LifeExpectancyIndexed ? "NEXT " + (rule.DatedTo + 1).ToString(CultureInfo.InvariantCulture) + " · NO FIGURE YET · NO LEVER"
+                    : rule.Kind == PensionAgeRule.LifeExpectancyIndexed
+                        ? (PensionAgeStatute.IsDated(country.Id, year)
+                            ? "NEXT " + (rule.DatedTo + 1).ToString(CultureInfo.InvariantCulture) + " · NO FIGURE YET · NO LEVER"
+                            : "CARRIED FROM " + rule.DatedTo.ToString(CultureInfo.InvariantCulture) + " · NO LEVER")   // past the horizon: the knob is the last published figure
                     : "NO NEXT · FLAT FROM HERE · NO LEVER";
                 float citationRoom = Mathf.Ceil(face.CalcSize(new GUIContent(rule.Citation.ToUpperInvariant())).x) + 6f * scale;
                 GUI.Label(new Rect(band.x, band.y, Mathf.Max(10f, band.width - citationRoom), band.height), bandText,
@@ -11521,12 +11528,36 @@ namespace PoliSim.UI
                 : SpendingDrivers.Of(line.Category) == SpendingDriver.None ? "NO DRIVER"
                 : line.LastDriverRatio > 0f ? driver + " ×" + line.LastDriverRatio.ToString("F3", CultureInfo.InvariantCulture) : driver;
             string leftShort = line.Pinned ? "PINNED" : driver;
+            if (LedgerRow.LastStep > 1f)
+            {
+                // BR-1: a coarse step is stated on the row, never discovered by dragging (EN-8's rule) - ahead of the driver, since 9d's caption
+                // holds the name's second line; the driver is the first thing dropped when the end is narrow
+                string by = "BY $" + LedgerRow.LastStep.ToString("0.#", CultureInfo.InvariantCulture) + "B";
+                leftFull = by + " · " + leftFull;
+                leftShort = face.CalcSize(new GUIContent(by + " · " + leftShort)).x <= end ? by + " · " + leftShort : by;
+            }
             string left = face.CalcSize(new GUIContent(leftFull)).x <= end ? leftFull : leftShort;
             string next = "NEXT " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions);
             string right = next;   // 9b: NEXT alone - the delta moved under the figure (SpendingDeltaText)
             Color ink = PoliSimTheme.TextSecondary;
             GUI.Label(new Rect(band.x, band.y, end, band.height), left, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, ink));
             GUI.Label(new Rect(band.xMax - end, band.y, end, band.height), right, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperRight, clipping = TextClipping.Clip }, ink));
+        }
+
+        /// <summary>
+        /// BR-1 (2026-09-14; EN-8's device on the spending rows): a spending row's GRAIN in dollars billions - its track's range's hundredth rounded up
+        /// to a 1-2-5 step and never under one billion - so a line whose allowed change spans hundreds of billions (the USA's Defense at ±15 %)
+        /// rests on and reaches every grain the way a smaller line reaches every billion, on any track of a hundred pixels or more. A range of a
+        /// hundred billion or less keeps the grain of one and snaps exactly as it did; a wider range snaps in its grain, and its step is printed
+        /// on the row only where it is coarser than a billion (`DrawSpendingLineInstruments`).
+        /// </summary>
+        private static float SpendingGrain(float min, float max)
+        {
+            float hundredth = (max - min) / 100f;
+            if (hundredth <= 1f) { return 1f; }
+            float decade = Mathf.Pow(10f, Mathf.Floor(Mathf.Log10(hundredth)));
+            float m = hundredth / decade;
+            return (m <= 1.0001f ? 1f : m <= 2f ? 2f : m <= 5f ? 5f : 10f) * decade;
         }
 
         /// <summary>9d (D15 item 4): the caption under the dial name. A line a ministry reads prints PORTFOLIO · EFF ×r - Bad below unity, TextMuted at or

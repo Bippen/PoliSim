@@ -49,7 +49,7 @@ namespace PoliSim.UI
         /// <summary>P2-1.3: a whole unit - the bound the film holds every Budget row to. A row whose track covers more
         /// than one unit per pixel cannot rest on every whole value, however it snaps. EN-8 (2026-09-12): the unit is the
         /// row's own GRAIN - a whole point for a rate in points, the ceiling's hundredth for a rate per tonne
-        /// (<see cref="PoliSim.Data.TaxLine.DialGrain"/>) - so the reach is recorded in grains and the bound holds every row
+        /// (<see cref="PoliSim.Data.TaxLine.DialGrain"/>), a spending row's range's hundredth on a 1-2-5 step since BR-1 - so the reach is recorded in grains and the bound holds every row
         /// to the same sentence: every resting value is reachable without overshoot.</summary>
         public const float WholeUnit = 1f;
 
@@ -227,7 +227,6 @@ namespace PoliSim.UI
                 GUI.color = barPrevious;
             }
 
-            DrawNameCell(nameRect, name, nameStyle, rowInk);
             // EN-8: a row whose grain is coarser than one prints its step under its name in the caption face - the second line
             // 9d gave the spending rows - so a coarse step is stated on the row, never discovered by dragging. A caller's own
             // second line wins; the step line is drawn only where the caller named the unit it is in. "BY 30 SEK/t": the first
@@ -238,6 +237,10 @@ namespace PoliSim.UI
             {
                 secondLine = "BY " + step.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture) + " " + grainUnit;
             }
+            // the second line takes the name cell's foot (drawn below), so a WRAPPED name has the room above it - measured, the caption's own height
+            float captionReserve = string.IsNullOrEmpty(secondLine) ? 0f
+                : Mathf.Ceil(EndCaptionStyle(nameStyle).CalcSize(new GUIContent(secondLine)).y) + 1f;
+            DrawNameCell(nameRect, name, nameStyle, rowInk, captionReserve);
             if (!string.IsNullOrEmpty(secondLine) && Event.current.type == EventType.Repaint)
             {
                 // 9d (D15 item 4): 6a's second line under the dial name - on a spending row PORTFOLIO · EFF ×r in the caption face, Bad below unity,
@@ -265,6 +268,8 @@ namespace PoliSim.UI
                 LastTrackRect = trackRect;
                 LastScale = scale;
                 LastHadEndNames = IsEndNames(trailingText);
+                LastGrain = grain;
+                LastStep = step;
             }
 
             // ALWAYS emitted, enabled or not - see the control-ID note above.
@@ -558,6 +563,9 @@ namespace PoliSim.UI
         /// <summary>P4-B2: the track rect the last <see cref="Draw"/> painted on this Repaint, and its scale, so the caller can place a range caption in the caption band beneath it.</summary>
         public static Rect LastTrackRect;
         public static float LastScale = 1f;
+        /// <summary>BR-1: the last row's grain and the step its draft snaps to, in the row's units, so a caller can state a coarse step in the band.</summary>
+        public static float LastGrain = 1f;
+        public static float LastStep = SnapStep;
         /// <summary>P4-B2: whether the last row drew end-names in its band (the caption then keeps clear of the band's two ends).</summary>
         public static bool LastHadEndNames;
 
@@ -831,7 +839,7 @@ namespace PoliSim.UI
             return widest;
         }
 
-        private static void DrawNameCell(Rect rect, string text, GUIStyle source, Color ink)
+        private static void DrawNameCell(Rect rect, string text, GUIStyle source, Color ink, float captionReserve = 0f)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -858,7 +866,8 @@ namespace PoliSim.UI
 
             style.wordWrap = true;
             float wrappedHeight = style.CalcHeight(content, rect.width);
-            if (wrappedHeight <= rect.height)
+            var roomAbove = new Rect(rect.x, rect.y, rect.width, Mathf.Max(1f, rect.height - captionReserve));   // a wrapped name stops at the caption line
+            if (wrappedHeight <= roomAbove.height)
             {
                 // ⚠ AND THIS ONE WAS CHOSEN ON HEIGHT ALONE. CalcHeight answers "how tall once wrapped
                 // to this width" and is silent about what the wrap had to DO to get there. When a single
@@ -871,8 +880,8 @@ namespace PoliSim.UI
                 // whether or not any pixel leaves the box. Confirmed in
                 // screenshots/run_05c_budget_welfare_deep.png before this check was written.
                 UiOverflowGuard.Check(text, new Vector2(WidestUnbreakableRun(text, style), wrappedHeight),
-                    rect.size, style.fontSize);
-                GUI.Label(rect, content, style);
+                    new Vector2(rect.width, rect.height - captionReserve), style.fontSize);   // the room above the caption line, not the whole cell
+                GUI.Label(roomAbove, content, style);
                 return;
             }
 
@@ -897,13 +906,13 @@ namespace PoliSim.UI
 
                 style.wordWrap = true;
                 float reducedHeight = style.CalcHeight(content, rect.width);
-                if (reducedHeight > rect.height)
+                if (reducedHeight > roomAbove.height)
                 {
                     continue;
                 }
 
-                UiOverflowGuard.Check(text, new Vector2(widestRun, reducedHeight), rect.size, style.fontSize);
-                GUI.Label(rect, content, style);
+                UiOverflowGuard.Check(text, new Vector2(widestRun, reducedHeight), new Vector2(rect.width, rect.height - captionReserve), style.fontSize);
+                GUI.Label(roomAbove, content, style);
                 style.fontSize = fullSize;
                 return;
             }
@@ -913,7 +922,7 @@ namespace PoliSim.UI
             // Two lines still will not hold it - shrink, which is the floor of the ladder rather than
             // its first move. MeasuredLabel re-seeds wordWrap itself, so the cached style is safe to
             // hand over in whatever state this left it.
-            PoliSimWidgets.MeasuredLabel(rect, text, style);
+            PoliSimWidgets.MeasuredLabel(roomAbove, text, style);
         }
     }
 }
