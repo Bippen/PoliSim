@@ -377,6 +377,9 @@ namespace PoliSim.EditorTools
         /// reported into a ledger that was built and then discarded at exit, unaudited.</summary>
         private static readonly (string Name, Action Run)[] Simulation = new (string Name, Action Run)[]
         {
+                // §496 (2026-09-14): FIRST, before any other check can leave static state behind - the first twenty no-policy turns
+                // of the dump's own text against the declared baseline's digests; §490 moved them from turn 2 and no bar saw it.
+                ("TrajectorySentinelCheck", TrajectorySentinelCheck.Run),
                 ("AggregationEquivalenceCheck", AggregationEquivalenceCheck.Run),
                 ("CreditRatingAnchorCheck", CreditRatingAnchorCheck.Run),
                 ("PublicationCadenceCheck", PublicationCadenceCheck.Run),

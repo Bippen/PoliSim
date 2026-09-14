@@ -143,12 +143,35 @@ namespace PoliSim.EditorTools
                 TaxSchedule.Statute s = TaxSchedule.Of(CountryId.Germany);
                 foreach (double x in new[] { s.FormulaZone2End, s.FormulaZone3End, s.FormulaZone4End, 400000.0 })
                 {
-                    double ramps = TaxSchedule.Tax(s, x, 0, 1.0), formula = TaxSchedule.StatuteFormulaTax(s, x);
+                    double ramps = TaxSchedule.RampTax(s, x), formula = TaxSchedule.StatuteFormulaTax(s, x);   // the ramps explicitly: Tax() reads § 32a verbatim with no sub-row moved
                     sb.Append(F("    Germany  at {0:N0} EUR: the ramps {1:N2}, § 32a {2:N2} - {3:+0.00;-0.00} EUR\n", x, ramps, formula, ramps - formula));
                     if (Math.Abs(ramps - formula) > 1.0) { ok = false; Debug.LogError($"TAX SCHEDULE: Germany's ramps read {ramps:F2} at {x:N0} against the formula's {formula:F2} - more than a euro apart."); }
                 }
                 List<TaxSchedule.SubRow> rows = TaxSchedule.SubRows(s);
                 sb.Append(F("    Germany  sub-rows: {0} - ramp ends DERIVED {1:F2} % and {2:F2} %, the entry rate {3:F0} %\n", rows.Count, TaxSchedule.DeRampEnd2, TaxSchedule.DeRampEnd3, TaxSchedule.DeEntryRate));
+
+                // with no sub-row moved the revenue reads § 32a VERBATIM, to the bit - §490 had put the ramps on every path and moved the no-policy
+                // trajectory with no dump; an unmoved line (null, or every entry −1) and a shifted lever both stay on the statute's arithmetic
+                var unmoved = new float[rows.Count]; for (int i = 0; i < unmoved.Length; i++) { unmoved[i] = -1f; }
+                int verbatim = 0, off = 0;
+                foreach (double scale in new[] { 1.0, 1.137 })
+                {
+                    foreach (double shift in new[] { 0.0, 5.0 })
+                    {
+                        for (double income = 5000; income <= 450000; income += 3713.7)
+                        {
+                            double taxable = income - s.FormulaGrund * scale;
+                            double expected = Math.Max(0, TaxSchedule.StatuteFormulaTax(s, Math.Floor(income / scale))) * scale + (taxable > 0 ? shift / 100.0 * taxable : 0);
+                            foreach (float[] o in new[] { null, unmoved })
+                            {
+                                double got = TaxSchedule.Tax(s, income, shift, scale, o);
+                                if (got == expected) { verbatim++; } else { off++; }
+                            }
+                        }
+                    }
+                }
+                sb.Append(F("    Germany  with no sub-row moved: {0} of {1} incomes, shifts and scales read § 32a to the bit\n", verbatim, verbatim + off));
+                if (off > 0) { ok = false; Debug.LogError($"TAX SCHEDULE: Germany's revenue left § 32a's own arithmetic on {off} unmoved cases - the ramps are on the statute's path."); }
                 Country pl = world.GetCountry(CountryId.Poland);
                 TaxLine line = Find(pl);
                 List<TaxSchedule.SubRow> plRows = TaxSchedule.SubRows(TaxSchedule.Of(CountryId.Poland));

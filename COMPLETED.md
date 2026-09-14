@@ -27388,3 +27388,59 @@ The cheap bar is **38** and the simulation group **49** (`bar424_cl2_sim`, 49 of
 | §494 | the return poses the two cases against the row's structural state, asks nothing else | **HOLDS** - as ruled |
 
 **Bar:** `bar429_ret_rec` **38 of 38** on the tree this record reads - residue 7, 12 ratchets tight; `bar430_shelf` **38 of 38** after this record was written from that reading (residue 7, 12 tight).
+
+## 496. §490 MOVED THE NO-POLICY TRAJECTORY — found by EN-7's control dump, attributed by checkout, § 32a restored on the statute's own path to the byte, and the sentinel that would have seen it on the second turn (2026-09-14)
+
+**The rulings:** *"measure the premise before fixing it"*; *"instrument fixed first, number re-measured after"*; *"prove every guard both directions"*; *"Two BASELINE families never in one pass"* (2026-09-14); §402: *"inertness is proved by the dump diff against the baseline and never by reading the code."*
+
+**How it was found.** EN-7's plan (the energy dials onto the instruments, expected byte-identical at the seed) took a control dump first, on HEAD `55e6987`, so that its own dump would have a clean reference: `traj_en7c` against the last dumped label `traj_pn1` (§489, itself identical to `traj_f4s2`). **It was not identical:**
+
+| seed | horizon | fields byte-identical (control `en7c` vs `pn1`) | after the restoration (`f44r` vs `pn1`) |
+|---|---|---|---|
+| 777 | 100 | 10 of 76 | **76 of 76** |
+| 777 | 500 | 8 of 76 | **76 of 76** |
+| 777 | 1000 | 8 of 76 | **76 of 76** |
+| 424242 | 100 | 9 of 76 | **76 of 76** |
+| 424242 | 500 | 8 of 76 | **76 of 76** |
+| 424242 | 1000 | 8 of 76 | **76 of 76** |
+
+The first differing value in the files: seed 777 at line 615 - turn 2, Germany's Budget: -365.6914 against -365.691528; seed 424242 at line 615 - turn 2, Germany's Budget: -369.4208 against -369.4211. Small - the budget and the debt a few hundredths of a per cent apart at a century, near-zero series large in relative terms - and real: every earlier pair of labels was byte-identical run to run.
+
+**Attributed by checkout, never by reading** (the §358 method: the commit checked out in place, the dump run on it, `main` restored):
+
+| seed | horizon | `pn1` | `f4s2` | `at490` (`a7fbb59`) | `at492` (`15f1643`) | `en7c` (`55e6987`) | `f44r` (restored) |
+|---|---|---|---|---|---|---|---|
+| 777 | 100 | `2337fa90386b` | `2337fa90386b` | `bbe65518d0c9` | `bbe65518d0c9` | `bbe65518d0c9` | `2337fa90386b` |
+| 777 | 500 | `a64e8d3650aa` | `a64e8d3650aa` | `4371cd6ef812` | `-` | `4371cd6ef812` | `a64e8d3650aa` |
+| 777 | 1000 | `3be927d2c42c` | `3be927d2c42c` | `29a4b85d556f` | `29a4b85d556f` | `29a4b85d556f` | `3be927d2c42c` |
+| 424242 | 100 | `609865ef4765` | `609865ef4765` | `510f15edb6f3` | `510f15edb6f3` | `510f15edb6f3` | `609865ef4765` |
+| 424242 | 500 | `bd8df6c44607` | `bd8df6c44607` | `dd0b5fc2370b` | `-` | `dd0b5fc2370b` | `bd8df6c44607` |
+| 424242 | 1000 | `b544907946a3` | `b544907946a3` | `ea884512adc8` | `ea884512adc8` | `ea884512adc8` | `b544907946a3` |
+
+`at490` - board 15b and F4-4, §490 - is where the trajectory left `pn1`, and nothing after it moved it again: CL-2, the spending tab's pass, the return and the two standing lists are inert, digest for digest (`at492` was dumped at two horizons).
+
+**The cause, read after it was measured.** §490 re-expressed Germany's § 32a as ramps whose end rates are derived from its coefficients - what the schedule row draws and what a sub-row dial moves - and routed the FORMULA kind's revenue through them too (`TaxSchedule.Tax` → `BandTax`), keeping the statute's own arithmetic only as `StatuteFormulaTax` for the check. The ramps are the formula within a euro at the zone ends, not to the cent, and carry no whole-euro floor; the drag reads a different yield ratio from year one and Germany's budget moved on the second turn. §490's record says *"no trajectory moves ... the trajectory suite verified by digest"* - that digest is `ArtifactIdentityCheck`'s over the trajectory files already on disk, which never reruns the model: **§490 was a numeric change on the statute's path with no dump, and its record's claim was the wrong instrument's.** §495, the standing list after it, repeated *"no label moved after them"* on the same reading; both are corrected by this record.
+
+**The restoration** (`TaxSchedule.Tax`, `HasActiveOverride`, `FormulaTax`, `RampTax`). The formula kind reads § 32a VERBATIM - F4-2's `FormulaTax`, restored as it was - on every path no sub-row moves: an unmoved line (no array, or every entry −1) and a shifted lever alike. The ramps carry only a line whose ramp end a bill has moved, which only they can express; that switch is a policy-path deviation of at most the ramps' distance from the formula, stated. Section 7 of `TaxScheduleDiagnostic` now reads the ramps explicitly (`RampTax`), so its comparison cannot go vacuous:
+
+```
+    Germany  at 17,799 EUR: the ramps 1,034.87, § 32a 1,034.87 - +0.00 EUR
+    Germany  at 69,878 EUR: the ramps 18,213.06, § 32a 18,213.06 - +0.00 EUR
+    Germany  at 277,825 EUR: the ramps 105,550.80, § 32a 105,550.87 - -0.07 EUR
+    Germany  at 400,000 EUR: the ramps 160,529.55, § 32a 160,529.62 - -0.07 EUR
+```
+
+and asserts the property the pass lacked: **960 of 960** unmoved cases - incomes from 5 000 to 450 000 euros, a shift of 0 and 5 points, threshold scales of 1 and 1.137, no array and an all-−1 array - read § 32a to the bit. On a tree with the ramps back on every path (`probe_f44`) the same assertion read **20 of 960** (the incomes under the Grundfreibetrag, where both give nothing) and the diagnostic FAILED; restored, it passes. **The dump:** `traj_f44r` against `traj_pn1` - **76 of 76 fields byte-identical at every seed and horizon** (the table above). The baseline label stays `f4s2`.
+
+**The drawing the restoration changed.** The schedule row samples `TaxSchedule.MarginalRate` - a one-euro difference - and the verbatim formula floors the income to a whole euro of the seed's, so in a year whose thresholds are scaled a one-euro step read nothing or the rate over the scale: the first film (`f44_germany_1280`) drew a notch to zero at the top threshold where the ramps had drawn none. The difference is a hundred euros now, which averages the floor out (`f44b_germany_1280`: 31 captured, 0 failed, 0 overflow). The revenue path is untouched by it.
+
+**The sentinel** (`TrajectorySentinelCheck`, first in the simulation group, now **50** checks). The dump's text builder is factored out of `TrajectoryBaselineDump` (`Build`, `StateFields`) and the sentinel hashes exactly that text for the first twenty no-policy turns at both seeds, against the digests of the declared baseline read off `traj_f4s2_s{seed}_t100.csv` (label and digests constants in the check, to be set in the same commit as any declared family). §490's divergence showed on turn 2; the pair of runs costs seconds. Proven: on the restored tree it passes (`sentinel_ok`); on the tree with the ramps back (`sentinel_broken`) it FAILED -
+
+```
+    seed 777: e7fdc8d5b6afc8bff47f934439c970570f3f3399bbefdcc1704c025940f07f0d - NOT the baseline's fcee9182a023fed88bb302b1dac4229b80622ef0df2b167cce7e1e4396ae073e
+    seed 424242: 2b662fdab498a875696585272b45df2bd17e05e08af62c21b56ec8c4cec0171d - NOT the baseline's 9ef7865519d31c5757abd990027635f820d499eb9b1bfb785abe2f0e1e94cbe8
+```
+
+**Not touched.** Every other schedule (the bracket tables, the barème, the two layers) did the same arithmetic in the same order across §490 and is unchanged here; no sub-row UI, no bill, no save field moved.
+
+**Bar:** `bar431_f44` **38 of 38**, `bar432_f44_sim` **49 of 49** on the restoration, `bar433_sent` **38 of 38** and `bar434_sent_sim` **50 of 50** with the sentinel first; `bar435_f44_rec` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.

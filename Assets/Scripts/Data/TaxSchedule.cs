@@ -275,11 +275,41 @@ namespace PoliSim.Data
                     return flat / 100.0 * income + BandTax(s, income, shiftPoints, thresholdScale, overrides);
                 }
                 case TaxScheduleKind.Formula:
-                    return BandTax(s, income, shiftPoints, thresholdScale, overrides);
+                    // § 32a verbatim wherever no sub-row is moved - the statute's own arithmetic, as F4-2 built it; the ramps only carry a moved end
+                    return HasActiveOverride(overrides) ? BandTax(s, income, shiftPoints, thresholdScale, overrides) : FormulaTax(s, income, shiftPoints, thresholdScale);
                 default:
                     return 0;
             }
         }
+
+        /// <summary>Whether a line's sub-row rates move anything: an entry at or above zero is a moved rate, −1 (or no array) the statute's.</summary>
+        public static bool HasActiveOverride(IReadOnlyList<float> overrides)
+        {
+            if (overrides == null) { return false; }
+            for (int i = 0; i < overrides.Count; i++) { if (overrides[i] >= 0f) { return true; } }
+            return false;
+        }
+
+        /// <summary>§ 32a EStG: the tariff on the income in a year's euros - an indexed year's tariff is the seed's on the deflated income, scaled back
+        /// (the "Tarif auf Rädern"); the uniform shift is added on the income above the Grundfreibetrag, the one exempt band. F4-2's arithmetic,
+        /// restored verbatim after §490 had replaced it with the ramps on every path.</summary>
+        private static double FormulaTax(Statute s, double income, double shiftPoints, double thresholdScale)
+        {
+            double x = Math.Floor(income / Math.Max(1e-9, thresholdScale));   // Satz 3-5: the income rounded down to a full euro, in the seed's euros
+            double tax;
+            if (x <= s.FormulaGrund) { tax = 0; }
+            else if (x <= s.FormulaZone2End) { double y = (x - s.FormulaGrund) / 10000.0; tax = (DeY1 * y + DeY0) * y; }
+            else if (x <= s.FormulaZone3End) { double z = (x - s.FormulaZone2End) / 10000.0; tax = (DeZ1 * z + DeZ0) * z + DeZ2; }
+            else if (x <= s.FormulaZone4End) { tax = DeX4 * x - DeC4; }
+            else { tax = DeX5 * x - DeC5; }
+            tax = Math.Max(0, tax) * thresholdScale;
+            double taxable = income - s.FormulaGrund * thresholdScale;
+            if (taxable > 0) { tax += shiftPoints / 100.0 * taxable; }
+            return tax;
+        }
+
+        /// <summary>The ramps' own integral at the seed (no shift, no override) - what section 7 of the diagnostic holds against § 32a at every zone end.</summary>
+        public static double RampTax(Statute s, double income) => BandTax(s, income, 0, 1.0, null);
 
         /// <summary>The bands' tax: a flat band's rate on its span, a ramp's average rate on its span - the integral of a marginal rate that rises linearly from the band's start to its end.</summary>
         private static double BandTax(Statute s, double income, double shiftPoints, double thresholdScale, IReadOnlyList<float> overrides)
@@ -331,7 +361,9 @@ namespace PoliSim.Data
         /// <summary>The marginal rate at an income, %, under the line's rates and the shift - the curve a row draws (15b).</summary>
         public static double MarginalRate(Statute s, double income, double shiftPoints, double thresholdScale, IReadOnlyList<float> overrides = null)
         {
-            const double h = 1.0;
+            // a hundred euros, not one: § 32a floors the income to a whole euro of the seed's, so a one-euro step in a year whose thresholds are
+            // scaled read either nothing or the rate over the scale - the restored formula drew a notch to zero at the top threshold on film (§496)
+            const double h = 100.0;
             return 100.0 * (Tax(s, income + h, shiftPoints, thresholdScale, overrides) - Tax(s, income, shiftPoints, thresholdScale, overrides)) / h;
         }
 

@@ -41,8 +41,7 @@ namespace PoliSim.EditorTools
             string outDir = Arg("-trajout=", DefaultOutputDirectory);
             Directory.CreateDirectory(outDir);
 
-            FieldInfo[] stateFields = typeof(EconomyState).GetFields(BindingFlags.Public | BindingFlags.Instance);
-            Array.Sort(stateFields, (a, b) => string.CompareOrdinal(a.Name, b.Name));
+            FieldInfo[] stateFields = StateFields();
             Debug.Log($"TRAJ: {stateFields.Length} public EconomyState fields per country per turn, label '{label}'.");
 
             foreach (int seed in Seeds)
@@ -58,7 +57,22 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(0);
         }
 
+        /// <summary>Every public EconomyState field, in the dump's order (ordinal by name).</summary>
+        public static FieldInfo[] StateFields()
+        {
+            FieldInfo[] stateFields = typeof(EconomyState).GetFields(BindingFlags.Public | BindingFlags.Instance);
+            Array.Sort(stateFields, (a, b) => string.CompareOrdinal(a.Name, b.Name));
+            return stateFields;
+        }
+
         private static void DumpOne(int seed, int horizon, FieldInfo[] stateFields, string path)
+        {
+            File.WriteAllText(path, Build(seed, horizon, stateFields));
+            Debug.Log($"TRAJ: wrote {path} ({horizon} turns, seed {seed}).");
+        }
+
+        /// <summary>The dump's text for one seed and horizon - what <see cref="DumpOne"/> writes and what `TrajectorySentinelCheck` hashes (§496).</summary>
+        public static string Build(int seed, int horizon, FieldInfo[] stateFields)
         {
             SimulationRandom.Seed(seed);
             World world = WorldFactory.CreateDefault();
@@ -126,8 +140,7 @@ namespace PoliSim.EditorTools
                     }
                 }
 
-                File.WriteAllText(path, sb.ToString());
-                Debug.Log($"TRAJ: wrote {path} ({horizon} turns, seed {seed}).");
+                return sb.ToString();
             }
             finally
             {
