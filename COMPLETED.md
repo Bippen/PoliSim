@@ -27599,4 +27599,31 @@ Read on the frames: Sweden's plate 4 in PROVENANCE draws the levy scale 1.00 as 
 
 **Not touched.** The clamp's rule itself; the sector support target's coefficients; where SC-1's cost should land; EN-7b, whose sourcing landed the same evening outside the tree (the electricity-tax statutes of the five and the EU floor, every quote checked against its saved file by a second reader) - it carries a measured premise to its own record: Poland's statutory excise is about two per cent of Eurostat's environmental-tax component, so a law that scales that component as "the electricity tax" would scale levies nobody has named.
 
-**Bar:** `bar443_en7a_r2` **38 of 38** and `bar444_en7a_r2_sim` **51 of 51** on the code; `bar445_rec498` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight..
+**Bar:** `bar443_en7a_r2` **38 of 38** and `bar444_en7a_r2_sim` **51 of 51** on the code; `bar445_rec498` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
+
+## 499. EN-7b's SOURCING LANDED — the electricity tax of the five and the EU floor, from the statutes on disk: the prep tool extracts ten rates by pattern, and the seed's component is measured against each - Germany's IS the statute, France's is the price shield, Italy's carries part of it, and **Poland's premise fails** (the component a "power tax" law would scale is 41.514 and 48.872 times the excise) (2026-09-14)
+
+**The ruling:** §474 - *"build the law category stage 5 needs, cited, as its own item"*; the plan's EN-7b - *"Sourcing (S1 pattern): raw files into PoliSim-captures/sources/, a Tools/energy_tax_prep.pl extraction, and a README with digests. No law is typed before this lands."*
+
+**How it was fetched.** A workflow: one agent per jurisdiction (Sweden with Denmark's cut, Germany, France, Italy, Poland, the EU floor with the USA), each saving the authority's files unedited with curl and quoting verbatim; then a second agent per jurisdiction that fetched nothing, recomputed every digest and re-found every quote in its file with its own extractor - all digests matched, every quote was found; the flags it raised are carried in the spine, not smoothed. 116 files, digests in `ENERGY_LAYER_SPINE.md` §15.
+
+**What the tool extracts** (`Tools/energy_tax_prep.pl` → `EnergyData/electricity_tax_2023.csv`, from the HTML and JSON editions; the gazettes' PDFs corroborate): per country and class the 2023 rate in the statute's own currency and unit (the currency trap the F4-2 ruling named: the krona and the zloty converted at the ECB 2023 rate, never read as euro), the rate in EUR per kWh, the seed's environmental-tax component, and the **coverage** - the component over the statute:
+
+| country | class | the statute | 2023 rate | EUR/kWh | the seed's component (EUR/kWh) | coverage | note |
+|---|---|---|---|---|---|---|---|
+| DE | households | StromStG § 3 | 20.5 EUR/MWh | 0.020500 | 0.0205 | **1.000** | the standard rate since 1 January 2003 |
+| DE | nonhousehold | StromStG § 3 | 20.5 EUR/MWh | 0.020500 | 0.0205 | **1.000** | the standard rate - manufacturing's relief of 5,13 EUR/MWh (§ 9b a.F.) is a refund on application, outside the band's figure |
+| SE | households | LSE (1994:1776) 11 kap. 3 § + SFS 2022:1590 | 39.2 öre/kWh | 0.034150 | 0.0337 | **0.987** | the northern municipalities pay 9.6 ore less (11 kap. 9 §) - the band averages both |
+| SE | nonhousehold | LSE (1994:1776) 11 kap. 9 § 1 st. 6 and 2 st. | 0.6 öre/kWh | 0.000523 | 0.0005 | **0.957** | the industrial rate - the service sector pays the full rate - the band is read as manufacturing (an inference) |
+| FR | households | CIBS L312-37 at the floor, loi 2022-1726 art. 64 | 1 EUR/MWh | 0.001000 | 0.0011 | **1.100** | the price shield - the tariff it replaced 25.6875 EUR/MWh |
+| FR | nonhousehold | CIBS L312-37 at the floor, loi 2022-1726 art. 64 | 0.5 EUR/MWh | 0.000500 | 0.0006 | **1.200** | the price shield |
+| IT | households | D.Lgs. 504/1995 Allegato I + D.M. 30.12.2011 art. 1 | 0.0227 EUR/kWh | 0.022700 | 0.0160 | **0.705** | the residence exemption of art. 52 c.3 e) (150 kWh a month up to 3 kW) lowers the band's average - consistent with, not proven |
+| IT | nonhousehold | D.Lgs. 504/1995 Allegato I (first 200 000 kWh a month) | 12.5 EUR/MWh | 0.012500 | 0.0110 | **0.880** | the first tier - the band's shortfall against it is not explained by the saved files |
+| PL | households | ustawa o podatku akcyzowym art. 89 ust. 3 | 5 PLN/MWh | 0.001101 | 0.0457 | **41.514** | the excise is a small part of the band's environmental-tax figure - the rest is named by no saved document |
+| PL | nonhousehold | ustawa o podatku akcyzowym art. 89 ust. 3 | 5 PLN/MWh | 0.001101 | 0.0538 | **48.872** | the excise is a small part of the band's environmental-tax figure - the rest is named by no saved document |
+
+**The premise measured before any law is typed.** The plan's EN-7b multiplied the seed's environmental-tax component. The coverage column says where that holds: Germany (1.000) exactly; Sweden and Italy with the component carrying part of the statute (0.705 and 0.880 in Italy); France's component is the price shield's floor, so a cut to the minimum moves nothing there and the real precedent is the restoration; **Poland's component is 41.514 and 48.872 times its excise** - Eurostat's metadata names the excise and nothing else in it, and no fetched document names the rest. A law that scaled that component would scale charges nobody has named. So EN-7b's reach is sheeted for its own plan: **the law moves the statutory rate, and the stack moves by the rate's change within the coverage the country's figures show** - Poland's excise moving its own figure only, stated; France's laws the shield's lifting and restoring; the USA not offered (no federal excise; its retail components BILLED).
+
+**Not touched.** The runtime - nothing reads the CSV until EN-7b's law category does; the retail seed (`retail_2023.csv`) and every fitted margin.
+
+**Bar:** `bar447_src499` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.

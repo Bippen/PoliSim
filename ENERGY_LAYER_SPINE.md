@@ -194,3 +194,164 @@ The spec-let's §2.1 says the layer derives the electricity part of `PowerCo2Per
 - **France:** the composante carbone of the TICPE, TICGN and TICC (ecologie.gouv.fr's fiscalité-carbone page, fetched 2026-09-11): installations under the quota regime stay at the taxes in force on 31 December 2013; the code article itself (legifrance) was not reached from this machine - BILLED, the ministry's statement cited.
 - **The deviation the model makes:** every statute exempts per INSTALLATION (an installation that surrenders allowances); the model keeps no register of installations, so the exemption is applied at SECTOR level - the whole power sector exempt, the whole transport sector taxed; a heat plant outside the ETS, taxed in law, sits in the power figure's residual here and is exempted with the fleet. Stated in `EnergyMarket`'s class doc, `TaxBases.Emissions` and the seed comment in `WorldFactory`.
 
+## 15. The electricity tax - the statutes of the five and the EU floor (EN-7b's sourcing, 2026-09-14, `COMPLETED.md` §499)
+
+Fetched 2026-09-14 for EN-7b, energy stage 5's law category (§474): each country's statutory electricity tax in the seed year with its paragraph, the reforms that moved it, and the EU's floor. Every file under `PoliSim-captures/sources/energy_tax/` is the authority's own page, gazette, dataset or a consolidated-text publisher's edition, saved unedited; every quote was checked against its saved file by a second reader that did not reuse the fetcher's scripts. The figures below are EXTRACTED by pattern from the HTML and JSON editions in `Tools/energy_tax_prep.pl` (`perl Tools/energy_tax_prep.pl ../PoliSim-captures EnergyData` → `EnergyData/electricity_tax_2023.csv`) - a pattern that does not match stops the script; the PDFs (gazettes, the ADM tables) corroborate and are not parsed. Nothing in the runtime reads the CSV yet.
+
+**The statute against the seed** - the rate the class's Eurostat band pays, converted at the ECB 2023 reference rate (SEK 11.4787584313725, PLN 4.5419658823529 per euro), beside the seed's environmental-tax component (`retail_2023.csv`'s `tax_env`, Eurostat TAX_ENV + TAX_NUC) and the ratio of the two - the COVERAGE, what a change of the statute can move in the stack:
+
+| country | class | the statute | 2023 rate | EUR/kWh | the seed's component (EUR/kWh) | coverage | note |
+|---|---|---|---|---|---|---|---|
+| DE | households | StromStG § 3 | 20.5 EUR/MWh | 0.020500 | 0.0205 | **1.000** | the standard rate since 1 January 2003 |
+| DE | nonhousehold | StromStG § 3 | 20.5 EUR/MWh | 0.020500 | 0.0205 | **1.000** | the standard rate - manufacturing's relief of 5,13 EUR/MWh (§ 9b a.F.) is a refund on application, outside the band's figure |
+| SE | households | LSE (1994:1776) 11 kap. 3 § + SFS 2022:1590 | 39.2 öre/kWh | 0.034150 | 0.0337 | **0.987** | the northern municipalities pay 9.6 ore less (11 kap. 9 §) - the band averages both |
+| SE | nonhousehold | LSE (1994:1776) 11 kap. 9 § 1 st. 6 and 2 st. | 0.6 öre/kWh | 0.000523 | 0.0005 | **0.957** | the industrial rate - the service sector pays the full rate - the band is read as manufacturing (an inference) |
+| FR | households | CIBS L312-37 at the floor, loi 2022-1726 art. 64 | 1 EUR/MWh | 0.001000 | 0.0011 | **1.100** | the price shield - the tariff it replaced 25.6875 EUR/MWh |
+| FR | nonhousehold | CIBS L312-37 at the floor, loi 2022-1726 art. 64 | 0.5 EUR/MWh | 0.000500 | 0.0006 | **1.200** | the price shield |
+| IT | households | D.Lgs. 504/1995 Allegato I + D.M. 30.12.2011 art. 1 | 0.0227 EUR/kWh | 0.022700 | 0.0160 | **0.705** | the residence exemption of art. 52 c.3 e) (150 kWh a month up to 3 kW) lowers the band's average - consistent with, not proven |
+| IT | nonhousehold | D.Lgs. 504/1995 Allegato I (first 200 000 kWh a month) | 12.5 EUR/MWh | 0.012500 | 0.0110 | **0.880** | the first tier - the band's shortfall against it is not explained by the saved files |
+| PL | households | ustawa o podatku akcyzowym art. 89 ust. 3 | 5 PLN/MWh | 0.001101 | 0.0457 | **41.514** | the excise is a small part of the band's environmental-tax figure - the rest is named by no saved document |
+| PL | nonhousehold | ustawa o podatku akcyzowym art. 89 ust. 3 | 5 PLN/MWh | 0.001101 | 0.0538 | **48.872** | the excise is a small part of the band's environmental-tax figure - the rest is named by no saved document |
+
+**The reading, per country.**
+- **Germany** - the seed's component IS § 3's rate, both bands. Manufacturing's reliefs (§ 9b, and until 2023 § 10's Spitzenausgleich) are refunds on application; that Eurostat's IC band carries the gross rate is the reading the figures fit, not a sentence a saved file states.
+- **Sweden** - households' component is the 2023 rate blended with the northern municipalities' deduction; non-households' is the industrial rate of 11 kap. 9 §, not the full rate the service sector pays (an inference: the band is read as manufacturing).
+- **France** - the seed is the price shield: the accise held at the EU floors for 2023. A law that cuts France's electricity tax to the minimum does nothing in 2023's France; the restoration is the precedent (below).
+- **Italy** - the household component is about seven tenths of the statute (the residence exemption of art. 52 c.3 e) is consistent with it; the contract mix is not in any saved file); the business component is under the first tier by a margin no saved file explains.
+- **Poland - THE PREMISE FAILS.** The band's environmental-tax component is **41.514 times the excise for households and 48.872 times for non-households**. Eurostat's own metadata says the component "includes the excise duties" and names no other charge; its national-currency rows put the component near 204 zł/MWh (households) and 240 (non-households) against the excise's 5; ARE's survey tables give the effective excise as 5,0 zł/MWh for households, 4,3 medium voltage, 1,1 high voltage. What fills the rest is named by no fetched document. A law that scaled Poland's whole component as "the electricity tax" would scale charges nobody has named; a law on Poland's excise moves at most its own figure.
+- **The EU floor** (Directive 2003/96/EC Annex I Table C, unchanged in the consolidated text of 10.01.2023): 0.5 EUR/MWh for business use, 1 for non-business; Art. 15(1)(h) allows households a total exemption, Art. 17 energy-intensive business down to 0 under agreements.
+- **The USA** - no federal electricity excise (OECD Taxing Energy Use 2019, the US note, 2018 rates); states levy gross-receipts taxes (Florida's 2,5 %, a current page) - not a row: its retail components are BILLED.
+
+**The precedents** (each act with its document id, each size read from its saved file; the laws' citations draw on these):
+- **Sweden** - prop. 2016/17:142 (SFS 2017:399/400): households and the service sector +3,0 öre (2017) and +1,2 öre (2019), industry not raised · SFS 2020:1045: the industrial floor 0,5 → 0,6 öre · prop. 2022/23:1 (SFS 2022:1781): data centres lose the industrial rate from 1 July 2023 · prop. 2025/26:1 (SFS 2025:1357): the rate 43,9 → 36,0 öre from 2026. **Denmark** - LOV nr 1775 af 29/12/2025: the general elafgift to the EU minimum, 0,8 øre, for 2026-2027.
+- **Germany** - the tax's introduction (BGBl. I 1999 S. 378, 20,00 DM/MWh; manufacturing at a fifth) · the schedule to 20,50 EUR from 2003 (BGBl. I 1999 S. 2432) · manufacturing's reduced rate to 60 % (BGBl. I 2002 S. 4602) · the 5,13 EUR relief (Haushaltsbegleitgesetz 2011, BGBl. I 2010 S. 1885) · manufacturing's relief to 20 EUR, net 0,50, for 2024-2025, and § 10 repealed (Haushaltsfinanzierungsgesetz 2024, BGBl. 2023 I Nr. 412) · the relief made permanent from 2026 (BGBl. 2025 I Nr. 340).
+- **France** - the shield: to the EU floors from 1 February 2022 (loi 2021-1900 art. 29) and held for 2023 (loi 2022-1726 art. 64) · the partial restoration to 21 / 20,5 EUR/MWh from 1 February 2024 (loi 2023-1322 art. 92 and the arrêté of 25 January 2024) · the full restoration from 1 February 2025 (households 33,70) and the rewritten tariffs from 1 August 2025 (loi 2025-127).
+- **Italy** - the municipal and provincial surcharges folded into the state excise from 2012 (the two D.M. of 30 December 2011) · the business tiers from 1 June 2012 (D.L. 16/2012 art. 3-bis, L. 44/2012).
+- **Poland** - the excise 20 → 5 zł/MWh from 2019 (Dz.U. 2018 poz. 2538) · the 2022 shield: households exempt, others 4,60 (Dz.U. 2021 poz. 2349), extended to the year's end (Dz.U. 2022 poz. 2180) · 5 zł again from 2023, the relief lapsed.
+- **The EU** - the harmonised minimum on electricity from 2004 (2003/96/EC); Latvia's and Malta's transitions up to it and the Czech Republic's and Ireland's temporary exemptions (2004/74/EC, Art. 18 and 18a).
+
+**What the second readers flagged** (carried, not smoothed): Germany's "IC carries the gross rate" and Sweden's "IC is manufacturing" are inferences; France's bill article 7 is the law's article 20 by matching content, not by a sentence; France's 25,68 counterfactual likely leaves out the old local levy (the ministry's 32 "avant la crise"); Italy's household explanation is "consistent with", not proven; Poland's survey-column guess for the unnamed part is unsupported; Directive 2003/96/EC's business/non-business indent is the fourth of Art. 5.
+
+**What is BILLED.** The code articles themselves for France (legifrance returns 403 - the Assemblée's adopted texts and the tax authority's pages stand in) and Italy (normattiva is a script shell - the Gazzetta Ufficiale and the customs agency's tables); Poland's ISAP (a bot wall - the Dziennik Ustaw PDFs); the Commission's "Excise duty tables Part II" 2023 edition (unreachable - its Taxes in Europe Database's JSON stands in); **the part of Poland's component that is not the excise** - no fetched document names it; the Statistical Office or ARE would have to be asked.
+
+**The files, by digest** (sha256, first sixteen hex; under `PoliSim-captures/sources/energy_tax/`, 116 files):
+
+| file | sha256 (16) | size |
+|---|---|---|
+| `de_3stromstaendg_bgbl2025_340.pdf` | `34f574832b5e3bfa` | 803422 bytes |
+| `de_buzer_10_hfing2024_synopse.html` | `b91654f3fa2bd017` | 23641 bytes |
+| `de_buzer_3_stromstg.html` | `2385c5f49d44243a` | 38288 bytes |
+| `de_buzer_9b_hfing2024_synopse.html` | `59c2a68129318030` | 14539 bytes |
+| `de_fortentwicklung_oekosteuer_bgbl2002_i_4602.pdf` | `e985998ef64fa675` | 23010 bytes |
+| `de_fortfuehrung_oekosteuer_bgbl1999_i_2432.pdf` | `8fe92bd32d97b08b` | 27486 bytes |
+| `de_hbeglg2011_bgbl2010_i_1885.pdf` | `d8bbb933a1d63e5a` | 114484 bytes |
+| `de_hfing2024_bgbl2023_412.pdf` | `dda4da936b207f62` | 318888 bytes |
+| `de_stroeg1999_bgbl1999_i_378.pdf` | `537cd84fc93facb1` | 23298 bytes |
+| `de_stromstg_10.html` | `30dd4a7088c04aa6` | 3324 bytes |
+| `de_stromstg_3.html` | `d37e1ee24f3ea292` | 3411 bytes |
+| `de_stromstg_9.html` | `ab36737d9a7ed8de` | 12203 bytes |
+| `de_stromstg_9b.html` | `7545d32f563bc8fa` | 5705 bytes |
+| `de_stromstg_full.html` | `9172204a3447c445` | 79137 bytes |
+| `dk_L24_2025_lovforslag.xml` | `b64c368d8efe2aff` | 122366 bytes |
+| `dk_lov_2025_1775.xml` | `8256ceb23995a641` | 9401 bytes |
+| `eu_2003_96_consol20230110.html` | `26130cbe139f8261` | 205852 bytes |
+| `eu_2003_96_orig.html` | `137b47a0ecc454ab` | 189264 bytes |
+| `eu_32011D0445.html` | `8f3f03eddab68055` | 11928 bytes |
+| `eu_32015D0993.html` | `5c82b8fa58ae2ebb` | 13598 bytes |
+| `eu_nrg_pc_204_sims.htm` | `4c3d691926435674` | 206039 bytes |
+| `eu_tedb_de_20230101.docx` | `a2de92a258c5cad2` | 16377 bytes |
+| `eu_tedb_de_20230701.docx` | `b5f687bdd4f5a653` | 16393 bytes |
+| `eu_tedb_de_rate_20230101.json` | `1bea114ac6e70dbb` | 18524 bytes |
+| `eu_tedb_de_rate_20230701.json` | `1bea114ac6e70dbb` | 18524 bytes |
+| `eu_tedb_de_rate_20240101.json` | `134aef06856531b1` | 18524 bytes |
+| `eu_tedb_de_rate_20240701.json` | `7d0aa635488fc2d1` | 18728 bytes |
+| `eu_tedb_de_rate_20260101.json` | `28a57b0486d2e718` | 18563 bytes |
+| `eu_tedb_fr_20230101.docx` | `4ab4e936480260ae` | 20001 bytes |
+| `eu_tedb_fr_20230701.docx` | `00a00771cbb47b62` | 20001 bytes |
+| `eu_tedb_fr_rate_20230101.json` | `61aa6befdeb728e7` | 15894 bytes |
+| `eu_tedb_fr_rate_20230701.json` | `61aa6befdeb728e7` | 15894 bytes |
+| `eu_tedb_fr_rate_20240101.json` | `c02d093f4028d305` | 15590 bytes |
+| `eu_tedb_fr_rate_20240201.json` | `3375078db83c4a50` | 15593 bytes |
+| `eu_tedb_fr_rate_20250201.json` | `71cf48624a9eb373` | 15581 bytes |
+| `eu_tedb_fr_rate_20250801.json` | `aeee8bd7a768139b` | 15523 bytes |
+| `eu_tedb_it_20230101.docx` | `b3ffea7def70687d` | 16687 bytes |
+| `eu_tedb_it_20230701.docx` | `5bc17169dc5e9b35` | 16691 bytes |
+| `eu_tedb_it_rate_20230101.json` | `04764f655ebd9110` | 18474 bytes |
+| `eu_tedb_it_rate_20230701.json` | `04764f655ebd9110` | 18474 bytes |
+| `eu_tedb_pl_20230101.docx` | `98e9a69a0081662a` | 18521 bytes |
+| `eu_tedb_pl_20230701.docx` | `c121a9d684ede4d2` | 18522 bytes |
+| `eu_tedb_pl_rate_20180701.json` | `a94cb8d4e29089b3` | 17257 bytes |
+| `eu_tedb_pl_rate_20190101.json` | `963e02942eb22765` | 17250 bytes |
+| `eu_tedb_pl_rate_20210701.json` | `395b28df135aa1a3` | 16884 bytes |
+| `eu_tedb_pl_rate_20220101.json` | `3266b985dc7bd0af` | 16990 bytes |
+| `eu_tedb_pl_rate_20230101.json` | `29b324e91dbc938c` | 16981 bytes |
+| `eu_tedb_pl_rate_20230701.json` | `29b324e91dbc938c` | 16981 bytes |
+| `eu_tedb_pl_rate_eur_20230101.json` | `77fe8f18895c16a0` | 17051 bytes |
+| `eu_tedb_pl_rate_eur_20230701.json` | `77fe8f18895c16a0` | 17051 bytes |
+| `eu_tedb_se_20230101.docx` | `19484896fde23822` | 17988 bytes |
+| `eu_tedb_se_20230701.docx` | `2af34a4b69f74cad` | 18004 bytes |
+| `eu_tedb_se_rate_20220701.json` | `7a2ccb2930463677` | 24039 bytes |
+| `eu_tedb_se_rate_20230101.json` | `5d76789f5e71c444` | 23917 bytes |
+| `eu_tedb_se_rate_20230701.json` | `0e5ed88eed59544f` | 24046 bytes |
+| `eu_tedb_se_rate_20250701.json` | `9252ef5538230e99` | 24203 bytes |
+| `eu_tedb_se_rate_20260101.json` | `3feccf21ce78639c` | 24203 bytes |
+| `eu_tedb_se_rate_eur_20230101.json` | `52a3afd80c0b8d09` | 24103 bytes |
+| `eu_tedb_se_rate_eur_20230701.json` | `9014d8fd8290ad0e` | 24238 bytes |
+| `eu_tedb_search_20230101.json` | `5e6b867280219661` | 5032 bytes |
+| `eu_tedb_search_20230701.json` | `e492f17359a6f8c6` | 5032 bytes |
+| `eu_tedb_search_history.json` | `0b8f1ce3ddf30a20` | 91611 bytes |
+| `fr_bofip_actu2023_53.html` | `0de22d4e10d68168` | 43290 bytes |
+| `fr_bofip_res_eat147.html` | `9717aad73277ce8c` | 52812 bytes |
+| `fr_bofip_res_eat240.html` | `6b054125f8844565` | 61882 bytes |
+| `fr_dec2022-84_affpub.html` | `7bfd1193725494ad` | 2987 bytes |
+| `fr_economie_fev2024.html` | `15f0a99f9f06f9f6` | 66922 bytes |
+| `fr_impots_tarifs2025.html` | `c7ef39ab40666cb4` | 55968 bytes |
+| `fr_impots_tarifs2025_jan.html` | `abf4ca7c88c14f48` | 51386 bytes |
+| `fr_lf2022_art29_an_ta737.html` | `cf2f438c32ad9e0a` | 2522815 bytes |
+| `fr_lf2023_art64_an_ta51.html` | `8f8ea9f5e23f8120` | 3290409 bytes |
+| `fr_lf2024_art92_an_ta223.html` | `ef890f13842b2e8b` | 4902680 bytes |
+| `fr_lf2025_art7_an_ta42.html` | `472f4b3332b9fb6c` | 3777289 bytes |
+| `fr_plf2023_an_avis285.html` | `3245cf9c86513241` | 375718 bytes |
+| `it_adm_aliquote_2023-01-01.pdf` | `10938dc52ce980f6` | 153847 bytes |
+| `it_adm_aliquote_2026-01-01.pdf` | `e5e2abc38542b3a4` | 191352 bytes |
+| `it_adm_aliquote_2026-04-08.pdf` | `9c51aabaaeb74db6` | 191995 bytes |
+| `it_adm_tua_dlgs504.pdf` | `2ceb399e6e04e205` | 682170 bytes |
+| `it_camera_dossier_dl16_2012.htm` | `354efb52ab021832` | 1957198 bytes |
+| `it_edizionieuropee_tua.html` | `3dfd3a344aa21523` | 807062 bytes |
+| `it_eurostat_nrg_pc_204_c_IT_DC_series.tsv` | `3db7a99f77079c25` | 4675 bytes |
+| `it_eurostat_nrg_pc_205_c_IT_IC_series.tsv` | `2262a9f903e62c3a` | 4597 bytes |
+| `it_gu_cc_ricorso_sardegna_012C0101.html` | `165a9f22f52bc1af` | 50017 bytes |
+| `it_gu_dlgs43_2025_art1.html` | `319520bd5993f8cf` | 186428 bytes |
+| `it_gu_dlgs43_2025_art11.html` | `dc8a137609a15e6c` | 1510 bytes |
+| `it_gu_dlgs43_2025_art2.html` | `61e8c82e27cbf031` | 1654 bytes |
+| `it_gu_dlgs43_2025_art8.html` | `341628169c6a733a` | 11875 bytes |
+| `it_gu_dlgs43_2025_eli.html` | `ec1e601f5b43a592` | 17077 bytes |
+| `it_gu_dm_2011-12-30_11A16869_art1.html` | `4a2dba9ccf9ccc8d` | 6305 bytes |
+| `it_gu_dm_2011-12-30_11A16869_art2.html` | `ba1aff4aae1968d6` | 1004 bytes |
+| `it_gu_dm_2011-12-30_11A16870_art1.html` | `ef2ba62318a28f48` | 4525 bytes |
+| `it_gu_dm_2011-12-30_11A16870_art2.html` | `ba1aff4aae1968d6` | 1004 bytes |
+| `it_gu_sg_2011-12-31_n304_index.html` | `ea7eb4a2517cab67` | 66095 bytes |
+| `pl_are_statystyka_elektroenergetyki_2023.pdf` | `3df8b0334cd9c815` | 7146927 bytes |
+| `pl_dzu_2018_1114_akcyza_tj.pdf` | `d767bb3081876423` | 3042884 bytes |
+| `pl_dzu_2018_2538_akcyza_5zl.pdf` | `9b4f69c0d5b41278` | 368925 bytes |
+| `pl_dzu_2021_2349_akcyza_tarcza.pdf` | `7b757c3d05f2072e` | 224478 bytes |
+| `pl_dzu_2021_2350_page.html` | `79abbd383e1df403` | 9532 bytes |
+| `pl_dzu_2022_2180_akcyza_extension.pdf` | `d743e97ec2e71352` | 600178 bytes |
+| `pl_dzu_2023_1542_akcyza_tj.pdf` | `2236e8660b83ca37` | 3788145 bytes |
+| `pl_eurostat_g11e_guidebook_2023.pdf` | `b8ad3eaaee2f85d8` | 198586 bytes |
+| `pl_eurostat_nrg_pc_204_c_PL_DC_series.tsv` | `d8a9dca7205f1a12` | 2666 bytes |
+| `pl_eurostat_nrg_pc_204_sims_pl.htm` | `00ba67737e003240` | 217954 bytes |
+| `pl_eurostat_nrg_pc_205_c_PL_IC_series.tsv` | `0e0d3b970b112d58` | 2566 bytes |
+| `se_lse_lagennu.html` | `e5b16344d2ddbc5d` | 1796646 bytes |
+| `se_lse_lagennu_kons_2019_491.html` | `50b81ad104a69769` | 226158 bytes |
+| `se_lse_lagennu_kons_2023_203.html` | `a5f510c8ceb6a084` | 332154 bytes |
+| `se_lse_lagennu_kons_2025_99.html` | `b07ca7b9b093d99b` | 342695 bytes |
+| `se_lse_riksdagen.html` | `1a1dc05e27e850b9` | 968230 bytes |
+| `se_prop_2016_17_142.html` | `e07ecda1a1fad1cd` | 928565 bytes |
+| `se_prop_2022_23_1_finansplan.html` | `1b31f8298b17eeba` | 5132080 bytes |
+| `se_prop_2025_26_1_finansplan.html` | `47a5f484a8558aa9` | 10424294 bytes |
+| `se_sfs_2022_1590_riksdagen.html` | `2cdc1cf6339bc4e6` | 263059 bytes |
+| `se_skv_skattpael.html` | `b47127535fd134b6` | 465154 bytes |
+| `us_fl_dor_grt_utility.html` | `64fc6a706232f54b` | 60471 bytes |
+| `us_oecd_teu2019_note.pdf` | `3684f4697dd35c55` | 1412540 bytes |
+
