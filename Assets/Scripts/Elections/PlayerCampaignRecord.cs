@@ -49,6 +49,29 @@ namespace PoliSim.Elections
             foreach (QueuedDecisionRecord q in Queue) { if (q.Day == day) { list.Add(q); } }
             return list;
         }
+
+        /// <summary>
+        /// CL-2 (2026-09-13, DS-10): the player's answers to the stories that broke for the party, by the campaign day each lands
+        /// on - the morning after its story broke. Kept apart from <see cref="Queue"/> because an answer is not an action: nothing
+        /// that reads the queue as the day's acts can meet one (the first films met one as a RecruitStaff and threw). One per day,
+        /// the last pressed standing; the party's scandal script reads it, so a load replays the same answers.
+        /// </summary>
+        public List<ScandalAnswerRecord> ScandalAnswers = new List<ScandalAnswerRecord>();
+
+        /// <summary>The answer queued for a campaign day, or null.</summary>
+        public ScandalResponse? AnswerFor(int day)
+        {
+            foreach (ScandalAnswerRecord a in ScandalAnswers) { if (a.Day == day) { return (ScandalResponse)a.Response; } }
+            return null;
+        }
+    }
+
+    /// <summary>CL-2: one answer as the save carries it - the campaign day it lands on and the response (a `ScandalResponse` as an int).</summary>
+    [Serializable]
+    public class ScandalAnswerRecord
+    {
+        public int Day;
+        public int Response;
     }
 
     /// <summary>One queued decision as the save carries it: the action, its target (a region index or −1 for national; an issue or −1 for the general message), the outlay.</summary>

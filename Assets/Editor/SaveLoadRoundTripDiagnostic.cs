@@ -208,6 +208,15 @@ namespace PoliSim.EditorTools
                 IntroduceCoverageBills(simA, world, player, playerCountry);
                 RunDays(simA, world, decisionsA, player, MidTurnSaveOffsetDays - BillIntroduceOffsetDays, null);
 
+                // CL-2: an answer on the campaign record must cross the save, and a list empty at the save proves nothing about
+                // persistence (C-D4's rule above). Day 0 carries it: no story can wait for an answer on day 0 (a held story breaks
+                // on one day and is answered the next), so the entry is inert in the unbroken run and in the replay alike.
+                bool answerProbed = simA.CampaignRecord != null;
+                if (answerProbed)
+                {
+                    simA.CampaignRecord.ScandalAnswers.Add(new Elections.ScandalAnswerRecord { Day = 0, Response = (int)Elections.ScandalResponse.Explain });
+                }
+
                 // One fixed stamp for every serialization in the scenario, so save files are
                 // string-comparable - SavedAtUtc is the single nondeterministic field.
                 var stamp = new DateTime(2026, 8, 16, 0, 0, 0, DateTimeKind.Utc);
@@ -249,6 +258,13 @@ namespace PoliSim.EditorTools
 
                 // Restore into a FRESH manager. Deserialize runs the zone-identity assert itself.
                 SaveGame loaded = SaveGameService.Deserialize(json);
+                // CL-2: the probe's answer must come back ON the loaded record - the string equality below cannot see a field that
+                // serializes to nothing on both sides.
+                if (answerProbed && (loaded.PlayerCampaign == null || loaded.PlayerCampaign.AnswerFor(0) != Elections.ScandalResponse.Explain))
+                {
+                    Debug.LogError($"RT: {player}/{seed} the campaign record's story answer did not cross the save");
+                    ok = false;
+                }
                 SimulationManager simB = goB.AddComponent<SimulationManager>();
                 SaveGameService.RestoreInto(simB, loaded);
                 World worldB = loaded.World;

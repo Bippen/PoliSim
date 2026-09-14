@@ -750,9 +750,9 @@ namespace PoliSim.UI
             // P2-0.3: the campaign announces itself - HQ opens the moment the hold is on, before any gate,
             // so a load or a harness that lands inside an unacknowledged opening meets the same screen the
             // day loop would have opened. State-derived, so it is idempotent.
-            if (HasPendingCampaignOpening() && !_liveCampaignOpen && !_isGameOver) { OpenLiveCampaign(); }
+            if ((HasPendingCampaignOpening() || HasPendingScandalAnswer()) && !_liveCampaignOpen && !_isGameOver) { OpenLiveCampaign(); }   // CL-2: a story that waits for its answer opens the HQ the same way
 
-            if (UpdateFedChairSelectionState() || HasPendingCampaignOpening() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
+            if (UpdateFedChairSelectionState() || HasPendingCampaignOpening() || HasPendingScandalAnswer() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                 || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
                 || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
@@ -790,7 +790,7 @@ namespace PoliSim.UI
                 // draining _daySpeedTimer toward days/turns that can't happen yet - re-check every gate
                 // before this same frame's loop continues.
                 if (_isGameOver || _electionNight != null || _signingQueue.Count > 0
-                    || UpdateFedChairSelectionState() || HasPendingCampaignOpening()
+                    || UpdateFedChairSelectionState() || HasPendingCampaignOpening() || HasPendingScandalAnswer()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
                     || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
@@ -890,6 +890,11 @@ namespace PoliSim.UI
             _cachedPreviewTurn = -1;
             _signingQueue.Clear();
             _daySpeedTimer = 0f;
+
+            // CL-2: the map's pick is the session's and names a region of the campaign it was made in - a load starts without one,
+            // and a map left open over the previous game closes.
+            _campaignPickedRegion = -1;
+            CloseLiveCampaignMap();
         }
 
         internal UiDraftState CaptureUiDrafts()
@@ -1004,7 +1009,7 @@ namespace PoliSim.UI
             _pendingElectionTurn = ui?.PendingElectionTurn ?? 0;
             _campaignOpeningAcknowledgedElection = ui?.CampaignOpeningAcknowledgedElection;
             // P2-0.3: a load that lands inside an unacknowledged opening opens HQ, as the day did.
-            if (HasPendingCampaignOpening() && !_liveCampaignOpen) { OpenLiveCampaign(); }
+            if ((HasPendingCampaignOpening() || HasPendingScandalAnswer()) && !_liveCampaignOpen) { OpenLiveCampaign(); }
             // P2-0.2: a save taken while election night held its verdict cannot rebuild the night (the count it
             // showed is in-process state), so the verdict lands on the desk at once - stated, never lost.
             if (!string.IsNullOrEmpty(_pendingElectionVerdict)) { ApplyElectionVerdict(); }
@@ -1297,8 +1302,8 @@ namespace PoliSim.UI
                     // failure of ANY kind must fail INTO the degradation path exactly once.
                     try
                     {
-                        _countrySelector = CountrySelectorScreen.Build(_world, SelectPlayerCountry,
-                            ScenarioLibrary.All, StartScenario);
+                        _countrySelector = CountrySelectorScreen.Build(_world, SelectPlayerCountryAndParty,
+                            ScenarioLibrary.All, OpenScenarioPartyPick);
                     }
                     catch (System.Exception e)
                     {
@@ -1587,6 +1592,48 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>
+        /// CL-2 (2026-09-13; DS-6 ruled *"the player is a party leader with a seated party (R-CL1); the picker ships"*): the
+        /// picker's commit - the party chosen from the country's own seeded chamber, then the country as before. The
+        /// one-argument shape below stands for the harness and seats the largest party, as every film before the picker did.
+        /// </summary>
+        private void SelectPlayerCountryAndParty(CountryId countryId, string partyAbbrev)
+        {
+            SeatPlayerParty(countryId, partyAbbrev);
+            SelectPlayerCountry(countryId);
+        }
+
+        /// <summary>CL-2: the picker's seat - the party chosen from the country's own seeded chamber, with the party's approval stock opened at the country's.</summary>
+        private void SeatPlayerParty(CountryId countryId, string partyAbbrev)
+        {
+            Country country = _world.GetCountry(countryId);
+            if (country == null || string.IsNullOrEmpty(partyAbbrev)) { return; }
+            bool seated = false;
+            foreach (PoliticalParty party in PartySystems.For(countryId)) { if (party.Abbrev == partyAbbrev) { seated = true; break; } }
+            if (seated) { country.PlayerPartyAbbrev = partyAbbrev; country.PartyApprovalRating = country.State.ApprovalRating; }
+            else { Debug.LogError($"PARTY PICKER: '{partyAbbrev}' is not in {countryId}'s seeded chamber - the largest party is seated instead."); }
+        }
+
+        /// <summary>
+        /// CL-2 (DS-6): a scenario is started as a party too - its country's chamber opens on the selector and the pick seats the party
+        /// before the scenario's deltas run. The one-argument <see cref="StartScenario"/> stays the harness's (its country already
+        /// selected, the deltas-plus-progress half).
+        /// </summary>
+        private void OpenScenarioPartyPick(ScenarioDefinition definition)
+        {
+            Country country = definition != null ? _world.GetCountry(definition.Country) : null;
+            if (country == null || _countrySelector == null) { return; }
+            _countrySelector.ShowPartyPanel(country, (id, abbrev) => StartScenarioAsParty(definition, abbrev));
+        }
+
+        /// <summary>CL-2: the scenario's party pick committed - the party seated, then the scenario as it always started.</summary>
+        private void StartScenarioAsParty(ScenarioDefinition definition, string partyAbbrev)
+        {
+            if (definition == null) { return; }
+            SeatPlayerParty(definition.Country, partyAbbrev);
+            StartScenario(definition);
+        }
+
         /// <summary>Commits the player's country choice from DrawCountrySelector - together with <see cref="ResetPlayerCountrySelection"/>, the only two places _selectedPlayerCountryId is ever set.</summary>
         private void SelectPlayerCountry(CountryId countryId)
         {
@@ -1595,11 +1642,11 @@ namespace PoliSim.UI
             _simulationManager.PlayerCountryId = countryId;   // C-R4b step 3: the day loop runs the player's campaign for this country
             _prevGdp = _playerCountry.State.GDP;
 
-            // C-R2 (R-CL1): the player has a party. ⚠ The PICKER is billed, not built (`COMPLETED.md`
-            // §119), so until it exists selection seats the LARGEST PARTY IN THIS COUNTRY'S OWN SEEDED
-            // CHAMBER - you are the government, and which party that is comes from the real returns on
-            // disk rather than from a default this code invented. Only when none is stored: a loaded save
-            // keeps the party it was played with.
+            // C-R2 (R-CL1): the player has a party. The PICKER is built since CL-2 (`SelectPlayerCountryAndParty`, the
+            // selector's second step); this one-argument shape is the harness's and the fallback's, and seats the LARGEST
+            // PARTY IN THIS COUNTRY'S OWN SEEDED CHAMBER - which party that is comes from the real returns on disk rather
+            // than from a default this code invented. Only when none is stored: a loaded save keeps the party it was
+            // played with, and the picker's choice arrives stored.
             if (string.IsNullOrEmpty(_playerCountry.PlayerPartyAbbrev))
             {
                 PoliticalParty largest = default;
@@ -1698,6 +1745,11 @@ namespace PoliSim.UI
         /// the post-selection dashboard), so picking a country has no cost/commitment beyond the
         /// choice itself.
         /// </summary>
+        /// <summary>CL-2: the country whose chamber the IMGUI selector (the degradation path) has opened for the party pick.</summary>
+        private CountryId? _partyPickCountry;
+        /// <summary>CL-2: the scenario whose country's chamber the IMGUI selector has opened for the party pick.</summary>
+        private ScenarioDefinition _partyPickScenario;
+
         private void DrawCountrySelector()
         {
             DrawMenuBackground();
@@ -1718,7 +1770,20 @@ namespace PoliSim.UI
             {
                 if (PoliSimWidgets.Button($"Scenario: {definition.Name}", UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
                 {
-                    StartScenario(definition);
+                    // CL-2: the scenario opens its country's chamber; a party starts it (the Canvas selector's own second step)
+                    _partyPickScenario = _partyPickScenario == definition ? null : definition;
+                }
+
+                if (_partyPickScenario == definition)
+                {
+                    System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(_world.GetCountry(definition.Country));
+                    foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(definition.Country))
+                    {
+                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                        {
+                            StartScenarioAsParty(definition, party.Abbrev);
+                        }
+                    }
                 }
             }
 
@@ -1730,7 +1795,8 @@ namespace PoliSim.UI
                 GUIStyle style = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.TabSelected, area);
                 if (PoliSimWidgets.Button(country.Name, style))
                 {
-                    SelectPlayerCountry(country.Id);
+                    // CL-2: the country opens its chamber; a party seats the player (the Canvas selector's own second step).
+                    _partyPickCountry = _partyPickCountry == country.Id ? (CountryId?)null : country.Id;
                 }
 
                 // The national flag, laid into the button's own left gutter. These sprites were delivered
@@ -1758,6 +1824,18 @@ namespace PoliSim.UI
                         flag, ScaleMode.ScaleToFit);
                 }
 
+                if (_partyPickCountry == country.Id)
+                {
+                    // CL-2: the chamber as elected, largest first, the cabinet the chamber forms marked - the same lines the Canvas panel prints.
+                    System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(country);
+                    foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(country.Id))
+                    {
+                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                        {
+                            SelectPlayerCountryAndParty(country.Id, party.Abbrev);
+                        }
+                    }
+                }
                 GUILayout.Space(10f);
             }
 
@@ -1975,7 +2053,7 @@ namespace PoliSim.UI
             // Part B design's explicit instruction to extend the existing pattern rather than build a
             // fourth separate ad-hoc pause-check system.
             bool hasPendingBudgetProcess = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
-            bool hasPendingCampaignOpening = HasPendingCampaignOpening();   // P2-0.3
+            bool hasPendingCampaignOpening = HasPendingCampaignOpening() || HasPendingScandalAnswer();   // P2-0.3; CL-2: a story's answer holds the clock the same way
 
             float marginX = Screen.width * ScreenMarginFraction;
             float marginY = Screen.height * ScreenMarginFraction;
@@ -2047,8 +2125,10 @@ namespace PoliSim.UI
             // gate at the right granularity, matching the old per-case behavior exactly.
             if (_campaignMapScreen.HasValue)
             {
-                // W-E2 (harness only), same contract as its three siblings below.
-                DrawCampaignMapStage(tabContentHeight, rightColumnWidth, _campaignMapScreen.Value);
+                // W-E2, same contract as its three siblings below. Two ways in since CL-2: the capture driver stages a snapshot
+                // (a film), and the HQ's masthead opens the LIVE map - re-read from the running state before every draw, as the HQ is.
+                if (_liveCampaignMapOpen) { OpenLiveCampaignMap(); }
+                if (_campaignMapScreen.HasValue) { DrawCampaignMapStage(tabContentHeight, rightColumnWidth, _campaignMapScreen.Value); }
             }
             else if (_campaignCoalitionScreen.HasValue)
             {
@@ -5339,6 +5419,11 @@ namespace PoliSim.UI
             if (HasPendingCampaignOpening())
             {
                 blocking.Add("the opening of your election campaign (Campaign HQ)");
+            }
+
+            if (HasPendingScandalAnswer())
+            {
+                blocking.Add("a story that broke for your party (Campaign HQ)");
             }
 
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)

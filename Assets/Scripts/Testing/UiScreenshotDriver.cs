@@ -250,6 +250,42 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // CL-2 (2026-09-13, DS-6): the party picker over the selector - the country's seeded chamber, largest first, the cabinet the
+            // chamber forms marked - filmed on the Canvas selector, then hidden; the run then seats the party the one-argument shape
+            // seats (the largest), as every film before the picker did, so no frame after this one moves.
+            if (controller.CanvasSelectorActive)
+            {
+                object selector = controller.GetType().GetField("_countrySelector", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+                object world = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+                Country pickCountry = (world as World)?.GetCountry(_countryId);
+                if (selector is CountrySelectorScreen canvasSelector && pickCountry != null)
+                {
+                    canvasSelector.ShowPartyPanel(pickCountry, null);
+                    yield return Settle();
+                    Claim("selector");   // S-20: the panel is the selector's own Canvas surface
+                    yield return Capture("01g_party_picker");
+                    RecordCanvasTextAssert("01g_party_picker", controller);
+                    canvasSelector.HidePartyPanel();
+                    yield return Settle();
+                    Debug.Log($"SHOT: CL-2 - the party picker filmed for {_countryId}: {CountrySelectorScreen.PartiesBySeats(_countryId).Count} parties, largest first.");
+
+                    // CL-2: a scenario line opens its country's chamber too - the stand-in no longer seats a scenario's party
+                    ScenarioDefinition firstScenario = ScenarioLibrary.All[0];
+                    controller.GetType().GetMethod("OpenScenarioPartyPick", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, new object[] { firstScenario });
+                    yield return Settle();
+                    Claim("selector");
+                    yield return Capture("01h_scenario_party_picker");
+                    RecordCanvasTextAssert("01h_scenario_party_picker", controller);
+                    canvasSelector.HidePartyPanel();
+                    yield return Settle();
+                    Debug.Log($"SHOT: CL-2 - the scenario '{firstScenario.Name}' opened {firstScenario.Country}'s chamber for its party pick.");
+                }
+                else
+                {
+                    Debug.LogWarning("SHOT: CL-2 - the Canvas selector was not reachable; the party picker is NOT filmed.");
+                }
+            }
+
             Invoke(controller, "SelectPlayerCountry", _countryId);
 
             // The YIELDING state: two frames into CoverOut, the scrim is mid-cover over the Canvas —
@@ -3397,6 +3433,61 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("e7b_campaign_opening_acknowledged");
             yield return ReportClockAfterDismissal(controller, sim, "the campaign's opening");
+
+            // CL-2 (2026-09-13): the loop's closures on film, on the live campaign the opening just began. (1) The map as the picker:
+            //    opened from the HQ's masthead, a tile picked (the catalog's second valkrets), the HQ's local-acts line naming it and a
+            //    rally queued there. (2) A story for the player's party: STAGED into the run's pending list for the film (the live rate is
+            //    a coin the film cannot wait on), the HQ's seven chips over the legality panel, an answer queued, the day stepped and the
+            //    note it leaves. The film stages the story; the harness (CampaignClockHarness 8) proves the rate, the answer, the replay.
+            {
+                int me = sim.PlayerPartyIndexForCampaign();
+                InvokeNoArg(controller, "OpenLiveCampaignMap");
+                yield return Settle();
+                yield return Capture("cl2_campaign_map_live");
+                controller.GetType().GetMethod("PickCampaignRegion", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, new object[] { 1 });
+                yield return Settle();
+                yield return Capture("cl2_campaign_map_picked");
+                InvokeNoArg(controller, "CloseLiveCampaignMap");
+                yield return Settle();
+                object pickedObject = controller.GetType().GetMethod("LocalActRegion", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, null);
+                int pickedRegion = pickedObject is int pr ? pr : -1;
+                CampaignActions.ActionSpec rally = CampaignActions.Spec(CampaignActionKind.Rally);
+                sim.QueueCampaignDecision(CampaignActionKind.Rally, pickedRegion, null, rally.MoneyCost, out string rallyRefusal);
+                if (rallyRefusal != null) { Debug.LogError($"SHOT: CL-2 - the rally was refused: {rallyRefusal}"); _failed++; }
+                yield return Settle();
+                yield return Capture("cl2_campaign_hq_rally_picked");
+                Debug.Log($"SHOT: CL-2 - region {pickedRegion} ({(pickedRegion >= 0 && sim.PlayerCampaign != null ? sim.PlayerCampaign.Setup.Regions[pickedRegion].Name : "none")}) picked on the map; a rally queued there for campaign day {sim.PlayerCampaign?.Day}; the debates fall on days {(sim.PlayerCampaign != null ? string.Join(" and ", sim.PlayerCampaign.Setup.DebateDays) : "?")}.");
+
+                if (me >= 0 && sim.PlayerCampaign != null && !sim.PlayerCampaign.Finished)
+                {
+                    var staged = new Scandal(ScandalKind.Corruption, ScandalSeverity.Major, 0.5);
+                    sim.PlayerCampaign.PendingScandals.Add((sim.PlayerCampaign.Day - 1, me, staged, 0.62));
+                    yield return Settle();
+                    yield return Settle();
+                    yield return Capture("cl2_campaign_hq_scandal");
+                    yield return AssertClockHeld(controller, sim, "a story that waits for its answer");
+                    sim.QueueScandalResponse(ScandalResponse.Apologize, out string answerRefusal);
+                    if (answerRefusal != null) { Debug.LogError($"SHOT: CL-2 - the answer was refused: {answerRefusal}"); _failed++; }
+                    yield return Settle();
+                    yield return Capture("cl2_campaign_hq_scandal_answered");
+                    {
+                        bool boundaryBefore = sim.AdvanceDay();
+                        sim.AdvanceCountryDayTick(_countryId);
+                        if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
+                    }
+                    yield return Settle();
+                    yield return Capture("cl2_campaign_hq_scandal_stepped");
+                    int answered = 0;
+                    foreach ((int sDay, int sParty, ScandalResponse sResponse, ScandalOutcome sOutcome) in sim.PlayerCampaign.Scandals) { if (sParty == me && sResponse == ScandalResponse.Apologize) { answered++; } }
+                    if (answered != 1) { Debug.LogError($"SHOT: CL-2 - the staged story was not answered by the queued response ({answered} apologies on the party's record)."); _failed++; }
+                    Debug.Log($"SHOT: CL-2 - the staged story (corruption, major, seen 0.62) answered APOLOGIZE and resolved on campaign day {sim.PlayerCampaign.Day - 1}; {sim.PlayerCampaign.Scandals.Count} story(ies) on the run's record; pending {sim.PlayerCampaign.PendingScandals.Count}.");
+                }
+                else
+                {
+                    Debug.LogError("SHOT: CL-2 - no player party in the live campaign; the story frames are NOT filmed.");
+                    _failed++;
+                }
+            }
 
             // Back to the Desk for the rest of the run, as a player who has read the HQ would go.
             InvokeNoArg(controller, "CloseLiveCampaign");

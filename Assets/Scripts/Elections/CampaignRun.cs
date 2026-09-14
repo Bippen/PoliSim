@@ -55,12 +55,15 @@ namespace PoliSim.Elections
             public readonly int TelevisionBuys;
             /// <summary>W-C2: a SCRIPTED party - the harness's stand-in for the player: given the campaign day, the decisions it makes that day, in order, resolved through the same seams as an AI's (paid, resolved, seen). Null = an AI party.</summary>
             public readonly Func<int, AiDecision[]> Script;
+            /// <summary>CL-2 (2026-09-13): a scripted party's answer to a story that broke for it the day before - given the campaign day, the response its queue holds for that morning, or null for none (the run then answers as the party's personality would). Null = an AI party, which answers within the news cycle.</summary>
+            public readonly Func<int, ScandalResponse?> ScandalScript;
 
             public PartySetup(string name, AiPersonality personality, double credibility, double startingMoney, double[] trueIssueMatch, int volunteers = 0,
                 CandidateProfile? candidate = null, int[] offices = null, double officeOperationsPerDay = 0.0, StaffRole[] staff = null, int televisionBuys = 0,
-                Func<int, AiDecision[]> script = null)
+                Func<int, AiDecision[]> script = null, Func<int, ScandalResponse?> scandalScript = null)
             {
                 Name = name; Personality = personality; Credibility = credibility; StartingMoney = startingMoney;
+                ScandalScript = scandalScript;
                 TrueIssueMatch = trueIssueMatch; Volunteers = volunteers;
                 Candidate = candidate ?? new CandidateProfile(name, 60, 60, 60, 60, 60, 60, 60, 60, 60);
                 Offices = offices ?? new int[0]; OfficeOperationsPerDay = officeOperationsPerDay;
@@ -96,13 +99,17 @@ namespace PoliSim.Elections
             public readonly int[] DebateDays;
             /// <summary>W-B8: scandals staged to break - (campaign day, party, the scandal). Null = none. §17's dynamic generation (a probability per day from §36's hidden variables) is a later item; today the harness stages them.</summary>
             public readonly (int Day, int Party, Scandal Scandal)[] Scandals;
+            /// <summary>CL-2 (DS-10): the probability per party per day that a story breaks in this run, every party equal (`Scandals.LiveRatePerPartyDay` in the game; 0 in every harness, so no staged digest moves).</summary>
+            public readonly double LiveScandalRatePerPartyDay;
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
-                MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null)
+                MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
+                double liveScandalRatePerPartyDay = 0.0)
             {
                 ElectorateLoyalty = electorateLoyalty;
+                LiveScandalRatePerPartyDay = liveScandalRatePerPartyDay;
                 Scandals = scandals ?? new (int, int, Scandal)[0];
                 Outlets = outlets ?? MediaCatalog.Archetypes(1);
                 DebateDays = debateDays ?? new[] { 20, 41 };
@@ -260,6 +267,10 @@ namespace PoliSim.Elections
             public System.Random Random, DebateRandom, ScandalRandom;
             public List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)> Debates;
             public List<(int Day, int Party, ScandalResponse Response, ScandalOutcome Outcome)> Scandals;
+            /// <summary>CL-2: the stories that broke for a SCRIPTED party and wait for its answer - the day they broke, the party, the story, and the evidence as the party's people read it (drawn when it broke, so the HQ can show it). Resolved at the start of the next stepped day; none breaks on the run's final day, so none is left at the close.</summary>
+            public List<(int Day, int Party, Scandal Scandal, double Seen)> PendingScandals;
+            /// <summary>CL-2: every story that broke and was answered, staged or live, by the day it resolved - index-aligned with <see cref="Scandals"/> (the two are appended together where a story resolves), so the HQ names a resolved story's kind by its index.</summary>
+            public List<(int Day, int Party, Scandal Scandal)> Stories;
             public double[] Credibility;
             public Dictionary<int, List<(int Party, double Raw)>> PendingCoverage;
             public int PartyCount, IssueCount;
@@ -312,6 +323,8 @@ namespace PoliSim.Elections
             scandalRandom = scandalRandom ?? random;
             var debates = new List<(int Day, int A, int B, double Margin, double CoverageShock, double MomentumShockPp)>();
             var scandals = new List<(int Day, int Party, ScandalResponse Response, ScandalOutcome Outcome)>();
+            var pendingScandals = new List<(int Day, int Party, Scandal Scandal, double Seen)>();
+            var stories = new List<(int Day, int Party, Scandal Scandal)>();
             var credibility = new double[setup.Parties.Length];
             for (int p = 0; p < credibility.Length; p++) { credibility[p] = setup.Parties[p].Credibility; }
             var pendingCoverage = new Dictionary<int, List<(int Party, double Raw)>>();   // a scandal's story, day by day
@@ -432,7 +445,7 @@ namespace PoliSim.Elections
             return new State
             {
                 Setup = setup, Random = random, DebateRandom = debateRandom, ScandalRandom = scandalRandom,
-                Debates = debates, Scandals = scandals, Credibility = credibility, PendingCoverage = pendingCoverage,
+                Debates = debates, Scandals = scandals, PendingScandals = pendingScandals, Stories = stories, Credibility = credibility, PendingCoverage = pendingCoverage,
                 PartyCount = partyCount, IssueCount = issueCount, Prior = prior, Pressure = pressure,
                 TruePreference = truePreference, Baseline = baseline, Momentum = momentum, MomentumPp = momentumPp,
                 Coverage = coverage, BookingLedger = bookingLedger, BookedReach = bookedReach, PublicPoll = publicPoll,
@@ -457,7 +470,7 @@ namespace PoliSim.Elections
             if (s.Finished) { return; }
             Setup setup = s.Setup;
             System.Random random = s.Random; System.Random debateRandom = s.DebateRandom; System.Random scandalRandom = s.ScandalRandom;
-            var debates = s.Debates; var scandals = s.Scandals;
+            var debates = s.Debates; var scandals = s.Scandals; var pendingScandals = s.PendingScandals; var stories = s.Stories;
             double[] credibility = s.Credibility; var pendingCoverage = s.PendingCoverage;
             int partyCount = s.PartyCount;
             double[] prior = s.Prior; CampaignPressure pressure = s.Pressure; double[] truePreference = s.TruePreference;
@@ -472,6 +485,43 @@ namespace PoliSim.Elections
             {
                 DateTime today = setup.Calendar.CampaignStart.AddDays(day);
                 CampaignPhase phase = setup.Calendar.PhaseOn(today);
+
+                // W-B8's body, one for the three ways a story reaches a party (CL-2): staged by the caller, drawn live at
+                // the setup's rate, or answered by a scripted party the morning after it broke. The party's response on the
+                // evidence AS IT SEES IT (§36); the story's days queue into coverage from TODAY, the momentum shock lands
+                // now, the credibility cost is lasting and the chain prices it from tomorrow.
+                void Break(int sParty, Scandal scandal, ScandalResponse response)
+                {
+                    ScandalOutcome outcome = Scandals.Resolve(scandal, response, scandalRandom);
+                    for (int k = 0; k < outcome.CoverageShockPerDay.Length; k++)
+                    {
+                        if (!pendingCoverage.TryGetValue(day + k, out List<(int Party, double Raw)> list)) { list = new List<(int, double)>(); pendingCoverage[day + k] = list; }
+                        list.Add((sParty, outcome.CoverageShockPerDay[k]));
+                    }
+
+                    momentum.AddShock(sParty, outcome.MomentumShockPp);
+                    credibility[sParty] *= 1.0 - outcome.CredibilityCost;
+                    ledgers[sParty].ScandalsSurvived++;
+                    // CL-2: a sacrifice takes someone off the roster (`StaffRoster.Sacrifice`), so the payroll, the role's effects and
+                    // the next story's roster read the loss. A resignation has no second candidate to hand over to and is refused where
+                    // it is asked (`SimulationManager.QueueScandalResponse`); no AI instinct chooses either.
+                    if (outcome.StaffMemberSacrificed) { staff[sParty].Sacrifice(); }
+                    scandals.Add((day, sParty, response, outcome));
+                    stories.Add((day, sParty, scandal));
+                    Append(digest, day, sParty, CampaignActionKind.DevelopPolicy, "scandal " + scandal.Kind + " " + response, outcome.CredibilityCost);
+                }
+
+                // CL-2: a scripted party's story from yesterday resolves first thing - on the answer its script gives for
+                // today (the HQ's queued chip), else on its personality's instinct as the AI's would have been, so a run no
+                // player watches never blocks. The party answered the next morning: the story's coverage runs from today.
+                for (int i = pendingScandals.Count - 1; i >= 0; i--)
+                {
+                    (int pDay, int pParty, Scandal pScandal, double pSeen) = pendingScandals[i];
+                    if (pDay >= day) { continue; }
+                    ScandalResponse? scripted = setup.Parties[pParty].ScandalScript?.Invoke(day);
+                    pendingScandals.RemoveAt(i);
+                    Break(pParty, pScandal, scripted ?? ScandalResponseFor(profiles[pParty].Kind, pSeen));
+                }
 
                 // The published tracker: fielded from the true preference, seen by everyone.
                 if (setup.PublicPollEveryDays > 0 && day % setup.PublicPollEveryDays == 0)
@@ -794,26 +844,31 @@ namespace PoliSim.Elections
                 // at the very end of the day, after the coverage close below (C-N1), so the last day's
                 // coverage is in the count. The attribution ledger asserts the close matches (W-D4 1c).
 
-                // W-B8: a staged scandal breaks for its party; the party responds by personality on the
-                // evidence AS IT SEES IT (§36); the story's days queue into coverage, the momentum shock
-                // lands now, the credibility cost is lasting and the chain prices it from tomorrow.
+                // W-B8: a staged scandal breaks for its party (the body is Break, above the day's opening).
                 foreach ((int sDay, int sParty, Scandal scandal) in setup.Scandals)
                 {
                     if (sDay != day) { continue; }
                     double seen = Scandals.EvidenceAsSeen(scandal, scandalRandom);
-                    ScandalResponse response = ScandalResponseFor(profiles[sParty].Kind, seen);
-                    ScandalOutcome outcome = Scandals.Resolve(scandal, response, scandalRandom);
-                    for (int k = 0; k < outcome.CoverageShockPerDay.Length; k++)
-                    {
-                        if (!pendingCoverage.TryGetValue(day + k, out List<(int Party, double Raw)> list)) { list = new List<(int, double)>(); pendingCoverage[day + k] = list; }
-                        list.Add((sParty, outcome.CoverageShockPerDay[k]));
-                    }
+                    Break(sParty, scandal, ScandalResponseFor(profiles[sParty].Kind, seen));
+                }
 
-                    momentum.AddShock(sParty, outcome.MomentumShockPp);
-                    credibility[sParty] *= 1.0 - outcome.CredibilityCost;
-                    ledgers[sParty].ScandalsSurvived++;
-                    scandals.Add((day, sParty, response, outcome));
-                    Append(digest, day, sParty, CampaignActionKind.DevelopPolicy, "scandal " + scandal.Kind + " " + response, outcome.CredibilityCost);
+                // CL-2 (DS-10): the live run's stories - one draw per party per day at the setup's rate, every party
+                // equal, from the same appended stream; a rate of 0 (every harness's) draws nothing, so no digest moves.
+                // A party the AI plays answers within the news cycle as the staged ones do; a SCRIPTED party's story is
+                // held for the player's answer and resolves the next morning (the top of the day) - the estimate of the
+                // evidence is drawn now, so the HQ can show what the party's people make of it. No story breaks on the
+                // run's final day, for any party: the player's would have no morning left to be answered on (a hold then
+                // could never be released), and every party is drawn on the same days.
+                if (setup.LiveScandalRatePerPartyDay > 0.0 && day < totalDays - 1)
+                {
+                    for (int p = 0; p < partyCount; p++)
+                    {
+                        if (scandalRandom.NextDouble() >= setup.LiveScandalRatePerPartyDay) { continue; }
+                        Scandal live = Scandals.Draw(scandalRandom);
+                        double seen = Scandals.EvidenceAsSeen(live, scandalRandom);
+                        if (setup.Parties[p].ScandalScript != null) { pendingScandals.Add((day, p, live, seen)); }
+                        else { Break(p, live, ScandalResponseFor(profiles[p].Kind, seen)); }
+                    }
                 }
 
                 if (pendingCoverage.TryGetValue(day, out List<(int Party, double Raw)> today0))
@@ -966,9 +1021,12 @@ namespace PoliSim.Elections
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>
+        /// <summary>[AUTHORED-DRAFT] the evidence as a party's people read it below which its instinct denies whatever its personality (W-B8's line; the HQ's story panel names it).</summary>
+        public const double DenyBelowSeenEvidence = 0.3;
+
         public static ScandalResponse ScandalResponseFor(AiPersonality personality, double evidenceAsSeen)
         {
-            if (evidenceAsSeen < 0.3) { return ScandalResponse.Deny; }
+            if (evidenceAsSeen < DenyBelowSeenEvidence) { return ScandalResponse.Deny; }
             switch (personality)
             {
                 case AiPersonality.Professional: return ScandalResponse.Explain;

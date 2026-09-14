@@ -2195,7 +2195,8 @@ namespace PoliSim.Simulation
                     : new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0 };
                 if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                         out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
-                        playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record), playerOutcome: brought))
+                        playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record), playerOutcome: brought,
+                        playerScandalScript: PlayerScandalScriptOver(record), liveScandalRate: Elections.Scandals.LiveRatePerPartyDay))
                 {
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
@@ -2334,6 +2335,51 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// CL-2 (2026-09-13): the player's answer to a story - the record's answer for the day the run steps next
+        /// (`PlayerCampaignRecord.AnswerFor`, read by `PartySetup.ScandalScript`); null when none is queued, and the run answers
+        /// on the party's instinct. Closed over the record like the action script, so a load replays the same answers.
+        /// </summary>
+        private System.Func<int, Elections.ScandalResponse?> PlayerScandalScriptOver(Elections.PlayerCampaignRecord record)
+        {
+            if (record == null) { return null; }
+            return day => record.AnswerFor(day);
+        }
+
+        /// <summary>CL-2: the story that broke for the player's party and waits for its answer - the day it broke, the story, the evidence as the party's people read it; null when none is pending.</summary>
+        public (int Day, Elections.Scandal Scandal, double Seen)? PendingPlayerScandal()
+        {
+            // A finished run holds nothing: no morning is left for an answer to land on, and QueueScandalResponse refuses one - a
+            // story still listed then would hold the clock with no way to release it.
+            if (PlayerCampaign == null || PlayerCampaign.Finished) { return null; }
+            int me = PlayerPartyIndexForCampaign();
+            if (me < 0) { return null; }
+            foreach ((int day, int party, Elections.Scandal scandal, double seen) in PlayerCampaign.PendingScandals) { if (party == me) { return (day, scandal, seen); } }
+            return null;
+        }
+
+        /// <summary>CL-2: the answer queued for the day the run steps next, or null.</summary>
+        public Elections.ScandalResponse? QueuedScandalResponse()
+        {
+            if (PlayerCampaign == null || CampaignRecord == null) { return null; }
+            return CampaignRecord.AnswerFor(PlayerCampaign.Day);
+        }
+
+        /// <summary>CL-2: queue the answer to the pending story for the day the run steps next - one answer, the last pressed standing; refused with the reason when no story waits.</summary>
+        public bool QueueScandalResponse(Elections.ScandalResponse response, out string refusal)
+        {
+            refusal = null;
+            if (PlayerCampaign == null || CampaignRecord == null) { refusal = "no campaign is running"; return false; }
+            if (PlayerCampaign.Finished) { refusal = "the campaign is over"; return false; }
+            if (!PendingPlayerScandal().HasValue) { refusal = "no story is waiting for an answer"; return false; }
+            if (response == Elections.ScandalResponse.Resign) { refusal = "no second candidate is cast - a candidate who resigns has nobody to hand the campaign to in this game"; return false; }
+            if (response == Elections.ScandalResponse.SacrificeStaffMember && PlayerCampaign.Staff[PlayerPartyIndexForCampaign()].Count == 0) { refusal = "nobody is on the roster to sacrifice"; return false; }
+            int day = PlayerCampaign.Day;
+            CampaignRecord.ScandalAnswers.RemoveAll(a => a.Day == day);
+            CampaignRecord.ScandalAnswers.Add(new Elections.ScandalAnswerRecord { Day = day, Response = (int)response });
+            return true;
+        }
+
+        /// <summary>
         /// Queue a decision for the NEXT day the run will step - a campaign day, or (CL-1) a run-up day, whose queue is keyed
         /// by the negative day counted back from the campaign's first. Refused when nothing runs, when the kind is not legal
         /// in that day's phase, when the run-up has no price for it (`PreCampaignRun.Refusal` - the four the model cannot
@@ -2417,7 +2463,8 @@ namespace PoliSim.Simulation
             }
             if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                     out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
-                    playerParty: me, playerScript: PlayerScriptOver(record), playerOutcome: brought))
+                    playerParty: me, playerScript: PlayerScriptOver(record), playerOutcome: brought,
+                    playerScandalScript: PlayerScandalScriptOver(record), liveScandalRate: Elections.Scandals.LiveRatePerPartyDay))
             {
                 return;
             }

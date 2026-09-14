@@ -68,7 +68,8 @@ namespace PoliSim.Elections
         /// until §17's dynamic generation exists).
         /// </summary>
         public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
-            bool onVoteModelCompatibility = false, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null)
+            bool onVoteModelCompatibility = false, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0)
         {
             if (country == CountryId.Sweden)
             {
@@ -91,7 +92,7 @@ namespace PoliSim.Elections
                         compatibilityOverride[p] = k >= 0 ? compatibility[k] : 0.0;
                     }
                 }
-                setup = Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome);
+                setup = Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate);
                 return true;
             }
             setup = default;
@@ -101,7 +102,8 @@ namespace PoliSim.Elections
 
         /// <summary>Sweden 2026 on the 2022 returns - the staging `CampaignAiHarness` has run since W-C1, from the runtime tables.</summary>
         public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
-            double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null)
+            double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0)
         {
             if (!PartySystems.TryHistory(CountryId.Sweden, out double[] shares2022, out double[] shares2018))
             {
@@ -148,7 +150,7 @@ namespace PoliSim.Elections
                     brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
                     CandidateFor(personality, SwedenParties[p]), brought.HasValue ? brought.Value.Offices : OfficesFor(personality, regions), OfficeOperationsPerDay,
                     brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
-                    p == playerParty ? playerScript : null);
+                    p == playerParty ? playerScript : null, p == playerParty ? playerScandalScript : null);
             }
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[SwedenParties.Length]);
             var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[SwedenParties.Length], isInternal: true);
@@ -171,7 +173,7 @@ namespace PoliSim.Elections
                 electorateLoyalty));
             note = sb.ToString();
             return new CampaignRun.Setup(calendar ?? CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
-                national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals);
+                national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals, liveScandalRate);
         }
 
         /// <summary>The 29 valkretsar as campaign regions: name and VALID votes (the audience a local action can address), from the runtime catalog.</summary>

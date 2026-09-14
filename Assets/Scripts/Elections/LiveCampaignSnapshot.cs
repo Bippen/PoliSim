@@ -20,7 +20,7 @@ namespace PoliSim.Elections
     public static class LiveCampaignSnapshot
     {
         /// <summary>The snapshot for the player's party in a running (or just finished) campaign, or null when the state carries no such party.</summary>
-        public static CampaignSnapshot? Build(CampaignRun.State s, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record = null)
+        public static CampaignSnapshot? Build(CampaignRun.State s, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record = null, int pickedRegion = -1)
         {
             if (s == null || country == null) { return null; }
             int p = PlayerPartyIndex(s, country);
@@ -83,9 +83,125 @@ namespace PoliSim.Elections
                 if (party.Abbrev == setup.Parties[p].Name) { markKey = party.MarkName; break; }
             }
 
+            // CL-2: the campaign's public events of the day just stepped - every party's, as the press carried them. A debate
+            // names the two who stood and who won by how much (the margin is A's); a story names its party, the kind, the
+            // severity and the answer, and whether the evidence surfaced on it. The run's own record, never a guess.
+            var notes = new List<string>();
+            int yesterday = s.Day - 1;
+            if (yesterday >= 0)
+            {
+                // the party's own stories first, then the debate and the others' (the HQ shows two lines and counts the rest); on a
+                // finished run the last stepped day is the one the strip calls today, so its events are THE LAST DAY's
+                string when = s.Finished ? "THE LAST DAY · " : "YESTERDAY · ";
+                var others = new List<string>();
+                foreach ((int dDay, int a, int b, double margin, double dCoverage, double dMomentum) in s.Debates)
+                {
+                    if (dDay != yesterday) { continue; }
+                    string verdict = margin > 0 ? names[a] + " BY " + margin.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)
+                        : margin < 0 ? names[b] + " BY " + (-margin).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) : "A DRAW";
+                    others.Add(when + "THE DEBATE: " + names[a] + " v " + names[b] + " · " + verdict);
+                }
+                for (int i = 0; i < s.Scandals.Count; i++)
+                {
+                    (int sDay, int sParty, ScandalResponse response, ScandalOutcome outcome) = s.Scandals[i];
+                    if (sDay != yesterday) { continue; }
+                    // by index: a party can answer two stories on one day (yesterday's held one and today's own), and the run appends
+                    // `Stories` beside `Scandals` in the one place a story resolves
+                    string line = when + names[sParty] + " · " + Scandals.KindCaption(s.Stories[i].Scandal.Kind) + " · " + Scandals.PastTense(response) + (outcome.Escalated ? " · THE EVIDENCE SURFACED" : "");
+                    if (sParty == p) { notes.Add(line); } else { others.Add(line); }
+                }
+                notes.AddRange(others);
+            }
+
+            // CL-2: the story waiting for the player's answer, with the answer queued for the morning if any.
+            PendingScandalView? pending = null;
+            if (playerRun)
+            {
+                foreach ((int pDay, int pParty, Scandal pScandal, double pSeen) in s.PendingScandals)
+                {
+                    if (pParty != p) { continue; }
+                    ScandalResponse? queuedAnswer = record.AnswerFor(s.Day);
+                    int roster = 0;
+                    foreach (CampaignStaffMember m in s.Staff[p].Members) { roster++; }
+                    pending = new PendingScandalView(pScandal.Kind, pScandal.Severity, pSeen, pDay, calendar.CampaignStart.AddDays(pDay), queuedAnswer, roster > 0);
+                    break;
+                }
+            }
+
+            // CL-2: the debate announced from the calendar, and where the next local act goes.
+            int nextDebate = -1;
+            foreach (int d in setup.DebateDays) { if (d >= shownDay && (nextDebate < 0 || d < nextDebate)) { nextDebate = d; } }
+            string localActs = null;
+            if (playerRun)
+            {
+                if (pickedRegion >= 0 && pickedRegion < setup.Regions.Length) { localActs = setup.Regions[pickedRegion].Name + " · PICKED ON THE MAP"; }
+                else
+                {
+                    int strongest = StrongestRegion(s, p, out bool byOffice);
+                    if (strongest >= 0) { localActs = setup.Regions[strongest].Name + (byOffice ? " · YOUR STRONGEST OFFICE" : " · THE LARGEST ELECTORATE"); }
+                }
+            }
+
             return new CampaignSnapshot(setup.Parties[p].Name, markKey, country.Name, phase, today, calendar,
                 s.Pools[p], setup.Parties[p].StartingMoney, poll, names, p, (double[])s.MomentumPp.Clone(),
-                queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex);
+                queue.ToArray(), staff.ToArray(), offices.ToArray(), perceivedEconomyIndex, notes.ToArray(),
+                (int[])setup.DebateDays.Clone(), nextDebate, pending, localActs);
+        }
+
+        /// <summary>
+        /// C-R4b step 4b's one-region rule, moved here for the HQ and the map to share (CL-2): where a local act goes when
+        /// nothing is picked - the region of the party's largest office by volunteers, else the largest electorate.
+        /// </summary>
+        public static int StrongestRegion(CampaignRun.State s, int p, out bool byOffice)
+        {
+            byOffice = false;
+            if (s == null || p < 0 || p >= s.PartyCount) { return -1; }
+            int best = -1;
+            int bestVolunteers = -1;
+            foreach (CampaignOffice office in s.Offices[p].Offices)
+            {
+                if (office.Volunteers > bestVolunteers) { bestVolunteers = office.Volunteers; best = office.Region; }
+            }
+            if (best >= 0) { byOffice = true; return best; }
+            double bestAudience = -1.0;
+            for (int r = 0; r < s.Setup.Regions.Length; r++)
+            {
+                if (s.Setup.Regions[r].Audience > bestAudience) { bestAudience = s.Setup.Regions[r].Audience; best = r; }
+            }
+            return best;
+        }
+
+        /// <summary>
+        /// CL-2: the campaign map over the LIVE run - board 4a's cartogram as the region picker. Every valkrets reads as
+        /// UNKNOWN, honestly: regional detail is not on sale in the live run (W-E4's ladder is the film's), and §36 says the
+        /// map must not tell the player where the race is close until they have paid to find out. What the sheet CAN say it
+        /// says - the party's own offices, framed, with their volunteers; the region picked; where the next local act goes.
+        /// </summary>
+        public static CampaignMapSnapshot? BuildMap(CampaignRun.State s, Country country, double perceivedEconomyIndex, PlayerCampaignRecord record, int pickedRegion)
+        {
+            CampaignSnapshot? campaign = Build(s, country, perceivedEconomyIndex, record, pickedRegion);
+            if (!campaign.HasValue) { return null; }
+            int p = campaign.Value.PlayerPartyIndex;
+            CampaignRun.Setup setup = s.Setup;
+            double national = 0.0;
+            foreach (RegionAudience r in setup.Regions) { national += r.Audience; }
+            var regions = new MapRegionReading[setup.Regions.Length];
+            var volunteers = new int[setup.Regions.Length];
+            for (int r = 0; r < regions.Length; r++)
+            {
+                regions[r] = SwingRegions.Unknown(setup.Regions[r].Name, national > 0.0 ? setup.Regions[r].Audience / national : 0.0);
+                volunteers[r] = -1;
+            }
+            foreach (CampaignOffice office in s.Offices[p].Offices)
+            {
+                if (office.Region >= 0 && office.Region < volunteers.Length) { volunteers[office.Region] = office.Volunteers; }
+            }
+            const string offer = "NO REGIONAL POLL CAN BE BOUGHT IN THIS CAMPAIGN - EVERY VALKRETS READS AS UNKNOWN, AND THE SHEET DOES NOT GUESS FOR YOU. " +
+                                 "THE MAP IS YOUR PICKER: A TILE SETS WHERE THE NEXT LOCAL ACT GOES.";
+            // the heavy frame is where the next local act goes - the pick, else the one-region rule's region, as the ledger names it
+            int nextLocalAct = pickedRegion >= 0 && pickedRegion < setup.Regions.Length ? pickedRegion : StrongestRegion(s, p, out _);
+            return new CampaignMapSnapshot(campaign.Value, regions, campaign.Value.PartyNames, p, "", 0, s.Today, offer,
+                live: true, nextLocalActRegion: nextLocalAct, officeVolunteers: volunteers);
         }
 
         /// <summary>

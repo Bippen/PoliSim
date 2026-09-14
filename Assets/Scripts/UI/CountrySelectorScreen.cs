@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using PoliSim.Data;
+using PoliSim.Elections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -29,8 +30,17 @@ namespace PoliSim.UI
     {
         public GameObject Root { get; private set; }
 
-        /// <summary>Build the screen under the shared host. Returns null when the folder sprite is missing — the caller keeps the IMGUI selector as the degradation path, so a broken import costs the new look, never the ability to start a game.</summary>
-        public static CountrySelectorScreen Build(World world, Action<CountryId> onSelect,
+        /// <summary>CL-2: the party panel over the folders - the country's seeded chamber, largest first; null when no country is open.</summary>
+        private GameObject _partyPanel;
+
+        /// <summary>
+        /// Build the screen under the shared host. Returns null when the folder sprite is missing — the caller keeps the IMGUI selector
+        /// as the degradation path, so a broken import costs the new look, never the ability to start a game. CL-2 (2026-09-13; DS-6,
+        /// R-CL1): a folder OPENS the country's chamber - the party panel - and a party seats the player; <paramref name="onSelect"/> is
+        /// called with the country and the party's abbreviation. The largest-party stand-in that selection seated since C-R2 is retired
+        /// from this path (the harness's one-argument shape keeps it).
+        /// </summary>
+        public static CountrySelectorScreen Build(World world, Action<CountryId, string> onSelect,
             IReadOnlyList<ScenarioDefinition> scenarios = null, Action<ScenarioDefinition> onScenario = null)
         {
             Sprite folder = CanvasChrome.Sliced("ui_folder_country", 48f, 48f, 72f, 40f);
@@ -122,7 +132,7 @@ namespace PoliSim.UI
 
             foreach (Country country in world.Countries)
             {
-                BuildFolderCard(grid.transform, country, folder, onSelect);
+                BuildFolderCard(grid.transform, country, folder, opened => screen.ShowPartyPanel(opened, onSelect));
             }
 
             // S-20: the capture-identity token, so a film of this board proves it is this board.
@@ -147,6 +157,96 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>The country's seeded parties, largest first - the picker's order (shared with the IMGUI degradation path).</summary>
+        public static List<PoliticalParty> PartiesBySeats(CountryId id)
+        {
+            var list = new List<PoliticalParty>(PartySystems.For(id));
+            list.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
+            return list;
+        }
+
+        /// <summary>One party's line on the picker: its abbreviation, its name as published, its seats at the last real election, and IN THE CABINET when the chamber's own formation seats it (`GovernmentFormation.Cabinet`).</summary>
+        public static string PartyLine(PoliticalParty party, IReadOnlyList<string> cabinet)
+        {
+            bool inCabinet = false;
+            if (cabinet != null) { foreach (string abbrev in cabinet) { if (abbrev == party.Abbrev) { inCabinet = true; break; } } }
+            return $"{party.Abbrev} — {party.Name} · {party.SeedSeats} SEATS{(inCabinet ? " · IN THE CABINET" : "")}";
+        }
+
+        /// <summary>
+        /// CL-2: the party panel - the selector's second step. Over the folders (a dim ground that takes the click, so a folder beneath
+        /// cannot), the country's chamber as elected: one text line per party, largest first, its seats and whether the chamber's own
+        /// formation seats it in the cabinet; a party seats the player and starts the game, BACK returns to the folders. Public so the
+        /// capture driver can film it; <paramref name="onSelect"/> null draws the panel and seats nobody.
+        /// </summary>
+        public void ShowPartyPanel(Country country, Action<CountryId, string> onSelect)
+        {
+            HidePartyPanel();
+            if (Root == null || country == null) { return; }
+
+            var panel = new GameObject("PartyPanel");
+            _partyPanel = panel;
+            panel.transform.SetParent(Root.transform, false);
+            Stretch(panel.AddComponent<RectTransform>());
+            Image dim = panel.AddComponent<Image>();
+            dim.color = new Color(PoliSimTheme.Desk.r, PoliSimTheme.Desk.g, PoliSimTheme.Desk.b, 0.94f);
+            dim.raycastTarget = true;
+
+            var column = new GameObject("Column");
+            column.transform.SetParent(panel.transform, false);
+            var columnRect = column.AddComponent<RectTransform>();
+            columnRect.anchorMin = new Vector2(0.5f, 0.5f);
+            columnRect.anchorMax = new Vector2(0.5f, 0.5f);
+            columnRect.pivot = new Vector2(0.5f, 0.5f);
+            columnRect.anchoredPosition = Vector2.zero;
+            columnRect.sizeDelta = new Vector2(1200f, 800f);
+            VerticalLayoutGroup layout = column.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.spacing = 10f;
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+
+            int seats = 0;
+            foreach (PoliticalParty party in PartySystems.For(country.Id)) { seats += party.SeedSeats; }
+            IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(country);
+
+            CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR PARTY — {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 30,
+                PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
+            CanvasChrome.MakeText(column.transform, "Subtitle",
+                $"THE CHAMBER AS ELECTED · {seats} SEATS · LARGEST FIRST · IN THE CABINET = THE CABINET THE CHAMBER FORMS FROM THESE SEATS",
+                PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+
+            foreach (PoliticalParty party in PartiesBySeats(country.Id))
+            {
+                Text line = CanvasChrome.MakeText(column.transform, $"Party_{party.Abbrev}", PartyLine(party, cabinet), PoliSimTheme.Display, 20,
+                    PoliSimTheme.Hex(0xC8A24A), TextAnchor.MiddleCenter);
+                line.raycastTarget = true;
+                Button button = line.gameObject.AddComponent<Button>();
+                button.targetGraphic = line;
+                string abbrev = party.Abbrev;
+                CountryId id = country.Id;
+                button.onClick.AddListener(() => { if (onSelect != null) { onSelect(id, abbrev); } });
+            }
+
+            Text back = CanvasChrome.MakeText(column.transform, "Back", "BACK TO THE COUNTRIES", PoliSimTheme.Display, 14,
+                PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+            back.raycastTarget = true;
+            Button backButton = back.gameObject.AddComponent<Button>();
+            backButton.targetGraphic = back;
+            backButton.onClick.AddListener(HidePartyPanel);
+        }
+
+        /// <summary>CL-2: closes the party panel; the folders take the click again.</summary>
+        public void HidePartyPanel()
+        {
+            if (_partyPanel != null)
+            {
+                UnityEngine.Object.Destroy(_partyPanel);
+                _partyPanel = null;
+            }
+        }
+
         /// <summary>One scenario line: a text button in the brass ink the screen already uses for
         /// interactive type, with no new art. `Text` carries its own raycast target, so the Button
         /// needs no separate face image — the lightest control this screen can host.</summary>
@@ -163,7 +263,7 @@ namespace PoliSim.UI
             button.onClick.AddListener(() => onScenario(captured));
         }
 
-        private static void BuildFolderCard(Transform parent, Country country, Sprite folder, Action<CountryId> onSelect)
+        private static void BuildFolderCard(Transform parent, Country country, Sprite folder, Action<Country> onOpen)
         {
             UiPalette.SystemArea area = UiPalette.GetCountryArea(country.Id);
             Color ink = UiPalette.GetCountryColor(country.Id);
@@ -179,8 +279,8 @@ namespace PoliSim.UI
 
             Button button = card.AddComponent<Button>();
             button.transition = Selectable.Transition.None;
-            CountryId id = country.Id;
-            button.onClick.AddListener(() => onSelect(id));
+            Country opened = country;
+            button.onClick.AddListener(() => onOpen(opened));   // CL-2: the folder opens the chamber; the party panel seats the player
             card.AddComponent<CountryFolderCard>();
 
             // The country hue strip — ui_tab_spine tinted at runtime, per the manifest's own note for

@@ -41,13 +41,21 @@ namespace PoliSim.Elections
 
         /// <summary>§19's perceived economy index (0–100) — what the electorate reacts to, not the truth.</summary>
         public readonly double PerceivedEconomyIndex;
-        /// <summary>CL-1: what the run-up's last stepped day came to - each decision done at its price or refused with its reason; empty for a campaign day.</summary>
+        /// <summary>CL-1: what the run-up's last stepped day came to - each decision done at its price or refused with its reason. CL-2: on a campaign day, the campaign's PUBLIC events of the day just stepped - a debate's result, a story that broke and how its party answered - every party's, as the press carried them.</summary>
         public readonly string[] Notes;
+        /// <summary>CL-2: the campaign days (0-based) the calendar's debates fall on, and the next of them from the day shown (−1 when the debates are past). Who stands is the run's rule: the two leading the published poll that day.</summary>
+        public readonly int[] DebateDays;
+        public readonly int NextDebateDay;
+        /// <summary>CL-2: the story that broke for the party and waits for its answer, or null.</summary>
+        public readonly PendingScandalView? Scandal;
+        /// <summary>CL-2: where a queued local act goes - the region picked on the map, else the party's strongest office's, else the largest electorate - named with which it is; null in the run-up.</summary>
+        public readonly string LocalActsRegion;
 
         public CampaignSnapshot(string partyName, string markKey, string countryName, CampaignPhase phase,
             DateTime today, CampaignCalendar calendar, ResourcePool resources, double moneyAtCampaignStart,
             Poll latestPoll, string[] partyNames, int playerPartyIndex, double[] momentumPp,
-            QueuedAction[] queue, StaffMember[] staff, RegionalOffice[] offices, double perceivedEconomyIndex, string[] notes = null)
+            QueuedAction[] queue, StaffMember[] staff, RegionalOffice[] offices, double perceivedEconomyIndex, string[] notes = null,
+            int[] debateDays = null, int nextDebateDay = -1, PendingScandalView? scandal = null, string localActsRegion = null)
         {
             PartyName = partyName; MarkKey = markKey; CountryName = countryName; Phase = phase;
             Today = today; Calendar = calendar; Resources = resources;
@@ -56,6 +64,7 @@ namespace PoliSim.Elections
             Queue = queue; Staff = staff; Offices = offices;
             PerceivedEconomyIndex = perceivedEconomyIndex;
             Notes = notes ?? new string[0];
+            DebateDays = debateDays ?? new int[0]; NextDebateDay = nextDebateDay; Scandal = scandal; LocalActsRegion = localActsRegion;
         }
 
         public int DaysUntilElection => Calendar.DaysUntilElection(Today);
@@ -65,6 +74,27 @@ namespace PoliSim.Elections
         public double MoneySpentShare => MoneyAtCampaignStart > 0
             ? 1.0 - Resources.Money / MoneyAtCampaignStart
             : 0.0;
+    }
+
+    /// <summary>
+    /// CL-2 (DS-10): a story that broke for the party and waits for its answer, as the HQ shows it - what, how bad, the
+    /// evidence AS THE PARTY'S PEOPLE READ IT (§36's estimate, never the truth), the day it broke, the answer queued for the
+    /// morning (or null), and whether anyone is on the roster to sacrifice.
+    /// </summary>
+    public readonly struct PendingScandalView
+    {
+        public readonly ScandalKind Kind;
+        public readonly ScandalSeverity Severity;
+        public readonly double SeenEvidence;
+        public readonly int BrokeOnDay;
+        public readonly DateTime BrokeOn;
+        public readonly ScandalResponse? Queued;
+        public readonly bool StaffOnRoster;
+
+        public PendingScandalView(ScandalKind kind, ScandalSeverity severity, double seenEvidence, int brokeOnDay, DateTime brokeOn, ScandalResponse? queued, bool staffOnRoster)
+        {
+            Kind = kind; Severity = severity; SeenEvidence = seenEvidence; BrokeOnDay = brokeOnDay; BrokeOn = brokeOn; Queued = queued; StaffOnRoster = staffOnRoster;
+        }
     }
 
     /// <summary>One action sitting in the day's queue: what, where, and what it costs.</summary>

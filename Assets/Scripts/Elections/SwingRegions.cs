@@ -104,12 +104,20 @@ namespace PoliSim.Elections
         public readonly DateTime FieldDate;
         /// <summary>The two offers that would sharpen this sheet, named with their prices (W-E4's ladder), so the gate points at its key.</summary>
         public readonly string OfferLine;
+        /// <summary>CL-2: the sheet is over the LIVE campaign - a tile is the picker (a click sets where the next local act goes), the party's offices are framed.</summary>
+        public readonly bool Live;
+        /// <summary>CL-2: where the next local act goes (an index into <see cref="Regions"/>) - the region picked on the map, else the one-region rule's; −1 for none.</summary>
+        public readonly int NextLocalActRegion;
+        /// <summary>CL-2: per region, the volunteers at the party's office there, −1 where it has none.</summary>
+        public readonly int[] OfficeVolunteers;
 
         public CampaignMapSnapshot(CampaignSnapshot campaign, MapRegionReading[] regions, string[] partyNames,
-            int playerPartyIndex, string pollingBought, int samplePerRegion, DateTime fieldDate, string offerLine)
+            int playerPartyIndex, string pollingBought, int samplePerRegion, DateTime fieldDate, string offerLine,
+            bool live = false, int nextLocalActRegion = -1, int[] officeVolunteers = null)
         {
             Campaign = campaign; Regions = regions; PartyNames = partyNames; PlayerPartyIndex = playerPartyIndex;
             PollingBought = pollingBought; SamplePerRegion = samplePerRegion; FieldDate = fieldDate; OfferLine = offerLine;
+            Live = live; NextLocalActRegion = nextLocalActRegion; OfficeVolunteers = officeVolunteers;
         }
 
         public int MeasuredCount

@@ -201,6 +201,108 @@ namespace PoliSim.EditorTools
                     $"chest {polled.Money:F0}; share(0) {(polled.LatestPoll.HasValue ? polled.LatestPoll.Value.Share(0) : double.NaN):F3} against prior {staging.PriorShares[0]:F3}; digest {polled.Digest.Length} chars");
             }
 
+            // 8. CL-2 (2026-09-13, DS-10): stories in the live run - a rate per party-day, every party equal, drawn from the appended
+            //    Scandal stream; a scripted party's story held for its answer; the run's determinism kept. 8c is the load-bearing one:
+            //    the rate is a Setup figure every harness leaves at 0, so the AI harness's digest (its own run, in this chain) cannot
+            //    have moved; 8a says the live rate breaks stories at about its expectation.
+            {
+                var none = new (int Day, int Party, Scandal Scandal)[0];
+                CampaignRun.Setup live = LiveCampaignSetup.Sweden(none, out _, liveScandalRate: Scandals.LiveRatePerPartyDay);
+                CampaignRun.Result liveRun = CampaignAiHarness.RunSeeded(live, 777);
+                var perParty = new int[live.Parties.Length];
+                foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in liveRun.Scandals) { perParty[xParty]++; }
+                int total = liveRun.Scandals.Count;
+                double expectedStories = live.Parties.Length * (live.Calendar.TotalCampaignDays - 1) * Scandals.LiveRatePerPartyDay;
+                int maxParty = 0;
+                foreach (int n in perParty) { if (n > maxParty) { maxParty = n; } }
+                failures += Assert(sb, "8a. at the live rate stories break for the parties at about the expectation (seed 777), none hoarding them",
+                    total >= 1 && total <= (int)(expectedStories * 3) + 2 && maxParty <= 6,
+                    $"{total} stories against {expectedStories:F1} expected ({live.Parties.Length} parties x {live.Calendar.TotalCampaignDays - 1} days before the last x 1/{1.0 / Scandals.LiveRatePerPartyDay:F0}); per party {string.Join("/", perParty)}");
+                failures += Assert(sb, "8b. the same seed replays the live run to the same digest",
+                    CampaignAiHarness.RunSeeded(live, 777).Digest == liveRun.Digest, $"digest {liveRun.Digest}, {total} stories");
+                CampaignRun.Result plain = CampaignAiHarness.RunSeeded(LiveCampaignSetup.Sweden(none, out _), 777);
+                CampaignRun.Result zero = CampaignAiHarness.RunSeeded(LiveCampaignSetup.Sweden(none, out _, liveScandalRate: 0.0), 777);
+                failures += Assert(sb, "8c. at a rate of 0 the staging's digest is the staging's own and no story breaks (no stream drawn)",
+                    plain.Digest == zero.Digest && zero.Scandals.Count == 0 && plain.Digest != liveRun.Digest,
+                    $"digest {plain.Digest} with and without the figure; live {liveRun.Digest}");
+
+                // A scripted party (0, the professional) whose answer is always to apologise: every story of its own resolves the
+                // morning after it broke on that answer, and a day's pending list holds only that day's stories.
+                CampaignRun.Setup answered = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                    playerScandalScript: d => ScandalResponse.Apologize, liveScandalRate: 0.2);
+                CampaignRun.State st = CampaignRun.Begin(answered, new System.Random(777), new System.Random(778), new System.Random(779));
+                bool pendingOnlyToday = true;
+                int heldOvernight = 0;
+                while (!st.Finished)
+                {
+                    heldOvernight += st.PendingScandals.Count;
+                    CampaignRun.StepDay(st);
+                    foreach ((int pDay, int pParty, Scandal pStory, double pSeen) in st.PendingScandals) { if (pDay != st.Day - 1 || pParty != 0) { pendingOnlyToday = false; } }
+                }
+                CampaignRun.Result answeredRun = CampaignRun.Finish(st);
+                int mine = 0, apologies = 0;
+                foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in answeredRun.Scandals) { if (xParty == 0) { mine++; if (xResponse == ScandalResponse.Apologize) { apologies++; } } }
+                failures += Assert(sb, "8d. a scripted party's stories are held for its answer and resolve the next morning on it (rate 0.2, always APOLOGIZE)",
+                    mine >= 1 && apologies == mine && heldOvernight == mine && pendingOnlyToday && st.PendingScandals.Count == 0,
+                    $"{mine} stories of party 0, {apologies} apologised; held overnight {heldOvernight}, {st.PendingScandals.Count} pending at the close; pending lists carried only the day's own: {pendingOnlyToday}");
+
+                // The same party with a script that answers nothing: the run answers as its personality would (the professional explains,
+                // or denies when the evidence looks weak) - a run no player watches never blocks.
+                CampaignRun.Setup unanswered = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                    playerScandalScript: d => null, liveScandalRate: 0.2);
+                CampaignRun.Result instinct = CampaignAiHarness.RunSeeded(unanswered, 777);
+                int mine2 = 0, byInstinct = 0;
+                foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in instinct.Scandals) { if (xParty == 0) { mine2++; if (xResponse == ScandalResponse.Explain || xResponse == ScandalResponse.Deny) { byInstinct++; } } }
+                failures += Assert(sb, "8e. a scripted party that answers nothing is answered by its personality's instinct (the professional: EXPLAIN, or DENY on weak evidence)",
+                    mine2 >= 1 && byInstinct == mine2, $"{mine2} stories of party 0, {byInstinct} by instinct");
+
+                // The picker's seam: a queued act carrying a region lands in that region - the ledger's own log names it.
+                int regionPick = 3;
+                CampaignRun.Setup baseSetup = LiveCampaignSetup.Sweden(none, out _);
+                CampaignActions.ActionSpec townHall = CampaignActions.Spec(CampaignActionKind.TownHall);
+                AiDecision pickedAct = new QueuedDecisionRecord { Day = 0, Kind = CampaignActionKind.TownHall, RegionIndex = regionPick, Spend = townHall.MoneyCost }.ToDecision(baseSetup);
+                CampaignRun.Setup pickedSetup = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => d == 0 ? new[] { pickedAct } : new AiDecision[0]);
+                CampaignRun.Result pickedRun = CampaignAiHarness.RunSeeded(pickedSetup, 777);
+                bool landed = false;
+                foreach (CampaignRun.DecisionRecord d in pickedRun.Parties[0].Log)
+                {
+                    if (d.Day == 0 && d.Kind == CampaignActionKind.TownHall && d.Target.StartsWith(pickedSetup.Regions[regionPick].Name, StringComparison.Ordinal)) { landed = true; }
+                }
+                failures += Assert(sb, "8f. a queued act carrying the map's pick lands in that region (the ledger's own log names it)",
+                    landed, $"region {regionPick} = {pickedSetup.Regions[regionPick].Name}; day-0 log entries {pickedRun.Parties[0].Log.Count}");
+
+                // The final day: no story breaks on the run's last day, for any party - the player's would have no morning left to be
+                // answered on, and a story held then would hold the game's clock with no answer the run could still take. At a rate of
+                // 1 every other day breaks one for every party, so the day before's story is certain and is apologised on the last day,
+                // no AI party's story is resolved on the last day, and nothing waits at the close.
+                CampaignRun.Setup everyDay = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                    playerScandalScript: d => ScandalResponse.Apologize, liveScandalRate: 1.0);
+                CampaignRun.State close = CampaignRun.Begin(everyDay, new System.Random(777), new System.Random(778), new System.Random(779));
+                while (!close.Finished) { CampaignRun.StepDay(close); }
+                int finalDay = close.TotalDays - 1, finalApologies = 0, everyApology = 0, othersOnFinalDay = 0;
+                foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in close.Scandals)
+                {
+                    if (xParty != 0) { if (xDay == finalDay) { othersOnFinalDay++; } continue; }
+                    if (xResponse == ScandalResponse.Apologize) { everyApology++; if (xDay == finalDay) { finalApologies++; } }
+                }
+                failures += Assert(sb, "8g. no story breaks on the final day for any party, the day before's is answered on the last day, none waits at the close (rate 1, always APOLOGIZE)",
+                    finalApologies == 1 && everyApology == finalDay && othersOnFinalDay == 0 && close.PendingScandals.Count == 0,
+                    $"final day {finalDay}: {finalApologies} apologised (the day before's story), {othersOnFinalDay} other parties' stories resolved on it; {everyApology} apologies in all; {close.PendingScandals.Count} pending at the close");
+
+                // SACRIFICE STAFF carried out: each sacrifice takes the most recently hired member off the roster, so a party that
+                // sacrifices for every story ends with its roster shorter by its sacrifices (never below empty).
+                CampaignRun.Setup sacrificing = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                    playerScandalScript: d => ScandalResponse.SacrificeStaffMember, liveScandalRate: 0.2);
+                CampaignRun.State sac = CampaignRun.Begin(sacrificing, new System.Random(777), new System.Random(778), new System.Random(779));
+                int rosterAtStart = sac.Staff[0].Count;
+                while (!sac.Finished) { CampaignRun.StepDay(sac); }
+                int sacrifices = 0;
+                foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in sac.Scandals) { if (xParty == 0 && xOutcome.StaffMemberSacrificed) { sacrifices++; } }
+                failures += Assert(sb, "8h. SACRIFICE STAFF takes a member off the roster for every story answered with it (rate 0.2, always SACRIFICE STAFF)",
+                    sacrifices >= 1 && rosterAtStart >= 1 && sac.Staff[0].Count == Math.Max(0, rosterAtStart - sacrifices),
+                    $"{sacrifices} sacrifices; the roster {rosterAtStart} at the start, {sac.Staff[0].Count} at the close");
+            }
+
             sb.Append($"\n=== CampaignClockHarness: {(failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED")} ===\n");
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);

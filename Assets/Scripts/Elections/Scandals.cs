@@ -229,5 +229,81 @@ namespace PoliSim.Elections
             return new ScandalOutcome(response, coverage.ToArray(), momentumPp, credibilityCost, escalated,
                 response == ScandalResponse.Resign, staffSacrificed);
         }
+
+        /// <summary>
+        /// CL-2 (2026-09-13; DS-10 ruled *"build, [AUTHORED-DRAFT] rate, every party equal, the seven responses as HQ chips"*).
+        /// [AUTHORED-DRAFT] the probability per party per campaign day that a story breaks in the LIVE run - the same for
+        /// every party (§36 keeps it hidden from the player; every harness stages its own and passes 0). Drawn on every campaign
+        /// day but the last, at 1 in 80 a 56-day campaign of eight parties breaks about 5.5 stories, and a party sees at least one
+        /// with a probability of about one half (1 − (79/80)^55 = 0.499). A play-calibration constant
+        /// judged in play (CL-3's sheet), not a measured rate: the record holds no figure for a campaign's story frequency.
+        /// </summary>
+        public const double LiveRatePerPartyDay = 1.0 / 80.0;
+
+        /// <summary>[AUTHORED-DRAFT] the severity mix of a live story: half minor, three in ten moderate, fifteen in a hundred major, five catastrophic.</summary>
+        public static readonly double[] SeverityWeights = { 0.50, 0.30, 0.15, 0.05 };
+
+        /// <summary>
+        /// One live story from the caller's random (the run's appended `Scandal` stream): the kind uniform over §17's eight,
+        /// the severity by <see cref="SeverityWeights"/>, the true evidence uniform on 0–1. Three draws, always three, so a
+        /// replay that re-steps the same days lands on the same counts.
+        /// </summary>
+        public static Scandal Draw(System.Random random)
+        {
+            if (random == null) { throw new ArgumentNullException(nameof(random)); }
+            int kind = random.Next(0, 8);
+            double u = random.NextDouble();
+            int severity = SeverityWeights.Length - 1;
+            double acc = 0.0;
+            for (int i = 0; i < SeverityWeights.Length; i++) { acc += SeverityWeights[i]; if (u < acc) { severity = i; break; } }
+            double evidence = random.NextDouble();
+            return new Scandal((ScandalKind)kind, (ScandalSeverity)severity, evidence);
+        }
+
+        /// <summary>The seven responses as the HQ's chips name them.</summary>
+        public static string Caption(ScandalResponse response)
+        {
+            switch (response)
+            {
+                case ScandalResponse.Deny: return "DENY";
+                case ScandalResponse.Apologize: return "APOLOGIZE";
+                case ScandalResponse.Explain: return "EXPLAIN";
+                case ScandalResponse.AttackSource: return "ATTACK SOURCE";
+                case ScandalResponse.Ignore: return "IGNORE";
+                case ScandalResponse.Resign: return "RESIGN";
+                default: return "SACRIFICE STAFF";
+            }
+        }
+
+        /// <summary>The response in the past tense, for the day's record on the HQ.</summary>
+        public static string PastTense(ScandalResponse response)
+        {
+            switch (response)
+            {
+                case ScandalResponse.Deny: return "DENIED IT";
+                case ScandalResponse.Apologize: return "APOLOGIZED";
+                case ScandalResponse.Explain: return "EXPLAINED";
+                case ScandalResponse.AttackSource: return "ATTACKED THE SOURCE";
+                case ScandalResponse.Ignore: return "IGNORED IT";
+                case ScandalResponse.Resign: return "THE CANDIDATE RESIGNED";
+                default: return "A STAFF MEMBER WENT";
+            }
+        }
+
+        /// <summary>§17's kinds as the HQ prints them.</summary>
+        public static string KindCaption(ScandalKind kind)
+        {
+            switch (kind)
+            {
+                case ScandalKind.FinancialMisconduct: return "FINANCIAL MISCONDUCT";
+                case ScandalKind.Corruption: return "CORRUPTION";
+                case ScandalKind.PersonalControversy: return "PERSONAL CONTROVERSY";
+                case ScandalKind.OffensiveStatement: return "OFFENSIVE STATEMENT";
+                case ScandalKind.OldSocialMediaPost: return "OLD SOCIAL MEDIA POST";
+                case ScandalKind.PolicyContradiction: return "POLICY CONTRADICTION";
+                case ScandalKind.InternalPartyDispute: return "INTERNAL PARTY DISPUTE";
+                default: return "CAMPAIGN FINANCE VIOLATION";
+            }
+        }
     }
 }

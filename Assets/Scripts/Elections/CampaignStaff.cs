@@ -179,6 +179,21 @@ namespace PoliSim.Elections
             return m;
         }
 
+        /// <summary>
+        /// CL-2 (§17's SACRIFICE STAFF): the member who goes for a story - the most recently hired (the latest day hired; of those
+        /// hired on the same day, the last added). A rule of this model, stated, not a figure; the salary and the role's effects end
+        /// with the member. Returns the member gone, or null when nobody is on the roster.
+        /// </summary>
+        public CampaignStaffMember Sacrifice()
+        {
+            if (_members.Count == 0) { return null; }
+            int at = 0;
+            for (int i = 1; i < _members.Count; i++) { if (_members[i].DayHired >= _members[at].DayHired) { at = i; } }
+            CampaignStaffMember gone = _members[at];
+            _members.RemoveAt(at);
+            return gone;
+        }
+
         /// <summary>W-B12: what the roster costs for one day if everyone is paid - the payroll half of the organisation's daily bill, which the manager's plan must hold back.</summary>
         public double DailySalaryBill()
         {

@@ -91,6 +91,27 @@ namespace PoliSim.UI
         /// </summary>
         private string _campaignOpeningAcknowledgedElection;
 
+        /// <summary>CL-2 (2026-09-13): the region picked on the campaign map - where the next local act goes (−1: the one-region rule, the strongest office's) - and the election whose campaign it was picked in. The session's, not the save's: a queued act carries its region in the record, a load clears the pick, and a pick from another campaign reads as none (`CampaignPick`).</summary>
+        private int _campaignPickedRegion = -1;
+        private System.DateTime _campaignPickedElection;
+
+        /// <summary>CL-2: the map's pick for the campaign that is running, or −1 - never a pick made in another campaign or an index outside this one's regions.</summary>
+        private int CampaignPick()
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null || _campaignPickedRegion < 0 || _campaignPickedRegion >= s.Setup.Regions.Length) { return -1; }
+            return s.Setup.Calendar.ElectionDate == _campaignPickedElection ? _campaignPickedRegion : -1;
+        }
+        /// <summary>CL-2: the map is open over the live campaign (the HQ's masthead opens it; BACK TO HQ closes it); refreshed from the run before every draw, as the HQ is.</summary>
+        private bool _liveCampaignMapOpen;
+
+        /// <summary>CL-2 (DS-10): a story broke for the player's party and no answer is queued - the clock holds, as it does for the opening, until one of the seven chips is pressed. State-derived and idempotent, like the opening's hold.</summary>
+        private bool HasPendingScandalAnswer()
+        {
+            if (_simulationManager == null || _playerCountry == null || _isGameOver) { return false; }
+            return _simulationManager.PendingPlayerScandal().HasValue && !_simulationManager.QueuedScandalResponse().HasValue;
+        }
+
         /// <summary>
         /// True while the player's campaign has opened and its opening has not been acknowledged: the
         /// clock HELDs, the banner names it, and HQ opens (the Fed-chair pause is the template). Only
@@ -135,7 +156,47 @@ namespace PoliSim.UI
             {
                 return LiveCampaignSnapshot.BuildPreCampaign(_simulationManager.PlayerPreCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord);
             }
-            return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord);
+            return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
+        }
+
+        /// <summary>
+        /// CL-2: the map over the live campaign - board 4a's cartogram as the REGION PICKER (a tile sets where the next local
+        /// act goes; the party's offices framed; every valkrets honestly unknown, regional detail not being on sale in the
+        /// live run). Opened from the HQ's masthead, closed from its own; rebuilt from the run before every draw like the HQ.
+        /// </summary>
+        private void OpenLiveCampaignMap()
+        {
+            // a map left open when its campaign is gone (the run dropped after polling day, a load) closes rather than freezing
+            if (_simulationManager?.PlayerCampaign == null || _playerCountry == null) { CloseLiveCampaignMap(); return; }
+            double perceived = PerceivedPerformance.Perceived(_playerCountry, null).Index;
+            CampaignMapSnapshot? map = LiveCampaignSnapshot.BuildMap(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
+            if (!map.HasValue) { CloseLiveCampaignMap(); return; }
+            _campaignMapScreen = map;
+            _liveCampaignMapOpen = true;
+        }
+
+        private void CloseLiveCampaignMap()
+        {
+            if (!_liveCampaignMapOpen) { return; }
+            _liveCampaignMapOpen = false;
+            _campaignMapScreen = null;
+        }
+
+        /// <summary>CL-2: a tile clicked on the live map - the next local act's region; the map redraws with the pick framed.</summary>
+        private void PickCampaignRegion(int region)
+        {
+            CampaignRun.State s = _simulationManager?.PlayerCampaign;
+            if (s == null) { return; }
+            _campaignPickedRegion = region;
+            _campaignPickedElection = s.Setup.Calendar.ElectionDate;
+            if (_liveCampaignMapOpen) { OpenLiveCampaignMap(); }
+        }
+
+        /// <summary>CL-2: where a queued local act goes - the region picked on the map, else the one-region rule (`LiveCampaignSnapshot.StrongestRegion`).</summary>
+        private int LocalActRegion()
+        {
+            int pick = CampaignPick();
+            return pick >= 0 ? pick : StrongestCampaignRegion();
         }
 
         /// <summary>Re-reads the live state into the HQ snapshot before a draw; closes the screen if the campaign is gone.</summary>
@@ -152,32 +213,20 @@ namespace PoliSim.UI
             if (!_liveCampaignOpen) { return; }
             _liveCampaignOpen = false;
             _campaignScreen = null;
+            CloseLiveCampaignMap();
         }
 
         /// <summary>
-        /// C-R4b step 4b: where a queued LOCAL act goes - the region of the party's largest office (by
-        /// volunteers), else the largest electorate. A region picker is a design surface (the campaign
-        /// map is the natural one) and is not improvised here; this is the one-region rule until it exists.
+        /// C-R4b step 4b: where a queued LOCAL act goes when nothing is picked - the region of the party's largest office
+        /// (by volunteers), else the largest electorate. The picker is the campaign map since CL-2 (`LocalActRegion`); this
+        /// is the rule beneath it, shared with the HQ's own line through `LiveCampaignSnapshot.StrongestRegion`.
         /// </summary>
         private int StrongestCampaignRegion()
         {
             CampaignRun.State s = _simulationManager?.PlayerCampaign;
             if (s == null || _playerCountry == null) { return -1; }
             int p = LiveCampaignSnapshot.PlayerPartyIndex(s, _playerCountry);
-            if (p < 0) { return -1; }
-            int best = -1;
-            int bestVolunteers = -1;
-            foreach (CampaignOffice office in s.Offices[p].Offices)
-            {
-                if (office.Volunteers > bestVolunteers) { bestVolunteers = office.Volunteers; best = office.Region; }
-            }
-            if (best >= 0) { return best; }
-            double bestAudience = -1.0;
-            for (int r = 0; r < s.Setup.Regions.Length; r++)
-            {
-                if (s.Setup.Regions[r].Audience > bestAudience) { bestAudience = s.Setup.Regions[r].Audience; best = r; }
-            }
-            return best;
+            return LiveCampaignSnapshot.StrongestRegion(s, p, out _);
         }
 
         /// <summary>The rail's CAMPAIGN cell: drawn only while a campaign runs for the player's party; a click opens the live HQ (or, if it is open, returns to the Desk).</summary>
@@ -240,7 +289,9 @@ namespace PoliSim.UI
             Rect Board(float x, float y, float w, float h) =>
                 new Rect(inner.x + x * ux, inner.y + y * uy, w * ux, h * uy);
 
-            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ");
+            // CL-2: the map is the HQ's own chip while the campaign runs; a story that waits for its answer takes the legality panel's place.
+            bool campaignRunning = _liveCampaignOpen && _simulationManager?.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished;
+            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ", campaignRunning ? "THE MAP" : null, OpenLiveCampaignMap);
 
             DrawCampaignResources(Board(0f, 36f, 440f, CampaignResourcesPlateHeight), snapshot);
             DrawCampaignStaffAndOffices(Board(0f, 348f, 440f, 264f), snapshot);
@@ -248,7 +299,8 @@ namespace PoliSim.UI
             DrawCampaignRace(Board(453f, 36f, 250f, CampaignRacePlateHeight), snapshot);
 
             DrawCampaignQueue(Board(716f, 36f, 440f, CampaignResourcesPlateHeight), snapshot);
-            DrawCampaignLegality(Board(716f, 348f, 440f, 264f), snapshot);
+            if (snapshot.Scandal.HasValue) { DrawCampaignScandal(Board(716f, 348f, 440f, 264f), snapshot); }
+            else { DrawCampaignLegality(Board(716f, 348f, 440f, 264f), snapshot); }
 
             if (Event.current.type == EventType.Repaint)
             {
@@ -261,7 +313,7 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         // The masthead: who is campaigning, in what phase, with how long left.
         // ------------------------------------------------------------------------------------------
-        private void DrawCampaignMasthead(Rect r, CampaignSnapshot s, string screenTitle)
+        private void DrawCampaignMasthead(Rect r, CampaignSnapshot s, string screenTitle, string sideChip = null, System.Action onSideChip = null)
         {
             float ux = r.width / 1156f;
             float uy = r.height / 28f;
@@ -310,15 +362,25 @@ namespace PoliSim.UI
 
             // P2-0.3: the opening interrupt's exit. The clock is held until this is pressed; the banner above
             // the sheet says so. Drawn only while the hold is on, so a re-opened HQ carries no stale chip.
+            float nextX = phaseRect.x;
             if (HasPendingCampaignOpening())
             {
                 const string trailText = "TAKE THE TRAIL";
                 float trailWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(trailText)).x) + Mathf.Round(16f * ux);
-                if (DrawDeskChipButton(new Rect(phaseRect.x - trailWidth - Mathf.Round(6f * ux), chipY, trailWidth, chipHeight),
-                        trailText, chipCaption, selected: false, disabled: false))
+                var trailRect = new Rect(nextX - trailWidth - Mathf.Round(6f * ux), chipY, trailWidth, chipHeight);
+                if (DrawDeskChipButton(trailRect, trailText, chipCaption, selected: false, disabled: false))
                 {
                     AcknowledgeCampaignOpening();
                 }
+                nextX = trailRect.x;
+            }
+
+            // CL-2: the screen's own side chip - the HQ's THE MAP, the map's BACK TO HQ - drawn only over the live campaign.
+            if (!string.IsNullOrEmpty(sideChip) && onSideChip != null)
+            {
+                float sideWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(sideChip)).x) + Mathf.Round(16f * ux);
+                var sideRect = new Rect(nextX - sideWidth - Mathf.Round(6f * ux), chipY, sideWidth, chipHeight);
+                if (DrawDeskChipButton(sideRect, sideChip, chipCaption, selected: false, disabled: false)) { onSideChip(); }
             }
         }
 
@@ -664,6 +726,13 @@ namespace PoliSim.UI
                     PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, noteHeight), s.Notes[i], noteStyle);
                     y += noteHeight;
                 }
+                if (s.Notes.Length > 2)
+                {
+                    // CL-2: the campaign's day can carry more public events than the plate's two lines - counted, never dropped silently
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, noteHeight),
+                        "+" + (s.Notes.Length - 2).ToString(CultureInfo.InvariantCulture) + " MORE", noteStyle);
+                    y += noteHeight;
+                }
                 y += Mathf.Round(2f * uy);
             }
             // C-R4b step 4b: the player's hand. On the LIVE HQ a row of chips queues an action for the
@@ -754,7 +823,7 @@ namespace PoliSim.UI
                     if (DrawDeskChipButton(new Rect(x, y, w, chipHeight), captions[i], chipCaption, selected: false, disabled: !legal) && legal)
                     {
                         CampaignActions.ActionSpec spec = CampaignActions.Spec(offered[i]);
-                        int region = spec.IsLocal ? StrongestCampaignRegion() : -1;
+                        int region = spec.IsLocal ? LocalActRegion() : -1;   // CL-2: the map's pick, else the one-region rule
                         _simulationManager.QueueCampaignDecision(offered[i], region, null, spec.MoneyCost, out string refusal);
                         if (refusal != null) { Debug.Log("CAMPAIGN QUEUE: " + refusal); }
                     }
@@ -766,6 +835,15 @@ namespace PoliSim.UI
                     _simulationManager.ClearCampaignQueue();
                 }
                 y += chipHeight + Mathf.Round(4f * uy);
+                // CL-2: where a local act goes, and which rule put it there - the map's pick or the strongest office. A chip
+                // that sent a rally somewhere the screen never named was the picker's absence made invisible.
+                if (!string.IsNullOrEmpty(s.LocalActsRegion))
+                {
+                    GUIStyle whereStyle = DeskCaption(8.5f, PoliSimTheme.TextMuted);
+                    float whereHeight = Mathf.Ceil(DeskCaptionHeight(whereStyle));
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, whereHeight), "LOCAL ACTS GO TO " + s.LocalActsRegion.ToUpperInvariant(), whereStyle);
+                    y += whereHeight + Mathf.Round(2f * uy);
+                }
             }
 
             y += Mathf.Round(4f * uy);
@@ -796,6 +874,87 @@ namespace PoliSim.UI
                         : "OVER THE WAR CHEST — THE SPEND WOULD BE REFUSED",
                     DeskCaption(8.5f, PoliSimTheme.Caution, bold: true));
             }
+        }
+
+        /// <summary>
+        /// CL-2 (DS-10): a story broke for the player's party - the seven responses as chips where the legality panel stands
+        /// until it is answered. The panel says what the party's people know: the kind, the severity, the EVIDENCE AS THEY
+        /// READ IT (§36's estimate, never the truth), the day it broke; the answer queued lands the next morning, and the
+        /// clock holds until one is queued. Under the chips, §17's own two sentences and the model's third (a sacrifice no staff
+        /// member could carry reads as cynical - `Scandals.CynicalSacrificeMultiplier`, [AUTHORED-DRAFT]); the response table
+        /// `Scandals.Table` prices all seven, and a sacrifice with nobody on the roster is refused rather than priced.
+        /// </summary>
+        private void DrawCampaignScandal(Rect r, CampaignSnapshot s)
+        {
+            if (!s.Scandal.HasValue) { return; }
+            PendingScandalView story = s.Scandal.Value;
+            float ux = r.width / 440f;
+            float uy = r.height / 264f;
+            float y = DrawCampaignLedgerHead(r, "A STORY BROKE — YOUR ANSWER, BEFORE THE DAY MOVES", ux, uy);
+
+            GUIStyle nameStyle = DeskBody(13f, PoliSimTheme.TextPrimary);
+            GUIStyle lineStyle = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
+            float rowHeight = Mathf.Max(Mathf.Round(18f * uy), nameStyle.CalcSize(new GUIContent("Ag")).y);
+            float lineHeight = Mathf.Ceil(DeskCaptionHeight(lineStyle));
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, rowHeight),
+                Scandals.KindCaption(story.Kind) + " · " + story.Severity.ToString().ToUpperInvariant(), nameStyle);
+            y += rowHeight;
+            // the one line the model draws on the evidence is the instinct's (below it a party denies); no other band is the model's
+            string deny = story.SeenEvidence < CampaignRun.DenyBelowSeenEvidence
+                ? string.Format(CultureInfo.InvariantCulture, " · UNDER THE {0:F2} BELOW WHICH A PARTY'S INSTINCT DENIES", CampaignRun.DenyBelowSeenEvidence) : "";
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, lineHeight),
+                string.Format(CultureInfo.InvariantCulture, "EVIDENCE AS YOUR PEOPLE READ IT: {0:F2}{1} · NOT THE TRUTH", story.SeenEvidence, deny), lineStyle);
+            y += lineHeight;
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, lineHeight),
+                string.Format(CultureInfo.InvariantCulture, "BROKE ON CAMPAIGN DAY {0} · {1}", story.BrokeOnDay,
+                    story.BrokeOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()), lineStyle);
+            y += lineHeight + Mathf.Round(4f * uy);
+
+            GUIStyle chipCaption = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
+            float chipHeight = Mathf.Ceil(DeskCaptionHeight(chipCaption)) + Mathf.Round(6f * uy);
+            float gap = Mathf.Round(4f * ux);
+            float x = r.x;
+            bool live = _liveCampaignOpen && _simulationManager != null && _simulationManager.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished;
+            foreach (ScandalResponse response in Scandals.TheSeven)
+            {
+                string caption = Scandals.Caption(response);
+                bool open = live && response != ScandalResponse.Resign && (response != ScandalResponse.SacrificeStaffMember || story.StaffOnRoster);
+                float w = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(caption)).x) + Mathf.Round(12f * ux);
+                if (x + w > r.xMax) { x = r.x; y += chipHeight + Mathf.Round(4f * uy); }
+                bool queued = story.Queued.HasValue && story.Queued.Value == response;
+                if (DrawDeskChipButton(new Rect(x, y, w, chipHeight), caption, chipCaption, selected: queued, disabled: !open) && open)
+                {
+                    _simulationManager.QueueScandalResponse(response, out string refusal);
+                    if (refusal != null) { Debug.Log("CAMPAIGN QUEUE: " + refusal); }
+                }
+                x += w + gap;
+            }
+            y += chipHeight + Mathf.Round(6f * uy);
+
+            GUIStyle stateStyle = DeskCaption(8.5f, story.Queued.HasValue ? PoliSimTheme.TextPrimary : PoliSimTheme.Caution, bold: true);
+            float stateHeight = Mathf.Ceil(DeskCaptionHeight(stateStyle));
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, stateHeight),
+                story.Queued.HasValue ? "QUEUED: " + Scandals.Caption(story.Queued.Value) + " — IT LANDS THE MORNING THE DAY STEPS"
+                    : "NOTHING QUEUED — THE CLOCK HOLDS UNTIL YOU ANSWER", stateStyle);
+            y += stateHeight;
+            // RESIGN is drawn and refused with its reason (CL-1's rule for a verb the model cannot price): no second candidate is cast
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, lineHeight), "RESIGN: NO SECOND CANDIDATE IS CAST TO HAND THE CAMPAIGN TO", DeskCaption(8.5f, PoliSimTheme.TextMuted));
+            y += lineHeight;
+            if (!story.StaffOnRoster)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, lineHeight), "SACRIFICE STAFF: NOBODY ON THE ROSTER TO SACRIFICE", DeskCaption(8.5f, PoliSimTheme.TextMuted));
+                y += lineHeight;
+            }
+
+            // §17's two sentences and the model's third, wrapped in the room that remains - the Desk's rule for a wrapped caption (GUI.Label +
+            // the containment guard; the overflow guard measures the one-line form).
+            GUIStyle foot = DeskCaptionWrapped(8.5f, PoliSimTheme.TextMuted);
+            const string footText = "A TRANSPARENT APOLOGY MAY REDUCE LONG-TERM DAMAGE BUT CAUSE A SHORT-TERM POLLING DECLINE · A DENIAL CAN WORK IF THE EVIDENCE IS WEAK " +
+                                    "BUT BECOME CATASTROPHIC IF EVIDENCE LATER APPEARS · A STAFF SACRIFICE FOR A STORY NO STAFF MEMBER COULD CARRY READS AS CYNICAL";
+            float footHeight = Mathf.Ceil(foot.CalcHeight(new GUIContent(footText), r.width));
+            var footRect = new Rect(r.x, Mathf.Min(y + Mathf.Round(4f * uy), r.yMax - footHeight), r.width, footHeight);
+            if (Event.current.type == EventType.Repaint) { UiContainmentGuard.Check("Campaign HQ story foot", footRect, r); }
+            GUI.Label(footRect, footText, foot);
         }
 
         // ------------------------------------------------------------------------------------------
@@ -896,6 +1055,29 @@ namespace PoliSim.UI
                 string.Format(CultureInfo.InvariantCulture, "TODAY {0}",
                     s.Today.ToString("d MMMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()),
                 DeskCaption(8.5f, PoliSimTheme.TextMuted));
+
+            // CL-2: the debate announced from the calendar - the day, its date, and who stands (W-B7's rule: the two leading
+            // the published poll that day). Until this the debate happened unannounced on days 20 and 41.
+            if (!runUp && s.DebateDays != null && s.DebateDays.Length > 0)
+            {
+                string debateText;
+                if (s.NextDebateDay >= 0)
+                {
+                    int inDays = s.NextDebateDay - s.CampaignDay;
+                    System.DateTime on = s.Calendar.CampaignStart.AddDays(s.NextDebateDay);
+                    string when = inDays <= 0 ? "DEBATE TODAY" : inDays == 1 ? "DEBATE TOMORROW" : "DEBATE IN " + inDays.ToString(CultureInfo.InvariantCulture) + " DAYS";
+                    debateText = when + " · " + on.ToString("d MMM", CultureInfo.InvariantCulture).ToUpperInvariant() + " · THE TWO LEADING THE PUBLISHED POLL STAND";
+                }
+                else
+                {
+                    var past = new string[s.DebateDays.Length];
+                    for (int i = 0; i < past.Length; i++) { past[i] = s.DebateDays[i].ToString(CultureInfo.InvariantCulture); }
+                    debateText = "THE DEBATES ARE PAST · DAYS " + string.Join(" AND ", past);
+                }
+                GUIStyle debateStyle = DeskCaption(8.5f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
+                float debateWidth = Mathf.Ceil(debateStyle.CalcSize(new GUIContent(debateText)).x) + Mathf.Round(4f * ux);
+                PoliSimWidgets.MeasuredLabel(new Rect(r.xMax - debateWidth, y + captionHeight + Mathf.Round(6f * uy), debateWidth, captionHeight), debateText, debateStyle);
+            }
         }
 
         // ------------------------------------------------------------------------------------------

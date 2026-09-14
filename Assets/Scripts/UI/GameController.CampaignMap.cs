@@ -68,7 +68,7 @@ namespace PoliSim.UI
             Rect Board(float x, float y, float w, float h) =>
                 new Rect(inner.x + x * ux, inner.y + y * uy, w * ux, h * uy);
 
-            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot.Campaign, "CAMPAIGN · THE MAP");
+            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot.Campaign, "CAMPAIGN · THE MAP", snapshot.Live ? "BACK TO HQ" : null, CloseLiveCampaignMap);
 
             DrawCampaignMapCartogram(Board(0f, 36f, 703f, 576f), snapshot);
             DrawCampaignMapLedger(Board(716f, 36f, 440f, 576f), snapshot);
@@ -97,6 +97,11 @@ namespace PoliSim.UI
             GUIStyle key = DeskCaptionWrapped(8.5f, PoliSimTheme.TextMuted);
             string keyText = "SHADE = YOUR POLLED SHARE, DARKER IS HIGHER · BOLD FRAME = SWING REGION (INDEX 60 OR MORE) · " +
                              "DASHED FRAME = THE LEAD IS INSIDE ITS OWN ± · HATCHED = NOT POLLED, NOTHING IS KNOWN HERE";
+            if (s.Live)
+            {
+                // CL-2: the live sheet's two more marks - the party's offices, and the pick.
+                keyText += " · INK FRAME = YOUR OFFICE (ITS VOLUNTEERS IN THE CORNER) · HEAVY INK FRAME = WHERE THE NEXT LOCAL ACT GOES · CLICK A TILE TO PICK";
+            }
             float keyHeight = Mathf.Ceil(key.CalcHeight(new GUIContent(keyText), r.width));
             var keyRect = new Rect(r.x, r.yMax - keyHeight, r.width, keyHeight);
 
@@ -195,9 +200,31 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(rect.x + pad, rect.y + pad, rect.width - pad * 2f, captionHeight),
                     tileCaption, reading.Measured ? captionOnInk : caption);
 
+                // CL-2: the live sheet - the party's office framed in the political ink with its volunteers in the corner, the
+                // picked region framed heavy, and the tile itself the picker's button (invisible, under the captions).
+                bool office = s.Live && s.OfficeVolunteers != null && index < s.OfficeVolunteers.Length && s.OfficeVolunteers[index] >= 0;
+                bool picked = s.Live && s.NextLocalActRegion == index;
+                if (Event.current.type == EventType.Repaint && (office || picked))
+                {
+                    PoliSimTheme.RoundedCard(rect, Color.clear, political, 0f);
+                    if (picked)
+                    {
+                        PoliSimTheme.RoundedCard(new Rect(rect.x + 1f, rect.y + 1f, rect.width - 2f, rect.height - 2f), Color.clear, political, 0f);
+                        PoliSimTheme.RoundedCard(new Rect(rect.x + 2f, rect.y + 2f, rect.width - 4f, rect.height - 4f), Color.clear, political, 0f);
+                    }
+                }
+                if (s.Live && PoliSimWidgets.Button(rect, GUIContent.none, GUIStyle.none)) { PickCampaignRegion(index); }
+
                 float figureHeight = Mathf.Ceil(DeskCaptionHeight(reading.Measured ? figure : unknown));
                 var figureRect = new Rect(rect.x + pad, rect.yMax - pad - figureHeight, rect.width - pad * 2f, figureHeight);
-                if (reading.Measured)
+                if (office && !reading.Measured)
+                {
+                    // the office's volunteers where the unknown tile would print "?" - the one figure the party knows about the place
+                    GUIStyle volunteers = DeskCaption(8f, political, bold: true, anchor: TextAnchor.LowerRight);
+                    string count = s.OfficeVolunteers[index].ToString(CultureInfo.InvariantCulture);
+                    if (volunteers.CalcSize(new GUIContent(count)).x <= figureRect.width) { PoliSimWidgets.MeasuredLabel(figureRect, count, volunteers); }
+                }
+                else if (reading.Measured)
                 {
                     // 4a's tiles are sized by mandates, so the smallest (Gotland at 2) cannot hold "29 ±10" at 1280: the figure
                     // falls back to the share alone, then to nothing - a label spilling into the next tile is worse than none.
@@ -229,7 +256,37 @@ namespace PoliSim.UI
         {
             float ux = r.width / 440f;
             float uy = r.height / 576f;
-            float y = DrawCampaignLedgerHead(r, s.MeasuredCount == 0 ? "SWING REGIONS — UNKNOWN" : "SWING REGIONS — BY INDEX, AS POLLED", ux, uy);
+            float y = DrawCampaignLedgerHead(r, s.Live ? "THE NEXT LOCAL ACT — WHERE IT GOES" : s.MeasuredCount == 0 ? "SWING REGIONS — UNKNOWN" : "SWING REGIONS — BY INDEX, AS POLLED", ux, uy);
+
+            if (s.Live)
+            {
+                // CL-2: the picker's ledger - where the next local act goes and by which rule, then the party's offices with
+                // their volunteers (the one thing the party knows about a valkrets before it has paid to poll it).
+                GUIStyle nameStyle = DeskBody(12f, PoliSimTheme.TextPrimary);
+                GUIStyle detail = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
+                float nameHeight = Mathf.Max(Mathf.Round(15f * uy), nameStyle.CalcSize(new GUIContent("Ag")).y);
+                float detailHeight = Mathf.Ceil(DeskCaptionHeight(detail));
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, nameHeight), s.Campaign.LocalActsRegion ?? "—", nameStyle);
+                y += nameHeight;
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight), "A RALLY, A TOWN HALL OR A DAY OF DOORS QUEUED NOW GOES HERE", detail);
+                y += detailHeight + Mathf.Round(6f * uy);
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight), s.Campaign.Offices.Length == 0 ? "YOUR OFFICES: NONE" : "YOUR OFFICES · VOLUNTEERS", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
+                y += detailHeight;
+                int shownOffices = 0;
+                foreach (RegionalOffice office in s.Campaign.Offices)
+                {
+                    if (shownOffices >= 6) { break; }
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight), office.RegionName.ToUpperInvariant() + " · " + office.Volunteers.ToString(CultureInfo.InvariantCulture), detail);
+                    y += detailHeight;
+                    shownOffices++;
+                }
+                if (s.Campaign.Offices.Length > shownOffices)
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight), "+" + (s.Campaign.Offices.Length - shownOffices).ToString(CultureInfo.InvariantCulture) + " MORE", detail);
+                    y += detailHeight;
+                }
+                y += Mathf.Round(6f * uy);
+            }
 
             GUIStyle method = DeskCaptionWrapped(8.5f, PoliSimTheme.TextMuted);
             string methodText = s.MeasuredCount == 0
@@ -242,7 +299,12 @@ namespace PoliSim.UI
             float methodHeight = Mathf.Ceil(method.CalcHeight(new GUIContent(methodText), r.width));
             var methodRect = new Rect(r.x, r.yMax - methodHeight, r.width, methodHeight);
 
-            if (s.MeasuredCount == 0)
+            if (s.MeasuredCount == 0 && s.Live)
+            {
+                // CL-2: the live sheet's ledger is the picker's (above) and its foot says why every valkrets is unknown - the staged
+                // sheet's gate sentence (a ledger left empty until detail is bought) would be false here twice.
+            }
+            else if (s.MeasuredCount == 0)
             {
                 GUIStyle gate = DeskCaptionWrapped(9f, PoliSimTheme.TextSecondary);
                 string gateText = "A NATIONAL POLL CANNOT SAY WHERE THE RACE IS CLOSE. UNTIL REGIONAL DETAIL IS BOUGHT, EVERY VALKRETS ON THE " +
