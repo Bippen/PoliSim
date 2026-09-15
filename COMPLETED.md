@@ -27920,3 +27920,83 @@ Read on the frames (the Energy sector's panel, every dial at rest, so the cost l
 **The registers.** `POLISIM_FEATURE_LIST.md`'s SC-1 bullet and row BUILT; the EN-7a row's tracker sentence points here; `POLISIM_ENERGY_SPECLET.md`'s reconciliation row; `LEVER_MAP.md`.
 
 **Bar:** `bar461_rec504` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 505. T-3 MEASURED, NEITHER FORM BUILT — the identity's G as the sourced final-consumption share grown with the lines (form A), and the lines' own sum re-based to it (form B): each form's implied potential at the seed beside FT-7's, and the hundred-year path per country at both seeds; the ruling is Elias's (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15, §503): *"measure before I rule. Build neither form; compute both — G as the sourced final-consumption share grown with the lines, and the lines' own sum re-based to it — and report each form's implied potential and year-100 path per country. §394's precedent: re-solving six potentials found the USA 14.7 % adrift and nobody predicted it. The ruling follows the tables."*
+
+**How it was measured** (`GovernmentFormMeasurement`, on no bar - a measurement, not a check). The identity's G today is the discretionary lines' sum, deflated, and the book spends the same plan. For each country k = the P3_S13 share (§376's table, sourced on the cross-check gate) × the seed's GDP ÷ the seed's discretionary lines. **Form A** scales the identity's G by k and leaves the book alone: that needs a factor on the identity's argument, which is not in the model, so it ran on a tree a probe edited and restored in the same chain - a per-country scale on `MacroSystem` (one static array, every entry 1) and the daily identity's argument multiplied by it; the tree was checked clean after, and nothing of it is committed. **Form B** scales every discretionary line's amount and seed anchor by k after the world is built and re-runs the families' seeding that `WorldFactory.CreateDefault` runs after the lines, so the identity and the book carry it; revenue stays as seeded. **The implied potential** is the potential at which the seed's GDP is the identity's own fixed point - the daily solve settles at Y = (0.5 (G + NX + DI) + 0.5 P) ÷ (1 − 0.5 a), so P = Y (2 − a) − (G + NX), with a the consumption-and-investment propensity read off the model's first day ((C + I) ÷ the seed's GDP; DI is zero at the seed's rates). FT-7's seed potential (§394, `Country.PotentialGdpSeed`) carries no G and is the same in every form. **The path** is the real model a hundred years from each form's world, no player, every country on the AI rule - the trajectory dump's settings - at its two seeds. **The lines run is the dump's own run**: GDP at turns 1 and 100 in all six countries at both seeds reads the stored `traj_f4s2` value to the last printed digit (24 of 24).
+
+**The seed** (seed 777; the seed is the same at 424242):
+
+| country | P3_S13, 2023 (§376) | the lines' G at the seed | k | FT-7's seed potential | implied potential, the lines (today) | implied potential, the sourced share (A and B alike) |
+|---|---|---|---|---|---|---|
+| USA | 13.5 % | 6.04 % | 2.236 | 29151.8 | 33383.7 (+14.52 %) | 31219.7 (+7.09 %) |
+| Sweden | 26.4 % | 21.09 % | 1.252 | 630.1 | 614.3 (-2.51 %) | 581.3 (-7.74 %) |
+| Germany | 21.1 % | 21.00 % | 1.005 | 4709.7 | 4662.0 (-1.01 %) | 4657.3 (-1.11 %) |
+| France | 24.1 % | 24.00 % | 1.004 | 3193.1 | 3075.5 (-3.68 %) | 3072.3 (-3.78 %) |
+| Italy | 17.9 % | 19.00 % | 0.942 | 2295.0 | 2325.5 (+1.33 %) | 2350.8 (+2.43 %) |
+| Poland | 18.9 % | 18.00 % | 1.050 | 843.6 | 866.3 (+2.70 %) | 858.8 (+1.80 %) |
+
+The propensity a on the seed's first day: USA 0.7885, Sweden 0.7983, Germany 0.7981, France 0.7989, Italy 0.7989, Poland 0.7887 - the same in every form. Net exports read zero on the seed's day in all six: the trade balance enters the state at the first boundary, so the implied potential is the identity's on the day it starts, not after trade arrives. At the seed the two forms are one G - the sourced share - so they imply one potential; they part only in the path, through the book.
+
+**The gap, GDP against potential, seed 777:**
+
+| country | form | year 1 | year 10 | year 25 | year 50 | year 100 |
+|---|---|---|---|---|---|---|
+| USA | the lines (today) | -5.10 % | -14.80 % | -16.98 % | -17.66 % | -18.83 % |
+| USA | form A | -3.28 % | -10.73 % | -14.00 % | -14.80 % | -16.42 % |
+| USA | form B | -3.28 % | -10.58 % | -12.34 % | -13.24 % | -17.09 % |
+| Sweden | the lines (today) | -3.03 % | -4.48 % | -4.39 % | -3.93 % | -3.78 % |
+| Sweden | form A | -1.90 % | -0.35 % | +0.07 % | +0.55 % | +0.73 % |
+| Sweden | form B | -1.90 % | -1.00 % | -0.95 % | -0.76 % | -1.11 % |
+| Germany | the lines (today) | +0.67 % | -2.79 % | -4.38 % | -6.53 % | -8.63 % |
+| Germany | form A | +0.69 % | -2.69 % | -4.28 % | -6.45 % | -8.57 % |
+| Germany | form B | +0.69 % | -2.68 % | -4.28 % | -6.45 % | -8.57 % |
+| France | the lines (today) | +1.33 % | -0.60 % | -5.09 % | -10.69 % | -10.90 % |
+| France | form A | +1.35 % | -0.58 % | -5.09 % | -10.70 % | -10.85 % |
+| France | form B | +1.35 % | -0.55 % | -5.04 % | -10.66 % | -10.85 % |
+| Italy | the lines (today) | +1.04 % | -3.62 % | -7.40 % | -11.30 % | -13.89 % |
+| Italy | form A | +0.79 % | -4.51 % | -8.10 % | -11.68 % | -14.21 % |
+| Italy | form B | +0.79 % | -4.61 % | -8.21 % | -11.82 % | -14.05 % |
+| Poland | the lines (today) | -1.40 % | -9.55 % | -8.23 % | -12.68 % | -14.93 % |
+| Poland | form A | -1.19 % | -8.57 % | -7.22 % | -11.56 % | -13.99 % |
+| Poland | form B | -1.19 % | -8.51 % | -7.16 % | -11.51 % | -13.90 % |
+
+**Year 100** (seed 777 in full; seed 424242 as gap, debt and unemployment):
+
+| country | form | real GDP (seed 777) | potential | against the lines' GDP | unemployment | debt, % of GDP | the identity's G, % of GDP | inflation | seed 424242: gap · debt · unemployment |
+|---|---|---|---|---|---|---|---|---|---|
+| USA | the lines | 103611.5 | 127654.2 | - | 4.05 % | 115.9 % | 1.96 % | 1.99 % | -18.47 % · 113.9 % · 3.35 % |
+| USA | form A | 106675.4 | 127635.1 | +2.96 % | 4.06 % | 116.8 % | 5.55 % | 1.99 % | -17.31 % · 113.5 % · 3.35 % |
+| USA | form B | 105797.5 | 127609.5 | +2.11 % | 4.07 % | 121.5 % | 4.59 % | 1.97 % | -16.37 % · 120.4 % · 3.36 % |
+| Sweden | the lines | 1596.2 | 1658.9 | - | 6.94 % | 25.9 % | 20.25 % | 1.98 % | -5.07 % · 25.1 % · 6.32 % |
+| Sweden | form A | 1669.8 | 1657.7 | +4.61 % | 6.95 % | 26.2 % | 24.96 % | 1.98 % | -1.04 % · 24.8 % · 6.33 % |
+| Sweden | form B | 1638.8 | 1657.1 | +2.67 % | 6.95 % | 28.0 % | 23.16 % | 1.97 % | -2.58 % · 27.0 % · 6.32 % |
+| Germany | the lines | 7696.8 | 8423.8 | - | 3.18 % | 36.3 % | 12.83 % | 2.14 % | -8.78 % · 35.4 % · 3.20 % |
+| Germany | form A | 7703.7 | 8425.4 | +0.09 % | 3.18 % | 36.4 % | 12.91 % | 2.14 % | -8.72 % · 35.4 % · 3.20 % |
+| Germany | form B | 7701.1 | 8422.6 | +0.06 % | 3.18 % | 36.4 % | 12.90 % | 2.14 % | -8.72 % · 35.5 % · 3.20 % |
+| France | the lines | 3446.9 | 3868.4 | - | 7.27 % | 29.9 % | 10.63 % | 2.09 % | -10.98 % · 34.0 % · 7.18 % |
+| France | form A | 3448.5 | 3868.2 | +0.05 % | 7.27 % | 28.9 % | 10.68 % | 2.09 % | -10.94 % · 33.0 % · 7.18 % |
+| France | form B | 3448.0 | 3867.7 | +0.03 % | 7.27 % | 28.2 % | 10.68 % | 2.09 % | -10.96 % · 33.9 % · 7.18 % |
+| Italy | the lines | 1222.0 | 1419.2 | - | 7.90 % | 47.0 % | 7.54 % | 2.06 % | -13.84 % · 48.5 % · 8.05 % |
+| Italy | form A | 1216.7 | 1418.2 | -0.44 % | 7.90 % | 47.0 % | 7.12 % | 2.06 % | -14.16 % · 49.2 % · 8.05 % |
+| Italy | form B | 1223.1 | 1423.1 | +0.09 % | 7.91 % | 44.7 % | 7.32 % | 2.06 % | -14.02 % · 48.0 % · 8.05 % |
+| Poland | the lines | 6770.7 | 7958.6 | - | 5.35 % | 26.4 % | 12.84 % | 2.43 % | -13.81 % · 26.4 % · 4.65 % |
+| Poland | form A | 6845.8 | 7959.0 | +1.11 % | 5.35 % | 26.0 % | 13.23 % | 2.44 % | -13.15 % · 25.2 % · 4.64 % |
+| Poland | form B | 6844.2 | 7949.5 | +1.09 % | 5.39 % | 26.1 % | 13.05 % | 2.44 % | -13.08 % · 25.2 % · 4.64 % |
+
+**Where form B's book parts from form A's** (debt, per cent of GDP, seed 777):
+
+| country | debt, % of GDP, year 1: lines · A · B | year 10: lines · A · B |
+|---|---|---|
+| USA | 138.9 · 132.8 · 140.5 | 136.9 · 132.0 · 162.0 |
+| Sweden | 34.5 · 32.9 · 38.0 | 30.4 · 30.5 · 36.0 |
+| Germany | 63.3 · 63.3 · 63.4 | 58.7 · 58.8 · 59.0 |
+| France | 116.2 · 116.2 · 116.3 | 117.3 · 117.1 · 117.4 |
+| Italy | 139.2 · 140.1 · 139.0 | 140.4 · 139.9 · 138.0 |
+| Poland | 65.8 · 65.4 · 66.3 | 54.6 · 55.1 · 56.5 |
+
+**What the measurement does not carry, stated.** Form B re-bases spending with revenue as seeded, so the primary balance moves by the lines' change from year one - the debt columns show it; a form B with revenue re-solved to the anchored balance is a third form nobody asked for. The preview's turn form (which hands the identity its G undeflated) was not probed - no preview runs here. The USA's lines are the federal perimeter and P3_S13 is general government, so its k is the widest (the second reading, BEA NIPA, is still billed - §376). Sweden's seeded lines give a G of the share the table prints, not the 20.38 % its WorldFactory comment states. Nothing was ruled and nothing was built: the tables are for the ruling.
+
+**Bar:** `bar463_t3_sim` **51 of 51**, the sentinel first and green on the committed tree (the measurement tool only - no play-path change); `bar464_rec505` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
