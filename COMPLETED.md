@@ -27627,3 +27627,104 @@ Read on the frames: Sweden's plate 4 in PROVENANCE draws the levy scale 1.00 as 
 **Not touched.** The runtime - nothing reads the CSV until EN-7b's law category does; the retail seed (`retail_2023.csv`) and every fitted margin.
 
 **Bar:** `bar447_src499` **38 of 38** on the tree this record reads - residue 7, 12 of 12 ratchets tight.
+
+## 500. EN-7b LANDED — energy stage 5's second half, the electricity-tax law category: ten laws on the statutory rate per MWh by class, moving the stack's environmental-tax component by the change within its coverage and never by more, the business rate held at the EU minimum, the excise's change booked to the budget as a planned flow, the USA not offered; two reviews' findings fixed; the no-policy trajectory held after a bisect found the revenue line's SHAPE moving it (2026-09-15)
+
+**The rulings:** §474 - *"build the law category stage 5 needs, cited, as its own item"* (EN-7a, §498, was the dials; this is the category). §499's measured premise, ruled 2026-09-15: *"Poland's electricity-tax premise failed and the law must not scale the unidentified component"* (recorded standing in §501). The standing rules: *"measure the premise before fixing it"*, *"prove every guard both directions"*, *"never invent a figure"*, §402's numeric inertness.
+
+**What was built.**
+- **The statute as data.** `EnergyCatalogGenerator` reads §499's `EnergyData/electricity_tax_2023.csv` (its digest in `GeneratedCatalogCheck`) into `EnergyLayerData.ElectricityTaxEurPerMwh` and `ElectricityTaxFloorEurPerMwh` (the USA −1: no federal excise). Two structural parameters, `ElectricityTaxHouseholds` and `ElectricityTaxNonHouseholds` (EUR/MWh, ten euros MODERATE, bounds 0-60), their values and bases on the country, seeded from one float each so the difference is exactly zero at the seed; the preview clone carries both (a value without its base previews the whole statute, a base without its value a repeal - the R4-1 class). Save format **14**.
+- **The law category** (`LawCategory.ElectricityTax`, `LawDefinition.RequiresElectricityTaxStatute`), ten laws, each precedent's size read from its saved file (the spine's §15):
+
+| law (`Id`) | plain name | moves | precedent (its Citation) |
+|---|---|---|---|
+| Household Electricity Tax Relief Act (`household_electricity_tax_relief_act`) | Cut the household electricity tax | households -10 EUR/MWh | Sweden's budget for 2026 cut the electricity tax from 43.9 to 36.0 öre per kWh from January 2026, the industrial rate unchanged |
+| Household Electricity Price Shield Act (`household_electricity_price_shield_act`) | Shield households from the electricity tax | households -20 EUR/MWh | France held its household electricity excise at the EU minimum of 1 euro per MWh from February 2022 |
+| Household Electricity Tax Reduction Act (`household_electricity_tax_exemption_act`) | Cut the household electricity tax by 35 euros | households -35 EUR/MWh | Poland exempted households' electricity from excise for 2022 under its anti-inflation shield |
+| Household Electricity Tax Rise Act (`household_electricity_tax_rise_act`) | Raise the household electricity tax | households +5 EUR/MWh | Sweden raised the electricity tax for households and services by 3.0 öre per kWh in 2017 and 1.2 öre in 2019, industry's rate unchanged |
+| Household Electricity Tax Increase Act (`household_electricity_tax_restoration_act`) | Raise the household electricity tax by 20 euros | households +20 EUR/MWh | France restored its household electricity excise from 1 to 21 euros per MWh in February 2024 |
+| Industrial Electricity Tax Relief Act (`industrial_electricity_tax_relief_act`) | Cut the electricity tax on firms by 20 euros | firms -20 EUR/MWh | Germany cut the electricity tax for manufacturing to the EU minimum of 0.50 euro per MWh for 2024 and 2025 |
+| Business Electricity Tax Trim Act (`large_user_electricity_tax_cut_act`) | Trim the electricity tax on firms | firms -5 EUR/MWh | Italy cut its electricity excise to 0.0075 euro per kWh on a firm's monthly use between 200 000 and 1 200 000 kWh from June 2012 |
+| Business Electricity Tax Rise Act (`business_electricity_tax_rise_act`) | Raise the electricity tax on industry | firms +10 EUR/MWh | Germany raised manufacturing's reduced electricity tax from a fifth to three fifths of the standard rate from 2003, to 12.30 euros per MWh |
+| Business Electricity Tax Increase Act (`business_electricity_tax_restoration_act`) | Raise the electricity tax on firms by 20 euros | firms +20 EUR/MWh | France restored its business electricity excise from 0.5 to 20.5 euros per MWh in February 2024 |
+| Ecological Electricity Tax Act (`ecological_electricity_tax_act`) | Tax electricity for the climate | households +10, firms +10 EUR/MWh | Germany introduced its electricity tax in April 1999 at 20 marks per MWh, manufacturing at a fifth, as the first step of its ecological tax reform. |
+
+- **The ledger.** A class's statute against its base (`EnergyLedger.ElectricityTaxDeltaEurPerMwh`, a branch - zero at the seed) moves the environmental-tax component by the change per kWh **within the coverage, capped at 1** (`EnergyLayer.ElectricityTaxCoverage`: the component over the statute), at the book's dollars and this year's prices; never below zero. The business rate is held at the EU minimum where its base is at or above it (`EffectiveElectricityTaxEurPerMwh` - the one expression the ledger and the energy page read); households may be exempted (Article 15(1)(h)). Households' VAT moves with the price; the excise's change alone is the budget's (`Book.ElectricityTaxRevenueChange`).
+- **The budget.** `EnergyLedger.AdvanceYear` returns the year's change; the boundary plans it (`FiscalPeriod.PlannedElectricityTaxRevenue`, the tariff flow's precedent), the day accrues its slice inside `ApplyRevenueAndSpending` - inside the fiscal-reaction multiplier, outside collection efficiency (the seeded taxes are inside its coverage bridge) - and the fiscal report says "of which". The preview reads the flow from the clone's own book, the same clearing.
+- **Competence.** A law of the category is offered, introduced and enacted only where a statute is levied: not in the USA, whose browser row says why (`LawCatalog.OutsideCompetenceReasonFor`) and whose `IntroduceLawBill` refuses.
+- **The surfaces.** The Laws browser's ELECTRICITY TAX filter and cell; the energy page's plate 4 carries the two statutes (the rate paid, the 2023 statute and the coverage in PROVENANCE; the USA's absent row with its reason); a film frame of the plate in PROVENANCE (`06c_policylaws_sectors_energy_electricity_tax_provenance`) and of a law's card (`06h_laws_electricity_card`).
+
+**The trajectory, and what moved it.** The first build failed the sentinel in its simulation bar (seed 777 `41a35137dc4a`, not the baseline). Ten sentinel runs bisected it (`sentinel_en7b_*`): every other EN-7b change on the play path was inert, and the revenue line was not - a ternary keeping the old expression for the zero case moved the budget, and so did the old statement followed by a dead `if (false)` block writing the same local (`sentinel_en7b_g5r` red, `sentinel_en7b_g5` green with only that block deleted). The line that holds is one expression, the flow always summed. §501 records it standing.
+
+**The reviews.** The build's review (a workflow, its findings given to skeptics told to refute them), then a verification workflow over the fixes - four lenses (the fixes against the findings, the new guards, the play path's inertness, the texts against the saved sources), every finding given to a skeptic told to refute it (fourteen findings, ten confirmed, four refuted). Acted on: the plate printed the composed business rate below the floor the ledger applies (one helper now); nothing checked that the flow reaches revenue, the budget, the debt and the preview's estimate (two reach checks and the preview's revenue move, each made unable to pass at a multiplier of 1 - Germany's seed multiplier is exactly 1); section 8 ran at a price index of 1 (now 1.6); the laws named destinations flat deltas miss once another law stands, claimed a weighting the model lacks, dated France's shield's end to the wrong step, said nothing where the bound at zero or the floor holds the move to a euro or nothing - worded by the delta, every description true in the five; two citations completed and a relief comment's referent restored; the zero statute's comments described the opposite of the ruling (the rest of a capped band stays) and its assertion only checked the sign; the competence check never asserted the USA's zero statute nor that its clause refuses only its own category.
+
+**Measured** (`EnergyLedgerDiagnostic` 8, `EnergyPassThroughDiagnostic` 7, `LawCompositionDiagnostic` - the simulation group):
+
+```
+    8. EN-7b: THE ELECTRICITY TAX - the statute's change within its coverage at a price index of 1.6 (nominal with nominal), the business floor, households' VAT, the revenue change, the boundary's flow, the flow's reach into the budget
+    USA      no statute - the stack unchanged to the bit whatever the field holds
+    Sweden   households 34.15 → 44.15 EUR/MWh, coverage 0.987, component +0.017073 $/kWh · nonhousehold 0.523 → 0.5 EUR/MWh, coverage 0.956, component -0.000038 $/kWh · revenue change +0.672 bn · at a household statute of zero the component 0.00000 $/kWh
+    Germany  households 20.5 → 30.5 EUR/MWh, coverage 1.000, component +0.017301 $/kWh · nonhousehold 20.5 → 10.5 EUR/MWh, coverage 1.000, component -0.017301 $/kWh · revenue change -3.643 bn · at a household statute of zero the component 0.00000 $/kWh
+    France   households the component 1.100 times the statute - moved by the statute's change alone · households 1 → 11 EUR/MWh, coverage 1.000, component +0.017301 $/kWh · nonhousehold the component 1.200 times the statute - moved by the statute's change alone · nonhousehold 0.5 → 0.5 EUR/MWh, coverage 1.000, component +0.000000 $/kWh · revenue change +2.608 bn · at a household statute of zero the component 0.00017 $/kWh
+    Italy    households 22.7 → 32.7 EUR/MWh, coverage 0.705, component +0.012194 $/kWh · nonhousehold 12.5 → 2.5 EUR/MWh, coverage 0.880, component -0.015225 $/kWh · revenue change -2.636 bn · at a household statute of zero the component 0.00000 $/kWh
+    Poland   households the component 41.508 times the statute - moved by the statute's change alone · households 1.101 → 11.101 EUR/MWh, coverage 1.000, component +0.017301 $/kWh · nonhousehold the component 48.865 times the statute - moved by the statute's change alone · nonhousehold 1.101 → 0.5 EUR/MWh, coverage 1.000, component -0.001040 $/kWh · revenue change +0.375 bn · at a household statute of zero the component 0.07716 $/kWh
+    Germany  the household relief enacted in year 1: the statute 20.5 → 10.5 EUR/MWh; the boundary planned -1.4630 bn for year 2 and the year booked -1.4630 bn as the report's "of which"; the repeal returned the statute to its base bit for bit
+    reach    ApplyRevenueAndSpending: a 4 bn flow at the multiplier 0.75 moved revenue +3.0000, the balance +3.0000, the budget +3.0000, the debt -3.0000 (the flow at the multiplier: 3.0000)
+    reach    the daily path: a 250 bn plan accrued 0.6849 bn of tax in one day (the slice 0.6849), revenue +0.5137, the budget +0.5137, the debt -0.5137 (the slice at the period's multiplier 0.7500: 0.5137)
+```
+
+```
+    7. THE PREVIEW READS THE LAW: Germany's household electricity relief in force into year 2's boundary - the preview's planned flow and the boundary's
+    Germany  the household relief in force: the preview planned -1.49924 bn, the boundary -1.49924 bn; the preview's revenue estimate moved -1.57324 bn against the statute at its base (the flow at the multiplier 1.0494: -1.57324)
+```
+
+```
+COMPOSITION: EN-7b - 10 ElectricityTax laws refused for the USA (no federal electricity excise, its statute and base 0), within competence for the five that levy one; 120 laws of the other categories within the USA's; every base inside the bounds.
+```
+
+**Proven in the other direction** - eleven probes, each on its own diagnostic and restored, the tree checked clean after each:
+
+| probe | what it broke | the diagnostic's exit | the assertion that caught it |
+|---|---|---|---|
+| E | the ledger's branch off | 1 | `ENERGY LEDGER: Sweden households: the component moved 0,0000E+000 against the statute's change within its coverage 1,7073E-002.` |
+| H | the business floor off in the one helper the ledger and the page read | 1 | `ENERGY LEDGER: Sweden nonhousehold: the effective statute the energy page prints (-9,477) is not the composed rate held at the floor (0,5).` |
+| I | ApplyRevenueAndSpending dropping its electricity-tax argument | 1 | `ENERGY LEDGER: a 4 bn electricity-tax argument at the multiplier 0,75 moved revenue 0,00000, the balance 0,00000, the budget 0,00000 and the debt 0,00000 - not 3 into revenue, balance and budget and out of the debt.` |
+| J | the daily path handing 0 for the plan | 1 | `ENERGY LEDGER: a 250 bn plan moved one day's accrued tax 0,68493 (slice 0,68493), revenue 0,00000, the budget 0,00000 and the debt 0,00000 - not the slice at the period's multiplier 0,7500 (0,51370).` |
+| N | the coverage uncapped - the law scaling the component | 1 | `ENERGY LEDGER: Poland households: the component moved 7,1812E-001 $/kWh, more than the statute's own change (1,7301E-002) - the law scaled the component (41,508 times the statute) instead of moving the statute.` |
+| O | a statute of zero taking the whole band | 1 | `ENERGY LEDGER: France's households' component at a statute of zero is 0,000000E+000 $/kWh, not the seed's less the base statute within its coverage (1,730080E-004) - at zero the law took more (or less) than the statute.` |
+| F | the preview clone without the statutes' bases | 1 | `ENERGY PASS-THROUGH: the preview planned 9,57130 bn of electricity-tax flow, the boundary -1,49924 - the preview does not read the law (the clone's statute or its base).` |
+| K | the preview handing 0 for its flow | 1 | `ENERGY PASS-THROUGH: the preview's revenue estimate moved 0,00000 bn with the law in force against its flow -1,49924 bn at the multiplier 1,0494 (-1,57324) - the flow does not reach the preview's budget.` |
+| G | the competence clause off | 1 | `COMPOSITION: EN-7b - the USA introduced household_electricity_tax_relief_act; it levies no federal electricity excise.` |
+| L | the clause refusing every law where no statute is levied | 1 | `COMPOSITION: EN-7b - truth_in_sentencing_act (CrimeJustice) is outside the USA's competence; the electricity-tax clause must refuse only its own category.` |
+| M | every country's households' base seeded one euro above the catalog | 1 | `COMPOSITION: EN-7b - the USA's electricity-tax statute is not zero (households 1/1, firms 0/0).` |
+
+**No policy, byte-identical** (`traj_en7bc` against `traj_pn1`; the sentinel green in the simulation bar, **51 of 51**; cheap bar **38 of 38**):
+
+| seed | horizon | `en7bc` vs `pn1` |
+|---|---|---|
+| 777 | 100 | **76 of 76** |
+| 777 | 500 | **76 of 76** |
+| 777 | 1000 | **76 of 76** |
+| 424242 | 100 | **76 of 76** |
+| 424242 | 500 | **76 of 76** |
+| 424242 | 1000 | **76 of 76** |
+
+Not a family: no law is in force at the seed and every statute sits on its base. The baseline label stays `f4s2`.
+
+**The films** - one per case at 1280 (Germany the statute the component is; France the price shield at the floor; Poland the band the excise is a sliver of; the USA with no statute) and Sweden at 2560, each stopped at the law's card, each starting and ending with the viewer's PROVENANCE setting at 0:
+
+| film | shots | overflow | the viewer's PROVENANCE setting after |
+|---|---|---|---|
+| `en7bc_germany_1280` | 85, 0 failed | none | 0 |
+| `en7bc_france_1280` | 85, 0 failed | none | 0 |
+| `en7bc_poland_1280` | 85, 0 failed | none | 0 |
+| `en7bc_usa_1280` | 85, 0 failed | none | 0 |
+| `en7bc_sweden_2560` | 85, 0 failed | none | 0 |
+
+Read on the frames: Germany's plate 4 in PROVENANCE draws the two statute rows at 20.50 with "2023 STATUTE 20.5 · STACK CARRIES 1.00 OF A CHANGE" and their three chips (LAWS ▸ STATUTE, ENV. TAX ▸ the class's price, BUDGET ▸); France's at 1.00 and 0.50 - the price shield's floor, the 2023 statute printed beside each; Poland's at 1.10 against a statute of 1.101, the stack carrying 1.00 of a change - the cap, the excise and not the band; the USA's one absent row, "THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE"; Sweden at 2560 - households 34.15 carrying 0.99, firms 0.52 carrying 0.96 - every caption inside its column. The law card (the industrial relief, MAJOR) prints the authored −20.0 in its dial movement and expected effects above the description worded by the delta, and the browser lists "Cut the household electricity tax by 35 euros" among the SWEEPING laws under THE ELECTRICITY TAX. **Not filmed:** the USA's refusal line sits below the card's fold in the frame, as the treaty's line on the monetary card always has; the refusal itself is `LawCompositionDiagnostic`'s to assert (above, and probe G).
+
+**Decisions taken, strikeable.** (1) The coverage capped at 1 - a law moves the statute's change and never scales the component (the ruling on Poland, asserted; to strike, the cap's `Math.Min`). (2) The EU business minimum applied in the ledger, not as a bound (bounds are one pair for every country). (3) The flow inside the fiscal-reaction multiplier and outside collection efficiency, planned at the boundary (the tariff flow's form). (4) Households' VAT on the tax's move not booked to the budget (the budget's VAT does not follow the retail price) - stated. (5) The USA not offered, with its reason. (6) Every law named and described by its delta, the precedent in the citation. (7) **Stated limits:** a law card's EXPECTED EFFECTS and magnitude print the law's authored delta, as every structural law's do - the move a country gets after the bound and the floor is on the energy page; a household tax change reaches the price and the budget, not disposable income; Sweden's households' coverage (0.987) blends the northern municipalities' deduction and its firms' (0.957) reads the band as manufacturing - both inferences §499 flagged; a statute's change rides the price level as the component it moves does (EN-4's stack carries its 2023 components by the price level, nominal with nominal), so the page's figure reads in 2023 euros - Germany's § 3 has been nominal since 2003 and Sweden's energy tax is indexed by statute, the distinction EN-4e's "carry the statute" draws for the carbon rate (§471); carrying the electricity tax's statute the same way would move the no-policy trajectory - a family of its own - and is not taken here.
+
+**The registers.** `POLISIM_FEATURE_LIST.md`'s EN-7 row closed (EN-7 complete); the plan's S-E2 row; the energy spec-let's stage 5 row; the spine's §15, whose *"Nothing in the runtime reads the CSV yet"* no longer holds; `LEVER_MAP.md` regenerated - its last generation was 2026-09-07 (**101 quantities, 130 laws**), so the diff carries every pass since, not EN-7b alone: **121 quantities, 140 laws**, 119 of 121 quantities reached by at least one lever, 2 UNREACHED.
+
+**Bar:** `bar454_rec500` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.

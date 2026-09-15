@@ -63,7 +63,7 @@ namespace PoliSim.UI
         private enum PolicyLawsCategory { LaborMarket, CrimeJustice, Sectors, PolicyWeb, Trade, Laws }
 
         /// <summary>Law system MVP slice: the Laws browser's category filter - "All" plus one member per LawCategory. A separate UI-only enum from Data.LawCategory (which has no "All" concept) rather than a nullable LawCategory?, since DrawSubCategoryButton&lt;T&gt; requires T : struct, System.Enum - Nullable&lt;LawCategory&gt; does not satisfy that constraint, so this can't self-derive from LawCategory's members at compile time. <b>The browser rebuild's own finding (2026-08-25): this filter has never once narrowed anything, and that is NOT a mechanism defect - it is a real, reported coupling.</b> LawCategory has exactly one populated member (CrimeJustice), so "All" and "Crime & Justice" render byte-identical lists; the fix for that is more law CATEGORIES, not a UI change. What this enum's shape does cost: it must be hand-extended in lockstep with LawCategory every time a second category ships, because the generic constraint above rules out deriving it automatically. That coupling - not a bug - is the honest cause.</summary>
-        private enum LawBrowserFilter { All, CrimeJustice, LaborMarket, LabourInstitutions, FiscalFramework, MonetaryRegime }
+        private enum LawBrowserFilter { All, CrimeJustice, LaborMarket, LabourInstitutions, FiscalFramework, MonetaryRegime, ElectricityTax }
 
         /// <summary>Law system MVP slice, browser rebuild (2026-08-25): the status filter/sort dimension the marathon's own stop condition found missing - "the top two rows both un-enacted, no sort-by-status" (CLAUDE.md, run_85g_bill_laws.png). All four values are always offered regardless of LawCategory's population, unlike LawBrowserFilter above - status is a property of ENACTMENT, not of catalog content, so this dimension is never inert the way the category one currently is.</summary>
         private enum LawStatusFilter { All, Enacted, Pending, Available }
@@ -7126,6 +7126,27 @@ namespace PoliSim.UI
             }
         }
 
+        private static int? _electricityTaxLawCountCache;
+
+        /// <summary>EN-7b (2026-09-15): the electricity tax's count.</summary>
+        private static int ElectricityTaxLawCount
+        {
+            get
+            {
+                if (_electricityTaxLawCountCache == null)
+                {
+                    int count = 0;
+                    foreach (LawDefinition law in LawCatalog.All)
+                    {
+                        if (law.Category == LawCategory.ElectricityTax) { count++; }
+                    }
+                    _electricityTaxLawCountCache = count;
+                }
+
+                return _electricityTaxLawCountCache.Value;
+            }
+        }
+
         private static int? _fiscalFrameworkLawCountCache;
 
         /// <summary>P4-C3: the fourth category's count.</summary>
@@ -7238,6 +7259,11 @@ namespace PoliSim.UI
                 }
 
                 if (_lawBrowserFilter == LawBrowserFilter.MonetaryRegime && law.Category != LawCategory.MonetaryRegime)
+                {
+                    continue;
+                }
+
+                if (_lawBrowserFilter == LawBrowserFilter.ElectricityTax && law.Category != LawCategory.ElectricityTax)
                 {
                     continue;
                 }
@@ -7869,6 +7895,7 @@ namespace PoliSim.UI
                 case LawCategory.LabourInstitutions: return "UNIONS & CONTRACTS";   // P4-C3
                 case LawCategory.FiscalFramework: return "THE BUDGET RULES";   // P4-C3
                 case LawCategory.MonetaryRegime: return "THE INTEREST RATE";   // P4-C3, the third category
+                case LawCategory.ElectricityTax: return "THE ELECTRICITY TAX";   // EN-7b
                 default: return category.ToString().ToUpperInvariant();
             }
         }
@@ -7887,7 +7914,7 @@ namespace PoliSim.UI
                 return LawCategoryLabel(category);
             }
 
-            return category == LawCategory.LaborMarket ? "LABOR" : category == LawCategory.LabourInstitutions ? "INSTIT." : category == LawCategory.FiscalFramework ? "FISCAL" : category == LawCategory.MonetaryRegime ? "MONET." : "C&J";   // P4-C3
+            return category == LawCategory.LaborMarket ? "LABOR" : category == LawCategory.LabourInstitutions ? "INSTIT." : category == LawCategory.FiscalFramework ? "FISCAL" : category == LawCategory.MonetaryRegime ? "MONET." : category == LawCategory.ElectricityTax ? "ELEC." : "C&J";   // P4-C3; EN-7b
         }
 
         /// <summary>The one place a LawCategory maps to its area color (pass 3, 2026-08-26): with
@@ -7897,7 +7924,7 @@ namespace PoliSim.UI
         /// (LABOR MARKET BILL draws SystemArea.Labor).</summary>
         private static UiPalette.SystemArea LawCategoryArea(LawCategory category)
         {
-            return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : category == LawCategory.FiscalFramework ? UiPalette.SystemArea.Fiscal : category == LawCategory.MonetaryRegime ? UiPalette.SystemArea.Political : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink, the framework the fiscal area's
+            return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : category == LawCategory.FiscalFramework ? UiPalette.SystemArea.Fiscal : category == LawCategory.MonetaryRegime ? UiPalette.SystemArea.Political : category == LawCategory.ElectricityTax ? UiPalette.SystemArea.Sectors : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink, the framework the fiscal area's; EN-7b: the electricity tax the energy page's (the Sectors area)
         }
 
         /// <summary>The magnitude taxonomy's own four tiers (LawCatalog's class doc: MINOR +-3..6,
@@ -8182,7 +8209,7 @@ namespace PoliSim.UI
             // country shares its currency zone - is not offered; the card says why, in the caption face, and IntroduceLawBill agrees.
             if (!LawCatalog.IsWithinCompetence(_simulationManager.World, _playerCountry, law))
             {
-                GUILayout.Label(LawCatalog.OutsideCompetenceReason, _labelStyle, GUILayout.Width(contentWidth));
+                GUILayout.Label(LawCatalog.OutsideCompetenceReasonFor(law), _labelStyle, GUILayout.Width(contentWidth));   // EN-7b: the law's own reason - the treaty's, or no statute
                 return;
             }
             bool ambientEnabled = GUI.enabled;
@@ -9807,6 +9834,11 @@ namespace PoliSim.UI
             GUILayout.Label($"Interest On Debt: {UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Welfare Program Cost: {UiFormat.Money(report.WelfareCost, MoneyUnit.Billions)}", _labelStyle);
             GUILayout.Label($"Of which tariff revenue at the stated rates, before the fiscal stance: {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
+            if (report.ElectricityTaxRevenue != 0f)
+            {
+                // EN-7b: the electricity tax's receipts above the 2023 statute - a law in force moved them
+                GUILayout.Label($"Of which the electricity tax's change against its 2023 statute, before the fiscal stance: {UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions)}", _labelStyle);
+            }
             GUILayout.Space(6f);
             DrawColoredLabel($"Net (this year's recorded balance): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
         }

@@ -114,7 +114,7 @@ namespace PoliSim.EditorTools
                     float theo = TheoreticalRevenue(c);
                     // Pass 5: the tariff flow sits inside the multiplier's bracket too - without it the
                     // reconstructed FRF overstated by take/(theo x CE) (Sweden +0.39%).
-                    float denom = theo * c.CollectionEfficiency + r.SwfReturns + r.TariffRevenue;
+                    float denom = theo * c.CollectionEfficiency + r.SwfReturns + r.TariffRevenue + r.ElectricityTaxRevenue;   // EN-7b: the electricity tax's flow sits in the same bracket
                     float impliedMult = denom > 0.0001f ? r.Revenue / denom : -1f;
                     Debug.Log(string.Join(" ", new[]
                     {

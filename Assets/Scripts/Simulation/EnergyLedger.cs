@@ -73,6 +73,8 @@ namespace PoliSim.Simulation
             public double Total => PreVat + Vat;
             /// <summary>What the class pays, billions: the all-in price for households, the pre-VAT price for non-households (recoverable VAT is no cost).</summary>
             public double Bill;
+            /// <summary>EN-7b: the electricity tax's move of TaxEnv this year, the book's dollars per kWh - already inside TaxEnv, never added again; 0 at the base.</summary>
+            public double ElectricityTaxShift;
         }
 
         /// <summary>The year's book: the stacks, the system-cost lines and the incidence lines, billions of the book's dollars.</summary>
@@ -106,6 +108,10 @@ namespace PoliSim.Simulation
             public double NetworkCreditPerKwh;
             /// <summary>The levy's scale against its indexed seed: 1 with the budget line on its path, below 1 where the line was raised, above where it was cut, 0 at the floor.</summary>
             public double LevyScale;
+            /// <summary>EN-7b: the state's electricity-tax receipts above the statute's base, billions of the book's dollars, nominal - the classes' shifts on
+            /// their consumption, the excise alone (households' VAT on it is not booked: the budget's VAT does not follow the retail price); the figure the
+            /// boundary plans as a budget flow (FiscalPeriod.PlannedElectricityTaxRevenue). Already inside ToStateTaxes; never added to ReceivedTotal.</summary>
+            public double ElectricityTaxRevenueChange;
             /// <summary>The budget line's deviation from its indexed path, billions - the player's (or the AI ministry's) own doing.</summary>
             public double SupportDeviation;
         }
@@ -180,16 +186,19 @@ namespace PoliSim.Simulation
         }
 
         // ---- the year ---------------------------------------------------------------------------------------
-        /// <summary>The yearly step: this year's book at this year's dispatch, last year's congestion rent credited, written to the state; the industrial bill's share of GDP and its change for MacroSystem's channel.</summary>
-        public static void AdvanceYear(Country country)
+        /// <summary>The yearly step: this year's book at this year's dispatch, last year's congestion rent credited, written to the state; the industrial bill's share of GDP and its change for MacroSystem's channel.
+        /// EN-7b: returns the year's electricity-tax receipts above the statute's base (Book.ElectricityTaxRevenueChange), billions, for the boundary to plan as a budget flow
+        /// - handed back rather than stored on the state, whose every public field is the trajectory dump's; 0 where the layer does not run.</summary>
+        public static double AdvanceYear(Country country)
         {
             EnvironmentSeeds s = country.Environment;
-            if (s == null || !s.Seeded || !EnergyLayer.Has(country.Id)) { return; }
+            if (s == null || !s.Seeded || !EnergyLayer.Has(country.Id)) { return 0.0; }
             if (s.RetailMargin == null || s.RetailMargin.Length != ClassCount) { FitMargins(country); }   // a save from before this layer
             EnergyMarket.Result r = EnergyMarket.Clear(country);
             double credit = CreditFor(country);   // last year's rent above the seed's, billions (EN-3b: the seed's rent is inside the seed's tariff)
             Book b = Compute(country, r, Math.Max(0.0001f, country.State.PriceLevel), credit);
             Write(country, b, first: false);
+            return b.ElectricityTaxRevenueChange;
         }
 
         /// <summary>This year's book for a clearing already made - pure: the state is read (the price level is passed, the spending line is read), never written. The carbon tax line is not read (EN-4d).</summary>
@@ -215,6 +224,8 @@ namespace PoliSim.Simulation
 
             // EN-7a: market liberalisation - the Energy sector's regulation gap below its seeded anchor; exactly zero at the seed (the level is the anchor)
             double liberalisation = LiberalisationGap(country);
+            // EN-7b: the electricity tax's statute against its base - exactly zero at the seed (value and base are one float) and for the USA (no statute)
+            bool taxed = EnergyLayer.HasElectricityTax(country.Id);
             for (int c = 0; c < ClassCount; c++)
             {
                 var st = new ClassStack { Class = EnergyLayerData.RetailClasses[c], ConsumptionGwh = EnergyLayerData.RetailConsumptionGwh[ci][c] };
@@ -224,6 +235,16 @@ namespace PoliSim.Simulation
                 st.Network = Math.Max(0.0, EnergyLayerData.RetailNetwork[ci][c] * usd * priceIndex - b.NetworkCreditPerKwh);
                 st.Policy = EnergyLayerData.RetailPolicy[ci][c] * usd * priceIndex * b.LevyScale;
                 st.TaxEnv = EnergyLayerData.RetailTaxEnv[ci][c] * usd * priceIndex;
+                if (taxed)
+                {
+                    double taxDelta = ElectricityTaxDeltaEurPerMwh(country, c);
+                    if (taxDelta != 0.0)   // a branch: the seed's arithmetic untouched
+                    {
+                        double seedPath = st.TaxEnv;
+                        st.TaxEnv = Math.Max(0.0, seedPath + ElectricityTaxShiftPerKwh(country.Id, c, taxDelta, usd, priceIndex));   // never below zero; a statute of zero takes the base statute out within its coverage - where the coverage is capped (Poland, France) the rest of the band stays
+                        st.ElectricityTaxShift = st.TaxEnv - seedPath;
+                    }
+                }
                 st.Vat = st.PreVat * s.RetailVatRate[c];
                 st.Bill = (c == Households ? st.Total : st.PreVat) * st.ConsumptionGwh / 1000.0;   // currency per kWh × GWh × 1e6 kWh / 1e9
                 b.Classes[c] = st;
@@ -233,6 +254,7 @@ namespace PoliSim.Simulation
                 b.NetworkRevenue += st.Network * kwhBn;
                 b.LevyRevenue += st.Policy * kwhBn;
                 b.ToStateTaxes += st.TaxEnv * kwhBn + (c == Households ? st.Vat * kwhBn : 0.0);
+                if (st.ElectricityTaxShift != 0.0) { b.ElectricityTaxRevenueChange += st.ElectricityTaxShift * kwhBn; }   // EN-7b: the excise's change, the budget's flow
             }
             b.ToGenerators = b.WholesaleOutlay;
             b.ToNetworks = b.NetworkRevenue;
@@ -277,6 +299,35 @@ namespace PoliSim.Simulation
             double x = ratio * h * kg / (1.0 + ratio * (1.0 - kg) * q) * usd * priceIndex;
             return c == NonHouseholds ? -x : x * q;
         }
+
+        /// <summary>EN-7b: a class's statute against its base, EUR per MWh - the composed value (the business rate held at the EU minimum where its base is at or
+        /// above it: Directive 2003/96/EC allows business no lower; households may be exempted) less the base, float from float so the seed reads exactly 0.</summary>
+        public static double ElectricityTaxDeltaEurPerMwh(Country country, int c)
+        {
+            float value = c == Households ? country.ElectricityTaxHouseholds : country.ElectricityTaxNonHouseholds;
+            float baseValue = c == Households ? country.ElectricityTaxHouseholdsBase : country.ElectricityTaxNonHouseholdsBase;
+            if (value == baseValue) { return 0.0; }
+            return (double)EffectiveElectricityTaxEurPerMwh(country, c) - baseValue;
+        }
+
+        /// <summary>EN-7b: the statute a class actually pays, EUR per MWh - the laws' composed value, the business rate held at the EU minimum where its base is at or
+        /// above it (the ledger's move and the energy page's figure read this one expression, so the page never prints a composed rate below the floor the ledger applies).</summary>
+        public static float EffectiveElectricityTaxEurPerMwh(Country country, int c)
+        {
+            float value = c == Households ? country.ElectricityTaxHouseholds : country.ElectricityTaxNonHouseholds;
+            if (c == NonHouseholds)
+            {
+                float baseValue = country.ElectricityTaxNonHouseholdsBase;
+                float floor = (float)EnergyLayer.ElectricityTaxFloorEurPerMwh(country.Id, c);
+                if (baseValue >= floor && value < floor) { value = floor; }
+            }
+            return value;
+        }
+
+        /// <summary>EN-7b: one class's move of the environmental-tax component per kWh, the book's dollars - the statute's change in EUR per MWh, per kWh, within the
+        /// component's coverage of the statute (EnergyLayer.ElectricityTaxCoverage, capped at 1), at the book's dollars per euro and this year's prices (nominal with nominal).</summary>
+        public static double ElectricityTaxShiftPerKwh(CountryId id, int c, double deltaEurPerMwh, double usd, double priceIndex)
+            => deltaEurPerMwh / 1000.0 * EnergyLayer.ElectricityTaxCoverage(id, c) * usd * priceIndex;
 
         /// <summary>EN-7a: whether the country's retail stack carries a policy levy for the Energy subsidy to displace (the USA's components are billed - none).</summary>
         public static bool HasPolicyLevy(CountryId id)

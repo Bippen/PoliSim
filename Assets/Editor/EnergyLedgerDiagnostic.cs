@@ -26,6 +26,11 @@ namespace PoliSim.EditorTools
     /// the other sectors' support target (the USA's Commerce unmoved; its price unmoved, no levy), the levy down one for one; Germany (no energy line)
     /// its cost left in that target; Poland's regulation twenty points either side of its anchor moving the pre-tax ratio by exactly (1 − k × gap)
     /// with suppliers' receipts unchanged; every class's seeded components positive at Regulation 0 and 100 in all six; the size, all six.
+    /// (8) EN-7b: the electricity tax - households' statute +10 and firms' −10 EUR/MWh on every covered country: the component moves by the change
+    /// within its coverage (Poland's capped at 1, not 41), firms never below the EU minimum (France's already there moves nothing), households' VAT on
+    /// the move, the revenue change the classes' shifts on their consumption, the book closed, the USA untouched to the bit; a statute of zero leaves
+    /// the component at or above zero; and through a real boundary - Germany's household relief enacted, the next boundary plans the flow the
+    /// ledger computed, the year after books it as the report's "of which", and a repeal returns the statute to its base bit for bit.
     /// </summary>
     public static class EnergyLedgerDiagnostic
     {
@@ -284,6 +289,157 @@ namespace PoliSim.EditorTools
                 sb.Append("    full liberalisation from each anchor (the size is the model's; Steiner's table 9, the industrial-to-residential ratio: unbundling −0.051, third-party access −0.035, a wholesale pool −0.114, against a constant of 0.528): " + string.Join(" · ", sizes) + "\n");
             }
 
+            // (8) EN-7b: the electricity tax
+            sb.Append("\n    8. EN-7b: THE ELECTRICITY TAX - the statute's change within its coverage at a price index of 1.6 (nominal with nominal), the business floor, households' VAT, the revenue change, the boundary's flow, the flow's reach into the budget\n");
+            {
+                SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
+                World tw = WorldFactory.CreateDefault(); EnergyMarket.BeginTurn(tw);
+                foreach (Country k in tw.Countries)
+                {
+                    if (!EnergyLayer.Has(k.Id)) { continue; }
+                    int ci = EnergyLayer.Index(k.Id);
+                    double usd = EnergyLayerData.UsdPerMarketCurrency[ci], idx = 1.6;   // not the seed's 1: a shift that forgot the price index would pass at 1
+                    EnergyMarket.Result kr = EnergyMarket.Clear(k);
+                    EnergyLedger.Book t0 = EnergyLedger.Compute(k, kr, idx, 0.0);
+                    float hh = k.ElectricityTaxHouseholds, nh = k.ElectricityTaxNonHouseholds;
+                    k.ElectricityTaxHouseholds = hh + 10f; k.ElectricityTaxNonHouseholds = nh - 10f;
+                    EnergyLedger.Book t1 = EnergyLedger.Compute(k, kr, idx, 0.0);
+                    float[] effective = { EnergyLedger.EffectiveElectricityTaxEurPerMwh(k, 0), EnergyLedger.EffectiveElectricityTaxEurPerMwh(k, 1) };   // the figure the energy page prints
+                    k.ElectricityTaxHouseholds = 0f;
+                    EnergyLedger.Book tz = EnergyLedger.Compute(k, kr, idx, 0.0);
+                    k.ElectricityTaxHouseholds = hh; k.ElectricityTaxNonHouseholds = nh;
+                    if (!EnergyLayer.HasElectricityTax(k.Id))
+                    {
+                        bool unmoved = t1.Classes[0].Total == t0.Classes[0].Total && t1.Classes[1].Total == t0.Classes[1].Total && t1.ToStateTaxes == t0.ToStateTaxes && t1.ElectricityTaxRevenueChange == 0.0;
+                        if (!unmoved) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id} levies no electricity tax but its stack moved under a changed statute."); }
+                        sb.Append(F("    {0,-8} no statute - the stack unchanged to the bit whatever the field holds\n", k.Id));
+                        continue;
+                    }
+                    double revenue = 0.0; var parts = new List<string>();
+                    for (int c = 0; c < EnergyLedger.ClassCount; c++)
+                    {
+                        float baseValue = c == 0 ? k.ElectricityTaxHouseholdsBase : k.ElectricityTaxNonHouseholdsBase;
+                        float composed = c == 0 ? baseValue + 10f : baseValue - 10f;
+                        float floor = (float)EnergyLayer.ElectricityTaxFloorEurPerMwh(k.Id, c);
+                        if (c == 1 && baseValue >= floor && composed < floor) { composed = floor; }
+                        if (effective[c] != composed) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id} {t0.Classes[c].Class}: the effective statute the energy page prints ({effective[c]:R}) is not the composed rate held at the floor ({composed:R})."); }
+                        double cov = Math.Min(1.0, EnergyLayerData.RetailTaxEnv[ci][c] / (EnergyLayerData.ElectricityTaxEurPerMwh[ci][c] / 1000.0));   // computed here, not read from the accessor it checks
+                        if (Math.Abs(cov - EnergyLayer.ElectricityTaxCoverage(k.Id, c)) > 1e-12) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id} {t0.Classes[c].Class}: the layer's coverage {EnergyLayer.ElectricityTaxCoverage(k.Id, c)} is not the component over the statute, capped at 1 ({cov})."); }
+                        double expected = Math.Max(0.0, t0.Classes[c].TaxEnv + ((double)composed - baseValue) / 1000.0 * cov * usd * idx) - t0.Classes[c].TaxEnv;
+                        double moved = t1.Classes[c].TaxEnv - t0.Classes[c].TaxEnv;
+                        // the ruling on Poland's failed premise: the law moves the statute's change and never scales the component - whatever else the band's figure
+                        // carries (Poland's is 41.5 and 48.9 times its excise, the rest named by no document) stays where the seed put it
+                        double statuteMove = Math.Abs(((double)composed - baseValue) / 1000.0 * usd * idx);
+                        double componentOverStatute = EnergyLayerData.RetailTaxEnv[ci][c] / (EnergyLayerData.ElectricityTaxEurPerMwh[ci][c] / 1000.0);
+                        if (Math.Abs(moved) > statuteMove * (1.0 + 1e-9) + 1e-15) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id} {t0.Classes[c].Class}: the component moved {moved:E4} $/kWh, more than the statute's own change ({statuteMove:E4}) - the law scaled the component ({componentOverStatute:F3} times the statute) instead of moving the statute."); }
+                        if (componentOverStatute > 1.0) { parts.Add(F("{0} the component {1:F3} times the statute - moved by the statute's change alone", t0.Classes[c].Class, componentOverStatute)); }
+                        revenue += expected * t0.Classes[c].ConsumptionGwh / 1000.0;
+                        if (Math.Abs(moved - expected) > 1e-12 || Math.Abs(t1.Classes[c].ElectricityTaxShift - moved) > 1e-15) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id} {t0.Classes[c].Class}: the component moved {moved:E4} against the statute's change within its coverage {expected:E4}."); }
+                        if (c == 0 && Math.Abs((t1.Classes[0].Vat - t0.Classes[0].Vat) - moved * k.Environment.RetailVatRate[0]) > 1e-12) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s households' VAT did not move by the rate on the tax's move."); }
+                        if (c == 1 && Math.Abs((t1.Classes[1].Bill - t0.Classes[1].Bill) - moved * t0.Classes[1].ConsumptionGwh / 1000.0) > 1e-9) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s industrial bill did not move by the tax's move on its consumption (pre-VAT)."); }
+                        if (c == 0)
+                        {
+                            double atZero = Math.Max(0.0, t0.Classes[0].TaxEnv + (0.0 - baseValue) / 1000.0 * cov * usd * idx);   // the base statute out within its coverage - never the rest of the band
+                            if (Math.Abs(tz.Classes[0].TaxEnv - atZero) > 1e-12) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s households' component at a statute of zero is {tz.Classes[0].TaxEnv:E6} $/kWh, not the seed's less the base statute within its coverage ({atZero:E6}) - at zero the law took more (or less) than the statute."); }
+                        }
+                        parts.Add(F("{0} {1:0.###} → {2:0.###} EUR/MWh, coverage {3:F3}, component {4:+0.000000;-0.000000} $/kWh", t0.Classes[c].Class, baseValue, composed, cov, moved));
+                    }
+                    if (Math.Abs(t1.ElectricityTaxRevenueChange - revenue) > 1e-9 * Math.Max(1.0, Math.Abs(revenue))) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s revenue change {t1.ElectricityTaxRevenueChange:F6} bn is not the classes' shifts on their consumption ({revenue:F6})."); }
+                    if (Math.Abs(t1.Gap) > 1e-9 * Math.Max(1.0, t1.PaidTotal) || Math.Abs(tz.Gap) > 1e-9 * Math.Max(1.0, tz.PaidTotal)) { ok = false; Debug.LogError($"ENERGY LEDGER: {k.Id}'s book does not close with the statute moved (gap {t1.Gap:E2} / {tz.Gap:E2})."); }
+                    sb.Append(F("    {0,-8} {1} · revenue change {2:+0.000;-0.000} bn · at a household statute of zero the component {3:F5} $/kWh\n", k.Id, string.Join(" · ", parts), t1.ElectricityTaxRevenueChange, tz.Classes[0].TaxEnv));
+                }
+
+                // through a real boundary: Germany's household relief enacted in year 1, planned at its close, booked over year 2, repealed
+                SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
+                World bw = WorldFactory.CreateDefault();
+                var bgo = new GameObject("EN7B");
+                try
+                {
+                    SimulationManager bsim = bgo.AddComponent<SimulationManager>();
+                    bsim.SetWorld(bw);
+                    bsim.PlayerCountryId = CountryId.Germany;
+                    Country de = bw.GetCountry(CountryId.Germany);
+                    const BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+                    MethodInfo applyLaw = typeof(SimulationManager).GetMethod("ApplyLawBillEffects", instance);
+                    FieldInfo periodsField = typeof(SimulationManager).GetField("_fiscalPeriods", instance);
+                    if (applyLaw == null || periodsField == null) { ok = false; Debug.LogError("ENERGY LEDGER: ApplyLawBillEffects or _fiscalPeriods was not found by reflection - the boundary's flow is UNVERIFIED."); }
+                    else
+                    {
+                        var decisions = new Dictionary<CountryId, PolicyDecision>();
+                        foreach (Country k in bw.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                        int hhBaseBits = BitConverter.SingleToInt32Bits(de.ElectricityTaxHouseholdsBase);
+                        for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { bsim.AdvanceDay(); }
+                        applyLaw.Invoke(bsim, new object[] { de, new LawBill { LawId = "household_electricity_tax_relief_act", IsRepeal = false } });
+                        de.EnactedLaws.Add(new EnactedLaw { LawId = "household_electricity_tax_relief_act", EnactedOn = bsim.CurrentDate });
+                        float statuteAfterLaw = de.ElectricityTaxHouseholds;
+                        bsim.AdvanceTurn(decisions);
+                        var periods = (System.Collections.IDictionary)periodsField.GetValue(bsim);
+                        float planned = ((SimulationManager.FiscalPeriod)periods[CountryId.Germany]).PlannedElectricityTaxRevenue;
+                        for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { bsim.AdvanceDay(); }
+                        bsim.AdvanceTurn(decisions);
+                        float booked = bsim.GetLastFiscalReport(CountryId.Germany).ElectricityTaxRevenue;
+                        applyLaw.Invoke(bsim, new object[] { de, new LawBill { LawId = "household_electricity_tax_relief_act", IsRepeal = true } });
+                        bool planOk = planned < 0f && Math.Abs(statuteAfterLaw - (de.ElectricityTaxHouseholdsBase - 10f)) < 1e-4f;
+                        bool bookOk = Math.Abs(booked - planned) <= 1e-4f * Math.Abs(planned) + 1e-6f;
+                        bool repealOk = BitConverter.SingleToInt32Bits(de.ElectricityTaxHouseholds) == hhBaseBits;
+                        if (!planOk) { ok = false; Debug.LogError($"ENERGY LEDGER: Germany's household relief did not plan a negative flow at the boundary (statute {statuteAfterLaw:F2}, planned {planned:F4} bn)."); }
+                        if (!bookOk) { ok = false; Debug.LogError($"ENERGY LEDGER: the year's electricity-tax flow booked {booked:F6} bn against the {planned:F6} planned - the daily slices do not sum to the plan."); }
+                        if (!repealOk) { ok = false; Debug.LogError($"ENERGY LEDGER: the relief's repeal left Germany's household statute at {de.ElectricityTaxHouseholds:R}, not its base."); }
+                        sb.Append(F("    Germany  the household relief enacted in year 1: the statute {0:0.##} → {1:0.##} EUR/MWh; the boundary planned {2:+0.0000;-0.0000} bn for year 2 and the year booked {3:+0.0000;-0.0000} bn as the report's \"of which\"; the repeal returned the statute to its base bit for bit\n",
+                            de.ElectricityTaxHouseholdsBase, statuteAfterLaw, planned, booked));
+                    }
+                }
+                finally { UnityEngine.Object.DestroyImmediate(bgo); }
+
+                // the flow reaches the budget: (a) ApplyRevenueAndSpending books its electricity-tax argument inside the fiscal-reaction multiplier - one state,
+                // the argument 0 against +4 bn at a fixed multiplier; (b) the daily path hands it the period's plan, sliced - two worlds identical but for the plan
+                SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
+                World fw = WorldFactory.CreateDefault();
+                var fgo = new GameObject("EN7B_REACH");
+                try
+                {
+                    SimulationManager fsim = fgo.AddComponent<SimulationManager>();
+                    fsim.SetWorld(fw);
+                    Country fde = fw.GetCountry(CountryId.Germany);
+                    MethodInfo books = typeof(SimulationManager).GetMethod("ApplyRevenueAndSpending", BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (books == null || books.GetParameters().Length != 14) { ok = false; Debug.LogError("ENERGY LEDGER: ApplyRevenueAndSpending (14 parameters) was not found by reflection - the flow's reach is UNVERIFIED."); }
+                    else
+                    {
+                        const float flow = 4f, multiplier = 0.75f;
+                        float budget0 = fde.State.Budget, debt0 = fde.State.GovernmentDebt;
+                        var at0 = new object[] { fde, 0.2f, 0.1f, 0.02f, 0.03f, 0.04f, 0f, 0f, 0f, 0f, 0f, 0f, 0.01f, multiplier };
+                        float revenue0 = (float)books.Invoke(fsim, at0);
+                        float budgetMove0 = fde.State.Budget - budget0, debtMove0 = fde.State.GovernmentDebt - debt0;
+                        fde.State.Budget = budget0; fde.State.GovernmentDebt = debt0;
+                        var atFlow = new object[] { fde, 0.2f, 0.1f, 0.02f, 0.03f, 0.04f, 0f, 0f, 0f, flow, 0f, 0f, 0.01f, multiplier };
+                        float revenue1 = (float)books.Invoke(fsim, atFlow);
+                        float budgetMove1 = fde.State.Budget - budget0, debtMove1 = fde.State.GovernmentDebt - debt0;
+                        fde.State.Budget = budget0; fde.State.GovernmentDebt = debt0;
+                        float want = flow * multiplier;
+                        float dRevenue = revenue1 - revenue0, dBalance = (float)atFlow[11] - (float)at0[11], dBudget = budgetMove1 - budgetMove0, dDebt = debtMove1 - debtMove0;
+                        bool reaches = Math.Abs(dRevenue - want) <= 2e-3f && Math.Abs(dBalance - want) <= 2e-3f && Math.Abs(dBudget - want) <= 2e-3f && Math.Abs(dDebt + want) <= 2e-3f;
+                        if (!reaches) { ok = false; Debug.LogError($"ENERGY LEDGER: a {flow} bn electricity-tax argument at the multiplier {multiplier} moved revenue {dRevenue:F5}, the balance {dBalance:F5}, the budget {dBudget:F5} and the debt {dDebt:F5} - not {want} into revenue, balance and budget and out of the debt."); }
+                        sb.Append(F("    reach    ApplyRevenueAndSpending: a {0} bn flow at the multiplier {1} moved revenue {2:+0.0000;-0.0000}, the balance {3:+0.0000;-0.0000}, the budget {4:+0.0000;-0.0000}, the debt {5:+0.0000;-0.0000} (the flow at the multiplier: {6:0.0000})\n",
+                            flow, multiplier, dRevenue, dBalance, dBudget, dDebt, want));
+                    }
+                }
+                finally { UnityEngine.Object.DestroyImmediate(fgo); }
+
+                const float plannedYear = 250f;
+                (float Budget, float Debt, float AccruedRevenue, float AccruedTax, float Multiplier)? dayOff = DayOfElectricityTaxFlow(0f), dayOn = DayOfElectricityTaxFlow(plannedYear);
+                if (dayOff == null || dayOn == null) { ok = false; Debug.LogError("ENERGY LEDGER: GetOrSeedFiscalPeriod or AccrueDailyFiscalFlows was not found by reflection - the daily path's reach is UNVERIFIED."); }
+                else
+                {
+                    float slice = plannedYear / SimulationManager.DaysPerTurn, m = dayOn.Value.Multiplier;
+                    float dBudget = dayOn.Value.Budget - dayOff.Value.Budget, dDebt = dayOn.Value.Debt - dayOff.Value.Debt;
+                    float dRevenue = dayOn.Value.AccruedRevenue - dayOff.Value.AccruedRevenue, dTax = dayOn.Value.AccruedTax - dayOff.Value.AccruedTax;
+                    bool daily = m == dayOff.Value.Multiplier && Math.Abs(m - 1f) * slice > 10f * 2e-3f && Math.Abs(dTax - slice) <= 1e-4f && Math.Abs(dRevenue - slice * m) <= 2e-3f && Math.Abs(dBudget - slice * m) <= 2e-3f && Math.Abs(dDebt + slice * m) <= 2e-3f;
+                    if (!daily) { ok = false; Debug.LogError($"ENERGY LEDGER: a {plannedYear} bn plan moved one day's accrued tax {dTax:F5} (slice {slice:F5}), revenue {dRevenue:F5}, the budget {dBudget:F5} and the debt {dDebt:F5} - not the slice at the period's multiplier {m:F4} ({slice * m:F5})."); }
+                    sb.Append(F("    reach    the daily path: a {0} bn plan accrued {1:0.0000} bn of tax in one day (the slice {2:0.0000}), revenue {3:+0.0000;-0.0000}, the budget {4:+0.0000;-0.0000}, the debt {5:+0.0000;-0.0000} (the slice at the period's multiplier {6:F4}: {7:0.0000})\n",
+                        plannedYear, dTax, slice, dRevenue, dBudget, dDebt, m, slice * m));
+                }
+            }
+
             sb.Append(ok ? "\n=== EnergyLedgerDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== EnergyLedgerDiagnostic: FAILED (see above) ===\n");
             if (ok) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
             CheckExit.Finish(ok ? 0 : 1);
@@ -292,6 +448,31 @@ namespace PoliSim.EditorTools
         private sealed class Outcome
         {
             public double HouseholdPrice, IndustryPrice, IndustryBill, BillShare, ChannelSum, EtsCost, Wholesale, MaxGap, RecomputeGapMax;
+        }
+
+        /// <summary>EN-7b: one day of Germany's REAL production accrual (AccrueDailyFiscalFlows, by reflection) on a fresh world at seed 777, its period's electricity-tax plan set to
+        /// <paramref name="planned"/> - the day's move of the budget and the debt, the period's accrued revenue and accrued electricity tax, the period's multiplier; null if a method is missing.</summary>
+        private static (float Budget, float Debt, float AccruedRevenue, float AccruedTax, float Multiplier)? DayOfElectricityTaxFlow(float planned)
+        {
+            SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
+            World w = WorldFactory.CreateDefault();
+            var go = new GameObject("EN7B_DAY");
+            try
+            {
+                SimulationManager s = go.AddComponent<SimulationManager>();
+                s.SetWorld(w);
+                Country d = w.GetCountry(CountryId.Germany);
+                MethodInfo seedPeriod = typeof(SimulationManager).GetMethod("GetOrSeedFiscalPeriod", BindingFlags.Instance | BindingFlags.NonPublic);
+                MethodInfo accrue = typeof(SimulationManager).GetMethod("AccrueDailyFiscalFlows", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (seedPeriod == null || accrue == null) { return null; }
+                var period = (SimulationManager.FiscalPeriod)seedPeriod.Invoke(s, new object[] { d });
+                period.PlannedFiscalReactionMultiplier = 0.75f;   // away from 1 on both runs: Germany's seed multiplier is exactly 1, which could not tell a flow inside the period's multiplier from one outside it
+                period.PlannedElectricityTaxRevenue = planned;
+                float budget0 = d.State.Budget, debt0 = d.State.GovernmentDebt;
+                accrue.Invoke(s, new object[] { d });
+                return (d.State.Budget - budget0, d.State.GovernmentDebt - debt0, period.AccruedRevenue, period.AccruedElectricityTaxRevenue, period.PlannedFiscalReactionMultiplier);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
         }
 
         private static Outcome RunCountry(CountryId player, int years, float etsStepPerT, ref bool ok)

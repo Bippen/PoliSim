@@ -78,6 +78,24 @@ namespace PoliSim.Data
         /// <summary>The share of a country's yearly hydro energy a reservoir operator can move between the blocks (0 where unsourced, BILLED).</summary>
         public static double HydroShiftableShare(CountryId id) { int i = Index(id); return i < 0 ? 0.0 : EnergyLayerData.HydroShiftableShare[i]; }
 
+        // ---- EN-7b: the electricity tax's statute (EnergyData/electricity_tax_2023.csv, COMPLETED.md §499) ------------------------------------------
+        /// <summary>Whether the country levies a national electricity tax the laws can move - every covered country but the USA, which has no federal electricity excise.</summary>
+        public static bool HasElectricityTax(CountryId id) { int i = Index(id); return i >= 0 && EnergyLayerData.ElectricityTaxEurPerMwh[i][0] >= 0.0; }
+        /// <summary>The 2023 statute for a class (0 households, 1 non-households), EUR per MWh - the base the laws compose on; 0 where the country levies none.</summary>
+        public static double ElectricityTaxBaseEurPerMwh(CountryId id, int cls) => HasElectricityTax(id) ? EnergyLayerData.ElectricityTaxEurPerMwh[Index(id)][cls] : 0.0;
+        /// <summary>The share of a statute change the stack's environmental-tax component carries for a class - the seed's component over the statute, both the
+        /// catalog's own figures, capped at 1 (Poland's band carries its excise and charges no document names, France's the shield's floor and a little more);
+        /// 0 where the country levies none. DERIVED, not fitted: at a statute of zero the component falls by the base statute within this coverage, never below zero - capped at 1, so the rest of a band that carries more than the statute (Poland's, France's) stays where the seed put it.</summary>
+        public static double ElectricityTaxCoverage(CountryId id, int cls)
+        {
+            if (!HasElectricityTax(id)) { return 0.0; }
+            int i = Index(id);
+            double statutePerKwh = EnergyLayerData.ElectricityTaxEurPerMwh[i][cls] / 1000.0;
+            return statutePerKwh > 0.0 ? Math.Min(1.0, EnergyLayerData.RetailTaxEnv[i][cls] / statutePerKwh) : 0.0;
+        }
+        /// <summary>The EU minimum for a class, EUR per MWh (Directive 2003/96/EC, Annex I Table C: business 0.5, non-business 1 - households may be exempted); 0 where the country levies none.</summary>
+        public static double ElectricityTaxFloorEurPerMwh(CountryId id, int cls) => HasElectricityTax(id) ? EnergyLayerData.ElectricityTaxFloorEurPerMwh[Index(id)][cls] : 0.0;
+
         /// <summary>The country's ISO currency code, for a figure presented in its own currency (a tax line's rate per tonne).</summary>
         public static string CurrencyCode(CountryId id)
         {

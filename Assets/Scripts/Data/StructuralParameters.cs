@@ -27,7 +27,11 @@ namespace PoliSim.Data
         UnemploymentGapWeight,
         // P4-C3 (2026-09-05, the labour institutions' second reach): the automatic stabiliser's generosity - benefit cost as % of GDP per
         // point of unemployment (Country.BenefitRatePerUnemployed), the last Country parameter the lever map listed as unreached.
-        BenefitRatePerUnemployed
+        BenefitRatePerUnemployed,
+        // EN-7b (2026-09-15): the statutory electricity tax per retail class, EUR per MWh (EnergyLedger.Households / NonHouseholds) - the 2023 statute is
+        // the base (EnergyLayer.ElectricityTaxBaseEurPerMwh); the USA levies no federal electricity excise (base 0, the laws not offered)
+        ElectricityTaxHouseholds,
+        ElectricityTaxNonHouseholds
     }
 
     /// <summary>One law's move of one structural parameter, in the parameter's own unit, signed.</summary>
@@ -81,7 +85,8 @@ namespace PoliSim.Data
         /// years (x5: two years is MODERATE); the premium sensitivity as a multiplier (x60: 0.15 is MODERATE); collection
         /// coverage as a multiplier (x300: 0.03 is MODERATE); the spending share in points of GDP (x10: one point is
         /// MODERATE). Bounds: the seeds run 3.3-8.0, 35-138, 5.9-8.5, 0-1, 0.61-1.31 and 17-26 respectively; each bound
-        /// sits outside what the OECD has measured for these six.</summary>
+        /// sits outside what the OECD has measured for these six. EN-7b: the electricity tax in euros per MWh (x1: ten is MODERATE); the seeds run
+        /// 0 (the USA) to 34.15 for households and 0 to 20.5 for firms (EnergyData/electricity_tax_2023.csv).</summary>
         public static readonly Spec[] All =
         {
             new Spec(StructuralParameter.NaturalUnemploymentRate, "Natural rate of unemployment", "pp", 15f, 2f, 12f,
@@ -109,6 +114,13 @@ namespace PoliSim.Data
             // P4-C3, the labour institutions' second reach: 0.05 % of GDP per point (a quarter of Germany's seeded 0.20) reads MODERATE (x200); bounds 0.02-0.60 hold the six seeds (0.10-0.25) with room either way.
             new Spec(StructuralParameter.BenefitRatePerUnemployed, "Benefit rate", "% GDP per pp", 200f, 0.02f, 0.6f,   /* the name is short because the card's grid cell is 153 px at the 8 px floor - "Benefit rate per point of unemployment (% of GDP per pp)" overflowed it by 57 px on the first film */
                 c => c.BenefitRatePerUnemployed, c => c.BenefitRatePerUnemployedBase, (c, v) => c.BenefitRatePerUnemployed = v),
+            // EN-7b: the statute in euros per MWh on the grid at x1 - ten euros is MODERATE, twenty MAJOR (Germany's whole 20.50), thirty-five SWEEPING (past
+            // Sweden's households' 34.15). Bounds 0-60: 0 because the USA carries a base of 0 and a household exemption is lawful (Directive 2003/96/EC
+            // Article 15(1)(h)); the business minimum (0.5) is not a bound - bounds are one pair for every country - the ledger applies it (EnergyLedger).
+            new Spec(StructuralParameter.ElectricityTaxHouseholds, "Power tax, homes", "EUR/MWh", 1f, 0f, 60f,
+                c => c.ElectricityTaxHouseholds, c => c.ElectricityTaxHouseholdsBase, (c, v) => c.ElectricityTaxHouseholds = v),
+            new Spec(StructuralParameter.ElectricityTaxNonHouseholds, "Power tax, firms", "EUR/MWh", 1f, 0f, 60f,
+                c => c.ElectricityTaxNonHouseholds, c => c.ElectricityTaxNonHouseholdsBase, (c, v) => c.ElectricityTaxNonHouseholds = v),
         };
 
         public static Spec Of(StructuralParameter parameter)

@@ -16,7 +16,10 @@ namespace PoliSim.Data
         FiscalFramework,
         /// <summary>P4-C3, the third category (2026-09-05): laws on the central bank's target, mandate and reaction - the zone's
         /// parameters (StructuralParameter.InflationTarget .. UnemploymentGapWeight), reached only where the parliament owns its bank.</summary>
-        MonetaryRegime
+        MonetaryRegime,
+        /// <summary>EN-7b (2026-09-15): the electricity tax - laws on the statutory rate per MWh by customer class (StructuralParameter.ElectricityTaxHouseholds /
+        /// ElectricityTaxNonHouseholds), reached only where the country levies one (not the USA: LawDefinition.RequiresElectricityTaxStatute).</summary>
+        ElectricityTax
     }
 
     /// <summary>
@@ -134,6 +137,10 @@ namespace PoliSim.Data
         /// within a parliament's competence only where the country OWNS its zone (World.OwnsCurrencyZone) - a euro member's House does not
         /// reach the ECB's target or mandate (TFEU Articles 127 and 130: treaty competence), and the browser says so instead of offering Enact.</summary>
         public bool RequiresOwnCurrency;
+
+        /// <summary>EN-7b (2026-09-15): true for a law that moves the statutory electricity tax. Within competence only where the country levies one
+        /// (EnergyLayer.HasElectricityTax - the catalog's statute rows: Germany, France, Italy, Poland, Sweden); the USA has no federal electricity excise to move.</summary>
+        public bool RequiresElectricityTaxStatute;
 
         /// <summary>P4-C3: the law's own reading on the economic axis (-1 left … +1 right), used for the NAIRU effect's stance
         /// term because the sign of a NAIRU move does not tell a law's politics - a benefit cut and a training programme both

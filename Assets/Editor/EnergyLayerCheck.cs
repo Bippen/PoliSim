@@ -140,6 +140,7 @@ namespace PoliSim.EditorTools
             if (EnergyLayerData.Zones.Length != 10 || EnergyLayerData.EnergyGwh.Length != 10 || EnergyLayerData.Scale.Length != 10) { failures++; }
             if (EnergyLayerData.SwedishZones.Length != 4 || EnergyLayerData.ZoneProductionGwh.Length != 4) { failures++; }
             if (EnergyLayerData.Co2Kt.Length != 6 || EnergyLayerData.Co2Kt[0].Length != 3 || EnergyLayerData.Co2Kt[0][0].Length != 6 || EnergyLayerData.PopulationM.Length != 6) { failures++; }
+            if (EnergyLayerData.ElectricityTaxEurPerMwh.Length != 6 || EnergyLayerData.ElectricityTaxEurPerMwh[0].Length != 2 || EnergyLayerData.ElectricityTaxFloorEurPerMwh.Length != 6) { failures++; }   // EN-7b
             if (failures > failuresBefore) { Debug.LogError("ENERGY: the catalog's arrays are not the shapes the layer reads (6 countries × 7 labels; 10 zones; 4 Swedish zones; 6 × 3 × 6 combustion)."); }
             sb.Append(F("\n    5. THE CATALOG: {0} countries × {1} labels, {2} zones, {3} Swedish zones, {4} links, {5}×{6}×{7} combustion cells - digests are GeneratedCatalogCheck's.\n",
                 EnergyLayerData.Countries.Length, EnergyLayerData.Labels.Length, EnergyLayerData.Zones.Length, EnergyLayerData.SwedishZones.Length, EnergyLayerData.LinkFrom.Length,
@@ -270,6 +271,43 @@ namespace PoliSim.EditorTools
                 if (!(weight > 0f) || weight > 0.2f) { failures++; Debug.LogError($"ENERGY: {c.Id}'s electricity weight in the price index is {weight} - not a sourced per-mille figure."); }
                 if (c.State.EnergyHouseholdPriceRealChange != 0f || PoliSim.Simulation.EnergyPassThrough.Planned(c) != 0f) { failures++; Debug.LogError($"ENERGY: {c.Id} passes {PoliSim.Simulation.EnergyPassThrough.Planned(c)} pp at the seed - a seed with no year written passes nothing."); }
                 sb.Append(F("    {0,-8} electricity {1:F2} per mille of the basket ({2}) · at the seed the real price {3:F4} $/kWh, change 0, pass-through 0\n", c.Id, weight * PoliSim.Simulation.EnergyPassThrough.PerMille, c.Id == CountryId.USA ? "BLS CPI-U relative importance, December 2023" : "Eurostat prc_hicp_inw CP0451 2023", c.State.EnergyHouseholdPriceReal));
+            }
+
+            // ---- gate 11 (EN-7b, 2026-09-15): the electricity tax's statute - the catalog's bases are the statutes §499 extracted, the USA levies none,
+            // the coverage is printed, and nothing moves at the seed (value and base one float; no shift, no revenue change)
+            sb.Append("\n    11. THE ELECTRICITY TAX (EN-7b): the 2023 statute per class the laws compose on, its coverage of the seed's component, nothing moved at the seed\n");
+            {
+                var named = new Dictionary<CountryId, double[]>
+                {
+                    { CountryId.Germany, new[] { 20.5, 20.5 } }, { CountryId.France, new[] { 1.0, 0.5 } }, { CountryId.Italy, new[] { 22.7, 12.5 } },
+                    { CountryId.Poland, new[] { 1.101, 1.101 } }, { CountryId.Sweden, new[] { 34.15, 0.523 } },   // EnergyData/electricity_tax_2023.csv's eur_per_kwh x 1000 - the emission's only guard
+                };
+                foreach (Country c in world.Countries)
+                {
+                    if (!EnergyLayer.Has(c.Id)) { continue; }
+                    bool taxed = EnergyLayer.HasElectricityTax(c.Id);
+                    if (taxed != named.ContainsKey(c.Id)) { failures++; Debug.LogError($"ENERGY: {c.Id} {(taxed ? "levies" : "does not levy")} an electricity tax in the catalog - the statute rows are Germany, France, Italy, Poland and Sweden."); }
+                    if (BitConverter.SingleToInt32Bits(c.ElectricityTaxHouseholds) != BitConverter.SingleToInt32Bits(c.ElectricityTaxHouseholdsBase) || BitConverter.SingleToInt32Bits(c.ElectricityTaxNonHouseholds) != BitConverter.SingleToInt32Bits(c.ElectricityTaxNonHouseholdsBase))
+                    { failures++; Debug.LogError($"ENERGY: {c.Id}'s electricity-tax statute is not its base at the seed - {c.ElectricityTaxHouseholds:R}/{c.ElectricityTaxHouseholdsBase:R}, {c.ElectricityTaxNonHouseholds:R}/{c.ElectricityTaxNonHouseholdsBase:R}."); }
+                    PoliSim.Simulation.EnergyLedger.Book tb = PoliSim.Simulation.EnergyLedger.Compute(c, PoliSim.Simulation.EnergyMarket.ClearAt(c.Id, 1.0, 0.0), 1.0, 0.0);
+                    if (tb.ElectricityTaxRevenueChange != 0.0 || tb.Classes[0].ElectricityTaxShift != 0.0 || tb.Classes[1].ElectricityTaxShift != 0.0) { failures++; Debug.LogError($"ENERGY: {c.Id}'s stack moves by the electricity tax at the seed (revenue change {tb.ElectricityTaxRevenueChange:E2})."); }
+                    if (!taxed)
+                    {
+                        if (c.ElectricityTaxHouseholdsBase != 0f || c.ElectricityTaxNonHouseholdsBase != 0f) { failures++; Debug.LogError($"ENERGY: {c.Id} carries an electricity-tax base with no statute."); }
+                        sb.Append(F("    {0,-8} no federal electricity excise - base 0 / 0, the laws not offered\n", c.Id));
+                        continue;
+                    }
+                    int ci = EnergyLayer.Index(c.Id);
+                    var parts = new List<string>();
+                    for (int k = 0; k < PoliSim.Simulation.EnergyLedger.ClassCount; k++)
+                    {
+                        double b = EnergyLayer.ElectricityTaxBaseEurPerMwh(c.Id, k), cov = EnergyLayer.ElectricityTaxCoverage(c.Id, k), uncapped = EnergyLayerData.RetailTaxEnv[ci][k] / (b / 1000.0);
+                        if (Math.Abs(b - named[c.Id][k]) > 1e-9) { failures++; Debug.LogError($"ENERGY: {c.Id} {EnergyLayerData.RetailClasses[k]}: the catalog's statute is {b} EUR/MWh, not the extracted {named[c.Id][k]}."); }
+                        if (!(cov > 0.0) || cov > 1.0) { failures++; Debug.LogError($"ENERGY: {c.Id} {EnergyLayerData.RetailClasses[k]}: coverage {cov} is outside (0, 1]."); }
+                        parts.Add(F("{0} {1:0.###} EUR/MWh (floor {2:0.#}), coverage {3:F3}{4}", EnergyLayerData.RetailClasses[k], b, EnergyLayer.ElectricityTaxFloorEurPerMwh(c.Id, k), uncapped, uncapped > 1.0 ? " - capped at 1" : ""));
+                    }
+                    sb.Append(F("    {0,-8} {1} · nothing moved at the seed\n", c.Id, string.Join(" · ", parts)));
+                }
             }
 
             sb.Append(failures == 0 ? "\n=== EnergyLayerCheck: ALL ASSERTIONS PASS ===\n" : $"\n=== EnergyLayerCheck: {failures} FAILURE(S) ===\n");

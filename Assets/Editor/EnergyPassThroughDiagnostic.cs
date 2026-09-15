@@ -22,6 +22,8 @@ namespace PoliSim.EditorTools
     /// (5) B6: a doubled price level with the same real stack passes nothing but the adders' erosion. (6) EN-7a, THE PREVIEW READS THE TURN: France
     /// (the player, so no AI ministry moves its lines) with its Energy subsidy at 80 standing into a boundary, against untouched - the preview's planned
     /// term moves by what the boundary's plan moves (the levy the subsidy displaces), within a tenth; read before the clone's spending resolved, it moved by nothing.
+    /// (7) EN-7b, THE PREVIEW READS THE LAW: Germany (the player) with the household electricity relief in force - the preview's planned budget flow
+    /// equals the boundary's within a hundredth, the clone carrying the statute and its base (a clone missing either previews the whole statute or a repeal).
     /// </summary>
     public static class EnergyPassThroughDiagnostic
     {
@@ -137,6 +139,22 @@ namespace PoliSim.EditorTools
                     at50.Preview, at50.Turn, at80.Preview, at80.Turn, at50.Levy, at80.Levy, dPreview, dTurn));
             }
 
+            // (7) EN-7b: the preview's electricity-tax flow against the boundary's, a law in force
+            sb.Append("\n    7. THE PREVIEW READS THE LAW: Germany's household electricity relief in force into year 2's boundary - the preview's planned flow and the boundary's\n");
+            {
+                (float Preview, float Turn, float RevenueMove, float Multiplier) law = PreviewTaxFlowAgainstTurn();
+                bool agrees = law.Turn < 0f && Math.Abs(law.Preview - law.Turn) <= 0.01f * Math.Abs(law.Turn) + 1e-6f;
+                if (!agrees) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: the preview planned {law.Preview:F5} bn of electricity-tax flow, the boundary {law.Turn:F5} - the preview does not read the law (the clone's statute or its base)."); }
+                // the preview's revenue estimate carries the flow: the same preview with the statute at its base, the difference against the flow in the fiscal-reaction multiplier
+                float wantMove = law.Preview * law.Multiplier;
+                float tolerance = 0.002f * Math.Abs(wantMove) + 1e-4f;
+                bool separable = Math.Abs(law.Multiplier - 1f) * Math.Abs(law.Preview) > 4f * tolerance;   // a flow booked outside the multiplier must miss by more than the tolerance
+                if (!separable) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: Germany's multiplier {law.Multiplier:F4} is too near 1 for the preview's revenue move to tell a flow inside it from one outside - the check would be vacuous; move the fixture."); }
+                bool reaches = Math.Abs(law.RevenueMove - wantMove) <= tolerance && Math.Abs(wantMove) > 0.1f;
+                if (!reaches) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: the preview's revenue estimate moved {law.RevenueMove:F5} bn with the law in force against its flow {law.Preview:F5} bn at the multiplier {law.Multiplier:F4} ({wantMove:F5}) - the flow does not reach the preview's budget."); }
+                sb.Append(F("    Germany  the household relief in force: the preview planned {0:+0.00000;-0.00000} bn, the boundary {1:+0.00000;-0.00000} bn; the preview's revenue estimate moved {2:+0.00000;-0.00000} bn against the statute at its base (the flow at the multiplier {3:F4}: {4:+0.00000;-0.00000})\n", law.Preview, law.Turn, law.RevenueMove, law.Multiplier, wantMove));
+            }
+
             sb.Append(ok ? "\n=== EnergyPassThroughDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== EnergyPassThroughDiagnostic: FAILED (see above) ===\n");
             if (ok) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
             CheckExit.Finish(ok ? 0 : 1);
@@ -214,6 +232,42 @@ namespace PoliSim.EditorTools
                 sim.AdvanceTurn(decisions);
                 float levy = (float)EnergyLedger.Compute(fr, EnergyMarket.Clear(fr), Math.Max(0.0001f, fr.State.PriceLevel), 0.0).LevyScale;
                 return (preview, EnergyPassThrough.Planned(fr), levy);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        /// <summary>EN-7b: Germany as the player, the household electricity relief enacted in year 1, a second year of days - then the preview's planned electricity-tax flow and,
+        /// after the boundary, the flow the boundary planned (read from the period by reflection); and the preview's revenue estimate with the law against the same preview with the
+        /// household statute put back at its base (restored bit for bit before the boundary), with the real country's fiscal-reaction multiplier the move is read against.</summary>
+        private static (float Preview, float Turn, float RevenueMove, float Multiplier) PreviewTaxFlowAgainstTurn()
+        {
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("ENERGYTAXPREVIEW");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                sim.PlayerCountryId = CountryId.Germany;
+                const System.Reflection.BindingFlags instance = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                Country de = world.GetCountry(CountryId.Germany);
+                for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                typeof(SimulationManager).GetMethod("ApplyLawBillEffects", instance).Invoke(sim, new object[] { de, new LawBill { LawId = "household_electricity_tax_relief_act", IsRepeal = false } });
+                de.EnactedLaws.Add(new EnactedLaw { LawId = "household_electricity_tax_relief_act", EnactedOn = sim.CurrentDate });
+                sim.AdvanceTurn(decisions);
+                for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                PolicyPreview withLaw = sim.PreviewTurn(CountryId.Germany, PolicyDecision.None());
+                float statuteWithLaw = de.ElectricityTaxHouseholds;
+                de.ElectricityTaxHouseholds = de.ElectricityTaxHouseholdsBase;
+                PolicyPreview atBase = sim.PreviewTurn(CountryId.Germany, PolicyDecision.None());
+                de.ElectricityTaxHouseholds = statuteWithLaw;
+                float multiplier = (float)typeof(SimulationManager).GetMethod("GetFiscalReactionMultiplier", instance).Invoke(sim, new object[] { de });
+                sim.AdvanceTurn(decisions);
+                var periods = (System.Collections.IDictionary)typeof(SimulationManager).GetField("_fiscalPeriods", instance).GetValue(sim);
+                return (withLaw.PreviewElectricityTaxRevenue, ((SimulationManager.FiscalPeriod)periods[CountryId.Germany]).PlannedElectricityTaxRevenue, withLaw.RevenueEstimate - atBase.RevenueEstimate, multiplier);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
         }

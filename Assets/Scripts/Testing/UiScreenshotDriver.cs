@@ -595,6 +595,19 @@ namespace PoliSim.Testing
                         yield return Settle();
                         yield return Settle();
                         yield return Capture(stem + "_energy_instruments_provenance");
+                        // EN-7b (2026-09-15): plate 4's foot, where the electricity tax's rows sit, still in PROVENANCE - scrolled to the plate's recorded rect
+                        var instrumentsField = controller.GetType().GetField("_energyInstrumentsLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                        Rect instruments = instrumentsField != null ? (Rect)instrumentsField.GetValue(controller) : Rect.zero;
+                        if (instruments.height > 0f)
+                        {
+                            ResetScrolls(controller);
+                            yield return Settle();
+                            ScrollBy(controller, Mathf.Max(0f, instruments.yMax - Screen.height * 0.52f));
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(stem + "_energy_electricity_tax_provenance");
+                        }
+                        else { Debug.LogError("SHOT: plate 4 was never laid out - 06c_policylaws_sectors_energy_electricity_tax_provenance not filmed."); }
                         DeskProvenance.On = _provenanceToRestore.Value;
                         _provenanceToRestore = null;
                         yield return Settle();
@@ -773,7 +786,7 @@ namespace PoliSim.Testing
                             lawCountry.State.ApprovalRating = approvalUntouched;
                             selectedLaw?.SetValue(controller, selectedBefore);
                             // P4-C3 (2026-09-04): one card per structural category on film - the law selected, its EXPECTED EFFECTS line in the parameter's own unit.
-                            foreach ((string lawId, string capture) in new[] { ("hartz_benefit_reform_act", "06h_laws_institutions_card"), ("constitutional_debt_brake_act", "06h_laws_fiscal_card"), ("full_employment_mandate_act", "06h_laws_monetary_card") })
+                            foreach ((string lawId, string capture) in new[] { ("hartz_benefit_reform_act", "06h_laws_institutions_card"), ("constitutional_debt_brake_act", "06h_laws_fiscal_card"), ("full_employment_mandate_act", "06h_laws_monetary_card"), ("industrial_electricity_tax_relief_act", "06h_laws_electricity_card") })
                             {
                                 selectedLaw?.SetValue(controller, lawId);
                                 ResetScrolls(controller);

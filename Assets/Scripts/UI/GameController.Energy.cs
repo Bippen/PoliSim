@@ -41,6 +41,9 @@ namespace PoliSim.UI
         /// <summary>EN-7a: where the Energy sector's cost sentence was laid out last frame - the film driver scrolls to it (06c_policylaws_sectors_energy_sector_cost).</summary>
         private Rect _energySectorCostLastArea;
 
+        /// <summary>EN-7b: where plate 4 (the instruments) was laid out last frame - the film driver scrolls to its foot (06c_policylaws_sectors_energy_electricity_tax_provenance).</summary>
+        private Rect _energyInstrumentsLastArea;
+
         private int _energyCacheTurn = -1;
         private CountryId _energyCacheCountry;
         private EnergyMarket.Result _energyResult;
@@ -242,8 +245,29 @@ namespace PoliSim.UI
                 PlateBand.None, 0f, 0f, 0f, null, true, new[] { "DESCRIPTIVE · THE SECTOR ROW ONLY" }, null, new[] { "ABSENT · STATED" }, false, chipsWithoutBand: true));
             instruments.Add(new PlateRow("Carbon tax", "THE NATIONAL RATE PER TONNE", "THE TAX LEDGER · " + countryUpper, PlateFigure(EnvironmentFamily.CarbonTaxRate(country), 0),
                 PlateBand.None, 0f, 0f, 0f, null, true, new[] { "REACHES TRANSPORT, NOT THE FLEET", "ENVIRONMENT ▸" }, null, new[] { "SOURCED" }, false, chipsWithoutBand: true));
-            string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THESE INSTRUMENTS - SET ON THE SECTORS PAGE ABOVE, NO SIXTH CONTROL · WHAT EACH REACHES IS ITS CHIP · THE LEVERS ARE THE SECTOR DIALS AND BUDGET ROWS (THE ENERGY LINE, THE CARBON TAX) AND, WHEN THE ENERGY LAWS LAND, LAWS ROWS - SO NO RAIL CELL · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
-            DrawPlateRows(instruments, areaInk, foot4, false, row => null);
+            // EN-7b (2026-09-15): the electricity tax - the statute per class as the laws in force leave it, against the 2023 statute; the stack's
+            // environmental-tax component moves by the change within its coverage (the plate above reads this turn's cached book, the rows the live statute)
+            if (EnergyLayer.HasElectricityTax(country.Id))
+            {
+                for (int cls = 0; cls < EnergyLedger.ClassCount; cls++)
+                {
+                    bool homes = cls == EnergyLedger.Households;
+                    float composed = homes ? country.ElectricityTaxHouseholds : country.ElectricityTaxNonHouseholds;
+                    float statute = EnergyLedger.EffectiveElectricityTaxEurPerMwh(country, cls);   // the rate the ledger moves the stack by - a business cut below the EU minimum reads the minimum
+                    float statuteBase = homes ? country.ElectricityTaxHouseholdsBase : country.ElectricityTaxNonHouseholdsBase;
+                    string source = string.Format(CultureInfo.InvariantCulture, "2023 STATUTE {0:0.###} · STACK CARRIES {1:0.00} OF A CHANGE", statuteBase, EnergyLayer.ElectricityTaxCoverage(country.Id, cls));
+                    string caption = statute != composed ? "EUR PER MWh · HELD AT THE EU BUSINESS MINIMUM" : "EUR PER MWh · THE STATUTE AS THE LAWS IN FORCE LEAVE IT";
+                    instruments.Add(new PlateRow(homes ? "Electricity tax, households" : "Electricity tax, firms", caption, source, PlateFigure(statute, 2),
+                        PlateBand.None, 0f, 0f, 0f, null, true, new[] { "LAWS ▸ STATUTE", homes ? "ENV. TAX ▸ HOUSEHOLDS' PRICE" : "ENV. TAX ▸ INDUSTRY'S BILL", "BUDGET ▸" }, null, new[] { "SOURCED" }, false, chipsWithoutBand: true));
+                }
+            }
+            else
+            {
+                instruments.Add(new PlateRow("Electricity tax", "EUR PER MWh", "NO FEDERAL ELECTRICITY EXCISE FOR " + countryUpper, "absent",
+                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LAWS ARE NOT OFFERED" }, null, new[] { "ABSENT · STATED" }, false, "THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE"));
+            }
+            string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - SET ON THE SECTORS PAGE ABOVE, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP - SO NO RAIL CELL · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
+            _energyInstrumentsLastArea = DrawPlateRows(instruments, areaInk, foot4, false, row => null);
         }
 
         // ---- the rule on the price: one device, two part-lists; the wholesale row above is its head, the derivation its foot -----------

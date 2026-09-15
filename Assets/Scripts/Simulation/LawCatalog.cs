@@ -2350,16 +2350,177 @@ namespace PoliSim.Simulation
                 LrEconToward10 = 0.5f,
                 EnactmentApprovalCost = 0.5f
             },
+
+            // ================================================================================================
+            // EN-7b, THE ELECTRICITY TAX (2026-09-15): energy stage 5's law category (§474). Ten laws on the statutory rate per MWh by customer
+            // class, reaching StructuralParameter.ElectricityTaxHouseholds / ElectricityTaxNonHouseholds (euros per MWh at x1 on the tier grid);
+            // every one RequiresElectricityTaxStatute (the USA has no federal electricity excise). The ledger moves the retail stack's
+            // environmental-tax component by the change within its coverage, the business rate never below the EU minimum, and books the excise
+            // change to the budget. Each precedent's act and size is read from its saved file (ENERGY_LAYER_SPINE.md §15); the law's size is
+            // authored in euros per MWh, cited in direction. Tax cuts read right, rises left.
+            // ================================================================================================
+
+            // CONFIRMED-DIRECTION: Sweden's budget bill for 2026 (prop. 2025/26:1, SFS 2025:1357) - the rate 43.9 -> 36.0 öre per kWh (about
+            // -6.9 EUR/MWh at the ECB 2023 rate), industry's floor unchanged. Modelled as -10 EUR/MWh on households, MODERATE (10 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "household_electricity_tax_relief_act",
+                Name = "Household Electricity Tax Relief Act", PlainName = "Cut the household electricity tax",
+                Description = "Cuts the tax on the electricity households buy by ten euros a megawatt-hour, or to zero where it is lower (France and Poland levy about one euro); the rate firms pay stays where it is.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "Sweden's budget for 2026 cut the electricity tax from 43.9 to 36.0 öre per kWh from January 2026, the industrial rate unchanged (prop. 2025/26:1).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxHouseholds, -10f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // CONFIRMED-DIRECTION: France's price shield - the household accise to the EU minimum of 1 EUR/MWh from February 2022 (loi 2021-1900 art. 29),
+            // held for 2023 (loi 2022-1726 art. 64); Denmark's elafgift to the minimum for 2026-2027 (LOV nr 1775 of 29.12.2025). Modelled as -20 EUR/MWh
+            // on households, MAJOR (20 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "household_electricity_price_shield_act",
+                Name = "Household Electricity Price Shield Act", PlainName = "Shield households from the electricity tax",
+                Description = "Cuts the household electricity tax by twenty euros a megawatt-hour, or to zero where it is lower, as a price shield against a spike in the bill.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "France held its household electricity excise at the EU minimum of 1 euro per MWh from February 2022 (loi 2021-1900, article 29) through 2023 (loi 2022-1726, article 64); Denmark cut its elafgift to the minimum for 2026 and 2027.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxHouseholds, -20f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // CONFIRMED-DIRECTION: Poland's anti-inflation shield exempted households' electricity from excise for 2022 (Dz.U. 2021 poz. 2349, art. 163d;
+            // extended to the year's end by Dz.U. 2022 poz. 2180); Directive 2003/96/EC Article 15(1)(h) lets a member state exempt households.
+            // Modelled as -35 EUR/MWh on households (to zero from any 2023 rate), SWEEPING (35 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "household_electricity_tax_exemption_act",
+                Name = "Household Electricity Tax Reduction Act", PlainName = "Cut the household electricity tax by 35 euros",
+                Description = "Cuts the household electricity tax by thirty-five euros a megawatt-hour - to zero from any of the 2023 rates, as the EU directive allows for households.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "Poland exempted households' electricity from excise for 2022 under its anti-inflation shield (Dz.U. 2021 poz. 2349, extended by Dz.U. 2022 poz. 2180); Council Directive 2003/96/EC, Article 15(1)(h), allows a household exemption.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxHouseholds, -35f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = 1f,
+                EnactmentApprovalCost = 2.0f
+            },
+            // CONFIRMED-DIRECTION: Sweden's energy agreement (prop. 2016/17:142) - the rate for households and services +3.0 öre per kWh from July 2017 and
+            // +1.2 öre from 2019 (about +3.7 EUR/MWh together), industry not raised. Modelled as +5 EUR/MWh on households, MINOR (5 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "household_electricity_tax_rise_act",
+                Name = "Household Electricity Tax Rise Act", PlainName = "Raise the household electricity tax",
+                Description = "Raises the tax on the electricity households buy by five euros a megawatt-hour; the rate firms pay stays where it is.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "Sweden raised the electricity tax for households and services by 3.0 öre per kWh in 2017 and 1.2 öre in 2019, industry's rate unchanged (prop. 2016/17:142).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxHouseholds, 5f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // CONFIRMED-DIRECTION: France's restoration - the household accise 1 -> 21 EUR/MWh from February 2024 (loi 2023-1322 art. 92 and the arrêté of
+            // 25 January 2024), 33.70 from February 2025 as the shield lapsed. Modelled as +20 EUR/MWh on households, MAJOR (20 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "household_electricity_tax_restoration_act",
+                Name = "Household Electricity Tax Increase Act", PlainName = "Raise the household electricity tax by 20 euros",
+                Description = "Raises the household electricity tax by twenty euros a megawatt-hour - the size of France's first step back from its price shield, in February 2024.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "France restored its household electricity excise from 1 to 21 euros per MWh in February 2024 (loi 2023-1322, article 92) and to 33.70 in February 2025 as the shield lapsed.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxHouseholds, 20f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // CONFIRMED-DIRECTION: Germany's relief for manufacturing - the § 9b relief to 20 EUR/MWh on the 20.50 rate, net 0.50 (the EU minimum), for 2024-2025
+            // (Haushaltsfinanzierungsgesetz 2024, BGBl. 2023 I Nr. 412), made permanent from 2026 (BGBl. 2025 I Nr. 340). Modelled as -20 EUR/MWh on
+            // non-households, floored at the EU business minimum in the ledger, MAJOR (20 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "industrial_electricity_tax_relief_act",
+                Name = "Industrial Electricity Tax Relief Act", PlainName = "Cut the electricity tax on firms by 20 euros",
+                Description = "Cuts the electricity tax firms pay by twenty euros a megawatt-hour, never below the EU minimum of half a euro - where firms pay the minimum or near it, as in France and Sweden, it moves little or nothing.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "Germany cut the electricity tax for manufacturing to the EU minimum of 0.50 euro per MWh for 2024 and 2025 (Haushaltsfinanzierungsgesetz 2024) and made the cut permanent from 2026.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxNonHouseholds, -20f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = 1f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // CONFIRMED-DIRECTION: Italy's business tiers (decree-law 16/2012 art. 3-bis, L. 44/2012) - 0.0121 -> 0.0075 EUR/kWh on a firm's monthly use
+            // between 200 000 and 1 200 000 kWh from June 2012 (-4.6 EUR/MWh on that slice). Modelled as -5 EUR/MWh on non-households, MINOR (5 x1). Reads right.
+            new LawDefinition
+            {
+                Id = "large_user_electricity_tax_cut_act",
+                Name = "Business Electricity Tax Trim Act", PlainName = "Trim the electricity tax on firms",
+                Description = "Cuts the electricity tax firms pay by five euros a megawatt-hour - about the size of Italy's cut for its larger business users - never below the EU minimum of half a euro: where firms pay the minimum or near it, as in France, Sweden and Poland, it moves little or nothing.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "Italy cut its electricity excise to 0.0075 euro per kWh on a firm's monthly use between 200 000 and 1 200 000 kWh from June 2012 (decree-law 16/2012, article 3-bis).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxNonHouseholds, -5f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = 0.5f,
+                EnactmentApprovalCost = 0.5f
+            },
+            // CONFIRMED-DIRECTION: Germany's 2002 reform (Gesetz zur Fortentwicklung der ökologischen Steuerreform, BGBl. I 2002 S. 4602) - manufacturing's
+            // reduced rate from a fifth to three fifths of the standard rate from 2003, to 12.30 EUR/MWh (+8.2). Modelled as +10 EUR/MWh on
+            // non-households, MODERATE (10 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "business_electricity_tax_rise_act",
+                Name = "Business Electricity Tax Rise Act", PlainName = "Raise the electricity tax on industry",
+                Description = "Raises the electricity tax firms pay by ten euros a megawatt-hour.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "Germany raised manufacturing's reduced electricity tax from a fifth to three fifths of the standard rate from 2003, to 12.30 euros per MWh (the 2002 act continuing its ecological tax reform).",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxNonHouseholds, 10f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 1.0f
+            },
+            // CONFIRMED-DIRECTION: France's business accise 0.5 -> 20.5 EUR/MWh from February 2024 (loi 2023-1322 art. 92); Sweden's data centres lost the
+            // industrial rate from July 2023 (prop. 2022/23:1, SFS 2022:1781). Modelled as +20 EUR/MWh on non-households, MAJOR (20 x1). Reads left.
+            new LawDefinition
+            {
+                Id = "business_electricity_tax_restoration_act",
+                Name = "Business Electricity Tax Increase Act", PlainName = "Raise the electricity tax on firms by 20 euros",
+                Description = "Raises the electricity tax firms pay by twenty euros a megawatt-hour - the size of France's step back from its price shield in February 2024.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "France restored its business electricity excise from 0.5 to 20.5 euros per MWh in February 2024 (loi 2023-1322, article 92); Sweden ended data centres' reduced rate from July 2023.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxNonHouseholds, 20f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = -0.5f,
+                EnactmentApprovalCost = 1.5f
+            },
+            // CONFIRMED-DIRECTION: Germany's electricity tax began at 20.00 marks per MWh from April 1999, manufacturing at a fifth, as the
+            // first step of the ecological tax reform (Gesetz zum Einstieg in die ökologische Steuerreform, BGBl. I 1999 S. 378). Modelled as +10 EUR/MWh
+            // on both classes, MODERATE (10 x1 on each). Reads left.
+            new LawDefinition
+            {
+                Id = "ecological_electricity_tax_act",
+                Name = "Ecological Electricity Tax Act", PlainName = "Tax electricity for the climate",
+                Description = "Levies ten euros a megawatt-hour more on all electricity, households and firms alike, as an ecological tax.",
+                Category = LawCategory.ElectricityTax,
+                Citation = "Germany introduced its electricity tax in April 1999 at 20 marks per MWh, manufacturing at a fifth, as the first step of its ecological tax reform.",
+                Structural = new[] { new StructuralDelta(StructuralParameter.ElectricityTaxHouseholds, 10f), new StructuralDelta(StructuralParameter.ElectricityTaxNonHouseholds, 10f) },
+                RequiresElectricityTaxStatute = true,
+                LrEconToward10 = -1f,
+                EnactmentApprovalCost = 1.0f
+            },
         };
 
         /// <summary>P4-C3 third category, ruling (a) (2026-09-05): whether this law is within the country's parliament's competence -
         /// every law is, except one that reaches the currency zone's parameters (RequiresOwnCurrency) in a country that shares its
         /// zone (World.OwnsCurrencyZone false): the ECB's target and mandate are the treaty's, not a member's House's.</summary>
         public static bool IsWithinCompetence(World world, Country country, LawDefinition law)
-            => law == null || !law.RequiresOwnCurrency || (world != null && world.OwnsCurrencyZone(country));
+            => law == null
+               || ((!law.RequiresOwnCurrency || (world != null && world.OwnsCurrencyZone(country)))
+                   && (!law.RequiresElectricityTaxStatute || (country != null && EnergyLayer.HasElectricityTax(country.Id))));   // EN-7b: no statute, nothing to move
 
         /// <summary>The reason a law outside competence is not offered - the browser's line and the bill's refusal.</summary>
         public const string OutsideCompetenceReason = "TREATY COMPETENCE - the target and the mandate are the currency union's, not this House's";
+
+        /// <summary>EN-7b: the reason for THIS law - the treaty's line for a monetary-regime law, the missing statute's for an electricity-tax law where none is levied.</summary>
+        public static string OutsideCompetenceReasonFor(LawDefinition law)
+            => law != null && law.RequiresElectricityTaxStatute ? "NO NATIONAL ELECTRICITY TAX - the country levies no federal excise on electricity for this House to move" : OutsideCompetenceReason;
 
         /// <summary>Looks up a law by its stable Id, or null if no such law exists (e.g. an old save citing a since-removed law - the caller decides how to degrade, matching PolicyWebRenderer/DisplayName's own "missing entry, not a crash" idiom).</summary>
         public static LawDefinition GetById(string lawId)

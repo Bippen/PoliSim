@@ -19,6 +19,9 @@ namespace PoliSim.Simulation
         public float UnemploymentBenefitCost;
         public float InterestOnDebt;
         public float TariffRevenue;
+        /// <summary>EN-7b (2026-09-15): the electricity tax's receipts above the statute's base that accrued over the closed period at STANCE 1 - inside Revenue
+        /// like TariffRevenue, so never re-added; a surface showing it says "of which".</summary>
+        public float ElectricityTaxRevenue;
         /// <summary>Pass 6 (2026-08-27): the tariff pass-through the previous boundary PLANNED for the period
         /// that just closed, in inflation points (FiscalPeriod.PlannedTariffPassThroughPp) - the change in the
         /// tariff take, as a price-level term for one year. The Trade stats line reads it. EN-5 (2026-09-11):
@@ -123,6 +126,8 @@ namespace PoliSim.Simulation
         /// <summary>EN-7a (2026-09-14): the electricity pass-through the preview planned, inflation points - read after the clone's spending resolves, so a
         /// standing or drafted Energy subsidy's levy cut is in it as the boundary's plan will be; read by EnergyPassThroughDiagnostic's parity section.</summary>
         public float PreviewEnergyPassThroughPp;
+        /// <summary>EN-7b (2026-09-15): the electricity tax's receipts above the statute the preview planned, nominal billions - the clone's book, the flow the turn will book; read by EnergyPassThroughDiagnostic.</summary>
+        public float PreviewElectricityTaxRevenue;
         public float PreviewUnemployment;
         public float PreviewNaturalUnemployment;
         public float PreviewOutputGapPercent;
@@ -757,6 +762,12 @@ namespace PoliSim.Simulation
             /// level map beside the tariff term. Zero where no ledger covers the country; zero to the noise at no policy.</summary>
             public float PlannedEnergyPassThroughPp;
 
+            /// <summary>EN-7b (2026-09-15): the period's electricity-tax receipts above the statute's base, nominal billions - the book the ledger wrote at the
+            /// boundary that opened this period (EnergyLedger.AdvanceYear's return), accrued daily inside ApplyRevenueAndSpending beside the tariff flow: inside the
+            /// fiscal-reaction multiplier, outside CollectionEfficiency (the seeded 2023 taxes are inside its coverage bridge; this is only the change). Zero at the seed,
+            /// and a zero from an older save degrades to "no flow for the loaded period's remainder" - the tariff flow's posture, no guard.</summary>
+            public float PlannedElectricityTaxRevenue;
+
             /// <summary>Pass 6: what of the planned level terms ACTUALLY printed on the latest day
             /// (ApplyPhillipsCurveInflation's return - the clamped print with the terms minus the clamped
             /// print without them; the tariff and, since EN-5, the electricity pass-through together). The
@@ -829,6 +840,8 @@ namespace PoliSim.Simulation
             /// <summary>Pass 5: the tariff portion of AccruedRevenue, kept separately so the
             /// FiscalTurnReport can show "of which tariffs" as a true reading of what accrued.</summary>
             public float AccruedTariffRevenue;
+            /// <summary>EN-7b: the electricity tax's portion of AccruedRevenue at stance 1, kept for the report's "of which".</summary>
+            public float AccruedElectricityTaxRevenue;
 
             public void ResetAccrual()
             {
@@ -842,6 +855,7 @@ namespace PoliSim.Simulation
                 AccruedTotalSpending = 0f;
                 AccruedBudgetBalance = 0f;
                 AccruedTariffRevenue = 0f;
+                AccruedElectricityTaxRevenue = 0f;
             }
         }
 
@@ -1450,7 +1464,7 @@ namespace PoliSim.Simulation
         public bool IntroduceLawBill(CountryId countryId, LawBill bill)
         {
             // P4-C3 third category, ruling (a) (2026-09-05): a law outside the parliament's competence (a monetary-regime law in a
-            // country that shares its currency zone) is refused here as well as not offered - the browser's line and this gate agree.
+            // country that shares its currency zone; EN-7b: an electricity-tax law where no statute is levied - the USA) is refused here as well as not offered - the browser's line and this gate agree.
             if (!LawCatalog.IsWithinCompetence(_world, _world?.GetCountry(countryId), LawCatalog.GetById(bill.LawId)))
             {
                 return false;
@@ -2801,7 +2815,7 @@ namespace PoliSim.Simulation
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
             InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
             EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): the intensities' yearly step; since §349 (2026-09-07) the carbon tax's base reads them (TaxBaseDriver.Emissions) - the one feedback this family has
-            EnergyLedger.AdvanceYear(country);   // EN-4 (2026-09-11): the retail stack and the two ledgers at this year's dispatch; the industrial bill's change reaches BusinessConfidence next boundary (MacroSystem.ApplyCategorySpendingEffects)
+            double electricityTaxRevenueChange = EnergyLedger.AdvanceYear(country);   // EN-4 (2026-09-11): the retail stack and the two ledgers at this year's dispatch; the industrial bill's change reaches BusinessConfidence next boundary (MacroSystem.ApplyCategorySpendingEffects). EN-7b: its electricity-tax receipts above the statute, planned below
             MigrationPovertyFamily.AdvanceYear(country);   // P5-C6 (2026-09-06): readouts, no feedback
             BoundaryLedger?.Invoke(country, "families");
 
@@ -2832,6 +2846,7 @@ namespace PoliSim.Simulation
                 UnemploymentBenefitCost = period.AccruedUnemploymentBenefitCost,
                 InterestOnDebt = period.AccruedInterestOnDebt,
                 TariffRevenue = period.AccruedTariffRevenue,
+                ElectricityTaxRevenue = period.AccruedElectricityTaxRevenue,   // EN-7b
                 TariffPassThroughPp = period.PlannedTariffPassThroughPp,   // EN-5: the planned tariff term (the applied print carries two terms now - PriceLevelTermsAppliedPp)
                 EnergyPassThroughPp = period.PlannedEnergyPassThroughPp,
                 PriceLevelTermsAppliedPp = period.AppliedPriceLevelTermsPp,
@@ -2899,6 +2914,8 @@ namespace PoliSim.Simulation
             // EN-5 (2026-09-11): the electricity pass-through for the coming period - the household price the ledger wrote above (the families ran before
             // this re-plan), relative to the general price level, in the index's weight; a price-level term the expectations step looks through
             period.PlannedEnergyPassThroughPp = EnergyPassThrough.Planned(country);
+            // EN-7b (2026-09-15): the electricity tax's receipts above the statute for the coming period - the book the ledger wrote above, booked as a flow
+            period.PlannedElectricityTaxRevenue = (float)electricityTaxRevenueChange;
 
             // Read AFTER 121 days of accrual have finished moving the debt stock, so the stance the next
             // period adopts responds to the debt the country actually ended this one with - the same
@@ -3119,7 +3136,8 @@ namespace PoliSim.Simulation
             // weight (EnergyPassThrough.PlannedForPreview). EN-7a: read HERE, after the clone's spending resolves, as the boundary plans after its pressures
             // and ledger - read before, it missed the Energy subsidy's move of the energy line (the levy it displaces) and the sector draft, which the clone
             // takes only at ApplySectorPolicyChanges.
-            float previewEnergyPassThroughPp = EnergyPassThrough.PlannedForPreview(previewCountry);
+            float previewEnergyPassThroughPp = EnergyPassThrough.PlannedForPreview(previewCountry, out EnergyLedger.Book previewEnergyBook);
+            float previewElectricityTaxRevenue = previewEnergyBook != null ? (float)previewEnergyBook.ElectricityTaxRevenueChange : 0f;   // EN-7b: the flow the turn will plan, from the same clearing
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
             // Phase 1: the preview deliberately keeps the TURN-level forms. It models one whole turn on a
             // throwaway clone WITHOUT advancing any days, so the daily methods would never be called on it
@@ -3161,7 +3179,7 @@ namespace PoliSim.Simulation
             // Capturing them adds no arithmetic and no second estimate: the figures a draft's
             // fiscal impact is built from are the boundary's own, which is pass 5's lesson on the
             // Budget "Net" line (never a hand sum beside the model).
-            float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, previewTariffRevenue, out float previewSpending, out _);
+            float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, previewTariffRevenue, previewElectricityTaxRevenue, out float previewSpending, out _);
 
             float previewedInterestRate;
             if (previewCountry.CurrentFedChair != null)
@@ -3223,6 +3241,7 @@ namespace PoliSim.Simulation
                 SectorDeltas = SectorDeltasSince(previewCountry, sectorsBefore),   // P4-B3
                 PreviewInflation = state.Inflation,
                 PreviewEnergyPassThroughPp = previewEnergyPassThroughPp,   // EN-7a
+                PreviewElectricityTaxRevenue = previewElectricityTaxRevenue,   // EN-7b
                 PreviewUnemployment = state.Unemployment,
                 PreviewNaturalUnemployment = previewCountry.EffectiveNaturalUnemploymentRate,   // FT-8 (§398): the figure the rule reads
                 PreviewOutputGapPercent = TaylorRule.GetOutputGapPercent(previewCountry),
@@ -3433,6 +3452,12 @@ namespace PoliSim.Simulation
                 CollectionEfficiency = country.CollectionEfficiency,
                 BaseDebtInterestRateOverride = country.BaseDebtInterestRateOverride,
                 RiskPremiumSensitivity = country.RiskPremiumSensitivity,
+                // EN-7b: the electricity tax's statute AND its base - the ledger reads their difference on the preview path (EnergyPassThrough.PlannedForPreview); a value
+                // without its base would preview the whole statute on top, a base without its value a repeal (the R4-1 clone-escape class)
+                ElectricityTaxHouseholds = country.ElectricityTaxHouseholds,
+                ElectricityTaxHouseholdsBase = country.ElectricityTaxHouseholdsBase,
+                ElectricityTaxNonHouseholds = country.ElectricityTaxNonHouseholds,
+                ElectricityTaxNonHouseholdsBase = country.ElectricityTaxNonHouseholdsBase,
                 // R4: both maturity-lag fields ride the preview clone's hand-list - the R4-1
                 // Clone-escape lesson applies to THIS list too (a missed field here silently
                 // previews at the sentinel fallback, i.e. instant repricing).
@@ -4550,6 +4575,7 @@ namespace PoliSim.Simulation
                 // Pass 6: no previous boundary, so no tariff change to pass through; EN-5: nor an electricity year written yet.
                 PlannedTariffPassThroughPp = 0f,
                 PlannedEnergyPassThroughPp = 0f,
+                PlannedElectricityTaxRevenue = 0f,   // EN-7b: every statute at its base at the seed
                 AppliedPriceLevelTermsPp = 0f,
                 PlannedFiscalReactionMultiplier = GetFiscalReactionMultiplier(country),
                 GdpAtPeriodOpen = country.State.GDP,
@@ -4605,6 +4631,8 @@ namespace PoliSim.Simulation
             // Pass 5: the planned tariff flow, sliced exactly like mandatory spending - a fixed period
             // figure distributed linearly, so the daily form sums to the turn form by construction.
             float tariffRevenue = period.PlannedTariffRevenue * FiscalFlowPerDayFraction;
+            // EN-7b: the electricity tax's planned flow, sliced the same way
+            float electricityTaxRevenue = period.PlannedElectricityTaxRevenue * FiscalFlowPerDayFraction;
 
             float swfReturns = 0f;
             float swfDraw = 0f;
@@ -4635,10 +4663,11 @@ namespace PoliSim.Simulation
             float interestAtIssuanceToday = debtBeforeWrite > 0f ? debtBeforeWrite * (issuanceRateToday / 100f) * FiscalFlowPerDayFraction : 0f;
             DebtLedgerRecorder.EnsureAccruing(country, CurrentDate, debtBeforeWrite);
 
-            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
+            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, electricityTaxRevenue, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
 
             period.AccruedRevenue += revenue;
             period.AccruedTariffRevenue += tariffRevenue;
+            period.AccruedElectricityTaxRevenue += electricityTaxRevenue;   // EN-7b
             period.AccruedMandatorySpending += mandatorySpending;
             period.AccruedUnemploymentBenefitCost += unemploymentBenefitCost;
             period.AccruedInterestOnDebt += interestOnDebt;
@@ -4695,7 +4724,7 @@ namespace PoliSim.Simulation
                 country.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, out _, out _);
+            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, 0f, out _, out _);   // EN-7b: the equivalence bar runs no law - no electricity-tax flow on either side
         }
 
         /// <summary>
@@ -4714,6 +4743,7 @@ namespace PoliSim.Simulation
             period.PlannedSwfReturn = swfPeriodReturn;
             period.PlannedTariffRevenueReal = tariffRevenue;
             period.PlannedTariffRevenue = tariffRevenue * country.State.PriceLevel;   // P5-B6: the take is computed on real trade; the book is nominal
+            period.PlannedElectricityTaxRevenue = 0f;   // EN-7b: the same plan the turn side runs - no law, no flow
             AccrueDailyFiscalFlows(country);
         }
 
@@ -4763,7 +4793,7 @@ namespace PoliSim.Simulation
         /// path passes the value its period opened with instead; see FiscalPeriod for why that one is
         /// held fixed while every other component is recomputed daily.
         /// </summary>
-        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns, float tariffRevenue, out float totalSpending, out float budgetBalance, float revenuePeriodFraction = 1f, float fiscalReactionMultiplierOverride = -1f)
+        private float ApplyRevenueAndSpending(Country country, float governmentSpending, float mandatorySpending, float unemploymentBenefitCost, float interestOnDebt, float welfareCost, float swfContribution, float swfReturns, float tariffRevenue, float electricityTaxRevenue, out float totalSpending, out float budgetBalance, float revenuePeriodFraction = 1f, float fiscalReactionMultiplierOverride = -1f)
         {
             EconomyState state = country.State;
             float theoreticalRevenue = GetTotalTaxRevenue(country) * revenuePeriodFraction;
@@ -4798,7 +4828,10 @@ namespace PoliSim.Simulation
             // tax revenue. The symmetry holds at the other end too: a heavily indebted government leans
             // harder on its fund.
             // Pass 5: the tariff flow sits with the fund draw - inside the multiplier, outside CE.
-            float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + swfReturns + tariffRevenue) * fiscalReactionMultiplier;
+            // EN-7b: the electricity tax's change sits with them - inside the multiplier, outside CE (the seeded taxes are inside CE's coverage bridge). ONE
+            // expression, the flow always summed (0 at no law): a ternary over the two expressions - and even a dead if-block writing actualRevenue a second
+            // time - moved the no-policy budget by a float's last digit on turn 1 (the sentinel caught both, 2026-09-15; §402's class)
+            float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + swfReturns + tariffRevenue + electricityTaxRevenue) * fiscalReactionMultiplier;
             totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
             budgetBalance = actualRevenue - totalSpending;
 

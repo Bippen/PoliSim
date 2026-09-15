@@ -101,6 +101,8 @@ namespace PoliSim.EditorTools
                 ok &= VerifyStructural(sim, world.GetCountry(CountryId.Germany), LawCategory.FiscalFramework);   // P4-C3, the second category
                 ok &= VerifyStructural(sim, world.GetCountry(CountryId.Sweden), LawCategory.MonetaryRegime);   // P4-C3, the third category: the zone's parameters, Sweden owns its bank
                 ok &= VerifyCompetence(sim, world);   // ruling (a): a euro member's House does not reach the ECB
+                ok &= VerifyStructural(sim, world.GetCountry(CountryId.Germany), LawCategory.ElectricityTax);   // EN-7b: the electricity tax, on a country that levies one
+                ok &= VerifyElectricityTaxCompetence(sim, world);   // EN-7b: the USA levies no federal electricity excise
 
                 Debug.Log(ok
                     ? "COMPOSITION: PASS - all six dials matched their independently-summed composed value " +
@@ -226,6 +228,57 @@ namespace PoliSim.EditorTools
             Debug.Log(ok
                 ? $"COMPOSITION: P4-C3 - {monetary} MonetaryRegime laws refused for Germany, France and Italy (treaty competence, ruling (a)); Sweden, Poland and the USA own their zones; Poland's target 2.5."
                 : "COMPOSITION: P4-C3 - competence FAILED (see above).");
+            return ok;
+        }
+
+        /// <summary>EN-7b (2026-09-15): every ElectricityTax law carries RequiresElectricityTaxStatute; the USA refuses each (IntroduceLawBill false, its two statutes at
+        /// their base of 0); the five that levy one have each within competence; and at the seed every country's statute is its base bit for bit, inside the bounds.</summary>
+        private static bool VerifyElectricityTaxCompetence(SimulationManager sim, World world)
+        {
+            bool ok = true;
+            int laws = 0;
+            Country usa = world.GetCountry(CountryId.USA);
+            foreach (LawDefinition law in LawCatalog.All)
+            {
+                if (law.Category != LawCategory.ElectricityTax) { continue; }
+                laws++;
+                if (!law.RequiresElectricityTaxStatute) { Debug.LogError($"COMPOSITION: EN-7b - {law.Id} is an electricity-tax law without RequiresElectricityTaxStatute."); ok = false; }
+                if (law.RequiresOwnCurrency) { Debug.LogError($"COMPOSITION: EN-7b - {law.Id} carries RequiresOwnCurrency and would be refused in the euro members."); ok = false; }
+                float hh = usa.ElectricityTaxHouseholds, nh = usa.ElectricityTaxNonHouseholds;
+                if (sim.IntroduceLawBill(CountryId.USA, new LawBill { LawId = law.Id, IsRepeal = false })) { Debug.LogError($"COMPOSITION: EN-7b - the USA introduced {law.Id}; it levies no federal electricity excise."); ok = false; }
+                if (usa.ElectricityTaxHouseholds != hh || usa.ElectricityTaxNonHouseholds != nh) { Debug.LogError($"COMPOSITION: EN-7b - the USA's statute moved on a refused bill."); ok = false; }
+                foreach (CountryId levies in new[] { CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.Sweden })
+                {
+                    if (!LawCatalog.IsWithinCompetence(world, world.GetCountry(levies), law)) { Debug.LogError($"COMPOSITION: EN-7b - {law.Id} is outside {levies}'s competence; it levies an electricity tax."); ok = false; }
+                }
+            }
+            foreach (Country c in world.Countries)
+            {
+                foreach (StructuralParameters.Spec spec in StructuralParameters.All)
+                {
+                    if (spec.Parameter != StructuralParameter.ElectricityTaxHouseholds && spec.Parameter != StructuralParameter.ElectricityTaxNonHouseholds) { continue; }
+                    float b = spec.GetBase(c);
+                    if (b < spec.Min || b > spec.Max) { Debug.LogError($"COMPOSITION: EN-7b - {c.Id}'s {spec.Parameter} base {b} is outside the bounds [{spec.Min}, {spec.Max}]."); ok = false; }
+                }
+            }
+            if (laws < 10) { Debug.LogError($"COMPOSITION: EN-7b - only {laws} electricity-tax law(s)."); ok = false; }
+            // the USA carries no statute: value and base 0 in both classes (the refusal above is not the only thing keeping its stack still)
+            if (usa.ElectricityTaxHouseholds != 0f || usa.ElectricityTaxHouseholdsBase != 0f || usa.ElectricityTaxNonHouseholds != 0f || usa.ElectricityTaxNonHouseholdsBase != 0f)
+            {
+                Debug.LogError($"COMPOSITION: EN-7b - the USA's electricity-tax statute is not zero (households {usa.ElectricityTaxHouseholds}/{usa.ElectricityTaxHouseholdsBase}, firms {usa.ElectricityTaxNonHouseholds}/{usa.ElectricityTaxNonHouseholdsBase})."); ok = false;
+            }
+            // the clause refuses the electricity-tax laws only: a law of any other category that needs no own currency stays within the USA's competence
+            int otherLaws = 0;
+            foreach (LawDefinition law in LawCatalog.All)
+            {
+                if (law.Category == LawCategory.ElectricityTax || law.RequiresOwnCurrency) { continue; }
+                otherLaws++;
+                if (!LawCatalog.IsWithinCompetence(world, usa, law)) { Debug.LogError($"COMPOSITION: EN-7b - {law.Id} ({law.Category}) is outside the USA's competence; the electricity-tax clause must refuse only its own category."); ok = false; break; }
+            }
+            if (otherLaws == 0) { Debug.LogError("COMPOSITION: EN-7b - no law outside the electricity-tax category to hold the USA's competence against."); ok = false; }
+            Debug.Log(ok
+                ? $"COMPOSITION: EN-7b - {laws} ElectricityTax laws refused for the USA (no federal electricity excise, its statute and base 0), within competence for the five that levy one; {otherLaws} laws of the other categories within the USA's; every base inside the bounds."
+                : "COMPOSITION: EN-7b - electricity-tax competence FAILED (see above).");
             return ok;
         }
 

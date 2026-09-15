@@ -42,6 +42,8 @@ namespace PoliSim.EditorTools
         internal static readonly string[] HydroZones = { "SE1", "SE2", "SE3", "SE4", "DE", "PL" };
         /// <summary>EN-3b: the hydro fleets' storage character per country - run-of-river and pumped capacity, the shiftable share.</summary>
         internal const string HydroFleetSource = "EnergyData/hydro_fleet_2023.csv";
+        /// <summary>EN-7b: the statutory electricity tax per country and class, 2023 (Tools/energy_tax_prep.pl, COMPLETED.md §499) - the base the electricity-tax laws compose on, its coverage of the seed's TAX_ENV, the EU floor; no USA row (no federal excise).</summary>
+        internal const string ElectricityTaxSource = "EnergyData/electricity_tax_2023.csv";
         private const string OutputRelative = "Assets/Scripts/Data/Generated/EnergyLayerData.cs";
         internal static readonly string[] DispatchBlocks = { "base", "mid", "peak" };
         internal static readonly string[] DispatchCategories = { "coal", "gas", "oil", "nuclear", "hydro", "wind", "solar", "firm" };
@@ -152,7 +154,23 @@ namespace PoliSim.EditorTools
                 (List<string[]> hydroFleet, string dHydroFleet) = Read(Path.Combine(root, HydroFleetSource), "country;hydro_mw;run_of_river_mw;pumped_mw;shiftable_share;status");
                 if (hydroFleet.Count != Countries.Length) { throw new InvalidDataException($"hydro fleet: {hydroFleet.Count} rows, expected {Countries.Length}"); }
                 for (int i = 0; i < hydroFleet.Count; i++) { if (hydroFleet[i][0] != Countries[i]) { throw new InvalidDataException($"hydro fleet row {i}: {hydroFleet[i][0]}, expected {Countries[i]}"); } double sh = P(hydroFleet[i][4]); if (sh < 0 || sh > 1) { throw new InvalidDataException($"hydro fleet: {Countries[i]}'s shiftable share {sh} is outside [0, 1]"); } }
-                string text = Emit(capR, capE, genR, genE, blocks, zones, links, fuel, co2, country, dFleet, dBlocks, dZones, dLinks, dComb, dCountry, dispatch, costs, external, dDispatch, dCosts, dExternal, retail, dRetail, weights, dWeights, hydro, dHydro, hydroFleet, dHydroFleet);
+                // EN-7b: the electricity tax's statute - one row per covered country and class, mapped BY CODE (the file lists DE, SE, FR, IT, PL; the catalog's order is DE, FR, IT, PL, SE, US)
+                (List<string[]> tax, string dTax) = Read(Path.Combine(root, ElectricityTaxSource), "country;class;rate;unit;currency;eur_per_kwh;component;coverage;floor_eur_per_kwh;paragraph;source;note");
+                if (tax.Count != (Countries.Length - 1) * RetailClasses.Length) { throw new InvalidDataException($"electricity tax: {tax.Count} rows, expected {(Countries.Length - 1) * RetailClasses.Length} (no USA row)"); }
+                var taxSeen = new bool[Countries.Length, RetailClasses.Length];
+                foreach (string[] r in tax)
+                {
+                    int tc = Array.IndexOf(Countries, r[0]), tk = Array.IndexOf(RetailClasses, r[1]);
+                    if (tc < 0 || tk < 0 || r[0] == "US") { throw new InvalidDataException($"electricity tax: a row for {r[0]}/{r[1]}, which the catalog does not carry as a statute"); }
+                    if (taxSeen[tc, tk]) { throw new InvalidDataException($"electricity tax: {r[0]}/{r[1]} twice"); }
+                    taxSeen[tc, tk] = true;
+                    double perKwh = P(r[5]), component = P(r[6]), coverage = P(r[7]), floor = P(r[8]);
+                    if (!(perKwh > 0) || !(component > 0) || !(floor > 0)) { throw new InvalidDataException($"electricity tax: {r[0]}/{r[1]} has a rate, component or floor that is not positive"); }
+                    if (Math.Abs(component - P(retail[tc * RetailClasses.Length + tk][6])) > 1e-9) { throw new InvalidDataException($"electricity tax: {r[0]}/{r[1]}'s component {r[6]} is not the retail seed's tax_env {retail[tc * RetailClasses.Length + tk][6]} - re-run Tools/energy_tax_prep.pl after a retail refresh"); }
+                    if (Math.Abs(coverage - component / perKwh) > 0.002 * Math.Max(1.0, coverage)) { throw new InvalidDataException($"electricity tax: {r[0]}/{r[1]}'s printed coverage {r[7]} is not its component over its rate ({component / perKwh:0.####})"); }
+                }
+                for (int tc = 0; tc < Countries.Length; tc++) { for (int tk = 0; tk < RetailClasses.Length; tk++) { if (Countries[tc] != "US" && !taxSeen[tc, tk]) { throw new InvalidDataException($"electricity tax: no row for {Countries[tc]}/{RetailClasses[tk]}"); } } }
+                string text = Emit(capR, capE, genR, genE, blocks, zones, links, fuel, co2, country, dFleet, dBlocks, dZones, dLinks, dComb, dCountry, dispatch, costs, external, dDispatch, dCosts, dExternal, retail, dRetail, weights, dWeights, hydro, dHydro, hydroFleet, dHydroFleet, tax, dTax);
                 File.WriteAllText(Path.Combine(root, OutputRelative), text, new UTF8Encoding(false));
                 Debug.Log($"ENERGY: catalog written to {OutputRelative} from six files under EnergyData/ ({dFleet.Substring(0, 12)}…, {dBlocks.Substring(0, 12)}…, {dZones.Substring(0, 12)}…, {dLinks.Substring(0, 12)}…, {dComb.Substring(0, 12)}…, {dCountry.Substring(0, 12)}…).");
                 CheckExit.Finish(0);
@@ -198,7 +216,7 @@ namespace PoliSim.EditorTools
         private static string Emit(double[][] capR, double[][] capE, double[][] genR, double[][] genE, List<string[]> blocks, List<string[]> zones, List<string[]> links, double[][][] fuel, double[][][] co2, List<string[]> country,
             string dFleet, string dBlocks, string dZones, string dLinks, string dComb, string dCountry,
             List<string[]> dispatch, List<string[]> costs, List<string[]> external, string dDispatch, string dCosts, string dExternal, List<string[]> retail, string dRetail, List<string[]> weights, string dWeights,
-            List<string[]> hydro, string dHydro, List<string[]> hydroFleet, string dHydroFleet)
+            List<string[]> hydro, string dHydro, List<string[]> hydroFleet, string dHydroFleet, List<string[]> tax, string dTax)
         {
             var sb = new StringBuilder();
             sb.Append("// GENERATED by PoliSim.EditorTools.EnergyCatalogGenerator. DO NOT EDIT BY HAND.\n//\n");
@@ -381,6 +399,14 @@ namespace PoliSim.EditorTools
             Block(sb, "HydroShiftableShare", "The share of the year's hydro energy a reservoir operator can move between the load blocks, per country - (hydro − run-of-river − pumped) / (hydro − pumped) from Eurostat nrg_inf_epcrw 2023; 1 for Sweden (regulated rivers); 0 where the run-of-river row is a reporting hole (France, Poland) or absent (the USA), BILLED.", hShare);
             Block(sb, "HydroRunOfRiverMw", "Run-of-river hydro capacity per country, MW (Eurostat nrg_inf_epcrw RA110ROR; 0 where unreported).", hRor);
             Block(sb, "HydroPumpedMw", "Pumped-storage capacity per country, MW (Eurostat nrg_inf_epcrw RA130) - a store, not an inflow.", hPump);
+            // EN-7b (2026-09-15): the electricity tax's statute
+            sb.Append("        // ---- EN-7b (2026-09-15): the statutory electricity tax - the base the electricity-tax laws compose on\n");
+            sb.Append("        public const string ElectricityTaxDigest = \"").Append(dTax).Append("\";\n");
+            var tRate = New2(Countries.Length, RetailClasses.Length); var tFloor = New2(Countries.Length, RetailClasses.Length);
+            for (int tc = 0; tc < Countries.Length; tc++) { for (int tk = 0; tk < RetailClasses.Length; tk++) { tRate[tc][tk] = -1.0; tFloor[tc][tk] = -1.0; } }
+            foreach (string[] r in tax) { int tc = Array.IndexOf(Countries, r[0]), tk = Array.IndexOf(RetailClasses, r[1]); tRate[tc][tk] = P(r[5]) * 1000.0; tFloor[tc][tk] = P(r[8]) * 1000.0; }
+            Matrix(sb, "ElectricityTaxEurPerMwh", "The statutory electricity tax the class's Eurostat band pays, 2023, by [country][class], EUR per MWh - the statute's own figure at the ECB 2023 rate (EnergyData/electricity_tax_2023.csv): the BASE the electricity-tax laws compose on; -1 for the USA (no federal electricity excise, not offered). Its coverage of the seed's environmental-tax component is RetailTaxEnv over this, capped at 1 by the ledger.", tRate);
+            Matrix(sb, "ElectricityTaxFloorEurPerMwh", "The EU minimum on electricity by [country][class], EUR per MWh (Council Directive 2003/96/EC, Annex I Table C): non-business 1, business 0.5 - households may be exempted outright (Article 15(1)(h)); -1 for the USA.", tFloor);
             sb.Append("    }\n}\n");
             return sb.ToString();
         }

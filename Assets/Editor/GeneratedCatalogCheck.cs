@@ -235,6 +235,8 @@ namespace PoliSim.EditorTools
                 // EN-3b (2026-09-11): the reservoir dispatch's two files
                 (EnergyCatalogGenerator.HydroSource, EnergyLayerData.HydroDigest, EnergyLayerData.HydroZones.Length),
                 (EnergyCatalogGenerator.HydroFleetSource, EnergyLayerData.HydroFleetDigest, EnergyLayerData.Countries.Length),
+                // EN-7b (2026-09-15): the electricity tax's statute - a row per class for every covered country but the USA (no federal excise)
+                (EnergyCatalogGenerator.ElectricityTaxSource, EnergyLayerData.ElectricityTaxDigest, (EnergyLayerData.Countries.Length - 1) * EnergyLayerData.RetailClasses.Length),
             };
             foreach ((string relative, string recorded, int rows) in sources)
             {

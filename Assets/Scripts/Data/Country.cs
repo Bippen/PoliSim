@@ -169,6 +169,11 @@ namespace PoliSim.Data
         public float GovernmentSpendingRateBase;
         /// <summary>P4-C3 (2026-09-05, the labour institutions' second reach): the seeded benefit rate per point of unemployment; the labour laws that cut benefit levels or duration compose on it.</summary>
         public float BenefitRatePerUnemployedBase;
+        /// <summary>EN-7b (2026-09-15): the statutory electricity tax per retail class, EUR per MWh - as the electricity-tax laws compose it (StructuralParameter.ElectricityTax*),
+        /// and its base, the 2023 statute (EnergyLayer.ElectricityTaxBaseEurPerMwh; 0 where the country levies none - the USA). The ledger moves the stack's environmental-tax
+        /// component by the difference (EnergyLedger.ElectricityTaxDeltaEurPerMwh); value and base are seeded from one float, so the difference is exactly 0 at the seed.</summary>
+        public float ElectricityTaxHouseholds, ElectricityTaxNonHouseholds;
+        public float ElectricityTaxHouseholdsBase, ElectricityTaxNonHouseholdsBase;
 
         /// <summary>P5-C2 (2026-09-05): the health family's seeds and bases (HealthFamily.Seed) - the state it moves is on EconomyState.</summary>
         public HealthSeeds Health = new HealthSeeds();
@@ -226,6 +231,10 @@ namespace PoliSim.Data
             CollectionEfficiencyBase = CollectionEfficiency;
             GovernmentSpendingRateBase = GovernmentSpendingRate;
             BenefitRatePerUnemployedBase = BenefitRatePerUnemployed;   // P4-C3, the labour institutions' second reach
+            // EN-7b (2026-09-15): the electricity tax's statute from the generated catalog - a static table, so no seeding order is at stake - value and base from
+            // ONE float each, bit-identical (the ledger's branch compares them); 0 where the country levies none (the USA)
+            ElectricityTaxHouseholds = ElectricityTaxHouseholdsBase = (float)EnergyLayer.ElectricityTaxBaseEurPerMwh(Id, 0);
+            ElectricityTaxNonHouseholds = ElectricityTaxNonHouseholdsBase = (float)EnergyLayer.ElectricityTaxBaseEurPerMwh(Id, 1);
         }
 
         /// <summary>

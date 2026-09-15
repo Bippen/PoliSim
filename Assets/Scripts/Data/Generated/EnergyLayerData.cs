@@ -594,5 +594,29 @@ namespace PoliSim.Data.Generated
         /// <summary>Pumped-storage capacity per country, MW (Eurostat nrg_inf_epcrw RA130) - a store, not an inflow.</summary>
         public static readonly double[] HydroPumpedMw = { 5345, 1728, 3970, 1423, 0, 0 };
 
+        // ---- EN-7b (2026-09-15): the statutory electricity tax - the base the electricity-tax laws compose on
+        public const string ElectricityTaxDigest = "f492b0784f36ff541689ef5341348c79c9bf38ad2a0d20b1867e21e1f3cc148c";
+        /// <summary>The statutory electricity tax the class's Eurostat band pays, 2023, by [country][class], EUR per MWh - the statute's own figure at the ECB 2023 rate (EnergyData/electricity_tax_2023.csv): the BASE the electricity-tax laws compose on; -1 for the USA (no federal electricity excise, not offered). Its coverage of the seed's environmental-tax component is RetailTaxEnv over this, capped at 1 by the ledger.</summary>
+        public static readonly double[][] ElectricityTaxEurPerMwh =
+        {
+            new double[] { 20.5, 20.5 },
+            new double[] { 1, 0.5 },
+            new double[] { 22.7, 12.5 },
+            new double[] { 1.101, 1.101 },
+            new double[] { 34.15, 0.523 },
+            new double[] { -1, -1 },
+        };
+
+        /// <summary>The EU minimum on electricity by [country][class], EUR per MWh (Council Directive 2003/96/EC, Annex I Table C): non-business 1, business 0.5 - households may be exempted outright (Article 15(1)(h)); -1 for the USA.</summary>
+        public static readonly double[][] ElectricityTaxFloorEurPerMwh =
+        {
+            new double[] { 1, 0.5 },
+            new double[] { 1, 0.5 },
+            new double[] { 1, 0.5 },
+            new double[] { 1, 0.5 },
+            new double[] { 1, 0.5 },
+            new double[] { -1, -1 },
+        };
+
     }
 }

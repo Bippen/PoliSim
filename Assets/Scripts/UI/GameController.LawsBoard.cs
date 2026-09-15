@@ -33,6 +33,7 @@ namespace PoliSim.UI
             (LawBrowserFilter.LabourInstitutions, "Unions & contracts"),
             (LawBrowserFilter.FiscalFramework, "The budget rules"),
             (LawBrowserFilter.MonetaryRegime, "The interest rate"),
+            (LawBrowserFilter.ElectricityTax, "The electricity tax"),   // EN-7b
         };
 
         private int LawCategoryCount(LawBrowserFilter filter)
@@ -44,6 +45,7 @@ namespace PoliSim.UI
                 case LawBrowserFilter.LabourInstitutions: return LabourInstitutionsLawCount;
                 case LawBrowserFilter.FiscalFramework: return FiscalFrameworkLawCount;
                 case LawBrowserFilter.MonetaryRegime: return MonetaryRegimeLawCount;
+                case LawBrowserFilter.ElectricityTax: return ElectricityTaxLawCount;   // EN-7b
                 default: return LawCatalog.All.Count;
             }
         }

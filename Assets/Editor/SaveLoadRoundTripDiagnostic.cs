@@ -449,10 +449,12 @@ namespace PoliSim.EditorTools
                 "restorative_justice_program", "mental_health_diversion_courts", "human_trafficking_task_force",
                 "antimafia_asset_confiscation_law", "national_guard_border_deployment", "pretrial_services_agency_establishment",
                 "raise_the_wage_act", "immigration_restriction_act", "flexicurity_package_act",
-                "immigration_skills_levy_act", "hartz_benefit_reform_act", "constitutional_debt_brake_act"
+                "immigration_skills_levy_act", "hartz_benefit_reform_act", "constitutional_debt_brake_act",
+                "industrial_electricity_tax_relief_act"   // EN-7b: where offered - the statute crosses the save off its base
             };
             foreach (string lawId in lawsToEnact)
             {
+                if (!LawCatalog.IsWithinCompetence(world, playerCountry, LawCatalog.GetById(lawId))) { continue; }   // EN-7b: the USA levies no electricity tax; a direct add would bypass the gate
                 playerCountry.EnactedLaws.Add(new EnactedLaw { LawId = lawId, EnactedOn = sim.CurrentDate });
             }
 
@@ -461,7 +463,7 @@ namespace PoliSim.EditorTools
             // internally consistent one real enactment produces - labor dials genuinely offset
             // from their bases across the save, C&J dials law-driven, instead of an enacted list
             // whose dials never moved.
-            foreach (string recompute in new[] { "RecomputeCrimeJusticeDialsFromEnactedLaws", "RecomputeLaborDialsFromEnactedLaws" })
+            foreach (string recompute in new[] { "RecomputeCrimeJusticeDialsFromEnactedLaws", "RecomputeLaborDialsFromEnactedLaws", "RecomputeStructuralParametersFromEnactedLaws" })   // EN-7b: the structural laws' values now cross the save off their bases too
             {
                 MethodInfo recomputeMethod = typeof(SimulationManager).GetMethod(recompute, BindingFlags.Instance | BindingFlags.NonPublic);
                 if (recomputeMethod == null)
