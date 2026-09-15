@@ -71,8 +71,12 @@ namespace PoliSim.EditorTools
     public static class ResponsivenessAuditHarness
     {
         private const int Seed = 777;
-        private const int Years = 6;
+        internal const int Years = 6;
         private static readonly CountryId Subject = CountryId.Sweden;
+
+        /// <summary>§512 (2026-09-15): the impact sweep's G-share scale (<see cref="ImpactScaleSweep"/>) - every country's k set, before the first day, to
+        /// 1 + blend × (its seeded k − 1), exactly 1 at a blend of 0. Null - the harness's own runs - leaves the seeded k untouched.</summary>
+        internal static float? ScaleBlend;
 
         /// <summary>Ramey's band, read at the paper: *"a surprisingly narrow range of 0.6 to 1"* for
         /// multipliers on general government purchases. ⚠ **D-13 (b) enforces on the CUMULATIVE column
@@ -101,16 +105,26 @@ namespace PoliSim.EditorTools
         /// never had (§404: 0.510–0.514 with the dice on, 0.507–0.511 without). Since §404 the harness runs with EventSystem.Enabled = false, and the
         /// verdict prints every spending dial's impact at four decimals; the ratchet is the lowest of them on that basis, and §406 records the reading it
         /// was set on. Still a floor, still never lowered, still retired at 0.6. The with-events history stays here as history.</para>
+        ///
+        /// <para>§512 (2026-09-15), RE-BASED BY RULING ON A CURVE, NOT A READING. T-3 form A (§507) put the identity's G at the sourced share through one
+        /// scale per country, k, and the impact read 0.4984 against 0.5074 - breached, attributed to k, not lowered. Elias ruled: sweep the multiplier
+        /// across k from 1 (where the code reproduces the old dump exactly - measured: `f4s2` 76 of 76 fields byte-identical, both seeds, three horizons)
+        /// to the seeded value; continuous means the mechanism is real and the ratchet re-bases with the curve recorded, a step means a seam. The sweep
+        /// (`ImpactScaleSweep`, every country's k blended, Sweden's 1.0000 → 1.2526) read a CONTINUOUS decline on all three dials, no grid step reaching
+        /// twice the median. The curve, impact at +2 % · +10 % · −10 %, by Sweden's k: 1.0000 0.5101 · 0.5114 · 0.5079 · 1.0631 0.5084 · 0.5095 · 0.5057
+        /// · 1.1263 0.5057 · 0.5075 · 0.5036 · 1.1894 0.5046 · 0.5056 · 0.5014 · 1.2526 0.5013 · 0.5028 · 0.4984. The mechanism: the purchases impulse
+        /// grows with k (2.5725 → 3.2235 on +2 %) faster than the output response. The ratchet is the landed tree's lowest reading; Ramey's band holds
+        /// at L+1 and L+4 throughout, so this was the impact horizon's question alone.</para>
         /// </summary>
-        private const float ImpactRatchet = 0.5074f;   // §406: the lowest events-off impact (Spending −10 %) printed at four decimals on 2026-09-09: 0.5074 (+2 % 0.5096, +10 % 0.5113)
+        private const float ImpactRatchet = 0.4984f;   // §512: the lowest events-off impact (Spending −10 %) on T-3's landed tree, re-based on the k sweep's continuous curve (was §406's 0.5074 at k = 1's predecessor tree)
 
         /// <summary>Float slack for the ratchet comparison — the measurement is printed at three decimals
         /// and re-runs land on the same digits, so this only absorbs the last bit.</summary>
         private const float RatchetTolerance = 0.0005f;
 
-        private enum Kind { Tax, Spending }
+        internal enum Kind { Tax, Spending }
 
-        private struct Dial
+        internal struct Dial
         {
             public string Name;
             public Kind Kind;
@@ -469,7 +483,7 @@ namespace PoliSim.EditorTools
         /// <summary>One run of <see cref="Years"/> years with a single dial held, or the untouched
         /// baseline when <paramref name="dial"/> is null. ⚠ Tax targets are read off the country's own
         /// seeded rate and stepped, so no rate here is an authored number.</summary>
-        private static void RunCase(Dial? dial, float[] gdp, float[] budget, float[] unemployment, float[] inflation, float[] purchases)
+        internal static void RunCase(Dial? dial, float[] gdp, float[] budget, float[] unemployment, float[] inflation, float[] purchases)
         {
             SimulationRandom.Seed(Seed);
             var go = new GameObject("C-C11 CASE");
@@ -478,6 +492,8 @@ namespace PoliSim.EditorTools
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 World world = WorldFactory.CreateDefault();
                 sim.SetWorld(world);
+                // §512: the sweep's scale, before any day reads it - k's readers are the day's national accounts, the preview and this harness's purchases, none at the seed
+                if (ScaleBlend.HasValue) { foreach (Country c in world.Countries) { c.GovernmentConsumptionScale = ScaleBlend.Value <= 0f ? 1f : 1f + ScaleBlend.Value * (c.GovernmentConsumptionScale - 1f); } }
 
                 Country subject = world.GetCountry(Subject);
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
@@ -561,7 +577,7 @@ namespace PoliSim.EditorTools
         /// <paramref name="horizon"/> inclusive: the summed output response over the summed spending
         /// response. Returns 0 when the summed spending response is nothing, which the caller has already
         /// excluded by testing the landing-year impulse.</summary>
-        private static float Cumulative(float[] gdp, float[] baseGdp, float[] purchases, float[] basePurchases, int landing, int horizon)
+        internal static float Cumulative(float[] gdp, float[] baseGdp, float[] purchases, float[] basePurchases, int landing, int horizon)
         {
             float outputSum = 0f;
             float spendingSum = 0f;

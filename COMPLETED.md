@@ -28644,3 +28644,84 @@ On the tree this record reads, *"126 states checked, 2026 to 2046; 378 band rung
 **Not touched.** No code; no trajectory.
 
 **Bar:** `bar479_rec511` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 512. T-3's IMPACT RATCHET RE-BASED BY RULING ON A CURVE — the harness's landing-year multiplier swept across the G-share scale from 1 to the seeded value. At k = 1 the code reproduces the old dump exactly, and the curve is continuous on all three dials: the mechanism is real, so the ratchet re-bases to the landed 0.4984 with the curve recorded (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15, on §507's sheet): *"the impact ratchet is not re-based — sweep the multiplier across G-share scale factors from 1 to the seeded value (at 1 the code reproduces the old dump exactly), continuous means the mechanism is real and the ratchet re-bases with the curve recorded, a step means a seam to fix; Ramey holds at L+1/L+4 so this is impact only, and the harness stays exit 1 and off the bar until it is explained."*
+
+**1. The premise, measured first: at k = 1 the code reproduces the old dump exactly.**
+- **The run.** §507's probe `k_one` (every country's k = 1 at the seed) was applied, the trajectory dumped as `traj_k1chk`, and the probe restored with the tree checked clean.
+- **The result.** Against `traj_f4s2`, the tree before the block, the dump reads **76 of 76 fields byte-identical** in all six comparisons (seeds 777 and 424242, horizons 100, 500 and 1000).
+- **Why it matters.** The one field only the new tree has, `GovernmentConsumption`, is named and excluded. So the block's code is inert at k = 1 to the byte, not only to §507's GDP at two turns, and the sweep's first point is the old model.
+
+**2. The instrument** (`ImpactScaleSweep`, new; `ResponsivenessAuditHarness`'s experiment made internal, with one hook, `ScaleBlend`, off in the harness's own runs).
+- **What it runs.** Each point is the harness's baseline and its three spending dials: Sweden, seed 777, the year's dice off, each dial set once, purchases on the identity's G. Only k differs.
+- **How k is set.** Every country's k is set before the first day to 1 + blend × (its seed − 1), exactly 1 at blend 0 and the seed untouched at blend 1. k's readers are the day's national accounts, the preview and the harness's purchases, none of them at the seed.
+- **Anchored at both ends on the harness's own logs.**
+  - Blend 0 reads 0.5101 · 0.5114 · 0.5079, §507's k = 1 row (`resp_t3a_k1`).
+  - Blend 1 reads 0.5013 · 0.5028 · 0.4984, the landed harness (`resp_t3a`).
+  - On this tree, with the hook compiled in, the harness itself still reads 0.5013 · 0.5028 · 0.4984 and exits 1.
+- **The seeded k:** USA 2.2426  Sweden 1.2526  Germany 1.0056  France 1.0030  Italy 0.9422  Poland 1.0527.
+
+**3. The curve** (21 points, blend 0 to 1 in twentieths, Sweden's k 1.0000 → 1.2526):
+
+| blend | Sweden's k | impact: +2 % · +10 % · −10 % | cumulative L+1 | cumulative L+4 | the purchases impulse at landing, +2 % |
+|---|---|---|---|---|---|
+| 0.00 | 1.0000 | 0.5101 · 0.5114 · 0.5079 | 0.835 · 0.719 · 0.818 | 0.902 · 0.820 · 0.887 | 2.5725 |
+| 0.05 | 1.0126 | 0.5099 · 0.5110 · 0.5074 | 0.833 · 0.719 · 0.816 | 0.899 · 0.819 · 0.878 | 2.6047 |
+| 0.10 | 1.0253 | 0.5095 · 0.5106 · 0.5070 | 0.831 · 0.727 · 0.814 | 0.897 · 0.823 · 0.870 | 2.6368 |
+| 0.15 | 1.0379 | 0.5092 · 0.5103 · 0.5064 | 0.829 · 0.736 · 0.811 | 0.895 · 0.828 · 0.862 | 2.6692 |
+| 0.20 | 1.0505 | 0.5086 · 0.5099 · 0.5061 | 0.826 · 0.744 · 0.809 | 0.893 · 0.834 · 0.854 | 2.7015 |
+| 0.25 | 1.0631 | 0.5084 · 0.5095 · 0.5057 | 0.824 · 0.753 · 0.807 | 0.890 · 0.839 · 0.847 | 2.7336 |
+| 0.30 | 1.0758 | 0.5077 · 0.5091 · 0.5053 | 0.822 · 0.762 · 0.805 | 0.887 · 0.845 · 0.839 | 2.7659 |
+| 0.35 | 1.0884 | 0.5072 · 0.5087 · 0.5048 | 0.819 · 0.772 · 0.803 | 0.885 · 0.851 · 0.832 | 2.7984 |
+| 0.40 | 1.1010 | 0.5072 · 0.5084 · 0.5044 | 0.817 · 0.781 · 0.801 | 0.883 · 0.857 · 0.826 | 2.8302 |
+| 0.45 | 1.1137 | 0.5066 · 0.5079 · 0.5039 | 0.815 · 0.791 · 0.799 | 0.880 · 0.864 · 0.819 | 2.8628 |
+| 0.50 | 1.1263 | 0.5057 · 0.5075 · 0.5036 | 0.813 · 0.801 · 0.797 | 0.844 · 0.864 · 0.818 | 2.8952 |
+| 0.55 | 1.1389 | 0.5058 · 0.5071 · 0.5031 | 0.811 · 0.812 · 0.795 | 0.822 · 0.864 · 0.817 | 2.9271 |
+| 0.60 | 1.1516 | 0.5053 · 0.5067 · 0.5027 | 0.809 · 0.818 · 0.793 | 0.822 · 0.861 · 0.817 | 2.9597 |
+| 0.65 | 1.1642 | 0.5051 · 0.5064 · 0.5022 | 0.807 · 0.816 · 0.791 | 0.821 · 0.852 · 0.816 | 2.9917 |
+| 0.70 | 1.1768 | 0.5050 · 0.5060 · 0.5018 | 0.805 · 0.814 · 0.788 | 0.821 · 0.844 · 0.816 | 3.0240 |
+| 0.75 | 1.1894 | 0.5046 · 0.5056 · 0.5014 | 0.803 · 0.811 · 0.786 | 0.820 · 0.836 · 0.815 | 3.0563 |
+| 0.80 | 1.2021 | 0.5038 · 0.5051 · 0.5008 | 0.800 · 0.809 · 0.784 | 0.818 · 0.827 · 0.814 | 3.0894 |
+| 0.85 | 1.2147 | 0.5031 · 0.5046 · 0.5002 | 0.798 · 0.807 · 0.782 | 0.818 · 0.823 · 0.813 | 3.1231 |
+| 0.90 | 1.2273 | 0.5025 · 0.5040 · 0.4996 | 0.795 · 0.804 · 0.780 | 0.818 · 0.823 · 0.812 | 3.1565 |
+| 0.95 | 1.2400 | 0.5017 · 0.5034 · 0.4990 | 0.793 · 0.802 · 0.777 | 0.817 · 0.822 · 0.866 | 3.1900 |
+| 1.00 | 1.2526 | 0.5013 · 0.5028 · 0.4984 | 0.791 · 0.799 · 0.775 | 0.815 · 0.821 · 0.869 | 3.2235 |
+
+**The continuity test, per dial.** Each dial's grid steps were checked; an interval changing by more than three times the median would have been bisected eight times, and a change that does not shrink with the interval named a step:
+
+| dial | median change per grid step | the largest, in medians | direction | intervals bisected |
+|---|---|---|---|---|
+| Spending +2% | 0.00048 | 1.80 | 1 rising, 19 falling | 0 |
+| Spending +10% | 0.00040 | 1.49 | 0 rising, 20 falling | 0 |
+| Spending -10% | 0.00045 | 1.42 | 0 rising, 20 falling | 0 |
+
+**The reading.**
+- **Continuous on all three dials,** falling on every grid step but one on the +2 % dial, which rises by 0.00003 (0.07 of that dial's median step). No grid step reaches twice the median, so no interval needed bisecting.
+- **The mechanism.** On the +2 % dial the purchases impulse at landing grows 25.3 % across the sweep (k itself grows 25.3 % for Sweden), while the output response at impact grows 23.1 %. The response grows by less than the purchases it answers, and with no seam between the two worlds.
+- **Ramey's band holds throughout.** L+1 and L+4 stay inside it at every point: L+1 0.719 to 0.835, L+4 0.812 to 0.902.
+- **Recorded, not attributed.** The later horizons move in larger single steps than impact: +2 % 0.880 → 0.844 between blends 0.45 and 0.50; +10 % 0.861 → 0.852 between blends 0.60 and 0.65; −10 % 0.812 → 0.866 between blends 0.90 and 0.95. §507 found those horizons carry the AI finance ministry's reaction. It is not the ruling's question and stays inside the band.
+
+**4. The re-base, as ruled** (`ResponsivenessAuditHarness.ImpactRatchet`).
+- **The new value.** 0.5074 → **0.4984**, the landed tree's lowest spending impact at four decimals (§406's convention). The doc comment carries the ruling, the premise, and the curve at five points by Sweden's k; this record's script checks every one of those figures against the sweep's log.
+- **Proven both ways.**
+  - On the re-based tree the harness exits 0: *"No breach: L+1 and L+4 inside the band on every dial, impact at or above its ratchet."*
+  - With the ratchet probed to 0.4990 (`probe_swp.pl ratchet_above`), it exits 1 with *"Spending -10% at IMPACT = 0.498, below the ratchet 0.4990 - it got WORSE"*.
+  - Restored, and the tree checked clean.
+- **Still a floor, still retired at 0.6.** The harness stays on no bar.
+
+**The registers.**
+- `POLISIM_FEATURE_LIST.md`: the OWNER ELIAS row for T-3's impact reading is RULED and RE-BASED.
+- `POLISIM_BACKLOG_PLAN.md`: the verification row that held 0.5074 now holds 0.4984.
+- `ResidueCheck`: T-3's exclusion names the ruling.
+
+**Decisions taken, strikeable.**
+1. **Every country's k was blended together.** The k = 1 world the premise measures is every country's, so the curve runs between two measured worlds.
+2. **Twenty grid steps and a three-medians trigger for bisection.** None triggered. A seam smaller than three median steps (0.0012 to 0.0014 on these dials) would have passed the trigger, but no step reached two.
+3. **The ratchet is the landed lowest reading.** The ruling re-bases it; §406's convention says which reading.
+4. **`ImpactScaleSweep` stays committed as a measurement tool, on no bar.** The harness's hook is internal and null in its own runs.
+
+**Not touched.** No trajectory (a measurement tool and a harness constant); the harness is on no bar.
+
+**Bar:** the code tree - `bar480_swp` **38 of 38** with the sweep tool, and `bar481_swp2` **38 of 38** after the re-base. The record's tree - `bar482_rec512` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
