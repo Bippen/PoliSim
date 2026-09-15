@@ -28725,3 +28725,35 @@ On the tree this record reads, *"126 states checked, 2026 to 2046; 378 band rung
 **Not touched.** No trajectory (a measurement tool and a harness constant); the harness is on no bar.
 
 **Bar:** the code tree - `bar480_swp` **38 of 38** with the sweep tool, and `bar481_swp2` **38 of 38** after the re-base. The record's tree - `bar482_rec512` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 513. P-N5b RULED (d) HOLD — Okun keeps its growth form. The reason recorded is the circularity: a level gap whose potential is built on employment cannot be the quantity unemployment answers to. (a), the identity anchored to potential, is the next pass's question, and FT-7's formula stands (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15, on §508's sheet): *"P-N5b: (d) hold — record the circularity as the reason (Okun reading a gap whose construction includes employment), with (a) anchoring the identity to potential as the next pass's question. FT-7's formula stands."*
+
+**What is held.** Nothing in the model changes.
+- `MacroSystem.ApplyOkunsLaw` keeps the growth gap with reversion to the natural rate, and the constant stays 0.5 inside the sourced range (§376).
+- `OkunSpecificationDiagnostic` keeps its finding: the model reads −0.483 at landing, decaying.
+- FT-2 stays closed by reason (§376). Its fix, P-N5b, is now held by ruling rather than waiting behind T-3.
+
+**The reason, as ruled - the circularity.**
+- **The construction.** Potential's labour input is employment: FT-7's second seat (§394), `PotentialOutput.LabourInput`, reads 1 − U.
+- **The loop.** A rise in unemployment lowers potential in the same step as it lowers output, so the level gap carries unemployment's own movement. §508 measured this as a co-movement with the unemployment gap of +0.08 to +0.21 in levels and +0.37 to +0.54 in first differences, wrong-signed for Okun in every country at both seeds. Okun reading that gap would make unemployment answer to a quantity built partly out of unemployment.
+- **The symptom.** On the level form, at the sourced range, unemployment sat 1.6 to 11.8 points above the growth form's at year 100 outside Sweden. Inflation sat at its floor in 7 of 12 runs at β 0.23 and 10 of 12 at 0.54 (§508). That is the loop's output, not a calibration to adjust.
+
+**FT-7's formula stands.** The circularity is not a reason to change potential's labour input. FT-7's second seat is ruled and landed (§394), and the loop is closed by what Okun reads, not by what potential reads.
+
+**The next pass's question - (a), the identity anchored to potential.** As §508 sheeted it:
+- **The change.** The attractor is re-specified so the day's fixed point is potential, and demand moves only the cycle around it. The level gap is then a cycle by construction, and P-N5b's level form follows.
+- **Its costs.** A macro-core re-specification (FT-6's class) and a BASELINE family on six countries, with the equivalence bar, the harness and the ratchets re-read.
+- **What it forecloses.** Fiscal policy's permanent level effect on output as the model has it (§505's form-A table).
+- The next pass opens with this question. Nothing is measured or built here.
+
+**The registers.**
+- `POLISIM_FEATURE_LIST.md`: the OWNER ELIAS row for P-N5b is RULED (d) hold, with its reason and the next pass's question; FT-2's row and T-3's row point here.
+- `ResidueCheck`: P-N5b's exclusion now names the ruling.
+
+**Decisions taken, strikeable.**
+1. **P-N5b stays out of the residue.** Its next pass is a macro-core re-specification and a BASELINE family, opened by instruction rather than started by a session on its own; the exclusion's reason now says held by ruling, with the question named.
+2. **The reason is stated from §508's own measurements.** Nothing was re-measured; the ruling rules on those figures.
+
+**Bar:** `bar483_rec513` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
