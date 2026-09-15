@@ -28378,3 +28378,161 @@ Okun on it converts that offset into permanent unemployment, and building it wou
 - `ResidueCheck` excludes P-N5b by name, with its reason.
 
 **Bar:** `bar471_rec508` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 509. BOARD 15c-r2 BUILT — the window and the nothing, on PN-1's dial row. The track carries figures and the caption carries years: six states read off the statute's dates, three empty tracks told apart by their sentences, France's axis named. Also E-36 answered, and `sweden_outline.svg`'s digest question closed (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15), carrying Design's answer:
+- *"One rule answers both indexed cases: the track carries figures, the caption carries years — a tick is a value at a position, so a year the law has dated but not calculated never gets one."*
+- *"Flagged not asked: France's tick years are birth cohorts, not years in force — the caption must name that axis once."*
+- *"Build 15c-r2 the D11 way on PN-1's dial row, deviations stated, France's cohort axis named in the caption."*
+
+**How the answer arrived** (E-36).
+- **What landed.** The paste reached the project as its manifest: `uploads/SEND_PACKAGE-fefa1da4.md` is this side's `SEND_PACKAGE.md` by digest.
+- **Design's read:** *"manifest only — 2 of 23 landed, and they were the right two"*, the pension annexes `README.md` `a9e6526c…` and `statutory_ages.csv` `ef7bb488…`. Both match this side's files.
+- **Measured on the project's own listing** (DesignSync `list_files`, 2026-09-15):
+  - The two annexes sit only in `uploads/D20_paste/ElectionsData/pensions/`, which is E-35's folder, and E-35's 48-artefact paste carried them at the same digests. The listing cannot tell E-36's copies from E-35's.
+  - Nothing else of the 23 is in the project at its digest: not the request document (`613f4ddd…`, row 1), not the errands, record or feature list, and not one of the 17 films.
+- **So the board was drawn without the films.** Design drew it from the CSV and the manifest's "what to read" column, and said so on the board: *"if a film contradicts what is recited here, the film wins and the ink is re-cut, the rule would not change."*
+
+**The board, read the D11 way** (`PoliSim v2 Screens.dc.html`, board 15c-r2, fetched live). Every age and year was checked against `PensionAgeStatute` and `statutory_ages.csv`:
+
+| the board's state | its figures | against the statute layer |
+|---|---|---|
+| HELD WINDOW · Sweden 2026 | 67 · 2026–2032; *67 HELD TO 2032 · 2033 NO FIGURE YET* | matches: one path point, 67, dated to 2032 by 10 c § |
+| RISING WINDOW · Italy 2026 | 67 y 1 m · 2027, 67 y 3 m · 2028; *PUBLISHED TO 2028 · 2029 NO FIGURE YET* | matches |
+| CLOSED SCHEDULE · France 2026 | 63½ · 1967, 63¾ · 1968, 64 · 1969; *63 y 6 m · SCHEDULE ENDS AT 64 · BY BIRTH YEAR* | the years are birth cohorts, as the board flags. The row prints years in force (63 y 6 m · 2030, 63 y 9 m · 2031, 64 · 2033), and in 2026 its next step is 63 · 2028 |
+| COMPLETE · Germany, and the USA *"with 2027"* | 66 y 10 m · 1963; *— · SCHEDULE COMPLETE 2031 · THE STANDING AGE IS ALREADY 67* | the end, 2031 and the USA's 2027 match. The tick's 1963 is a cohort too; the row prints 66 y 10 m · 2029 |
+| CARRIED · Italy 2029 onward | 67 y 1 m · 2027 at half ink; *— · 2029 NOT PUBLISHED · THE KNOB CARRIES 2028's FIGURE*; CARRIED FROM 2028 under 67¼ | matches; 67¼ is the statute's 67 y 3 m |
+| FIXED · Poland | 65 · NO PATH; *— · THE LAW DOES NOT MOVE IT · ONLY A BILL MOVES THIS DIAL* | matches |
+
+**Withdrawn by the board:** 15c's Sweden tick *"at 68 · 2033?"* and Italy's *"? · 2029"*. As built (§491, §493) the "?" tick was not at 68. It stood three tick-widths past the last known age, labelled with the year. Both are gone from the row.
+
+**Built as** (`PensionAgeStatute.MarkState`, `TicksAhead`, `HistoryTick`, `FigureProvenance`, `MarkSegments`, `BandSentence`, `AxisNote`; `GameController.DrawPensionAgeRow`; `LedgerRow`):
+
+| the board's device | built as |
+|---|---|
+| a tick is a value at a position | a tick only at a published path point after this year and within the rule's dated horizon (`TicksAhead`). `UndatedMarkYear`'s "?" tick is withdrawn; the year it names is a word in the caption |
+| HELD WINDOW | the law's tick under the knob, drawn taller so it shows beneath it; its label carries the span, `67 · 2026–2032 · HELD` |
+| RISING WINDOW | ticks at the published values, each labelled figure · year; the dotted hairline from the knob to the last tick and on for one tick-pitch (`LedgerRow.LastTickPitch`, the track's own gradation pitch), stopping in air with no tick, cap or year |
+| CLOSED SCHEDULE | ticks at the schedule's values; the hairline closing at an end-mark, one of the track's own gradation ticks in its Hairline ink, beside the last step |
+| COMPLETE, CARRIED | the step before the figure in force at half ink with its label; nothing ahead of the knob |
+| FIXED | `65 · NO PATH` |
+| the figure's provenance, *"9b's second line under the figure"* | `FigureProvenance`: CARRIED FROM the horizon past it, THE STATUTE's OWN otherwise. Drawn through `figureSecondLine`, which lifts the figure onto the track's line, with a new opt-in `figureSecondLineWide` that lets the line run left from the figure's edge over the row's foot. Every other row is unchanged |
+| the caption band, DRIVER ▏ NEXT | the citation's short form ▏ `NEXT:` and the state's sentence, in ranked segments: 1 the state's answer, never dropped; 2 the dash and the window's reach; 3 what the labels already say. The band is measured rung by rung: the citation kept while the sentence sheds rank 3, then rank 2; then the same without the citation; last, the word NEXT. It is set wholly to one side of the knob and ends short of the figure's own glyph |
+| France's axis | `AxisNote`, `BY BIRTH YEAR, YEARS IN FORCE`, rank 1 in France's closed-schedule sentence; standing alone it takes no NEXT |
+
+**What the films found, cut by cut** (1280, six countries × the film's year, 2026 and 2034, through a film-only year field the driver sets and clears):
+1. **Cut 1.** The provenance in the figure cell's own second line overflowed in every 1280 film (`"THE STATUTE's OWN" needs 81,5 wide in 57,4` at the 8 px floor; 6 films exited 1). The band, cut from its end, cut Sweden's answer, 2033 NO FIGURE YET.
+   - Fixed: the sentence took ranks, the citation moved to the band's driver end, and the provenance moved to the band's height under the figure.
+2. **Cut 2.** The band's words ran under the knob, whose 23 px face reaches into the band. Fixed: the words sit wholly to one side of it.
+3. **Cut 3.** The band still stopped at the track's end. France's `NEXT: BY BIRTH YEAR, YEARS IN FORCE` needed 167,9 in 108,1, and Poland's `NEXT: - · THE LAW DOES NOT MOVE IT` 163,1 in 160,5.
+   - Fixed: the band runs on under the figure column, and the dash ranks 2.
+4. **Cut 4.** Poland's and France's sentences were drawn at the shrink floor. Fixed: rungs without the word NEXT and without the ordinary provenance.
+5. **Cut 5.** The figure's glyphs ran into the provenance in all six countries (`66 y 10 m` over `THE STATUTE'S OWN`). A figure with no second line centres on the whole row, below the track's line, and the provenance sat at the band's height under it. Separately, France 2026 printed `NEXT: BY BIRTH YEAR, YEARS IN FORCE`, NEXT in front of a note that says what the years count.
+   - Fixed: the provenance goes back to 9b's slot, drawn wide. The band stops at the figure's glyph, the provenance-free rungs go (the provenance now always prints), and `BandSentence` withholds NEXT from the axis note alone.
+6. **Cut 6** (this record's films): no overflow in any film; the figure on the track's line; the provenance on the foot line beside the kind; every sentence clear of the knob.
+
+**Section 6 of `PensionAgeDiagnostic`** (126 states: six countries, 2026 to 2046). It checks:
+- the state against the statute's dates;
+- a tick ahead only at a published figure, and none in the three empty states;
+- a history tick only where COMPLETE or CARRIED;
+- no "?" anywhere;
+- each state's required words;
+- the axis on France's closed schedule and nowhere else;
+- CARRIED FROM exactly where carried;
+- the answers at rank 1;
+- new: every band rung (378), which must keep its answer, with NEXT exactly where something comes next.
+
+On the tree this record reads, *"126 states checked, 2026 to 2046; 378 band rungs, France 2026 at rank 1 "BY BIRTH YEAR, YEARS IN FORCE""*, and the print at the three years:
+
+```
+    2026 Sweden   HeldWindow      knob 67        THE STATUTE's OWN  ticks ahead [] · NEXT: 67 HELD TO 2032 · 2033 NO FIGURE YET
+    2026 Germany  ClosedSchedule  knob 66 y 4 m  THE STATUTE's OWN  ticks ahead [66 y 6 m · 2027   66 y 8 m · 2028   66 y 10 m · 2029   67 · 2031] · NEXT: 66 y 6 m · 2027 · SCHEDULE ENDS AT 67
+    2026 France   ClosedSchedule  knob 62 y 9 m  THE STATUTE's OWN  ticks ahead [63 · 2028   63 y 3 m · 2029   63 y 6 m · 2030   63 y 9 m · 2031   64 · 2033] · NEXT: 63 · 2028 · SCHEDULE ENDS AT 64 · BY BIRTH YEAR, YEARS IN FORCE
+    2026 Italy    RisingWindow    knob 67        THE STATUTE's OWN  ticks ahead [67 y 1 m · 2027   67 y 3 m · 2028] · NEXT: 67 y 1 m · 2027 · PUBLISHED TO 2028 · 2029 NO FIGURE YET
+    2026 Poland   Fixed           knob 65        THE STATUTE's OWN  ticks ahead [] · NEXT: — · THE LAW DOES NOT MOVE IT · ONLY A BILL MOVES THIS DIAL
+    2026 USA      ClosedSchedule  knob 66 y 10 m THE STATUTE's OWN  ticks ahead [67 · 2027] · NEXT: 67 · 2027 · SCHEDULE ENDS AT 67
+    2029 Sweden   HeldWindow      knob 67        THE STATUTE's OWN  ticks ahead [] · NEXT: 67 HELD TO 2032 · 2033 NO FIGURE YET
+    2029 Germany  ClosedSchedule  knob 66 y 10 m THE STATUTE's OWN  ticks ahead [67 · 2031] · NEXT: 67 · 2031 · SCHEDULE ENDS AT 67
+    2029 France   ClosedSchedule  knob 63 y 3 m  THE STATUTE's OWN  ticks ahead [63 y 6 m · 2030   63 y 9 m · 2031   64 · 2033] · NEXT: 63 y 6 m · 2030 · SCHEDULE ENDS AT 64 · BY BIRTH YEAR, YEARS IN FORCE
+    2029 Italy    Carried         knob 67 y 3 m  CARRIED FROM 2028  ticks ahead [] · half ink 67 y 1 m · 2027 · NEXT: — · 2029 NOT PUBLISHED · THE KNOB CARRIES 2028's FIGURE
+    2029 Poland   Fixed           knob 65        THE STATUTE's OWN  ticks ahead [] · NEXT: — · THE LAW DOES NOT MOVE IT · ONLY A BILL MOVES THIS DIAL
+    2029 USA      Complete        knob 67        THE STATUTE's OWN  ticks ahead [] · half ink 66 y 10 m · 2026 · NEXT: — · SCHEDULE COMPLETE 2027 · THE STANDING AGE IS ALREADY 67
+    2034 Sweden   Carried         knob 67        CARRIED FROM 2032  ticks ahead [] · NEXT: — · 2034 NOT PUBLISHED · THE KNOB CARRIES 2032's FIGURE
+    2034 Germany  Complete        knob 67        THE STATUTE's OWN  ticks ahead [] · half ink 66 y 10 m · 2029 · NEXT: — · SCHEDULE COMPLETE 2031 · THE STANDING AGE IS ALREADY 67
+    2034 France   Complete        knob 64        THE STATUTE's OWN  ticks ahead [] · half ink 63 y 9 m · 2031 · NEXT: — · SCHEDULE COMPLETE 2033 · THE STANDING AGE IS ALREADY 64
+    2034 Italy    Carried         knob 67 y 3 m  CARRIED FROM 2028  ticks ahead [] · half ink 67 y 1 m · 2027 · NEXT: — · 2034 NOT PUBLISHED · THE KNOB CARRIES 2028's FIGURE
+    2034 Poland   Fixed           knob 65        THE STATUTE's OWN  ticks ahead [] · NEXT: — · THE LAW DOES NOT MOVE IT · ONLY A BILL MOVES THIS DIAL
+    2034 USA      Complete        knob 67        THE STATUTE's OWN  ticks ahead [] · half ink 66 y 10 m · 2026 · NEXT: — · SCHEDULE COMPLETE 2027 · THE STANDING AGE IS ALREADY 67
+```
+
+**Proven in the other direction** (`chain_r2d`, every probe restored and the tree checked clean before the next):
+
+| probe (`probe_r2.pl`, each restored and the tree checked clean) | what it breaks | the diagnostic | failure lines | the first |
+|---|---|---|---|---|
+| `carried_as_held` | an indexed rule past its horizon read as a held window (the carried figure drawn as the law's own) | exit 1 | 62 | *PENSION AGE: Italy in 2029 reads HeldWindow; the statute's dates make it Carried.* |
+| `tick_undated` | 15c's invention back: a tick at the first dated year without a figure, at the last published age | exit 1 | 18 | *PENSION AGE: Sweden in 2026 reads RisingWindow; the statute's dates make it HeldWindow.* |
+| `question_word` | the caption's word turned back into the "?" | exit 1 | 16 | *PENSION AGE: Sweden in 2026's caption carries a "?" - "67 HELD TO 2032 · 2033 ?".* |
+| `axis_dropped` | France's closed schedule without its axis | exit 1 | 7 | *PENSION AGE: France in 2026 (ClosedSchedule) does not name the birth-year axis - France's closed schedule names it once, and no other row does.* |
+| `answer_rank` | Sweden's NO FIGURE YET ranked to be dropped first, as the first film dropped it | exit 1 | 8 | *PENSION AGE: Sweden in 2026 (HeldWindow) - "2033 NO FIGURE YET" is the state's answer and ranks 3; a narrow band would drop it.* |
+| `axis_next` | NEXT printed in front of France's axis note standing alone, as the fifth film printed it | exit 1 | 7 | *PENSION AGE: France in 2026 (ClosedSchedule) - the band's rank-1 rung reads "NEXT: BY BIRTH YEAR, YEARS IN FORCE"; NEXT stands before what comes next, and France's axis note alone is not that.* |
+| `rung_drops_answer` | a band rung that keeps only what outranks it - at rank 1, no answer at all | exit 1 | 126 | *PENSION AGE: Sweden in 2026 (HeldWindow) - the band's rank-1 rung "NEXT: " drops the answer "2033 NO FIGURE YET".* |
+
+**Films** (`-shotstop=05b_budget_spending_pension_2034`; every figure parsed from the logs):
+
+| film | captured | failed | overflow | escapes | edge-guard flags | worst Budget row (grains per pixel) | the runner's exit |
+|---|---|---|---|---|---|---|---|
+| `r2_sweden_1280` | 39 | 0 | 0 | 0 | 0 | 0,742 (05r_budget_rest / Carbon Tax) | 0 |
+| `r2_italy_1280` | 39 | 0 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `r2_germany_1280` | 39 | 0 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `r2_france_1280` | 39 | 0 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `r2_poland_1280` | 39 | 0 | 0 | 0 | 9 | 0,477 (05t_budget_turn0 / Payroll Tax) | 1 |
+| `r2_usa_1280` | 39 | 0 | 0 | 0 | 0 | 0,477 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `r2_italy_2560` | 39 | 0 | 0 | 0 | 0 | 0,146 (05t_budget_turn0 / Payroll Tax) | 0 |
+| `r2_france_2560` | 39 | 0 | 0 | 0 | 0 | 0,146 (05t_budget_turn0 / Payroll Tax) | 0 |
+
+**The Poland film's exit 1 is the edge guard, and it is not this build.**
+- **What the guard flagged.** 9 frames flagged NOT FLUSH at zero margin (03_decisions, 03a_decisions_options, 04_demographics, 04a_demographics_pie, 04b_people_health_plate, 04c_people_education_plate, 04d_people_infrastructure_plate, 04e_people_environment_plate, 04f_people_migration_plate), the right edge's run 620 px against the 640 of this morning's film (`en7bc_poland_1280`). The same 9 flags were on cut 5's film.
+- **The frames show why.** The pause banner at `03_decisions` also names *"your incoming government's first budget (Budget tab)"*. With Poland's long central-bank name it wraps to three lines, and the sheet's run down the right edge starts 20 px lower under it.
+- **The attribution.** The window opens only in `SimulationManager.AdvanceCountryDayTick`, which only the controller's real-time day loop calls before the warm-up. The film's warm-up (`AdvanceDays`) calls `AdvanceDay` alone.
+- **The evidence.** Both failing films stop their warm-up a day earlier (day 1124, and 1124 on cut 5) than this morning's Poland film (1125). One real-time day passed on the running Desk before the warm-up, and opened the window; this morning's frame shows it closed and this chain's open.
+- **It is a race, and older than this build.**
+  - Across this chain's films the stop reads 1124 in 6 and 1125 in 2. A country's own untouched stop is not assumed here; the evidence is the pairs below.
+  - On one code path it moved between runs: `r2_germany_1280` 1125 on cut 5 and 1124 on cut 6. Nothing that changed between the two cuts runs before the warm-up.
+  - On one tree and one country it moved with the screen (§493's films, where the larger frames draw slower): `sp2_usa` 1125 at 1280 and 1124 at 2560.
+  - The pension row first draws on the spending tab at `05b`, after the warm-up, and cut 4's Poland film passed on the same frames.
+- **What it costs.** Whichever country it hits, every frame after the warm-up carries the open window. CLAUDE.md's standing note (§47) has films of one code comparing byte-for-byte outside three named clock frames, and on this evidence they do not, for a reason no frame names. Poland is where a guard sees it, because its hold banner wraps.
+- **Recorded, not fixed here:** it is the harness's own item (§510).
+
+**Item 3 closed: `sweden_outline.svg`.** Design found the drawing never wrong: an export had embedded a C2PA block. They stripped it and corrected MANIFEST row 62 to 1 381 bytes, `42a3ebe1…`. This side's copy from the §448 pack reads 9155 bytes; with its `<metadata>` block removed it reads 1419, and with the c2pa namespace declaration removed it reads 1381 bytes and `42a3ebe1…`, the corrected row exactly. `DeliveredAssetCheck`'s held reason now says the digest question is closed and the file stays held because its board, 12f, is not built.
+
+**Deviations from the board, stated.**
+1. The labels sit above the track, not under it, because under it is the caption band (§491's third finding). They form one run, centred on what they name, and keep the last label when the run is wider than the track.
+2. The lever column's statute line (`SFB 2 kap. 10 a–c §§ · riktålder · Pensionsmyndigheten`) is the citation's short form at the band's driver end. The 1280 name cell holds the kind.
+3. The driver's sentence (*"BETWEEN DECISIONS THE AGE MOVES AS THE LAW MOVES IT"*) is not on the row. It stays the Policy Web node's (§491), and NO LEVER is gone from the band as the board has it.
+4. Each sentence's closing clauses are not band segments. They are two statute facts (10 c §'s sixth year, art. 24's adjustment every two years) and four notes on the ink.
+   - At the films' sizes the band holds the answer, the citation where there is room, and never a third clause: the caption face scales with the screen, so a third clause would be ink that never prints.
+   - The two statute facts stay in `PensionAgeStatute`'s class note.
+5. The override state (case B with a passed bill: the ghost at the carried figure, OVERRIDDEN BY BILL No. n) is not built. The pensions driver is deferred by ruling (§489), so no bill sets an age.
+6. The board's case chips (SOURCED, BILLED · VIA INPS, CASE A, CASE B · NOTHING AHEAD) are not built. They label the board's cases; the row's chip is the kind.
+7. France's axis reads `BY BIRTH YEAR, YEARS IN FORCE`, not the board's `BY BIRTH YEAR` (decision 1 below).
+
+**Flags back to Design, not asked.**
+1. **France's flag, on the built row.** The row's ticks have printed years in force since §489 converted every schedule's birth-year table (born b at age a: in force from b + a). So a 1968 tick beside a 2026 knob never reached the row. The board's own COMPLETE state carries the same cohort beside a year in force: `66 y 10 m · 1963` against `SCHEDULE COMPLETE 2031`. The caption names the conversion once, as ruled.
+2. **The transport.** The board was drawn without the films. This build's frames are named by stem in the request's status head for the next paste.
+
+**Decisions taken, strikeable.**
+1. **France's axis is named as the conversion.** A bare "by birth year" would describe years the row does not print.
+2. **France's closed schedule ranks the axis note 1 and SCHEDULE ENDS AT 2.** The ruling asks for the axis in the caption, and the ticks' last label already carries the end.
+3. **The provenance uses 9b's slot through a row-level opt-in** rather than a caption drawn by the pension row, so the figure is lifted by the row that draws it.
+4. **No return package is cut.** The request's status head carries the build and the flags for whichever paste comes next.
+5. **Poland's edge exit is recorded with its attribution and taken as its own item** (§510), not folded into this commit.
+
+**Not touched.** No trajectory moves. The statute's new methods are read by the row and the diagnostic only, `LedgerRow`'s opt-in changes no other row, and the pensions driver stays deferred by ruling.
+
+**The registers.**
+- `CLAUDE_DESIGN_ASSET_REQUEST.md`: a status head for 2026-09-15.
+- `ERRANDS.md`: E-36 marked sent and answered, with its transport.
+- `POLISIM_FEATURE_LIST.md`: PN-1's row, and D20's bullet and row.
+
+**Bar:** the code tree - `bar474_r2` **38 of 38**, `bar475_r2_sim` **52 of 52** with the sentinel first and green. The record's tree - `bar476_rec509` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.

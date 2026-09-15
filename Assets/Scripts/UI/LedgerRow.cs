@@ -184,12 +184,16 @@ namespace PoliSim.UI
             string nameSecondLine = null,
             Color? nameSecondLineInk = null,
             float grain = 1f,
-            string grainUnit = null)
+            string grainUnit = null,
+            bool figureSecondLineWide = false)
         {
             // Board 9b (D15 item 2, 2026-09-05): `ghost` is the value the line stood at when the year opened - a third tick in TextMuted where the
             // driver's move can be read against the standing tick (ghost → standing the driver's, standing → knob the player's); drawn only when the
             // two sit ≥ 2 px apart. `figureSecondLine` is the delta under the figure, in the figure cell, caption face, right-aligned - the draft cue
             // shared while drafted. Rows that pass neither draw exactly as before.
+            // Board 15c-r2 (2026-09-15): `figureSecondLineWide` lets that line run left from the figure's edge over the row's foot under the track
+            // instead of the figure cell alone - a provenance ("CARRIED FROM 2028", 81 px) in the 57 px cell at 1280 was shrunk on the first film. The
+            // foot sits below the caption band, so the band keeps its own line.
             float scale = Scale(nameStyle);
             Columns(row, nameStyle, NameNeed(name, nameStyle), TrailingNeed(trailingText, figureStyle), FigureNeed(standingText, draftText, figureStyle),
                 out Rect nameRect, out Rect trackRect, out Rect figureRect, out Rect trailingRect);
@@ -266,6 +270,7 @@ namespace PoliSim.UI
                 // P4-B2: the last row's track and scale, for a caller that draws a range caption into the caption band
                 // beneath it (the band DrawEndNames uses) after this returns - read on the same Repaint, never stored.
                 LastTrackRect = trackRect;
+                LastFigureRect = figureRect;
                 LastScale = scale;
                 LastHadEndNames = IsEndNames(trailingText);
                 LastGrain = grain;
@@ -295,7 +300,7 @@ namespace PoliSim.UI
                 GeometryByRow[UiGuardContext.CurrentScreen + " / " + name] = (nameRect, trackRect, figureRect, trailingRect);
             }
 
-            DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk, figureSecondLine);
+            DrawFigurePair(figureRect, standingText, draftText, figureStyle, rowInk, figureSecondLine, figureSecondLineWide ? trackRect.x : float.NaN);
 
 
             if (!IsEndNames(trailingText) && Event.current.type == EventType.Repaint) { DrawTrailingUnderFigure(figureRect, trackRect, trailingText, figureStyle, scale, interactive); }   // P5-1: under the rate cell
@@ -462,13 +467,14 @@ namespace PoliSim.UI
             Texture2D tick = IconLibrary.GetChrome("ui_slider_tick");
             if (tick != null && track.width > 0f)
             {
-                float tickWidth = Mathf.Max(1f, RefTickWidth * scale * 0.5f);
+                float tickWidth = GradationTickWidth(scale);
                 Color tickPrev = GUI.color;
                 GUI.color = PoliSimTheme.Hairline;
                 // P5-1 (board 6a): SPARSE - a quarter of the span on every 0-100 dial (0/25/50/75/100), and the caller's own step on
                 // a dial in points (a quarter-point on the rate sliders) widened fourfold until the pitch holds 12 px @1x.
                 float step = tickStep > 0f ? tickStep : span / 4f;
                 while (step > 0f && track.width * (step / span) < RefTickMinPitch * scale && step < span) { step *= 4f; }
+                LastTickPitch = track.width * (step / span);   // board 15c-r2: an open end runs one of these past the last published tick
                 for (float v = min; v <= max + step * 0.001f; v += step)
                 {
                     float x = track.x + track.width * Mathf.Clamp01((v - min) / span);
@@ -562,7 +568,14 @@ namespace PoliSim.UI
         /// <summary>The end-names under the track ends in caption mono (board 6a: 7.5 board px - here 0.6 of the row's figure size, floored at 8), left end left-aligned, right end right-aligned; furniture, never on the track.</summary>
         /// <summary>P4-B2: the track rect the last <see cref="Draw"/> painted on this Repaint, and its scale, so the caller can place a range caption in the caption band beneath it.</summary>
         public static Rect LastTrackRect;
+        /// <summary>Board 15c-r2 (2026-09-15): the last row's figure cell - the band under the figure runs to its right edge, where a trailing line right-aligns.</summary>
+        public static Rect LastFigureRect;
         public static float LastScale = 1f;
+        /// <summary>Board 15c-r2 (2026-09-15): the pitch of the last row's own gradation ticks in pixels, as drawn (the caller's step, widened until it holds its
+        /// minimum pitch) - the length of an open end; read on the same Repaint, never stored.</summary>
+        public static float LastTickPitch;
+        /// <summary>Board 15c-r2: the gradation ticks' width and ink as drawn - the track's own end-mark is one of them.</summary>
+        public static float GradationTickWidth(float scale) => Mathf.Max(1f, RefTickWidth * scale * 0.5f);
         /// <summary>BR-1: the last row's grain and the step its draft snaps to, in the row's units, so a caller can state a coarse step in the band.</summary>
         public static float LastGrain = 1f;
         public static float LastStep = SnapStep;
@@ -656,7 +669,7 @@ namespace PoliSim.UI
         /// value stays readable as the hard tick on the track, and the hatch band is the change. The pair this
         /// used to print ("standing → draft" in two halves) is what shrank the track the moment a draft appeared.
         /// </summary>
-        private static void DrawFigurePair(Rect rect, string standingText, string draftText, GUIStyle style, Color rowInk, string secondLine = null)
+        private static void DrawFigurePair(Rect rect, string standingText, string draftText, GUIStyle style, Color rowInk, string secondLine = null, float secondLineLeft = float.NaN)
         {
             bool drafted = !string.IsNullOrEmpty(draftText);
             // P5-1 (board 6a): the pencil's slot at the cell's left is reserved at rest and filled while a draft differs - one draft colour, three carriers (the hatch, the pencil, the figure).
@@ -671,7 +684,8 @@ namespace PoliSim.UI
                 figureRect = new Rect(rect.x, rect.y, rect.width, Mathf.Max(1f, rect.height - lineH));
                 if (Event.current.type == EventType.Repaint)
                 {
-                    DrawCell(new Rect(rect.x + slot, rect.yMax - lineH, Mathf.Max(1f, rect.width - slot), lineH), secondLine, caption, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.UpperRight);
+                    float left = float.IsNaN(secondLineLeft) ? rect.x + slot : Mathf.Min(secondLineLeft, rect.x + slot);   // 15c-r2: a wide line reaches left over the foot
+                    DrawCell(new Rect(left, rect.yMax - lineH, Mathf.Max(1f, rect.xMax - left), lineH), secondLine, caption, drafted ? PoliSimTheme.Caution : rowInk, TextAnchor.UpperRight);
                 }
             }
             if (drafted && Event.current.type == EventType.Repaint)

@@ -192,6 +192,9 @@ namespace PoliSim.UI
         // EN-4e (§471): the carbon line's rate the turn started with. Its statute moves the rate at the boundary (CarbonRateStatute), so a committed
         // carbon draft - equal to this figure - is dropped after the turn and the slider follows the law; a changed, unpassed draft survives.
         private float? _carbonRateBeforeTurn;
+        /// <summary>Board 15c-r2 (2026-09-15): the calendar year the pension row reads, set ONLY by the film harness (UiScreenshotDriver, by reflection) so the
+        /// six states - two of which a game in 2029 has not reached or has passed - are on film; null in play, where the row reads the simulation's date.</summary>
+        private int? _pensionRowYearForFilm;
 
         private Vector2 _parliamentScrollPosition;
 
@@ -11469,111 +11472,189 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Board 15c (2026-09-13, D20 batch 3; DS-3 and DS-3d ruled §474; PN-1's statute layer §489): THE STATUTORY MARK - the law's path drawn on the
-        /// track beside the figure that stands this year, in TextMuted (9b's third tint), with its years; no glyph. Under the Budget's pension
-        /// line (the Budget group, DS-3d): a D13 row on the family's own columns (the spending row above draws on the full row; the first
-        /// film drew this one on the tax family's narrower split and its track fell short of the row above), whose track is 60–70, the knob
-        /// the age in force this year (`PensionAgeStatute.AgeInForce`), the law's path a row of D13's tick sprite at each future statutory
-        /// value with its year ABOVE the track (the caption band beneath is the row's, and the first film printed the years over its
-        /// sentence), joined to the knob by a dotted hairline; an INDEXED rule's path is dated only to its horizon and the next year prints a
-        /// "?" tick - the year known, the figure not (Sweden's six years by SFB 2 kap. 10 c §, Italy's to 2028), and once the calendar has passed the
-        /// horizon the "?" names this year and the band says CARRIED FROM the horizon (`PensionAgeStatute.UndatedMarkYear`); a SCHEDULED rule's path ends
-        /// where the statute says; a FIXED rule prints no path and says only a bill moves it. The kind is 9c's chip under the name, the
-        /// citation the row's trailing line (its short form, under the figure), the caption band NEXT and NO LEVER (the carbon row's sentence is
-        /// the Policy Web node's - with the citation under the figure the band at 1280 holds no more). ⚠ The row is NOT a lever: the pensions driver is the BASELINE half, deferred by ruling with
-        /// the dial (§489) - the knob is the statute's figure and moves only as the law moves it (the band says NO LEVER);
-        /// the override state the board draws (a passed bill's figure, the ghost tick, the hairline from the ghost) is drawn the day the
-        /// driver gives the row a bill.
+        /// Board 15c (2026-09-13, D20 batch 3; DS-3 and DS-3d ruled §474; PN-1's statute layer §489), re-cut by board 15c-r2 (Design, 2026-09-15, the
+        /// D20 return's answer): THE STATUTORY MARK - the law's path drawn on the track beside the figure that stands this year, in TextMuted (9b's
+        /// third tint); no glyph. Under the Budget's pension line (the Budget group, DS-3d): a D13 row on the family's own columns (the spending row
+        /// above draws on the full row, and so does this one), the track 60–70, the knob the age in force this year (`PensionAgeStatute.AgeInForce`).
+        ///
+        /// <para><b>15c-r2's rule: the track carries figures, the caption carries years.</b> A tick is a value at a position, so a year the law has
+        /// dated without calculating its figure never gets one - it gets a word in the caption band (15c's "2033 ?" and "2029 ?" ticks withdrawn).
+        /// Six states (`PensionAgeStatute.MarkState`), three drawing an empty track ahead of the knob and told apart by their sentence:
+        /// HELD WINDOW - the law's tick coincides with the knob, protruding beneath it, and carries its span ("67 · 2026–2032 · HELD");
+        /// RISING WINDOW - ticks at the published values and a dotted hairline running one tick-pitch past the last, stopping in air;
+        /// CLOSED SCHEDULE - ticks at its values, the hairline closing at the track's own end-mark (a gradation tick beside the last);
+        /// COMPLETE and CARRIED - the step behind the knob at half ink, nothing ahead, the carried figure saying CARRIED FROM under itself;
+        /// FIXED - no path ("65 · NO PATH"). Every tick's label is its figure and its year, above the track (under it is the caption band).</para>
+        ///
+        /// <para>The kind is 9c's chip under the name; under the figure, where the figure comes from (THE STATUTE's OWN, or CARRIED FROM the horizon - 9b's
+        /// second line, drawn wide: the figure cell is 57 px at 1280 and the first film shrank the 17 characters into it, so the line runs left from the
+        /// figure's edge over the row's foot, below the band); the caption band's driver end the statute's citation ▏ NEXT with the state's sentence
+        /// (`PensionAgeStatute.MarkSegments`), measured and shortened by rank - the state's answer never dropped. ⚠ The row is NOT a
+        /// lever: the pensions driver is the BASELINE half, deferred by ruling with the dial (§489); the override state both boards draw (a passed bill's
+        /// figure, the ghost tick at the statute's, the hairline from the ghost) is drawn the day the driver gives the row a bill.</para>
         /// </summary>
         private void DrawPensionAgeRow()
         {
             Country country = _playerCountry;
             PensionAgeStatute.Rule rule = PensionAgeStatute.Of(country.Id);
             if (rule == null) { return; }
-            int year = _simulationManager != null ? _simulationManager.CurrentDate.Year : PensionAgeStatute.SeedYear;
+            int year = _pensionRowYearForFilm ?? (_simulationManager != null ? _simulationManager.CurrentDate.Year : PensionAgeStatute.SeedYear);
             float age = PensionAgeStatute.AgeInForce(country.Id, year);
+            PensionMarkState state = PensionAgeStatute.MarkState(country.Id, year);
             const float TrackMin = 60f, TrackMax = 70f;
             string kind = rule.Kind == PensionAgeRule.LifeExpectancyIndexed ? (country.Id == CountryId.Sweden ? "INDEXED · RIKTÅLDER" : "INDEXED · ISTAT") : rule.Kind == PensionAgeRule.Scheduled ? "SCHEDULED" : "FIXED";
+            // under the figure, 9b's second line: where the figure comes from - drawn by the row, which lifts the figure onto the track's line to make the room
+            string provenance = PensionAgeStatute.FigureProvenance(country.Id, year).ToUpperInvariant();
             Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
             LedgerRow.Draw(rowRect, "Pension age", age, age, TrackMin, TrackMax,
-                PensionAgeStatute.Format(age), null, rule.Citation, false,
+                PensionAgeStatute.Format(age), null, null, false,
                 _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, tickStep: 1f,
-                nameSecondLine: kind);
+                figureSecondLine: provenance, nameSecondLine: kind, figureSecondLineWide: true);
             if (Event.current.type != EventType.Repaint) { return; }
 
             Rect track = LedgerRow.LastTrackRect;
             float scale = LedgerRow.LastScale;
             GUIStyle face = LedgerRow.CaptionStyle(_labelStyle);
-            GUIStyle yearFace = Inked(new GUIStyle(face) { alignment = TextAnchor.LowerCenter, clipping = TextClipping.Clip }, PoliSimTheme.TextMuted);
             float capH = Mathf.Ceil(DeskCaptionHeight(face));
             float X(float a) => track.x + track.width * Mathf.Clamp01((a - TrackMin) / (TrackMax - TrackMin));
             Texture2D tick = IconLibrary.GetChrome("ui_slider_tick");
             float tickW = Mathf.Max(2f, 2f * scale);
             float knobX = X(age);
-
-            // the law's path: a tick at every future statutory value, its year above; the hairline from the knob to the next step
-            var marks = new List<(float X, string Label, bool Known)>();
-            foreach (PensionAgeStatute.PathPoint p in rule.Path)
+            float lineY = track.y + track.height * 0.5f;
+            Color prev = GUI.color;
+            void Tick(float x, float top, float height, Color ink)
             {
-                if (p.Year <= year) { continue; }
-                marks.Add((X(p.Age), p.Year.ToString(CultureInfo.InvariantCulture), true));
+                if (tick != null) { GUI.color = ink; GUI.DrawTexture(new Rect(x - tickW * 0.5f, top, tickW, height), tick, ScaleMode.StretchToFill); GUI.color = prev; }
+                else { PoliSimTheme.Rule(new Rect(x - tickW * 0.5f, top, tickW, height), ink); }
             }
-            int? undated = PensionAgeStatute.UndatedMarkYear(country.Id, year);
-            if (undated.HasValue)
+            void Dotted(float x0, float x1)
             {
-                // the third mark: the first year the statute has published no figure for - the year after the horizon, or this year once the
-                // calendar has passed it (the knob then carries the last published figure) - never a year already past
-                float lastAge = PensionAgeStatute.AgeInForce(country.Id, rule.DatedTo);
-                marks.Add((X(lastAge) + tickW * 3f, undated.Value.ToString(CultureInfo.InvariantCulture) + " ?", false));
-            }
-            if (marks.Count > 0)
-            {
-                float lineY = track.y + track.height * 0.5f;
-                float x0 = Mathf.Min(knobX, marks[0].X), x1 = Mathf.Max(knobX, marks[0].X);
                 for (float x = x0; x < x1; x += 4f * scale) { PoliSimTheme.Rule(new Rect(x, lineY - 0.5f, Mathf.Min(1.5f * scale, x1 - x), 1f), PoliSimTheme.TextMuted); }
             }
-            Color prev = GUI.color;
-            float labelY = track.y - 1f * scale - capH;
-            float lastRight = float.NegativeInfinity;
-            for (int i = 0; i < marks.Count; i++)
-            {
-                (float x, string label, bool known) = marks[i];
-                if (tick != null)
-                {
-                    GUI.color = known ? PoliSimTheme.TextMuted : PoliSimTheme.Tint(PoliSimTheme.TextMuted, 0.5f);
-                    GUI.DrawTexture(new Rect(x - tickW * 0.5f, track.y - 2f * scale, tickW, track.height + 4f * scale), tick, ScaleMode.StretchToFill);
-                }
-                else { PoliSimTheme.Rule(new Rect(x - tickW * 0.5f, track.y - 2f * scale, tickW, track.height + 4f * scale), PoliSimTheme.TextMuted); }
-                // a year that would print over the one before it is dropped (Germany's four steps sit two months apart); the last always prints
-                float w = face.CalcSize(new GUIContent(label)).x + 4f;
-                float lx = Mathf.Clamp(x - w * 0.5f, track.x, track.xMax - w);
-                bool last = i == marks.Count - 1;
-                if (lx < lastRight + 2f)
-                {
-                    if (!last) { continue; }
-                    lx = Mathf.Min(lastRight + 2f, track.xMax - w);
-                }
-                GUI.Label(new Rect(lx, labelY, w, capH), label, yearFace);
-                lastRight = lx + w;
-            }
-            GUI.color = prev;
+            string Y(int y) => y.ToString(CultureInfo.InvariantCulture);
 
-            // the caption band: NEXT and NO LEVER; the citation (the trailing) right-aligns
-            // under the figure and reaches a little way into the band's right end, so the band's text is left-aligned and stops short of it
+            // the track: what the state draws - figures only, each a value at its position
+            var labels = new List<string>();
+            float spanLeft = knobX, spanRight = knobX;
+            Color labelInk = PoliSimTheme.TextMuted;
+            PensionAgeStatute.PathPoint[] ahead = PensionAgeStatute.TicksAhead(country.Id, year);
+            switch (state)
+            {
+                case PensionMarkState.HeldWindow:
+                {
+                    // the law's tick under the knob, drawn taller so it shows beneath it - law and figure at one value; the span is the window it holds
+                    float knobBottom = lineY + 11.5f * scale;
+                    Tick(knobX, knobBottom - 1f * scale, 6f * scale, PoliSimTheme.TextMuted);
+                    int since = PensionAgeStatute.InForceSince(country.Id, year);
+                    labels.Add(PensionAgeStatute.Format(age) + " · " + (since == rule.DatedTo ? Y(since) : Y(since) + "–" + Y(rule.DatedTo)) + " · HELD");
+                    labelInk = PoliSimTheme.TextPrimary;
+                    break;
+                }
+                case PensionMarkState.RisingWindow:
+                case PensionMarkState.ClosedSchedule:
+                {
+                    float lastX = knobX;
+                    foreach (PensionAgeStatute.PathPoint p in ahead)
+                    {
+                        float x = X(p.Age);
+                        Tick(x, track.y - 2f * scale, track.height + 4f * scale, PoliSimTheme.TextMuted);
+                        labels.Add(PensionAgeStatute.Format(p.Age) + " · " + Y(p.Year));
+                        lastX = Mathf.Max(lastX, x);
+                        spanLeft = Mathf.Min(spanLeft, x); spanRight = Mathf.Max(spanRight, x);
+                    }
+                    Dotted(Mathf.Min(knobX, lastX), Mathf.Max(knobX, lastX));
+                    if (state == PensionMarkState.RisingWindow)
+                    {
+                        // an open end: the hairline carries on one tick-pitch past the last published tick and stops in air - no tick, no cap, no year
+                        Dotted(lastX, Mathf.Min(track.xMax, lastX + LedgerRow.LastTickPitch));
+                    }
+                    else
+                    {
+                        // a closed schedule ends at the track's own end-mark: one of its gradation ticks, in its ink, beside the last step
+                        float markW = LedgerRow.GradationTickWidth(scale);
+                        float markX = lastX + tickW * 0.5f + 2f * scale;
+                        if (tick != null) { GUI.color = PoliSimTheme.Hairline; GUI.DrawTexture(new Rect(markX, track.y, markW, track.height), tick, ScaleMode.StretchToFill); GUI.color = prev; }
+                        else { PoliSimTheme.Rule(new Rect(markX, track.y, markW, track.height), PoliSimTheme.Hairline); }
+                    }
+                    break;
+                }
+                case PensionMarkState.Complete:
+                case PensionMarkState.Carried:
+                {
+                    // HALF INK = HISTORY: the step before the figure in force; ahead of the knob nothing - no tick, no stub, no "?"
+                    PensionAgeStatute.PathPoint? history = PensionAgeStatute.HistoryTick(country.Id, year);
+                    if (history.HasValue)
+                    {
+                        float x = X(history.Value.Age);
+                        Tick(x, track.y - 2f * scale, track.height + 4f * scale, PoliSimTheme.Tint(PoliSimTheme.TextMuted, 0.5f));
+                        labels.Add(PensionAgeStatute.Format(history.Value.Age) + " · " + Y(history.Value.Year));
+                        spanLeft = Mathf.Min(spanLeft, x); spanRight = Mathf.Max(spanRight, x);
+                    }
+                    break;
+                }
+                default:
+                    labels.Add(PensionAgeStatute.Format(age) + " · NO PATH");
+                    labelInk = PoliSimTheme.TextPrimary;
+                    break;
+            }
+
+            // the labels: one run above the track, centred on what they name and kept inside it - figures and their years, nothing else
+            if (labels.Count > 0)
+            {
+                string run = string.Join("   ", labels);
+                GUIStyle labelFace = Inked(new GUIStyle(face) { alignment = TextAnchor.LowerLeft, clipping = TextClipping.Clip }, labelInk);
+                float w = Mathf.Ceil(face.CalcSize(new GUIContent(run)).x) + 2f;
+                if (w > track.width && labels.Count > 1) { run = labels[labels.Count - 1]; w = Mathf.Ceil(face.CalcSize(new GUIContent(run)).x) + 2f; }   // a run the track cannot hold keeps the last figure, the path's end
+                float lx = Mathf.Clamp((spanLeft + spanRight) * 0.5f - w * 0.5f, track.x, Mathf.Max(track.x, track.xMax - w));
+                GUI.Label(new Rect(lx, track.y - 1f * scale - capH, Mathf.Min(w, track.width), capH), run, labelFace);
+            }
+
+            // the caption band, 9d's two ends: the DRIVER end names what moves the figure - the statute's citation, the law itself (board 15c-r2 puts the statute
+            // in the lever column and the driver's sentence here; the 1280 name cell holds the kind and no more, and the sentence is the Policy Web node's) -
+            // ▏ NEXT, the state's sentence. The band runs on past the track to the figure's own glyph and stops short of it (a descender reaches the band's
+            // top). The knob reaches below the track into the band (a 23 px face on a 14 px track), so the words sit wholly to one side of it. MEASURED, NEVER
+            // SHRUNK where a rung fits: the sentence drops its rank-3 then rank-2 segments, then the citation, then the word NEXT; the state's answer (rank 1) is
+            // never dropped. The cuts that set this: the first dropped from the end and cut the answer, the second ran sentences under the knob, the third
+            // stopped the band at the track's end, the fourth shrank Poland's and France's sentences into the label's floor, the fifth set the provenance at the
+            // band's height under a figure centred on the whole row, and the figure's glyphs ran into it.
             Rect band = LedgerRow.LastCaptionBand;
             if (band.width > 8f)
             {
-                PensionAgeStatute.PathPoint? next = PensionAgeStatute.NextStep(country.Id, year);
-                string bandText = rule.Kind == PensionAgeRule.Fixed ? "A BILL ONLY · NO LEVER"
-                    : next.HasValue ? "NEXT " + PensionAgeStatute.Format(next.Value.Age) + " · " + next.Value.Year.ToString(CultureInfo.InvariantCulture) + " · NO LEVER"
-                    : rule.Kind == PensionAgeRule.LifeExpectancyIndexed
-                        ? (PensionAgeStatute.IsDated(country.Id, year)
-                            ? "NEXT " + (rule.DatedTo + 1).ToString(CultureInfo.InvariantCulture) + " · NO FIGURE YET · NO LEVER"
-                            : "CARRIED FROM " + rule.DatedTo.ToString(CultureInfo.InvariantCulture) + " · NO LEVER")   // past the horizon: the knob is the last published figure
-                    : "NO NEXT · FLAT FROM HERE · NO LEVER";
-                float citationRoom = Mathf.Ceil(face.CalcSize(new GUIContent(rule.Citation.ToUpperInvariant())).x) + 6f * scale;
-                GUI.Label(new Rect(band.x, band.y, Mathf.Max(10f, band.width - citationRoom), band.height), bandText,
-                    Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, PoliSimTheme.TextSecondary));
+                float bandEnd = LedgerRow.LastFigureRect.xMax - Mathf.Ceil(_labelStyle.CalcSize(new GUIContent(PensionAgeStatute.Format(age))).x) - 6f * scale;
+                string citation = rule.Citation.ToUpperInvariant();
+                float divider = 7f * scale;
+                string Sentence(int maxRank, bool prefix) => PensionAgeStatute.BandSentence(country.Id, year, maxRank, prefix);
+                float Need(string driver, string next) => (driver == null ? 0f : face.CalcSize(new GUIContent(driver)).x + divider) + face.CalcSize(new GUIContent(next)).x;
+                float knobHalf = 7.5f * scale + 2f * scale;
+                var rungs = new List<(string Driver, string Next)>
+                {
+                    (citation, Sentence(3, true)), (citation, Sentence(2, true)), (citation, Sentence(1, true)),
+                    (null, Sentence(3, true)), (null, Sentence(2, true)), (null, Sentence(1, true)), (null, Sentence(1, false)),
+                };
+                string chosenDriver = null, chosenNext = null;
+                float x = band.x, bandRight = band.x;
+                float leftEnd = Mathf.Min(bandEnd, knobX - knobHalf), rightStart = knobX + knobHalf;
+                foreach ((string driver, string next) in rungs)
+                {
+                    float need = Need(driver, next);
+                    if (need <= leftEnd - band.x) { chosenDriver = driver; chosenNext = next; x = band.x; bandRight = leftEnd; break; }
+                    if (need <= bandEnd - rightStart) { chosenDriver = driver; chosenNext = next; x = rightStart; bandRight = bandEnd; break; }
+                }
+                if (chosenNext == null)
+                {
+                    // no rung fits whole: the state's answer on the wider side, and the label's own shrink - the floor the overflow guard reports
+                    chosenNext = Sentence(1, false);
+                    if (bandEnd - rightStart > leftEnd - band.x) { x = rightStart; bandRight = bandEnd; } else { x = band.x; bandRight = leftEnd; }
+                }
+                GUIStyle bandFace = Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, PoliSimTheme.TextSecondary);
+                if (chosenDriver != null)
+                {
+                    float dw = Mathf.Ceil(face.CalcSize(new GUIContent(chosenDriver)).x);
+                    GUI.Label(new Rect(x, band.y, dw + 1f, band.height), chosenDriver, bandFace);
+                    PoliSimTheme.Rule(new Rect(x + dw + divider * 0.5f - 0.5f, band.y + 1f * scale, 1f, capH - 2f * scale), PoliSimTheme.TextMuted);
+                    x += dw + divider;
+                }
+                PoliSimWidgets.MeasuredLabel(new Rect(x, band.y, Mathf.Max(10f, bandRight - x), band.height), chosenNext, bandFace);
             }
         }
 

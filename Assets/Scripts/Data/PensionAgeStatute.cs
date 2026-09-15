@@ -16,6 +16,24 @@ namespace PoliSim.Data
         Fixed,
     }
 
+    /// <summary>Board 15c-r2 (Design, 2026-09-15, the D20 return's answer): what the statutory mark reads in a year - six states, three of which draw an
+    /// empty track ahead of the knob and are told apart by a sentence, because ink cannot carry a reason.</summary>
+    public enum PensionMarkState
+    {
+        /// <summary>An indexed rule whose published window ahead holds one value (Sweden's 67 from 2026 to 2032): the law's tick coincides with the knob and carries the span.</summary>
+        HeldWindow,
+        /// <summary>An indexed rule with published steps ahead (Italy in 2026-2027): ticks at the published values, the hairline running one pitch past the last and stopping in air.</summary>
+        RisingWindow,
+        /// <summary>A schedule with steps ahead and a known end: ticks at its values, the hairline closing at the track's own end-mark.</summary>
+        ClosedSchedule,
+        /// <summary>A schedule that has finished moving: the last step behind the knob at half ink, nothing ahead.</summary>
+        Complete,
+        /// <summary>An indexed rule past its horizon: the figure is the last published one, carried; nothing ahead - no tick, no stub, no "?".</summary>
+        Carried,
+        /// <summary>A number in the statute: no path; only a bill moves it.</summary>
+        Fixed,
+    }
+
     /// <summary>
     /// PN-1 (2026-09-13; DS-3 ruled §474 "statute + dial, on CarbonRateStatute's precedent: one rule per country with its paragraph, stepped at
     /// the boundary, a passed bill's figure wins"): THE STATUTE'S OWN MOVE OF THE PENSION AGE, one rule per country, each with its paragraph and
@@ -34,8 +52,9 @@ namespace PoliSim.Data
     /// <para><b>An indexed rule has a SHORT DATED PATH.</b> Socialförsäkringsbalken 2 kap. 10 c § makes the riktålder computed in a year apply
     /// "det sjätte året efter" - it is in force the sixth year after its calculation - so the figure is known six years out and no further:
     /// Pensionsmyndigheten publishes 67 for 2026 through 2032, and 2033 is a date with no figure. Italy's art. 24 DL 201/2011 adjusts every
-    /// two years on ISTAT's life expectancy: 67 through 2026, 67 y 1 m in 2027, 67 y 3 m in 2028, then a date with no figure. That is what
-    /// sharpens board 15c's third mark: an indexed path's later ticks carry a year and a "?" - the year is known, the figure is not.</para>
+    /// two years on ISTAT's life expectancy: 67 through 2026, 67 y 1 m in 2027, 67 y 3 m in 2028, then a date with no figure. Board 15c drew that
+    /// date as a "?" tick; board 15c-r2 (2026-09-15) withdrew it - a tick is a value at a position, so the dated year without a figure is a word in
+    /// the caption (<see cref="MarkSentence"/>) and the track carries only what the law has published (<see cref="MarkState"/>).</para>
     /// </summary>
     public static class PensionAgeStatute
     {
@@ -110,7 +129,7 @@ namespace PoliSim.Data
         }
 
         /// <summary>
-        /// Board 15c's third mark, the year it names: for an indexed rule, the first year its statute has published no figure for, and never a
+        /// The year the statute has dated without a figure - board 15c's third mark, a word in the caption since 15c-r2 (never a tick): for an indexed rule, the first year its statute has published no figure for, and never a
         /// year already past - the year after the horizon while the calendar is inside it, THIS year once the calendar has passed it (the age in
         /// force is then the last published figure, carried, and <see cref="IsDated"/> says so). Null for a schedule or a fixed rule, whose
         /// every year is known.
@@ -129,6 +148,121 @@ namespace PoliSim.Data
             if (r == null) { return null; }
             foreach (PathPoint p in r.Path) { if (p.Year > year) { return p; } }
             return null;
+        }
+
+        /// <summary>
+        /// Board 15c-r2 (Design, 2026-09-15): the state the statutory mark reads in a calendar year. *"The track carries figures. The caption carries
+        /// years. A tick is a value at a position"* - so a year the law has dated without calculating its figure never gets a tick; it gets a word.
+        /// An indexed rule past its horizon is CARRIED; inside it, RISING where a published step lies ahead and HELD where the window holds one
+        /// value; a schedule is CLOSED while a step lies ahead and COMPLETE after its last; a fixed rule is FIXED.
+        /// </summary>
+        public static PensionMarkState MarkState(CountryId id, int year)
+        {
+            Rule r = Of(id);
+            if (r == null || r.Kind == PensionAgeRule.Fixed) { return PensionMarkState.Fixed; }
+            bool ahead = TicksAhead(id, year).Length > 0;
+            if (r.Kind == PensionAgeRule.LifeExpectancyIndexed)
+            {
+                if (year > r.DatedTo) { return PensionMarkState.Carried; }
+                return ahead ? PensionMarkState.RisingWindow : PensionMarkState.HeldWindow;
+            }
+            return ahead ? PensionMarkState.ClosedSchedule : PensionMarkState.Complete;
+        }
+
+        /// <summary>Board 15c-r2: the ticks ahead of the knob - the path's PUBLISHED values after this year and never a year past the horizon, so a
+        /// dated year without a figure draws nothing (15c's "2033 ?" and "? · 2029" ticks are withdrawn).</summary>
+        public static PathPoint[] TicksAhead(CountryId id, int year)
+        {
+            Rule r = Of(id);
+            if (r == null || r.Kind == PensionAgeRule.Fixed) { return new PathPoint[0]; }
+            var ahead = new List<PathPoint>();
+            foreach (PathPoint p in r.Path) { if (p.Year > year && p.Year <= r.DatedTo) { ahead.Add(p); } }
+            return ahead.ToArray();
+        }
+
+        /// <summary>Board 15c-r2: the year the figure in force took effect on the path (the path's first year where it starts later) - a held window's span opens here.</summary>
+        public static int InForceSince(CountryId id, int year)
+        {
+            Rule r = Of(id);
+            if (r == null || r.Path.Length == 0) { return year; }
+            int since = r.Path[0].Year;
+            foreach (PathPoint p in r.Path) { if (p.Year <= year) { since = p.Year; } }
+            return since;
+        }
+
+        /// <summary>Board 15c-r2: HALF INK = HISTORY - the step before the figure in force, drawn behind the knob in the two states whose track is otherwise
+        /// empty for a reason the path explains (COMPLETE, CARRIED); null where the path has no earlier step or the state draws none.</summary>
+        public static PathPoint? HistoryTick(CountryId id, int year)
+        {
+            PensionMarkState state = MarkState(id, year);
+            if (state != PensionMarkState.Complete && state != PensionMarkState.Carried) { return null; }
+            Rule r = Of(id);
+            PathPoint? previous = null, current = null;
+            foreach (PathPoint p in r.Path) { if (p.Year <= year) { previous = current; current = p; } }
+            return previous;
+        }
+
+        /// <summary>Board 15c-r2: the figure cell's second line (9b's line under the figure) - where the figure comes from. CARRIED FROM the horizon for a
+        /// carried figure; THE STATUTE's OWN otherwise (the knob is the law's figure while the driver is deferred).</summary>
+        public static string FigureProvenance(CountryId id, int year)
+        {
+            Rule r = Of(id);
+            if (r == null) { return null; }
+            return MarkState(id, year) == PensionMarkState.Carried
+                ? "CARRIED FROM " + r.DatedTo.ToString(CultureInfo.InvariantCulture)
+                : "THE STATUTE's OWN";
+        }
+
+        /// <summary>Board 15c-r2's flag, answered on the row as built: France's statute (L161-17-2) writes its table by BIRTH YEAR, and the row's tick
+        /// years are the years each cohort reaches its age (born b at a: in force from b + a). The caption names that axis once; a narrow band drops
+        /// other segments before it.</summary>
+        public const string AxisNote = "BY BIRTH YEAR, YEARS IN FORCE";
+
+        /// <summary>
+        /// Board 15c-r2: the caption band's NEXT sentence for the state, as the board writes it - the years the track may not carry - in segments
+        /// joined by " · ", each with the RANK it keeps on a narrow band: 1 is the state's own answer and is never dropped (2033 NO FIGURE YET, 2029 NOT
+        /// PUBLISHED, SCHEDULE COMPLETE 2031, THE LAW DOES NOT MOVE IT, France's axis), 2 the empty NEXT figure's dash and the window's reach, 3 what
+        /// the track's label or the answer already says (the next figure and its year, the carried and standing restatements). The first film dropped from the end and cut Sweden's 2033 NO FIGURE YET - the answer itself.
+        /// </summary>
+        public static (string Text, int Rank)[] MarkSegments(CountryId id, int year)
+        {
+            Rule r = Of(id);
+            if (r == null) { return new (string, int)[0]; }
+            string Y(int y) => y.ToString(CultureInfo.InvariantCulture);
+            float age = AgeInForce(id, year);
+            PathPoint[] ahead = TicksAhead(id, year);
+            PathPoint end = r.Path[r.Path.Length - 1];
+            switch (MarkState(id, year))
+            {
+                case PensionMarkState.HeldWindow:
+                    return new[] { (Format(age) + " HELD TO " + Y(r.DatedTo), 2), (Y(UndatedMarkYear(id, year).Value) + " NO FIGURE YET", 1) };
+                case PensionMarkState.RisingWindow:
+                    return new[] { (Format(ahead[0].Age) + " · " + Y(ahead[0].Year), 3), ("PUBLISHED TO " + Y(r.DatedTo), 2), (Y(UndatedMarkYear(id, year).Value) + " NO FIGURE YET", 1) };
+                case PensionMarkState.ClosedSchedule:
+                    return id == CountryId.France
+                        ? new[] { (Format(ahead[0].Age) + " · " + Y(ahead[0].Year), 3), ("SCHEDULE ENDS AT " + Format(end.Age), 2), (AxisNote, 1) }
+                        : new[] { (Format(ahead[0].Age) + " · " + Y(ahead[0].Year), 3), ("SCHEDULE ENDS AT " + Format(end.Age), 1) };
+                case PensionMarkState.Complete:
+                    return new[] { ("—", 2), ("SCHEDULE COMPLETE " + Y(end.Year), 1), ("THE STANDING AGE IS ALREADY " + Format(end.Age), 3) };
+                case PensionMarkState.Carried:
+                    return new[] { ("—", 2), (Y(UndatedMarkYear(id, year).Value) + " NOT PUBLISHED", 1), ("THE KNOB CARRIES " + Y(r.DatedTo) + "'s FIGURE", 3) };
+                default:
+                    return new[] { ("—", 2), ("THE LAW DOES NOT MOVE IT", 1), ("ONLY A BILL MOVES THIS DIAL", 3) };
+            }
+        }
+
+        /// <summary>Board 15c-r2: the whole sentence, every segment - what the band says where it has the room.</summary>
+        public static string MarkSentence(CountryId id, int year) => BandSentence(id, year, int.MaxValue, false);
+
+        /// <summary>Board 15c-r2: the band's sentence at one rung - the segments ranked at or under <paramref name="maxRank"/>, in the board's order, behind
+        /// the word NEXT where <paramref name="next"/> asks for it. France's axis note says what the ticks' years count, not what comes next, so standing
+        /// alone it takes no NEXT (the fifth film printed "NEXT: BY BIRTH YEAR, YEARS IN FORCE").</summary>
+        public static string BandSentence(CountryId id, int year, int maxRank, bool next)
+        {
+            var parts = new List<string>();
+            foreach ((string text, int rank) in MarkSegments(id, year)) { if (rank <= maxRank) { parts.Add(text); } }
+            bool axisAlone = parts.Count == 1 && parts[0] == AxisNote;
+            return (next && !axisAlone ? "NEXT: " : "") + string.Join(" · ", parts);
         }
 
         /// <summary>An age in years and months, as the statutes write it - "66 y 10 m", "67".</summary>

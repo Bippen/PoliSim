@@ -115,7 +115,7 @@ namespace PoliSim.EditorTools
                     (n => n.StartsWith("mark_cell_", StringComparison.Ordinal) && (n.EndsWith("_split_solid.png", StringComparison.Ordinal) || n.EndsWith("_spine_solid.png", StringComparison.Ordinal)),
                         "the split and spine cuts - rule 3's ladder never reached them (the largest chamber spends three cuts); held for a chamber that needs a fourth"),
                     (n => n == "sweden_outline.svg",
-                        "board 12f's geometry, delivered AHEAD of its board being read (§448): it FAILS its own manifest (9 155 bytes with a C2PA block against a stated 1 795; stripped 1 381, so the content differs too) - held until Design re-issues it with a digest that matches, and its board is built"),
+                        "board 12f's geometry, delivered AHEAD of its board being read (§448). The digest question is CLOSED (Design, 2026-09-15, item 3): the drawing was never wrong - an export embedded a C2PA block (9 155 bytes against the stated 1 795); Design stripped it and corrected MANIFEST row 62 to 1 381 bytes, 42a3ebe1…, and this pack's copy with its <metadata> block and c2pa namespace removed is those bytes exactly (§509). Still held: its board, 12f, is not built (instrument-first, §452 - no map is asked)"),
                 }
             },
         };

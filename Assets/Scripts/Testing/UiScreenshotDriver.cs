@@ -679,11 +679,26 @@ namespace PoliSim.Testing
                             if (hadBefore) { spendingInputs[SpendingCategory.Education] = before; } else { spendingInputs.Remove(SpendingCategory.Education); }
                             yield return Settle();
                             // Board 15c (2026-09-13): the same tab scrolled past the summary block to its FIRST row - Social Security, the pension
-                            // line - so the statutory mark beneath it (PN-1's path on the track, the years, the "?" tick past an indexed horizon) is
+                            // line - so the statutory mark beneath it (PN-1's path on the track and its sentence in the caption band) is
                             // on film with the row it belongs to. The offset is the summary block's height at 1280, scaled with the screen.
                             ScrollBy(controller, 470f * Screen.height / 720f);
                             yield return Settle();
                             yield return Capture(stem + "_pension");
+                            // Board 15c-r2 (2026-09-15): the same row in 2026 and in 2034 - the game's calendar stands at 2029 on film, so the RISING and HELD
+                            // windows (Italy 2026, Sweden to 2032) and the COMPLETE and CARRIED states (Germany from 2031, Sweden from 2033) need the row's
+                            // own year; the field is the film's alone and is cleared before the next frame.
+                            var pensionYear = controller.GetType().GetField("_pensionRowYearForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                            if (pensionYear != null)
+                            {
+                                foreach (int filmYear in new[] { 2026, 2034 })
+                                {
+                                    pensionYear.SetValue(controller, (int?)filmYear);
+                                    yield return Settle();
+                                    yield return Capture(stem + "_pension_" + filmYear);
+                                }
+                                pensionYear.SetValue(controller, null);
+                            }
+                            else { Debug.LogError("SHOT: board 15c-r2 - GameController._pensionRowYearForFilm was not found; the 2026 and 2034 pension frames are NOT filmed."); }
                             ScrollBy(controller, 0f);
                             yield return Settle();
                         }
