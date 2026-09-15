@@ -28600,3 +28600,47 @@ On the tree this record reads, *"126 states checked, 2026 to 2046; 378 band rung
 **Not touched.** No trajectory moves - a harness change. Where the race did not hit, the frames' content is unchanged; the fades above are the only differences.
 
 **Bar:** the code tree - `bar477_clk` **38 of 38**. The record's tree - `bar478_rec510` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 511. THE 15c-r2 RETURN CUT AS ONE ARCHIVE — SEND_PACKAGE.md re-cut and the whole D20/E-36 set zipped with MANIFEST.sha256 inside, every artefact verified by digest on the way in, written to AssetPackArchive; both flags carried in the return; E-37 opened (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15): *"Re-cut SEND_PACKAGE.md, then zip the whole D20/E-36 set — one archive with MANIFEST.sha256 inside, every artefact verified by digest on the way in, written to AssetPackArchive\. Elias uploads one file; the 23-file paste has now failed twice and the zip route is the only one that has worked. Put both flags in the return: France's premise was already false (years in force since §489) and the board's own Germany tick mixes a birth year with a schedule-complete year — the same axis mix it flagged."*
+
+**Why one file.**
+- E-36's 23 files reached the project as the manifest alone (§509, measured on the project's listing), and the ruling records the 23-file paste as failed twice.
+- The zip route is the one that has worked: E-35's `D20_paste.zip` landed whole as `uploads/D20_paste/`.
+- `DeliveredAssetCheck` already reads a zip that carries `SEND_PACKAGE.md` at its root as an outbound paste, not a delivery (§486), so an archive in `AssetPackArchive/` needs no new rule.
+
+**The return** (`CLAUDE_DESIGN_ASSET_REQUEST.md`). A status head names the archive and both flags. Above ⭐ THE D20 RETURN sits a new section, ⭐ THE 15c-r2 RETURN, which carries:
+- the board as built, device by device;
+- the seven deviations, as §509 states them;
+- the two flags as ruled:
+  1. France's premise was already false: the row's ticks have been years in force since §489, and France in 2029 reads 63 y 6 m · 2030, 63 y 9 m · 2031, 64 · 2033.
+  2. The board's own COMPLETE tick `66 y 10 m · 1963` sits beside `SCHEDULE COMPLETE 2031`, the axis mix it flagged; the row prints `66 y 10 m · 2029`.
+- item 3 closed;
+- the transport;
+- the annex of 12 frames, one or two per state.
+
+**What the archive carries** (`SEND_PACKAGE.md`, cut last by `make_return2.pl`, every digest read off disk after this record's bar line):
+- **The documents.** The request document, the errands, the record and the feature list, then the pension statutes' README and CSV.
+- **The 12 frames of 15c-r2 as built, chosen by state:**
+  - HELD and CARRIED: Sweden. RISING and CARRIED: Italy. CLOSED with its axis, and COMPLETE with its citation: France. The cluster and COMPLETE (flag 2's evidence): Germany. COMPLETE: the USA. FIXED: Poland.
+  - At 2560: Italy carried and France closed.
+  - They come from §510's held films, and from §509's France 2560 film where §510 filmed Italy and the USA at that size.
+- **The whole E-36 set, carried as it listed it:** 15c's five case frames (labelled as the row before 15c-r2, since they show the ticks the board withdrew), 15b's six and 15a's six.
+
+**How it is verified.**
+- **On the way in.** `cut_return_zip.pl` copies every row of `SEND_PACKAGE.md` into a staging folder. It re-reads each copy's SHA-256 and byte count against the row's recorded ones as it copies, and against its source. It lists any MISMATCH or MISSING in the manifest rather than dropping it.
+- **The manifest.** `MANIFEST.sha256` is written from the copies, with `SEND_PACKAGE.md` at the root, and the archive is written with forward-slash paths.
+- **On the way out.** The zip is extracted into a fresh folder and every line of `MANIFEST.sha256` is checked there (`sha256sum -c`).
+- **Where the counts live.** In the manifest's own header, in the cut's log `logs/zip_d20return.out`, and in the commit. The archive carries this record, so the record cannot carry its digest.
+
+**E-37 opened:** upload `AssetPackArchive/D20_return.zip` as one file.
+
+**Decisions taken, strikeable.**
+1. **The annex is chosen by state (12 frames), not every frame of the build (24).** Each of the six states appears at least once, and both flags have their frame.
+2. **E-36's 15c frames are carried, not dropped**, labelled as the row before 15c-r2. The ruling says the whole set, and Design's rule makes a film outrank its label, so the label says what the film shows.
+3. **The archive is `D20_return.zip`**, and `SEND_PACKAGE.md` rides inside it at the root, so the "what to read" column Design drew from last time is in the same file.
+
+**Not touched.** No code; no trajectory.
+
+**Bar:** `bar479_rec511` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
