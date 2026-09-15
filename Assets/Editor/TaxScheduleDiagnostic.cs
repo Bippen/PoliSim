@@ -187,6 +187,32 @@ namespace PoliSim.EditorTools
                 if (Math.Abs(untouched - 1.0) > 1e-9) { ok = false; Debug.LogError($"TAX SCHEDULE: the standing line moved after a clone's sub-row was set ({untouched})."); }
             }
 
+            // (8) F4-3 (2026-09-15): THE LEVER'S POINT - what one point on the lever raises at the seed, against the base the AI finance ministry spends a
+            // point by (AiFinanceMinistry.RaiseHouseholdRates: points = the shortfall over the income tax's and VAT's bases). The revenue engine anchors the
+            // lever's seeded rate on the sourced base (rate × base, D-16) and moves it by the statute's yield ratio, so one point raises the anchored figure
+            // over the statute's own yield: a seeded rate far from the statute's average effective rate prices its point wrong by that ratio.
+            sb.Append("\n    8. THE LEVER'S POINT (F4-3) - one point on the lever at the seed, % of GDP, against the base a point is spent by; the seeded rate against the statute's yield\n");
+            foreach (CountryId id in order)
+            {
+                Country c = world.GetCountry(id);
+                TaxLine line = Find(c);
+                float gdp = Mathf.Max(1f, c.State.NominalGdp);
+                float perPoint = (TaxBases.RevenueAtRate(c, TaxType.IncomeTax, line.Rate + 1f) - TaxBases.RevenueAtRate(c, TaxType.IncomeTax, line.Rate)) / gdp * 100f;
+                float baseShare = TaxBases.Base(c, TaxType.IncomeTax) / gdp;   // the base per point, as a share of GDP - one point of rate on it is this many per cent of GDP
+                sb.Append(F("    {0,-8} seed rate {1:F2} % against the statute's yield {2:F2} % · a point raises {3:F4} % of GDP · the base a point is spent by {4:F4} % of GDP · raised over priced {5:F3}\n",
+                    id, line.RateSeed, c.IncomeTaxSeedAer, perPoint, baseShare, baseShare > 0f ? perPoint / baseShare : 0f));
+                TaxSchedule.Statute st = TaxSchedule.Of(id);
+                if (st.Kind == TaxScheduleKind.TwoLayer)
+                {
+                    // F4-3's three verdicts (§514): the blend cannot come back, the base is the source over the rate it is read against, and the point is priced right
+                    if (Math.Abs(line.RateSeed - (float)st.FlatLayerRate) > 1e-4f) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s two-layer line is seeded at {1:F2} %, not its municipal layer's {2:F2} % - the blended rate F4-3 retired is back.", id, line.RateSeed, st.FlatLayerRate)); }
+                    double anchoredPct = line.RateSeed * TaxBaseTable.BaseShareOfGdp(id, TaxType.IncomeTax);
+                    sb.Append(F("    {0,-8} the seeded rate × the sourced base {1:F4} % of GDP against the realised {2:F6} % (T_1110, general government, 2022)\n", id, anchoredPct, TaxBaseTable.SwedenIncomeTaxRevenuePctOfGdp));
+                    if (Math.Abs(anchoredPct - TaxBaseTable.SwedenIncomeTaxRevenuePctOfGdp) > 0.002) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s seeded rate × its base reads {1:F4} % of GDP against the realised {2:F6} % - the row was not re-derived for the rate it is read against.", id, anchoredPct, TaxBaseTable.SwedenIncomeTaxRevenuePctOfGdp)); }
+                    if (baseShare <= 0f || Math.Abs(perPoint / baseShare - 1f) > 0.05f) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s lever point raises {1:F4} % of GDP against the {2:F4} % it is spent by - priced off a rate that is not the statute's yield.", id, perPoint, baseShare)); }
+                }
+            }
+
             Debug.Log(sb.ToString());
             Debug.Log(ok ? "=== TaxScheduleDiagnostic: ALL ASSERTIONS PASS ===" : "=== TaxScheduleDiagnostic: FAILED ===");
             CheckExit.Finish(ok ? 0 : 1);

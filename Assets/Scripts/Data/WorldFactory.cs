@@ -229,7 +229,10 @@ namespace PoliSim.Data
             SeedTaxLines(poland, incomeTax: 32f, corporateTax: 19f, vat: 23f, vatImplemented: true,
                 payrollTax: 35f, capitalGainsTax: 19f, salesTax: 0f, salesTaxImplemented: false,
                 estateTax: 20f, estateTaxImplemented: false, carbonTax: 0f, carbonTaxImplemented: false);
-            SeedTaxLines(sweden, incomeTax: 52f, corporateTax: 20.6f, vat: 25f, vatImplemented: true,
+            // F4-3 (2026-09-15, §514; DS-2d): Sweden's blended 52 - the municipal and state rates added at the top, a rate no Swede pays on every krona -
+            // RETIRED into the layers' own figures. The line's rate is the municipal layer's (kommunalskatt, the national average on every krona), read off the
+            // statute rather than typed; the state layer (20 % above the skiktgräns) is the schedule's second layer on the same line, and the row draws both.
+            SeedTaxLines(sweden, incomeTax: (float)TaxSchedule.Of(CountryId.Sweden).FlatLayerRate, corporateTax: 20.6f, vat: 25f, vatImplemented: true,
                 payrollTax: 31.4f, capitalGainsTax: 30f, salesTax: 0f, salesTaxImplemented: false,
                 estateTax: 20f, estateTaxImplemented: false, carbonTax: 1330f, carbonTaxImplemented: true);
 
@@ -279,7 +282,7 @@ namespace PoliSim.Data
             france.CollectionEfficiency = 1.1742f;  // EN-4d: 1.1764 (45.3 / 38.5058) - 0.0022; EN-4c: 1.1753 (45.3 / 38.5426) - 0.0022 (2.685 / 1233.4); D-16: 1.1800 = 1.1822 (45.3 / 38.3197 sourced) - 0.0022 (2.685 / 1226.2)
             italy.CollectionEfficiency = 1.2363f;   // 1.2366 (42.5 / 34.3689 sourced) - 0.0003 (0.240 / 790.5)
             poland.CollectionEfficiency = 1.3086f;  // 1.3117 (37.6 / 28.6659 sourced) - 0.0031 (0.735 / 240.8)
-            sweden.CollectionEfficiency = 1.0725f;  // EN-4d: 1.0766 (42.2 / 39.1994) - 0.0041; EN-4c: 1.0733 (42.2 / 39.3172) - 0.0041 (1.010 / 243.8); D-16: 1.0026 = 1.0065 (42.2 / 41.9274 sourced) - 0.0039 (1.010 / 259.9)
+            sweden.CollectionEfficiency = 1.0724f;  // F4-3 (§514): the income line's base re-derived for the retired 52 (TaxBaseTable: 10.389453 ÷ 32.38 = 0.3209), implied 39.1994 − 52 × 0.1998 + 32.38 × 0.3209 = 39.2005, and the bridge re-solved to hold the anchor: 42.04 ÷ 39.2005 = 1.0724 (39.2005 × 1.0724 = 42.039); EN-4d: 1.0766 (42.2 / 39.1994) - 0.0041; EN-4c: 1.0733 (42.2 / 39.3172) - 0.0041 (1.010 / 243.8); D-16: 1.0026 = 1.0065 (42.2 / 41.9274 sourced) - 0.0039 (1.010 / 259.9)
 
             // Fiscal reaction function's per-country comfort anchor (see "Fiscal Reaction Function" in
             // CLAUDE.md) - reuses each country's own seeded starting debt-to-GDP ratio from the

@@ -50,8 +50,17 @@ namespace PoliSim.Data
             { "France/IncomeTax", 0.2154f },  { "France/CorporateTax", 0.1139f },  { "France/VAT", 0.3745f },  { "France/PayrollTax", 0.2469f },
             { "Italy/IncomeTax", 0.2491f },   { "Italy/CorporateTax", 0.1106f },   { "Italy/VAT", 0.3151f },   { "Italy/PayrollTax", 0.4257f },
             { "Poland/IncomeTax", 0.1406f },  { "Poland/CorporateTax", 0.1474f },  { "Poland/VAT", 0.3132f },  { "Poland/PayrollTax", 0.3775f },
-            { "Sweden/IncomeTax", 0.1998f },  { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
+            { "Sweden/IncomeTax", 0.3209f },  { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
         };
+
+        /// <summary>
+        /// F4-3 (2026-09-15, §514): the realised revenue Sweden's income row is derived from - taxes on the income and profits of individuals (`T_1110`), general
+        /// government (`S13`), % of GDP, 2022: 10.389453, re-fetched from the OECD's Revenue Statistics (`DSD_REV_COMP_OECD`, version 2.0, key
+        /// `SWE.TAX_REV.S13.T_1110._T.PT_B1GQ.A`) when the blended 52 was retired - the same figure the D-9 sheet's 0.1998 was (10.389453 ÷ 52 = 0.1998), now
+        /// over the municipal layer's 32.38 (= 0.3209). The same fetch books the layers apart - local government (`S1313`) 14.656972 % of GDP, central
+        /// government (`S1311`) −4.267519 %, the state layer net of the credits it pays - so the one revenue figure the line reports is the sum, as S5 holds.
+        /// </summary>
+        public const double SwedenIncomeTaxRevenuePctOfGdp = 10.389453;
 
         /// <summary>True for a country the table covers - the five on the general-government perimeter. False for the USA (F-B: the federal perimeter; the uniform stand-in stays) and for any country seeded later without a row.</summary>
         public static bool IsSourced(CountryId country) => country != CountryId.USA && Sourced.ContainsKey(country + "/IncomeTax");

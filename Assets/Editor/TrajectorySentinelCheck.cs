@@ -16,17 +16,17 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class TrajectorySentinelCheck
     {
-        /// <summary>The baseline these digests are the first turns of: `traj_t3a` - T-3 form A, the identity's G at the sourced share (§507) (was `traj_f4s2`).</summary>
-        public const string BaselineLabel = "t3a";
+        /// <summary>The baseline these digests are the first turns of: `traj_f4s6` - F4-3, Sweden's blended 52 retired into the municipal layer's 32.38 with its base re-derived and the bridge re-solved (§514) (was `traj_t3a`).</summary>
+        public const string BaselineLabel = "f4s6";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_t3a_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_f4s6_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "f9f1a59f26212b7d0ba43d16c85bfb2c4400a56fd0453a72911ea44f37278ff3"),
-            (424242, "f84ce6898313519671f4e229f02c22195a52e5e6725bc1b40c8fc0b535352d31"),
+            (777, "470af57ef466354234df39dd35408e821baae76f89d72246ba97bc86bbea8129"),
+            (424242, "d0dfc6a80755982bb5f06e1f8d08b827be47b88e2f0bf3df8188b18a10de227d"),
         };
 
         public static void Run()

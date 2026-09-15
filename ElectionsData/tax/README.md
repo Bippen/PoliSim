@@ -111,6 +111,9 @@ Kommunal skattesats, national average **32.38 %** (SCB, *Kommunalskatterna 2026*
 brytpunkt, skiktgräns **643 000 kr** (Skatteverket, *Belopp och procent 2026*). The model (F4-2, 2026-09-13) reads them as
 one line with two layers (DS-2d): the municipal rate on every krona, the state rate on the income above the skiktgräns; the
 grundavdrag is not modelled and the skiktgräns is read on the whole income - stated, not hidden.
+F4-3 (2026-09-15, `COMPLETED.md` §514): the line's own rate is the municipal layer's 32.38 (the blended 52 retired); its revenue
+anchor is OECD Revenue Statistics `T_1110`, general government, 2022: **10.389453 %** of GDP - booked **14.656972** local and **−4.267519**
+central (the state layer net of the credits it pays) - over 32.38.
 
 ## Digests (`sha256sum`, first 16 hex, at fetch)
 

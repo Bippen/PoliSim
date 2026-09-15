@@ -28757,3 +28757,109 @@ On the tree this record reads, *"126 states checked, 2026 to 2046; 378 band rung
 2. **The reason is stated from §508's own measurements.** Nothing was re-measured; the ruling rules on those figures.
 
 **Bar:** `bar483_rec513` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 514. F4-3 LANDED — Sweden's blended 52 retired into the layers' own figures: the income line seeded at the municipal layer's 32.38 on every krona, the state layer's 20 % its second layer on the same line, the base re-derived from the re-fetched source, and the bridge re-solved. The family explained: the year-one bridge, and FT-5's participation term reading the after-tax wage at the right level (2026-09-15)
+
+**The ruling.** Elias, 2026-09-15: *"Only then F4-3."* The row, opened at §474 (the plan's S4): *"kommunal + statlig as one `IncomeTax` line carrying a two-layer schedule, two rates on the row (DS-2d); Sweden's bridge re-solved. BASELINE (`traj_f4s6`; five countries byte-identical, Sweden explained)."* DS-2d: *"S5's constraint holds (one revenue figure per TaxType, so the decompositions don't change shape) and S6's intent holds (kommunal + statlig are two real instruments). Both, not either."* §488: F4-2 read DS-2d's *"one line, two layers"* as the shape and left the figures to this pass.
+
+**1. The premise, measured first.** On the tree before, `TaxScheduleDiagnostic` gained section 8, the lever's point. It prints what one point on the income-tax lever raises at the seed against the base the AI finance ministry prices a point by (`AiFinanceMinistry.RaiseHouseholdRates` divides a shortfall by the income tax's and VAT's bases):
+
+| country | seeded rate | the statute's yield at the seed | one point raises, % of GDP | the base a point is spent by | raised over priced |
+|---|---|---|---|---|---|
+| Sweden | 52.00 % | 32.61 % | 0.3223 | 0.1998 | **1.613** |
+| Germany | 45.00 % | 16.55 % | 0.3874 | 0.2317 | **1.672** |
+| France | 45.00 % | 10.63 % | 0.5574 | 0.2154 | **2.588** |
+| Italy | 43.00 % | 0.00 % | 0.2491 | 0.2491 | **1.000** |
+| Poland | 32.00 % | 6.12 % | 0.3639 | 0.1406 | **2.588** |
+| USA | 37.00 % | 12.89 % | 0.8654 | 0.4000 | **2.163** |
+
+- **Where the gap comes from.** The revenue engine anchors the lever's seeded rate on the sourced base (rate × base, D-16) and moves it by the statute's yield ratio, so one point raises the anchored figure over the statute's yield. A seeded rate far above the statute's average effective rate prices its point wrong by that ratio.
+- **Sweden's 52** is the municipal and state rates added at the top: a rate that almost no krona pays. It sits 19.4 points above the statute's own yield.
+- **The other four schedule countries** are seeded at their statutes' top rates and read the same way; **Italy**, flat and billed, prices its point exactly.
+
+**The source, re-fetched rather than recalled.** OECD Revenue Statistics (`DSD_REV_COMP_OECD@DF_RSOECD` 2.0), Sweden 2022, taxes on the income and profits of individuals (`T_1110`), % of GDP:
+- **General government** reads **10.389453**, and 10.389453 ÷ 52 is the D-9 sheet's 0.1998, reproduced. Over 32.38 it is **0.3209**.
+- **The layers booked apart.** The same fetch splits them: local government **14.656972**, central government **−4.267519** (the state layer net of the credits it pays out). The line's one revenue figure is their sum, as S5 holds.
+
+**2. What was built.**
+- **`WorldFactory`.** Sweden's income line is seeded at `TaxSchedule.Of(Sweden).FlatLayerRate`, the municipal layer's 32.38 read off the statute rather than typed.
+  - The state layer (20 % above the skiktgräns) was already the schedule's second layer (§488).
+  - The row already carries both rates in F4-4's sub-rows (EVERY KRONA and the band over the skiktgräns), so *"two rates on the row"* stands.
+- **`TaxBaseTable`.** `Sweden/IncomeTax` 0.1998 → **0.3209**, with the source figure as `SwedenIncomeTaxRevenuePctOfGdp`.
+- **The bridge.** `CollectionEfficiency` 1.0725 → **1.0724**. Implied revenue moves 39.1994 → 39.2005 % of GDP, and × 1.0724 = **42.039** against the anchor 42.04.
+- **The save format** is 16: a save from before is refused, because its line is anchored on 52 and the re-derived base would read it as some sixty per cent more revenue.
+- **Section 8 of `TaxScheduleDiagnostic` asserts F4-3's three verdicts** for a two-layer line:
+  - the blend cannot come back (the seeded rate is the municipal layer's);
+  - the base is the source over the rate it is read against: 32.38 × the base reads **10.3907** % of GDP against the realised 10.389453;
+  - the point is priced right: Sweden now raises **0.3223** % of GDP per point against **0.3209** % priced, **1.004**.
+
+**Proven in the other direction** (`chain_f4s6b`):
+
+| probe (`probe_f4s6.pl`, restored and the tree checked clean) | the diagnostic | exit | what it said |
+|---|---|---|---|
+| `seed_blend` | `TaxScheduleDiagnostic` | 1 | *TAX SCHEDULE: Sweden's two-layer line is seeded at 52.00 %, not its municipal layer's 32.38 % - the blended rate F4-3 retired is back. / TAX SCHEDULE: Sweden's seeded rate × its base reads 16.6868 % of GDP against the realised 10.389453 % - the row was not re-derived for the rate it is read against. / TAX SCHEDULE: Sweden's lever point raises 0.5176 % of GDP against the 0.3209 % it is spent by - priced off a rate that is not the statute's yield.* |
+| `base_stale` | `TaxScheduleDiagnostic` | 1 | *TAX SCHEDULE: Sweden's seeded rate × its base reads 6.4695 % of GDP against the realised 10.389453 % - the row was not re-derived for the rate it is read against.* |
+| `base_stale` | `CarbonTaxUnitDiagnostic` | 1 | *Sweden implied 35.2793 % × CE 1.0724 = 37.834 (anchor 42.04)* |
+
+**On the landed tree** the schedule, the carbon unit's anchors, the labour-tax participation, the household burden, the tax transmission, the preview parity and the save round trip all exit 0.
+
+**3. The family** (`traj_f4s6` against `traj_t3a`; two seeds, three horizons, **8 of 77 fields byte-identical** in all six diffs; per country from the 1 000-turn dumps):
+
+| country | seed | fields byte-identical over 1 000 turns | first turn anything moves, and what | GDP at year 100, t3a → f4s6 | government debt at year 100 | participation at year 100 |
+|---|---|---|---|---|---|---|
+| Sweden | 777 | 9 of 77 | turn 1: `Budget`, `GovernmentDebt` | +0.7420 % | -1.188 % | +0.513 points |
+| Sweden | 424242 | 9 of 77 | turn 1: `Budget`, `GovernmentDebt` | +0.7408 % | -1.109 % | +0.506 points |
+| Germany | 777 | 77 of 77 | nothing moves | identical | identical | identical |
+| Germany | 424242 | 77 of 77 | nothing moves | identical | identical | identical |
+| France | 777 | 77 of 77 | nothing moves | identical | identical | identical |
+| France | 424242 | 77 of 77 | nothing moves | identical | identical | identical |
+| Italy | 777 | 77 of 77 | nothing moves | identical | identical | identical |
+| Italy | 424242 | 77 of 77 | nothing moves | identical | identical | identical |
+| Poland | 777 | 9 of 77 | turn 3: `CurrencyStrength`, `TradeBalance` | -0.0013 % | -0.003 % | identical |
+| Poland | 424242 | 10 of 77 | turn 3: `CurrencyStrength`, `TradeBalance` | -0.0011 % | -0.001 % | identical |
+| USA | 777 | 29 of 77 | turn 3: `CurrencyStrength`, `TradeBalance` | -0.0001 % | -0.000 % | +0.000 points |
+| USA | 424242 | 21 of 77 | turn 3: `CurrencyStrength`, `TradeBalance` | -0.0001 % | -0.000 % | +0.000 points |
+
+**Explained.**
+- **Year one is the bridge.** Sweden's budget moves by -0.0173 bn in the first year (seed 777), the product of the base row's four decimals and the re-solved coverage bridge. That is all S6's *"changes seeded revenue"* now amounts to: F4-2's ratio construction and D-16's anchors hold the seed's revenue.
+- **The long run is FT-5's participation term reading the after-tax wage at the right level.**
+  - `MacroSystem.LaborTaxParticipationTerm` is 11.6 × ln((100 − t) ÷ (100 − t₀)), with t the statute's effective rate (the seeded rate moved by the yield's own drift) and t₀ the seeded rate.
+  - The same bracket-creep drift in the yield was divided by the after-tax share at 52 (48 %). It is now divided by the municipal layer's (67.62 %), the after-tax share of the 98.85 % of income below the skiktgräns.
+  - So the creep's drag on participation is about three-tenths smaller. Sweden's participation, year by year at seed 777: year 1 65.31 → 65.31, year 10 64.68 → 64.68, year 50 59.95 → 60.05, year 100 55.35 → 55.86. At year 100 it reads +0.51 points at seed 777 and +0.51 at 424242.
+  - Real GDP at year 100 is +0.74 % (seed 777) and +0.74 % (424242), with more people in the labour force (unemployment up a little), lower inflation, and less debt.
+- **Not the AI finance ministry.**
+  - The attribution re-ran the tree before (probe `revert_all`, reproducing `traj_t3a_s777_t100` byte for byte) and the landed tree with every ministry off (`dump_min_off`).
+  - Sweden still moves by +0.64 % of GDP and +0.53 points of participation at year 100 (seed 777).
+  - The ministry's corrected point price is real but is not what moves Sweden's century.
+- **Three countries are byte-identical, not five.** Germany, France and Italy do not move at either seed. The USA and Poland move from turn 3 in `CurrencyStrength` and `TradeBalance`, their trade and exchange links to Sweden, by the thousandths of a per cent in the table. The plan's *"five countries byte-identical"* assumed no cross-border coupling. The euro area's three are unmoved.
+
+**The harness and the films.**
+- **The impact ratchet held** on the landed tree: Spending +2% 0.5013, Spending +10% 0.5028, Spending -10% 0.4984, with *no breach* (§512's 0.4984).
+- **Sweden's Budget, filmed** at 1280 and 2560 (`-shotstop=05a_budget_tax_rows`, 31 captured each, 0 failed, no overflow). The income tax row reads **32.38 %** with *AER 32.4* under it and TWO LAYERS under the name. The curve steps at the indexed skiktgräns, and the EVERY KRONA sub-row reads 32.38 %.
+
+**The sentinel.** `TrajectorySentinelCheck` moved to `f4s6` in this commit, as its own rule requires (seed 777 `470af57e…`, 424242 `d0dfc6a8…`).
+
+**What it opens.** **F4-5**, the income-tax lever's level in the other four schedule countries.
+- **Its first half.** Their seeded rates are their statutes' top rates (Germany and France 45, Poland 32, the USA 37) against yields of 6 to 17 %. The AI finance ministry prices their point 1.67 to 2.59 times too low (section 8), and FT-5's net-of-tax ratio divides their creep by the top rate's after-tax share.
+- **Its second half.** What t₀ should be for a schedule with brackets - the median earner's marginal rate, or the statute's yield - is a design question with no single statutory figure, unlike Sweden's municipal rate.
+- **Not self-built here.** It is a BASELINE family of its own, and two families never go in one pass.
+
+**Decisions taken, strikeable.**
+1. **The line's rate is the municipal layer's, not the two layers' top sum (52.38).** Every krona pays it, the statute names it, and the state layer is the schedule's second layer on the same line. A top sum would be a blend again.
+2. **The base row keeps the table's four decimals.** The bridge is re-solved by D-16's arithmetic to the anchor nearest 42.04 (1.0724: 42.039, against 42.043 unchanged).
+3. **"Two rates on the row" is F4-4's sub-rows.** The lever's figure reads the municipal rate, and nothing new is drawn.
+4. **The seed is read off the statute.** A typed 32.38 could drift from `TaxSchedule`'s.
+5. **The plan's "five countries byte-identical" is recorded as three, with the two trade-coupled countries' movement measured**, not smoothed.
+
+**The registers.**
+- `POLISIM_FEATURE_LIST.md`: F4-3 ✅, and F4-5 opened.
+- `POLISIM_TAX_SPECLET.md`: S6 built.
+- `POLISIM_BACKLOG_PLAN.md`: the S4 row.
+- `ElectionsData/tax/README.md`: Sweden's section gains the line's seed and the OECD split.
+
+**Bar:** the code tree.
+- `bar484_f4s6` read **37 of 38**: `MojibakeCheck` found the section sign in the sentinel's new note encoded twice (U+00C2 before U+00A7). The re-baselining script took the note from the command line as bytes. The byte run was repaired and the script now decodes its argument.
+- `bar486_f4s6b` **38 of 38** on the repaired tree.
+- `bar485_f4s6_sim` **52 of 52**, with the sentinel first and green on `f4s6`.
+
+The record's tree - `bar487_rec514` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.

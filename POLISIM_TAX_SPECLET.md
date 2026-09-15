@@ -118,7 +118,7 @@ will misrepresent the other three. **This is the single most important thing in 
   bracketed instrument still reports one revenue figure per `TaxType`, so **the decompositions need no
   change**. This is a deliberate constraint on S1: any design that changes the revenue line's shape also
   changes the fiscal ledger, the debt attribution and the budget screens, and is a much larger item.
-- **S6. Sweden's blended 52 is retired at this build**, replaced by kommunal + statlig as two
+- **S6. ✅ BUILT 2026-09-15 as F4-3 (`COMPLETED.md` §514): the line seeded at the municipal layer's 32.38, the state layer its second layer, the base re-derived, the bridge re-solved; seeded revenue held by D-16's anchors to the base row's rounding, the family running through FT-5's participation term.** Sweden's blended 52 is retired at this build, replaced by kommunal + statlig as two
   instruments. ⚠ **BASELINE**: it changes seeded revenue and therefore every Swedish trajectory. The
   family must be explained per country under the full sim-math bar. **DS-2d (§474): one line, two layers - S5's one revenue figure per `TaxType` holds and S6's two real instruments hold; "both, not either" (F4-3).**
 - **S7. ~~Do not build S1–S6 while the tax multiplier is zero.~~ STRUCK 2026-09-12 (DS-1, `COMPLETED.md` §474):** *"Its premise died at C-N4/§345/FT-5; a stale ruling that blocks live work is worse than none."* C-N4 built the disposable-income term (§126), §345 reached SELMA's anchor, FT-5 added the labour-supply channel (§372, §396) - the multiplier is not zero. As it stood: *C-C11's R-C11a is the prerequisite: a detailed instrument with no output channel is detail without consequence.*
