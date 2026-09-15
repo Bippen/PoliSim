@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
+using System.Reflection;
 using PoliSim.Data;
 using PoliSim.Simulation;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace PoliSim.EditorTools
 {
@@ -36,6 +39,11 @@ namespace PoliSim.EditorTools
     /// country's accruing debt ledger is byte-untouched across a preview (days recorded and
     /// term sum identical before and after), so a future clone escape that reached the ledger
     /// would name itself here.</para>
+    ///
+    /// <para><b>§506 (2026-09-15) - two more sections, T-3's condition ("probe the preview path before it lands").</b> THE CLONE AUDIT: every value field of Country
+    /// marked on a copy and read back through the preview's clone, by reflection, a field exempt only with its reason - what it found is ClonePreviewCountry's §506 block, the fields the hand-list never
+    /// carried. THE IDENTITY'S G: with each country's first discretionary line raised, the G the preview hands its identity against the G the boundary's plan hands
+    /// the day's - the preview handed the plan nominal until this item.</para>
     ///
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod
     /// PoliSim.EditorTools.PreviewParityDiagnostic.Run -logFile &lt;path&gt;`, or from the menu.
@@ -165,9 +173,13 @@ namespace PoliSim.EditorTools
                               $"MiseryCorr {real.MiseryCorruption:F4}/{prev.MiseryCorruption:F4}");
                 }
 
+                // §506 (2026-09-15): the clone audit, then the identity's G previewed against the boundary on a world of its own
+                failures += CloneAudit(world);
+                failures += IdentityGovernmentParity();
+
                 Debug.Log(failures == 0
-                    ? "PARITY: 7 of 7 asserted terms match for all 6 countries - no clone escape in the covered set."
-                    : $"PARITY: {failures} term mismatches - each names the escaped input above.");
+                    ? "PARITY: 7 of 7 asserted terms match for all 6 countries - no clone escape in the covered set; the clone audit clean; the preview's identity G the boundary's."
+                    : $"PARITY: {failures} mismatches - each names the escaped input above.");
                 CheckExit.Finish(failures == 0 ? 0 : 1);
             }
             finally
@@ -175,6 +187,154 @@ namespace PoliSim.EditorTools
                 Object.DestroyImmediate(go);
             }
         }
+
+        /// <summary>
+        /// §506 (2026-09-15) - T-3's condition, *"probe the preview path before it lands"*: THE PREVIEW HANDS THE IDENTITY THE BOUNDARY'S G. A world with the AI
+        /// ministry off, a year of days, each country's first discretionary line raised ten per cent (the mechanism engaged, not at no policy); the preview's identity
+        /// argument (PolicyPreview.PreviewIdentityGovernment) against the G the boundary's plan hands the next day's identity (SimulationManager.GetIdentityGovernmentConsumption,
+        /// read right after the boundary - only the day moves the price level), within a hundredth of a per cent.
+        /// </summary>
+        private static int IdentityGovernmentParity()
+        {
+            const float raisePercent = 10f;
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("PARITY_IDENTITY_G");
+            int failures = 0;
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                sim.AiFinanceMinistryEnabled = false;
+                for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
+                // the preview through the public path's own two steps (SimulationManager.PreviewTurn is exactly these), holding the clone so a mismatch can name its lines
+                MethodInfo cloneOf = typeof(SimulationManager).GetMethod("ClonePreviewCountry", BindingFlags.NonPublic | BindingFlags.Static);
+                MethodInfo previewOn = typeof(SimulationManager).GetMethod("PreviewTurnOnClone", BindingFlags.NonPublic | BindingFlags.Instance);
+                var previews = new Dictionary<CountryId, float>();
+                var clones = new Dictionary<CountryId, Country>();
+                foreach (Country c in world.Countries)
+                {
+                    var clone = (Country)cloneOf.Invoke(null, new object[] { c });
+                    previews[c.Id] = ((PolicyPreview)previewOn.Invoke(sim, new object[] { clone, c.Id, Raised(c, raisePercent) })).PreviewIdentityGovernment;
+                    clones[c.Id] = clone;
+                }
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country c in world.Countries) { decisions[c.Id] = Raised(c, raisePercent); }
+                sim.AdvanceTurn(decisions);
+                foreach (Country c in world.Countries)
+                {
+                    float boundary = sim.GetIdentityGovernmentConsumption(c.Id);
+                    float preview = previews[c.Id];
+                    bool same = Mathf.Abs(preview - boundary) <= 1e-4f * Mathf.Abs(boundary);
+                    if (!same)
+                    {
+                        failures++;
+                        Debug.LogError($"PARITY: {c.Id} THE PREVIEW'S IDENTITY G {preview:F4} is not the boundary's {boundary:F4} ({(preview / boundary - 1f) * 100f:+0.000;-0.000} %) - the preview's turn form hands its identity a G the day will not.");
+                        // name the lines: each discretionary line on the clone after its preview against the real line after the boundary, with the driver level each indexed on
+                        for (int i = 0; i < c.SpendingLines.Count && i < clones[c.Id].SpendingLines.Count; i++)
+                        {
+                            SpendingLine real = c.SpendingLines[i], previewed = clones[c.Id].SpendingLines[i];
+                            if (real.IsMandatory || Mathf.Abs(previewed.Amount - real.Amount) <= 1e-4f * Mathf.Abs(real.Amount)) { continue; }
+                            Debug.LogError($"PARITY: {c.Id} line {real.Category} ({SpendingDrivers.Of(real.Category)}): preview {previewed.Amount:F4} vs boundary {real.Amount:F4} ({(previewed.Amount / real.Amount - 1f) * 100f:+0.000;-0.000} %); driver level the preview indexed on {previewed.DriverReference:F4}, the boundary {real.DriverReference:F4}; driver ratio {previewed.LastDriverRatio:F5} vs {real.LastDriverRatio:F5}.");
+                        }
+                    }
+                    Debug.Log($"PARITY: {c.Id} identity G, first discretionary line +{raisePercent:F0} %: preview {preview:F4} vs boundary {boundary:F4} ({(preview / boundary - 1f) * 100f:+0.0000;-0.0000} %) {(same ? "ok" : "FAIL")}, price level {c.State.PriceLevel:F5}.");
+                }
+            }
+            finally { Object.DestroyImmediate(go); }
+            return failures;
+        }
+
+        private static PolicyDecision Raised(Country c, float percent)
+        {
+            PolicyDecision d = PolicyDecision.None();
+            foreach (SpendingLine line in c.SpendingLines) { if (!line.IsMandatory) { d.SpendingLineChanges[line.Category] = percent; break; } }
+            return d;
+        }
+
+        /// <summary>
+        /// §506 (2026-09-15) - THE CLONE AUDIT, by reflection, so no list is kept. For each country a memberwise copy has EVERY public instance value field marked with a
+        /// value no seed carries (a float or int a thousand and its index, a flag inverted, a string named for its index, an enum stepped, an array of marks); the preview's
+        /// clone of that copy (SimulationManager.ClonePreviewCountry) must read every mark back - a field the hand-list drops reads the constructor's default, and a field
+        /// equal to its default by coincidence cannot hide. A reference the copy carries and the clone does not is named too. A field the clone carries differently on
+        /// purpose is exempt only with its reason (<see cref="CloneExempt"/>). The R4-1 clone-escape class - C-N4, §391/§398, §497, EN-7b, Q1 - found each time by a
+        /// figure; this finds it by the field.
+        /// </summary>
+        private static int CloneAudit(World world)
+        {
+            MethodInfo clone = typeof(SimulationManager).GetMethod("ClonePreviewCountry", BindingFlags.NonPublic | BindingFlags.Static);
+            MethodInfo memberwise = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (clone == null || memberwise == null) { Debug.LogError("PARITY: ClonePreviewCountry or MemberwiseClone not found - the clone audit verified NOTHING."); return 1; }
+            FieldInfo[] fieldsOfCountry = typeof(Country).GetFields(BindingFlags.Public | BindingFlags.Instance);
+            int failures = 0, valueFields = 0;
+            var named = new HashSet<string>();
+            // TWO PASSES: a flag has two values and an enum a few, so a single mark can land on the constructor's own default - the whole-block probe read 161 escapes
+            // where 27 fields on six clones are 162, the USA's TracksHousingOverburden marked true (its false inverted) and read back as the default true. Marked both
+            // ways, a dropped field reads its default in at least one pass; a field is named once however many passes catch it.
+            for (int pass = 0; pass < 2; pass++)
+            foreach (Country c in world.Countries)
+            {
+                var marked = (Country)memberwise.Invoke(c, null);
+                int index = 0;
+                valueFields = 0;
+                foreach (FieldInfo f in fieldsOfCountry)
+                {
+                    index++;
+                    if (f.IsNotSerialized || f.IsInitOnly) { continue; }
+                    object mark = Mark(f.FieldType, f.GetValue(c), index, pass);
+                    if (mark == null) { continue; }
+                    f.SetValue(marked, mark);
+                    valueFields++;
+                }
+                var copy = (Country)clone.Invoke(null, new object[] { marked });
+                foreach (FieldInfo f in fieldsOfCountry)
+                {
+                    if (f.IsNotSerialized) { continue; }   // a memo rebuilt on first read (TaxSchedule.Memo) - never state
+                    object expected = f.GetValue(marked), cloned = f.GetValue(copy);
+                    string difference = null;
+                    Type t = f.FieldType;
+                    if (t.IsPrimitive || t.IsEnum || t == typeof(string)) { if (!Equals(expected, cloned)) { difference = $"marked {expected}, the clone read {cloned}"; } }
+                    else if (t.IsArray && (t.GetElementType().IsPrimitive || t.GetElementType().IsEnum))
+                    {
+                        var ea = (Array)expected; var ca = (Array)cloned;
+                        if ((ea == null) != (ca == null) || (ea != null && ea.Length != ca.Length)) { difference = "array length or presence differs"; }
+                        else if (ea != null) { for (int i = 0; i < ea.Length; i++) { if (!Equals(ea.GetValue(i), ca.GetValue(i))) { difference = $"element {i}: marked {ea.GetValue(i)}, the clone read {ca.GetValue(i)}"; break; } } }
+                    }
+                    else if (expected != null && cloned == null) { difference = "the country carries it, the clone carries null"; }
+                    if (difference == null) { continue; }
+                    if (CloneExempt.TryGetValue(f.Name, out string reason)) { continue; }
+                    if (!named.Add(c.Id + "." + f.Name)) { continue; }
+                    failures++;
+                    Debug.LogError($"PARITY: CLONE ESCAPE - {c.Id}.{f.Name}: {difference}. The preview's clone does not carry a field the country does (the R4-1 class); add it to ClonePreviewCountry's hand-list, or exempt it here with its reason.");
+                }
+            }
+            Debug.Log($"PARITY: clone audit - {valueFields} value fields of Country marked two ways on six copies and read back through the preview's clone, {failures} escape(s); exempt by reason: " + string.Join("; ", CloneExempt.Keys) + ".");
+            return failures;
+        }
+
+        /// <summary>A value no seed carries for a field of <paramref name="type"/> (the field's current value sizes an array), different in each <paramref name="pass"/>;
+        /// a flag is true in the first pass and false in the second, an enum its first value then its second; null for a reference the audit does not mark.</summary>
+        private static object Mark(Type type, object current, int index, int pass)
+        {
+            if (type == typeof(float)) { return 1000f + index + 0.25f + pass; }
+            if (type == typeof(double)) { return 1000.0 + index + 0.25 + pass; }
+            if (type == typeof(int)) { return 1000 + index + 1000 * pass; }
+            if (type == typeof(long)) { return 1000L + index + 1000L * pass; }
+            if (type == typeof(bool)) { return pass == 0; }
+            if (type == typeof(string)) { return "MARK" + index + "_" + pass; }
+            if (type.IsEnum) { Array values = Enum.GetValues(type); return values.Length > 1 ? values.GetValue(pass % values.Length) : null; }
+            if (type == typeof(float[])) { var a = (float[])current; if (a == null) { return null; } var m = new float[a.Length]; for (int i = 0; i < m.Length; i++) { m[i] = 1000f + index + i + 0.5f + pass; } return m; }
+            return null;
+        }
+
+        /// <summary>The fields the preview's clone carries differently on purpose, each with its reason (ClonePreviewCountry's own comments).</summary>
+        private static readonly Dictionary<string, string> CloneExempt = new Dictionary<string, string>
+        {
+            { "FiscalLedgerAccruing", "null on the clone by design - the preview never runs the daily path, and a shared reference would be a latent escape (Step 2's third section)" },
+            { "FiscalLedgerLastPeriod", "null on the clone by design, as the accruing ledger" },
+            { "ApprovalLedgerLastPeriod", "null on the clone by design - a preview has no history and nothing reads it; the accruing ledger is a fresh one" },
+        };
 
         private static int AssertTerm(CountryId id, string name, float real, float preview)
         {

@@ -28000,3 +28000,69 @@ The propensity a on the seed's first day: USA 0.7885, Sweden 0.7983, Germany 0.7
 **What the measurement does not carry, stated.** Form B re-bases spending with revenue as seeded, so the primary balance moves by the lines' change from year one - the debt columns show it; a form B with revenue re-solved to the anchored balance is a third form nobody asked for. The preview's turn form (which hands the identity its G undeflated) was not probed - no preview runs here. The USA's lines are the federal perimeter and P3_S13 is general government, so its k is the widest (the second reading, BEA NIPA, is still billed - §376). Sweden's seeded lines give a G of the share the table prints, not the 20.38 % its WorldFactory comment states. Nothing was ruled and nothing was built: the tables are for the ruling.
 
 **Bar:** `bar463_t3_sim` **51 of 51**, the sentinel first and green on the committed tree (the measurement tool only - no play-path change); `bar464_rec505` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 506. THE PREVIEW PATH PROBED BEFORE T-3 LANDS — Elias's first condition, taken as its own item: the preview's clone audited by field (27 value fields the hand-list never carried, now carried), the preview's identity G deflated as the day's, the year committed to the clone's pyramid as the boundary commits it; the preview's identity G the boundary's in all six to the printed digit; the no-policy trajectory byte-identical (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15): *"T-3 ruled: Form A — G is the sourced final-consumption share of GDP at the seed, grown with the lines. […] Two conditions: probe the preview path before it lands (§463/§464's class), and state the USA's single-source reading on the row […]"* This record is the first condition. It lands as its own item ahead of the block (§507), so what it changes is proven inert on a tree without form A.
+
+**§463/§464's class, read before building.** Neither record carries a preview finding: §463 (EN-4) found a static leaking across the bar's worlds, §464 (EN-4c) one stored rate given one meaning. The class of a preview disagreeing with the boundary it previews is §398 (the clone without `ParticipationAtLastBoundary`; the rule read after the boundary's steps), §497 (the dial-cost trackers off the clone), §498 (the electricity term planned before the clone's spending resolved) and §500 (the preview reading the electricity-tax law). The probe was built on that class and on §463's lesson (no static carries k - §507). §505's own bars were labelled `bar463_t3_sim` and `bar464_rec505`; the numbers may point there. That is stated here, not resolved.
+
+**The method** (§398/§497/§498/§500): the preview and the real boundary from the same state, the mechanism engaged rather than at no policy, the preview's figure held to the boundary's own, then the route broken and the check watched fail. Two sections join `PreviewParityDiagnostic`, which is already in the simulation bar:
+- **The identity's G.** A world with the AI ministry off runs a year of days. Each country's first discretionary line is raised ten per cent. The preview's identity argument (`PolicyPreview.PreviewIdentityGovernment`) is held to the G the boundary's plan hands the next day's identity (`SimulationManager.GetIdentityGovernmentConsumption`), within a hundredth of a per cent. On a mismatch the section names every discretionary line that differs, with the driver level each side indexed on.
+- **The clone audit.** For each country, a memberwise copy has every public instance value field of `Country` marked with a value no seed carries, in two passes: a float or int a thousand plus its index (and the pass), a flag true and then false, an enum its first value and then its second, a string named for its index, an array of marks. The preview's clone of that copy (`ClonePreviewCountry`) must read every mark back, so a field equal to its constructor default cannot hide. **The instrument was fixed before it was believed.** The first build marked a flag once, by inverting it, and one mark can land on the constructor's own default. With the whole block removed it read **161** escapes where 27 fields on six clones are 162, missing `TracksHousingOverburden` on USA (probe `audit_onepass`: that first build put back on a probe tree). Marked two ways, it names every field on every clone. A reference the copy carries and the clone does not is named too. A field may be exempt only with its reason. Three are: the two fiscal ledgers and the approval ledger's last period, null on the clone by design (the hand-list's own comments).
+
+**What the probe found - three defects, all on the preview path.**
+1. **The clone dropped 27 value fields.** The hand-list never carried them, and each read its constructor default on the clone: `AverageDebtMaturityYearsBase`, `BaselineHomeownership`, `BaselineHousingOverburden`, `BaselineIncomeTaxRate`, `BaselineLifeExpectancy`, `BaselineYouthUnemploymentRate`, `BenefitRatePerUnemployedBase`, `CollectionEfficiencyBase`, `ComfortableDebtToGdpPercentBase`, `DebtRatioLastReport`, `DebtRatioReportBefore`, `DebtRatioSeed`, `FamilyPolicyBase`, `GovernmentSpendingRateBase`, `ImmigrationPolicyBase`, `IncomeTaxSeedAer`, `LaborTaxRateSeed`, `MinimumWagePercentOfMedianBase`, `NaturalUnemploymentRateBase`, `OvertimeRegulationBase`, `PaidFamilyLeaveWeeksBase`, `PartyApprovalRating`, `PlayerPartyAbbrev`, `RealWageIndexAtLastIndex`, `RetrainingProgramBase`, `RiskPremiumSensitivityBase`, `TracksHousingOverburden`. Two of them change a preview figure today:
+   - `LaborTaxRateSeed` at 0 turns off FT-5's participation term (`MacroSystem.LaborTaxParticipationTerm` returns 0 below a positive seed).
+   - `RealWageIndexAtLastIndex` at 0 left an AI clone's caseload lines without the year's real-wage growth.
+   The rest are the structural laws' bases (no preview path composes a law today), the AI ministry's memory, the society baselines and the party fields. The first audit compared live values and ran on the tree carrying form A (`t3a1_parity`). It did not name 4 of them, whose year-one values coincided with the constructor's: `DebtRatioReportBefore`, `NaturalUnemploymentRateBase`, `PartyApprovalRating`, `PlayerPartyAbbrev`. The marks found them.
+2. **The preview handed its identity the plan in nominal terms.** That is P times the G the day reads. P5-B6 deflated only the daily site.
+3. **The preview never committed the year to its pyramid.** The boundary's first step is `CohortDemographics.CommitYear`. The preview read the year's scalars on the pyramid it started from and stopped there. So every line on a demographic driver indexed on a ratio of exactly one, a year behind the boundary. The unemployment the labour lines index on followed, because the boundary's supply-shock step reads the pyramid's structural participation. The section named the lines, for example:
+   - `PARITY: USA line HHSDiscretionary (AgeCostIndex): preview 133,4826 vs boundary 135,2260 (-1,289 %); driver level the preview indexed on 437,8379, the boundary 443,5563; driver ratio 1,00000 vs 1,01306.`
+   - `PARITY: USA line Labor (UnemploymentRate): preview 25,0051 vs boundary 25,7065 (-2,729 %); driver level the preview indexed on 8,4298, the boundary 8,6662; driver ratio 1,87328 vs 1,92583.`
+
+**Fixed.** `ClonePreviewCountry` carries the 27 fields in one block, with the reason stated beside it. The preview deflates its identity's G by the clone's price level: the boundary leaves the level where the preview reads it, and only the day moves it. The preview takes the year's step before the decision moves a lever, as the boundary does, and writes it to the clone's own pyramid after the year's readings.
+
+**Measured on the committed tree** (the clone audit: **84 value fields** marked two ways on six copies and read back, 0 escapes):
+
+| country | the preview's identity G | the boundary's | difference | price level |
+|---|---|---|---|---|
+| USA | 1876.7070 | 1876.7070 | +0.0000 % | 1.01846 |
+| Sweden | 130.9760 | 130.9760 | +0.0000 % | 1.01736 |
+| Germany | 999.0891 | 999.0891 | +0.0000 % | 1.02925 |
+| France | 784.2330 | 784.2330 | +0.0000 % | 1.03148 |
+| Italy | 447.3086 | 447.3086 | +0.0000 % | 1.02964 |
+| Poland | 158.5716 | 158.5716 | +0.0000 % | 1.01772 |
+
+**Proven in the other direction** - five probes, each on `PreviewParityDiagnostic` and restored, the tree checked clean after each:
+
+| probe | what it broke | exit | the clone audit | the preview's identity G against the boundary's, USA · Sweden · Germany · France · Italy · Poland |
+|---|---|---|---|---|
+| clone_unfixed | the §506 block removed - the hand-list as it stood at HEAD | 1 | 162 escape(s) - `AverageDebtMaturityYearsBase`, `BaselineHomeownership`, `BaselineHousingOverburden`, `BaselineIncomeTaxRate`, `BaselineLifeExpectancy`, `BaselineYouthUnemploymentRate`, `BenefitRatePerUnemployedBase`, `CollectionEfficiencyBase`, `ComfortableDebtToGdpPercentBase`, `DebtRatioLastReport`, `DebtRatioReportBefore`, `DebtRatioSeed`, `FamilyPolicyBase`, `GovernmentSpendingRateBase`, `ImmigrationPolicyBase`, `IncomeTaxSeedAer`, `LaborTaxRateSeed`, `MinimumWagePercentOfMedianBase`, `NaturalUnemploymentRateBase`, `OvertimeRegulationBase`, `PaidFamilyLeaveWeeksBase`, `PartyApprovalRating`, `PlayerPartyAbbrev`, `RealWageIndexAtLastIndex`, `RetrainingProgramBase`, `RiskPremiumSensitivityBase`, `TracksHousingOverburden` | -0.1511 % · -0.1186 % · -0.1037 % · -0.3541 % · -0.0869 % · -1.1987 % |
+| clone_realwage | the real wage's reference dropped from the hand-list | 1 | 6 escape(s) - `RealWageIndexAtLastIndex` | -0.1511 % · -0.1186 % · -0.1037 % · -0.3541 % · -0.0869 % · -1.1987 % |
+| clone_laborseed | the labour tax's seed dropped from the hand-list | 1 | 6 escape(s) - `LaborTaxRateSeed` | +0.0000 % · +0.0000 % · +0.0000 % · +0.0000 % · +0.0000 % · +0.0000 % |
+| preview_nominal | the preview hands its identity the plan nominal, as before this item | 1 | 0 escape(s) | +1.8460 % · +1.7364 % · +2.9251 % · +3.1483 % · +2.9640 % · +1.7723 % |
+| preview_uncommitted | the preview does not commit the year to its pyramid, as before this item | 1 | 0 escape(s) | -0.1223 % · -0.4623 % · -0.1049 % · -0.1282 % · -0.1670 % · +0.1887 % |
+
+`clone_laborseed` is why the audit exists beside the identity section. The dropped seed changes no plan, so the identity section passes while the audit names the field. `clone_realwage` measures what one dropped reference cost the plan.
+
+**No policy, byte-identical.** The sentinel is green in the simulation bar on the tree as committed (`bar466b_pv1_sim`), **51 of 51**. The cheap bar (`bar465_pv1`, **38 of 38**) and the dump below ran one step earlier, before a comment's correction and the audit's second pass; neither change is on the play path, and the record's own bar reads the committed tree. Every change is on the preview path or in an instrument.
+
+| seed | horizon | `pv1` vs `f4s2` |
+|---|---|---|
+| 777 | 100 | **76 of 76** |
+| 777 | 500 | **76 of 76** |
+| 777 | 1000 | **76 of 76** |
+| 424242 | 100 | **76 of 76** |
+| 424242 | 500 | **76 of 76** |
+| 424242 | 1000 | **76 of 76** |
+
+**Decisions taken, strikeable.**
+1. **The condition landed as its own item, ahead of the block.** "Before it lands" is read as a commit of its own, so the preview's fixes carry their own inertness proof, and the block (§507) is measured on a preview that already holds.
+2. **The clone carries every value field**, including those no preview reads today. The audit's rule is that the clone is the country, and an exemption needs a reason. The alternative, carrying only what is read, is the hand-list this class kept breaking (§398, §497, EN-7b, Q1).
+3. **The preview deflates by the clone's price level at the moment of the preview.** That is P5-B6's rule for the day, not a new one.
+4. **The audit marks values rather than comparing live ones**, because a live comparison missed 4 fields that coincided with their defaults at year one.
+
+**The registers.** `POLISIM_FEATURE_LIST.md`'s T-3 rows: the preview path probed first (§506). `CLAUDE.md` gains the standing note beside numeric inertness: the preview's clone is audited by field, not by memory.
+
+**Bar:** `bar467_rec506` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.

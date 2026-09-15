@@ -133,6 +133,9 @@ namespace PoliSim.Simulation
         public float PreviewOutputGapPercent;
         public float PreviewRuleRate;
         public float PreviewedInterestRate;
+        /// <summary>§506 (2026-09-15): the government consumption the preview handed its identity, real - the clone's plan over its price level, as the day deflates it;
+        /// PreviewParityDiagnostic holds it to the boundary's (SimulationManager.GetIdentityGovernmentConsumption).</summary>
+        public float PreviewIdentityGovernment;
     }
 
     /// <summary>
@@ -3102,6 +3105,11 @@ namespace PoliSim.Simulation
             var sectorsBefore = new Dictionary<SectorType, (float Output, float Employment, float Metric)>();
             foreach (Sector sector in previewCountry.Sectors) { sectorsBefore[sector.Type] = (sector.OutputShareOfGdp, sector.EmploymentShare, sector.SectorMetric); }
 
+            // §506 (2026-09-15): the boundary's FIRST step commits the year to the pyramid, with the levers as they stood through it (AdvanceTurn, CohortDemographics.CommitYear).
+            // The preview never committed, so every line on a demographic driver indexed on the pyramid the year started from - a ratio of one, a year behind the
+            // boundary (PreviewParityDiagnostic's identity section named them line by line). The step is taken here, before the decision moves a lever, and
+            // written to the clone's own pyramid after the year's readings below, which read the pyramid the year started from as the day did.
+            CohortDemographics.YearStep previewYearStep = CohortDemographics.Step(previewCountry, CohortDemographics.SubstrateYear(CurrentTurn));
             ApplyTariffRateChange(previewCountry, decision);
             ApplyPartnerTariffOverrides(previewCountry, decision);
             // Pass 5: the clone's tariff figure is threaded into its fiscal step below, exactly as the
@@ -3130,7 +3138,8 @@ namespace PoliSim.Simulation
             // (as the preview did until now, masked because the clone carried no boundary reference) previewed a rate the turn never sets; PreviewParityDiagnostic caught it.
             float ruleReadingAtOpen = previewCountry.CurrentFedChair != null ? TaylorRule.GetSuggestedInterestRate(previewCountry) : 0f;
             float blendedAtOpen = previewCountry.CurrentFedChair == null && CurrencySystem.SharesCurrencyZoneWithOthers(previewCountry, _world) ? EurozoneRateSystem.GetBlendedSuggestedRate(_world, previewCountry) : 0f;
-            CohortDemographics.ApplyTurn(previewCountry, CohortDemographics.SubstrateYear(CurrentTurn));   // F2 step 4: the year's readings on the clone's own pyramid; nothing commits
+            CohortDemographics.ApplyTurn(previewCountry, CohortDemographics.SubstrateYear(CurrentTurn));   // F2 step 4: the year's readings on the clone's own pyramid
+            if (previewYearStep.IsValid) { previewCountry.Cohorts.Counts = previewYearStep.Next; }   // §506: then the year committed on the clone, as the boundary commits it
             MacroSystem.ApplySupplyShockToUnemployment(previewCountry);   // FT-7 (§391): the preview reads the same boundary step, in the same place
             MacroSystem.ApplyNaturalRateFromLabourForce(previewCountry);   // FT-8 (§398)
             DetailedSpendingResult spendingResult = ResolveSpendingForTurn(previewCountry, decision);
@@ -3202,7 +3211,10 @@ namespace PoliSim.Simulation
                     previewCountry.CurrencyZone.InterestRate + decision.InterestRateChange,
                     CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
             }
-            MacroSystem.ApplyNationalAccounts(previewCountry, spendingResult.GovernmentSpending, previewedInterestRate);
+            // §506 (2026-09-15): the identity's G deflated as the day's is (P5-B6) - the preview handed the plan nominal, P times the G the day will read; PreviewParityDiagnostic
+            // holds this figure to the boundary's. The boundary leaves the price level where the preview reads it; only the day moves it.
+            float previewIdentityGovernment = spendingResult.GovernmentSpending / Mathf.Max(0.0001f, previewCountry.State.PriceLevel);
+            MacroSystem.ApplyNationalAccounts(previewCountry, previewIdentityGovernment, previewedInterestRate);
             MacroSystem.ApplyPotentialGdpGrowth(previewCountry);
 
             float actualGrowthRate = (state.GDP - gdpBeforeThisTurn) / Mathf.Max(gdpBeforeThisTurn, 1f) * 100f;
@@ -3249,6 +3261,7 @@ namespace PoliSim.Simulation
                 PreviewOutputGapPercent = TaylorRule.GetOutputGapPercent(previewCountry),
                 PreviewRuleRate = TaylorRule.GetSuggestedInterestRate(previewCountry),
                 PreviewedInterestRate = previewedInterestRate,
+                PreviewIdentityGovernment = previewIdentityGovernment,   // §506
             };
         }
 
@@ -3315,6 +3328,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The tariff take the country's CURRENT fiscal period planned (what the next boundary's pass-through is measured against), read with TryGetValue so a preview or an estimate never seeds a period; before the first period exists, the seed take from the same pure function.</summary>
+        /// <summary>§506 (2026-09-15): the government consumption the daily identity is handed today - the period's plan over the price level as it stands, the day's own
+        /// expression; NaN before the first period exists. The preview's parity section reads it right after a boundary.</summary>
+        public float GetIdentityGovernmentConsumption(CountryId countryId)
+            => _fiscalPeriods.TryGetValue(countryId, out FiscalPeriod period) ? period.PlannedGovernmentSpending / Mathf.Max(0.0001f, _world.GetCountry(countryId).State.PriceLevel) : float.NaN;
+
         /// <summary>P5-B6: the period's planned take at the seed's prices - the real field when the period carries it, else the
         /// nominal figure over today's level (an older save). The pass-through compares real to real: a rate change moves it,
         /// the price level never does.</summary>
@@ -3520,7 +3538,39 @@ namespace PoliSim.Simulation
                 FamilyPolicyLevel = country.FamilyPolicyLevel,
                 ImmigrationPolicyLevel = country.ImmigrationPolicyLevel,
                 BasePotentialGrowthRate = country.BasePotentialGrowthRate,
-                InfrastructureSpendingGrowthAdjustment = country.InfrastructureSpendingGrowthAdjustment
+                InfrastructureSpendingGrowthAdjustment = country.InfrastructureSpendingGrowthAdjustment,
+                // §506 (2026-09-15) - FOUND BY THE CLONE AUDIT T-3's condition asked for ("probe the preview path before it lands"): the value fields this list never carried,
+                // each reading the constructor's default on the clone. The structural laws' bases (no preview path composes a law today; the day one does, it composes on these), the seeds FT-5, F4-2 and
+                // RF-2 read (LaborTaxRateSeed at 0 dropped the preview's participation term; RealWageIndexAtLastIndex at 0 indexed an AI clone's caseload lines by no real wage
+                // growth - with it alone dropped, the preview's identity G reads 0.09 to 1.20 per cent below the boundary's), the AI ministry's memory, the society baselines, the party fields.
+                // PreviewParityDiagnostic's audit marks every value field and names any this list drops, so the next field added to Country is covered the day it lands.
+                NaturalUnemploymentRateBase = country.NaturalUnemploymentRateBase,
+                ComfortableDebtToGdpPercentBase = country.ComfortableDebtToGdpPercentBase,
+                AverageDebtMaturityYearsBase = country.AverageDebtMaturityYearsBase,
+                RiskPremiumSensitivityBase = country.RiskPremiumSensitivityBase,
+                CollectionEfficiencyBase = country.CollectionEfficiencyBase,
+                GovernmentSpendingRateBase = country.GovernmentSpendingRateBase,
+                BenefitRatePerUnemployedBase = country.BenefitRatePerUnemployedBase,
+                MinimumWagePercentOfMedianBase = country.MinimumWagePercentOfMedianBase,
+                PaidFamilyLeaveWeeksBase = country.PaidFamilyLeaveWeeksBase,
+                OvertimeRegulationBase = country.OvertimeRegulationBase,
+                RetrainingProgramBase = country.RetrainingProgramBase,
+                FamilyPolicyBase = country.FamilyPolicyBase,
+                ImmigrationPolicyBase = country.ImmigrationPolicyBase,
+                LaborTaxRateSeed = country.LaborTaxRateSeed,
+                IncomeTaxSeedAer = country.IncomeTaxSeedAer,
+                RealWageIndexAtLastIndex = country.RealWageIndexAtLastIndex,
+                DebtRatioSeed = country.DebtRatioSeed,
+                DebtRatioLastReport = country.DebtRatioLastReport,
+                DebtRatioReportBefore = country.DebtRatioReportBefore,
+                BaselineYouthUnemploymentRate = country.BaselineYouthUnemploymentRate,
+                BaselineLifeExpectancy = country.BaselineLifeExpectancy,
+                BaselineIncomeTaxRate = country.BaselineIncomeTaxRate,
+                TracksHousingOverburden = country.TracksHousingOverburden,
+                BaselineHousingOverburden = country.BaselineHousingOverburden,
+                BaselineHomeownership = country.BaselineHomeownership,
+                PlayerPartyAbbrev = country.PlayerPartyAbbrev,
+                PartyApprovalRating = country.PartyApprovalRating
             };
         }
 

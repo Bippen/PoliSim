@@ -111,6 +111,15 @@ precision. A guard written *so that* the zero case is the old arithmetic is not 
 This sits beside the accounting convention above because both are rules about what the model's numbers ARE, not about what they should be:
 one book in current prices, one price level joining it to the real block; one arithmetic in the play path, untouched by the instruments that read it.
 
+## The preview's clone is audited by field, not by memory (2026-09-15, `COMPLETED.md` §506)
+
+**`SimulationManager.ClonePreviewCountry` is a hand-list, and a hand-list drifts.** The class (R4-1) was paid for at C-N4, §391/§398, §497, EN-7b and Q1, each
+time found by a figure that happened to read the dropped field. T-3's condition - *probe the preview path before it lands* - found the list short by
+twenty-seven value fields at once, and the preview wrong in two more ways (its identity handed the plan nominal; the year never committed to the clone's
+pyramid). `PreviewParityDiagnostic` now MARKS every value field of `Country` on a copy and reads each mark back through the clone, so a field added to
+`Country` and not to the list fails the simulation bar by name the day it lands - a field equal to its default by coincidence cannot hide; an exemption
+carries its reason in the check. Beside it, the preview's identity G is held to the boundary's with a line raised. **Add the field to the list; never to the exemptions without a reason a preview could not contradict.**
+
 ## A session's context is not a binary transport (ruled standing 2026-09-09, `COMPLETED.md` §424, §427)
 
 **Bytes that pass through a model's context come out changed, and they come out changed quietly.** §424 carried
