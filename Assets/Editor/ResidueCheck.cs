@@ -43,6 +43,7 @@ namespace PoliSim.EditorTools
             ("D-7", "DESIGN", "board 2b, the Policy Web drawn to be read - never pasted, Design's to draw"),
             ("D-1 portraits", "DESIGN", "appointed ministers render the procedural placeholder until the portrait delivery"),
             ("T-3", "OWNER ELIAS", "the identity's government-consumption block - RULED form A and LANDED (§506, §507); what stays his: the harness's impact reading after the block, the ratchet not lowered"),
+            ("P-N5b", "OWNER ELIAS", "Okun on the output gap - measured and stopped (§508): the level gap is a structural offset co-moving with unemployment the wrong way; which gap Okun reads is a macro-core ruling"),
             ("dials-only laws", "OWNER ELIAS", "whether laws should reach the 31 dials-only quantities, and which - a design call with no literature to read it from (§378)"),
             ("FT-6", "OWNER ELIAS", "the long-horizon inflation drift - measured and three forms proposed (§379); the hold on inflation is a macro-core specification, ruled not typed"),
             ("K-1", "CALENDAR", "the seed refresh from Sweden's real result - 13 September 2026"),

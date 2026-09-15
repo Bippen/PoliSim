@@ -28271,3 +28271,110 @@ So the block lowers the landing-year multiplier on its own purchases by 0.0086 t
 - The sentinel is re-baselined to `t3a`: the label and both digests are set in this commit, and it reads green in the bar.
 
 **Bar:** the code tree - `bar468_t3a` **38 of 38**, `bar469_t3a_sim` **52 of 52** with the sentinel on `t3a`. The record's tree - `bar470_rec507` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 508. P-N5b MEASURED AND STOPPED — Okun on the output gap, in the fixed order after T-3: its premise measured on the landed tree and failed. The level gap is a structural offset that co-moves with the unemployment gap with the wrong sign. Okun on it at the sourced range turns the offset into unemployment and pins inflation at its floor. Nothing applied; the form of the gap is sheeted for Elias (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15, with T-3's): *"Then P-N5b in the fixed order, its own family."* The standing rule it rides first: *"measure the premise before fixing it."*
+
+**The premise, from the record.**
+- C-N5 (§123) found Okun's coefficient sound but its object wrong: it is applied to a GROWTH gap with reversion to NAIRU, where the literature applies it to the LEVEL gap.
+- It blocked the fix on *"a level output gap that means something"* and ordered the government-consumption block first: *"the prerequisite rather than the sequel"* (§123, P-N5b).
+- §127 fixed the order and §376 closed FT-2 behind it.
+- No record writes P-N5b's equation.
+
+T-3 is landed (§507). The premise is now a thing to measure: does the level gap mean something?
+
+**1. The gap on the landed tree.** No policy, turns 101-1000, both seeds, from `traj_t3a`, with the tree before the block (`traj_f4s2`) beside. The unemployment gap reads the effective natural rate (ONE NATURAL RATE):
+
+| country | seed | the gap's mean ± sd, `t3a` (`f4s2` beside) | turns within 2 points of zero | U − U*, mean ± sd | correlation, gap with U − U*: levels · first differences |
+|---|---|---|---|---|---|
+| USA | 777 | -15.16 ± 0.59 % (-17.73 %) | 0 of 900 | -0.02 ± 0.24 | +0.17 · +0.40 |
+| USA | 424242 | -16.74 ± 0.55 % (-17.98 %) | 0 of 900 | -0.02 ± 0.26 | +0.16 · +0.43 |
+| Sweden | 777 | +1.05 ± 1.30 % (-3.35 %) | 676 of 900 | -0.02 ± 0.26 | +0.10 · +0.48 |
+| Sweden | 424242 | +2.24 ± 1.56 % (-2.39 %) | 387 of 900 | -0.02 ± 0.27 | +0.16 · +0.52 |
+| Germany | 777 | -8.16 ± 1.08 % (-8.17 %) | 0 of 900 | -0.01 ± 0.26 | +0.08 · +0.37 |
+| Germany | 424242 | -8.52 ± 0.78 % (-8.58 %) | 0 of 900 | -0.01 ± 0.27 | +0.11 · +0.39 |
+| France | 777 | -5.01 ± 2.08 % (-5.06 %) | 0 of 900 | -0.02 ± 0.26 | +0.17 · +0.51 |
+| France | 424242 | -5.09 ± 1.78 % (-5.13 %) | 0 of 900 | -0.02 ± 0.26 | +0.19 · +0.54 |
+| Italy | 777 | -13.61 ± 0.42 % (-13.27 %) | 0 of 900 | -0.00 ± 0.26 | +0.21 · +0.53 |
+| Italy | 424242 | -13.68 ± 0.43 % (-13.34 %) | 0 of 900 | -0.00 ± 0.25 | +0.18 · +0.51 |
+| Poland | 777 | -12.63 ± 0.60 % (-13.71 %) | 0 of 900 | -0.00 ± 0.26 | +0.12 · +0.47 |
+| Poland | 424242 | -12.60 ± 0.59 % (-13.65 %) | 0 of 900 | -0.00 ± 0.26 | +0.12 · +0.49 |
+
+- **It is a structural offset, not a cycle.** In 5 of six countries the gap is never within 2 points of zero in 900 years, at either seed. Only Sweden's sits near zero.
+- **T-3 moved the offset without changing its nature.** The USA's mean moves -17.73 → -15.16 % at seed 777, and Sweden's -3.35 → +1.05 %. The largest standard deviation is 2.08 points.
+- **The unemployment gap is a cycle.** It is centred on zero with a standard deviation of 0.24 to 0.27 of a point.
+- **The two co-move with the wrong sign for Okun:** +0.08 to +0.21 in levels and +0.37 to +0.54 in first differences, in every country at both seeds. Okun's law needs a negative relation, output above potential with unemployment below the natural rate.
+- **The formula accounts for the sign.** Potential's labour input is employment (FT-7's second seat, §394, `PotentialOutput.LabourInput` reads 1 − U). A rise in unemployment lowers potential and lifts the gap in the same step, so the gap as defined carries unemployment's own movement.
+
+**2. Okun on that gap - measured on a probe tree, not built.** Okun is re-specified on the level gap in `MacroSystem.ApplyOkunsLaw` (probe `PROBE PN5B`, restored and checked clean):
+- The growth term is removed.
+- The core reverts toward the natural rate less β × the gap, at the existing reversion speed.
+- β is read at Ball, Leigh & Loungani's two ends, 0.23 and 0.54 (IMF WP 13/10, §107: *"mostly between −0.23 and −0.54"*; P-N5d: a range, reported as one).
+
+The world is the trajectory dump's settings (`GovernmentFormMeasurement`, landed form):
+
+| country | seed | unemployment, years 1 · 10 · 100: growth form (landed) / β 0.23 / β 0.54 | the gap at year 100: landed / 0.23 / 0.54 | inflation at year 100: landed / 0.23 / 0.54 |
+|---|---|---|---|---|
+| USA | 777 | 6.89/4.89/5.50 · 3.90/6.62/10.14 · 4.06/8.27/15.51 | -16.4 % / -19.7 % / -22.0 % | 1.99 / 0.00 / 0.00 |
+| USA | 424242 | 6.89/4.89/5.50 · 3.79/6.59/10.36 · 3.35/8.11/15.19 | -17.3 % / -18.4 % / -21.0 % | 2.20 / 0.00 / 0.00 |
+| Sweden | 777 | 5.75/7.14/7.19 · 6.36/6.61/6.64 · 6.95/6.02/6.31 | +0.7 % / +0.6 % / -0.5 % | 1.98 / 2.29 / 2.10 |
+| Sweden | 424242 | 5.75/7.14/7.19 · 6.88/6.60/6.65 · 6.33/6.11/6.61 | -1.0 % / +0.8 % / -0.6 % | 2.12 / 2.23 / 1.87 |
+| Germany | 777 | 4.16/3.96/4.04 · 3.03/3.60/4.07 · 3.18/4.80/10.45 | -8.6 % / -6.5 % / -13.3 % | 2.14 / 0.94 / 0.00 |
+| Germany | 424242 | 4.16/3.96/4.04 · 3.37/3.64/4.05 · 3.20/4.82/10.44 | -8.7 % / -6.6 % / -13.2 % | 2.13 / 0.92 / 0.00 |
+| France | 777 | 7.33/7.72/7.55 · 7.97/7.53/7.45 · 7.27/10.87/15.75 | -10.9 % / -15.3 % / -17.5 % | 2.09 / 0.00 / 0.00 |
+| France | 424242 | 7.33/7.72/7.55 · 7.42/7.40/7.19 · 7.18/10.89/15.79 | -11.0 % / -15.3 % / -17.5 % | 2.11 / 0.00 / 0.00 |
+| Italy | 777 | 9.30/8.68/8.77 · 8.29/9.10/10.24 · 7.90/11.62/18.71 | -14.2 % / -16.9 % / -20.9 % | 2.06 / 0.00 / 0.00 |
+| Italy | 424242 | 9.30/8.68/8.77 · 8.30/9.08/10.19 · 8.05/11.63/18.85 | -14.2 % / -17.0 % / -21.0 % | 2.04 / 0.00 / 0.00 |
+| Poland | 777 | 7.57/6.03/6.47 · 5.55/6.83/9.06 · 5.35/8.56/15.95 | -13.9 % / -16.0 % / -20.7 % | 2.44 / 0.00 / 0.00 |
+| Poland | 424242 | 7.57/6.03/6.47 · 5.19/6.82/9.04 · 4.64/8.44/15.65 | -13.1 % / -14.7 % / -19.6 % | 2.66 / 0.01 / 0.00 |
+
+- **The offset becomes unemployment.** At year 100 (seed 777) the USA reads 4.06 → 8.27 and 15.51, and Italy 7.90 → 11.62 and 18.71. Sweden, whose gap sits near zero, reads 6.95 → 6.02 and 6.31: the one country where the level form behaves.
+- **Inflation hits its floor** of 0 (`ApplyPhillipsCurveInflation` clamps to [0, 30]) at year 100 in 7 of 12 runs at β 0.23 and 10 of 12 at 0.54. That is unemployment held above the natural rate for decades.
+- **The gap does not close.** Outside Sweden it is deeper at year 100 than on the landed tree in 18 of 20 runs.
+
+**3. The specification check, on the Swedish step** (`OkunSpecificationDiagnostic`: +10 % on the discretionary lines, year 1 only):
+
+| form | implied Okun at landing (year 2) | year 4 | year 8 | unemployment's move, year 2 → year 8 | the level gain at year 8 |
+|---|---|---|---|---|---|
+| the growth gap (the model today) | -0.483 | -0.040 | -0.005 | -0.5998 → -0.0073 | 10.03 (1.415 %) |
+| the level gap, β 0.23 | -0.083 | -0.158 | -0.157 | -0.1058 → -0.3176 | 14.29 (2.017 %) |
+| the level gap, β 0.54 | -0.182 | -0.296 | -0.290 | -0.2315 → -0.6420 | 15.69 (2.217 %) |
+
+- **Where the gap is near zero, the level form does what C-N5 asked for.** Unemployment's response to a durable level gain persists instead of decaying, so the diagnostic built to retire itself fails as designed (exit 1 on both probes).
+- **The coefficient it implies is the range's, or below it.** At year 8 it reads -0.290 at β 0.54 and -0.157 at β 0.23, against the growth form's -0.483 at landing decaying to -0.005.
+
+**The reading.** The premise fails. After the block, the level gap does not mean something in five of the six:
+- It is the identity's own settling point read against a factor potential. That fixed point is a function of G and the propensity (§505, §507), and the fixed-point potentials of §507 left the century's gap within 1.55 points.
+- It moves with unemployment by construction.
+
+Okun on it converts that offset into permanent unemployment, and building it would tune the unemployment path to a quantity that is not a cycle. **P-N5b is STOPPED with this measurement; nothing is applied.** FT-2 stays closed by reason, the constant stays 0.5, and the growth form stays what the model runs. `OkunSpecificationDiagnostic` keeps its finding, since the model today still reads −0.483 at landing, decaying.
+
+**The sheet - P-N5b's form, Elias's.**
+- **The question:** what gap should Okun read, so that the level gap means something?
+- **(a) The identity anchored to potential.**
+  - The attractor is re-specified so the day's fixed point is potential, and demand moves only the cycle around it. The level gap is then a cycle by construction, and P-N5b's level form follows on a natural-rate potential.
+  - *Costs:* a macro-core re-specification (FT-6's class) and a BASELINE family on six countries, with the equivalence bar, the harness and the ratchets re-read.
+  - *Forecloses:* fiscal policy's permanent level effect on output as the model has it today (§505's form-A table is that effect).
+- **(b) Okun on a cyclical gap.** Output is read against its own trend or against the identity's attractor, rather than the factor potential.
+  - *Costs:* a second "potential" beside the one FT-7 ruled, and the choice of trend is a calibration with no source in the record.
+  - *Forecloses:* ONE NATURAL RATE's sibling, one potential.
+- **(c) The deviation form** (§364's precedent). Okun reads the gap's change from its seed value.
+  - *Costs:* little code.
+  - *Forecloses:* nothing, but it does not remove the drift. §507's table shows the USA's gap −3 % in year 1 against −16 % at year 100, so the unemployment offset returns as the gap drifts.
+- **(d) Hold.** The growth form stays, with its measured −0.483 at landing, decaying.
+- **Recommendation:** (d) now, with (a) as the question that decides P-N5b. (b) and (c) each put a second definition of potential or a drifting anchor into a model that has just made one potential a rule.
+- **What it gates:** P-N5b; T-3's output-gap-adjusted balance for the AI ministry's structural reading (§390, which reads the same gap); the central-bank tab's "OUTPUT GAP - READ · NOT WEIGHED" lane staying unweighted.
+- **Self-takeable:** no. It is a macro-core ruling.
+
+**Decisions taken, strikeable.**
+1. **The measured form is the plain level relation.** The core reverts toward U* − β·gap at the existing speed and the growth term is removed. No record wrote an equation, and this is the literature's relation with the model's own adjustment speed. A form with the growth term kept alongside would be two Okuns.
+2. **β is read at the range's two ends, not at a point** (P-N5d).
+3. **The gap reads the live potential**, as `TaylorRule.GetOutputGapPercent` and the central-bank lane read it.
+4. **The item stops at measurement.** The consequence - unemployment 1.6 to 11.8 points above the growth form's at year 100 outside Sweden, and inflation at its floor - is a premise failing, not a calibration to adjust (never tune to pass).
+
+**The registers.**
+- `POLISIM_FEATURE_LIST.md`: FT-2's row points here; T-3's pointer names the stop; the OWNER ELIAS table gains P-N5b's sheet.
+- `ResidueCheck` excludes P-N5b by name, with its reason.
+
+**Bar:** `bar471_rec508` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
