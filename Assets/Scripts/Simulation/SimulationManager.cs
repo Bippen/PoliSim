@@ -4183,13 +4183,13 @@ namespace PoliSim.Simulation
         /// sentencing -&gt; prison stock, on its ~4-year half-life -&gt; budget); the BORDER target =
         /// the border dial gap at its share. Line routing, perimeter-consistent per country:
         /// USA Justice + HomelandSecurity (CBP/ICE's real federal line); Sweden Justice (UO4
-        /// rattsvasendet) + Migration (UO8); the four generics PublicServices for both (no finer
-        /// line exists until their decomposition passes). All lines are Discretionary, so the
+        /// rattsvasendet) + Migration (UO8); the four statute books that replaced the generic seeds carry
+        /// Justice and HomelandSecurity too (JusticeCostLine, BorderCostLine; PublicServices only the fallback). All lines are Discretionary, so the
         /// cost flows into the national-accounts G term through the existing line sum - police
         /// and prisons are government PURCHASES, and this is the ruling's point.
         ///
-        /// STATELESS TARGET ON A STATEFUL LINE: the two Applied* trackers on Country record the
-        /// last applied dollar target, and each boundary applies only the DIFFERENCE - so the
+        /// STATELESS TARGET ON A STATEFUL LINE: the Applied* trackers on Country (four since EN-7a - justice, border,
+        /// sector support, energy) record the dollars applied, and each boundary applies only the DIFFERENCE - so the
         /// dial cost composes with the five existing line writers (growth, pressure, player
         /// changes) instead of overwriting them. ClampToSeedRange applies like every other line
         /// mutation; if it binds (the USA's small federal Justice line saturates at 3x seed under

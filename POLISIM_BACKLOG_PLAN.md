@@ -81,7 +81,7 @@ The items: individual tax rates by bracket; pension age and average pension paym
 | The rules | "generated from the coverage checks rather than recalled"; "a batch that unblocks nothing is not requested"; §427 binaries uploaded, not described (`Tools/pngcheck.pl`); sending is Elias's (E2) | the request's head, `ERRANDS.md` |
 | Today's gaps | every coverage check prints zero (bar372). D20's generated rows can only come from nodes the items declare; a declared node with no asset fails the bar unless a ratchet ceiling admits it (D18's UNCONSUMED idiom) | `bar372_shelf.log` |
 | Open Design rows | D-7 (board 2b, the one drawing open); D8-2 (colours, a ruling); D8-3 (valkrets map); D8-4/D8-5 (election night's paper, the stamp - behind K-1); D8-6; D-E4 (in E-3's return); D12 all built; D13 built (§267); D17/D18/D19 closed | the request's carried table, §473 |
-| The paste | E-32: ONE paste carrying the D19 ask and the D17/D18 return - re-cut twice, never pasted; E-3 the return paste | `ERRANDS.md` |
+| The paste | E-36: the D20 return (`SEND_PACKAGE.md`, cut 2026-09-14), not sent - its manifest is re-cut before a paste checks clean; E-32 was WITHDRAWN for E-35 (sent, answered); E-3 the older return paste | `ERRANDS.md` |
 
 ---
 

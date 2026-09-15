@@ -27746,3 +27746,74 @@ ENERGY LEDGER: Poland households: the component moved 7,1812E-001 $/kWh, more th
 The EN-7 row (`POLISIM_FEATURE_LIST.md`) and the spine's §15 now say so where the category is described.
 
 **Bar:** `bar455_rec501` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 502. THE STANDING LIST, CYCLED AFTER §496–§501 — the residue at 6 (EN-7 closed, stage 5 complete), F4-3 the one row a session can take without a ruling, the deferral register re-read with nothing fired, two corrections to the records, the stale lines of three registers and one comment fixed, the batch's sheets marked (2026-09-15)
+
+**The ruling:** *"the standing list after each landed pass"* (§474); 2026-09-15: *"Then the standing list."*
+
+**The batch** (six records, six commits, each on its own bar, pushed): §496 the no-policy trajectory restored and the sentinel (`99a0c24`), §497 the applied-cost idiom under the indexed book (`59b3688`), §498 EN-7a (`8d923d1`), §499 EN-7b's sourcing (`3ae2cc1`) - 2026-09-14; §500 EN-7b (`98986b5`), §501 three things recorded standing (`98e5e39`) - 2026-09-15.
+
+**Ratchets.** `RatchetSlackCheck` on this cycle's reading bar (`bar456_shelf_read`): **12 reported, 12 tight**, the ledger printed whole:
+
+| ratchet | measured | ceiling | verdict |
+|---|---|---|---|
+| `PartyMarkCoverageCheck.UNCONSUMED` | 0 | 0 | tight |
+| `DeadStateCheck.UNREACHED` | 0 | 0 | tight |
+| `DeadStateCheck.WRITE_ONLY` | 0 | 0 | tight |
+| `ConstantProvenanceCheck.UNMARKED` | 0 | 0 | tight |
+| `UnwiredSubsystemCheck.UNWIRED` | 2 | 2 | tight |
+| `UnwiredSubsystemCheck.UNREACHABLE` | 2 | 2 | tight |
+| `EvidenceDiscriminationCheck.NO_FAILURE_PATH` | 0 | 0 | tight |
+| `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` | 0 | 0 | tight |
+| `DocumentClaimCheck.MEMBER_GONE` | 0 | 0 | tight |
+| `DocumentClaimCheck.WRONG_OWNER` | 0 | 0 | tight |
+| `MojibakeCheck.SUSPECT_RUNS` | 1 | 1 | tight |
+| `PreWiringPremiseCheck.ASSERTED` | 0 | 0 | tight |
+
+The cheap bar is **38** and the simulation group **51** (`bar453_en7bc_sim`, 51 of 51; the sentinel first). No family was declared in the batch - §497, §498 and §500 each dumped 76 of 76 against `traj_pn1` at every seed and horizon - and the baseline label stays `f4s2`. **The sentinel on this list's own tree** (`sentinel_shelf502` - the enforcement doc's comment is edited below, and R-T4 says a no-trajectory claim is carried by a run): seed 777 `fcee9182a023`, seed 424242 `9ef7865519d3`, the baseline's.
+
+**The residue** reads **6** (`bar456_shelf_read`, 439 files scanned; the exclusions **19** by name): F4-3, PN-1, PN-2, PN-3, CL-3, CL-4. **EN-7 closed** with §500. **What each waits on:** **F4-3** (Sweden's two layers as one line, a BASELINE family) waits on nothing - its dependency F4-2 landed (§488) and no ruling stands in front of it (`POLISIM_FEATURE_LIST.md`'s row; the plan's S4) - the one row a session can take next; **PN-1** holds its driver by the ruling of 2026-09-13, and **PN-2** (its headcount is the driver's) and **PN-3** (its own family after PN-1) wait behind it; **CL-3** waits on K-1, whose date has passed without the refresh being taken; **CL-4** on CL-3 played once.
+
+**The deferral register, re-read literally against the repo** (one reader; every row's trigger opened where it is defined, the code read against it):
+
+| row | trigger | against the repo |
+|---|---|---|
+| T-1, T-2, T-4 .. T-7 | as at §480 | **NOT FIRED** - no scenario, epilogue, capital stock, trade volume or retaliation file changed since §495; T-4's trade volume untouched by EN-7b, which borrows only the tariff flow's form |
+| T-3 | the level output gap must mean something | **FIRED, Elias's** - the ruling on the form of G, unchanged |
+| **T-8 EN-3c** | *stage 5's fleet reads its inframarginal rent* | **NOT FIRED** - `EnergyLedger`'s rent is still read only by the energy page and the layer dump; EN-7a kept investment planning and state ownership absent and EN-7b added a tax, not an ownership or investment term; the three exchange folds are not on disk |
+| F-1 .. F-5 | the elections' deferred set | **NOT FIRED** - no campaign played (CL-3 open), no scope or playability ruling |
+| **F-7** | *the tax spec-let RULED, downstream of F-6 and C-N4* | **FIRED and BUILT** - see correction (1) |
+| D-3's trigger | fired §479 | **FIRED and BUILT** - F4-2 §488, F4-4 §490 |
+| PN-1's driver | *the BASELINE half, by ruling* | **HELD** - the ruling of 2026-09-13 |
+| FT-1 .. FT-9, RF-1, RF-2 | the fix track | **closed** as at §469 - FT-1 held as ruled and FT-3 stopped with its form Elias's, the qualifiers the rows carry |
+
+**The errands, the calendar, the rulings owed, the documents.** **E-36** open - the D20 return assembled, not sent; its manifest (`SEND_PACKAGE.md`) no longer checks clean: three of its twenty-three digests have moved (`ERRANDS.md` by line endings alone, `COMPLETED.md` and the feature list by §496-§501), it names nothing after §494, and its board-15a lower frames predate EN-7a's instruments plate - it is re-cut before a paste. **E-3** open and partly overtaken (its two stat icons, D-E4, remain); **E-6** open (Italy's IRPEF as a text document); **E-34**'s two leftover asks (the energy concept's docx, IRENA's costs PDF). **K-1** - 13 September 2026 - has passed by two days with no 2026 result on disk; the refresh is the calendar's row and stays open; **K-2** on 29 January 2027. **Owed to Elias, ruling-first:** RS-1 (who replaces a candidate who resigns), SC-1 (where the sector dials' support cost lands), T-3, OP-1, the hold on PN-1's driver; E-25..E-29, C-N8, the [GAP] figures and the twenty-one play-calibration entries stand. **Design's:** D-7, D8-2, D8-4 and D8-5 (behind K-1), D8-6, D-E4, and the D20 return's two cases (a rule that publishes a window, one that publishes nothing) - not asked until E-36 is pasted. `ls *.md` returns **23**, `Tools/` holds **16** (§499's `energy_tax_prep.pl` the new one); the numbered constants read their listed values (`CampaignPressure.PersuasionPerCompatibilityPoint` 40000, `DefaultPreCampaignWeeks` 26, `MoneyScale` 500000, `Scandals.LiveRatePerPartyDay` 1.0 / 80.0), read off the code by this record's script. Save format **14** (EN-7b's statutes and bases on the country).
+
+**Two corrections to the records, stated rather than edited in place.** (1) **F-7** has been carried since §469 under *"the elections' deferred set - NOT FIRED"* (§495 among them). F-7 is the tax instruments build, and its trigger - the tax spec-let RULED, downstream of F-6 and C-N4 (`COMPLETED.md`'s register) - is met: C-C12 ruled at D-3 on 31 August, its sheets at §474, and the build landed as F4-2 (§488) and F4-4 (§490), F4-3 next. §402's reading, *"NOT FIRED in the sense the register meant (E-27 still open)"*, no longer applies: E-27's two spec-lets are both ruled. (2) **§496's attribution table** prints `-` for `at492` at the 500-turn horizon and says *"`at492` was dumped at two horizons"*: both 500-turn files are on disk from the same run, and their digests equal `at490`'s (`4371cd6ef812`, `dd0b5fc2370b`) - the attribution stands, one column stronger.
+
+**Stale lines fixed in this pass** (live registers and one comment, not records): the plan's "The paste" row named E-32, withdrawn for E-35 on 12 September - it names E-36 now; the feature list's document table carried the tax spec-let as *"awaiting Elias's ruling (E-27) - frozen until ruled"* and its OWNER table *"F-7's instruments behind E-27"* - both say RULED and built; `SimulationManager`'s enforcement doc still said *"the two Applied\* trackers ... record the last applied dollar target"* and *"the four generics PublicServices for both"* - four trackers record the dollars applied (§498), and the four statute books carry Justice and HomelandSecurity (`WorldFactory`'s spending blocks).
+
+**Found by the re-read, stated, not taken.** The plan's **(13a)** row - D19 item 1 on DS-8, *"a text chip from primitives now"* - carries no marker and no build record, and is not a feature-list row, so no count sees it; whether it is built is measured before it is taken. Four of `ResidueCheck`'s exclusion names point at closed rows (E-1, D-1 portraits, the dials-only laws, FT-6) and its E-3 is the play sheet's felt verdict, not `ERRANDS.md`'s E-3 - no effect on the count. The feature list closes D-8.3 as drawn (board 4a on election night, §438) while the Design request still carries D8-3 as the campaign map's outline - the two registers read the row differently, and it stays as each has it until Design's next return. The return's 15a line *"the REACHES chips in PROVENANCE"* was true for band-less rows only from §498. §500's stated limit - a statute's change rides the price level as the component does - is the one modelling question the batch leaves, sheeted there, not a row.
+
+**This batch's self-ruled sheets, marked** (§496-§500's; the re-read's reader opened the code for each):
+
+| § | the decision taken | on re-reading |
+|---|---|---|
+| §496 | § 32a VERBATIM on every path no sub-row moves; the ramps only for a moved ramp end | **HOLDS** - the switch reads any adjustable sub-row moved (the 42 % and 45 % bands too, which the formula cannot express either); 960 of 960 unmoved cases asserted |
+| §496 | the schedule row samples a hundred-unit difference | **HOLDS** - the only caller is the row's drawing, in every statute's currency |
+| §496 | the sentinel first in the simulation group, its label and digests set in the commit of any declared family | **HOLDS** - no family declared since; the constants unchanged; recomputed from `traj_f4s2`'s first twenty turns |
+| §497 | the trackers ride their own line's index, cross the clone, take their targets on nominal GDP | **HOLDS** - four trackers since EN-7a, all on the clone's hand-list |
+| §497 | *"not touched: the clamp's rule"* | **SUPERSEDED** by §498's decision (4), measured |
+| §498 | stage 5 as two items | **HOLDS** - §499 and §500 each their own record and commit |
+| §498 | the regulation gap from the seeded anchor, not from 50 | **HOLDS** - no anchor sits at 50; from 50 would move six seeds (Elias's if wanted) |
+| §498 | the subsidy through EN-4's levy rule, no new constant | **HOLDS** |
+| §498 | the four trackers record the move their line took | **HOLDS** - `ApplyCostOnLine` unchanged by EN-7b |
+| §498 | the liberalisation rule on the ratio, the closure the model's | **HOLDS** |
+| §498 | investment planning and state ownership absent, research grants descriptive | **HOLDS** |
+| §498 | SC-1 stated, its landing ruling-first | **HOLDS** - still Elias's |
+| §499 | the ECB 2023 rates; the rates extracted by pattern; the bands read per country, the inferences flagged | **HOLDS** - Germany's gross IC band and Sweden's manufacturing band stay inferences, Italy's "consistent with" |
+| §499 | the coverage printed uncapped; the USA no row | **HOLDS** - the runtime caps it at 1 (§500) |
+| §500 | the coverage capped at 1 - never scale the component | **HOLDS** - the ruling (§501); probe N |
+| §500 | the business minimum in the ledger; the flow inside the multiplier; households' VAT not booked; the USA not offered; the laws worded by their delta | **HOLDS** - measured the same day, each by its own section and probe; marked again at the next list |
+
+**Bar:** `bar456_shelf_read` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight. After this record was written from that reading: `bar457_shelf` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
