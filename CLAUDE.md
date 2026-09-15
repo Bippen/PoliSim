@@ -101,6 +101,13 @@ as they are and recomputes what it wants for the subscriber alone, behind a null
 treated as one: its own family, its own dump diff, its own explanation. **Inertness is proved by the dump diff against the baseline and never by
 reading the code**: the diff is the only instrument that sees a one-ulp shift compound over a millennium.
 
+**The IL-shape case (EN-7b, 2026-09-15, `COMPLETED.md` §500, §501): inertness is about the shape of the store, not only about locals.** EN-7b gave
+`ApplyRevenueAndSpending` a flow and meant to keep the old expression for the zero case to the bit - first as a ternary over the two expressions,
+then as the old statement followed by a branch that overrode it. Both moved the no-policy budget by a float's last digit, and so did that branch
+reduced to `if (false)`: **a dead block writing the same local a second time moved the trajectory** (`sentinel_en7b_g5r` red; the same tree with only
+that block deleted, `sentinel_en7b_g5`, green). What held is one expression with the flow always summed - one store, and `x + 0` exact at any
+precision. A guard written *so that* the zero case is the old arithmetic is not inert by construction; the sentinel and the dump are the proof.
+
 This sits beside the accounting convention above because both are rules about what the model's numbers ARE, not about what they should be:
 one book in current prices, one price level joining it to the real block; one arithmetic in the play path, untouched by the instruments that read it.
 
