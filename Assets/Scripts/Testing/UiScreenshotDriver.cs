@@ -287,6 +287,10 @@ namespace PoliSim.Testing
             }
 
             Invoke(controller, "SelectPlayerCountry", _countryId);
+            // §510 (2026-09-15): PLAY'S CLOCK IS HELD FROM HERE THROUGH THE WARM-UP, invisibly - its accumulator is primed an hour short
+            // of a day, so the speed, the lamp and the running captures stay what they are and no real-time day can pass before the
+            // warm-up (a slow frame used to pass one - see ReportClockBeforeWarmup). Released, to zero, the moment the warm-up ends.
+            SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
 
             // The YIELDING state: two frames into CoverOut, the scrim is mid-cover over the Canvas —
             // the seam's other half on film. Alpha varies with frame rate (time-based envelope);
@@ -332,7 +336,9 @@ namespace PoliSim.Testing
             SetPrivateField(controller, "_onDesk", true);
             yield return Settle();
 
+            ReportClockBeforeWarmup(controller);
             AdvanceDays(controller, _countryId);
+            SetPrivateField(controller, "_daySpeedTimer", 0f);   // §510: the hold released
 
             // R-D4: the playtest saves are staged on the warmed-up game BEFORE the sweep's own drafts
             // (diverged SWF weights, drafted spending lines) go in - a playtester should open a clean
@@ -1933,9 +1939,31 @@ namespace PoliSim.Testing
         /// what makes the pagination row real rather than merely present.
         /// </summary>
         private const int MinWarmupDays = 365 * 3;
+        /// <summary>§510: how far below a day play's clock is primed while held - an hour of real time, against a stage that reaches the warm-up in seconds.</summary>
+        private const float ClockHoldSeconds = 3600f;
 
         /// <summary>Ceiling on the search for a preliminary release, so a schedule change can never turn the warm-up into an unbounded loop - the same bounded-retry discipline UiScreenshotCapture applies to waiting for play mode.</summary>
         private const int MaxWarmupDays = 365 * 5;
+
+        /// <summary>
+        /// §510 (2026-09-15): the days PLAY'S OWN CLOCK ran before the warm-up - read off the date against the epoch, and a failure when
+        /// any. The controller's clock is real time (a second a day at Normal), so a slow frame between the running captures and the
+        /// warm-up let it tick a day. That day is not a figure: only the controller's day tick opens the incoming government's budget
+        /// window (the warm-up's `AdvanceDay` does not), so every frame after the warm-up carried an open window, the warm-up stopped a
+        /// day earlier, and Poland's hold banner wrapped under the edge guard - frames decided by the machine's speed (§509).
+        /// </summary>
+        private void ReportClockBeforeWarmup(object controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(simField?.GetValue(controller) is SimulationManager sim)) { return; }   // AdvanceDays reports the unreachable manager
+            int ran = (sim.CurrentDate - SimulationManager.EpochDate).Days;
+            if (ran > 0)
+            {
+                Debug.LogError($"SHOT: play's clock RAN {ran} day(s) in real time before the warm-up (the date {sim.CurrentDate:yyyy-MM-dd}) - the budget window and the warm-up's stop now depend on the machine's speed.");
+                _failed++;
+            }
+            else { Debug.Log($"SHOT: play's clock HELD before the warm-up - the date {sim.CurrentDate:yyyy-MM-dd}, 0 days run."); }
+        }
 
         /// <summary>
         /// Drives the simulation forward through the real `AdvanceDay` / `AdvanceTurn` pair, so warmed-up

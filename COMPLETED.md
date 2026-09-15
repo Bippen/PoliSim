@@ -28536,3 +28536,67 @@ On the tree this record reads, *"126 states checked, 2026 to 2046; 378 band rung
 - `POLISIM_FEATURE_LIST.md`: PN-1's row, and D20's bullet and row.
 
 **Bar:** the code tree - `bar474_r2` **38 of 38**, `bar475_r2_sim` **52 of 52** with the sentinel first and green. The record's tree - `bar476_rec509` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 510. THE HARNESS'S CLOCK HELD — play's own day clock ran in real time between the running captures and the warm-up, and a slow frame let it tick a day that opened the incoming government's budget window. Measured by an instrument first, then held invisibly from the game's start through the warm-up (2026-09-15)
+
+**What §509 found, and why it is its own item.** §509's Poland film exited 1 on the edge guard. Nine frames came in twenty pixels short on the right edge, under a hold banner that also named *"your incoming government's first budget"*. The warm-up stopped a day earlier than this morning's film, and the same shift appeared as a race on countries and sizes the pension row never touches. CLAUDE.md's standing note (§47) has films of one code compare byte-for-byte outside three named clock frames, and a race that moves every frame after the warm-up breaks that. The standing rule: measure the premise before fixing it, and fix the instrument first.
+
+**The mechanism, read in the source.**
+- **The clock.** `GameController.Update` accumulates real seconds into `_daySpeedTimer` and advances a day each second at Normal (`GetSecondsPerDay`).
+- **What the tick does.** Each such day calls `SimulationManager.AdvanceCountryDayTick`, whose last line, `TryOpenBudgetProcess`, opens the incoming government's window on the first day it runs.
+- **What the warm-up does.** The film's warm-up (`UiScreenshotDriver.AdvanceDays`) calls `AdvanceDay` alone, so the window stays closed through it unless play's clock ticked first.
+- **The frames.** Every film's `01b` and `01c` read JAN 1 with the lamp green. Where the race hit, `05t_budget_turn0` reads JAN 2 with the lamp held, as on Italy and France at 1280 and both 2560 films of §509. So the day passes between the running captures and the turn-0 frame, on the controller's clock, in the second or so the stage takes.
+
+**1. The instrument first** (`UiScreenshotDriver.ReportClockBeforeWarmup`). Just before the warm-up the driver reads the date against `SimulationManager.EpochDate` and logs *"play's clock HELD"* or *"RAN n day(s)"*; a day run fails the film. On the tree without the hold:
+
+| film (the instrument, no hold; `-shotstop=01d_desk_held`) | play's clock before the warm-up | the warm-up's stop | the runner's exit |
+|---|---|---|---|
+| `clk_inst_italy_1280` | RAN 1 day, 2026-01-02 | 1124 | 1 |
+| `clk_inst_france_1280` | RAN 1 day, 2026-01-02 | 1124 | 1 |
+| `clk_inst_primed_sweden_1280` | RAN 1 day, 2026-01-02 | 1124 | 1 |
+| `clk_broken_primed_sweden_1280` (the hold, with the probe `clock_primed`) | RAN 1 day, 2026-01-02 | 1124 | 1 |
+
+- **It sees the race on the natural path.** Italy and France, which raced in both of §509's cuts, each report a day run and stop at 1124.
+- **A day run is exactly a day short.** Sweden, whose own stop is 1125, shows it when its clock is primed past a day at the game's start (probe `clock_primed_bare`): it reports the day and stops at 1124.
+
+**2. The hold** (`UiScreenshotDriver`, after `SelectPlayerCountry`):
+- **How it holds.** Play's accumulator is primed `ClockHoldSeconds` (an hour of real time) short of a day, and released to zero the moment the warm-up ends.
+- **Why this form.** The speed, the lamp and the running captures stay exactly what they were, so `01b`/`01c` still film RUNNING; a paused speed would have changed the rail on the turn-0 frame.
+- **Broken on purpose** (probe `clock_primed`, the hold primed past a day instead): the instrument reports RAN 1 and the film exits 1, as the table above shows. Restored, and the tree checked clean.
+
+**The films on the held tree** (`-shotstop=05b_budget_spending_pension_2034`, §509's frames; every figure parsed from the logs):
+
+| film | play's clock before the warm-up | the warm-up's stop | captured | failed | overflow | escapes | edge-guard flags | the runner's exit | §509's film of the same country and size stopped at |
+|---|---|---|---|---|---|---|---|---|---|
+| `clk_poland_1280` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | 1124 |
+| `clk_italy_1280` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | 1124 |
+| `clk_france_1280` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | 1124 |
+| `clk_germany_1280` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | 1124 |
+| `clk_sweden_1280` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | 1125 |
+| `clk_usa_1280` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | 1125 |
+| `clk_italy_2560` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | 1124 |
+| `clk_usa_2560` | HELD, 2026-01-01 | 1125 | 39 | 0 | 0 | 0 | 0 | 0 | - |
+
+- **Every film holds.** Each reports play's clock HELD on the epoch's date, and every warm-up stops at 1125, whatever §509's film of that country read. France's and Italy's untouched stop is 1125 too, so their 1124s were the race.
+- **Poland's edge is back.** `03_decisions` runs 640 px down the right edge, and the edge guard flags nothing.
+- **France's first held film was lost to the environment and re-filmed.** It captured 0 of 114. Every frame came out 953 px tall against the 699 asked for, from the first capture (`01_country_selector`), after the Game View reported its size. The harness failed it loudly with exit 2, and the clock line in that log still reads HELD. The failed run's log is kept as `clk_envfail_france_1280.log`.
+
+**Byte for byte against §509's films** (SHA-256 per frame):
+- **Where the race hit, the whole sheet changed.** `clk_poland_1280` matches `r2_poland_1280` on 6 frames and differs on 32, and `clk_italy_1280` 5 / 33; Italy's held turn-0 frame reads JAN 1 again, on film.
+- **Where it did not hit, little changed.** `clk_sweden_1280` matches on 19 and differs on 19; `clk_usa_1280` 35 / 3. Leave out `01a_selector_yielding`, one of §47's named clock frames, and read the rest pixel by pixel (`clk_pixdiff.out`):
+  - 19 differ only inside one rail tongue's cell (x 0..56, one cell tall, at most 2373 pixels): the tongue a tab switch has just left.
+  - 1 differs only inside the Budget heading (x 68..237, y 69..92).
+  - Both are time-based fades caught at a different phase - the class of §47's named clock frames, not state. They are named in the standing note here, and not held.
+
+**The standing note corrected** (CLAUDE.md, the film seeded and the cursor parked): a fourth clock, found by §509's films and now held, with the instrument that fails a film if it runs again.
+
+**Decisions taken, strikeable.**
+1. **The hold primes the accumulator; it does not pause the speed.** It is invisible on every frame the stage films, and it releases at a single point.
+2. **The hold starts at the game's start, not after the running captures.** The day was seen to pass after them, but from `SelectPlayerCountry` to the warm-up the stage is one real-time window; holding all of it leaves no slower machine a gap.
+3. **The race is recorded as a finding against §47's claim, not as a flake.** Every film from §47 on may carry it, and nothing is re-filmed retroactively; the films of this item are the first held ones.
+
+**After the films, placement only.** `ReportClockBeforeWarmup` had gone in between `AdvanceDays`' own summary and `AdvanceDays`, which left that summary over the wrong method. It was moved above the summary byte for byte (no statement changed), and the record's bar compiles the moved tree.
+
+**Not touched.** No trajectory moves - a harness change. Where the race did not hit, the frames' content is unchanged; the fades above are the only differences.
+
+**Bar:** the code tree - `bar477_clk` **38 of 38**. The record's tree - `bar478_rec510` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
