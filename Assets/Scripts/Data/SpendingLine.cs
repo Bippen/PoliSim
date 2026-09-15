@@ -31,7 +31,8 @@ namespace PoliSim.Data
         /// ceiling this anchors keeps pace with GDP instead of silently freezing G in absolute dollar
         /// terms (see that method's doc comment and CLAUDE.md's "SpendingLine Amount Ceiling -
         /// Debt-to-Zero Fix" for why a genuinely-fixed anchor caused an ever-widening primary surplus
-        /// that paid USA's debt to exactly 0 by turn ~70).
+        /// that paid USA's debt to exactly 0 by turn ~70). SC-1 (ruled 2026-09-15): the band this anchors bounds the line's OWN path;
+        /// an applied dial cost (Country's Applied* trackers) sits outside it, and Amount is the clamped own path plus the cost.
         /// </summary>
         public float SeedAmount;
 

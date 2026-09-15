@@ -724,13 +724,15 @@ namespace PoliSim.Data
 
         /// <summary>P4-B3 (2026-09-04): the sector twin of <see cref="AppliedJusticeEnforcementCost"/> - the last applied
         /// sector-support cost (SectorCouplings: subsidies, tax credits and research grants above the neutral dial) on the
-        /// Commerce line (else PublicServices). Additive save field; old saves load 0 and self-correct at their first boundary.</summary>
+        /// support line - each statute budget's Business-and-industry line, the USA's Commerce (SC-1, ruled 2026-09-15). Additive save field; old saves
+        /// load 0 and self-correct at their first boundary.</summary>
         public float AppliedSectorSupportCost = 0f;
 
         /// <summary>EN-7a (2026-09-14): the Energy sector's SUBSIDY as retail intervention's money side - the last applied subsidy cost on the
         /// book's energy line (`SectorCouplings.EnergySupportCostTarget`), where EN-4's levy rule reads the line's move off its path. Zero where
         /// the book carries no energy line (Germany: the subsidy's cost stays in the other sectors' target, `SectorCouplings.SupportCostTarget`). Like the other
-        /// three trackers it records the move its line actually took, so a clamped cost gives back only what it added. Additive save field; old saves load 0.</summary>
+        /// three trackers it carries the whole target outside its line's seed band (SC-1, ruled 2026-09-15 - the line is its clamped own path plus the cost),
+        /// short of it only where a cut would take the line below zero. Additive save field; old saves load 0.</summary>
         public float AppliedEnergySupportCost = 0f;
 
         /// <summary>

@@ -17,7 +17,7 @@ Probed country Sweden, seed 777, horizon 8 turns (2920 days). A lever REACHES a 
 | `EconomyState.BirthRate` | EconomyState | Budget line HealthcareAndSocialCare (+10 %), Tax IncomeTax (+5 pts), Family Policy (to 80), Immigration Policy (to 80) | 19 of 140 | reached |
 | `EconomyState.Budget` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 129 of 140 | reached |
 | `EconomyState.BusinessConfidence` | EconomyState | 85 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 123 of 140 | reached |
-| `EconomyState.ConsumerConfidence` | EconomyState | 78 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 86 of 140 | reached |
+| `EconomyState.ConsumerConfidence` | EconomyState | 86 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 89 of 140 | reached |
 | `EconomyState.Consumption` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `EconomyState.CorruptionIndex` | EconomyState | Judicial Funding (to 80) | 14 of 140 | reached |
 | `EconomyState.CrimeIndex` | EconomyState | 90 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
@@ -26,7 +26,7 @@ Probed country Sweden, seed 777, horizon 8 turns (2920 days). A lever REACHES a 
 | `EconomyState.DependencyRatio` | EconomyState | 22 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line HealthcareAndSocialCare (+10 %), Budget line MunicipalGrants (+10 %), Tax IncomeTax (+5 pts), …) | 48 of 140 | reached |
 | `EconomyState.EarlyLeavers` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 129 of 140 | reached |
 | `EconomyState.EnergyCongestionRent` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
-| `EconomyState.EnergyHouseholdPrice` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
+| `EconomyState.EnergyHouseholdPrice` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 126 of 140 | reached |
 | `EconomyState.EnergyHouseholdPriceReal` | EconomyState | 78 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), Budget line Justice (+10 %), …) | 126 of 140 | reached |
 | `EconomyState.EnergyHouseholdPriceRealChange` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 129 of 140 | reached |
 | `EconomyState.EnergyIndustryBill` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 129 of 140 | reached |
@@ -41,7 +41,7 @@ Probed country Sweden, seed 777, horizon 8 turns (2920 days). A lever REACHES a 
 | `EconomyState.HealthCoverage` | EconomyState | Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line SicknessAndDisability (+10 %), Welfare MeansTestedWelfare (to 80), Welfare UniversalHealthcare (to 80), Welfare HousingAssistance (to 80), Fund contribution rate (+1 pt), Fund drawdown (2 % of GDP) | 5 of 140 | reached |
 | `EconomyState.HomelessPer10k` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 129 of 140 | reached |
 | `EconomyState.Homeownership` | EconomyState | 84 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Justice (+10 %), …) | 121 of 140 | reached |
-| `EconomyState.HousePriceIndex` | EconomyState | 88 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 123 of 140 | reached |
+| `EconomyState.HousePriceIndex` | EconomyState | 88 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 124 of 140 | reached |
 | `EconomyState.HousingOverburden` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 126 of 140 | reached |
 | `EconomyState.HydroReservoirBalanceGwh` | EconomyState | - | - | **UNREACHED** |
 | `EconomyState.Inflation` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 129 of 140 | reached |
@@ -51,12 +51,12 @@ Probed country Sweden, seed 777, horizon 8 turns (2920 days). A lever REACHES a 
 | `EconomyState.LaborForceParticipationRate` | EconomyState | 90 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `EconomyState.LifeExpectancy` | EconomyState | Budget line IncomeSecurity (+10 %), Budget line HealthcareAndSocialCare (+10 %), Budget line SicknessAndDisability (+10 %), Tax IncomeTax (+5 pts), Welfare MeansTestedWelfare (to 80), Welfare UniversalHealthcare (to 80), Welfare HousingAssistance (to 80), Welfare ChildcareSubsidies (to 80), Fund contribution rate (+1 pt), Fund drawdown (2 % of GDP) | 6 of 140 | reached |
 | `EconomyState.NaturalBirthRate` | EconomyState | Budget line HealthcareAndSocialCare (+10 %), Tax IncomeTax (+5 pts), Tax CorporateTax (+5 pts), Tax VAT (+5 pts), Tax PayrollTax (+5 pts), Welfare MeansTestedWelfare (to 80), Welfare UniversalHealthcare (to 80), Overtime Regulation (to 80), Family Policy (to 80), Immigration Policy (to 80), Fund contribution rate (+1 pt), Fund drawdown (2 % of GDP) | 26 of 140 | reached |
-| `EconomyState.NaturalNetMigrationRate` | EconomyState | 77 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Justice (+10 %), …) | 100 of 140 | reached |
+| `EconomyState.NaturalNetMigrationRate` | EconomyState | 62 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Justice (+10 %), …) | 99 of 140 | reached |
 | `EconomyState.NaturalRateDemographicShift` | EconomyState | Budget line Transportation (+10 %), Budget line HealthcareAndSocialCare (+10 %), Budget line LaborMarket (+10 %), Tax IncomeTax (+5 pts), Welfare MeansTestedWelfare (to 80), Family Policy (to 80), Immigration Policy (to 80) | 21 of 140 | reached |
 | `EconomyState.NetMigrationRate` | EconomyState | 92 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `EconomyState.OrganizedCrimeIndex` | EconomyState | Police Funding (to 80), Judicial Funding (to 80), Border Enforcement (to 80) | 32 of 140 | reached |
 | `EconomyState.Population` | EconomyState | 30 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Justice (+10 %), …) | 58 of 140 | reached |
-| `EconomyState.PopulationGrowthRate` | EconomyState | 71 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Justice (+10 %), …) | 90 of 140 | reached |
+| `EconomyState.PopulationGrowthRate` | EconomyState | 63 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Justice (+10 %), …) | 90 of 140 | reached |
 | `EconomyState.PotentialGDP` | EconomyState | 92 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `EconomyState.PovertyGap` | EconomyState | Welfare MeansTestedWelfare (to 80), Welfare UniversalHealthcare (to 80), Welfare HousingAssistance (to 80), Welfare ChildcareSubsidies (to 80) | - | dials only |
 | `EconomyState.PovertyRate` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
@@ -72,11 +72,11 @@ Probed country Sweden, seed 777, horizon 8 turns (2920 days). A lever REACHES a 
 | `EconomyState.SupplyUnemploymentExcess` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `EconomyState.TradeBalance` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `EconomyState.TransportCo2PerCapita` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 126 of 140 | reached |
-| `EconomyState.TreatableMortality` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 126 of 140 | reached |
+| `EconomyState.TreatableMortality` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 128 of 140 | reached |
 | `EconomyState.Underemployment` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `EconomyState.Unemployment` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
-| `EconomyState.WaitCataractDays` | EconomyState | 84 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 120 of 140 | reached |
-| `EconomyState.WaitKneeDays` | EconomyState | 84 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 120 of 140 | reached |
+| `EconomyState.WaitCataractDays` | EconomyState | 92 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 120 of 140 | reached |
+| `EconomyState.WaitKneeDays` | EconomyState | 92 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 121 of 140 | reached |
 | `EconomyState.YouthUnemployment` | EconomyState | 93 dials (Budget line SocialSecurity (+10 %), Budget line IncomeSecurity (+10 %), Budget line Defense (+10 %), Budget line Transportation (+10 %), Budget line Education (+10 %), Budget line Energy (+10 %), …) | 127 of 140 | reached |
 | `Country.AverageDebtMaturityYears` | Country parameter | - | 2 of 140 | laws only |
 | `Country.BenefitRatePerUnemployed` | Country parameter | - | 3 of 140 | laws only |
@@ -244,45 +244,45 @@ The four Taylor-rule constants (`CurrencyZone.InflationTarget`, `NeutralRealRate
 
 ### Sector dial
 
-- Manufacturing Subsidy (to 80): 72 reached
+- Manufacturing Subsidy (to 80): 71 reached
 - Manufacturing Regulation (to 80): 72 reached
-- Manufacturing Tax Credits (to 80): 72 reached
-- Manufacturing Research Grants (to 80): 69 reached
+- Manufacturing Tax Credits (to 80): 71 reached
+- Manufacturing Research Grants (to 80): 71 reached
 - Manufacturing Nationalization / Deregulation (to 80): 69 reached
-- Technology Subsidy (to 80): 72 reached
+- Technology Subsidy (to 80): 71 reached
 - Technology Regulation (to 80): 72 reached
-- Technology Tax Credits (to 80): 72 reached
-- Technology Research Grants (to 80): 69 reached
+- Technology Tax Credits (to 80): 71 reached
+- Technology Research Grants (to 80): 71 reached
 - Technology Nationalization / Deregulation (to 80): 69 reached
-- Agriculture Subsidy (to 80): 72 reached
+- Agriculture Subsidy (to 80): 71 reached
 - Agriculture Regulation (to 80): 72 reached
-- Agriculture Tax Credits (to 80): 72 reached
-- Agriculture Research Grants (to 80): 69 reached
+- Agriculture Tax Credits (to 80): 71 reached
+- Agriculture Research Grants (to 80): 71 reached
 - Agriculture Nationalization / Deregulation (to 80): 69 reached
-- Finance Subsidy (to 80): 72 reached
+- Finance Subsidy (to 80): 71 reached
 - Finance Regulation (to 80): 72 reached
-- Finance Tax Credits (to 80): 72 reached
-- Finance Research Grants (to 80): 69 reached
+- Finance Tax Credits (to 80): 71 reached
+- Finance Research Grants (to 80): 71 reached
 - Finance Nationalization / Deregulation (to 80): 69 reached
 - Energy Subsidy (to 80): 72 reached
 - Energy Regulation (to 80): 74 reached
-- Energy Tax Credits (to 80): 72 reached
-- Energy Research Grants (to 80): 69 reached
+- Energy Tax Credits (to 80): 71 reached
+- Energy Research Grants (to 80): 71 reached
 - Energy Nationalization / Deregulation (to 80): 69 reached
-- Construction Subsidy (to 80): 72 reached
+- Construction Subsidy (to 80): 71 reached
 - Construction Regulation (to 80): 72 reached
-- Construction Tax Credits (to 80): 72 reached
-- Construction Research Grants (to 80): 69 reached
+- Construction Tax Credits (to 80): 71 reached
+- Construction Research Grants (to 80): 71 reached
 - Construction Nationalization / Deregulation (to 80): 69 reached
-- Retail Subsidy (to 80): 72 reached
+- Retail Subsidy (to 80): 71 reached
 - Retail Regulation (to 80): 71 reached
-- Retail Tax Credits (to 80): 72 reached
-- Retail Research Grants (to 80): 69 reached
+- Retail Tax Credits (to 80): 71 reached
+- Retail Research Grants (to 80): 71 reached
 - Retail Nationalization / Deregulation (to 80): 69 reached
-- Telecommunications Subsidy (to 80): 72 reached
+- Telecommunications Subsidy (to 80): 71 reached
 - Telecommunications Regulation (to 80): 72 reached
-- Telecommunications Tax Credits (to 80): 72 reached
-- Telecommunications Research Grants (to 80): 69 reached
+- Telecommunications Tax Credits (to 80): 71 reached
+- Telecommunications Research Grants (to 80): 71 reached
 - Telecommunications Nationalization / Deregulation (to 80): 69 reached
 
 ### Fund
@@ -311,40 +311,40 @@ The four Taylor-rule constants (`CurrencyZone.InflationTarget`, `NeutralRealRate
 - Law sweden_zero_tolerance_drug_policy - Zero-Tolerance Drug Policy [via Sentencing Severity +6; Drug Policy +18]: 65 reached
 - Law public_defender_funding_act - Public Defender & Legal Aid Funding Act [via Sentencing Severity -4; Judicial Funding +16]: 68 reached
 - Law immigration_detention_expansion_act - Immigration Detention Expansion Act [via Police Funding +4; Border Enforcement +16]: 68 reached
-- Law body_worn_camera_program - Body-Worn Camera Program [via Police Funding +8]: 67 reached
+- Law body_worn_camera_program - Body-Worn Camera Program [via Police Funding +8]: 68 reached
 - Law militarized_police_equipment_program - Militarized Police Equipment Program [via Police Funding +18; Sentencing Severity +4]: 70 reached
 - Law cybercrime_investigation_unit - Cybercrime Investigation Unit [via Police Funding +10]: 68 reached
 - Law gang_crime_sentencing_escalation - Gang Crime Sentencing Escalation [via Police Funding +6; Sentencing Severity +20]: 68 reached
 - Law court_backlog_reduction_program - Court Backlog Reduction Program [via Judicial Funding +20]: 69 reached
 - Law court_interpreter_funding - Court Interpreter & Translation Funding [via Judicial Funding +5]: 67 reached
 - Law victim_witness_support_funding - Victim & Witness Support Services Funding [via Judicial Funding +7]: 70 reached
-- Law frontex_border_cooperation_agreement - Frontex Border Cooperation Agreement [via Border Enforcement +12]: 67 reached
-- Law refugee_asylum_fast_track_processing - Refugee & Asylum Fast-Track Processing [via Judicial Funding +5; Border Enforcement -14]: 69 reached
+- Law frontex_border_cooperation_agreement - Frontex Border Cooperation Agreement [via Border Enforcement +12]: 66 reached
+- Law refugee_asylum_fast_track_processing - Refugee & Asylum Fast-Track Processing [via Judicial Funding +5; Border Enforcement -14]: 68 reached
 - Law sanctuary_city_policy - Sanctuary City Policy [via Border Enforcement -10]: 67 reached
 - Law prosecutorial_discretion_guidelines - Prosecutorial Discretion Guidelines [via Sentencing Severity -10; Drug Policy -6]: 62 reached
-- Law electronic_monitoring_program - Electronic Monitoring Program [via Sentencing Severity -8; Judicial Funding +3]: 57 reached
+- Law electronic_monitoring_program - Electronic Monitoring Program [via Sentencing Severity -8; Judicial Funding +3]: 56 reached
 - Law restorative_justice_program - Restorative Justice & Victim-Offender Mediation [via Sentencing Severity -10]: 63 reached
 - Law juvenile_justice_reform - Juvenile Justice Reform [via Sentencing Severity -8]: 61 reached
-- Law hate_crime_sentencing_enhancement - Hate Crime Sentencing Enhancement [via Sentencing Severity +5]: 61 reached
+- Law hate_crime_sentencing_enhancement - Hate Crime Sentencing Enhancement [via Sentencing Severity +5]: 62 reached
 - Law risk_based_pretrial_assessment - Risk-Based Pretrial Assessment [via Bail Reform +14; Judicial Funding +4]: 68 reached
 - Law mental_health_diversion_courts - Mental Health Diversion Courts [via Sentencing Severity -9; Judicial Funding +8]: 68 reached
 - Law drug_courts_program - Drug Courts Program [via Sentencing Severity -6; Drug Policy -10; Judicial Funding +6]: 70 reached
 - Law strict_drug_classification_equalization_act - Strict Drug Classification Equalization Act [via Sentencing Severity +8; Drug Policy +16]: 62 reached
 - Law physical_border_barrier_construction - Physical Border Barrier Construction [via Border Enforcement +26]: 68 reached
-- Law schengen_border_reimposition - Schengen Border Reimposition [via Border Enforcement +14]: 66 reached
+- Law schengen_border_reimposition - Schengen Border Reimposition [via Border Enforcement +14]: 67 reached
 - Law amnesty_regularization_program - Amnesty & Regularization Program [via Border Enforcement -20]: 69 reached
 - Law human_trafficking_task_force - Human Trafficking Task Force [via Police Funding +10; Border Enforcement +6]: 69 reached
 - Law ice_287g_agreements_law - 287(g) Immigration Enforcement Agreements [via Police Funding +4; Border Enforcement +12]: 68 reached
 - Law hot_spot_policing_program - Hot Spot Policing Program [via Police Funding +10]: 68 reached
 - Law veterans_treatment_courts - Veterans Treatment Courts [via Sentencing Severity -5; Judicial Funding +7]: 68 reached
-- Law financial_crimes_aml_unit - Financial Crimes & Anti-Money-Laundering Unit [via Police Funding +8; Judicial Funding +4]: 69 reached
+- Law financial_crimes_aml_unit - Financial Crimes & Anti-Money-Laundering Unit [via Police Funding +8; Judicial Funding +4]: 70 reached
 - Law stand_your_ground_law - Stand Your Ground Law [via Sentencing Severity -10]: 63 reached
 - Law antimafia_asset_confiscation_law - Anti-Mafia Asset Confiscation Law [via Police Funding +6; Sentencing Severity +8]: 66 reached
 - Law federal_bail_reform_preventive_detention_act - Pretrial Preventive Detention Act [via Bail Reform -16]: 64 reached
 - Law percentage_bail_deposit_program - Percentage Bail Deposit Program [via Bail Reform +9]: 64 reached
 - Law drug_free_zone_sentencing_enhancement - Drug-Free Zone Sentencing Enhancement [via Sentencing Severity +5; Drug Policy +10]: 60 reached
-- Law counter_narcotics_interdiction_funding_act - Counter-Narcotics Interdiction Funding Act [via Drug Policy +9; Border Enforcement +8]: 65 reached
-- Law national_guard_border_deployment - National Guard Border Deployment [via Border Enforcement +10]: 66 reached
+- Law counter_narcotics_interdiction_funding_act - Counter-Narcotics Interdiction Funding Act [via Drug Policy +9; Border Enforcement +8]: 68 reached
+- Law national_guard_border_deployment - National Guard Border Deployment [via Border Enforcement +10]: 67 reached
 - Law pretrial_services_agency_establishment - Pretrial Services Agency Establishment [via Bail Reform +5; Judicial Funding +8]: 67 reached
 
 ### Law: LaborMarket

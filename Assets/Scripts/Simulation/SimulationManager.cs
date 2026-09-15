@@ -662,7 +662,9 @@ namespace PoliSim.Simulation
         /// Amount, is what actually stops the compounding - a clamp relative to the current value would
         /// just get carried along by the same exponential growth it's supposed to bound. Applies to
         /// both Discretionary (ApplySpendingLineChanges) and Mandatory categories' PLAYER-driven
-        /// changes, regardless of how many turns of repeated changes are stacked.
+        /// changes, regardless of how many turns of repeated changes are stacked. SC-1 (ruled 2026-09-15, §503): the band
+        /// bounds a line's OWN path; an applied dial cost - a figure the player set by law or bill - sits outside it, and
+        /// the line is the clamped own path plus the cost (SimulationManager.ComposeLine).
         ///
         /// For a Discretionary line, SeedAmount is NOT frozen at construction - ApplyDiscretionarySpendingGrowth
         /// grows it in lockstep with the automatic GDP-tracking growth applied to Amount (see that
@@ -4114,8 +4116,6 @@ namespace PoliSim.Simulation
             // pre-RF-2 form grew every line with potential growth, a policy nobody took (§367). This form is the law's: a caseload, at the going wage.
             float wages = aiBudget && country.RealWageIndexAtLastIndex > 0f ? country.State.RealWageIndex / country.RealWageIndexAtLastIndex : 1f;
             country.RealWageIndexAtLastIndex = country.State.RealWageIndex;
-            // §497: the lines the dial costs land on - each tracker rides its own line's index below
-            SpendingLine justiceCostLine = JusticeCostLine(country), borderCostLine = BorderCostLine(country), sectorCostLine = SectorCostLine(country), energyCostLine = EnergyCostLine(country);
             foreach (SpendingLine line in country.SpendingLines)
             {
                 SpendingDriver driver = SpendingDrivers.Of(line.Category);
@@ -4133,15 +4133,85 @@ namespace PoliSim.Simulation
                 float factor = prices * driverRatio * (driverless ? realGrowth : wages);   // RF-2 re-formed (§384): a caseload at the going real wage, a discretionary line at the economy's growth
                 line.SeedAmount *= factor;
                 if (line.Pinned) { continue; }
-                line.Amount = ClampToSeedRange(line, line.Amount * factor);
-                // §497: the amount just indexed carries last year's applied dial cost at this year's index, so the tracker rides the same factor -
-                // left unindexed, the next boundary's difference (target - tracker) re-applied the index's share of the cost every year, and a
-                // dial held off neutral compounded its line past its target. Zero at no policy.
-                if (line == justiceCostLine) { country.AppliedJusticeEnforcementCost *= factor; }
-                if (line == borderCostLine) { country.AppliedBorderEnforcementCost *= factor; }
-                if (line == sectorCostLine) { country.AppliedSectorSupportCost *= factor; }
-                if (line == energyCostLine) { country.AppliedEnergySupportCost *= factor; }
+                // SC-1 (ruled 2026-09-15, §503): the line's OWN PATH indexes and is clamped to its seed band; the applied dial cost rides the same factor
+                // outside it (§497: a tracker left unindexed made the next boundary's difference re-apply the index's share of the cost every year).
+                // The own path's product is taken here, before the trackers move. Zero cost at no policy: the old expression's value to the bit.
+                IndexComposedLine(country, line, (line.Amount - AppliedDialCostOn(country, line)) * factor, factor);
             }
+        }
+
+        /// <summary>SC-1: one line's index step - its dial costs ride the factor, then the line is written from its indexed own path (<see cref="ComposeLine"/>).</summary>
+        private static void IndexComposedLine(Country country, SpendingLine line, float indexedOwnPath, float factor)
+        {
+            if (line == JusticeCostLine(country)) { country.AppliedJusticeEnforcementCost *= factor; }
+            if (line == BorderCostLine(country)) { country.AppliedBorderEnforcementCost *= factor; }
+            if (line == SectorCostLine(country)) { country.AppliedSectorSupportCost *= factor; }
+            if (line == EnergyCostLine(country)) { country.AppliedEnergySupportCost *= factor; }
+            ComposeLine(country, line, indexedOwnPath);
+        }
+
+        /// <summary>
+        /// SC-1 (Elias's ruling, 2026-09-15, `COMPLETED.md` §503): the applied dial cost a line carries - the trackers whose landing line it is
+        /// (<see cref="JusticeCostLine"/>, <see cref="BorderCostLine"/>, <see cref="SectorCostLine"/>, <see cref="EnergyCostLine"/>); zero on every other
+        /// line and on every line at neutral dials. A composed line is its own path plus this.
+        /// </summary>
+        private static float AppliedDialCostOn(Country country, SpendingLine line)
+        {
+            float cost = 0f;
+            if (line == JusticeCostLine(country)) { cost += country.AppliedJusticeEnforcementCost; }
+            if (line == BorderCostLine(country)) { cost += country.AppliedBorderEnforcementCost; }
+            if (line == SectorCostLine(country)) { cost += country.AppliedSectorSupportCost; }
+            if (line == EnergyCostLine(country)) { cost += country.AppliedEnergySupportCost; }
+            return cost;
+        }
+
+        /// <summary>
+        /// SC-1 (ruled 2026-09-15, §503: *"the seed-relative clamp bounds the line's own path, not a cost the player deliberately set; the applied dial
+        /// cost sits outside it and the composed total is the clamped line plus the applied cost"*): writes a line from its OWN PATH - clamped to the seed
+        /// band - plus the applied dial costs it carries. Every writer of a line's amount comes through here: the index, the dial costs, the percent
+        /// changes and the nominal targets. The one bound a cost meets is ZERO (a decision taken and sheeted in §504): a line carries no negative spending,
+        /// so where a cut below neutral would take the total under, the cuts on the line record what the line could give - §498's idiom at that one
+        /// bound - and the next boundary asks for the rest again.
+        /// </summary>
+        private static void ComposeLine(Country country, SpendingLine line, float ownPath)
+        {
+            float own = ClampToSeedRange(line, ownPath);
+            float cost = AppliedDialCostOn(country, line);
+            if (own + cost < 0f) { cost = HoldCutsAtZero(country, line, own); }
+            line.Amount = own + cost;
+        }
+
+        /// <summary>SC-1: a line's own path - its amount less the applied dial costs it carries; the figure the seed band bounds and a percentage moves.
+        /// The Budget row's track and the chamber's weight read it.</summary>
+        internal static float OwnPathOf(Country country, SpendingLine line) => line.Amount - AppliedDialCostOn(country, line);
+
+        /// <summary>SC-1: the applied dial cost a line carries, for a reader outside the boundary (the Budget row).</summary>
+        internal static float DialCostOf(Country country, SpendingLine line) => AppliedDialCostOn(country, line);
+
+        /// <summary>SC-1: the own path a figure set on a line would land it on - the figure, the line's total, less the cost it carries, clamped to the seed band
+        /// (<see cref="ComposeLine"/>'s arithmetic on a nominal target, no tracker touched).</summary>
+        internal static float LandedOwnPathOf(Country country, SpendingLine line, float figure) => ClampToSeedRange(line, Mathf.Max(0f, figure) - AppliedDialCostOn(country, line));
+
+        /// <summary>SC-1: the total a figure set on a line would land at - its landed own path plus the cost, never below zero.</summary>
+        internal static float LandedTotalOf(Country country, SpendingLine line, float figure) => Mathf.Max(0f, LandedOwnPathOf(country, line, figure) + AppliedDialCostOn(country, line));
+
+        /// <summary>SC-1's zero bound: trims the negative dial costs on a line until the line's total is zero, and returns the cost it now carries (minus its own path).</summary>
+        private static float HoldCutsAtZero(Country country, SpendingLine line, float own)
+        {
+            float excess = -(own + AppliedDialCostOn(country, line));
+            if (line == JusticeCostLine(country)) { TrimCut(ref country.AppliedJusticeEnforcementCost, ref excess); }
+            if (line == BorderCostLine(country)) { TrimCut(ref country.AppliedBorderEnforcementCost, ref excess); }
+            if (line == SectorCostLine(country)) { TrimCut(ref country.AppliedSectorSupportCost, ref excess); }
+            if (line == EnergyCostLine(country)) { TrimCut(ref country.AppliedEnergySupportCost, ref excess); }
+            return -own;
+        }
+
+        private static void TrimCut(ref float applied, ref float excess)
+        {
+            if (excess <= 0f || applied >= 0f) { return; }
+            float trim = Mathf.Min(excess, -applied);
+            applied += trim;
+            excess -= trim;
         }
 
         /// <summary>§497: the line the justice dials' cost lands on - Justice, else PublicServices (the one lookup the pressure and the index share).</summary>
@@ -4150,7 +4220,7 @@ namespace PoliSim.Simulation
         /// <summary>§497: the line border enforcement's cost lands on - HomelandSecurity, else Migration, else PublicServices.</summary>
         private static SpendingLine BorderCostLine(Country country) => FindSpendingLine(country, SpendingCategory.HomelandSecurity) ?? FindSpendingLine(country, SpendingCategory.Migration) ?? FindSpendingLine(country, SpendingCategory.PublicServices);
 
-        /// <summary>§497: the line the sector dials' support cost lands on - Commerce, else PublicServices (SectorCouplings.SupportLine, which the Sectors page shares; SC-1: the USA's book only).</summary>
+        /// <summary>§497: the line the sector dials' support cost lands on - SectorCouplings.SupportLine, which the Sectors page shares (SC-1, ruled 2026-09-15: Business-and-industry, the USA's Commerce).</summary>
         private static SpendingLine SectorCostLine(Country country) => SectorCouplings.SupportLine(country);
 
         /// <summary>EN-7a: the line the Energy sector's subsidy lands on - the book's energy line, or none (Germany).</summary>
@@ -4190,12 +4260,11 @@ namespace PoliSim.Simulation
         ///
         /// STATELESS TARGET ON A STATEFUL LINE: the Applied* trackers on Country (four since EN-7a - justice, border,
         /// sector support, energy) record the dollars applied, and each boundary applies only the DIFFERENCE - so the
-        /// dial cost composes with the five existing line writers (growth, pressure, player
-        /// changes) instead of overwriting them. ClampToSeedRange applies like every other line
-        /// mutation; if it binds (the USA's small federal Justice line saturates at 3x seed under
-        /// extreme SWEEPING-law stacks), the tracker records the move the line TOOK (EN-7a,
-        /// <see cref="ApplyCostOnLine"/> - it recorded the requested target until a clamped dial
-        /// returned to neutral was measured leaving its line off path). Amount only, never SeedAmount, per the pressure methods'
+        /// dial cost composes with the line's other writers (the index, the percent changes, the
+        /// nominal targets) instead of overwriting them. SC-1 (ruled 2026-09-15, §503): the seed band
+        /// bounds the line's OWN path, never the cost - the line is the clamped own path plus the applied
+        /// cost (<see cref="ComposeLine"/>), so the USA's small federal Justice line carries an extreme
+        /// SWEEPING-law stack's whole cost; the one bound a cost meets is zero. Amount only, never SeedAmount, per the pressure methods'
         /// own reconciliation rule. Runs inside ResolveSpendingForTurn (boundary-resident: dials
         /// change only at boundaries via law composition, and the period plan idiom carries the
         /// cost through the daily accrual automatically). Old saves carry Applied* = 0 and
@@ -4213,41 +4282,39 @@ namespace PoliSim.Simulation
                 * (country.BorderEnforcementLevel - CrimeJusticeCouplings.NeutralDialLevel);
 
             SpendingLine justiceLine = JusticeCostLine(country);
-            if (justiceLine != null) { ApplyCostOnLine(justiceLine, justiceTarget, ref country.AppliedJusticeEnforcementCost); }
+            if (justiceLine != null) { ApplyCostOnLine(country, justiceLine, justiceTarget, ref country.AppliedJusticeEnforcementCost); }
 
             SpendingLine borderLine = BorderCostLine(country);
-            if (borderLine != null) { ApplyCostOnLine(borderLine, borderTarget, ref country.AppliedBorderEnforcementCost); }
+            if (borderLine != null) { ApplyCostOnLine(country, borderLine, borderTarget, ref country.AppliedBorderEnforcementCost); }
         }
 
         /// <summary>
-        /// The applied-difference idiom's one step, shared by the four dial costs: the line moves by what the target asks beyond what the tracker says the
-        /// line already carries, clamped to its seed range like every line mutation, and the tracker records THE MOVE THE LINE TOOK (the part of it the
-        /// asked move explains). EN-7a (2026-09-14, review-found and measured): until then the tracker recorded the REQUESTED target, so a bound that bound
-        /// kept its un-achieved remainder out on the way up and took it off the line on the way down - a dial returned to neutral left its line below
-        /// its path for good (Italy's energy line at Subsidy 100 and back: floored at 0.2 x its path, the policy levy above its seed with no policy in
-        /// force). Now a clamped cost gives back only what it added, and a remainder the bound held is asked again at the next boundary, landing only if
-        /// the line has room by then. Zero asked (every dial at neutral), zero moved: the old arithmetic to the bit.
+        /// The applied-difference idiom's one step, shared by the four dial costs. SC-1 (ruled 2026-09-15, §503): the cost is a figure the player set, so the
+        /// seed band does not bound it - the line's own path is recovered (its amount less the costs it carries), the tracker takes the target, and the line
+        /// is written as the clamped own path plus its costs (<see cref="ComposeLine"/>, where a cut below neutral meets the one bound a cost has: zero).
+        /// History: until EN-7a the tracker recorded the REQUESTED target inside the clamp, which left a line off its path after a round trip; EN-7a
+        /// (§498) recorded the move the line took; SC-1 takes the cost out of the clamp, so the target is what lands. Zero asked (every dial at neutral):
+        /// the line's own amount, unchanged.
         /// </summary>
-        private static void ApplyCostOnLine(SpendingLine line, float target, ref float applied)
+        private static void ApplyCostOnLine(Country country, SpendingLine line, float target, ref float applied)
         {
-            float asked = target - applied;
-            float before = line.Amount;
-            line.Amount = ClampToSeedRange(line, line.Amount + asked);
-            applied += Mathf.Clamp(line.Amount - before, Mathf.Min(0f, asked), Mathf.Max(0f, asked));
+            float own = line.Amount - AppliedDialCostOn(country, line);
+            applied = target;
+            ComposeLine(country, line, own);
         }
 
         /// <summary>
         /// P4-B3 (2026-09-04): the sector dials' cost, in the enforcement cost's own shape - a stateless target
         /// (<see cref="SectorCouplings.SupportCostTarget"/>: every sector's subsidy, tax credits and research grants above
-        /// the neutral dial, at their standing levels) composed with the stateful Commerce line (else PublicServices)
-        /// through <see cref="Country.AppliedSectorSupportCost"/>, so each boundary applies only the difference. Zero at
+        /// the neutral dial, at their standing levels) composed with the stateful support line - each statute budget's
+        /// Business-and-industry line, the USA's Commerce (SC-1, ruled 2026-09-15) - through <see cref="Country.AppliedSectorSupportCost"/>, so each boundary applies only the difference. Zero at
         /// neutral dials, so the seed's trajectory does not move; the target moves only when a sector bill passes.
         /// </summary>
         private void ApplySectorSupportCostPressure(Country country)
         {
             float target = SectorCouplings.SupportCostTarget(country);
             SpendingLine line = SectorCostLine(country);
-            if (line != null) { ApplyCostOnLine(line, target, ref country.AppliedSectorSupportCost); }
+            if (line != null) { ApplyCostOnLine(country, line, target, ref country.AppliedSectorSupportCost); }
         }
 
         /// <summary>
@@ -4261,7 +4328,7 @@ namespace PoliSim.Simulation
         {
             SpendingLine line = EnergyCostLine(country);
             if (line == null) { return; }
-            ApplyCostOnLine(line, SectorCouplings.EnergySupportCostTarget(country), ref country.AppliedEnergySupportCost);
+            ApplyCostOnLine(country, line, SectorCouplings.EnergySupportCostTarget(country), ref country.AppliedEnergySupportCost);
         }
 
 
@@ -4293,12 +4360,13 @@ namespace PoliSim.Simulation
                 {
                     float maxRange = line.IsMandatory ? MandatoryPercentChangeRange : DiscretionaryPercentChangeRange;
                     float clampedPercent = Mathf.Clamp(requestedPercent, -maxRange, maxRange);
-                    line.Amount = ClampToSeedRange(line, line.Amount * (1f + clampedPercent / 100f));
+                    ComposeLine(country, line, (line.Amount - AppliedDialCostOn(country, line)) * (1f + clampedPercent / 100f));   // SC-1: the percent moves the line's own path; the dial cost it carries stays as set
                 }
-                // P5-B2: a line SET to a nominal amount takes it (clamped to the seed band), and a pin holds it there until unpinned.
+                // P5-B2: a line SET to a nominal amount takes it (clamped to the seed band), and a pin holds it there until unpinned. SC-1: the figure is the line's
+                // total, so its own path is the figure less the dial cost the line carries, clamped to the band, the cost outside it.
                 if (decision.SpendingNominalTargets.TryGetValue(line.Category, out float nominalTarget))
                 {
-                    line.Amount = ClampToSeedRange(line, Mathf.Max(0f, nominalTarget));
+                    ComposeLine(country, line, Mathf.Max(0f, nominalTarget) - AppliedDialCostOn(country, line));
                 }
                 if (decision.SpendingPinChanges.TryGetValue(line.Category, out bool pin))
                 {

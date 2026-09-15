@@ -180,7 +180,8 @@ namespace PoliSim.EditorTools
                 if (energyPressure == null || sectorPressure == null) { ok = false; Debug.LogError("ENERGY LEDGER: the support pressures were not found by reflection - EN-7a is UNVERIFIED."); }
                 else
                 {
-                    // France: an energy line and a levy, no sector-support line · the USA: an energy line, no levy, Commerce (the double-booking guard) · Germany: no energy line
+                    // France: an energy line and a levy, the support cost on Business and industry (SC-1) · the USA: an energy line, no levy, Commerce (the double-booking guard) ·
+                    // Germany: no energy line - the subsidy's cost lands with the other sectors' support on Business and industry
                     foreach (CountryId id in new[] { CountryId.France, CountryId.USA, CountryId.Germany })
                     {
                         SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
@@ -209,10 +210,10 @@ namespace PoliSim.EditorTools
                             string landing = supportLine != null ? F("{0} {1:+0.000;-0.000}", supportLine.Category, supportMove) : "no sector-support line in this book";
                             if (energyLine != null)
                             {
-                                bool clampedHigh = energyLine.Amount >= energyLine.SeedAmount * 2.999f;
                                 bool levyOneForOne = Math.Abs((before.LevyRevenue - after.LevyRevenue) - Math.Min(lineMove, before.LevyRevenue)) <= 1e-6 * Math.Max(1.0, before.LevyRevenue);
                                 bool noLevyNoPrice = before.LevyRevenue > 0.0 || Math.Abs(after.Classes[0].Total - before.Classes[0].Total) <= 1e-12;
-                                if (Math.Abs(target - subsidyCost) > 1e-4 || (!clampedHigh && Math.Abs(lineMove - target) > 1e-3 * Math.Max(1.0, target))
+                                // SC-1 (ruled 2026-09-15): the cost sits outside the line's seed band - the whole target lands, whatever the band would have held
+                                if (Math.Abs(target - subsidyCost) > 1e-4 || Math.Abs(lineMove - target) > 1e-3 * Math.Max(1.0, target)
                                     || Math.Abs(sectorMove) > 1e-4 || Math.Abs(supportMove) > 1e-4 || !levyOneForOne || !noLevyNoPrice)
                                 { ok = false; Debug.LogError($"ENERGY LEDGER: {id}'s subsidy at 80 did not land on its energy line alone, one for one - target {target:F4} against the cost {subsidyCost:F4}, line +{lineMove:F4}, the other sectors' target +{sectorMove:F4}, {landing}, levy {before.LevyRevenue:F4} → {after.LevyRevenue:F4}, households' price {before.Classes[0].Total:F6} → {after.Classes[0].Total:F6}."); }
                                 sb.Append(F("    {0,-8} subsidy 80: the cost {1:F3} bn on the energy line (moved {2:+0.000;-0.000}); the other sectors' support target {3:+0.000;-0.000}, {4}; levy {5:F3} → {6:F3} bn{7}, households' price {8:F5} → {9:F5}/kWh; the book closes ({10:E1})\n",
@@ -220,9 +221,11 @@ namespace PoliSim.EditorTools
                             }
                             else
                             {
-                                if (Math.Abs(target) > 1e-9 || Math.Abs(sectorMove - subsidyCost) > 1e-3 * Math.Max(1.0, subsidyCost) || Math.Abs(after.LevyScale - before.LevyScale) > 1e-12)
-                                { ok = false; Debug.LogError($"ENERGY LEDGER: {id} has no energy line but its subsidy did not stay in the other sectors' support target - energy target {target:F4}, that target +{sectorMove:F4} against the cost {subsidyCost:F4}, levy scale {before.LevyScale} → {after.LevyScale}."); }
-                                sb.Append(F("    {0,-8} subsidy 80: no energy line - the cost {1:F3} bn stays in the other sectors' support target (moved {2:+0.000;-0.000}; {3}); the levy scale unchanged at {4:F3}\n",
+                                // SC-1: the other sectors' support now lands on a line - the subsidy's cost must land there with it, whole
+                                bool landsWithSupport = supportLine != null && Math.Abs(supportMove - subsidyCost) <= 1e-3 * Math.Max(1.0, subsidyCost);
+                                if (Math.Abs(target) > 1e-9 || Math.Abs(sectorMove - subsidyCost) > 1e-3 * Math.Max(1.0, subsidyCost) || !landsWithSupport || Math.Abs(after.LevyScale - before.LevyScale) > 1e-12)
+                                { ok = false; Debug.LogError($"ENERGY LEDGER: {id} has no energy line but its subsidy did not land with the other sectors' support - energy target {target:F4}, that target +{sectorMove:F4} against the cost {subsidyCost:F4}, {landing}, levy scale {before.LevyScale} → {after.LevyScale}."); }
+                                sb.Append(F("    {0,-8} subsidy 80: no energy line - the cost {1:F3} bn lands with the other sectors' support (their target moved {2:+0.000;-0.000}; {3}); the levy scale unchanged at {4:F3}\n",
                                     id, subsidyCost, sectorMove, landing, after.LevyScale));
                             }
                             if (Math.Abs(after.Gap) > 1e-9 * Math.Max(1.0, after.PaidTotal)) { ok = false; Debug.LogError($"ENERGY LEDGER: {id}'s book does not close with the subsidy at 80 (gap {after.Gap:E2})."); }

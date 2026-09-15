@@ -8,10 +8,11 @@ namespace PoliSim.Simulation
     /// would have read zero on every slider. The coupling is built the way the crime six's was
     /// (`CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint`): a percentage of GDP per dial point above the
     /// neutral 50, per sector, summed over the country's sectors into ONE target that
-    /// `SimulationManager.ApplySectorSupportCostPressure` writes onto the Commerce line (else PublicServices) at each
-    /// boundary through <see cref="Country.AppliedSectorSupportCost"/> - the stateless target composing with the stateful
-    /// line writer, so each boundary applies only the difference. At neutral dials the target is zero and the seed's
-    /// trajectory does not move. Regulation and deregulation cost nothing here: a rulebook is not a cheque.
+    /// `SimulationManager.ApplySectorSupportCostPressure` writes onto the support line (<see cref="SupportLine"/> - each statute
+    /// budget's Business-and-industry line, the USA's Commerce; SC-1, ruled 2026-09-15) at each boundary through
+    /// <see cref="Country.AppliedSectorSupportCost"/> - the stateless target composing with the stateful line writer, so each
+    /// boundary applies only the difference, outside the line's seed band (SC-1). At neutral dials the target is zero and the
+    /// seed's trajectory does not move. Regulation and deregulation cost nothing here: a rulebook is not a cheque.
     /// </summary>
     public static class SectorCouplings
     {
@@ -79,10 +80,11 @@ namespace PoliSim.Simulation
         /// <summary>EN-7a: the book's energy spending line, the one the Energy sector's subsidy lands on - or null (Germany).</summary>
         public static SpendingLine EnergyLine(Country country) => LineOf(country, SpendingCategory.Energy);
 
-        /// <summary>The line the sector dials' support cost lands on - Commerce, else PublicServices - the one lookup the boundary's pressure, the index
-        /// and the Sectors page share. SC-1 (2026-09-14, measured): only the USA's book carries either, so in the other five the support cost is booked on
-        /// no line (the statute budgets that replaced the generic seeds on 1 September carry neither; P4-B3 landed after them) - ruling-first.</summary>
-        public static SpendingLine SupportLine(Country country) => LineOf(country, SpendingCategory.Commerce) ?? LineOf(country, SpendingCategory.PublicServices);
+        /// <summary>The line the sector dials' support cost lands on - the one lookup the boundary's pressure, the index and the Sectors page share. SC-1
+        /// (measured 2026-09-14, §498: only the USA's book carried Commerce, so in the other five the cost was booked on no line; RULED 2026-09-15, §503):
+        /// each statute budget's Business-and-industry line - Sweden's UO24, Germany's Epl 09, Italy's, Poland's and France's business lines - else the
+        /// USA's Commerce, else PublicServices (a generic seed's, none left).</summary>
+        public static SpendingLine SupportLine(Country country) => LineOf(country, SpendingCategory.BusinessAndIndustry) ?? LineOf(country, SpendingCategory.Commerce) ?? LineOf(country, SpendingCategory.PublicServices);
 
         private static SpendingLine LineOf(Country country, SpendingCategory category)
         {

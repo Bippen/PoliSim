@@ -27838,3 +27838,85 @@ The cheap bar is **38** and the simulation group **51** (`bar453_en7bc_sim`, 51 
 **The order, self-taken:** this record, then SC-1's build, then T-3's measurement - each its own commit, bar and record; SC-1's dump is diffed before T-3's probe is typed, so two families can never share a pass.
 
 **Bar:** `bar458_rec503` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 504. SC-1 BUILT — the sector dials' support cost on each statute budget's Business-and-industry line, and every applied dial cost outside the seed band: a line is its clamped own path plus the cost, held at zero; the policy path explained per country, the no-policy dump unmoved (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15, §503): *"the support cost lands on each statute budget's Business-and-industry line, and the clamp's rule changes for a dial cost — the seed-relative clamp bounds the line's own path, not a cost the player deliberately set; the applied dial cost sits outside it and the composed total is the clamped line plus the applied cost. Its own BASELINE family, explained per country."* The standing rules it rides: *"measure the premise before fixing it"*, *"prove every guard both directions"*, *"instrument fixed first, number re-measured after"*.
+
+**The premise, measured.** The ruling calls the change a BASELINE family. No dial sits off neutral at the seed in any of the six books and nothing but a law or a bill moves one, so every applied dial cost is exactly zero on the no-policy path - and the dump says the same: `traj_sc1` against `traj_pn1`, **76 of 76 fields byte-identical at both seeds and every horizon** (below). So the family is the POLICY path's, and it is explained per country on that path - where each book's support cost lands, what the rule before booked, how the index, a percent change and a figure move the own path with the cost standing, where a cut meets zero (section 4, below) - while the no-policy baseline label stays `f4s2`.
+
+**What was built.**
+- **The landing** (`SectorCouplings.SupportLine`): Business-and-industry, else Commerce (the USA's federal book has no Business line), else PublicServices. The five statute budgets' support cost, booked on no line since P4-B3 (§498), lands; Germany's Energy subsidy, which has no energy line to land on, lands with the other sectors' support.
+- **The clamp's rule for a dial cost.** One composition every writer of a line comes through (`SimulationManager.ComposeLine`): the line's OWN path is clamped to its seed band and the applied dial costs it carries (`AppliedDialCostOn` - justice, border, sector support, energy) sit outside it. The index scales the own path and rides the cost at the same factor (§497's rule kept); a dial cost's step recovers the own path and takes the whole target (`ApplyCostOnLine` - §498's "the tracker records the move the line took" is superseded by the ruling: the target is what lands); a percent change moves the own path alone; a figure set on a line is the line's total, its own path the figure less the cost.
+- **The one bound a cost meets: zero** (a decision taken, below). A cut below neutral takes at most what the line holds; the cuts on the line record what it gave and the next boundary asks for the rest again.
+- **The surfaces.** The Sectors page says where the support cost lands, and that the line's own range does not bound it. On a line carrying a dial cost the Budget row's track is the own path's allowed change with the cost on top, each end the total that figure lands at (a line a cut holds at zero keeps a track), and the chamber weighs a figure as the change it makes to the own path; a line with no dial cost reads as it always has. The row's year-open tick and delta read "a year has run" from the index's own mark, so a line at zero is a figure, not a missing year.
+
+**The review** (a workflow, four lenses - the composition across every writer, the readers of a composed total, the checks, the no-policy path's inertness - each finding given to a skeptic told to refute it): six confirmed, all acted on before the chain - the Budget row's track and the chamber's weight read the composed total while a figure moves the own path (a small line carrying a large cost lost most of its travel, a line held at zero lost its slider and its vote weight); the zero line's year-open tick and delta read a missing year; the energy spec-let and the EN-7a row still carried the rule before; section 4 never pushed the own path past a band edge nor set a figure with the cost standing - both added, with probes. The inertness lens found nothing to confirm; the sentinel and the dump are the proof.
+
+**Measured** (`AppliedCostIdiomDiagnostic` 3-4, `EnergyLedgerDiagnostic` 7 - the simulation group):
+
+```
+    3. THE COST OUTSIDE THE BAND (SC-1) - each dial at 100 for a boundary, asking more than the line's seed band would hold, then back to 50: the whole cost on the line, then the line against its path
+       USA Justice (police funding 100)           path 40.000 bn · asked 87.000 · at 100 the line 127.000 (the seed band's top 120.000, the tracker 87.000) · back at 50 the line 40.000, the tracker 0.000 - +0.0000 off its path
+       USA Commerce (seven sectors' subsidy 100)  path 16.000 bn · asked 304.500 · at 100 the line 320.500 (the seed band's top 48.000, the tracker 304.500) · back at 50 the line 16.000, the tracker 0.000 - +0.0000 off its path
+       Italy Energy (energy subsidy 100)          path 0.860 bn · asked 3.450 · at 100 the line 4.310 (the seed band's top 2.579, the tracker 3.450) · back at 50 the line 0.860, the tracker 0.000 - +0.0000 off its path
+    4. SC-1 PER COUNTRY - every sector's subsidy at 100 (tax credits and research at 50): where the support cost lands against what the rule before booked; then, the cost standing, a price level up 5 % and a +10 % change on the line (each moves the own path, the cost rides outside); then every subsidy at 0 (a cut below neutral, held at zero); then back to 50
+       USA      Commerce (seed 16.000 bn, band 3.200-48.000): the stance's cost 304.500 bn (1.050 % of GDP) - on the line +304.500, the rule before booked +32.000; indexed ×1.0669 → 341.953; +10 % → 343.660 (the cost 324.882 unmoved); a figure at the seed plus the cost, then past the band's top (410.237), indexed there, then past its floor → 350.271; every subsidy at 0: the cut -335.711 → the line 0.000 (held at zero); back at 50 → 3.643
+       Sweden   Business and industry (seed 0.965 bn, band 0.193-2.894): the stance's cost 6.510 bn (1.050 % of GDP) - on the line +6.510, the rule before booked +0.000 (no line); indexed ×1.0607 → 7.928; +10 % → 8.031 (the cost 6.905 unmoved); a figure at the seed plus the cost, then past the band's top (12.021), indexed there, then past its floor → 7.541; every subsidy at 0: the cut -7.177 → the line 0.000 (held at zero); back at 50 → 0.217
+       Germany  Business and industry (seed 12.959 bn, band 2.592-38.877): the stance's cost 56.400 bn (1.200 % of GDP) - on the line +56.400, the rule before booked +0.000 (no line); indexed ×1.0598 → 73.510; +10 % → 74.883 (the cost 59.775 unmoved); a figure at the seed plus the cost, then past the band's top (128.448), indexed there, then past its floor → 66.264; every subsidy at 0: the cut -62.181 → the line 0.000 (held at zero); back at 50 → 2.911
+       France   Business and industry (seed 14.940 bn, band 2.988-44.819): the stance's cost 33.600 bn (1.050 % of GDP) - on the line +33.600, the rule before booked +0.000 (no line); indexed ×1.0554 → 51.228; +10 % → 52.805 (the cost 35.461 unmoved); a figure at the seed plus the cost, then past the band's top (114.297), indexed there, then past its floor → 40.753; every subsidy at 0: the cut -37.044 → the line 0.000 (held at zero); back at 50 → 3.328
+       Italy    Business and industry (seed 62.874 bn, band 12.575-188.623): the stance's cost 24.150 bn (1.050 % of GDP) - on the line +24.150, the rule before booked +0.000 (no line); indexed ×1.0512 → 91.484; +10 % → 98.094 (the cost 25.388 unmoved); a figure at the seed plus the cost, then past the band's top (355.870), indexed there, then past its floor → 40.586; every subsidy at 0: the cut -26.625 → the line 0.000 (held at zero); back at 50 → 13.897
+       Poland   Business and industry (seed 1.455 bn, band 0.291-4.365): the stance's cost 8.820 bn (1.050 % of GDP) - on the line +8.820, the rule before booked +0.000 (no line); indexed ×1.0817 → 11.115; +10 % → 11.272 (the cost 9.541 unmoved); a figure at the seed plus the cost, then past the band's top (17.411), indexed there, then past its floor → 10.661; every subsidy at 0: the cut -9.724 → the line 0.000 (held at zero); back at 50 → 0.341
+       the zero bound held the cut in 6 of the six books
+```
+
+```
+    France   subsidy 80: the cost 2.880 bn on the energy line (moved +2.880); the other sectors' support target +0.000, BusinessAndIndustry +0.000; levy 1.510 → 0.000 bn (scale 0.000), households' price 0.26362 → 0.25581/kWh; the book closes (1.4E-014)
+    USA      subsidy 80: the cost 26.100 bn on the energy line (moved +26.100); the other sectors' support target +0.000, Commerce +0.000; levy 0.000 → 0.000 bn - no levy in the stack to displace, no retail effect, households' price 0.16000 → 0.16000/kWh; the book closes (0.0E+000)
+    Germany  subsidy 80: no energy line - the cost 4.230 bn lands with the other sectors' support (their target moved +4.230; BusinessAndIndustry +4.230); the levy scale unchanged at 1.000
+```
+
+The zero bound held the cut in **6 of the six books** once the floor step had put each line's own path at its band's floor. `SaveLoadRoundTripDiagnostic`: `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip clean.`.
+
+**Proven in the other direction** - seven probes, each on its diagnostic and restored, the tree checked clean after each:
+
+| probe | what it broke | diagnostic | exit | the assertion that caught it |
+|---|---|---|---|---|
+| SA | the support line without Business-and-industry | AppliedCostIdiom | 1 | `APPLIED COST: Sweden's sector support lands on no line, not BusinessAndIndustry (SC-1).` |
+| SA | the support line without Business-and-industry | EnergyLedger | 1 | `ENERGY LEDGER: Germany has no energy line but its subsidy did not land with the other sectors' support - energy target 0,0000, that target +4,2300 against the cost 4,2300, no sector-support line in this book, levy scale 1 → 1.` |
+| SB | the seed band clamping the cost with the own path | AppliedCostIdiom | 1 | `APPLIED COST: USA Justice (police funding 100) - the line carried 80,0000 of a 87,0000 cost (the tracker 87,0000): the seed band held the cost, which SC-1 puts outside it.` |
+| SC | the zero bound off | AppliedCostIdiom | 1 | `APPLIED COST: USA's support line under a cut is -332,0685 (tracker -335,7112) - not its own path plus the cut held at zero (0,0000, tracker -3,6427).` |
+| SD | the index taking the composed amount as the own path (the cost indexed twice) | AppliedCostIdiom | 1 | `APPLIED COST: USA's indexed support line 376,0951 is not its clamped indexed own path plus the indexed cost (341,9531).` |
+| SE | a percent change on the composed amount | AppliedCostIdiom | 1 | `APPLIED COST: USA's support line after +10 % is 376,0951, not its own path's move plus the standing cost (343,6602) - the change scaled the cost.` |
+| SF | a figure set on the line booking the cost again | AppliedCostIdiom | 1 | `APPLIED COST: USA's support line set to 341,9531 (a figure of its seed plus the cost) reads 376,0951, not its clamped own path plus the standing cost (341,9531; the tracker 324,8821 against 324,8821).` |
+| SG | the own path unclamped | AppliedCostIdiom | 1 | `APPLIED COST: USA's support line set to 410,2370 (an own path of five seeds (past the band's top)) reads 410,2370, not its clamped own path plus the standing cost (376,0951; the tracker 324,8821 against 324,8821).` |
+
+**No policy, byte-identical** (the sentinel green in the simulation bar, **51 of 51**; cheap bar **38 of 38**):
+
+| seed | horizon | `sc1` vs `pn1` |
+|---|---|---|
+| 777 | 100 | **76 of 76** |
+| 777 | 500 | **76 of 76** |
+| 777 | 1000 | **76 of 76** |
+| 424242 | 100 | **76 of 76** |
+| 424242 | 500 | **76 of 76** |
+| 424242 | 1000 | **76 of 76** |
+
+**The lever map**, regenerated (probed country Sweden, eight turns): 119 of 121 quantities reached by at least one lever, 2 UNREACHED (was 119 of 121 quantities reached by at least one lever, 2 UNREACHED). 23 sector-dial levers moved (8 sectors' Research Grants 69 → 71; 7 sectors' Subsidy 72 → 71; 8 sectors' Tax Credits 72 → 71 quantities reached - the support cost now on Sweden's Business-and-industry line; the Energy sector's subsidy, on the energy line as before, unmoved) and 9 crime laws (Body-Worn Camera Program 67 → 68; Frontex Border Cooperation Agreement 67 → 66; Refugee & Asylum Fast-Track Processing 69 → 68; Electronic Monitoring Program 57 → 56; Hate Crime Sentencing Enhancement 61 → 62; Schengen Border Reimposition 66 → 67; Financial Crimes & Anti-Money-Laundering Unit 69 → 70; Counter-Narcotics Interdiction Funding Act 65 → 68; National Guard Border Deployment 66 → 67 - their justice and border costs composed by the new arithmetic, not traced quantity by quantity); 8 quantity rows' counts follow. No other lever moved.
+
+**The films** - the Sectors page's Energy sector and its cost lines, one per case at 1280 (Germany: no energy line, the subsidy with the other sectors' support; Sweden: an energy line and a Business line; the USA: Commerce) and Sweden at 2560:
+
+| film | shots | overflow | the viewer's PROVENANCE setting after |
+|---|---|---|---|
+| `sc1_germany_1280` | 63, 0 failed | none | 0 |
+| `sc1_sweden_1280` | 63, 0 failed | none | 0 |
+| `sc1_usa_1280` | 63, 0 failed | none | 0 |
+| `sc1_sweden_2560` | 63, 0 failed | none | 0 |
+
+Read on the frames (the Energy sector's panel, every dial at rest, so the cost lines print $0): Germany - "No energy line in this budget: the subsidy's cost lands with the other sectors' support" and "Sector support lands on Business And Industry, outside the line's own range"; Sweden - the energy line carrying the subsidy and displacing the policy levy, then "Its tax credits and research grants land on Business And Industry, outside the line's own range"; the USA - no levy to displace, then "Its tax credits and research grants land on Commerce, outside the line's own range"; Sweden at 2560 the same three lines, every caption inside the panel. The name is the category's display name as the Budget row prints it ("Business And Industry").
+
+**Decisions taken, strikeable.** (1) **The zero bound** - a line carries no negative spending, so a cut below neutral takes at most what the line holds and the cuts record what it gave; the ruling's words bound the own path and say nothing of a total below zero, and without the bound a player zeroing two sectors' subsidy drove Sweden's, Germany's, France's and Poland's Business lines negative (section 4). To strike: `ComposeLine`'s zero branch. (2) The USA keeps Commerce - its federal book carries no Business-and-industry line. (3) The Budget row and the chamber read the own path only on a line carrying a dial cost; a line with none is untouched (its band-edge travel as before). (4) "A year has run" is the index's mark (`LastDriverRatio`), not a positive amount. (5) PublicServices stays the last fallback, carried by no book. **Stated limits:** the AI finance ministry sizes its cuts on composed totals while a percentage moves the own path - a line carrying a dial cost only (no AI dial moves one, so no AI line carries one); a pinned line still takes a dial cost, as before; `BUDGET_PREMISE.md` (generated 2026-09-04) predates the book's prices and this rule - re-run its dump to refresh it.
+
+**The registers.** `POLISIM_FEATURE_LIST.md`'s SC-1 bullet and row BUILT; the EN-7a row's tracker sentence points here; `POLISIM_ENERGY_SPECLET.md`'s reconciliation row; `LEVER_MAP.md`.
+
+**Bar:** `bar461_rec504` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.

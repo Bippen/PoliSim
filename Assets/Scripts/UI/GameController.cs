@@ -11037,20 +11037,27 @@ namespace PoliSim.UI
             if (sector.Type == SectorType.Energy)
             {
                 // EN-7a: the subsidy is retail intervention's money side - where its cost lands decides what it does; the figure is what the line carries
-                // (the tracker records the move the line took, so a bound that holds part of the cost is not printed as landed)
+                // (SC-1: the tracker carries the whole cost outside the line's own range, short of it only where a cut would take the line below zero)
                 string carried = UiFormat.Money(_playerCountry.AppliedEnergySupportCost, MoneyUnit.Billions);
-                string subsidy = !energyLine ? "No energy line in this budget: the subsidy's cost stays with the other sectors' support"
+                string subsidy = !energyLine ? "No energy line in this budget: the subsidy's cost lands with the other sectors' support"
                     : EnergyLedger.HasPolicyLevy(_playerCountry.Id) ? $"The energy line carries {carried}/yr of the subsidy, displacing the policy levy one for one until none is left"
                     : $"The energy line carries {carried}/yr of the subsidy - no policy levy in the retail price to displace, so no retail effect";
                 DrawColoredLabel(subsidy + " · regulation below its seeded level moves supply margin from industry to households", _labelStyle, PoliSimTheme.TextMuted);
                 if (Event.current.type == EventType.Repaint) { _energySectorCostLastArea = GUILayoutUtility.GetLastRect(); }
             }
-            if (SectorCouplings.SupportLine(_playerCountry) == null)
+            SpendingLine supportLine = SectorCouplings.SupportLine(_playerCountry);
+            if (supportLine == null)
             {
-                // SC-1 (2026-09-14, measured): no line in this book carries the sector dials' support - said where the cost is printed, until it is ruled
+                // a book with no support line (none of the six since SC-1's ruling): the cost is said not to be booked, where it is printed
                 DrawColoredLabel(energyLine
                         ? "No spending line in this budget carries the tax credits' and research grants' cost - it is not booked"
                         : "No spending line in this budget carries sector support - the cost above is not booked",
+                    _labelStyle, PoliSimTheme.TextMuted);
+            }
+            else
+            {
+                // SC-1 (ruled 2026-09-15, COMPLETED.md §503): where the support cost lands, and that the line's own range does not bound it
+                DrawColoredLabel((energyLine ? "Its tax credits and research grants land on " : "Sector support lands on ") + DisplayName.Of(supportLine.Category.ToString()) + ", outside the line's own range",
                     _labelStyle, PoliSimTheme.TextMuted);
             }
 
@@ -11410,6 +11417,16 @@ namespace PoliSim.UI
             // draft is the standing amount, which is why a slider left where it stands stores nothing.
             float min = standing * (1f - rangePercent / 100f);
             float max = standing * (1f + rangePercent / 100f);
+            float dialCost = SimulationManager.DialCostOf(_playerCountry, spendingLine);
+            if (dialCost != 0f)
+            {
+                // SC-1 (ruled 2026-09-15): the allowed change is the law on the line's OWN path (a percentage moves the own path; the dial cost stands outside the
+                // seed band), so the track is the own path's ±rangePercent with the cost on top, each end the total that figure lands at - a line a cut holds at
+                // zero keeps a track. A line with no dial cost reads its standing amount as it always has.
+                float own = standing - dialCost;
+                min = SimulationManager.LandedTotalOf(_playerCountry, spendingLine, own * (1f - rangePercent / 100f) + dialCost);
+                max = SimulationManager.LandedTotalOf(_playerCountry, spendingLine, own * (1f + rangePercent / 100f) + dialCost);
+            }
             float grain = SpendingGrain(min, max);   // BR-1
             Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
 
@@ -11429,7 +11446,7 @@ namespace PoliSim.UI
                 _sliderStyle,
                 _sliderThumbStyle,
                 barFraction: standing / groupMax,
-                ghost: spendingLine.LastYearAmount > 0f ? spendingLine.LastYearAmount : float.NaN,   // 9b: the year-open tick
+                ghost: spendingLine.LastDriverRatio > 0f ? spendingLine.LastYearAmount : float.NaN,   // 9b: the year-open tick (SC-1: "a year has run" is the index's mark, not a positive amount - a line a cut held at zero opened its year at zero)
                 figureSecondLine: SpendingDeltaText(spendingLine, hasDraft ? draft : standing),   // 9b: Δ under the figure, measured from the ghost
                 nameSecondLine: SpendingRowCaption(spendingLine, rangePercent, out Color captionInk),   // 9d: PORTFOLIO · EFF ×r, or the class word
                 nameSecondLineInk: captionInk,
@@ -11631,7 +11648,7 @@ namespace PoliSim.UI
         /// (the ghost tick), signed; zero prints "Δ $0", never a dash (5c: zero is a figure); nothing before the first index (no year-open figure yet).</summary>
         private static string SpendingDeltaText(SpendingLine line, float figure)
         {
-            if (line.LastYearAmount <= 0f) { return null; }
+            if (line.LastDriverRatio <= 0f) { return null; }   // SC-1: before the first index - a line held at zero by a cut has a year and a zero to read against
             float delta = figure - line.LastYearAmount;
             return Mathf.Abs(delta) < 0.0005f ? "Δ $0" : "Δ " + UiFormat.MoneyDelta(delta, MoneyUnit.Billions);
         }

@@ -9,15 +9,17 @@ namespace PoliSim.EditorTools
 {
     /// <summary>
     /// §497 (2026-09-14): THE APPLIED-COST IDIOM UNDER THE INDEXED BOOK. Four dial costs land on spending lines by the applied-difference
-    /// idiom - the justice dials' on Justice, border enforcement's on HomelandSecurity, the sector dials' support on Commerce, and since EN-7a the
-    /// Energy sector's subsidy on the energy line - each a stateless target composed with its line through a tracker on the country, so a boundary
-    /// applies only what moved. Measured on the USA, whose book carries all four lines: (1) THE INDEX - `IndexSpendingLines` scales a line's whole
-    /// amount, the applied cost inside it included, and a tracker left unindexed made the next boundary's difference re-apply the index's share every
-    /// year; (2) THE CLONE - `ClonePreviewCountry` carried no tracker, so a preview re-applied every standing dial's whole cost on top of lines that
-    /// already carried it. (3) THE ROUND TRIP (EN-7a, review-found) - a dial at its ceiling on a line its bound holds, then back to neutral: the line
-    /// must return to its path (Justice and Commerce on the USA, the energy line on Italy, where the levy reads the line's move); the tracker that
-    /// recorded the requested target left each line below its path for good. The dials are set directly, as passed bills would leave them, and
-    /// the private seams are called by reflection so nothing but the idiom moves between the readings.
+    /// idiom - the justice dials' on Justice, border enforcement's on HomelandSecurity, the sector dials' support on the support line (each statute
+    /// budget's Business-and-industry line, the USA's Commerce - SC-1), and since EN-7a the Energy sector's subsidy on the energy line - each a stateless
+    /// target composed with its line through a tracker on the country, so a boundary applies only what moved. Measured on the USA, whose book carries
+    /// all four lines: (1) THE INDEX - a tracker left unindexed made the next boundary's difference re-apply the index's share every year; (2) THE
+    /// CLONE - `ClonePreviewCountry` carried no tracker, so a preview re-applied every standing dial's whole cost on top of lines that already carried
+    /// it. (3) THE COST OUTSIDE THE BAND (SC-1, ruled 2026-09-15: "the seed-relative clamp bounds the line's own path, not a cost the player
+    /// deliberately set") - a dial at its ceiling asking more than the line's band would hold, then back to neutral: the whole cost lands and the line
+    /// returns to its path (Justice and Commerce on the USA, the energy line on Italy). (4) SC-1 PER COUNTRY - where the support cost lands in each
+    /// of the six books against what the rule before booked, the index and a percent change moving the own path with the cost standing, a cut below
+    /// neutral held at the one bound a cost meets (zero), and the way back. The dials are set directly, as passed bills would leave them, and the
+    /// private seams are called by reflection so nothing but the idiom moves between the readings.
     /// </summary>
     public static class AppliedCostIdiomDiagnostic
     {
@@ -102,7 +104,7 @@ namespace PoliSim.EditorTools
             }
 
             // (3) the round trip, on a fresh world: every dial that lands a cost at its ceiling for a boundary, then back to neutral for the next
-            sb.Append("    3. THE ROUND TRIP - each dial at 100 for a boundary (the line's bound holding part of the cost), then back to 50: the line against its path\n");
+            sb.Append("    3. THE COST OUTSIDE THE BAND (SC-1) - each dial at 100 for a boundary, asking more than the line's seed band would hold, then back to 50: the whole cost on the line, then the line against its path\n");
             SimulationRandom.Seed(777);
             World trip = WorldFactory.CreateDefault();
             var go3 = new GameObject("APPLIED_COST_ROUND_TRIP");
@@ -152,6 +154,16 @@ namespace PoliSim.EditorTools
                 UnityEngine.Object.DestroyImmediate(go3);
             }
 
+            // (4) SC-1 per country, each on a fresh world
+            sb.Append("    4. SC-1 PER COUNTRY - every sector's subsidy at 100 (tax credits and research at 50): where the support cost lands against what the rule before booked; then, the cost standing, a price level up 5 % and a +10 % change on the line (each moves the own path, the cost rides outside); then every subsidy at 0 (a cut below neutral, held at zero); then back to 50\n");
+            HeldAtZero = 0;
+            foreach (CountryId id in new[] { CountryId.USA, CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland })
+            {
+                ok &= PerCountry(sb, id);
+            }
+            if (HeldAtZero == 0) { ok = false; Debug.LogError("APPLIED COST: no book's cut reached the zero bound - section 4's zero-bound assertion tests nothing; deepen the cut."); }
+            sb.Append(F("       the zero bound held the cut in {0} of the six books\n", HeldAtZero));
+
             Debug.Log(sb.ToString());
             Debug.Log(ok ? "=== AppliedCostIdiomDiagnostic: ALL ASSERTIONS PASS ===" : "=== AppliedCostIdiomDiagnostic: FAILED ===");
             CheckExit.Finish(ok ? 0 : 1);
@@ -169,14 +181,124 @@ namespace PoliSim.EditorTools
 
         private static bool Trip(StringBuilder sb, string name, float path, float asked, float up, float appliedUp, float back, float appliedBack, float seed)
         {
-            double off = back - path, bound = seed * 3.0;
-            sb.Append(F("       {0,-42} path {1:F3} bn · asked {2:F3} · at 100 the line {3:F3} (bound {4:F3}, the tracker {5:F3} = the move {6:F3}) · back at 50 the line {7:F3}, the tracker {8:F3} - {9:+0.0000;-0.0000} off its path\n",
-                name, path, asked, up, bound, appliedUp, up - path, back, appliedBack, off));
-            bool held = up < path + asked - 1e-3;   // the round trip means something only where the bound held part of the ask
-            bool ok = held && Math.Abs(off) <= Math.Max(1e-4, 1e-5 * path) && Math.Abs(appliedBack) <= Math.Max(1e-4, 1e-5 * path) && Math.Abs(appliedUp - (up - path)) <= Math.Max(1e-4, 1e-5 * path);
-            if (!held) { Debug.LogError($"APPLIED COST: {name} - the bound did not hold any of the ask (line {up:F3} for {path + asked:F3}); the round trip tests nothing - raise the ask."); }
-            else if (!ok) { Debug.LogError($"APPLIED COST: {name} did not return to its path - {back:F4} against {path:F4} ({off:F4} off), the tracker {appliedBack:F4} after, {appliedUp:F4} at the ceiling against a move of {up - path:F4}."); }
+            double off = back - path, bound = seed * 3.0, tol = Math.Max(1e-3, 1e-6 * (path + Math.Abs(asked)));
+            sb.Append(F("       {0,-42} path {1:F3} bn · asked {2:F3} · at 100 the line {3:F3} (the seed band's top {4:F3}, the tracker {5:F3}) · back at 50 the line {6:F3}, the tracker {7:F3} - {8:+0.0000;-0.0000} off its path\n",
+                name, path, asked, up, bound, appliedUp, back, appliedBack, off));
+            bool beyondBand = path + asked > bound + 1e-3;   // the test means something only where the band would have held part of the ask
+            bool whole = Math.Abs(up - (path + asked)) <= tol && Math.Abs(appliedUp - asked) <= tol;
+            bool ok = beyondBand && whole && Math.Abs(off) <= Math.Max(1e-4, 1e-5 * path) && Math.Abs(appliedBack) <= Math.Max(1e-4, 1e-5 * path);
+            if (!beyondBand) { Debug.LogError($"APPLIED COST: {name} - the ask ({path + asked:F3}) stays inside the seed band ({bound:F3}); the check tests nothing - raise the ask."); }
+            else if (!whole) { Debug.LogError($"APPLIED COST: {name} - the line carried {up - path:F4} of a {asked:F4} cost (the tracker {appliedUp:F4}): the seed band held the cost, which SC-1 puts outside it."); }
+            else if (!ok) { Debug.LogError($"APPLIED COST: {name} did not return to its path - {back:F4} against {path:F4} ({off:F4} off), the tracker {appliedBack:F4} after."); }
             return ok;
+        }
+
+        /// <summary>SC-1 on one country's book, on a fresh world: the landing, the cost against the rule before, the index and a percent change with the cost
+        /// standing, the cut held at zero, the way back - each read against figures computed here from the seams' inputs, not from the composing code.</summary>
+        private static bool PerCountry(StringBuilder sb, CountryId id)
+        {
+            bool ok = true;
+            SimulationRandom.Seed(777);
+            World w = WorldFactory.CreateDefault();
+            var go = new GameObject("SC1_" + id);
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(w);
+                const BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+                MethodInfo index = typeof(SimulationManager).GetMethod("IndexSpendingLines", instance);
+                MethodInfo sectorPressure = typeof(SimulationManager).GetMethod("ApplySectorSupportCostPressure", instance);
+                MethodInfo energyPressure = typeof(SimulationManager).GetMethod("ApplyEnergySupportCostPressure", instance);
+                MethodInfo changes = typeof(SimulationManager).GetMethod("ApplySpendingLineChanges", instance);
+                if (index == null || sectorPressure == null || energyPressure == null || changes == null) { Debug.LogError("APPLIED COST: an SC-1 seam was not found by reflection - SC-1 is UNVERIFIED."); return false; }
+                Country k = w.GetCountry(id);
+                SpendingLine line = SectorCouplings.SupportLine(k);
+                SpendingCategory expected = id == CountryId.USA ? SpendingCategory.Commerce : SpendingCategory.BusinessAndIndustry;
+                if (line == null || line.Category != expected) { Debug.LogError($"APPLIED COST: {id}'s sector support lands on {(line == null ? "no line" : line.Category.ToString())}, not {expected} (SC-1)."); return false; }
+                SpendingLine oldLanding = Find(k, SpendingCategory.Commerce) ?? Find(k, SpendingCategory.PublicServices);   // the rule before SC-1
+                void Boundary() { sectorPressure.Invoke(sim, new object[] { k }); energyPressure.Invoke(sim, new object[] { k }); }
+                double tol(double x) => Math.Max(1e-3, 2e-6 * Math.Abs(x));
+                double gdp = k.State.NominalGdp;
+
+                // the stance
+                double path = line.Amount, seed = line.SeedAmount;
+                foreach (Sector s in k.Sectors) { s.SubsidyLevel = 100f; }
+                double target = SectorCouplings.SupportCostTarget(k);
+                Boundary();
+                double up = line.Amount;
+                double before = oldLanding == null ? 0.0 : Math.Min(Math.Max(path + target, seed * 0.2), seed * 3.0) - path;   // what the rule before would have booked
+                if (Math.Abs(up - (path + target)) > tol(up) || Math.Abs(k.AppliedSectorSupportCost - target) > tol(target)) { ok = false; Debug.LogError($"APPLIED COST: {id}'s support line carries {up - path:F4} of a {target:F4} cost (tracker {k.AppliedSectorSupportCost:F4}) - not the whole cost outside its band."); }
+
+                // the index with the cost standing: the own path indexed and clamped, the cost at the same factor outside
+                k.State.PriceLevel *= 1.05f;
+                double ownBefore = up - k.AppliedSectorSupportCost, trackerBefore = k.AppliedSectorSupportCost;
+                index.Invoke(sim, new object[] { k });
+                double f = line.SeedAmount / seed, seedNow = line.SeedAmount;
+                double wantIndexed = Math.Min(Math.Max(ownBefore * f, seedNow * 0.2), seedNow * 3.0) + trackerBefore * f;
+                double indexed = line.Amount;
+                if (Math.Abs(indexed - wantIndexed) > tol(indexed) || Math.Abs(k.AppliedSectorSupportCost - trackerBefore * f) > tol(trackerBefore)) { ok = false; Debug.LogError($"APPLIED COST: {id}'s indexed support line {indexed:F4} is not its clamped indexed own path plus the indexed cost ({wantIndexed:F4})."); }
+
+                // a +10 % change on the line with the cost standing: the own path moves, the cost does not
+                PolicyDecision plus = PolicyDecision.None();
+                plus.SpendingLineChanges[line.Category] = 10f;
+                double ownNow = indexed - k.AppliedSectorSupportCost, costNow = k.AppliedSectorSupportCost;
+                changes.Invoke(sim, new object[] { k, plus });
+                double wantChanged = Math.Min(Math.Max(ownNow * 1.1, seedNow * 0.2), seedNow * 3.0) + costNow;
+                double changed = line.Amount, changedAtPlus = line.Amount, costAtPlus = costNow;
+                if (Math.Abs(changed - wantChanged) > tol(changed) || Math.Abs(k.AppliedSectorSupportCost - costNow) > tol(costNow)) { ok = false; Debug.LogError($"APPLIED COST: {id}'s support line after +10 % is {changed:F4}, not its own path's move plus the standing cost ({wantChanged:F4}) - the change scaled the cost."); }
+
+                // a figure set on the line with the cost standing: the figure is the line's total - its own path the figure less the cost, clamped; the cost unmoved
+                double figure = seedNow + costNow, wantSet = Math.Min(Math.Max(figure - costNow, seedNow * 0.2), seedNow * 3.0) + costNow;
+                ok &= SetFigure(changes, sim, k, line, figure, wantSet, costNow, id, "a figure of its seed plus the cost", tol);
+                // the band's two edges, the cost standing: a figure asking an own path of five seeds lands at the band's top, one of a twentieth at its floor
+                double topFigure = seedNow * 5.0 + costNow;
+                ok &= SetFigure(changes, sim, k, line, topFigure, seedNow * 3.0 + costNow, costNow, id, "an own path of five seeds (past the band's top)", tol);
+                // the index at the band's top: the own path indexed and held at the NEW band's top, the cost at the factor outside
+                k.State.PriceLevel *= 1.05f;
+                double seedBeforeTop = line.SeedAmount, trackerAtTop = k.AppliedSectorSupportCost;
+                index.Invoke(sim, new object[] { k });
+                double f2 = line.SeedAmount / seedBeforeTop, wantTopIndexed = Math.Min(seedBeforeTop * 3.0 * f2, line.SeedAmount * 3.0) + trackerAtTop * f2;
+                if (Math.Abs(line.Amount - wantTopIndexed) > tol(line.Amount)) { ok = false; Debug.LogError($"APPLIED COST: {id}'s support line indexed at the band's top is {line.Amount:F4}, not the new band's top plus the indexed cost ({wantTopIndexed:F4})."); }
+                seedNow = line.SeedAmount; costNow = k.AppliedSectorSupportCost;
+                double floorFigure = seedNow * 0.05 + costNow;
+                ok &= SetFigure(changes, sim, k, line, floorFigure, seedNow * 0.2 + costNow, costNow, id, "an own path of a twentieth of the seed (past the band's floor)", tol);
+                changed = line.Amount;
+
+                // the cut: every subsidy at 0 - a negative target, held at zero where it would take the line under
+                foreach (Sector s in k.Sectors) { s.SubsidyLevel = 0f; }
+                double cutTarget = SectorCouplings.SupportCostTarget(k), ownCut = changed - k.AppliedSectorSupportCost;
+                if (cutTarget < -ownCut) { HeldAtZero++; }
+                Boundary();
+                double cut = line.Amount, wantCut = Math.Max(0.0, ownCut + cutTarget), wantTracker = Math.Max(cutTarget, -ownCut);
+                if (cut < 0.0 || Math.Abs(cut - wantCut) > tol(ownCut) || Math.Abs(k.AppliedSectorSupportCost - wantTracker) > tol(ownCut)) { ok = false; Debug.LogError($"APPLIED COST: {id}'s support line under a cut is {cut:F4} (tracker {k.AppliedSectorSupportCost:F4}) - not its own path plus the cut held at zero ({wantCut:F4}, tracker {wantTracker:F4})."); }
+
+                // back to neutral: the own path, no cost
+                foreach (Sector s in k.Sectors) { s.SubsidyLevel = 50f; }
+                Boundary();
+                double back = line.Amount;
+                if (Math.Abs(back - ownCut) > tol(ownCut) || Math.Abs(k.AppliedSectorSupportCost) > tol(ownCut)) { ok = false; Debug.LogError($"APPLIED COST: {id}'s support line back at neutral is {back:F4}, not its own path {ownCut:F4} (tracker {k.AppliedSectorSupportCost:F4})."); }
+
+                sb.Append(F("       {0,-8} {1} (seed {2:F3} bn, band {3:F3}-{4:F3}): the stance's cost {5:F3} bn ({6:F3} % of GDP) - on the line {7:+0.000;-0.000}, the rule before booked {8:+0.000;-0.000}{9}; indexed ×{10:F4} → {11:F3}; +10 % → {12:F3} (the cost {13:F3} unmoved); a figure at the seed plus the cost, then past the band's top ({18:F3}), indexed there, then past its floor → {19:F3}; every subsidy at 0: the cut {14:F3} → the line {15:F3}{16}; back at 50 → {17:F3}\n",
+                    id, DisplayLine(line.Category), seed, seed * 0.2, seed * 3.0, target, target / gdp * 100.0, up - path, before, oldLanding == null ? " (no line)" : "", f, indexed, changedAtPlus, costAtPlus, cutTarget, cut, cutTarget < -ownCut ? " (held at zero)" : "", back, topFigure, changed));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+            return ok;
+        }
+
+        private static string DisplayLine(SpendingCategory c) => c == SpendingCategory.BusinessAndIndustry ? "Business and industry" : c.ToString();
+
+        /// <summary>How many of the six books' cuts section 4 held at zero - the zero bound is tested only if one did.</summary>
+        private static int HeldAtZero;
+
+        /// <summary>A figure set on the support line as a passed bill sets it (SpendingNominalTargets), read against the total computed by the caller; the cost must not move.</summary>
+        private static bool SetFigure(MethodInfo changes, SimulationManager sim, Country k, SpendingLine line, double figure, double want, double cost, CountryId id, string what, Func<double, double> tol)
+        {
+            PolicyDecision set = PolicyDecision.None();
+            set.SpendingNominalTargets[line.Category] = (float)figure;
+            changes.Invoke(sim, new object[] { k, set });
+            if (Math.Abs(line.Amount - want) <= tol(want) && Math.Abs(k.AppliedSectorSupportCost - cost) <= tol(cost)) { return true; }
+            Debug.LogError($"APPLIED COST: {id}'s support line set to {figure:F4} ({what}) reads {line.Amount:F4}, not its clamped own path plus the standing cost ({want:F4}; the tracker {k.AppliedSectorSupportCost:F4} against {cost:F4}).");
+            return false;
         }
 
         private static SpendingLine Find(Country country, SpendingCategory category)

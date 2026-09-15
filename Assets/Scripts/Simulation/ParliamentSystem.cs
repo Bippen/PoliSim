@@ -115,14 +115,25 @@ namespace PoliSim.Simulation
         /// % change, welfare generosity points) - consistent with this formula's own existing precedent
         /// as a stated proposal rather than a rigorously-derived one.
         /// </summary>
-        /// <summary>P5-B5: the bill's spending changes as percentages of each line's standing amount - the percentage dictionary as it is, and every nominal target (P5-B2) read against the line it sets, so a figure set on the screen weighs on the vote exactly as the same change asked as a percentage.</summary>
+        /// <summary>P5-B5: the bill's spending changes as percentages of each line's standing amount - the percentage dictionary as it is, and every nominal target (P5-B2) read against the line it sets, so a figure set on the screen weighs on the vote exactly as the same change asked as a percentage.
+        /// SC-1 (ruled 2026-09-15): on a line carrying an applied dial cost a percentage moves the line's OWN path, so a figure weighs as the change it makes to the own path
+        /// - the figure less the cost, clamped to the seed band, against the own path standing (never zero, so a line a cut holds at zero is weighed too).</summary>
         private static IEnumerable<KeyValuePair<SpendingCategory, float>> SpendingPercentChangesOf(Country country, BudgetBill bill)
         {
             foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingPercentChanges) { yield return kvp; }
             foreach (KeyValuePair<SpendingCategory, float> kvp in bill.SpendingNominalTargets)
             {
                 SpendingLine line = country.SpendingLines.Find(l => l.Category == kvp.Key);
-                if (line == null || line.Amount <= 0f) { continue; }
+                if (line == null) { continue; }
+                float dialCost = SimulationManager.DialCostOf(country, line);
+                if (dialCost != 0f)
+                {
+                    float own = line.Amount - dialCost;
+                    if (own <= 0f) { continue; }
+                    yield return new KeyValuePair<SpendingCategory, float>(kvp.Key, (SimulationManager.LandedOwnPathOf(country, line, kvp.Value) / own - 1f) * 100f);
+                    continue;
+                }
+                if (line.Amount <= 0f) { continue; }
                 yield return new KeyValuePair<SpendingCategory, float>(kvp.Key, (kvp.Value / line.Amount - 1f) * 100f);
             }
         }
