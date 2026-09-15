@@ -133,7 +133,7 @@ namespace PoliSim.Simulation
         public float PreviewOutputGapPercent;
         public float PreviewRuleRate;
         public float PreviewedInterestRate;
-        /// <summary>§506 (2026-09-15): the government consumption the preview handed its identity, real - the clone's plan over its price level, as the day deflates it;
+        /// <summary>§506 (2026-09-15): the government consumption the preview handed its identity, real - the clone's plan over its price level, as the day deflates it (since T-3 form A, §507, scaled by k);
         /// PreviewParityDiagnostic holds it to the boundary's (SimulationManager.GetIdentityGovernmentConsumption).</summary>
         public float PreviewIdentityGovernment;
     }
@@ -395,7 +395,7 @@ namespace PoliSim.Simulation
                     float anchoredPotential = macroPeriod.PotentialGdpAtPeriodOpen > 0f
                         ? macroPeriod.PotentialGdpAtPeriodOpen
                         : country.State.PotentialGDP;
-                    MacroSystem.ApplyNationalAccountsDaily(country, macroPeriod.PlannedGovernmentSpending / Mathf.Max(0.0001f, country.State.PriceLevel), country.CurrencyZone.InterestRate, anchoredPotential, macroPeriod.WageGrowthGapAtPeriodOpen);   // P5-B6: G is a nominal budget; the identity is real - deflate it by today's price level
+                    MacroSystem.ApplyNationalAccountsDaily(country, MacroSystem.IdentityGovernmentConsumption(country, macroPeriod.PlannedGovernmentSpending), country.CurrencyZone.InterestRate, anchoredPotential, macroPeriod.WageGrowthGapAtPeriodOpen);   // P5-B6: G is a nominal budget; the identity is real - deflate it by today's price level. T-3 form A (§507): scaled to the sourced share by k
                     MacroSystem.ApplyPotentialGdpGrowthDaily(country);
                     // The day's growth increment is measured against the PERIOD-OPEN GDP, not the
                     // day's own base - the third fixed reference of this phase: daily linear
@@ -3213,7 +3213,7 @@ namespace PoliSim.Simulation
             }
             // §506 (2026-09-15): the identity's G deflated as the day's is (P5-B6) - the preview handed the plan nominal, P times the G the day will read; PreviewParityDiagnostic
             // holds this figure to the boundary's. The boundary leaves the price level where the preview reads it; only the day moves it.
-            float previewIdentityGovernment = spendingResult.GovernmentSpending / Mathf.Max(0.0001f, previewCountry.State.PriceLevel);
+            float previewIdentityGovernment = MacroSystem.IdentityGovernmentConsumption(previewCountry, spendingResult.GovernmentSpending);   // T-3 form A (§507): the day's own method - k on the plan, deflated
             MacroSystem.ApplyNationalAccounts(previewCountry, previewIdentityGovernment, previewedInterestRate);
             MacroSystem.ApplyPotentialGdpGrowth(previewCountry);
 
@@ -3328,10 +3328,10 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The tariff take the country's CURRENT fiscal period planned (what the next boundary's pass-through is measured against), read with TryGetValue so a preview or an estimate never seeds a period; before the first period exists, the seed take from the same pure function.</summary>
-        /// <summary>§506 (2026-09-15): the government consumption the daily identity is handed today - the period's plan over the price level as it stands, the day's own
+        /// <summary>§506 (2026-09-15): the government consumption the daily identity is handed today - the period's plan over the price level as it stands (since T-3 form A, §507, scaled by k), the day's own
         /// expression; NaN before the first period exists. The preview's parity section reads it right after a boundary.</summary>
         public float GetIdentityGovernmentConsumption(CountryId countryId)
-            => _fiscalPeriods.TryGetValue(countryId, out FiscalPeriod period) ? period.PlannedGovernmentSpending / Mathf.Max(0.0001f, _world.GetCountry(countryId).State.PriceLevel) : float.NaN;
+            => _fiscalPeriods.TryGetValue(countryId, out FiscalPeriod period) ? MacroSystem.IdentityGovernmentConsumption(_world.GetCountry(countryId), period.PlannedGovernmentSpending) : float.NaN;   // T-3 form A (§507): the day's own method
 
         /// <summary>P5-B6: the period's planned take at the seed's prices - the real field when the period carries it, else the
         /// nominal figure over today's level (an older save). The pass-through compares real to real: a rate change moves it,
@@ -3428,6 +3428,7 @@ namespace PoliSim.Simulation
                 PotentialLabourSeed = country.PotentialLabourSeed,
                 PotentialProductivityIndex = country.PotentialProductivityIndex,
                 PotentialLabourAtLastTurn = country.PotentialLabourAtLastTurn,
+                GovernmentConsumptionScale = country.GovernmentConsumptionScale,   // T-3 form A (§507): without it the clone's k is 0 and the preview's identity reads no government
                 PriceLevelAtLastIndex = country.PriceLevelAtLastIndex,   // P5-B6
                 Health = country.Health,   // P5-C2: the seeds are immutable after the seed; the preview reads them
                 Education = country.Education,   // P5-C3: seeds, immutable after the seed
@@ -4047,8 +4048,8 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// For a country with a detailed SpendingLines portfolio (Phase 1: USA only): applies this
-        /// turn's SpendingLineChanges to the Discretionary lines (ApplySpendingLineChanges), then G
-        /// is the sum of Discretionary line Amounts AFTER that change (Mandatory lines are transfers,
+        /// turn's SpendingLineChanges to the Discretionary lines (ApplySpendingLineChanges), then G (the book's plan; the identity reads it
+        /// scaled to the sourced share by k - T-3 form A, §507) is the sum of Discretionary line Amounts AFTER that change (Mandatory lines are transfers,
         /// excluded from G - same reasoning as UnemploymentBenefitCost/InterestOnDebt) and
         /// MandatorySpending is reported separately for ApplyRevenueAndSpending to add to total
         /// budget outflow. BaselineGovernmentSpending/DiscretionarySpendingChangeThisTurn are split

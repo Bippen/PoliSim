@@ -43,7 +43,8 @@ namespace PoliSim.EditorTools
     /// <para><b>§506 (2026-09-15) - two more sections, T-3's condition ("probe the preview path before it lands").</b> THE CLONE AUDIT: every value field of Country
     /// marked on a copy and read back through the preview's clone, by reflection, a field exempt only with its reason - what it found is ClonePreviewCountry's §506 block, the fields the hand-list never
     /// carried. THE IDENTITY'S G: with each country's first discretionary line raised, the G the preview hands its identity against the G the boundary's plan hands
-    /// the day's - the preview handed the plan nominal until this item.</para>
+    /// the day's - the preview handed the plan nominal until this item. Since T-3 form A (§507) both sides read MacroSystem.IdentityGovernmentConsumption - k on the
+    /// plan, deflated - and the clone carries k, so a clone without it previews an identity with no government and this section names it.</para>
     ///
     /// Run: `Unity.exe -batchmode -nographics -projectPath &lt;path&gt; -executeMethod
     /// PoliSim.EditorTools.PreviewParityDiagnostic.Run -logFile &lt;path&gt;`, or from the menu.

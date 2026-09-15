@@ -28066,3 +28066,208 @@ The propensity a on the seed's first day: USA 0.7885, Sweden 0.7983, Germany 0.7
 **The registers.** `POLISIM_FEATURE_LIST.md`'s T-3 rows: the preview path probed first (§506). `CLAUDE.md` gains the standing note beside numeric inertness: the preview's clone is audited by field, not by memory.
 
 **Bar:** `bar467_rec506` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 507. T-3 FORM A LANDED AS RULED — the identity's G is the sourced final-consumption share of GDP at the seed (general government, 2023: Eurostat for the five, BEA for the USA), grown with the lines through one scale per country; the book untouched; the six seed potentials re-solved by FT-7's closed form and unchanged, with the identity's own fixed point measured beside them; the family explained per country, the year-100 tables beside FT-7's; the harness's impact ratchet breached by the block, attributed, and not lowered (2026-09-15)
+
+**The ruling** (Elias, 2026-09-15): *"T-3 ruled: Form A — G is the sourced final-consumption share of GDP at the seed, grown with the lines. The measurement decides it: the USA's implied potential falls +14.5 % → +7.1 %, Sweden moves −2.5 % → −7.7 %, and a sourced share disagreeing with the lines in both directions is what it is for. Form B refused on its own evidence — the USA at 162 % of GDP by year 10 with revenue as seeded, and its repair (revenue re-solved) never measured; it also demotes the lines from meaning to calibration target, against P5-B2. Two conditions: probe the preview path before it lands (§463/§464's class), and state the USA's single-source reading on the row — P3_S13 is general government against federal lines, BEA billed, and it is the country the change moves most. The largest BASELINE family attempted: six potentials re-solved with G inside the identity, explained per country, the year-100 tables beside FT-7's. Then P-N5b in the fixed order, its own family."* The first condition is §506. It landed as its own item before this one, so the preview this block rides is already held to the boundary.
+
+**What was built.**
+- **The source (route A, §499's).** The authorities' files sit unedited under `PoliSim-captures/sources/govcons/`, listed by digest in `MacroData/README.md`:
+  - Eurostat `nama_10_gdp`: P3_S13 and B1GQ in national currency, plus PC_GDP.
+  - BEA's NIPA flat file and registers.
+  - The World Bank's NE.CON.GOVT.ZS.
+
+  `Tools/govcons_prep.pl` derives `MacroData/government_consumption_2023.csv`. For the five, the share comes from the levels, and the tool stops if it lies more than 0.05 from Eurostat's one-decimal share. For the USA it is BEA's A955RC over A191RC, and the tool stops if the World Bank's figure is not that ratio. `GovernmentConsumptionCatalogGenerator` emits `GovernmentConsumptionData` with the file's digest, and `GeneratedCatalogCheck` holds the table to the file: six shares, the USA's federal-only share beside its general one, the row count.
+- **k, one scale per country.** `Country.GovernmentConsumptionScale` is captured once in `CaptureStructuralBases` as the sourced share × the seed's nominal GDP ÷ the seed's discretionary lines, and is 1 where a country has no lines or no share.
+  - It rides the preview's clone: §506's audit names it if it does not (probe `k_off_clone`, below).
+  - It rides the save at format 15. The gate refuses the old format: *"This save uses format version 16; this build reads version 15"*; `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip clean.`
+  - It is not a static (§463's lesson).
+- **The identity.** `MacroSystem.IdentityGovernmentConsumption` (k × the plan ÷ the price level) is the one method the day and the preview hand the identity. `EconomyState.GovernmentConsumption` records what the identity read, which makes it the dump's 77th field. The book is untouched: the plan, the daily accruals and the report spend the lines.
+- **The instruments re-formed.**
+  - `ResponsivenessAuditHarness` counts purchases on the identity's G. Ramey's band is over general government purchases, which the identity's G now is (§363's class).
+  - `GovernmentFormMeasurement` reads the landed tree in three worlds: landed; k = 1, the identity as before the block; and the seed potentials at the identity's fixed point.
+  - `GovernmentConsumptionDiagnostic` joins the simulation bar.
+- **Docs made true:** `SpendingLine`, `SimulationManager`'s spending resolution, `WorldFactory`'s recalibration note, `TaylorRule`'s gap note, `GovernmentConsumptionGapDiagnostic`'s table caption, `PreviewParityDiagnostic`'s section.
+
+**⚠ The USA's reading is one source - the ruling's second condition, stated here and on the row.**
+- P3_S13 is GENERAL government consumption: 13.54 % of GDP in 2023, BEA NIPA A955RC ÷ A191RC.
+- The model's USA lines are the FEDERAL budget: 6.04 % of GDP at the seed in discretionary lines (`WorldFactory.SeedUsaSpendingLines`). BEA's federal consumption alone (A957RC) is 4.82 %.
+- §376 counted the World Bank's NE.CON.GOVT.ZS as a reading, but it is BEA's own ratio: the prep tool stops if the two differ by more than a millionth of a point. So the USA's figure is one source in two copies. BEA, billed at §376, is fetched now and is the reading; no independent reading of US general government consumption exists in the repo.
+- The USA is the country the change moves most: k 2.2426, against 0.94 to 1.25 for the five.
+
+**The seed** - the identity's G on the seed's first day is the sourced share in all six (`GovernmentConsumptionDiagnostic` 1-2):
+
+```
+    USA      k 2.2426   the lines   6.04 % of GDP   sourced  13.54 %       the identity on day one  13.54 %
+    Sweden   k 1.2526   the lines  21.09 % of GDP   sourced  26.42 %       the identity on day one  26.42 %
+    Germany  k 1.0056   the lines  21.00 % of GDP   sourced  21.12 % (p)   the identity on day one  21.12 %
+    France   k 1.0030   the lines  24.00 % of GDP   sourced  24.07 %       the identity on day one  24.07 %
+    Italy    k 0.9422   the lines  19.00 % of GDP   sourced  17.90 %       the identity on day one  17.90 %
+    Poland   k 1.0527   the lines  18.00 % of GDP   sourced  18.95 %       the identity on day one  18.95 %
+```
+
+**The six potentials, re-solved with G inside the identity - read, measured, and the reading taken.** FT-7's ruled seed potential (§394, GDP × (1 − NAIRU) ÷ (1 − U)) is a closed form of the seed's factors and carries no G. Re-solved on the landed tree it is the same six figures, and `PotentialEmploymentDiagnostic` asserts that to 1e-5.
+
+What G inside the identity does move is the identity's own fixed point: the potential at which the seed's GDP would be the day's attractor, P = Y (2 − a) − (G + NX), with the landed G. This is §505's comparison, now on the landed tree with the unrounded shares:
+
+| country | k | the lines, % of GDP | the sourced share (the identity's G on day one), % | FT-7's seed potential (closed form, no G) | the identity's fixed point with the lines | the identity's fixed point with the landed G | propensity a |
+|---|---|---|---|---|---|---|---|
+| USA | 2.2426 | 6.04 | 13.54 | 29151.8 | 33383.7 (+14.52 %) | 31207.9 (+7.05 %) | 0.7885 |
+| Sweden | 1.2526 | 21.09 | 26.42 | 630.1 | 614.3 (-2.51 %) | 581.2 (-7.76 %) | 0.7983 |
+| Germany | 1.0056 | 21.00 | 21.12 | 4709.7 | 4662.0 (-1.01 %) | 4656.5 (-1.13 %) | 0.7981 |
+| France | 1.0030 | 24.00 | 24.07 | 3193.1 | 3075.5 (-3.68 %) | 3073.1 (-3.76 %) | 0.7989 |
+| Italy | 0.9422 | 19.00 | 17.90 | 2295.0 | 2325.5 (+1.33 %) | 2350.7 (+2.43 %) | 0.7989 |
+| Poland | 1.0527 | 18.00 | 18.95 | 843.6 | 866.3 (+2.70 %) | 858.4 (+1.75 %) | 0.7887 |
+
+
+The USA's implied potential falls from +14.52 % to +7.05 % above FT-7's, and Sweden's moves from -2.51 % to -7.76 % below. Those are the figures the ruling quoted.
+
+**Measured beside it, not built:** the seed potentials set to that fixed point instead of FT-7's closed form (the third world below).
+- It opens a seed gap: the USA -8.07 % and Sweden +4.51 % in year one. That is the USA's typed-potential gap that FT-7 closed, reopened at half size.
+- It moves the year-100 gap by at most 1.55 of a point at either seed: USA -16.41 → -17.96 %, Sweden +0.74 → +1.77 %.
+- The century's gap is the identity's dynamics, not the seed's level. So the landed reading is FT-7's closed form, unchanged, and the fixed point is a column (decision 2).
+
+**Grown with the lines, the book unscaled** (`GovernmentConsumptionDiagnostic` 3). A year on, each country's first discretionary line is raised ten per cent against the same world untouched. The book's plan is the lines' own sum, the identity's G is k × the plan ÷ P, and the raise moves G by k times the plan's move:
+
+```
+    USA      the plan moved    88.245 (the book, unscaled)   G moved  193.6965   k × move ÷ P  193.6964   ok
+    Sweden   the plan moved     0.243 (the book, unscaled)   G moved    0.2984   k × move ÷ P    0.2984   ok
+    Germany  the plan moved     1.838 (the book, unscaled)   G moved    1.7956   k × move ÷ P    1.7956   ok
+    France   the plan moved    13.017 (the book, unscaled)   G moved   12.6576   k × move ÷ P   12.6576   ok
+    Italy    the plan moved     8.124 (the book, unscaled)   G moved    7.4375   k × move ÷ P    7.4375   ok
+    Poland   the plan moved     3.282 (the book, unscaled)   G moved    3.3938   k × move ÷ P    3.3938   ok
+```
+
+**The preview, on §506's ground.** The clone audit reads **85 value fields**, k among them, marked two ways, with 0 escapes. The preview's identity G equals the boundary's to the printed digit, with each country's first line raised: USA 4198.8480 · Sweden 162.2800 · Germany 1004.6640 · France 786.5162 · Italy 421.8276 · Poland 166.9191.
+
+**Proven in the other direction** - seven probes, each on its check and restored, the tree checked clean after each:
+
+| probe | what it broke | check | exit | the assertion that caught it |
+|---|---|---|---|---|
+| k_off_clone | the clone without k | PreviewParityDiagnostic | 1 | `PARITY: CLONE ESCAPE - USA.GovernmentConsumptionScale: marked 1030,25, the clone read 0` |
+| preview_undeflated | the preview scales by k and does not deflate | PreviewParityDiagnostic | 1 | `PARITY: USA THE PREVIEW'S IDENTITY G 4289,9250 is not the boundary's 4198,8480 (+2,169 %)` |
+| preview_unscaled | the preview as §506 left it - deflated, without k | PreviewParityDiagnostic | 1 | `PARITY: USA THE PREVIEW'S IDENTITY G 1872,3060 is not the boundary's 4198,8480 (-55,409 %)` |
+| daily_unscaled | the day's identity handed the lines, as before the block | GovernmentConsumptionDiagnostic | 1 | `GOVERNMENT CONSUMPTION: the identity read USA's G on day one at 6,0379 % of the seed's GDP against the sourced 13,5407 % - the daily call site does not hand k × the plan.` |
+| k_all_lines | k captured over every line, mandatory included | GovernmentConsumptionDiagnostic | 1 | `GOVERNMENT CONSUMPTION: USA's k × seed lines ÷ seed nominal GDP is 4,1156 % against the sourced 13,5407 % - k was not captured from the share.` |
+| book_scaled | the book planned at k × the lines (form B's book) | GovernmentConsumptionDiagnostic | 1 | `GOVERNMENT CONSUMPTION: USA (untouched) - the book's plan 4092,027 is not the discretionary lines' sum 1824,673; the book was scaled or the plan left the lines.` |
+| catalog_digest | the table's recorded digest not its source's | GeneratedCatalogCheck | 1 | `CATALOG: MacroData/government_consumption_2023.csv changed since the government-consumption table was generated (on disk 040d354569e38955644e8ca9bd26b12544184efbb708addcc60c97c7864a04fc, recorded 140d354569e38955644e8ca9bd26b12544 …` |
+
+**The family - the largest BASELINE family attempted.** `traj_t3a` against `traj_f4s2`: **8 of 76 fields byte-identical** at both seeds and every horizon (`CorruptionIndex`, `EventGdpShockDaysLeft`, `HydroReservoirBalanceGwh`, `IrregularMigrationPer10k`, `OrganizedCrimeIndex`, `PovertyGap`, `PowerCo2PerCapita`, `PrisonPopulationRate`). Everything else moved, and `GovernmentConsumption` is new.
+
+The k = 1 world reproduces the stored `f4s2` dump's GDP at turns 1 and 100 in six countries at both seeds (**24 of 24**). The block's code is inert at k = 1, so every move below is k's.
+
+The mechanism in one line: output reads the identity's G, and the identity's G is now k times what it was. Where k > 1 the attractor rises and GDP with it. Where k < 1 (Italy) it falls. Unemployment at year 100 lies within 0.01 of a point of the tree before in every country at both seeds, because Okun reads the growth gap and not the level (P-N5b's question).
+
+**Per country** (seed 777; k = 1 is the tree before the block):
+- **The USA** (k 2.2426). G at the seed is 13.54 % of GDP where the lines gave 6.04 %.
+  - The seed recession FT-7 exposed is smaller: the year-1 gap is -3.27 % against -5.10 %.
+  - At year 100, real GDP is +2.97 % against k = 1 and the gap -16.41 % against -18.83 %. Unemployment reads 4.05 → 4.06 and debt 115.9 → 116.8 % of GDP.
+  - G's share falls with the lines: the federal lines' share at k = 1 is 1.88 % of GDP at year 100, and the identity's G, grown with them, is 5.32 %.
+  - The gap the identity settles into remains the deepest of the six. What remains of it is the identity's, not the seed's.
+- **Sweden** (k 1.2526; the lines 21.09 % against the sourced 26.42 %). The second largest k, and the largest move in output.
+  - The year-1 gap is -1.89 % against -3.03 %.
+  - At year 100, the gap is +0.74 % against -3.78 %: the only country whose century gap sits near zero (seed 424242: -1.02 %). Real GDP is +4.63 %, and G's share 19.70 → 24.22 %.
+  - Unemployment reads 6.94 → 6.95 and debt 25.9 → 26.2 % of GDP.
+- **Germany** (k 1.0056) and **France** (k 1.0030). Their lines were seeded at their shares to a tenth of a point, so the block moves them by hundredths: year-100 GDP +0.11 % and +0.04 %, gaps -8.63 → -8.55 % and -10.90 → -10.86 %. France's debt moves 29.9 → 28.9 % through the path.
+- **Italy** (k 0.9422). The only country whose sourced share (17.90 %) sits below its lines (19.00 %), so its G falls.
+  - Year-100 GDP is -0.43 %, and the gap deepens -13.89 → -14.21 %.
+  - The year-1 gap is +0.79 % against +1.04 %.
+- **Poland** (k 1.0527). The year-1 gap is -1.18 % against -1.40 %; at year 100, GDP is +1.18 % and the gap -14.93 → -13.93 %.
+- **The long horizon** (turns 500 and 1000): unemployment within 0.03 of a point and inflation within 0.01 of a point of the tree before, in every country at both seeds; real GDP from -0.50 % (Italy, seed 777, turn 1000) to +6.30 % (Sweden, seed 424242, turn 1000). Nothing runs away.
+
+**The gap, GDP against potential, seed 777** - the three worlds:
+
+| country | world | year 1 | year 10 | year 25 | year 50 | year 100 |
+|---|---|---|---|---|---|---|
+| USA | k = 1 (the identity as before T-3) | -5.10 % | -14.80 % | -16.98 % | -17.66 % | -18.83 % |
+| USA | **form A, landed** | -3.27 % | -10.71 % | -13.98 % | -14.79 % | -16.41 % |
+| USA | form A, seed potentials at the fixed point | -8.07 % | -13.39 % | -15.22 % | -16.22 % | -17.96 % |
+| Sweden | k = 1 (the identity as before T-3) | -3.03 % | -4.48 % | -4.39 % | -3.93 % | -3.78 % |
+| Sweden | **form A, landed** | -1.89 % | -0.33 % | +0.09 % | +0.56 % | +0.74 % |
+| Sweden | form A, seed potentials at the fixed point | +4.51 % | +1.66 % | +1.48 % | +1.76 % | +1.77 % |
+| Germany | k = 1 (the identity as before T-3) | +0.67 % | -2.79 % | -4.38 % | -6.53 % | -8.63 % |
+| Germany | **form A, landed** | +0.70 % | -2.67 % | -4.26 % | -6.44 % | -8.55 % |
+| Germany | form A, seed potentials at the fixed point | +1.57 % | -3.01 % | -4.61 % | -6.68 % | -8.67 % |
+| France | k = 1 (the identity as before T-3) | +1.33 % | -0.60 % | -5.09 % | -10.69 % | -10.90 % |
+| France | **form A, landed** | +1.34 % | -0.58 % | -5.09 % | -10.70 % | -10.86 % |
+| France | form A, seed potentials at the fixed point | +4.41 % | +0.12 % | -4.17 % | -10.52 % | -10.75 % |
+| Italy | k = 1 (the identity as before T-3) | +1.04 % | -3.62 % | -7.40 % | -11.30 % | -13.89 % |
+| Italy | **form A, landed** | +0.79 % | -4.51 % | -8.10 % | -11.68 % | -14.21 % |
+| Italy | form A, seed potentials at the fixed point | -1.05 % | -4.31 % | -8.00 % | -11.48 % | -14.28 % |
+| Poland | k = 1 (the identity as before T-3) | -1.40 % | -9.55 % | -8.23 % | -12.68 % | -14.93 % |
+| Poland | **form A, landed** | -1.18 % | -8.52 % | -7.17 % | -11.50 % | -13.93 % |
+| Poland | form A, seed potentials at the fixed point | -2.48 % | -8.17 % | -6.65 % | -10.89 % | -13.27 % |
+
+
+**Year 100, beside FT-7's.** §394's headline columns for FT-7's second seat: the seed gap (typed → re-solved), debt ÷ GDP before → after, real GDP against the tree before, unemployment before → after. FT-7's rows, verbatim from §394 and on the tree of 2026-09-08:
+
+| country | seed gap, typed → re-solved | debt ÷ GDP at year 100: before → after | real GDP at year 100 against the tree before | unemployment at year 100 |
+|---|---|---|---|---|
+| USA | +14.7 % → **+0.5 %** | 141 % → 143 % | **−11.7 %** | 3.49 → 3.41 |
+| Sweden | −0.9 % → **+1.6 %** | 28 % → 29 % | **+4.0 %** | 6.37 → 6.27 |
+| Germany | 0 → +0.2 % | 37 % → 37 % | +0.5 % | 3.31 → 3.29 |
+| France | 0 → −0.2 % | 43 % → 38 % | −0.4 % | 7.48 → 7.48 |
+| Italy | 0 → −0.2 % | 53 % → 38 % | −0.3 % | 7.88 → 7.87 |
+| Poland | 0 → +0.4 % | 16 % → 17 % | +1.0 % | 4.57 → 4.60 |
+
+T-3 form A's, on this tree, both seeds:
+
+| country | seed | the seed's gap, FT-7's potential (unchanged) | debt ÷ GDP at year 100: k = 1 → landed | real GDP at year 100 against k = 1 | unemployment at year 100: k = 1 → landed | the identity's G at year 100, % of GDP: k = 1 → landed | the gap at year 100: k = 1 → landed → fixed-point potentials |
+|---|---|---|---|---|---|---|---|
+| USA | 777 | +0.52 % | 115.9 % → 116.8 % | +2.97 % | 4.05 → 4.06 | 1.88 → 5.32 | -18.83 → -16.41 → -17.96 % |
+| USA | 424242 | +0.52 % | 113.9 % → 113.5 % | +1.45 % | 3.35 → 3.35 | 1.57 → 3.25 | -18.47 → -17.30 → -16.90 % |
+| Sweden | 777 | +1.63 % | 25.9 % → 26.2 % | +4.63 % | 6.94 → 6.95 | 19.70 → 24.22 | -3.78 → +0.74 → +1.77 % |
+| Sweden | 424242 | +1.63 % | 25.1 % → 24.8 % | +4.18 % | 6.32 → 6.33 | 18.59 → 22.73 | -5.07 → -1.02 → -0.09 % |
+| Germany | 777 | +0.21 % | 36.3 % → 36.4 % | +0.11 % | 3.18 → 3.18 | 12.50 → 12.59 | -8.63 → -8.55 → -8.67 % |
+| Germany | 424242 | +0.21 % | 35.4 % → 35.4 % | +0.10 % | 3.20 → 3.20 | 12.30 → 12.39 | -8.78 → -8.71 → -8.73 % |
+| France | 777 | -0.22 % | 29.9 % → 28.9 % | +0.04 % | 7.27 → 7.27 | 10.31 → 10.35 | -10.90 → -10.86 → -10.75 % |
+| France | 424242 | -0.22 % | 34.0 % → 33.1 % | +0.05 % | 7.18 → 7.18 | 10.61 → 10.65 | -10.98 → -10.95 → -10.85 % |
+| Italy | 777 | -0.22 % | 47.0 % → 47.0 % | -0.43 % | 7.90 → 7.90 | 7.41 → 6.99 | -13.89 → -14.21 → -14.28 % |
+| Italy | 424242 | -0.22 % | 48.5 % → 49.2 % | -0.43 % | 8.05 → 8.05 | 7.28 → 6.86 | -13.84 → -14.16 → -14.15 % |
+| Poland | 777 | +0.42 % | 26.4 % → 26.0 % | +1.18 % | 5.35 → 5.35 | 12.18 → 12.60 | -14.93 → -13.93 → -13.27 % |
+| Poland | 424242 | +0.42 % | 26.4 % → 25.2 % | +0.78 % | 4.65 → 4.64 | 12.43 → 12.45 | -13.81 → -13.10 → -12.71 % |
+
+
+Read side by side, each family on its own tree: FT-7's moved the USA's century output −11.7 % by removing a typed potential the identity could not reach, and this one moves it +2.97 % by giving the identity the government consumption the national accounts record. Sweden gains in both families. Germany and France barely move in either.
+
+**The harness - the impact ratchet breached by the block, not lowered.** The subject is Sweden, events off, the dials set once. The purchases basis is the identity's G:
+
+| run | impact, four decimals: +2 % · +10 % · −10 % | cumulative L+1: +2 % · +10 % · −10 % | cumulative L+4 | the purchases impulse at landing, +2 % |
+|---|---|---|---|---|
+| **form A, landed** (purchases: the identity's G) | 0.5013 · 0.5028 · 0.4984 | 0.791 · 0.799 · 0.775 | 0.815 · 0.821 · 0.869 | 3.223 |
+| k = 1 (the tree before the block) | 0.5101 · 0.5114 · 0.5079 | 0.835 · 0.719 · 0.818 | 0.902 · 0.820 · 0.887 | 2.573 |
+| form A, the AI ministry off | 0.5022 · 0.5037 · 0.4993 | 0.643 · 0.641 · 0.644 | 0.763 · 0.762 · 0.766 | 3.218 |
+| k = 1, the AI ministry off | 0.5101 · 0.5114 · 0.5079 | 0.656 · 0.654 · 0.657 | 0.777 · 0.776 · 0.781 | 2.573 |
+| form A, purchases on the book's lines (probe `harness_lines`) | 0.6279 · 0.6298 · 0.6243 | 0.991 · 1.001 · 0.971 | 1.021 · 1.028 · 1.088 | 2.573 |
+
+- **The measurement.** On the identity's basis, form A reads **0.4984** at impact on its weakest dial, against the ratchet 0.5074. The +2 % and +10 % dials read below it too.
+- **The attribution.** k = 1, the same instrument with only k different, reads **0.5079** and holds.
+- **Not the AI ministry.** With the ministry off, form A reads 0.4993 and k = 1 reads 0.5079: a gap of 0.0086 between the worlds, against 0.0095 with it on. The ministry moves the later horizons, not the landing year.
+- **Not the instrument.** On the book's lines (probe `harness_lines`), impact reads above the ratchet, but L+4 leaves Ramey's band at the top on all three dials. That basis divides the identity's response by the book's impulse - §363's class - and is not the reading.
+- **Inside the band.** Every cumulative L+1 and L+4 reading on the identity's basis lies inside Ramey's 0.60-1.00.
+
+So the block lowers the landing-year multiplier on its own purchases by 0.0086 to 0.0095 across the three dials. The response at impact grows by less than k does. The ratchet stays at 0.5074 and the harness exits 1 on this tree. **The reading is Elias's** (the registers' OWNER ELIAS table): whether form A's impact reading becomes the ratchet by ruling, or the mechanism is found first. The harness is on no bar, and both bars below are green.
+
+**The lever map**, regenerated (Sweden, eight turns): 119 of 123 quantities reached by at least one lever, 4 UNREACHED (was 119 of 121 quantities reached by at least one lever, 2 UNREACHED). The two new quantities:
+- `EconomyState.GovernmentConsumption` is reached by 93 dials.
+- `Country.GovernmentConsumptionScale` is unreached by construction: a seed constant no lever moves.
+
+`EconomyState.HealthCoverage` moved from reached (9 levers before) to unreached. Sweden's coverage sits at its ceiling of 100 at no policy, and `HealthFamily.TargetsFor` takes it below 100 only when real health spending per head falls below its seed. Under form A no lever's eight-turn path crosses that threshold. This reads as a threshold at a ceiling, from the formula, not as a channel removed. Across the rest, 33 rows changed their count of reaching dials as the paths moved, the largest by +14 (`EconomyState.PopulationGrowthRate`, 63 → 77 dials).
+
+**Decisions taken, strikeable.**
+1. **The book stays the lines** (the ruling's form A, P5-B2): k scales the identity's argument alone. `SpendingLine`'s doc says so.
+2. **The six seed potentials keep FT-7's ruled closed form.** Re-solved with G inside the identity, they are unchanged, because the closed form has no G. The alternative reading, the identity's fixed point, is measured beside it. That reading reopens a year-one gap of -8.07 % for the USA and +4.51 % for Sweden, the class FT-7 closed, and moves the century's gap by at most 1.55 of a point. Replacing a ruled closed form is Elias's call, and the table is in front of him.
+3. **k is captured on the seed's discretionary lines** - the sum the plan spends, with mandatory lines excluded as transfers - and on nominal GDP at a price level of 1.
+4. **k is 1 where a country has no lines or no share.** The identity reads the book as it did, which is no scaling of a quantity nobody sourced. It applies to none of the six.
+5. **The generated table reads the unrounded shares.** §505 used §376's one-decimal figures, so the USA's implied potential reads +7.05 % here against +7.09 % there. The shares are the file's.
+6. **The save format bumps to 15.** A save from before would load k = 0 and an identity with no government, and "seed on first sight" cannot rebuild it: the seed's discretionary sum is persisted nowhere.
+7. **The harness counts the identity's G as purchases.** That is Ramey's quantity, and it is the basis on which the ratchet breaks and the band holds; the lines' basis inverts both, and is printed for that reason.
+8. **The ratchet is not lowered.** The breach is recorded, attributed and sheeted.
+
+**The registers.**
+- `POLISIM_FEATURE_LIST.md`: the T-3 pointer and the OWNER ELIAS row, now LANDED with the USA's reading stated; a new OWNER ELIAS row for the impact reading.
+- `ResidueCheck`'s exclusion text for T-3 now names the ratchet as what stays Elias's.
+- `LEVER_MAP.md`.
+- The sentinel is re-baselined to `t3a`: the label and both digests are set in this commit, and it reads green in the bar.
+
+**Bar:** the code tree - `bar468_t3a` **38 of 38**, `bar469_t3a_sim` **52 of 52** with the sentinel on `t3a`. The record's tree - `bar470_rec507` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.

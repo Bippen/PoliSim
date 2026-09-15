@@ -215,10 +215,20 @@ namespace PoliSim.Simulation
                                 + DisposableIncomeConsumptionDelta(country, priorGdp);
             state.Investment = priorGdp * BaseInvestmentRate * investmentInterestFactor * state.BusinessConfidence;
 
+            state.GovernmentConsumption = governmentSpending;   // T-3 form A (§507): the G the identity read
             float gdpFromIdentity = state.Consumption + state.Investment + governmentSpending + state.TradeBalance;
             float gdpAfterReversion = gdpFromIdentity + OutputGapReversionSpeed * (state.PotentialGDP - gdpFromIdentity);
             state.GDP = Mathf.Max(MinGdp, gdpAfterReversion);
         }
+
+        /// <summary>
+        /// T-3, form A (Elias, 2026-09-15, `COMPLETED.md` §507): the government consumption the identity reads - the book's discretionary plan (nominal)
+        /// scaled by the country's k (Country.GovernmentConsumptionScale: the sourced share of GDP over the seed's lines) and deflated by the price level as it
+        /// stands. ONE method for the day (SimulationManager's daily identity) and the preview (its turn form), so the two hand the identity one G - the preview
+        /// handed the plan undeflated until this item, which PreviewParityDiagnostic's identity section now holds to the boundary's.
+        /// </summary>
+        public static float IdentityGovernmentConsumption(Country country, float plannedNominal)
+            => country.GovernmentConsumptionScale * plannedNominal / Mathf.Max(0.0001f, country.State.PriceLevel);
 
         // --- Potential GDP: trend output, independent of this turn's actual GDP ---
 
@@ -647,6 +657,7 @@ namespace PoliSim.Simulation
             // ⚠ This is also why the SPENDING multiplier always worked and the tax one never did: G was
             // already a level in this line, and nothing else households did ever reached it.
             float disposableIncomeDelta = DisposableIncomeConsumptionDelta(country, priorGdp);
+            state.GovernmentConsumption = governmentSpending;   // T-3 form A (§507): the G the identity read today
             float attractorTerm = (1f - OutputGapReversionSpeed) * (governmentSpending + state.TradeBalance + disposableIncomeDelta)
                 + OutputGapReversionSpeed * potentialGdpAtPeriodOpen;
 

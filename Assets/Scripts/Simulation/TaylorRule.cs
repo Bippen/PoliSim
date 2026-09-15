@@ -11,7 +11,7 @@ namespace PoliSim.Simulation
     ///
     /// Why the unemployment gap. The level gap (GDP - PotentialGDP)/PotentialGDP is a persistent
     /// per-country LEVEL in this model, not a cycle: it is the fixed point of the identity's own
-    /// dynamics (G is discretionary-only, C+I ~0.79 of GDP, the attractor anchors period-open
+    /// dynamics (G was discretionary-only until T-3 form A, §507, made it the sourced consumption share; C+I ~0.79 of GDP, the attractor anchors period-open
     /// potential), so no seed value can close it - CLAUDE.md "Discretionary Spending Growth"
     /// proved that in 2026-07 and the pass 4 derivation measured it again at HEAD: USA -14.5% for a
     /// thousand turns (sd 0.6), Poland -7, Italy -4.5, Germany -2.7. Weighted at 0.5, that term

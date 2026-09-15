@@ -119,6 +119,7 @@ namespace PoliSim.EditorTools
             failures += CheckItanes(sb);
             failures += CheckEnergy(sb);
             failures += CheckCohortIncome(sb);
+            failures += CheckGovernmentConsumption(sb);
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -205,6 +206,38 @@ namespace PoliSim.EditorTools
             }
             if (countries != 6) { failures++; Debug.LogError($"CATALOG: the income catalog carries {countries} countries, not six."); }
             sb.Append($"    CohortIncomeSeeds: the source at its recorded digest, {countries} countries × {PopulationCohorts.CohortCount} cohorts, medians and sigmas positive from 15 up and zero below.\n");
+            return failures;
+        }
+
+        /// <summary>
+        /// T-3, form A (2026-09-15): `GovernmentConsumptionData` against the one file it was generated from, plus the table's own shape -
+        /// six countries, each share a number strictly between 0 and 100 with its source and flag, the federal-only share on the USA alone and
+        /// below its general-government share, and as many data rows in the file as the table holds.
+        /// </summary>
+        private static int CheckGovernmentConsumption(StringBuilder sb)
+        {
+            int failures = 0;
+            string path = Path.Combine(Directory.GetCurrentDirectory(), GovernmentConsumptionData.SourcePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path)) { Debug.LogError($"CATALOG: {GovernmentConsumptionData.SourcePath} is not on disk, so the government-consumption table cannot be verified."); return 1; }
+            string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(path));
+            if (!string.Equals(onDisk, GovernmentConsumptionData.SourceDigest, StringComparison.OrdinalIgnoreCase))
+            {
+                failures++;
+                Debug.LogError($"CATALOG: {GovernmentConsumptionData.SourcePath} changed since the government-consumption table was generated (on disk {onDisk}, recorded {GovernmentConsumptionData.SourceDigest}). Re-run GovernmentConsumptionCatalogGenerator - and read the diff first: a derived data file changing means a source or the prep script changed, which is an event somebody explains.");
+            }
+            int dataRows = -1;
+            foreach (string raw in File.ReadAllLines(path)) { if (raw.Trim().Length > 0) { dataRows++; } }
+            if (dataRows != GovernmentConsumptionData.SharePct.Count) { failures++; Debug.LogError($"CATALOG: {GovernmentConsumptionData.SourcePath} holds {dataRows} data row(s) and the government-consumption table holds {GovernmentConsumptionData.SharePct.Count}."); }
+            foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
+            {
+                if (!GovernmentConsumptionData.SharePct.TryGetValue(id, out float share)) { failures++; Debug.LogError($"CATALOG: the government-consumption table carries no share for {id}."); continue; }
+                if (!(share > 0f) || !(share < 100f)) { failures++; Debug.LogError($"CATALOG: the government-consumption table's {id} share reads {share} - not a number strictly between 0 and 100."); }
+                if (!GovernmentConsumptionData.Source.ContainsKey(id) || !GovernmentConsumptionData.Flag.ContainsKey(id)) { failures++; Debug.LogError($"CATALOG: the government-consumption table's {id} has no source or flag."); }
+                bool federal = GovernmentConsumptionData.FederalSharePct.TryGetValue(id, out float fed);
+                if (federal != (id == CountryId.USA)) { failures++; Debug.LogError($"CATALOG: the government-consumption table's {id} {(federal ? "carries" : "lacks")} a federal-only share - the USA alone carries one (its lines are federal, the share general government)."); }
+                else if (federal && !(fed > 0f && fed < share)) { failures++; Debug.LogError($"CATALOG: the USA's federal-only share {fed} is not positive and below its general-government share {share}."); }
+            }
+            sb.Append($"    GovernmentConsumptionData: the source at its recorded digest, {GovernmentConsumptionData.SharePct.Count} shares of GDP ({GovernmentConsumptionData.Year}), the USA's federal-only share beside its general one ({failures} fault(s)).\n");
             return failures;
         }
 

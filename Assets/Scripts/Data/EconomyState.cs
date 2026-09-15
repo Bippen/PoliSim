@@ -73,6 +73,10 @@ namespace PoliSim.Data
         /// <summary>Business investment (the I in GDP = C + I + G + NX) for the most recent turn. See MacroSystem.ApplyNationalAccounts.</summary>
         public float Investment;
 
+        /// <summary>T-3, form A (2026-09-15, `COMPLETED.md` §507): government consumption (the G in GDP = C + I + G + NX), real, as the identity was last handed it -
+        /// MacroSystem.IdentityGovernmentConsumption, the lines' plan scaled to the sourced share by k and deflated. The book spends the lines; this is what output reads.</summary>
+        public float GovernmentConsumption;
+
         /// <summary>
         /// Trend/potential output level - grows independently of actual GDP at the country's
         /// PotentialGrowthRate. Used for Okun's Law's growth gap and the identity's reversion;

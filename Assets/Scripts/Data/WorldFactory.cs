@@ -925,7 +925,7 @@ namespace PoliSim.Data
             // reaction multiplier was crushed to 0.58-0.76 papering over it. G is deliberately
             // untouched: at 18-24% it already matches these countries' real government-consumption
             // shares, and raising it would break every C+I+G+NX seed identity (the USA PotentialGDP
-            // lesson). SocialSecurity = real old-age cash benefits; IncomeSecurity = the residual
+            // lesson). T-3, form A (2026-09-15, §507): the identity's G is now the sourced P3_S13 share itself - k × these lines, the lines untouched as the book. SocialSecurity = real old-age cash benefits; IncomeSecurity = the residual
             // that lands each year-1 primary balance on its real 2025 structural position
             // (DE -1.6, FR -2.9, IT +0.8, PL -4.8) - sources and the solve in the class doc
             // comment and the method's own. Sweden's block is inside SeedSwedenSpendingLines

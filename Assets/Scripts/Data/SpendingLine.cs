@@ -10,8 +10,10 @@ namespace PoliSim.Data
     /// Discretionary, reflecting the real political difficulty of entitlement reform) or
     /// Discretionary (wider range) line. Mirrors TaxLine's pattern. Mandatory lines are excluded from
     /// the national accounts identity's G term (transfers, not purchases - same reasoning as
-    /// UnemploymentBenefitCost/InterestOnDebt); Discretionary lines' sum IS G for a country with a
-    /// detailed SpendingLines portfolio - see SimulationManager.ApplyDomesticPolicy.
+    /// UnemploymentBenefitCost/InterestOnDebt); Discretionary lines' sum is the BOOK's purchases for a country with a
+    /// detailed SpendingLines portfolio - see SimulationManager.ApplyDomesticPolicy. T-3, form A (2026-09-15, §507): the identity's G is
+    /// that sum scaled to the sourced share of GDP by the country's k (Country.GovernmentConsumptionScale, read through
+    /// MacroSystem.IdentityGovernmentConsumption) - the lines stay the book and the meaning, the share is what output reads.
     /// </summary>
     [Serializable]
     public class SpendingLine

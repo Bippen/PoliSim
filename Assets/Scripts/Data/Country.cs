@@ -142,6 +142,14 @@ namespace PoliSim.Data
         public float PotentialProductivityIndex;
         public float PotentialLabourAtLastTurn;
 
+        /// <summary>T-3, form A (Elias, 2026-09-15, `COMPLETED.md` §507): the identity's government consumption over the book's discretionary lines - k = the sourced
+        /// share of GDP (general government final consumption expenditure, P3_S13, 2023: GovernmentConsumptionData, generated from MacroData/) × the seed's
+        /// nominal GDP ÷ the seed's discretionary lines, captured once by CaptureStructuralBases. The identity reads k × the lines' plan ÷ the price level
+        /// (MacroSystem.IdentityGovernmentConsumption), so G is the sourced share at the seed and grows with the lines after it; the book spends the lines
+        /// themselves, unscaled. The USA's k is the widest because its lines are the federal budget and its share general government (the row's statement).
+        /// 1 where a country has no discretionary lines or no share (the identity reads the book as it did); a save from before carries none - the gate refuses it.</summary>
+        public float GovernmentConsumptionScale;
+
         /// <summary>P5-B6 (2026-09-05): the price level as it stood when the spending lines were last indexed, so the lines carry the year's prices as the ratio now/then (IndexSpendingLines). 1 at the seed; 0 = a save from before this pass (the first index takes the level and applies 1).</summary>
         public float PriceLevelAtLastIndex;
         /// <summary>RF-2 re-formed (2026-09-07, §384): the real wage index as it stood when the spending lines were last indexed, so an AI country's caseload
@@ -204,6 +212,12 @@ namespace PoliSim.Data
             // 33 260 against a GDP of 29 000 was a 14.7 % gap no seed could close, §127). Potential is its factors from here on (P5-B7), from the seed too.
             PotentialGdpSeed = State.GDP * Math.Min(100f, Math.Max(1f, 100f - NaturalUnemploymentRate)) / Math.Min(100f, Math.Max(1f, 100f - State.Unemployment));
             State.PotentialGDP = PotentialGdpSeed;
+            // T-3, form A (2026-09-15, §507): the identity's G at the seed is the sourced share of the seed's nominal GDP; k carries it onto the lines, which grow it
+            float seedDiscretionaryLines = 0f;
+            foreach (SpendingLine line in SpendingLines) { if (!line.IsMandatory) { seedDiscretionaryLines += line.Amount; } }
+            GovernmentConsumptionScale = seedDiscretionaryLines > 0f && Generated.GovernmentConsumptionData.SharePct.TryGetValue(Id, out float consumptionSharePct)
+                ? (float)(consumptionSharePct / 100.0 * State.NominalGdp / seedDiscretionaryLines)
+                : 1f;
             PotentialLabourSeed = PotentialOutput.LabourInput(this);
             PotentialProductivityIndex = 1f;
             PotentialLabourAtLastTurn = PotentialLabourSeed;

@@ -1,0 +1,7 @@
+geo,country,source,consumption_series,gdp_series,year,consumption,gdp,unit,share_pct,published_pct,published_source,federal_share_pct,flag
+SE,Sweden,Eurostat nama_10_gdp CP_MNAC,P3_S13,B1GQ,2023,1622880,6143187,national currency millions,26.417558,26.4,Eurostat nama_10_gdp PC_GDP,,
+DE,Germany,Eurostat nama_10_gdp CP_MNAC,P3_S13,B1GQ,2023,898546,4254930,national currency millions,21.117762,21.1,Eurostat nama_10_gdp PC_GDP,,p
+FR,France,Eurostat nama_10_gdp CP_MNAC,P3_S13,B1GQ,2023,682168.8,2833826.4,national currency millions,24.072357,24.1,Eurostat nama_10_gdp PC_GDP,,
+IT,Italy,Eurostat nama_10_gdp CP_MNAC,P3_S13,B1GQ,2023,383600,2142744.4,national currency millions,17.902275,17.9,Eurostat nama_10_gdp PC_GDP,,
+PL,Poland,Eurostat nama_10_gdp CP_MNAC,P3_S13,B1GQ,2023,647134,3415274,national currency millions,18.948231,18.9,Eurostat nama_10_gdp PC_GDP,,
+US,USA,BEA NIPA flat file,A955RC,A191RC,2023,3765878,27811517,USD millions,13.540714,13.540714,World Bank NE.CON.GOVT.ZS (BEA's ratio),4.817048,

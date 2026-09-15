@@ -512,15 +512,16 @@ namespace PoliSim.EditorTools
                     unemployment[year] = subject.State.Unemployment;
                     inflation[year] = subject.State.Inflation;
 
-                    // G as the national accounts identity spends it: the DISCRETIONARY lines' sum, which
-                    // is what SpendingLine's own doc names as G for a country with a detailed portfolio.
+                    // G as the national accounts identity spends it. T-3, form A (2026-09-15, §507): the DISCRETIONARY lines' sum scaled to the sourced share of
+                    // GDP by k and deflated (MacroSystem.IdentityGovernmentConsumption - the day's own method). Ramey's band is over general government purchases,
+                    // which the identity's G now is; the lines alone would divide the response by the book's impulse, not the identity's (§363's class).
                     float discretionary = 0f;
                     foreach (SpendingLine line in subject.SpendingLines)
                     {
                         if (!line.IsMandatory) { discretionary += line.Amount; }
                     }
 
-                    purchases[year] = discretionary / deflator;   // FT-4: real purchases, the same deflator as the balance
+                    purchases[year] = MacroSystem.IdentityGovernmentConsumption(subject, discretionary);   // FT-4: real purchases, the same deflator as the balance; T-3: k on the lines
                 }
             }
             finally

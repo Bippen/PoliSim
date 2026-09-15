@@ -42,7 +42,7 @@ namespace PoliSim.EditorTools
             ("E-34", "OWNER ELIAS", "the energy spec-let - RULED 2026-09-10 (§454); what stays his: the source docx's whereabouts and, optionally, IRENA's costs PDF (§455)"),
             ("D-7", "DESIGN", "board 2b, the Policy Web drawn to be read - never pasted, Design's to draw"),
             ("D-1 portraits", "DESIGN", "appointed ministers render the procedural placeholder until the portrait delivery"),
-            ("T-3", "OWNER ELIAS", "the identity's government-consumption block - trigger fired (C-N5), the six shares sourced (§376); the form of G in the identity is a seed change on six countries and Elias's ruling"),
+            ("T-3", "OWNER ELIAS", "the identity's government-consumption block - RULED form A and LANDED (§506, §507); what stays his: the harness's impact reading after the block, the ratchet not lowered"),
             ("dials-only laws", "OWNER ELIAS", "whether laws should reach the 31 dials-only quantities, and which - a design call with no literature to read it from (§378)"),
             ("FT-6", "OWNER ELIAS", "the long-horizon inflation drift - measured and three forms proposed (§379); the hold on inflation is a macro-core specification, ruled not typed"),
             ("K-1", "CALENDAR", "the seed refresh from Sweden's real result - 13 September 2026"),

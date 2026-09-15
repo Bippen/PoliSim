@@ -94,7 +94,8 @@ namespace PoliSim.EditorTools
             sb.Append("    GENERAL GOVERNMENT CONSUMPTION: the state buying goods and services - salaries of public\n");
             sb.Append("    employees, health and education provision, defence procurement - which national accounts put in\n");
             sb.Append("    G and this identity has nowhere at all. In the real six that term is roughly a fifth of GDP;\n");
-            sb.Append("    here the whole G is the discretionary column above.\n");
+            sb.Append("    here the whole G was the discretionary column above - until T-3 form A (2026-09-15, §507), which hands the identity that column\n");
+            sb.Append("    scaled to the sourced share (EconomyState.GovernmentConsumption); the table above is the book's lines, not the identity's G.\n");
 
             // ---- 2. what six re-solved potentials would do ----
             sb.Append("\n    2. THE LEVEL OUTPUT GAP TODAY, and what closing it would demand of PotentialGDP\n");
