@@ -937,7 +937,8 @@ namespace PoliSim.UI
                 story.Queued.HasValue ? "QUEUED: " + Scandals.Caption(story.Queued.Value) + " — IT LANDS THE MORNING THE DAY STEPS"
                     : "NOTHING QUEUED — THE CLOCK HOLDS UNTIL YOU ANSWER", stateStyle);
             y += stateHeight;
-            // RESIGN is drawn and refused with its reason (CL-1's rule for a verb the model cannot price): no second candidate is cast
+            // RESIGN is drawn and refused with its reason (CL-1's rule for a verb the model cannot price): no second candidate is cast - RS-1 closed
+            // by Elias's ruling (2026-09-15, COMPLETED.md §503); trigger T-9 reopens it when the model casts more than one candidate per party
             PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, lineHeight), "RESIGN: NO SECOND CANDIDATE IS CAST TO HAND THE CAMPAIGN TO", DeskCaption(8.5f, PoliSimTheme.TextMuted));
             y += lineHeight;
             if (!story.StaffOnRoster)

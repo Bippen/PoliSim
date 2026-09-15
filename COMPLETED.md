@@ -27817,3 +27817,24 @@ The cheap bar is **38** and the simulation group **51** (`bar453_en7bc_sim`, 51 
 | §500 | the business minimum in the ledger; the flow inside the multiplier; households' VAT not booked; the USA not offered; the laws worded by their delta | **HOLDS** - measured the same day, each by its own section and probe; marked again at the next list |
 
 **Bar:** `bar456_shelf_read` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight. After this record was written from that reading: `bar457_shelf` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+## 503. FOUR SHEETS ANSWERED — SC-1 RULED (built as its own item), RS-1 CLOSED BY RULING with the trigger that reopens it (T-9), T-3 SENT TO MEASUREMENT (both forms computed, neither built), OP-1 STANDING (2026-09-15)
+
+**What was put to Elias:** the four open decision sheets printed verbatim from the register - RS-1, SC-1, T-3 and OP-1 - each with the fields the register carries and the ones it does not.
+
+**The rulings, verbatim (Elias, 2026-09-15):**
+- **SC-1 - RULED.** *"the support cost lands on each statute budget's Business-and-industry line, and the clamp's rule changes for a dial cost — the seed-relative clamp bounds the line's own path, not a cost the player deliberately set; the applied dial cost sits outside it and the composed total is the clamped line plus the applied cost. Its own BASELINE family, explained per country."*
+- **RS-1 - RULED, closed.** *"RESIGN stays refused with its reason — a named deputy is a person the record does not hold and a flat profile is one character standing for every party; close the question with the trigger that reopens it (the model casts more than one candidate per party)."*
+- **T-3 - measure first.** *"measure before I rule. Build neither form; compute both — G as the sourced final-consumption share grown with the lines, and the lines' own sum re-based to it — and report each form's implied potential and year-100 path per country. §394's precedent: re-solving six potentials found the USA 14.7 % adrift and nobody predicted it. The ruling follows the tables."*
+- **OP-1 - standing.** *"OP-1 stands unruled; D-5 (a) holds until a campaign is played."*
+
+**What each ruling changed in the registers, this commit.**
+- **SC-1** (`POLISIM_FEATURE_LIST.md`'s bullet and its OWNER ELIAS row): RULED, with the words; the build is its own item and record - the landing line, the clamp's rule for the four dial costs, the dump and the per-country explanation. **Nothing of it is built here.** One premise is on the record before the build, from reading the code (to be measured by the build's dump, never by reading - §402): no dial sits off neutral at the seed in any of the six books, and nothing but a law or a bill moves one, so every applied dial cost is exactly zero on the no-policy path; whether the ruled family moves the no-policy dump is the dump's to say.
+- **RS-1** (the bullet): ⏹ closed by the ruling, a TRIGGER row - **T-9** in the deferral register, beside T-8 (the precedent: EN-3c, §472). **The trigger:** the model casts more than one candidate per party - a second candidate the record holds, with a profile of its own the campaign reads (W-F6's casting carried past one leader per party). **The defence clause:** a name is not a cast candidate - a deputy written into a string, one flat profile standing for every party's replacement, or a second name drawn with no profile the model reads does not open the row; only a second cast candidate the campaign can be handed to does. `GameController.Campaign`'s refusal line keeps its reason; its comment names the ruling and the trigger.
+- **T-3** (the index entry and its OWNER ELIAS row): *"measure before I rule"* - the two forms are computed by their own item, each form's implied potential and its year-100 path per country, and neither form is built. The row stays Elias's until the tables are in front of him.
+- **OP-1** (the bullet): re-affirmed - unruled, D-5 (a) lose-only until a campaign is played. `ResidueCheck`'s exclusion stands.
+- **The pointer index** gains `T-8` (missing since §472) and `T-9`.
+
+**The order, self-taken:** this record, then SC-1's build, then T-3's measurement - each its own commit, bar and record; SC-1's dump is diffed before T-3's probe is typed, so two families can never share a pass.
+
+**Bar:** `bar458_rec503` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
