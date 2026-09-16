@@ -121,3 +121,25 @@ central (the state layer net of the credits it pays) - over 32.38.
 `053bfcfc2ba961a3` §32a EStG · `6426b64c1d497d9a` podatki.gov.pl stawki · `e9ada115fb43a4af` rp-25-32.pdf ·
 `2fd045566387c0c6` urssaf taux · `4d2754905fbbe1f1` fr-2025-19763 · `eca28a1b7394b2d0` PIT act (U) ·
 `307adbff35f42174` SUS act (U) · `bc28df6bf65b55e5` zus.pl składki
+
+## The income tax REALISED, per country (F4-5, fetched 2026-09-16)
+
+What each income row of `TaxBaseTable` is derived from — the realised revenue over the rate the row is read
+against. Taxes on the income and profits of individuals, % of GDP, 2022. OECD Revenue Statistics
+(`OECD.CTP.TPS,DSD_REV_COMP_OECD@DF_RSOECD` 2.0, `T_1110`), keys and values:
+
+| country | key | % of GDP |
+|---|---|--:|
+| Germany | `DEU.TAX_REV.S13.T_1110._T.PT_B1GQ.A` | 10.425679 |
+| France | `FRA.TAX_REV.S13.T_1110._T.PT_B1GQ.A` | 9.693475 |
+| Sweden | `SWE.TAX_REV.S13.T_1110._T.PT_B1GQ.A` | 10.389453 |
+| the USA (FEDERAL, used) | `USA.TAX_REV.S1311.T_1110._T.PT_B1GQ.A` | 9.300111 |
+| the USA (general government, NOT used) | `USA.TAX_REV.S13.T_1110._T.PT_B1GQ.A` | 11.384784 |
+| Poland | the flow carries NO income rows for Poland | — |
+
+Poland's figure is Eurostat `gov_10a_taxag`, D51A, general government, PC_GDP, 2022 = **4.5**, the same source
+D-16 (a) used for the same reason. The USA is taken at the FEDERAL level because this project calibrates the
+USA on the federal perimeter; the general-government figure is listed only to show the gap between them.
+
+Each figure reproduces the row D-16 (a) derived against the old top rate — 45 × 0.2317 = 10.4265 (Germany),
+45 × 0.2154 = 9.693 (France), 32 × 0.1406 = 4.4992 (Poland) — so the fetch confirms the table it re-derives.

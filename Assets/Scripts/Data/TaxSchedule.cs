@@ -571,6 +571,27 @@ namespace PoliSim.Data
             return 100.0 * Tax(Of(country.Id), income, rate - RateSeedOf(line), ThresholdScale(country), line.BracketRates) / income;
         }
 
+        /// <summary>
+        /// F4-5 (2026-09-16): THE SCHEDULE'S OWN AVERAGE RATE ON THE INCOME IT TAXES, % - the yield over the taxed share, and the rate a lever must be
+        /// seeded at for one point of it to raise one point of the sourced base.
+        ///
+        /// <para>The revenue engine anchors the line at the seeded rate times the sourced base and moves it by the statute's yield ratio, so one point
+        /// raises <c>seed × base × (AER(+1) − AER) ⁄ AER</c> while the AI finance ministry spends a point by <c>base</c>: the two agree exactly when
+        /// <c>seed = AER ⁄ (AER(+1) − AER)</c>. A one-point shift of every taxed band raises the yield by the TAXED SHARE of income, so that quotient is
+        /// the average rate the taxed income actually pays - the top rate only where a schedule is flat above its exemption, and far below it wherever the
+        /// schedule ramps (Germany's § 32a) or holds a wide first band (France's barème, Poland's 12 %).</para>
+        ///
+        /// <para>Read at the seed's scales (1.0, 1.0) over the country's own cohorts, so it is the statute read against THIS country's incomes and not a
+        /// figure from elsewhere. Zero where the shape does not respond - Italy is BILLED and flat, and prices its point exactly already.</para>
+        /// </summary>
+        public static double AverageRateOnTaxedIncome(Country country)
+        {
+            if (!Responds(country.Id)) { return 0.0; }
+            double aer = AverageEffectiveRate(country, 0.0, 1.0, 1.0);
+            double taxedShare = AverageEffectiveRate(country, 1.0, 1.0, 1.0) - aer;   // points of yield per point of shift = the share of income the statute reaches
+            return taxedShare > 1e-9 ? aer / taxedShare : 0.0;
+        }
+
         /// <summary>The standard normal's quantile (Acklam's rational approximation, relative error below 1.2e-9) - the log-normal's integration grid.</summary>
         public static double InverseNormal(double p)
         {

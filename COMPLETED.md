@@ -28954,4 +28954,91 @@ The record's tree - `bar487_rec514` **38 of 38** on the tree this record reads -
 
 **Bar:** the documents' bar — `bar493_rec516b` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
 
+## 517. F4-5 LANDED — the income lever's LEVEL for the four bracketed schedules: the statute's own average rate on the income it TAXES, not its top rate, with every base re-derived for it and the USA's income row sourced on the federal series. The bridge instrument fixed first (2026-09-16)
+
+**The premise, measured before it was touched** (`TaxScheduleDiagnostic` section 8, on the tree §514 left). One point of the lever, against the base the AI finance ministry spends a point by:
+
+| | seed | the statute's yield | a point raises | a point is spent by | raised over priced |
+|---|--:|--:|--:|--:|--:|
+| Sweden | 32.38 | 32.61 | 0.3223 | 0.3209 | **1.004** |
+| Germany | 45.00 | 16.55 | 0.3874 | 0.2317 | **1.672** |
+| France | 45.00 | 10.63 | 0.5574 | 0.2154 | **2.588** |
+| Poland | 32.00 | 6.12 | 0.3639 | 0.1406 | **2.588** |
+| the USA | 37.00 | 12.89 | 0.8654 | 0.4000 | **2.163** |
+| Italy | 43.00 | — | 0.2491 | 0.2491 | 1.000 |
+
+**What the engine's own arithmetic says the level must be.** The revenue engine anchors the line at `seed × base` and moves it by the statute's yield ratio, so one point raises `seed × base × (AER(+1) − AER) ⁄ AER` while a point is spent by `base`. The two agree exactly when
+
+> **seed = AER ⁄ (AER(+1) − AER)**
+
+and since a one-point shift of every taxed band raises the yield by the TAXED SHARE of income, that quotient is the average rate the taxed income actually pays. It is the top rate only where a schedule is flat above its exemption. **The check that this is the general form of §514's answer: run it on Sweden, whose statute names one rate every krona pays, and it returns 32.2396 against the municipal layer's 32.38** — four tenths of a per cent apart, derived against typed.
+
+**Built.**
+- `TaxSchedule.AverageRateOnTaxedIncome(country)` — the yield over the taxed share, read at the seed's scales over the country's own cohorts.
+- `WorldFactory.SeedIncomeLeverLevel` — called once, after the cohorts and their incomes exist and before `CaptureStructuralBases` takes the seeds, so the yield reference, the shift's origin and FT-5's wage wedge all read one figure. **Sweden keeps its statute's own 32.38** (§514): where a statute names the rate, the statute's number is the one to show on a row that cites it. Italy is billed and flat and already prices its point exactly.
+- `TaxBaseTable` — each row re-derived as that country's realised revenue over the rate the row is read against, and the realised figures themselves put on record with their keys (`IncomeTaxRevenuePctOfGdp`).
+- **The USA's income row is sourced, federally.** D-16 (a) excluded the USA because the sourced bases were general government while this project calibrates the USA on the federal perimeter. The same OECD flow publishes the row at the federal level, so the exclusion's reason does not reach it; its other three instruments keep the uniform stand-in, as F-B ruled.
+- `CollectionEfficiency` — **Germany, France and Poland do not move**: a base re-derived for a new rate leaves `rate × base` unchanged, so the implied revenue the bridge is solved on is the same figure (35.64, 38.51, 28.67 % of GDP, measured). The USA's moves with its income row: implied 29.37 → 23.87, CE 0.6119 → **0.7531** (18.0 ⁄ 23.8701 less the same 0.0010 seed tariff decrement).
+- The save format is **17**: a save from before carries a line anchored on the statutory top rate, which the re-derived base would read as up to two and a half times the revenue.
+
+**The sources, fetched on the day and not recalled** (OECD Revenue Statistics `DSD_REV_COMP_OECD` 2.0, taxes on the income and profits of individuals `T_1110`, % of GDP, 2022; Eurostat `gov_10a_taxag` D51A for Poland, whose income rows the OECD flow does not carry):
+
+| | key | realised, % of GDP | the row it derives |
+|---|---|--:|--:|
+| Germany | `DEU.TAX_REV.S13.T_1110._T.PT_B1GQ.A` | 10.425679 | 10.425679 ⁄ 26.9164 = **0.387336** |
+| France | `FRA.TAX_REV.S13.T_1110._T.PT_B1GQ.A` | 9.693475 | 9.693475 ⁄ 17.3907 = **0.557394** |
+| Poland | Eurostat `gov_10a_taxag` D51A S13 | 4.5 | 4.5 ⁄ 12.3647 = **0.363939** |
+| the USA | `USA.TAX_REV.S1311.T_1110._T.PT_B1GQ.A` | 9.300111 | 9.300111 ⁄ 17.1020 = **0.543803** |
+
+Each source figure reproduces the row D-16 derived against the old top rate (45 × 0.2317 = 10.4265, 45 × 0.2154 = 9.693, 32 × 0.1406 = 4.4992), so the fetch confirms the table it re-derives rather than replacing it.
+
+**The instrument fixed first, the number re-measured after.** `CollectionEfficiencyBasisDiagnostic` read the bridge by summing `rate × base` over every implemented line — and since EN-4c (§465) the carbon tax's rate is the country's currency per TONNE, so Sweden's 1 480 kr/t entered that sum as fourteen hundred points of tax and its implied revenue read **171.93 % of GDP** against the 39.20 the bridge was actually solved on. The row is now the tonnes' own revenue over GDP through `TaxBases.RevenueAtRate`, the one accessor. On the fixed instrument every recorded bridge reproduces to its own decrement: Sweden 39.20 (1.0765 against the seeded 1.0724), Germany 35.64 (1.1476 / 1.1452), France 38.51 (1.1764 / 1.1742), Italy 34.37 (1.2366 / 1.2363), Poland 28.67 (1.3117 / 1.3086), the USA 29.37 (0.6129 / 0.6119) — the same 0.0010–0.0031 tariff decrements the seeds carry in their own comments. **No number in this record was taken from the instrument before it was fixed.**
+
+**The lever's point, after** (`f45_schedule`): the point prices at ONE everywhere it was wrong, and every row reproduces its source:
+
+| | seed | a point raises | a point is spent by | raised over priced | seed × base | the realised |
+|---|--:|--:|--:|--:|--:|--:|
+| Sweden | 32.38 | 0.3223 | 0.3209 | 1.004 | 10.3907 | 10.389453 |
+| Germany | **26.92** | 0.3873 | 0.3873 | **1.000** | 10.4257 | 10.425679 |
+| France | **17.39** | 0.5574 | 0.5574 | **1.000** | 9.6935 | 9.693475 |
+| Poland | **12.36** | 0.3639 | 0.3639 | **1.000** | 4.5000 | 4.500000 |
+| the USA | **17.10** | 0.5438 | 0.5438 | **1.000** | 9.3001 | 9.300111 |
+| Italy | 43.00 | 0.2491 | 0.2491 | 1.000 | — | billed |
+
+The yield ratio is exactly one at the seed for all six, so no seeded budget moves by the change of level itself.
+
+**The family, `traj_f4s7` against `traj_f4s6`:** six dumps, two seeds × three horizons, every one of them diffed.
+
+- **The seed itself holds.** Germany's year-one GDP is the same figure to the last decimal (4 718.48975) and its year-one budget moves by 0.045 bn out of 111.5 - four hundredths of a per cent, the sixth decimal of the base row, which is what D-16's anchors are held to.
+- **Who diverges, and when.** The four re-levelled countries diverge from TURN 1 (the burden term and FT-5's wedge read the new level at once); Italy and Sweden, whose levels are untouched, diverge from TURN 3 - through trade and the energy market, the same coupling §514 measured.
+- **What moves.** Eight of seventy-seven fields are byte-identical across the whole trajectory. The largest RELATIVE movers are near-zero series and the diff's own header says to judge those on the absolute column: `SupplyUnemploymentExcess` moves 0.23 points at its worst and the Taylor gap term half a point. The substantive mover is the USA's `GovernmentConsumption`, 38.99 % at turn 100 on seed 777 - and 3.16 % on seed 424242, so it is a path, not a level.
+- **The attribution, measured not argued.** The same century with the AI finance ministry OFF on both trees (`traj_f45_before_off` against `traj_f45_after_off`): `GovernmentConsumption` and the schooling ratios that follow it LEAVE the ranked movers entirely. What remains is the level's own work - Poland's supply-side unemployment excess (77.7 % of a series worth 0.05 points) and the Taylor gap term (33.3 %, 0.054 pp), largest where the wedge fell furthest (Poland, 32 → 12.36). **So the USA's century-scale swing is the ministry spending a point it now prices correctly, and the rest is FT-5's wedge.**
+- **The revert is exact.** The 'before' tree is the committed one, restored by `git stash` on the six files this pass touches, and its dump reproduces `traj_f4s6_s777` BYTE FOR BYTE at t100, t500 and t1000. Nothing in this attribution rests on a hand-written reverse edit.
+- **The harness holds.** `ResponsivenessAuditHarness` reads the spending dials at 0.5013 / 0.5028 / 0.4984 against the ratchet 0.4984 - §512's re-based figures to the fourth decimal, no breach, and Ramey's band 3 of 3 on the cumulative column.
+- **The sentinel** moves to `traj_f4s7` in this commit, by its own rule.
+
+**Guards, each proved both ways** (`TaxScheduleDiagnostic` section 8, now over every schedule that responds rather than the two-layer one alone): 
+1. **`seed_top_rate`** - the seeding step skipped for Germany: all three fire at once - seeded at 45.0000 against the schedule's own 26.9164, `seed × base` 17.4301 against the realised 10.425679, and the point raising 0.6476 against the 0.3873 it is spent by.
+2. **`base_stale_f45`** - France's row left at the figure it had against the top rate: `seed × base` reads 3.7460 against 9.693475.
+3. **`usa_uniform`** - the USA's income row served the uniform stand-in again at the accessor: 6.8408 against 9.300111.
+4. **`carbon_rate_as_percent`** - the bridge instrument's own defect put back: Sweden's implied revenue reads **171.93 %** of GDP again, against the 39.20 the fixed instrument prints. The tree was checked clean after each restore.
+
+**What the guards caught in the building, and how it was fixed.** The first run of the family's diagnostics failed `HouseholdBurdenAnchorDiagnostic`: all four countries carried a nonzero household-burden gap AT THE SEED (Germany −0.070, France −0.154, Poland −0.071, the USA −0.108). The burden term compares today's household taxes against the rate at the seed, and that baseline (`Country.BaselineTaxRates`) is taken inside `SeedTaxLines`, where the literal top rate was still the line's rate - before any cohort existed, so before the level could be derived. The seeding step now re-takes it, and the gap closes to zero. Nothing was tuned: the defect was an ordering one, and the instrument named it in one line.
+
+
+**Decisions taken, strikeable.**
+1. **The level is the schedule's own average rate on taxed income** — derived from the engine's own arithmetic, not chosen from the statute's headline. The alternative t₀ the §514 record named (the median earner's marginal rate) prices the point wrong wherever the median sits inside one band, and no statute publishes it.
+2. **Sweden keeps the municipal 32.38** rather than the derived 32.24: where the statute names the rate, the statute's number is the one a row that cites the statute should show, and the derivation's own answer is within four tenths of a per cent.
+3. **The USA's income row is sourced federally**, partly lifting D-16 (a)'s USA exclusion for that row alone, on the perimeter that exclusion was made to protect.
+4. **The bridge instrument's carbon row is the tonnes' revenue**, not a rate times a share — a fix to an instrument this pass had to read, taken before any figure was read off it.
+5. **Italy is untouched**: billed and flat, its point prices exactly and it has no statute to average.
+
+**The registers.** `POLISIM_FEATURE_LIST.md` (F4-5 ✅), `POLISIM_TAX_SPECLET.md` (S6 generalised), `POLISIM_BACKLOG_PLAN.md` (the S4 row), and `ElectionsData/tax/README.md` gains the four revenue fetches with their keys, so the next pass re-fetches rather than recalls.
+
+**Bar:** the code tree carried both.
+- `bar494_f45` **38 of 38** on the cheap bar.
+- `bar495_f45_sim` **52 of 52** on the simulation bar, the sentinel first and green on `traj_f4s7`.
+- The record's tree - `bar497_rec517b` **38 of 38** on the tree this record reads - residue 5, 12 of 12 ratchets tight.
+
+
 

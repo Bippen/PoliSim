@@ -37,6 +37,10 @@ namespace PoliSim.EditorTools
         /// USA is EXCLUDED from `TaxBaseTable` by F-B's ruling (the federal perimeter), so these rows exist
         /// nowhere the game runs and are read here solely to SIZE the perimeter mismatch below. The five
         /// countries' rows moved into `TaxBaseTable` when D-16 (a) landed (2026-09-04) and are read from there.
+        /// ⚠ F4-5 (2026-09-16): the USA's INCOME row now lives in `TaxBaseTable` as well, on the FEDERAL series
+        /// (0.543803 = 9.300111 % of GDP over the lever's level, 17.1020). The general-government row below
+        /// (0.3077 = 11.384784 over the old top rate 37) stays, and stays local, because its job here is
+        /// unchanged: to size what a general-government base would do under a federal target.
         /// </summary>
         private static readonly Dictionary<string, float> Sourced = new Dictionary<string, float>
         {
@@ -76,6 +80,17 @@ namespace PoliSim.EditorTools
                 foreach (TaxLine line in c.TaxLines)
                 {
                     if (!line.IsImplemented || line.Type == TaxType.Tariffs) { continue; }
+                    // F4-5 (2026-09-16): THE CARBON TAX'S RATE IS NOT A PERCENTAGE. Since EN-4c (§465) it is the country's currency per tonne, so
+                    // `rate × a share of GDP` read Sweden's 1 480 kr/t as fourteen hundred points of tax and its implied revenue as 171.93 % of GDP
+                    // against the 39.20 the bridge was solved on. A rate that is not a rate cannot enter a sum of rates: this row is the tonnes' own
+                    // revenue over GDP, which is what the bridge always meant it to be (`TaxBases.RevenueAtRate`, the one accessor).
+                    if (line.Type == TaxType.CarbonTax)
+                    {
+                        float gdpNow = Mathf.Max(1f, c.State.NominalGdp);
+                        float carbonPct = TaxBases.RevenueAtRate(c, line.Type, line.Rate) / gdpNow * 100f;
+                        uniform += carbonPct; sourced += carbonPct;
+                        continue;
+                    }
 
                     float rate = line.Rate;
                     uniform += rate * TaxTypeBaseShares.GetBaseShareOfGdp(line.Type);

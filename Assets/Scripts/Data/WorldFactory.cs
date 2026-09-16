@@ -214,6 +214,10 @@ namespace PoliSim.Data
             // at the taxes in force on 31 December 2013; the ministry's page, the code article not reached). No installation register exists in this model,
             // so the exemption is applied at SECTOR level (TaxBases.Emissions, EnergyMarket's class doc state the deviation); heating fuels the model does not
             // carry stay outside. An unimplemented line seeds at 0, not a placeholder.
+            // ⚠ F4-5 (2026-09-16): THE `incomeTax` FIGURE BELOW IS THE STATUTE'S TOP RATE, and it is what the line is BUILT with, not what the game runs on.
+            // For every schedule with brackets <see cref="SeedIncomeLeverLevel"/> replaces it once the cohorts and their incomes exist with the schedule's own
+            // average rate on the income it taxes (Germany 26.92, France 17.39, Poland 12.36, the USA 17.10); Sweden's reads the statute's flat layer here already
+            // and stands, and Italy is billed and flat. `TaxBaseTable`'s row for each is that country's realised revenue over the rate it ends at.
             SeedTaxLines(usa, incomeTax: 37f, corporateTax: 21f, vat: 0f, vatImplemented: false,
                 payrollTax: 15.3f, capitalGainsTax: 20f, salesTax: 7f, salesTaxImplemented: true,
                 estateTax: 40f, estateTaxImplemented: true, carbonTax: 0f, carbonTaxImplemented: false);
@@ -273,7 +277,10 @@ namespace PoliSim.Data
             // 147.72 Mt = 6.59 bn EUR = 7.12 bn USD over 3 200). Italy, Poland and the USA: no carbon revenue before or after - unchanged. The tariff
             // decrement is re-taken on the new theoretical revenue. CarbonTaxUnitDiagnostic asserts the anchors (SE 42.04, DE 40.81, FR 45.22, IT 42.49,
             // PL 37.51): implied 39.3203 × 1.0692 = 42.041, 35.7612 × 1.1413 = 40.814, 38.5423 × 1.1731 = 45.214.
-            usa.CollectionEfficiency = 0.6119f;    // 0.6129 (18.0 / 29.37, federal-only, UNIFORM bases) - 0.0010
+            // F4-5 (2026-09-16): the USA's income row moves off the uniform stand-in onto the FEDERAL series (TaxBaseTable: 9.300111 % of GDP over the lever's
+            // new level 17.1020 = 0.543803), so its implied revenue falls from 29.37 to 23.87 % of GDP and the bridge is re-solved on it: 18.0 / 23.8701 = 0.7541,
+            // less the same 0.0010 seed tariff decrement. The federal target 18.0 is untouched, and the other three lines keep the stand-in (F-B).
+            usa.CollectionEfficiency = 0.7531f;    // 0.7541 (18.0 / 23.8701, federal-only, the income row sourced) - 0.0010; F4-3 and before: 0.6119 = 0.6129 (18.0 / 29.37, UNIFORM bases) - 0.0010
             // EN-4d (2026-09-11, §467): the carbon line's tonnes are transport's alone, so the three implemented lines' implied revenue-to-GDP falls by the
             // power share of the seed's carbon take - Sweden 0.393 % × 0.56 / 1.82 = 0.121 (implied 39.3203 → 39.1994), Germany 0.220 % × 2.13 / 3.81 = 0.123
             // (35.7612 → 35.6382), France 0.223 % × 0.35 / 2.14 = 0.036 (38.5423 → 38.5058) - and the bridge is re-solved to hold the anchors:
@@ -1064,6 +1071,7 @@ namespace PoliSim.Data
                 }
             }
 
+            foreach (Country c in world.Countries) { SeedIncomeLeverLevel(c); }   // F4-5 (2026-09-16): the lever's LEVEL for a schedule with brackets, read off the statute
             foreach (Country c in world.Countries) { c.CaptureStructuralBases(); }   // P4-C3: the seeds above are the bases the structural laws compose on
             HealthFamily.SeedAll(world);   // P5-C2 (2026-09-05): the health family's seeds and bases, after the lines and the cabinet exist
             EducationFamily.SeedAll(world);   // P5-C3 (2026-09-06)
@@ -1094,6 +1102,42 @@ namespace PoliSim.Data
         private const float ModestPropertyTaxRate = 1f;
         private const float ModestWealthTaxRate = 1.5f;
         private const float ModestStampDutyRate = 1f;
+
+        /// <summary>
+        /// F4-5 (2026-09-16): THE INCOME LEVER'S LEVEL FOR A SCHEDULE WITH BRACKETS - the statute's own average rate on the income it taxes
+        /// (<see cref="TaxSchedule.AverageRateOnTaxedIncome"/>), read off the schedule against this country's own cohorts rather than typed.
+        ///
+        /// <para><b>Why not the top rate.</b> The four bracketed schedules were seeded at their statutes' TOP rates (Germany and France 45, Poland 32,
+        /// the USA 37). The revenue engine anchors the line at the seeded rate times the sourced base and moves it by the statute's yield ratio, so a
+        /// seed far above the rate the taxed income actually pays prices one point of the lever 1.67 (Germany), 2.16 (the USA) and 2.59 (France and
+        /// Poland) times what the AI finance ministry spends a point by, and FT-5 divides the wage creep by the after-tax share of a rate almost nobody
+        /// faces. The average on taxed income prices the point at one by construction.</para>
+        ///
+        /// <para><b>Sweden keeps its statute's own figure</b> (§514: the municipal layer, 32.38, which every krona pays). Where a statute names one rate
+        /// on all taxed income, that rate IS the average on it - the derivation returns 32.24 against the typed 32.38, four tenths of a per cent apart -
+        /// and the statute's own number is the better one to show on a row that cites the statute. Italy is BILLED and flat and prices its point exactly.</para>
+        ///
+        /// <para>Called once, after the cohorts and their incomes exist and before <see cref="Country.CaptureStructuralBases"/> takes the seeds, so the
+        /// yield reference, the shift's origin and FT-5's wage wedge all read the same figure. `TaxBaseTable`'s row for each country is that country's
+        /// sourced revenue over THIS rate; `TaxScheduleDiagnostic` section 8 asserts the three of them together.</para>
+        /// </summary>
+        private static void SeedIncomeLeverLevel(Country country)
+        {
+            if (country == null || !TaxSchedule.Responds(country.Id)) { return; }
+            if (TaxSchedule.Of(country.Id).Kind == TaxScheduleKind.TwoLayer) { return; }   // Sweden: the statute's own flat layer stands (§514)
+            double rate = TaxSchedule.AverageRateOnTaxedIncome(country);
+            if (rate <= 0.0) { return; }
+            foreach (TaxLine line in country.TaxLines)
+            {
+                if (line.Type != TaxType.IncomeTax) { continue; }
+                line.Rate = (float)rate;
+                line.RateSeed = (float)rate;
+                // The burden term's baseline is THE RATE AT THE SEED (FT-3, §377), and the seed is this figure: `SeedTaxLines` took the literal when it
+                // built the line, before any cohort existed, so it is re-taken here. Left stale, the household burden gap opens at the seed itself -
+                // which is what `HouseholdBurdenAnchorDiagnostic` caught on this pass's first run (Germany −0.070, France −0.154, Poland −0.071, the USA −0.108).
+                country.BaselineTaxRates[line.Type] = line.Rate;
+            }
+        }
 
         /// <summary>
         /// Builds one country's starting TaxLine portfolio. IncomeTax/CorporateTax/PayrollTax/

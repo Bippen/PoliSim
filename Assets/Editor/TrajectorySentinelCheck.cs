@@ -16,17 +16,17 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class TrajectorySentinelCheck
     {
-        /// <summary>The baseline these digests are the first turns of: `traj_f4s6` - F4-3, Sweden's blended 52 retired into the municipal layer's 32.38 with its base re-derived and the bridge re-solved (§514) (was `traj_t3a`).</summary>
-        public const string BaselineLabel = "f4s6";
+        /// <summary>The baseline these digests are the first turns of: `traj_f4s7` - F4-5 (§517): the income lever of the four bracketed schedules seeded at the schedule's own average rate on the income it taxes, every base re-derived for it, the USA's income row sourced federally (was `traj_f4s6`).</summary>
+        public const string BaselineLabel = "f4s7";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_f4s6_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_f4s7_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "470af57ef466354234df39dd35408e821baae76f89d72246ba97bc86bbea8129"),
-            (424242, "d0dfc6a80755982bb5f06e1f8d08b827be47b88e2f0bf3df8188b18a10de227d"),
+            (777, "02458854eedf2b43bb47e2a2a6ef97ee25fe10bc44db4c31555c784f42aa54fe"),
+            (424242, "a7ec054f019d99099c7ab32346daf3298f2d00a99b0b34c04034019587904666"),
         };
 
         public static void Run()

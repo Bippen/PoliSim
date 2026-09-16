@@ -201,14 +201,40 @@ namespace PoliSim.EditorTools
                 float baseShare = TaxBases.Base(c, TaxType.IncomeTax) / gdp;   // the base per point, as a share of GDP - one point of rate on it is this many per cent of GDP
                 sb.Append(F("    {0,-8} seed rate {1:F2} % against the statute's yield {2:F2} % · a point raises {3:F4} % of GDP · the base a point is spent by {4:F4} % of GDP · raised over priced {5:F3}\n",
                     id, line.RateSeed, c.IncomeTaxSeedAer, perPoint, baseShare, baseShare > 0f ? perPoint / baseShare : 0f));
-                TaxSchedule.Statute st = TaxSchedule.Of(id);
-                if (st.Kind == TaxScheduleKind.TwoLayer)
+                // F4-5 (2026-09-16): what the schedule would have to be seeded at for that ratio to be one - its own average rate on the income it taxes,
+                // with the taxed share it implies and the base that rate derives from the realised revenue this row is sourced on.
+                if (TaxSchedule.Responds(id))
                 {
-                    // F4-3's three verdicts (§514): the blend cannot come back, the base is the source over the rate it is read against, and the point is priced right
-                    if (Math.Abs(line.RateSeed - (float)st.FlatLayerRate) > 1e-4f) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s two-layer line is seeded at {1:F2} %, not its municipal layer's {2:F2} % - the blended rate F4-3 retired is back.", id, line.RateSeed, st.FlatLayerRate)); }
-                    double anchoredPct = line.RateSeed * TaxBaseTable.BaseShareOfGdp(id, TaxType.IncomeTax);
-                    sb.Append(F("    {0,-8} the seeded rate × the sourced base {1:F4} % of GDP against the realised {2:F6} % (T_1110, general government, 2022)\n", id, anchoredPct, TaxBaseTable.SwedenIncomeTaxRevenuePctOfGdp));
-                    if (Math.Abs(anchoredPct - TaxBaseTable.SwedenIncomeTaxRevenuePctOfGdp) > 0.002) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s seeded rate × its base reads {1:F4} % of GDP against the realised {2:F6} % - the row was not re-derived for the rate it is read against.", id, anchoredPct, TaxBaseTable.SwedenIncomeTaxRevenuePctOfGdp)); }
+                    double onTaxed = TaxSchedule.AverageRateOnTaxedIncome(c);
+                    double taxedShare = onTaxed > 0 ? c.IncomeTaxSeedAer / onTaxed : 0.0;
+                    double realised = line.RateSeed * baseShare;   // the revenue the row's base and seed stand on, % of GDP - the sourced figure by construction
+                    sb.Append(F("    {0,-8} its own average rate on the income it taxes {1:F4} % (taxed share {2:F6}) · that seed derives the base {3:F6} from the realised {4:F6} % of GDP\n",
+                        id, onTaxed, taxedShare, onTaxed > 0 ? realised / onTaxed : 0.0, realised));
+                }
+                TaxSchedule.Statute st = TaxSchedule.Of(id);
+                if (TaxSchedule.Responds(id))
+                {
+                    // F4-3's three verdicts (§514), extended by F4-5 (2026-09-16) to EVERY schedule that responds:
+                    // (1) the lever's level is the rate the statute names where it names one every unit of taxed income pays - Sweden's municipal layer -
+                    //     and its own average rate on taxed income everywhere else. A blend, or a top rate, is a level nothing in the statute holds.
+                    if (st.Kind == TaxScheduleKind.TwoLayer)
+                    {
+                        if (Math.Abs(line.RateSeed - (float)st.FlatLayerRate) > 1e-4f) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s two-layer line is seeded at {1:F2} %, not its municipal layer's {2:F2} % - the blended rate F4-3 retired is back.", id, line.RateSeed, st.FlatLayerRate)); }
+                    }
+                    else
+                    {
+                        double onTaxedSeed = TaxSchedule.AverageRateOnTaxedIncome(c);
+                        if (Math.Abs(line.RateSeed - onTaxedSeed) > 0.01) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s line is seeded at {1:F4} % against the schedule's own average rate on the income it taxes, {2:F4} % - either the seeding step did not run or the statute moved under the table (F4-5).", id, line.RateSeed, onTaxedSeed)); }
+                    }
+                    // (2) the base is the country's own realised revenue over the rate the row is read against.
+                    if (TaxBaseTable.IncomeTaxRevenuePctOfGdp.TryGetValue(id, out double sourcedPct))
+                    {
+                        double anchoredPct = line.RateSeed * TaxBaseTable.BaseShareOfGdp(id, TaxType.IncomeTax);
+                        sb.Append(F("    {0,-8} the seeded rate × the sourced base {1:F4} % of GDP against the realised {2:F6} %\n", id, anchoredPct, sourcedPct));
+                        if (Math.Abs(anchoredPct - sourcedPct) > 0.002) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s seeded rate × its base reads {1:F4} % of GDP against the realised {2:F6} % - the row was not re-derived for the rate it is read against.", id, anchoredPct, sourcedPct)); }
+                    }
+                    else { ok = false; Debug.LogError(F("TAX SCHEDULE: {0} responds to a statute but no realised revenue is on record for its income row - a base cannot be derived and nothing states what it stands on (F4-5).", id)); }
+                    // (3) one point of the lever raises one point of the base the ministry spends it by.
                     if (baseShare <= 0f || Math.Abs(perPoint / baseShare - 1f) > 0.05f) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s lever point raises {1:F4} % of GDP against the {2:F4} % it is spent by - priced off a rate that is not the statute's yield.", id, perPoint, baseShare)); }
                 }
             }

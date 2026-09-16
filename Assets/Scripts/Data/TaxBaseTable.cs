@@ -26,6 +26,12 @@ namespace PoliSim.Data
     /// never as efficiency. The anchored quantity (the year-1 primary balance) is preserved exactly by construction;
     /// what moves is the RESPONSE family - a point of income tax now costs each country its own base's worth.</para>
     ///
+    /// <para>⚠ <b>F4-5 (2026-09-16) puts the USA's INCOME row in, on the federal series, and leaves its other three out.</b> The paragraph below is D-16's
+    /// and stands for corporate, VAT and payroll: their sourced figures are general government and the USA's calibration is federal, so they keep the uniform
+    /// stand-in. The income row is different because the same OECD flow publishes it at the FEDERAL level (`S1311`, 9.300111 % of GDP in 2022 against 11.384784
+    /// at general government), which is the perimeter this project calibrates on - the exclusion's reason does not reach it. The USA's `CollectionEfficiency`
+    /// is re-solved for the change, and the income line it prices is the one the lever moves.</para>
+    ///
     /// <para>⚠ <b>The USA is EXCLUDED, with F-B's reason (Elias, 2026-09-01: keep the federal perimeter).</b> The
     /// sourced bases are GENERAL GOVERNMENT for all six; the USA's whole calibration is FEDERAL by `WorldFactory`'s
     /// perimeter rule, because the state and local layer is not modelled. A general-government base under a federal
@@ -46,11 +52,15 @@ namespace PoliSim.Data
         /// <summary>The sourced bases, keyed "CountryId/TaxType". [VERIFIED] revenue (OECD/Eurostat, 2022) over the seeded rate; see the class doc.</summary>
         private static readonly Dictionary<string, float> Sourced = new Dictionary<string, float>
         {
-            { "Germany/IncomeTax", 0.2317f }, { "Germany/CorporateTax", 0.0772f }, { "Germany/VAT", 0.3860f }, { "Germany/PayrollTax", 0.3673f },
-            { "France/IncomeTax", 0.2154f },  { "France/CorporateTax", 0.1139f },  { "France/VAT", 0.3745f },  { "France/PayrollTax", 0.2469f },
-            { "Italy/IncomeTax", 0.2491f },   { "Italy/CorporateTax", 0.1106f },   { "Italy/VAT", 0.3151f },   { "Italy/PayrollTax", 0.4257f },
-            { "Poland/IncomeTax", 0.1406f },  { "Poland/CorporateTax", 0.1474f },  { "Poland/VAT", 0.3132f },  { "Poland/PayrollTax", 0.3775f },
-            { "Sweden/IncomeTax", 0.3209f },  { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
+            // F4-5 (2026-09-16): the four bracketed schedules' income rows are re-derived for the lever's new level - the schedule's own average rate on the
+            // income it taxes, not its statutory top rate - so each row is still that country's realised revenue over the rate the row is read against.
+            { "Germany/IncomeTax", 0.387336f }, { "Germany/CorporateTax", 0.0772f }, { "Germany/VAT", 0.3860f }, { "Germany/PayrollTax", 0.3673f },
+            { "France/IncomeTax", 0.557394f },  { "France/CorporateTax", 0.1139f },  { "France/VAT", 0.3745f },  { "France/PayrollTax", 0.2469f },
+            { "Italy/IncomeTax", 0.2491f },     { "Italy/CorporateTax", 0.1106f },   { "Italy/VAT", 0.3151f },   { "Italy/PayrollTax", 0.4257f },
+            { "Poland/IncomeTax", 0.363939f },  { "Poland/CorporateTax", 0.1474f },  { "Poland/VAT", 0.3132f },  { "Poland/PayrollTax", 0.3775f },
+            { "Sweden/IncomeTax", 0.3209f },    { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
+            // THE USA's INCOME ROW ONLY, on the FEDERAL perimeter (F4-5): its other three keep the uniform stand-in, as F-B ruled.
+            { "USA/IncomeTax", 0.543803f },
         };
 
         /// <summary>
@@ -62,7 +72,30 @@ namespace PoliSim.Data
         /// </summary>
         public const double SwedenIncomeTaxRevenuePctOfGdp = 10.389453;
 
-        /// <summary>True for a country the table covers - the five on the general-government perimeter. False for the USA (F-B: the federal perimeter; the uniform stand-in stays) and for any country seeded later without a row.</summary>
+        /// <summary>
+        /// F4-5 (2026-09-16): the realised revenue each income row is derived from, % of GDP, 2022 - that figure over the rate the row is read against IS the
+        /// row above, so a re-seeded rate re-derives its row and this table says from what. Every figure re-fetched on the day, not recalled:
+        /// <list type="bullet">
+        /// <item>Germany <b>10.425679</b> and France <b>9.693475</b> - OECD Revenue Statistics (`DSD_REV_COMP_OECD` 2.0), taxes on the income and profits of
+        /// individuals (`T_1110`), general government (`S13`), keys `DEU.TAX_REV.S13.T_1110._T.PT_B1GQ.A` and `FRA.TAX_REV.S13.T_1110._T.PT_B1GQ.A`. Both
+        /// reproduce the D-9 sheet's own rows over the old top rates (45 × 0.2317 = 10.4265; 45 × 0.2154 = 9.693), so the source confirms the table it re-derives.</item>
+        /// <item>Poland <b>4.5</b> - Eurostat `gov_10a_taxag`, D51A, general government, % of GDP, 2022 (the OECD flow carries no income rows for Poland in any
+        /// of 2020-2023, which is D-16's own note); it reproduces 32 × 0.1406 = 4.4992.</item>
+        /// <item>The USA <b>9.300111</b> - the same OECD flow at the FEDERAL level (`USA.TAX_REV.S1311.T_1110._T.PT_B1GQ.A`). This is the row D-16 (a) could not
+        /// take: it excluded the USA because the sourced bases were general government (the USA reads 11.384784 there) while this project calibrates the USA on the
+        /// FEDERAL perimeter. The federal series is that perimeter, so the reason for the exclusion does not hold for this one row, and F-B's rule - consistency
+        /// inside a country outranks uniformity across the set - is what puts it in. Its other three instruments stay on the uniform stand-in.</item>
+        /// </list>
+        /// </summary>
+        public static readonly System.Collections.Generic.IReadOnlyDictionary<CountryId, double> IncomeTaxRevenuePctOfGdp = new Dictionary<CountryId, double>
+        {
+            { CountryId.Germany, 10.425679 }, { CountryId.France, 9.693475 }, { CountryId.Poland, 4.5 },
+            { CountryId.USA, 9.300111 }, { CountryId.Sweden, SwedenIncomeTaxRevenuePctOfGdp },
+        };
+
+        /// <summary>True for a country the table covers WHOLE - the five on the general-government perimeter. False for the USA, whose corporate, VAT and payroll
+        /// rows are still the uniform stand-in (F-B: the federal perimeter), even though F4-5 sources its INCOME row federally - ask <see cref="HasSourcedBase"/>
+        /// for one instrument. False for any country seeded later without a row.</summary>
         public static bool IsSourced(CountryId country) => country != CountryId.USA && Sourced.ContainsKey(country + "/IncomeTax");
 
         /// <summary>True when this country and instrument have a sourced row.</summary>
@@ -71,12 +104,13 @@ namespace PoliSim.Data
         /// <summary>
         /// The base a revenue site multiplies `GDP × rate` by: the sourced share for a sourced pair, otherwise
         /// the uniform stand-in for that instrument (<see cref="TaxTypeBaseShares.GetBaseShareOfGdp"/>).
-        /// ⚠ The USA is served the stand-in on purpose - F-B's perimeter reason in the class doc - and not by an
-        /// absence in the table.
+        /// ⚠ The USA is served the stand-in on purpose for corporate, VAT and payroll - F-B's perimeter reason in the
+        /// class doc - and not by an absence in the table; its INCOME row is in the table on the FEDERAL series (F4-5),
+        /// which is the perimeter that reason defends, so the table answers for it.
         /// </summary>
         public static float BaseShareOfGdp(CountryId country, TaxType type)
         {
-            if (country != CountryId.USA && Sourced.TryGetValue(country + "/" + type, out float share))
+            if ((country != CountryId.USA || type == TaxType.IncomeTax) && Sourced.TryGetValue(country + "/" + type, out float share))
             {
                 return share;
             }
