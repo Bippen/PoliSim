@@ -11531,10 +11531,28 @@ namespace PoliSim.UI
             {
                 for (float x = x0; x < x1; x += 4f * scale) { PoliSimTheme.Rule(new Rect(x, lineY - 0.5f, Mathf.Min(1.5f * scale, x1 - x), 1f), PoliSimTheme.TextMuted); }
             }
+            // Board 15c-r3: ONE state mark, whichever state draws it. The marks are painted after the slider, so a mark under the knob paints on the knob's own
+            // face and reads as shading on it - 15c-r2's held mark stopped INSIDE the face (it was placed half a knob below the track's centre line, but IMGUI
+            // top-aligns the thumb, so the face's bottom is a whole sprite height below track.y), and Germany's and Italy's half-ink history marks sat inside the
+            // face two months from the knob, which at 1280 is six pixels. Where the face covers the track the mark BRACKETS the knob instead: a sliver above the
+            // track and a stub that runs from the face's last rows to clear of the whole sprite, both in the mark's own ink.
+            void StateTick(float x, Color ink)
+            {
+                if (LedgerRow.UnderKnob(x, knobX, scale))
+                {
+                    Tick(x, track.y - Mathf.Max(3f, 3f * scale), Mathf.Max(3f, 3f * scale), ink);
+                    // the stub starts ON the face's last rows, so it reads as one mark with what shows above the track, and ends clear of the whole sprite -
+                    // a stub that began below the face floated, and one that stopped at the face's own last row only cleared the knob by two pixels
+                    float stubTop = LedgerRow.KnobFaceBottom(track, scale) - 2f * scale;
+                    Tick(x, stubTop, LedgerRow.KnobSpriteBottom(track, scale) + Mathf.Max(4f, 5f * scale) - stubTop, ink);
+                }
+                else { Tick(x, track.y - 2f * scale, track.height + 4f * scale, ink); }
+            }
             string Y(int y) => y.ToString(CultureInfo.InvariantCulture);
 
             // the track: what the state draws - figures only, each a value at its position
             var labels = new List<string>();
+            var labelX = new List<float>();   // board 15c-r3: the tick each label names, so a run the track cannot hold keeps the last figure OVER its own tick
             float spanLeft = knobX, spanRight = knobX;
             Color labelInk = PoliSimTheme.TextMuted;
             PensionAgeStatute.PathPoint[] ahead = PensionAgeStatute.TicksAhead(country.Id, year);
@@ -11542,11 +11560,11 @@ namespace PoliSim.UI
             {
                 case PensionMarkState.HeldWindow:
                 {
-                    // the law's tick under the knob, drawn taller so it shows beneath it - law and figure at one value; the span is the window it holds
-                    float knobBottom = lineY + 11.5f * scale;
-                    Tick(knobX, knobBottom - 1f * scale, 6f * scale, PoliSimTheme.TextMuted);
+                    // the law's mark at the knob's own value, bracketing the face so it shows above and below it - law and figure at one value; the span is the window it holds
+                    StateTick(knobX, PoliSimTheme.TextMuted);
                     int since = PensionAgeStatute.InForceSince(country.Id, year);
                     labels.Add(PensionAgeStatute.Format(age) + " · " + (since == rule.DatedTo ? Y(since) : Y(since) + "–" + Y(rule.DatedTo)) + " · HELD");
+                    labelX.Add(knobX);
                     labelInk = PoliSimTheme.TextPrimary;
                     break;
                 }
@@ -11557,8 +11575,9 @@ namespace PoliSim.UI
                     foreach (PensionAgeStatute.PathPoint p in ahead)
                     {
                         float x = X(p.Age);
-                        Tick(x, track.y - 2f * scale, track.height + 4f * scale, PoliSimTheme.TextMuted);
+                        StateTick(x, PoliSimTheme.TextMuted);
                         labels.Add(PensionAgeStatute.Format(p.Age) + " · " + Y(p.Year));
+                        labelX.Add(x);
                         lastX = Mathf.Max(lastX, x);
                         spanLeft = Mathf.Min(spanLeft, x); spanRight = Mathf.Max(spanRight, x);
                     }
@@ -11586,14 +11605,16 @@ namespace PoliSim.UI
                     if (history.HasValue)
                     {
                         float x = X(history.Value.Age);
-                        Tick(x, track.y - 2f * scale, track.height + 4f * scale, PoliSimTheme.Tint(PoliSimTheme.TextMuted, 0.5f));
+                        StateTick(x, PoliSimTheme.Tint(PoliSimTheme.TextMuted, 0.5f));
                         labels.Add(PensionAgeStatute.Format(history.Value.Age) + " · " + Y(history.Value.Year));
+                        labelX.Add(x);
                         spanLeft = Mathf.Min(spanLeft, x); spanRight = Mathf.Max(spanRight, x);
                     }
                     break;
                 }
                 default:
                     labels.Add(PensionAgeStatute.Format(age) + " · NO PATH");
+                    labelX.Add(knobX);
                     labelInk = PoliSimTheme.TextPrimary;
                     break;
             }
@@ -11604,7 +11625,14 @@ namespace PoliSim.UI
                 string run = string.Join("   ", labels);
                 GUIStyle labelFace = Inked(new GUIStyle(face) { alignment = TextAnchor.LowerLeft, clipping = TextClipping.Clip }, labelInk);
                 float w = Mathf.Ceil(face.CalcSize(new GUIContent(run)).x) + 2f;
-                if (w > track.width && labels.Count > 1) { run = labels[labels.Count - 1]; w = Mathf.Ceil(face.CalcSize(new GUIContent(run)).x) + 2f; }   // a run the track cannot hold keeps the last figure, the path's end
+                // a run the track cannot hold keeps the last figure, the path's end - and board 15c-r3: it is then centred on THAT figure's own tick, not on the
+                // span the dropped labels made (15c-r2 re-centred on the span, which put Germany's surviving `67 · 2031` 12 px left of the tick it names)
+                if (w > track.width && labels.Count > 1)
+                {
+                    run = labels[labels.Count - 1];
+                    w = Mathf.Ceil(face.CalcSize(new GUIContent(run)).x) + 2f;
+                    spanLeft = spanRight = labelX[labels.Count - 1];
+                }
                 float lx = Mathf.Clamp((spanLeft + spanRight) * 0.5f - w * 0.5f, track.x, Mathf.Max(track.x, track.xMax - w));
                 GUI.Label(new Rect(lx, track.y - 1f * scale - capH, Mathf.Min(w, track.width), capH), run, labelFace);
             }

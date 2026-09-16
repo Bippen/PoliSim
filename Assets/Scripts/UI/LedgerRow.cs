@@ -576,6 +576,24 @@ namespace PoliSim.UI
         public static float LastTickPitch;
         /// <summary>Board 15c-r2: the gradation ticks' width and ink as drawn - the track's own end-mark is one of them.</summary>
         public static float GradationTickWidth(float scale) => Mathf.Max(1f, RefTickWidth * scale * 0.5f);
+        /// <summary>Board 15c-r3 (2026-09-16): the knob sprite as the slider draws it - <see cref="KnobStyle"/> takes its fixed size from these two, so a
+        /// caller marking the track cannot drift from the face that covers it. IMGUI's horizontal slider TOP-ALIGNS the thumb to the track rect, so the knob's
+        /// bottom is <see cref="KnobHeight"/> below <c>track.y</c>, NOT half a knob below the track's centre line (15c-r2 assumed the centre and its held tick
+        /// stopped inside the knob's face).</summary>
+        public static float KnobWidth(float scale) => Mathf.Round(RefKnobSpriteWidth * scale);
+        public static float KnobHeight(float scale) => Mathf.Round(RefKnobSpriteHeight * scale);
+        /// <summary>Board 15c-r3: the sprite's own transparent margins, measured off the PNG's alpha (both faces, live and disabled, are 30x46 with the opaque
+        /// face at x 3..26 and y 2..41): what covers the track is the FACE, not the rect, and a mark keyed to the rect misses by a fifth of a knob.</summary>
+        private const float KnobFaceWidthFraction = 24f / 30f;
+        private const float KnobFaceBottomFraction = 42f / 46f;
+        /// <summary>The bottom edge of the knob's drawn FACE on <paramref name="track"/>, in the track rect's space - where the sprite's opaque rows stop.</summary>
+        public static float KnobFaceBottom(Rect track, float scale) => track.y + KnobHeight(scale) * KnobFaceBottomFraction;
+        /// <summary>The bottom of the whole sprite, the face's soft rows included: on film those rows still read as knob, so a mark meant to show BENEATH the
+        /// knob has to clear this, not the face (the first cut cleared the face by two pixels and read as a knob with a chin).</summary>
+        public static float KnobSpriteBottom(Rect track, float scale) => track.y + KnobHeight(scale);
+        /// <summary>Whether a mark at <paramref name="x"/> falls under the knob's face at <paramref name="knobX"/> - the knob is drawn before the caller's
+        /// marks, so a mark inside this reach paints on the face and reads as shading on it unless it is drawn clear of the face.</summary>
+        public static bool UnderKnob(float x, float knobX, float scale) => Mathf.Abs(x - knobX) <= KnobWidth(scale) * KnobFaceWidthFraction * 0.5f;
         /// <summary>BR-1: the last row's grain and the step its draft snaps to, in the row's units, so a caller can state a coarse step in the band.</summary>
         public static float LastGrain = 1f;
         public static float LastStep = SnapStep;
@@ -653,7 +671,7 @@ namespace PoliSim.UI
         {
             if (_knobStyle == null || !Mathf.Approximately(_knobScale, scale))
             {
-                _knobStyle = new GUIStyle(thumbStyle) { fixedWidth = Mathf.Round(RefKnobSpriteWidth * scale), fixedHeight = Mathf.Round(RefKnobSpriteHeight * scale) };
+                _knobStyle = new GUIStyle(thumbStyle) { fixedWidth = KnobWidth(scale), fixedHeight = KnobHeight(scale) };
                 _knobDisabledStyle = new GUIStyle(_knobStyle);
                 Texture2D disabled = IconLibrary.GetChrome("ui_slider_knob_disabled");
                 if (disabled != null) { _knobDisabledStyle.normal.background = disabled; _knobDisabledStyle.hover.background = disabled; _knobDisabledStyle.active.background = disabled; _knobDisabledStyle.focused.background = disabled; }
