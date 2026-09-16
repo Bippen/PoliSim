@@ -28933,3 +28933,25 @@ The record's tree - `bar487_rec514` **38 of 38** on the tree this record reads -
 - `bar490_r3c` **38 of 38** on the code tree the films were shot from, with the pension diagnostic's 126 states and 378 band rungs unchanged.
 - The record's tree - `bar491_rec515` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
 
+## 516. THE 15c-r3 RETURN CUT AS ONE ARCHIVE — the reading, the four marks and the eleven flags in one file, every artefact verified by digest on the way in and on the way out (2026-09-16)
+
+**Why one file.** E-36's paste reached Design's project as its manifest alone; E-37's archive landed whole and was answered the same night. The route that works is the one this return takes: `AssetPackArchive/D20_return3.zip`, with `SEND_PACKAGE.md` and `MANIFEST.sha256` inside it at the root, so `sha256sum -c MANIFEST.sha256` checks every file after the upload.
+
+**What is in it.** 27 artefacts, plus the manifest document and the digest list:
+- the four documents the return is made of — the request doc with the 2026-09-16 status at its head, `ERRANDS.md` (E-38 this return, E-37 closed), `COMPLETED.md` (§515 and the records behind it) and `POLISIM_FEATURE_LIST.md` (PN-1's row re-cut);
+- the statute layer the flags turn on — `ElectionsData/pensions/README.md` and `statutory_ages.csv`, from which Sweden's 2033 and Italy's 2028 are read;
+- the row in every state: eighteen frames at 1280 (six countries in the film's year, 2026 and 2034) and three at 2560 — Sweden's band with its citation, Italy's the same, and France's two clauses at width.
+
+**The cut, checked both ways.** Every row is copied into a staging folder and verified against `SEND_PACKAGE.md`'s recorded digest and byte count AS IT IS COPIED, and against its source; the manifest is written from the copies; the archive is then extracted into a fresh folder and every line re-checked with `sha256sum -c`. A single MISSING or DIFFERS row fails the cut and no archive is written.
+- In: 27 rows staged, 27 matched their recorded digest and byte count as they were copied, none differed and none was missing. Out: 29 files extracted from the written archive (18.9 MB, `23d7ddf92f081085484221f43e875e75fa6fd5dc08ef4fbe1ee3675c73dd5b08`), 28 of 28 manifest lines OK under `sha256sum -c` and none FAILED.
+
+**Decisions taken, strikeable.**
+1. **The whole state set travels, not a sample.** The board's cells are claims about which country is in which state and when; the frames that settle them are the ones this archive carries.
+2. **Three frames at 2560, not fifteen.** The 2560 frames answer one question each (what the band prints at width); the rest would be weight.
+3. **Nothing is asked in the return.** Design's board says nothing is owed, and the eleven flags are corrections to their ink, not questions.
+
+**The registers.** `ERRANDS.md`: E-38 gains the archive's name and digest. `SEND_PACKAGE.md` is re-cut as this return (the 15c-r2 manifest it replaces is in §511's archive, which Design already holds).
+
+**Bar:** the documents' bar — `bar493_rec516b` **38 of 38** on the tree this record reads - residue 6, 12 of 12 ratchets tight.
+
+
