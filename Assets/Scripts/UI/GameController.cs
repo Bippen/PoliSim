@@ -11734,7 +11734,7 @@ namespace PoliSim.UI
             if (band.width <= 8f) { return; }
             GUIStyle face = LedgerRow.CaptionStyle(_labelStyle);
             float end = band.width * (captionShown ? 0.2f : 0.35f);
-            string driver = SpendingDrivers.Short(SpendingDrivers.Of(line.Category));
+            string driver = SpendingDrivers.Short(SpendingDrivers.Of(line.Category), _playerCountry);   // PN-1's driver (§520): the pension line's band reads the age in force
             string leftFull = line.Pinned ? "PINNED"   // 9b: a driver STATE like NO DRIVER - a word, nowhere else
                 : SpendingDrivers.Of(line.Category) == SpendingDriver.None ? "NO DRIVER"
                 : line.LastDriverRatio > 0f ? driver + " ×" + line.LastDriverRatio.ToString("F3", CultureInfo.InvariantCulture) : driver;

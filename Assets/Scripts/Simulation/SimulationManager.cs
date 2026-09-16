@@ -267,6 +267,7 @@ namespace PoliSim.Simulation
         public bool AdvanceDay()
         {
             CurrentDate = CurrentDate.AddDays(1);
+            CommitCalendarYear();   // PN-1's driver (§520): the year the pension line's driver reads is the clock's
             // F2 step 4: which day of the turn's year this is (1..DaysPerTurn) - the cohort substrate
             // reads its year at this fraction. Derived from the same day count the boundary test uses.
             int dayOfTurn = ((int)(CurrentDate - EpochDate).TotalDays - 1) % DaysPerTurn + 1;
@@ -2053,6 +2054,17 @@ namespace PoliSim.Simulation
         {
             _world = world;
             SeedPublishedHistory();
+            CommitCalendarYear();   // PN-1's driver (§520): the countries read the clock's year from the first day
+        }
+
+        /// <summary>PN-1's driver (2026-09-16, §520): the clock's calendar year committed to every country (Country.CalendarYear), so a reader without a
+        /// clock - the pension line's driver, which counts the cohorts at or above the age the statute has in force THIS year - reads the year the turn is
+        /// in. Called where the clock is set or moved: SetWorld, RestoreSaveState, AdvanceDay. An int, written only; nothing in the daily arithmetic reads it.</summary>
+        private void CommitCalendarYear()
+        {
+            if (_world == null) { return; }
+            int year = CurrentDate.Year;
+            foreach (Country c in _world.Countries) { c.CalendarYear = year; }
         }
 
         /// <summary>
@@ -2527,6 +2539,7 @@ namespace PoliSim.Simulation
             SetWorld(world);
             CurrentTurn = currentTurn;
             CurrentDate = currentDate;
+            CommitCalendarYear();   // PN-1's driver (§520): a restored world reads the restored clock's year, not the seed's
 
             // OLD-SAVE BASE ADOPTION (pass 3, coexistence ruling 2026-08-26): a save written
             // before the statutory-base fields existed restores them at their -1 sentinel; adopt
@@ -3561,6 +3574,7 @@ namespace PoliSim.Simulation
                 LaborTaxRateSeed = country.LaborTaxRateSeed,
                 IncomeTaxSeedAer = country.IncomeTaxSeedAer,
                 RealWageIndexAtLastIndex = country.RealWageIndexAtLastIndex,
+                CalendarYear = country.CalendarYear,   // PN-1's driver (§520): the year the pension line's driver reads - the clone audit names it the day it is dropped
                 DebtRatioSeed = country.DebtRatioSeed,
                 DebtRatioLastReport = country.DebtRatioLastReport,
                 DebtRatioReportBefore = country.DebtRatioReportBefore,

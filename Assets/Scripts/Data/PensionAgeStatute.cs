@@ -203,7 +203,7 @@ namespace PoliSim.Data
         }
 
         /// <summary>Board 15c-r2: the figure cell's second line (9b's line under the figure) - where the figure comes from. CARRIED FROM the horizon for a
-        /// carried figure; THE STATUTE's OWN otherwise (the knob is the law's figure while the driver is deferred).</summary>
+        /// carried figure; THE STATUTE's OWN otherwise (the knob is the law's figure - and since §520 the pension line's driver reads it; a bill's figure, the dial, is still open).</summary>
         public static string FigureProvenance(CountryId id, int year)
         {
             Rule r = Of(id);

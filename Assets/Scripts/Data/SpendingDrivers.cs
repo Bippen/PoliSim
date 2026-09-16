@@ -20,7 +20,12 @@ namespace PoliSim.Data
         WorkingAge20To64,
         Students15To29,
         AgeCostIndex,
-        UnemploymentRate
+        UnemploymentRate,
+        /// <summary>PN-1's driver (2026-09-16, §520): the cohorts at or above the STATUTORY pension age in force this calendar year, the straddled
+        /// band by its fraction (DS-3b) - the headcount the pension line multiplies, read through the one accessor the payment row and its gate read
+        /// (PensionPayment.PensionersMillions), so a statute that raises its age retires fewer people and the line follows. The 65+ cohort where a
+        /// country has no statute on file.</summary>
+        StatutoryPensionAge
     }
 
     public static class SpendingDrivers
@@ -37,6 +42,9 @@ namespace PoliSim.Data
             switch (category)
             {
                 case SpendingCategory.SocialSecurity:
+                    // PN-1's driver (§520): the one pension line follows the statute's age; the USA's federal-retirement and veterans' lines are
+                    // other systems with other ages and stay on the 65+ cohort
+                    return SpendingDriver.StatutoryPensionAge;
                 case SpendingCategory.FederalRetirement:
                 case SpendingCategory.VeteransBenefitsMandatory:
                     return SpendingDriver.Elderly65Plus;
@@ -76,6 +84,12 @@ namespace PoliSim.Data
             {
                 case SpendingDriver.Population: return cohorts != null ? cohorts.Total : country.State.Population;
                 case SpendingDriver.Elderly65Plus: return cohorts != null ? cohorts.InAgeRange(65, 999) : country.State.Population * country.State.DependencyRatio / 100f;
+                case SpendingDriver.StatutoryPensionAge:
+                    // PN-1's driver (§520): the cohorts at or above the age in force in the country's calendar year, the straddled band by its fraction -
+                    // PensionPayment's own headcount, so the driver and the payment readout count one set of people
+                    return cohorts != null && PensionAgeStatute.Has(country.Id)
+                        ? (float)PensionPayment.PensionersMillions(country, PensionAgeStatute.AgeInForce(country.Id, country.CalendarYear))
+                        : Level(SpendingDriver.Elderly65Plus, country);
                 case SpendingDriver.Youth0To19: return cohorts != null ? cohorts.InAgeRange(0, 19) : country.State.Population;
                 case SpendingDriver.WorkingAge20To64: return cohorts != null ? cohorts.InAgeRange(20, 64) : country.State.Population;
                 case SpendingDriver.Students15To29: return cohorts != null ? cohorts.InAgeRange(15, 29) : country.State.Population;
@@ -113,8 +127,20 @@ namespace PoliSim.Data
                 case SpendingDriver.Students15To29: return "15–29";
                 case SpendingDriver.AgeCostIndex: return "AGE COST";
                 case SpendingDriver.UnemploymentRate: return "JOBLESS RATE";
+                case SpendingDriver.StatutoryPensionAge: return "STATUTE AGE";
                 default: return "NO DRIVER";
             }
+        }
+
+        /// <summary>PN-1's driver (§520): the short name with the country's own figure where the driver has one - the pension line's band reads the
+        /// age in force this year ("67+", "66 Y 4 M+") the way the 65+ line read its constant.</summary>
+        public static string Short(SpendingDriver driver, Country country)
+        {
+            if (driver == SpendingDriver.StatutoryPensionAge && country != null && PensionAgeStatute.Has(country.Id))
+            {
+                return PensionAgeStatute.Format(PensionAgeStatute.AgeInForce(country.Id, country.CalendarYear)).ToUpperInvariant() + "+";
+            }
+            return Short(driver);
         }
 
         public static string Name(SpendingDriver driver)
@@ -128,6 +154,7 @@ namespace PoliSim.Data
                 case SpendingDriver.Students15To29: return "the 15–29 cohort";
                 case SpendingDriver.AgeCostIndex: return "the age-cost index";
                 case SpendingDriver.UnemploymentRate: return "the unemployment rate";
+                case SpendingDriver.StatutoryPensionAge: return "the cohort at the statutory pension age";
                 default: return "no driver";
             }
         }

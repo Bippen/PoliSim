@@ -221,6 +221,75 @@ namespace PoliSim.EditorTools
             sb.Append("\n    ⚠ THE REPLACEMENT RATE IS A READING, NOT A GATE: ilc_pnp3 is a median individual pension over median earnings of a named age band, and this is a\n");
             sb.Append("    mean over a mean, so the two cannot be equal even where the model is right. It is printed because a reader will ask, and the gap is named with it.\n");
 
+            // 7. PN-1's DRIVER (§520): the pension line's driver IS the payment's headcount - one set of people, read through one accessor - and the statute's own
+            //    path moves it. The USA's federal-retirement and veterans' lines are other systems and stay on the 65+ cohort.
+            sb.Append("\n    7. THE DRIVER (PN-1, §520) - the pension line's driver against the payment's headcount at the age in force, and what the statute's own path does to the same pyramid\n");
+            if (SpendingDrivers.Of(SpendingCategory.SocialSecurity) != SpendingDriver.StatutoryPensionAge)
+            {
+                ok = false;
+                Debug.LogError("PENSION PAYMENT: the pension line's driver is not the statutory-age cohort - the line follows the 65+ cohort where the statute retires people at its own age.");
+            }
+            if (SpendingDrivers.Of(SpendingCategory.FederalRetirement) != SpendingDriver.Elderly65Plus || SpendingDrivers.Of(SpendingCategory.VeteransBenefitsMandatory) != SpendingDriver.Elderly65Plus)
+            {
+                ok = false;
+                Debug.LogError("PENSION PAYMENT: the USA's federal-retirement or veterans' line follows the statutory pension age - those are other systems and stay on the 65+ cohort.");
+            }
+            foreach (CountryId id in order)
+            {
+                Country c = world.GetCountry(id);
+                if (c.CalendarYear != SeedYear) { ok = false; Debug.LogError(F("PENSION PAYMENT: {0}'s calendar year reads {1} at the seed, not {2}.", id, c.CalendarYear, SeedYear)); }
+                float ageNow = PensionAgeStatute.AgeInForce(id, c.CalendarYear);
+                float driverLevel = SpendingDrivers.Level(SpendingDrivers.Of(SpendingCategory.SocialSecurity), c);
+                double heads = PensionPayment.PensionersMillions(c, ageNow);
+                float sixtyFive = SpendingDrivers.Level(SpendingDriver.Elderly65Plus, c);
+                PensionAgeStatute.Rule rule = PensionAgeStatute.Of(id);
+                float endAge = rule.Path[rule.Path.Length - 1].Age; int endYear = rule.Path[rule.Path.Length - 1].Year;
+                double atEnd = PensionPayment.PensionersMillions(c, endAge);   // the path's last age on the seed's own pyramid - what a rising age does to the line, the pyramid held still
+                sb.Append(F("    {0,-8} driver {1:N3} m against the payment's heads {2:N3} m at {3} (age {4}) · the 65+ cohort {5:N3} m (x{6:F3}) · the path's end {7} in {8}: {9:N3} m on the same pyramid (x{10:F3})\n",
+                    id, driverLevel, heads, c.CalendarYear, PensionAgeStatute.Format(ageNow), sixtyFive, sixtyFive > 0 ? driverLevel / sixtyFive : 0, PensionAgeStatute.Format(endAge), endYear, atEnd, heads > 0 ? atEnd / heads : 0));
+                if (Math.Abs(driverLevel - heads) > 1e-4 * Math.Max(1.0, heads))
+                {
+                    ok = false;
+                    Debug.LogError(F("PENSION PAYMENT: {0}'s pension driver reads {1:N4} m against the payment's {2:N4} m at the age in force - the line and the readout count two sets of people.", id, driverLevel, heads));
+                }
+            }
+
+            // 8. THE YEAR THE DRIVER READS IS THE CLOCK'S: a manager advanced one turn commits its year to every country, and the index at the boundary takes the new year's headcount
+            sb.Append("\n    8. THE CLOCK'S YEAR - a manager advanced one turn: every country's calendar year is the clock's, and the pension line's driver reference is the new year's headcount\n");
+            var go = new GameObject("PensionPaymentDiagnostic");
+            try
+            {
+                SimulationRandom.Seed(777);
+                EnergyMarket.ResetCalibration();
+                World advanced = WorldFactory.CreateDefault();
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(advanced);
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country c in advanced.Countries) { decisions[c.Id] = PolicyDecision.None(); }
+                for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { sim.AdvanceDay(); }
+                sim.AdvanceTurn(decisions);
+                int clockYear = sim.CurrentDate.Year;
+                foreach (Country c in advanced.Countries)
+                {
+                    SpendingLine pension = null;
+                    foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.SocialSecurity) { pension = l; } }
+                    float expected = SpendingDrivers.Level(SpendingDriver.StatutoryPensionAge, c);
+                    sb.Append(F("    {0,-8} clock {1} · country {2} · age in force {3} · driver reference {4:N3} m against the level now {5:N3} m · the year's ratio x{6:F4}\n",
+                        c.Id, clockYear, c.CalendarYear, PensionAgeStatute.Format(PensionAgeStatute.AgeInForce(c.Id, c.CalendarYear)), pension != null ? pension.DriverReference : 0f, expected, pension != null ? pension.LastDriverRatio : 0f));
+                    if (c.CalendarYear != clockYear)
+                    {
+                        ok = false;
+                        Debug.LogError(F("PENSION PAYMENT: {0}'s calendar year reads {1} after a turn while the clock reads {2} - the driver reads a year the turn is not in.", c.Id, c.CalendarYear, clockYear));
+                    }
+                    if (pension != null && Math.Abs(pension.DriverReference - expected) > 1e-4f * Math.Max(1f, expected))
+                    {
+                        ok = false;
+                        Debug.LogError(F("PENSION PAYMENT: {0}'s pension line's driver reference {1:N4} m is not the statutory cohort at the clock's year, {2:N4} m.", c.Id, pension.DriverReference, expected));
+                    }
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); }
+
             // the identity the row and the gate both stand on: the benefit IS the line over the heads
             foreach (CountryId id in order)
             {

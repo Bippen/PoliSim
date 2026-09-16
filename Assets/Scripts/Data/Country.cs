@@ -156,6 +156,11 @@ namespace PoliSim.Data
         /// lines carry the year's real wage growth as the ratio now/then (IndexSpendingLines) - the income index of Socialförsäkringsbalken 58 kap. in the
         /// model's terms. 0 = a save from before: a factor of 1 once.</summary>
         public float RealWageIndexAtLastIndex;
+        /// <summary>PN-1's driver (2026-09-16, §520): the calendar year the model is in - committed by SimulationManager from its clock (at SetWorld, at a
+        /// restore and every day it advances), so a reader that has no clock reads the year the turn is in: the pension line's driver
+        /// (SpendingDrivers.Level, StatutoryPensionAge) counts the cohorts at or above the age the statute has IN FORCE this year
+        /// (PensionAgeStatute.AgeInForce). The seed year until the clock runs. The preview's clone carries it - the R4-1 hand-list, audited by field (§506).</summary>
+        public int CalendarYear = PensionAgeStatute.SeedYear;
         /// <summary>The AI finance ministry (§388): the debt ratio at the seed, and at the top of the last two turns - the US rule's trigger reads the ratio above
         /// its seed and rising two years running (the debt-limit logic). 0 = not yet observed; a save from before the ministry seeds itself on first sight.</summary>
         public float DebtRatioSeed;

@@ -29159,6 +29159,76 @@ Three countries sit below ESSPROS's old-age edge by their perimeter and two insi
 - `bar502_pn4_sim` **53 of 53** - the payment diagnostic on the bar from this record - with the sentinel re-based to `traj_pn4` and green on it.
 - The record's tree - `bar504_rec519b` **38 of 38** on the tree this record reads - residue 4, 12 of 12 ratchets tight.
 
+## 520. PN-1's DRIVER LANDED — the pension line follows the cohort at the statutory age in force, the straddled band by its fraction; the calendar year rides the country and the preview's clone, and §507's guard was made to catch it before the pass landed; BASELINE, all six (2026-09-16)
+
+**The ruling it completes.** DS-3 (§474): *statute + dial, on `CarbonRateStatute`'s precedent* - the statute layer landed at §489 with the driver deferred as the BASELINE half by ruling (2026-09-13), and this pass is that half: the pensions DRIVER, *the cohort at or above the age with the sub-band fraction stated* (DS-3b). The dial is not here (below).
+
+**Built.**
+- `SpendingDriver.StatutoryPensionAge` - the one pension line's driver (`SpendingCategory.SocialSecurity`): its level is `PensionPayment.PensionersMillions` at `PensionAgeStatute.AgeInForce(country, year)` - **the same accessor the payment row and its gate read**, so the driver, the readout and the gate count one set of people; a statute that raises its age retires fewer of the same pyramid and the line follows. The USA's `FederalRetirement` and `VeteransBenefitsMandatory` lines are other systems with other ages and stay on the 65+ cohort (asserted).
+- `Country.CalendarYear` - the year a reader without a clock reads. Committed by `SimulationManager.CommitCalendarYear` where the clock is set or moved (`SetWorld`, `RestoreSaveState`, `AdvanceDay`): an int, written only; nothing in the daily arithmetic reads it. The preview's clone carries it (`ClonePreviewCountry`, the R4-1 hand-list).
+- The row's instrument band reads the age in force where it read `65+` - `SpendingDrivers.Short(driver, country)`: `67+`, `66 Y 4 M+`.
+- Save format 18: a save from before carries the line's driver reference as the 65+ cohort, which the first index would read against the statutory cohort as a one-off fall of up to a seventh of the line.
+- `PensionPaymentDiagnostic` sections 7 and 8 (below), on the simulation bar.
+
+**§507's guard, exercised on it.** T-3's condition (§506) built the clone audit for exactly this day: a field added to `Country` and not to the hand-list fails the simulation bar by name. With the hand-list line for `CalendarYear` removed (`clone_year_off`), `PreviewParityDiagnostic` named it on every country - *"PARITY: CLONE ESCAPE - Sweden.CalendarYear: marked 1033, the clone read 2026. The preview's clone does not carry a field the country does (the R4-1 class)"* - 6 escapes, one per country, and the bar red; restored, the audit reads 86 value fields marked two ways on six copies and 0 escapes. The field went into the list because the guard asked for it, not because a figure was found wrong later - the seventh time the R4-1 class was met and the first time it was met before it cost anything.
+
+**The driver is the payment's headcount, measured** (section 7, the seed world at 2026 - the 65+ cohort beside it, and the path's last age on the same pyramid held still, so the statute's own effect is read apart from ageing):
+
+| | age in force 2026 | the driver = the payment's heads | the 65+ cohort | driver over 65+ | the path's end | on the same pyramid | over this year's |
+|---|--:|--:|--:|--:|--:|--:|--:|
+| Sweden | 67 | 2.003 m | 2.222 m | ×0.901 | 67 (2026) | 2.003 m | ×1.000 |
+| Germany | 66 y 4 m | 17.804 m | 19.272 m | ×0.924 | 67 (2031) | 17.070 m | ×0.959 |
+| France | 62 y 9 m | 17.256 m | 15.307 m | ×1.127 | 64 (2033) | 16.174 m | ×0.937 |
+| Italy | 67 | 13.255 m | 14.790 m | ×0.896 | 67 y 3 m (2028) | 13.064 m | ×0.986 |
+| Poland | 65 | 7.786 m | 7.786 m | ×1.000 | 65 (2026) | 7.786 m | ×1.000 |
+| USA | 66 y 10 m | 57.398 m | 64.737 m | ×0.887 | 67 (2027) | 56.731 m | ×0.988 |
+
+**The clock's year reaches the driver** (section 8: a manager advanced one turn from the epoch - the clock reads 2027 and so does every country, and the index at the boundary took the new year's cohort as the line's reference):
+
+| | the clock | the country | age in force | the line's driver reference | the year's ratio |
+|---|--:|--:|--:|--:|--:|
+| Sweden | 2027 | 2027 | 67 | 2.025 m | ×1.0114 |
+| Germany | 2027 | 2027 | 66 y 6 m | 17.896 m | ×1.0052 |
+| France | 2027 | 2027 | 62 y 9 m | 17.523 m | ×1.0155 |
+| Italy | 2027 | 2027 | 67 y 1 m | 13.395 m | ×1.0105 |
+| Poland | 2027 | 2027 | 65 | 7.882 m | ×1.0123 |
+| USA | 2027 | 2027 | 67 | 58.355 m | ×1.0167 |
+
+**The family - BASELINE, all six, attributed.** `traj_pn1doff` (the whole pass with the driver mapped back to the 65+ cohort) against `traj_pn4`: BYTE-IDENTICAL at both seeds and all three horizons, 77 of 77 in every diff - the year field, its commits, the clone line and the band's caption are inert. `traj_pn1d` (the pass as committed) against `traj_pn4`: every country moves - France (s777 from turn 2, 55905 of 77000 rows; s424242 from turn 2, 57451 of 77000 rows), Germany (s777 from turn 2, 53816 of 77000 rows; s424242 from turn 2, 52024 of 77000 rows), Italy (s777 from turn 2, 63417 of 77000 rows; s424242 from turn 2, 63421 of 77000 rows), Poland (s777 from turn 3, 40309 of 77000 rows; s424242 from turn 3, 47190 of 77000 rows), Sweden (s777 from turn 2, 61600 of 77000 rows; s424242 from turn 2, 59734 of 77000 rows), USA (s777 from turn 2, 29410 of 77000 rows; s424242 from turn 2, 40492 of 77000 rows). Its size, read off the dumps at s777 - the debt-to-GDP ratio (`GovernmentDebt` over `GDP × PriceLevel`) and nominal GDP at the two horizons:
+
+| | debt-to-GDP at t100, pn4 → pn1d | nominal GDP at t100 | debt-to-GDP at t1000 | nominal GDP at t1000 |
+|---|--:|--:|--:|--:|
+| Sweden | 26.14 → 26.29 % (+0.15 pp) | -0.158 % | 19.28 → 19.30 % (+0.02 pp) | -0.584 % |
+| Germany | 36.38 → 36.45 % (+0.07 pp) | +0.033 % | 31.25 → 36.32 % (+5.06 pp) | +2.774 % |
+| France | 29.28 → 30.32 % (+1.03 pp) | +0.445 % | 27.68 → 27.66 % (-0.02 pp) | +1.046 % |
+| Italy | 47.07 → 47.35 % (+0.28 pp) | -0.174 % | 24.42 → 24.60 % (+0.18 pp) | -0.344 % |
+| Poland | 24.70 → 24.70 % (-0.00 pp) | +0.000 % | 12.22 → 12.22 % (-0.00 pp) | -0.000 % |
+| USA | 119.56 → 120.40 % (+0.85 pp) | +0.000 % | 111.35 → 112.08 % (+0.73 pp) | -0.000 % |
+
+Poland's driver counts the same people it always did (its statute is 65, fixed - section 7 reads ×1.000 against the 65+ cohort), so its own line does not move and what moves there comes through its partners; France's is the widest at a century: its statutory cohort at 62 y 9 m is two million people larger than the 65+ cohort the line followed before (17.256 m against 15.307 m), and its schedule climbs to 64 by 2033. The sentinel is re-based to `traj_pn1d`.
+
+**Guards, each proved both ways** (`chain_pn1d`; the tree checked clean after every restore):
+1. **`driver_off`** - the line mapped back to the 65+ cohort: "the pension line's driver is not the statutory-age cohort - the line follows the 65+ cohort where the statute retires people at its own age" (and the dump under it is the attribution above).
+2. **`clone_year_off`** - the hand-list line removed: §507's guard, six escapes named (above).
+3. **`identity_off`** - the driver counting the 65+ cohort under the statutory name: "Sweden's pension driver reads 2.2223 m against the payment's 2.0026 m at the age in force - the line and the readout count two sets of people.".
+4. **`commit_off`** - the day's advance no longer committing the year: "Sweden's calendar year reads 2026 after a turn while the clock reads 2027 - the driver reads a year the turn is not in.".
+
+**Decisions taken, strikeable.**
+1. **The driver reads the payment's accessor.** One headcount for the row, the gate and the line; a second arithmetic would be a second set of people.
+2. **The year rides the country, committed by the clock.** `SpendingDrivers.Level` is a country-only reader in twenty places; a year parameter threaded through them would touch every driver to serve one. The field is written by the manager and read by nothing on the daily path, which is what keeps `traj_pn1doff` byte-identical.
+3. **The USA's two other 65+ lines stay.** Federal retirement and veterans' pensions are not Social Security's age.
+4. **What stays open, named.** The DIAL (a bill's figure wins - a lever needs a bill, a vote and a row that shows the override state boards 15c drew for it); the participation response of the bands the age crosses (BILLED to a named evaluation or `[AUTHORED-DRAFT]` with its reason - neither is on file); the dependency ratio's definition and potential's 20–64 window (DS-3c: PN-3's own family). PN-1's row stays ◐ for the dial.
+
+**Films.** `pn1d_sweden_1280`: the Social Security row's instrument band reads `67+ ×1.013` - the harness films at day 1125 (turn 3), and in that year the 65+ cohort §519's frame followed grew by the same three decimals, so the age is what changed on the band where §519's read `65+ ×1.013`, the age row and the payment row as at §519.
+
+**The registers.** `POLISIM_FEATURE_LIST.md` (PN-1 ◐, the driver landed, the dial open), `POLISIM_BACKLOG_PLAN.md` (S5).
+
+**Bar:** a BASELINE family of six, attributed by its own probe - the cheap bar, the simulation bar with the sentinel re-based, §507's guard green on the list with the field in it.
+- `bar505_pn1d` **38 of 38**.
+- `bar506_pn1d_sim` **53 of 53** with the sentinel re-based to `traj_pn1d`.
+- The record's tree - `bar507_rec520` **38 of 38** on the tree this record reads - residue 4, 12 of 12 ratchets tight.
+
+
 
 
 
