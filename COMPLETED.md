@@ -29040,5 +29040,62 @@ The yield ratio is exactly one at the seed for all six, so no seeded budget move
 - `bar495_f45_sim` **52 of 52** on the simulation bar, the sentinel first and green on `traj_f4s7`.
 - The record's tree - `bar497_rec517b` **38 of 38** on the tree this record reads - residue 5, 12 of 12 ratchets tight.
 
+## 518. PN-2 LANDED — the pension payment as a readout: the line over the people the statute retires, its replacement rate as the row's own fill, and a seed gate whose band is the source's disagreement with itself. Two countries' lines come back DIVERGENT and are named (2026-09-16)
+
+**What it is.** The model has one pension line (`SpendingCategory.SocialSecurity`) and a pyramid, so the average benefit it implies is that line over the cohorts at or above the statutory age, and the replacement rate is that benefit over the mean income the tax schedules already read. No lever: the line is headcount × benefit and the player moves the line (DS-3b), so a dial on the payment would be a second way to move one quantity.
+
+**Built.**
+- `PensionPayment` — `PensionersMillions`, `LineBillions`, `AverageBenefitPerYear`, `ReplacementRate`. **One accessor, read by both sites:** the row on the Budget page and the seed gate read these, so the figure on the screen is the figure the gate is measured against.
+- The row, under the statutory mark on the same line: the family's READ-ONLY form with the replacement rate as its fill (a rate is a proportion, which is what that form's bar means), the benefit as its figure, and the bar's ends named by the family's own END-NAMES device — `0 none - 100 the mean income`. **Four films to get that right.** The caption began as prose (`PER PENSIONER · 18.1 M AT THE AGE · 71 % OF THE MEAN INCOME`) and the read-only row draws prose UNDER the figure, where all three attempts collided with the money; written as a pair it is end-names and goes under the track's two ends, which is where a bar's scale belongs and is what `0 lenient - 100 harsh` has been doing on the crime page since P5-1.
+- `PensionPaymentDiagnostic` — the measurement, the gate and three assertions.
+
+**The premise, measured before anything was gated.** The headcount the statute implies, and what the line pays over it (seed world, 2026):
+
+| | age | pensioners | of the population | the line | benefit |
+|---|--:|--:|--:|--:|--:|
+| Sweden | 67.00 | 2.003 m | 18.7 % | 42.5 bn | 21 207 USD/yr |
+| Germany | 66.33 | 17.804 m | 21.3 % | 423.0 bn | 23 758 USD/yr |
+| France | 62.75 | 17.256 m | 25.0 % | 396.8 bn | 22 995 USD/yr |
+| Italy | 67.00 | 13.255 m | 22.5 % | 312.8 bn | 23 598 USD/yr |
+| Poland | 65.00 | 7.786 m | 21.4 % | 87.4 bn | 11 220 USD/yr |
+| the USA | 66.83 | 57.398 m | 16.7 % | 1 530.0 bn | 26 656 USD/yr |
+
+**The gate, and why its band is not invented.** A benefit is expenditure over heads, so its gap against a source is exactly the expenditure gap over the headcount gap. The headcount gap is DEFINITIONAL — ESSPROS counts every beneficiary (survivors, the disabled, early retirements), this counts the cohorts at or above the age — and a definition cannot be a verdict; measured, it runs 0.80 to 1.07, so the proxy is close but it is a proxy. The EXPENDITURE gap can be a verdict: both sides are a country's old-age pension spending, in euro, for the same year. **And the band is the source's own:** ESSPROS publishes two definitions of the same thing — old-age pensions, and all pension types — so the model's one line is asked only to fall between them. That band is nobody's choice; it is the width of the source's disagreement with itself, country by country.
+
+| | the line, bn EUR | ESSPROS old-age .. all types | verdict | from the nearest edge |
+|---|--:|--:|---|--:|
+| Germany | 391.2 | 364.4 .. 462.2 | **WITHIN** | — |
+| France | 367.0 | 324.4 .. 393.2 | **WITHIN** | — |
+| Italy | 289.3 | 249.4 .. 309.3 | **WITHIN** | — |
+| Poland | 80.8 | 53.9 .. 66.8 | **DIVERGENT** | ×1.209 above |
+| Sweden | 39.3 | 54.3 .. 58.8 | **DIVERGENT** | ×0.724 below |
+| the USA | — | no ESSPROS row (it is an EU collection) | **unsourced** | no verdict is formed |
+
+**The replacement rate is a READING, not a gate.** Against Eurostat's `ilc_pnp3` (2024, sex T) the model reads 0.667 (Sweden, source 0.59), 0.692 (Germany, 0.49), 0.720 (France, 0.61), 0.922 (Italy, 0.79) and 0.801 (Poland, 0.60) — 1.13 to 1.41 times the published ratio. The two cannot be equal even where the model is right: `ilc_pnp3` is a MEDIAN individual pension over the MEDIAN earnings of a named age band, and this is a mean over a mean. It is printed because a reader will ask, and the gap is named beside it rather than gated on.
+
+**The family, `traj_pens2` against `traj_f4s7`: BYTE-IDENTICAL at both seeds and all three horizons** (six dumps, six digests, six matches). A readout reads; nothing in `EconomyState` derives from it, and the trajectory says so exactly.
+
+**Guards, each proved both ways** (`PensionPaymentDiagnostic`, and the tree checked clean after every restore):
+1. **`line_out_of_band`** — Germany's line doubled: "Germany's line reads 782.4 bn EUR against the source's band 364.4 .. 462.2 - it is DIVERGENT where §518 measured it WITHIN."
+2. **`edge_moved`** — Poland's line raised a tenth: "Poland sits ×1.330 from the source's nearest edge against the ×1.209 §518 measured - the gap moved and the record's figure is stale."
+3. **`identity_broken`** — one person added to every denominator: "the USA's benefit × heads reads 1 503.800 bn against the line's 1 530.000 bn - the readout is not the line over the people it names."
+
+**Decisions taken, strikeable.**
+1. **The gate is on expenditure, not on the benefit or the replacement rate** — the only one of the three where both sides mean the same thing.
+2. **The band is the source's own two definitions**, so no tolerance was chosen after seeing the answer.
+3. **The row carries no lever and no source figure.** The line is the lever; a foreign statistic drawn on the row would need its own provenance line, and the gate is where the comparison belongs.
+4. **The sub-band assumption is stated where it is made** (`PensionPayment`'s doc): a statutory age inside a five-year band takes that band's fraction, people spread evenly inside a cohort — standard, and standardly wrong at the ends of the pyramid.
+5. **The USA gets no verdict rather than a stretched one.** ESSPROS is an EU collection; OECD's net replacement rate is a different quantity and is not used as an expenditure gate.
+
+**What it opens — and what this pass deliberately did not do.** Sweden's pension line is ×0.724 of the source's nearest edge and Poland's ×1.209 above it. Those are the SEEDS, not the readout, and re-seeding a spending line moves every trajectory that country is in: it is a BASELINE item of its own, opened as **PN-4** with both figures on record. Nothing was re-seeded here to make a gate green.
+
+**The registers.** `POLISIM_FEATURE_LIST.md` (PN-2 ✅, and **PN-4** opened for the two divergent seeds), `POLISIM_BACKLOG_PLAN.md` (the plan's S6). The sources were already on disk from §475 and are unchanged; what is new is that a check now reads them.
+
+**Bar:** a readout whose family is byte-identical - the cheap bar, the simulation bar, and the payment diagnostic itself.
+- `bar498_pn2` **38 of 38**.
+- `bar499_pn2_sim` **52 of 52**, the sentinel unmoved on `traj_f4s7`.
+- The record's tree - `bar500_rec518` **38 of 38** on the tree this record reads - residue 5, 12 of 12 ratchets tight.
+
+
 
 

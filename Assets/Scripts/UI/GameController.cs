@@ -11468,7 +11468,40 @@ namespace PoliSim.UI
             else { _spendingLineInputs[spendingLine.Category] = result; }
 
             // board 15c (2026-09-13): the statutory mark under the pension line - the law's path beside this year's figure (PN-1's statute layer; the driver deferred)
-            if (spendingLine.Category == SpendingCategory.SocialSecurity && PensionAgeStatute.Has(_playerCountry.Id)) { GUILayout.Space(4f); DrawPensionAgeRow(); }
+            if (spendingLine.Category == SpendingCategory.SocialSecurity && PensionAgeStatute.Has(_playerCountry.Id))
+            {
+                GUILayout.Space(4f);
+                DrawPensionAgeRow();
+                // PN-2 (2026-09-16): and under the law, what the line PAYS - the readout, on the read-only row of the same family
+                DrawPensionPaymentRow();
+            }
+        }
+
+        /// <summary>
+        /// PN-2 (2026-09-16, the plan's S6): **the payment the pension line implies, under the age that sets who draws it.** The line over the
+        /// cohorts at or above the statutory age is an average benefit; that benefit over the mean income the tax schedules read is a
+        /// replacement rate, and a replacement rate is a proportion - so the row is the family's READ-ONLY form with the rate as its fill,
+        /// the benefit as its figure, and what the figure is per as its trailing caption. No lever: the line is headcount × benefit, and the
+        /// player moves the line (DS-3b), so a dial here would be a second way to move one quantity.
+        ///
+        /// <para>The arithmetic is <see cref="PensionPayment"/>'s, which `PensionPaymentDiagnostic`'s seed gate reads too - the figure drawn
+        /// here is the figure measured against ESSPROS and `ilc_pnp3` (§518), not a second computation of the same idea.</para>
+        /// </summary>
+        private void DrawPensionPaymentRow()
+        {
+            if (_playerCountry == null) { return; }
+            int year = _pensionRowYearForFilm ?? (_simulationManager != null ? _simulationManager.CurrentDate.Year : PensionAgeStatute.SeedYear);
+            double benefit = PensionPayment.AverageBenefitPerYear(_playerCountry, year);
+            if (benefit <= 0) { return; }
+            double replacement = PensionPayment.ReplacementRate(_playerCountry, year);
+            string figure = UiFormat.Money((float)(benefit / 1e9), MoneyUnit.Billions) + "/yr";   // the book's own money formatting; the benefit is dollars, the helper takes billions
+            // THE TRAILING TEXT IS THE FAMILY'S END-NAMES when it is written as a pair, and that is what this row needs: the bar is a
+            // fraction of the mean income, so its ends are nothing and the mean income itself (P5-1/board 6a's device, the same one
+            // "0 lenient - 100 harsh" uses two pages away). Written as prose it is NOT end-names and the row draws it under the figure,
+            // where three films found it colliding with the money ("PER PENSIONER · 18.1 M AT THE AGE · 71 % OF THE MEAN INCOME", then
+            // "PER PENSIONER · 71 %", then "PER PENSIONER" - each one touching the figure's baseline).
+            const string trailing = "0 none - 100 the mean income";
+            DrawDerivedStatRow("Pension payment", (float)System.Math.Min(1.0, replacement), figure, trailing, PoliSimTheme.TextMuted);
         }
 
         /// <summary>
