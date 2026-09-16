@@ -16,17 +16,17 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class TrajectorySentinelCheck
     {
-        /// <summary>The baseline these digests are the first turns of: `traj_f4s7` - F4-5 (§517): the income lever of the four bracketed schedules seeded at the schedule's own average rate on the income it taxes, every base re-derived for it, the USA's income row sourced federally (was `traj_f4s6`).</summary>
-        public const string BaselineLabel = "f4s7";
+        /// <summary>The baseline these digests are the first turns of: `traj_pn4` - PN-4 (2026-09-16, §519): Sweden's pension line landed on its source, 7.0 % of GDP with UO11's slice inside it, the residual giving the 0.15 back; Sweden's family alone (was `traj_f4s7`).</summary>
+        public const string BaselineLabel = "pn4";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_f4s7_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pn4_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "02458854eedf2b43bb47e2a2a6ef97ee25fe10bc44db4c31555c784f42aa54fe"),
-            (424242, "a7ec054f019d99099c7ab32346daf3298f2d00a99b0b34c04034019587904666"),
+            (777, "de56f4d4a7b35aff813d00ab3d61f9cecd9b0f1f3d5ee50c347e4f9c418cf9a6"),
+            (424242, "f744f6a3e4722c7cded8309b8f9ef3cd38b19707a4760c06ee83f8b190d01767"),
         };
 
         public static void Run()

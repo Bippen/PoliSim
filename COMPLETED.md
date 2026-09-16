@@ -29096,6 +29096,70 @@ The yield ratio is exactly one at the seed for all six, so no seeded budget move
 - `bar499_pn2_sim` **52 of 52**, the sentinel unmoved on `traj_f4s7`.
 - The record's tree - `bar500_rec518` **38 of 38** on the tree this record reads - residue 5, 12 of 12 ratchets tight.
 
+## 519. PN-4 MEASURED, THEN LANDED — Poland's ×1.209 was THE YEAR and Sweden's ×0.724 THE PERIMETER times a slip in the seed's own arithmetic; the gate re-cut to the same year, share against share, the perimeter read beside the verdict; Sweden's line landed on its source, Poland's untouched (2026-09-16)
+
+**The premise, measured before anything was proposed.** §518 held each model line, in euro at the seed, against ESSPROS's 2022 euro band and read Poland ×1.209 above it and Sweden ×0.724 below. The instruction was to establish per country whether the cause was the DRIVER (the cohorts at the age against ESSPROS's beneficiaries), the line's PERIMETER (general government's pension against every scheme's), or the INDEXATION - before proposing. So the seeds' own source was re-read first: every EU pension line is COFOG (`gov_10a_exp`, S13, GF10.02 "Old age", D62 cash, % of GDP, 2024), and the API returns 9.0, 12.4, 13.6, 10.4 and 7.0 today - the five seeds confirmed. ESSPROS turned out to be published through 2024 (France through 2023), which is what made a same-year comparison possible at all. Four fetches on disk under `PoliSim-captures/sources/pensions/` (digests in the README), one table derived from them by `Tools/pension_prep.pl` (`pension_line_sources_2019_2024.csv`: COFOG and ESSPROS side by side, as shares of GDP, six years, with nominal GDP and the beneficiary counts), and the diagnostic re-cut to read it.
+
+**§518's two figures, decomposed.** The euro ratio factors exactly: YEAR (the model's GDP in euro over the source year's) × VINTAGE (the seed's 2024 share over COFOG's 2022 share - the line's own indexation between the two years) × PERIMETER (COFOG's 2022 share over ESSPROS's 2022 edge share, same year) × SEED (the seed's share over the COFOG share it was typed from). Measured in the model with the landing turned off, so §518's figures are reproduced and not recalled:
+
+| | year | vintage | perimeter | seed | product | §518's direct |
+|---|--:|--:|--:|--:|--:|--:|
+| Poland (against all types) | 1.174 (776.8 bn EUR over 661.7) | 1.182 (COFOG 10.4 over 8.8) | 0.872 (8.8 over ESSPROS 10.09) | 1.000 | **1.210** | 1.209 |
+| Sweden (against old-age) | 1.048 (573.4 over 547.2) | 1.000 (7.0 over 7.0) | 0.706 (7.0 over ESSPROS 9.92) | **0.979** | **0.724** | 0.724 |
+
+**The verdict, cause by cause.**
+- **The driver: neither.** The headcount never enters the line - it divides it. Against ESSPROS's 2024 old-age beneficiaries the cohorts at the age read Poland ×0.922 and Sweden ×0.791 (Germany 0.888, France 1.000, Italy 1.056), a factor on the BENEFIT and printed as one. Poland's 0.922 is the one-age statute's own deviation (women retire at 60; the model reads the men's 65) and belongs to PN-1's driver, not here.
+- **The perimeter: Sweden, and it is the whole of Sweden's gap that the seed did not cause.** COFOG counts general government; ESSPROS counts every scheme. In the same year Sweden's general-government old-age cash is 7.0 % of GDP and ESSPROS's old-age pensions 9.92 - a gap of 2.92 points that reads 2.5 to 2.9 in every one of the six years on disk: the collectively agreed occupational pensions (tjänstepension) paid outside the state, which no lever of this government moves. It is not a shortfall of the line; it is a quantity the line was never defined to carry. Poland's perimeter factor runs the other way (COFOG 10.4 against ESSPROS 9.58 .. 11.61 - inside the band, and inside it in every year 2019–2024).
+- **The indexation, read as the year: Poland, entirely.** The model's line is a 2024 share on a 2026 GDP; the band was 2022's euros. The model's Poland GDP in euro is 1.174 times 2022's, and the share itself rose 8.8 → 10.4 between 2022 and 2024 (Poland's pension indexation - 14.8 % in 2023, 12.1 % in 2024, with the thirteenth and fourteenth payments - outran its nominal GDP; ESSPROS's own old-age share rose 8.15 → 9.58 over the same two years). Those two factors are the ×1.209; the seed's factor is 1.000. Poland's line is not re-seeded.
+- **And a fourth cause the instruction did not list: Sweden's seed missed its own source by 0.15 of GDP.** The line was UO11's state-budget slice plus a top-up constant, 5.8128 = 7.0 − 26 × (60 ⁄ 1314) - derived for a budget sum of 1,314 bn SEK, while the areas in the code sum to 1,323 and the remainder makes 1,504. The slice was 1.037 % of GDP, not 1.187, and the line landed at 6.850 % of GDP against the 7.0 its comment cites. That is the 0.979, and it has been there since the recalibration commit (`290d4ee`): the area list has summed to 1,504 in every commit that carries it, and no check compared a seed with the share it was typed from.
+
+**The same year, share against share - the gate as it stands now** (2024; France's ESSPROS 2024 is not yet published, so 2023):
+
+| | COFOG GF10.02/D62 | ESSPROS old-age .. all types | verdict | perimeter (ESSPROS old-age − COFOG) |
+|---|--:|--:|---|--:|
+| Germany | 9.0 | 9.38 .. 11.83 | BELOW | +0.38 pp |
+| France (2023) | 12.0 | 12.07 .. 14.61 | BELOW | +0.07 pp |
+| Italy | 13.6 | 12.85 .. 15.91 | **WITHIN** | −0.75 pp |
+| Poland | 10.4 | 9.58 .. 11.61 | **WITHIN** | −0.82 pp |
+| Sweden | 7.0 | 9.92 .. 10.81 | BELOW | +2.92 pp |
+| the USA | — | no row (EU collections) | unsourced | — |
+
+Three countries sit below ESSPROS's old-age edge by their perimeter and two inside the band - the honest reading, and a worse-looking one than §518's three WITHIN, which the year factor had lifted (Germany's 391.2 bn EUR was 9.0 % of a 2026 GDP against 9.13 % of a 2022 one). **What can be a verdict in any perimeter is the upper edge:** general government's old-age cash cannot exceed every scheme's every pension type, so a seed above ESSPROS's all-types figure is wrong whatever the sector - that bound is asserted for the five. The old-age edge is read, with the perimeter's sign and its name beside it.
+
+**Built.**
+- `Tools/pension_prep.pl` section 5 and the table it derives; `ElectionsData/pensions/README.md` (the table, the four files by digest, the finding in one paragraph).
+- `PensionPaymentDiagnostic`, re-cut: section 2 prints each line as its share of the seed's nominal GDP; section 3 is the gate above (the PROVENANCE guard - a seed that misses its COFOG share by a hundredth of a point is named; the all-types BOUND; the five verdicts held at §519's); section 4 the driver's factor, on the benefit; section 5 the decomposition, held to the direct ratio within 0.002 and to the recorded figures (Poland ×1.209 from §518, untouched; Sweden ×0.739 from this record); the identity benefit × heads = line kept. It reads the table off disk and fails if the table is not there. **On the simulation bar from this record** (53 checks; §518 ran it standalone).
+- `WorldFactory.SeedSwedenSpendingLines`: SocialSecurity is CONSTRUCTED at the sourced 7.0 % of GDP with UO11's slice inside it (`OldAgePensionsPercentOfGdp`), so the line cannot drift when the areas list does; the residual transfer line gives back the 0.15 the slip had left in it (9.73 → 9.58), the two mandatory lines together what they were. The "1,314" the class comment quoted is corrected to the sum the code makes. Sweden's line reads 43.4 bn = 7.000 % of GDP; benefit 21,671 USD/yr = 230,058 SEK/yr; replacement 0.681 (§518: 42.5 bn, 21,207, 0.667).
+
+**The family - BASELINE, Sweden's, and attributed.** `traj_pn4off` (the whole pass with the landing turned off) against `traj_f4s7`: BYTE-IDENTICAL at both seeds and all three horizons, 77 of 77 in every diff - the diagnostic, the bar's list and the table are inert. `traj_pn4` (the pass as committed) against `traj_f4s7`: Sweden moves from turn 1 (61318 of 77000 rows through turn 1000 at s777, 61613 of 77000 at s424242); Poland (from turn 4: 39780 of 77000 rows at s777, 41600 of 77000 at s424242) and USA (from turn 4: 28019 of 77000 rows at s777, 23481 of 77000 at s424242) follow through Sweden's partner channels; France, Germany, Italy are byte-identical, every row. Sweden's turn-1 `Budget` reads 0.9836818 against 0.983482838 - the transfer form holds the year-1 balance. The sentinel is re-based to `traj_pn4`.
+
+**Guards, each proved both ways** (`chain_pn4a`; the tree checked clean after every restore):
+1. **`landing_off`** - Sweden's old arithmetic back: "Sweden's pension line is 6.850 % of the seed's GDP against the 7.0 % COFOG GF10.02/D62 2024 it was typed from - the seed does not land on its own source", and the recorded figure: "sits x0.724 from ESSPROS's 2022 edge against the x0.739 §519 measured".
+2. **`bound_broken`** - Poland typed at 12.0: the provenance guard and "exceeds ESSPROS's all-pension-types figure 11.61 % (2024) - general government's old-age cash cannot exceed every scheme's every pension type".
+3. **`verdict_moved`** - the table's Germany 2024 old-age lowered to 8.90: "Germany reads WITHIN against the same year's ESSPROS band where §519 measured it BELOW".
+4. **`figure_stale`** - the table's Sweden 2022 GDP moved: the decomposition no longer accounts for the figure, and the recorded figure is stale.
+5. **`identity_broken`** - one person added to every denominator: "benefit × heads reads ... - the readout is not the line over the people it names".
+6. **`table_missing`** - the table renamed off disk: "is not on disk - the seed cannot be held against its source".
+
+**Decisions taken, strikeable.**
+1. **The gate compares the same year, share against share.** A euro figure of one year is never held against a line of another: the book is in current prices and four years of nominal growth is a factor of 1.17 in Poland - the whole of what §518 called a divergence.
+2. **The perimeter is read, not gated; the all-types bound is the verdict that survives any perimeter.** ESSPROS's old-age edge is a different sector's figure for three of the five, and Eurostat does not split its schemes by sector online; a gate that failed Sweden for its occupational pensions would be failing the statistic, not the seed.
+3. **Sweden's line is the sourced share itself, and the residual gives the slip back.** The transfer form keeps the year-1 primary balance where the recalibration solved it; what moves is the split between a line the 65+ cohort drives and one the unemployment rate drives.
+4. **Poland is not re-seeded.** Its seed is what its source says and its source is inside the independent one's band in every year on disk.
+5. **The USA stays unsourced** rather than gated on a stretched analogue - its `SocialSecurity` line is OASDI, which includes disability and is an all-types perimeter by construction.
+
+**What this pass did not do, stated.** The driver's own perimeter (Poland's women at 60; every country's early retirees) is PN-1's, next. The model's Poland GDP in euro (776.8 bn) sits below Poland's own 2024 figure (852.2) - the seed GDPs' vintage is a question for the seed GDPs, not for a pension line. Nothing in the diagnostic was tuned to pass: the verdicts it holds are the worse-looking ones.
+
+**Films.** `pn4_sweden_1280` and `pn4_sweden_2560` (the payment row sits below the 1280 fold; at 2560 it is on the frame): Social Security reads $45.7B · 6.8 % GDP where §518's frame read $44.7B · 6.7 % - the seed's 43.4 bn indexed to the day the frame is taken on - the age row is unchanged (67 · 2026–2032 · HELD), and the payment row reads $22.9k/yr with its fill at the replacement rate and `0 NONE - 100 THE MEAN INCOME` under the track.
+
+**The registers.** `POLISIM_FEATURE_LIST.md` (PN-4 ✅ with the cause per country), `POLISIM_BACKLOG_PLAN.md` (S6's row carries the closing), `ElectionsData/pensions/README.md`, `CLAUDE.md` (the same-year rule beside the accounting convention).
+
+**Bar:** a BASELINE family of one country, attributed by its own probe - the cheap bar, the simulation bar with the sentinel re-based, and the diagnostic on it.
+- `bar501_pn4` **38 of 38**.
+- `bar502_pn4_sim` **53 of 53** - the payment diagnostic on the bar from this record - with the sentinel re-based to `traj_pn4` and green on it.
+- The record's tree - `bar504_rec519b` **38 of 38** on the tree this record reads - residue 4, 12 of 12 ratchets tight.
+
+
 
 
 

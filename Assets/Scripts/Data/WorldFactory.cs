@@ -1356,18 +1356,26 @@ namespace PoliSim.Data
         /// ✅ THE FLAGS FLIPPED IN THE RECALIBRATION PASS, as the item-4 ruling recorded they
         /// would ("the flags flip in the recalibration pass under the full sim-math bar" -
         /// terminal ruling confirmed 2026-08-26): UO10 (sickness/disability), UO11 (old-age) and
-        /// UO12 (family/children) - the state budget's three cash-transfer systems, 284 of 1,314
-        /// bn SEK - are now MANDATORY lines: they leave the national-accounts G term (transfers,
+        /// UO12 (family/children) - the state budget's three cash-transfer systems, 284 of the
+        /// 1,504 bn SEK the areas and the remainder sum to (the "1,314" this comment once quoted
+        /// is the figure the pension top-up was derived against and never the code's sum - PN-4,
+        /// §519) - are now MANDATORY lines: they leave the national-accounts G term (transfers,
         /// not purchases), grow on the mandatory path, take demographic pressure, and carry the
         /// mandatory approval weighting. G consequently falls 26% -> ~20.38% of GDP, a real
         /// identity change this pass's fresh baselines measure rather than hide.
         ///
         /// Two RECALIBRATION additions beyond the state budget (both mandatory, sources dated):
-        /// the SocialSecurity line is TOPPED UP at construction to Sweden's real total old-age
-        /// cash benefits - 7.0% of GDP (Eurostat gov_10a_exp GF10.02/D62, 2024, API vintage
-        /// 2026-07-21) - because UO11 (garantipension etc., ~1.19% of GDP) is only the state
-        /// budget's slice of a pension system that mostly sits OUTSIDE it (the inkomstpension/AP
-        /// system this class's own SWF comment describes); and an IncomeSecurity residual line
+        /// the SocialSecurity line is CONSTRUCTED at Sweden's real total old-age cash benefits -
+        /// 7.0% of GDP (Eurostat gov_10a_exp S13 GF10.02/D62, 2024, API vintage 2026-07-21,
+        /// re-read 2026-09-16 with 2022 and 2023 at 7.0 as well) - because UO11 (garantipension
+        /// etc., ~1.04% of GDP) is only the state budget's slice of a pension system that mostly
+        /// sits OUTSIDE it (the inkomstpension/AP system this class's own SWF comment describes).
+        /// ⚠ The perimeter, stated (PN-4, §519): 7.0 is GENERAL GOVERNMENT's old-age cash. ESSPROS,
+        /// which counts every scheme, puts Sweden's old-age pensions at 9.9% of GDP in the same
+        /// year - the 2.9 between them is the collectively agreed occupational pensions
+        /// (tjänstepension) paid outside the state, which no lever of this government moves, and
+        /// the payment diagnostic prints that gap as a perimeter, not a shortfall. Poland's line
+        /// (10.4) sits inside ESSPROS's same-year band; and an IncomeSecurity residual line
         /// lands the year-1 primary balance on Sweden's real 2025 structural position (-0.7% of
         /// GDP: Eurostat April-2026 notification deficit -1.3, ECB GFS D.41 interest 0.61).
         /// ApplyDemographicPensionPressure targets SocialSecurity first, so Sweden's aging
@@ -1414,14 +1422,22 @@ namespace PoliSim.Data
             }
 
             // RECALIBRATION constants (terminal rulings 2026-08-26; derivations in the class doc
-            // comment). The pension top-up raises SocialSecurity from UO11's state-budget slice
-            // (~1.19% of GDP) to Sweden's REAL total old-age cash benefits, 7.0% of GDP
-            // (Eurostat gov_10a_exp GF10.02/D62 2024): top-up = 7.0 - 26*(60/1314) = 5.8128.
+            // comment). SocialSecurity is CONSTRUCTED AT Sweden's real total old-age cash benefits,
+            // 7.0% of GDP (Eurostat gov_10a_exp S13 GF10.02/D62 2024 - and 7.0 in 2022 and 2023 too,
+            // re-read from the API 2026-09-16), with UO11's state-budget slice inside it.
+            // ⚠ PN-4 (2026-09-16, §519): until this pass the line was the slice PLUS a top-up constant
+            // 5.8128 = 7.0 - 26*(60/1314) - derived for a budget sum of 1,314 bn SEK while the areas
+            // above sum to 1,323 and the remainder makes 1,504, so the slice was 1.037% and the line
+            // landed at 6.850% of GDP, 0.15 short of its own source (the payment diagnostic's provenance
+            // guard now names a seed that misses its source by a hundredth of a point). The line is
+            // the sourced share itself now, and cannot drift when the areas list does.
             // The residual transfer line solves the year-1 primary balance to Sweden's real 2025
             // structural -0.7% of GDP given the recalibrated revenue target (42.2%), the fund's
-            // structural draw (~0.94%), benefits (2.0%) and the contribution (0.3%).
-            const float OutOfBudgetPensionPercentOfGdp = 5.8128f;
-            const float ResidualTransfersPercentOfGdp = 9.73f;
+            // structural draw (~0.94%), benefits (2.0%) and the contribution (0.3%); it gives back
+            // the 0.15 of GDP the pension line's slip had left in it (9.73 -> 9.58), so the two
+            // mandatory lines together are what they were and the year-1 balance does not move.
+            const float OldAgePensionsPercentOfGdp = 7.0f;
+            const float ResidualTransfersPercentOfGdp = 9.58f;
 
             float allocated = 0f;
             foreach ((SpendingCategory category, float sek) in areas)
@@ -1439,8 +1455,10 @@ namespace PoliSim.Data
                 if (category == SpendingCategory.SocialSecurity)
                 {
                     // Constructed at the full real size rather than mutated afterwards, so
-                    // SeedAmount (the player-change clamp anchor) is the honest figure too.
-                    amount += sweden.State.GDP * OutOfBudgetPensionPercentOfGdp / 100f;
+                    // SeedAmount (the player-change clamp anchor) is the honest figure too. The
+                    // SEK-derived slice above stays in 'allocated' (the state-budget invariant);
+                    // the line itself is the sourced share of GDP, the slice inside it (PN-4, §519).
+                    amount = sweden.State.GDP * OldAgePensionsPercentOfGdp / 100f;
                 }
 
                 sweden.SpendingLines.Add(new SpendingLine(category, amount, mandatory));

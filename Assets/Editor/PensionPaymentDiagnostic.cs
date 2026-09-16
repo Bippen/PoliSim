@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using PoliSim.Data;
 using PoliSim.Simulation;
@@ -13,37 +15,37 @@ namespace PoliSim.EditorTools
     /// (`SpendingCategory.SocialSecurity`) and a pyramid; the average benefit it implies is that line over the people at or above
     /// the statutory age, and the replacement rate is that benefit over the mean income the schedules already read.
     ///
-    /// <para><b>This run measures and asserts NOTHING yet.</b> It prints, per country: the line, the headcount the statute's age
-    /// implies, the benefit that quotient gives in the book's dollars and in the source's own euros, the sourced average pension
-    /// (ESSPROS 2022) beside it, and the replacement rate against Eurostat's aggregate replacement ratio (`ilc_pnp3` 2024). The
-    /// premise of PN-2's gate is whether those two pairs are within a stated tolerance or DIVERGENT - and that is what this reads.</para>
+    /// <para><b>PN-4 (2026-09-16, §519): the seed against its source SAME YEAR, share of GDP against share of GDP.</b> §518's gate held the
+    /// model's 2026 line, in euro, against ESSPROS's 2022 euro band, and read Poland ×1.209 above it and Sweden ×0.724 below. Measured
+    /// (section 5 below decomposes both figures), Poland's was THE YEAR - the model's GDP in euro over 2022's, times the share's own
+    /// 2022→2024 indexation - and in the same year's band Poland is inside; Sweden's was THE PERIMETER - COFOG counts general government
+    /// (S13) and ESSPROS every scheme, and Sweden's occupational schemes pay 2.9 % of GDP of old-age pensions outside the state - times
+    /// a slip in the seed's own arithmetic (a top-up constant derived for a budget sum of 1,314 bn SEK while the code's areas sum to
+    /// 1,504), which this pass lands on the source's 7.0. So the gate now compares like with like: the seed's share against the COFOG
+    /// share it was typed from (provenance, the tight guard), and that share against ESSPROS's two definitions FOR THE SAME YEAR, with
+    /// the perimeter - what ESSPROS counts that general government does not - printed beside the verdict rather than read as an error.
+    /// A euro figure of one year is never again held against a line of another.</para>
     ///
     /// <para><b>The headcount's sub-band assumption, stated.</b> The pyramid is five-year bands, so a statutory age inside a band
     /// takes that band's fraction ((band end − age) ⁄ 5) and every band above it whole - the uniform-within-cohort approximation
     /// `PopulationCohorts` names, applied here and said out loud rather than discovered later (DS-3b's own rule).</para>
     ///
-    /// <para><b>What the two sources measure, which is not the same thing.</b> ESSPROS is expenditure over beneficiaries, so it
-    /// counts everyone drawing a pension including survivors and the disabled and those below the statutory age; this readout's
-    /// denominator is the cohorts at or above the age. `ilc_pnp3` is the median individual gross pension of 65–74 over the median
-    /// gross earnings of 50–59; this readout's is a mean over a mean. Both differences are printed as the reason a gap is not
-    /// automatically an error.</para>
+    /// <para><b>What the sources measure, which is not the same thing.</b> ESSPROS is expenditure over beneficiaries, so it counts
+    /// everyone drawing a pension including survivors and the disabled and those below the statutory age, from every scheme; this
+    /// readout's denominator is the cohorts at or above the age and its line is general government's. `ilc_pnp3` is the median
+    /// individual gross pension of 65–74 over the median gross earnings of 50–59; this readout's is a mean over a mean. Each difference
+    /// is printed as the reason a gap is not automatically an error.</para>
     /// </summary>
     public static class PensionPaymentDiagnostic
     {
-        /// <summary>
-        /// ESSPROS 2022 as `ElectionsData/pensions/average_pension_2022.csv` carries it (§475): expenditure in million euro and beneficiaries in persons,
-        /// for BOTH of the source's definitions - old-age pensions (old age + anticipated + partial) and all pension types. The USA is not in ESSPROS and
-        /// has no row here; its own source (OECD's net replacement rate) is a different quantity and is not used as an expenditure gate.
-        /// </summary>
-        private static readonly (CountryId Id, double AllTypesExpMio, double OldAgeExpMio, double AllTypesBen, double OldAgeBen)[] SourcedEssprosEur =
-        {
-            (CountryId.Germany, 462194.48, 364356.91, 23507818, 19860928),
-            (CountryId.France, 393151.24, 324367.32, 20556173, 17040084),
-            (CountryId.Italy, 309254.00, 249397.00, 15694751, 12426492),
-            (CountryId.Poland, 66799.09, 53916.32, 10505618, 8143281),
-            (CountryId.Sweden, 58792.05, 54271.18, 2818737, 2520552),
-            (CountryId.USA, 0, 0, 0, 0),
-        };
+        /// <summary>The table S1's prep script derives from the four Eurostat files on disk (`Tools/pension_prep.pl`, section 5): COFOG and
+        /// ESSPROS side by side per country and year, as shares of GDP, with nominal GDP and the beneficiary counts. Read here, never typed.</summary>
+        public const string SourceRelative = "ElectionsData/pensions/pension_line_sources_2019_2024.csv";
+
+        /// <summary>The seed's own vintage: every EU pension line is COFOG GF10.02/D62 of this year (WorldFactory's seed comments).</summary>
+        private const int SeedSourceYear = 2024;
+        /// <summary>The year §518's band was taken in - the euro figures its two ratios were measured against.</summary>
+        private const int OldGateYear = 2022;
 
         /// <summary>Eurostat `ilc_pnp3` 2024, sex T: the aggregate replacement ratio (`ElectionsData/pensions/replacement_ratio_2024.csv`, §475).</summary>
         private static readonly (CountryId Id, double Ratio)[] SourcedReplacementRatio =
@@ -51,22 +53,41 @@ namespace PoliSim.EditorTools
             (CountryId.Germany, 0.49), (CountryId.France, 0.61), (CountryId.Italy, 0.79), (CountryId.Poland, 0.60), (CountryId.Sweden, 0.59),
         };
 
+        /// <summary>The verdicts §519 measured, source against source in the latest year both publish - held so a seed or a table that drifts trips the bar by name.</summary>
+        private static readonly (CountryId Id, string Verdict)[] RecordedVerdicts =
+        {
+            (CountryId.Germany, "BELOW"), (CountryId.France, "BELOW"), (CountryId.Italy, "WITHIN"), (CountryId.Poland, "WITHIN"), (CountryId.Sweden, "BELOW"),
+        };
+
         /// <summary>The year the game opens in - the seed world is 2026, the same year the pension row is filmed at.</summary>
         private const int SeedYear = 2026;
 
+        private static readonly (CountryId Id, string Geo)[] Geo = { (CountryId.Germany, "DE"), (CountryId.France, "FR"), (CountryId.Italy, "IT"), (CountryId.Poland, "PL"), (CountryId.Sweden, "SE") };
+
         private static string F(string f, params object[] a) => string.Format(CultureInfo.InvariantCulture, f, a);
+
+        /// <summary>One row of the sourced table. An ESSPROS field is NaN where that year is not yet published (the flags column names it).</summary>
+        private sealed class SourceRow
+        {
+            public string Geo; public int Year;
+            public double CofogPct, CofogMeur, EssprosOldPct, EssprosOldMeur, EssprosAllPct, EssprosAllMeur, GdpMeur, GdpMnac, BenOld, BenAll;
+            public string Flags;
+        }
 
         public static void Run()
         {
             CheckExit.ArmLogFold();
             var sb = new StringBuilder();
-            sb.Append("=== PENSION PAYMENT (PN-2): the line over the people the statute retires, against the sourced average pension and replacement ratio - MEASURED, NOTHING ASSERTED ===\n");
+            sb.Append("=== PENSION PAYMENT (PN-2, PN-4): the line over the people the statute retires; the seed against its source SAME YEAR, share against share ===\n");
+            bool ok = true;
 
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
             World world = WorldFactory.CreateDefault();
             EnergyMarket.BeginTurn(world);
             CountryId[] order = { CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.USA };
+
+            Dictionary<string, List<SourceRow>> table = ReadTable(ref ok);
 
             sb.Append("\n    1. THE HEADCOUNT the statute's age implies - the bands at or above it, the straddled band by its fraction (uniform within the cohort)\n");
             foreach (CountryId id in order)
@@ -78,7 +99,7 @@ namespace PoliSim.EditorTools
                     id, age, straddleBand, straddleFraction, head, TotalMillions(c), TotalMillions(c) > 0 ? head / TotalMillions(c) : 0));
             }
 
-            sb.Append("\n    2. THE BENEFIT the line implies - the pension line over that headcount, in the book's dollars and in the source's euros\n");
+            sb.Append("\n    2. THE BENEFIT the line implies - the pension line over that headcount, in the book's dollars and in the statute's currency; the line as its share of the seed's nominal GDP\n");
             foreach (CountryId id in order)
             {
                 Country c = world.GetCountry(id);
@@ -88,41 +109,108 @@ namespace PoliSim.EditorTools
                 double perYearUsd = head > 0 ? line * 1e9 / (head * 1e6) : 0;   // billions over millions = thousands; × 1000 = the person's own figure
                 double nationalPerUsd = EnergyLayer.NationalPerUsd(id);
                 double perYearNational = perYearUsd * nationalPerUsd;
-                sb.Append(F("    {0,-8} line {1:N1} bn · {2:N3} m pensioners · benefit {3:N0} USD/yr = {4:N0} {5}/yr\n",
-                    id, line, head, perYearUsd, perYearNational, EnergyLayer.CurrencyCode(id)));
+                sb.Append(F("    {0,-8} line {1:N1} bn = {2:F3} % of GDP {3:N0} · {4:N3} m pensioners · benefit {5:N0} USD/yr = {6:N0} {7}/yr\n",
+                    id, line, SharePct(c), c.State.NominalGdp, head, perYearUsd, perYearNational, EnergyLayer.CurrencyCode(id)));
             }
 
-            // THE GAP, DECOMPOSED - and the GATE on the half that compares like with like.
-            // The benefit is expenditure over heads, so its gap against the source is exactly the expenditure gap over the headcount gap. The headcount
-            // gap is definitional (ESSPROS counts every beneficiary; this counts the cohorts at or above the age) and cannot be a verdict. The EXPENDITURE
-            // gap can: both sides are a country's old-age pension spending in euro for the same year. THE BAND IS THE SOURCE'S OWN: ESSPROS publishes two
-            // definitions - old-age pensions, and all pension types - and the model's one line is asked only to fall between them. That band is not chosen
-            // to pass anything; it is the width of the source's own disagreement with itself, country by country.
-            double eurPerUsd = EnergyLayer.NationalPerUsd(CountryId.Germany);   // the book is in dollars, the source in euro; Germany's rate IS the euro's
-            sb.Append(F("\n    3. THE GATE - the model's pension line against ESSPROS 2022, in euro, with the band the source draws itself (old-age .. all types). 1 USD = {0:F4} EUR\n", eurPerUsd));
-            int within = 0, divergent = 0, unsourced = 0;
-            foreach ((CountryId id, double allTypesExpMio, double oldAgeExpMio, double allTypesBen, double oldAgeBen) in SourcedEssprosEur)
+            // 3. THE GATE, re-cut (PN-4). Two comparisons, both like with like:
+            //   (a) PROVENANCE - the seed's share of nominal GDP against the COFOG GF10.02/D62 share of the seed's own year, which is what the line was typed
+            //       from. This is the tight guard: a seed that drifts from its source by a hundredth of a point is named.
+            //   (b) THE INDEPENDENT SOURCE, SAME YEAR - that COFOG share against ESSPROS's two definitions (old-age pensions .. all pension types) for the
+            //       latest year BOTH publish. ESSPROS counts every scheme and COFOG general government alone, so the difference between ESSPROS's old-age
+            //       figure and COFOG's is the PERIMETER - old-age pensions paid outside the state - and it is printed with its sign, not read as an error.
+            //       What CAN be a verdict regardless of perimeter is the upper edge: general government's old-age cash cannot exceed every scheme's every
+            //       pension type, so a seed above ESSPROS's all-types figure is wrong in any perimeter. That bound is asserted; the old-age edge is read.
+            sb.Append(F("\n    3. THE SEED AGAINST ITS SOURCE - the share of GDP against COFOG GF10.02/D62 {0} (provenance), and that against ESSPROS's own two definitions for the same year (the perimeter named)\n", SeedSourceYear));
+            int within = 0, below = 0, above = 0, unsourced = 0;
+            var verdicts = new Dictionary<CountryId, string>();
+            foreach (CountryId id in order)
             {
                 Country c = world.GetCountry(id);
-                float age = PensionAgeStatute.AgeInForce(id, SeedYear);
-                double head = PensionPayment.PensionersMillions(c, age);
-                double lineEurBn = PensionPayment.LineBillions(c) * eurPerUsd;
-                if (allTypesExpMio <= 0) { unsourced++; sb.Append(F("    {0,-8} NO SOURCE ROW - the fetch does not carry this country; no verdict is formed\n", id)); continue; }
-                double lowBn = oldAgeExpMio / 1000.0, highBn = allTypesExpMio / 1000.0;
-                bool inBand = lineEurBn >= lowBn && lineEurBn <= highBn;
-                if (inBand) { within++; } else { divergent++; }
-                double nearest = lineEurBn < lowBn ? lineEurBn / lowBn : lineEurBn / highBn;
-                sb.Append(F("    {0,-8} line {1:N1} bn EUR against ESSPROS {2:N1} (old age) .. {3:N1} (all types) · {4} · nearest edge x{5:F3} · heads {6:N2} m against {7:N2} m beneficiaries (x{8:F3})\n",
-                    id, lineEurBn, lowBn, highBn, inBand ? "WITHIN" : "DIVERGENT", nearest, head, oldAgeBen / 1e6, oldAgeBen > 0 ? head / (oldAgeBen / 1e6) : 0));
+                string geo = GeoOf(id);
+                if (geo == null || table == null || !table.ContainsKey(geo)) { unsourced++; sb.Append(F("    {0,-8} NO SOURCE ROW - the table does not carry this country (ESSPROS and COFOG are EU collections); no verdict is formed\n", id)); continue; }
+                SourceRow seedRow = RowOf(table, geo, SeedSourceYear);
+                SourceRow same = LatestWithEsspros(table, geo);
+                double share = SharePct(c);
+                double provenance = share - seedRow.CofogPct;
+                string verdict = same.CofogPct < same.EssprosOldPct ? "BELOW" : same.CofogPct > same.EssprosAllPct ? "ABOVE" : "WITHIN";
+                if (verdict == "WITHIN") { within++; } else if (verdict == "BELOW") { below++; } else { above++; }
+                verdicts[id] = verdict;
+                double perimeter = same.EssprosOldPct - same.CofogPct;
+                sb.Append(F("    {0,-8} seed {1:F3} % against COFOG {2} {3:F1} % (Δ {4:+0.000;-0.000} pp) · {5}: COFOG {6:F1} % against ESSPROS old-age {7:F2} .. all types {8:F2} % · {9} · perimeter {10:+0.00;-0.00} pp {11}\n",
+                    id, share, SeedSourceYear, seedRow.CofogPct, provenance, same.Year, same.CofogPct, same.EssprosOldPct, same.EssprosAllPct, verdict, perimeter,
+                    perimeter > 0 ? "(old-age pensions ESSPROS counts that general government does not pay)" : "(old-age cash COFOG counts that ESSPROS files elsewhere)"));
+                if (Math.Abs(provenance) > 0.01)
+                {
+                    ok = false;
+                    Debug.LogError(F("PENSION PAYMENT: {0}'s pension line is {1:F3} % of the seed's GDP against the {2:F1} % COFOG GF10.02/D62 {3} it was typed from - the seed does not land on its own source.", id, share, seedRow.CofogPct, SeedSourceYear));
+                }
+                if (share > same.EssprosAllPct + 0.005)
+                {
+                    ok = false;
+                    Debug.LogError(F("PENSION PAYMENT: {0}'s pension line at {1:F3} % of GDP exceeds ESSPROS's all-pension-types figure {2:F2} % ({3}) - general government's old-age cash cannot exceed every scheme's every pension type; the seed is wrong in any perimeter.", id, share, same.EssprosAllPct, same.Year));
+                }
             }
-            sb.Append(F("    {0} WITHIN the source's own band, {1} DIVERGENT, {2} unsourced.\n", within, divergent, unsourced));
+            sb.Append(F("    {0} WITHIN the same year's band, {1} BELOW its old-age edge by the perimeter, {2} ABOVE its all-types edge, {3} unsourced.\n", within, below, above, unsourced));
+            foreach ((CountryId id, string recorded) in RecordedVerdicts)
+            {
+                if (verdicts.TryGetValue(id, out string v) && v != recorded)
+                {
+                    ok = false;
+                    Debug.LogError(F("PENSION PAYMENT: {0} reads {1} against the same year's ESSPROS band where §519 measured it {2} - a seed moved, or the table did, and the record's verdict is stale.", id, v, recorded));
+                }
+            }
 
-            sb.Append("\n    4. THE REPLACEMENT RATE - the benefit over the mean income the schedules read, against Eurostat's aggregate replacement ratio\n");
+            sb.Append("\n    4. THE DRIVER'S FACTOR - the cohorts at or above the age against ESSPROS's beneficiaries (every scheme, every pension type counted once) - a factor on the BENEFIT, never on the line\n");
+            foreach (CountryId id in order)
+            {
+                string geo = GeoOf(id); if (geo == null || table == null || !table.ContainsKey(geo)) { continue; }
+                Country c = world.GetCountry(id);
+                SourceRow same = LatestWithEsspros(table, geo);
+                double head = PensionPayment.PensionersMillions(c, PensionAgeStatute.AgeInForce(id, SeedYear));
+                sb.Append(F("    {0,-8} heads {1:N3} m ({2}) against {3:N3} m old-age beneficiaries (x{4:F3}) and {5:N3} m of all types (x{6:F3}) in {7}\n",
+                    id, head, SeedYear, same.BenOld / 1e6, head / (same.BenOld / 1e6), same.BenAll / 1e6, head / (same.BenAll / 1e6), same.Year));
+            }
+
+            // 5. §518's TWO FIGURES, DECOMPOSED. Its ratio was (the line in euro at the model's rate) over (the ESSPROS 2022 edge in euro), which factors exactly as
+            //    YEAR (the model's GDP in euro over the source year's GDP in euro) × VINTAGE (the seed's COFOG share over COFOG's share of the source year - the line's
+            //    own indexation between the two years) × PERIMETER (COFOG's share of the source year over ESSPROS's edge share of the same year) × SEED (the seed's
+            //    share over the COFOG share it was typed from - 1 when the seed lands on its source). The product must reproduce the direct ratio to the third place.
+            double eurPerUsd = EnergyLayer.NationalPerUsd(CountryId.Germany);   // the book is in dollars, the source in euro; Germany's rate IS the euro's
+            sb.Append(F("\n    5. §518'S TWO FIGURES DECOMPOSED - line / ESSPROS {0} edge in euro = year × vintage × perimeter × seed (1 USD = {1:F4} EUR)\n", OldGateYear, eurPerUsd));
+            var products = new Dictionary<CountryId, double>();
+            foreach ((CountryId id, bool againstAllTypes) in new[] { (CountryId.Poland, true), (CountryId.Sweden, false) })
+            {
+                string geo = GeoOf(id); if (table == null || !table.ContainsKey(geo)) { continue; }
+                Country c = world.GetCountry(id);
+                SourceRow old = RowOf(table, geo, OldGateYear), seedRow = RowOf(table, geo, SeedSourceYear);
+                double modelGdpEur = c.State.NominalGdp * eurPerUsd;                       // bn
+                double year = modelGdpEur / (old.GdpMeur / 1000.0);
+                double vintage = seedRow.CofogPct / old.CofogPct;
+                double edgePct = againstAllTypes ? old.EssprosAllPct : old.EssprosOldPct;
+                double edgeMeur = againstAllTypes ? old.EssprosAllMeur : old.EssprosOldMeur;
+                double perimeter = old.CofogPct / edgePct;
+                double seed = SharePct(c) / seedRow.CofogPct;
+                double product = year * vintage * perimeter * seed;
+                double direct = PensionPayment.LineBillions(c) * eurPerUsd / (edgeMeur / 1000.0);
+                products[id] = product;
+                sb.Append(F("    {0,-8} year {1:F3} ({2:N1} bn EUR model GDP over {3:N1} bn {4}) × vintage {5:F3} (COFOG {6:F1} over {7:F1}) × perimeter {8:F3} (COFOG {9:F1} over ESSPROS {10} {11:F2}) × seed {12:F3} = {13:F3} · direct {14:F3}\n",
+                    id, year, modelGdpEur, old.GdpMeur / 1000.0, OldGateYear, vintage, seedRow.CofogPct, old.CofogPct, perimeter, old.CofogPct, againstAllTypes ? "all types" : "old-age", edgePct, seed, product, direct));
+                if (Math.Abs(product - direct) > 0.002)
+                {
+                    ok = false;
+                    Debug.LogError(F("PENSION PAYMENT: {0}'s decomposition multiplies to {1:F3} against the direct ratio {2:F3} - the four factors no longer account for the figure.", id, product, direct));
+                }
+            }
+            // the two figures the records carry: Poland's ×1.209 (§518, untouched by this pass - the seed is inside the same year's band and stays) and Sweden's
+            // product with its seed landed on the source (§519); §518's 0.724 was this times the slip, and the slip is measured by the probe that turns the landing off
+            AssertProduct(products, CountryId.Poland, 1.209, "§518", ref ok);
+            AssertProduct(products, CountryId.Sweden, 0.739, "§519", ref ok);
+
+            sb.Append("\n    6. THE REPLACEMENT RATE - the benefit over the mean income the schedules read, against Eurostat's aggregate replacement ratio\n");
             foreach ((CountryId id, double ratio) in SourcedReplacementRatio)
             {
                 Country c = world.GetCountry(id);
-                float age = PensionAgeStatute.AgeInForce(id, SeedYear);
-                double head = PensionPayment.PensionersMillions(c, age);
                 double perYearUsd = PensionPayment.AverageBenefitPerYear(c, SeedYear);
                 double meanIncomeStatute = TaxSchedule.AverageIncome(c, 1.0);            // the statute's own currency, the schedules' reading
                 double meanIncomeUsd = meanIncomeStatute / Math.Max(1e-9, EnergyLayer.NationalPerUsd(id));
@@ -130,29 +218,9 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    {0,-8} benefit {1:N0} USD/yr over mean income {2:N0} USD/yr = {3:F3} against ilc_pnp3 {4:F2} · ratio {5:F3}\n",
                     id, perYearUsd, meanIncomeUsd, model, ratio, ratio > 0 ? model / ratio : 0));
             }
-
             sb.Append("\n    ⚠ THE REPLACEMENT RATE IS A READING, NOT A GATE: ilc_pnp3 is a median individual pension over median earnings of a named age band, and this is a\n");
             sb.Append("    mean over a mean, so the two cannot be equal even where the model is right. It is printed because a reader will ask, and the gap is named with it.\n");
 
-            // (5) THE VERDICTS, ASSERTED - so a seed that drifts out of the source's band trips the bar instead of being read as the same row
-            bool ok = true;
-            foreach ((CountryId id, double allTypesExpMio, double oldAgeExpMio, double _, double __) in SourcedEssprosEur)
-            {
-                Country c = world.GetCountry(id);
-                double lineEur = PensionPayment.LineBillions(c) * eurPerUsd;
-                bool expectedWithin = id == CountryId.Germany || id == CountryId.France || id == CountryId.Italy;
-                if (allTypesExpMio <= 0) { continue; }
-                bool inBand = lineEur >= oldAgeExpMio / 1000.0 && lineEur <= allTypesExpMio / 1000.0;
-                if (inBand != expectedWithin)
-                {
-                    ok = false;
-                    Debug.LogError(F("PENSION PAYMENT: {0}'s line reads {1:N1} bn EUR against the source's band {2:N1} .. {3:N1} - it is {4} where §518 measured it {5}. A seed moved, or a rate did.",
-                        id, lineEur, oldAgeExpMio / 1000.0, allTypesExpMio / 1000.0, inBand ? "WITHIN" : "DIVERGENT", expectedWithin ? "WITHIN" : "DIVERGENT"));
-                }
-            }
-            // the two DIVERGENT ones at the size they were measured at, so the record's figures cannot rot silently
-            AssertNearestEdge(world, CountryId.Poland, 1.209, ref ok);
-            AssertNearestEdge(world, CountryId.Sweden, 0.724, ref ok);
             // the identity the row and the gate both stand on: the benefit IS the line over the heads
             foreach (CountryId id in order)
             {
@@ -173,22 +241,81 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(ok ? 0 : 1);
         }
 
-        /// <summary>A DIVERGENT country's distance from the nearest edge of the source's own band, asserted at the figure §518 measured - a drift either way is a finding.</summary>
-        private static void AssertNearestEdge(World world, CountryId id, double measured, ref bool ok)
+        /// <summary>The pension line as a share of the seed's nominal GDP, in percent - the quantity the seed was typed as.</summary>
+        private static double SharePct(Country c) => c.State.NominalGdp > 0 ? PensionPayment.LineBillions(c) / c.State.NominalGdp * 100.0 : 0;
+
+        private static string GeoOf(CountryId id) { foreach ((CountryId i, string g) in Geo) { if (i == id) { return g; } } return null; }
+
+        private static SourceRow RowOf(Dictionary<string, List<SourceRow>> table, string geo, int year)
         {
-            foreach ((CountryId rowId, double allTypesExpMio, double oldAgeExpMio, double _, double __) in SourcedEssprosEur)
+            foreach (SourceRow r in table[geo]) { if (r.Year == year) { return r; } }
+            throw new InvalidOperationException(F("{0} has no {1} row in {2}", geo, year, SourceRelative));
+        }
+
+        /// <summary>The latest year the table carries both sources for - ESSPROS lags COFOG by a year for some countries, and the comparison is only ever same-year.</summary>
+        private static SourceRow LatestWithEsspros(Dictionary<string, List<SourceRow>> table, string geo)
+        {
+            SourceRow best = null;
+            foreach (SourceRow r in table[geo]) { if (!double.IsNaN(r.EssprosOldPct) && (best == null || r.Year > best.Year)) { best = r; } }
+            if (best == null) { throw new InvalidOperationException(F("{0} has no year with ESSPROS published in {1}", geo, SourceRelative)); }
+            return best;
+        }
+
+        /// <summary>A recorded figure held: the decomposition's product for a country, at the figure the named record measured.</summary>
+        private static void AssertProduct(Dictionary<CountryId, double> products, CountryId id, double recorded, string record, ref bool ok)
+        {
+            if (!products.TryGetValue(id, out double product)) { return; }
+            if (Math.Abs(product - recorded) > 0.005)
             {
-                if (rowId != id) { continue; }
-                double lineEur = PensionPayment.LineBillions(world.GetCountry(id)) * EnergyLayer.NationalPerUsd(CountryId.Germany);
-                double low = oldAgeExpMio / 1000.0, high = allTypesExpMio / 1000.0;
-                double edge = lineEur < low ? lineEur / low : lineEur / high;
-                if (Math.Abs(edge - measured) > 0.01)
-                {
-                    ok = false;
-                    Debug.LogError(F("PENSION PAYMENT: {0} sits x{1:F3} from the source's nearest edge against the x{2:F3} §518 measured - the gap moved and the record's figure is stale.", id, edge, measured));
-                }
-                return;
+                ok = false;
+                Debug.LogError(F("PENSION PAYMENT: {0}'s line sits x{1:F3} from ESSPROS's {2} edge against the x{3:F3} {4} measured - the gap moved and the record's figure is stale.", id, product, OldGateYear, recorded, record));
             }
+        }
+
+        /// <summary>The sourced table, by geo. Absent file: a failure - the gate is what the table is on disk for.</summary>
+        private static Dictionary<string, List<SourceRow>> ReadTable(ref bool ok)
+        {
+            string path = Path.Combine(Directory.GetCurrentDirectory(), SourceRelative.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(path)) { ok = false; Debug.LogError(F("PENSION PAYMENT: {0} is not on disk - the seed cannot be held against its source.", SourceRelative)); return null; }
+            var table = new Dictionary<string, List<SourceRow>>();
+            string[] lines = File.ReadAllLines(path);
+            for (int i = 1; i < lines.Length; i++)
+            {
+                if (string.IsNullOrWhiteSpace(lines[i])) { continue; }
+                List<string> f = SplitCsv(lines[i]);
+                if (f.Count < 15) { ok = false; Debug.LogError(F("PENSION PAYMENT: row {0} of {1} has {2} fields, 15 expected.", i + 1, SourceRelative, f.Count)); continue; }
+                var r = new SourceRow
+                {
+                    Geo = f[0], Year = int.Parse(f[2], CultureInfo.InvariantCulture),
+                    CofogPct = Num(f[3]), CofogMeur = Num(f[4]), EssprosOldPct = Num(f[5]), EssprosOldMeur = Num(f[6]), EssprosAllPct = Num(f[7]), EssprosAllMeur = Num(f[8]),
+                    GdpMeur = Num(f[9]), GdpMnac = Num(f[10]), BenOld = Num(f[11]), BenAll = Num(f[12]), Flags = f[13],
+                };
+                if (!table.TryGetValue(r.Geo, out List<SourceRow> rows)) { rows = new List<SourceRow>(); table[r.Geo] = rows; }
+                rows.Add(r);
+            }
+            return table;
+        }
+
+        private static double Num(string s) => string.IsNullOrEmpty(s) ? double.NaN : double.Parse(s, CultureInfo.InvariantCulture);
+
+        /// <summary>A CSV line into fields - a quoted field may carry commas and doubled quotes (the flags and source columns do).</summary>
+        private static List<string> SplitCsv(string line)
+        {
+            var fields = new List<string>(); var cur = new StringBuilder(); bool quoted = false;
+            for (int i = 0; i < line.Length; i++)
+            {
+                char ch = line[i];
+                if (quoted)
+                {
+                    if (ch == '"') { if (i + 1 < line.Length && line[i + 1] == '"') { cur.Append('"'); i++; } else { quoted = false; } }
+                    else { cur.Append(ch); }
+                }
+                else if (ch == '"') { quoted = true; }
+                else if (ch == ',') { fields.Add(cur.ToString()); cur.Clear(); }
+                else { cur.Append(ch); }
+            }
+            fields.Add(cur.ToString());
+            return fields;
         }
 
         private static double TotalMillions(Country c)

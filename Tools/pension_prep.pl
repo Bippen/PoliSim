@@ -128,3 +128,48 @@ for my $g (@geo) {
     }
 }
 writecsv("$out/average_pension_2022.csv", @ap);
+
+# ---- 5. pension_line_sources_2019_2024.csv - PN-4 (2026-09-16): the pension LINE's two sources side by side, SAME YEAR, as shares of GDP.
+#         The seed's own source is COFOG (gov_10a_exp, S13 general government, GF10.02 "Old age", D62 cash benefits, % of GDP); the gate's is
+#         ESSPROS (spr_exp_pens, ALL schemes - occupational and other non-government schemes included - old-age = OLD+AOLD+PART, and TOTAL).
+#         The two differ by PERIMETER (the sector) and a euro figure of one year cannot be held against a line of another, so this table
+#         carries both as % of GDP for every year both publish, with nominal GDP (nama_10_gdp, current prices) and the beneficiary counts
+#         beside them. A COFOG or GDP cell that is missing stops the script; an ESSPROS year not yet published is NAMED in the flags column.
+{
+    my $exp = eurostat("$src/pensions/spr_exp_pens_2019_2024.json"); my $gov = eurostat("$src/pensions/gov_10a_exp_gf10_2019_2024.json");
+    my $gdp = eurostat("$src/pensions/nama_10_gdp_2019_2025.json"); my $ben = eurostat("$src/pensions/spr_pns_ben_2019_2024.json");
+    my @pl = ('geo,country,year,cofog_old_age_cash_pct_gdp,cofog_old_age_cash_mio_eur,esspros_old_age_pct_gdp,esspros_old_age_mio_eur,esspros_all_types_pct_gdp,esspros_all_types_mio_eur,gdp_mio_eur,gdp_mio_nac,beneficiaries_old_age,beneficiaries_all_types,flags,source');
+    my $rows = 0;
+    for my $g (@geo) {
+        for my $y (2019 .. 2024) {
+            my $cof = $gov->(geo => $g, time => $y, unit => 'PC_GDP', sector => 'S13', cofog99 => 'GF1002', na_item => 'D62');
+            my $cofEur = $gov->(geo => $g, time => $y, unit => 'MIO_EUR', sector => 'S13', cofog99 => 'GF1002', na_item => 'D62');
+            die "COFOG GF10.02/D62 $g $y: not published - nothing is filled from memory\n" unless defined $cof && defined $cofEur;
+            my $gEur = $gdp->(geo => $g, time => $y, unit => 'CP_MEUR', na_item => 'B1GQ'); my $gNac = $gdp->(geo => $g, time => $y, unit => 'CP_MNAC', na_item => 'B1GQ');
+            die "nama_10_gdp $g $y: not published\n" unless defined $gEur && defined $gNac;
+            my @flags;
+            my ($oldPct, $oldEur, $allPct, $allEur, $bOld, $bAll) = ('', '', '', '', '', '');
+            my $total = $exp->(geo => $g, time => $y, unit => 'PC_GDP', spdepb => 'TOTAL', spdepm => 'TOTAL');
+            if (defined $total) {
+                my (@summed, @absent); my ($op, $oe) = (0, 0);
+                for my $p (qw(OLD AOLD PART)) {
+                    my $v = $exp->(geo => $g, time => $y, unit => 'PC_GDP', spdepb => $p, spdepm => 'TOTAL'); my $e = $exp->(geo => $g, time => $y, unit => 'MIO_EUR', spdepb => $p, spdepm => 'TOTAL');
+                    if (defined $v && defined $e) { $op += $v; $oe += $e; push @summed, $p } else { push @absent, $p }
+                }
+                die "ESSPROS $g $y: the old-age line itself is missing\n" unless grep { $_ eq 'OLD' } @summed;
+                push @flags, 'ESSPROS old-age parts ' . join('+', @absent) . ' not reported' if @absent;
+                ($oldPct, $oldEur) = (sprintf('%.2f', $op), sprintf('%.2f', $oe));
+                ($allPct, $allEur) = (sprintf('%.2f', $total), sprintf('%.2f', $exp->(geo => $g, time => $y, unit => 'MIO_EUR', spdepb => 'TOTAL', spdepm => 'TOTAL')));
+                $bOld = $ben->(geo => $g, time => $y, spdepb => 'OLD_TOT', spdepm => 'TOTAL', sex => 'T'); $bAll = $ben->(geo => $g, time => $y, spdepb => 'TOTAL', spdepm => 'TOTAL', sex => 'T');
+                die "ESSPROS beneficiaries $g $y missing\n" unless defined $bOld && defined $bAll;
+            } else {
+                push @flags, "ESSPROS $y not published";
+            }
+            push @pl, join(',', $g, $country{$g}, $y, sprintf('%.1f', $cof), sprintf('%.1f', $cofEur), $oldPct, $oldEur, $allPct, $allEur, sprintf('%.1f', $gEur), sprintf('%.1f', $gNac), $bOld, $bAll, csvq(join('; ', @flags)),
+                csvq('Eurostat gov_10a_exp S13 GF1002 D62 (PC_GDP, MIO_EUR); spr_exp_pens (means-tested and not, all schemes; old-age = OLD+AOLD+PART, all types = TOTAL); spr_pns_ben (persons, sex T); nama_10_gdp B1GQ current prices - fetched 2026-09-16'));
+            $rows++;
+        }
+    }
+    die "pension line sources: $rows rows, 30 expected\n" unless $rows == 30;
+    writecsv("$out/pension_line_sources_2019_2024.csv", @pl);
+}
