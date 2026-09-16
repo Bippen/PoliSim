@@ -271,6 +271,12 @@ namespace PoliSim.EditorTools
             // written - and it was sized as a READ. A read decays the moment it finishes.
             ("PreWiringPremiseCheck", PreWiringPremiseCheck.Run),
 
+            // CL-3 (2026-09-16, §523): the play protocol's two guards - the pre-campaign save cuts and loads back onto the run-up's first day
+            // (a save the protocol names cannot silently stop loading), and PLAY_SHEET.md is the sheet the code and §346 generate today
+            // (a constant that moves makes the sheet stale by name; Elias's column is the one column the compare ignores).
+            ("PlayProtocolCheck", PlayProtocolCheck.Run),
+            ("PlaySheetCheck", PlaySheetCheck.Run),
+
             // S-39 (2026-09-01): a screen we CUT must be told to the person drawing it. ⚠ This project
             // has a great deal of machinery keeping its documents true to its code and NONE keeping an
             // outward-facing ask true to a decision made after it was sent.
