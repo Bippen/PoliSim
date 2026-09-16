@@ -96,7 +96,7 @@ The items: individual tax rates by bracket; pension age and average pension paym
 | **DS-2d** | S5 vs S6 for Sweden | **one line, two layers.** "S5's constraint holds (one revenue figure per TaxType, so the decompositions don't change shape) and S6's intent holds (kommunal + statlig are two real instruments). Both, not either." | F4-3 |
 | **DS-3** | Pension age as statutory-vs-set | **statute + dial**, "on CarbonRateStatute's precedent: one rule per country with its paragraph, stepped at the boundary, a passed bill's figure wins." | PN-1 |
 | **DS-3b** | An age inside a five-year band | **the fraction, stated.** "Snapping to the band would make a two-year reform invisible, which is the opposite of what the lever is for." | PN-1 |
-| **DS-3c** | Potential's 20–64 window under a moved age | **state the seam now.** "Potential's 20–64 window is printed as a deviation; re-forming labour input to Σ(band × rate) is its own family after B3, because it re-solves six seed potentials (§394's precedent) and must not ride inside a pension pass." | PN-1, PN-3 |
+| **DS-3c** (seam closed §522) | Potential's 20–64 window under a moved age | **state the seam now.** "Potential's 20–64 window is printed as a deviation; re-forming labour input to Σ(band × rate) is its own family after B3, because it re-solves six seed potentials (§394's precedent) and must not ride inside a pension pass." | PN-1, PN-3 |
 | **DS-3d** | Where the age and the payment live | **the Budget group.** "The pension line is a budget line; a seventh society family would split one fact across two homes." | PN-1, PN-2 |
 | **DS-4** | S14 - hold or amend | **amend S14.** "Structural ship first in the v3 grammar, the board second, read the D11 way against a built page. The D19 way worked: real parts make a better ask than a description does. I ruled S14 and I am amending it." | EN-6 |
 | **DS-4b** | The page's home | "the Sectors page now, the rail cell asked in D20 and taken only if the page proves it needs one." | EN-6, D20 |
@@ -134,7 +134,7 @@ Legend: **B#** a BASELINE family (dumped `traj_<label>_s{777,424242}_t{100,500,1
 | **S-E2** ✅ §498 §500 | **EN-7** | **EN-7a LANDED 2026-09-14 (§498): the dials onto the instruments; EN-7b LANDED 2026-09-15 (§500): the electricity-tax law category. Neither a family; stage 5 complete.** energy stage 5: the five dials onto the four instruments (S9), the one law category cited (§378's ruling) | S-E1 | a family only if a seeded dial position is not neutral - measured by the dump | the page's instrument strip |
 | **S-C5** | **D-22** | Germany's campaign on the Länder catalog and the cast (DS-9) | S-C3 played | none | a second country |
 | (13a) | | D19 item 1 on DS-8: the text chip, B8's banner kept | - | UI | - |
-| **PN-3** | | potential's labour input re-formed to Σ(band × rate), six seed potentials re-solved (§394's precedent) - its own family after PN-1 | S5 | **B4** | - |
+| **PN-3** ✅ §522 | | **MEASURED AND LANDED 2026-09-16 (§522): the window counted the ageing twice (Italy -11.44 %, Poland -9.99 % at year 25); the labour force is the 15+ population at the state's rate = Σ(band × rate) exactly; `traj_pn3`, all six; the wage bill's same seam opened as PN-3b.** potential's labour input re-formed to Σ(band × rate), six seed potentials re-solved (§394's precedent) - its own family after PN-1 | S5 | **B4** | - |
 | **Shelf** | | the standing list after each landed pass | - | - | - |
 
 ---

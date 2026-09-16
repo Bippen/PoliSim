@@ -12,9 +12,9 @@ namespace PoliSim.EditorTools
     /// computed HERE from the cohorts, participation and the natural rate) × the compound of the trend the ledger held
     /// each turn (read after each turn, compounded by the diagnostic) within 1e-3 - the daily slices of one turn sum to
     /// one; Country.PotentialGrowthRate must equal the derived rate ((1 + trend/100) × labour growth − 1) within 1e-3
-    /// pp. Then the workforce probe: a country whose 20–64 cohort shrinks over the five years (the substrate says
-    /// which) must show potential BELOW the productivity index alone - the labour input speaking - and one whose cohort
-    /// grows, above. Sits on the simulation bar.
+    /// pp. Then the workforce probe: a country whose labour input shrinks over the five years (the pyramid's labour force
+    /// at the state's rate, employed - PN-3 §522, where P5-B7 read the 20–64 cohort) must show potential BELOW the
+    /// productivity index alone - the labour input speaking - and one whose input grows, above. Sits on the simulation bar.
     /// </summary>
     public static class PotentialOutputDiagnostic
     {

@@ -29247,3 +29247,91 @@ Poland's driver counts the same people it always did (its statute is 65, fixed -
 **Bar:** a read and its registers - the cheap bar on the tree this record reads.
 - The record's tree - `bar508_rec521` **38 of 38** on the tree this record reads - residue 4, 12 of 12 ratchets tight.
 
+## 522. PN-3 MEASURED, THEN LANDED — potential's labour force is the pyramid's, not a window's: the 20–64 cohort × a 15-and-over participation rate counted the ageing twice, 2 to 11 % after 25 years; the labour force is now the 15+ population at the state's rate, which is Σ(band × sourced rate) exactly; DS-3c's seam closed; BASELINE, all six; the wage bill's same seam measured and opened as PN-3b (2026-09-16)
+
+**The ruling it completes.** DS-3c (§474): *"Potential's 20–64 window is printed as a deviation; re-forming labour input to Σ(band × rate) is its own family after B3, because it re-solves six seed potentials (§394's precedent) and must not ride inside a pension pass."* PN-1's driver landed at §520; this is the family after it.
+
+**The premise, measured before anything was re-formed** (`LabourInputWindowDiagnostic`, run 2026-09-16 on the tree as it stood: a manager advanced 25 years, no player). Potential's labour input was the 20–64 cohort × the state's participation rate × (1 − U). The state's rate is a **15-and-over** rate by construction - `ParticipationRateTable.StructuralRate` is Σ(band × sourced rate by age) over the population aged 15 and over, and `MacroSystem.ApplyLaborForceParticipationRate` reverts the state's rate toward it - so the input multiplied a count on one base by a rate on another. An ageing pyramid moves both the same way: the 20–64 window shrinks AND the 15+ rate falls as the old grow. Two ageing effects on one input. The three forms side by side, as ratios to their seeds after 25 years of the model's own ageing:
+
+| | 20–64 ÷ seed | 15+ ÷ seed | the state's rate (structural) | the WINDOW form | the BAND form (sourced rates alone) | the 15+ form (the levers carried) | the window against the band |
+|---|--:|--:|--:|--:|--:|--:|--:|
+| USA | ×1.0475 | ×1.0849 | 60.39 % (60.25) | ×1.0303 | ×1.0647 | ×1.0671 | **-3.24 %** |
+| Sweden | ×1.1108 | ×1.1467 | 63.61 % (62.99) | ×1.0925 | ×1.1169 | ×1.1279 | **-2.18 %** |
+| Germany | ×0.9292 | ×1.0003 | 56.76 % (56.71) | ×0.8700 | ×0.9356 | ×0.9365 | **-7.01 %** |
+| France | ×0.9621 | ×1.0387 | 52.18 % (51.61) | ×0.9093 | ×0.9711 | ×0.9817 | **-6.36 %** |
+| Italy | ×0.8531 | ×0.9769 | 43.91 % (43.30) | ×0.7694 | ×0.8688 | ×0.8811 | **-11.44 %** |
+| Poland | ×0.8117 | ×0.9259 | 50.33 % (49.01) | ×0.7182 | ×0.7979 | ×0.8192 | **-9.99 %** |
+
+The window sat below the labour force the sourced rates by age imply in every country, by more than the levers' deviation could explain (the state's rate ran ABOVE the structural rate everywhere - the discouraged-worker, health, education and tax terms net positive - so the 15+ form, which carries that deviation, sits above the band form, not below it). Italy and Poland, the two pyramids ageing fastest, lost a tenth of their labour input to the double count in a quarter century.
+
+**The identity that decides the form.** Σ(band × rate) = the 15+ population × the structural rate ÷ 100, by the table's own definition; the state's rate is that anchor plus the levers' points; so the labour force the pyramid implies at the state's rate is the 15+ population × the state's rate - Σ(band × sourced rate) EXACTLY while no lever has moved participation, and the same labour force scaled by the levers' deviation otherwise. That is the form DS-3c named, with the levers' reach kept, and it costs no second participation figure. At the seed:
+
+| | 20–64 | 15+ | the state's rate = structural | Σ(band × rate) | U | the window's input | the 15+ input (potential's) | the 65+ bands of the labour force |
+|---|--:|--:|--:|--:|--:|--:|--:|--:|
+| USA | 197.235 m | 284.079 m | 61.894 % | 175.829 m | 4.50 % | 116.584 m | 167.917 m | 7.2 % |
+| Sweden | 6.021 m | 8.884 m | 65.313 % | 5.802 m | 8.00 % | 3.618 m | 5.338 m | 4.0 % |
+| Germany | 48.669 m | 71.927 m | 60.787 % | 43.722 m | 3.50 % | 28.549 m | 42.192 m | 3.7 % |
+| France | 38.054 m | 57.632 m | 55.628 % | 32.059 m | 7.30 % | 19.623 m | 29.719 m | 1.8 % |
+| Italy | 34.274 m | 51.984 m | 48.776 % | 25.355 m | 7.80 % | 15.413 m | 23.378 m | 3.0 % |
+| Poland | 21.302 m | 31.024 m | 57.204 % | 17.747 m | 5.40 % | 11.527 m | 16.789 m | 2.4 % |
+
+**Built.**
+- `PotentialOutput.LabourForce` - the 15+ population × the state's rate (`Population15Plus` beside it); `LabourInput` is that labour force × (1 − U), employment as §394 made it. The 15–19 and 65+ bands enter at their sourced rates (Sweden's 65–69 at 31.2 %, 70–74 at 11.8 %), and a participation response of the bands a pension age crosses (PN-1's open item) reaches this input through the table it would move.
+- `PotentialLabourSeed` is captured in the new form (`Country.CaptureStructuralBases`); `PotentialGdpSeed` - GDP × (1 − NAIRU) ÷ (1 − U) - is unchanged: the seed potentials are re-solved in the sense §394 left them, from their factors, and the labour factor's seed is the pyramid's now. Save format 19 (a save from before carries the window's seed, which the re-formed input would read as a labour ratio near 1.5 on load).
+- `LabourInputWindowDiagnostic`, on the simulation bar (54): the table's identity, the 15+ form's identity, and the input's - potential's labour input IS the 15+ form, at the seed and after 10 and 25 years; the window printed as the deviation retired; section 4 the wage bill.
+- `POTENTIAL_PREMISE.md` regenerated (`potential04`); `CLAUDE.md`'s potential section; the docs of `PotentialOutputDiagnostic` and `PotentialPremiseDump`.
+
+**The family - BASELINE, all six, attributed.** `traj_pn3off` (the whole pass with the labour force mapped back to the window) against `traj_pn1d`: BYTE-IDENTICAL at both seeds and all three horizons, 77 of 77 in every diff - the diagnostic, the bar's list, the docs and the save version are inert. **It was not on the first run.** The re-form was first written as `LabourForce(country) × (1 − U)` - an accessor call and a product where the old input was one three-factor expression - and the probe's "window back" tree then differed from `traj_pn1d` in 69 of 77 fields at every horizon: Mono rounds a stored intermediate where it rounds nothing inside an expression (the numeric-inertness rule, `CLAUDE.md`), so the probe was not the old arithmetic to the bit and could attribute nothing. `LabourInput` is one expression again, the pyramid's population in the window's place and `LabourForce` an accessor beside it; the second run's six diffs are the attribution. The first run's diagnostic also failed on its own timing (a year-10 reading compared with the input read at year 25), fixed by reading the input into the same Reading. `traj_pn3` (the pass as committed) against `traj_pn1d`: every country moves - France (s777 from turn 1, 57450 of 77000 rows; s424242 from turn 1, 57468 of 77000 rows), Germany (s777 from turn 1, 54027 of 77000 rows; s424242 from turn 1, 52524 of 77000 rows), Italy (s777 from turn 1, 63865 of 77000 rows; s424242 from turn 1, 63819 of 77000 rows), Poland (s777 from turn 1, 56608 of 77000 rows; s424242 from turn 1, 57756 of 77000 rows), Sweden (s777 from turn 1, 62403 of 77000 rows; s424242 from turn 1, 62400 of 77000 rows), USA (s777 from turn 1, 51545 of 77000 rows; s424242 from turn 1, 51023 of 77000 rows). Its size, read off the dumps at s777 - the debt-to-GDP ratio and nominal GDP at the two horizons:
+
+| | debt-to-GDP at t100, pn1d → pn3 | nominal GDP at t100 | debt-to-GDP at t1000 | nominal GDP at t1000 |
+|---|--:|--:|--:|--:|
+| Sweden | 26.29 → 25.51 % (-0.78 pp) | +12.756 % | 19.30 → 19.40 % (+0.10 pp) | +13.509 % |
+| Germany | 36.45 → 33.41 % (-3.05 pp) | +12.794 % | 36.32 → 24.20 % (-12.12 pp) | +7.098 % |
+| France | 30.32 → 29.03 % (-1.29 pp) | +14.334 % | 27.66 → 27.55 % (-0.11 pp) | +13.275 % |
+| Italy | 47.35 → 48.19 % (+0.84 pp) | +17.721 % | 24.60 → 24.08 % (-0.52 pp) | +17.795 % |
+| Poland | 24.70 → 12.69 % (-12.00 pp) | +20.028 % | 12.22 → 11.32 % (-0.90 pp) | +19.867 % |
+| USA | 120.40 → 118.99 % (-1.42 pp) | +13.235 % | 112.08 → 111.39 % (-0.70 pp) | +13.169 % |
+
+**B7's premise, re-measured** (`POTENTIAL_PREMISE.md`, `potential03` → `potential04`, year 100, no player): potential ÷ seed, GDP ÷ seed, the labour input ÷ seed and the debt ratio, before → after:
+
+| | potential ÷ seed | GDP ÷ seed | labour input ÷ seed | debt (% GDP) |
+|---|--:|--:|--:|--:|
+| USA | 4.617 → **5.011** | 3.727 → **4.134** | 0.931 → **1.011** | 1297.365 → **844.848** |
+| Sweden | 2.735 → **3.062** | 2.662 → **3.077** | 0.984 → **1.104** | 298.129 → **193.158** |
+| Germany | 1.875 → **2.088** | 1.712 → **1.885** | 0.749 → **0.836** | 387.872 → **255.915** |
+| France | 1.248 → **1.411** | 1.107 → **1.249** | 0.755 → **0.855** | 363.37 → **216.993** |
+| Italy | 0.634 → **0.729** | 0.554 → **0.622** | 0.592 → **0.691** | 379.39 → **355.146** |
+| Poland | 10.562 → **11.495** | 8.796 → **9.87** | 0.543 → **0.588** | 290.22 → **168.582** |
+
+The labour input's century ratio rises where the pyramid ages (the window had been shrinking it twice) and potential and output follow it; the direction is the measurement's, country by country.
+
+**Guards, each proved both ways** (`chain_pn3`; the tree checked clean after every restore):
+1. **`window_back`** - the labour force mapped back to the 20–64 window: "Italy at the seed: potential's labour input 15.4134 m is not the 15+ population at the state's rate, employed (23.3777 m; the window would read 15.4134 m) - the input is not the pyramid's labour force." (and the dump under it is the attribution above).
+2. **`structural_base_off`** - the table's base counted from 20 instead of 15: "Sweden's Σ(band × rate) 5.8022 m is not 15+ × structural 6.2529 m - the table's own definition does not hold.".
+
+**PN-3b, opened with its figures and not taken here.** The wage bill's base (`TaxBases`, WageBill) reads the same three factors × the real wage, and so the same window. Section 4 measures it at year 25:
+
+| | the base's labour part ÷ seed | the window ÷ seed | potential's input ÷ seed | the base against potential's input |
+|---|--:|--:|--:|--:|
+| USA | ×1.0302 | ×1.0302 | ×1.0670 | -3.45 % |
+| Sweden | ×1.0921 | ×1.0921 | ×1.1274 | -3.14 % |
+| Germany | ×0.8701 | ×0.8701 | ×0.9366 | -7.10 % |
+| France | ×0.9094 | ×0.9094 | ×0.9818 | -7.37 % |
+| Italy | ×0.7699 | ×0.7699 | ×0.8816 | -12.68 % |
+| Poland | ×0.7178 | ×0.7178 | ×0.8188 | -12.33 % |
+
+One employment read two ways is the seam this pass leaves, stated: re-forming the base moves every revenue path (P5-B3's family) and is its own BASELINE item after this one - the one-family rule, not an oversight.
+
+**Decisions taken, strikeable.**
+1. **The form is the 15+ population × the state's rate**, not a second Σ(band × rate) beside the state's rate - they are one quantity by the table's definition, and a second accessor would be a second participation figure for the levers to miss.
+2. **The wage bill is not re-formed here** (PN-3b): two BASELINE families never in one pass.
+3. **The window is kept on the diagnostic as the deviation retired**, so the double count stays measurable against the form that replaced it.
+
+**The registers.** `POLISIM_FEATURE_LIST.md` (PN-3 ✅, **PN-3b** opened with the year-25 figures), `POLISIM_BACKLOG_PLAN.md` (PN-3's row; DS-3c's seam closed), `CLAUDE.md`.
+
+**Bar:** a BASELINE family of six, attributed by its own probe - the cheap bar, the simulation bar with the sentinel re-based to `traj_pn3`.
+- `bar509_pn3` **38 of 38**.
+- `bar510_pn3_sim` **54 of 54** - the window diagnostic on the bar from this record - with the sentinel re-based to `traj_pn3`.
+- The record's tree - `bar511_rec522` **38 of 38** on the tree this record reads - residue 4, 12 of 12 ratchets tight.
+
+
