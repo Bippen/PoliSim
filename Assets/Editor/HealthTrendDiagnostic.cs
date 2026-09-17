@@ -32,9 +32,11 @@ namespace PoliSim.EditorTools
                 if (!expectedRate.ContainsKey(c.Id) || Mathf.Abs(c.Health.TreatableMortalityTrendPerYear - expectedRate[c.Id]) > 1e-6f) { Debug.LogError($"HEALTH TREND: {c.Id}'s rate is {c.Health.TreatableMortalityTrendPerYear:R}, not the sourced one."); ok = false; }
             }
 
-            float[] untouched = Run(CountryId.Sweden, Years, 0f, out int floorYearSe);
-            float[] cut = Run(CountryId.Sweden, Years, -0.2f, out _);
-            float[] raised = Run(CountryId.Sweden, Years, 0.2f, out _);
+            // The untouched run is year twenty of the shared no-policy century (§525), which `InfrastructureReadoutDiagnostic` cross-checks bit for bit against a run of its own.
+            NoPolicyCentury.Year se = NoPolicyCentury.For(CountryId.Sweden)[Years - 1];
+            float[] untouched = { se.TreatableMortality, se.TrendIndex, se.DeathRate, se.Population, se.NetMigrationRate, se.LifeExpectancy };
+            float[] cut = Run(CountryId.Sweden, Years, -0.2f);
+            float[] raised = Run(CountryId.Sweden, Years, 0.2f);
             // [0] treatable mortality, [1] trend index, [2] death rate, [3] population, [4] net migration, [5] life expectancy
             float expectedIndex = Mathf.Exp(Years * -0.02980f);
             if (Mathf.Abs(untouched[1] - expectedIndex) > 1e-5f) { Debug.LogError($"HEALTH TREND: Sweden's index after {Years} years is {untouched[1]:R}, not exp(20 × rate) = {expectedIndex:R}."); ok = false; }
@@ -50,7 +52,9 @@ namespace PoliSim.EditorTools
             var floors = new List<string>();
             foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.USA })
             {
-                Run(id, 100, 0f, out int floorYear);
+                IReadOnlyList<NoPolicyCentury.Year> run = NoPolicyCentury.For(id);
+                int floorYear = 0;
+                for (int year = 1; year <= run.Count; year++) { if (run[year - 1].TreatableMortality <= HealthFamily.MinTreatableMortality + 1e-3f) { floorYear = year; break; } }
                 floors.Add($"{id} {(floorYear > 0 ? "year " + floorYear : "not in a century")}");
             }
 
@@ -61,12 +65,12 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(ok ? 0 : 1);
         }
 
-        private static float[] Run(CountryId player, int years, float share, out int floorYear)
+        /// <summary>Sweden with the health lines moved by <paramref name="share"/> through the decision every year. The untouched runs are not made here - they are the shared <see cref="NoPolicyCentury"/>.</summary>
+        private static float[] Run(CountryId player, int years, float share)
         {
             SimulationRandom.Seed(777);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject("HEALTHTREND");
-            floorYear = 0;
             try
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
@@ -82,7 +86,6 @@ namespace PoliSim.EditorTools
                     if (share != 0f) { foreach (SpendingLine line in c.SpendingLines) { if (HealthFamily.IsHealthLine(line.Category)) { d.SpendingLineChanges[line.Category] = share * 100f; } } }
                     decisions[player] = d;
                     sim.AdvanceTurn(decisions);
-                    if (floorYear == 0 && c.State.TreatableMortality <= HealthFamily.MinTreatableMortality + 1e-3f) { floorYear = year; }
                 }
                 return new[] { c.State.TreatableMortality, c.Health.TrendIndex, c.State.DeathRate, c.State.Population, c.State.NetMigrationRate, c.State.LifeExpectancy };
             }

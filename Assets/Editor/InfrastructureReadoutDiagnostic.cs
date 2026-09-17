@@ -30,16 +30,28 @@ namespace PoliSim.EditorTools
                 if (Mathf.Abs(InfrastructureFamily.SaturationFactor(c) - 1f) > 1e-6f) { Debug.LogError($"INFRASTRUCTURE READOUT: {c.Id}'s saturation factor at the seed is {InfrastructureFamily.SaturationFactor(c):R}, not 1."); ok = false; }
             }
 
-            float[] untouched = Run(CountryId.Sweden, 20, 0f, out _);
-            float[] cut = Run(CountryId.Sweden, 20, -0.2f, out _);
-            float[] raised = Run(CountryId.Sweden, 20, 0.2f, out _);
+            float[] untouched = Run(CountryId.Sweden, 20, 0f);
+            float[] cut = Run(CountryId.Sweden, 20, -0.2f);
+            float[] raised = Run(CountryId.Sweden, 20, 0.2f);
+            // ⚠ THE SHARED CENTURY IS CHECKED HERE (§525). This diagnostic and `HealthTrendDiagnostic` read their no-policy centuries from `NoPolicyCentury`, run once;
+            // this run of Sweden's untouched twenty years stays independent of it, and the two must agree to the bit in all three readouts - a defect in the shared run,
+            // or state leaking into it from whatever ran between its making and this read, fails here instead of passing silently in both diagnostics.
+            NoPolicyCentury.Year shared = NoPolicyCentury.For(CountryId.Sweden)[19];
+            if (shared.RoadQuality != untouched[0] || shared.TreatableMortality != untouched[1] || shared.Population != untouched[2])
+            {
+                Debug.LogError($"INFRASTRUCTURE READOUT: the shared no-policy century's year twenty for Sweden (road quality {shared.RoadQuality:R}, treatable mortality {shared.TreatableMortality:R}, population {shared.Population:R}) is not this diagnostic's own run ({untouched[0]:R}, {untouched[1]:R}, {untouched[2]:R}) - every century read from it is suspect.");
+                ok = false;
+            }
             if (!(cut[0] < untouched[0]) || !(raised[0] > untouched[0])) { Debug.LogError($"INFRASTRUCTURE READOUT: the cut ({cut[0]:F2}) and the raise ({raised[0]:F2}) do not bracket untouched ({untouched[0]:F2})."); ok = false; }
             if (!(raised[0] < InfrastructureFamily.MaxScore)) { Debug.LogError($"INFRASTRUCTURE READOUT: twenty years of raises reached the ceiling ({raised[0]:F2})."); ok = false; }
 
             var century = new List<string>();
             foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.USA })
             {
-                float[] r = Run(id, 100, 0f, out float maxScore);
+                IReadOnlyList<NoPolicyCentury.Year> run = NoPolicyCentury.For(id);
+                float maxScore = 0f;
+                foreach (NoPolicyCentury.Year year in run) { maxScore = Mathf.Max(maxScore, year.RoadQuality); }
+                float[] r = { run[run.Count - 1].RoadQuality };
                 century.Add($"{id} {r[0]:F2} (max {maxScore:F2})");
                 if (maxScore >= InfrastructureFamily.MaxScore - 1e-3f) { Debug.LogError($"INFRASTRUCTURE READOUT: {id} reached the ceiling at baseline within a century (max {maxScore:F3}) - the drift is not fixed."); ok = false; }
                 if (r[0] <= InfrastructureFamily.MinScore + 1e-3f) { Debug.LogError($"INFRASTRUCTURE READOUT: {id} fell to the floor at baseline within a century ({r[0]:F3})."); ok = false; }
@@ -51,12 +63,12 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(ok ? 0 : 1);
         }
 
-        private static float[] Run(CountryId player, int years, float share, out float maxScore)
+        /// <summary>Sweden with the infrastructure lines moved by <paramref name="share"/> through the decision every year: [0] road quality, [1] treatable mortality, [2] population. The centuries are not made here - they are the shared <see cref="NoPolicyCentury"/>.</summary>
+        private static float[] Run(CountryId player, int years, float share)
         {
             SimulationRandom.Seed(777);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject("INFRAREADOUT");
-            maxScore = 0f;
             try
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
@@ -72,9 +84,8 @@ namespace PoliSim.EditorTools
                     if (share != 0f) { foreach (SpendingLine line in c.SpendingLines) { if (InfrastructureFamily.IsInfrastructureLine(line.Category)) { d.SpendingLineChanges[line.Category] = share * 100f; } } }
                     decisions[player] = d;
                     sim.AdvanceTurn(decisions);
-                    maxScore = Mathf.Max(maxScore, c.State.RoadQuality);
                 }
-                return new[] { c.State.RoadQuality };
+                return new[] { c.State.RoadQuality, c.State.TreatableMortality, c.State.Population };
             }
             finally { Object.DestroyImmediate(go); }
         }
