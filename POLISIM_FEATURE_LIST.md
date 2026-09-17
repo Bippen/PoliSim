@@ -155,9 +155,10 @@ instance was produced by somebody trying to be careful. **Care is not the missin
   ⚠ **Precondition, measured:** Unity refuses to run against a project another Unity process holds — Editor
   **or** a background batch. **Unity work cannot be parallelised**, and a bar started in the background
   blocks the next one.
-- **P3 — the bar costs ~5 min 24 s regardless of what changed**, of which `ArtifactIdentityCheck` is
-  **243 s re-reading 3.7 GB of trajectory CSVs**. Ranked first for time returned: a manifest between gates,
-  the full sweep at gates. See `POLISIM_REVIEW_ADDENDUM.md`.
+- **P3 — what a bar costs is read, never written down, and what runs is the commit's tier.** Every bar
+  appends its stages to `Logs/bar_timing.tsv`; the cost fixes and their measurements are `COMPLETED.md`
+  §524 (and the digest manifest before them, 2026-09-01); which bar a commit owes is rule 1's tiers, not
+  one bar for everything.
 
 ---
 
@@ -969,6 +970,18 @@ the ITANES registration, still open.
   **P5** records generated from git · **P6b** per-country trajectories (P6a, the artifact check made
   incremental, is DONE and cut the bar to ~26 s). Each is a proposal awaiting a ruling; none outranks
   F2–F6.
+- **PF-1 — France's Budget tab evaluates a vote for every tax line on every IMGUI event.** OPEN, found
+  2026-09-17 by the dry film's pass timer (`COMPLETED.md` §524, item 2): `DrawTaxProgramBillVerdict` calls
+  `ParliamentSystem.GetTaxProgramBillDirection` and `ParliamentSystem.WouldBillPass` for each line's
+  hypothetical bill each time the tab is laid out or painted, so France's Budget tab draws far below a frame
+  a second in play, and every France film and dry film pays it; Italy's passes are slow on the same order and
+  unattributed. The fix named: cache each line's verdict until the day, the draft or the chamber changes.
+  UI and SIMULATION paths (the verdict reads the chamber); no money moves, so no review unless the fix books one.
+- **The streamlining review's named fixes** (`COMPLETED.md` §524, item 5): `DeadStateCheck`'s scan tokenised
+  once · the no-policy centuries the infrastructure and health diagnostics both run, memoised once · one
+  per-process source cache behind `SourceText` · a generated session brief and a reading order for a
+  session's start · the memory index at one line an entry. Each is a proposal with its measured cost awaiting
+  a ruling; none outranks F2–F6.
 - **`D-16` — the sourced tax-base table for five countries**, `CollectionEfficiency` re-solved and
   re-documented as a coverage bridge, the >1 values named as coverage rather than efficiency. **BASELINE**;
   ruled and TAKEN, execution logged STOPPED with its five-step order in `COMPLETED.md` §197 §D. Rides F4.
@@ -1195,13 +1208,36 @@ while that document stood and they bind every pass now. **Their history — the 
 narratives, the instances that taught each one — is `COMPLETED.md` §35 and §181**, and this text points
 there rather than restating it. Numbered references to *"rule N"* across the record resolve against §35.
 
-1. **Truth = real Unity, explicit project path, validation scaled to risk.** Sim math → the full matrix,
-   like-for-like. UI-only → compile + guards + captures of the touched screens only. Uncalled data →
-   compile.
-   - **Per screen item: the two extreme widths only**, with the guards and `ScreenEdgeCheck` silent.
-   - ⚠ **The full four-width matrix, the full trajectory suite and the old-beside-new diff run ONCE, at
-     the close of a track — never per item.** This has drifted once and been restored once; the drift is
-     named so it does not return.
+1. **Truth = real Unity, explicit project path, validation scaled to risk - and the risk is read off what the
+   commit touches** (the tiers, ruled 2026-09-17; the measurement behind them is `COMPLETED.md` §524).
+   `Tools/bar_tier.ps1` prints the tiers a commit touches, the paths that decided each, and the runs it owes
+   (`-Staged` for the index, `-Commit <rev>` for a commit made). **A commit owes every tier it touches.**
+
+   | tier | the commit touches | per item | at the track's close |
+   |---|---|---|---|
+   | **DOCUMENTS** | documents only | `CheckSuite.RunDocumentBatch` - the checks that read documents | - |
+   | **TOOLING** | an Editor tool or a cheap-group check, and nothing the model or the screens run | the cheap bar | - |
+   | **UI** | the screens: `Assets/Scripts/UI`, `Assets/Scripts/Testing`, art, scenes, the capture tools | the cheap bar + **the dry film** of the touched screens (`UiScreenshotCapture.RunDry`) at every width and country the item names, iterated until its guards are silent + **ONE filmed width** at the item's end | the four-width film matrix |
+   | **SIMULATION** | anything the model runs: `Assets/Scripts` Simulation, Data, Elections and Persistence; the data folders and their prep tools; a check only the simulation group registers, or a tool one of those calls | the cheap bar + the simulation bar (the sentinel runs first in it) | the full trajectory dump with its old-beside-new diffs; the four-width film matrix |
+
+   - ⚠ **The full four-width matrix, the full trajectory dump and the old-beside-new diff run ONCE, at the
+     close of a track - never per item.** This has drifted twice and been restored twice (2026-08-28, and
+     2026-09-17, when every BASELINE item was found dumping twice per item); the tiers and their tool are
+     the mechanism, so a third drift has something to contradict it.
+   - ⚠ **A UI item iterates on the dry film, never on films.** A layout iteration's findings are rects, and
+     the dry film measures the rects: the overflow and containment guards, the ledger reach, and the label
+     table (every text draw of a captured frame against its rect and its clip; a film and a dry film of one
+     tree write it byte-identically). Pixels stay the film's alone - `ScreenEdgeCheck`, the identity token,
+     the frame size - and so does the play path the dry film cannot take (it always sets the screen size
+     the film reads from the screen), which is why a UI item still films one width before it closes.
+   - ⚠ **A BASELINE item's per-item evidence is the sentinel.** When the sentinel moves, the item sets its
+     digests from the check's own failure line in the same commit and says so; the family is dumped and
+     explained per country at the track's close.
+   - **The adversarial review is conditional** (ruled 2026-09-17). It runs for a BASELINE family and for
+     anything that touches the fiscal book or a money flow - a spending line, a tax, a transfer, the debt, a
+     ledger, a bill that is booked. It is skipped for UI, records and documents, and for anything else that
+     moves neither money nor the trajectory unless the item's own sheet asks for it. `Tools/bar_tier.ps1`
+     names the money paths it sees; **the record says whether the review ran and why.**
    - ⚠ **Review at TRACK boundaries, not item boundaries.** A session works across items without stopping
      and reports at a track close or when budget runs low. Pre-rulings exist so no session stalls
      mid-track.

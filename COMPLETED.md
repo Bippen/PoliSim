@@ -29364,3 +29364,188 @@ One employment read two ways is the seam this pass leaves, stated: re-forming th
 
 
 
+## 524. THE STREAMLINING PASS — the cheap bar's slowest check digests on every core and parses bytes, a dry film lays the screens out with no window and writes the same rect table a film writes, the bars tiered by what a commit touches with a tool that reads them off the paths, the adversarial review made conditional; and one review of the loop's own cost, measured (2026-09-17)
+
+**The ask** (Elias, 2026-09-17): a streamlining pass before the next feature work, four items each measured - ArtifactIdentityCheck made to skip unchanged artifacts by content hash and proven both ways; a dry-film layout probe that measures every label's rect headless and writes no captures; the bars tiered by what a commit touches, restoring Discipline v2's closing-gate rule; the adversarial review made conditional - and a fifth, one review scoped to the loop's own cost: (a) why a UI change takes several film passes, (b) what in the bars is duplicated work, (c) what a session spends re-deriving at start. Report the measured before and after: bar time, films per item, what a five-item pass costs.
+
+### Item 1 — ArtifactIdentityCheck (`e80cf89`)
+
+**The premise, measured first: the content-digest skip already existed.** It landed the evening of 2026-09-01: `Logs/bar_timing.tsv` has the check at 136.1 s of a 147.3 s cheap bar at 20:37 (the whole 3.7 GB archive re-parsed every run) and 13.7 s of 26.0 s at 21:17. What had happened since is that the archive doubled, and the serial digest became the cost.
+
+| | files | archive | the check | the cheap bar (in-process) |
+|---|---|---|---|---|
+| 2026-09-01, before the manifest | - | 3.7 GB | 136.1 s | 147.3 s |
+| 2026-09-01, the manifest landed | - | 3.7 GB | 13.7 s | 26.0 s |
+| 184 cheap bars, 2026-09-10 to this morning | 1 415 | 7.93 GB | median 23.5 s (19.8–54.5) | median 46.1 s (36.5–99.3) |
+| this pass's before-bar (`bar_before`, 73 s wall) | 1 415 | 7.93 GB | 26.4 s | 50.3 s |
+
+**The parts, measured by a probe** (`StreamlineProbe`, batch, never committed; 16 logical cores, NVMe): stat of every file 38 ms; a plain serial read of the archive 4.2 s; the serial managed MD5 36.5–37.4 s; the same MD5 across the cores 6.0–6.9 s, every digest identical. The cost was the hash on one core.
+
+**Built.**
+- The digests run in parallel. Every byte is still read and hashed on every run: a size-and-timestamp gate stays not taken, for the reason the check's comment always gave, and proof E below is why.
+- A file that needs parsing is parsed in parallel by an allocation-free byte scanner with the string parser's exact contract. ⚠ **The first parallel form kept `StreamReader.ReadLine` and `Split`, and the full gate took 568.5 s on 16 workers** (597 s wall) - an allocation per row serialised by Mono's collector, far slower than the serial parse it replaced. It was found by this pass's own gate run and replaced before the commit. The scanner's gate parsed all 1 415 files in 23.8 s (56 s wall), and wrote a manifest whose MD5 (`9F09A8A9…`) is the string parser's to the byte: every file's rows, fields and horizon agree.
+- One manifest per artifact directory. The manifest was keyed by file name and rewritten whole each run, so a single run against any other `-artifactdir=` evicted the archive's cache and the next bar re-parsed 7.9 GB. The archive keeps the original manifest file; the proof runs below wrote their own, and the archive manifest's digest was unchanged across all of them.
+
+**Proven both ways** (`chain_item1b`, a scratch directory holding copies of three real `t100` dumps, the scanner in place):
+
+| run | what was done | expected | the check said |
+|---|---|---|---|
+| C | three copies, never seen | parse all, CLEAN | 3 parsed, 0 FAILED, exit 0 |
+| D | nothing | all by digest, CLEAN | 0 parsed, 3 by digest, exit 0 |
+| E | one byte changed (`1,USA` to `1,USB` on the first data row), size unchanged, timestamp restored to the second | FAIL | exit 1 - `countries 7 vs 6` |
+| F | the original bytes restored | the failure was never remembered: parse again, CLEAN | 1 parsed, 2 by digest, exit 0 |
+| G | the last row of a second file removed | FAIL | exit 1 - `rows 17999 vs 18000` |
+| H | that file restored; a `t100` dump copied in under a `t500` name | FAIL on the mislabel only | exit 1 - `rows 18000 vs 90000, turns 100 vs 500` |
+| I | the mislabel removed | CLEAN | 0 parsed, 3 by digest, exit 0 |
+
+**After** (this pass's cheap bars on the landed code; the machine was in use through the afternoon, which moves every stage - `DeadStateCheck` read 9.4–16.1 s across the same runs):
+
+| | the check | the cheap bar (in-process) | wall |
+|---|---|---|---|
+| before (`bar_before`) | 26.4 s | 50.3 s | 73 s |
+| after, the quietest pair (`bar_item2`, `bar_item3`) | 3.0–3.3 s | 27.4–27.5 s | 46–50 s |
+| after, all nine runs | 3.0–7.0 s | 27.4–50.1 s | 46–79 s |
+| the gate (`-artifactfull`) | 23.8 s parse + 6.3 s digest | - | 56 s |
+
+### Item 2 — the dry film (`5843661`)
+
+**(a) answered first, because it decides the probe.** The layout code does not know its cells before it draws: `GameController.cs` alone makes 591 `GUILayout` calls, and a GUILayout rect exists only after IMGUI's Layout event has run and is handed back at Repaint. But overflow was never discoverable only from a rendered frame. The Repaint event runs on the CPU before any pixel is composited, and `UiOverflowGuard` and `UiContainmentGuard` already measure there. The film needed a window for one reason: the Game View is what delivers OnGUI's events. Measured (`StreamlineProbe2`, never committed): under `-batchmode` play mode came up 6.0–6.1 s after the entry method, `GameController.Start` ran on its first frame, and a hand-delivered Layout and Repaint of the real controller's Budget screen took 10 ms and 34 ms with `GUIStyle.onDraw` seeing 189 styled draws. The one thing in the way was the size: a batch Editor reports a 640x480 screen and every style scales with the height, read at 68 code sites. So the probe was cheap, and the real fix was one seam.
+
+**Built.**
+- `UiScreen.Width` / `UiScreen.Height` replace every code read of `Screen.width` / `Screen.height` in the UI and the driver: the real screen in play and in films, the dry film's frame in the Editor.
+- `DryGuiPass` delivers OnGUI through the IMGUIContainer entry points (`GUIUtility.BeginContainer`, `GUILayoutUtility.BeginContainer`, `GUILayoutUtility.LayoutFromContainer`), once a frame and once at each capture, with the game skin and the mouse off the screen. Internals by reflection, named on failure.
+- `UiScreenshotCapture.RunDry` runs the film's own driver and choreography, one play session per country per geometry, in one Unity process; a capture measures instead of photographing. The pixel traps stay the film's.
+- The label table: `GUIStyle.onDraw` feeds `<shotdir>/labels/<label>_labels.tsv` in films and dry films alike - every text draw of a captured frame with its rect, type size, what its text needs, and whether it straddles or leaves its clip, filtered to the game skin. It reports; the verdict stays the guards'.
+- Every dry capture's line carries its IMGUI pass time (`141bdaf`, a follow-up; see the France finding below).
+
+**Found while building, and each fixed before the commit.**
+1. The pass first reset the GUI state before entering the container; `GUIUtility.ResetGlobalState` assigns `GUI.skin`, which is only legal inside it, so every frame threw and the log reached 1.5 GB in ten minutes. The reset now runs inside the container; a pass whose own machinery throws stops the run failed after one line; OnGUI's own exceptions log in full twenty times and are then counted; both launchers kill a run whose log passes 200 MB.
+2. **The first real film caught what no dry film could:** the seam replacement had also rewritten `UiScreen.cs` itself, so with no override set `UiScreen.Height` called itself - a stack overflow on every frame of every film and of play (3.2 GB of log). The dry film always sets the override and never takes that branch. This is the standing reason a UI item still films one width.
+3. The film's table first carried 581 rows the dry film's did not: the Editor's own chrome (`Hierarchy`, `Game`, `Free Aspect`, `Play Focused`) drawn through the same hook while the film recorded. Every one of the dry film's 6 687 rows was in the film's table unchanged. The hook now records only the game skin.
+
+**Proven** (Sweden at 1280 through `05b_budget_spending_pension_2034`, 39 captures, on the committed tree):
+
+| | the dry film (`dryv4`) | the film (`filmv3`) |
+|---|---|---|
+| captures, failed | 39, 0 | 39, 0 |
+| overflows, escapes, canvas text | 0, 0, 0 | 0, 0, 0 |
+| worst ledger reach | 0,742 grains per pixel (05r_budget_rest / Carbon Tax), track 151 px, name 73, figure 74, trailing 0, row 0..338 | the same line |
+| label table | 6 687 rows, SHA-256 `5691b40b…` | **byte-identical** |
+| wall | 41 s (session 15.8 s) | 42 s |
+
+**The other direction:** the shrink floor raised from 8 to 12 px (`PoliSimWidgets.MinMeasuredLabelFontSize`), Sweden at 1280: the dry film exits 1 with 94 text overflows ("BALANCE · THIS YEAR · PROJECTED needs 223,3 wide in 159,7 at 12px", "WOULD PASS", "1330 SEK/t CO2", …); the file restored byte-identical.
+
+**One process, twelve sessions** (`drymulti`: six countries at 1280x720 and 2560x1440, the same stop frame): 747.8 s in-process, 765 s wall, every session 39 measured, 0 failed, 0 overflows, 0 escapes. Sweden's 1280 table is byte-identical to `dryv4`'s. 
+
+| session | 1280x720 | 2560x1440 |
+|---|---|---|
+| Sweden | 15.6 s | 14.4 s |
+| Germany | 14.7 s | 15.9 s |
+| Poland | 12.7 s | 15.5 s |
+| USA | 13.2 s | 15.3 s |
+| Italy | 90.4 s | 87.7 s |
+| France | 220.1 s | 222.3 s |
+
+**What a pass costs, and why France and Italy cost more - found with the dry film's own pass timer** (`141bdaf`: every dry capture's line carries its IMGUI pass time and its Layout event's).
+- **Films pay it too.** Across the chain logs a France film at 1280 took a median of about 221 s, Italy about 110 s, Sweden, Germany, Poland and the USA 48–55 s. The dry sessions above show the same split, so the cost is in the frames the choreography draws and not in the window.
+- **Where it is.** France's Budget frames take 2.1–3.9 s per IMGUI pass, the Layout event about half of it; the same frames for Sweden take 33–56 ms.
+- **Named by two timing probes** (timers around the Budget tab's sections, then inside each tax row; both reverted by `git checkout`): the tab's category content is about 1.1 s per event and the support estimate about 0.1 s; inside it, `DrawTaxProgramBillVerdict` is about 0.1 s for each of France's eleven tax lines on every event. It calls `ParliamentSystem.GetTaxProgramBillDirection` and `ParliamentSystem.WouldBillPass` for the line's hypothetical bill each time.
+- ⚠ **It is a play cost as well as a film cost.** A player's Budget tab for France is drawn at well under a frame a second.
+- **The fix, named and not built** (item 5 builds nothing but the probe): cache each line's verdict until the day, the draft or the chamber changes. Opened as a CODE row (PF-1). Italy's sessions are of the same order and not attributed here.
+
+### Item 3 — the tiers (`6bfd330`; the rule in `POLISIM_FEATURE_LIST.md`'s working discipline, rule 1)
+
+**The drift, measured from the chain logs** (`PoliSim-captures/logs/chain_*.out`, 782 steps; Unity wall-clock per item):
+
+| item | touched | films | cheap / simulation bars | dumps + diffs | other runs | total |
+|---|---|---|---|---|---|---|
+| §509 board 15c-r2 | UI | 68 (7 665 s) | 370 s / 641 s | - | 1 438 s | 10 114 s |
+| §515 board 15c-r3 | UI | 26 (2 436 s) | 73 s / - | - | 127 s | 2 636 s |
+| §517 F4-5 | simulation | 4 (281 s) | 80 s / 722 s | 1 349 s | 795 s | 3 227 s |
+| §518 PN-2 | simulation + UI | 12 (726 s) | 90 s / 824 s | 833 s | 287 s | 2 760 s |
+| §519 PN-4 | simulation | 2 (158 s) | 121 s / 981 s | 1 550 s | 217 s | 3 027 s |
+| §520 PN-1's driver | simulation + UI | 1 (44 s) | 82 s / 691 s | 1 370 s | 194 s | 2 381 s |
+| §522 PN-3 | simulation | 0 | 78 s / 685 s | 1 277 s | 149 s | 2 189 s |
+| §523 CL-3 | tooling | 2 (76 s) | 142 s / - | - | 75 s | 293 s |
+| eighteen records commits, §509–§523 | documents | - | 1 424 s / - | - | - | 1 424 s |
+
+Every BASELINE item dumped its family twice (the attribution and the landing, a median 517 s each) and diffed it twelve times per item; Discipline v2's rule 1 says once, at the track's close. UI items filmed every cut: a median 61 s a film.
+
+**Built.**
+- `Tools/bar_tier.ps1` reads the working tree, the index or a commit into DOCUMENTS, TOOLING, UI and SIMULATION from `CheckSuite`'s own registration tables; a commit owes every tier it touches; it prints the runs owed per item and at the close, and the money paths that make the review required. Read back over the last twelve commits it placed each where its record says it belonged (CL-3 tooling, PN-2 and PN-1's driver simulation plus UI, the 15c-r3 records documents).
+- `CheckSuite.RunDocumentBatch` - the eight cheap-group checks that read documents, each also in the cheap suite or the batch fails by name; the ratchet slack audit stays with the cheap bar. First run: 8 of 8, 7.4 s in-process, 21 s wall, against the cheap bar's 46–50 s.
+
+**Decisions taken, strikeable.**
+1. **The cheap bar stays in the SIMULATION tier.** The ask named the simulation bar and the sentinel; the cheap bar is a few percent of that tier's cost and carries the two checks written for simulation code (`ConstantProvenanceCheck`, `DeadStateCheck`) - without it a simulation commit's missing provenance tag would first fail an unrelated commit.
+2. **A TOOLING tier** for a commit touching only Editor tools or cheap-group checks: the cheap bar, no film and no simulation bar.
+3. **Tiers are additive.** PN-2 and PN-1's driver touched both the model and a row on the screen; a highest-tier rule would have dropped the dry film and the one film they owed.
+4. **A BASELINE item's per-item evidence is the sentinel**, its digests set in the same commit when it moves; the per-country explanation moves to the track's close with the dump.
+
+### Item 4 — the adversarial review, conditional (the rule in the same place)
+
+**Measured** (the session transcripts' workflow notifications):
+
+| review | agents | subagent tokens | minutes |
+|---|---|---|---|
+| CL-2 (2026-09-14) | 32 | 3.85 M | 25.8 |
+| EN-7a | 28 | 3.82 M | 26.0 |
+| EN-7b | 34 | 3.96 M | 24.8 |
+| EN-7b's fixes verified | 18 | 2.18 M | 19.9 |
+| SC-1 (2026-09-15) | 11 | 1.50 M | 17.9 |
+
+**Ruled:** it runs for a BASELINE family and for anything touching the fiscal book or a money flow; it is skipped for UI, records and documents. **Decision taken, strikeable:** whatever else moves neither money nor the trajectory - tooling, a gameplay rule like CL-2's - skips it unless the item's sheet asks. The tool names the money paths it sees; a record says whether the review ran and why.
+
+### Item 5 — the loop's own cost, reviewed (nothing built but (a)'s probe)
+
+**(a)** is answered under item 2.
+
+**(b) Duplicated work in the bars, with a measured cost and a named fix each.**
+1. **`DeadStateCheck` scans the whole source tree once per declared name.** 9.4–16.1 s of every cheap bar today - a third of it once item 1 landed - for 1 979 distinct names - a whole-corpus scan for each, and a second for each field's reads - over 8.55 M characters; reading and stripping the tree once costs 0.4 s (`CommentClaimCheck`'s whole run). Fix: tokenise the stripped tree once into an identifier count table and look each name up.
+2. **The same no-policy centuries run twice in the simulation bar.** `InfrastructureReadoutDiagnostic` (110.7 s) and `HealthTrendDiagnostic` (106.5 s) of the 671.6 s bar of 2026-09-16 16:21 each advance six 100-year worlds at seed 777 with every country as player and no decision - identical inputs - plus Sweden's untouched 20 years: 620 of each one's 660 simulated years, about 100 s duplicated. Fix: one memoised no-policy run per player and seed, recording the per-year readouts both read.
+3. **Thirteen cheap checks each read and strip the source tree.** Six read all 436 files, four the 227 under `Assets/Scripts`, three subsets; one full read and strip costs about 0.4 s, so about 3 s of the bar is re-reading. Fix: a per-process source cache behind `SourceText` (path to raw and to stripped text).
+4. Measured and small, no fix proposed: a warm `WorldFactory.CreateDefault` costs 46–49 ms (1.5 s cold), so even `EventRateDiagnostic`'s 60 worlds are 3 s of its 96 s; `D18InventoryCheck` re-runs five coverage checks the cheap bar has just run, for 0.6 s.
+
+**(c) What a session spends re-deriving at start** (from the transcripts: the first real prompt to the first edit under `Assets/` or the first Unity launch):
+
+| session | tool calls | results read | minutes |
+|---|---|---|---|
+| 2026-09-14 → 16 (`b8921673`) | 49 | 962 KB (~246 k tokens) | 12.9 |
+| 2026-09-12 → 14, "continue from cut off session" (`8b73cdb4`) | 64 | 1 220 KB (~312 k tokens) | 15.0 |
+| 2026-09-04 → 10 (`c9e9415e`) | 67 | 846 KB (~216 k tokens) | 14.3 |
+| 2026-09-10 → 11, a narrow kickoff (`25e38189`) | 20 | 278 KB (~71 k tokens) | 4.2 |
+
+Where it goes, in the largest two: the previous session's transcript tail and scratch patches (330 KB); `CLAUDE.md` - its 491-heading outline dumped twice and three sections read (263 KB); the memory files (104 KB); source greps re-finding call sites (103–325 KB); the chain logs for the last bars' results. Fixes named, none built:
+1. **A generated session brief** at each commit - the last commits, the residue rows, the open errands, the sentinel's baseline label, the last bars' tiers and exits - a few KB replacing the transcript hunt and the outline dump.
+2. **A reading order for a session's start** where the discipline lives: `CLAUDE.md` up to "Genre & Scope" (its standing notes), the working discipline, the newest memory file, `git log`, `Tools/bar_tier.ps1` - instead of the 1.36 MB file's outline.
+3. **The memory index at one line an entry.** `MEMORY.md` is 13 KB loaded every session, several entries over 1 KB; the environment-quirks memory (34 KB) was read at two of the four starts.
+
+### Before and after, measured
+
+| | before | after |
+|---|---|---|
+| the cheap bar, in-process | 50.3 s this morning; a median of 46.1 s over 184 runs since 2026-09-10 | 27.4–27.5 s on a quiet machine; 27.4–50.1 s over this pass's nine runs |
+| the cheap bar, wall | 73 s | 46–50 s quiet; 46–79 s across the nine |
+| `ArtifactIdentityCheck` | 26.4 s; a median of 23.5 s | 3.0–7.0 s |
+| the artifact gate (`-artifactfull`) | 136 s for 3.7 GB on 2026-09-01 (not re-run serially) | 56 s wall for 7.93 GB |
+| a documents-only commit's bar | the cheap bar - eighteen records commits of §509–§523 took 1 424 s, 79 s each | `RunDocumentBatch`, 21 s wall |
+| films per UI item | §509 68, §515 26, §518 12 | one filmed width per item; the iterations are dry sessions |
+| one Sweden pass at 1280 to the pension frame | a film, 42–46 s wall | a dry film, 41–47 s wall; each further country in the same process 13–16 s |
+| a 15c-r2 cut: six countries at 1280, France and Italy at 2560 | eight films, about 925 s from the chain-log medians | one dry process, about 700 s from this pass's sessions - France and Italy are 620 s of it either way, until PF-1 lands |
+
+**A five-item pass.** The measured before is the five items of 2026-09-16 with their record commits: board 15c-r3 (UI), F4-5 (simulation), PN-2 (simulation + UI), PN-4 (simulation), CL-3 (tooling) - 12 496 s of Unity wall-clock, about 3 h 28 min, with no review that day. At the 2026-09-14/15 habit of one review per landing the four code items would have added 72–104 min.
+
+The after is an estimate built from this pass's measured units, the same five under the tiers, each item's own measurement runs kept as they were:
+
+| item | tier | runs owed | estimated |
+|---|---|---|---|
+| board 15c-r3 | UI | the cheap bar; its 26 films as dry sessions in three processes, 30 s of startup saved per film but one; one film | about 1 900 s |
+| F4-5 | simulation | the cheap and simulation bars; its dumps, diffs and films go | about 1 570 s + the review |
+| PN-2 | simulation + UI | the cheap and simulation bars; four dry processes of three countries; one film | about 1 480 s + the review |
+| PN-4 | simulation | the cheap and simulation bars | about 1 250 s + the review |
+| CL-3 | tooling | the cheap bar | about 200 s |
+| seven record commits | documents | the document batch, 21 s each | about 150 s |
+| the track's close, once | - | one family dump (a median 517 s), twelve diffs (24 s each), the four-width matrix (four films) | about 1 050 s |
+
+**About 7 600 s, 2 h 7 min** - 39 % less Unity time than the measured before - plus three required reviews of 18–26 min each (the money paths `Tools/bar_tier.ps1` names for F4-5, PN-2 and PN-4). The largest single lever is the dump moving to the close; the largest one still open is PF-1, which is most of every France and Italy pass.
+
+**Bars.** Item 1's tree - `bar_item1b_a`/`_b`/`_c` 40 of 40, the gate CLEAN. Item 2's tree - `bar_item2` 40 of 40, `dryv4` and `filmv3` as above. Item 3's tree - `bar_item3` 40 of 40, `docbar_item3` 8 of 8. The pass timer's tree - `bar_item2c` 40 of 40, `dryv5` (Sweden and Germany at 1280, clean), `filmv5c` 39 captured and its label table byte-identical to `dryv5`'s; two film launches before it quit a few seconds in after the licensing handshake, straight after a batch step had stopped the licensing client - environmental, re-run, recorded. The record's tree - the documents tier: `docbar_rec524` **8 of 8**, residue 3, and `docbar_rec524b` on the tree with this line filled.

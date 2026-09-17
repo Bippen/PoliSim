@@ -142,6 +142,26 @@ header read are all satisfied by a corrupt file; the CRC is the only thing that 
 legible where binary damage is not, and the standing habit for anything that carries figures is stronger anyway:
 generate it, do not transcribe it (§419).
 
+## Bars are tiered by what a commit touches, and a UI item iterates on the dry film (2026-09-17, `COMPLETED.md` §524)
+
+**The tiers are the working discipline's rule 1** (`POLISIM_FEATURE_LIST.md`); `Tools/bar_tier.ps1` prints the tiers a commit touches and what it owes. Per-item bars had crept back into running the full trajectory dump twice per BASELINE item and a film per country per layout cut, while the closing-gate rule said once per track; §524 is the measurement.
+
+**The dry film.** `UiScreenshotCapture.RunDry` runs the film's own driver and choreography in `-batchmode` play mode, one play session per country per geometry, all in one Unity process:
+
+```
+Unity.exe -batchmode -projectPath <proj> -executeMethod PoliSim.EditorTools.UiScreenshotCapture.RunDry -skipsimulationtestrunner
+          -shotlabel=<label> -shotcountries=Sweden,Italy -shotgeometries=1280x720,2560x1440 [-shotstop=<capture>] -logFile <log>
+```
+
+- **Why no window is needed.** GUILayout computes every rect on the CPU in the Layout event and hands it back at Repaint, where `UiOverflowGuard` and `UiContainmentGuard` already measure. A Game View was needed only to deliver OnGUI's events. `DryGuiPass` delivers them itself through the IMGUIContainer entry points (`GUIUtility.BeginContainer`, `GUILayoutUtility.BeginContainer`, the controller's `OnGUI`, `GUILayoutUtility.LayoutFromContainer`), once a frame and once at each capture, with the game skin and the mouse off the screen.
+- ⚠ **Those are Unity internals, reached by reflection.** `DryGuiPass.Prepare` names a member it cannot find, and a pass whose own machinery throws stops the run failed after one line - the first form, which reset the GUI state outside the container, wrote 1.5 GB of one exception in ten minutes.
+- **The size seam.** A `-batchmode` Editor reports a 640x480 screen and every style here scales with the height, so the UI reads `UiScreen.Width` / `UiScreen.Height`: the real screen in play and in films, and in a dry film the frame a film of that geometry captures (the height less the Game View's toolbar). ⚠ **The dry film never takes the seam's other branch.** The seam's first form read itself there - a stack overflow no dry film could reach and the one film at the item's end found at once. That is the standing reason a UI item still films one width.
+- **The label table.** `GUIStyle.onDraw` sees every styled draw, so both kinds of film write `<shotdir>/labels/<label>_labels.tsv`: each text draw of a captured frame with its rect, type size, what its text needs, and whether it straddles or leaves its clip. It is filtered to the game skin - a film's hook otherwise also records the Editor's own chrome (the Game View toolbar, the Hierarchy). It reports and never judges: the verdict stays the guards'. A film and a dry film of one tree wrote it byte-identically (§524).
+- ⚠ **What it does not claim.** `ScreenEdgeCheck`, the capture-identity token and the frame-size traps read pixels, and a dry film has none.
+- **Every dry capture logs its IMGUI pass time** (`SHOT: dry pass for <capture> - the IMGUI pass took N ms, its Layout event M ms`). ⚠ It found France's Budget frames at 2–4 s a pass against Sweden's tens of milliseconds, in films as much as in dry films: `DrawTaxProgramBillVerdict` asks the parliament about every tax line on every IMGUI event (PF-1, §524). A France or Italy session is minutes until that is cached; read the pass times before blaming the harness.
+- **The launch after a batch step can quit in seconds** (exit 0, the log ending after package resolution, no `SHOT:` line) when the step stopped the licensing client and the Hub is respawning it; re-run it. A film's verdict is `SHOT: done, N captured`, never its exit code.
+- ⚠ **Never run `RunDry` without `-batchmode`** - a Game View would deliver OnGUI as well and every frame would be laid out twice; it refuses.
+
 ## Genre & Scope
 - Turn-based (not real-time). One "turn" = one simulated period (e.g. a quarter or year — exact cadence still TBD).
 - Multiple playable/simulated countries: USA, Sweden, Germany, France, Italy, Poland. `WorldFactory.CreateDefault()` seeds the figures the user specified — policy rates, inflation, and USA/Poland unemployment and USA/Eurozone/Sweden/Poland potential growth — to real mid-2026 data; NAIRU, unspecified unemployment rates, government-spending shares, and starting GDP levels are stylized, directionally-realistic estimates, not researched figures (see comments in `WorldFactory.cs`).
