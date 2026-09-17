@@ -29967,3 +29967,86 @@ Three non-controls are recorded so the next census does not re-open them: the fo
 - **The inventory is the proof for the names**: regenerating D18's block moved the delivered-asset count from 32 held / 165 reached to 29 held / 168 reached - the paper canvas trio is reached for the first time since it was delivered.
 
 **Bars.** `bar_a2b` the cheap bar 41 of 41 (the first run, `bar_a2`, went red on `D18InventoryCheck` - the ask was stale the moment a held asset was reached, which is the check working); `filma2b` the one filmed width (France 1280) as above; `docbar_a2` the document batch 8 of 8 for the regenerated inventory block. The tier is UI and documents.
+
+## 529. P6-A3 — THE INTERRUPT PANEL'S OVERSPILL: the urgency stamp was reserved INSIDE the dossier's baked tab shoulder and painted rotated outside the rect it reserved; both are fixed at their own sites, the state is filmed for the first time, and the assert that would have caught it now exists (2026-09-17)
+
+**The row** (P6-A3): *"The interrupt panel runs over the tab strip above it and the `HOLDS TIME` stamp sits outside the panel. Fix the containment; this is the label-clipping class one level up - a panel outside its rect. Done when: filmed in the interrupt state at both widths, containment assert clean."*
+
+### What the interrupt state is, and why no film had ever carried it
+
+A budget process open is one of the four things that hold the clock. On the Decisions tab the docket draws it as its own dossier card - `BeginAreaCard("BUDGET PROCESS", Fiscal, blocksTime: true, dossier: true)` - whose header carries the `HOLDS TIME` stamp. ⚠ **No ordinary film had ever been in that state**: the state pins that reach it run only behind `-shotstates`, and the sweep's warm-up burns the incoming-government window that opens the process, after which it opens only on the country's own fiscal-year start. The sweep now stages it where the docket is already filmed - the flag is a membership in the simulation's pending set and nothing else - and takes it back immediately, asserting that it did, because every capture after it would otherwise be of a held clock.
+
+### The two escapes, measured from the code's own constants
+
+**1. The stamp was reserved inside the baked shoulder.** The dossier style's border reserves the tab shoulder at the top of the art, and the style's own comment says content needs the padding to clear it; a later pass cut that padding to less than the shoulder's depth. The chip is the FIRST control in a dossier card, so its rect began inside the shoulder band - and on the right of the card, where the shoulder art stops, that band is above the paper. That is the stamp sitting outside the panel, and it is a mismatch between two numbers of the same style.
+
+**2. The rotation painted outside the rect that was reserved for it.** The stamp is turned about its own centre, so its corners leave the unrotated rect by half its width times the sine of the angle. The reserve was the UNROTATED size, and the method's own comment said *"the reserve is the layout, the stamp is paint"* - true of the layout, false of the pixels. Measured by the new assert on the old geometry: **2.0 px above the reserve**, on every card that carries a chip.
+
+⚠ **No guard in this project could see either.** The containment guard compares two rects the calling code already computed and is opt-in - it had no call at the card, the chip or the stamp. The overflow guard is text-only and the stamp draws through a raw label rather than the measured one. The edge check reads the written frame's four margin lines. All three would have reported zero for this defect, which is the same shape as the finding that created the containment guard in the first place.
+
+### Built
+
+- **The clearance**, at the one site that draws into the shoulder band: the first control in a dossier card is pushed by the style's own border depth less its padding, read off the style rather than typed, so a change to the art or the padding carries here.
+- **The reserve now holds what the rotation paints**: the chip reserves the rotated bounds and paints in the middle of them.
+- **The assert the class never had**: the rotated bounds are checked against the reserved rect at the one site that rotates, through the project's own containment guard.
+- **The interrupt state is in the sweep**: `03b_decisions_budget_process`, `03c_decisions_budget_process_scrolled` and `03d_budget_process_open` (the Budget tab in the same state, where the banner deliberately does not repeat the hold).
+
+### Proven
+
+- **Before and after, magnified from the films at 1280:** the stamp's border straddled the card's top edge and stood on the background above the paper; it now sits wholly on the card.
+- **The assert fails when the fix is taken out.** With the stamp painted into the old unrotated reserve (a probe, never committed): `ESCAPE: URGENCY CHIP escapes its container top by 2,0` on every capture carrying a chip - the statistics deep card, the docket, the options, the staged interrupt. Restored, the same films record 0 escapes.
+- **Filmed in the interrupt state at both widths**: `a3fix1` (1280) and `a3fix2560` (2560), each 23 captured to the Budget tab in the interrupt state, 0 containment escapes; the full sweep at 1280 (`filma3`, 119 captured) carries the three new captures.
+
+**Bars.** `bar_a3` the cheap bar 41 of 41; `drya3` the dry film 119 measured, 0 failed, 0 escapes; `filma3` the one filmed width 119 captured, 0 failed, 0 containment escapes, 0 canvas text violations. The tier is UI.
+
+## 530. P6-B1 — THE `†` RULE APPLIED GLOBALLY: every at-rest caption censused from the films' own label table and classified, the four provenance lines moved behind the tab, the one qualifier that could not be read given the height to be read, and the three pre-existing overflows closed with it (2026-09-17)
+
+**The row** (P6-B1): *"D16's board 10a ruled it and the People page carries it: source lines, seed footnotes and SOURCED/DERIVED sit behind the desk-global `†`; **BILLED, ABSENT, DATED and two-definitions stay at rest**… Census every at-rest caption on every surface, classify each as qualifier (stays) or provenance (moves), and move the provenance. **Nothing is deleted**… Done when: the census table is in the record with counts per surface, every moved line is readable under `†`, and the films show both states."*
+
+### The census, and how it was taken
+
+⚠ **The census is read off the films, not off the code.** Every film and dry film writes a label table - one row per styled text draw of every capture, with its rect, its type size and its text - so *"every at-rest caption on every surface"* is a question the harness can already answer for the whole sweep at once. The table for a full Sweden sweep at 1280 (`filma3`, 119 captures, the desk at rest) was cut to the caption class: type at 11 units or smaller, text of 28 characters or more, distinct by capture.
+
+**1 328 caption draws** across the sweep, classified by what the line SAYS rather than where it sits:
+
+| class | draws | the test | verdict |
+|---|---|---|---|
+| explanatory | 1 213 | it says what the reader is looking at - an axis, a unit, a legend, a rule of the drawing | stays at rest |
+| qualifier | 78 | `BILLED`, `ABSENT`, `DATED`, two-definitions, `NO SOURCE` - it qualifies something the player cannot otherwise see | stays at rest, by D16 §2 |
+| **provenance** | **37** | it says where a figure came from - a publisher, a vintage, `SEEDS:`, `SOURCED`, `DERIVED n` | **moves behind the `†`** |
+
+Of the 37 provenance draws, **24 were already behind the tab** (the energy page's source lines appear only in its two `_provenance` captures, and the plate family header has gated its publisher since D16). **Thirteen were at rest**, and they are four distinct lines drawn on repeated captures:
+
+| the line | where | draws at rest | classified |
+|---|---|---|---|
+| `SEEDS: OECD SDMX, LATEST OBSERVATION PER COUNTRY, SEX TOTAL …` | the People page's plate foot (the shared core, every family) | 7 | provenance |
+| `SEEDS: THE EDGAR 2024 GHG BOOKLET, VERIFIED BY CONTENT, OVER WORLD BANK POPULATIONS 2023 …` | the same core | 7 | provenance |
+| `TURNOUT: SCB 2014, THE SERIES' END — DRAWN ONLY WHERE A BAND IS ELIGIBLE; DASHED WHERE NOT. VOTING AGE …` | the cohort substrate's turnout lane | 7 | **mixed** - the source is provenance, the drawing rule is a qualifier |
+| `DERIVED n · DECLARED n · NO LINE AUTHORED · NO EDGE INVENTED` | the Policy Web's pinned-node pane | 2 | provenance (the honesty column's own vocabulary) |
+
+⚠ **The plate foot is one line in the code and five on the page**: the shared plate core draws every family's seed line, so health, education, infrastructure, environment and immigration-and-poverty all moved with one change. That is why 13 at-rest draws are 4 lines and 4 lines are 3 edits.
+
+### Moved, and what stayed
+
+- **The plate foot** is drawn only in the PROVENANCE state, and at rest the plate does not reserve its height either - D16 §2's rule is that provenance ADDS lines rather than reserving lanes, so the page is shorter at rest instead of carrying dead paper.
+- **The Policy Web's `DERIVED / DECLARED` count** moved behind the tab. At rest the pane keeps every edge and loses only that line.
+- **The turnout caption was SPLIT along the rule's own test, not shortened.** What the lane does - drawn only where a band is eligible, dashed where it is not, which band the voting age falls in - qualifies a lane the player is looking at, so it stays at rest; where the series came from prints behind the `†`. ⚠ The `NO SOURCE` wording for a country without a series is a GAP WORD and keeps its place in both states, which is `DeskProvenance`'s own rule: a symbol for *"we do not have this"* reads as decoration.
+- **Nothing was deleted.** Every moved line is the same line, in the other state.
+
+### The qualifier that could not be read, and the three overflows that came with it
+
+P6-A1 carried three pre-existing text overflows here: the Policy Web's effect lines at 8 px, the longest of them the income tax's statute sentence, needing 534.9 px in a 400.1 px pane on three captures. They are **qualifiers** - the statute is what a point of the dial does - so by the rule they stay at rest; and a qualifier that cannot be read is not one.
+
+⚠ **The mechanism, which is worth the record**: the pane drew each effect through `MeasuredLabel`, whose contract is SHRINK-TO-FIT and which forces word wrap OFF. A sentence too long was therefore shrunk to the 8 px floor and, still not fitting, recorded as an overflow - it never wrapped, because that path cannot. The lines are now drawn with a wrapping style at the height that style measures. **The sweep's text overflows go from 3 to 0**, and the dry film exits clean for the first time in this pass.
+
+### Both states, filmed
+
+The sweep carries the pair now: `04g_people_health_plate_provenance` beside the five at-rest plate captures, and `06l_policylaws_policyweb_node_provenance` beside the pinned node. Read off the label tables of one run:
+
+| line | at rest | under the `†` |
+|---|---|---|
+| the two `SEEDS:` feet | absent from every capture | 5 draws in `04g` |
+| the turnout caption | `TURNOUT: DRAWN ONLY WHERE A BAND IS ELIGIBLE…` | `TURNOUT: SCB 2014, THE SERIES' END — DRAWN ONLY…` |
+| `DERIVED 2 · DECLARED 0 · NO LINE AUTHORED · NO EDGE INVENTED` | absent | drawn in `06l` |
+
+**Bars.** `bar_b1b` the cheap bar 41 of 41; `dryb1b` the dry film (Sweden 1280) 121 measured, 0 failed, 0 overflows, 0 escapes, exit 0 - the first clean dry film of this pass; `filmb1b` the one filmed width (Sweden 1280) 121 captured, 0 failed, 0 overflows, 0 escapes, 0 canvas text violations across 5 asserts. The tier is UI.

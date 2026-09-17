@@ -1018,6 +1018,12 @@ would overrule the boards, and it is a D21 row if Design wants it.**
 tab strip above it and the `HOLDS TIME` stamp sits outside the panel. Fix the containment; this is
 the label-clipping class one level up — a *panel* outside its rect. *Done when:* filmed in the
 interrupt state at both widths, containment assert clean.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §529 (`22e6972`): two escapes, both arithmetic between constants -
+the urgency stamp was the first control in a dossier card and was reserved inside the baked tab shoulder,
+and its rotation painted outside the rect it reserved. Both fixed at their sites; the interrupt state is
+staged in the sweep for the first time (`03b`/`03c`/`03d`) and filmed at both widths; the rotated bounds
+are now asserted against the reserve through the containment guard, proven to fire when the fix is taken
+out.**
 
 ## Track B — the provenance rule, applied everywhere (finding 6)
 
@@ -1030,6 +1036,12 @@ at-rest caption on every surface, classify each as **qualifier** (stays) or **pr
 and move the provenance. **Nothing is deleted**: the apparatus is the spine, and this is where it
 lives, not whether it exists. *Done when:* the census table is in the record with counts per
 surface, every moved line is readable under `†`, and the films show both states.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §530 (`826d709`): the census is read off the films' own label
+table and classified by what each line says; four provenance lines were at rest (the shared plate foot's
+two `SEEDS:` lines, the turnout caption's source, the Policy Web's `DERIVED / DECLARED` count) and moved
+behind the `†`, the turnout line split along the rule's own test rather than shortened, nothing deleted.
+The three pre-existing Policy Web overflows closed with it - a qualifier drawn through the shrink-to-fit
+path now wraps - and both states are in the sweep (`04g`, `06l`).**
 
 ## Track C — the People page, re-composed (findings 7, 8)
 
