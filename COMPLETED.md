@@ -30140,3 +30140,230 @@ Filmed at both widths: `filmb1b` (1280, the full sweep) and `c1_2560` (2560, to 
 ### The finding that is Elias's
 
 The sheet describes a row as *"figure, band, own tick, five peer dots, reach chips, sparkline, honesty tags and a source line"*. That is the row in the **PROVENANCE** state. The tab's state is one value for the whole desk and it **persists across sessions**, by §9.1's own ruling, so a player who opened it once sees every row's apparatus on every visit until the tab is closed. Whether that persistence is what the density complaint was, and whether the mode should outlive a session, is a ruling and not a fix; it is stated here so it is not silently taken either way.
+
+## 533. P6-D1 — EVERY PAIR CARRIES A SOURCED TRADE LINK: the fifteen pairs of the six from one Eurostat vintage, goods and services stated separately, each direction as the exporter reports it, in the book's dollars; the seeded world held to the table by a diagnostic; and the family it makes, dumped and re-based (2026-09-17)
+
+**The row** (P6-D1): *"The map holds no `TradePartner` link between Sweden and Italy, and the page says so honestly - but fifteen pairs with gaps is a world that doesn't trade. Source the bilateral matrix: IMF DOTS, Eurostat Comext or UN Comtrade, one vintage, goods and services stated separately if the source separates them; the USA's rows from the same source, not a second one. Every one of the fifteen pairs gets a sourced volume or an explicit absence with its reason. No figure is authored. Done when: the matrix is seeded for all fifteen pairs, the diagnostic asserts symmetry and the national totals against the source, and the pair page draws a link wherever one exists."*
+
+### What stood before
+
+Ten authored pairs in `WorldFactory` - round figures with no source (Germany–France 200 and 180, the USA–Germany 120 and 150) - and **five of the fifteen pairs with no link at all**: Sweden–Italy, Sweden–France, Italy–Poland, Italy–the USA, France–Poland. The pair page reported each absence as `NO TRADE LINK`, which was honest and which the sheet is right to call a world that does not trade.
+
+### The source, and the convention
+
+**One source, one vintage: Eurostat, 2023.** Goods from Comext (`ds-045409`, "EU trade since 1988 by HS2-4-6 and CN8", product `TOTAL`, `VALUE_IN_EUROS`, annual; last updated by Eurostat 2026-09-15); services from `bop_its6_det` ("International trade in services since 2010, BPM6", item S, million euro; last updated 2026-04-16). Both pulled through Eurostat's dissemination API on 2026-09-17, thirty directed flows and ten reporter totals in ten small JSON-stat responses; the pulls and the parse are in the pass's scratch. IMF DOTS and Comtrade were not needed: Eurostat's five reporters describe every one of the fifteen pairs, the USA included as a partner.
+
+**The convention.** Two EU reporters describe every intra-EU pair twice, and the two books disagree - the exporter's FOB against the importer's CIF, plus each office's own attribution. Measured on the goods flows of this vintage, the importer's figure differs from the exporter's by:
+
+| pair | exporter's report | importer's report | gap |
+|---|---|---|---|
+| Germany → Sweden | 29.58 bn € | 29.82 | +0.8 % |
+| Germany → France | 119.76 | 112.04 | −6.5 % |
+| Germany → Italy | 85.37 | 87.89 | +3.0 % |
+| Germany → Poland | 90.58 | 86.92 | −4.0 % |
+| France → Sweden | 6.42 | 6.64 | +3.5 % |
+| France → Italy | 53.05 | 45.02 | −15.2 % |
+| France → Poland | 14.50 | 13.13 | −9.5 % |
+| Italy → Sweden | 6.12 | 5.91 | −3.5 % |
+| Italy → Poland | 19.77 | 16.72 | −15.4 % |
+| Poland → Sweden | 8.72 | 7.90 | −9.3 % |
+
+One directed flow needs one number, so **every flow is the exporter's report** - goods flow 2 and services credits - and a country's link carries `ExportVolume` = its own report, `ImportVolume` = its partner's report: symmetric by construction, and the importer's report is not used and not lost. ⚠ **The USA is not a Eurostat reporter**, so a flow FROM the USA is the EU country's own report of what it took in (goods flow 1, CIF, and services debits) - the same book read from the other side, which is what *"from the same source, not a second one"* requires.
+
+**The book's units.** `TradePartner` volumes are the book's dollars in billions, so the euro figures are converted at the ECB 2023 reference rate the book already uses - read through the energy layer's own accessor, so the book has one rate and this table types none.
+
+### Built
+
+- **`TradeMatrixTable`** - thirty directed flows (goods euros, services euros), the five reporters' world totals (goods exports and imports, services credits and debits), the vintage, and `VolumeUsdBn(from, to)`. ⚠ A pair the table does not carry is an error at seed time, not a zero.
+- **`WorldFactory`** seeds all fifteen pairs from it in one loop; the ten authored calls are gone.
+- **`TradeMatrixDiagnostic`** (the cheap group): every pair linked both ways; symmetric to the bit; every link reproducing the table's euros at the book's rate; and each reporter's five-partner sums inside its own world totals, with the share printed. The USA's total is an **explicit absence with its reason**, printed so the missing assertion cannot be read as a passing one.
+
+### The seeded matrix, in the book's dollars (the diagnostic's own print)
+
+| | Sweden | Germany | France | Italy | Poland | USA |
+|---|---|---|---|---|---|---|
+| **Sweden →** | · | 28.30 | 13.81 | 7.30 | 9.01 | 32.03 |
+| **Germany →** | 38.81 | · | 161.50 | 105.77 | 108.95 | 245.11 |
+| **France →** | 10.99 | 126.02 | · | 74.33 | 18.72 | 97.07 |
+| **Italy →** | 8.24 | 97.96 | 83.83 | · | 24.48 | 87.20 |
+| **Poland →** | 12.67 | 130.65 | 27.16 | 19.42 | · | 22.34 |
+| **USA →** | 22.09 | 143.29 | 78.78 | 39.95 | 15.77 | · |
+
+Against each reporter's own world total, the five partners take 29.8 % of Sweden's exports and supply 30.1 % of its imports; Germany 30.6 / 26.5; France 31.9 / 32.6; Italy 36.6 / 31.2; Poland 43.3 / 40.6. The USA's total is the stated absence.
+
+### The family — BASELINE, all six
+
+The sentinel moved at both seeds on the first run, which is the trade balance and the tariff take reading the new volumes from turn 1. The family is dumped as `traj_p6d1` (both seeds, the three horizons), the sentinel's label and digests are set to it in this commit, and the dump's own first twenty turns hash to the sentinel's digests - the tie between the constants and the artefact is checked, not assumed. **Explained per country - the mechanism and the size.** The one term the volumes feed is the trade balance (`TradeSystem.ApplyTradeEffects`: exports less imports over the six, into the national accounts' net-exports term) and, through import volumes, the tariff take. So the family is each country's net position with the five moving from the authored figures to the sourced ones, in the book's dollars:
+
+| country | exports to the five | imports from the five | net, sourced | net, authored | the move |
+|---|---|---|---|---|---|
+| USA | 299.9 | 483.8 | **−183.9** | −33 | −150.9 |
+| Sweden | 90.5 | 92.8 | −2.4 | −15 | +12.7 |
+| Germany | 660.1 | 526.2 | **+133.9** | +75 | +58.9 |
+| France | 327.1 | 365.1 | −38.0 | −5 | −33.0 |
+| Italy | 301.7 | 246.8 | **+54.9** | −15 | +69.9 |
+| Poland | 212.2 | 176.9 | **+35.3** | −7 | +42.3 |
+
+The diffs (`TrajectoryDiffCheck`, `traj_pn3` beside `traj_p6d1`, both seeds, the three horizons) read the same: `TradeBalance` is the largest absolute mover - 152 bn at the USA by turn 68 and still 152 at turn 100, a 442 % move on its authored level; Poland's is the largest relative move (605 % at turn 15, from a small deficit to a surplus). What follows from it is what the national accounts do with a net-exports term: the potential-growth and Taylor-rule series move by fractions of a point in the early turns (Poland's potential growth by 1.4 points at turn 2 as the seed re-solves on the new demand, the Taylor gap term by 1.2 points), the energy bill shares and price changes by hundredths, and the population growth rate by hundredths of a percent through the migration channel; eight of the 77 fields are byte-identical over a thousand turns at both seeds. ⚠ **The net positions are the six-country partial balance, not each country's whole external balance** - a country's trade with the rest of the world is not in the model, before or after this item - and the USA's −184 bn with the five is the real shape of that partial (a deficit with every one of the five, largest with Germany). The dump's own first twenty turns hash to the sentinel's new digests at both seeds, checked with an independent hash of the CSV.
+
+**Where it lands, turn 100 at seed 777** (`traj_p6d1` less `traj_pn3`, the book's dollars in billions):
+
+| country | trade balance | GDP | GDP, relative | the cumulated budget |
+|---|---|---|---|---|
+| USA | −152.4 | −126.6 | −0.1 % | +1 730.6 |
+| Sweden | +12.3 | +6.6 | +0.3 % | +56.8 |
+| Germany | +56.2 | +23.1 | +0.3 % | +283.8 |
+| France | −33.1 | −30.8 | −0.8 % | −374.9 |
+| Italy | +67.3 | +60.8 | +4.2 % | +289.2 |
+| Poland | +41.4 | +49.1 | +4.7 % | +2 091.2 |
+
+The USA's budget moves up with its trade balance down because its tariff take rises with its imports from the five; Italy's and Poland's GDP move most in relative terms because their sourced surpluses with the five are the largest against their own size. Unemployment and inflation are unchanged to two decimals everywhere - the term enters demand, not the labour market's rate.
+
+### The review (the tariff take is a money path)
+
+**The path.** Import volumes × the tariff rate the importer charges (`ComputeTariffRevenue`) is planned revenue; export volumes less imports is the net-exports term. Both read the same links, so a wrong volume is wrong money twice.
+
+**What could be wrong, checked in order.**
+1. **Units.** The source is euros; the book is dollars in billions. The conversion is the ECB 2023 reference rate the energy layer already carries, read through its accessor, so a second copy of the rate cannot drift; the diagnostic prints the rate it used (1.0813) and reproduces every link from the table's euros through it. A units slip of a thousand would put a link at 0.03 or 30 000 bn - the printed matrix is in tens to hundreds, the scale the authored pairs had.
+2. **Direction.** Comext's flow 1 is imports and flow 2 exports; the services dataset's `CRE` is credits (exports) and `DEB` debits. The convention is stated in the table's own note and the diagnostic's symmetry assertion would not catch a swapped direction - so the sign was checked against a fact outside the model: the USA runs a deficit with each of the five in the source, and the seeded matrix has every USA row's imports above its exports.
+3. **CIF against FOB.** An importer's report is CIF and an exporter's FOB, so the exporter's convention understates what the importer paid by freight and insurance; the measured mirror gaps run from +0.8 % to −15.4 %, both signs, which says attribution and not freight alone. The choice is one convention applied to every pair, and the other book is in the record.
+4. **The tariff take's scale.** The EU's internal rate is 0.1 % and its external 3 %, so the take is dominated by the five's imports from the USA and the USA's from the five: the USA's imports from the five rise from 283 to 484 bn, so its planned tariff revenue on them rises in proportion (at 3 %, from about 8.5 to 14.5 bn a year); Germany's from the USA from 150 to 143. Neither is a new order of magnitude, and the ministry's rule sees the take as revenue it already books.
+5. **What is not modelled and was not before.** No rest-of-world trade; no services-goods split in the link itself (the two are summed into one volume, which is what `TradePartner` holds); no re-export or transit correction. The USA has no reporter total in the source and the diagnostic says so instead of asserting one.
+
+**The verdict.** The money the item moves is the trade balance's net-exports term and the tariff take, both on the sourced volumes; the risk that remains is the partial-balance shape (item 5), which is a standing modelling choice this item inherits and states rather than one it introduces.
+
+**Bars.** `d1_matrix` the diagnostic alone, CLEAN; `bar_d1tree` the cheap bar on this commit's own tree (P6-E1's files set aside, `CheckSuite` carrying this registration alone) 41 of 42 - the one failure `DocumentClaimCheck` reading the feature list's P6-E1 row against a tree with E1 set aside, which the commit carries neither of; `sentinel_d1tree` PASS on the new digests; `bar_d1` the cheap bar on the tree carrying E1 as well 42 of 43 (E1's own diagnostic red on the two defects §534 names, fixed there); `simbar_d1` the simulation bar on that tree 54 of 54, the sentinel first. The tier is SIMULATION with a money path; the review is above.
+
+## 534. P6-E1 AND P6-E2 — *JOBBSKATTEAVDRAGET* BUILT AS A CREDIT LAYER ON SWEDEN'S SCHEDULE, THE STATUTE'S OWN ARITHMETIC REPRODUCED TO THE KRONA, AND HELD OFF THE YIELD BY THE TWO-FAMILY RULE; the four equivalents billed with their statutes (2026-09-17)
+
+**The rows.** P6-E1: *"Build it as a credit layer on the schedule, not a rate adjustment: the credit's own formula on the prisbasbelopp and the municipal rate, phased as the statute phases it, with the 66+ enhancement stated. It is a player lever (its size is the political instrument). Done when: the AER the row prints reproduces Skatteverket's own published table for a set of incomes, the credit's formula is verbatim from the statute, and its family is explained - Sweden alone moves."* P6-E2: *"Every country has some earned-income relief… Bill each with its exact source; build none until E1 is ruled on film."*
+
+### The statute, and where its arithmetic was read
+
+Inkomstskattelagen (1999:1229) 67 kap. 5–9 §§, in the arithmetic Skatteverket publishes for the tax tables: **Teknisk beskrivning SKV 433, utgåva 35 (2024-12-11), income year 2025** - section 7.5.2 for the credit, and the *grundavdrag* section it rests on. The document was fetched from skatteverket.se and its text inflated from the PDF's own streams; every constant below is that text's. ⚠ The 2025 schedule carries **no phase-out**: the document's last interval is *över 8,08 PBB → (2,776 PBB − GA) × KI*, and the words *avtrappning* and *13,54* do not occur in it.
+
+**The credit, income year 2025** (PBB = the price base amount, 58 800 kr; AI = earned income rounded down to a whole hundred kronor; GA = the basic allowance; KI = the municipal rate):
+
+| earned income | credit, under 66 at the start of the year |
+|---|---|
+| not over 0.91 PBB | (AI − GA) × KI |
+| 0.91–3.24 PBB | (0.91 PBB + 0.3874 × (AI − 0.91 PBB) − GA) × KI |
+| 3.24–8.08 PBB | (1.813 PBB + 0.1990 × (AI − 3.24 PBB) − GA) × KI |
+| over 8.08 PBB | (2.776 PBB − GA) × KI |
+
+| earned income | credit, turned 66 at the start of the year - the enhancement |
+|---|---|
+| not over 1.75 PBB | 22 % of AI |
+| 1.75–5.24 PBB | 0.2635 PBB + 7 % of AI |
+| over 5.24 PBB | 0.6293 PBB |
+
+Rounded down to a whole krona, and set off against municipal income tax only. The basic allowance: 0.423 PBB to 0.99 PBB; 0.423 PBB + 20 % of the income above 0.99 PBB to 2.72; 0.77 PBB to 3.11; 0.77 PBB − 10 % of the income above 3.11 PBB to 7.88; 0.293 PBB above - never more than the income, rounded UP to a whole hundred.
+
+**KI, stated.** The tables' column rate includes the burial and church fees and the statute takes 1.16 points off it; the model's municipal layer is SCB's national average, municipality plus region, which carries neither - so it IS the statute's KI and nothing is subtracted.
+
+### Built
+
+- **`EarnedIncomeCredit`** - `BasicAllowance(income)` and `Credit(earnedIncome, municipalRate, turned66, scale)`, the statute's intervals and rounding verbatim, the cap at the municipal tax, and the lever as a scale on the statute's credit (100 = the statute).
+- **The credit in the schedule's average effective rate**, cohort by cohort: `TaxSchedule.AverageEffectiveRateWithCredit` subtracts the credit from each cohort's tax under the municipal layer's rate, the 66-plus schedule from the first band at or above 65 (a one-year approximation on a five-year band, stated in the code).
+- **The readout**: Sweden's income row prints the rate without the credit, which the yield reads, and the statute's foot beneath the curve prints the rate with it. Filmed on Sweden's Budget tab at 1280 (`filme1`, the label table's own row, the first form): **`AER 32.4 · 22.3 CREDITED`** - at the headcount-weighted mean income the statute's rate is 32.4 % without the credit and 22.3 % with it. Over the whole cohort integral at the seed the diagnostic reads 32.61 % without and 22.66 % with: **the credit is worth 9.95 points of Sweden's average effective rate on earned income**, which is the gap the row named between the rate the row printed and the statute's. ⚠ The first form printed the pair in the figure cell - `AER 32.4 · 22.3 CREDITED` - and the film's overflow guard reported it on six captures (115 px needed in a 52 px cell), so the sentence moved to the statute's own foot under the curve, which wraps: *the earned income credit (jobbskatteavdraget, SKV 433 2025): 22.3 % with it against 32.4 % without at the mean income · held off the yield until its family is ruled.*
+- **`EarnedIncomeCreditDiagnostic`** (the cheap group): the document's three worked examples to the krona - **11 935 kr at 90 000, 25 238 kr at 240 000, 23 867 kr at 214 000**, all at tax table 34 (32.84 %) - the allowance's rounding on the way (31 300, 39 600, 38 600), the 66-plus schedule at its interval ends, the cap, the continuity of the under-66 schedule across its three interval ends, and the hold.
+
+### ⚠ Held off the yield, and why - the two-family rule
+
+The sheet's own rule for this pass is *"two BASELINE families never in one pass."* P6-D1 is this pass's family (§533): the trade matrix moved the no-policy path at both seeds and was re-based. A credit that reaches Sweden's income-tax yield moves that path again - Sweden alone, as the row says - which is a second family in the same pass. So the credit is built, verified and on the screen, and **`EarnedIncomeCredit.Live` holds it off the book** until its family is dumped and ruled: flipping it is its own item with its own dump and its own sentinel re-base. The diagnostic asserts the hold - the seed's average effective rate is the captured seed's, unchanged - and the sentinel run after the credit landed shows the `p6d1` digests intact, which is numeric inertness measured rather than claimed (§402).
+
+What that leaves owed to the row: the lever's own sub-row on the income line (the bill mechanism that moves a band's rate would move the credit's scale the same way), and the family's explanation when it flips. Both are the follow-up item, not silently dropped.
+
+### P6-E2 — the equivalents, billed
+
+| country | the relief | the statute | what it is, and why it is not a credit layer like Sweden's |
+|---|---|---|---|
+| USA | Earned Income Tax Credit | Internal Revenue Code § 32; the year's parameters in the annual inflation revenue procedure (Rev. Proc. 2024-40 § 2.06 for tax year 2025) | a refundable credit phased in and out by earned income and the number of qualifying children - a different shape (four child counts, a phase-out) and a federal one, on the USA's federal income row |
+| Germany | Arbeitnehmer-Pauschbetrag | § 9a Satz 1 Nr. 1 Buchstabe a EStG | a flat deduction from employment income before the tariff, not a credit; folds into the tariff's exempt zone |
+| France | abattement forfaitaire pour frais professionnels | CGI art. 83, 3° (the 10 % abattement with its indexed floor and ceiling) | a proportional deduction from salary before the barème, with a floor and a ceiling indexed yearly |
+| Poland | koszty uzyskania przychodów (pracownicze) | ustawa o PIT art. 22 ust. 2 | a flat monthly deduction from employment income, higher for commuters; the tax-free band is already the 3 600 zł credit the schedule carries |
+
+Each is BILLED at the statute named; none is built, per the row, until E1 is ruled on film. Each will need its own primary text on disk before it is built (the project's rule for a schedule), which is what the bill is for.
+
+**Bars.** `bar_e1` the cheap bar 43 of 43 (the first run, `bar_d1`, was red on this diagnostic alone - Exempel 3 and the continuity tolerance, both above); `filme1` the readout filmed (Sweden 1280, 35 captured to the tax rows) - the second form, after the first overflowed; `simbar_d1` the simulation bar on the tree carrying these files 54 of 54, the sentinel first on `p6d1` - the credit moves no trajectory while it is held. The tier is SIMULATION and UI.
+
+## 535. P6-G1 — A PIE BELOW A SIZE READS AS A BAR: 8a's own inside-label rule measured against the disc it is drawn on, found over its chord at every filmed width because the disc is a constant and the type is not; below the measured threshold the distribution draws as the stacked bar (2026-09-17)
+
+**The row** (P6-G1): *"Board 8a ruled the pie's form (largest first from 12 o'clock, inside labels where the wedge clears 40°, hatched OTHER past eight) and the form is right - at size. The instance finding 5 names is too small for any pie to read. Measure the threshold at which 8a's own rule stops working, then below it the distribution draws as the stacked bar the grammar already has. Done when: the threshold is measured, both forms are filmed, and no pie renders below it."*
+
+### The rule, as built, and the measurement
+
+`PieChartRenderer` draws a 120 px disc - a constant, at every geometry - and prints a wedge's share inside it where the wedge spans at least 45° (board 9a moved 8a's 40° to 45° on Design's own measurement of a `12.3 %` in mono at 1280: 27 px against a 40° chord of 25.4 and a 45° chord of 28.5). The chord the rule holds a label to is the 45° wedge's at 0.62 of the radius: **28.5 px on the 120 px disc, at every geometry, because the disc does not scale.** The inside label's type does scale - it is the page's caption style, re-derived from the height like every IMGUI style.
+
+Read off the label tables of the films (the pie capture `04a_demographics_pie`, the share labels drawn inside the wedges):
+
+| geometry | the inside label | it needs | the chord holds | over by |
+|---|---|---|---|---|
+| 1280×699 | `30 %` at 12 units | 32.1 px | 28.5 px | 3.6 px |
+| 2560×1419 | `30 %` at 20 units | 53.6 px | 28.5 px | 25.1 px |
+
+⚠ **So 8a's rule is already over its chord at the smallest width this project films**, by the difference between the mono figure Design measured and the caption the renderer prints, and it is a full label's width over at 2560. The disc that holds a 45° label at this caption would be 135 px at 1280 and 226 px at 2560; the renderer draws 120 at both. That is the finding: the pie is below its own threshold everywhere, worst where the window is largest.
+
+**The threshold, stated as the rule the renderer now applies:** the widest inside share label the page would print, measured in the caption style the page hands the renderer, against the 45° chord at 0.62 r of the disc it is about to draw. Where the label is wider than the chord, the distribution is not a pie at that size, and it draws as the stacked bar.
+
+### Built
+
+- **The threshold, applied where the disc is about to be drawn.** `PieChartRenderer.Draw` measures the widest share label the page would print, in the caption style the page hands it, against the 45° chord at 0.62 r of its own disc. Where the label is wider than the chord the distribution draws as the stacked bar; where it fits, the pie draws as before. `LastFormWasBar` says which form the last draw took, because the label table cannot tell the two apart.
+- **The bar is the plate grammar's distribution band, on this renderer**: largest first, left to right, the paper hairline between parts (8a's wedge gap, on a bar), each part's share inside it where it fits - the pie's own inside-label rule on a width instead of a chord, and never on OTHER - and the pie's own legend beneath. ⚠ OTHER is solid on the bar where the pie hatches it: a hatch on a bar is a form Design has not drawn, and it is D21 row 3 rather than an invention here.
+- **The disc's constant size is left as it is.** Whether the disc should scale with the window so the pie holds at size above 1280, or the bar is the form there, is the same D21 row: the pass measured the threshold and built the fallback the sheet named, and it does not decide the disc's size for Design.
+
+### Filmed, both forms
+
+**Before** - the pie: `filmb1b` at 1280 and `c1_2560` at 2560, the disc with three shares inside (30, 22, 19 %), the rest in the legend. **After** - the bar: `filmg1_1280` and `filmg1_2560` (25 captured each, 0 overflows, 0 escapes), the distribution as one bar across the sheet with the share inside five parts at 1280 and six at 2560, the legend beneath. No pie renders below the threshold, which at the constant disc is every filmed width; whether the disc should scale so the pie holds at size is D21 row 3.
+
+**Bars.** `bar_g1` the cheap bar 43 of 43; the two films above. The tier is UI.
+
+## 536. P6-F1 — ENERGY GETS ITS OWN RAIL CELL (DS-4b OVERRULED): the area declared, the page moved whole to its own tab, the icon a genuine asset gap and a D21 row, `AreaIconCoverageCheck`'s failure recorded as the named gap the ruling asked for - never suppressed - and the two things the sheet assumed corrected against the code; the rail's missing-icon fallback measured for the first time and its two defects closed in four cuts (2026-09-17/18)
+
+**The row** (P6-F1): *"I ruled DS-4b the other way on Design's board 15a (`Rail cell: NO`, the page under Sectors). Elias has played it and wants a tab; the player's reading wins. Consequences, all of them real: `SystemArea.Energy` is declared, `icon_area_energy` becomes a genuine asset gap and a D21 row (it was explicitly not one under the old ruling), the rail's legibility re-opens at the new cell count, and `AreaIconCoverageCheck` fails until the icon lands - which is correct, and the fallback is the honest hairline until it does. Done when: the cell is reachable, the page moves whole, films at both widths, and the coverage check's failure is recorded as a named gap rather than suppressed."*
+
+### Two corrections to the sheet, read off the code before anything moved
+
+1. **The rail's missing-icon fallback is not a hairline; it is the caption's initial letter in the area's ink.** `DrawRailNavCell` draws the icon where one resolves and otherwise the first letter of the caption in the same ink, so the rail never shows a blank cell that navigates somewhere - its own contract, documented at the site. ENERGY without art therefore draws a tinted **E** and stays clickable. That is what a player sees until Design's icon lands, and it is stated here instead of the hairline the sheet expected.
+2. **An area has an ink as well as an icon, and the ink is Design's.** Every `SystemArea` is keyed in the palette's area colours and the theme's accents, and an area without an entry throws at draw time; the inks are the boards' (D-inks), not this pass's to author. Energy therefore **borrows the Sectors ink as a stand-in**, stated in the code beside the entry, and the D21 row asks for the area's own ink together with its icon.
+
+### Built
+
+- **`UiPalette.SystemArea.Energy`** and **`ConsolidatedTab.Energy`**, both appended last so nothing already numbered moves; the palette's area colour, the theme's accents (paper and desk weights) and the inactive swatch tint carry the Sectors values as the stated stand-in; the tab maps to its area.
+- **The rail's ninth cell, ENERGY**, after POLITICS and before the conditional CAMPAIGN cell. The rail's height derives from the cell width, not from the count; the containment guard at the rail's own site (`shell rail: ENERGY`) is what would report a ninth cell overrunning the window, and it reported nothing at either width.
+- **`DrawEnergyTab`** in the frame every other tab draws - the sheet sized to the frame, the page header with the provenance tab, one scroll view - around the same `DrawEnergyPlate` the Sectors page called since EN-6 and no longer calls. The page read no Sectors state; its one coupling was the area ink, which is its own now.
+- **The film drives the tab**: `Energy` is the seventh tab in the driver's sweep, and the six energy captures that lived under the Sectors sub-screen (the cost sentence, the page at three scrolls, the instruments and the electricity tax in PROVENANCE) moved into the tab loop under the `08_energy` stems, otherwise unchanged. The D18 inventory was regenerated so the missing icon is in the ask's own block.
+- **Not moved**: the electricity-tax law stays under LAWS with its filter, and `LawCategoryArea` still answers Sectors for it - a one-line follow-up when the area has its own ink.
+
+**The fallback, exercised for the first time - two defects, both measured on the first film and closed in four cuts.** `DrawRailNavCell` degrades a missing sprite to the caption's initial in the icon's ink, so the cell navigates and never shows blank. Every area had an icon until tonight, so the path had never drawn a glyph, and the first F1 film was its first measurement:
+- **The initial through the tab style.** The fallback drew the E through `LedgerRow.Cell` with `_tabButtonStyle` - Unity's default button as the tab strip's base: its face, its padding and the strip's FIXED HEIGHT. The label tables: `"E" needs 21.8 wide, 44.0 tall in a 21×21 slot at 16px` on 116 captures at 1280, `30.3 × 70.0 in 35×35 at 30px` on 100 at 2560 - the 44 and the 70 are `_tabButtonStyle.fixedHeight` at the two widths - and on the frame a dark rounded box behind the letter. Four cuts, each measured: (1) the face and the padding stripped, the fixed height not - the E fell to MeasuredLabel's 8 px floor (`6.0 × 44.0`), which is how the fixed height was found; (2) the fixed size stripped too and the style cached - every guard silent (`16 px, 12.0 × 15.6` in the slot), but the crop still showed the box: a copy of the button style with all eight state backgrounds set to null drew its face regardless, and why is not established; (3) a probe film to the desk with the style based on the LABEL style and the tab's font - the box gone, the E bare on the paper; (4) that cut barred and filmed at both widths. `DrawRailInitial` as it stands: the label style with the tab's font, bold, no padding, no fixed size, sized at 0.8 of the slot and fitted to the slot's height before MeasuredLabel measures it (the calendar chip's own resort for its day numeral); the style cached on the tab type's size so MeasuredLabel's scratch for it is one object, not one per frame; the ink re-seeded per cell on all eight states.
+- **The cell cache, keyed on the size alone.** The first film also carried an overflow the rail could not have caused: `"WOULD PASS" needs 141.0 wide in 138.7 at 19px` on every Desk frame at 2560 - the budget verdict's cell, which the G1 film of the previous tree drew clean at `21 px, 135.5 × 27.1`. In the F1 film its row read `19 px, 141.0 × 70.0`: bold, and 70 tall - the tab strip's fixed height again, on a cell that never touches the tab style. `LedgerRow.CellStyle` kept ONE clone, re-made only when the source's FONT SIZE changed; the rail's E (tab style, 30 px at 2560) and the verdict (its own style, 30 px at the source) are the same size, so the verdict inherited the E's clone. At 1280 the two sizes differ (16 and 9) and nothing showed - which is why the second filmed width is in the tier. Proved by the second cut's film with the E off that path: the verdict rows returned to `21 px, 135.5 × 27.1` and the 2560 film's overflows were the E's own, 100 of 100. The cache now keys on the source's reference as well as its size (`_cellStyleSource`); the churn class is unchanged - a re-make when consecutive callers differ, which alternating sizes already caused.
+
+### The named gap
+
+`AreaIconCoverageCheck` on every bar of this tree: `MISSING   icon_area_energy does not resolve through IconLibrary.GetAreaIcon` - the other eleven areas `ok` at 256×256 RGBA32, Neutral skipped by design. The cheap bar reads **1 of 43 FAILED — AreaIconCoverageCheck** and will until Design's icon lands (D21 row 1, which asks for the icon and the ink together). By ruling this is a NAMED GAP, not a failure to suppress: the check stays registered, its line stays red, the bar's other 42 are read around it, and the rail meanwhile draws the E in the Sectors ink.
+
+### Filmed at both widths
+
+`filmf1d_1280` (Sweden, the full sweep: 122 captured, 0 overflows, 0 escapes) and `filmf1d_2560` (to `08_energy_electricity_tax_provenance`: 105 captured, 0 overflows, 0 escapes); the dry film `dryf1d` at 1280×699 the same 122, clean. The rail's E in the label tables: `16 px, 12.0 × 15.6 in the 21 × 21 slot` at 1280 and `28 px, 21.0 × 27.4 in 35 × 35` at 2560; the Desk's verdict cell `21 px, 135.5 × 27.1` on all 75 of its rows at 2560. The three earlier cuts' films (`filmf1`, `filmf1b`, `filmf1c`) and the probe to the desk (`probe_e`) stay in `PoliSim-captures` beside them as the measurement - the crops of the slot at each cut are what decided the third and the fourth. The `08_energy` frames at both widths: the page whole under its own header, the ENERGY cell active with the wash and the spine, the E bare in the slot over its caption.
+
+**Bars.** the cheap bar on each of the tree's four cuts (`bar_f1`, `bar_f1b`, `bar_f1c`, `bar_f1d`; 33–34 s wall), each **42 of 43** with `AreaIconCoverageCheck` the one red - the named gap; `D18InventoryCheck` green on the regenerated block (source digest `6f8dbb95…`). Tier UI: the cheap bar, the dry film, and both widths filmed rather than the one the tier asks, because the second width is where the cell cache showed - and a crop of the slot after every cut, because the guards were silent on the third while the face was still on the frame.
+## 537. P6-H1 — THE D21 ASK CUT AS ONE ARCHIVE: `AssetPackArchive/D21_ask.zip` on §511's route, twenty-two artefacts with `SEND_PACKAGE.md` at the root and `MANIFEST.sha256` beside it, verified on the way in and on the way out; E-41 names the one file (2026-09-18)
+
+**The row** (P6-H1): *"Install D21, reconciled against D20: the energy tab's composition (the decisions as the page's spine, not the readouts), `icon_area_energy` and the rail at its new cell count, the pie's size threshold if the measurement says the bar needs a form, and whatever P6-C2's measurement says needs a new form. Nothing already answered is re-asked. The package is one zip, verified both ways — the route that worked for E-37 and E-38. Sending stays Elias's."* The document was installed at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md` in §536's pass (the seven rows, each with the measurement behind it); this is the cut.
+
+**What the archive carries** (`SEND_PACKAGE.md`, cut last by `make_d21.pl` after this record's last edit, every digest and byte count read off the file on disk at that moment): the four documents - the request, the errands, this record, the feature list - and eighteen frames, one to four per row, each named for what it shows:
+- **Rows 1 and 2** from `filmf1d` at both widths: the rail with ENERGY active (the E in the stand-in ink, the wash and the spine) and inactive under POLITICS; the tab at its middle and its foot, with PROVENANCE open on the instruments, and the foot at 2560.
+- **Row 3**: the pie BEFORE (`filmb1b` at 1280, `c1_2560` at 2560) and the bar AFTER (`filmg1` at both widths) - §535's own frames.
+- **Rows 4 to 6**: the health family at rest at both widths and with the dagger open (`filmf1d`).
+- **Row 7**: the selector card before and after the floor (`a1before`, `a1after`, §527's frames) and as it stands at both widths, with A2's faces.
+
+**How it is verified.** `cut_d21_zip.pl` is §511's script with this cut's paths: every row of the sheet is copied into a staging folder and its SHA-256 and byte count re-read against the sheet's recorded ones as it is copied, and against its source; `MANIFEST.sha256` is written from the copies, with `SEND_PACKAGE.md` at the root; the archive is written with forward-slash paths, the documents deflated and the frames stored; then it is extracted into a fresh folder and every manifest line re-checked there (`sha256sum -c`). A single MISSING or DIFFERS row fails the cut and nothing is written. The counts live in the manifest's own header, in the cut's log `logs/zip_d21ask.out`, and in the records commit; the archive carries this record, so the record cannot carry its digest.
+
+**Where it lives.** `AssetPackArchive/` is not tracked (`.gitignore`, as for `D20_return.zip` and `D20_return3.zip`); `SEND_PACKAGE.md` is, and is committed with this record. E-41 is re-worded to name the one file.
+
+**Decisions taken, strikeable.**
+1. **Eighteen frames, not every frame of the pass.** Each row carries the frame its measurement was made on and the current tree's frame at both widths where the row's form is on screen. Rows 4 to 6 share three frames, because they are one page.
+2. **The magnified crops are not in the archive.** They are this side's instrument (the slot at each of §536's cuts); the frames they were cut from are what travels, and Design's own reading is of the frame.
+3. **No prose summary of the frames in the sheet** beyond one line per row naming what to look at - the standing rule that binary artifacts travel as files, not descriptions.
+

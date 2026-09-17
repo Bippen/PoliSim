@@ -1,81 +1,70 @@
-# The send package — re-cut 2026-09-16: **THE 15c-r3 RETURN, AS ONE ARCHIVE — your board read claim by claim, four marks re-cut on the knob's own face, eleven things back**
+# The send package — cut 2026-09-18: **THE D21 ASK, AS ONE ARCHIVE — seven forms Playtest 6 measured and could not draw, reconciled against D20; nothing answered is re-asked**
 
-**What this is.** ONE FILE: `D20_return3.zip`. This manifest rides inside it at the root beside `MANIFEST.sha256`, which gives the SHA-256 of every file in the archive (`sha256sum -c MANIFEST.sha256`). One file, because that is the route that has worked: E-37's archive landed whole and your 15c-r3 was drawn from it. On top, the return (`CLAUDE_DESIGN_ASSET_REQUEST.md`, the status at its head); then the statutes the flags turn on, and the row filmed in every state at both widths.
+**What this is.** ONE FILE: `D21_ask.zip`. This manifest rides inside it at the root beside `MANIFEST.sha256`, which gives the SHA-256 of every file in the archive (`sha256sum -c MANIFEST.sha256`). One file, because that is the route that has worked twice (E-37, E-38). On top, the ask (`CLAUDE_DESIGN_ASSET_REQUEST.md`, the D21 head at its top); then the frames each row is measured on, at both filmed widths.
 
-**What was built from your board.** The marks now key to the knob sprite's own FACE, measured off its alpha (30×46, the opaque face x 3–26 and y 2–41), not to the thumb's rect: the held mark PROTRUDES BELOW THE KNOB as your device says (on §509's film it stopped inside the face), a step the face covers BRACKETS the knob instead of shading it, a cut label stands OVER the tick it names, and a step the face does not cover stays a column on the track. Four corrections, all yours to check against the frames — a film outranks what this manifest recites.
+**What is asked - seven rows, one table.** (1) `icon_area_energy` and the Energy area's ink pair: the rail has a ninth cell and no art for it - the coverage check reports the icon MISSING on every bar by ruling until yours lands, and the cell draws the caption's E in the Sectors ink as a stated stand-in. (2) The Energy tab's composition with the player's decisions as its spine - the page moved whole to its own tab and is the layer's readouts, which you answered in D20; what it lacks is anything a player does. (3) The distribution pie below its size: the inside-label rule is over its own chord at every filmed width, so the renderer draws the bar there - whether the disc should scale, or the bar is the form, and if the bar, its board. (4) A family header with the family's key figure. (5) A per-row disclosure beside the desk-global dagger. (6) What the health family's Supporting readouts row carries at rest. (7) The selector card at the smallest window, now that nothing on it may fall below the device-pixel floor. Each row's measurement is in the table's last column and in the record it names.
 
-**What goes back, flagged and not asked.** Sweden is CARRIED from 2033, not 2034. Italy's RISING window is 2026 and 2027; 2028 is a one-year held window, and CARRIED begins 2029 as your own cell says. Neither filmed width prints the HELD sentence your specimen recites: 1280 gives `NEXT: 2033 NO FIGURE YET` and 2560 gives `SFB 2 KAP. 10 A–10 C ▏ NEXT: 2033 NO FIGURE YET` — the citation and the answer, with the reach clause shed, because the sentence keeps clear of the knob. France's two clauses print in the other order. The `60` and `70` at the track's ends are not drawn, because the band carries the sentence. Four marks are this row's own that D13 and the gradation do not have — the dotted hairline, the half ink, a state tick at twice the gradation's width, and now the bracket. FIXED's empty track is empty ahead of the knob only. CARRIED's device draws for Italy and not for Sweden. `66 · THE BILL` is in no CSV row. The annex count names sixteen files for twelve frames. And the return carried twelve frames of the built row, not ten. **Nothing is asked.**
+**What is not asked.** The energy plates (D20/15a), the schedule row (15b), the statutory marks (15c), the plate grammar, the eight party inks (D17), the mark inventory (D18): answered, built, untouched.
 
 ## What goes in — computed, not claimed, and numbered so a partial archive shows
 
-*Every figure is read off the file on disk at the moment this manifest was written — after the last document edit of the pass. **27 artefacts**, plus this manifest and `MANIFEST.sha256`. If the archive holds fewer, it is incomplete.*
+*Every figure is read off the file on disk at the moment this manifest was written — after the last document edit of the pass. **22 artefacts**, plus this manifest and `MANIFEST.sha256`. If the archive holds fewer, it is incomplete.*
 
-| n of 27 | kind | artifact | bytes | sha256 (on disk) |
+| n of 22 | kind | artifact | bytes | sha256 (on disk) |
 |---|---|---|--:|---|
-| **1 of 27** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 220909 | `09a311c77493a3f0d316efb1d44f92310edbec850cedae1bcc7b007f2032a2af` |
-| **2 of 27** | document | `ERRANDS.md` | 26659 | `12058bacf91d9e2e651e5b7f1a846533ff7c1c8fcf3b4b65d1b5f4df609eae16` |
-| **3 of 27** | document | `COMPLETED.md` | 3380253 | `2adff443c59632ce8d5fedd1734c4d157529d6f04be501c5acc81a3c2b3ece46` |
-| **4 of 27** | document | `POLISIM_FEATURE_LIST.md` | 235323 | `150389bd504fe2281dcca612d8883064a26cbe804b5f4664f93c796d6245e8b4` |
-| **5 of 27** | document | `ElectionsData/pensions/README.md` | 5856 | `a9e6526c08a60d9a2fb32fda89d1de97475cceecfbfa1d697f7bb27ad55982b2` |
-| **6 of 27** | data | `ElectionsData/pensions/statutory_ages.csv` | 2835 | `ef7bb488d563ba788dcd158e3bbcb2ce88f18b526243802446e72e0b72ad98fd` |
-| **7 of 27** | film | `r3c_sweden_1280_05b_budget_spending_pension.png` | 678119 | `af38ecedfb071c4ef2a2209e1c6378763d4a0594304fdc73fb2b07eb3ca11a5b` |
-| **8 of 27** | film | `r3c_sweden_1280_05b_budget_spending_pension_2026.png` | 678119 | `af38ecedfb071c4ef2a2209e1c6378763d4a0594304fdc73fb2b07eb3ca11a5b` |
-| **9 of 27** | film | `r3c_sweden_1280_05b_budget_spending_pension_2034.png` | 676651 | `bb7b815b8452f2412e339831c63f93f6bdd2fe701dc4e36cb1bc8e212a28ea2e` |
-| **10 of 27** | film | `r3c_germany_1280_05b_budget_spending_pension.png` | 665485 | `5f01666bac47d62592271f5957b27183198d0fa51958f9a996517247b289b17d` |
-| **11 of 27** | film | `r3c_germany_1280_05b_budget_spending_pension_2026.png` | 665428 | `2fa736544da8cbac75b97d53f74642866b3fe490fdf05d6377bb152e21515a7e` |
-| **12 of 27** | film | `r3c_germany_1280_05b_budget_spending_pension_2034.png` | 665092 | `dab20f59bcf6f7cda2b4d03c538e133b1eb46224773988b411a00f6c6fee5efa` |
-| **13 of 27** | film | `r3c_france_1280_05b_budget_spending_pension.png` | 670340 | `29be4b8520cce615add384320e6aef5c00e2e983ba110a80b904fb81aa900517` |
-| **14 of 27** | film | `r3c_france_1280_05b_budget_spending_pension_2026.png` | 669029 | `7fe75da98df6d995f46db8f965fdfa579a45ed0ec0bede63b7e1e93bef1f4466` |
-| **15 of 27** | film | `r3c_france_1280_05b_budget_spending_pension_2034.png` | 669279 | `63d036e43863582d86d01f60521af63d7250f4c3094631c533a0b673c81ce5b0` |
-| **16 of 27** | film | `r3c_italy_1280_05b_budget_spending_pension.png` | 673333 | `146e4ee8ac09f5dcaf3bfd079547e2dded494104c2e58ca0bf4a523c5532e33b` |
-| **17 of 27** | film | `r3c_italy_1280_05b_budget_spending_pension_2026.png` | 672838 | `14e08d8718540430388db68988afbe524423f439cd7e9dd39befe3f720462dce` |
-| **18 of 27** | film | `r3c_italy_1280_05b_budget_spending_pension_2034.png` | 673383 | `d37ae19eaf8e8fd940215868e9b509aa33a2b2de631e722349e46efa5c484c87` |
-| **19 of 27** | film | `r3c_poland_1280_05b_budget_spending_pension.png` | 680026 | `fc365a0ca373610eae89ad7da2cea7b49328fdc3007e786ef5fe643b0ca1c114` |
-| **20 of 27** | film | `r3c_poland_1280_05b_budget_spending_pension_2026.png` | 680026 | `fc365a0ca373610eae89ad7da2cea7b49328fdc3007e786ef5fe643b0ca1c114` |
-| **21 of 27** | film | `r3c_poland_1280_05b_budget_spending_pension_2034.png` | 680026 | `fc365a0ca373610eae89ad7da2cea7b49328fdc3007e786ef5fe643b0ca1c114` |
-| **22 of 27** | film | `r3c_usa_1280_05b_budget_spending_pension.png` | 685306 | `0451551025cfe62a25da2bf761fb50c59d9802526ab44f1c541d42823fed88c7` |
-| **23 of 27** | film | `r3c_usa_1280_05b_budget_spending_pension_2026.png` | 685874 | `5f3547b84a1c31b7f0f6d1b45ae87133090f5e99f9356e82d41f1a4ecbedc2b2` |
-| **24 of 27** | film | `r3c_usa_1280_05b_budget_spending_pension_2034.png` | 685306 | `0451551025cfe62a25da2bf761fb50c59d9802526ab44f1c541d42823fed88c7` |
-| **25 of 27** | film | `r3c_sweden_2560_05b_budget_spending_pension_2026.png` | 2069228 | `f307599cc75e27d9356339e9ca06ecae55339c502bca873538c4cca6fd82cc6b` |
-| **26 of 27** | film | `r3c_italy_2560_05b_budget_spending_pension_2026.png` | 2088924 | `73b734da6b86078b672e17e2cb752cfec117e719678f96b57c62f1ef8dfbecad` |
-| **27 of 27** | film | `r3c_france_2560_05b_budget_spending_pension.png` | 2059242 | `1295c2fcc3a48617722ed5eb39b3b5ffa9cf1b6398a806abc2c422cdbbd4e8a5` |
+| **1 of 22** | document | `CLAUDE_DESIGN_ASSET_REQUEST.md` | 226493 | `abd6e78bb9a47d16b7629e23fc79fe859c4d965fe955b01c7eeb248f23116e47` |
+| **2 of 22** | document | `ERRANDS.md` | 29381 | `4c6bc8261bb03469ed0d011f5bffd70728fd049d4a32912789883838f4f303d7` |
+| **3 of 22** | document | `COMPLETED.md` | 3577703 | `d110b7a2c4489613a5600d9b032035dd016e06eeb43aec0dc403b6b27799884b` |
+| **4 of 22** | document | `POLISIM_FEATURE_LIST.md` | 266041 | `e5e52a119c273c05b4b09b94bdf923b0ca9ffe1251ef2fb6cb4f7b81579332a2` |
+| **5 of 22** | film | `filmf1d_1280_08_energy.png` | 541792 | `38c95f062a767cc22018dbc52a7f2331e88ab5989c1e47c35e275cb0d59dc2a5` |
+| **6 of 22** | film | `filmf1d_2560_08_energy.png` | 1406593 | `50235313a8629d7730c9dfdcfb19b07a97740503e0c6c8f3d477eb4f2d3bd1ea` |
+| **7 of 22** | film | `filmf1d_1280_07_politics.png` | 540919 | `8a59d98ca149c5f821ce00a63e4134c7a632cd2cd3ac22cb3922e431d354af34` |
+| **8 of 22** | film | `filmf1d_1280_08_energy_mid.png` | 521049 | `4a9651a0f7f90ff34bc913ca4ca74e1c3d3bb29bb12c7900df524614739c4819` |
+| **9 of 22** | film | `filmf1d_1280_08_energy_lower.png` | 507677 | `fbb14e4fe8234323732054ea96efd2156689ab4dccdf8c330deafb43bd1cf026` |
+| **10 of 22** | film | `filmf1d_1280_08_energy_instruments_provenance.png` | 607343 | `424623ffb9de58c40fc6af65536c08b0ae6fd4b11de892a427fe4704dbb73f3c` |
+| **11 of 22** | film | `filmf1d_2560_08_energy_lower.png` | 1395131 | `dc286bba6a4dfa291c138bfab52eb4f2f3053556cd46b605dd3c2c60f830ab58` |
+| **12 of 22** | film | `filmb1b_04a_demographics_pie.png` | 501325 | `ab429f6f3c953a356a1f65f801f9655cdcd2bdab7d1650aa8b141d90e5cce169` |
+| **13 of 22** | film | `c1_2560_04a_demographics_pie.png` | 1381994 | `803196ad69425b90bad2996e55e83ec3e1cd8817fa9301902a14ac00ed5c1662` |
+| **14 of 22** | film | `filmg1_1280_04a_demographics_pie.png` | 489646 | `b2e31de23b446fd286b7a545a650d665bede3f98f5865156137c1578ae19716b` |
+| **15 of 22** | film | `filmg1_2560_04a_demographics_pie.png` | 1347201 | `75a04644d2ee63eaecc0ae1d9afb5ccef5125945da15b7ac3f058dcc94fdf7e2` |
+| **16 of 22** | film | `filmf1d_1280_04b_people_health_plate.png` | 504461 | `b1dc859fcbe4f26c7e30843089f53bd62c7ad6cd18fb4d694ca192e9012dc5f8` |
+| **17 of 22** | film | `filmf1d_2560_04b_people_health_plate.png` | 1396576 | `131c58747ba0ae57b61d2f90cc742a9eb68f50cb7352eeebe8fe593c152f1c5f` |
+| **18 of 22** | film | `filmf1d_1280_04g_people_health_plate_provenance.png` | 555928 | `cacacf039696602a36d3fb5c7c294b8693ab79562e44937195f59cf724887579` |
+| **19 of 22** | film | `a1before_1280x720_01_country_selector.png` | 368575 | `aa99003566bc6b0ab82e191819770d8f0c189703f0e3eb64b477eb511104457d` |
+| **20 of 22** | film | `a1after_1280x720_01_country_selector.png` | 353176 | `6135921d4abe5257ae20396cbdfcd4cc06f7d2dad31833c18aeaff03f25e9590` |
+| **21 of 22** | film | `filmf1d_1280_01_country_selector.png` | 353593 | `ea016e910ebd518416a0ed87a21cec09747a0c981909c3c22eb74d1e1401d35b` |
+| **22 of 22** | film | `filmf1d_2560_01_country_selector.png` | 1236986 | `e674a5a17e154840e3d958a53b060d1341c5e08fe5cdd65ce6dcb53a022510aa` |
 
 ### What each artefact is for
 
-| n of 27 | artefact | what to read |
+| n of 22 | artefact | what to read |
 |---|---|---|
-| **1 of 27** | `CLAUDE_DESIGN_ASSET_REQUEST.md` | THE RETURN - the status at its head (2026-09-16): your 15c-r3 read claim by claim, the four marks re-cut on the knob's own face, and the eleven flags back; the 15c-r2 return and everything before it kept beneath |
-| **2 of 27** | `ERRANDS.md` | E-38, this return; E-37 closed - your project holds the whole 15c-r2 archive, read back by listing |
-| **3 of 27** | `COMPLETED.md` | the record this return is cut from: §515 (15c-r3 read, the marks re-cut, the flags); behind it §509 (15c-r2 built), §510 (the film harness's clock), §511 (the archive) |
-| **4 of 27** | `POLISIM_FEATURE_LIST.md` | the register: PN-1's row re-cut by 15c-r3; the two D20 rows |
-| **5 of 27** | `ElectionsData/pensions/README.md` | the six pension statutes, one rule per country with its own sentence |
-| **6 of 27** | `ElectionsData/pensions/statutory_ages.csv` | the statutes extracted by pattern - every age and year the board recites, and the years the flags turn on |
-| **7 of 27** | `r3c_sweden_1280_05b_budget_spending_pension.png` | 15c-r3 AS BUILT - Sweden at 1280, 2029, the game's own year: HELD, the mark bracketing the knob and protruding below it |
-| **8 of 27** | `r3c_sweden_1280_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - Sweden at 1280, 2026: HELD - the frame the held device is measured on (the knob ends y 651, the mark runs 647-655) |
-| **9 of 27** | `r3c_sweden_1280_05b_budget_spending_pension_2034.png` | 15c-r3 AS BUILT - Sweden at 1280, 2034: CARRIED - no half-ink mark, because Sweden's path has one point; the sentence carries the state alone |
-| **10 of 27** | `r3c_germany_1280_05b_budget_spending_pension.png` | 15c-r3 AS BUILT - Germany at 1280, 2029, the game's own year: CLOSED - the steps as columns, the end-mark beside the last |
-| **11 of 27** | `r3c_germany_1280_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - Germany at 1280, 2026: CLOSED - the cluster, and the cut label standing over the tick it names (centre 615, its tick 616) |
-| **12 of 27** | `r3c_germany_1280_05b_budget_spending_pension_2034.png` | 15c-r3 AS BUILT - Germany at 1280, 2034: COMPLETE - the half-ink step two months behind the knob, bracketing the face instead of shading it |
-| **13 of 27** | `r3c_france_1280_05b_budget_spending_pension.png` | 15c-r3 AS BUILT - France at 1280, 2029, the game's own year: CLOSED - three steps and the axis note alone in the band at 1280 |
-| **14 of 27** | `r3c_france_1280_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - France at 1280, 2026: CLOSED - the dense cluster, the run cut to its last figure |
-| **15 of 27** | `r3c_france_1280_05b_budget_spending_pension_2034.png` | 15c-r3 AS BUILT - France at 1280, 2034: COMPLETE - the citation and the sentence together at 1280 |
-| **16 of 27** | `r3c_italy_1280_05b_budget_spending_pension.png` | 15c-r3 AS BUILT - Italy at 1280, 2029, the game's own year: CARRIED - the half-ink step, `CARRIED FROM 2028` |
-| **17 of 27** | `r3c_italy_1280_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - Italy at 1280, 2026: RISING - the one-month step bracketing the knob and the three-month step a column on the track; the hairline one tick-pitch past the last tick |
-| **18 of 27** | `r3c_italy_1280_05b_budget_spending_pension_2034.png` | 15c-r3 AS BUILT - Italy at 1280, 2034: CARRIED - the same state five years on |
-| **19 of 27** | `r3c_poland_1280_05b_budget_spending_pension.png` | 15c-r3 AS BUILT - Poland at 1280, 2029, the game's own year: FIXED - `65 · NO PATH`, no mark on the track at all |
-| **20 of 27** | `r3c_poland_1280_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - Poland at 1280, 2026: FIXED |
-| **21 of 27** | `r3c_poland_1280_05b_budget_spending_pension_2034.png` | 15c-r3 AS BUILT - Poland at 1280, 2034: FIXED |
-| **22 of 27** | `r3c_usa_1280_05b_budget_spending_pension.png` | 15c-r3 AS BUILT - the USA at 1280, 2029, the game's own year: COMPLETE - the USA's own figures, `66 y 10 m · 2026` and `SCHEDULE COMPLETE 2027` |
-| **23 of 27** | `r3c_usa_1280_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - the USA at 1280, 2026: CLOSED - one step ahead |
-| **24 of 27** | `r3c_usa_1280_05b_budget_spending_pension_2034.png` | 15c-r3 AS BUILT - the USA at 1280, 2034: COMPLETE |
-| **25 of 27** | `r3c_sweden_2560_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - Sweden at 2560: the band at width: the citation prints WITH the answer, which is what your rule describes |
-| **26 of 27** | `r3c_italy_2560_05b_budget_spending_pension_2026.png` | 15c-r3 AS BUILT - Italy at 2560: the band at width - `DL 201/2011 ART. 24 ▏ NEXT: 2029 NO FIGURE YET` |
-| **27 of 27** | `r3c_france_2560_05b_budget_spending_pension.png` | 15c-r3 AS BUILT - France at 2560: the two clauses at width, in the row's order - the schedule's end first, the axis note last |
+| **1 of 22** | `CLAUDE_DESIGN_ASSET_REQUEST.md` | THE ASK - the D21 head at the top (seven rows, each with the measurement behind it, reconciled against D20); every earlier return and status kept beneath |
+| **2 of 22** | `ERRANDS.md` | E-41, this ask; E-40, the findings paste the pass never received |
+| **3 of 22** | `COMPLETED.md` | the record the rows are cut from: s526 the rows sheet, s527 the selector floor (row 7), s531 and s532 the People page measured (rows 4-6), s535 the pie (row 3), s536 the rail cell and the tab (rows 1-2), s537 this archive |
+| **4 of 22** | `POLISIM_FEATURE_LIST.md` | the register: the Playtest 6 rows, each marked with what closed and what waits on you |
+| **5 of 22** | `filmf1d_1280_08_energy.png` | ROW 1 - the rail at 1280 with ENERGY active: the caption's E in the stand-in ink where the icon will sit, the wash and the spine in the same ink |
+| **6 of 22** | `filmf1d_2560_08_energy.png` | ROW 1 - the same at 2560 |
+| **7 of 22** | `filmf1d_1280_07_politics.png` | ROW 1 - the cell inactive: the E in the swatch tint under POLITICS |
+| **8 of 22** | `filmf1d_1280_08_energy_mid.png` | ROW 2 - the tab scrolled to its middle at 1280: the zones and the load rows, the readouts D20 answered |
+| **9 of 22** | `filmf1d_1280_08_energy_lower.png` | ROW 2 - the tab scrolled to its foot: the system cost |
+| **10 of 22** | `filmf1d_1280_08_energy_instruments_provenance.png` | ROW 2 - the four instruments with PROVENANCE open - the dials the decisions would sit beside |
+| **11 of 22** | `filmf1d_2560_08_energy_lower.png` | ROW 2 - the foot at 2560 |
+| **12 of 22** | `filmb1b_04a_demographics_pie.png` | ROW 3 - BEFORE, the pie at 1280: the 120 px disc with three shares inside, the rest in the legend |
+| **13 of 22** | `c1_2560_04a_demographics_pie.png` | ROW 3 - BEFORE, the pie at 2560: the same disc, the captions scaled |
+| **14 of 22** | `filmg1_1280_04a_demographics_pie.png` | ROW 3 - AFTER, the stacked bar at 1280: the plate grammar's distribution band, the legend beneath |
+| **15 of 22** | `filmg1_2560_04a_demographics_pie.png` | ROW 3 - AFTER, the bar at 2560 |
+| **16 of 22** | `filmf1d_1280_04b_people_health_plate.png` | ROWS 4 and 6 - the health family at rest at 1280: the header without a figure cell, the Supporting readouts row with its five sub-figures |
+| **17 of 22** | `filmf1d_2560_04b_people_health_plate.png` | ROWS 4 and 6 - the same at 2560 |
+| **18 of 22** | `filmf1d_1280_04g_people_health_plate_provenance.png` | ROW 5 - the desk-global dagger open: every row disclosed at once, the seed foot under the plate |
+| **19 of 22** | `a1before_1280x720_01_country_selector.png` | ROW 7 - BEFORE the floor: the card at 1280x720 as Playtest 6 saw it, its labels rasterised below six device pixels |
+| **20 of 22** | `a1after_1280x720_01_country_selector.png` | ROW 7 - AFTER the floor, before the faces: every line at the caption floor, the figure label and the hue line on one size |
+| **21 of 22** | `filmf1d_1280_01_country_selector.png` | ROW 7 - as it stands at 1280: the floor and the faced controls |
+| **22 of 22** | `filmf1d_2560_01_country_selector.png` | ROW 7 - as it stands at 2560, where the card has room |
 
 ## What is left, and whose it is
 
-1. **The eleven flags** - yours to read: confirm them, or re-cut the ink against the frames. Nothing is asked.
-2. **The override state** - not built here either, and your board marks it so: it waits on the pensions driver, which is deferred by ruling.
-3. **D19 item 1** - stopped on this side on three citations the record does not hold; the banner is ruled here (B8 stays; a text chip now).
+1. **The seven rows** - yours to draw, in any order; row 1 is the one the rail shows every player today, and row 2 is the one Elias's play is waiting on.
+2. **Nothing is re-asked.** Where a row touches a form you drew (the plates on row 2, the distribution band on row 3), the frame shows it as built and the ask is the composition around it.
 
 **Binary artifacts travel as files, not descriptions**, and nothing here summarises in prose what the archive's files show.

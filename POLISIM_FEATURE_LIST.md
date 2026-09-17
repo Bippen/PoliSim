@@ -1077,6 +1077,12 @@ same source, not a second one. Every one of the fifteen pairs gets a sourced vol
 absence with its reason. **No figure is authored.** *Done when:* the matrix is seeded for all
 fifteen pairs, the diagnostic asserts symmetry and the national totals against the source, and the
 pair page draws a link wherever one exists.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §533: one Eurostat vintage - Comext for goods, `bop_its6_det` for
+services, stated separately, each direction as the exporter reports it, the USA's rows the five's own books
+read from the other side; `TradeMatrixTable` seeds all fifteen pairs in the book's dollars at the rate the
+book already carries; `TradeMatrixDiagnostic` holds the world to it (fifteen, symmetric, the table reproduced,
+each reporter's five inside its own totals, the USA's total an explicit absence). BASELINE, all six: the
+family dumped as `traj_p6d1` and the sentinel re-based in the same commit.**
 
 ## Track E — jobbskatteavdrag (finding 9)
 
@@ -1089,10 +1095,20 @@ municipal rate, phased as the statute phases it, with the 66+ enhancement stated
 lever (its size is the political instrument). *Done when:* the AER the row prints reproduces
 Skatteverket's own published table for a set of incomes, the credit's formula is verbatim from the
 statute, and its family is explained — Sweden alone moves.
+**→ ⚠ BUILT AND HELD 2026-09-17, `COMPLETED.md` §534: `EarnedIncomeCredit` carries the statute's arithmetic
+verbatim from Skatteverket's SKV 433 (income year 2025 - the intervals in prisbasbelopp, the grundavdrag it
+subtracts, the 66-plus schedule, the municipal cap) and `EarnedIncomeCreditDiagnostic` reproduces the
+document's three worked examples to the krona; Sweden's income row prints the rate with the credit beside
+the rate without. The yield does NOT read it yet: P6-D1 is this pass's BASELINE family and the sheet's
+rule is two never in one pass, so `EarnedIncomeCredit.Live` holds it until its family is dumped and ruled
+- that flip, with the lever's own sub-row, is the follow-up item.**
 
 **P6-E2 — The equivalents, billed.** Every country has some earned-income relief (the USA's EITC,
 Germany's *Arbeitnehmer-Pauschbetrag*, France's *abattement*, Poland's *koszty uzyskania*). Bill
 each with its exact source; build none until E1 is ruled on film.
+**→ ✅ BILLED 2026-09-17, `COMPLETED.md` §534: IRC § 32 with the year's Rev. Proc. parameters (the USA);
+§ 9a Satz 1 Nr. 1 Buchst. a EStG (Germany); CGI art. 83, 3° (France); ustawa o PIT art. 22 ust. 2 (Poland)
+- each named with what it is and why it is not Sweden's shape; none built, per the row.**
 
 ## Track F — the Energy tab (finding 10) — **DS-4b is overruled**
 
@@ -1104,6 +1120,15 @@ rail's legibility re-opens at the new cell count, and `AreaIconCoverageCheck` fa
 lands — which is correct, and the fallback is the honest hairline until it does. *Done when:* the
 cell is reachable, the page moves whole, films at both widths, and the coverage check's failure is
 recorded as a named gap rather than suppressed.
+
+**→ ✅ CLOSED 2026-09-18, `COMPLETED.md` §536 (`1073637`): SystemArea.Energy and the tab declared, the
+ninth rail cell ENERGY, the page moved whole to `DrawEnergyTab`, filmed at 1280 and 2560 with the
+containment guard silent at the rail. `AreaIconCoverageCheck` reports `icon_area_energy` MISSING on every
+bar - the NAMED GAP, standing until Design's icon lands (D21 row 1, which asks for the ink too; Energy
+borrows the Sectors ink meanwhile). The rail's fallback is the caption's initial, not a hairline, and its
+first film measured two defects, both closed: the initial drawn through the tab style's fixed height, and
+`LedgerRow.CellStyle`'s cache keyed on the font size alone, through which the Desk's verdict cell
+inherited the E's clone at 2560.**
 
 **P6-F2 — The tab's structure: clear, simple, and the choices are the point.** The layer holds
 everything the current plates draw; what it lacks is **anything a player does.** The `ABSENT` row
@@ -1120,6 +1145,10 @@ Each is its own item; **none is invented** — every one is a stage the spec-let
 *Done when:* a player can open Energy from the rail, see the system, and make a decision that
 changes it.
 
+**→ ⏸ NOT BUILT this pass (2026-09-18, `COMPLETED.md` §536): the tab exists and draws the layer; its
+decisions wait on D21 row 2 (the composition with the decisions as the spine) and on the IRENA costs
+still billed. Nothing of it is invented meanwhile.**
+
 ## Track G — the pie (finding 5)
 
 **P6-G1 — A pie below a size reads as a bar.** Board 8a ruled the pie's form (largest first from
@@ -1128,6 +1157,11 @@ right — at size. The instance finding 5 names is too small for any pie to read
 threshold at which 8a's own rule stops working, then **below it the distribution draws as the
 stacked bar the grammar already has**. *Done when:* the threshold is measured, both forms are
 filmed, and no pie renders below it.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §535 (`8611134`): the threshold measured off the films' own label
+tables - the inside share label against the 45° chord at 0.62 r of the disc - and found over its chord at
+every filmed width, because the disc is a constant and the caption scales; `PieChartRenderer` now measures
+the widest share against its own chord and, where it does not fit, draws the plate grammar's stacked bar.
+Both forms filmed at 1280 and 2560. The disc's size and the OTHER hatch on a bar are D21 row 3.**
 
 ## Track H — the D21 ask
 
@@ -1136,6 +1170,9 @@ page's spine, not the readouts), `icon_area_energy` and the rail at its new cell
 size threshold if the measurement says the bar needs a form, and whatever P6-C2's measurement
 says needs a new form. **Nothing already answered is re-asked.** The package is **one zip**,
 verified both ways — the route that worked for E-37 and E-38. Sending stays Elias's.
+
+**→ ✅ INSTALLED 2026-09-17/18, `COMPLETED.md` §536: the D21 head (seven rows, reconciled against D20)
+is at the top of `CLAUDE_DESIGN_ASSET_REQUEST.md`; the send is E-41. The archive is cut on §511's route: `AssetPackArchive/D21_ask.zip`, twenty-two artefacts (the four documents and eighteen frames, one to four per row) with `SEND_PACKAGE.md` at its root and `MANIFEST.sha256` beside it, verified on the way in and out - §537.**
 
 ---
 
