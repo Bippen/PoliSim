@@ -408,22 +408,56 @@ namespace PoliSim.Data
         /// <see cref="QuadraturePoints"/> quantile midpoints. Zero where no cohort has an income or the shape does not respond.
         /// </summary>
         public static double AverageEffectiveRate(Country country, double shiftPoints, double incomeScale, double thresholdScale, IReadOnlyList<float> overrides = null)
+            => AverageEffectiveRateCore(country, shiftPoints, incomeScale, thresholdScale, overrides, withCredit: EarnedIncomeCredit.Live && CarriesCredit(country.Id));
+
+        /// <summary>P6-E1 (2026-09-17): the same average effective rate WITH the earned income credit set off against the municipal layer, cohort by cohort
+        /// (the 66-plus schedule from the first band at or above 65). The readout prints it beside the rate without, so the gap the credit makes is on the
+        /// screen; the yield path reads it only when <see cref="EarnedIncomeCredit.Live"/> (see that class for why it is held).</summary>
+        public static double AverageEffectiveRateWithCredit(Country country, double shiftPoints, double incomeScale, double thresholdScale, IReadOnlyList<float> overrides = null)
+            => AverageEffectiveRateCore(country, shiftPoints, incomeScale, thresholdScale, overrides, withCredit: CarriesCredit(country.Id));
+
+        /// <summary>Which statutes carry the earned income credit as built: Sweden's two-layer schedule (P6-E1); the equivalents elsewhere are BILLED (P6-E2).</summary>
+        public static bool CarriesCredit(CountryId id) => id == CountryId.Sweden && Of(id).Kind == TaxScheduleKind.TwoLayer;
+
+        /// <summary>P6-E1: the effective rate at the headcount-weighted mean income WITH the credit - the readout's second figure. The mean income is a working-age
+        /// income for the purpose (the under-66 schedule), stated: it is one figure for the row, not the cohort integral.</summary>
+        public static double AverageEffectiveRateWithCreditAtMeanIncome(Country country, TaxLine line, float rate)
+        {
+            if (!Responds(country.Id) || !CarriesCredit(country.Id)) { return AverageEffectiveRateAtMeanIncome(country, line, rate); }
+            double income = AverageIncome(country, IncomeScale(country));
+            if (income <= 0) { return 0; }
+            Statute s = Of(country.Id);
+            double shift = rate - RateSeedOf(line);
+            double municipal = RowRate(s, SubRows(s)[0], line.BracketRates, 0) + shift;
+            double tax = Tax(s, income, shift, ThresholdScale(country), line.BracketRates) - EarnedIncomeCredit.Credit(income, municipal, turned66: false);
+            return 100.0 * tax / income;
+        }
+
+        /// <summary>The first cohort band whose ages have turned 66 at the start of the income year - the band starting at 65 is taken as turned, a one-year
+        /// approximation on a five-year band, stated here rather than hidden.</summary>
+        private const int FirstTurned66Band = 13;
+
+        private static double AverageEffectiveRateCore(Country country, double shiftPoints, double incomeScale, double thresholdScale, IReadOnlyList<float> overrides, bool withCredit)
         {
             Statute s = Of(country.Id);
             if (!Responds(country.Id) || country.Cohorts == null) { return 0; }
             double conversion = StatutePerIncomeUnit(country.Id);
+            double municipalRate = withCredit ? RowRate(s, SubRows(s)[0], overrides, 0) + shiftPoints : 0;
             double taxSum = 0, incomeSum = 0;
             for (int cohort = 0; cohort < PopulationCohorts.CohortCount; cohort++)
             {
                 if (!CohortIncome(country, cohort, conversion, incomeScale, out double median, out double sigma)) { continue; }
                 double count = country.Cohorts.Counts[cohort];
                 if (count <= 0) { continue; }
+                bool turned66 = cohort >= FirstTurned66Band;
                 double t = 0, y = 0;
                 for (int i = 0; i < QuadraturePoints; i++)
                 {
                     double p = (i + 0.5) / QuadraturePoints;
                     double income = median * Math.Exp(sigma * InverseNormal(p));
-                    t += Tax(s, income, shiftPoints, thresholdScale, overrides);
+                    double tax = Tax(s, income, shiftPoints, thresholdScale, overrides);
+                    if (withCredit) { tax -= EarnedIncomeCredit.Credit(income, municipalRate, turned66); }
+                    t += tax;
                     y += income;
                 }
                 taxSum += count * t / QuadraturePoints;

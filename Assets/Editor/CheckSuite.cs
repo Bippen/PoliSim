@@ -255,6 +255,7 @@ namespace PoliSim.EditorTools
             ("EnergyLayerCheck", EnergyLayerCheck.Run),
             ("ChamberVerdictCacheCheck", ChamberVerdictCacheCheck.Run),   // PF-1 (2026-09-17, §525): the screens' cached chamber answers are the model's own, through a draft, a seat and a party change
             ("TradeMatrixDiagnostic", TradeMatrixDiagnostic.Run),   // P6-D1 (2026-09-17, §533): fifteen sourced pairs, symmetric, the table reproduced, each reporter's five inside its own totals
+            ("EarnedIncomeCreditDiagnostic", EarnedIncomeCreditDiagnostic.Run),   // P6-E1 (2026-09-17, §534): jobbskatteavdraget to the krona against SKV 433's examples; held off the yield until ruled
 
             // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. ⚠ A prose
             // mention used to count as a reference in FOUR name-scanning checks - a commented-out

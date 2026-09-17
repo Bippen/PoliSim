@@ -10544,6 +10544,8 @@ namespace PoliSim.UI
                 grain: taxLine.DialGrain,
                 grainUnit: taxLine.IsPerTonne ? EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t" : null,
                 // F4-4 / board 15b: the statute's kind under the name; the average effective rate at the mean income under the figure - the row's one figure
+                // P6-E1 (2026-09-17): the rate WITH the credit does not fit beside this one - the figure cell is 52 px at 1280 and the pair needed 115, which the
+                // film's overflow guard reported on six captures - so it rides the statute's own foot line under the curve below, where a sentence wraps.
                 figureSecondLine: schedule ? "AER " + TaxSchedule.AverageEffectiveRateAtMeanIncome(_playerCountry, taxLine, draftRate).ToString("0.0", CultureInfo.InvariantCulture) : null,   // the average effective rate at the mean income, in the figure cell's 52 px at 1280
                 nameSecondLine: schedule ? TaxSchedule.KindWord(TaxSchedule.Of(_playerCountry.Id).Kind) : null);
             if (schedule && Event.current.type == EventType.Repaint) { _incomeTaxTrackRect = LedgerRow.LastTrackRect; }
@@ -10602,6 +10604,17 @@ namespace PoliSim.UI
             // ---- the curve: the marginal rate over income, the standing statute solid, the draft dashed where it differs ----------------
             GUIStyle footFace = DeskCaptionWrapped(6.5f, PoliSimTheme.TextMuted);
             string footText = (statute.CitationLine ?? "X: THE TARIFF'S OWN CURRENCY, TO ITS TOP THRESHOLD × 1.5");
+            // P6-E1 (2026-09-17): where the statute carries the earned income credit, the foot says what the credit does to the mean income's rate - the
+            // rate with it against the rate without - and that the yield does not read it yet. A sentence, so it rides the wrapped foot and not the figure
+            // cell (the first form put the pair in the cell and overflowed it by 63 px at 1280).
+            if (TaxSchedule.CarriesCredit(country.Id))
+            {
+                double without = TaxSchedule.AverageEffectiveRateAtMeanIncome(country, taxLine, draftLever);
+                double with = TaxSchedule.AverageEffectiveRateWithCreditAtMeanIncome(country, taxLine, draftLever);
+                footText += " · THE EARNED INCOME CREDIT (JOBBSKATTEAVDRAGET, SKV 433 " + EarnedIncomeCredit.IncomeYear.ToString(CultureInfo.InvariantCulture) + "): "
+                    + with.ToString("0.0", CultureInfo.InvariantCulture) + " % WITH IT AGAINST " + without.ToString("0.0", CultureInfo.InvariantCulture)
+                    + " % WITHOUT AT THE MEAN INCOME · " + (EarnedIncomeCredit.Live ? "IN THE YIELD" : "HELD OFF THE YIELD UNTIL ITS FAMILY IS RULED");
+            }
             // the foot's height is measured at a width no wider than the band it is drawn in (the band is 37 % of the window at 1280; 36 % wraps at least as much)
             float footH = Mathf.Ceil(footFace.CalcHeight(new GUIContent(footText), Mathf.Max(10f, UiScreen.Width * 0.36f))) + StatsUnit(2f);
             float curveH = StatsUnit(44f) + capH + footH;
