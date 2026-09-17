@@ -1,5 +1,15 @@
 # PoliSim
 
+> ## START HERE — the reading order for a session's start (ruled 2026-09-17, `COMPLETED.md` §524 (c), built §525)
+>
+> 1. **Run the session brief:** `powershell -NoProfile -File Tools/session_brief.ps1`. It prints, read at the moment it runs: the branch against origin and anything uncommitted, whether Unity holds the project, the last commits, the last bars and their exits, the newest record sections with their line numbers, the residue the last bar printed, the errands still open, the trajectory sentinel's baseline, and the newest memory file.
+> 2. **Read this file down to `## Genre & Scope`** - the standing rulings and notes. Below that line it is reference: search it by name, never read it through, never dump its heading outline.
+> 3. **Read `# THE WORKING DISCIPLINE`** at the end of `POLISIM_FEATURE_LIST.md` - the rules every pass is bound by.
+> 4. **Read the newest memory file, then the record sections the brief names** - each by its line number. `COMPLETED.md` is never read whole.
+> 5. **Before every commit, `powershell -NoProfile -File Tools/bar_tier.ps1 -Staged`**, and run what it says the commit owes.
+>
+> The brief stores nothing and decides nothing: every line is read from where it lives, so it cannot go stale, and a source it cannot read it names. What the order replaces is §524 (c)'s measurement - sessions spending their first quarter hour and up to 1.2 MB re-deriving this from transcripts and the heading outline.
+
 > ## ⚠ READ FIRST — what "N anomalies detected" actually means
 >
 > This file quotes anomaly counts in roughly a hundred places as evidence that a change was safe. **That
