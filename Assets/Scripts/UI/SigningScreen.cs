@@ -461,44 +461,17 @@ namespace PoliSim.UI
         /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips. The label reads "SIGN" only for a passed division - "FILE" for a rejected one, matching the plate's own REJECTED stamp rather than claiming an enactment that did not happen. Returns the button's CanvasGroup - §A.13 row 6's fade handle (the controls fade in last).</summary>
         private static CanvasGroup BuildSignButton(Transform parent, Action onSign, bool passed)
         {
-            Sprite normal = CanvasChrome.Sliced("ui_btn_brass_canvas", 24f, 24f, 24f, 24f);
-            Sprite hover = CanvasChrome.Sliced("ui_btn_brass_canvas_hover", 24f, 24f, 24f, 24f);
-            Sprite pressed = CanvasChrome.Sliced("ui_btn_brass_canvas_pressed", 24f, 24f, 24f, 24f);
-
-            var button = new GameObject("SignButton");
-            button.transform.SetParent(parent, false);
-            button.AddComponent<RectTransform>().sizeDelta = new Vector2(220f, 56f);
-            // Not through the tint accessors: a Button face must keep raycastTarget true, and the
-            // missing-sprite degradation needs the brass fill, not locked white.
-            Image face = button.AddComponent<Image>();
-            if (normal != null)
-            {
-                face.sprite = normal;
-                face.type = Image.Type.Sliced;
-                face.pixelsPerUnitMultiplier = 2f;
-            }
-            else
-            {
-                face.color = PoliSimTheme.Hex(0x8A6B2F);
-            }
-
-            Button control = button.AddComponent<Button>();
-            if (normal != null && hover != null && pressed != null)
-            {
-                control.transition = Selectable.Transition.SpriteSwap;
-                control.spriteState = new SpriteState { highlightedSprite = hover, pressedSprite = pressed };
-            }
-
+            // P6-A2: the face, its states and its degradation live in `CanvasChrome.FacedButton` now - this
+            // method was the pattern the other Canvas screens copied, and a copied pattern is what let the
+            // selector's controls end up with no face at all.
+            Button control = CanvasChrome.FacedButton(parent, "SignButton", passed ? "SIGN" : "FILE",
+                PoliSimTheme.Display, 18, PoliSimTheme.Hex(0xF0E7D8), new Vector2(220f, 56f));
             control.onClick.AddListener(() => onSign());
-
-            Text label = CanvasChrome.MakeText(button.transform, "Label", passed ? "SIGN" : "FILE", PoliSimTheme.Display, 18,
-                PoliSimTheme.Hex(0xF0E7D8), TextAnchor.MiddleCenter, FontStyle.Bold);
-            Stretch((RectTransform)label.transform);
 
             // Row 6's handle: the group starts invisible and non-interactable; DocumentEntrance brings
             // it in once the document has settled, so a click cannot land on a button that is not yet
             // there (input locks are the envelope's first row).
-            CanvasGroup group = button.AddComponent<CanvasGroup>();
+            CanvasGroup group = control.gameObject.AddComponent<CanvasGroup>();
             group.alpha = 0f;
             group.interactable = false;
             group.blocksRaycasts = false;

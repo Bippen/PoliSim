@@ -86,20 +86,32 @@ namespace PoliSim.UI
             titleRect.anchorMin = new Vector2(0f, 1f);
             titleRect.anchorMax = new Vector2(1f, 1f);
             titleRect.pivot = new Vector2(0.5f, 1f);
-            titleRect.anchoredPosition = new Vector2(0f, -56f);
-            titleRect.sizeDelta = new Vector2(0f, 140f);
+            // P6-A2: the scenario controls are faces now, not lines, so the block is taller by the face's
+            // padding and starts correspondingly higher. ⚠ The grid below is anchored to the centre and did
+            // not move; the block grows into the gap above it, not into it.
+            titleRect.anchoredPosition = new Vector2(0f, -40f);
+            titleRect.sizeDelta = new Vector2(0f, 172f);
             VerticalLayoutGroup titleLayout = title.AddComponent<VerticalLayoutGroup>();
             titleLayout.childAlignment = TextAnchor.UpperCenter;
             titleLayout.spacing = 8f;
             titleLayout.childControlHeight = true;
             titleLayout.childControlWidth = true;
             titleLayout.childForceExpandHeight = false;
+            // P6-A2: the scenario controls carry a face, and a face stretched across the whole screen is a
+            // bar, not a button; each child keeps its own preferred width and the column centres it.
+            titleLayout.childForceExpandWidth = false;
 
-            CanvasChrome.MakeText(title.transform, "Wordmark", "PoliSim", PoliSimTheme.Display, 54,
+            // ⚠ THE MINIMUMS ARE LOAD-BEARING (P6-A2). A `VerticalLayoutGroup` that cannot fit its children
+            // shrinks the ones with no minimum toward zero, and a `Text` squeezed under its own line height
+            // is CLIPPED, silently - which is what the canvas-text guard caught the moment the scenario
+            // lines grew faces. The wordmark and the subtitle now state what a line of their type needs.
+            Text wordmark = CanvasChrome.MakeText(title.transform, "Wordmark", "PoliSim", PoliSimTheme.Display, 54,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
+            wordmark.gameObject.AddComponent<LayoutElement>().minHeight = WordmarkMinHeight;
             MakeRulePair(title.transform);
-            CanvasChrome.MakeText(title.transform, "Subtitle", "Choose your country", PoliSimTheme.Body, 14,
+            Text subtitle = CanvasChrome.MakeText(title.transform, "Subtitle", "Choose your country", PoliSimTheme.Body, 14,
                 PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+            subtitle.gameObject.AddComponent<LayoutElement>().minHeight = SubtitleMinHeight;
 
             // STEP 3: the scenario strip — one text line per authored scenario, under the subtitle.
             // Deliberately NOT a seventh folder: the grid is a 3×2 that exactly fits six countries,
@@ -202,10 +214,13 @@ namespace PoliSim.UI
             columnRect.sizeDelta = new Vector2(1200f, 800f);
             VerticalLayoutGroup layout = column.AddComponent<VerticalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 10f;
+            // P6-A2: the rows carry a face now, so they are taller than the lines they replace; the spacing
+            // comes down to keep the longest chamber inside the column.
+            layout.spacing = 6f;
             layout.childControlHeight = true;
             layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = false;
 
             int seats = 0;
             foreach (PoliticalParty party in PartySystems.For(country.Id)) { seats += party.SeedSeats; }
@@ -217,23 +232,31 @@ namespace PoliSim.UI
                 $"THE CHAMBER AS ELECTED · {seats} SEATS · LARGEST FIRST · IN THE CABINET = THE CABINET THE CHAMBER FORMS FROM THESE SEATS",
                 PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
 
+            // P6-A2: every row is the control it is - the delivered brass face under the party's line,
+            // not a sentence in interactive ink. The row height is the face's, and the column's spacing
+            // is cut to match, so the longest chamber (France's fifteen) still stands inside the column.
             foreach (PoliticalParty party in PartiesBySeats(country.Id))
             {
-                Text line = CanvasChrome.MakeText(column.transform, $"Party_{party.Abbrev}", PartyLine(party, cabinet), PoliSimTheme.Display, 20,
-                    PoliSimTheme.Hex(0xC8A24A), TextAnchor.MiddleCenter);
-                line.raycastTarget = true;
-                Button button = line.gameObject.AddComponent<Button>();
-                button.targetGraphic = line;
+                Button button = CanvasChrome.FacedButton(column.transform, $"Party_{party.Abbrev}",
+                    PartyLine(party, cabinet), PoliSimTheme.Display, 20,
+                    PoliSimTheme.Hex(0xF0E7D8), new Vector2(PartyRowWidth, PartyRowHeight));
+                LayoutElement rowLayout = button.gameObject.AddComponent<LayoutElement>();
+                rowLayout.preferredWidth = PartyRowWidth;
+                rowLayout.preferredHeight = PartyRowHeight;
+                rowLayout.minHeight = PartyRowHeight;
+
                 string abbrev = party.Abbrev;
                 CountryId id = country.Id;
                 button.onClick.AddListener(() => { if (onSelect != null) { onSelect(id, abbrev); } });
             }
 
-            Text back = CanvasChrome.MakeText(column.transform, "Back", "BACK TO THE COUNTRIES", PoliSimTheme.Display, 14,
-                PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
-            back.raycastTarget = true;
-            Button backButton = back.gameObject.AddComponent<Button>();
-            backButton.targetGraphic = back;
+            Button backButton = CanvasChrome.FacedButton(column.transform, "Back", "BACK TO THE COUNTRIES",
+                PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight),
+                CanvasChrome.Face.Paper);
+            LayoutElement backLayout = backButton.gameObject.AddComponent<LayoutElement>();
+            backLayout.preferredWidth = BackButtonWidth;
+            backLayout.preferredHeight = PartyRowHeight;
+            backLayout.minHeight = PartyRowHeight;
             backButton.onClick.AddListener(HidePartyPanel);
         }
 
@@ -247,18 +270,51 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>One scenario line: a text button in the brass ink the screen already uses for
-        /// interactive type, with no new art. `Text` carries its own raycast target, so the Button
-        /// needs no separate face image — the lightest control this screen can host.</summary>
+        /// <summary>What a line of the wordmark's type needs, in canvas units - its own size plus the
+        /// face's ascent and descent. See the minimums note at the call site.</summary>
+        private const float WordmarkMinHeight = 62f;
+
+        /// <summary>See <see cref="WordmarkMinHeight"/>; the subtitle's line at 14 units.</summary>
+        private const float SubtitleMinHeight = 18f;
+
+        /// <summary>A party row's face, in canvas units at the board basis: the widest chamber line at 20
+        /// units fits inside it, and the height is one line plus the face's padding.</summary>
+        private const float PartyRowWidth = 880f;
+
+        /// <summary>See <see cref="PartyRowWidth"/>.</summary>
+        private const float PartyRowHeight = 30f;
+
+        /// <summary>The way back out of the picker: the same height as a row, narrower, and on the paper
+        /// face rather than the brass - 6b's own split, where the brass is the committing control and the
+        /// paper face carries the navigation.</summary>
+        private const float BackButtonWidth = 340f;
+
+        /// <summary>The scenario control's face, in canvas units at the board basis: wide enough for the
+        /// longest authored scenario name at 18 units, one line tall plus the face's own padding.</summary>
+        private const float ScenarioButtonWidth = 460f;
+
+        /// <summary>See <see cref="ScenarioButtonWidth"/>.</summary>
+        private const float ScenarioButtonHeight = 34f;
+
+        /// <summary>
+        /// One scenario line, on the chrome's own brass face (P6-A2, 2026-09-17).
+        ///
+        /// <para>⚠ <b>It used to be a bare sentence.</b> The first form was a `Text` with a `Button` bolted
+        /// on and nothing behind it - *"the lightest control this screen can host"*, which is exactly what
+        /// playtest 6's finding 2 reports: prose the player cannot tell is a control. The face is the
+        /// delivered per-state brass strip the signing plate and election night already wear; no new art is
+        /// drawn here.</para>
+        /// </summary>
         private static void BuildScenarioLine(Transform parent, ScenarioDefinition definition, Action<ScenarioDefinition> onScenario)
         {
-            Text label = CanvasChrome.MakeText(parent, $"Scenario_{definition.Id}",
+            Button button = CanvasChrome.FacedButton(parent, $"Scenario_{definition.Id}",
                 $"Scenario:  {definition.Name}", PoliSimTheme.Display, 18,
-                PoliSimTheme.Hex(0xC8A24A), TextAnchor.MiddleCenter);
-            label.raycastTarget = true;
+                PoliSimTheme.Hex(0xF0E7D8), new Vector2(ScenarioButtonWidth, ScenarioButtonHeight));
+            LayoutElement layout = button.gameObject.AddComponent<LayoutElement>();
+            layout.preferredWidth = ScenarioButtonWidth;
+            layout.preferredHeight = ScenarioButtonHeight;
+            layout.minHeight = ScenarioButtonHeight;
 
-            Button button = label.gameObject.AddComponent<Button>();
-            button.targetGraphic = label;
             ScenarioDefinition captured = definition;
             button.onClick.AddListener(() => onScenario(captured));
         }

@@ -195,6 +195,79 @@ namespace PoliSim.UI
             return image;
         }
 
+        /// <summary>Which delivered face a Canvas control wears. The strips are Design's, delivered per state
+        /// (`ui_btn_brass_canvas` / `ui_btn_paper_canvas`, each with `_hover` and `_pressed`).</summary>
+        public enum Face
+        {
+            /// <summary>Brass: the screen's own interactive ink - what the signing plate and election night already wear.</summary>
+            Brass,
+
+            /// <summary>Paper: a control that sits on the desk's paper rather than over it.</summary>
+            Paper,
+        }
+
+        /// <summary>
+        /// **THE CANVAS FACED BUTTON, in one place (P6-A2, 2026-09-17).** A sliced face from the delivered
+        /// per-state strips, `SpriteSwap` between them, and a centred label stretched over it - the pattern
+        /// `SigningScreen` and `ElectionNightScreen` each carried inline before this existed.
+        ///
+        /// <para>⚠ <b>Why it is a seam and not a convenience.</b> Playtest 6's finding 2 is that controls
+        /// draw as prose: the selector's scenario lines, the picker's party rows and its way back were
+        /// `Text` with a `Button` bolted on and nothing behind them, so nothing said they could be
+        /// clicked. A control built here cannot be that by accident - the face is the first argument
+        /// the caller cannot omit.</para>
+        ///
+        /// <para>⚠ <b>Degradation is the standing one.</b> A missing strip leaves the face's fill colour
+        /// rather than white or nothing: a control still reads as a control when its art is absent.</para>
+        /// </summary>
+        public static Button FacedButton(Transform parent, string name, string label, Font font, int size,
+            Color ink, Vector2 sizeDelta, Face face = Face.Brass, FontStyle style = FontStyle.Bold)
+        {
+            // ⚠ THE SIX NAMES ARE WRITTEN OUT, and that is not verbosity. The delivered-asset inventory and
+            // the coverage checks read the SOURCE for the names an asset is reached by; the first form of
+            // this method built them as `stem + "_hover"`, and the regenerated inventory immediately
+            // reported `ui_btn_brass_canvas_hover` and `_pressed` as held-but-unreached while the running
+            // game was drawing them. A name assembled at runtime is a name no census can see.
+            bool brass = face == Face.Brass;
+            Sprite normal = Sliced(brass ? "ui_btn_brass_canvas" : "ui_btn_paper_canvas", 24f, 24f, 24f, 24f);
+            Sprite hover = Sliced(brass ? "ui_btn_brass_canvas_hover" : "ui_btn_paper_canvas_hover", 24f, 24f, 24f, 24f);
+            Sprite pressed = Sliced(brass ? "ui_btn_brass_canvas_pressed" : "ui_btn_paper_canvas_pressed", 24f, 24f, 24f, 24f);
+
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.AddComponent<RectTransform>().sizeDelta = sizeDelta;
+
+            // Not through the tint accessors: a Button face keeps raycastTarget true, and the missing-sprite
+            // degradation needs the face's own fill rather than a locked white.
+            Image faceImage = go.AddComponent<Image>();
+            if (normal != null)
+            {
+                faceImage.sprite = normal;
+                faceImage.type = Image.Type.Sliced;
+                faceImage.pixelsPerUnitMultiplier = 2f;
+            }
+            else
+            {
+                faceImage.color = face == Face.Brass ? PoliSimTheme.Hex(0x8A6B2F) : PoliSimTheme.Hex(0xD9CBAC);
+            }
+
+            Button control = go.AddComponent<Button>();
+            control.targetGraphic = faceImage;
+            if (normal != null && hover != null && pressed != null)
+            {
+                control.transition = Selectable.Transition.SpriteSwap;
+                control.spriteState = new SpriteState { highlightedSprite = hover, pressedSprite = pressed };
+            }
+
+            Text text = MakeText(go.transform, "Label", label, font, size, ink, TextAnchor.MiddleCenter, style);
+            var textRect = (RectTransform)text.transform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+            return control;
+        }
+
         private static Image MakeImage(Transform parent, string name, Sprite sprite, bool sliced)
         {
             var go = new GameObject(name);

@@ -937,44 +937,19 @@ namespace PoliSim.UI
             BuildContinueButton(foot.transform, screen.Dismiss);
         }
 
-        /// <summary>The canvas brass button, the signing screen's own pattern (SigningScreen.BuildSignButton): uGUI Button + SpriteSwap over the delivered per-state strips, a flat brass face when the strips are missing.</summary>
+        /// <summary>The canvas brass button, through the ONE definition of it since P6-A2 (2026-09-17):
+        /// `CanvasChrome.FacedButton`. This file used to carry its own copy of `SigningScreen.BuildSignButton`
+        /// - the same strips, the same SpriteSwap, the same flat-brass degradation - and the playtest's
+        /// finding 2 is what made a third copy unacceptable rather than merely untidy.</summary>
         private static void BuildContinueButton(Transform parent, Action onContinue)
         {
-            Sprite normal = CanvasChrome.Sliced("ui_btn_brass_canvas", 24f, 24f, 24f, 24f);
-            Sprite hover = CanvasChrome.Sliced("ui_btn_brass_canvas_hover", 24f, 24f, 24f, 24f);
-            Sprite pressed = CanvasChrome.Sliced("ui_btn_brass_canvas_pressed", 24f, 24f, 24f, 24f);
-
-            var button = new GameObject("ContinueButton");
-            button.transform.SetParent(parent, false);
-            button.AddComponent<RectTransform>().sizeDelta = new Vector2(200f, 48f);
-            LayoutElement size = button.AddComponent<LayoutElement>();
+            Button control = CanvasChrome.FacedButton(parent, "ContinueButton", "CONTINUE", PoliSimTheme.Display, 16,
+                PoliSimTheme.Hex(0xF0E7D8), new Vector2(200f, 48f));
+            LayoutElement size = control.gameObject.AddComponent<LayoutElement>();
             size.minWidth = 200f;
             size.preferredWidth = 200f;
             size.minHeight = 48f;
-            Image face = button.AddComponent<Image>();
-            if (normal != null)
-            {
-                face.sprite = normal;
-                face.type = Image.Type.Sliced;
-                face.pixelsPerUnitMultiplier = 2f;
-            }
-            else
-            {
-                face.color = PoliSimTheme.Hex(0x8A6B2F);
-            }
-
-            Button control = button.AddComponent<Button>();
-            if (normal != null && hover != null && pressed != null)
-            {
-                control.transition = Selectable.Transition.SpriteSwap;
-                control.spriteState = new SpriteState { highlightedSprite = hover, pressedSprite = pressed };
-            }
-
             control.onClick.AddListener(() => onContinue());
-
-            Text label = CanvasChrome.MakeText(button.transform, "Label", "CONTINUE", PoliSimTheme.Display, 16,
-                PoliSimTheme.Hex(0xF0E7D8), TextAnchor.MiddleCenter, FontStyle.Bold);
-            Stretch((RectTransform)label.transform);
         }
 
         private static void Stretch(RectTransform rect)
