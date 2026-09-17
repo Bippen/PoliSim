@@ -29674,3 +29674,172 @@ The two normalised logs are identical but for two differences, each accounted fo
 **Not built, by ruling:** the memory index at one line an entry - a fourth thing to keep true.
 
 **Bars.** `bar_pf1b` 41 of 41 with `drypf1b` and `filmpf1b` (PF-1, `f02efeb`); `cache_after_clean` 41 of 41 (the source cache, `d78105e`); `b1_after_clean` 41 of 41 (`DeadStateCheck`, `73ed866`); `bar_b2` 41 of 41 and `b2_simbar_after` 54 of 54 (the centuries, `af9e155`); `bar_c` 41 of 41 (the brief, `2734841`); this record's document batch `docbar_rec525`.
+
+## 526. PLAYTEST 6 RECORDED AND INSTALLED — the sitting's sheet byte for byte, the three rulings that came with it (DS-4b overruled, finding 6 as D16's `†` rule applied globally, measure before fixing on A1, C1 and G1), and the one thing the pass was NOT given: the findings' own words (2026-09-17)
+
+**The kickoff** (Elias, 2026-09-17, verbatim): *"Append PLAYTEST6_ROWS.md to POLISIM_FEATURE_LIST.md; record the ten findings and their screenshots verbatim first (Elias saves them to Elias Screenshots\). DS-4b is overruled — Energy gets its own rail cell, with icon_area_energy as a real asset gap and the coverage check's failure recorded as a named gap, never suppressed. Finding 6 is D16's † rule applied globally — census every at-rest caption, classify qualifier vs provenance, move the provenance; nothing is deleted. Then Track A → H in order; measure before fixing on A1, C1 and G1. One commit per item, one green bar, R-SP1 push, one report."*
+
+### ⚠ What this pass was not given, said before anything is built on it
+
+**The ten findings' own text did not arrive, and the screenshots are not on disk.** The sheet below names each finding by number and says what it showed; that is the whole of what was pasted. `G:\UNITY\Projects\PoliSim-captures\Elias Screenshots` holds nothing newer than 2026-09-10, so no Playtest 6 frame has been saved there yet.
+
+⚠ **The findings are therefore recorded as the SHEET'S ATTRIBUTION, never as Elias's words.** Paraphrasing a finding and filing it as verbatim would be the project's own signature defect — documentation of an absence functioning as evidence of a presence (S-36) — and the instruction was to record his words, which this pass cannot do without them. `ERRANDS.md` E-40 asks for the paste and the screenshots; when they land they go into this section, and nothing below is blocked by their absence, because every row states its own done-when.
+
+**What the sheet attributes to each finding** (the sheet's words, reduced to the claim each row acts on):
+
+| finding | what the sheet says it showed | the row that acts on it |
+|---|---|---|
+| 1 | blurry text on the Canvas screens - the country selector and the party picker | P6-A1 |
+| 2 | controls that are text, not buttons: the selector's scenario lines, `BACK TO THE COUNTRIES` on the party picker | P6-A2 |
+| 3 | the map holds no trade link between Sweden and Italy, and fifteen pairs carry gaps | P6-D1 |
+| 4 | the budget-process interrupt panel runs over the tab strip and its `HOLDS TIME` stamp sits outside the panel | P6-A3 |
+| 5 | a pie drawn too small to read as a pie | P6-G1 |
+| 6 | the long mono provenance captions under bands, plates and instruments sit at rest on every surface | P6-B1 |
+| 7, 8 | the People page's density - six families, about thirty rows, each carrying figure, band, tick, peer dots, reach chips, sparkline, honesty tags and a source line | P6-C1, P6-C2 |
+| 9 | the Swedish income-tax row prints an effective average rate that the statute alone cannot explain - *jobbskatteavdrag* is not built | P6-E1, P6-E2 |
+| 10 | the Energy page has no rail cell and nothing a player does | P6-F1, P6-F2 |
+
+### The three rulings that came with the sheet
+
+1. **DS-4b is OVERRULED.** Energy gets its own rail cell. The consequences are taken whole and none is softened: the area member is declared, `icon_area_energy` becomes a genuine asset gap and a D21 row, the rail's legibility re-opens at the new cell count, and **`AreaIconCoverageCheck` fails until the icon lands - that failure is recorded as a named gap and never suppressed.** ⚠ This is the one standing exception to *one green bar per commit* in this pass: from P6-F1 until Design's icon arrives, the cheap bar carries exactly one named failure, and every bar line in this record says so explicitly rather than reporting a clean count.
+2. **Finding 6 is D16's `†` rule applied globally** - census every at-rest caption, classify each as qualifier or provenance, move the provenance behind the desk-global `†`. **Nothing is deleted.**
+3. **Measure before fixing on P6-A1, P6-C1 and P6-G1**, and the measurement is in the record before the fix is written.
+
+### Installed
+
+`POLISIM_FEATURE_LIST.md` carries the sheet as its next section, before the appendix. It is verbatim with one character-level departure, disclosed at the section's head: the sheet's backticked reference to the energy area's member stands there without its backticks, because a live document may not name a member before it exists (the claim convention, and `DocumentClaimCheck` binds live documents against today's code at a ceiling of zero). P6-F1 declares it. The byte-verbatim sheet is below.
+
+**The sheet, byte for byte:**
+
+```markdown
+# PoliSim — Playtest 6 (2026-09-17): rows for `POLISIM_FEATURE_LIST.md`
+
+**Append as the next section; record the ten findings and their screenshots verbatim first.** Work
+down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and
+self-taken, one report at end of budget. Two BASELINE families never in one pass.
+
+---
+
+## Track A — the frame's legibility (findings 1, 2, 4)
+
+**P6-A1 — Blurry text on the Canvas screens (finding 1).** Measure the premise before fixing it:
+what renders the country selector and the party picker, at what scale, through what path. The
+likely causes are a `CanvasScaler` reference resolution that doesn't match the window, a font
+rendered at a non-native size, or a blit through a render texture. Report the cause, then fix at
+the seam. *Done when:* filmed at 1280 and 2560 with the glyph edges measured before and after.
+
+**P6-A2 — Controls that look like controls (finding 2).** The scenario lines on the selector and
+`BACK TO THE COUNTRIES` on the party picker are text, not buttons. Census every player-reachable
+control that draws as prose; give each the chrome's own button face (D20/6b answered the button
+faces — inherit them, invent nothing). *Done when:* the census is in the record and no control on
+a filmed surface draws as a bare sentence.
+
+**P6-A3 — The budget-process banner's overspill (finding 4).** The interrupt panel runs over the
+tab strip above it and the `HOLDS TIME` stamp sits outside the panel. Fix the containment; this is
+the label-clipping class one level up — a *panel* outside its rect. *Done when:* filmed in the
+interrupt state at both widths, containment assert clean.
+
+## Track B — the provenance rule, applied everywhere (finding 6)
+
+**P6-B1 — The `†` rule is already ruled; apply it globally.** D16's board 10a ruled it and the
+People page carries it: source lines, seed footnotes and SOURCED/DERIVED sit behind the desk-global
+`†`; **BILLED, ABSENT, DATED and two-definitions stay at rest**, because they qualify something the
+player cannot otherwise see. The captions finding 6 names — the long mono provenance sentences
+under bands, plates and instruments — are at-rest text that should be behind `†`. Census every
+at-rest caption on every surface, classify each as **qualifier** (stays) or **provenance** (moves),
+and move the provenance. **Nothing is deleted**: the apparatus is the spine, and this is where it
+lives, not whether it exists. *Done when:* the census table is in the record with counts per
+surface, every moved line is readable under `†`, and the films show both states.
+
+## Track C — the People page, re-composed (findings 7, 8)
+
+**P6-C1 — Measure the density first.** Six families, ~30 rows, each with figure, band, own tick,
+five peer dots, reach chips, sparkline, honesty tags and a source line. After Track B moves the
+provenance, re-measure what remains per row and per family. *Done when:* the measurement is in the
+record — rows per viewport at 1280, ink per row, and what a player reads first.
+
+**P6-C2 — The structural simplification.** From the measurement: collapse what repeats, promote
+the family's key figure, and let a row's detail open rather than sit open. The plate grammar
+(9c/10a) is Design's and is not re-litigated — this is applying it at the density the measurement
+shows. **Anything the measurement says needs a new form goes to Design as a D21 row, not invented
+here.** *Done when:* filmed at both widths, rows-per-viewport measured before and after.
+
+## Track D — the trade matrix (finding 3)
+
+**P6-D1 — Every pair carries a real link, or says why not.** The map holds no `TradePartner` link
+between Sweden and Italy, and the page says so honestly — but fifteen pairs with gaps is a world
+that doesn't trade. **Source the bilateral matrix**: IMF DOTS, Eurostat Comext or UN Comtrade, one
+vintage, goods and services stated separately if the source separates them; the USA's rows from the
+same source, not a second one. Every one of the fifteen pairs gets a sourced volume or an explicit
+absence with its reason. **No figure is authored.** *Done when:* the matrix is seeded for all
+fifteen pairs, the diagnostic asserts symmetry and the national totals against the source, and the
+pair page draws a link wherever one exists.
+
+## Track E — jobbskatteavdrag (finding 9)
+
+**P6-E1 — The earned income tax credit, sourced.** Sweden's *jobbskatteavdrag* (Inkomstskattelagen
+67 kap. 5–9 §§) is the largest labour-tax policy of the last twenty years and the reason the
+effective average rate on earned income differs materially from the statutory one — exactly the
+gap the row now prints as `AER 32.4` against the statute's 32.38. Build it as a **credit layer on
+the schedule**, not a rate adjustment: the credit's own formula on the *prisbasbelopp* and the
+municipal rate, phased as the statute phases it, with the 66+ enhancement stated. It is a player
+lever (its size is the political instrument). *Done when:* the AER the row prints reproduces
+Skatteverket's own published table for a set of incomes, the credit's formula is verbatim from the
+statute, and its family is explained — Sweden alone moves.
+
+**P6-E2 — The equivalents, billed.** Every country has some earned-income relief (the USA's EITC,
+Germany's *Arbeitnehmer-Pauschbetrag*, France's *abattement*, Poland's *koszty uzyskania*). Bill
+each with its exact source; build none until E1 is ruled on film.
+
+## Track F — the Energy tab (finding 10) — **DS-4b is overruled**
+
+**P6-F1 — Energy gets its own rail cell.** I ruled DS-4b the other way on Design's board 15a
+(`Rail cell: NO`, the page under Sectors). Elias has played it and wants a tab; the player's reading
+wins. **Consequences, all of them real:** `SystemArea.Energy` is declared, `icon_area_energy`
+becomes a genuine asset gap and a D21 row (it was explicitly not one under the old ruling), the
+rail's legibility re-opens at the new cell count, and `AreaIconCoverageCheck` fails until the icon
+lands — which is correct, and the fallback is the honest hairline until it does. *Done when:* the
+cell is reachable, the page moves whole, films at both widths, and the coverage check's failure is
+recorded as a named gap rather than suppressed.
+
+**P6-F2 — The tab's structure: clear, simple, and the choices are the point.** The layer holds
+everything the current plates draw; what it lacks is **anything a player does.** The `ABSENT` row
+says it plainly: *nothing builds or closes a plant; the fleet and the load are static until
+dispatch.* So the tab's spine is the decisions:
+- **Build and retire** — capacity by technology as a thing the player changes, with CAPEX, lead
+  time and a connection queue (the energy spec-let's stage list already names this; IRENA's 2024
+  costs are still billed and are the blocker — bill them precisely).
+- **The four policy instruments** (market liberalisation, retail intervention, investment planning,
+  state ownership) as the dials S9 named, each with its range captions.
+- **The law category** EN-7b built, reachable from the tab.
+- **The ministry** on the AI finance ministry's pattern, with its mandate weights.
+Each is its own item; **none is invented** — every one is a stage the spec-let already ruled.
+*Done when:* a player can open Energy from the rail, see the system, and make a decision that
+changes it.
+
+## Track G — the pie (finding 5)
+
+**P6-G1 — A pie below a size reads as a bar.** Board 8a ruled the pie's form (largest first from
+12 o'clock, inside labels where the wedge clears 40°, hatched OTHER past eight) and the form is
+right — at size. The instance finding 5 names is too small for any pie to read. Measure the
+threshold at which 8a's own rule stops working, then **below it the distribution draws as the
+stacked bar the grammar already has**. *Done when:* the threshold is measured, both forms are
+filmed, and no pie renders below it.
+
+## Track H — the D21 ask
+
+**P6-H1 — Install D21**, reconciled against D20: the energy tab's composition (the decisions as the
+page's spine, not the readouts), `icon_area_energy` and the rail at its new cell count, the pie's
+size threshold if the measurement says the bar needs a form, and whatever P6-C2's measurement
+says needs a new form. **Nothing already answered is re-asked.** The package is **one zip**,
+verified both ways — the route that worked for E-37 and E-38. Sending stays Elias's.
+
+---
+
+## Yours
+
+Play again after Track F's first decision lands — it is the first time the energy system will
+answer you. The D21 paste when installed. `PLAY_SHEET.md` still open: twenty constants unjudged.
+```
+
+**Next:** Track A to H in order, one commit per item, each row's done-when as written; the D21 ask at P6-H1 is assembled here and sent by Elias.
