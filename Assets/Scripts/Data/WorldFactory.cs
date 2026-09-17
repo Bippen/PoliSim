@@ -1002,16 +1002,21 @@ namespace PoliSim.Data
             var euMembers = new List<CountryId> { germany.Id, france.Id, italy.Id, sweden.Id, poland.Id };
             var europeanUnion = new TradeBloc("European Union", euMembers, externalTariffRate: 3f, internalTariffRate: 0.1f);
 
-            AddBilateralTrade(usa, germany, aExportVolume: 120f, aImportVolume: 150f);
-            AddBilateralTrade(usa, france, aExportVolume: 80f, aImportVolume: 90f);
-            AddBilateralTrade(usa, sweden, aExportVolume: 30f, aImportVolume: 25f);
-            AddBilateralTrade(usa, poland, aExportVolume: 20f, aImportVolume: 18f);
-            AddBilateralTrade(germany, france, aExportVolume: 200f, aImportVolume: 180f);
-            AddBilateralTrade(germany, italy, aExportVolume: 150f, aImportVolume: 140f);
-            AddBilateralTrade(germany, poland, aExportVolume: 100f, aImportVolume: 90f);
-            AddBilateralTrade(germany, sweden, aExportVolume: 70f, aImportVolume: 65f);
-            AddBilateralTrade(france, italy, aExportVolume: 90f, aImportVolume: 85f);
-            AddBilateralTrade(poland, sweden, aExportVolume: 40f, aImportVolume: 35f);
+            // P6-D1 (2026-09-17): EVERY PAIR CARRIES A SOURCED LINK. Ten authored pairs stood here - round
+            // figures with no source, and five of the fifteen pairs (Sweden–Italy among them) had no link at
+            // all, which the pair page reported honestly as NO TRADE LINK. The fifteen are `TradeMatrixTable`'s
+            // now: one Eurostat vintage, goods and services stated separately, each direction as the exporter
+            // reports it, in the book's dollars. `TradeMatrixDiagnostic` holds the seeded world to the table.
+            Country[] traders = { usa, sweden, germany, france, italy, poland };
+            for (int i = 0; i < traders.Length; i++)
+            {
+                for (int j = i + 1; j < traders.Length; j++)
+                {
+                    AddBilateralTrade(traders[i], traders[j],
+                        aExportVolume: TradeMatrixTable.VolumeUsdBn(traders[i].Id, traders[j].Id),
+                        aImportVolume: TradeMatrixTable.VolumeUsdBn(traders[j].Id, traders[i].Id));
+                }
+            }
 
             var world = new World();
             world.Countries.AddRange(new[] { usa, sweden, germany, france, italy, poland });

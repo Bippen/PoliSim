@@ -16,17 +16,17 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class TrajectorySentinelCheck
     {
-        /// <summary>The baseline these digests are the first turns of: `traj_pn3` - PN-3 (2026-09-16, §522): potential's labour force is the pyramid's - the 15+ population at the state's rate, employed - not the 20–64 window; all six move (was `traj_pn1d`).</summary>
-        public const string BaselineLabel = "pn3";
+        /// <summary>The baseline these digests are the first turns of: `traj_p6d1` - P6-D1 (2026-09-17, §533): every pair of the six carries a sourced trade link (Eurostat 2023, goods and services, the exporter's report), replacing ten authored pairs and five absences; all six move through the trade balance and tariff revenue (was `traj_pn3`).</summary>
+        public const string BaselineLabel = "p6d1";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pn3_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_p6d1_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "58e6b4c4abd33c42f63d5e3f11ca717770c4c6f54ec42245037fa7a9211e5c70"),
-            (424242, "71c1394931f5ce5d9f05d61eedb517d2546b06f5fe8d5a960cb1eae6a0ea8fe5"),
+            (777, "4c0b330db384880cfd90106d2b9825dbe1335009eeb8847be4cf7e68cac2e013"),
+            (424242, "37398d8e4192e16293ea981c822f6e7b432acdd484d6f8086eb3b68dd5b26a43"),
         };
 
         public static void Run()
