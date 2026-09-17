@@ -70,6 +70,28 @@ namespace PoliSim.UI
             }
 
             Order(slices);
+
+            // ⚠ P6-G1 (2026-09-17, `COMPLETED.md` §535): A PIE BELOW A SIZE READS AS A BAR. 9a's rule holds a wedge's share inside it
+            // where the wedge clears InsideLabelMinDegrees, on the chord that wedge offers at 0.62 r - 28.5 px on this 120 px disc,
+            // at EVERY geometry, because the disc is a constant while the caption the share is set in scales with the window. Measured
+            // off the films' label tables: the widest share needs 32.1 px at 1280×699 and 53.6 px at 2560×1419, so the rule was over
+            // its own chord everywhere, worst where the window is largest. Where the label does not fit the chord the distribution is
+            // not a pie at this size, and it draws as the stacked bar the plate grammar already has (the distribution band's form).
+            float widestShare = 0f;
+            for (int i = 0; i < _ordered.Count; i++)
+            {
+                float pct = _ordered[i].Value / total * 100f;
+                widestShare = Mathf.Max(widestShare, _insideStyle.CalcSize(new GUIContent($"{pct:F0} %")).x);
+            }
+            float chord = 2f * 0.62f * (Diameter * 0.5f) * Mathf.Sin(InsideLabelMinDegrees * 0.5f * Mathf.Deg2Rad);
+            if (widestShare > chord)
+            {
+                LastFormWasBar = true;
+                DrawStackedBar(total, valueFormat, moneyUnit, widestShare, chord);
+                return;
+            }
+            LastFormWasBar = false;
+
             if (NeedsRedraw())
             {
                 Regenerate(total);
@@ -117,6 +139,71 @@ namespace PoliSim.UI
                     Vector2 size = _insideStyle.CalcSize(new GUIContent(share));
                     GUI.Label(new Rect(Mathf.Round(at.x - size.x * 0.5f), Mathf.Round(at.y - size.y * 0.5f), size.x, size.y), share, _insideStyle);
                 }
+            }
+        }
+
+        /// <summary>Which form the last draw took: true where the share label did not fit the disc's chord and the bar drew instead (P6-G1). Read by the
+        /// film's record, which cannot tell the two forms apart from the label table alone.</summary>
+        public bool LastFormWasBar { get; private set; }
+
+        /// <summary>
+        /// The distribution as the stacked bar the plate grammar already has (the distribution band, D16 §3.3): largest first, left to right,
+        /// the paper hairline between parts as 8a puts between wedges, each part's share inside it where it fits - the pie's own inside-label
+        /// rule, on a width instead of a chord - and the legend beneath, the pie's own. ⚠ OTHER is solid here where the pie hatches it: the
+        /// hatch on a bar is a form Design has not drawn, and it is on the D21 ask rather than invented.
+        /// </summary>
+        private void DrawStackedBar(float total, string valueFormat, MoneyUnit? moneyUnit, float widestShare, float chord)
+        {
+            float lineHeight = Mathf.Max(_nameStyle.lineHeight, _nameStyle.fontSize + 3f);
+            float barHeight = Mathf.Round(lineHeight * 1.2f);
+            float gap = Mathf.Round(lineHeight * 0.5f);
+            float rowsHeight = _ordered.Count * lineHeight * 2f;
+            Rect area = GUILayoutUtility.GetRect(10f, barHeight + gap + rowsHeight, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint) { LastArea = area; }
+            if (Event.current.type != EventType.Repaint) { return; }
+
+            Color previous = GUI.color;
+            float x = area.x;
+            for (int i = 0; i < _ordered.Count; i++)
+            {
+                PieSlice slice = _ordered[i];
+                float w = area.width * Mathf.Max(0f, slice.Value) / total;
+                GUI.color = slice.Color;
+                GUI.DrawTexture(new Rect(x, area.y, w, barHeight), Texture2D.whiteTexture);
+                if (i > 0)
+                {
+                    GUI.color = BackgroundColor;
+                    GUI.DrawTexture(new Rect(x, area.y, WedgeGap, barHeight), Texture2D.whiteTexture);
+                }
+                GUI.color = previous;
+
+                float percent = slice.Value / total * 100f;
+                string share = $"{percent:F0} %";
+                Vector2 size = _insideStyle.CalcSize(new GUIContent(share));
+                bool isOther = slice.Label == "Other" && i == _ordered.Count - 1 && _ordered.Count == UiPalette.MaxCategoricalSeries;
+                if (size.x + 4f <= w && !isOther && ContrastRatio(BackgroundColor, slice.Color) >= 4.5f)
+                {
+                    GUI.Label(new Rect(Mathf.Round(x + (w - size.x) * 0.5f), Mathf.Round(area.y + (barHeight - size.y) * 0.5f), size.x, size.y), share, _insideStyle);
+                }
+                x += w;
+            }
+
+            // The legend, the pie's own, beneath the bar.
+            float swatch = Mathf.Round(_nameStyle.fontSize * 0.8f);
+            float textX = area.x + swatch + 6f;
+            float labelWidth = Mathf.Max(20f, area.xMax - textX);
+            float y = area.y + barHeight + gap;
+            for (int i = 0; i < _ordered.Count; i++)
+            {
+                PieSlice slice = _ordered[i];
+                float percent = slice.Value / total * 100f;
+                string figure = (moneyUnit.HasValue ? UiFormat.Money(slice.Value, moneyUnit.Value) : slice.Value.ToString(valueFormat ?? "F1")) + $" · {percent:F0} %";
+                GUI.color = slice.Color;
+                GUI.DrawTexture(new Rect(area.x, y + (lineHeight - swatch) * 0.5f, swatch, swatch), Texture2D.whiteTexture);
+                GUI.color = previous;
+                GUI.Label(new Rect(textX, y, labelWidth, lineHeight), slice.Label, _nameStyle);
+                GUI.Label(new Rect(textX, y + lineHeight, labelWidth, lineHeight), figure, _figureStyle);
+                y += lineHeight * 2f;
             }
         }
 
