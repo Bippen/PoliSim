@@ -83,7 +83,7 @@ namespace PoliSim.EditorTools
             foreach (string file in files)
             {
                 scanned++;
-                string[] lines = File.ReadAllLines(file);
+                string[] lines = SourceText.ReadLines(file);
                 for (int i = 0; i < lines.Length; i++)
                 {
                     string line = lines[i];

@@ -75,7 +75,7 @@ namespace PoliSim.EditorTools
             foreach (string file in files)
             {
                 byte[] bytes;
-                try { bytes = File.ReadAllBytes(file); }
+                try { bytes = SourceText.ReadBytes(file); }
                 catch (IOException) { continue; }
 
                 string text;

@@ -113,8 +113,8 @@ namespace PoliSim.EditorTools
 
             foreach (string path in Directory.GetFiles(assets, "*.cs", SearchOption.AllDirectories))
             {
-                string text = File.ReadAllText(path);
-                fileText[path] = SourceText.WithoutComments(text);
+                string text = SourceText.Read(path);
+                fileText[path] = SourceText.ReadWithoutComments(path);
                 foreach (Match m in TypeDeclaration.Matches(text)) { Add(typeFiles, m.Groups[1].Value, path); }
                 foreach (Match m in MemberDeclaration.Matches(text)) { Add(memberFiles, m.Groups[1].Value, path); }
                 foreach (Match m in Identifier.Matches(text)) { usedNames.Add(m.Value); }
@@ -142,7 +142,7 @@ namespace PoliSim.EditorTools
 
             foreach (string doc in docs)
             {
-                string text = File.ReadAllText(doc);
+                string text = SourceText.Read(doc);
                 string name = Path.GetFileName(doc);
                 var seen = new HashSet<string>(StringComparer.Ordinal);
 

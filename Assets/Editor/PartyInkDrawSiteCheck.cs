@@ -90,7 +90,7 @@ namespace PoliSim.EditorTools
             {
                 // A commented-out draw is not a draw, and a comment DISCUSSING the rule would otherwise
                 // read as a violation of it - the defect this repo has catalogued five times.
-                string text = SourceText.WithoutComments(File.ReadAllText(path));
+                string text = SourceText.ReadWithoutComments(path);
                 string file = Path.GetFileName(path);
                 scanned++;
 

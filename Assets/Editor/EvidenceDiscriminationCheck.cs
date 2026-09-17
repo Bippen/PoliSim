@@ -96,7 +96,7 @@ namespace PoliSim.EditorTools
             }
 
             var registered = new List<string>();
-            foreach (Match m in Registration.Matches(File.ReadAllText(suitePath)))
+            foreach (Match m in Registration.Matches(SourceText.Read(suitePath)))
             {
                 string type = m.Groups[2].Value;
                 if (!registered.Contains(type)) { registered.Add(type); }
@@ -118,7 +118,7 @@ namespace PoliSim.EditorTools
             {
                 string path = Path.Combine(editor, type + ".cs");
                 if (!File.Exists(path)) { missingFile.Add(type); continue; }
-                if (!FailurePath.IsMatch(SourceText.WithoutComments(File.ReadAllText(path)))) { withoutFailure.Add(type); }
+                if (!FailurePath.IsMatch(SourceText.ReadWithoutComments(path))) { withoutFailure.Add(type); }
             }
 
             // CLAUSE B: the census over every editor tool with a Run, reported and not enforced.
@@ -126,11 +126,11 @@ namespace PoliSim.EditorTools
             int tools = 0;
             foreach (string path in Directory.GetFiles(editor, "*.cs", SearchOption.AllDirectories))
             {
-                string text = File.ReadAllText(path);
+                string text = SourceText.Read(path);
                 if (!HasRun.IsMatch(text)) { continue; }
 
                 tools++;
-                if (!FailurePath.IsMatch(SourceText.WithoutComments(text))) { census.Add(Path.GetFileNameWithoutExtension(path)); }
+                if (!FailurePath.IsMatch(SourceText.ReadWithoutComments(path))) { census.Add(Path.GetFileNameWithoutExtension(path)); }
             }
 
             census.Sort(StringComparer.Ordinal);

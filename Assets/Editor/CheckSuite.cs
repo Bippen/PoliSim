@@ -500,6 +500,7 @@ namespace PoliSim.EditorTools
             // group whose checks all failed early look identical - so it is STATED by the caller.
             RatchetResidency.ActiveGroup = RatchetResidency.Group.Simulation;
             BarTiming.Begin("simulation");
+            SourceText.BeginScope();
             var simulation = Simulation;
 
             var names = new string[simulation.Length];
@@ -529,6 +530,7 @@ namespace PoliSim.EditorTools
                 ? $"CHECKS: {simulation.Length} of {simulation.Length} simulation checks clean."
                 : $"CHECKS: {failed.Count} of {simulation.Length} FAILED — {string.Join(", ", failed)}.");
 
+            SourceText.EndScope();
             BarTiming.End(worstCode);
             return worstCode;
         }
@@ -635,6 +637,9 @@ namespace PoliSim.EditorTools
         {
             RatchetResidency.ActiveGroup = RatchetResidency.Group.Cheap;
             BarTiming.Begin(group);
+            // §525: one read per source file for the whole group - every check below reads through SourceText's cache.
+            SourceText.BeginScope();
+            int diskBefore = SourceText.DiskReads, hitsBefore = SourceText.CacheHits;
 
             var failed = new List<string>();
             int worst = 0;
@@ -675,6 +680,8 @@ namespace PoliSim.EditorTools
                 Debug.Log($"CHECKS: {table.Length} of {table.Length} clean.");
             }
 
+            Debug.Log($"SOURCE: {SourceText.DiskReads - diskBefore} file read(s) from the disk and {SourceText.CacheHits - hitsBefore} served from the source cache across the {group} group.");
+            SourceText.EndScope();
             BarTiming.End(worst);
             return worst;
         }

@@ -86,7 +86,7 @@ namespace PoliSim.EditorTools
             {
                 // R-T3's enrolment: a commented-out declaration is not a declaration, and a comment
                 // DISCUSSING the four statements would otherwise read as a fifth one.
-                string text = SourceText.WithoutComments(File.ReadAllText(path));
+                string text = SourceText.ReadWithoutComments(path);
                 string file = Path.GetFileName(path);
                 scanned++;
 

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -55,6 +58,108 @@ namespace PoliSim.EditorTools
             }
 
             return sb.ToString();
+        }
+
+        // ── The source cache (2026-09-17, `COMPLETED.md` §525) ────────────────────────────────────────────────────────
+        // ⚠ ONE READ PER FILE PER BAR, NOT ONE PER CHECK. Thirteen cheap checks each read the source tree - six all of it,
+        // four `Assets/Scripts`, three a subset - and several stripped the comments again after another had. Inside a
+        // scope (the suite opens one around each group it runs) every form of a file is made once from ONE read of its
+        // bytes and handed to every later reader; outside a scope nothing is cached and every call reads the disk, exactly
+        // as the checks did before. Each access re-stats the file (length and last write), so a file changed mid-scope is
+        // read again rather than served stale.
+
+        private sealed class Entry
+        {
+            public long Length;
+            public DateTime Written;
+            public byte[] Bytes;
+            public string Text;
+            public string[] Lines;
+            public string Stripped;
+        }
+
+        private static readonly Dictionary<string, Entry> Cache = new Dictionary<string, Entry>(StringComparer.Ordinal);
+        private static int _scopes;
+
+        /// <summary>Opens a cache scope; nested scopes share one cache, and the last close empties it.</summary>
+        public static void BeginScope() { _scopes++; }
+
+        /// <summary>Closes a cache scope; the last close drops every entry.</summary>
+        public static void EndScope()
+        {
+            if (_scopes > 0) { _scopes--; }
+            if (_scopes == 0) { Cache.Clear(); }
+        }
+
+        /// <summary>Reads within a scope that were served from the cache, and reads that went to the disk - the bar's enumeration of the dedupe.</summary>
+        public static int CacheHits { get; private set; }
+        public static int DiskReads { get; private set; }
+
+        private static Entry Get(string path)
+        {
+            string full = Path.GetFullPath(path);
+            var info = new FileInfo(full);
+            if (Cache.TryGetValue(full, out Entry entry) && entry.Length == info.Length && entry.Written == info.LastWriteTimeUtc)
+            {
+                CacheHits++;
+                return entry;
+            }
+
+            DiskReads++;
+            entry = new Entry { Length = info.Length, Written = info.LastWriteTimeUtc, Bytes = File.ReadAllBytes(full) };
+            Cache[full] = entry;
+            return entry;
+        }
+
+        /// <summary>`File.ReadAllBytes`, once per file inside a scope.</summary>
+        public static byte[] ReadBytes(string path)
+        {
+            return _scopes == 0 ? File.ReadAllBytes(path) : Get(path).Bytes;
+        }
+
+        /// <summary>`File.ReadAllText` (UTF-8, a byte-order mark honoured), once per file inside a scope.</summary>
+        public static string Read(string path)
+        {
+            if (_scopes == 0) { return File.ReadAllText(path); }
+            Entry entry = Get(path);
+            if (entry.Text == null)
+            {
+                using (var reader = new StreamReader(new MemoryStream(entry.Bytes, false), Encoding.UTF8, true))
+                {
+                    entry.Text = reader.ReadToEnd();
+                }
+            }
+
+            return entry.Text;
+        }
+
+        /// <summary>`File.ReadAllLines`, once per file inside a scope.</summary>
+        public static string[] ReadLines(string path)
+        {
+            if (_scopes == 0) { return File.ReadAllLines(path); }
+            Entry entry = Get(path);
+            if (entry.Lines == null)
+            {
+                var lines = new List<string>();
+                using (var reader = new StreamReader(new MemoryStream(entry.Bytes, false), Encoding.UTF8, true))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null) { lines.Add(line); }
+                }
+
+                entry.Lines = lines.ToArray();
+            }
+
+            return entry.Lines;
+        }
+
+        /// <summary>`WithoutComments(File.ReadAllText(path))`, stripped once per file inside a scope.</summary>
+        public static string ReadWithoutComments(string path)
+        {
+            if (_scopes == 0) { return WithoutComments(File.ReadAllText(path)); }
+            Entry entry = Get(path);
+            if (entry.Stripped == null) { entry.Stripped = WithoutComments(Read(path)); }
+            return entry.Stripped;
         }
     }
 }

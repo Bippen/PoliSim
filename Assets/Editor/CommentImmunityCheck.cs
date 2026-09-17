@@ -70,8 +70,8 @@ namespace PoliSim.EditorTools
             ("ResidueCheck", "its SUBJECT is the marker in the comment - the to-do, work-in-progress and stub markers and a bare [AUTHORED-DRAFT] live in comments by design; a reporting check, never a verdict"),
         };
 
-        /// <summary>A check that reads C# source: it reads files and names the `*.cs` pattern.</summary>
-        private static readonly Regex ReadsSource = new Regex(@"File\.ReadAll(Text|Lines)");
+        /// <summary>A check that reads C# source: it reads files and names the `*.cs` pattern. ⚠ Through the disk (`File.ReadAllText`, `File.ReadAllLines`) or through the bar's source cache (`SourceText.Read`, `SourceText.ReadLines`, `SourceText.ReadWithoutComments`, 2026-09-17, §525) - a reader that moved to the cache is still a reader.</summary>
+        private static readonly Regex ReadsSource = new Regex(@"File\.ReadAll(Text|Lines)|SourceText\.Read(Lines|WithoutComments)?\(");
 
         public static void Run()
         {
@@ -124,7 +124,7 @@ namespace PoliSim.EditorTools
                     continue;
                 }
 
-                bool routes = Regex.IsMatch(SourceText.WithoutComments(File.ReadAllText(path)), @"SourceText\.WithoutComments|StripComments");
+                bool routes = Regex.IsMatch(SourceText.WithoutComments(File.ReadAllText(path)), @"SourceText\.(Read)?WithoutComments|StripComments");
                 if (!routes) { failures.Add(name + " does not route through the shared stripper"); }
                 sb.Append(routes ? "    ok       " : "    ⚠ RAW     ").Append(name).Append('\n');
             }

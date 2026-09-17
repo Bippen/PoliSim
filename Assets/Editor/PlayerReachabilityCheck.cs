@@ -71,13 +71,13 @@ namespace PoliSim.EditorTools
                 return;
             }
 
-            string controllerText = SourceText.WithoutComments(File.ReadAllText(controller));   // a comment naming a takeover is not a route
+            string controllerText = SourceText.ReadWithoutComments(controller);   // a comment naming a takeover is not a route
             var takeovers = new List<string>();
             var unreachable = new List<string>();
 
             foreach (string path in Directory.GetFiles(scripts, "*.cs", SearchOption.AllDirectories))
             {
-                string text = File.ReadAllText(path);
+                string text = SourceText.Read(path);
                 if (text.IndexOf("CanvasChrome.EnsureHost", StringComparison.Ordinal) < 0) { continue; }
                 if (string.Equals(path, controller, StringComparison.OrdinalIgnoreCase)) { continue; }
 

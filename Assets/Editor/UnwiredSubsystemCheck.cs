@@ -125,10 +125,10 @@ namespace PoliSim.EditorTools
             // quote, so a URL inside a literal survives - stated because it is an approximation, not a
             // parser.
             var contents = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (string file in Directory.GetFiles(scripts, "*.cs", SearchOption.AllDirectories)) { contents[file] = StripComments(File.ReadAllText(file)); }
+            foreach (string file in Directory.GetFiles(scripts, "*.cs", SearchOption.AllDirectories)) { contents[file] = SourceText.ReadWithoutComments(file); }
             if (Directory.Exists(editor))
             {
-                foreach (string file in Directory.GetFiles(editor, "*.cs", SearchOption.AllDirectories)) { contents[file] = StripComments(File.ReadAllText(file)); }
+                foreach (string file in Directory.GetFiles(editor, "*.cs", SearchOption.AllDirectories)) { contents[file] = SourceText.ReadWithoutComments(file); }
             }
 
             var gameCalls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -376,22 +376,6 @@ namespace PoliSim.EditorTools
             if (!path.StartsWith(scriptsRoot, StringComparison.OrdinalIgnoreCase)) { return true; }
             return path.IndexOf(Path.DirectorySeparatorChar + "Testing" + Path.DirectorySeparatorChar,
                 StringComparison.OrdinalIgnoreCase) >= 0;
-        }
-
-        /// <summary>
-        /// Remove `/* … */` blocks and `//` line comments so a PROSE mention cannot make a subsystem look
-        /// reachable. ⚠ String literals survive on purpose — a reflected call is built from one.
-        ///
-        /// <para>⚠ **It is an approximation and says so**: the line rule leaves a `//` alone when the line
-        /// already contains a quote, so a URL inside a literal is not eaten. A file that puts a real line
-        /// comment after a string literal on the same line keeps that comment, which can only ever cause a
-        /// FALSE NEGATIVE of the same kind this fixes — a smaller one, and named rather than hidden.</para>
-        /// </summary>
-        private static string StripComments(string text)
-        {
-            // ⚠ ONE stripper for the whole audit, shared since the sweep that followed this fix found
-            // the same exposure in three more checks. See `SourceText` for the incident and the rule.
-            return SourceText.WithoutComments(text);
         }
 
         private static int CountWord(string text, string word)

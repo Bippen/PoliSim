@@ -77,7 +77,7 @@ namespace PoliSim.EditorTools
             string featurePath = Path.Combine(root, "POLISIM_FEATURE_LIST.md");
             if (File.Exists(featurePath))
             {
-                string text = File.ReadAllText(featurePath).Replace("\r\n", "\n");
+                string text = SourceText.Read(featurePath).Replace("\r\n", "\n");
                 scanned++;
                 MatchCollection heads = RowHead.Matches(text);
                 for (int i = 0; i < heads.Count; i++)
@@ -112,7 +112,7 @@ namespace PoliSim.EditorTools
                 if (Historical.Contains(name)) { continue; }
                 if (ExcludedFiles.ContainsKey(name)) { excludedFiles.Add($"{name}: {ExcludedFiles[name]}"); continue; }
                 scanned++;
-                string[] lines = File.ReadAllLines(path);
+                string[] lines = SourceText.ReadLines(path);
                 for (int i = 0; i < lines.Length; i++)
                 {
                     if (lines[i].IndexOf("to fetch", StringComparison.OrdinalIgnoreCase) >= 0 && lines[i].IndexOf("closed as billed", StringComparison.OrdinalIgnoreCase) < 0 && lines[i].IndexOf("no longer", StringComparison.OrdinalIgnoreCase) < 0)
@@ -128,7 +128,7 @@ namespace PoliSim.EditorTools
                 string file = Path.GetFileName(path);
                 if (file == "MetaTextCheck.cs" || file == "ResidueCheck.cs") { continue; }
                 scanned++;
-                string[] lines = File.ReadAllLines(path);
+                string[] lines = SourceText.ReadLines(path);
                 for (int i = 0; i < lines.Length; i++)
                 {
                     if (codeMarker.IsMatch(lines[i])) { open.Add($"{file}:{i + 1}: code marker ({codeMarker.Match(lines[i]).Value})"); }

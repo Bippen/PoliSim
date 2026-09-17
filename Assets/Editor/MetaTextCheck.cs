@@ -131,7 +131,7 @@ namespace PoliSim.EditorTools
             foreach (string file in files)
             {
                 string rel = file.Substring(projectRoot.Length + 1).Replace('\\', '/');
-                string code = StripComments(File.ReadAllText(file));
+                string code = StripComments(SourceText.Read(file));
                 foreach ((string literal, int line) in Literals(code))
                 {
                     literals++;

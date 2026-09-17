@@ -100,7 +100,7 @@ namespace PoliSim.EditorTools
 
             foreach (string path in Directory.GetFiles(editorDir, "*.cs", SearchOption.TopDirectoryOnly))
             {
-                string text = SourceText.WithoutComments(File.ReadAllText(path));
+                string text = SourceText.ReadWithoutComments(path);
                 if (!text.Contains("public static void Run")) { continue; }
                 if (!DeclaresRatchet.IsMatch(text)) { continue; }
 
