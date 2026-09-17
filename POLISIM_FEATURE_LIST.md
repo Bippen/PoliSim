@@ -966,7 +966,7 @@ the ITANES registration, still open.
 ## CODE
 
 - **The review's unexecuted proposals** (`COMPLETED.md` §190, its §B.4): **P3** the session start-up
-  command · **P4** generated blocks, starting with the two documents that paste tool output by hand ·
+  command (**→ ✅ BUILT 2026-09-17 as the session brief, `COMPLETED.md` §525**) · **P4** generated blocks, starting with the two documents that paste tool output by hand ·
   **P5** records generated from git · **P6b** per-country trajectories (P6a, the artifact check made
   incremental, is DONE and cut the bar to ~26 s). Each is a proposal awaiting a ruling; none outranks
   F2–F6.
@@ -977,11 +977,22 @@ the ITANES registration, still open.
   a second in play, and every France film and dry film pays it; Italy's passes are slow on the same order and
   unattributed. The fix named: cache each line's verdict until the day, the draft or the chamber changes.
   UI and SIMULATION paths (the verdict reads the chamber); no money moves, so no review unless the fix books one.
+  **→ ✅ FIXED 2026-09-17 by ruling, `COMPLETED.md` §525 (`f02efeb`): the screens ask `ChamberVerdicts`, which
+  answers once per chamber (the country, the player's party, the seat table) and question (the concern's
+  direction, moves and cuts) and drops everything when the chamber changes, not when the day does - the films'
+  verification runs while the days advance and found no answer that moved with them. Italy's slowness was the same coalition search over its parties. Every film and dry film re-verifies
+  every cached answer against the model (`ChamberVerdicts.VerifyHits`, a drift logged and counted), and
+  `ChamberVerdictCacheCheck` holds Italy and Sweden through a draft, a seat and a party change.**
 - **The streamlining review's named fixes** (`COMPLETED.md` §524, item 5): `DeadStateCheck`'s scan tokenised
   once · the no-policy centuries the infrastructure and health diagnostics both run, memoised once · one
   per-process source cache behind `SourceText` · a generated session brief and a reading order for a
   session's start · the memory index at one line an entry. Each is a proposal with its measured cost awaiting
   a ruling; none outranks F2–F6.
+  **→ ✅ RULED AND TAKEN 2026-09-17, `COMPLETED.md` §525: the first four BUILT, each proven equivalent and
+  proven to fail when broken - the source cache (`d78105e`), the single-pass tally (`73ed866`), the shared
+  century `NoPolicyCentury` with a bit-exact cross-check against an independent run (`af9e155`), the brief
+  `Tools/session_brief.ps1` and the reading order at the head of `CLAUDE.md` (`2734841`). The memory index
+  NOT built, by the same ruling: a fourth thing to keep true.**
 - **`D-16` — the sourced tax-base table for five countries**, `CollectionEfficiency` re-solved and
   re-documented as a coverage bridge, the >1 values named as coverage rather than efficiency. **BASELINE**;
   ruled and TAKEN, execution logged STOPPED with its five-step order in `COMPLETED.md` §197 §D. Rides F4.

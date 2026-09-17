@@ -29549,3 +29549,128 @@ The after is an estimate built from this pass's measured units, the same five un
 **About 7 600 s, 2 h 7 min** - 39 % less Unity time than the measured before - plus three required reviews of 18–26 min each (the money paths `Tools/bar_tier.ps1` names for F4-5, PN-2 and PN-4). The largest single lever is the dump moving to the close; the largest one still open is PF-1, which is most of every France and Italy pass.
 
 **Bars.** Item 1's tree - `bar_item1b_a`/`_b`/`_c` 40 of 40, the gate CLEAN. Item 2's tree - `bar_item2` 40 of 40, `dryv4` and `filmv3` as above. Item 3's tree - `bar_item3` 40 of 40, `docbar_item3` 8 of 8. The pass timer's tree - `bar_item2c` 40 of 40, `dryv5` (Sweden and Germany at 1280, clean), `filmv5c` 39 captured and its label table byte-identical to `dryv5`'s; two film launches before it quit a few seconds in after the licensing handshake, straight after a batch step had stopped the licensing client - environmental, re-run, recorded. The record's tree - the documents tier: `docbar_rec524` **8 of 8**, residue 3, and `docbar_rec524b` on the tree with this line filled.
+
+## 525. PF-1 FIXED AND THE REVIEW'S NAMED FIXES TAKEN — the screens ask the chamber once per seat table and question and every cached answer is checked against the model's; the bars read each source file once, walk the corpus once for every dead-state name, and run the no-policy centuries once for both diagnostics that read them; a session starts from a generated brief and a fixed reading order (2026-09-17)
+
+**The ruling** (Elias, 2026-09-17, on §524's report): *"PF-1 ruled: fix it. France's Budget screen at 2–4 s per draw is a player-facing defect, not only a harness cost - the tax screen asks the parliament how every line would vote on every draw. Cache per draw, invalidate on draft change, and assert the cached verdict equals the uncached one so the cache cannot drift. Italy the same. Take (b) whole: DeadStateCheck's per-name rescan, the two diagnostics running the same six no-policy centuries, and the thirteen checks re-reading the tree - dedupe all three, no verification lost, prove each still fails when broken. Take (c)'s first two: the generated session brief and the fixed start-up reading order; skip the memory index, which is a fourth thing to keep true. Your four self-taken decisions stand, one film per UI item included. Then Playtest 6."*
+
+### PF-1 — the chamber's answers cached per seat table and question (`f02efeb`)
+
+**The cost, measured before the fix** (`VerdictCostProbe`, batch, never committed): one stance evaluation - `StanceModel.Stances`, which runs `GovernmentFormation.TryGovernment`'s coalition search - costs France 90.0 ms (15 parties), Italy 34.6 ms (14), Sweden 0.3 ms (8); `WouldBillPass` is the same search again (France 91.5 ms, Italy 36.6 ms). The Budget tab asked it for every tax line's hypothetical bill and for the draft's own question on every IMGUI event, so a France Budget frame took 2.1–3.9 s a pass and a France dry session at 1280 took 220–229 s (`drymulti`, `dryfrance`, `dryfrance2`), Italy's 90 s.
+
+**What the answer depends on, read from the model.** The country, the player's party, the seat table (the coalition search reads it), and the question (`BillConcern`: its direction, its moves, its cuts); the party systems it enumerates are the country's static data. That reading is not taken on trust: every film and dry film re-verifies every hit against the model while the days advance between captures (below).
+
+**Built.**
+- `ChamberVerdicts` - an instance cache the controller owns, answering `Stances`, `SeatSides` and `WouldPass` exactly as `ParliamentSystem` does. The key is the chamber (the country, the player's party, the seat table sorted by party) and the question (its direction to the round trip, every move, every cut). When the chamber's key changes the whole cache is dropped; a changed draft is a different question and misses. A zero or empty concern is not cached at all - it goes straight to the model, as before.
+- Every screen that asked the chamber per draw asks the cache: the Budget tab's per-line verdict and seat sides, the laws board, the seat map (`SeatMapRenderer.Draw` takes the cache as an optional argument).
+- ⚠ **THE CACHE CANNOT DRIFT SILENTLY.** With `ChamberVerdicts.VerifyHits` armed, every hit is recomputed from the model and compared field by field; a difference logs `CHAMBER CACHE DRIFT` with both answers and counts in `Drifts`. The film and the dry film arm it for every capture and log how much of each pass the verification took; play does not pay it.
+- `ChamberVerdictCacheCheck` (the cheap group) runs Italy and Sweden through four questions - the first two tax lines, the first welfare program, a budget concern with a cut - and compares the cached answer against the model's at every step: fresh, hit, hit under verification, the draft moved, a third of the largest party's seats moved to the smallest, the player's party changed. It restores the seats and the party after itself. France is left to the films: its four questions cost the cheap bar 44 s in the first form, and a film verifies every France hit anyway.
+
+**Proven.**
+
+| run | what | result |
+|---|---|---|
+| `bar_pf1b` | the cheap bar | 41 of 41, 32.6 s in-process; the new check 2.7 s. Italy's four questions 309.7 ms from the chamber, 0.15 ms from the cache; 30 hits, 26 misses, 2 invalidations, 20 comparisons each, CLEAN |
+| `pf1b_mut_seats` | the seat table taken out of the chamber key | exit 1 - `Italy seats moved tax IncomeTax: FdI 119 seats … cached against FdI 80 seats` and the same for Sweden |
+| `pf1b_mut_party` | the player's party taken out of the key | exit 1 - `Italy player's party moved welfare UBI: the cache says PASS, the model FAIL` |
+| `drypf1b` | France, Italy and Sweden at 1280 to the pension frame, verification armed | 39 measured each, 0 failed; France 40.9 s (was 220–229 s), Italy 21.5 s (was 90 s), Sweden 12.0 s (was 13.7 s) |
+| `filmpf1b` | the one film, France at 1280 | 39 captured, 0 failed, no drift line |
+
+**The pass time, net of the verification a player never pays** (`drypf1b`, the pass time less the drift verification's share of it): France's Budget frames 24–36 ms (were 2.1–3.9 s), Italy's 19–37 ms, Sweden's 18–42 ms. What a frame now costs on the Budget tab is the drawing, not the parliament.
+
+**Tier:** UI (the cheap bar, the dry film, one film). No money moves, so no review.
+
+### (b)1 — one read per source file per bar (`d78105e`)
+
+**The duplicate, measured in §524:** thirteen of the cheap group's checks and `RatchetResidency`, the helper `RatchetSlackCheck` reads ratchets through, read the tree for themselves, some several times per file in different forms (bytes, text, lines, text without comments).
+
+**Built.** `SourceText` holds a per-process cache opened by `CheckSuite` around each group (`BeginScope`/`EndScope`) and serves bytes, text, lines and comment-stripped text from one read of each file. Every entry re-stats its file (size and last write) on each ask, so a file changed mid-run is read again; outside a scope every form falls back to a plain disk read. Text is decoded as `File.ReadAllText` decodes it (UTF-8 with byte-order-mark detection) and lines are split from that text. The fourteen readers route through it: `DeadStateCheck`, `PhantomGuardCheck`, `DocumentClaimCheck`, `UnwiredSubsystemCheck` (its private copy of the comment stripper deleted), `CommentClaimCheck`, `EvidenceDiscriminationCheck`, `ConstantProvenanceCheck`, `MojibakeCheck` (bytes), `MetaTextCheck`, `ResidueCheck`, `PlayerReachabilityCheck`, `PartyInkDrawSiteCheck`, `SharedMidpointCheck`, `RatchetResidency`. `CommentImmunityCheck`'s census of source readers now counts the cache's readers too, or a check moved onto the cache would have dropped out of its census. Each group logs `SOURCE: N file read(s) from the disk and M served from the source cache`.
+
+**Proven.**
+- Equivalence (`ZzSourceCacheEquivalenceProbe`, never committed): 483 files, every form from the cache against the disk read it replaced, over two passes - 966 comparisons, 0 differences in bytes, text, lines or stripped text.
+- The clean bar (`cache_after_clean`): 41 of 41; 482 disk reads and 5 114 served from the cache across the cheap group.
+- Still fails when broken: one planted file (never committed) carrying a guard that names a check that does not exist, a comment naming a member that does not exist, a field never read and a field only written, an unsourced constant, a public static nothing outside the Editor calls, and a doubly decoded string fails the same six checks before the change (`dedupe_before2_planted`: PhantomGuardCheck, CommentClaimCheck, DeadStateCheck, ConstantProvenanceCheck, UnwiredSubsystemCheck, MojibakeCheck) and after it (`cache_after_planted`); a second planted file, an Editor class reading the source through the cache and enrolled in no census, fails `CommentImmunityCheck` as the seventh. The normalised logs of the two trees differ only in the counts the new code's own comments and files add.
+- The cheap bar 30.2 s to 28.8 s in-process.
+
+**Tier:** TOOLING (the cheap bar).
+
+### (b)1 — DeadStateCheck walks the corpus once for every name (`73ed866`)
+
+**The duplicate:** the check walked every text with `IndexOf` once per declared name, and again per field for its reads - 9.6 s of the 30.2 s cheap bar.
+
+**Built.** One pass per text cuts it into maximal runs of word characters and counts a run only when it is a declared name; each occurrence of a field's name is classified read or write by the old per-occurrence rules, moved unchanged into `IsRead`. It is the same count: a whole-word occurrence of a name is exactly a maximal run equal to it.
+
+**Proven.**
+- Equivalence (`ZzDeadStateEquivalenceProbe`, never committed, the old scan kept verbatim beside the new): 1 995 names over 440 files, every occurrence count and every read count compared name by name - 0 differences. The tally took 595 ms, the old scan 14 075 ms.
+- Still fails when broken (`b1_after_planted`): the planted unreached and write-only fields are reported, and the same six checks fail as before the change.
+- `DeadStateCheck` 9.6 s to 645 ms; the cheap bar 28.8 s to 20.1 s in-process (`b1_after_clean`, 41 of 41).
+
+**Tier:** TOOLING (the cheap bar).
+
+### (b)2 — one no-policy century per country for both diagnostics (`af9e155`)
+
+**The duplicate.** `HealthTrendDiagnostic` and `InfrastructureReadoutDiagnostic` each advanced the same six worlds - seed 777, the default world, each country the player in turn, no decision on any turn, a hundred years - and each ran Sweden's untouched twenty years once more. This morning's simulation bar on the unchanged tree (`b2_simbar_before`) had them at 105.9 s and 104.8 s, the two slowest stages of 659.2 s.
+
+**Built.** `NoPolicyCentury.For(country)` runs that loop, verbatim, once per country per process, and records each year's readouts the two diagnostics read: road quality, treatable mortality, the trend index, the death rate, population, net migration, life expectancy. The health diagnostic's untouched Sweden is its year twenty and the floor's binding years are read off its years; the infrastructure diagnostic's year-100 scores and their maxima likewise. The cut and raised runs stay each diagnostic's own: they move the lines, and nobody else runs them.
+
+⚠ **No verification lost, and one gained.** The infrastructure diagnostic keeps its own run of Sweden's untouched twenty years - its bracketing assertion reads it - and now fails when the shared run's year twenty differs from it by a bit in road quality, treatable mortality or population. In a simulation bar the health diagnostic makes the shared run and the infrastructure diagnostic reads it five stages later, so a defect in the shared loop, or state leaking into it from the stages between, fails the bar.
+
+**Proven.**
+
+| run | what | result |
+|---|---|---|
+| `b2_before_health` / `b2_after_health` | the health diagnostic standalone, on the old code and the new | exit 0 both; its printed lines byte-identical |
+| `b2_before_infra` / `b2_after_infra` | the infrastructure diagnostic the same | exit 0 both; its printed lines byte-identical |
+| `b2_mut_memo` | the shared run a day short every year | exit 1 on the cross-check: road quality 83.0728149 against 83.07282, population 11.8132429 against 11.8162422. ⚠ **Every century figure the diagnostic prints was still identical at two decimals** - without the cross-check this defect passes |
+| `b2_mut_ceiling` | road quality pinned to the ceiling from year fifty, so the twenty-year runs are untouched | exit 1: all six countries reached the ceiling within a century, read off the shared run |
+| `b2_mut_trend` | the trend index compounding 1 % fast | exit 1: Sweden's index after twenty years 0.5477 against exp(20 × rate) = 0.5510, read off the shared run |
+
+The probed files were restored from byte-exact copies and their hashes compared equal.
+
+**The simulation bar, before and after** (54 of 54 both, the sentinel on `pn3`):
+
+| | `b2_simbar_before` | `b2_simbar_after` |
+|---|---|---|
+| in-process | 659.2 s | 561.4 s |
+| wall | 674 s | 576 s |
+| `InfrastructureReadoutDiagnostic` | 104.8 s | 10.3 s |
+| `HealthTrendDiagnostic` | 105.9 s | 102.3 s |
+
+The two normalised logs are identical but for two differences, each accounted for. The residue scan counts one more file, the new class. And thirty campaigns' log lines are gone: Sweden is the one of the six whose runs log their campaigns, and the runs removed are exactly the health diagnostic's untouched twenty years (5 campaigns) and the infrastructure diagnostic's Sweden century (25) - the health diagnostic's campaign starts 40 to 35, the infrastructure diagnostic's 40 to 15.
+
+**Tier:** SIMULATION (`bar_b2` 41 of 41, the simulation bar above). No simulation code changed and the sentinel held, so no review.
+
+### (c) — the session brief and the reading order (`2734841`)
+
+**Built.**
+- **`Tools/session_brief.ps1`**, generated at the moment it runs and storing nothing: the branch against origin and anything uncommitted, whether Unity holds the project, the last commits, the last bars' totals and exits from `Logs/bar_timing.tsv`, the newest `COMPLETED.md` headings with their line numbers, the residue the last bar log printed, the errands `ERRANDS.md`'s live table leaves open, the sentinel's baseline label, the newest memory files. §524 proposed it "at each commit"; it is built on demand instead, so there is no generated file to fall behind the tree.
+- **The reading order at the head of `CLAUDE.md`**, above the anomaly note: the brief; `CLAUDE.md` down to "Genre & Scope", its heading outline never dumped; the working discipline; the newest memory file and the record sections the brief names, each by its line number; `Tools/bar_tier.ps1` before every commit.
+
+**Two defects, found by the brief's first run and fixed before its commit.** The records' section signs, dashes and multiplication signs printed as replacement marks through a pipe - PowerShell 5.1 writes the console's code page; the brief now writes UTF-8. And E-13, E-14 and E-15 read as open: their done marks sit 218–255 characters into the row, past the 140-character window the first form looked in, while every done row in the live table carries the mark somewhere. A mark anywhere in the row now counts; E-39 and E-3 are the two it reads as open, which is what the file says.
+
+**Measured.**
+
+| | before (§524 (c), three full starts) | after |
+|---|---|---|
+| read before the first edit | 846–1 220 KB over 49–67 tool calls, 12.9–15.0 min | the reading order: the brief 4.9 KB, `CLAUDE.md` to "Genre & Scope" 24.5 KB, the working discipline 33.9 KB, the newest memory file 2.6 KB - 66 KB in five reads |
+| the brief itself | - | about 2 s, the `git fetch` included |
+
+⚠ **Not measured here:** the minutes a start now takes. That is read off the next session's transcript, not claimed in advance.
+
+**Tier:** TOOLING (`bar_c` 41 of 41).
+
+### Before and after, the pass
+
+| | before | after |
+|---|---|---|
+| France's Budget tab, one IMGUI pass | 2.1–3.9 s | 24–36 ms, net of the capture-only verification |
+| a France dry session at 1280 to the pension frame | 220–229 s | 40.9 s |
+| an Italy dry session, the same | 90.4 s | 21.5 s |
+| the cheap bar, in-process | 30.2 s (`dedupe_before_clean`, the chamber check's 2.7 s in it) | 20.1–21.8 s over this pass's three clean bars after the dedupes |
+| `DeadStateCheck` | 9.6 s | 0.65 s |
+| the simulation bar, in-process | 659.2 s | 561.4 s |
+| a session's start-up reading | 846–1 220 KB | 66 KB |
+
+**Not built, by ruling:** the memory index at one line an entry - a fourth thing to keep true.
+
+**Bars.** `bar_pf1b` 41 of 41 with `drypf1b` and `filmpf1b` (PF-1, `f02efeb`); `cache_after_clean` 41 of 41 (the source cache, `d78105e`); `b1_after_clean` 41 of 41 (`DeadStateCheck`, `73ed866`); `bar_b2` 41 of 41 and `b2_simbar_after` 54 of 54 (the centuries, `af9e155`); `bar_c` 41 of 41 (the brief, `2734841`); this record's document batch `docbar_rec525`.
