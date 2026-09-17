@@ -1661,7 +1661,7 @@ namespace PoliSim.Testing
                 // The dry film's frame: the IMGUI pass a Game View would have delivered before WaitForEndOfFrame resumes.
                 if (!DryGuiPass.Pump(_dryController, _dryOnGui)) { DryStop(); yield break; }
 #endif
-                Debug.Log($"SHOT: dry pass for {name}.");
+                Debug.Log($"SHOT: dry pass for {name} - the IMGUI pass took {DryGuiPass.LastPassMilliseconds} ms, its Layout event {DryGuiPass.LastLayoutMilliseconds} ms.");
             }
             else
             {

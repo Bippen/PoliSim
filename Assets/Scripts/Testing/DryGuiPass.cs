@@ -144,8 +144,19 @@ namespace PoliSim.Testing
         /// </summary>
         public static bool Pump(MonoBehaviour target, MethodInfo onGui)
         {
-            return Deliver(target, onGui, EventType.Layout) && Deliver(target, onGui, EventType.Repaint);
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            bool ok = Deliver(target, onGui, EventType.Layout);
+            LastLayoutMilliseconds = clock.ElapsedMilliseconds;
+            ok = ok && Deliver(target, onGui, EventType.Repaint);
+            LastPassMilliseconds = clock.ElapsedMilliseconds;
+            return ok;
         }
+
+        /// <summary>The last pump's Layout event, and the whole pass, in milliseconds - a screen that is slow to draw is slow in a film too, and this is where it shows.</summary>
+        public static long LastLayoutMilliseconds { get; private set; }
+
+        /// <summary>See <see cref="LastLayoutMilliseconds"/>.</summary>
+        public static long LastPassMilliseconds { get; private set; }
 
         private static bool Deliver(MonoBehaviour target, MethodInfo onGui, EventType type)
         {
