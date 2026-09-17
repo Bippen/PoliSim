@@ -732,13 +732,20 @@ namespace PoliSim.UI
         /// </summary>
         private static GUIStyle _cellStyle;
         private static int _cellStyleSourceSize = -1;
+        private static GUIStyle _cellStyleSource;
 
         private static GUIStyle CellStyle(GUIStyle source)
         {
-            if (_cellStyle == null || _cellStyleSourceSize != source.fontSize)
+            // Keyed on the SOURCE as well as its size (P6-F1, 2026-09-18): keyed on the size alone, a second
+            // source at the same size inherited the first's clone - the rail's missing-icon fallback drew its
+            // initial through the tab style at 30 px (2560), and the Desk's verdict cell, also 30 px at its
+            // source, printed WOULD PASS bold with the tab strip's fixed height (141 wide in 138.7, 70 tall)
+            // on every desk frame of that film; the size check alone cannot tell two styles apart.
+            if (_cellStyle == null || !ReferenceEquals(_cellStyleSource, source) || _cellStyleSourceSize != source.fontSize)
             {
                 _cellStyle = new GUIStyle(source) { wordWrap = true, clipping = TextClipping.Overflow };
                 _cellStyleSourceSize = source.fontSize;
+                _cellStyleSource = source;
             }
 
             // Reset the size every call: MeasuredLabel may have shrunk the cached copy for a previous

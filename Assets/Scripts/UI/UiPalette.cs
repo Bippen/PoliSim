@@ -29,7 +29,11 @@ namespace PoliSim.UI
             Infrastructure,
             SovereignWealth,
             /// <summary>The world map tab (Phase 5) - a cross-cutting overview, not owned by any one policy area, so it gets its own distinct hue rather than reusing Neutral or borrowing another area's.</summary>
-            Global
+            Global,
+            /// <summary>P6-F1 (2026-09-17, `COMPLETED.md` §536): the energy system's own area - DS-4b's "Rail cell: NO" overruled by Elias after play. ⚠ Its icon
+            /// (`icon_area_energy`) is a genuine asset gap on the D21 ask, and its ink is Design's too: until both land, the area borrows the Sectors ink as a stated
+            /// stand-in, and `AreaIconCoverageCheck` reports the icon MISSING on every bar by ruling - a named gap, never suppressed.</summary>
+            Energy
         }
 
         public enum ButtonKind
@@ -131,7 +135,8 @@ namespace PoliSim.UI
             { SystemArea.Sectors, PoliSimTheme.Hex(0x62579F) },         // indigo - economic sectors
             { SystemArea.Infrastructure, PoliSimTheme.Hex(0x3C6F7B) },  // slate - infrastructure
             { SystemArea.SovereignWealth, PoliSimTheme.Hex(0x826239) }, // bronze - sovereign wealth fund
-            { SystemArea.Global, PoliSimTheme.Hex(0x456C89) }           // sky blue - world map overview
+            { SystemArea.Global, PoliSimTheme.Hex(0x456C89) },          // sky blue - world map overview
+            { SystemArea.Energy, PoliSimTheme.Hex(0x62579F) }           // P6-F1 (2026-09-17): the SECTORS indigo as a stated stand-in - the area's own ink is Design's, D21 row 1
         };
 
         public static Color GetAreaColor(SystemArea area) => AreaColors[area];

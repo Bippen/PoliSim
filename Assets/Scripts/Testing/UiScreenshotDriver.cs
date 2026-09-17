@@ -122,7 +122,8 @@ namespace PoliSim.Testing
 
         private static readonly string[] Tabs =
         {
-            "Statistics", "Decisions", "Demographics", "Budget", "PolicyLaws", "Politics"
+            "Statistics", "Decisions", "Demographics", "Budget", "PolicyLaws", "Politics",
+            "Energy",   // P6-F1 (2026-09-17): the ninth rail cell; last, so the stems of the tabs before it do not move
         };
 
         /// <summary>
@@ -466,6 +467,61 @@ namespace PoliSim.Testing
                 ResetScrolls(controller);   // board 5b (2026-09-02): the whole-tab capture at scroll ZERO - the previous tab's deep scroll had been carried into it by SetScrolls (every scroll field at once), so People filmed at its tail
                 yield return Settle();
                 yield return Capture($"{i + 2:00}_{Tabs[i].ToLowerInvariant()}");
+                // EN-6 (2026-09-12): the energy page sits under the forty sector rows on the Sectors page - the plate's own
+                // laid-out area, scrolled to the way the People plates are, four plates filmed in one frame where they fit.
+                if (Tabs[i] == "Energy")
+                {
+                    string energyStem = $"{i + 2:00}_energy";
+                    // EN-7a (2026-09-14): the Energy sector's cost sentence - where its subsidy lands, what the line carries, and SC-1's unbooked support
+                    var energyCostField = controller.GetType().GetField("_energySectorCostLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    float energyCostY = energyCostField != null ? ((Rect)energyCostField.GetValue(controller)).y : 0f;
+                    if (energyCostY > 0f)
+                    {
+                        ScrollBy(controller, Mathf.Max(0f, energyCostY - UiScreen.Height * 0.45f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(energyStem + "_sector_cost");
+                    }
+                    else { Debug.LogError($"SHOT: the Energy sector's cost sentence was never laid out - {energyStem}_sector_cost not filmed."); }
+                    var energyField = controller.GetType().GetField("_energyPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    float energyY = energyField != null ? ((Rect)energyField.GetValue(controller)).y : 3600f;
+                    ScrollBy(controller, Mathf.Max(0f, energyY - UiScreen.Height * 0.06f));
+                    yield return Settle();
+                    yield return Settle();
+                    yield return Capture(energyStem);
+                    ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 0.50f));
+                    yield return Settle();
+                    yield return Capture(energyStem + "_mid");
+                    ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.06f));
+                    yield return Settle();
+                    yield return Capture(energyStem + "_lower");
+                    // EN-7a (2026-09-14): the instruments plate in PROVENANCE, where the chips that say what each instrument reaches draw
+                    // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
+                    _provenanceToRestore = DeskProvenance.On;
+                    DeskProvenance.On = true;
+                    ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.6f));
+                    yield return Settle();
+                    yield return Settle();
+                    yield return Capture(energyStem + "_instruments_provenance");
+                    // EN-7b (2026-09-15): plate 4's foot, where the electricity tax's rows sit, still in PROVENANCE - scrolled to the plate's recorded rect
+                    var instrumentsField = controller.GetType().GetField("_energyInstrumentsLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Rect instruments = instrumentsField != null ? (Rect)instrumentsField.GetValue(controller) : Rect.zero;
+                    if (instruments.height > 0f)
+                    {
+                        ResetScrolls(controller);
+                        yield return Settle();
+                        ScrollBy(controller, Mathf.Max(0f, instruments.yMax - UiScreen.Height * 0.52f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(energyStem + "_electricity_tax_provenance");
+                    }
+                    else { Debug.LogError($"SHOT: plate 4 was never laid out - {energyStem}_electricity_tax_provenance not filmed."); }
+                    DeskProvenance.On = _provenanceToRestore.Value;
+                    _provenanceToRestore = null;
+                    yield return Settle();
+                    ResetScrolls(controller);
+                    yield return Settle();
+                }
                 if (Tabs[i] == "Decisions")
                 {
                     // P4-E3 (2026-09-04): the staged Cabinet decision's options scrolled into view - two options, each with its cost line, plate and scope line.
@@ -627,60 +683,6 @@ namespace PoliSim.Testing
                         yield return Settle();
                     }
 
-                    // EN-6 (2026-09-12): the energy page sits under the forty sector rows on the Sectors page - the plate's own
-                    // laid-out area, scrolled to the way the People plates are, four plates filmed in one frame where they fit.
-                    if (stem == "06c_policylaws_sectors")
-                    {
-                        // EN-7a (2026-09-14): the Energy sector's cost sentence - where its subsidy lands, what the line carries, and SC-1's unbooked support
-                        var energyCostField = controller.GetType().GetField("_energySectorCostLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                        float energyCostY = energyCostField != null ? ((Rect)energyCostField.GetValue(controller)).y : 0f;
-                        if (energyCostY > 0f)
-                        {
-                            ScrollBy(controller, Mathf.Max(0f, energyCostY - UiScreen.Height * 0.45f));
-                            yield return Settle();
-                            yield return Settle();
-                            yield return Capture(stem + "_energy_sector_cost");
-                        }
-                        else { Debug.LogError("SHOT: the Energy sector's cost sentence was never laid out - 06c_policylaws_sectors_energy_sector_cost not filmed."); }
-                        var energyField = controller.GetType().GetField("_energyPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                        float energyY = energyField != null ? ((Rect)energyField.GetValue(controller)).y : 3600f;
-                        ScrollBy(controller, Mathf.Max(0f, energyY - UiScreen.Height * 0.06f));
-                        yield return Settle();
-                        yield return Settle();
-                        yield return Capture(stem + "_energy");
-                        ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 0.50f));
-                        yield return Settle();
-                        yield return Capture(stem + "_energy_mid");
-                        ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.06f));
-                        yield return Settle();
-                        yield return Capture(stem + "_energy_lower");
-                        // EN-7a (2026-09-14): the instruments plate in PROVENANCE, where the chips that say what each instrument reaches draw
-                        // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
-                        _provenanceToRestore = DeskProvenance.On;
-                        DeskProvenance.On = true;
-                        ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.6f));
-                        yield return Settle();
-                        yield return Settle();
-                        yield return Capture(stem + "_energy_instruments_provenance");
-                        // EN-7b (2026-09-15): plate 4's foot, where the electricity tax's rows sit, still in PROVENANCE - scrolled to the plate's recorded rect
-                        var instrumentsField = controller.GetType().GetField("_energyInstrumentsLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                        Rect instruments = instrumentsField != null ? (Rect)instrumentsField.GetValue(controller) : Rect.zero;
-                        if (instruments.height > 0f)
-                        {
-                            ResetScrolls(controller);
-                            yield return Settle();
-                            ScrollBy(controller, Mathf.Max(0f, instruments.yMax - UiScreen.Height * 0.52f));
-                            yield return Settle();
-                            yield return Settle();
-                            yield return Capture(stem + "_energy_electricity_tax_provenance");
-                        }
-                        else { Debug.LogError("SHOT: plate 4 was never laid out - 06c_policylaws_sectors_energy_electricity_tax_provenance not filmed."); }
-                        DeskProvenance.On = _provenanceToRestore.Value;
-                        _provenanceToRestore = null;
-                        yield return Settle();
-                        ResetScrolls(controller);
-                        yield return Settle();
-                    }
 
                     // P4-1 (2026-09-03): the readout pair on the TAX ledger, where the rows sit above the fold - the Income Tax
                     // draft moved +5 points, the same frame again, the geometry compared, the draft put back.

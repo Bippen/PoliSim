@@ -41,7 +41,10 @@ namespace PoliSim.UI
             // which were already sub-categories here.
             Budget,
             PolicyLaws,
-            Politics
+            Politics,
+            /// <summary>P6-F1 (2026-09-17, §536): the energy system's own tab - DS-4b overruled by Elias after play; the page that lived under the Sectors
+            /// category moved here whole. Appended last so the film's stem numbering of the tabs before it does not move.</summary>
+            Energy
         }
 
 
@@ -2195,6 +2198,11 @@ namespace PoliSim.UI
                 case ConsolidatedTab.Politics:
                     DrawPoliticsTab(tabContentHeight, rightColumnWidth);
                     break;
+                case ConsolidatedTab.Energy:
+                    GUI.enabled = !_isGameOver;
+                    DrawEnergyTab(tabContentHeight, rightColumnWidth);
+                    GUI.enabled = true;
+                    break;
             }
 
             // P2-1.1: the frame's own probe - on Repaint the sheet must end where the column ends. A shortfall
@@ -2720,6 +2728,7 @@ namespace PoliSim.UI
                 case ConsolidatedTab.Budget: return UiPalette.SystemArea.Fiscal;
                 case ConsolidatedTab.PolicyLaws: return UiPalette.SystemArea.Sectors;
                 case ConsolidatedTab.Politics: return UiPalette.SystemArea.Political;
+                case ConsolidatedTab.Energy: return UiPalette.SystemArea.Energy;
                 default: return UiPalette.SystemArea.Neutral;
             }
         }
@@ -4748,6 +4757,10 @@ namespace PoliSim.UI
             GUILayout.Space(RailGap());
             DrawRailNavCell("POLITICS", ConsolidatedTab.Politics, "icon_area_political", cell, cells);
             GUILayout.Space(RailGap());
+            // P6-F1 (2026-09-17): the ninth cell. ⚠ `icon_area_energy` is not on disk - the cell draws the caption's initial in the area's ink, by this
+            // rail's own missing-icon contract, until Design's icon lands (D21 row 1); AreaIconCoverageCheck names the gap on every bar meanwhile.
+            DrawRailNavCell("ENERGY", ConsolidatedTab.Energy, "icon_area_energy", cell, cells);
+            GUILayout.Space(RailGap());
             DrawRailCampaignCell(cell, cells);   // C-R4b step 4a: present only while the player's campaign runs
 
             GUILayout.FlexibleSpace();
@@ -4883,9 +4896,74 @@ namespace PoliSim.UI
             }
             else
             {
-                LedgerRow.Cell(slot, caption.Substring(0, 1), _tabButtonStyle, ink, TextAnchor.MiddleCenter);
+                // P6-F1: the fallback, exercised for the first time (icon_area_energy is a named gap until
+                // Design's icon lands). Through LedgerRow.Cell the tab style brought the skin's button
+                // face and its padding with it - a 44 px box in a 21 px slot on every capture of the first
+                // F1 film - so the initial is a bare glyph fitted to the slot instead.
+                DrawRailInitial(slot, caption.Substring(0, 1), ink);
             }
         }
+
+        /// <summary>The rail's missing-icon fallback: the caption's initial as a bare bold glyph in the
+        /// ink the icon would have taken, sized from the glyph slot and fitted to its height before
+        /// MeasuredLabel measures it (the calendar chip's own resort for the day numeral). The tab style
+        /// is the wrong instrument for a glyph in a slot: it carries the skin's button face, its padding
+        /// and the tab strip's FIXED HEIGHT (44 px at 1280, 70 at 2560), and drawn through LedgerRow.Cell
+        /// the first F1 film's E was a 44 px box in a 21 px slot on every capture, then at the 8 px floor
+        /// once the face was stripped but the fixed height was not. Cached on the tab type's size so the
+        /// scratch MeasuredLabel keeps for it is one object, not one per frame; the ink is re-seeded per
+        /// cell (active area ink or the swatch tint) on all eight states, so the label never draws the
+        /// skin's hover ink.</summary>
+        private void DrawRailInitial(Rect slot, string initial, Color ink)
+        {
+            if (_railInitialStyle == null || _railInitialSourceSize != _tabButtonStyle.fontSize)
+            {
+                _railInitialStyle = new GUIStyle(_labelStyle)
+                {
+                    font = _tabButtonStyle.font,
+                    wordWrap = false,
+                    clipping = TextClipping.Overflow,
+                    alignment = TextAnchor.MiddleCenter,
+                    fontStyle = FontStyle.Bold,
+                    padding = new RectOffset(),
+                    margin = new RectOffset(),
+                    border = new RectOffset(),
+                    overflow = new RectOffset(),
+                    contentOffset = Vector2.zero,
+                    fixedWidth = 0f,
+                    fixedHeight = 0f,
+                    stretchWidth = true,
+                    stretchHeight = true,
+                };
+                foreach (GUIStyleState state in RailInitialStates(_railInitialStyle))
+                {
+                    state.background = null;
+                }
+
+                _railInitialSourceSize = _tabButtonStyle.fontSize;
+            }
+
+            GUIStyle style = _railInitialStyle;
+            foreach (GUIStyleState state in RailInitialStates(style))
+            {
+                state.textColor = ink;
+            }
+
+            style.fontSize = Mathf.Max(PoliSimWidgets.MinMeasuredLabelFontSize, Mathf.FloorToInt(slot.height * 0.8f));
+            float need = style.CalcSize(new GUIContent(initial)).y;
+            if (need > slot.height && need > 0f)
+            {
+                style.fontSize = Mathf.Max(PoliSimWidgets.MinMeasuredLabelFontSize, Mathf.FloorToInt(style.fontSize * slot.height / need));
+            }
+
+            PoliSimWidgets.MeasuredLabel(slot, initial, style);
+        }
+
+        private GUIStyle _railInitialStyle;
+        private int _railInitialSourceSize = -1;
+
+        private static GUIStyleState[] RailInitialStates(GUIStyle style) =>
+            new[] { style.normal, style.hover, style.active, style.focused, style.onNormal, style.onHover, style.onActive, style.onFocused };
 
         /// <summary>
         /// The calendar chip: the desk pad's own sprite at cell width (the whole sprite scaled, not
@@ -10922,8 +11000,7 @@ namespace PoliSim.UI
             }
 
             DrawTierBreakdownAfterRows();   // P4-B2: the sectors bill's breakdown, after the forty rows
-            GUILayout.Space(14f);
-            DrawEnergyPlate();   // EN-6 (2026-09-12): the energy page, structural, under the Sectors page (DS-4b) - instruments first
+            // P6-F1 (2026-09-17): the energy page drew here under the Sectors category from EN-6 to this pass (DS-4b); it is its own tab now, whole.
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }

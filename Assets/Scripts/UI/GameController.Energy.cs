@@ -95,6 +95,27 @@ namespace PoliSim.UI
         private const string AbsentLoadGrowth = "THE LOAD DOES NOT GROW WITH GDP OR ELECTRIFICATION · STATED, NOT MODELLED";
         private const string AbsentInvestment = "NOTHING BUILDS OR CLOSES A PLANT · THE FLEET AND THE LOAD ARE STATIC UNTIL DISPATCH";
 
+        /// <summary>The tab's own scroll position - a new field is picked up by the film driver's scroll reflection without a driver edit.</summary>
+        private Vector2 _energyScrollPosition;
+
+        /// <summary>
+        /// **P6-F1 (2026-09-17, `COMPLETED.md` §536): the Energy tab.** DS-4b put the energy page under the Sectors category and ruled
+        /// "Rail cell: NO"; Elias played it and overruled that - the player's reading wins - so the page has its own tab and its own
+        /// rail cell now, and it moved WHOLE: the same `DrawEnergyPlate` the Sectors page called, in the frame every other tab draws
+        /// (the sheet sized to the frame, the page header with the provenance tab, one scroll view). ⚠ What the tab still lacks is
+        /// anything a player DOES - the sheet's own words - and that is P6-F2: build and retire, the four instruments, the law
+        /// category, the ministry; each a stage the spec-let already ruled, none built here.
+        /// </summary>
+        private void DrawEnergyTab(float availableHeight, float availableWidth)
+        {
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
+            DrawPageHeaderWithProvenanceTab("Energy", UiPalette.GetAreaColor(UiPalette.SystemArea.Energy));
+            _energyScrollPosition = GUILayout.BeginScrollView(_energyScrollPosition, GUILayout.ExpandHeight(true));
+            DrawEnergyPlate();
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+        }
+
         private void DrawEnergyPlate()
         {
             Country country = _playerCountry;
@@ -112,7 +133,7 @@ namespace PoliSim.UI
             EnsureEnergyCache(country);
             EnergyMarket.Result r = _energyResult;
             EnergyLedger.Book book = _energyBook;
-            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);
+            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Energy);   // P6-F1: the page carries its own area's ink (the Sectors ink as a stand-in until D21)
             bool sweden = country.Id == CountryId.Sweden;
             bool usa = country.Id == CountryId.USA;
             string marketUnit = (usa ? "USD" : "EUR") + " PER MWh";

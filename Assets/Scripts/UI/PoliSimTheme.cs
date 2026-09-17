@@ -168,7 +168,8 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.Sectors, Hex(0x62579F) },
             { UiPalette.SystemArea.Infrastructure, Hex(0x3E7480) },
             { UiPalette.SystemArea.SovereignWealth, Hex(0x85643A) },
-            { UiPalette.SystemArea.Global, Hex(0x47708E) }       // D6 (2026-08-28): #5C87A8 → #47708E, with UiPalette's on-paper entry
+            { UiPalette.SystemArea.Global, Hex(0x47708E) },      // D6 (2026-08-28): #5C87A8 → #47708E, with UiPalette's on-paper entry
+            { UiPalette.SystemArea.Energy, Hex(0x62579F) }       // P6-F1 (2026-09-17): the SECTORS ink as a stated stand-in until Design assigns the area its own (D21 row 1)
         };
 
         /// <summary>
@@ -189,7 +190,8 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.Sectors, Hex(0x9288C2) },
             { UiPalette.SystemArea.Infrastructure, Hex(0x7BA3AE) },
             { UiPalette.SystemArea.SovereignWealth, Hex(0xB0925F) },
-            { UiPalette.SystemArea.Global, Hex(0x8FAEC7) }
+            { UiPalette.SystemArea.Global, Hex(0x8FAEC7) },
+            { UiPalette.SystemArea.Energy, Hex(0x9288C2) }       // P6-F1: the Sectors lifted weight, the same stand-in (D21 row 1)
         };
 
         /// <summary>
@@ -580,7 +582,8 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.Labor, Hex(0xA2653E) },
             { UiPalette.SystemArea.CrimeJustice, Hex(0x8E4A40) },
             { UiPalette.SystemArea.Sectors, Hex(0x5B5187) },
-            { UiPalette.SystemArea.Global, Hex(0x4E7291) }
+            { UiPalette.SystemArea.Global, Hex(0x4E7291) },
+            { UiPalette.SystemArea.Energy, Hex(0x5B5187) }       // P6-F1: the Sectors swatch tint, the same stand-in, so the ENERGY glyph sits at its neighbours' weight
         };
 
         /// <summary>The inactive tab swatch's tint for an area - the snapped §A.3 value where one is delivered, the area ink otherwise.</summary>
