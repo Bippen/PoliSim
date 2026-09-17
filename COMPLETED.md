@@ -30050,3 +30050,93 @@ The sweep carries the pair now: `04g_people_health_plate_provenance` beside the 
 | `DERIVED 2 · DECLARED 0 · NO LINE AUTHORED · NO EDGE INVENTED` | absent | drawn in `06l` |
 
 **Bars.** `bar_b1b` the cheap bar 41 of 41; `dryb1b` the dry film (Sweden 1280) 121 measured, 0 failed, 0 overflows, 0 escapes, exit 0 - the first clean dry film of this pass; `filmb1b` the one filmed width (Sweden 1280) 121 captured, 0 failed, 0 overflows, 0 escapes, 0 canvas text violations across 5 asserts. The tier is UI.
+
+## 531. P6-C1 — THE PEOPLE PAGE'S DENSITY, MEASURED AFTER TRACK B: rows per viewport, what a row carries at rest, ink per row by column, and what a player reads first — every figure read off the films' label tables and pixels, none off an impression (2026-09-17)
+
+**The row** (P6-C1): *"Six families, ~30 rows, each with figure, band, own tick, five peer dots, reach chips, sparkline, honesty tags and a source line. After Track B moves the provenance, re-measure what remains per row and per family. Done when: the measurement is in the record - rows per viewport at 1280, ink per row, and what a player reads first."*
+
+### How it was measured
+
+Two instruments the harness already owns. **The label table** (every styled text draw of a capture, with its rect and type size) gives the page's geometry - row tops, pitch, which lines print - for the whole page at once, because the desk lays the whole sheet out and the table records what is off the viewport too. **The pixels** of the same film give ink: for each row band and each column span, the share of pixels darker than the paper by a margin (ink), the share a little darker (hairlines, pale marks, anti-aliasing), and the darkest pixel. The film is `filmb1b` (Sweden, 1280×699, after Track B), and `filma3` is the same sweep before it.
+
+### The page, in rows
+
+| family | rows at rest | what the rows are |
+|---|---|---|
+| Health | 6, plus the *Supporting readouts* extra row | coverage, of which public, retiree coverage, treatable mortality, two waiting times; the extra row is five sub-figures with their units |
+| Education | 4 | PISA (a gap row), graduation rate (a gap row), early leavers, attainment by level (a distribution) |
+| Infrastructure | 4 | road quality, connectivity, congestion, road length |
+| Environment | 7 | emissions per person and its split, electricity and transport CO₂ per head, electricity by source (a distribution), two prices |
+| Immigration · poverty depth | 4 | irregular migration, poverty gap, underemployment, homelessness |
+
+**25 rows and one extra row across five plates** (the sixth family of the sheet's count is the cohort substrate above them, which is a pyramid, not rows). The row pitch is **36 px** at 1280, measured over 21 consecutive gaps, the same before and after Track B: the plates got shorter by their feet, not by their rows.
+
+**Rows per viewport at 1280**, counted from the Health header down one 699-px viewport: **16 row names under 3 family headers before Track B; 17 under 4 after** - the Infrastructure header and its first rows came up into the viewport when the seed feet left. At 2560×1419 (`c1_2560`), where the type scales with the height and the pitch is 66 px, the same count is **18 row names under 4 headers** - the viewport holds the same order of rows at both widths, which is the height-fraction scaling doing what it is for.
+
+⚠ **The plate block is not the page.** The five plates run about 1 120 px, 1.6 viewports at 1280; the sheet continues for 1 340 px more below them - the spending and revenue breakdown lists - so the People page is 4.9 viewports tall and the families are a third of it.
+
+### What a row carries at rest
+
+After D16 and Track B, a data row at rest is **the name (with its qualification glyph), the figure with its unit glyph, the band with its own tick and the five peer ticks, the pips, and the sparkline** - 3 to 4 text draws and three graphics. The reach chips, the unit and source lines, the rank numeral and the honesty column are the tab's, by D16 §2, and print in the PROVENANCE state only; the seed foot joined them at §530.
+
+The rows that carry more at rest, and why: a **gap row** carries its reason sentence (`BILLED · …`), which the rule keeps at rest because a gap keeps its word; a row a **live draft moves** carries the arrow and its `COUPLING DRAFT` chip, which follow the draft onto the page and off it; the **Supporting readouts** extra row carries fifteen draws - five sub-figures, each with a caption above and a unit line below.
+
+### Ink per row, by column
+
+Percent of the pixels in the row band that are ink (darker than the paper by a margin), with the darkest pixel; the health rows and the education rows of the first viewport:
+
+| row | name | figure | band | pips | sparkline |
+|---|---|---|---|---|---|
+| Coverage | 2.4 % | 5.6 % (38) | 0.3 % | 9.7 % (38) | 4.5 % |
+| … of which public | 3.9 % | 5.6 % (38) | 0.3 % | 9.7 % (38) | 1.2 % |
+| Retiree coverage | 4.2 % | 5.6 % (38) | 0.0 % | 0.0 % | 0.0 % |
+| Quality · treatable mortality | 7.0 % | 3.9 % (38) | 3.6 % | 9.7 % (38) | 4.5 % |
+| Waiting · cataract | 4.3 % | 3.1 % (38) | 3.6 % | 5.4 % (38) | 1.2 % |
+| Waiting · knee replacement | 7.7 % | 4.3 % (38) | 4.5 % | 6.1 % (38) | 1.3 % |
+| Supporting readouts | 5.0 % | 8.1 % (39) | 7.7 % | 1.8 % | 1.7 % |
+| Academic score · PISA (gap) | 3.8 % | 3.5 % (95) | 7.8 % | - | - |
+| Graduation rate (gap) | 3.2 % | 3.7 % (95) | 7.7 % | - | - |
+| Early leavers | 3.0 % | 3.7 % (38) | 2.9 % | 7.2 % (38) | 4.0 % |
+| Attainment by level (a distribution) | 6.9 % | 10.2 % (38) | 11.4 % | 9.3 % (38) | 5.5 % |
+
+Reading it: **a data row at rest is about 5 % ink**; the band column - the widest cell on the page - is under 1 % on a bounded row (a hairline track, a tick, five pale peer ticks) and rises to 11 % only where the row is a filled distribution; the pips are the densest ink on the page per pixel but sit in a 50-px cell; a gap row's figure column is the pale `BILLED` word (darkest 95 against 38), so it reads lighter than any figure, which is the rule working.
+
+### What a player reads first
+
+By type and by ink together: **the figure.** It is the largest type in the row (17 units, bold), it is the darkest ink in every data row (38, the page's black), and it sits in one column with the same left edge on every row, so the eye runs down it. The name is next (12 units, regular; darkest 40–44). The band and the sparkline are pale by design and read after. In the PROVENANCE state every row adds its lines beneath the name and its chips beneath the band, and the row is no longer one glance - which is the state's purpose, and the state persists across sessions by §9.1's ruling: ⚠ **a player who opened the tab once sees every row's apparatus until the tab is closed again.** The sheet's description of a row - *"figure, band, own tick, five peer dots, reach chips, sparkline, honesty tags and a source line"* - is the PROVENANCE row, not the row at rest.
+
+## 532. P6-C2 — THE STRUCTURAL SIMPLIFICATION, HELD AGAINST THE MEASUREMENT: what the grammar already collapses at rest, what the measurement says would need a NEW form and therefore goes to Design as D21 rows, and the one finding that is Elias's — no form invented here (2026-09-17)
+
+**The row** (P6-C2): *"From the measurement: collapse what repeats, promote the family's key figure, and let a row's detail open rather than sit open. The plate grammar (9c/10a) is Design's and is not re-litigated - this is applying it at the density the measurement shows. Anything the measurement says needs a new form goes to Design as a D21 row, not invented here. Done when: filmed at both widths, rows-per-viewport measured before and after."*
+
+### The three moves, each held against §531
+
+**1. Collapse what repeats.** At rest a data row repeats exactly the grammar's own parts - the name, the figure with its unit glyph, the band with its tick and peer ticks, the pips, the sparkline (D16 §3.3's four graphics) - at 3 to 4 text draws and about 5 % ink per row. Collapsing any of those is removing the grammar, which the row says is not re-litigated. What repeated OUTSIDE the grammar at rest was the seed foot under every family, and that collapsed at §530. The one at-rest element heavier than a row is the health family's *Supporting readouts* extra row - fifteen draws, five sub-figures each with a caption above and a unit line below - and it is a form D16 drew (the extra row), so its weight is recorded and its form is Design's.
+
+**2. Promote the family's key figure.** The family header carries the name and, behind the tab, the publisher and vintage; it has **no figure cell**. Putting the family's headline figure in the header is a new cell in a header the boards drew without one - a new form. It goes to Design.
+
+**3. Let a row's detail open rather than sit open.** It already does, one level up: the reach chips, the unit and source lines, the rank numeral, the honesty column and now the seed foot open with the desk-global `†` and sit closed without it - D16 §2, ruled at §9.1. What the row describes - a row's detail opening **in place**, on that row - is a per-row disclosure, an interaction the grammar does not have. It goes to Design.
+
+⚠ **So nothing is built here, and that is the measurement's verdict rather than an omission.** The row's own rule for this case is explicit. The three D21 rows are collected for P6-H1:
+
+| D21 row | what is asked | the measurement behind it |
+|---|---|---|
+| the family's key figure | a figure cell in the family header, so a family reads at a glance before its rows do | the figure is what a player reads first (§531), and today the first one is a row's, not the family's |
+| a per-row disclosure | a row's own detail opening on that row, in place, beside the desk-global tab | at rest a row is one glance; the tab opens every row at once and the state persists |
+| the extra row's form | what the *Supporting readouts* row should carry at rest | fifteen draws at rest against three to four on any other row |
+
+### Rows per viewport, before and after, at both widths
+
+The only change this pass made to the People page's density is Track B's, and it is measured rather than assumed:
+
+| | 1280×699 | 2560×1419 |
+|---|---|---|
+| before Track B (`filma3`) | 16 row names under 3 family headers in one viewport | - |
+| after Track B (`filmb1b`, `c1_2560`) | 17 under 4 | 18 under 4 |
+| the row pitch | 36 px | 66 px |
+
+Filmed at both widths: `filmb1b` (1280, the full sweep) and `c1_2560` (2560, to the plate's provenance frame); the label tables are the count's source.
+
+### The finding that is Elias's
+
+The sheet describes a row as *"figure, band, own tick, five peer dots, reach chips, sparkline, honesty tags and a source line"*. That is the row in the **PROVENANCE** state. The tab's state is one value for the whole desk and it **persists across sessions**, by §9.1's own ruling, so a player who opened it once sees every row's apparatus on every visit until the tab is closed. Whether that persistence is what the density complaint was, and whether the mode should outlive a session, is a ruling and not a fix; it is stated here so it is not silently taken either way.

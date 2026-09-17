@@ -1049,12 +1049,23 @@ path now wraps - and both states are in the sweep (`04g`, `06l`).**
 five peer dots, reach chips, sparkline, honesty tags and a source line. After Track B moves the
 provenance, re-measure what remains per row and per family. *Done when:* the measurement is in the
 record — rows per viewport at 1280, ink per row, and what a player reads first.
+**→ ✅ MEASURED 2026-09-17, `COMPLETED.md` §531: read off the films' label tables and pixels - 25 rows and one
+extra row across five plates at a 36 px pitch; 17 row names under 4 family headers in one viewport at 1280
+after Track B (16 under 3 before), 18 under 4 at 2560; a data row at rest is 3 to 4 text draws and about 5 %
+ink, the band column under 1 %; the figure is what a player reads first (the largest type and the darkest
+ink, in one column). The sheet's row description is the PROVENANCE row, and that state persists across
+sessions by §9.1.**
 
 **P6-C2 — The structural simplification.** From the measurement: collapse what repeats, promote
 the family's key figure, and let a row's detail open rather than sit open. The plate grammar
 (9c/10a) is Design's and is not re-litigated — this is applying it at the density the measurement
 shows. **Anything the measurement says needs a new form goes to Design as a D21 row, not invented
 here.** *Done when:* filmed at both widths, rows-per-viewport measured before and after.
+**→ ⚠ HELD AGAINST THE MEASUREMENT 2026-09-17, `COMPLETED.md` §532: nothing built, by the row's own rule.
+At rest a row already repeats only the grammar's parts, and its detail already opens rather than sits open
+- with the desk-global `†`. The three moves that remain are new forms and go to Design as D21 rows (the
+family's key figure in its header, a per-row disclosure, the extra row's form). Rows per viewport measured
+before and after at both widths (§532). One finding is Elias's: the tab's state persists across sessions.**
 
 ## Track D — the trade matrix (finding 3)
 
