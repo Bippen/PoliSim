@@ -128,12 +128,25 @@ namespace PoliSim.EditorTools
             var unreached = new List<string>();
             var writeOnly = new List<string>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            // §525: the corpus is walked ONCE for every declared name together (see Tally), not once per name.
+            var names = new HashSet<string>(StringComparer.Ordinal);
+            var fieldNames = new HashSet<string>(StringComparer.Ordinal);
+            foreach ((string kind, string name, string _) in declarations)
+            {
+                names.Add(name);
+                if (kind == "field") { fieldNames.Add(name); }
+            }
+
+            var occurrenceCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            var readCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            Tally(contents.Values, names, fieldNames, occurrenceCounts, readCounts);
+
             foreach ((string kind, string name, string where) in declarations)
             {
                 if (!seen.Add(kind + ":" + name)) { continue; }
 
-                int occurrences = 0;
-                foreach (string text in contents.Values) { occurrences += CountWord(text, name); }
+                int occurrences = occurrenceCounts.TryGetValue(name, out int counted) ? counted : 0;
 
                 // 1 = the declaration itself and nothing else.
                 if (occurrences <= 1) { unreached.Add($"{kind,-7} {name,-42} {where}"); continue; }
@@ -153,8 +166,7 @@ namespace PoliSim.EditorTools
                 // reads would let a field escape scrutiny by being passed somewhere.
                 if (kind != "field") { continue; }
 
-                int reads = 0;
-                foreach (string text in contents.Values) { reads += CountReads(text, name); }
+                int reads = readCounts.TryGetValue(name, out int read) ? read : 0;
 
                 if (reads == 0) { writeOnly.Add($"{kind,-7} {name,-42} {where}"); }
             }
@@ -210,98 +222,112 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(0);
         }
 
-        /// <summary>Whole-word occurrences, so `Gdp` does not match `GdpGrowth`.</summary>
-        /// <summary>Occurrences of <paramref name="word"/> that are READS - every whole-word occurrence
-        /// that is not an assignment target. ⚠ The rules are listed at the call site because they are
-        /// choices rather than facts, and the most important one is that a compound assignment counts as a
-        /// WRITE: a field that only accumulates into itself is not being consumed.</summary>
-        private static int CountReads(string text, string word)
+        /// <summary>
+        /// **ONE PASS OVER THE CORPUS, NOT ONE PER NAME (2026-09-17, `COMPLETED.md` §525).** The check used to walk every
+        /// text with `IndexOf` once for each declared name, and once more for each field's reads - thousands of
+        /// whole-corpus scans and a third of the cheap bar. This walks each text once, cuts it into maximal runs of word
+        /// characters (the same <see cref="IsWordChar"/> the old boundary test used), and counts a run only when it IS a
+        /// declared name. That is the same count: a whole-word occurrence of a name is exactly a maximal run equal to it,
+        /// and the old scan's skip past an overlapping candidate could never skip one, because an overlap leaves a word
+        /// character on the next candidate's left. Each occurrence of a FIELD's name is then classified read or write by
+        /// <see cref="IsRead"/>, whose rules are the old ones unchanged. Measured name by name against the old scan before
+        /// the old scan was deleted (§525): every occurrence count and every read count equal.
+        /// </summary>
+        private static void Tally(IEnumerable<string> texts, HashSet<string> names, HashSet<string> fields,
+            Dictionary<string, int> occurrences, Dictionary<string, int> reads)
         {
-            int reads = 0;
-            int index = 0;
-            while ((index = text.IndexOf(word, index, StringComparison.Ordinal)) >= 0)
+            int shortest = int.MaxValue, longest = 0;
+            foreach (string name in names)
             {
-                int after = index + word.Length;
-                bool leftOk = index == 0 || !IsWordChar(text[index - 1]);
-                bool rightOk = after >= text.Length || !IsWordChar(text[after]);
-                if (!leftOk || !rightOk) { index = after; continue; }
-
-                // ⚠ THE DECLARATION IS NEITHER A READ NOR A WRITE, and getting this wrong made the first
-                // version of this classifier report ZERO on a planted write-only field. `private int x;`
-                // has no `=` after the name, so the naive rule counted the DECLARATION as a read and every
-                // write-only field looked read-once. The probe caught it; the check did not.
-                int lineStart = text.LastIndexOf((char)10, index) + 1;
-                int lineEnd = text.IndexOf((char)10, index);
-                if (lineEnd < 0) { lineEnd = text.Length; }
-                Match decl = PrivateField.Match(text.Substring(lineStart, lineEnd - lineStart));
-                if (decl.Success && decl.Groups[1].Value == word) { index = after; continue; }
-
-                // Look right, past spaces, for an assignment or an increment.
-                int j = after;
-                while (j < text.Length && (text[j] == ' ' || text[j] == '\t')) { j++; }
-
-                bool isWrite = false;
-                if (j < text.Length)
-                {
-                    char c0 = text[j];
-                    char c1 = j + 1 < text.Length ? text[j + 1] : '\0';
-
-                    // `x =` but NOT `x ==`, `x =>`, `x !=`, `x <=`, `x >=`.
-                    if (c0 == '=' && c1 != '=' && c1 != '>') { isWrite = true; }
-                    else if ((c0 == '+' || c0 == '-' || c0 == '*' || c0 == '/') && c1 == '=') { isWrite = true; }
-                    // ⚠ AN INCREMENT IS A WRITE ONLY WHEN ITS VALUE IS DISCARDED. `x++;` is a write;
-                    // `if (++x > 600)` READS x, and the first version of this rule called it a write and
-                    // reported `_attachAttempts` dead when it is the loop bound of the capture's attach
-                    // retry. **A false positive is not a harmless over-report here** - it would have had
-                    // somebody delete a live guard. The test is what FOLLOWS the operator: a statement
-                    // terminator means the value went nowhere.
-                    else if ((c0 == '+' && c1 == '+') || (c0 == '-' && c1 == '-'))
-                    {
-                        int m = j + 2;
-                        while (m < text.Length && (text[m] == ' ' || text[m] == '\t')) { m++; }
-                        isWrite = m < text.Length && text[m] == ';';
-                    }
-                }
-
-                // Look left, past spaces, for `out`/`ref`/`++`/`--`.
-                if (!isWrite)
-                {
-                    int k = index - 1;
-                    while (k >= 0 && (text[k] == ' ' || text[k] == '\t')) { k--; }
-                    // Same rule on the prefix side: `++x;` discards, `++x > 600` does not.
-                    if (k >= 1 && ((text[k - 1] == '+' && text[k] == '+') || (text[k - 1] == '-' && text[k] == '-')))
-                    {
-                        int m = after;
-                        while (m < text.Length && (text[m] == ' ' || text[m] == '\t')) { m++; }
-                        isWrite = m < text.Length && text[m] == ';';
-                    }
-                    else if (k >= 2 && text[k] == 't' && text[k - 1] == 'u' && text[k - 2] == 'o'
-                             && (k < 3 || !IsWordChar(text[k - 3]))) { isWrite = true; }
-                    else if (k >= 2 && text[k] == 'f' && text[k - 1] == 'e' && text[k - 2] == 'r'
-                             && (k < 3 || !IsWordChar(text[k - 3]))) { isWrite = true; }
-                }
-
-                if (!isWrite) { reads++; }
-                index = after;
+                shortest = Math.Min(shortest, name.Length);
+                longest = Math.Max(longest, name.Length);
             }
 
-            return reads;
+            foreach (string text in texts)
+            {
+                int i = 0;
+                while (i < text.Length)
+                {
+                    if (!IsWordChar(text[i])) { i++; continue; }
+                    int start = i;
+                    while (i < text.Length && IsWordChar(text[i])) { i++; }
+                    int length = i - start;
+                    if (length < shortest || length > longest) { continue; }
+                    string token = text.Substring(start, length);
+                    if (!names.Contains(token)) { continue; }
+                    occurrences[token] = occurrences.TryGetValue(token, out int n) ? n + 1 : 1;
+                    if (fields.Contains(token) && IsRead(text, start, token))
+                    {
+                        reads[token] = reads.TryGetValue(token, out int r) ? r + 1 : 1;
+                    }
+                }
+            }
         }
 
-        private static int CountWord(string text, string word)
+        /// <summary>Whether the whole-word occurrence of <paramref name="word"/> at <paramref name="index"/> is a READ -
+        /// not the declaration and not an assignment target. ⚠ The rules are listed at the call site because they are
+        /// choices rather than facts, and the most important one is that a compound assignment counts as a WRITE: a
+        /// field that only accumulates into itself is not being consumed.</summary>
+        private static bool IsRead(string text, int index, string word)
         {
-            int count = 0;
-            int index = 0;
-            while ((index = text.IndexOf(word, index, StringComparison.Ordinal)) >= 0)
+            int after = index + word.Length;
+
+            // ⚠ THE DECLARATION IS NEITHER A READ NOR A WRITE, and getting this wrong made the first
+            // version of this classifier report ZERO on a planted write-only field. `private int x;`
+            // has no `=` after the name, so the naive rule counted the DECLARATION as a read and every
+            // write-only field looked read-once. The probe caught it; the check did not.
+            int lineStart = text.LastIndexOf((char)10, index) + 1;
+            int lineEnd = text.IndexOf((char)10, index);
+            if (lineEnd < 0) { lineEnd = text.Length; }
+            Match decl = PrivateField.Match(text.Substring(lineStart, lineEnd - lineStart));
+            if (decl.Success && decl.Groups[1].Value == word) { return false; }
+
+            // Look right, past spaces, for an assignment or an increment.
+            int j = after;
+            while (j < text.Length && (text[j] == ' ' || text[j] == '\t')) { j++; }
+
+            bool isWrite = false;
+            if (j < text.Length)
             {
-                bool leftOk = index == 0 || !IsWordChar(text[index - 1]);
-                int after = index + word.Length;
-                bool rightOk = after >= text.Length || !IsWordChar(text[after]);
-                if (leftOk && rightOk) { count++; }
-                index = after;
+                char c0 = text[j];
+                char c1 = j + 1 < text.Length ? text[j + 1] : '\0';
+
+                // `x =` but NOT `x ==`, `x =>`, `x !=`, `x <=`, `x >=`.
+                if (c0 == '=' && c1 != '=' && c1 != '>') { isWrite = true; }
+                else if ((c0 == '+' || c0 == '-' || c0 == '*' || c0 == '/') && c1 == '=') { isWrite = true; }
+                // ⚠ AN INCREMENT IS A WRITE ONLY WHEN ITS VALUE IS DISCARDED. `x++;` is a write;
+                // `if (++x > 600)` READS x, and the first version of this rule called it a write and
+                // reported `_attachAttempts` dead when it is the loop bound of the capture's attach
+                // retry. **A false positive is not a harmless over-report here** - it would have had
+                // somebody delete a live guard. The test is what FOLLOWS the operator: a statement
+                // terminator means the value went nowhere.
+                else if ((c0 == '+' && c1 == '+') || (c0 == '-' && c1 == '-'))
+                {
+                    int m = j + 2;
+                    while (m < text.Length && (text[m] == ' ' || text[m] == '\t')) { m++; }
+                    isWrite = m < text.Length && text[m] == ';';
+                }
             }
 
-            return count;
+            // Look left, past spaces, for `out`/`ref`/`++`/`--`.
+            if (!isWrite)
+            {
+                int k = index - 1;
+                while (k >= 0 && (text[k] == ' ' || text[k] == '\t')) { k--; }
+                // Same rule on the prefix side: `++x;` discards, `++x > 600` does not.
+                if (k >= 1 && ((text[k - 1] == '+' && text[k] == '+') || (text[k - 1] == '-' && text[k] == '-')))
+                {
+                    int m = after;
+                    while (m < text.Length && (text[m] == ' ' || text[m] == '\t')) { m++; }
+                    isWrite = m < text.Length && text[m] == ';';
+                }
+                else if (k >= 2 && text[k] == 't' && text[k - 1] == 'u' && text[k - 2] == 'o'
+                         && (k < 3 || !IsWordChar(text[k - 3]))) { isWrite = true; }
+                else if (k >= 2 && text[k] == 'f' && text[k - 1] == 'e' && text[k - 2] == 'r'
+                         && (k < 3 || !IsWordChar(text[k - 3]))) { isWrite = true; }
+            }
+
+            return !isWrite;
         }
 
         private static bool IsWordChar(char c) => char.IsLetterOrDigit(c) || c == '_';
