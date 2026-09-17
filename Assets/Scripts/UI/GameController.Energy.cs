@@ -79,7 +79,7 @@ namespace PoliSim.UI
         private float EnergyGapRowHeight(string why)
         {
             GUIStyle reason = DeskBodyWrapped(11.5f, PoliSimTheme.TextPrimary);
-            float width = Mathf.Max(10f, (PlateGrid.GapRow[2] / PlateGrid.Content) * Mathf.Max(10f, Screen.width * 0.8f));
+            float width = Mathf.Max(10f, (PlateGrid.GapRow[2] / PlateGrid.Content) * Mathf.Max(10f, UiScreen.Width * 0.8f));
             return Mathf.Ceil(reason.CalcHeight(new GUIContent(why), width)) + StatsUnit(16f);
         }
 

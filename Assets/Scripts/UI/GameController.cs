@@ -1117,9 +1117,9 @@ namespace PoliSim.UI
         {
             DrawMenuBackground();
 
-            float width = Mathf.Min(Screen.width * 0.62f, 1100f);
-            float height = Screen.height * 0.8f;
-            var area = new Rect((Screen.width - width) * 0.5f, (Screen.height - height) * 0.5f, width, height);
+            float width = Mathf.Min(UiScreen.Width * 0.62f, 1100f);
+            float height = UiScreen.Height * 0.8f;
+            var area = new Rect((UiScreen.Width - width) * 0.5f, (UiScreen.Height - height) * 0.5f, width, height);
             GUILayout.BeginArea(area);
             GUILayout.BeginVertical(_boxStyle);
 
@@ -1450,9 +1450,9 @@ namespace PoliSim.UI
                 string interrupt = BuildFoldedInterruptText(includeBudgetProcess: false);
                 if (interrupt != null)
                 {
-                    float marginX = Screen.width * ScreenMarginFraction;
-                    float marginY = Screen.height * ScreenMarginFraction;
-                    GUILayout.BeginArea(new Rect(marginX, marginY, Screen.width - marginX * 2f, Screen.height - marginY * 2f));
+                    float marginX = UiScreen.Width * ScreenMarginFraction;
+                    float marginY = UiScreen.Height * ScreenMarginFraction;
+                    GUILayout.BeginArea(new Rect(marginX, marginY, UiScreen.Width - marginX * 2f, UiScreen.Height - marginY * 2f));
                     DrawHoldBannerLabel(interrupt);
                     GUILayout.EndArea();
                 }
@@ -1495,7 +1495,7 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawCanvasScrim(float alpha)
         {
-            var screen = new Rect(0f, 0f, Screen.width, Screen.height);
+            var screen = new Rect(0f, 0f, UiScreen.Width, UiScreen.Height);
             Texture2D scrim = IconLibrary.GetChrome("ui_scrim_takeover");
             if (scrim != null)
             {
@@ -1757,12 +1757,12 @@ namespace PoliSim.UI
         {
             DrawMenuBackground();
 
-            GUILayout.BeginArea(new Rect(0f, 0f, Screen.width, Screen.height));
+            GUILayout.BeginArea(new Rect(0f, 0f, UiScreen.Width, UiScreen.Height));
             GUILayout.FlexibleSpace();
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
 
-            GUILayout.BeginVertical(GUILayout.Width(Screen.width * 0.4f));
+            GUILayout.BeginVertical(GUILayout.Width(UiScreen.Width * 0.4f));
             GUILayout.Label("PoliSim", _headerStyle);
             GUILayout.Label("Choose your country", _labelStyle);
             GUILayout.Space(20f);
@@ -1899,14 +1899,14 @@ namespace PoliSim.UI
             }
 
             GUI.DrawTextureWithTexCoords(
-                new Rect(0f, 0f, Screen.width, Screen.height),
+                new Rect(0f, 0f, UiScreen.Width, UiScreen.Height),
                 grain,
-                new Rect(0f, 0f, Screen.width / (float)grain.width, Screen.height / (float)grain.height));
+                new Rect(0f, 0f, UiScreen.Width / (float)grain.width, UiScreen.Height / (float)grain.height));
         }
 
         private void DrawMenuBackground()
         {
-            var screen = new Rect(0f, 0f, Screen.width, Screen.height);
+            var screen = new Rect(0f, 0f, UiScreen.Width, UiScreen.Height);
             GUI.DrawTexture(screen, Texture2D.whiteTexture, ScaleMode.StretchToFill, false, 0f,
                 PoliSimTheme.AppBackground, Vector4.zero, Vector4.zero);
 
@@ -2058,10 +2058,10 @@ namespace PoliSim.UI
             bool hasPendingBudgetProcess = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
             bool hasPendingCampaignOpening = HasPendingCampaignOpening() || HasPendingScandalAnswer();   // P2-0.3; CL-2: a story's answer holds the clock the same way
 
-            float marginX = Screen.width * ScreenMarginFraction;
-            float marginY = Screen.height * ScreenMarginFraction;
-            float areaWidth = Screen.width - marginX * 2f;
-            float areaHeight = Screen.height - marginY * 2f;
+            float marginX = UiScreen.Width * ScreenMarginFraction;
+            float marginY = UiScreen.Height * ScreenMarginFraction;
+            float areaWidth = UiScreen.Width - marginX * 2f;
+            float areaHeight = UiScreen.Height - marginY * 2f;
 
             float columnSpacing = areaWidth * ColumnSpacingFraction;
             float sectionSpacing = areaHeight * SectionSpacingFraction;
@@ -2597,19 +2597,19 @@ namespace PoliSim.UI
         /// <summary>Re-derives every style's font size/control size from the current screen size every frame (cheap field writes, no allocation) so a live window resize stays legible instead of squinting-small.</summary>
         private void RescaleStylesToScreen()
         {
-            int headerFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.032f), 22, 42);
+            int headerFontSize = Mathf.Clamp(Mathf.RoundToInt(UiScreen.Height * 0.032f), 22, 42);
             // D4 (2026-08-28): body/label type clamp(0.022h, 16, 28) → clamp(0.024h, 17, 30) - it grows
             // into the reclaim. Headers, buttons, tabs and the banner are unchanged by the table.
-            int labelFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.024f), 17, 30);
-            int buttonFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.032f), 22, 38);
-            int tabFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.024f), 18, 30);
-            int bannerFontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.028f), 20, 36);
+            int labelFontSize = Mathf.Clamp(Mathf.RoundToInt(UiScreen.Height * 0.024f), 17, 30);
+            int buttonFontSize = Mathf.Clamp(Mathf.RoundToInt(UiScreen.Height * 0.032f), 22, 38);
+            int tabFontSize = Mathf.Clamp(Mathf.RoundToInt(UiScreen.Height * 0.024f), 18, 30);
+            int bannerFontSize = Mathf.Clamp(Mathf.RoundToInt(UiScreen.Height * 0.028f), 20, 36);
             // P2-1.3 (2026-09-02): thinner - the bar at about half its former height and the knob narrower; the
             // ledger row draws the bar itself at RefTrackHeight, so these size the knob and the standalone sliders.
-            float sliderHeight = Mathf.Clamp(Screen.height * 0.02f, 14f, 28f);
-            float sliderThumbWidth = Mathf.Clamp(Screen.width * 0.012f, 12f, 24f);
-            float buttonHeight = Mathf.Clamp(Screen.height * 0.09f, 60f, 140f);
-            float tabButtonHeight = Mathf.Clamp(Screen.height * 0.05f, 36f, 70f);
+            float sliderHeight = Mathf.Clamp(UiScreen.Height * 0.02f, 14f, 28f);
+            float sliderThumbWidth = Mathf.Clamp(UiScreen.Width * 0.012f, 12f, 24f);
+            float buttonHeight = Mathf.Clamp(UiScreen.Height * 0.09f, 60f, 140f);
+            float tabButtonHeight = Mathf.Clamp(UiScreen.Height * 0.05f, 36f, 70f);
 
             _headerStyle.fontSize = headerFontSize;
             _labelStyle.fontSize = labelFontSize;
@@ -2997,7 +2997,7 @@ namespace PoliSim.UI
             int totalCells = leadBlanks + daysInMonth;
             int rows = Mathf.CeilToInt(totalCells / 7f);
 
-            float scale = Mathf.Clamp(Screen.height / 1080f, 0.6f, 1.5f);
+            float scale = Mathf.Clamp(UiScreen.Height / 1080f, 0.6f, 1.5f);
             float cellHeight = CalendarDayCellHeight();
             float gap = 2f * scale;   // D4 (2026-08-28): the calendar sheet's cell gap 3s → 2s; dots, strike and rules stand by ruling
             Rect gridRect = GUILayoutUtility.GetRect(0f, rows * cellHeight + (rows - 1) * gap, GUILayout.ExpandWidth(true));
@@ -3106,7 +3106,7 @@ namespace PoliSim.UI
                 float numeralWidth = _calendarDayNumberStyle.CalcSize(CalendarDayNumberSample).x;
                 var numeralBox = new Rect(rect.x + (rect.width - numeralWidth) * 0.5f + CalendarStrikeInset, rect.y + CalendarStrikeInset,
                     Mathf.Max(1f, numeralWidth - CalendarStrikeInset * 2f), Mathf.Max(1f, dayNumberLine - CalendarStrikeInset * 2f));
-                float strike = CalendarStrikeThickness1600 * Mathf.Clamp(Screen.height / 929f, 0.7f, 2f);
+                float strike = CalendarStrikeThickness1600 * Mathf.Clamp(UiScreen.Height / 929f, 0.7f, 2f);
                 PoliSimTheme.Stroke(numeralBox, CalendarStrikeAngleDegrees, strike, PoliSimTheme.Tint(dayInk, CalendarStrikeInkAlpha));
             }
 
@@ -3337,7 +3337,7 @@ namespace PoliSim.UI
             // P5-7 (board 6b row 6, 2026-09-03): Design's call on the 720 fold - no variant, a VISIBLE fold. At the floor size the
             // idiom's vertical paper scrollbar draws always (never on hover), and the first section caption below the fold peeks
             // 14 px above the sheet's lower edge on a strip of paper (drawn after the scroll view, below). Nothing is re-composed at 1280+.
-            bool atTheFloor = Screen.height <= 800;
+            bool atTheFloor = UiScreen.Height <= 800;
             _federalReserveScrollPosition = GUILayout.BeginScrollView(_federalReserveScrollPosition, false, atTheFloor, GUILayout.Height(scrollHeight));
             _riksbankCaptions.Clear();
 
@@ -3545,7 +3545,7 @@ namespace PoliSim.UI
             GUI.enabled = pending;
             if (PoliSimWidgets.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
             {
-                _federalReserveScrollPosition.y += Screen.height;   // the candidates are the modal beneath this page
+                _federalReserveScrollPosition.y += UiScreen.Height;   // the candidates are the modal beneath this page
             }
             GUI.enabled = true;
             // §5.4: the paragraph became a STATE LINE, under the button it describes.
@@ -4009,7 +4009,7 @@ namespace PoliSim.UI
                 GUILayout.Space(8f);
                 // The Budget's own width term for its breakdown (DrawPolicyPreview): a share of the screen, not a measured
                 // rect, so the breakdown's width is the same on every event and never a Layout-pass dummy.
-                DrawStanceBreakdown(_tierConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(Screen.width * 0.6f, _boxStyle)));
+                DrawStanceBreakdown(_tierConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.6f, _boxStyle)));
             }
         }
 
@@ -4079,7 +4079,7 @@ namespace PoliSim.UI
 
             // P2-2.2 (2026-09-02): the lean bar is a per-seat map - every mandate coloured FOR / UNDECIDED / AGAINST
             // for this bill, from the same enumeration the verdict above reads (ParliamentSystem.SeatSides).
-            float seatMapWidth = wrapWidth > 0f ? wrapWidth : Mathf.Max(10f, PoliSimWidgets.InnerWidth(Screen.width * 0.3f, _boxStyle));
+            float seatMapWidth = wrapWidth > 0f ? wrapWidth : Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.3f, _boxStyle));
             Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(seatMapWidth, _labelStyle), GUILayout.ExpandWidth(true));
             SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle);
 
@@ -4274,7 +4274,7 @@ namespace PoliSim.UI
                 EffectArrowsRenderer.Draw(arrows, _cachedPreviewEffects, _labelStyle);
                 EffectArrowsRenderer.DrawScopeLine(_labelStyle);
             }
-            if (_budgetConcernForBreakdown != null && !_budgetConcernForBreakdown.IsEmpty) { DrawStanceBreakdown(_budgetConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(Screen.width * 0.3f, _boxStyle))); }
+            if (_budgetConcernForBreakdown != null && !_budgetConcernForBreakdown.IsEmpty) { DrawStanceBreakdown(_budgetConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.3f, _boxStyle))); }
         }
 
         /// <summary>P3-C1: the Budget draft's concern, kept from the support preview for the breakdown drawn after the arrows.</summary>
@@ -5089,15 +5089,15 @@ namespace PoliSim.UI
 
         private void DrawInstrumentLadder(string kind)
         {
-            float marginX = Screen.width * ScreenMarginFraction;
-            float marginY = Screen.height * ScreenMarginFraction;
-            var area = new Rect(marginX, marginY, Screen.width - marginX * 2f, Screen.height - marginY * 2f);
+            float marginX = UiScreen.Width * ScreenMarginFraction;
+            float marginY = UiScreen.Height * ScreenMarginFraction;
+            var area = new Rect(marginX, marginY, UiScreen.Width - marginX * 2f, UiScreen.Height - marginY * 2f);
             GUI.Box(area, GUIContent.none, _boxStyle);
 
             float pad = _boxStyle.padding.left + 10f;
             float captionHeight = _calendarMetaStyle.lineHeight + 6f;
             GUI.Label(new Rect(area.x + pad, area.y + pad, area.width - pad * 2f, captionHeight),
-                $"LADDER {kind} - {Screen.width}x{Screen.height}; body type {_labelStyle.fontSize} px, tab type {_tabButtonStyle.fontSize} px; captions: rung size, type where scaled",
+                $"LADDER {kind} - {UiScreen.Width}x{UiScreen.Height}; body type {_labelStyle.fontSize} px, tab type {_tabButtonStyle.fontSize} px; captions: rung size, type where scaled",
                 _calendarMetaStyle);
             var cursor = new LadderCursor { X = area.x + pad, Y = area.y + pad + captionHeight + 10f, Left = area.x + pad, Right = area.xMax - pad, Gap = 16f };
 
@@ -6075,11 +6075,11 @@ namespace PoliSim.UI
         {
             bool won = _scenarioProgress.Verdict == ScenarioVerdict.Won;
 
-            GUILayout.BeginArea(new Rect(0f, 0f, Screen.width, Screen.height));
+            GUILayout.BeginArea(new Rect(0f, 0f, UiScreen.Width, UiScreen.Height));
             GUILayout.FlexibleSpace();
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
-            GUILayout.BeginVertical(GUILayout.Width(Screen.width * 0.52f));
+            GUILayout.BeginVertical(GUILayout.Width(UiScreen.Width * 0.52f));
 
             var bannerStyle = new GUIStyle(_gameOverStyle);
             bannerStyle.normal.textColor = won ? PoliSimTheme.Hex(0x8FBF7A) : PoliSimTheme.Hex(0xE0907E);
@@ -8627,7 +8627,7 @@ namespace PoliSim.UI
             _policyWebScrollPosition = GUILayout.BeginScrollView(_policyWebScrollPosition, GUILayout.Height(scrollHeight));
 
             bool pinned = _selectedPolicyWebPolicyNode.HasValue || _selectedPolicyWebStatNode.HasValue;
-            float width = PoliSimWidgets.InnerWidth(Screen.width - RailWidth() - 40f, _boxStyle, 1, GUI.skin.box);
+            float width = PoliSimWidgets.InnerWidth(UiScreen.Width - RailWidth() - 40f, _boxStyle, 1, GUI.skin.box);
             float needed = _policyWebBoard.NeededHeight(width, _labelStyle, pinned);
             Rect webRect = GUILayoutUtility.GetRect(10f, Mathf.Max(scrollHeight - 8f, needed), GUILayout.ExpandWidth(true));
             _policyWebBoard.Draw(webRect, _labelStyle, _headerStyle, _calendarMetaStyle, _playerCountry, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode,
@@ -9067,7 +9067,7 @@ namespace PoliSim.UI
 
             // P2-2.2 (2026-09-02): the seat map replaces the lean bar here too (a law-support preview); an
             // unopposed bill maps every seat UNDECIDED, because SeatSides treats a zero direction as no side.
-            Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(Screen.width * 0.5f, _labelStyle), GUILayout.ExpandWidth(true));
+            Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(UiScreen.Width * 0.5f, _labelStyle), GUILayout.ExpandWidth(true));
             SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle);
             if (contested) { DrawStanceBreakdown(concern, Mathf.Max(10f, seatMapRect.width)); }
 
@@ -9192,7 +9192,7 @@ namespace PoliSim.UI
         {
             DrawColoredLabel("Political Compass", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
             GUILayout.Label("CHES 2024 positions: economic left-right across, liberal-conservative down. Parties at their published pairs, countries at the seat-weighted mean of their chambers, the sitting cabinet ringed.", _labelStyle);   // P2-3.2 (2026-09-02)
-            float compassSize = Mathf.Clamp(Screen.height * 0.55f, 260f, 800f);   // P2-3.2: the plot takes the height the sheet has; the legend column takes the rest of the width
+            float compassSize = Mathf.Clamp(UiScreen.Height * 0.55f, 260f, 800f);   // P2-3.2: the plot takes the height the sheet has; the legend column takes the rest of the width
             // R-SP4 (2026-08-28): reserve the compass's HONEST footprint - the plot square plus its
             // caption band at the width the captions need, capped at the sheet's own inner width less
             // the scroll view's gutter - so the renderer's declared rect contains everything it draws
@@ -9880,7 +9880,7 @@ namespace PoliSim.UI
         /// </summary>
         /// <summary>P2-1.4: the fiscal strip's height - the desk strip's 53 board px scaled by the window height (R-B10's law), so the
         /// Budget's header and the desk's foot are one strip at one size.</summary>
-        private float FiscalStripHeight() => Mathf.Round(53f * Screen.height / DeskBoardHeight);
+        private float FiscalStripHeight() => Mathf.Round(53f * UiScreen.Height / DeskBoardHeight);
 
         private float BudgetProcessHeaderHeight(float availableWidth)
         {
@@ -10558,7 +10558,7 @@ namespace PoliSim.UI
             GUIStyle footFace = DeskCaptionWrapped(6.5f, PoliSimTheme.TextMuted);
             string footText = (statute.CitationLine ?? "X: THE TARIFF'S OWN CURRENCY, TO ITS TOP THRESHOLD × 1.5");
             // the foot's height is measured at a width no wider than the band it is drawn in (the band is 37 % of the window at 1280; 36 % wraps at least as much)
-            float footH = Mathf.Ceil(footFace.CalcHeight(new GUIContent(footText), Mathf.Max(10f, Screen.width * 0.36f))) + StatsUnit(2f);
+            float footH = Mathf.Ceil(footFace.CalcHeight(new GUIContent(footText), Mathf.Max(10f, UiScreen.Width * 0.36f))) + StatsUnit(2f);
             float curveH = StatsUnit(44f) + capH + footH;
             Rect curveRow = GUILayoutUtility.GetRect(10f, curveH, GUILayout.ExpandWidth(true));
             LedgerFamilyColumns(curveRow, out Rect cLedger, out Rect cVerdict, out Rect cAction);

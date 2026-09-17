@@ -148,7 +148,7 @@ namespace PoliSim.UI
         // The sheet's measures: the board's px at 720, scaled by the window height - DeskPx for type
         // (floored at D4's 9), StatsUnit for lengths - the same law the Desk draws by (R-B10).
         // ------------------------------------------------------------------------------------------
-        private static float StatsUnit(float boardPx) => Mathf.Round(boardPx * Screen.height / DeskBoardHeight);
+        private static float StatsUnit(float boardPx) => Mathf.Round(boardPx * UiScreen.Height / DeskBoardHeight);
 
         /// <summary>The width the Statistics content has inside its scroll view - the sheet's inner width less the scrollbar - so the grids can lay their columns out on the Layout event rather than on a rect measured a frame late.</summary>
         private float StatsContentWidth(float availableWidth)

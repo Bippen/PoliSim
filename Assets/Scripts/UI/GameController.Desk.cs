@@ -81,7 +81,7 @@ namespace PoliSim.UI
 
         private static int DeskPx(float boardPx)
         {
-            return Mathf.Max(DeskCaptionFloorPx, Mathf.RoundToInt(boardPx * Screen.height / DeskBoardHeight));
+            return Mathf.Max(DeskCaptionFloorPx, Mathf.RoundToInt(boardPx * UiScreen.Height / DeskBoardHeight));
         }
 
         private static GUIStyle Inked(GUIStyle style, Color ink)

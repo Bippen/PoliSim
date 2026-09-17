@@ -114,6 +114,135 @@ namespace PoliSim.EditorTools
             EditorApplication.delayCall += AttachDriver;
         }
 
+        private const string DryPlanKey = "PoliSim.UiScreenshotCapture.DryPlan";
+        private const string DryIndexKey = "PoliSim.UiScreenshotCapture.DryIndex";
+        private const string DryResultsKey = "PoliSim.UiScreenshotCapture.DryResults";
+        private const string DryWorstKey = "PoliSim.UiScreenshotCapture.DryWorst";
+        private const string DrySessionStartKey = "PoliSim.UiScreenshotCapture.DrySessionStart";
+        private const string DryRunStartKey = "PoliSim.UiScreenshotCapture.DryRunStart";
+
+        /// <summary>
+        /// **THE DRY FILM (2026-09-17)** - the film's sweep with no window and no captures, for iterating on a layout.
+        /// <code>
+        /// Unity.exe -batchmode -projectPath &lt;path&gt; -executeMethod PoliSim.EditorTools.UiScreenshotCapture.RunDry
+        ///           -skipsimulationtestrunner -shotlabel=&lt;label&gt; -shotcountries=Sweden,Italy
+        ///           -shotgeometries=1280x720,2560x1440 [-shotstop=&lt;capture&gt;] -logFile &lt;path&gt;
+        /// </code>
+        ///
+        /// <para><b>What it is.</b> The same driver and the same choreography, in `-batchmode` play mode. No Game View
+        /// delivers OnGUI there, so the driver delivers it (`DryGuiPass`) once a frame and once at each capture, at
+        /// the frame a film of that geometry captures (the requested height less <see cref="GameViewChromeHeight"/>).
+        /// A capture then measures instead of photographing: `UiOverflowGuard`, `UiContainmentGuard`, the canvas text
+        /// assert, the ledger reach and the log fold give the film's verdict, and the label table (every text draw's
+        /// rect against what its text needs and against its clip) is written to <c>&lt;shotdir&gt;/labels/</c>.</para>
+        ///
+        /// <para><b>One Unity process for every session.</b> Each country at each geometry is its own play session
+        /// (the choreography selects one country and scrolls by the screen's height), and the sessions follow one
+        /// another by leaving and re-entering play mode - the plan and the results ride `SessionState` across the
+        /// domain reload. The run ends with one line per session and exits with the worst code.</para>
+        ///
+        /// <para>⚠ <b>What it does NOT claim.</b> `ScreenEdgeCheck`, the capture-identity token and the frame-size
+        /// traps read pixels; a dry film has none, so a UI item still films ONE width at its end - the dry film is how
+        /// the item gets there, not how it closes.</para>
+        /// </summary>
+        public static void RunDry()
+        {
+            if (!Application.isBatchMode)
+            {
+                Debug.LogError("SHOT: DRY REFUSED outside -batchmode. A Game View would deliver OnGUI as well as the driver, "
+                               + "and every frame would be laid out twice. Re-run with -batchmode (a graphics device is fine; "
+                               + "-nographics is not needed).");
+                EditorApplication.Exit(2);
+                return;
+            }
+
+            string[] countries = Arg("-shotcountries=", Arg("-shotcountry=", "USA")).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] geometries = Arg("-shotgeometries=", $"{Mathf.RoundToInt(ViewWidth)}x{Mathf.RoundToInt(ViewHeight)}").Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var plan = new System.Collections.Generic.List<string>();
+            foreach (string geometry in geometries)
+            {
+                string[] wh = geometry.Trim().Split('x');
+                if (wh.Length != 2 || !int.TryParse(wh[0], out int w) || !int.TryParse(wh[1], out int h) || w <= 0 || h <= 0)
+                {
+                    Debug.LogError($"SHOT: DRY - '{geometry}' is not a geometry (WIDTHxHEIGHT, the film's requested size).");
+                    EditorApplication.Exit(2);
+                    return;
+                }
+
+                if (!StandardGeometries.Contains((w, h)) && !OffStandardAllowed)
+                {
+                    Debug.LogError($"SHOT: DRY - REFUSING a non-standard geometry {w}x{h}; S-17's four are "
+                                   + string.Join(" ", StandardGeometries.Select(g => $"{g.Width}x{g.Height}"))
+                                   + ". An off-standard size is a different test (-shotoffstandard says so).");
+                    EditorApplication.Exit(2);
+                    return;
+                }
+
+                foreach (string country in countries)
+                {
+                    plan.Add($"{country.Trim()}@{w}x{h}");
+                }
+            }
+
+            SessionState.SetString(DryPlanKey, string.Join(";", plan));
+            SessionState.SetInt(DryIndexKey, 0);
+            SessionState.SetString(DryResultsKey, string.Empty);
+            SessionState.SetInt(DryWorstKey, 0);
+            SessionState.SetString(DryRunStartKey, DateTime.UtcNow.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            Debug.Log($"SHOT: DRY plan - {plan.Count} session(s): {string.Join(", ", plan)}.");
+            BeginDrySession();
+        }
+
+        private static void BeginDrySession()
+        {
+            EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");
+            SessionState.SetString(DrySessionStartKey, DateTime.UtcNow.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            SessionState.SetBool(ActiveKey, true);
+            EditorApplication.isPlaying = true;
+        }
+
+        private static double SecondsSince(string key)
+        {
+            return long.TryParse(SessionState.GetString(key, "0"), out long ticks) && ticks > 0
+                ? (DateTime.UtcNow.Ticks - ticks) / 1e7
+                : -1.0;
+        }
+
+        /// <summary>A dry session's sweep ended: its line is kept, and play mode is left so the next session can begin.</summary>
+        private static void OnDrySessionEnd(int code)
+        {
+            string[] plan = SessionState.GetString(DryPlanKey, string.Empty).Split(';');
+            int index = SessionState.GetInt(DryIndexKey, 0);
+            string line = string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0}: {1} ({2:F1} s)",
+                index < plan.Length ? plan[index] : "?", UiScreenshotDriver.LastSweepSummary, SecondsSince(DrySessionStartKey));
+            SessionState.SetString(DryResultsKey, SessionState.GetString(DryResultsKey, string.Empty) + line + "\n");
+            SessionState.SetInt(DryWorstKey, Math.Max(SessionState.GetInt(DryWorstKey, 0), code));
+            SessionState.SetInt(DryIndexKey, index + 1);
+            Debug.Log("SHOT: DRY session done - " + line);
+            EditorApplication.playModeStateChanged += OnDryPlayModeChanged;
+            EditorApplication.isPlaying = false;
+        }
+
+        private static void OnDryPlayModeChanged(PlayModeStateChange change)
+        {
+            if (change != PlayModeStateChange.EnteredEditMode) { return; }
+            EditorApplication.playModeStateChanged -= OnDryPlayModeChanged;
+
+            string[] plan = SessionState.GetString(DryPlanKey, string.Empty).Split(';');
+            int index = SessionState.GetInt(DryIndexKey, 0);
+            if (index < plan.Length)
+            {
+                BeginDrySession();
+                return;
+            }
+
+            int worst = SessionState.GetInt(DryWorstKey, 0);
+            Debug.Log($"SHOT: DRY done - {plan.Length} session(s) in {SecondsSince(DryRunStartKey):F1} s, exiting {worst}:\n"
+                      + SessionState.GetString(DryResultsKey, string.Empty));
+            SessionState.SetString(DryPlanKey, string.Empty);
+            EditorApplication.Exit(worst);
+        }
+
         public static void Run()
         {
             // ⚠ TRAP 1, ARMED 2026-08-31 (the clearance list's process correction). This file's own doc
@@ -352,6 +481,29 @@ namespace PoliSim.EditorTools
                 Debug.Log("SHOT: running the edge guard over '" + edgePattern + "' before exit (M-S16).");
                 return CheckExit.Collect(() => ScreenEdgeCheck.RunOver(edgePattern));
             };
+
+            // The dry film's session: this country at this geometry, laid out at the frame a film of it captures.
+            string dryPlan = SessionState.GetString(DryPlanKey, string.Empty);
+            if (dryPlan.Length > 0)
+            {
+                string[] sessions = dryPlan.Split(';');
+                int index = SessionState.GetInt(DryIndexKey, 0);
+                string[] session = sessions[Math.Min(index, sessions.Length - 1)].Split('@');
+                string[] wh = session[1].Split('x');
+                int w = int.Parse(wh[0], System.Globalization.CultureInfo.InvariantCulture);
+                int h = int.Parse(wh[1], System.Globalization.CultureInfo.InvariantCulture);
+                PoliSim.UI.UiScreen.OverrideWidth = w;
+                PoliSim.UI.UiScreen.OverrideHeight = h - GameViewChromeHeight;
+                driver.Country = session[0];
+                driver.Label = $"{label}_{session[0].ToLowerInvariant()}_{w}";
+                driver.Dry = true;
+                driver.ExpectedWidth = 0;
+                driver.ExpectedHeight = 0;
+                driver.BeforeExit = null;
+                driver.DryExit = OnDrySessionEnd;
+                Debug.Log($"SHOT: DRY session {index + 1} of {sessions.Length} - {session[0]} at {w}x{h - GameViewChromeHeight} (a {w}x{h} film's frame), label {driver.Label}.");
+                return;
+            }
             Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
         }
 

@@ -169,7 +169,7 @@ namespace PoliSim.UI
             // handles that) - a Screen.height fraction, clamped, so three stacked graphs cost
             // meaningfully less of the dashboard's vertical budget on a typical window than the old
             // fixed TextureHeight (90px) did, without losing plot resolution.
-            float displayHeight = Mathf.Clamp(Screen.height * 0.085f, 56f, 110f);   // D4 (2026-08-28): clamp(0.075h, 50, 90) → clamp(0.085h, 56, 110); the 300×90 buffer stands (R-G5) and stretches
+            float displayHeight = Mathf.Clamp(UiScreen.Height * 0.085f, 56f, 110f);   // D4 (2026-08-28): clamp(0.075h, 50, 90) → clamp(0.085h, 56, 110); the 300×90 buffer stands (R-G5) and stretches
             Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture != null)
             {
@@ -938,7 +938,7 @@ namespace PoliSim.UI
             }
 
             float cutCaptions = Mathf.Round(CutCaptionsHeightAt1280 * labelStyle.fontSize / 14f);   // P6-3 (board 8c): the room the four cut captions held goes to the path, not to the instruments beneath
-            float displayHeight = Mathf.Clamp(Screen.height * 0.11f, 64f, 140f) + cutCaptions;   // the page's one graph takes a little more of the sheet than a dashboard's three
+            float displayHeight = Mathf.Clamp(UiScreen.Height * 0.11f, 64f, 140f) + cutCaptions;   // the page's one graph takes a little more of the sheet than a dashboard's three
             Rect rect = GUILayoutUtility.GetRect(TextureWidth, displayHeight, GUILayout.ExpandWidth(true));
             if (_texture != null)
             {

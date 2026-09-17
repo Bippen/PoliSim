@@ -275,12 +275,12 @@ namespace PoliSim.UI
             float extraHeight = extraRowHeightFor != null ? extraRowHeightFor(nameH, capH, srcH, smallH) : 0f;
             float pad = StatsUnit(4f);
             float headerHeight = string.IsNullOrEmpty(familyName) ? 0f : Mathf.Ceil(DeskCaptionHeight(DeskBody(15f, PoliSimTheme.TextPrimary))) + StatsUnit(8f);
-            float footHeight = Mathf.Ceil(foot.CalcHeight(new GUIContent(footText), Mathf.Max(10f, Screen.width * 0.8f - pad * 2f))) + StatsUnit(4f);
+            float footHeight = Mathf.Ceil(foot.CalcHeight(new GUIContent(footText), Mathf.Max(10f, UiScreen.Width * 0.8f - pad * 2f))) + StatsUnit(4f);
 
             // A gap row's reason is the only prose on the page and it earns its reading size, so the row grows to hold it.
             float gapReasonWidth = 0f, gapRowHeight = rowHeight;
             {
-                gapReasonWidth = Mathf.Max(10f, (gapTracks[2] / PlateGrid.Content) * Mathf.Max(10f, Screen.width * 0.8f));
+                gapReasonWidth = Mathf.Max(10f, (gapTracks[2] / PlateGrid.Content) * Mathf.Max(10f, UiScreen.Width * 0.8f));
                 foreach (PlateRow r in rows)
                 {
                     if (r.Band != PlateBand.Absent || string.IsNullOrEmpty(r.AbsentReason)) { continue; }

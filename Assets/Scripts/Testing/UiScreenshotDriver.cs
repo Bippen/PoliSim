@@ -100,6 +100,23 @@ namespace PoliSim.Testing
         /// others are enumerated. Zero means no size was requested and nothing is claimed.</summary>
         public int ExpectedHeight;
 
+        /// <summary>**THE DRY FILM (2026-09-17)** - `-shotdry`: the same sweep under `-batchmode`, where no Game View
+        /// delivers OnGUI. The driver delivers it (<see cref="DryGuiPass"/>) once a frame and once more at each capture,
+        /// and a capture measures instead of photographing: the guards, the ledger reach and the label table run as in
+        /// a film; nothing is written but the table. The pixel checks (the identity token, the frame size, the edge
+        /// guard) need pixels and stay the film's.</summary>
+        public bool Dry;
+
+        /// <summary>Set by the Editor side's dry loop: called with the sweep's exit code INSTEAD of exiting, so one Unity
+        /// process can run the next country or width.</summary>
+        public System.Action<int> DryExit;
+
+        /// <summary>The last sweep's counters, read by the dry loop's summary before the next play session reloads the domain.</summary>
+        public static string LastSweepSummary = string.Empty;
+
+        private GameController _dryController;
+        private MethodInfo _dryOnGui;
+
         /// <summary>Frames to let IMGUI settle before a capture. IMGUI lays out on the frame it draws, so a screen switched to on frame N is not fully measured until N+1; four is cheap insurance rather than a measured minimum.</summary>
         private const int SettleFrames = 4;
 
@@ -207,8 +224,9 @@ namespace PoliSim.Testing
             SimulationRandom.Seed(FilmSeed);
             Debug.Log($"SHOT: SimulationRandom seeded ({FilmSeed}) - the film is deterministic run-to-run.");
 
-            // THE CURSOR, PARKED (the candidate's second half) - see ParkCursor's own doc.
-            ParkCursor();
+            // THE CURSOR, PARKED (the candidate's second half) - see ParkCursor's own doc. A dry film has no
+            // window for a cursor to hover over, and moving the OS cursor would only disturb whoever is at the desk.
+            if (!Dry) { ParkCursor(); }
 
             Directory.CreateDirectory(OutputDirectory);
 
@@ -219,6 +237,24 @@ namespace PoliSim.Testing
                 Finish(1);
                 yield break;
             }
+
+#if UNITY_EDITOR
+            // The label table's hook, in both kinds of film, so a film and a dry film of one tree can be diffed row by row.
+            DryGuiPass.InstallHook();
+            if (Dry)
+            {
+                _dryOnGui = typeof(GameController).GetMethod("OnGUI", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (!DryGuiPass.Prepare() || _dryOnGui == null)
+                {
+                    Debug.LogError($"SHOT: DRY - the IMGUI pass cannot be driven on this Unity ({DryGuiPass.Failure ?? "GameController.OnGUI"} not found). A dry film that cannot lay out measures nothing, so it stops here.");
+                    Finish(1);
+                    yield break;
+                }
+
+                _dryController = controller;
+                Debug.Log($"SHOT: DRY - the sweep runs without a window at {UiScreen.Width}x{UiScreen.Height}; OnGUI is delivered by the driver once a frame and at every capture.");
+            }
+#endif
 
             // The canvas text guard self-tests BOTH directions before its first assert, per the
             // standing guard discipline — a broken probe must not be able to report clean. A failed
@@ -433,7 +469,7 @@ namespace PoliSim.Testing
                 if (Tabs[i] == "Decisions")
                 {
                     // P4-E3 (2026-09-04): the staged Cabinet decision's options scrolled into view - two options, each with its cost line, plate and scope line.
-                    ScrollBy(controller, Screen.height * 0.8f);
+                    ScrollBy(controller, UiScreen.Height * 0.8f);
                     yield return Settle();
                     yield return Capture("03a_decisions_options");
                     ResetScrolls(controller);
@@ -444,7 +480,7 @@ namespace PoliSim.Testing
                     // P6-1 (board 8a): the sector pie sits deep in the People page - scroll to where the renderer laid it out (its LastArea, read after a settled frame), the disc with its outside labels on film.
                     var pie = controller.GetType().GetField("_sectorEmploymentPieChart", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as PieChartRenderer;
                     float pieY = pie != null ? pie.LastArea.y : 2400f;
-                    ScrollBy(controller, Mathf.Max(0f, pieY - Screen.height * 0.12f));
+                    ScrollBy(controller, Mathf.Max(0f, pieY - UiScreen.Height * 0.12f));
                     yield return Settle();
                     yield return Capture("04a_demographics_pie");
                     ResetScrolls(controller);
@@ -452,7 +488,7 @@ namespace PoliSim.Testing
                     // P5-C2 (2026-09-05, board 9c): the health family's plate sits under the pie - scroll to where the renderer laid it out.
                     var plateField = controller.GetType().GetField("_healthPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                     float plateY = plateField != null ? ((Rect)plateField.GetValue(controller)).y : 3000f;
-                    ScrollBy(controller, Mathf.Max(0f, plateY - Screen.height * 0.08f));
+                    ScrollBy(controller, Mathf.Max(0f, plateY - UiScreen.Height * 0.08f));
                     yield return Settle();
                     yield return Capture("04b_people_health_plate");
                     ResetScrolls(controller);
@@ -460,7 +496,7 @@ namespace PoliSim.Testing
                     // P5-C3 (2026-09-06): the education plate sits under the health plate.
                     var eduField = controller.GetType().GetField("_educationPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                     float eduY = eduField != null ? ((Rect)eduField.GetValue(controller)).y : 3600f;
-                    ScrollBy(controller, Mathf.Max(0f, eduY - Screen.height * 0.08f));
+                    ScrollBy(controller, Mathf.Max(0f, eduY - UiScreen.Height * 0.08f));
                     yield return Settle();
                     yield return Capture("04c_people_education_plate");
                     ResetScrolls(controller);
@@ -468,7 +504,7 @@ namespace PoliSim.Testing
                     // P5-C4 (2026-09-06): the infrastructure plate sits under the education plate.
                     var infraField = controller.GetType().GetField("_infrastructurePlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                     float infraY = infraField != null ? ((Rect)infraField.GetValue(controller)).y : 4200f;
-                    ScrollBy(controller, Mathf.Max(0f, infraY - Screen.height * 0.08f));
+                    ScrollBy(controller, Mathf.Max(0f, infraY - UiScreen.Height * 0.08f));
                     yield return Settle();
                     yield return Capture("04d_people_infrastructure_plate");
                     ResetScrolls(controller);
@@ -476,7 +512,7 @@ namespace PoliSim.Testing
                     // P5-C5 (2026-09-06): the environment plate sits under the infrastructure plate.
                     var envField = controller.GetType().GetField("_environmentPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                     float envY = envField != null ? ((Rect)envField.GetValue(controller)).y : 4800f;
-                    ScrollBy(controller, Mathf.Max(0f, envY - Screen.height * 0.08f));
+                    ScrollBy(controller, Mathf.Max(0f, envY - UiScreen.Height * 0.08f));
                     yield return Settle();
                     yield return Capture("04e_people_environment_plate");
                     ResetScrolls(controller);
@@ -484,7 +520,7 @@ namespace PoliSim.Testing
                     // P5-C6 (2026-09-06): the immigration-and-poverty plate sits under the environment plate.
                     var migField = controller.GetType().GetField("_migrationPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                     float migY = migField != null ? ((Rect)migField.GetValue(controller)).y : 5400f;
-                    ScrollBy(controller, Mathf.Max(0f, migY - Screen.height * 0.08f));
+                    ScrollBy(controller, Mathf.Max(0f, migY - UiScreen.Height * 0.08f));
                     yield return Settle();
                     yield return Capture("04f_people_migration_plate");
                     ResetScrolls(controller);
@@ -533,13 +569,13 @@ namespace PoliSim.Testing
                             var field = controller.GetType().GetField("_paidFamilyLeaveWeeksInput", BindingFlags.Instance | BindingFlags.NonPublic);
                             before = field?.GetValue(controller);
                             field?.SetValue(controller, (float?)60f);
-                            ScrollBy(controller, Screen.height * 0.45f);   // the rows sit under the bill card; a fraction of the height, since the card scales with the face
+                            ScrollBy(controller, UiScreen.Height * 0.45f);   // the rows sit under the bill card; a fraction of the height, since the card scales with the face
                         }
                         else
                         {
                             var inputs = controller.GetType().GetField("_sectorSubsidyInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SectorType, float>;
                             if (inputs != null) { before = inputs.TryGetValue(firstSector, out float b0) ? (object)b0 : null; inputs[firstSector] = 80f; }
-                            ScrollBy(controller, Screen.height * 0.74f);   // past the sectors bill card so the first sector AND its plate (P4-B3) sit above the fold; to the first sector's dials (a fraction of the height: the card scales with the face)
+                            ScrollBy(controller, UiScreen.Height * 0.74f);   // past the sectors bill card so the first sector AND its plate (P4-B3) sit above the fold; to the first sector's dials (a fraction of the height: the card scales with the face)
                         }
                         yield return Settle();
                         yield return Settle();
@@ -575,7 +611,7 @@ namespace PoliSim.Testing
                         float energyCostY = energyCostField != null ? ((Rect)energyCostField.GetValue(controller)).y : 0f;
                         if (energyCostY > 0f)
                         {
-                            ScrollBy(controller, Mathf.Max(0f, energyCostY - Screen.height * 0.45f));
+                            ScrollBy(controller, Mathf.Max(0f, energyCostY - UiScreen.Height * 0.45f));
                             yield return Settle();
                             yield return Settle();
                             yield return Capture(stem + "_energy_sector_cost");
@@ -583,21 +619,21 @@ namespace PoliSim.Testing
                         else { Debug.LogError("SHOT: the Energy sector's cost sentence was never laid out - 06c_policylaws_sectors_energy_sector_cost not filmed."); }
                         var energyField = controller.GetType().GetField("_energyPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                         float energyY = energyField != null ? ((Rect)energyField.GetValue(controller)).y : 3600f;
-                        ScrollBy(controller, Mathf.Max(0f, energyY - Screen.height * 0.06f));
+                        ScrollBy(controller, Mathf.Max(0f, energyY - UiScreen.Height * 0.06f));
                         yield return Settle();
                         yield return Settle();
                         yield return Capture(stem + "_energy");
-                        ScrollBy(controller, Mathf.Max(0f, energyY + Screen.height * 0.50f));
+                        ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 0.50f));
                         yield return Settle();
                         yield return Capture(stem + "_energy_mid");
-                        ScrollBy(controller, Mathf.Max(0f, energyY + Screen.height * 1.06f));
+                        ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.06f));
                         yield return Settle();
                         yield return Capture(stem + "_energy_lower");
                         // EN-7a (2026-09-14): the instruments plate in PROVENANCE, where the chips that say what each instrument reaches draw
                         // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
                         _provenanceToRestore = DeskProvenance.On;
                         DeskProvenance.On = true;
-                        ScrollBy(controller, Mathf.Max(0f, energyY + Screen.height * 1.6f));
+                        ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.6f));
                         yield return Settle();
                         yield return Settle();
                         yield return Capture(stem + "_energy_instruments_provenance");
@@ -608,7 +644,7 @@ namespace PoliSim.Testing
                         {
                             ResetScrolls(controller);
                             yield return Settle();
-                            ScrollBy(controller, Mathf.Max(0f, instruments.yMax - Screen.height * 0.52f));
+                            ScrollBy(controller, Mathf.Max(0f, instruments.yMax - UiScreen.Height * 0.52f));
                             yield return Settle();
                             yield return Settle();
                             yield return Capture(stem + "_energy_electricity_tax_provenance");
@@ -687,7 +723,7 @@ namespace PoliSim.Testing
                             // Board 15c (2026-09-13): the same tab scrolled past the summary block to its FIRST row - Social Security, the pension
                             // line - so the statutory mark beneath it (PN-1's path on the track and its sentence in the caption band) is
                             // on film with the row it belongs to. The offset is the summary block's height at 1280, scaled with the screen.
-                            ScrollBy(controller, 470f * Screen.height / 720f);
+                            ScrollBy(controller, 470f * UiScreen.Height / 720f);
                             yield return Settle();
                             yield return Capture(stem + "_pension");
                             // Board 15c-r2 (2026-09-15): the same row in 2026 and in 2034 - the game's calendar stands at 2029 on film, so the RISING and HELD
@@ -757,7 +793,7 @@ namespace PoliSim.Testing
                         }
                         else
                         {
-                            detailScroll.SetValue(controller, new Vector2(0f, Screen.height * 0.3f));
+                            detailScroll.SetValue(controller, new Vector2(0f, UiScreen.Height * 0.3f));
                             yield return Settle();
                             yield return Capture("06g_laws_expected_effects");
                             ResetScrolls(controller);
@@ -811,7 +847,7 @@ namespace PoliSim.Testing
                             {
                                 selectedLaw?.SetValue(controller, lawId);
                                 ResetScrolls(controller);
-                                detailScroll.SetValue(controller, new Vector2(0f, Screen.height * 0.3f));   // the effects and the citation sit under the name and the magnitude; the same scroll 06g uses
+                                detailScroll.SetValue(controller, new Vector2(0f, UiScreen.Height * 0.3f));   // the effects and the citation sit under the name and the magnitude; the same scroll 06g uses
                                 yield return Settle();
                                 yield return Capture(capture);
                             }
@@ -1379,6 +1415,7 @@ namespace PoliSim.Testing
             // above are the driver's own asserts; _loggedErrors catches everything else - the ~18
             // uncounted LogError sites and any ATTRIB the simulation raised while this drove it.
             bool clean = _failed == 0 && overflows == 0 && escapes == 0 && _canvasTextViolations == 0;
+            LastSweepSummary = $"{_captured} measured, {_failed} failed, {overflows} overflow(s), {escapes} escape(s), {_canvasTextViolations} canvas text, {_loggedErrors} error(s) logged, ";
             if (_loggedErrors > 0)
             {
                 Debug.Log(clean
@@ -1615,9 +1652,26 @@ namespace PoliSim.Testing
             // this line is what tells "never reached WaitForEndOfFrame" apart from "reached it and
             // Unity itself stopped rendering" - if this line prints but SHOT: wrote/SHOT: capture
             // returned null never follows, the cause is (1) or (2) above, not this driver's own code.
-            Debug.Log($"SHOT: entering WaitForEndOfFrame for {name}.");
-            yield return new WaitForEndOfFrame();
-            Debug.Log($"SHOT: WaitForEndOfFrame resumed for {name}.");
+#if UNITY_EDITOR
+            DryGuiPass.BeginCapture(name);
+#endif
+            if (Dry)
+            {
+#if UNITY_EDITOR
+                // The dry film's frame: the IMGUI pass a Game View would have delivered before WaitForEndOfFrame resumes.
+                if (!DryGuiPass.Pump(_dryController, _dryOnGui)) { DryStop(); yield break; }
+#endif
+                Debug.Log($"SHOT: dry pass for {name}.");
+            }
+            else
+            {
+                Debug.Log($"SHOT: entering WaitForEndOfFrame for {name}.");
+                yield return new WaitForEndOfFrame();
+                Debug.Log($"SHOT: WaitForEndOfFrame resumed for {name}.");
+            }
+#if UNITY_EDITOR
+            DryGuiPass.EndCapture();
+#endif
             if (name.Contains("parliament"))
             {
                 // P2-3.1 (2026-09-02): the hemicycle's dot count against the chamber, read from the frame just
@@ -1635,6 +1689,21 @@ namespace PoliSim.Testing
             foreach (KeyValuePair<string, float> reach in PoliSim.UI.LedgerRow.ReachByRow)
             {
                 if (!_reachByCapture.TryGetValue(reach.Key, out float worstSoFar) || reach.Value > worstSoFar) { _reachByCapture[reach.Key] = reach.Value; }
+            }
+
+            if (Dry)
+            {
+                // Measured, not photographed: the guards recorded during the pass, the reach is merged above, and the
+                // pixel traps (identity token, frame size) have no pixels to read.
+                _captured++;
+                CaptureIdentity.Expected = "imgui";
+                if (!string.IsNullOrEmpty(StopAfter) && name == StopAfter)
+                {
+                    Debug.Log($"SHOT: -shotstop={StopAfter} - the sweep ends at this capture by request: a PARTIAL set of {_captured}, not a sweep.");
+                    EndSweep();
+                }
+
+                yield break;
             }
 
             Texture2D shot = ScreenCapture.CaptureScreenshotAsTexture();
@@ -1828,7 +1897,26 @@ namespace PoliSim.Testing
             // ⚠ The hook runs BEFORE the exit and can only make the code worse, never better. A hook that
             // throws must not swallow the run's own verdict, so it is caught and counted as a failure -
             // an exception in a guard is not a pass, which is this suite's standing rule for checks.
-            if (BeforeExit != null)
+#if UNITY_EDITOR
+            string table = DryGuiPass.WriteTable(Path.Combine(OutputDirectory, "labels"), Label);
+            Debug.Log(table == null
+                ? "SHOT: label table - nothing recorded (no captured frame drew text through a style)."
+                : $"SHOT: label table - {DryGuiPass.Summary}; written to {table}.");
+#endif
+
+            if (Dry)
+            {
+                Debug.Log("SHOT: DRY - the edge guard, the identity token and the frame-size traps read pixels; they stay the film's, and this run claims none of them.");
+                LastSweepSummary = $"{LastSweepSummary}exit {exitCode}";
+                if (DryExit != null)
+                {
+                    // The sweep is over for this session: nothing after the stop frame may run while play mode winds down.
+                    StopAllCoroutines();
+                    DryExit(exitCode);
+                    return;
+                }
+            }
+            else if (BeforeExit != null)
             {
                 try { exitCode = System.Math.Max(exitCode, BeforeExit(exitCode)); }
                 catch (System.Exception e)
@@ -1842,6 +1930,29 @@ namespace PoliSim.Testing
             UnityEditor.EditorApplication.Exit(exitCode);
 #endif
         }
+
+        /// <summary>The dry film's frame: OnGUI delivered once a frame, as a Game View would, so everything the controller
+        /// advances inside OnGUI (the Canvas seam's envelope, the per-frame style rescale) advances between captures.</summary>
+        private void LateUpdate()
+        {
+#if UNITY_EDITOR
+            if (Dry && _dryController != null && !_finishCalled && !DryGuiPass.Pump(_dryController, _dryOnGui))
+            {
+                DryStop();
+            }
+#endif
+        }
+
+#if UNITY_EDITOR
+        /// <summary>The dry pass's own machinery failed: named once, and the run ends failed - never a frame-by-frame repeat.</summary>
+        private void DryStop()
+        {
+            if (_finishCalled) { return; }
+            Debug.LogError($"SHOT: DRY - the IMGUI pass failed ({DryGuiPass.Failure}); the dry film stops here, measuring nothing further.");
+            StopAllCoroutines();
+            Finish(1);
+        }
+#endif
 
         /// <summary>
         /// THE CURSOR, PARKED (2026-08-28, the ratified candidate's second half). The OS cursor is an
