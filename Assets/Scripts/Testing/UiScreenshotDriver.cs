@@ -474,6 +474,14 @@ namespace PoliSim.Testing
                     yield return Capture("03a_decisions_options");
                     ResetScrolls(controller);
                     yield return Settle();
+
+                    // P6-A3 (2026-09-17): THE INTERRUPT STATE, which no film had ever carried. The budget
+                    // process is the fourth thing that holds the clock, and when it is open the docket
+                    // draws its own area card with the urgency stamp - the panel playtest 6's finding 4
+                    // reports painting over the tab strip. The flag is the whole of the state the card
+                    // reads (a country in the pending set), so it is staged here and taken back straight
+                    // after: the sweep's later captures must see the game they would have seen.
+                    yield return CaptureBudgetProcessInterrupt(controller);
                 }
                 if (Tabs[i] == "Demographics")
                 {
@@ -1851,6 +1859,69 @@ namespace PoliSim.Testing
         /// outside the tile, which is exactly how the stat tile's delta came to be drawn on its
         /// neighbour's keyline.
         /// </summary>
+        /// <summary>
+        /// The docket with the budget process open - the interrupt state (P6-A3, 2026-09-17).
+        ///
+        /// <para>The card the docket draws for it is `BeginAreaCard("BUDGET PROCESS", …, blocksTime: true)`,
+        /// whose header carries the `HOLDS TIME` stamp. ⚠ **The state is staged, not driven**: the flag is a
+        /// membership in `SimulationManager`'s pending set and nothing else, and driving a year of days to
+        /// reach a fiscal-year start would move every figure the rest of the sweep films. It is taken back
+        /// before the method returns, in a `finally`-shaped path, so a failure cannot leave the clock held
+        /// for the captures that follow.</para>
+        /// </summary>
+        private IEnumerator CaptureBudgetProcessInterrupt(GameController controller)
+        {
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(simField?.GetValue(controller) is SimulationManager sim))
+            {
+                Debug.LogError("SHOT: P6-A3 - no SimulationManager on the controller; the interrupt state is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+
+            FieldInfo pendingField = typeof(SimulationManager).GetField("_pendingBudgetProcessByCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(pendingField?.GetValue(sim) is HashSet<CountryId> pending))
+            {
+                Debug.LogError("SHOT: P6-A3 - the pending budget-process set could not be reached; the interrupt state is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+
+            bool held = pending.Contains(_countryId);
+            if (!held) { pending.Add(_countryId); }
+            if (!sim.GetPendingBudgetProcess(_countryId))
+            {
+                Debug.LogError("SHOT: P6-A3 - the staged flag did not take; the interrupt state is NOT filmed.");
+                _failed++;
+                if (!held) { pending.Remove(_countryId); }
+                yield break;
+            }
+
+            yield return Settle();
+            yield return Capture("03b_decisions_budget_process");
+            ScrollBy(controller, UiScreen.Height * 0.5f);
+            yield return Settle();
+            yield return Capture("03c_decisions_budget_process_scrolled");
+            ResetScrolls(controller);
+
+            // The Budget tab in the same state: the screen whose own rows sit above the process panel, and
+            // the one screen where the banner deliberately does NOT repeat the hold.
+            SetEnumField(controller, "_consolidatedTab", "Budget");
+            ResetScrolls(controller);
+            yield return Settle();
+            yield return Capture("03d_budget_process_open");
+            SetEnumField(controller, "_consolidatedTab", "Decisions");
+            ResetScrolls(controller);
+
+            if (!held) { pending.Remove(_countryId); }
+            yield return Settle();
+            if (sim.GetPendingBudgetProcess(_countryId) != held)
+            {
+                Debug.LogError("SHOT: P6-A3 - the staged interrupt was not taken back; every capture after this one is of a held clock.");
+                _failed++;
+            }
+        }
+
         private static int ReportContainmentEscapes()
         {
 #if UNITY_EDITOR

@@ -6851,6 +6851,14 @@ namespace PoliSim.UI
 
             if (_openCardDossier)
             {
+                // ⚠ P6-A3 (2026-09-17): CLEAR THE BAKED SHOULDER BEFORE THE FIRST CONTROL. The dossier
+                // style's border reserves the tab shoulder at the top of the art, and its own comment says
+                // content needs the padding to clear it; D4 then cut that padding below the shoulder's
+                // depth. The chip is the first control in the card, so it was reserved INSIDE the shoulder
+                // band and painted on the folder tab rather than on the card body. The clearance is the
+                // difference between the two numbers of the same style, read off the style itself rather
+                // than typed here, so it cannot drift from the art.
+                GUILayout.Space(DossierShoulderClearance());
                 GUILayout.BeginHorizontal();
                 GUILayout.FlexibleSpace();
                 DrawUrgencyChip(blocksTime);
@@ -6891,10 +6899,35 @@ namespace PoliSim.UI
         {
             string text = blocksTime ? "HOLDS TIME" : "CAN WAIT";
             Vector2 size = PoliSimWidgets.StampSize(text, _cardKindStyle, UrgencyChipPadX, UrgencyChipPadY, UrgencyChipBorder);
-            Rect rect = GUILayoutUtility.GetRect(size.x, size.y, GUILayout.Width(size.x), GUILayout.Height(size.y));
+
+            // ⚠ P6-A3 (2026-09-17): RESERVE WHAT THE ROTATION PAINTS. The stamp turns about its own centre,
+            // so its corners leave the unrotated rect by half its width times the sine of the angle - about
+            // two pixels at this size - while the reserve above was the UNROTATED size. This method's own
+            // comment said "the reserve is the layout, the stamp is paint", which was true of the layout
+            // and false of the pixels: playtest 6's finding 4 is a stamp sitting outside its panel.
+            float radians = Mathf.Abs(UrgencyChipRotation) * Mathf.Deg2Rad;
+            float lift = Mathf.Ceil(size.x * 0.5f * Mathf.Sin(radians));
+            float spread = Mathf.Ceil(size.y * 0.5f * Mathf.Sin(radians));
+            Rect reserved = GUILayoutUtility.GetRect(size.x + spread * 2f, size.y + lift * 2f,
+                GUILayout.Width(size.x + spread * 2f), GUILayout.Height(size.y + lift * 2f));
+            var painted = new Rect(reserved.x + spread, reserved.y + lift, size.x, size.y);
             Color ink = blocksTime ? PoliSimTheme.Bad : PoliSimTheme.HairlineStrong;
             Color border = blocksTime ? PoliSimTheme.Bad : PoliSimTheme.Hairline;
-            PoliSimWidgets.Stamp(rect, text, _cardKindStyle, ink, border, UrgencyChipBorder, UrgencyChipRotation);
+            PoliSimWidgets.Stamp(painted, text, _cardKindStyle, ink, border, UrgencyChipBorder, UrgencyChipRotation);
+
+            // The assert this class never had, at the one site that rotates: the rotated bounds against the
+            // rect reserved for them. It is the ledger's own containment shape, one level up.
+            var rotatedBounds = new Rect(painted.x - spread, painted.y - lift, size.x + spread * 2f, size.y + lift * 2f);
+            UiContainmentGuard.Check("URGENCY CHIP", rotatedBounds, reserved);
+        }
+
+        /// <summary>How far the first control in a dossier card must be pushed to clear the baked tab
+        /// shoulder: the style's own border depth less the padding that starts the content, never below
+        /// zero. Derived from `_dossierCardStyle` so a change to the art or the padding carries here.</summary>
+        private float DossierShoulderClearance()
+        {
+            if (_dossierCardStyle == null) { return 0f; }
+            return Mathf.Max(0f, _dossierCardStyle.border.top - _dossierCardStyle.padding.top);
         }
 
         private const float UrgencyChipPadX = 7f;
