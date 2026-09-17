@@ -571,17 +571,74 @@ namespace PoliSim.EditorTools
             EditorApplication.Exit(worst);
         }
 
-        /// <summary>Runs the nine and returns the WORST code any of them wanted (0 = all clean). A check
-        /// that throws counts as 1 — an exception is not a pass.</summary>
-        private static int RunAll(bool announceClean)
+        /// <summary>
+        /// **THE DOCUMENTS TIER'S BAR (2026-09-17; the working discipline's rule 1, `Tools/bar_tier.ps1`).** A commit
+        /// that touches only documents runs the checks that READ documents, not the whole cheap suite, whose other
+        /// checks read code, art and artifacts such a commit cannot have moved.
+        ///
+        /// <para><b>The array is the enumeration, and every name in it is also in <see cref="Suite"/></b> - the cheap
+        /// bar still runs each of them, and <see cref="RunDocumentBatch"/> fails by name on one that is not there, so
+        /// the subset cannot quietly hold a check the full bar lacks.</para>
+        ///
+        /// <para>⚠ `RatchetSlackCheck` is deliberately NOT here. It audits every ratchet the cheap group registers and
+        /// would call the ones this subset does not run silent; a document commit's ratchets are still held to their
+        /// ceilings by their own checks, and the slack audit waits for the next cheap bar.</para>
+        /// </summary>
+        private static readonly (string Name, Action Run)[] Documents =
+        {
+            ("UpstreamCheck", UpstreamCheck.Run),                       // the push tripwire: a document commit is still a commit
+            ("DocumentClaimCheck", DocumentClaimCheck.Run),             // a written claim about the code, checked against the code
+            ("PreWiringPremiseCheck", PreWiringPremiseCheck.Run),       // the live documents' premise terms
+            ("D18InventoryCheck", D18Inventory.Run),                    // the ask's inventory against the repo it describes
+            ("DesignNotificationCheck", DesignNotificationCheck.Run),   // a cut screen told to the person drawing it
+            ("PlaySheetCheck", PlaySheetCheck.Run),                     // PLAY_SHEET.md against the code and its source record
+            ("MojibakeCheck", MojibakeCheck.Run),                       // text decoded once too few times
+            ("ResidueCheck", ResidueCheck.Run),                         // the residue, read off the live documents
+        };
+
+        /// <summary>
+        /// The documents tier's bar under ONE `-executeMethod`:
+        /// <code>
+        /// Unity.exe -batchmode -nographics -projectPath &lt;path&gt; \
+        ///   -executeMethod PoliSim.EditorTools.CheckSuite.RunDocumentBatch -logFile &lt;path&gt;
+        /// </code>
+        /// Prints the enumeration first and exits with the worst code any check wanted.
+        /// </summary>
+        public static void RunDocumentBatch()
+        {
+            var names = new string[Documents.Length];
+            for (int i = 0; i < Documents.Length; i++) { names[i] = Documents[i].Name; }
+            Debug.Log($"CHECKS: running the {Documents.Length} document checks in one pass — {string.Join(", ", names)}. "
+                      + "The ratchet slack audit is not among them; it runs with the next cheap bar.");
+
+            var cheap = new HashSet<string>(CheapGroup);
+            int worst = 0;
+            foreach (string name in names)
+            {
+                if (cheap.Contains(name)) { continue; }
+                Debug.LogError($"CHECKS: '{name}' is in the document group and not in the cheap suite - the cheap bar would never run it.");
+                worst = 1;
+            }
+
+            worst = Mathf.Max(worst, RunTable(Documents, "documents", announceClean: true));
+            Debug.Log($"CHECKS: document group exiting {worst}.");
+            EditorApplication.Exit(worst);
+        }
+
+        /// <summary>Runs the cheap suite and returns the WORST code any check wanted (0 = all clean).</summary>
+        private static int RunAll(bool announceClean) => RunTable(Suite, "cheap", announceClean);
+
+        /// <summary>Runs one registration table of cheap-group checks and returns the WORST code any of them wanted
+        /// (0 = all clean). A check that throws counts as 1 — an exception is not a pass.</summary>
+        private static int RunTable((string Name, Action Run)[] table, string group, bool announceClean)
         {
             RatchetResidency.ActiveGroup = RatchetResidency.Group.Cheap;
-            BarTiming.Begin("cheap");
+            BarTiming.Begin(group);
 
             var failed = new List<string>();
             int worst = 0;
 
-            foreach ((string name, Action run) in Suite)
+            foreach ((string name, Action run) in table)
             {
                 int code;
                 try
@@ -609,12 +666,12 @@ namespace PoliSim.EditorTools
 
             if (failed.Count > 0)
             {
-                Debug.LogError($"CHECKS: {failed.Count} of {Suite.Length} FAILED — {string.Join(", ", failed)}. " +
+                Debug.LogError($"CHECKS: {failed.Count} of {table.Length} FAILED — {string.Join(", ", failed)}. " +
                                "Scroll up for the per-check detail.");
             }
             else if (announceClean)
             {
-                Debug.Log($"CHECKS: {Suite.Length} of {Suite.Length} clean.");
+                Debug.Log($"CHECKS: {table.Length} of {table.Length} clean.");
             }
 
             BarTiming.End(worst);
