@@ -533,6 +533,23 @@ namespace PoliSim.Testing
                     yield return Capture("04f_people_migration_plate");
                     ResetScrolls(controller);
                     yield return Settle();
+
+                    // P6-B1 (2026-09-17): THE SAME PLATE IN PROVENANCE. The families' seed lines moved behind
+                    // the `†` this item, and the rule they moved under is that provenance ADDS lines - so the
+                    // film has to carry both states of one page, or "nothing is deleted" is a claim with no
+                    // frame behind it. The health plate is the anchor because it is the first family.
+                    _provenanceToRestore = DeskProvenance.On;
+                    DeskProvenance.On = true;
+                    yield return Settle();
+                    float provY = plateField != null ? ((Rect)plateField.GetValue(controller)).y : 3000f;
+                    ScrollBy(controller, Mathf.Max(0f, provY - UiScreen.Height * 0.08f));
+                    yield return Settle();
+                    yield return Settle();
+                    yield return Capture("04g_people_health_plate_provenance");
+                    DeskProvenance.On = _provenanceToRestore.Value;
+                    _provenanceToRestore = null;
+                    ResetScrolls(controller);
+                    yield return Settle();
                 }
 
                 if (!SubScreens.TryGetValue(Tabs[i], out KeyValuePair<string, string[]> sub))
@@ -997,6 +1014,19 @@ namespace PoliSim.Testing
                 ScrollBy(controller, 900f);
                 yield return Settle();
                 yield return Capture("06k_policylaws_policyweb_node_policy_rows");
+
+                // P6-B1 (2026-09-17): the same pinned node in PROVENANCE. The pane's DERIVED / DECLARED
+                // count moved behind the `†` this item, and a line that moved has to be readable in the
+                // state it moved to - otherwise "nothing is deleted" is a claim with no frame behind it.
+                _provenanceToRestore = DeskProvenance.On;
+                DeskProvenance.On = true;
+                ResetScrolls(controller);
+                yield return Settle();
+                yield return Settle();
+                yield return Capture("06l_policylaws_policyweb_node_provenance");
+                DeskProvenance.On = _provenanceToRestore.Value;
+                _provenanceToRestore = null;
+                yield return Settle();
 
                 policyNodeField.SetValue(controller, null);
                 statNodeField.SetValue(controller, StatNodeId.Approval);

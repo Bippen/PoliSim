@@ -255,10 +255,23 @@ namespace PoliSim.UI
                 y += 4f * u;
                 PoliSimWidgets.MeasuredLabel(new Rect(pane.x, y, pane.width, line), "CURRENT EFFECTS — FROM THE LIVE DIALS", mono);
                 y += line;
+                // ⚠ P6-B1 (2026-09-17): THE EFFECT LINES WRAP. Each was drawn on one row of the pane's line
+                // height, and the longest of them - the income tax's statute sentence - needed 534.9 px in a
+                // 400.1 px pane, which the film's overflow guard reported on three captures and which no
+                // recent dry film had reached (the partial sweeps stopped before the Policy Web). These
+                // lines QUALIFY what the node shows, so by D16 §2 they stay at rest; and a qualifier that
+                // cannot be read is not one, so each line is given the height its own text needs.
+                // ⚠ NOT THROUGH `MeasuredLabel`, and that is the point: that path is SHRINK-TO-FIT and forces
+                // word wrap OFF, so a sentence too long for the pane was shrunk to the 8 px floor and then
+                // recorded as an overflow - which is exactly what the guard reported here, three captures at
+                // a time. A sentence belongs on as many lines as it needs, so it is drawn with a wrapping
+                // style and given the height that style measures.
+                var effectWrap = new GUIStyle(body) { wordWrap = true };
                 foreach (string effect in PolicyWebRenderer.GetCurrentEffectSummary(node, country))
                 {
-                    PoliSimWidgets.MeasuredLabel(new Rect(pane.x, y, pane.width, line), effect, body);
-                    y += line;
+                    float effectHeight = Mathf.Max(line, effectWrap.CalcHeight(new GUIContent(effect), pane.width));
+                    GUI.Label(new Rect(pane.x, y, pane.width, effectHeight), effect, effectWrap);
+                    y += effectHeight;
                 }
                 y += 4f * u;
                 if (repaint) { Rule(new Rect(pane.x, y, pane.width, 1f), PoliSimTheme.RuleRow); }
@@ -277,9 +290,15 @@ namespace PoliSim.UI
                     PoliSimWidgets.MeasuredLabel(new Rect(pane.x + pane.width * 0.5f, y, pane.width * 0.5f, line), isDerived ? "LEDGER: " + (edge.LedgerTerm ?? string.Empty).ToUpperInvariant() : "— DECLARED", monoRight);
                     y += line;
                 }
-                string foot = string.Format(CultureInfo.InvariantCulture, "DERIVED {0} · DECLARED {1} · NO LINE AUTHORED · NO EDGE INVENTED", derived, declared);
-                PoliSimWidgets.MeasuredLabel(new Rect(pane.x, pane.yMax - line, pane.width, line), foot, monoRight);
-                if (repaint) { Rule(new Rect(pane.x, pane.yMax - line - 2f * u, pane.width, 1f), PoliSimTheme.RuleRow); }
+                // ⚠ P6-B1: DERIVED / DECLARED is the honesty column's own vocabulary, so this count lives
+                // behind the `†` - it says where the edges came from, not what the pane shows. At rest the
+                // pane keeps every edge and loses only this line; nothing is deleted.
+                if (DeskProvenance.On)
+                {
+                    string foot = string.Format(CultureInfo.InvariantCulture, "DERIVED {0} · DECLARED {1} · NO LINE AUTHORED · NO EDGE INVENTED", derived, declared);
+                    PoliSimWidgets.MeasuredLabel(new Rect(pane.x, pane.yMax - line, pane.width, line), foot, monoRight);
+                    if (repaint) { Rule(new Rect(pane.x, pane.yMax - line - 2f * u, pane.width, 1f), PoliSimTheme.RuleRow); }
+                }
             }
             else
             {

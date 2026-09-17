@@ -275,7 +275,15 @@ namespace PoliSim.UI
             float extraHeight = extraRowHeightFor != null ? extraRowHeightFor(nameH, capH, srcH, smallH) : 0f;
             float pad = StatsUnit(4f);
             float headerHeight = string.IsNullOrEmpty(familyName) ? 0f : Mathf.Ceil(DeskCaptionHeight(DeskBody(15f, PoliSimTheme.TextPrimary))) + StatsUnit(8f);
-            float footHeight = Mathf.Ceil(foot.CalcHeight(new GUIContent(footText), Mathf.Max(10f, UiScreen.Width * 0.8f - pad * 2f))) + StatsUnit(4f);
+            // ⚠ P6-B1 (2026-09-17): THE SEED LINE IS PROVENANCE, SO IT LIVES BEHIND THE TAB. It says where a
+            // family's figures came from, which is exactly what D16 §2 sends behind the `†`: it says nothing
+            // about a figure the player can already see. Playtest 6's finding 6 is that these long mono
+            // sentences sit at rest under every plate. Nothing is deleted - it is the same line in the
+            // PROVENANCE state - and at rest the plate does not reserve its height either, because the state
+            // rule adds lines rather than reserving lanes.
+            float footHeight = prov
+                ? Mathf.Ceil(foot.CalcHeight(new GUIContent(footText), Mathf.Max(10f, UiScreen.Width * 0.8f - pad * 2f))) + StatsUnit(4f)
+                : 0f;
 
             // A gap row's reason is the only prose on the page and it earns its reading size, so the row grows to hold it.
             float gapReasonWidth = 0f, gapRowHeight = rowHeight;
@@ -330,7 +338,10 @@ namespace PoliSim.UI
                 y += extraHeight;
             }
             PoliSimTheme.Rule(new Rect(area.x, y - 1f, area.width, 1f), PoliSimTheme.Hairline);
-            GUI.Label(new Rect(area.x + pad, y + StatsUnit(2f), area.width - pad * 2f, footHeight - StatsUnit(2f)), footText, foot);
+            if (prov)
+            {
+                GUI.Label(new Rect(area.x + pad, y + StatsUnit(2f), area.width - pad * 2f, footHeight - StatsUnit(2f)), footText, foot);
+            }
             return area;
         }
 

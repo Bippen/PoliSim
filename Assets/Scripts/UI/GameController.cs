@@ -9463,8 +9463,16 @@ namespace PoliSim.UI
             GUILayout.BeginHorizontal();
             GUILayout.Label("TOTAL " + Millions(total) + " · THE BANDS SUM TO IT EXACTLY", DeskCaption(8f, PoliSimTheme.TextSecondary, true));
             GUILayout.FlexibleSpace();
+            // ⚠ P6-B1 (2026-09-17): THE LINE IS SPLIT ALONG D16 §2's OWN TEST, not shortened. What the lane
+            // does - drawn only where a band is eligible, dashed where it is not, and which band the voting
+            // age falls in - QUALIFIES a lane the player is looking at, so it stays at rest. Where the
+            // series came from says nothing about a lane already drawn, so the publisher and its vintage
+            // print behind the `†`. ⚠ The NO SOURCE wording is a GAP WORD and keeps its place in both
+            // states (`DeskProvenance.ShowsGapWord`): a symbol for "we do not have this" reads as
+            // decoration, and the absence is the honest half of the readout.
+            string turnoutProvenance = DeskProvenance.On ? "SCB 2014, THE SERIES' END — " : string.Empty;
             GUILayout.Label(turnoutSourced
-                ? $"TURNOUT: SCB 2014, THE SERIES' END — DRAWN ONLY WHERE A BAND IS ELIGIBLE; DASHED WHERE NOT. VOTING AGE {votingAge} — INSIDE THE {votingAge - votingAge % 5}–{votingAge - votingAge % 5 + 4} BAND, SPLIT PRO RATA"
+                ? $"TURNOUT: {turnoutProvenance}DRAWN ONLY WHERE A BAND IS ELIGIBLE; DASHED WHERE NOT. VOTING AGE {votingAge} — INSIDE THE {votingAge - votingAge % 5}–{votingAge - votingAge % 5 + 4} BAND, SPLIT PRO RATA"
                 : "TURNOUT: NO SOURCE FOR THIS COUNTRY — THE LANE IS DASHED ON EVERY BAND RATHER THAN DRAWN FROM A GUESS",
                 DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
             GUILayout.EndHorizontal();
