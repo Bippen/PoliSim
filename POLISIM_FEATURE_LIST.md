@@ -995,12 +995,24 @@ what renders the country selector and the party picker, at what scale, through w
 likely causes are a `CanvasScaler` reference resolution that doesn't match the window, a font
 rendered at a non-native size, or a blit through a render texture. Report the cause, then fix at
 the seam. *Done when:* filmed at 1280 and 2560 with the glyph edges measured before and after.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §527 (`c19ebc8`): the cause is the scaler's fractional factor with
+nothing snapping the quad and nothing flooring the product - the card's labels were asked for at under six
+device pixels. The host snaps to the pixel grid and no Canvas line renders below the desk's own caption
+floor; measured on the films at both widths, before and after. A render-texture blit and a GUI-matrix scale
+were both eliminated by measurement. ⚠ A dry film cannot represent a Canvas screen: its canvas-text assert
+is now the film's.**
 
 **P6-A2 — Controls that look like controls (finding 2).** The scenario lines on the selector and
 `BACK TO THE COUNTRIES` on the party picker are text, not buttons. Census every player-reachable
 control that draws as prose; give each the chrome's own button face (D20/6b answered the button
 faces — inherit them, invent nothing). *Done when:* the census is in the record and no control on
 a filmed surface draws as a bare sentence.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §528 (`5672166`): the census covers both families. The three Canvas
+controls that drew as bare sentences wear the delivered faces now - brass for the scenario lines and the
+party rows, paper for the way back - through `CanvasChrome.FacedButton`, one definition that the signing
+and election-night screens (which had copied it inline) also use. On the IMGUI side no bare sentence
+remains: every prose control carries a form Design drew, and faces are NOT put under those forms - that
+would overrule the boards, and it is a D21 row if Design wants it.**
 
 **P6-A3 — The budget-process banner's overspill (finding 4).** The interrupt panel runs over the
 tab strip above it and the `HOLDS TIME` stamp sits outside the panel. Fix the containment; this is

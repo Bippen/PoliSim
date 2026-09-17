@@ -29843,3 +29843,127 @@ answer you. The D21 paste when installed. `PLAY_SHEET.md` still open: twenty con
 ```
 
 **Next:** Track A to H in order, one commit per item, each row's done-when as written; the D21 ask at P6-H1 is assembled here and sent by Elias.
+
+## 527. P6-A1 — THE CANVAS SCREENS' BLUR, MEASURED THEN FIXED AT THE SEAM: their type is authored in canvas units and multiplied by a fractional scaler factor with no snapping and no floor, so the selector card's labels were asked for at under six device pixels; the host now snaps to the pixel grid and no Canvas line renders below the desk's own caption floor (2026-09-17)
+
+**The row** (`POLISIM_FEATURE_LIST.md`, P6-A1): *"Blurry text on the Canvas screens (finding 1). Measure the premise before fixing it: what renders the country selector and the party picker, at what scale, through what path… Report the cause, then fix at the seam. Done when: filmed at 1280 and 2560 with the glyph edges measured before and after."* The ruling added: measure before fixing, and the measurement is in the record before the fix is written.
+
+### The premise, measured
+
+**1. What draws them.** Both screens are uGUI on a code-built Canvas, not IMGUI: `CountrySelectorScreen.Build` and `.ShowPartyPanel`, every glyph through one factory, `CanvasChrome.MakeText`, on `UnityEngine.UI.Text` with the project's own `Font` assets (dynamic, smooth). IMGUI suppresses itself while the Canvas is up and contributes only the scrim. There is a dormant IMGUI selector behind a build-failure gate; it is not what is filmed.
+
+⚠ **The film's own label table proves the split without reading a line of code.** The table records every styled text draw of every capture; for `01_country_selector`, `01g_party_picker` and `01h_scenario_party_picker` it records **none**, while `01c_desk` records 147. Those three screens draw no text through the skin at all.
+
+**2. At what scale.** `CanvasChrome.EnsureHost` sets `ScaleWithScreenSize`, reference 1920×1080, match 0.5 - the board basis, a deliberate divergence from IMGUI's height-fraction sizing, recorded in the file's charter. Match 0.5 makes the factor the geometric mean of the two ratios, so at this project's four filmed geometries it is **0.6569 · 0.8467 · 0.9902 · 1.3236** and at the shipped player default (1024×768) **0.6158**. Not one is 1.
+
+**3. What that does to the type.** The authored size is in canvas units and the rasterised size is the product with the factor. The selector's and picker's own sizes, and what they are asked for:
+
+| authored | 1280×699 | 1600×929 | 1920×1059 | 2560×1419 |
+|---|---|---|---|---|
+| 54 wordmark | 35.47 px | 45.72 px | 53.47 px | 71.47 px |
+| 30 picker title | 19.71 px | 25.40 px | 29.71 px | 39.71 px |
+| 24 country name | 15.76 px | 20.32 px | 23.77 px | 31.77 px |
+| 20 party line | 13.14 px | 16.93 px | 19.80 px | 26.47 px |
+| 18 scenario line | 11.82 px | 15.24 px | 17.82 px | 23.82 px |
+| 16 figure value | 10.51 px | 13.55 px | 15.84 px | 21.18 px |
+| 14 subtitle, BACK TO THE COUNTRIES | 9.20 px | 11.85 px | 13.86 px | 18.53 px |
+| 12 HUE line | **7.88 px** | 10.16 px | 11.88 px | 15.88 px |
+| 9 figure label | **5.91 px** | 7.62 px | 8.91 px | 11.91 px |
+
+⚠ **The IMGUI screens cannot land there.** They size type in whole device pixels re-derived from the screen height every frame and every one of those expressions is clamped: the body style is `clamp(round(H × 0.024), 17, 30)` - 17 px at the same 1280×699 frame - and the desk's captions are floored at 9. **Nothing floored the Canvas product**, so the two screens playtest 6 names are the only filmed surfaces drawing type at six and eight device pixels.
+
+**4. What it looks like.** Magnified 6× from the films, no resample of their own: the card's `POPULATION` and `GDP` labels at 5.91 px have letterforms running into each other; `HUE: POLITICAL` at 7.88 px is a smear; the 15.76 px country name and the 10.51 px value are clean. The IMGUI desk's 12 px header at the same geometry is crisp and its 9 px mono caption is soft but legible.
+
+**5. The two hypotheses the row named, both eliminated by measurement.** There is **no** `RenderTexture`, `targetTexture` or `Graphics.Blit` anywhere under `Assets/`, and **no** `GUIUtility.ScaleAroundPivot` at all; the render scale and DPI factor are 1, and the capture writes the backbuffer at native size with its dimensions asserted. So the blur is not a blit and not a GUI-matrix scale. What remains is the scaler's fractional factor - which the arithmetic above shows, and the glyph-edge measurement below quantifies.
+
+**6. The edge measurement, before.** Transition width is the run of pixels between ink and paper at a glyph edge, measured on the film itself (a hand-cut crop on the Canvas screens, which have no label rects; the label table's own rects on the IMGUI control):
+
+| region, 1280×699 | edges | mean width | 1 px | 2 px | 3 px | 4 px and wider | darkest pixel |
+|---|---|---|---|---|---|---|---|
+| the selector's card text (Canvas) | 316 | 1.304 px | 84.5 % | 8.5 % | 3.2 % | 3.8 % | 46 |
+| the desk's own label rects (IMGUI, the control) | 4 975 | 1.347 px | 86.2 % | 6.9 % | 3.3 % | 3.6 % | 22 |
+| the budget tab's label rects (IMGUI, the control) | 8 124 | 1.187 px | - | - | - | - | 13 |
+
+⚠ **The edge width alone does not carry the defect, and saying so is the point of measuring.** The Canvas card's edges measure like the IMGUI screens' at the same geometry. What separates them is that the Canvas text at 1280 is asked for at **5.91 px and 7.88 px**, sizes no IMGUI surface draws, and that its stems never reach the ink the IMGUI text reaches (darkest 46 against 22): a stem thinner than a pixel is spread across two and never fills. The magnified crops show the consequence directly - the labels are unreadable - which is what the player reported and what the arithmetic above predicts.
+
+### The cause, stated
+
+**The selector and the party picker are the only filmed screens whose type size is authored in canvas units and multiplied by a fractional factor, and nothing in that path either snapped the quad to the pixel grid or floored the product.** Two mechanical consequences, both fixed here; one composition consequence, which is not ours.
+
+### Built
+
+- **`Canvas.pixelPerfect` on the host.** Every graphic's vertices round to whole device pixels, which is what the IMGUI screens get for free by drawing in device pixels.
+- **A device-pixel floor in `CanvasChrome.MakeText`**, the single factory every Canvas screen's text passes through: the authored size is raised until the product with the factor clears **the desk's own caption floor of 9 px** - not a new number - and vertical overflow is opened on a floored line, because a taller line in a rect sized in canvas units would otherwise be truncated away entirely, which is worse than small type.
+- `CanvasChrome.ScaleFactor()` reproduces the scaler's arithmetic from the reference constants, because the scaler does not publish its factor until its first update and the text is made while a screen is being built.
+
+⚠ **What the floor does NOT do, recorded rather than smoothed over.** At 1280 it raises both the 9-unit label and the 12-unit hue line to 14 units, so two levels of the card's hierarchy land on the same size; at 1600 the label goes to 11 units and the hue line stays; at 2560 nothing moves. **The floor is a legibility bound, not a composition.** What the card should show at the smallest geometry is Design's, and it goes on the D21 ask (P6-H1).
+
+### Measured after
+
+The same crops, the same films, before and after the change (`a1before_*` / `a1after_*`, Sweden, a partial sweep to the desk):
+
+| the selector's card text | edges | mean width | 1 px | 2 px | 3 px | 4 px and wider | darkest |
+|---|---|---|---|---|---|---|---|
+| 1280×699 before | 316 | 1.304 px | 84.5 % | 8.5 % | 3.2 % | 3.8 % | 46 |
+| 1280×699 after | 405 | **1.163 px** | 88.4 % | 8.1 % | 2.7 % | **0.7 %** | **38** |
+| 2560×1419 before | 1 110 | 1.132 px | 92.9 % | 4.2 % | 1.4 % | 1.5 % | 28 |
+| 2560×1419 after | 1 003 | 1.229 px | 80.7 % | 17.4 % | 0.8 % | 1.1 % | 28 |
+
+**Reading those four rows honestly.**
+- **At 1280 the fix lands.** The widest edges - the 4 px and wider class, which is what a smear looks like - fall from 3.8 % to 0.7 %; the mean width falls; the darkest pixel deepens from 46 to 38, meaning stems now fill; and the edge COUNT rises from 316 to 405 because letterforms that had run together are resolved as separate strokes. The magnified crop is the plain version of all four numbers: `POPULATION`, `GDP` and `HUE: POLITICAL` are legible where they were mush.
+- **At 2560 nothing was broken and nothing much changed.** The floor does not bind there (the smallest authored size is asked for at 11.91 px), so only the snapping applies; the crops before and after are visually the same frame, the mean width moves by a tenth of a pixel and the 2 px class rises - a phase shift of where the anti-aliased column falls, not a spread: the 4 px class stays near 1 % and the ink depth is identical. ⚠ Reported rather than smoothed: the metric moved the wrong way at 2560 and the frames say it does not matter.
+- **The party picker was never below the floor** (its sizes are asked for at 19.71, 13.14 and 9.20 px at 1280), so its only change is the snap. Its panel sits on a dimmed scrim whose gradient dominates any rectangle large enough to hold a line, so no edge figure for it is quoted here: the film is the evidence, and the picker reads clean at both widths.
+
+### Two things the full sweep surfaced, both attributed before being acted on
+
+⚠ **1. A DRY FILM CANNOT REPRESENT A CANVAS SCREEN — found by this item and now stated by the harness.** The first full dry film after the floor landed reported **124 canvas-text clips**; the film of the same tree at the same geometry reported **none across five asserts**. The cause is the seam itself: a dry film's size seam is `UiScreen`, which the IMGUI styles read, while a Canvas is scaled by the real backbuffer - and a windowless Editor reports 640×480 whatever geometry the run names. So the dry film was asserting on Canvas screens laid out at 640×480 and calling it the 1280 frame; before the floor it passed there by luck, because at that frame nothing was raised into its rect's ceiling. The canvas-text assert now stays the film's, beside the edge guard, the identity token and the frame-size traps, and the dry run's own closing line says so. ⚠ **The standing consequence: a Canvas screen's containment is proven by a film, never by a dry film.**
+
+**2. A pre-existing overflow, measured on HEAD before the change and carried to Track B.** The same full sweep reports **3 text overflows** - and the identical three on HEAD's tree, so they are not this item's: the Policy Web's statute caption at 8 px needs 534.9 px in a 400.1 px rect (over by 134.8) on `06j_policylaws_policyweb_rest`, `06k_policylaws_policyweb_node_policy` and `06k_policylaws_policyweb_node_policy_rows`. It went unseen because the recent dry films were partial sweeps that stopped before those captures. It is an at-rest caption, which is exactly P6-B1's census, and it is carried there rather than fixed here.
+
+**Bars.** `bar_a1` the cheap bar 41 of 41 (`bar_a1b`, on the committed tree); `drya1` the dry film (Sweden at 1280) 116 measured, 0 failed, 0 escapes, and the three pre-existing overflows that also stand on HEAD; the canvas-text assert is no longer claimed there; `filma1` the one filmed width (Sweden at 1280) 116 captured, 0 failed, 0 canvas text violations across 5 asserts. The tier is UI.
+
+## 528. P6-A2 — THE CENSUS OF CONTROLS THAT DRAW AS PROSE, AND THE THREE THAT NOW WEAR THE CHROME'S OWN FACE: the selector's scenario lines, the picker's party rows and its way back; the faced Canvas button given ONE definition, which the two screens that had copied it inline now use (2026-09-17)
+
+**The row** (P6-A2): *"The scenario lines on the selector and `BACK TO THE COUNTRIES` on the party picker are text, not buttons. Census every player-reachable control that draws as prose; give each the chrome's own button face (D20/6b answered the button faces - inherit them, invent nothing). Done when: the census is in the record and no control on a filmed surface draws as a bare sentence."*
+
+### What the faces ARE, read off the code before anything was changed
+
+`PoliSimWidgets.Button` is **not** a face: its six overloads are `GUILayout.Button`/`GUI.Button` plus the press cue, and they draw whatever style they are handed - `GUIStyle.none` yields a hit rect and nothing. The face lives in `UiPalette.BuildButtonStyle`: `ui_btn_brass` for the emphatic kinds, `ui_btn_paper` otherwise, `ui_btn_disabled` for disabled, nine-sliced, with hover lightened and active darkened. **6b's ruling, already built (§268):** both pagers left the raw skin button for the paper face, and its closing line was that no `GUI.skin.button` face remains on the sweep. On the Canvas side Design delivered the per-state strips `ui_btn_brass_canvas` and `ui_btn_paper_canvas`, each with `_hover` and `_pressed` - all six present.
+
+### The census
+
+**A. Canvas screens.** Every Canvas clickable in the project is a `Button`; there is no `EventTrigger`, `IPointerClickHandler` control, `Toggle`, `Slider` or `InputField` anywhere.
+
+| where | control | drew as | now |
+|---|---|---|---|
+| `CountrySelectorScreen.BuildScenarioLine` | `Scenario: <name>`, one per authored scenario | **PROSE** - a `Text` with a `Button` bolted on, `targetGraphic` the text itself, nothing behind it | the brass face |
+| `CountrySelectorScreen.ShowPartyPanel`, the party loop | one row per seated party | **PROSE** - the same shape; the only `Image` in the panel was the dimming scrim | the brass face |
+| `CountrySelectorScreen.ShowPartyPanel`, the way back | `BACK TO THE COUNTRIES` | **PROSE** - the same shape | the paper face, 6b's own split: the brass commits, the paper navigates |
+| `CountrySelectorScreen.BuildFolderCard` | the country folder card | faced already - the sliced folder art is the control | unchanged |
+| `SigningScreen.BuildSignButton` | `SIGN` / `FILE` | faced already | now through the shared definition |
+| `ElectionNightScreen.BuildContinueButton` | `CONTINUE` | faced already | now through the shared definition |
+
+Three non-controls are recorded so the next census does not re-open them: the folder card's pointer handler animates a hover lift and routes no click, and the party panel's scrim and the signing screen's wash are click *swallowers* with no handler. `ValkretsCartogramView` builds Canvas graphics with every raycast target off - nothing there is reachable.
+
+**B. IMGUI screens.** Every interactive control was classified; none of it is faceless in the sense 6b closed (no raw skin button survives), but a large family draws no button face at all. Two sub-kinds, and the distinction is the ruling this item makes:
+
+- **A drawn form that is not a button face** - a plate, a tongue, a chip, a ruled menu, a brass underline. These READ as controls, and each is a form Design drew: the desk chip family (`GameController.Desk.cs`'s `DrawDeskChipButton`, fourteen call sites - RUN/PAUSE, SAVES, the speed chips, the campaign's verb, target, option and queue chips), the nav rail's cells and the calendar chip (`GameController.cs`), the provenance `†` tab (`Desk.cs`), the laws board's category chip and its ruled category menu, the campaign map's region tiles, the laws board's control-line word sets (the active member inked and underlined in brass), the law browser's ledger rows, the stat chips on the policy screen, and the policy web's and world map's discs and nodes.
+- **Bare prose - type with nothing at all marking it as a control.** After the sweep: **none on an IMGUI surface.** The word sets carry the brass underline that says which is live, the menu rows sit inside a ruled menu, the ledger rows are the ledger's own list idiom, and the discs and nodes are marks rather than sentences.
+
+⚠ **The ruling this item takes, stated so a later pass does not re-litigate it.** *Give each a button face* is applied to controls that draw as a **bare sentence**, which is what the finding names and what the done-when says. It is **not** applied to a form Design drew - putting `ui_btn_paper` under the desk's chips, the rail's tongues or the laws board's underlined words would overrule the boards that drew them, which is not this pass's to do. The census above is the list; if Design wants any of those to become faces, it is a D21 row, not a self-taken change.
+
+### Built
+
+- **`CanvasChrome.FacedButton`** - one definition of the Canvas faced button: the delivered per-state strips sliced at the pack's own borders, `SpriteSwap` between them, a stretched label, and the standing degradation (a missing strip leaves the face's own fill, never white). The face is the argument a caller cannot omit. `Face.Brass` and `Face.Paper` name the two delivered sets.
+- The selector's three prose controls converted to it, and **the two screens that had copied the pattern inline** (`SigningScreen`, `ElectionNightScreen`) now call it instead - the third copy is what made the copies a defect rather than untidiness.
+- The picker's column spacing comes down because a faced row is taller than the line it replaces, so France's fifteen still stand inside the column.
+
+⚠ **A layout minimum that was missing, found by the guard the moment the faces landed.** A `VerticalLayoutGroup` that cannot fit its children shrinks the ones with no minimum toward zero, and a `Text` squeezed under its own line height is clipped silently. The first film after the faces reported the wordmark at a rect of 30 units under a 52-unit line. The title block now states what its two lines need and is as tall as its contents; the folder grid below it did not move.
+
+### Proven
+
+- **Filmed.** France at 1280 (`filma2b`): 114 captured, 0 failed, the capture-identity token proved on every frame, **0 canvas-text violations across 5 asserts**, 0 containment escapes. The three Policy Web overflows stand unchanged from HEAD - they are P6-A1's carried gap, not this item's.
+- **The frames.** The picker's fifteen French party rows each carry the brass face, the way back carries the paper one, and the selector's two scenario lines carry brass under the wordmark; the folder grid is untouched, and the card labels are the ones P6-A1 floored.
+- **The inventory is the proof for the names**: regenerating D18's block moved the delivered-asset count from 32 held / 165 reached to 29 held / 168 reached - the paper canvas trio is reached for the first time since it was delivered.
+
+**Bars.** `bar_a2b` the cheap bar 41 of 41 (the first run, `bar_a2`, went red on `D18InventoryCheck` - the ask was stale the moment a held asset was reached, which is the check working); `filma2b` the one filmed width (France 1280) as above; `docbar_a2` the document batch 8 of 8 for the regenerated inventory block. The tier is UI and documents.
