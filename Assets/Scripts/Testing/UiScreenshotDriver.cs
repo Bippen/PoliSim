@@ -1340,6 +1340,18 @@ namespace PoliSim.Testing
         /// <summary>One canvas-text assert per pinned Canvas capture. A Canvas that failed to build asserts nothing and says so — the guard's own "verified nothing" path counts as a violation here, so a silent degradation can't launder a clean count.</summary>
         private void RecordCanvasTextAssert(string context, GameController controller)
         {
+            // ⚠ A DRY FILM CANNOT REPRESENT A CANVAS SCREEN, and P6-A1 (2026-09-17) is where that showed.
+            // The dry film's size seam is `UiScreen`, which the IMGUI styles read; a Canvas is scaled by
+            // the REAL backbuffer, and a windowless Editor reports 640x480 whatever geometry the run names.
+            // So a Canvas screen in a dry pass is laid out at a frame the run does not claim, and asserting
+            // on it reports the wrong frame's clipping - 124 of them the first time the Canvas type carried
+            // a device-pixel floor, against none in the film of the same tree at the same geometry. The
+            // assert stays the film's, beside the edge guard and the frame-size traps.
+            if (Dry)
+            {
+                return;
+            }
+
             if (!controller.CanvasSelectorActive)
             {
                 Debug.LogWarning($"CANVAS TEXT [{context}]: no canvas surface live - nothing asserted (the IMGUI fallback is up).");
@@ -1409,7 +1421,11 @@ namespace PoliSim.Testing
             int escapes = ReportContainmentEscapes();
             Debug.Log($"SHOT: {escapes} containment escape(s) recorded.");
 
-            Debug.Log($"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
+            // ⚠ In a dry pass this line would otherwise read "0 violations across 0 asserts", which is the
+            // guard's own shape for "verified nothing" and would be mistaken for a clean Canvas (P6-A1).
+            Debug.Log(Dry
+                ? "SHOT: DRY - canvas text NOT CLAIMED: a Canvas is scaled by the real backbuffer, which is 640x480 with no window, so this run asserted nothing about it."
+                : $"SHOT: {_canvasTextViolations} canvas text violation(s) recorded across {_canvasTextAsserts} assert(s).");
 
             // Ruling 1's fold: a red line nothing counted is still a failure. The four counters
             // above are the driver's own asserts; _loggedErrors catches everything else - the ~18
@@ -1910,7 +1926,7 @@ namespace PoliSim.Testing
 
             if (Dry)
             {
-                Debug.Log("SHOT: DRY - the edge guard, the identity token and the frame-size traps read pixels; they stay the film's, and this run claims none of them.");
+                Debug.Log("SHOT: DRY - the edge guard, the identity token and the frame-size traps read pixels, and the canvas-text guard reads a Canvas scaled by the real backbuffer (640x480 with no window, whatever geometry this run names); they stay the film's, and this run claims none of them.");
                 LastSweepSummary = $"{LastSweepSummary}exit {exitCode}";
                 if (DryExit != null)
                 {

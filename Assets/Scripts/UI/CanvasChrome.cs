@@ -27,12 +27,63 @@ namespace PoliSim.UI
     /// canvas units directly. This differs from IMGUI's `Screen.height`-fraction scaling on purpose:
     /// Canvas screens are documents composed at a reference size, not furniture re-derived per
     /// resolution.</para>
+    ///
+    /// <para>⚠ <b>What that decision cost, measured at P6-A1 (2026-09-17, playtest 6's finding 1).</b> A
+    /// document composed at the basis is drawn through a FRACTIONAL factor at every geometry this project
+    /// films, and two things followed that the charter above did not foresee: a glyph quad landed on
+    /// fractional device pixels and was filtered across two columns, and the authored type sizes had no
+    /// floor, so the selector card's smallest labels were asked for at under six device pixels. The
+    /// composition stays at the basis - that is Design's - and the two mechanical consequences are answered
+    /// here instead: <see cref="Canvas.pixelPerfect"/> on the host, and <see cref="MinDeviceTextPx"/>
+    /// enforced in <see cref="MakeText"/>. ⚠ The floor is a legibility BOUND, not a design: what the card
+    /// should show at the smallest geometry is a composition question and it goes to Design.</para>
     /// </summary>
     public static class CanvasChrome
     {
         private static readonly Dictionary<string, Sprite> SpriteCache = new Dictionary<string, Sprite>();
 
         private static Canvas _canvas;
+
+        /// <summary>The board basis the Canvas screens are composed at. ⚠ Declared once because
+        /// <see cref="ScaleFactor"/> has to reproduce the scaler's arithmetic to know what a canvas unit is
+        /// worth in device pixels.</summary>
+        public const float ReferenceWidth = 1920f;
+
+        /// <summary>See <see cref="ReferenceWidth"/>.</summary>
+        public const float ReferenceHeight = 1080f;
+
+        /// <summary>See <see cref="ReferenceWidth"/>. 0.5 weights width and height equally, so the factor is
+        /// the geometric mean of the two ratios.</summary>
+        public const float ScalerMatch = 0.5f;
+
+        /// <summary>
+        /// ⚠ **THE SMALLEST TYPE A CANVAS SCREEN MAY RENDER, IN DEVICE PIXELS — the desk's own caption
+        /// floor, not a new number** (`GameController.Desk.cs` holds every IMGUI caption to it).
+        ///
+        /// <para><b>Why it exists (P6-A1, 2026-09-17).</b> Canvas type is authored in canvas units at the
+        /// board basis and multiplied by <see cref="ScaleFactor"/> at draw time, and nothing floored the
+        /// product. At the smallest geometry this project films, the selector card's figure labels were
+        /// asked for at under six device pixels and its hue line at under eight - below anything the IMGUI
+        /// screens draw - and the letterforms collapsed into each other. The floor is applied where the
+        /// text is made, so every Canvas screen inherits it.</para>
+        /// </summary>
+        private const int MinDeviceTextPx = 9;
+
+        /// <summary>
+        /// What one canvas unit is worth in device pixels right now — `CanvasScaler`'s own arithmetic for
+        /// `ScaleWithScreenSize` with `MatchWidthOrHeight`, reproduced here because the scaler does not
+        /// publish its factor until its first update and <see cref="MakeText"/> runs while a screen is
+        /// being built. ⚠ It reads `Screen`, not `UiScreen`: the Canvas is scaled by the real backbuffer,
+        /// and the editor-only override exists for the IMGUI seam.
+        /// </summary>
+        public static float ScaleFactor()
+        {
+            float w = Mathf.Max(1, Screen.width);
+            float h = Mathf.Max(1, Screen.height);
+            float logWidth = Mathf.Log(w / ReferenceWidth, 2f);
+            float logHeight = Mathf.Log(h / ReferenceHeight, 2f);
+            return Mathf.Pow(2f, Mathf.Lerp(logWidth, logHeight, ScalerMatch));
+        }
 
         /// <summary>The shared screen-space Canvas, created on first use. ScreenSpaceOverlay — which the render-order spike measured as still BELOW IMGUI, which is the whole seam: a Canvas screen is visible exactly when OnGUI suppresses itself.</summary>
         public static Canvas EnsureHost()
@@ -45,11 +96,17 @@ namespace PoliSim.UI
             var root = new GameObject("CanvasHost");
             _canvas = root.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            // ⚠ P6-A1 (2026-09-17): SNAP EVERY GRAPHIC TO A DEVICE PIXEL. The scaler below puts these
+            // screens on a fractional factor at every geometry this project films, so a glyph quad landed
+            // on fractional pixels and was filtered across two columns. `pixelPerfect` rounds each
+            // graphic's vertices to whole device pixels - what the IMGUI screens get for free by drawing
+            // in device pixels to begin with.
+            _canvas.pixelPerfect = true;
 
             CanvasScaler scaler = root.AddComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
+            scaler.matchWidthOrHeight = ScalerMatch;
 
             root.AddComponent<GraphicRaycaster>();
 
@@ -162,7 +219,21 @@ namespace PoliSim.UI
             Text text = go.AddComponent<Text>();
             text.text = content;
             if (font != null) { text.font = font; }
-            text.fontSize = size;
+            // ⚠ P6-A1: the authored size is in CANVAS UNITS and the product with the scaler's factor is what
+            // gets rasterised, so the floor is applied to that product, in device pixels, and the authored
+            // size raised until it clears. `CeilToInt` rather than rounding: rounding down would land back
+            // under the floor. Vertical overflow is opened at the same time - a floored line is taller than
+            // the rect its caller sized in canvas units, and `Truncate` would drop the line rather than
+            // show it, which is the one outcome worse than small type.
+            int canvasSize = Mathf.Max(1, size);
+            float scale = ScaleFactor();
+            if (scale > 0f && canvasSize * scale < MinDeviceTextPx)
+            {
+                canvasSize = Mathf.Max(canvasSize, Mathf.CeilToInt(MinDeviceTextPx / scale));
+                text.verticalOverflow = VerticalWrapMode.Overflow;
+            }
+
+            text.fontSize = canvasSize;
             text.color = color;
             text.alignment = anchor;
             text.fontStyle = style;
