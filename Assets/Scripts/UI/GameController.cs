@@ -4041,7 +4041,7 @@ namespace PoliSim.UI
         {
             // An unchanged draft is uncontested: no side, WOULD PASS, as WouldBillPass short-circuits.
             bool contested = concern != null && !concern.IsEmpty;
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, concern);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
 
             // Free-aspect pass (2026-08-26): callers inside a width-bounded pane pass wrapWidth so
             // these labels WRAP there instead of requesting natural width and stretching the pane's
@@ -4056,7 +4056,7 @@ namespace PoliSim.UI
             int forSeats = 0, againstSeats = 0, undecidedSeats = 0;
             if (contested)
             {
-                foreach ((PoliticalParty _, int seats, int side, float _, bool measured) in ParliamentSystem.SeatSides(_playerCountry, concern))
+                foreach ((PoliticalParty _, int seats, int side, float _, bool measured) in _chamberVerdicts.SeatSides(_playerCountry, concern))
                 {
                     if (!measured) { continue; }
                     if (side > 0) { forSeats += seats; } else if (side < 0) { againstSeats += seats; } else { undecidedSeats += seats; }
@@ -4081,7 +4081,7 @@ namespace PoliSim.UI
             // for this bill, from the same enumeration the verdict above reads (ParliamentSystem.SeatSides).
             float seatMapWidth = wrapWidth > 0f ? wrapWidth : Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.3f, _boxStyle));
             Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(seatMapWidth, _labelStyle), GUILayout.ExpandWidth(true));
-            SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle);
+            SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle, _chamberVerdicts);
 
             if (contested && withBreakdown) { DrawStanceBreakdown(concern, seatMapWidth); }
         }
@@ -4106,7 +4106,7 @@ namespace PoliSim.UI
             nameStyle.normal.textColor = PoliSimTheme.TextPrimary;
             GUILayout.Label("THE BREAKDOWN · EVERY PARTY'S STANCE AND ITS REASON", head, GUILayout.Width(width));
             var byAbbrev = new Dictionary<string, PartyStance>();
-            foreach (PartyStance stance in StanceModel.Stances(_playerCountry, concern)) { byAbbrev[stance.Party.Abbrev] = stance; }
+            foreach (PartyStance stance in _chamberVerdicts.Stances(_playerCountry, concern)) { byAbbrev[stance.Party.Abbrev] = stance; }
             float u = _labelStyle.fontSize / 14f;
             float mark = Mathf.Round(14f * u);
             float rowHeight = Mathf.Max(mark + 4f * u, _labelStyle.CalcSize(new GUIContent("Ag")).y);   // CalcSize, not lineHeight - the serif's box is a pixel taller than its line (quirk 3 of the layout facts)
@@ -4279,6 +4279,10 @@ namespace PoliSim.UI
 
         /// <summary>P3-C1: the Budget draft's concern, kept from the support preview for the breakdown drawn after the arrows.</summary>
         private BillConcern _budgetConcernForBreakdown;
+
+        /// <summary>PF-1 (2026-09-17): every screen's question to the chamber - a line's verdict, a draft's count, seat map and
+        /// breakdown - asked once per chamber and concern instead of on every draw; see <see cref="ChamberVerdicts"/>.</summary>
+        private readonly ChamberVerdicts _chamberVerdicts = new ChamberVerdicts();
 
         /// <summary>True if no preview has been computed yet, the turn has advanced since the last one was, or any slider's value (including any tax line's requested rate change) differs from the snapshot the cached preview was computed from.</summary>
         private bool PolicyInputsChangedSinceLastPreview()
@@ -8371,7 +8375,7 @@ namespace PoliSim.UI
             if (concern == null || concern.IsEmpty) { return; }
             GUIStyle reasonStyle = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
             reasonStyle.wordWrap = true;
-            foreach (PartyStance stance in StanceModel.Stances(_playerCountry, concern))
+            foreach (PartyStance stance in _chamberVerdicts.Stances(_playerCountry, concern))
             {
                 string side = !stance.Measured ? "UNMEASURED" : stance.Side > 0 ? "FOR" : stance.Side < 0 ? "AGAINST" : "UNDECIDED";
                 DrawLawPartyStanceRow(stance.Party.Name, stance.Seats, side, contentWidth);
@@ -9054,7 +9058,7 @@ namespace PoliSim.UI
         {
             // P3-A3 (2026-09-03): the card's verdict is the vote's own - over the bill's concern (the tariff on
             // openness inside it, R-CL2's axis kept) - and the breakdown beneath the map says why, party by party.
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, concern);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
 
             bool contested = concern != null && !concern.IsEmpty;
 
@@ -9068,7 +9072,7 @@ namespace PoliSim.UI
             // P2-2.2 (2026-09-02): the seat map replaces the lean bar here too (a law-support preview); an
             // unopposed bill maps every seat UNDECIDED, because SeatSides treats a zero direction as no side.
             Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(UiScreen.Width * 0.5f, _labelStyle), GUILayout.ExpandWidth(true));
-            SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle);
+            SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle, _chamberVerdicts);
             if (contested) { DrawStanceBreakdown(concern, Mathf.Max(10f, seatMapRect.width)); }
 
             EndAreaCard(area);
@@ -10696,7 +10700,7 @@ namespace PoliSim.UI
         {
             TaxProgramBill bill = pendingBill ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !taxLine.IsImplemented };
             float direction = ParliamentSystem.GetTaxProgramBillDirection(_playerCountry, bill);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, direction);
 
             // The sentence this used to print - "If introduced now: WOULD PASS (current seat
             // composition)" - said the same thing on every one of thirteen rows, so twelve repetitions
@@ -10816,7 +10820,7 @@ namespace PoliSim.UI
         {
             WelfareProgramBill bill = pendingBill ?? new WelfareProgramBill { Type = welfareProgram.Type, IsAdd = !welfareProgram.IsImplemented };
             float direction = ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill);
-            bool wouldPass = ParliamentSystem.WouldBillPass(_playerCountry, direction);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, direction);
 
             // See DrawTaxProgramBillVerdict - the "(current seat composition)" qualifier moved to the
             // screen header there for the same reason it moves here, and it is declared to Design as V1.

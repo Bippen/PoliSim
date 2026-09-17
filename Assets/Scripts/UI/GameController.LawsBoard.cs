@@ -241,13 +241,13 @@ namespace PoliSim.UI
                 int forSeats = 0, againstSeats = 0;
                 if (concern != null && !concern.IsEmpty)
                 {
-                    foreach ((PoliticalParty _, int seats, int side, float _, bool measured) in ParliamentSystem.SeatSides(_playerCountry, concern))
+                    foreach ((PoliticalParty _, int seats, int side, float _, bool measured) in _chamberVerdicts.SeatSides(_playerCountry, concern))
                     {
                         if (!measured || side == 0) { continue; }
                         if (side > 0) { forSeats += seats; } else { againstSeats += seats; }
                     }
                 }
-                bool passes = ParliamentSystem.WouldBillPass(_playerCountry, concern);
+                bool passes = _chamberVerdicts.WouldPass(_playerCountry, concern);
                 string verdictText = concern == null || concern.IsEmpty
                     ? "UNCONTESTED · CARRIES"
                     : (passes ? "CARRIES · " : "FALLS · ") + forSeats + " ⁄ " + againstSeats;
@@ -269,7 +269,7 @@ namespace PoliSim.UI
             var ordered = new List<(PoliticalParty Party, int Seats, int Side)>();
             if (concern != null && !concern.IsEmpty)
             {
-                foreach ((PoliticalParty party, int seats, int side, float _, bool measured) in ParliamentSystem.SeatSides(_playerCountry, concern))
+                foreach ((PoliticalParty party, int seats, int side, float _, bool measured) in _chamberVerdicts.SeatSides(_playerCountry, concern))
                 {
                     total += seats;
                     ordered.Add((party, seats, measured ? side : 0));

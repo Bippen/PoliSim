@@ -253,6 +253,7 @@ namespace PoliSim.EditorTools
             // named, the blocks' identity, the links' identity with the links infinite, the single book (derived + residual = the family's
             // seed, per country), the catalog's shapes. It builds a default World to read the family's seeds off it rather than re-typing them.
             ("EnergyLayerCheck", EnergyLayerCheck.Run),
+            ("ChamberVerdictCacheCheck", ChamberVerdictCacheCheck.Run),   // PF-1 (2026-09-17, §525): the screens' cached chamber answers are the model's own, through a draft, a seat and a party change
 
             // The coherence audit's NINTH sweep (2026-09-01): a guard a COMMENT can switch off. ⚠ A prose
             // mention used to count as a reference in FOUR name-scanning checks - a commented-out

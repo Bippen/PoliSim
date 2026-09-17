@@ -43,10 +43,10 @@ namespace PoliSim.UI
             => Draw(area, country, BillConcern.FromLegacy(direction, axis), captionStyle);
 
         /// <summary>P3-A3 (2026-09-03): the map over what the bill CONCERNS (the stance model's enumeration), so a support preview and the vote that follows it colour the same seats the same way.</summary>
-        public static void Draw(Rect area, Country country, BillConcern concern, GUIStyle captionStyle)
+        public static void Draw(Rect area, Country country, BillConcern concern, GUIStyle captionStyle, ChamberVerdicts verdicts = null)
         {
             int forSeats = 0, againstSeats = 0, undecidedSeats = 0;
-            foreach ((PoliticalParty _, int seats, int side, float _, bool _) in ParliamentSystem.SeatSides(country, concern))
+            foreach ((PoliticalParty _, int seats, int side, float _, bool _) in verdicts != null ? verdicts.SeatSides(country, concern) : ParliamentSystem.SeatSides(country, concern))
             {
                 if (side > 0) { forSeats += seats; } else if (side < 0) { againstSeats += seats; } else { undecidedSeats += seats; }
             }

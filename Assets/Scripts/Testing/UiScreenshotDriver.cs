@@ -1654,14 +1654,17 @@ namespace PoliSim.Testing
             // returned null never follows, the cause is (1) or (2) above, not this driver's own code.
 #if UNITY_EDITOR
             DryGuiPass.BeginCapture(name);
+            // PF-1: every chamber answer the captured frame reuses is recomputed uncached and compared - a drift fails the film.
+            ChamberVerdicts.VerifyHits = true;
+            double verifiedBefore = ChamberVerdicts.VerifyMilliseconds;
 #endif
             if (Dry)
             {
 #if UNITY_EDITOR
                 // The dry film's frame: the IMGUI pass a Game View would have delivered before WaitForEndOfFrame resumes.
                 if (!DryGuiPass.Pump(_dryController, _dryOnGui)) { DryStop(); yield break; }
+                Debug.Log($"SHOT: dry pass for {name} - the IMGUI pass took {DryGuiPass.LastPassMilliseconds} ms, its Layout event {DryGuiPass.LastLayoutMilliseconds} ms, the chamber cache's drift verification {ChamberVerdicts.VerifyMilliseconds - verifiedBefore:F0} ms of it.");
 #endif
-                Debug.Log($"SHOT: dry pass for {name} - the IMGUI pass took {DryGuiPass.LastPassMilliseconds} ms, its Layout event {DryGuiPass.LastLayoutMilliseconds} ms.");
             }
             else
             {
@@ -1671,6 +1674,7 @@ namespace PoliSim.Testing
             }
 #if UNITY_EDITOR
             DryGuiPass.EndCapture();
+            ChamberVerdicts.VerifyHits = false;
 #endif
             if (name.Contains("parliament"))
             {
