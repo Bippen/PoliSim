@@ -1102,6 +1102,12 @@ document's three worked examples to the krona; Sweden's income row prints the ra
 the rate without. The yield does NOT read it yet: P6-D1 is this pass's BASELINE family and the sheet's
 rule is two never in one pass, so `EarnedIncomeCredit.Live` holds it until its family is dumped and ruled
 - that flip, with the lever's own sub-row, is the follow-up item.**
+**→ ✅ LANDED 2026-09-18, `COMPLETED.md` §538 (`8aacfdb`): the credit is in the yield as this pass's family
+(`traj_p6e1`, the sentinel re-based). It reaches the budget through the lever's level - F4-5's rule now derives
+Sweden's as it does the four's, the credited average rate on taxed income (29.16, not the municipal layer's 32.38)
+- with the anchored revenue unchanged and a point of the lever raising what the ministry prices; every ranked row
+of the diff is Sweden's. The lever's own sub-row (the credit's size as the instrument) is still the follow-up.**
+
 
 **P6-E2 — The equivalents, billed.** Every country has some earned-income relief (the USA's EITC,
 Germany's *Arbeitnehmer-Pauschbetrag*, France's *abattement*, Poland's *koszty uzyskania*). Bill
@@ -1145,9 +1151,13 @@ Each is its own item; **none is invented** — every one is a stage the spec-let
 *Done when:* a player can open Energy from the rail, see the system, and make a decision that
 changes it.
 
-**→ ⏸ NOT BUILT this pass (2026-09-18, `COMPLETED.md` §536): the tab exists and draws the layer; its
-decisions wait on D21 row 2 (the composition with the decisions as the spine) and on the IRENA costs
-still billed. Nothing of it is invented meanwhile.**
+**→ ✅ BEGUN 2026-09-18, `COMPLETED.md` §539 (`c544620`): the first decision is on the tab - build and retire,
+capacity by technology as a thing the player changes, with the EIA's lead times (AEO2023 Table 1: coal 4 y, gas 3,
+nuclear 6, wind 3, solar 2) and a connection queue; an order lands at its year and moves the fleet every reader sees
+(`EnergyLayer.CapacityMw`, the must-run levels scaled). **The first cut prices nothing and says so:** IRENA's 2024
+costs stay billed and the cost row reads BILLED. Hydro and "other" are not orderable; the notice is a stated
+stand-in. Filmed at rest and with one order placed. The four instruments, the law category's reach and the ministry
+follow as their own items, on the ruling.**
 
 ## Track G — the pie (finding 5)
 
@@ -1191,6 +1201,7 @@ answer you. The D21 paste when installed. `PLAY_SHEET.md` still open: twenty con
   **P5** records generated from git · **P6b** per-country trajectories (P6a, the artifact check made
   incremental, is DONE and cut the bar to ~26 s). Each is a proposal awaiting a ruling; none outranks
   F2–F6.
+- **FT-10 — the energy layer's nominal price indices run away** (found by §538's diff, present in `traj_p6d1` alike): Poland's `EnergyIndustryPrice` passes 10⁶ at t361 and stands near 10²⁰ at t1000, and its REAL household price at 7 × 10⁸; Sweden's industry price 7 × 10⁹. No sentinel sees it (the first twenty turns) and no shorter horizon ranks it. Elias's to rule: the index's base and what it compounds on. OPEN, untouched by the pass that found it.
 - **PF-1 — France's Budget tab evaluates a vote for every tax line on every IMGUI event.** OPEN, found
   2026-09-17 by the dry film's pass timer (`COMPLETED.md` §524, item 2): `DrawTaxProgramBillVerdict` calls
   `ParliamentSystem.GetTaxProgramBillDirection` and `ParliamentSystem.WouldBillPass` for each line's
