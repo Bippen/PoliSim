@@ -68,13 +68,13 @@ namespace PoliSim.EditorTools
             // Inert until ruled: the yield's rate is the rate without the credit, so the seed's average effective rate is what it was.
             World world = WorldFactory.CreateDefault();
             Country sweden = world.GetCountry(CountryId.Sweden);
-            double without = TaxSchedule.AverageEffectiveRate(sweden, 0.0, 1.0, 1.0);
+            double without = TaxSchedule.AverageEffectiveRateWithoutCredit(sweden, 0.0, 1.0, 1.0);   // P6-E1's yield (§538): the yield path reads the credit now, so "without" is read past the hold
             double with = TaxSchedule.AverageEffectiveRateWithCredit(sweden, 0.0, 1.0, 1.0);
             double seedAer = sweden.IncomeTaxSeedAer;
-            if (EarnedIncomeCredit.Live) { failures.Add("the hold is off - the credit's family must be dumped and ruled before it reaches the yield"); }
-            if (System.Math.Abs(without - seedAer) > 1e-4) { failures.Add(F("the seed's average effective rate moved: {0:F4} against the captured {1:F4}", without, seedAer)); }
+            if (!EarnedIncomeCredit.Live) { failures.Add("the credit is held off the yield - it landed by ruling as the pass's family (§538, traj_p6e1)"); }
+            if (System.Math.Abs((EarnedIncomeCredit.Live ? with : without) - seedAer) > 1e-4) { failures.Add(F("the seed's average effective rate moved: {0:F4} against the captured {1:F4}", EarnedIncomeCredit.Live ? with : without, seedAer)); }   // §538: the captured seed is the credited rate while the flag is on
             if (!(with < without)) { failures.Add(F("the credited rate ({0:F2}) is not below the rate without ({1:F2})", with, without)); }
-            sb.Append(F("    Sweden at the seed: {0:F2} % without the credit (the yield's, and the captured seed's {1:F2}), {2:F2} % with it - the credit is worth {3:F2} points of the average effective rate\n", without, seedAer, with, without - with));
+            sb.Append(F("    Sweden at the seed: {0:F2} % without the credit, {2:F2} % with it (the yield's since §538, and the captured seed's {1:F2}) - the credit is worth {3:F2} points of the average effective rate\n", without, seedAer, with, without - with));
 
             foreach (string f in failures) { sb.Append("    ⚠ ").Append(f).Append('\n'); }
             sb.Append(failures.Count == 0 ? "    CLEAN - the statute's three examples to the krona, the allowance's rounding, the 66-plus ends, the cap, the continuity, the hold." : F("    {0} FAILURE(S).", failures.Count));

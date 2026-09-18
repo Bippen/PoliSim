@@ -58,7 +58,9 @@ namespace PoliSim.Data
             { "France/IncomeTax", 0.557394f },  { "France/CorporateTax", 0.1139f },  { "France/VAT", 0.3745f },  { "France/PayrollTax", 0.2469f },
             { "Italy/IncomeTax", 0.2491f },     { "Italy/CorporateTax", 0.1106f },   { "Italy/VAT", 0.3151f },   { "Italy/PayrollTax", 0.4257f },
             { "Poland/IncomeTax", 0.363939f },  { "Poland/CorporateTax", 0.1474f },  { "Poland/VAT", 0.3132f },  { "Poland/PayrollTax", 0.3775f },
-            { "Sweden/IncomeTax", 0.3209f },    { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
+            // P6-E1's yield (2026-09-18, §538): Sweden's income row re-derived for the CREDITED lever level - the schedule's average rate on taxed income with
+            // jobbskatteavdraget in it, 29.1592 (TaxScheduleDiagnostic section 8), so the row is still the realised 10.389453 % of GDP over the rate it is read against.
+            { "Sweden/IncomeTax", 0.356301f },  { "Sweden/CorporateTax", 0.1675f },  { "Sweden/VAT", 0.3798f },  { "Sweden/PayrollTax", 0.4488f },
             // THE USA's INCOME ROW ONLY, on the FEDERAL perimeter (F4-5): its other three keep the uniform stand-in, as F-B ruled.
             { "USA/IncomeTax", 0.543803f },
         };

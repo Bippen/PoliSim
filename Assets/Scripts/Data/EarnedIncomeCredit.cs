@@ -37,9 +37,12 @@ namespace PoliSim.Data
         /// <summary>The price base amount for the income year, kronor (SKV 433 utgåva 35: "Prisbasbeloppet för 2025 har fastställts till 58 800 kr").</summary>
         public const double PriceBaseAmount = 58800;
 
-        /// <summary>⚠ The hold: false until the credit's family is dumped and ruled (see the class note). The readout and the diagnostic do not read this;
-        /// the yield path does.</summary>
-        public const bool Live = false;
+        /// <summary>LANDED 2026-09-18 (P6-E1's yield, §538, Elias's ruling: "E1's yield lands as this pass's family"): true - the yield path reads the credit.
+        /// The seed AER (<see cref="Country.IncomeTaxSeedAer"/>) is captured WITH it, so the ratio is one at the seed and the anchored revenue - the OECD's
+        /// realised figure, which is net of the credit - does not move; the lever seeds at the credited average rate on taxed income (F4-5's rule, applied
+        /// to Sweden now that its flat layer is no longer the average the taxed income pays), and `TaxBaseTable`'s Sweden row is that revenue over this rate.
+        /// Held at false from §534 until the family could be its own (the two-family rule). The readout and the diagnostic never read this; the yield path does.</summary>
+        public const bool Live = true;
 
         /// <summary>The credit's statute scale, % - 100 is the statute; the lever's own sub-row moves it (P6-E1: "its size is the political instrument").</summary>
         public const double StatuteScalePercent = 100;

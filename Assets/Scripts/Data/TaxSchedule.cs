@@ -416,6 +416,10 @@ namespace PoliSim.Data
         public static double AverageEffectiveRateWithCredit(Country country, double shiftPoints, double incomeScale, double thresholdScale, IReadOnlyList<float> overrides = null)
             => AverageEffectiveRateCore(country, shiftPoints, incomeScale, thresholdScale, overrides, withCredit: CarriesCredit(country.Id));
 
+        /// <summary>The statute WITHOUT the credit, whatever <see cref="EarnedIncomeCredit.Live"/> says - the readout's "WITHOUT" figure and the diagnostic's, now that the yield path reads the credit (P6-E1's yield, §538).</summary>
+        public static double AverageEffectiveRateWithoutCredit(Country country, double shiftPoints, double incomeScale, double thresholdScale, IReadOnlyList<float> overrides = null)
+            => AverageEffectiveRateCore(country, shiftPoints, incomeScale, thresholdScale, overrides, withCredit: false);
+
         /// <summary>Which statutes carry the earned income credit as built: Sweden's two-layer schedule (P6-E1); the equivalents elsewhere are BILLED (P6-E2).</summary>
         public static bool CarriesCredit(CountryId id) => id == CountryId.Sweden && Of(id).Kind == TaxScheduleKind.TwoLayer;
 

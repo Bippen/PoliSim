@@ -1129,7 +1129,9 @@ namespace PoliSim.Data
         private static void SeedIncomeLeverLevel(Country country)
         {
             if (country == null || !TaxSchedule.Responds(country.Id)) { return; }
-            if (TaxSchedule.Of(country.Id).Kind == TaxScheduleKind.TwoLayer) { return; }   // Sweden: the statute's own flat layer stands (§514)
+            // Sweden: the statute's own flat layer stands (§514) while it is the average the taxed income pays. With the credit in the yield (§538) it is
+            // not - the credited average on taxed income is some eight points under the municipal rate - so the rule applies to Sweden as to the four.
+            if (TaxSchedule.Of(country.Id).Kind == TaxScheduleKind.TwoLayer && !(EarnedIncomeCredit.Live && TaxSchedule.CarriesCredit(country.Id))) { return; }
             double rate = TaxSchedule.AverageRateOnTaxedIncome(country);
             if (rate <= 0.0) { return; }
             foreach (TaxLine line in country.TaxLines)

@@ -217,7 +217,10 @@ namespace PoliSim.EditorTools
                     // F4-3's three verdicts (§514), extended by F4-5 (2026-09-16) to EVERY schedule that responds:
                     // (1) the lever's level is the rate the statute names where it names one every unit of taxed income pays - Sweden's municipal layer -
                     //     and its own average rate on taxed income everywhere else. A blend, or a top rate, is a level nothing in the statute holds.
-                    if (st.Kind == TaxScheduleKind.TwoLayer)
+                    //     P6-E1's yield (2026-09-18, §538): with the credit in the yield the municipal layer is no longer the average the taxed income
+                    //     pays, and Sweden's level is derived like the four's (section 8 asserts it prices its point at one); the flat-layer verdict holds
+                    //     for a two-layer statute without a credit.
+                    if (st.Kind == TaxScheduleKind.TwoLayer && !(EarnedIncomeCredit.Live && TaxSchedule.CarriesCredit(id)))
                     {
                         if (Math.Abs(line.RateSeed - (float)st.FlatLayerRate) > 1e-4f) { ok = false; Debug.LogError(F("TAX SCHEDULE: {0}'s two-layer line is seeded at {1:F2} %, not its municipal layer's {2:F2} % - the blended rate F4-3 retired is back.", id, line.RateSeed, st.FlatLayerRate)); }
                     }
