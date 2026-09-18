@@ -87,6 +87,7 @@ namespace PoliSim.Data
 
         public static World CreateDefault()
         {
+            EnergyFleet.Reset();   // P6-F2 (§539): the fleet's derived delta never carries across worlds
             var eurozone = new CurrencyZone("Eurozone", 2.25f);
             var usDollarZone = new CurrencyZone("US Dollar Zone", 3.75f);
             var swedishKronaZone = new CurrencyZone("Swedish Krona Zone", 1.75f);

@@ -495,6 +495,32 @@ namespace PoliSim.Testing
                     ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.06f));
                     yield return Settle();
                     yield return Capture(energyStem + "_lower");
+                    // P6-F2 (2026-09-18, §539): the decisions plate at rest, then with one order placed by the driver - a wind step, the
+                    // technology every fleet runs - and withdrawn after the frame, so the sweep's later captures read the seed's fleet
+                    var decisionsField = controller.GetType().GetField("_energyDecisionsLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Rect decisions = decisionsField != null ? (Rect)decisionsField.GetValue(controller) : Rect.zero;
+                    if (decisions.height > 0f)
+                    {
+                        ResetScrolls(controller);
+                        yield return Settle();
+                        ScrollBy(controller, Mathf.Max(0f, decisions.y - UiScreen.Height * 0.08f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(energyStem + "_decisions");
+                        var playerField = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+                        var player = playerField?.GetValue(controller) as PoliSim.Data.Country;
+                        EnergyFleet.Order placed = player != null ? EnergyFleet.Place(player, 4, EnergyFleet.StepMw(player.Id), player.CalendarYear) : null;
+                        if (placed != null)
+                        {
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(energyStem + "_decisions_ordered");
+                            EnergyFleet.Withdraw(player, placed);
+                            yield return Settle();
+                        }
+                        else { Debug.LogError($"SHOT: no wind order could be placed - {energyStem}_decisions_ordered not filmed."); }
+                    }
+                    else { Debug.LogError($"SHOT: the decisions plate was never laid out - {energyStem}_decisions not filmed."); }
                     // EN-7a (2026-09-14): the instruments plate in PROVENANCE, where the chips that say what each instrument reaches draw
                     // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
                     _provenanceToRestore = DeskProvenance.On;

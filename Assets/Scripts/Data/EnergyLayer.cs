@@ -109,7 +109,10 @@ namespace PoliSim.Data
         }
 
         // ---- the fleet -------------------------------------------------------------------------------------------
-        public static double CapacityMw(CountryId id, int label) => EnergyLayerData.CapacityRecordMw[Index(id)][label];
+        /// <summary>The fleet as it stands: the 2023 record plus the landed orders of P6-F2's queue (<see cref="Simulation.EnergyFleet"/>, §539) - zero orders at the seed and on every AI state, so this is the record there.</summary>
+        public static double CapacityMw(CountryId id, int label) => EnergyLayerData.CapacityRecordMw[Index(id)][label] + Simulation.EnergyFleet.DeltaMw(id, label);
+        /// <summary>The 2023 record alone - the sourced fleet, what the seed ran and what an order is stepped against.</summary>
+        public static double RecordCapacityMw(CountryId id, int label) => EnergyLayerData.CapacityRecordMw[Index(id)][label];
         public static double CapacityEmberMw(CountryId id, int label) => EnergyLayerData.CapacityEmberMw[Index(id)][label];
         public static double GenerationGwh(CountryId id, int label) => EnergyLayerData.GenerationRecordGwh[Index(id)][label];
         public static double GenerationEmberGwh(CountryId id, int label) => EnergyLayerData.GenerationEmberGwh[Index(id)][label];

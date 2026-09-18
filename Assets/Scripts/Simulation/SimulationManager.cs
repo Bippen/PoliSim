@@ -2833,6 +2833,7 @@ namespace PoliSim.Simulation
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
             InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
             EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): the intensities' yearly step; since §349 (2026-09-07) the carbon tax's base reads them (TaxBaseDriver.Emissions) - the one feedback this family has
+            EnergyFleet.Advance(country, country.CalendarYear);   // P6-F2 (2026-09-18, §539): the queue's orders whose year has come land, and the fleet the year clears on is the one they made
             double electricityTaxRevenueChange = EnergyLedger.AdvanceYear(country);   // EN-4 (2026-09-11): the retail stack and the two ledgers at this year's dispatch; the industrial bill's change reaches BusinessConfidence next boundary (MacroSystem.ApplyCategorySpendingEffects). EN-7b: its electricity-tax receipts above the statute, planned below
             MigrationPovertyFamily.AdvanceYear(country);   // P5-C6 (2026-09-06): readouts, no feedback
             BoundaryLedger?.Invoke(country, "families");
@@ -3536,6 +3537,7 @@ namespace PoliSim.Simulation
                 SentencingSeverity = country.SentencingSeverity,
                 CurrentFedChair = country.CurrentFedChair,
                 SovereignWealthFund = country.SovereignWealthFund?.Clone(),
+                FleetOrders = country.FleetOrders?.ConvertAll(o => o.Clone()),   // P6-F2 (§539): the connection queue, order by order
                 PaidFamilyLeaveWeeks = country.PaidFamilyLeaveWeeks,
                 BaselinePaidFamilyLeaveWeeks = country.BaselinePaidFamilyLeaveWeeks,
                 OvertimeRegulationLevel = country.OvertimeRegulationLevel,

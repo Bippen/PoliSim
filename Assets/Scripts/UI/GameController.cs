@@ -887,6 +887,7 @@ namespace PoliSim.UI
             _world = save.World;
             _selectedPlayerCountryId = save.PlayerCountryId;
             _playerCountry = _world.GetCountry(save.PlayerCountryId);
+            EnergyFleet.Rebuild(_world.Countries);   // P6-F2 (§539): the loaded queue's landed orders back in the fleet before anything reads it
             _simulationManager.PlayerCountryId = save.PlayerCountryId;   // C-R4b step 3 (RestoreInto set it too, before the replay; this keeps the two paths one)
             RestoreUiDrafts(save.Ui);
 

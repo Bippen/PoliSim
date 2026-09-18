@@ -83,17 +83,114 @@ namespace PoliSim.UI
             return Mathf.Ceil(reason.CalcHeight(new GUIContent(why), width)) + StatsUnit(16f);
         }
 
-        private void DrawEnergyGapRow(float[] x, float y, float pad, string name, string unit, string why)
+        private void DrawEnergyGapRow(float[] x, float y, float pad, string name, string unit, string why, bool billed = false)
         {
             var area = new Rect(x[0], y, x[x.Length - 1] - x[0], EnergyGapRowHeight(why));
             float[] gx = PlateGrid.Tracks(area, PlateGrid.GapRow);
             PoliSimTheme.Rule(new Rect(area.x, area.y, area.width, 1f), PoliSimTheme.RuleRow);
-            var row = new PlateRow(name, unit, "", "absent", PlateBand.Absent, 0f, 1f, -1f, null, true, null, null, new[] { "ABSENT · STATED" }, false, why);
+            // P6-F2 (§539): the BILLED form for a row whose source is owed - the cost row of the decisions plate
+            var row = new PlateRow(name, unit, "", billed ? "billed" : "absent", PlateBand.Absent, 0f, 1f, -1f, null, true, null, null, new[] { billed ? "BILLED" : "ABSENT · STATED" }, false, why);
             DrawPlateGapRow(area, gx, row, DeskBodyWrapped(11.5f, PoliSimTheme.TextPrimary), pad);
         }
 
+        // ---- P6-F2 (2026-09-18, §539): the decisions plate - build and retire, the connection queue, the cost row BILLED ----------------------
+
+        /// <summary>P6-F2 (§539): where the decisions plate was laid out last frame - the film scrolls to it.</summary>
+        private Rect _energyDecisionsLastArea;
+
+        /// <summary>
+        /// The tab's first decision, on Elias's rule for the row (§526, P6-F2): capacity by technology as a thing the player changes, with a lead
+        /// time and a connection queue; IRENA's 2024 costs stay billed, so the first cut prices nothing and says so - the decision exists, the cost
+        /// row reads BILLED. One row states the decision and its reach; the extra row is the surface - a line per technology with its lead time,
+        /// a step down and a step up, and what is queued - then the queue itself, then the cost row. The rule is <see cref="EnergyFleet"/>'s.
+        /// </summary>
+        private void DrawEnergyDecisionsPlate(Country country, Color areaInk)
+        {
+            int year = country.CalendarYear;
+            double step = EnergyFleet.StepMw(country.Id);
+            int pending = EnergyFleet.PendingCount(country);
+            string figure = pending == 0 ? "NOTHING QUEUED" : pending == 1 ? "1 ORDER QUEUED" : pending + " ORDERS QUEUED";
+            var rows = new List<PlateRow>
+            {
+                new PlateRow("Build and retire", "MW BY TECHNOLOGY · STEP " + PlateFigure((float)step, 0) + " MW · AFTER THE LEAD TIME",
+                    EnergyFleet.LeadTimeSourceShort, figure, PlateBand.None, 0f, 1f, -1f, null, true,
+                    new[] { "CAPACITY BY TECHNOLOGY ▸", "GENERATION BY TECHNOLOGY ▸", "THE WHOLESALE PRICE ▸" }, null, new[] { "DECLARED" }, false),
+            };
+            string foot = "THE ORDERS ARE THE PLAYER'S · ON LANDING AN ORDER MOVES THE FLEET EVERY ROW ABOVE READS, AND NUCLEAR, WIND AND SOLAR RUN AT THE SEED FLEET'S OWN PROFILE · HYDRO AND OTHER ARE NOT ORDERABLE · THE NOTICE IS STATED, NOT SOURCED · NOTHING IS PRICED UNTIL IRENA'S COSTS LAND";
+            _energyDecisionsLastArea = DrawPlateRows(rows, areaInk, foot, false, row => null,
+                extraRowHeightFor: (nameH, capH, srcH, smallH) => EnergyDecisionsRowHeight(country, capH),
+                drawExtraRow: (x, y, pad, styles) => DrawEnergyDecisionsRow(x, y, pad, styles, country, year, step));
+        }
+
+        private float EnergyDecisionsLineHeight => StatsUnit(15f);
+        private float EnergyDecisionsQueueLineHeight => StatsUnit(12f);
+
+        private float EnergyDecisionsRowHeight(Country country, float capH)
+        {
+            int lines = EnergyLayerData.Labels.Length;
+            int queue = Mathf.Max(1, country.FleetOrders?.Count ?? 0);
+            return StatsUnit(4f) + capH + lines * EnergyDecisionsLineHeight + StatsUnit(6f) + capH + queue * EnergyDecisionsQueueLineHeight + StatsUnit(8f) + EnergyGapRowHeight(EnergyFleet.CapexBill);
+        }
+
+        private void DrawEnergyDecisionsRow(float[] x, float y, float pad, PlateStyles styles, Country country, int year, double step)
+        {
+            // the name column: what the surface is and how it is read
+            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH), "The order", styles.Name);
+            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH), "+ BUILDS · - RETIRES · ONE STEP PER CLICK", styles.Caption);
+            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH), "PLACED IN " + year + " · THE QUEUE BENEATH", styles.Source);
+
+            float left = x[1] + pad, right = x[x.Length - 2] - pad, width = Mathf.Max(10f, right - left);
+            float techW = width * 0.24f, leadW = width * 0.08f, chipW = StatsUnit(22f), chipH = StatsUnit(12f);
+            GUIStyle label = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            GUIStyle small = DeskCaption(8f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleLeft);
+            GUIStyle chipCaption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter);
+            PoliSimWidgets.MeasuredLabel(new Rect(left, y + StatsUnit(2f), width, styles.CapH), "TECHNOLOGY · THE FLEET · LEAD TIME · ORDER · IN THE QUEUE", styles.Caption);
+            float lineY = y + StatsUnit(4f) + styles.CapH;
+            for (int k = 0; k < EnergyLayerData.Labels.Length; k++)
+            {
+                float lh = EnergyDecisionsLineHeight;
+                var line = new Rect(left, lineY, width, lh);
+                PoliSimWidgets.MeasuredLabel(new Rect(line.x, line.y, techW, lh), EnergyLayerData.Labels[k].ToUpperInvariant() + " · " + PlateFigure((float)(EnergyLayer.CapacityMw(country.Id, k) / 1000.0), 1) + " GW", label);
+                bool can = EnergyFleet.CanOrder(country.Id, k);
+                PoliSimWidgets.MeasuredLabel(new Rect(line.x + techW, line.y, leadW, lh), can ? EnergyFleet.LeadTimeYears[k] + " Y" : "-", small);
+                float cx = line.x + techW + leadW;
+                var minus = new Rect(cx, line.y + (lh - chipH) * 0.5f, chipW, chipH);
+                var plus = new Rect(cx + chipW + StatsUnit(4f), line.y + (lh - chipH) * 0.5f, chipW, chipH);
+                if (DrawDeskChipButton(minus, "-", chipCaption, false, !can)) { EnergyFleet.Place(country, k, -step, year); }
+                if (DrawDeskChipButton(plus, "+", chipCaption, false, !can)) { EnergyFleet.Place(country, k, step, year); }
+                double queued = EnergyFleet.QueuedMw(country, k);
+                string queuedText = can
+                    ? (Math.Abs(queued) < 0.5 ? "NOTHING QUEUED" : (queued > 0 ? "+" : "-") + PlateFigure((float)Math.Abs(queued), 0) + " MW QUEUED")
+                    : EnergyFleet.CannotOrderWhy(country.Id, k);
+                PoliSimWidgets.MeasuredLabel(new Rect(plus.xMax + StatsUnit(6f), line.y, Mathf.Max(10f, right - plus.xMax - StatsUnit(6f)), lh), queuedText, small);
+                lineY += lh;
+            }
+
+            // the queue: every order, the pending ones first
+            lineY += StatsUnit(6f);
+            PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, styles.CapH), "THE CONNECTION QUEUE", styles.Caption);
+            lineY += styles.CapH;
+            bool any = false;
+            foreach (EnergyFleet.Order o in EnergyFleet.Queue(country))
+            {
+                any = true;
+                string text = EnergyLayerData.Labels[o.Technology].ToUpperInvariant() + " " + (o.Mw > 0 ? "+" : "-") + PlateFigure((float)Math.Abs(o.Mw), 0) + " MW · PLACED " + o.OrderedYear + " · "
+                    + (o.Landed ? (o.Mw > 0 ? "CONNECTED " : "LEFT ") : (o.Mw > 0 ? "CONNECTS " : "LEAVES ")) + o.OnlineYear;
+                PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), text, o.Landed ? small : label);
+                lineY += EnergyDecisionsQueueLineHeight;
+            }
+            if (!any)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), "EMPTY · THE FLEET IS THE SEED'S UNTIL AN ORDER LANDS", small);
+                lineY += EnergyDecisionsQueueLineHeight;
+            }
+
+            // the cost row: BILLED, and says so
+            lineY += StatsUnit(8f);
+            DrawEnergyGapRow(x, lineY, pad, "Capital cost", "PER MW BY TECHNOLOGY · WHAT AN ORDER WOULD COST", EnergyFleet.CapexBill, billed: true);
+        }
+
         private const string AbsentLoadGrowth = "THE LOAD DOES NOT GROW WITH GDP OR ELECTRIFICATION · STATED, NOT MODELLED";
-        private const string AbsentInvestment = "NOTHING BUILDS OR CLOSES A PLANT · THE FLEET AND THE LOAD ARE STATIC UNTIL DISPATCH";
 
         /// <summary>The tab's own scroll position - a new field is picked up by the film driver's scroll reflection without a driver edit.</summary>
         private Vector2 _energyScrollPosition;
@@ -183,11 +280,10 @@ namespace PoliSim.UI
                 // 15a: two bars, one order, one legend - capacity and generation share the technology order (the same seven, left to right) and cannot share a scale
                 new PlateRow("Capacity by technology", "% OF MW · COAL·GAS·NUCLEAR·HYDRO·WIND·SOLAR·OTHER", "EMBER · EUROSTAT · EIA · " + EnergyLayer.Year + " · " + PlateFigure((float)(capacityTotal / 1000.0), 1) + " GW",
                     PlateFigure(capacityShares[4] + capacityShares[5], 0, " % WIND + SOLAR"), PlateBand.Distribution, 0f, 100f, -1f, null, true,
-                    new[] { "NO INVESTMENT, NO RETIREMENT", string.Format(CultureInfo.InvariantCulture, "WIND {0:0} % · SOLAR {1:0} % UTILISED", utilisationWind * 100.0, utilisationSolar * 100.0) }, null, new[] { "SOURCED" }, false, null, capacityShares, fleetLabels),
+                    new[] { "BUILD AND RETIRE BELOW ▸", string.Format(CultureInfo.InvariantCulture, "WIND {0:0} % · SOLAR {1:0} % UTILISED", utilisationWind * 100.0, utilisationSolar * 100.0) }, null, new[] { "SOURCED" }, false, null, capacityShares, fleetLabels),
                 new PlateRow("Generation by technology", "% OF GWh · THE SAME ORDER · THIS YEAR'S DISPATCH", "THE CLEARING · SEEDED EMBER · EUROSTAT · EIA · " + EnergyLayer.Year, PlateFigure(dispatched[0] + dispatched[1], 0, " % FOSSIL"),
                     PlateBand.Distribution, 0f, 100f, -1f, null, true, new[] { "DISPATCHED YEARLY", "ENVIRONMENT ▸" }, null, new[] { "DERIVED" }, false, null, dispatched, EnvironmentFamily.MixLabels),
-                new PlateRow("Investment and retirement", "MW BUILT · MW CLOSED", "NO RULE", "absent",
-                    PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE FLEET IS THE SEED'S" }, null, new[] { "ABSENT · STATED" }, false, AbsentInvestment),
+                // P6-F2 (§539): the "Investment and retirement" ABSENT row that stood here since EN-6 is retired - the decision exists, on the plate below
             };
             string foot2 = sweden
                 ? "THE FLEET'S TWO BARS SHARE ONE ORDER, NOT ONE SCALE: A COLUMN READS SHARE OF THE FLEET, THEN SHARE OF THE POWER · FOUR BIDDING ZONES ON THE SEEDED LOADS, THE CHAIN'S THREE LINKS DRAWN IN THE GUTTERS THEY JOIN AT PEAK FLOW OVER CAPACITY; A LINK BINDS WHERE A BLOCK FILLS IT AND THE PRICES EITHER SIDE SPLIT · THE NEIGHBOURS OUTSIDE THE SIX ARE EXOGENOUS · NO QUANTITY MOVES DAILY"
@@ -195,6 +291,9 @@ namespace PoliSim.UI
             DrawPlateRows(fleet, areaInk, foot2, false, row => null,
                 extraRowHeightFor: (nameH, capH, srcH, smallH) => EnergyZonesRowHeight(nameH, capH, srcH, sweden) + EnergyGapRowHeight(AbsentLoadGrowth),
                 drawExtraRow: (x, y, pad, styles) => DrawEnergyZonesRow(x, y, pad, styles, r, country.Id, marketUnit, sweden));
+
+            // ---- plate 2b (P6-F2, §539): the decisions - build and retire, the connection queue, the cost row BILLED --------------------------
+            DrawEnergyDecisionsPlate(country, areaInk);
 
             // ---- plate 3: the water, aligned under the rule row's blocks, and the two ledgers on one scale ----------------------------
             var water = new List<PlateRow>();

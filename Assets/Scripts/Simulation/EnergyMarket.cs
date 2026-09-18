@@ -273,7 +273,9 @@ namespace PoliSim.Simulation
         private static double MustRun(CountryId id, int zone, int block, double hydroShiftMw = 0.0)
         {
             double[] level = EnergyLayerData.DispatchLevelMw[zone][block];
-            return level[Nuclear] * NuclearAvailability(id) + level[Hydro] + hydroShiftMw + level[Wind] + level[Solar] + level[Firm];   // EN-3b: the reservoir operator's shift on the block's hydro
+            // P6-F2 (§539): nuclear, wind and solar scale with the fleet the queue made - (record + landed orders) / record, one at the seed - so a
+            // built MW runs at the seed fleet's own block profile and a retired one takes its output; hydro and "other" are not orderable and stay the record's.
+            return level[Nuclear] * NuclearAvailability(id) * EnergyFleet.Scale(id, 2) + level[Hydro] + hydroShiftMw + level[Wind] * EnergyFleet.Scale(id, 4) + level[Solar] * EnergyFleet.Scale(id, 5) + level[Firm];   // EN-3b: the reservoir operator's shift on the block's hydro
         }
 
         private static double[] Costs(CountryId id, double priceIndex, double etsRisePerT, double[] adders)
