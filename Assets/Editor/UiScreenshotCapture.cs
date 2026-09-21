@@ -457,6 +457,8 @@ namespace PoliSim.EditorTools
             // 2026-09-04 (the 1920 wedge): end the sweep at a named capture, so a bisect at one width films
             // the frames in question rather than the set. The film says it stopped, and where.
             driver.StopAfter = Arg("-shotstop=", "");
+            // §560 (2026-09-21): open on a named save, loaded through the game's own load path - the sitting package films a real game, not the harness's fresh world.
+            driver.LoadSave = Arg("-shotload=", "");
             // C-C10 (2026-08-31): film the impact ledger POPULATED instead of the sweep. The sweep's
             // warm-up is deliberately no-policy, so it films the ledger's empty state and only this
             // films the state where there is a divergence to attribute.

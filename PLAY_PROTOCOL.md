@@ -1,5 +1,7 @@
 # The play protocol (CL-3, `COMPLETED.md` §523)
 
+> ⚠ **2026-09-21 - THIS PROTOCOL CANNOT BE PLAYED AS WRITTEN, AND E-39 IS BLOCKED ON A RULING (`COMPLETED.md` §557, §558; the feature list's CL-5).** Three things were wrong and two are fixed. The game could not LOAD the staged save at all - *Load FAILED*, from before the save was first cut (fixed; the bar now loads it through the controller, the way a player does). The save seated NO PARTY, so no run-up began and every campaign verb was refused (fixed and re-staged: the player is the largest party of Sweden's seeded chamber, the seat the fresh game's fallback and the film harness take). **And the game does not run the calendar this document names:** below, the run-up opens on 18 January 2026 and polling day is 13 September 2026 - `CampaignCalendar.Sweden2026`; the live day path reads the next election turn's boundary, so on this very save the game's run-up begins on 7 May 2029 and its polling day is 31 December 2029. Until that is ruled, a load opens a Desk with no CAMPAIGN cell and more than three years to govern before one appears. `PlayProtocolStaging` prints both calendars on every run.
+
 One play of Sweden's 2026 election from the run-up's first day to election night, on a stated seed, with the twenty-line sheet beside it and the save as the record. This is the protocol S-C3 ruled (`POLISIM_BACKLOG_PLAN.md`, §474); the play itself is Elias's.
 
 ## 1. The seed, stated
@@ -13,12 +15,12 @@ Four saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\Defaul
 
 | save | cut by | what it opens on |
 |---|---|---|
-| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: 18 January 2026, the first day of the 26-week run-up (`CampaignCalendar.Sweden2026.PreCampaignStart`), Sweden, a clean book - nothing drafted |
+| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: 18 January 2026, the first day of the 26-week run-up (`CampaignCalendar.Sweden2026.PreCampaignStart`), Sweden, the player seated as the largest party of the seeded chamber (§558), a clean book - nothing drafted |
 | `playtest_2_riksbank_rate_decision.json` | the film harness, `-shotsaves`, Sweden | felt verdict 2 ("still not independent"): a rate decision drafted on the Riksbank tab |
 | `playtest_1_trade_bill_costs.json` | the film harness, `-shotsaves`, the USA | felt verdict 1: the Trade bill open with its costs on screen |
 | `playtest_3_dense_midgame.json` | the film harness, `-shotsaves`, the USA | the dense mid-game: the budget-process pause, pending cabinet decisions, a foreign-policy meeting, one bill of every type |
 
-`PlayProtocolCheck` (the cheap bar) cuts the first to a temporary path and loads it back every run, so a save this protocol names cannot silently stop loading.
+`PlayProtocolCheck` (the cheap bar) cuts the first to a temporary path every run and loads it back TWICE - into a bare manager, and, since 2026-09-21 (§557), through the controller's own load path, the one the Load button takes - and holds that the player has a party (§558). Until then it loaded the save into a manager only, and the game itself could not open it.
 
 ## 3. The play
 

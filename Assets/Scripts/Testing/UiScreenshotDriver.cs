@@ -81,6 +81,14 @@ namespace PoliSim.Testing
         /// sweep runs out as usual - the film's own count says which happened.</summary>
         public string StopAfter = "";
 
+        /// <summary>Set by `-shotload=&lt;save name&gt;` (2026-09-21, §560, the sitting package): once the game has landed on the Desk the named save is loaded through the
+        /// controller's ONE load path (the saves menu's own), so every frame after it is of that game and not of the harness's fresh world. The save's digest, date and
+        /// player are logged, and a save that is missing, refused, or another country's ends the run: a film of the wrong game under this flag's name is the one outcome it
+        /// exists to prevent. The sweep's warm-up then plays the LOADED game forward; the modes that drive the campaign's own day path (`-shotinterrupts`) or stage a
+        /// dated reading over the game (`-shotcampaign`, `-shotelectionnight`) skip it, so the run-up they open on is the one the save was cut in.</summary>
+        public string LoadSave = "";
+        private DateTime _loadedDate = DateTime.MinValue;
+
         /// <summary>Set by `-shotlocale=` (e.g. "en-US"): overrides the thread culture before anything draws, so number/date formatting can be captured in a locale other than the OS's. Empty = OS culture, which is what every set before 2026-08-12 rendered in (sv-SE on this machine — the decimal-comma set).</summary>
         public string Locale = "";
 
@@ -346,6 +354,19 @@ namespace PoliSim.Testing
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
 
+            // §560: the save, loaded the way a player loads it - after the game has landed, through the saves menu's own path - then the Desk AS LOADED (a load always
+            // resumes PAUSED), then play pressed so the two frames below are the RUNNING state their names promise. The clock stays held: no real-time day passes.
+            if (!string.IsNullOrEmpty(LoadSave))
+            {
+                if (!LoadNamedSave(controller)) { Finish(1); yield break; }
+                SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                yield return Settle();
+                yield return Capture("01l_desk_as_loaded");
+                AssertDeskState(controller, "01l_desk_as_loaded");
+                SetEnumField(controller, "_gameSpeed", "Normal");
+                yield return Settle();
+            }
+
             // ⚠ THE ONE GUARANTEED RUNNING-STATE CAPTURE, taken before the warm-up. The 2026-08-12 run
             // showed every post-warm-up capture in the HELD state — the preliminary-release stop lands
             // on an election eve, so the fed-chair pause is live for the whole main set (and was in
@@ -374,7 +395,9 @@ namespace PoliSim.Testing
             yield return Settle();
 
             ReportClockBeforeWarmup(controller);
-            AdvanceDays(controller, _countryId);
+            bool opensOnTheSave = !string.IsNullOrEmpty(LoadSave) && (Interrupts || CampaignHq || ElectionNightBoard);
+            if (opensOnTheSave) { Debug.Log($"SHOT: -shotload - no warm-up in this mode: it opens on the save's own day, {_loadedDate:yyyy-MM-dd}."); }
+            else { AdvanceDays(controller, _countryId); }
             SetPrivateField(controller, "_daySpeedTimer", 0f);   // §510: the hold released
 
             // R-D4: the playtest saves are staged on the warmed-up game BEFORE the sweep's own drafts
@@ -1561,7 +1584,7 @@ namespace PoliSim.Testing
         /// stops early (<see cref="StopAfter"/>) is judged by the same fold as one that runs out.</summary>
         private void EndSweep()
         {
-            Debug.Log($"SHOT: capture-identity - {_identityAsserts} capture(s) proved they show the surface they claim.");
+            ReportIdentity();
             Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
 
             int overflows = ReportOverflows();
@@ -2088,9 +2111,20 @@ namespace PoliSim.Testing
         /// <summary>EN-7a: the viewer's PROVENANCE setting a frame switched on, while that frame is out - Finish restores it, so a run that ends on the frame leaves the preference as it found it.</summary>
         private bool? _provenanceToRestore;
 
+        /// <summary>The identity trap's count, once a run (the sitting package, 2026-09-21): the sweep said it at its end and the four modes that end through their own Finish said
+        /// nothing, so a campaign or an election-night film proved every frame and printed no line to show for it. A dry film reads no pixels and claims none.</summary>
+        private void ReportIdentity()
+        {
+            if (_identityReported || Dry) { return; }
+            _identityReported = true;
+            Debug.Log($"SHOT: capture-identity - {_identityAsserts} capture(s) proved they show the surface they claim.");
+        }
+        private bool _identityReported;
+
         private void Finish(int exitCode)
         {
             _finishCalled = true;
+            ReportIdentity();
             if (_provenanceToRestore.HasValue) { DeskProvenance.On = _provenanceToRestore.Value; _provenanceToRestore = null; }
             // P2-1.3 (2026-09-02): every ledger row the film drew recorded the range a pixel of its track covers;
             // a whole point is reachable without overshoot only when that does not exceed the row's snap.
@@ -2299,13 +2333,35 @@ namespace PoliSim.Testing
         {
             FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
             if (!(simField?.GetValue(controller) is SimulationManager sim)) { return; }   // AdvanceDays reports the unreachable manager
-            int ran = (sim.CurrentDate - SimulationManager.EpochDate).Days;
+            int ran = (sim.CurrentDate - (_loadedDate != DateTime.MinValue ? _loadedDate : SimulationManager.EpochDate)).Days;   // §560: a loaded game's clock is held from the save's own date
             if (ran > 0)
             {
                 Debug.LogError($"SHOT: play's clock RAN {ran} day(s) in real time before the warm-up (the date {sim.CurrentDate:yyyy-MM-dd}) - the budget window and the warm-up's stop now depend on the machine's speed.");
                 _failed++;
             }
             else { Debug.Log($"SHOT: play's clock HELD before the warm-up - the date {sim.CurrentDate:yyyy-MM-dd}, 0 days run."); }
+        }
+
+        /// <summary>§560: loads <see cref="LoadSave"/> from the game's saves directory through `GameController.LoadFromPath` - the path F9 and the menu's Load share - and
+        /// holds the result to what the flag promises: the file exists, the load was not refused, the player is this run's country. Logs the file's SHA-256.</summary>
+        private bool LoadNamedSave(GameController controller)
+        {
+            string path = Path.Combine(PoliSim.Persistence.SaveGameService.DefaultSaveDirectory, LoadSave + ".json");
+            if (!File.Exists(path)) { Debug.LogError($"SHOT: -shotload={LoadSave} - no such save at {path}. NOTHING filmed: a fresh world under a loaded game's name is what this flag exists to prevent."); return false; }
+            string digest;
+            using (var sha = System.Security.Cryptography.SHA256.Create()) using (FileStream stream = File.OpenRead(path)) { digest = BitConverter.ToString(sha.ComputeHash(stream)).Replace("-", "").ToLowerInvariant(); }
+            MethodInfo load = controller.GetType().GetMethod("LoadFromPath", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo statusField = controller.GetType().GetField("_savesMenuStatus", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (load == null || simField == null || statusField == null) { Debug.LogError("SHOT: -shotload - the controller's load path could not be reached (LoadFromPath / _simulationManager / _savesMenuStatus). NOTHING filmed."); return false; }
+            load.Invoke(controller, new object[] { path });
+            string status = statusField.GetValue(controller) as string;
+            var sim = simField.GetValue(controller) as SimulationManager;
+            if (!string.IsNullOrEmpty(status) || sim == null) { Debug.LogError($"SHOT: -shotload={LoadSave} - the game did not take the save: {status ?? "no manager"}. NOTHING filmed."); return false; }
+            if (sim.PlayerCountryId != _countryId) { Debug.LogError($"SHOT: -shotload={LoadSave} - the save's player is {sim.PlayerCountryId} and this run films {_countryId}. NOTHING filmed."); return false; }
+            _loadedDate = sim.CurrentDate;
+            Debug.Log($"SHOT: -shotload={LoadSave} - LOADED through the game's own load path: sha256 {digest}, {new FileInfo(path).Length} bytes, {sim.CurrentDate:yyyy-MM-dd}, turn {sim.CurrentTurn}, player {sim.PlayerCountryId}. Every frame from here is of this game.");
+            return true;
         }
 
         /// <summary>
