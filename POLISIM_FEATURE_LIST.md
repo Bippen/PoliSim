@@ -1158,6 +1158,26 @@ nuclear 6, wind 3, solar 2) and a connection queue; an order lands at its year a
 costs stay billed and the cost row reads BILLED. Hydro and "other" are not orderable; the notice is a stated
 stand-in. Filmed at rest and with one order placed. The four instruments, the law category's reach and the ministry
 follow as their own items, on the ruling.**
+**→ 2026-09-21, the follow-ons, each its own item:**
+**· ✅ The four instruments as dials with range captions - `COMPLETED.md` §542 (`9e33b3a`):** the Energy sector's own dials on
+the tab under S9's names, one draft with the Sectors page and one bill; forty captions held to the model
+(the levy on the bill falls, industry's price against households' rises, the two the layer does not read say so);
+both dial checks now read every partial of the controller.
+**· ✅ The law category reachable from the tab - §543 (`dc55ff0`):** one faced control that opens LAWS on the
+electricity-tax filter, with what it will find; disabled with its reason for the USA.
+**· ⚠ The ministry BUILT AND HELD - §544 (`e44f41a`):** five mandates read from the countries' own statutes on the day
+(Germany's EEG / WindSeeG / KVBG paths, Italy's PNIEC capacities, France's 40 %, Sweden's fossil-free 2040; Poland BILLED,
+the USA nothing to answer), orders through the player's own queue with a sentence each, `AiEnergyMinistry.Live` false.
+Its failure modes measured before the flip: a statute's GW path floods a load that does not grow (Germany: every block
+curtailing from 2030), the queue has no capacity (a first order of 65 GW), and curtailment does not reach the price
+(the fossil floor's convention). **The flip is its own BASELINE family, after FT-10 is ruled.**
+**· ⚠ BUILD AND RETIRE RE-FOUNDED - §544, the same commit:** the item's money-path review found that §539's landed orders
+sat in one static table shared by every world the game holds, and the shadow baseline zeroed the player's fleet after
+every turn - the decision did not work in play. The fleet is the country's own now, orders land by turn at the top of
+the boundary, the preview lands its clone's, a retired fossil fleet stops running, and the queue refuses what would not
+move or would scale a fleet that is not there (France's and Italy's coal, Germany's nuclear, Sweden's coal and gas).
+**· The price row stays BILLED until IRENA's costs land.**
+
 
 ## Track G — the pie (finding 5)
 
@@ -1201,7 +1221,9 @@ answer you. The D21 paste when installed. `PLAY_SHEET.md` still open: twenty con
   **P5** records generated from git · **P6b** per-country trajectories (P6a, the artifact check made
   incremental, is DONE and cut the bar to ~26 s). Each is a proposal awaiting a ruling; none outranks
   F2–F6.
-- **FT-10 — the energy layer's nominal price indices run away** (found by §538's diff, present in `traj_p6d1` alike): Poland's `EnergyIndustryPrice` passes 10⁶ at t361 and stands near 10²⁰ at t1000, and its REAL household price at 7 × 10⁸; Sweden's industry price 7 × 10⁹. No sentinel sees it (the first twenty turns) and no shorter horizon ranks it. Elias's to rule: the index's base and what it compounds on. OPEN, untouched by the pass that found it.
+- **FT-10 — the energy layer's price indices run away** (found by §538's diff, present in every baseline since EN-4). **MEASURED 2026-09-21, `COMPLETED.md` §541 (`46ccc7b`), PROPOSED, NOTHING APPLIED - Elias's to rule.** The mechanism: the levy scale divides the support line's shortfall, which rides the spending index's REAL GROWTH (RF-2), by a levy path that rides the price level alone - the price level cancels, the growth index does not, and once a ministry cuts the line the scale compounds at the path's growth rate (Poland first: the fastest path, a deep cut, and a levy in its stack; France bounded only by stalled growth; the USA and Germany immune by absence). Sweden's second term is the B6 class across books - Poland's and Germany's prices read at their own price levels with no exchange rate. The pass-through amplifies and does not cause. **Proposed:** P-A the scale on the line's SHARE of its path (a BASELINE family on four), P-B Sweden's water value in the seed's prices (Sweden alone), and the question whether they land as one family or two; P-A′ whether EN-4's rule should read only the line's support share. **The sentinel now sees it:** a century's bounds pass on the real energy prices, thirteen recorded cells under a ratchet (`EnergyBreachCeiling`), lowered by the fix.
+- **PF-2 — the Budget's spending rows never draw their range captions.** OPEN, found 2026-09-21 (`COMPLETED.md` §542) by the new guard for a caption band left empty: the twenty lines of the catalog's two spending dials need 468–583 px in a band of 163–179 px at 1280 (804 in 428 at 2560) - the band between a spending row's instruments is a third of a dial's - so P5-B5's captions have drawn at neither filmed width. The row's fallback (its instruments take the band) is its designed path, so the guard is scoped to dial rows; the fix is the row's own item: shorter lines, a second band, or the captions retired.
+- **PF-3 — the USA's Politics compass caption escapes its container.** OPEN, found 2026-09-21 (§542) on a full-sweep dry film of the USA at 1280: the y-axis caption stands 15.1 px below its container on four captures of the compass page. Present on the tree before the item that found it (`dryusa_before`); the five other countries' sweeps are clean.
 - **PF-1 — France's Budget tab evaluates a vote for every tax line on every IMGUI event.** OPEN, found
   2026-09-17 by the dry film's pass timer (`COMPLETED.md` §524, item 2): `DrawTaxProgramBillVerdict` calls
   `ParliamentSystem.GetTaxProgramBillDirection` and `ParliamentSystem.WouldBillPass` for each line's
