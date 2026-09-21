@@ -3822,7 +3822,7 @@ namespace PoliSim.UI
         /// Emits exactly one control, always, enabled or not.
         /// </summary>
         private float DrawDialRow(string name, float standing, float draft, float min, float max,
-            string format, string suffix, string trailing, bool interactive = true, float tickStep = 0f, string captionKey = null)
+            string format, string suffix, string trailing, bool interactive = true, float tickStep = 0f, string captionKey = null, GUIStyle nameFace = null)
         {
             // P5-1 (board 6a, 2026-09-03): the family's track, ticks, knob, pencil slot and end-names on every dial. The board's
             // verdict and action cells are NOT drawn on a ledger with no bill to judge and no action: on film they cost the
@@ -3835,7 +3835,7 @@ namespace PoliSim.UI
                 interactive ? standing.ToString(format, CultureInfo.InvariantCulture) + suffix : "n/a",
                 changed ? draft.ToString(format, CultureInfo.InvariantCulture) + suffix : null,
                 trailing, interactive,
-                _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, tickStep: tickStep);
+                _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, tickStep: tickStep, nameFace: nameFace);
             if (interactive && Event.current.type == EventType.Repaint) { DrawRangeCaption(name, captionKey ?? name, result, standing, min, max); }
             return result;
         }
@@ -3870,7 +3870,10 @@ namespace PoliSim.UI
             }
             if (area.width <= 8f) { return false; }
             int size = Mathf.Max(8, Mathf.RoundToInt(RangeCaptionFontAt1280 * _labelStyle.fontSize / 14f));
-            GUIStyle line = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { fontSize = size, alignment = TextAnchor.LowerLeft, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
+            // 8d: *the same band, the same LINE*. Between two end-names the caption hangs from the top like them, its top lifted by the difference of the two faces' ascents, so the
+            // larger face stands on the smaller one's baseline; until 2026-09-21 it sat lower-left in the band and crossed their line by two pixels at 1280 (Design's sighting).
+            bool onEndNameLine = LedgerRow.LastHadEndNames && !endPieces;
+            GUIStyle line = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { fontSize = size, alignment = onEndNameLine ? TextAnchor.UpperLeft : TextAnchor.LowerLeft, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
             GUIStyle nameStyle = new GUIStyle(line) { fontStyle = FontStyle.Bold };
             Color ink = PoliSimTheme.TextPrimary;
             ink.a *= alpha;
@@ -3892,14 +3895,32 @@ namespace PoliSim.UI
             }
             float total = withName ? nameWidth + lineWidth : lineWidth;
             float x = Mathf.Round(area.x + (area.width - total) * 0.5f);
+            float textHeight = Mathf.Ceil(line.CalcSize(new GUIContent(b.Line)).y);
+            float textTop = onEndNameLine ? Mathf.Round(LedgerRow.LastCaptionBand.y + LedgerRow.Ascent(LedgerRow.CaptionStyle(_labelStyle)) - LedgerRow.Ascent(line)) : area.yMax - textHeight;
+            Rect captionRow = onEndNameLine ? new Rect(x, textTop, total, textHeight) : new Rect(x, area.y, total, area.height);
+            if (onEndNameLine)
+            {
+                // THE GUARD, WIDENED TO THE END-NAMES' LANE (Design's sighting on `filmpa3_1280_08_energy_instrument_dials_dragged`, 2026-09-21; board 8d: *"the same band, the same
+                // line; it fits between them with >= 12 px clear each side"*). Until now the guard knew only the caption's own band - the middle three fifths - and so could not see
+                // the lane it shares: whether the caption stands on the END-NAMES' LINE (their baseline, not one of its own across theirs) and whether it keeps the board's
+                // clearance from the end-names AS DRAWN (their measured ink, not the fifth a name is assumed to fit).
+                Rect lane = LedgerRow.LastCaptionBand;
+                float endBaseline = lane.y + LedgerRow.Ascent(LedgerRow.CaptionStyle(_labelStyle));   // the end-names hang from the lane's top
+                float captionBaseline = textTop + LedgerRow.Ascent(line);
+                UiContainmentGuard.Check("RangeCaption / the end-names' line (8d: the same band, the same line) / " + name,
+                    new Rect(x, captionBaseline - 0.5f, total, 1f), new Rect(lane.x, endBaseline - 0.5f, lane.width, 1f));
+                float freeLeft = lane.x + LedgerRow.LastEndNameLeftInk + clear, freeRight = lane.xMax - LedgerRow.LastEndNameRightInk - clear;
+                UiContainmentGuard.Check("RangeCaption / clear of the end-names as drawn (8d: >= 12 px each side) / " + name,
+                    new Rect(x, lane.y, total, lane.height), new Rect(freeLeft, lane.y, Mathf.Max(1f, freeRight - freeLeft), lane.height));
+            }
             Color previous = GUI.color;
             GUI.color = new Color(1f, 1f, 1f, alpha);
             if (withName)
             {
-                GUI.Label(new Rect(x, area.y, nameWidth, area.height), nameText, Inked(nameStyle, ink));
+                GUI.Label(new Rect(x, captionRow.y, nameWidth, captionRow.height), nameText, Inked(nameStyle, ink));
                 x += nameWidth;
             }
-            GUI.Label(new Rect(x, area.y, lineWidth, area.height), b.Line, Inked(line, ink));
+            GUI.Label(new Rect(x, captionRow.y, lineWidth, captionRow.height), b.Line, Inked(line, ink));
             GUI.color = previous;
             return true;
         }
@@ -11102,16 +11123,36 @@ namespace PoliSim.UI
 
             string statusText = pendingBill != null
                 ? $"An Economic Sectors bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Economic Sectors bill currently before Parliament. Introduce your current draft (across every sector) as a bill below.";
-            GUILayout.Label(statusText, _labelStyle);
-
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && pendingBill == null;
-            if (PoliSimWidgets.Button("Introduce Economic Sectors Bill", _neutralActionButtonStyle))
+                : "No Economic Sectors bill currently before Parliament. Introduce your current draft (across every sector) as a bill.";
+            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))
             {
                 _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts());
             }
+        }
+
+        /// <summary>
+        /// A bill's call to action as board 6a's button (Design's sighting, 2026-09-21: *"`INTRODUCE ECONOMIC SECTORS BILL` is the old pack's full-width face, not 6a's one-width
+        /// three-face button"*): one row - the bill's status sentence, and at its right the family's ONE-WIDTH action button in the family's own column
+        /// (<see cref="LedgerFamilyColumns"/>), brass *Introduce* when the draft can go to Parliament and the stamped-grey *Pending (NNd)* while one is before it - rendered, never
+        /// omitted, as on every tax and welfare row. The sentence names the bill, so the button does not. One control, always, enabled or not.
+        /// </summary>
+        private bool DrawBillCallToAction(string statusText, bool pending, int daysRemaining)
+        {
+            Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            LedgerFamilyColumns(fullRow, out _, out _, out Rect actionRect);
+            Rect sentence = new Rect(fullRow.x, fullRow.y, Mathf.Max(1f, actionRect.x - fullRow.x - _labelStyle.fontSize * 0.6f), fullRow.height);
+            if (Event.current.type == EventType.Repaint)
+            {
+                GUIStyle wrapped = new GUIStyle(_labelStyle) { wordWrap = true, alignment = TextAnchor.MiddleLeft };
+                PoliSimWidgets.MeasuredLabel(sentence, statusText, wrapped);
+            }
+            float buttonHeight = Mathf.Min(fullRow.height, Mathf.Ceil(_implementButtonStyle.CalcSize(new GUIContent("Introduce")).y));
+            Rect button = new Rect(actionRect.x, fullRow.y + (fullRow.height - buttonHeight) * 0.5f, actionRect.width, buttonHeight);
+            bool ambientEnabled = GUI.enabled;
+            GUI.enabled = ambientEnabled && !pending;
+            bool clicked = PoliSimWidgets.Button(button, pending ? $"Pending ({daysRemaining}d)" : "Introduce", pending ? _pendingButtonStyle : _implementButtonStyle);
             GUI.enabled = ambientEnabled;
+            return clicked && !pending;
         }
 
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern.</summary>

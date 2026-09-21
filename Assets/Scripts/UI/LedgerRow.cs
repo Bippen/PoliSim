@@ -185,8 +185,11 @@ namespace PoliSim.UI
             Color? nameSecondLineInk = null,
             float grain = 1f,
             string grainUnit = null,
-            bool figureSecondLineWide = false)
+            bool figureSecondLineWide = false,
+            GUIStyle nameFace = null)
         {
+            // `nameFace` (2026-09-21, Design's sighting on the Energy tab): the face the NAME is set in, where a page carries its row names at its own pitch. The row's geometry - its
+            // height, its columns, the track, the caption band - stays `nameStyle`'s, so a dial drawn on such a page is the same dial and only its name changes size.
             // Board 9b (D15 item 2, 2026-09-05): `ghost` is the value the line stood at when the year opened - a third tick in TextMuted where the
             // driver's move can be read against the standing tick (ghost → standing the driver's, standing → knob the player's); drawn only when the
             // two sit ≥ 2 px apart. `figureSecondLine` is the delta under the figure, in the figure cell, caption face, right-aligned - the draft cue
@@ -244,7 +247,7 @@ namespace PoliSim.UI
             // the second line takes the name cell's foot (drawn below), so a WRAPPED name has the room above it - measured, the caption's own height
             float captionReserve = string.IsNullOrEmpty(secondLine) ? 0f
                 : Mathf.Ceil(EndCaptionStyle(nameStyle).CalcSize(new GUIContent(secondLine)).y) + 1f;
-            DrawNameCell(nameRect, name, nameStyle, rowInk, captionReserve);
+            DrawNameCell(nameRect, name, nameFace ?? nameStyle, rowInk, captionReserve);
             if (!string.IsNullOrEmpty(secondLine) && Event.current.type == EventType.Repaint)
             {
                 // 9d (D15 item 4): 6a's second line under the dial name - on a spending row PORTFOLIO · EFF ×r in the caption face, Bad below unity,
@@ -599,6 +602,17 @@ namespace PoliSim.UI
         public static float LastStep = SnapStep;
         /// <summary>P4-B2: whether the last row drew end-names in its band (the caption then keeps clear of the band's two ends).</summary>
         public static bool LastHadEndNames;
+        /// <summary>The ink widths of the last row's two end-names as drawn (0 where the row drew none) - what a range caption in the same lane must keep clear of.</summary>
+        public static float LastEndNameLeftInk, LastEndNameRightInk;
+
+        /// <summary>From a label's top to its first baseline, for a face drawn from the top with no padding: the font's ascent at the style's size. Two faces share a LINE when their
+        /// tops differ by the difference of these - board 8d's *the same band, the same line* for the range caption and the end-names, whose sizes differ.</summary>
+        public static float Ascent(GUIStyle style)
+        {
+            Font font = style.font != null ? style.font : GUI.skin.font;
+            if (font == null || font.fontSize <= 0 || font.ascent <= 0) { return style.fontSize * 0.8f; }   // a font that reports no metrics: the usual ratio, stated
+            return font.ascent * (float)style.fontSize / font.fontSize;
+        }
 
         /// <summary>P4-B2: the caption band beneath the last row's track - the rect <see cref="DrawEndNames"/> writes its two ends into.</summary>
         public static Rect LastCaptionBand => new Rect(LastTrackRect.x, LastTrackRect.yMax + 1f * LastScale, LastTrackRect.width, RefEndCaption * LastScale);
@@ -633,6 +647,8 @@ namespace PoliSim.UI
             var band = new Rect(track.x, track.yMax + 1f * scale, track.width, RefEndCaption * scale);
             string left = (m.Groups["n"].Value + " " + m.Groups["a"].Value).ToUpperInvariant();
             string right = (m.Groups["m"].Value + " " + m.Groups["b"].Value).ToUpperInvariant();
+            LastEndNameLeftInk = _endCaptionStyle.CalcSize(new GUIContent(left)).x;
+            LastEndNameRightInk = _endCaptionStyle.CalcSize(new GUIContent(right)).x;
             Cell(new Rect(band.x, band.y, band.width * 0.5f, band.height), left, _endCaptionStyle, ink, TextAnchor.UpperLeft);
             Cell(new Rect(band.x + band.width * 0.5f, band.y, band.width * 0.5f, band.height), right, _endCaptionStyle, ink, TextAnchor.UpperRight);
         }

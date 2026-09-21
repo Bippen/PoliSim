@@ -312,35 +312,44 @@ namespace PoliSim.UI
             }
             float top = head.y;
 
+            // ONE PITCH FOR ONE NAME ON ONE PAGE (Design's sighting, 2026-09-21: the dial rows' names sat at the body face while the readout rows above carry the same four names at
+            // the plate's pitch). The dials keep D13's row - its height, columns, track and caption band are the label face's - and take the page's own name face and name lane:
+            // the plate's `DeskBody(12.5)` and its four-unit pad, the same two figures `DrawStatPlate` draws its row names with.
+            GUIStyle nameFace = DeskBody(12.5f, PoliSimTheme.TextPrimary);
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(StatsUnit(4f));
+            GUILayout.BeginVertical();
             bool levied = SectorCouplings.HasEnergyLine(country) && EnergyLedger.HasPolicyLevy(country.Id);
             if (levied)
             {
                 _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Retail intervention",
                     energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
-                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 sponsored", captionKey: "EnergyTab/Retail");
+                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 sponsored", captionKey: "EnergyTab/Retail", nameFace: nameFace);
             }
             else
             {
                 // no energy line (Germany) or no policy levy in the stack (the USA): the dial reaches no levy here, so it keeps the sector's own name and captions
                 _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Subsidy",
                     energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
-                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: "EnergyTab/Subsidy");
+                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: "EnergyTab/Subsidy", nameFace: nameFace);
             }
 
             _sectorRegulationInputs[SectorType.Energy] = DrawDialRow("Market liberalisation",
                 energy.RegulationLevel, GetSectorRegulationInput(SectorType.Energy, energy.RegulationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 liberalised - 100 regulated", captionKey: "EnergyTab/Liberalisation");
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 liberalised - 100 regulated", captionKey: "EnergyTab/Liberalisation", nameFace: nameFace);
 
             _sectorTaxCreditInputs[SectorType.Energy] = DrawDialRow("Investment planning",
                 energy.TaxCreditLevel, GetSectorTaxCreditInput(SectorType.Energy, energy.TaxCreditLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 planned", captionKey: "EnergyTab/Investment");
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 planned", captionKey: "EnergyTab/Investment", nameFace: nameFace);
 
             _sectorDeregulationInputs[SectorType.Energy] = DrawDialRow("State ownership",
                 energy.DeregulationNationalizationLevel, GetSectorDeregulationInput(SectorType.Energy, energy.DeregulationNationalizationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated", captionKey: "EnergyTab/Ownership");
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated", captionKey: "EnergyTab/Ownership", nameFace: nameFace);
 
             // the dials travel in the Economic Sectors bill - its status and the way to introduce it, here as on the Sectors page
             DrawSectorBillStatusAndIntroduce();
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
             Rect last = GUILayoutUtility.GetLastRect();
             if (Event.current.type == EventType.Repaint) { _energyDialsLastArea = new Rect(head.x, top, head.width, Mathf.Max(1f, last.yMax - top)); }
         }
