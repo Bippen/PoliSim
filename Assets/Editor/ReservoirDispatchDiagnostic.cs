@@ -19,8 +19,8 @@ namespace PoliSim.EditorTools
     /// (3) THE RESERVOIR: an inflow shortfall of a fifth (a probe) runs a deficit, the water value rises by the slope times the deficit share, the
     /// balance is bounded by the store; at the 2023 inflow the balance stays zero. (4) THE SHIFT: Italy's fleet's ETS price stepped fifty dollars per tonne
     /// moves the peak–base spread off the seed's, the shiftable hydro moves toward the peak and brings it back within the tolerance; the year's hydro
-    /// energy is conserved; at the seed nothing moves. (5) B6: at a doubled price level with the continent doubled first, every Swedish zone's price
-    /// doubles.
+    /// energy is conserved; at the seed nothing moves. (5) B6: at a doubled price level with the continent doubled first - and Poland's doubled TWICE (FT-10 · P-B, §552: a level doubled
+    /// everywhere cancels in the water value's old form too, so it told nothing apart) - every Swedish zone's price doubles.
     /// </summary>
     public static class ReservoirDispatchDiagnostic
     {
@@ -114,12 +114,12 @@ namespace PoliSim.EditorTools
             }
 
             // (5) B6
-            sb.Append("\n    5. B6: at a doubled price level, the continent doubled first, every Swedish zone's price doubles\n");
+            sb.Append("\n    5. B6: at a doubled price level, the continent doubled first and Poland's doubled twice, every Swedish zone's price doubles - the water value reads each neighbour's price over its own level\n");
             {
                 SimulationRandom.Seed(777); EnergyMarket.ResetCalibration(); EnergyMarket.ResetTurnState();
                 World w = WorldFactory.CreateDefault(); EnergyMarket.BeginTurn(w);
                 EnergyMarket.Result at1 = EnergyMarket.Clear(w.GetCountry(CountryId.Sweden));
-                foreach (Country c in w.Countries) { c.State.PriceLevel = 2f; }
+                foreach (Country c in w.Countries) { c.State.PriceLevel = c.Id == CountryId.Poland ? 4f : 2f; }   // P-B: non-uniform, or the probe cannot tell the two forms apart
                 EnergyMarket.BeginTurn(w);
                 EnergyMarket.Result at2 = EnergyMarket.Clear(w.GetCountry(CountryId.Sweden));
                 for (int z = 0; z < 4; z++) { for (int b = 0; b < 3; b++) { if (Math.Abs(at2.Zones[z][b].Price - 2 * at1.Zones[z][b].Price) > 1e-6) { ok = false; Debug.LogError($"RESERVOIR: {at1.ZoneNames[z]}'s {EnergyLayerData.DispatchBlocks[b]} price at a doubled level is {at2.Zones[z][b].Price:F3} against twice {at1.Zones[z][b].Price:F3}."); } } }

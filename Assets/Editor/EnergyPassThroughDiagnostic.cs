@@ -14,12 +14,12 @@ namespace PoliSim.EditorTools
     /// EN-5 (2026-09-11), the energy track's S8 - the retail electricity price reaches Inflation through a sourced index weight. It builds and
     /// advances worlds, so it belongs to the simulation group. (1) THE WEIGHTS: six, sourced, per mille. (2) NOTHING PASSES AT NO POLICY: ten
     /// years for six, the largest planned term printed and bounded - a stack that indexes with the level it is measured against passes only the
-    /// fitted adders' real erosion. (3) THE MECHANISM: Poland's fleet's ETS price stepped fifty dollars per tonne (a probe on that fleet alone -
+    /// nominal ceiling's erosion of a scarcity term (none on the seed fleets; the adders carry the level since EN-5). (3) THE MECHANISM: Poland's fleet's ETS price stepped fifty dollars per tonne (a probe on that fleet alone -
     /// since EN-4d, §467, the national carbon tax does not reach ETS-covered plant) - the year of the step the planned term equals the weight times
     /// the household price's real change, the inflation print is higher than untouched by about that term, and expectations look through it
     /// (their difference a fraction of the term). (4) THE RIKSBANK'S PATH: Germany's fleet's ETS step reaches Sweden's household price through
     /// the water value and prints on Sweden's inflation through Sweden's own weight - what a German carbon year does to a Swedish print, named.
-    /// (5) B6: a doubled price level with the same real stack passes nothing but the adders' erosion. (6) EN-7a, THE PREVIEW READS THE TURN: France
+    /// (5) B6: a doubled price level with the same real stack passes nothing but the ceiling's erosion - and with Poland's level doubled twice (P-B, §552) Sweden's still nothing. (6) EN-7a, THE PREVIEW READS THE TURN: France
     /// (the player, so no AI ministry moves its lines) with its Energy subsidy at 80 standing into a boundary, against untouched - the preview's planned
     /// term moves by what the boundary's plan moves (the levy the subsidy displaces), within a tenth; read before the clone's spending resolved, it moved by nothing.
     /// (7) EN-7b, THE PREVIEW READS THE LAW: Germany (the player) with the household electricity relief in force - the preview's planned budget flow
@@ -29,11 +29,14 @@ namespace PoliSim.EditorTools
     {
         private const int Years = 10;
         private const float RaiseUsdPerTonne = 50f;
-        /// <summary>The bound on the planned term at no policy, inflation points a year. Two things move a relative price when nobody moves anything: ACER's
-        /// nominal ceiling erodes a scarcity term, and A COUNTRY WHOSE WHOLESALE IS ANOTHER MARKET'S PRICE carries that market's inflation differential -
-        /// Sweden's water value is Germany's and Poland's clearing at THEIR price level, so their 3 per cent against Sweden's 2 moves Sweden's real
-        /// wholesale by their gap (the first run read 0.0204 pp in year 1 and named it): an import-price channel, which is the mechanism working.</summary>
-        private const float NoPolicyBoundPp = 0.05f;
+        /// <summary>CONVENTION - the bound on the planned term at no policy, inflation points a year. ONE thing moves a relative price when nobody moves anything: ACER's nominal
+        /// ceiling erodes a scarcity term (none stands on the seed fleets). Until FT-10 · P-B (§552) there was a second - Sweden's water value read Germany's and Poland's
+        /// clearing at THEIR price levels, so their inflation against Sweden's moved Sweden's real wholesale (0.0204 pp in year 1), which this comment called *the mechanism
+        /// working* and §541 found to be the B6 class across books; the bound stood at 0.05 to admit it. With the water value in the seed's prices all six read 0.0000 in
+        /// year 1 and at a doubled price level - exact zeros, the float's noise standing near a millionth of a point - and the bound is a fiftieth of what it was: the tree just before
+        /// P-B read 0.0080 pp on Sweden's year 1 (`traj_p6pa`: a real change of 0.113 % on a weight of 70.5 per mille; the 0.0204 above is §465's world), so 0.001 stands eight
+        /// times under the defect it excludes and a thousand times over the noise.</summary>
+        private const float NoPolicyBoundPp = 0.001f;
 
         public static void Run()
         {
@@ -55,7 +58,7 @@ namespace PoliSim.EditorTools
             }
 
             // (2) nothing at no PLAYER policy - the first year, before the AI ministry's own budget moves reach the levy
-            sb.Append(F("\n    2. NOTHING PASSES AT NO PLAYER POLICY: the first year's planned term for six (bound {0:F2} pp - the ceiling's erosion is all that moves a relative price when nothing else does); the ten-year largest term printed with the levy scale that made it\n", NoPolicyBoundPp));
+            sb.Append(F("\n    2. NOTHING PASSES AT NO PLAYER POLICY: the first year's planned term for six (bound {0:F3} pp - the ceiling's erosion is all that moves a relative price when nothing else does); the ten-year largest term printed with the levy scale that made it\n", NoPolicyBoundPp));
             Outcome untouched = RunWorld(CountryId.Poland, Years, null, 0f);
             foreach (CountryId id in untouched.Countries)
             {
@@ -105,14 +108,16 @@ namespace PoliSim.EditorTools
             }
 
             // (5) B6
-            sb.Append("\n    5. B6: a doubled price level with the same real stack passes nothing but the ceiling's erosion (every cost carries the level, the adders since this pass; ACER's 4 000 is a nominal legal figure, so a scarcity term's real value falls)\n");
+            sb.Append("\n    5. B6: a doubled price level with the same real stack passes nothing but the ceiling's erosion (every cost carries the level; ACER's 4 000 is a nominal legal figure, so a scarcity term's real value falls) - and Sweden's water value, with Poland's level doubled twice, reads each neighbour's price over its own level (P-B)\n");
             {
                 SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
                 World w = WorldFactory.CreateDefault(); EnergyMarket.BeginTurn(w);
                 var at1 = new Dictionary<CountryId, double>();
                 foreach (Country c in w.Countries) { if (EnergyLayer.Has(c.Id)) { at1[c.Id] = EnergyLedger.Compute(c, EnergyMarket.ClearAt(c.Id, 1.0, 0.0), 1.0, 0.0).Classes[0].Total; } }
-                // the water value is Germany's and Poland's clearing at THEIR price level - double theirs before Sweden's book at index 2 is read, as a turn would
-                foreach (Country c in w.Countries) { c.State.PriceLevel = 2f; }
+                // every country's level is doubled and POLAND'S DOUBLED TWICE, then the turn begun as a boundary would (FT-10 · P-B, §552). A level doubled everywhere cancels in the
+                // water value's old form too, so it told nothing apart; with Poland's at 4 the old form read a continental price near three times the seed's, and the new one - each
+                // neighbour's clearing over ITS OWN level - reads the seed's. Each country's own book below is cleared at the explicit 2, Poland's too; powers of two keep it exact.
+                foreach (Country c in w.Countries) { c.State.PriceLevel = c.Id == CountryId.Poland ? 4f : 2f; }
                 EnergyMarket.BeginTurn(w);
                 foreach (Country c in w.Countries)
                 {

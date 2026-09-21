@@ -109,7 +109,9 @@ namespace PoliSim.Simulation
             public BlockResult[][] Zones;        // [zone][block]
             public string[] ZoneNames;
             public LinkResult[] Links;           // Sweden only
-            public double[] WaterValue;          // Sweden only, per block
+            public double[] WaterValue;          // Sweden only, per block - the continental proxy AT SWEDEN'S PRICE LEVEL (FT-10 · P-B: kept in the seed's prices inside the market, written nominal here)
+            /// <summary>FT-10 · P-B: the price index this clearing was made at - what a reader deflates its prices by (Sweden's water value reads Germany's and Poland's).</summary>
+            public double PriceIndex;
             /// <summary>Sweden only, per block: the chain's national unbalance, MW - the four balances' sum, which the exogenous exchange and the unmodelled losses leave a few tens of MW from zero; printed, never priced.</summary>
             public double[] ChainUnbalanceMw;
             public readonly double[] AnnualGwh = new double[8];
@@ -344,6 +346,7 @@ namespace PoliSim.Simulation
         {
             Result cleared = ClearAtCore(id, priceIndex, etsRisePerT, waterValue);
             cleared.EtsRisePerT = etsRisePerT;
+            cleared.PriceIndex = priceIndex;   // FT-10 · P-B: what this clearing's prices are deflated by
             return cleared;
         }
 
@@ -448,11 +451,15 @@ namespace PoliSim.Simulation
         }
 
         // ---- Sweden -------------------------------------------------------------------------------------------
-        /// <summary>Set once per turn by the boundary: the water value Sweden's uncongested zones clear at - Germany's and Poland's block prices this turn (their price levels; the ETS probe where one stands), weighted by SE4's capacity to each (615 and 600 MW). Null outside a turn: the SEED's water value then stands (the same two markets at price index 1), so a seed fit (EN-4's margins) reads the seed's price and not the curtailment offer.</summary>
+        /// <summary>Set once per turn by the boundary: the water value Sweden's uncongested zones clear at - Germany's and Poland's block prices this turn, EACH OVER ITS OWN PRICE LEVEL (FT-10 · P-B; the ETS probe where one stands), weighted by SE4's capacity to each (615 and 600 MW). Null outside a turn: the SEED's water value then stands (the same two markets at price index 1), so a seed fit (EN-4's margins) reads the seed's price and not the curtailment offer.</summary>
         public static void BeginTurn(World world)
         {
             Country de = world.GetCountry(CountryId.Germany), pl = world.GetCountry(CountryId.Poland);
             if (de == null || pl == null) { _waterValue = null; _swedenDeficitShare = 0.0; return; }
+            // FT-10 · P-B (§552): each neighbour's clearing is in ITS OWN price level - every COST is carried by it (fuel, O&M, the ETS, the adders, the floor's price); ACER's 4 000
+            // ceiling is a nominal legal figure, EN-5's convention (and the curtailment offer, which is zero), so a SCARCE block's real price erodes with its country's level as it always has (neither neighbour is scarce
+            // on the standing fleets, to the millennium). Each is deflated by the level it was CLEARED at - the clearing's own stamp, never a second reading of the state - before the
+            // two are weighted: the water value is kept in the SEED's prices, real with real, and Sweden's clearing carries it by Sweden's level once (ClearSweden).
             _waterValue = WaterValueOf(Clear(de), Clear(pl));
             // EN-3b: the reservoirs' standing - a deficit against the seed's cycle raises the water value this turn
             Country se = world.GetCountry(CountryId.Sweden);
@@ -473,11 +480,19 @@ namespace PoliSim.Simulation
             country.State.HydroReservoirBalanceGwh = (float)Math.Max(-capacity, Math.Min(capacity, balance));
         }
 
+        /// <summary>The continental proxy IN THE SEED'S PRICES: Germany's and Poland's block prices, each over the price level it was cleared at, weighted by SE4's capacity to each.
+        /// FT-10 · P-B (§552): until 2026-09-21 the two prices were weighted as they stood - Germany's at Germany's price level, Poland's at Poland's - and Sweden's market read the
+        /// sum against a seed carried by SWEDEN's level, with no exchange rate between a złoty price level and a krona market: Poland's level outruns Sweden's by the difference of
+        /// two inflation targets, and Sweden read that as a real rise in the continental price (§541: ×1.65 in a century, ×194 in a millennium). The book is in one currency and has
+        /// no exchange rate, so a neighbour's REAL price is the only one another country's market can read (B6's rule across books).</summary>
         private static double[] WaterValueOf(Result rde, Result rpl)
         {
+            // the index each was cleared at (ClearAt stamps it on every path). A clearing with no stamp would silently be read at 1 - the defect P-B removed, back - so it is refused.
+            if (!(rde.PriceIndex > 0) || !(rpl.PriceIndex > 0)) { throw new InvalidOperationException("EnergyMarket.WaterValueOf: a neighbour's clearing carries no price index - it did not come through ClearAt."); }
+            double priceLevelDe = rde.PriceIndex, priceLevelPl = rpl.PriceIndex;
             double wde = 615.0, wpl = 600.0;   // Svenska kraftnät's capacity-map text: SE4 → Germany 615 MW, SE4 → Poland 600 MW (EnergyData/external_links_se.csv)
             var water = new double[3];
-            for (int b = 0; b < 3; b++) { water[b] = (rde.Zones[0][b].Price * wde + rpl.Zones[0][b].Price * wpl) / (wde + wpl); }
+            for (int b = 0; b < 3; b++) { water[b] = (rde.Zones[0][b].Price / priceLevelDe * wde + rpl.Zones[0][b].Price / priceLevelPl * wpl) / (wde + wpl); }
             return water;
         }
 
@@ -498,9 +513,9 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// Sweden's four zones. EN-3b (2026-09-11): each zone's uncongested price in a block is ITS OWN 2023 price on the exchange (EnergyLayer.SeedZonePrice - the
-        /// day-ahead series folded onto the model's blocks) carried by the price level, plus the zone's measured share of the continental move (EnergyLayer.ZoneBetaToProxy,
-        /// the OLS slope of the zone's hours on the 615/600-weighted German-Polish price in 2023) times the proxy's move from its seed - and raised by the reservoirs'
-        /// deficit share at the slope stated above. At the seed the zones clear at the exchange's figures; before EN-3b every zone cleared at the proxy itself, 87 €/MWh
+        /// day-ahead series folded onto the model's blocks) plus the zone's measured share of the continental move (EnergyLayer.ZoneBetaToProxy,
+        /// the OLS slope of the zone's hours on the 615/600-weighted German-Polish price in 2023) times the proxy's move from its seed, BOTH IN THE SEED'S PRICES (FT-10 · P-B,
+        /// §552) - the sum carried by Sweden's price level once, and raised by the reservoirs' deficit share at the slope stated above. At the seed the zones clear at the exchange's figures; before EN-3b every zone cleared at the proxy itself, 87 €/MWh
         /// load-weighted against the exchange's 44–70 (§466). The chain's binding rule stands above it as before.
         /// </summary>
         private static void ClearSweden(Result result, double[] mc, double[] caps, double[] waterValue, double priceIndex)
@@ -518,12 +533,13 @@ namespace PoliSim.Simulation
             for (int z = 0; z < n; z++) { result.Zones[z] = new BlockResult[3]; }
             for (int b = 0; b < 3; b++)
             {
-                double water = waterValue[b];
-                result.WaterValue[b] = water;   // the continental proxy, kept for the record and the coupling
+                double water = waterValue[b];   // FT-10 · P-B: in the SEED's prices, like the seed proxy it is read against
+                result.WaterValue[b] = water * priceIndex;   // the continental proxy at SWEDEN's price level - what the page prints and the coupling's readers take (they read it against seedProxy × priceIndex)
                 var own = new double[n];
                 for (int z = 0; z < n; z++)
                 {
-                    own[z] = (EnergyLayer.SeedZonePrice(chain[z], b) * priceIndex + EnergyLayer.ZoneBetaToProxy(chain[z]) * (water - seedProxy[b] * priceIndex)) * (1.0 + ReservoirDeficitSlope * _swedenDeficitShare);
+                    // real with real, then nominal ONCE: the zone's seed price and the proxy's move are both in the seed's prices, and the sum is carried by Sweden's price level
+                    own[z] = (EnergyLayer.SeedZonePrice(chain[z], b) + EnergyLayer.ZoneBetaToProxy(chain[z]) * (water - seedProxy[b])) * priceIndex * (1.0 + ReservoirDeficitSlope * _swedenDeficitShare);
                 }
                 // each zone's own balance: consumption + external export served by its own supply; Sweden's fossil caps are its national tiny fleet, put in SE3's zone (Stockholm) - the only zone with thermal capacity of note
                 var surplus = new double[n];

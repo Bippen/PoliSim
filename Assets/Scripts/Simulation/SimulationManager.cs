@@ -2695,7 +2695,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public void AdvanceTurn(Dictionary<CountryId, PolicyDecision> decisions)
         {
-            // EN-3 (2026-09-11): the water value Sweden's zones clear at this turn - Germany's and Poland's block prices at their current rates - fixed
+            // EN-3 (2026-09-11): the water value Sweden's zones clear at this turn - Germany's and Poland's block prices, each over the price level it was cleared at (FT-10 · P-B, §552: the water value is kept in the seed's prices) - fixed
             // once at the top of the boundary, before any family's yearly step reads a clearing.
             // P6-F2 (§539, moved here by §544's review): the queue's due orders land FIRST - the water value just below and the power CO₂ in the families' step
             // both clear before the ledger does, and read last year's fleet while the landing sat beside the ledger.
