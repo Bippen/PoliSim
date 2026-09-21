@@ -37,6 +37,8 @@ namespace PoliSim.EditorTools
             if (AiEnergyMinistry.Live) { failures.Add("the hold is off - the ministry's family must be dumped and ruled before the turn calls it"); }
 
             FleetIsTheCountrys(sb, failures);
+            QueueHoldsWhatIsPublished(sb, failures);
+            MinistryOrdersWhatFits(sb, failures);
 
             SimulationRandom.Seed(777);
             World world = WorldFactory.CreateDefault();
@@ -148,6 +150,110 @@ namespace PoliSim.EditorTools
             if (EnergyFleet.CapacityMw(deA, 0) > 1e-6 || coalMw > 1e-6) { failures.Add("a coal fleet ordered to zero still runs"); }
         }
 
+        /// <summary>
+        /// P6-F2e (§551), asserted: the connection queue holds what the country's operator publishes and no more. For every line of every published queue - a build of the line's
+        /// whole figure stands, a megawatt more is refused with the queue's own sentence, a retirement is never refused and takes no room, a landed order frees its megawatts, and the
+        /// line's technologies share one room. Where the capacity is BILLED (Germany; a technology the published queue has no line for) an order of any size stands. And the
+        /// figures are the COUNTRY's: a second world's queue is empty whatever the first one holds (§544's class).
+        /// </summary>
+        private static void QueueHoldsWhatIsPublished(StringBuilder sb, List<string> failures)
+        {
+            sb.Append("    the connection queue's capacity (P6-F2e):\n");
+            foreach (CountryId id in new[] { CountryId.USA, CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland })
+            {
+                World a = WorldFactory.CreateDefault(), b = WorldFactory.CreateDefault();
+                Country c = a.GetCountry(id), other = b.GetCountry(id);
+                EnergyConnectionQueue.Published p = EnergyConnectionQueue.Of(id);
+                if (p == null) { failures.Add(F("{0}: the catalog holds no entry - a covered country is either published or billed", id)); continue; }
+                sb.Append(F("    {0,-8} {1}\n             {2}\n", id, EnergyConnectionQueue.CapacityText(c), EnergyConnectionQueue.SourceText(c)));
+                if (p.BilledWhy != null)
+                {
+                    if (p.Lines.Length != 0) { failures.Add(F("{0}: billed and yet carries lines", id)); }
+                    if (EnergyFleet.CanOrder(id, 4) && EnergyFleet.Place(c, 4, 1e6, 2026, 0) == null) { failures.Add(F("{0}: the capacity is billed, so a terawatt of wind must stand - and it was refused", id)); }
+                    continue;
+                }
+                foreach (EnergyConnectionQueue.Line line in p.Lines)
+                {
+                    if (!(line.CapMw > 0) || string.IsNullOrEmpty(line.Made)) { failures.Add(F("{0} {1}: a line without its figure or without the publisher's cells it is made of", id, line.Name)); }
+                    int tech = -1; foreach (int t in line.Technologies) { if (EnergyFleet.CanOrder(id, t)) { tech = t; break; } }
+                    if (tech < 0) { sb.Append(F("             {0}: no technology of the line can be ordered here - nothing to fill\n", line.Name)); continue; }
+                    EnergyFleet.Order whole = EnergyFleet.Place(c, tech, line.CapMw, 2026, 0);
+                    if (whole == null) { failures.Add(F("{0} {1}: the line's whole figure ({2:0} MW) was refused in an empty queue", id, line.Name, line.CapMw)); continue; }
+                    string why = EnergyFleet.CannotPlaceWhy(c, tech, 1.0);
+                    if (EnergyFleet.Place(c, tech, 1.0, 2026, 0) != null || why == null || !why.StartsWith("THE QUEUE IS FULL", StringComparison.Ordinal)) { failures.Add(F("{0} {1}: a megawatt past the line's figure stood, or was refused without the queue's sentence ({2})", id, line.Name, why ?? "no sentence")); }
+                    foreach (int t in line.Technologies) { if (t != tech && EnergyFleet.CanOrder(id, t) && EnergyFleet.Place(c, t, 1.0, 2026, 0) != null) { failures.Add(F("{0} {1}: {2} shares the line and took a megawatt from a full queue", id, line.Name, EnergyLayerData.Labels[t])); } }
+                    if (EnergyFleet.CannotPlaceWhy(c, tech, -1.0) != null) { failures.Add(F("{0} {1}: a retirement was refused by a full queue - a retirement is not a connection", id, line.Name)); }
+                    EnergyFleet.Order leaves = EnergyFleet.Place(c, tech, -100.0, 2026, 0);   // really placed: a retirement stands in a full line, takes no room and GIVES none
+                    if (leaves == null) { failures.Add(F("{0} {1}: a retirement of 100 MW could not be placed in a full line", id, line.Name)); }
+                    if (Math.Abs(EnergyConnectionQueue.StandingMw(c, line) - line.CapMw) > 1e-6 || EnergyConnectionQueue.RoomMw(c, tech) > 1e-6) { failures.Add(F("{0} {1}: a retirement in the queue changed what stands in the line ({2:0} of {3:0} MW) - it gave room, or took it", id, line.Name, EnergyConnectionQueue.StandingMw(c, line), line.CapMw)); }
+                    if (leaves != null) { EnergyFleet.Withdraw(c, leaves); }
+                    if (Math.Abs(EnergyConnectionQueue.StandingMw(other, line)) > 1e-9 || EnergyFleet.CannotPlaceWhy(other, tech, 1.0) != null) { failures.Add(F("{0} {1}: the second world's queue is not empty - the queue is shared between worlds", id, line.Name)); }
+                    if (EnergyConnectionQueue.FullText(c, tech) == null || EnergyConnectionQueue.StepUpMw(c, tech, EnergyFleet.StepMw(id)) >= 1.0) { failures.Add(F("{0} {1}: the line is full and the page would still offer a step, or would not say the queue is full", id, line.Name)); }
+                    EnergyFleet.Advance(c, whole.OnlineTurn, whole.OnlineYear);
+                    double offered = EnergyConnectionQueue.StepUpMw(c, tech, EnergyFleet.StepMw(id));
+                    if (offered > line.CapMw + 1e-6 || offered < 1.0 || EnergyFleet.CannotPlaceWhy(c, tech, offered) != null) { failures.Add(F("{0} {1}: in an empty line the page offers a step of {2:0} MW that the queue would refuse (the line holds {3:0})", id, line.Name, offered, line.CapMw)); }
+                    if (!whole.Landed || EnergyFleet.CannotPlaceWhy(c, tech, line.CapMw) != null) { failures.Add(F("{0} {1}: the order landed and its megawatts were not freed", id, line.Name)); }
+                    // THE MID-STATE: half a step short of the figure, the page's step is exactly that half, it can be placed, and then the line is full; and an order past the room that
+                    // is left says ROOM, not FULL (the review: the sentence said FULL of an empty queue)
+                    double stepMw = EnergyFleet.StepMw(id), half = Math.Floor(Math.Min(stepMw, line.CapMw) / 2.0);
+                    EnergyFleet.Order most = half >= 1.0 ? EnergyFleet.Place(c, tech, line.CapMw - half, 2026, 0) : null;
+                    if (most != null)
+                    {
+                        double upMw = EnergyConnectionQueue.StepUpMw(c, tech, stepMw);
+                        string past = EnergyFleet.CannotPlaceWhy(c, tech, half + 1.0);
+                        if (Math.Abs(upMw - half) > 1e-6 || EnergyConnectionQueue.FullText(c, tech) != null) { failures.Add(F("{0} {1}: {2:0} MW short of the figure the page offers a step of {3:0} MW, or already says FULL", id, line.Name, half, upMw)); }
+                        if (past == null || !past.StartsWith("THE ORDER IS PAST THE QUEUE'S ROOM", StringComparison.Ordinal)) { failures.Add(F("{0} {1}: an order past the room that is left must say ROOM, and said: {2}", id, line.Name, past ?? "nothing")); }
+                        if (EnergyFleet.Place(c, tech, upMw, 2026, 0) == null || EnergyConnectionQueue.FullText(c, tech) == null) { failures.Add(F("{0} {1}: the last step of {2:0} MW was refused, or did not fill the line", id, line.Name, upMw)); }
+                    }
+                    else { failures.Add(F("{0} {1}: the mid-state could not be staged", id, line.Name)); }
+                    sb.Append(F("             {0}: {1:0} MW stood whole, a megawatt more was refused - {2}; landed, the room is the line's again; {3:0} MW short, the step is {3:0} and fills it\n", line.Name, line.CapMw, why, half));
+                }
+                for (int t = 0; t < EnergyLayerData.Labels.Length; t++)
+                {
+                    int inLines = 0; foreach (EnergyConnectionQueue.Line line in p.Lines) { if (Array.IndexOf(line.Technologies, t) >= 0) { inLines++; } }
+                    if (inLines > 1) { failures.Add(F("{0}: {1} stands in {2} lines - LineOf would take the first and StandingMw would count an order in each", id, EnergyLayerData.Labels[t], inLines)); }
+                }
+                foreach (int t in new[] { 0, 1, 2 })
+                {
+                    if (EnergyConnectionQueue.LineOf(id, t) == null && EnergyFleet.CanOrder(id, t))
+                    {
+                        if (EnergyFleet.Place(c, t, 1e6, 2026, 0) == null || EnergyConnectionQueue.NoLineText(id, t) == null) { failures.Add(F("{0} {1}: the published queue has no line for it, so its capacity is billed and any size must stand - with the page's note", id, EnergyLayerData.Labels[t])); }
+                        sb.Append(F("             {0}: no line in the published queue - {1}\n", EnergyLayerData.Labels[t].ToUpperInvariant(), EnergyConnectionQueue.NoLineText(id, t)));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// The ministry against a queue with little room. The review's finding was that no published queue bound the ministry on the measured forty years, so the clip and its
+        /// deferral had never run; with France's wind line on the cells its publisher calls queued (16 934 MW) the forty years DO clip France, in 2027 and 2028 - but France's is a
+        /// share mandate, which AssertMandates does not assert, so the dated excuse there still runs for no country. This stages the clip directly: France's wind line is filled to a thousand megawatts short of its
+        /// figure and the ministry asked to decide: it must place exactly the thousand that fits, say what it deferred in the queue's own words, and leave the line full.
+        /// </summary>
+        /// <summary>How a build's deferral opens (AiEnergyMinistry.Place): the country, the year the ministry decided in, the label, a plus. ONE format for the excuse in
+        /// <see cref="AssertMandates"/> - which no run reaches today: only capacity paths are asserted there, Germany's queue is billed and Italy's lines stand far above its statute's
+        /// figures - and for <see cref="MinistryOrdersWhatFits"/>, which does run it.</summary>
+        private static string DeferralPrefix(CountryId id, int decidedInYear, int label) => F("{0} {1}: {2} +", id, decidedInYear, EnergyLayerData.Labels[label].ToUpperInvariant());
+
+        private static void MinistryOrdersWhatFits(StringBuilder sb, List<string> failures)
+        {
+            World w = WorldFactory.CreateDefault();
+            Country fr = w.GetCountry(CountryId.France);
+            EnergyConnectionQueue.Line wind = EnergyConnectionQueue.LineOf(CountryId.France, 4);
+            if (wind == null) { failures.Add("France's wind has no line - the ministry's clip cannot be exercised"); return; }
+            if (EnergyFleet.Place(fr, 4, wind.CapMw - 1000.0, 2026, 0) == null) { failures.Add("France's wind line could not be filled to a thousand megawatts short"); return; }
+            AiEnergyMinistry.Decision d = AiEnergyMinistry.Decide(fr, 2026, 0);
+            EnergyFleet.Order placedWind = d.Placed.Find(o => o.Technology == 4);
+            string deferral = d.Deferred.Find(x => x.StartsWith(DeferralPrefix(CountryId.France, 2026, 4), StringComparison.Ordinal));   // the excuse's own prefix - the one format, exercised here
+            if (deferral == null && (placedWind == null || placedWind.Mw < 1000.0 - 1e-6)) { failures.Add("the staged room exceeds the ministry's first-year wind ask - the clip was NOT exercised (the staging's fault, not the rule's)"); return; }
+            sb.Append(F("    the ministry against a queue with 1 000 MW of room: placed {0}; deferred: {1}\n", placedWind != null ? F("WIND +{0:0} MW", placedWind.Mw) : "no wind", deferral ?? "nothing"));
+            if (placedWind == null || Math.Abs(placedWind.Mw - 1000.0) > 1e-6) { failures.Add("the ministry did not place exactly the thousand megawatts of wind the queue had room for"); }
+            if (deferral == null || !deferral.Contains("THE CONNECTION QUEUE HAS ROOM FOR 1000 MW") || !deferral.Contains("THE ORDER IS PAST THE QUEUE'S ROOM")) { failures.Add("the ministry's deferral does not say what the queue had room for, in the queue's own words"); }
+            if (Math.Abs(EnergyConnectionQueue.StandingMw(fr, wind) - wind.CapMw) > 1e-6) { failures.Add(F("after the ministry's order France's wind line holds {0:0} of {1:0} MW - not full", EnergyConnectionQueue.StandingMw(fr, wind), wind.CapMw)); }
+            AiEnergyMinistry.Decision again = AiEnergyMinistry.Decide(fr, 2026, 0);
+            if (again.Placed.Exists(o => o.Technology == 4) || !again.Deferred.Exists(x => x.StartsWith(DeferralPrefix(CountryId.France, 2026, 4), StringComparison.Ordinal) && x.Contains("THE QUEUE IS FULL"))) { failures.Add("asked again with the line full, the ministry placed wind, or did not say the queue is full"); }
+        }
+
         /// <summary>The rule's own years: a capacity path's figure stands in the statute's year to within one per cent (from the first year the lead time allows), and a
         /// coal exit or a fossil-free goal stands at zero the year after the statute's - or the country carries a DEFERRED line, which is the veto saying why.</summary>
         private static void AssertMandates(World world, int calendar, Dictionary<CountryId, List<string>> deferred, List<string> failures)
@@ -165,6 +271,10 @@ namespace PoliSim.EditorTools
                         {
                             if (year != calendar) { continue; }
                             double fleet = EnergyFleet.CapacityMw(c, label) / 1000.0;
+                            // P6-F2e: the queue's capacity is the ministry's excuse, in the queue's own words - and DATED: only a deferral placed the lead time before this statute year
+                            // speaks for it (the review: an undated excuse from 2026 would have waved through 2045)
+                            string excuse = DeferralPrefix(c.Id, year - EnergyFleet.LeadTimeYears[label], label);
+                            if (deferred[c.Id].Exists(d => d.StartsWith(excuse, StringComparison.Ordinal) && d.Contains("THE CONNECTION QUEUE HAS ROOM"))) { continue; }
                             if (Math.Abs(fleet - gw) > gw * 0.01 + AiEnergyMinistry.MinOrderMw / 1000.0) { failures.Add(F("{0}: the statute names {1:0.0} GW of {2} in {3}; the fleet stands at {4:0.0}", c.Id, gw, EnergyLayerData.Labels[label], year, fleet)); }
                         }
                     }

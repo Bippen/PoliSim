@@ -234,6 +234,19 @@ namespace PoliSim.Simulation
                 decision.Deferred.Add(country.Id + " " + year + ": " + EnergyLayerData.Labels[label].ToUpperInvariant() + " DEFERRED - CANNOT BE ORDERED: " + EnergyFleet.CannotOrderWhy(country.Id, label));
                 return;
             }
+            if (mw > 0)
+            {
+                // P6-F2e (§551): the connection queue's capacity binds the ministry as it binds the player - it orders what the queue has room for and says what it could not
+                double room = EnergyConnectionQueue.RoomMw(country, label);
+                if (EnergyConnectionQueue.RefusalFor(country, label, mw) != null)   // the queue's ONE rule - the inequality Place itself tests, never a second copy of it
+                {
+                    double fits = room >= MinOrderMw ? room : 0.0;   // below the noise floor nothing is placed, and the whole step is what was deferred
+                    decision.Deferred.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}: {2} +{3:0} MW DEFERRED OF +{4:0} - THE CONNECTION QUEUE HAS ROOM FOR {5:0} MW: {6}", country.Id, year,
+                        EnergyLayerData.Labels[label].ToUpperInvariant(), mw - fits, mw, room, EnergyConnectionQueue.RefusalFor(country, label, mw)));
+                    mw = fits;
+                    if (mw < MinOrderMw) { return; }
+                }
+            }
             EnergyFleet.Order order = EnergyFleet.Place(country, label, mw, year, turn);
             if (order == null) { return; }
             order.Reason = reason;

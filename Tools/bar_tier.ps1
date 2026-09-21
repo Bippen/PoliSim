@@ -34,7 +34,7 @@ try {
   foreach ($c in $simOnly) { $f = Join-Path $Root "Assets/Editor/$c.cs"; if (Test-Path $f) { $simSources += [IO.File]::ReadAllText($f) } }
 
   # The money paths: a file whose name says it books, taxes, spends, borrows, transfers or bills.
-  $money = 'Fiscal|Budget|Tax|Spending|Debt|Ledger|SovereignWealthFund|Welfare|Pension|EnergyMarket|EnergyPassThrough|AiFinanceMinistry|TradeCosts|Transfer|CarbonRate|ProgramBill|PortfolioEffectiveness|EconomyState|EnergyFleet|AiEnergyMinistry|SimulationManager'   # s546: the fleet decides what is dispatched and so what is billed - s539's defect lived in EnergyFleet.cs. s549 (ruled 2026-09-21): SimulationManager - the fiscal path cannot sit outside a money-path audit because of its name
+  $money = 'Fiscal|Budget|Tax|Spending|Debt|Ledger|SovereignWealthFund|Welfare|Pension|EnergyMarket|EnergyPassThrough|AiFinanceMinistry|TradeCosts|Transfer|CarbonRate|ProgramBill|PortfolioEffectiveness|EconomyState|EnergyFleet|EnergyConnectionQueue|AiEnergyMinistry|SimulationManager'   # s546: the fleet decides what is dispatched and so what is billed - s539's defect lived in EnergyFleet.cs. s549 (ruled 2026-09-21): SimulationManager - the fiscal path cannot sit outside a money-path audit because of its name. s551: EnergyConnectionQueue - every refusal in EnergyFleet.Place is decided there (its own review's finding)
   # The roots the ledger reaches: runtime source. Data files, prep scripts and editor diagnostics with a money name stay REQUIRED on the
   # line below and are reached by the ledger's BASELINE pass (a moved sentinel needs a reviewed digest), not by a row of their own.
   $moneyRoots = '^Assets/Scripts/(Simulation|Data|Elections|Persistence)/'

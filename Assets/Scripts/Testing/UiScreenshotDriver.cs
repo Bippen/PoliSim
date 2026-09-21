@@ -520,6 +520,27 @@ namespace PoliSim.Testing
                             yield return Settle();
                         }
                         else { Debug.LogError($"SHOT: no wind order could be placed - {energyStem}_decisions_ordered not filmed."); }
+                        // P6-F2e (2026-09-21, §551): the queue FULL - solar steps placed until the queue refuses one, filmed with the step up disabled and the sentence on its line, and
+                        // every step withdrawn after the frame. Where the capacity is billed (Germany) no step is ever refused: nothing to film, and the rest frame already says BILLED.
+                        if (player != null && fleetSim != null && EnergyConnectionQueue.LineOf(player.Id, 5) != null && EnergyFleet.CanOrder(player.Id, 5))
+                        {
+                            var steps = new System.Collections.Generic.List<EnergyFleet.Order>();
+                            for (int guard = 0; guard < 4000; guard++)
+                            {
+                                double up = EnergyConnectionQueue.StepUpMw(player, 5, EnergyFleet.StepMw(player.Id));   // the page's own step: the last one is the room
+                                EnergyFleet.Order step = up >= 1.0 ? EnergyFleet.Place(player, 5, up, player.CalendarYear, fleetSim.CurrentTurn) : null;
+                                if (step == null) { break; }
+                                steps.Add(step);
+                            }
+                            bool refused = EnergyConnectionQueue.FullText(player, 5) != null && EnergyFleet.CannotPlaceWhy(player, 5, 1.0) != null;
+                            if (!refused) { Debug.LogError($"SHOT: the solar queue never refused a step - {energyStem}_decisions_queue_full not filmed."); }
+                            // the queue's lines are one per order: a full queue is many steps, so its plate is scrolled to the technology lines, where the refusal stands
+                            yield return Settle();
+                            yield return Settle();
+                            if (refused) { yield return Capture(energyStem + "_decisions_queue_full"); }
+                            foreach (EnergyFleet.Order step in steps) { EnergyFleet.Withdraw(player, step); }
+                            yield return Settle();
+                        }
                     }
                     else { Debug.LogError($"SHOT: the decisions plate was never laid out - {energyStem}_decisions not filmed."); }
                     // P6-F2b (2026-09-21, §542): the four instruments as dials - at rest, then with the liberalisation dial's DRAFT moved fifteen points down

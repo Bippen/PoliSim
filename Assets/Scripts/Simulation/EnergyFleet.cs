@@ -90,6 +90,15 @@ namespace PoliSim.Simulation
             return null;
         }
 
+        /// <summary>Why THIS order cannot be placed - a technology the queue refuses (<see cref="CannotOrderWhy"/>), or a build that would take the connection queue past
+        /// what the country's operator publishes (<see cref="EnergyConnectionQueue.RefusalFor"/>, P6-F2e); null where no RULE refuses it - <see cref="Place"/> still places nothing for a
+        /// zero order or a retirement with nothing left to retire, which are not refusals and carry no sentence.</summary>
+        public static string CannotPlaceWhy(Country country, int technology, double mw)
+        {
+            if (country == null) { return "NO COUNTRY"; }
+            return CannotOrderWhy(country.Id, technology) ?? EnergyConnectionQueue.RefusalFor(country, technology, mw);
+        }
+
         /// <summary>The order step for a country, MW: one per cent of the seed fleet, rounded to 100 MW, never under 100.</summary>
         public static double StepMw(CountryId id)
         {
@@ -106,6 +115,7 @@ namespace PoliSim.Simulation
         public static Order Place(Country country, int technology, double mw, int year, int turn)
         {
             if (country == null || !CanOrder(country.Id, technology) || Math.Abs(mw) < 1e-9) { return null; }
+            if (mw > 0 && EnergyConnectionQueue.RefusalFor(country, technology, mw) != null) { return null; }   // P6-F2e (§551): a build past the queue's published capacity is refused whole - CannotPlaceWhy has the sentence
             if (mw < 0)
             {
                 double have = CapacityMw(country, technology) + QueuedMw(country, technology, retirementsOnly: true);

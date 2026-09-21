@@ -112,7 +112,7 @@ namespace PoliSim.UI
             string figure = pending == 0 ? "NOTHING QUEUED" : pending == 1 ? "1 ORDER QUEUED" : pending + " ORDERS QUEUED";
             var rows = new List<PlateRow>
             {
-                new PlateRow("Build and retire", "MW BY TECHNOLOGY · STEP " + PlateFigure((float)step, 0) + " MW · AFTER THE LEAD TIME",
+                new PlateRow("Build and retire", "MW BY TECHNOLOGY · STEP " + EnergyConnectionQueue.Mw(step) + " MW · AFTER THE LEAD TIME",
                     EnergyFleet.LeadTimeSourceShort, figure, PlateBand.None, 0f, 1f, -1f, null, true,
                     new[] { "CAPACITY BY TECHNOLOGY ▸", "GENERATION BY TECHNOLOGY ▸", "THE WHOLESALE PRICE ▸" }, null, new[] { "DECLARED" }, false),
             };
@@ -130,7 +130,8 @@ namespace PoliSim.UI
             int lines = EnergyLayerData.Labels.Length;
             int queue = Mathf.Max(1, country.FleetOrders?.Count ?? 0);
             float mandate = StatsUnit(6f) + capH + EnergyDecisionsQueueLineHeight * 2f;   // P6-F2d (§544): the mandate's three lines
-            return StatsUnit(4f) + capH + lines * EnergyDecisionsLineHeight + StatsUnit(6f) + capH + queue * EnergyDecisionsQueueLineHeight + mandate + StatsUnit(8f) + EnergyGapRowHeight(EnergyFleet.CapexBill);
+            float capacity = EnergyDecisionsQueueLineHeight * 2f;   // P6-F2e (§551): what the queue holds, and whose queue the figures are
+            return StatsUnit(4f) + capH + lines * EnergyDecisionsLineHeight + StatsUnit(6f) + capH + capacity + queue * EnergyDecisionsQueueLineHeight + mandate + StatsUnit(8f) + EnergyGapRowHeight(EnergyFleet.CapexBill);
         }
 
         private void DrawEnergyDecisionsRow(float[] x, float y, float pad, PlateStyles styles, Country country, int year, double step)
@@ -158,11 +159,17 @@ namespace PoliSim.UI
                 var minus = new Rect(cx, line.y + (lh - chipH) * 0.5f, chipW, chipH);
                 var plus = new Rect(cx + chipW + StatsUnit(4f), line.y + (lh - chipH) * 0.5f, chipW, chipH);
                 if (DrawDeskChipButton(minus, "-", chipCaption, false, !can)) { EnergyFleet.Place(country, k, -step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary - the cached preview is of a fleet without it
-                if (DrawDeskChipButton(plus, "+", chipCaption, false, !can)) { EnergyFleet.Place(country, k, step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }
+                // P6-F2e (§551): a step the connection queue has no room for is REFUSED, and the line says why - the step up draws disabled, the step down stands
+                string full = can ? EnergyConnectionQueue.FullText(country, k) : null;
+                double up = can ? EnergyConnectionQueue.StepUpMw(country, k, step) : step;   // a step larger than the line's room is the room - the last step lands on the published figure
+                if (DrawDeskChipButton(plus, "+", chipCaption, false, !can || full != null)) { EnergyFleet.Place(country, k, up, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }
                 double queued = EnergyFleet.QueuedMw(country, k);
                 string queuedText = can
-                    ? (Math.Abs(queued) < 0.5 ? "NOTHING QUEUED" : (queued > 0 ? "+" : "-") + PlateFigure((float)Math.Abs(queued), 0) + " MW QUEUED")
+                    ? (Math.Abs(queued) < 0.5 ? "NOTHING QUEUED" : (queued > 0 ? "+" : "-") + EnergyConnectionQueue.Mw(Math.Abs(queued)) + " MW QUEUED")
                     : EnergyFleet.CannotOrderWhy(country.Id, k);
+                if (full != null) { queuedText += " · " + full; }
+                else if (can && up < step) { queuedText += " · THE NEXT STEP IS THE QUEUE'S ROOM: " + EnergyConnectionQueue.Mw(up) + " MW"; }
+                else if (can && EnergyConnectionQueue.NoLineText(country.Id, k) != null) { queuedText += " · " + EnergyConnectionQueue.NoLineText(country.Id, k); }
                 PoliSimWidgets.MeasuredLabel(new Rect(plus.xMax + StatsUnit(6f), line.y, Mathf.Max(10f, right - plus.xMax - StatsUnit(6f)), lh), queuedText, small);
                 lineY += lh;
             }
@@ -171,11 +178,17 @@ namespace PoliSim.UI
             lineY += StatsUnit(6f);
             PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, styles.CapH), "THE CONNECTION QUEUE", styles.Caption);
             lineY += styles.CapH;
+            // P6-F2e (§551): what the queue HOLDS - the operator's own published queue, line by line, with what stands in each - and whose queue it is; BILLED where none is published
+            // in the regular face and the primary ink: the USA's five lines, every one filled, run to some hundred and forty characters - the bold caption face holds a hundred and thirty at 1280
+            PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), EnergyConnectionQueue.CapacityText(country), DeskCaption(8f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleLeft));
+            lineY += EnergyDecisionsQueueLineHeight;
+            PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), EnergyConnectionQueue.SourceText(country), small);
+            lineY += EnergyDecisionsQueueLineHeight;
             bool any = false;
             foreach (EnergyFleet.Order o in EnergyFleet.Queue(country))
             {
                 any = true;
-                string text = EnergyLayerData.Labels[o.Technology].ToUpperInvariant() + " " + (o.Mw > 0 ? "+" : "-") + PlateFigure((float)Math.Abs(o.Mw), 0) + " MW · PLACED " + o.OrderedYear + " · "
+                string text = EnergyLayerData.Labels[o.Technology].ToUpperInvariant() + " " + (o.Mw > 0 ? "+" : "-") + EnergyConnectionQueue.Mw(Math.Abs(o.Mw)) + " MW · PLACED " + o.OrderedYear + " · "
                     + (o.Landed ? (o.Mw > 0 ? "CONNECTED " : "LEFT ") : (o.Mw > 0 ? "CONNECTS " : "LEAVES ")) + o.OnlineYear;
                 PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), text, o.Landed ? small : label);
                 lineY += EnergyDecisionsQueueLineHeight;
