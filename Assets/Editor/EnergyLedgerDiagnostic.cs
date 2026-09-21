@@ -118,6 +118,20 @@ namespace PoliSim.EditorTools
                 }
             }
 
+            // (3b) FT-10 · P-A (§545, its second reader's finding): the page says ONE FOR ONE, and (3) proves that AT THE SEED only, where the old form and the share-of-path form are one by
+            // construction. The claim that matters is about a PLAYED book ten years on: its driverless path rides prices alone, so K × (line ⁄ path − 1) must still be (line − path) ⁄ (seedLevy × P).
+            // And the probe must discriminate: the same country under its AI ministry, whose path also rides real growth, must read the two forms APART - or the equality proves nothing.
+            sb.Append("\n    3b. ONE FOR ONE, AWAY FROM THE SEED: Poland played for ten years with a tenth on its energy line, the levy's two forms read together; Poland under its ministry, read apart\n");
+            {
+                (double Scale, double OldForm, double LineOverPath, double P) played = LevyFormsAfter(CountryId.Poland, true, 10, 10f);
+                (double Scale, double OldForm, double LineOverPath, double P) ministry = LevyFormsAfter(CountryId.Poland, false, 10, 0f);
+                if (!(played.LineOverPath > 1.05) || !(played.Scale < 0.999) || !(played.Scale > 0.0)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): the played probe did not move the line where the levy could answer - line ⁄ path {played.LineOverPath:F4}, scale {played.Scale:F5}."); }
+                if (Math.Abs(played.Scale - played.OldForm) > 1e-5) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): in a PLAYED book the share-of-path form reads {played.Scale:F6} and one-for-one reads {played.OldForm:F6} ten years from the seed - the page's sentence is no longer the arithmetic (has the player's driverless path gained a growth term?)."); }
+                if (!(Math.Abs(ministry.Scale - ministry.OldForm) > 1e-4)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): under its ministry Poland's two forms read {ministry.Scale:F6} and {ministry.OldForm:F6} - the probe does not discriminate, so the played equality proves nothing."); }
+                sb.Append(F("    played: line ⁄ path {0:F4}, P {1:F4} - share-of-path {2:F6}, one-for-one {3:F6} (apart by {4:E1}); under its ministry: line ⁄ path {5:F4} - share-of-path {6:F6}, the old form {7:F6} (apart by {8:F4}: the path's real growth, which P-A took out of the ratio)\n",
+                    played.LineOverPath, played.P, played.Scale, played.OldForm, Math.Abs(played.Scale - played.OldForm), ministry.LineOverPath, ministry.Scale, ministry.OldForm, Math.Abs(ministry.Scale - ministry.OldForm)));
+            }
+
             // (4) congestion: a probe on Sweden's links
             sb.Append("\n    4. CONGESTION RENT AND ITS CREDIT: Sweden's links at a third of their NTCs (a probe), the rent read, the next year's network component lower by it\n");
             {
@@ -476,6 +490,38 @@ namespace PoliSim.EditorTools
                 return (d.State.Budget - budget0, d.State.GovernmentDebt - debt0, period.AccruedRevenue, period.AccruedElectricityTaxRevenue, period.PlannedFiscalReactionMultiplier);
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
+        }
+
+        /// <summary>(3b): the country stepped <paramref name="years"/> boundaries from the seed - played (its own lines ride prices alone) or under its AI ministry - with a percent change on its
+        /// energy line in year 1, and the levy's two forms read off the book at the last boundary's price level: the rule's (K × the share of the path) and the old one (billions over the levy's path).</summary>
+        private static (double Scale, double OldForm, double LineOverPath, double P) LevyFormsAfter(CountryId id, bool played, int years, float firstYearPercent)
+        {
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("ENERGYLEDGER3B");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                if (played) { sim.PlayerCountryId = id; }
+                Country c = world.GetCountry(id);
+                for (int year = 1; year <= years; year++)
+                {
+                    var decisions = new Dictionary<CountryId, PolicyDecision>();
+                    foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
+                    if (year == 1 && firstYearPercent != 0f) { decisions[id].SpendingLineChanges[SpendingCategory.Energy] = firstYearPercent; }
+                    for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                    sim.AdvanceTurn(decisions);
+                }
+                double p = Math.Max(0.0001f, c.State.PriceLevel);   // the boundary's own: no day has stepped since the index read it
+                EnergyLedger.Book b = EnergyLedger.Compute(c, EnergyMarket.Clear(c), p, 0.0);
+                SpendingLine line = null; foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; } }
+                double seedLevy = EnergyLedger.SeedLevyBillions(id);
+                double oldForm = seedLevy > 0.0 ? Math.Max(0.0, 1.0 - b.SupportDeviation / (seedLevy * p)) : 0.0;
+                return (b.LevyScale, oldForm, line != null && line.SeedAmount > 0f ? (double)line.Amount / line.SeedAmount : 0.0, p);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }
         }
 
         private static Outcome RunCountry(CountryId player, int years, float etsStepPerT, ref bool ok)

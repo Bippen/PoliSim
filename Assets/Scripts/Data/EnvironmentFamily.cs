@@ -45,6 +45,11 @@ namespace PoliSim.Data
         public float RetailWholesaleSeed;
         /// <summary>EN-3b: the congestion rent the seed clearing earns on the zonal links, billions of dollars - Sweden's, once the zones clear at the exchange's own 2023 prices; the seed's network tariff already contains 2023's capacity fees, so only the rent ABOVE this is credited to the next year's network component (EnergyLedger.CreditFor).</summary>
         public float EnergyCongestionRentSeed;
+        /// <summary>FT-10 · P-A (ruled 2026-09-21): K, the seed's support line over the seed's levy revenue, both in the book's dollars at the seed's prices - captured once at the seed
+        /// (EnergyLedger.Seed), a pure number. The levy rule reads the line's move as a SHARE of its own indexed path and this ratio turns that share into a share of the levy
+        /// (EnergyLedger.Compute): indexed with indexed, so neither the price level nor the spending index's real growth stands on one side of the ratio alone. 0 where the book
+        /// carries no energy line (Germany) or the stack no policy levy (the USA).</summary>
+        public float EnergySupportLineToLevySeed;
         public bool Seeded;
     }
 

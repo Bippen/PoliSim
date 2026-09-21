@@ -91,10 +91,10 @@ namespace PoliSim.EditorTools
                         sb.Append(F("         {0,-14} /P: wholesale {1:G5} · margin {2:G5} · network {3:G5} · policy {4:G5} · taxenv {5:G5} · vat {6:G5} · TOTAL {7:G5}   (tax shift {8:G4})\n",
                             s.Class, s.Wholesale / p, s.Margin / p, s.Network / p, s.Policy / p, s.TaxEnv / p, s.Vat / p, s.Total / p, s.ElectricityTaxShift / p));
                     }
-                    sb.Append(F("         levy scale {0:G5} · support deviation {1:G5} bn (line {2:G5}, seed {3:G5}, line/(seed×P) {4:G5}) · network credit/P {5:G4} · liberalisation gap {6:G4} · el.tax delta hh {7:G4} nh {8:G4}\n",
+                    sb.Append(F("         levy scale {0:G5} · support deviation {1:G5} bn (line {2:G5}, path {3:G5}, line/path {4:G5}, K {9:G5}) · network credit/P {5:G4} · liberalisation gap {6:G4} · el.tax delta hh {7:G4} nh {8:G4}\n",
                         b.LevyScale, b.SupportDeviation, line != null ? line.Amount : 0f, line != null ? line.SeedAmount : 0f,
-                        line != null && line.SeedAmount > 0f ? line.Amount / (line.SeedAmount * p) : 0.0, b.NetworkCreditPerKwh / p,
-                        EnergyLedger.LiberalisationGap(country), EnergyLedger.ElectricityTaxDeltaEurPerMwh(country, 0), EnergyLedger.ElectricityTaxDeltaEurPerMwh(country, 1)));
+                        line != null && line.SeedAmount > 0f ? (double)line.Amount / line.SeedAmount : 0.0, b.NetworkCreditPerKwh / p,
+                        EnergyLedger.LiberalisationGap(country), EnergyLedger.ElectricityTaxDeltaEurPerMwh(country, 0), EnergyLedger.ElectricityTaxDeltaEurPerMwh(country, 1), country.Environment.EnergySupportLineToLevySeed));
                     if (r.Zones != null)
                     {
                         for (int z = 0; z < r.Zones.Length; z++)

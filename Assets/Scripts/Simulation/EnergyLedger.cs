@@ -21,7 +21,11 @@ namespace PoliSim.Simulation
     /// other line (P5-B2). The bill-financed support is the policy levy - revenue following its base (P5-B3): the levy per kWh times the consumption.
     /// The scheme's cost is one sum; the split is the policy: a budget line moved above its indexed path takes the levy down one for one, a line
     /// cut takes it up (the EEG's own history - levy until July 2022, the federal budget since), spread over every kWh in proportion to the seed's
-    /// levies by class; a levy cannot fall below zero, and support above the whole levy is taxpayer-funded support with no retail effect. Germany's
+    /// levies by class; a levy cannot fall below zero, and support above the whole levy is taxpayer-funded support with no retail effect.
+    /// THE RULE'S FORM since FT-10 · P-A (§545): the line's move is read as a SHARE of its own path times K, the seed's line over the seed's levy. For the country the
+    /// PLAYER governs that is the same arithmetic as *one for one*: the player's driverless lines ride prices alone (SimulationManager.IndexSpendingLines: real growth is the AI
+    /// ministry's), so the path is the seed's line times the price level and a billion on the line is a billion off the levy, at the year's prices, as the page says. An
+    /// AI-governed book's path also rides REAL GROWTH, which the levy's static base does not, and there the share-of-path form is what keeps the ratio indexed with indexed. Germany's
     /// book carries no energy line (the KTF is a Sondervermögen outside the Bundeshaushalt), so its budget-financed support reads 0, stated.</para>
     ///
     /// <para><b>Congestion rent and its redistribution rule.</b> Where a zonal link binds (Sweden's snitt), the rent the dispatch computes is
@@ -106,7 +110,7 @@ namespace PoliSim.Simulation
             public double CongestionRent;
             /// <summary>The credit applied to this year's network component, dollars per kWh - last year's rent over the consumption.</summary>
             public double NetworkCreditPerKwh;
-            /// <summary>The levy's scale against its indexed seed: 1 with the budget line on its path, below 1 where the line was raised, above where it was cut, 0 at the floor.</summary>
+            /// <summary>The levy's scale against its indexed seed: 1 with the budget line on its path, below 1 where the line was raised, above where it was cut, 0 at the floor - 1 − K × (line ⁄ path − 1), K the seed's line over the seed's levy (FT-10 · P-A).</summary>
             public double LevyScale;
             /// <summary>EN-7b: the state's electricity-tax receipts above the statute's base, billions of the book's dollars, nominal - the classes' shifts on
             /// their consumption, the excise alone (households' VAT on it is not booked: the budget's VAT does not follow the retail price); the figure the
@@ -123,10 +127,29 @@ namespace PoliSim.Simulation
             EnvironmentSeeds s = country.Environment;
             if (s == null || !EnergyLayer.Has(country.Id)) { return; }
             FitMargins(country);
+            s.EnergySupportLineToLevySeed = (float)SupportLineToLevyAtSeed(country);   // FT-10 · P-A: K, before the seed's book reads it (the line stands on its path here, so the seed's scale is 1 whatever K is)
             EnergyMarket.Result r = EnergyMarket.ClearAtSeed(country.Id);
             Book b = Compute(country, r, 1.0, 0.0);
             s.EnergyCongestionRentSeed = (float)b.CongestionRent;   // EN-3b: the seed's own rent is inside the seed's network tariff; only the rent above it is credited
             Write(country, b, first: true);
+        }
+
+        /// <summary>The seed's levy revenue, billions of the book's dollars at the seed's prices: the catalog's levy per kWh by class times the class's consumption.</summary>
+        public static double SeedLevyBillions(CountryId id)
+        {
+            int ci = EnergyLayer.Index(id); if (ci < 0) { return 0.0; }
+            double usd = EnergyLayerData.UsdPerMarketCurrency[ci], seedLevy = 0;
+            for (int c = 0; c < ClassCount; c++) { seedLevy += EnergyLayerData.RetailPolicy[ci][c] * usd * EnergyLayerData.RetailConsumptionGwh[ci][c] / 1000.0; }
+            return seedLevy;
+        }
+
+        /// <summary>FT-10 · P-A: K at the seed - the energy line's seed over the seed's levy revenue; 0 with no line or no levy. Called once, by <see cref="Seed"/>, while the line still stands at its seed.</summary>
+        private static double SupportLineToLevyAtSeed(Country country)
+        {
+            double seedLevy = SeedLevyBillions(country.Id);
+            if (seedLevy <= 0.0) { return 0.0; }
+            foreach (SpendingLine l in country.SpendingLines) { if (l.Category == SpendingCategory.Energy) { return l.SeedAmount > 0f ? l.SeedAmount / seedLevy : 0.0; } }
+            return 0.0;
         }
 
         /// <summary>The network credit the coming year carries, billions: the rent the last year earned ABOVE the seed's - the seed's rent carried by the price level, nominal with nominal (P5-B6), since the seed's tariff already contains 2023's capacity fees at 2023's prices - times the rule's share. Zero at the seed and wherever the links earn no more in real terms than they did in 2023.</summary>
@@ -223,9 +246,16 @@ namespace PoliSim.Simulation
             foreach (SpendingLine l in country.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; break; } }
             b.BudgetSupport = line != null ? Math.Max(0f, line.Amount) : 0.0;
             b.SupportDeviation = line != null ? line.Amount - line.SeedAmount : 0.0;
-            double seedLevy = 0; for (int c = 0; c < ClassCount; c++) { seedLevy += EnergyLayerData.RetailPolicy[ci][c] * usd * EnergyLayerData.RetailConsumptionGwh[ci][c] / 1000.0; }
-            double levyNominal = seedLevy * priceIndex;
-            b.LevyScale = levyNominal > 0 ? Math.Max(0.0, 1.0 - b.SupportDeviation / levyNominal) : 0.0;
+            // FT-10 · P-A (ruled 2026-09-21, §545): the line's move is read as a SHARE of its own indexed path and K - the seed's line over the seed's levy - turns it into a share
+            // of the levy. Before, the deviation in billions (riding the spending index: prices × RF-2's REAL GROWTH) stood over the levy's path (riding the price level alone, the
+            // load being static): the price level cancelled, the growth index did not, and a cut line's scale compounded at the path's real growth for ever (Poland's past 10⁶ at t361).
+            // Exactly 1 with the line on its path (the quotient of one float by itself is 1), below 1 where raised, above where cut, 0 at the floor. Bounded: at most 1 + K (a line cannot
+            // go below zero - since SC-1 a dial's cost sits outside the own path's clamp band and meets only zero), and 1 + 0.8 K on the own path alone, which is all an AI book moves.
+            // THE PLAYER'S BOOK IS UNCHANGED BY THIS: its path rides prices alone, so K × (Amount ⁄ path − 1) is (Amount − path) ⁄ (seedLevy × P), the old expression, to float rounding - AT THE BOUNDARY,
+            // where the index and this book read one price level. Between boundaries the page recomputes with the day's price level: the old form drifted with it through the year (a scale of
+            // 0.50 read 0.51 by December at three per cent inflation), this one holds the boundary's figure. EnergyLedgerDiagnostic (3b) asserts the equality ten years from the seed.
+            double pathShare = line != null && line.SeedAmount > 0f ? (double)line.Amount / line.SeedAmount - 1.0 : 0.0;
+            b.LevyScale = SeedLevyBillions(country.Id) > 0 ? Math.Max(0.0, 1.0 - s.EnergySupportLineToLevySeed * pathShare) : 0.0;
 
             // EN-7a: market liberalisation - the Energy sector's regulation gap below its seeded anchor; exactly zero at the seed (the level is the anchor)
             double liberalisation = LiberalisationGap(country);

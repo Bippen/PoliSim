@@ -231,6 +231,17 @@ namespace PoliSim.EditorTools
                 if (c.State.EnergyHouseholdPrice < 0f || Math.Abs(c.State.EnergyHouseholdPrice - book.Classes[0].Total) > 1e-5 * Math.Max(1.0, book.Classes[0].Total)) { failures++; Debug.LogError($"ENERGY: {c.Id}'s state carries a household price of {c.State.EnergyHouseholdPrice} at the seed against the stack's {book.Classes[0].Total} - the presented figure is not the stored one."); }
                 sb.Append(F("    {0,-8} {1} per kWh (the book's dollars) · wholesale {2:F4} · margins households {3:+0.0000;-0.0000} non-households {4:+0.0000;-0.0000} (FITTED) · VAT implied {5:F1} % / {6:F1} % · totals {7:F4} / {8:F4} = the components' sum (Eurostat's stated totals within {9:F4} of it in the source's currency) · bills {10:F1} + {11:F1} bn, budget support {12:F2} bn · paid {13:F2} = received {14:F2} (gap {15:E1})\n",
                     c.Id, PoliSim.Simulation.EnergyLedger.BookCurrency, book.WholesalePerKwh, c.Environment.RetailMargin[0], c.Environment.RetailMargin[1], 100 * c.Environment.RetailVatRate[0], 100 * c.Environment.RetailVatRate[1], book.Classes[0].Total, book.Classes[1].Total, statedResidual, book.PaidHouseholds, book.PaidNonHouseholds, book.PaidTaxpayers, book.PaidTotal, book.ReceivedTotal, book.Gap));
+                // FT-10 · P-A (§545; its review's suggestion): K IS LIVE. A K of 0 beside a line and a levy would hold the scale at 1 whatever the line did, and the sentinel's bounds pass
+                // would read that silence as a clean country - so the seed's ratio is asserted where the line still stands at its seed, and asserted ZERO where either side is missing.
+                {
+                    double seedLevy = PoliSim.Simulation.EnergyLedger.SeedLevyBillions(c.Id);
+                    SpendingLine energyLine = null;
+                    foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.Energy) { energyLine = l; break; } }
+                    double expectedK = seedLevy > 0.0 && energyLine != null && energyLine.SeedAmount > 0f ? energyLine.SeedAmount / seedLevy : 0.0;
+                    double k = c.Environment.EnergySupportLineToLevySeed;
+                    if (Math.Abs(k - expectedK) > 1e-5 * Math.Max(1.0, expectedK)) { failures++; Debug.LogError($"ENERGY: {c.Id}'s K (the seed's support line over the seed's levy) is {k} against {expectedK} - the levy rule would read the line's move at the wrong weight, or not at all."); }
+                    sb.Append(F("             K {0:G5} - the seed's support line over the seed's levy (FT-10 · P-A){1}\n", k, expectedK > 0.0 ? "" : seedLevy > 0.0 ? " · no energy line in the book" : " · no policy levy in the stack"));
+                }
             }
             sb.Append(F("    {0} fitted parameters in the fiscal layer - the supply margins - so {1} in the energy layer in all, each named; a negative margin is printed, not hidden: Poland's households' (the 2023 household price freeze, compensated to the suppliers off the bill); Sweden's turned positive when EN-3b priced its zones at the exchange's 2023 figures.\n", fittedMargins, fitted + fittedMargins));
 
