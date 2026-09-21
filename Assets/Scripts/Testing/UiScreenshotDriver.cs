@@ -521,6 +521,35 @@ namespace PoliSim.Testing
                         else { Debug.LogError($"SHOT: no wind order could be placed - {energyStem}_decisions_ordered not filmed."); }
                     }
                     else { Debug.LogError($"SHOT: the decisions plate was never laid out - {energyStem}_decisions not filmed."); }
+                    // P6-F2b (2026-09-21, §542): the four instruments as dials - at rest, then with the liberalisation dial's DRAFT moved fifteen points down
+                    // (the sector's regulation draft, the same dictionary the Sectors page writes) so its range caption and its hatch are on film, and taken back
+                    var dialsField = controller.GetType().GetField("_energyDialsLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Rect dials = dialsField != null ? (Rect)dialsField.GetValue(controller) : Rect.zero;
+                    if (dials.height > 0f)
+                    {
+                        ResetScrolls(controller);
+                        yield return Settle();
+                        ScrollBy(controller, Mathf.Max(0f, dials.y - UiScreen.Height * 0.30f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(energyStem + "_instrument_dials");
+                        var regulation = controller.GetType().GetField("_sectorRegulationInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SectorType, float>;
+                        if (regulation != null && regulation.TryGetValue(SectorType.Energy, out float standingRegulation))
+                        {
+                            RangeCaptionPresenter.Reset();
+                            RangeCaptionPresenter.ClockOverride = 0f;   // on-drag: the caption at full ink, as the Sectors page's own caption captures hold it (P4-B2)
+                            regulation[SectorType.Energy] = Mathf.Max(0f, standingRegulation - 15f);
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(energyStem + "_instrument_dials_dragged");
+                            regulation[SectorType.Energy] = standingRegulation;
+                            RangeCaptionPresenter.ClockOverride = null;
+                            RangeCaptionPresenter.Reset();
+                            yield return Settle();
+                        }
+                        else { Debug.LogError($"SHOT: the Energy sector's regulation draft was never written - {energyStem}_instrument_dials_dragged not filmed."); }
+                    }
+                    else { Debug.LogError($"SHOT: the instruments' dials were never laid out - {energyStem}_instrument_dials not filmed."); }
                     // EN-7a (2026-09-14): the instruments plate in PROVENANCE, where the chips that say what each instrument reaches draw
                     // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
                     _provenanceToRestore = DeskProvenance.On;

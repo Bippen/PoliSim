@@ -190,6 +190,71 @@ namespace PoliSim.UI
             DrawEnergyGapRow(x, lineY, pad, "Capital cost", "PER MW BY TECHNOLOGY · WHAT AN ORDER WOULD COST", EnergyFleet.CapexBill, billed: true);
         }
 
+        // ---- P6-F2b (2026-09-21, §542): the four instruments as dials - the Energy sector's own, mapped and not doubled -------------------
+
+        /// <summary>P6-F2b (§542): where the instruments' dials were laid out last frame - the film scrolls to them.</summary>
+        private Rect _energyDialsLastArea;
+
+        /// <summary>
+        /// The four policy instruments as dials with their range captions, on Elias's ruling (2026-09-21) and the spec-let's S9: *"the Energy
+        /// sector's five dials ARE the four instruments ... mapped, not doubled"*. Each row here IS the Energy sector's dial - the same draft the
+        /// Sectors page's Energy row writes (`_sectorSubsidyInputs` and its three siblings, keyed by `SectorType.Energy`), so a dial moved on
+        /// either page stands moved on the other and there is still no sixth control: two surfaces, one draft, one bill (the Economic Sectors
+        /// bill, introduced from here as from there). What differs is the NAME and the CAPTIONS: on this page a dial is named for the
+        /// instrument it is and its ten bands speak to what the instrument reaches in the energy layer - the levy on the bill, industry's price
+        /// against households' - or, for the two the layer does not read (investment planning, state ownership), to the sector's output, saying
+        /// so. Where the book carries no energy line or the stack no policy levy (Germany, the USA) the subsidy dial reaches no levy, and the
+        /// row keeps the sector's own name and captions rather than promise one. Research grants stays descriptive (S9) and is not drawn.
+        /// </summary>
+        private void DrawEnergyInstrumentDials(Country country)
+        {
+            Sector energy = null;
+            foreach (Sector sector in country.Sectors) { if (sector.Type == SectorType.Energy) { energy = sector; break; } }
+            if (energy == null) { return; }
+
+            GUILayout.Space(StatsUnit(6f));
+            Rect head = GUILayoutUtility.GetRect(10f, Mathf.Ceil(DeskCaptionHeight(DeskCaption(9f, PoliSimTheme.TextSecondary, true))) + StatsUnit(4f), GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.Rule(new Rect(head.x, head.y, head.width, 1f), PoliSimTheme.RuleRow);
+                PoliSimWidgets.MeasuredLabel(new Rect(head.x + StatsUnit(4f), head.y + StatsUnit(3f), head.width - StatsUnit(8f), head.height - StatsUnit(3f)),
+                    "THE FOUR INSTRUMENTS AS DIALS · THE ENERGY SECTOR'S OWN - ONE DRAFT WITH THE SECTORS PAGE, ONE BILL", DeskCaption(9f, PoliSimTheme.TextSecondary, true, TextAnchor.MiddleLeft));
+            }
+            float top = head.y;
+
+            bool levied = SectorCouplings.HasEnergyLine(country) && EnergyLedger.HasPolicyLevy(country.Id);
+            if (levied)
+            {
+                _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Retail intervention",
+                    energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
+                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 sponsored", captionKey: "EnergyTab/Retail");
+            }
+            else
+            {
+                // no energy line (Germany) or no policy levy in the stack (the USA): the dial reaches no levy here, so it keeps the sector's own name and captions
+                _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Subsidy",
+                    energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
+                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: "EnergyTab/Subsidy");
+            }
+
+            _sectorRegulationInputs[SectorType.Energy] = DrawDialRow("Market liberalisation",
+                energy.RegulationLevel, GetSectorRegulationInput(SectorType.Energy, energy.RegulationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 liberalised - 100 regulated", captionKey: "EnergyTab/Liberalisation");
+
+            _sectorTaxCreditInputs[SectorType.Energy] = DrawDialRow("Investment planning",
+                energy.TaxCreditLevel, GetSectorTaxCreditInput(SectorType.Energy, energy.TaxCreditLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 planned", captionKey: "EnergyTab/Investment");
+
+            _sectorDeregulationInputs[SectorType.Energy] = DrawDialRow("State ownership",
+                energy.DeregulationNationalizationLevel, GetSectorDeregulationInput(SectorType.Energy, energy.DeregulationNationalizationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated", captionKey: "EnergyTab/Ownership");
+
+            // the dials travel in the Economic Sectors bill - its status and the way to introduce it, here as on the Sectors page
+            DrawSectorBillStatusAndIntroduce();
+            Rect last = GUILayoutUtility.GetLastRect();
+            if (Event.current.type == EventType.Repaint) { _energyDialsLastArea = new Rect(head.x, top, head.width, Mathf.Max(1f, last.yMax - top)); }
+        }
+
         private const string AbsentLoadGrowth = "THE LOAD DOES NOT GROW WITH GDP OR ELECTRIFICATION · STATED, NOT MODELLED";
 
         /// <summary>The tab's own scroll position - a new field is picked up by the film driver's scroll reflection without a driver edit.</summary>
@@ -357,8 +422,8 @@ namespace PoliSim.UI
             }
             instruments.Add(new PlateRow("Market liberalisation", "POINTS BELOW THE SEED'S REGULATION · MARGIN TO HOUSEHOLDS", "THE ENERGY SECTOR'S REGULATION DIAL · STEINER, OECD 2000", PlateFigure((float)(EnergyLedger.LiberalisationGap(country) * 100.0), 0),
                 PlateBand.None, 0f, 0f, 0f, null, true, new[] { "REGULATION DIAL ▸ MARGIN SPLIT", "INDUSTRY'S BILL ▸", "HOUSEHOLDS' PRICE ▸" }, null, new[] { "DECLARED" }, false, chipsWithoutBand: true));
-            instruments.Add(new PlateRow("Investment planning", "THE TAX CREDITS DIAL", "THE FLEET DOES NOT INVEST OR RETIRE", "absent",
-                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "NOTHING IN THE LAYER TO REACH" }, null, new[] { "ABSENT · STATED" }, false, "NO INVESTMENT RULE - THE FLEET IS THE SEED'S · THE DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT"));
+            instruments.Add(new PlateRow("Investment planning", "THE TAX CREDITS DIAL", "THE FLEET MOVES BY ORDER, NOT BY THIS DIAL", "absent",
+                PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "NOTHING IN THE LAYER TO REACH" }, null, new[] { "ABSENT · STATED" }, false, "THE DIAL REACHES NO ORDER - THE FLEET MOVES BY THE CONNECTION QUEUE ABOVE, UNPRICED · THE DIAL'S COST STAYS WITH THE OTHER SECTORS' SUPPORT"));
             instruments.Add(new PlateRow("State ownership", "THE NATIONALIZATION / DEREGULATION DIAL", "NO OWNERSHIP TERM IN THE LEDGERS", "absent",
                 PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE SECTOR ROW STILL READS IT" }, null, new[] { "ABSENT · STATED" }, false, "A STATE SHARE OF THE GENERATORS' RECEIPTS WOULD READ THE RENT THE PAGE PRINTS AND NOTHING READS · THE DIAL STILL MOVES THE SECTOR'S OUTPUT AND EMPLOYMENT"));
             instruments.Add(new PlateRow("Research grants", "THE RESEARCH GRANTS DIAL", "NO RESEARCH MECHANIC", "—",
@@ -386,8 +451,9 @@ namespace PoliSim.UI
                 instruments.Add(new PlateRow("Electricity tax", "EUR PER MWh", "NO FEDERAL ELECTRICITY EXCISE FOR " + countryUpper, "absent",
                     PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LAWS ARE NOT OFFERED" }, null, new[] { "ABSENT · STATED" }, false, "THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE"));
             }
-            string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - SET ON THE SECTORS PAGE ABOVE, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP - SO NO RAIL CELL · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
+            string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - FOUR OF THEM SET BELOW, THE SAME DRAFT AS THE SECTORS PAGE'S, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
             _energyInstrumentsLastArea = DrawPlateRows(instruments, areaInk, foot4, false, row => null);
+            DrawEnergyInstrumentDials(country);   // P6-F2b (§542): the four instruments as dials, under the rows that say what each reaches
         }
 
         // ---- the rule on the price: one device, two part-lists; the wholesale row above is its head, the derivation its foot -----------

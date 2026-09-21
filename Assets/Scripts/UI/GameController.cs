@@ -3873,7 +3873,18 @@ namespace PoliSim.UI
             float nameWidth = nameStyle.CalcSize(new GUIContent(nameText)).x;
             float lineWidth = line.CalcSize(new GUIContent(b.Line)).x;
             bool withName = nameWidth + lineWidth <= area.width;
-            if (!withName && lineWidth > area.width) { return false; }   // neither fits: the band stays empty rather than overflow (the guards would say so)
+            if (!withName && lineWidth > area.width)
+            {
+                // Neither fits: the band stays empty rather than overflow - and the guard is TOLD, because an empty band is a caption the player never gets and
+                // no guard could see one (P6-F2b, §542: a 75-character line on an end-named dial drew nothing at 1280 and both films read clean; between two
+                // end-names the band is the middle three fifths, some seventy characters of the caption face, where the catalog check allows ninety-six).
+                // ⚠ A DIAL row only. The first film with this guard read 93 of them on the Budget's SPENDING rows at 1280 and 39 at 2560: the twenty captions
+                // of "Discretionary line" and "Mandatory line" need 468-583 px in a band of 163-179 (804 in 428 at 2560) and have never drawn at either filmed
+                // width - the band between a spending row's instruments is a third of a dial's. That is P5-B5's row and its own finding (the feature list's
+                // appendix, PF-2), not this item's to fix; the spending row's fallback - instruments in the band - is its designed path, so it is not told here.
+                if (!endPieces) { UiOverflowGuard.Check(b.Line, new Vector2(lineWidth, area.height), new Vector2(area.width, area.height), size); }
+                return false;
+            }
             float total = withName ? nameWidth + lineWidth : lineWidth;
             float x = Mathf.Round(area.x + (area.width - total) * 0.5f);
             Color previous = GUI.color;

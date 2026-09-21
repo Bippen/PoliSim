@@ -37,7 +37,7 @@ namespace PoliSim.EditorTools
             var sb = new StringBuilder();
             var failures = new List<string>();
             string path = Path.Combine(Application.dataPath, "Scripts", "UI", "GameController.cs");
-            string text = File.ReadAllText(path);
+            string text = SourceText.ControllerPartials(path);   // P6-F2b (§542): every partial - the Energy tab's dials are drawn in GameController.Energy.cs
             Type controller = typeof(PoliSim.UI.GameController);
             int dials = 0;
             sb.Append("=== DialLabelCheck (P3-C3): every dial's left label, right label and range ===\n");
@@ -99,9 +99,9 @@ namespace PoliSim.EditorTools
                     verdict = $"FAIL: two-ended '{name}' has no trailing - its ends are unsaid";
                 }
                 if (verdict.StartsWith("FAIL", StringComparison.Ordinal)) { failures.Add(verdict); }
-                sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-40} range {1}..{2}  trailing {3,-32} {4}\n", name, minExpr, maxExpr, trailing == null ? "-" : "'" + Regex.Replace(trailing, @"s+", " ") + "'", verdict));
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0,-40} range {1}..{2}  trailing {3,-32} {4}\n", name, minExpr, maxExpr, trailing == null ? "-" : "'" + Regex.Replace(trailing, @"\s+", " ") + "'", verdict));
             }
-            sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0} dial row(s) read from GameController.cs.\n", dials));
+            sb.Append(string.Format(CultureInfo.InvariantCulture, "    {0} dial row(s) read from GameController.cs and its partials.\n", dials));
             if (dials == 0) { failures.Add("no DrawDialRow call sites were read - the pattern no longer matches the code, and this verified nothing"); }
 
             if (failures.Count == 0)

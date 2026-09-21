@@ -42,6 +42,22 @@ namespace PoliSim.EditorTools
     {
         private static readonly Regex BlockComment = new Regex(@"/\*.*?\*/", RegexOptions.Singleline);
 
+        /// <summary>
+        /// P6-F2b (2026-09-21, §542): EVERY PARTIAL OF THE CONTROLLER, concatenated - `GameController.cs` and its `GameController.*.cs` siblings in the same
+        /// folder, in name order. The two dial checks read `GameController.cs` alone from the day they were written; the Energy tab's dials are drawn in
+        /// `GameController.Energy.cs`, and a dial a check cannot see is the hole the checks exist to close. Empty where the path's folder is missing.
+        /// </summary>
+        public static string ControllerPartials(string controllerPath)
+        {
+            string dir = System.IO.Path.GetDirectoryName(controllerPath);
+            if (string.IsNullOrEmpty(dir) || !System.IO.Directory.Exists(dir)) { return string.Empty; }
+            string[] files = System.IO.Directory.GetFiles(dir, "GameController*.cs");
+            System.Array.Sort(files, string.CompareOrdinal);
+            var sb = new System.Text.StringBuilder();
+            foreach (string file in files) { sb.Append(System.IO.File.ReadAllText(file)).Append('\n'); }
+            return sb.ToString();
+        }
+
         /// <summary>Source with `/* … */` blocks and `//` line comments removed and string literals kept.</summary>
         public static string WithoutComments(string text)
         {

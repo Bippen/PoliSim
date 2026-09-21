@@ -298,6 +298,69 @@ namespace PoliSim.UI
                 B("Enlarged", "A big rise on a big line. The deficit carries the weight for every year after.", +1),
                 B("Recast", "A seventh more in one year. A new social contract, priced at its opening.", +1),
             }) },
+            // ---- P6-F2b (2026-09-21, §542): THE ENERGY TAB'S FOUR INSTRUMENTS - the Energy sector's own dials under the names the spec-let's S9 maps them to,
+            // each speaking to what the instrument reaches in the energy layer. Same ranges, same drafts, same save keys as the sector's rows above.
+            // Retail intervention = the Subsidy dial's money side: the budget's energy line rises with it and the levy is cut one for one (EnergyLedger.Compute's
+            // LevyScale falls as the line rises) - the stat is the levy on the bill, and it FALLS as the dial rises. Drawn only where the stack carries a levy.
+            { "Retail intervention", new Dial("Retail intervention", "the levy on the bill", -1, 0.5f, new[]
+            {
+                B("Hands off", "No support on the line. The levy carries the scheme.", +1),
+                B("Token", "A gesture on the line. The levy does the lifting.", +1),
+                B("Sparse", "Below custom. A little more of the scheme on the bill.", +1),
+                B("Thin", "The line gives less. Households pay it per kilowatt-hour.", +1),
+                B("Customary", "The seeded support. The levy stands as found.", 0),
+                B("Cushioned", "The treasury takes a slice. The levy eases.", -1),
+                B("Subsidised", "The budget pays what the bill did. The levy falls.", -1),
+                B("Generous", "Most of the scheme is the taxpayer's. The levy thins.", -1),
+                B("Lavish", "The line swallows the scheme. The levy nears nothing.", -1),
+                B("On the house", "The levy at its floor. Support is a budget matter.", -1),
+            }) },
+            // Market liberalisation = the Regulation dial read from the other end (S9: "0 light - 100 heavy inverted"): below the seeded anchor the supply margin
+            // moves from industry onto households (EnergyLedger.LiberalisationShiftPerKwh, Steiner's finding), above it the other way - the stat is industry's
+            // price against households', and it RISES as the dial (regulation) rises.
+            { "Market liberalisation", new Dial("Market liberalisation", "industry's price against households'", +1, 0.5f, new[]
+            {
+                B("Unbundled", "Industry shops around. Households carry the margin.", -1),
+                B("Open", "Large users bargain and win. Industry's price eases.", -1),
+                B("Liberal", "Below the seeded rulebook. Industry pays a little less.", -1),
+                B("Loosened", "A little competition at the top. Industry notices first.", -1),
+                B("Customary", "The seeded regulation. The margin splits as found.", 0),
+                B("Supervised", "The regulator leans on the household tariff.", +1),
+                B("Regulated", "Household prices are watched. Industry pays more.", +1),
+                B("Administered", "Tariffs are set, not found. Industry pays the rest.", +1),
+                B("Controlled", "The household price is political. Industry pays for it.", +1),
+                B("Decreed", "One tariff for the voter, a larger one for the firm.", +1),
+            }) },
+            // Investment planning = the Tax Credits dial. The energy layer does not read it - the fleet moves by the player's orders alone (P6-F2) - so the lines
+            // speak to the sector's output, which MacroSystem's SectorTaxCreditSensitivity does move, and say what the dial does not do.
+            { "Investment planning", new Dial("Investment planning", "the sector's output", +1, 0.5f, new[]
+            {
+                B("None", "No credit for building. The sector's output below custom.", -1),
+                B("Token", "A credit too small to move a board. Output a shade under.", -1),
+                B("Sparse", "Below the usual incentive. The sector invests less.", -1),
+                B("Thin", "Less than the sector was used to. Output edges down.", -1),
+                B("Customary", "The seeded incentive. The fleet's orders are above.", 0),
+                B("Encouraging", "A better credit. Output rises; no plant is ordered.", +1),
+                B("Generous", "The sector invests more. The queue still waits for you.", +1),
+                B("Lavish", "Output well above custom. The treasury funds the mood.", +1),
+                B("Directed", "The state drafts the plan. The fleet still takes orders.", +1),
+                B("Planned", "Every project has a credit. Output at the ceiling.", +1),
+            }) },
+            // State ownership = the Nationalization / Deregulation dial. No ledger reads a state share of the generators' receipts (the page prints the rent and
+            // nothing reads it), so the lines speak to the sector's output (SectorDeregulationSensitivity) and say so.
+            { "State ownership", new Dial("State ownership", "the sector's output", +1, 0.5f, new[]
+            {
+                B("Nationalised", "The state owns the turbines. Output at the floor.", -1),
+                B("State-led", "A ministry in all but name. Output well below custom.", -1),
+                B("Majority state", "The treasury holds the casting vote. Output lower.", -1),
+                B("Golden share", "Private in daylight, public in a crisis.", -1),
+                B("Customary", "The seeded ownership. No ledger reads a state share.", 0),
+                B("Commercial", "State firms told to act like firms. Output edges up.", +1),
+                B("Privatising", "Shares are sold; prospectuses printed. Output rises.", +1),
+                B("Private", "The state keeps the regulator and little else.", +1),
+                B("Deregulated", "Owners answer to markets. Output and lobbying high.", +1),
+                B("Hands off", "The state has left the building. Output at the ceiling.", +1),
+            }) },
         };
     }
 }
