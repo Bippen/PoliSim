@@ -509,7 +509,8 @@ namespace PoliSim.Testing
                         yield return Capture(energyStem + "_decisions");
                         var playerField = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic);
                         var player = playerField?.GetValue(controller) as PoliSim.Data.Country;
-                        EnergyFleet.Order placed = player != null ? EnergyFleet.Place(player, 4, EnergyFleet.StepMw(player.Id), player.CalendarYear) : null;
+                        var fleetSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                        EnergyFleet.Order placed = player != null && fleetSim != null ? EnergyFleet.Place(player, 4, EnergyFleet.StepMw(player.Id), player.CalendarYear, fleetSim.CurrentTurn) : null;
                         if (placed != null)
                         {
                             yield return Settle();

@@ -204,6 +204,11 @@ namespace PoliSim.Simulation
         /// <summary>This year's book for a clearing already made - pure: the state is read (the price level is passed, the spending line is read), never written. The carbon tax line is not read (EN-4d).</summary>
         public static Book Compute(Country country, EnergyMarket.Result r, double priceIndex, double congestionCreditBillions)
         {
+            using (EnergyFleet.For(country)) { return ComputeOn(country, r, priceIndex, congestionCreditBillions); }   // §544: the fossil floors and caps the cost lines read are THIS country's fleet's
+        }
+
+        private static Book ComputeOn(Country country, EnergyMarket.Result r, double priceIndex, double congestionCreditBillions)
+        {
             EnvironmentSeeds s = country.Environment;
             int ci = EnergyLayer.Index(country.Id);
             double nat = EnergyLayerData.NationalPerMarketCurrency[ci], usd = EnergyLayerData.UsdPerMarketCurrency[ci];

@@ -129,7 +129,8 @@ namespace PoliSim.UI
         {
             int lines = EnergyLayerData.Labels.Length;
             int queue = Mathf.Max(1, country.FleetOrders?.Count ?? 0);
-            return StatsUnit(4f) + capH + lines * EnergyDecisionsLineHeight + StatsUnit(6f) + capH + queue * EnergyDecisionsQueueLineHeight + StatsUnit(8f) + EnergyGapRowHeight(EnergyFleet.CapexBill);
+            float mandate = StatsUnit(6f) + capH + EnergyDecisionsQueueLineHeight * 2f;   // P6-F2d (§544): the mandate's three lines
+            return StatsUnit(4f) + capH + lines * EnergyDecisionsLineHeight + StatsUnit(6f) + capH + queue * EnergyDecisionsQueueLineHeight + mandate + StatsUnit(8f) + EnergyGapRowHeight(EnergyFleet.CapexBill);
         }
 
         private void DrawEnergyDecisionsRow(float[] x, float y, float pad, PlateStyles styles, Country country, int year, double step)
@@ -156,8 +157,8 @@ namespace PoliSim.UI
                 float cx = line.x + techW + leadW;
                 var minus = new Rect(cx, line.y + (lh - chipH) * 0.5f, chipW, chipH);
                 var plus = new Rect(cx + chipW + StatsUnit(4f), line.y + (lh - chipH) * 0.5f, chipW, chipH);
-                if (DrawDeskChipButton(minus, "-", chipCaption, false, !can)) { EnergyFleet.Place(country, k, -step, year); }
-                if (DrawDeskChipButton(plus, "+", chipCaption, false, !can)) { EnergyFleet.Place(country, k, step, year); }
+                if (DrawDeskChipButton(minus, "-", chipCaption, false, !can)) { EnergyFleet.Place(country, k, -step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary - the cached preview is of a fleet without it
+                if (DrawDeskChipButton(plus, "+", chipCaption, false, !can)) { EnergyFleet.Place(country, k, step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }
                 double queued = EnergyFleet.QueuedMw(country, k);
                 string queuedText = can
                     ? (Math.Abs(queued) < 0.5 ? "NOTHING QUEUED" : (queued > 0 ? "+" : "-") + PlateFigure((float)Math.Abs(queued), 0) + " MW QUEUED")
@@ -182,6 +183,36 @@ namespace PoliSim.UI
             if (!any)
             {
                 PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), "EMPTY · THE FLEET IS THE SEED'S UNTIL AN ORDER LANDS", small);
+                lineY += EnergyDecisionsQueueLineHeight;
+            }
+
+            // P6-F2d (§544): the mandate - the country's own statute, read for the player: what it asks, where the fleet with its queue stands against it. The AI
+            // states' ministries answer theirs with orders like these (AiEnergyMinistry), HELD until that family is ruled; nothing here reads or moves anything.
+            AiEnergyMinistry.Mandate mandate = AiEnergyMinistry.MandateOf(country.Id);
+            if (mandate != null)
+            {
+                lineY += StatsUnit(6f);
+                PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, styles.CapH), "THE MANDATE · " + mandate.Statute, styles.Caption);
+                lineY += styles.CapH;
+                string standing = mandate.Headline;
+                if (mandate.Form == AiEnergyMinistry.MandateForm.CapacityPath)
+                {
+                    standing += string.Format(CultureInfo.InvariantCulture, " · WITH THE QUEUE: WIND {0:0.0} GW · SOLAR {1:0.0} GW",
+                        (EnergyLayer.CapacityMw(country.Id, 4) + EnergyFleet.QueuedMw(country, 4)) / 1000.0, (EnergyLayer.CapacityMw(country.Id, 5) + EnergyFleet.QueuedMw(country, 5)) / 1000.0);
+                }
+                else if (mandate.Form == AiEnergyMinistry.MandateForm.RenewableShare)
+                {
+                    standing += string.Format(CultureInfo.InvariantCulture, " · WITH THE QUEUE {0:0.0} % · THE RECORD {1:0.0} %", AiEnergyMinistry.RenewableSharePercent(country), AiEnergyMinistry.RecordRenewableSharePercent(country.Id));
+                }
+                else if (mandate.Form == AiEnergyMinistry.MandateForm.FossilFree)
+                {
+                    standing += string.Format(CultureInfo.InvariantCulture, " · WITH THE QUEUE: COAL {0:0} MW · GAS {1:0} MW",
+                        EnergyLayer.CapacityMw(country.Id, 0) + EnergyFleet.QueuedMw(country, 0), EnergyLayer.CapacityMw(country.Id, 1) + EnergyFleet.QueuedMw(country, 1));
+                }
+                PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), standing, label);
+                lineY += EnergyDecisionsQueueLineHeight;
+                PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight),
+                    "THE COUNTRY'S OWN STATUTE, READ FOR YOU · AN AI STATE'S MINISTRY ANSWERS ITS OWN WITH ORDERS LIKE THESE - HELD UNTIL ITS FAMILY IS RULED", small);
                 lineY += EnergyDecisionsQueueLineHeight;
             }
 
@@ -332,7 +363,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
             DrawPageHeaderWithProvenanceTab("Energy", UiPalette.GetAreaColor(UiPalette.SystemArea.Energy));
             _energyScrollPosition = GUILayout.BeginScrollView(_energyScrollPosition, GUILayout.ExpandHeight(true));
-            DrawEnergyPlate();
+            using (EnergyFleet.For(_playerCountry)) { DrawEnergyPlate(); }   // §544: every fleet figure on the page is THIS country's - the record plus its own landed orders
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }

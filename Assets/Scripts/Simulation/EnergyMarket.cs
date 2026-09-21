@@ -147,6 +147,13 @@ namespace PoliSim.Simulation
 
         // ---- the catalog, by country and category ----------------------------------------------------------
         private static int CostIndex(int category) => category;   // coal, gas, oil are the first three of both lists
+        /// <summary>§544: false where the country's clearing does not read a fossil fleet at all - Sweden's four zones clear on their exchange prices, the water and the
+        /// links, and its national fossil caps and costs are computed and never offered (ClearSweden) - so an order on coal or gas there would move a bar and nothing else.</summary>
+        public static bool ClearsFossilFleet(CountryId id) => id != CountryId.Sweden;
+
+        /// <summary>§544: true where the record's nuclear stock is closed by law - a built MW would not run, so the queue refuses the order.</summary>
+        public static bool NuclearClosedByLaw(CountryId id) => NuclearAvailability(id) <= 0.0;
+
         private static double NuclearAvailability(CountryId id) => id == CountryId.Germany ? 0.0 : 1.0;   // §457: CLOSED BY LAW - the record's installed stock, unavailable (Atomgesetz, 15 April 2023)
 
         /// <summary>The record's dependable capacity for a fossil category, MW: the record's capacity times the availability for coal and gas; for oil the record's "other" label times oil's share of that label's 2023 output - an apportionment, stated.</summary>
@@ -168,7 +175,7 @@ namespace PoliSim.Simulation
         {
             int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(id)); double peak = 0;
             for (int b = 0; b < 3; b++) { peak = Math.Max(peak, EnergyLayerData.DispatchLevelMw[zone][b][category]); }
-            return peak;
+            return peak * FossilFleetScale(id, category);   // P6-F2d (§544): the 2023 output a fleet was "demonstrably capable of" goes with the fleet - a coal fleet ordered to zero kept this much capacity in the merit order
         }
 
         /// <summary>
@@ -183,7 +190,13 @@ namespace PoliSim.Simulation
         /// The inflexible part of a fossil category: what it produced in the trough decile of the load runs in every block - heat-led CHP, minimum loads,
         /// contracts - and is not dispatched; the merit order runs above it. [AUTHORED-DRAFT] as a rule; the level itself is the 2023 record's.
         /// </summary>
-        public static double MustRunFossilMw(CountryId id, int category) => EnergyLayerData.DispatchLevelMw[EnergyLayer.ZoneIndex(EnergyLayer.Code(id))][0][category];
+        public static double MustRunFossilMw(CountryId id, int category) => EnergyLayerData.DispatchLevelMw[EnergyLayer.ZoneIndex(EnergyLayer.Code(id))][0][category] * FossilFleetScale(id, category);
+
+        /// <summary>P6-F2d (§544): the fleet's scale for a fossil category - coal and gas follow their labels' fleets ((record + landed orders) ⁄ record, exactly one with no
+        /// order landed); oil sits inside the "other" label, which no order reaches. Found by the ministry's first measurement: Germany's coal stood at zero from 2039 and
+        /// its must-run floor ran on, pricing every block, because the floor and the peak-output capacity were the record's levels and §539 had scaled only the must-run of
+        /// nuclear, wind and solar.</summary>
+        private static double FossilFleetScale(CountryId id, int category) => category == Coal ? EnergyFleet.Scale(id, 0) : category == Gas ? EnergyFleet.Scale(id, 1) : 1.0;
 
         private static double AnnualLevelGwh(int zone, int category)
         {
@@ -319,13 +332,13 @@ namespace PoliSim.Simulation
 
         // ---- the country ------------------------------------------------------------------------------------
         /// <summary>Clear a country this turn - at its price level, with the ETS probe's rise where one stands: its single zone, or Sweden's four along the chain. The national carbon tax does not enter (EN-4d: the fleet pays the ETS and is exempt of the tax).</summary>
-        public static Result Clear(Country country) => ClearAt(country.Id, Math.Max(0.0001f, country.State.PriceLevel), ProbeEtsRiseFor(country.Id));
+        public static Result Clear(Country country) { using (EnergyFleet.For(country)) { return ClearAt(country.Id, Math.Max(0.0001f, country.State.PriceLevel), ProbeEtsRiseFor(country.Id)); } }   // §544: the fleet is THIS country's - its own landed orders, read through the scope
 
         /// <summary>Clear at an explicit price index and ETS rise (the calibration and the probes use the seed's: 1 and 0); Sweden at the turn's water value where a turn has set one, the seed's otherwise.</summary>
         public static Result ClearAt(CountryId id, double priceIndex, double etsRisePerT) => ClearAt(id, priceIndex, etsRisePerT, null);
 
         /// <summary>The SEED clearing - price index 1, the ETS at its catalog price, and Sweden at the SEED's water value whatever turn state stands: the seed fits (the residual, the retail margins) and the seed gates read this, so a stale turn value from an earlier world in the same process cannot reach a seed figure (EN-4's first simulation bar found it: the ledger diagnostic ran after the market's ten-year worlds and fitted Sweden's margins against their last water value).</summary>
-        public static Result ClearAtSeed(CountryId id) => ClearAt(id, 1.0, 0.0, WaterValueAtSeed());
+        public static Result ClearAtSeed(CountryId id) { using (EnergyFleet.RecordOnly()) { return ClearAt(id, 1.0, 0.0, WaterValueAtSeed()); } }   // P6-F2d: the seed's fleet is the record's
 
         private static Result ClearAt(CountryId id, double priceIndex, double etsRisePerT, double[] waterValue)
         {
@@ -409,7 +422,8 @@ namespace PoliSim.Simulation
         {
             if (SeedSpreadCache.TryGetValue(id, out double s)) { return s; }
             double[] adders = Adders(id);
-            Result seed = ClearCountry(id, adders, Costs(id, 1.0, 0.0, adders), Caps(id), 0.0);
+            Result seed;
+            using (EnergyFleet.RecordOnly()) { seed = ClearCountry(id, adders, Costs(id, 1.0, 0.0, adders), Caps(id), 0.0); }   // P6-F2d: on the record's fleet
             s = Spread(seed); SeedSpreadCache[id] = s; return s;
         }
 
@@ -424,10 +438,12 @@ namespace PoliSim.Simulation
                 result.AnnualGwh[k] += gwh;
                 result.DerivedCo2Mt += gwh * EnergyLayerData.EmissionFactorTPerMwh[ci][k] * EnergyLayerData.MainShare[ci][k] / 1000.0;   // GWh × t/MWh = kt; /1000 = Mt
             }
-            result.AnnualGwh[Nuclear] += level[Nuclear] * NuclearAvailability(id) * hours / 1000.0;
+            // §544 (the review's finding): the year's energy follows the fleet as the must-run does - MustRun scaled these three by the fleet and this sum did not,
+            // so the page's generation mix kept 2023's wind under a fleet twice the size. Exactly one with nothing landed.
+            result.AnnualGwh[Nuclear] += level[Nuclear] * NuclearAvailability(id) * EnergyFleet.Scale(id, 2) * hours / 1000.0;
             result.AnnualGwh[Hydro] += (level[Hydro] + hydroShiftMw) * hours / 1000.0;   // EN-3b: the shift moves energy between blocks, the year's sum unchanged
-            result.AnnualGwh[Wind] += level[Wind] * hours / 1000.0;
-            result.AnnualGwh[Solar] += level[Solar] * hours / 1000.0;
+            result.AnnualGwh[Wind] += level[Wind] * EnergyFleet.Scale(id, 4) * hours / 1000.0;
+            result.AnnualGwh[Solar] += level[Solar] * EnergyFleet.Scale(id, 5) * hours / 1000.0;
             result.AnnualGwh[Firm] += level[Firm] * hours / 1000.0;
         }
 
@@ -468,7 +484,7 @@ namespace PoliSim.Simulation
         /// <summary>The seed's water value - Germany's and Poland's seed clearings weighted as BeginTurn weights them; what Sweden clears at outside a turn.</summary>
         public static double[] WaterValueAtSeed()
         {
-            if (_waterValueSeed == null) { _waterValueSeed = WaterValueOf(ClearAt(CountryId.Germany, 1.0, 0.0), ClearAt(CountryId.Poland, 1.0, 0.0)); }
+            if (_waterValueSeed == null) { using (EnergyFleet.RecordOnly()) { _waterValueSeed = WaterValueOf(ClearAt(CountryId.Germany, 1.0, 0.0), ClearAt(CountryId.Poland, 1.0, 0.0)); } }   // P6-F2d: on the record's fleets
             return _waterValueSeed;
         }
 
@@ -558,6 +574,11 @@ namespace PoliSim.Simulation
         public static double[] Adders(CountryId id)
         {
             if (AdderCache.TryGetValue(id, out double[] cached)) { return cached; }
+            using (EnergyFleet.RecordOnly()) { return FitAdders(id); }   // P6-F2d (§544): the calibration is 2023's and is cached for the process - fitted on the record's fleet, whatever the queue has landed
+        }
+
+        private static double[] FitAdders(CountryId id)
+        {
             var adders = new double[FossilCount];
             int zone = EnergyLayer.ZoneIndex(EnergyLayer.Code(id));
             var target = new double[FossilCount]; double total = 0;
@@ -611,7 +632,8 @@ namespace PoliSim.Simulation
         {
             var names = new List<string>();
             if (id == CountryId.Sweden) { return names; }
-            double[] target = SeedTargets(id); double[] caps = Caps(id);
+            double[] target = SeedTargets(id); double[] caps;
+            using (EnergyFleet.RecordOnly()) { caps = Caps(id); }   // §544: a fact about the record's fleet, whatever scope the caller stands in
             int dominant = 0; for (int k = 1; k < FossilCount; k++) { if (target[k] > target[dominant]) { dominant = k; } }
             for (int k = 0; k < FossilCount; k++)
             {
@@ -624,7 +646,8 @@ namespace PoliSim.Simulation
         /// <summary>The out-of-sample response at the seed: the adders fixed, the ETS price stepped by <paramref name="stepEtsPerT"/> (the market's currency per tonne) - coal's and gas's shares of the fossil total and the peak price, before and after.</summary>
         public static (double CoalBefore, double CoalAfter, double GasBefore, double GasAfter, double PeakBefore, double PeakAfter) Response(CountryId id, double stepEtsPerT)
         {
-            Result a = ClearAtSeed(id), b = ClearAt(id, 1.0, stepEtsPerT, WaterValueAtSeed());
+            Result a = ClearAtSeed(id), b;
+            using (EnergyFleet.RecordOnly()) { b = ClearAt(id, 1.0, stepEtsPerT, WaterValueAtSeed()); }   // §544: both legs on the record's fleet
             double fa = a.AnnualGwh[Coal] + a.AnnualGwh[Gas] + a.AnnualGwh[Oil], fb = b.AnnualGwh[Coal] + b.AnnualGwh[Gas] + b.AnnualGwh[Oil];
             return (fa > 0 ? a.AnnualGwh[Coal] / fa : 0, fb > 0 ? b.AnnualGwh[Coal] / fb : 0, fa > 0 ? a.AnnualGwh[Gas] / fa : 0, fb > 0 ? b.AnnualGwh[Gas] / fb : 0, a.Zones[0][2].Price, b.Zones[0][2].Price);
         }

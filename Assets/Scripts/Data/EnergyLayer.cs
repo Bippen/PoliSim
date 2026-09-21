@@ -120,7 +120,9 @@ namespace PoliSim.Data
         /// <summary>The 2023 capacity factor - generation over capacity × the hours; 0 where there is no capacity.</summary>
         public static double Utilisation(CountryId id, int label)
         {
-            double cap = CapacityMw(id, label);
+            // P6-F2d (§544): the RECORD's fleet, as the summary says - since §539 CapacityMw carries the landed orders, and the record's generation over a
+            // fleet an order had grown read as a FALLING capacity factor on the page while the clearing ran the new MW at the seed's own profile.
+            double cap = RecordCapacityMw(id, label);
             return cap > 0 ? GenerationGwh(id, label) * 1000.0 / (cap * HoursPerYear) : 0.0;
         }
 

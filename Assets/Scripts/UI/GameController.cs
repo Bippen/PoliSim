@@ -887,7 +887,12 @@ namespace PoliSim.UI
             _world = save.World;
             _selectedPlayerCountryId = save.PlayerCountryId;
             _playerCountry = _world.GetCountry(save.PlayerCountryId);
-            EnergyFleet.Rebuild(_world.Countries);   // P6-F2 (§539): the loaded queue's landed orders back in the fleet before anything reads it
+            // §544 (the verification review): three things of the world just left must not stand in the one just loaded. The Energy page caches its clearing and
+            // book by turn and country id, and a load to the same turn and country kept the old world's; the market's turn state (Sweden's water value, its
+            // reservoir share) is the process's and was the old world's; and a save from the §539 build may carry an order on a label the queue now refuses.
+            _energyResult = null;
+            foreach (Country loaded in _world.Countries) { EnergyFleet.Sanitise(loaded); }
+            EnergyMarket.BeginTurn(_world);
             _simulationManager.PlayerCountryId = save.PlayerCountryId;   // C-R4b step 3 (RestoreInto set it too, before the replay; this keeps the two paths one)
             RestoreUiDrafts(save.Ui);
 
@@ -5626,6 +5631,10 @@ namespace PoliSim.UI
             // a shadow ran beside them or not. Calling the shadow's own manager directly from here would
             // reintroduce exactly the 41-draw leak the wrapper exists to prevent.
             _shadowBaseline?.AdvanceTurn();
+            // §544 (the verification review): the market's turn state is the PROCESS's (EN-3b: Sweden's water value, its reservoir share), written by whichever
+            // world last ran a boundary - and the shadow's runs last. Until the next boundary the page's clearing and the preview would read the counterfactual
+            // world's German and Polish prices; the played world's are set again here. The boundary itself always sets its own at its top, so no turn read them.
+            EnergyMarket.BeginTurn(_world);
 
             EconomyState state = _playerCountry.State;
             _lastGrowthPercent = (state.GDP - _prevGdp) / Mathf.Max(_prevGdp, 1f) * 100f;

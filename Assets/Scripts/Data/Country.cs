@@ -756,7 +756,7 @@ namespace PoliSim.Data
 
         /// <summary>P6-F2 (2026-09-18, §539): the energy fleet's connection queue - build and retire orders by technology, MW, the year placed and the year they
         /// connect or leave (<see cref="Simulation.EnergyFleet"/>). Null or empty on every AI state and at the seed; the landed ones are the fleet's delta,
-        /// rebuilt from this list at each year boundary and on load. Additive save field: a version-19 save loads none.</summary>
+        /// read off this list every time a reader asks (§544: no table - the fleet is the country's own). Additive save field: a save from before it loads none.</summary>
         public System.Collections.Generic.List<Simulation.EnergyFleet.Order> FleetOrders = null;
 
         /// <summary>

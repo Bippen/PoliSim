@@ -2697,6 +2697,9 @@ namespace PoliSim.Simulation
         {
             // EN-3 (2026-09-11): the water value Sweden's zones clear at this turn - Germany's and Poland's block prices at their current rates - fixed
             // once at the top of the boundary, before any family's yearly step reads a clearing.
+            // P6-F2 (§539, moved here by §544's review): the queue's due orders land FIRST - the water value just below and the power CO₂ in the families' step
+            // both clear before the ledger does, and read last year's fleet while the landing sat beside the ledger.
+            foreach (Country country in _world.Countries) { EnergyFleet.Advance(country, CurrentTurn + 1, country.CalendarYear); }
             EnergyMarket.BeginTurn(_world);
             // F2 step 4: the year the days just read is COMMITTED to the pyramid first, with the levers
             // as they stood through it - before this turn's decisions move them (a lever changed at the
@@ -2744,6 +2747,9 @@ namespace PoliSim.Simulation
                     ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision);
                     AiFinanceMinistry.Observe(country);
                 }
+                // THE AI ENERGY MINISTRY (P6-F2d, §544): HELD - AiEnergyMinistry.Live is false until its family is dumped and ruled; with it on, a country the player
+                // does not govern answers its own statute with orders in its connection queue, which land through EnergyFleet.Advance like the player's.
+                if (AiEnergyMinistry.Live && (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id)) { AiEnergyMinistry.Decide(country, PensionAgeStatute.SeedYear + CurrentTurn + 1, CurrentTurn + 1); }   // the year about to be played and its turn: an order placed at the boundary waits its lead time from the coming year
                 ApplyDomesticPolicy(country, decision, tariffRevenueByCountry[country.Id]);
                 // §388: what the ministry wrote leaves the decision again - a caller (the trajectory dump, a harness) may hand the same object in next turn,
                 // and the first builds re-applied year 2's cuts for a century because it did not.
@@ -2833,7 +2839,6 @@ namespace PoliSim.Simulation
             EducationFamily.AdvanceYear(country);   // P5-C3 (2026-09-06): the education family's yearly step - readouts, no feedback
             InfrastructureFamily.AdvanceYear(country);   // P5-C4 (2026-09-06): readouts, no feedback
             EnvironmentFamily.AdvanceYear(country);   // P5-C5 (2026-09-06): the intensities' yearly step; since §349 (2026-09-07) the carbon tax's base reads them (TaxBaseDriver.Emissions) - the one feedback this family has
-            EnergyFleet.Advance(country, country.CalendarYear);   // P6-F2 (2026-09-18, §539): the queue's orders whose year has come land, and the fleet the year clears on is the one they made
             double electricityTaxRevenueChange = EnergyLedger.AdvanceYear(country);   // EN-4 (2026-09-11): the retail stack and the two ledgers at this year's dispatch; the industrial bill's change reaches BusinessConfidence next boundary (MacroSystem.ApplyCategorySpendingEffects). EN-7b: its electricity-tax receipts above the statute, planned below
             MigrationPovertyFamily.AdvanceYear(country);   // P5-C6 (2026-09-06): readouts, no feedback
             BoundaryLedger?.Invoke(country, "families");
@@ -3161,6 +3166,7 @@ namespace PoliSim.Simulation
             // weight (EnergyPassThrough.PlannedForPreview). EN-7a: read HERE, after the clone's spending resolves, as the boundary plans after its pressures
             // and ledger - read before, it missed the Energy subsidy's move of the energy line (the levy it displaces) and the sector draft, which the clone
             // takes only at ApplySectorPolicyChanges.
+            EnergyFleet.Advance(previewCountry, CurrentTurn + 1, previewCountry.CalendarYear);   // §544: the clone lands ITS OWN due orders (a copy of the queue), as the boundary will - the preview cleared on the old fleet while the turn planned on the new
             float previewEnergyPassThroughPp = EnergyPassThrough.PlannedForPreview(previewCountry, out EnergyLedger.Book previewEnergyBook);
             float previewElectricityTaxRevenue = previewEnergyBook != null ? (float)previewEnergyBook.ElectricityTaxRevenueChange : 0f;   // EN-7b: the flow the turn will plan, from the same clearing
             MacroSystem.ApplyCategorySpendingEffects(previewCountry, spendingResult.EffectiveDecision);
