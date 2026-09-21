@@ -3873,6 +3873,17 @@ namespace PoliSim.UI
             // 8d: *the same band, the same LINE*. Between two end-names the caption hangs from the top like them, its top lifted by the difference of the two faces' ascents, so the
             // larger face stands on the smaller one's baseline; until 2026-09-21 it sat lower-left in the band and crossed their line by two pixels at 1280 (Design's sighting).
             bool onEndNameLine = LedgerRow.LastHadEndNames && !endPieces;
+            // PF-8 (2026-09-21, §559): THE LANE AS DRAWN BOUNDS THE PLACEMENT, not only the guard. §550 taught the guard the end-names' measured ink and left the fit and the
+            // centring on the middle three fifths - the fifth an end-name is ASSUMED to fit. Two of Labor's dials carry a right end-name longer than its fifth (*Overtime /
+            // Working-Hour Regulation*, *Family Policy*), and the caption stood across it by some fifty pixels at 1280: the widened guard said so on the first film that reached
+            // those rows (the state pins, past where a partial film stops). The caption now fits and centres in what is left of its three fifths once the end-names AS DRAWN and
+            // the board's clearance are taken off; where the names are short that is the three fifths, and nothing moves.
+            if (onEndNameLine)
+            {
+                Rect drawnLane = LedgerRow.LastCaptionBand;
+                float clearLeft = Mathf.Max(area.x, drawnLane.x + LedgerRow.LastEndNameLeftInk + clear), clearRight = Mathf.Min(area.xMax, drawnLane.xMax - LedgerRow.LastEndNameRightInk - clear);
+                area = new Rect(clearLeft, area.y, Mathf.Max(0f, clearRight - clearLeft), area.height);
+            }
             GUIStyle line = new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { fontSize = size, alignment = onEndNameLine ? TextAnchor.UpperLeft : TextAnchor.LowerLeft, fontStyle = FontStyle.Normal, clipping = TextClipping.Overflow };
             GUIStyle nameStyle = new GUIStyle(line) { fontStyle = FontStyle.Bold };
             Color ink = PoliSimTheme.TextPrimary;
