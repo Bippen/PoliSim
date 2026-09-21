@@ -30651,3 +30651,184 @@ The decisions plate carries **the mandate** for the player's own country - the s
 2. **The statutes' own units are the rule's.** Where a statute names gigawatts the ministry follows gigawatts, where it names a share a share; converting Germany's path to its § 1(2) share is failure mode 1's remedy and Elias's to rule.
 3. **Poland is BILLED rather than sourced from the press.** A figure the record cannot quote from its own document is not a mandate.
 4. **No connection cap was authored** to make the first orders look plausible: the absence is the measurement.
+## 545. FT-10 · P-A LANDED — THE LEVY SCALE READS THE SUPPORT LINE'S MOVE AS A SHARE OF ITS OWN PATH: the runaway is gone (Poland's scale stands at 1.28 from year 100 to year 1000, where it had passed 10¹⁰), a BASELINE family `traj_p6pa` read per country, FT-10's thirteen sentinel cells lowered to eleven in the same commit and proved by mutation, the money-path review run and on record (2026-09-21)
+
+**The ruling** (Elias, 2026-09-21, the second of the day): *"FT-10 ruled: P-A first as this pass's family, P-B second as the next, P-A′ third as a ruling on EN-4 — the levy rule reads the support share only, not the whole energy line. The FT-10 sentinel's ceilings lower in P-A's own commit, proved by mutation."* §541 measured the mechanism and proposed; this section is P-A alone. P-B and P-A′ are the next two families, in that order, each on its own pass.
+
+### What changed
+
+`EnergyLedger.Compute` read the budget's energy line against its indexed path IN BILLIONS and divided by the levy's path: `1 − (Amount − SeedAmount) ⁄ (seedLevy × P)`. The numerator rides the spending index (prices × RF-2's REAL GROWTH, §384), the denominator the price level alone (the load is static), so the price level cancelled and the growth index did not. Now:
+
+`LevyScale = max(0, 1 − K × (Amount ⁄ SeedAmount − 1))`
+
+- **K is the seed's energy line over the seed's levy revenue**, both in the book's dollars at the seed's prices, captured ONCE by `EnergyLedger.Seed` into `EnvironmentSeeds.EnergySupportLineToLevySeed` - beside the congestion rent's seed, which is the same kind of figure. Sweden 40.198, France 13.396, Poland 0.50668, Italy 0.07349; 0 for the USA (no policy levy in its stack) and Germany (no energy line in its book).
+- **Indexed with indexed.** The line's move is a share of ITS OWN path, so the spending index - prices and growth alike - stands on both sides of one quotient and cancels whole. §327's rule (P5-B6: nominal with nominal) had been kept; its sibling on the growth index had not.
+- **Exactly 1 on the path** (one float divided by itself), below 1 where the line was raised, above where it was cut, 0 at the floor - EN-4's documented semantics, to the bit at the seed, where the two forms are one. **Bounded:** at most 1 + K, since a line cannot go below zero (a dial's cost sits outside the own path's clamp band since SC-1), and 1 + 0.8 K on the own path alone - which is all an AI book moves, so the sentinel's cells are the tighter figure.
+- ⚠ **ONLY AI-GOVERNED BOOKS CHANGE - the review's finding, and the most useful sentence in this section.** `IndexSpendingLines` gives real growth to an AI ministry's driverless lines only; the country the player governs indexes its energy line by prices alone, so its path is the seed's line times the price level and `K × (Amount ⁄ path − 1)` IS `(Amount − path) ⁄ (seedLevy × P)`, the old expression, to float rounding. The runaway never stood in the played country's own levy - it stood in every AI neighbour's, and in the shadow baseline, where no player is seated and the played country is ministry-run like the rest. `EnergyLedgerDiagnostic`'s *a billion for a billion* assertions pass unchanged for that reason.
+- **The subsidy dial is the player's, so P-A does not touch it** - and what I wrote in the first draft of this section, that the dial's levy cut *had the same defect and is mended*, was wrong: no AI moves the dial, and for the player the form is the old arithmetic. The dial's cost is a share of NOMINAL GDP on a levy whose base is static, so a held dial displaces more of the levy as real GDP grows - as it did before. That is the load's ABSENT row (*the load does not grow*) showing through, recorded here and not P-A's.
+- **Save format 21.** K is captured at the seed and a save from before carries none - its levy would stand at the seed whatever the line did - so the version moves and an older save is refused with the standing message (never migrated pre-release). The staged play-protocol save (§523) is re-staged by its own tool when Elias next plays.
+- **The player's sentences stay *one for one*, because for the player they are exactly true.** The first cut of this change re-worded the Sectors page's sentence and the Energy tab's row to a share-of-path form; the review showed that wording wrong by the factor K for the only reader those sentences have (a player adding 2.5 % to Sweden's line takes the whole levy off, not 2.5 % of it), and the three UI files went back to their committed text untouched. The class doc and `SimulationManager`'s note now say both: one for one in the player's book, the share-of-path form for a ministry's.
+
+### Measured - the instrument, a thousand years (`EnergyRunawayDiagnostic`, seed 777, `logs/pa_measure.log`)
+
+| | K | the line against its path, t100 | levy scale t100 · t361 · t1000 | before P-A, t100 · t1000 |
+|---|--:|--:|--:|--:|
+| **Poland** | 0.507 | 0.440 | 1.284 · 1.286 · 1.284 | 4.27 · 3.3 × 10¹⁰ |
+| **France** | 13.40 | 0.364 | 9.52 · 7.25 · 6.36 | 13.0 · 38.9 |
+| **Sweden** | 40.20 | 0.870 | 6.21 · 8.59 · 4.92 | 16.7 · 12 772 |
+| **Italy** | 0.073 | 0.278 | 1.053 · 1.052 · 1.052 | 1.04 · 1.04 |
+| **The USA** | 0 | 0.200 | 0 | 0 |
+| **Germany** | 0 | no line | 1 | 1 |
+
+Poland's real household price stands at 0.2322 from year 100 to year 1000 (0.2261 at the seed: +2.7 %, the rule's answer to a line cut to 0.44 of its path, once); before P-A it read 0.296 at year 100, 89.8 at year 361 and 7 × 10⁸ at year 1000. **What is left is named:** France's and Sweden's scales are large because K is - the rule reads the WHOLE energy line as levy support (P-A′, ruled third) - and they now breathe with the ministry's cut instead of compounding; Sweden's prices still climb (the industry price over the price level 0.105 → 0.118 → 3.24) on its water value, which reads Poland's and Germany's prices at their own price levels (P-B, ruled second).
+
+### The family - `traj_p6pa` against `traj_p6e1`, per country (seed 777; 424242 reads the same signs and sizes - Poland −21.6 %, France −7.6 %, Italy +0.11 %, Sweden −1.4 % where 777 reads −1.1 %)
+
+Both seeds, three horizons, six diffs (`logs/pa_diff_*`): 8 of 77 fields byte-identical across the whole trajectory. Per country at year 100, old beside new:
+
+| | real household price | industry price over P | price level | GDP | first moves |
+|---|--:|--:|--:|--:|---|
+| **Poland** | 0.2961 → 0.2322 (−21.6 %) | 0.3079 → 0.2405 (−21.9 %) | −0.54 % | +0.024 % | t2, its own levy |
+| **France** | 0.3575 → 0.3302 (−7.6 %) | 0.2757 → 0.2689 (−2.5 %) | −0.21 % | +0.011 % | t2, its own levy |
+| **Sweden** | 0.2772 → 0.2742 (−1.1 %) | 0.1202 → 0.1178 (−2.0 %) | −0.06 % | +0.005 % | t2, its own levy |
+| **Italy** | 0.3873 → 0.3877 (+0.11 %) | 0.2568 → 0.2574 (+0.25 %) | +0.004 % | +0.002 % | t2, its own levy |
+| **Germany** | byte-identical | byte-identical | +0.0004 % | +0.0008 % | t3, `Zone.InterestRate` |
+| **The USA** | byte-identical | byte-identical | +0.0000 % | −0.0000 % | t3, `CurrencyStrength` |
+
+- **Italy moves UP, and that is the fix too.** Its path SHRINKS in real terms (G 0.73 over the century), so the old rule's growth index had been damping its answer where it inflated Poland's; the share-of-path form reads the cut in full.
+- ⚠ **§541 said the USA and Germany "cannot move", and that was true of their energy prices only.** Their levy scales and every REAL energy field - the household price at the seed's prices, its change, the rent, the reservoir, the power CO₂ - are byte-identical over a thousand years on both seeds. Their other rows move in the fifth decimal place, and the dump says through what: Germany shares the euro's one interest rate with France and Italy (first field to move, year 3), the USA trades with all four (`CurrencyStrength`, year 3; §533's links). Their NOMINAL energy prices follow their own price levels. A spillover, not a leak: no German or American energy field that is real moves at all.
+- **The runaway had been feeding Poland's inflation.** Its price level at year 1000 reads 8.1 × 10¹⁰ against 1.35 × 10¹¹ - forty per cent lower - and its inflation 2.81 against 2.88: the levy's share of the CPI is small (§541: a loop of gain 0.024) but a term compounding for ever is not.
+
+### The sentinel - lowered in this commit, proved by mutation
+
+`TrajectorySentinelCheck`: the label `p6pa`, the digests `57f1e5cc…` (777) and `cd39dfbe…` (424242), read off the dump's own files and matched by the check's rerun. **FT-10's recorded cells go from thirteen to eleven** (`EnergyBreachCeiling`), every ceiling re-cut on the new measurement and EACH CELL NOW CARRYING ITS CAUSE, printed on its line:
+
+| cell | before P-A | now | ceiling | waits on |
+|---|--:|--:|--:|---|
+| Poland · household · LEVEL / TAIL | 30.946 / 11.652 | 2.797 / 0.004 | 3 / closed | the rule's bounded answer |
+| Poland · industry · LEVEL / TAIL | 31.544 / 11.844 | 2.851 / 0.004 | 3 / closed | the rule's bounded answer |
+| France · household · LEVEL / TAIL | 35.628 / 1.878 | 27.176 / 0.401 | 28 / closed | P-A′ |
+| France · industry · LEVEL | 9.275 | 7.075 | 8 | P-A′ |
+| Italy · industry · LEVEL | 0.77, in the band | 1.003 | 2 | the rule's bounded answer - **a cell P-A OPENED** |
+| Sweden · household · LEVEL / TAIL | 7.125 / 1.658 | 5.966 / 1.201 | 6 / 2 | P-B |
+| Sweden · industry · LEVEL / TAIL | 13.986 / 3.101 | 11.710 / 2.260 | 12 / 3 | P-B |
+| Sweden · rent · LEVEL / TAIL | 48.427 / 7.649 | 47.827 / 7.433 | 48 / 8 | P-B |
+
+Three cells closed - the three TAILs that were the runaway's signature: Poland's tail reads four thousandths of a per cent. One opened, by three thousandths of a point: Italy's industry LEVEL, 1.003 against a clean band of 1 - the rule's honest answer to a line cut to 0.28 of its path, which the old form had damped. The band was not moved to let it in; it is a recorded cell with its cause.
+
+**Proved by mutation** (`logs/pa_sentinel_mut.log`, the file restored from its copy and its digest compared): Poland's household LEVEL ceiling set to 2 read *⚠ OVER … 2.797 % at t65 against 2.0 % - a recorded cell got WORSE*; France's industry ceiling set to 10 read *⚠ SLACK … lower it*; and a CLOSED cell put back in the table (Poland's household TAIL at its old 12) read *⚠ SLACK … 0.004 %* - a ceiling cannot stand above a cell that has closed. The check FAILED, exit 1, on all three by name. **Italy's row carries its own instruction:** when it reads under the band the row is DELETED and the count lowered, never re-cut.
+
+### The review - run, and on record
+
+`EnergyLedger.cs` is a money path and a family is reviewed whatever it touches, so the review was owed twice over; it ran in the form §544 set - one independent read-only reader on the change, a second on the rework - and both reports are committed verbatim as `Reviews/2026-09-21_s545_ft10_pa.md`, which is what §546's ledger row stands on.
+
+**The first reader** found no defect in the formula, in K's capture (one writer, at the end of `WorldFactory.CreateDefault`, the line still at its seed; no scenario or loader touches it), in save and load (K rides the JSON; the version gate refuses older saves; nothing re-seeds), or in the several-worlds class that §539 fell to (the preview's clone shares the seeds by reference and nothing writes K after the seed; the shadow baseline seeds its own world with the same K; the forks travel through the save round trip). What it found was in what the change SAID:
+1. *"The USA and Germany cannot move"* - false for their rows: 4,798 of Germany's and 2,404 of the USA's differ, by propagation from turn 3. Their levy scales and real energy prices do not. The sentinel's doc and this section say what is true.
+2. **The two re-worded player-facing sentences were wrong by the factor K** - for the country the player governs the change is the old arithmetic, so *one for one* was still exactly true and the new wording was not. The three UI files were reverted whole.
+3. The bound is 1 + K, not 1 + 0.8 K, where a subsidy dial stands below neutral (the dial's cost sits outside the clamp band since SC-1). An AI book holds 1 + 0.8 K, so the sentinel's cells were right; the comments were not.
+4. ⚠ **§542's *Retail intervention* captions promise a levy floor the dial cannot reach in Italy and Poland, and reach it a few points above neutral in Sweden and France** - my own captions of the same day, *held to the model* on their sign and on one country. Not P-A's; filed as **PF-4** with the reader's table.
+5. Housekeeping: `CLAUDE.md`'s FT-10 note and the feature list's row still said *not applied* (the records commit re-cuts both); the staged play-protocol save on disk is format 19, refused since §538's bump, so `PlayProtocolStaging.Run` is owed before Elias plays whichever version stands (CL-4).
+6. Its suggestion, taken: `EnergyLayerCheck` gate 8 asserts **K is live** at the seed - a K of 0 beside a line and a levy would hold the scale at 1 whatever the line did, and the bounds pass would read that silence as a clean country. It prints K per country and would fail on all four if `Seed` forgot the capture.
+
+**The second reader** verified the rework - no UI file differs from HEAD, the withdrawn wording occurs nowhere, `EnergyLedger.cs`'s code lines are exactly the five intended, `Amount` cannot go negative (so 1 + K holds), no AI path touches the subsidy dial, the turn-2 and turn-3 claims hold on a full diff of both dumps, and every one of the eleven measurements and both digests reproduces from the dump's own files - and found no blocking defect. Taken from it:
+- **Probe 3b** (`EnergyLedgerDiagnostic`): *"THE PLAYER'S BOOK IS UNCHANGED"* rested on reading alone, since every existing probe sits at the seed, where the two forms are one by construction (§402: reading never proves inertness). Poland is now PLAYED for ten years with a tenth on its energy line and the two forms are asserted equal (they read 0.949332 and 0.949332, apart by 6 × 10⁻⁹); and Poland under its ministry must read them APART, or the equality proves nothing (1.0968 against 1.1242). If the player's driverless path ever gains a growth term, the page's sentence stops being the arithmetic and this goes red.
+- The equality is exact AT THE BOUNDARY, where the index and the book read one price level. Between boundaries the page recomputes with the day's price level: the old form drifted with it through the year (a scale of 0.50 read 0.51 by December at three per cent inflation), the new one holds the boundary's figure. Said in the comment; a film with a dial raised may move in the second decimal.
+- The class doc's sentence had been spliced mid-sentence into the EEG's history; *fifth decimal place*, not *digit*; Italy's row's instruction.
+
+**After the second reader, read by no one but me:** comments in `EnergyLedger.cs` (its findings 3 and 5), probe 3b, two comment edits in the sentinel. The evidence file says so in its header.
+
+**Decisions taken, strikeable.**
+1. **K on the environment seeds, not recomputed.** The seed's line is gone the first year (the path is indexed in place), so the ratio is captured where the congestion rent's seed is - one float, shared by reference across the preview's clone like every other seed.
+2. **A recorded cell for Italy rather than a wider band.** Nothing raises the band; the cell says what it is.
+3. **The cells keep their name** (`ENERGY_BREACHES`) though two of the three causes left are not breaches but the rule answering: renaming a ratchet mid-count hides its history. The cause column says which is which.
+4. **No UI file is touched.** The tier is SIMULATION alone; the first cut's dry film and films (`drypa2`, `filmpa2_*`, all clean) were of a wording that was withdrawn.
+
+**Bars.** Tier SIMULATION by the staged paths (seven simulation, one tooling, the evidence file). Barred on the final tree, after the mutation's restore: the cheap bar **42 of 43** with `AreaIconCoverageCheck` the standing named gap (`bar_pa4`, 45 s; `EnergyLayerCheck` prints K per country) and the simulation bar **55 of 55** with `TrajectorySentinelCheck` holding on `p6pa`, the ledger reading `TrajectorySentinelCheck.ENERGY_BREACHES 11 11 tight` (`simbar_pa4`, 609 s). The two earlier cuts barred green as well (`bar_pa2`/`simbar_pa2` on the first cut, with its dry film of six countries and both films clean on a wording since withdrawn; `bar_pa3`/`simbar_pa3` on the first rework). Beyond the tier: films at 1280 (Sweden) and 2560 (Germany) on the reworked tree, 111 captured each, 0 overflows, 0 escapes (`filmpa3_*`) - the frames §547's archive carries. The dump and its six diffs are this family's; the four-width matrix is the track's close, and FT-10's track closes with P-A′. Committed as `e0f5064`.
+## 546. THE REVIEW LEDGER — A COMMIT WHOSE TIER OWED AN ADVERSARIAL REVIEW AND GOT NONE FAILS THE BAR: `ReviewLedgerCheck` over a money path's state, every commit since the guard and the baseline's digest; pointed before `c544620` it fails on that commit by name (2026-09-21)
+
+**The ruling** (Elias, 2026-09-21): *"A process guard: a commit whose tier owed an adversarial review and got none fails the bar — §539 shipped a static-table-across-worlds defect because the rule was written and not enforced."*
+
+### What happened, in one paragraph
+
+§524's rule says a commit that touches a money path is reviewed adversarially, and `Tools/bar_tier.ps1` prints `review : REQUIRED` when it is owed. `c544620` (§539, build and retire) touched `EnergyMarket.cs`; the tool said REQUIRED; I ran no review and wrote none into the record; nothing noticed. The landed orders sat in one static table shared by every world the game holds, and the shadow baseline zeroed the player's fleet after every turn. §544's review found it three days later in a commit already pushed. A rule that only prints is a rule nobody has to keep - and the one who did not keep it was me.
+
+### The guard
+
+`Tools/review_ledger.tsv` is the ledger of reviews that RAN - tab-separated rows of *kind, key, sha256, status, date, record, evidence, note*. `ReviewLedgerCheck` (the cheap bar, so every commit that touches `Assets/` meets it) makes three passes and fails on any miss:
+
+1. **THE STATE.** Every money-path source file as it stands in the working tree needs a row for THAT state. A money path is the tier tool's own definition, read OUT OF `bar_tier.ps1` by the check (`$money`, and a new `$moneyRoots` line) - the tool reads the suite's tables, the check reads the tool's, one definition. A state is named by the SHA-256 of the file's bytes with every carriage return removed, so the working tree and the repository's blob are one state. A row is `reviewed` - a record, and an evidence file under `Reviews/` that exists, is a report's length and NAMES the file - or `grandfathered`: the state the guard found on the day, files only, a count under a ratchet (`GrandfatheredCeiling`) that only falls, because a grandfathered row whose file has moved on is STALE and fails until it is removed. **So the tree being committed cannot carry an unreviewed state of a money path past its bar.**
+2. **THE HISTORY.** Every commit after `3d92516` - the last pushed before the ruling - that changed a money path needs a `reviewed` row for the blob it left behind, so a state committed without its bar and overwritten later is still found. `-reviewsince=<commit>` may WIDEN the audit (an ancestor of the anchor only; anything else is refused and fails), never narrow it. One `git log`, one `git cat-file` per money blob.
+3. **THE BASELINE.** Both of the sentinel's digests need a `reviewed` row - the tier tool's second clause, *"REQUIRED if the sentinel moves"*: a family moves every figure the game books whatever files it touched, and it is the pass that reaches money booked under a name the pattern does not know.
+
+**There is no waiver row.** A comment-only edit to a money path changes its state and asks for its row like any other; §545's evidence header is the form for saying exactly what changed after the last reader, and who read it.
+
+**Beside the check:** `bar_tier.ps1` prints, under `review : REQUIRED`, whether the ledger holds a row for the state THIS commit carries (the index under `-Staged`, the blob under `-Commit`), in the check's own hash; `Tools/review_row.ps1` writes a row (`-Path`, or `-Baseline` with `-Digest`; `-AtCommit` for a blob in history; `-Grandfather` for the landing day only). `Reviews/README.md` says what an evidence file is: a header - what was reviewed, in what form, on which states, and what changed after the last reader - then the reviewers' reports VERBATIM, never edited after the fact.
+
+**The pattern gained two names:** `EnergyFleet` and `AiEnergyMinistry`. §539's defect lived in `EnergyFleet.cs`, which the pattern did not name - the review was owed only because the same commit happened to touch `EnergyMarket.cs`. The fleet decides what is dispatched and so what is billed. Strikeable; it is one line in the tool.
+
+### The ledger as it lands
+
+Thirty-one money-path files. **Four stand in a reviewed state:** `EnergyMarket.cs`, `EnergyFleet.cs` and `AiEnergyMinistry.cs` as `e44f41a` left them, on §544's two reports - recovered verbatim from the session's subagent transcripts and committed as `Reviews/2026-09-21_s544_f2d_ministry_and_fleet.md` - and `EnergyLedger.cs` as P-A left it, on §545's two. **Twenty-seven are grandfathered**, the ratchet tight at 27. The baseline `p6pa`'s two digests are reviewed (§545). A history row holds `EnergyLedger.cs` as `e44f41a` left it. P-A (`e0f5064`) is the first commit the history pass holds.
+
+### Proved
+
+| run | what | result |
+|---|---|---|
+| `guard_plain` | the clean tree | passes: 31 files, 4 reviewed, 27 grandfathered; 1 commit since the guard, 1 blob; 2 digests |
+| `guard_since` | `-reviewsince=8aacfdb`, the commit before §539's | **FAILS on `c544620` by name**, on both files it left unreviewed - *NO REVIEW ON RECORD: commit c544620 left …/EnergyFleet.cs at a0955697 … Its tier owed an adversarial review*, and the same for `EnergyMarket.cs` - and passes `e44f41a` and `e0f5064`. It would have held the day. |
+| `guard_mut` | a comment line appended to `TradeCosts.cs`; the baseline's 777 row removed; `-reviewsince=HEAD` | *UNREVIEWED …/TradeCosts.cs* and its grandfathered row *STALE*; *UNREVIEWED BASELINE: seed 777's digest 57f1e5cc*; the argument *refused as narrowing*; exit 1; files restored |
+| the tool | `bar_tier.ps1 -Commit e0f5064` / `-Commit c544620` | the first prints the row (*reviewed, s545*), the second *NO ROW FOR THIS STATE* twice - the tool's hashes are the check's |
+
+The three proof runs predate one line: the census below asked that the sentinel's text be read without comments, and the clean pass after that change, inside the bar, finds the same two digests.
+
+**The project's own census caught the new check on its first bar** (`bar_guard`, 42 of 44): `CommentImmunityCheck` found a source reader enrolled in neither of its lists. Right, and useful: a digest left in a comment - the old baseline's, kept as history - is not the declared baseline. The digest table is now read through the shared stripper and the check is enrolled; its state hashes read BYTES, comments included, by design, and the enrolment says so.
+
+### What it cannot see, stated in its doc
+
+- **A real review from a written one.** It turns a silent omission into a false statement in the record, with a report committed beside it. That is all a check can do, and it is the difference between §539 and a lie.
+- **Money booked under another name.** The pattern is names: `SimulationManager.cs`, where most of the book moves, is outside it, and so is `MacroSystem.cs`. The baseline pass is what reaches them - any change that moves the no-policy world needs a reviewed digest - and a change that moves money only under a player's hand (§539's own shape) is reached by neither. Widening the pattern is Elias's: it is the price of a review on every edit to the two largest files in the game.
+- **Data files, prep scripts and editor diagnostics** the tool also calls money paths: left to the tool's printed line and the baseline pass, and the tool now says so on their line.
+
+**Decisions taken, strikeable.**
+1. **State-keyed, not commit-keyed.** A commit cannot know its own hash before it exists, so the row names what the commit CARRIES. The history pass is the commit-keyed half, for what a bar never saw.
+2. **Grandfathering, under a ratchet, rather than a review of thirty-one files today.** The guard's claim is about changes from its landing on; the ratchet makes the unreviewed remainder a number that only falls.
+3. **The cheap bar, not a git hook.** Every commit touching `Assets/` already owes the cheap bar by the tier rule; a hook would be a second mechanism that a clone does not carry.
+4. **§544's reports recovered rather than re-run.** They exist; the evidence file says where they came from and that their line numbers predate the rework.
+
+**Bars.** Tier TOOLING: the cheap bar **43 of 44** on the committed tree, `AreaIconCoverageCheck` the standing named gap (`bar_guard2`, 44 s), the ledger reading `ReviewLedgerCheck.GRANDFATHERED 27 27 tight`. Review: skipped (tooling), and this sentence is the record saying so. Committed as `4403b33`. **From here every cheap bar reads 43 of 44.**
+## 547. D21 RE-CUT — PART 2 AGAINST THE ENERGY TAB AS IT NOW STANDS: the decision with its refusals and the mandate, the four instruments as dials, the laws chip, the ministry built and held; Part 1 word for word; one archive, verified both ways (2026-09-21)
+
+**The ruling** (Elias, 2026-09-21): *"Re-cut D21's Part 2 text against the tab as it now stands (dials, laws link, held ministry) and re-zip."* The morning's report had said it plainly: the archive of 2026-09-18 (§540) described a page with one decision and three promises - *the four instruments, the law category's reach and the ministry follow as their own items* - and all three landed on 2026-09-21 (§542, §543, §544), so its Part 2 was a description of a page that no longer exists.
+
+### What changed, and what did not
+
+- **Part 1 is untouched, word for word** - the five rows asked now (the Energy area's icon and ink; C2's three rows with their label-table figures; the pie's bar form), their frames the same files at the same digests. Nothing is re-asked and nothing is added to the ask.
+- **Part 2 is re-written whole** in `CLAUDE_DESIGN_ASSET_REQUEST.md`, still ARRIVING, still asking nothing:
+  - *Its first decision is on it, and it now works in play* - with the thing that is new on the plate since the first cut: **the queue's refusals as sentences on the technology's own line**, the steppers drawn disabled (hydro and other everywhere; Germany's nuclear *CLOSED BY LAW · A BUILT MW WOULD NOT RUN*; France's and Italy's coal *THE RECORD'S FUEL GROUPS DO NOT HOLD THESE PLANTS*; Sweden's coal and gas *THE ZONES CLEAR WITHOUT A FOSSIL FLEET · NOTHING WOULD MOVE* - in Sweden four of the plate's seven lines are refusals). Each string was read off `EnergyFleet.CannotOrderWhy`, not remembered.
+  - **The mandate under the queue** - the citation line, the statute's figures against the fleet and the queue, the closing line that says an AI state's ministry answers its own with orders like these and that this is HELD; Poland BILLED, the USA nothing to answer. *The AI ministry is built and held: no order of its is on any page yet.*
+  - **The four instruments as dials** in the D13 slider-row family under S9's names, one draft with the Sectors page and one bill; two of the four reach nothing in the energy layer and their readout rows say so as ABSENT, in place.
+  - **The laws chip** with the line saying what it opens and what it will find.
+  - **What is still to come before the composition is asked:** a capacity on the connection queue (F2e), the capital cost when IRENA's costs land, the ministry's orders on an AI country's page once it is live.
+  - **One fact for the composition, stated and not asked:** the page's order is the BUILD order, not a composed one - the decisions sit mid-page between readouts and the dials at its foot, under the readout rows that have carried their four names since EN-6.
+- **The head** says what it is: *STATUS 2026-09-21 (Part 2 re-cut against the tab as it now stands; Part 1 stands as asked on 2026-09-18)*.
+- **The frames.** Part 2's six frames of the first cut are replaced by eleven from the films of the P-A tree (`filmpa3_1280` Sweden, `filmpa3_2560` Germany - §545's, on a tree whose UI is `e44f41a`'s untouched): the tab's middle, the decision at rest and with one order placed, Germany's decision at 2560 with nuclear refused and its three statutes, the water and the bridges, the readout rows with PROVENANCE open, the laws chip at rest and arrived, the dials at rest, held (the range caption in the band) and at 2560. Part 1's ten frames are the first cut's.
+- **`SEND_PACKAGE.md`** is regenerated by the same generator with the re-cut applied (`make_d21v3.pl`, run last, after every document edit of the pass): its title says RE-CUT, its Part 2 paragraph is the new one, its closing list tells Design that the first cut's Part 2 is superseded whole and its Part 1 stands word for word.
+- **E-41** is re-worded in `ERRANDS.md`: the same one file at the same path, and *if the 2026-09-18 archive was already uploaded, upload this one over it*.
+
+### The archive
+
+`AssetPackArchive/D21_ask.zip`, cut on §537's route (`cut_d21_zip.pl`): every row of `SEND_PACKAGE.md` copied into a staging folder and verified against its recorded digest and byte count AS IT IS COPIED; `MANIFEST.sha256` written from the copies; the archive written; then extracted fresh and every manifest line re-checked, and `sha256sum -c` run in the extracted folder. The counts - rows matched on the way in, files extracted and lines OK on the way out, the archive's size and digest - are in the cut's log (`logs/zip_d21ask.out`) and in the records commit's message, since the archive carries this record and cannot carry its own digest. The archive directory is not tracked; the sheet is.
+
+**Sending stays Elias's** (E-41). Tier DOCUMENTS; the document bar is the records commit's.
+## 548. THE SECOND RULING OF 2026-09-21, INSTALLED — FT-10's three families in their order, the ministry held behind its first prerequisite (F2e, the connection queue's capacity, filed), PF-4 filed, the standing notes re-cut (2026-09-21)
+
+**The ruling, whole** (Elias, 2026-09-21): *"FT-10 ruled: P-A first as this pass's family, P-B second as the next, P-A′ third as a ruling on EN-4 — the levy rule reads the support share only, not the whole energy line. The FT-10 sentinel's ceilings lower in P-A's own commit, proved by mutation. The ministry stays held; the connection cap is its first prerequisite and its own item. A process guard: a commit whose tier owed an adversarial review and got none fails the bar — §539 shipped a static-table-across-worlds defect because the rule was written and not enforced. Re-cut D21's Part 2 text against the tab as it now stands (dials, laws link, held ministry) and re-zip. One commit per item, one report."*
+
+What each clause became: P-A is §545 (`e0f5064`); the guard is §546 (`4403b33`); the re-cut is §547. This section is the rest - the rows.
+
+- **FT-10's row** (`POLISIM_FEATURE_LIST.md`) is re-cut as RULED: P-A LANDED with its record and commit; **P-B NEXT**, the next pass's family (Sweden's water value in the seed's prices; Sweden alone moves; Sweden's six cells wait on it); **P-A′ THIRD**, ruled as a ruling on EN-4 - *the levy rule reads the support share only, not the whole energy line* - which needs the support share of each country's energy line from a source before it can land (France's and Sweden's K are the whole line over a small levy). What stands after all three is the rule's own bounded answer to a ministry's cut, recorded as such.
+- **F2e - the connection queue's capacity - is filed, OPEN, not built.** The ruling made it *its own item* and named no pass for it; I read that as a row, not as this pass's work, and say so here so it can be struck. §544 measured the need (the queue accepts an order of any size; Germany's held ministry opens with a single year's order nearly the size of the country's whole wind fleet) and named the sourced candidate for Germany (the EEG's own tender volumes); the other five need theirs or a BILLED row; the player's orders pass through the same queue, so the cap is the player's too. The ministry's flip stays its own BASELINE family, after F2e and after FT-10's three.
+- **PF-4 is filed** - §545's first reader's finding on §542's captions: *Retail intervention*'s ten lines promise a levy floor the dial cannot reach in Italy and Poland and reach it a few points above neutral in Sweden and France. One catalog for four stacks whose seed levies differ by two orders of magnitude; `RangeCaptionCheck` holds the sign, on one country. Its own item.
+- **The working discipline's review clause** gains its enforcement sentence (§546).
+- **`CLAUDE.md`'s notes of the day** are re-cut: FT-10's note says P-A landed, that ONLY AI-GOVERNED BOOKS change (a player's driverless path rides prices alone), eleven cells with their causes; the money-path note says the bar enforces it and how a row is written; and the standing figure for the cheap bar is 43 of 44.
+- **Owed before Elias next plays, whichever version stands:** `PlayProtocolStaging.Run` - the staged play-protocol save on disk is format 19, refused since §538's bump to 20 and now two behind (CL-4 waits on the play; both of §545's readers noticed).
