@@ -22,6 +22,10 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class RangeCaptionCheck
     {
+        /// <summary>CONVENTION (PF-4, §554): the words by which a Retail-intervention line would PROMISE A FLOOR - false wherever the full dial leaves levy standing.</summary>
+        private static readonly Regex FloorPromise = new Regex("\\b(floor|nothing|none is left)\\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        /// <summary>CONVENTION (PF-4, §554): the words by which a line above neutral ADMITS the levy may already be gone - owed wherever a levied country's is, at the band's lower edge.</summary>
+        private static readonly Regex GoneAdmitted = new Regex("\\bgone\\b|past the levy", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex DialCall = new Regex("(?:DrawDialRow|DrawRangeCaption)\\(\\s*\"([^\"]+)\"", RegexOptions.Compiled);
 
         public static void Run()
@@ -75,6 +79,7 @@ namespace PoliSim.EditorTools
                 sb.Append(string.Format("    {0,-36} {1,-32} {2,6} {3,6}  {4}\n", dial.Key, dial.Stat, modelSign.ToString("+0;-0;0"), dial.RiseSign.ToString("+0;-0;0"), summary));
             }
             sb.Append($"    {dials} dial(s) in the catalog, {drawn.Count} drawn by GameController.\n");
+            RetailReach(failures, sb);
 
             if (failures.Count == 0)
             {
@@ -88,6 +93,48 @@ namespace PoliSim.EditorTools
                 foreach (string f in failures) { sb.Append("    ").Append(f).Append('\n'); }
                 Debug.LogError(sb.ToString());
                 CheckExit.Finish(1);
+            }
+        }
+
+        /// <summary>
+        /// PF-4 (2026-09-21, §554): RETAIL INTERVENTION'S LINES AGAINST THE DIAL'S REACH, on every levied country's book. The sign test above reads one country; the defect it missed
+        /// was a PROMISE: *the levy at its floor* where the full dial leaves most of the levy standing (Italy, Poland), and lines describing a falling levy where it was gone a few
+        /// points above neutral (Sweden, France). For each country with an energy line and a policy levy the dial's cost at 50, 60 … 100 is stood on the line the way
+        /// SimulationManager composes it (the tracker and the line together) and the book's levy scale read: (1) where ANY country's levy still stands at the top of the dial, no
+        /// line above neutral may promise a floor; (2) where ANY country's levy is already gone at a band's lower edge, that band's line must admit it.
+        /// </summary>
+        private static void RetailReach(List<string> failures, StringBuilder sb)
+        {
+            if (!RangeCaptions.TryGet("Retail intervention", out RangeCaptions.Dial dial) || dial.Bands == null || dial.Bands.Length != 10) { return; }   // its absence is the coverage pass's failure
+            sb.Append("\n    RETAIL INTERVENTION'S REACH (PF-4): the levy scale with the dial's cost standing, per levied country\n");
+            PoliSim.Data.World world = PoliSim.Data.WorldFactory.CreateDefault();
+            var goneAt = new List<string>[10]; var standsAtTop = new List<string>(); int levied = 0;
+            for (int i = 0; i < 10; i++) { goneAt[i] = new List<string>(); }
+            foreach (PoliSim.Data.Country c in world.Countries)
+            {
+                PoliSim.Data.SpendingLine line = SectorCouplings.EnergyLine(c);
+                if (line == null || !EnergyLedger.HasPolicyLevy(c.Id)) { continue; }
+                levied++;
+                EnergyMarket.Result r = EnergyMarket.ClearAtSeed(c.Id);
+                float keptAmount = line.Amount, keptApplied = c.AppliedEnergySupportCost;
+                var scale = new double[11];
+                for (int k = 5; k <= 10; k++)
+                {
+                    float cost = SectorCouplings.SupportCost(c.State.NominalGdp, k * 10f, SectorCouplings.NeutralDialLevel, SectorCouplings.NeutralDialLevel);
+                    line.Amount = keptAmount + cost; c.AppliedEnergySupportCost = keptApplied + cost;
+                    scale[k] = EnergyLedger.Compute(c, r, 1.0, 0.0).LevyScale;
+                }
+                line.Amount = keptAmount; c.AppliedEnergySupportCost = keptApplied;
+                for (int band = 5; band <= 9; band++) { if (scale[band] <= 0.0) { goneAt[band].Add(c.Id.ToString()); } }   // band b holds (10b, 10b + 10]: its lower edge is the dial at 10b
+                if (scale[10] > 0.0) { standsAtTop.Add(c.Id.ToString()); }
+                sb.Append(string.Format(System.Globalization.CultureInfo.InvariantCulture, "    {0,-8} dial 50: {1:0.###} · 60: {2:0.###} · 70: {3:0.###} · 80: {4:0.###} · 90: {5:0.###} · 100: {6:0.###}\n", c.Id, scale[5], scale[6], scale[7], scale[8], scale[9], scale[10]));
+            }
+            if (levied == 0) { failures.Add("'Retail intervention': no country carries an energy line and a policy levy - the reach pass verified NOTHING"); return; }
+            for (int band = 5; band <= 9; band++)
+            {
+                string text = dial.Bands[band].Line ?? string.Empty;
+                if (standsAtTop.Count > 0 && FloorPromise.IsMatch(text)) { failures.Add($"'Retail intervention' band {band} ('{dial.Bands[band].Name}') promises a floor - \"{text}\" - and the full dial leaves levy standing in {string.Join(", ", standsAtTop)}"); }
+                if (goneAt[band].Count > 0 && !GoneAdmitted.IsMatch(text)) { failures.Add($"'Retail intervention' band {band} ('{dial.Bands[band].Name}') speaks of a levy still falling - \"{text}\" - and at the band's lower edge it is already gone in {string.Join(", ", goneAt[band])}"); }
             }
         }
 

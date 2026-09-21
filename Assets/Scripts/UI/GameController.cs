@@ -11240,7 +11240,9 @@ namespace PoliSim.UI
                 // (SC-1: the tracker carries the whole cost outside the line's own range, short of it only where a cut would take the line below zero)
                 string carried = UiFormat.Money(_playerCountry.AppliedEnergySupportCost, MoneyUnit.Billions);
                 string subsidy = !energyLine ? "No energy line in this budget: the subsidy's cost lands with the other sectors' support"
-                    : EnergyLedger.HasPolicyLevy(_playerCountry.Id) ? $"The energy line carries {carried}/yr of the subsidy, displacing the policy levy one for one until none is left"
+                    : EnergyLedger.HasPolicyLevy(_playerCountry.Id) ? (_playerCountry.AppliedEnergySupportCost < 0f   // PF-4: under neutral the line gives support BACK, and the levy takes it up
+                        ? $"The energy line carries {carried}/yr of the subsidy - support given back, which the policy levy takes up one for one"
+                        : $"The energy line carries {carried}/yr of the subsidy, displacing the policy levy one for one until none is left")
                     : $"The energy line carries {carried}/yr of the subsidy - no policy levy in the retail price to displace, so no retail effect";
                 DrawColoredLabel(subsidy + " · regulation below its seeded level moves supply margin from industry to households", _labelStyle, PoliSimTheme.TextMuted);
                 if (Event.current.type == EventType.Repaint) { _energySectorCostLastArea = GUILayoutUtility.GetLastRect(); }

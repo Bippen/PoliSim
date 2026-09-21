@@ -561,10 +561,16 @@ namespace PoliSim.Testing
                             RangeCaptionPresenter.Reset();
                             RangeCaptionPresenter.ClockOverride = 0f;   // on-drag: the caption at full ink, as the Sectors page's own caption captures hold it (P4-B2)
                             regulation[SectorType.Energy] = Mathf.Max(0f, standingRegulation - 15f);
+                            // PF-4 (§554): the Subsidy dial dragged in the same frame - *Retail intervention*'s caption (the sector's own *Subsidy* where no levy is reached) had never been
+                            // on a film; sixty-five is the band whose line admits a levy already gone, the longest of the ten
+                            var subsidy = controller.GetType().GetField("_sectorSubsidyInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SectorType, float>;
+                            float standingSubsidy = 0f; bool subsidyDragged = subsidy != null && subsidy.TryGetValue(SectorType.Energy, out standingSubsidy);
+                            if (subsidyDragged) { subsidy[SectorType.Energy] = 65f; } else { Debug.LogError($"SHOT: the Energy sector's subsidy draft was never written - {energyStem}_instrument_dials_dragged films one caption, not two."); }
                             yield return Settle();
                             yield return Settle();
                             yield return Capture(energyStem + "_instrument_dials_dragged");
                             regulation[SectorType.Energy] = standingRegulation;
+                            if (subsidyDragged) { subsidy[SectorType.Energy] = standingSubsidy; }
                             RangeCaptionPresenter.ClockOverride = null;
                             RangeCaptionPresenter.Reset();
                             yield return Settle();

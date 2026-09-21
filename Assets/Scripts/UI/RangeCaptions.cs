@@ -302,18 +302,22 @@ namespace PoliSim.UI
             // each speaking to what the instrument reaches in the energy layer. Same ranges, same drafts, same save keys as the sector's rows above.
             // Retail intervention = the Subsidy dial's money side: the budget's energy line rises with it and the levy is cut one for one (EnergyLedger.Compute's
             // LevyScale falls as the line rises) - the stat is the levy on the bill, and it FALLS as the dial rises. Drawn only where the stack carries a levy.
+            // PF-4 (2026-09-21, §554): THE LINES PROMISE A DIRECTION, NEVER A FLOOR. The dial's whole cost is a fixed share of GDP and the four seeded levies differ by two orders of
+            // magnitude: the full dial leaves most of Italy's and Poland's levy standing and takes Sweden's and France's whole levy a few points above neutral. One catalog serves
+            // four stacks, so a line above neutral that can stand where the levy is already gone SAYS SO ("or is gone"), none names a floor, and each is short enough to DRAW between the end-names at 1280 (some sixty characters of the caption face; the band's NAME drops first, by P6-4's rule, and does on most of these) - RangeCaptionCheck holds both to
+            // every levied country's book.
             { "Retail intervention", new Dial("Retail intervention", "the levy on the bill", -1, 0.5f, new[]
             {
-                B("Hands off", "No support on the line. The levy carries the scheme.", +1),
-                B("Token", "A gesture on the line. The levy does the lifting.", +1),
+                B("Hands off", "The least the dial gives. The levy carries more.", +1),
+                B("Token", "A gesture on the line. More of it goes on the bill.", +1),
                 B("Sparse", "Below custom. A little more of the scheme on the bill.", +1),
                 B("Thin", "The line gives less. Households pay it per kilowatt-hour.", +1),
                 B("Customary", "The seeded support. The levy stands as found.", 0),
                 B("Cushioned", "The treasury takes a slice. The levy eases.", -1),
-                B("Subsidised", "The budget pays what the bill did. The levy falls.", -1),
-                B("Generous", "Most of the scheme is the taxpayer's. The levy thins.", -1),
-                B("Lavish", "The line swallows the scheme. The levy nears nothing.", -1),
-                B("On the house", "The levy at its floor. Support is a budget matter.", -1),
+                B("Subsidised", "The budget takes it over. The levy falls, or is gone.", -1),
+                B("Generous", "The taxpayer takes more. The levy thins, or is gone.", -1),
+                B("Lavish", "Nearly all the dial gives. The levy falls, or is gone.", -1),
+                B("On the house", "The whole dial. Past the levy, only taxpayers pay.", -1),
             }) },
             // Market liberalisation = the Regulation dial read from the other end (S9: "0 light - 100 heavy inverted"): below the seeded anchor the supply margin
             // moves from industry onto households (EnergyLedger.LiberalisationShiftPerKwh, Steiner's finding), above it the other way - the stat is industry's
