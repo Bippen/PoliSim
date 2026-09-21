@@ -55,6 +55,9 @@ namespace PoliSim.EditorTools
             // §419 (2026-09-09): D18's inventory counts a delivered sprite as REACHED when a source file
             // names its stem, so a stem mentioned in a comment would report art as wired that nothing loads.
             "D18Inventory",
+            // §546 (2026-09-21): the review ledger reads the sentinel's digest table out of its source - a digest surviving in a comment is history, not the
+            // declared baseline. (Its file-state hashes read BYTES, comments included, by design: a state is the whole file.)
+            "ReviewLedgerCheck",
         };
 
         /// <summary>

@@ -178,6 +178,7 @@ namespace PoliSim.EditorTools
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),
             ("UpstreamCheck", UpstreamCheck.Run),
+            ("ReviewLedgerCheck", ReviewLedgerCheck.Run),   // s546 (2026-09-21): a money path's state, a commit's blob since the guard and the baseline's digest each carry the review that ran - s539 shipped a defect because the rule was written and not enforced
             ("DialLabelCheck", DialLabelCheck.Run),   // P3-C3 (2026-09-03): every dial's left label, right label and range agree (the ends in the trailing's order, the range's own numbers).
                 ("AudioCueCoverageCheck", PoliSim.EditorTools.AudioCueCoverageCheck.Run),
                 ("AudioInventoryCheck", PoliSim.EditorTools.AudioInventoryCheck.Run),

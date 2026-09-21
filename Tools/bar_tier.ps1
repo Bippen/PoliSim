@@ -6,6 +6,11 @@ param([switch]$Staged, [string]$Commit = '', [string]$Root = '')
 # It prints every tier the paths touch, the paths that decided each, the runs owed per item (the union of the tiers
 # touched) and at the track's close, and whether the adversarial review runs. It decides nothing by itself: the
 # record states what the commit was barred at.
+# THE REVIEW IS ENFORCED SINCE 2026-09-21 (COMPLETED.md s546; c544620 touched a money path, this tool said REQUIRED,
+# no review ran and a defect shipped): under `review : REQUIRED` it prints, per money path, whether
+# Tools/review_ledger.tsv holds a row for the state this commit carries. The gate is the cheap bar's
+# ReviewLedgerCheck, which reads `$money` and `$moneyRoots` OUT OF THIS FILE - the two lines below are the
+# definition of a money path for both. Add a row with Tools/review_row.ps1.
 # ASCII only: PowerShell 5.1 reads a BOM-less script as ANSI.
 
 $ErrorActionPreference = 'Stop'
@@ -29,7 +34,10 @@ try {
   foreach ($c in $simOnly) { $f = Join-Path $Root "Assets/Editor/$c.cs"; if (Test-Path $f) { $simSources += [IO.File]::ReadAllText($f) } }
 
   # The money paths: a file whose name says it books, taxes, spends, borrows, transfers or bills.
-  $money = 'Fiscal|Budget|Tax|Spending|Debt|Ledger|SovereignWealthFund|Welfare|Pension|EnergyMarket|EnergyPassThrough|AiFinanceMinistry|TradeCosts|Transfer|CarbonRate|ProgramBill|PortfolioEffectiveness|EconomyState'
+  $money = 'Fiscal|Budget|Tax|Spending|Debt|Ledger|SovereignWealthFund|Welfare|Pension|EnergyMarket|EnergyPassThrough|AiFinanceMinistry|TradeCosts|Transfer|CarbonRate|ProgramBill|PortfolioEffectiveness|EconomyState|EnergyFleet|AiEnergyMinistry'   # s546: the fleet decides what is dispatched and so what is billed - s539's defect lived in EnergyFleet.cs
+  # The roots the ledger reaches: runtime source. Data files, prep scripts and editor diagnostics with a money name stay REQUIRED on the
+  # line below and are reached by the ledger's BASELINE pass (a moved sentinel needs a reviewed digest), not by a row of their own.
+  $moneyRoots = '^Assets/Scripts/(Simulation|Data|Elections|Persistence)/'
 
   $ignored = @(); $docs = @(); $ui = @(); $sim = @(); $tooling = @(); $moneyHits = @()
   foreach ($p in $paths) {
@@ -87,7 +95,25 @@ try {
   "  per item : $($perItem -join ' + ')"
   "  at close : $(if ($atClose.Count) { $atClose -join '; ' } else { '-' })"
   if ($touched -contains 'SIMULATION') {
-    if ($moneyHits.Count) { "  review   : REQUIRED - money paths: $($moneyHits -join ', ')" }
+    if ($moneyHits.Count) {
+      "  review   : REQUIRED - money paths: $($moneyHits -join ', ')"
+      $ledgerRows = @(); $ledgerFile = Join-Path $Root 'Tools/review_ledger.tsv'
+      if (Test-Path $ledgerFile) { $ledgerRows = @([IO.File]::ReadAllLines($ledgerFile) | Where-Object { $_ -and $_[0] -ne '#' } | ForEach-Object { ,($_.Split("`t")) }) }
+      foreach ($m in $moneyHits) {
+        if ($m -notmatch $moneyRoots -or $m -notmatch '\.cs$') { "    ledger   : $m - outside the ledger's rows (not runtime source under the money roots); the line above stands, and the baseline pass reaches it"; continue }
+        $bytes = $null; $tmp = [IO.Path]::GetTempFileName()
+        try {
+          if ($Commit) { cmd /c "git show `"${Commit}:$m`" > `"$tmp`" 2>nul" } elseif ($Staged) { cmd /c "git show `":$m`" > `"$tmp`" 2>nul" } else { $LASTEXITCODE = 0; if (Test-Path (Join-Path $Root $m)) { Copy-Item -Force (Join-Path $Root $m) $tmp } else { $LASTEXITCODE = 1 } }
+          if ($LASTEXITCODE -eq 0) { $bytes = [IO.File]::ReadAllBytes($tmp) }
+        } finally { Remove-Item -Force $tmp -ErrorAction SilentlyContinue }
+        if ($null -eq $bytes) { "    ledger   : $m - deleted by this change; nothing left to review"; continue }
+        $latin = [Text.Encoding]::GetEncoding(28591); $lf = $latin.GetBytes($latin.GetString($bytes).Replace("`r", ''))
+        $hasher = [Security.Cryptography.SHA256]::Create(); try { $state = -join ($hasher.ComputeHash($lf) | ForEach-Object { $_.ToString('x2') }) } finally { $hasher.Dispose() }
+        $row = $ledgerRows | Where-Object { $_.Length -ge 8 -and $_[0] -eq 'file' -and $_[1] -eq $m -and $_[2] -eq $state } | Select-Object -First 1
+        if ($row) { "    ledger   : $m at $($state.Substring(0, 8)) - $($row[3]), $($row[5]), $($row[6])" }
+        else { "    ledger   : $m at $($state.Substring(0, 8)) - NO ROW FOR THIS STATE. ReviewLedgerCheck fails the cheap bar until the review has run, its report is under Reviews/ and Tools/review_row.ps1 has added the row" }
+      }
+    }
     else { '  review   : REQUIRED if the sentinel moves (a BASELINE family) or the change books money; otherwise skipped - the record says which' }
   }
   else { "  review   : skipped ($(($touched | ForEach-Object { $_.ToLowerInvariant() }) -join ', '))" }
