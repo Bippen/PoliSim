@@ -169,7 +169,7 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.Infrastructure, Hex(0x3E7480) },
             { UiPalette.SystemArea.SovereignWealth, Hex(0x85643A) },
             { UiPalette.SystemArea.Global, Hex(0x47708E) },      // D6 (2026-08-28): #5C87A8 → #47708E, with UiPalette's on-paper entry
-            { UiPalette.SystemArea.Energy, Hex(0x62579F) }       // P6-F1 (2026-09-17): the SECTORS ink as a stated stand-in until Design assigns the area its own (D21 row 1)
+            { UiPalette.SystemArea.Energy, Hex(0x566217) }       // board 16a's ink (D21 row 1, §556), with UiPalette's on-paper entry; the Sectors stand-in until 2026-09-21
         };
 
         /// <summary>
@@ -191,7 +191,7 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.Infrastructure, Hex(0x7BA3AE) },
             { UiPalette.SystemArea.SovereignWealth, Hex(0xB0925F) },
             { UiPalette.SystemArea.Global, Hex(0x8FAEC7) },
-            { UiPalette.SystemArea.Energy, Hex(0x9288C2) }       // P6-F1: the Sectors lifted weight, the same stand-in (D21 row 1)
+            { UiPalette.SystemArea.Energy, Hex(0x8A9648) }       // board 16a's lift (D21 row 1, §556): 4.96:1 on the rail's desk ground, 5.33 on the desk
         };
 
         /// <summary>
@@ -583,7 +583,10 @@ namespace PoliSim.UI
             { UiPalette.SystemArea.CrimeJustice, Hex(0x8E4A40) },
             { UiPalette.SystemArea.Sectors, Hex(0x5B5187) },
             { UiPalette.SystemArea.Global, Hex(0x4E7291) },
-            { UiPalette.SystemArea.Energy, Hex(0x5B5187) }       // P6-F1: the Sectors swatch tint, the same stand-in, so the ENERGY glyph sits at its neighbours' weight
+            // Board 16a delivers no tint: *"the inactive swatch tint derives from ink as the other ten do; nothing is authored for it"*. DERIVED here by this table's own stated
+            // rule - the ink #566217 at oklch chroma ×0.78, lightness ×0.97 - computed, not chosen (§556 keeps the arithmetic). ⚠ The six rows above are pass 3's SNAPPED values
+            // and the rule does not reproduce them to the unit (Political's predates D6's darkening of its ink): a drift the sitting package puts before Design.
+            { UiPalette.SystemArea.Energy, Hex(0x535D28) }
         };
 
         /// <summary>The inactive tab swatch's tint for an area - the snapped §A.3 value where one is delivered, the area ink otherwise.</summary>

@@ -407,7 +407,7 @@ namespace PoliSim.UI
             EnsureEnergyCache(country);
             EnergyMarket.Result r = _energyResult;
             EnergyLedger.Book book = _energyBook;
-            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Energy);   // P6-F1: the page carries its own area's ink (the Sectors ink as a stand-in until D21)
+            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Energy);   // P6-F1: the page carries its own area's ink (board 16a's, since §556)
             bool sweden = country.Id == CountryId.Sweden;
             bool usa = country.Id == CountryId.USA;
             string marketUnit = (usa ? "USD" : "EUR") + " PER MWh";

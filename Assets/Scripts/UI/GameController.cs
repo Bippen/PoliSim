@@ -4795,8 +4795,8 @@ namespace PoliSim.UI
             GUILayout.Space(RailGap());
             DrawRailNavCell("POLITICS", ConsolidatedTab.Politics, "icon_area_political", cell, cells);
             GUILayout.Space(RailGap());
-            // P6-F1 (2026-09-17): the ninth cell. ⚠ `icon_area_energy` is not on disk - the cell draws the caption's initial in the area's ink, by this
-            // rail's own missing-icon contract, until Design's icon lands (D21 row 1); AreaIconCoverageCheck names the gap on every bar meanwhile.
+            // P6-F1 (2026-09-17): the ninth cell. Its icon is board 16a's solid bolt, installed 2026-09-21 (§556); until then the cell drew the caption's initial by this
+            // rail's own missing-icon contract (DrawRailInitial, kept for the next area that arrives before its art).
             DrawRailNavCell("ENERGY", ConsolidatedTab.Energy, "icon_area_energy", cell, cells);
             GUILayout.Space(RailGap());
             DrawRailCampaignCell(cell, cells);   // C-R4b step 4a: present only while the player's campaign runs
@@ -4934,8 +4934,8 @@ namespace PoliSim.UI
             }
             else
             {
-                // P6-F1: the fallback, exercised for the first time (icon_area_energy is a named gap until
-                // Design's icon lands). Through LedgerRow.Cell the tab style brought the skin's button
+                // P6-F1: the fallback, exercised for the first time while icon_area_energy was a named gap (2026-09-17 to
+                // 2026-09-21, §556). Through LedgerRow.Cell the tab style brought the skin's button
                 // face and its padding with it - a 44 px box in a 21 px slot on every capture of the first
                 // F1 film - so the initial is a bare glyph fitted to the slot instead.
                 DrawRailInitial(slot, caption.Substring(0, 1), ink);
@@ -8084,7 +8084,7 @@ namespace PoliSim.UI
         /// (LABOR MARKET BILL draws SystemArea.Labor).</summary>
         private static UiPalette.SystemArea LawCategoryArea(LawCategory category)
         {
-            return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : category == LawCategory.FiscalFramework ? UiPalette.SystemArea.Fiscal : category == LawCategory.MonetaryRegime ? UiPalette.SystemArea.Political : category == LawCategory.ElectricityTax ? UiPalette.SystemArea.Sectors : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink, the framework the fiscal area's; EN-7b: the electricity tax the energy page's (the Sectors area)
+            return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : category == LawCategory.FiscalFramework ? UiPalette.SystemArea.Fiscal : category == LawCategory.MonetaryRegime ? UiPalette.SystemArea.Political : category == LawCategory.ElectricityTax ? UiPalette.SystemArea.Energy : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink, the framework the fiscal area's; EN-7b: the electricity tax the energy page's - the Energy area since its ink landed (§536's *not moved*, moved at §556)
         }
 
         /// <summary>The magnitude taxonomy's own four tiers (LawCatalog's class doc: MINOR +-3..6,

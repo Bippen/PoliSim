@@ -30,9 +30,9 @@ namespace PoliSim.UI
             SovereignWealth,
             /// <summary>The world map tab (Phase 5) - a cross-cutting overview, not owned by any one policy area, so it gets its own distinct hue rather than reusing Neutral or borrowing another area's.</summary>
             Global,
-            /// <summary>P6-F1 (2026-09-17, `COMPLETED.md` §536): the energy system's own area - DS-4b's "Rail cell: NO" overruled by Elias after play. ⚠ Its icon
-            /// (`icon_area_energy`) is a genuine asset gap on the D21 ask, and its ink is Design's too: until both land, the area borrows the Sectors ink as a stated
-            /// stand-in, and `AreaIconCoverageCheck` reports the icon MISSING on every bar by ruling - a named gap, never suppressed.</summary>
+            /// <summary>P6-F1 (2026-09-17, `COMPLETED.md` §536): the energy system's own area - DS-4b's "Rail cell: NO" overruled by Elias after play. Its icon
+            /// (`icon_area_energy`) and its ink are Design's, board 16a (D21 row 1), installed 2026-09-21 (§556): until then the area borrowed the Sectors ink as a
+            /// stated stand-in and `AreaIconCoverageCheck` named the missing icon on every bar.</summary>
             Energy
         }
 
@@ -136,7 +136,10 @@ namespace PoliSim.UI
             { SystemArea.Infrastructure, PoliSimTheme.Hex(0x3C6F7B) },  // slate - infrastructure
             { SystemArea.SovereignWealth, PoliSimTheme.Hex(0x826239) }, // bronze - sovereign wealth fund
             { SystemArea.Global, PoliSimTheme.Hex(0x456C89) },          // sky blue - world map overview
-            { SystemArea.Energy, PoliSimTheme.Hex(0x62579F) }           // P6-F1 (2026-09-17): the SECTORS indigo as a stated stand-in - the area's own ink is Design's, D21 row 1
+            // Board 16a (D21 row 1, RULED 2026-09-21: *Energy takes its own area ink, not Sectors'*), §556. The one empty sector of the wheel - oklch hue 118°, at the family's
+            // own lightness and chroma: the nearest area ink is Political, 34° away by the board's figures (33° recomputed from this table's hexes), four times the 8.7° floor;
+            // 5.03:1 on the rail's active tongue and 5.18 on the card (InkContrastCheck prints the card's on every run). The desk weight is PoliSimTheme's.
+            { SystemArea.Energy, PoliSimTheme.Hex(0x566217) }           // olive - the energy system
         };
 
         public static Color GetAreaColor(SystemArea area) => AreaColors[area];
