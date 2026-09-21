@@ -970,7 +970,7 @@ namespace PoliSim.UI
         {
             _taxRateInputs.Clear();
             _bracketRateInputs.Clear();
-            if (ui.BracketRateInputs != null) { foreach (KeyValuePair<int, float> kvp in ui.BracketRateInputs) { _bracketRateInputs[kvp.Key] = kvp.Value; } }
+            if (ui?.BracketRateInputs != null) { foreach (KeyValuePair<int, float> kvp in ui.BracketRateInputs) { _bracketRateInputs[kvp.Key] = kvp.Value; } }   // ⚠ `ui?.` - a batch-written save has NO UI layer (the doc above), and until §557 this one line read it bare: the play protocol's staged save threw here and the game said Load FAILED
             _welfareGenerosityInputs.Clear();
             _sectorSubsidyInputs.Clear();
             _sectorRegulationInputs.Clear();
