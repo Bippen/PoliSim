@@ -550,6 +550,32 @@ namespace PoliSim.Testing
                         else { Debug.LogError($"SHOT: the Energy sector's regulation draft was never written - {energyStem}_instrument_dials_dragged not filmed."); }
                     }
                     else { Debug.LogError($"SHOT: the instruments' dials were never laid out - {energyStem}_instrument_dials not filmed."); }
+                    // P6-F2c (2026-09-21, §543): the laws link on the tab, then the jump it makes - the three fields a click writes, written here, so the frame
+                    // is the Laws board on the electricity-tax filter as a player arriving from the Energy tab finds it; then back to the tab for the captures that follow
+                    var lawsLinkField = controller.GetType().GetField("_energyLawsLinkLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Rect lawsLink = lawsLinkField != null ? (Rect)lawsLinkField.GetValue(controller) : Rect.zero;
+                    if (lawsLink.height > 0f)
+                    {
+                        ResetScrolls(controller);
+                        yield return Settle();
+                        ScrollBy(controller, Mathf.Max(0f, lawsLink.y - UiScreen.Height * 0.55f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(energyStem + "_laws_link");
+                        SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
+                        SetEnumField(controller, "_policyLawsCategory", "Laws");
+                        SetEnumField(controller, "_lawBrowserFilter", "ElectricityTax");
+                        ResetScrolls(controller);
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(energyStem + "_laws_link_arrived");
+                        SetEnumField(controller, "_lawBrowserFilter", "All");
+                        SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
+                        SetEnumField(controller, "_consolidatedTab", "Energy");
+                        ResetScrolls(controller);
+                        yield return Settle();
+                    }
+                    else { Debug.LogError($"SHOT: the laws link was never laid out - {energyStem}_laws_link not filmed."); }
                     // EN-7a (2026-09-14): the instruments plate in PROVENANCE, where the chips that say what each instrument reaches draw
                     // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
                     _provenanceToRestore = DeskProvenance.On;

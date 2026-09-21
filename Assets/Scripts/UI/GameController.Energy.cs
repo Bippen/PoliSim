@@ -190,6 +190,65 @@ namespace PoliSim.UI
             DrawEnergyGapRow(x, lineY, pad, "Capital cost", "PER MW BY TECHNOLOGY · WHAT AN ORDER WOULD COST", EnergyFleet.CapexBill, billed: true);
         }
 
+        // ---- P6-F2c (2026-09-21, §543): the law category, reachable from the tab -----------------------------------------------------------
+
+        /// <summary>P6-F2c (§543): where the laws link was laid out last frame - the film scrolls to it.</summary>
+        private Rect _energyLawsLinkLastArea;
+
+        /// <summary>
+        /// The one law category that reaches the energy layer (EN-7b, §500: the electricity tax's statute per class) was reachable only by
+        /// knowing to open LAWS and pick its filter. This is the way there from the page that shows what those laws move: one faced control
+        /// under the instruments' rows that opens the Laws board with the electricity-tax filter set, and a line saying what it will find -
+        /// how many laws the category offers, how many stand enacted, how many are before Parliament. Navigation only: it writes the three
+        /// fields a player's own clicks would write (the tab, the sub-screen, the filter) and nothing else. Where the country has no national
+        /// statute (the USA) the laws are not offered, and the control is drawn disabled with that sentence - rendered, never omitted.
+        /// </summary>
+        private void DrawEnergyLawsLink(Country country)
+        {
+            bool offered = EnergyLayer.HasElectricityTax(country.Id);
+            int enacted = 0, pending = 0;
+            if (offered)
+            {
+                foreach (EnactedLaw law in country.EnactedLaws)
+                {
+                    LawDefinition definition = LawCatalog.GetById(law.LawId);
+                    if (definition != null && definition.Category == LawCategory.ElectricityTax) { enacted++; }
+                }
+                foreach (KeyValuePair<string, LawBill> bill in _simulationManager.GetPendingLawBills(PlayerCountryId))
+                {
+                    LawDefinition definition = LawCatalog.GetById(bill.Key);
+                    if (definition != null && definition.Category == LawCategory.ElectricityTax) { pending++; }
+                }
+            }
+
+            GUILayout.Space(StatsUnit(6f));
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextSecondary, true, TextAnchor.MiddleLeft);
+            GUIStyle chipCaption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter);
+            float lineHeight = Mathf.Ceil(DeskCaptionHeight(caption)) + StatsUnit(8f);
+            Rect row = GUILayoutUtility.GetRect(10f, lineHeight, GUILayout.ExpandWidth(true));
+            const string label = "THE ELECTRICITY TAX'S LAWS ▸";
+            float chipWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(label)).x) + StatsUnit(16f);
+            var chip = new Rect(row.x + StatsUnit(4f), row.y + StatsUnit(2f), chipWidth, row.height - StatsUnit(4f));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.Rule(new Rect(row.x, row.y, row.width, 1f), PoliSimTheme.RuleRow);
+                string line = offered
+                    ? string.Format(CultureInfo.InvariantCulture, "OPENS LAWS ON THIS CATEGORY · {0} OFFERED · {1} ENACTED · {2} BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER", ElectricityTaxLawCount, enacted, pending)
+                    : "NO NATIONAL ELECTRICITY EXCISE FOR " + country.Name.ToUpperInvariant() + " · THE LAWS ARE NOT OFFERED";
+                PoliSimWidgets.MeasuredLabel(new Rect(chip.xMax + StatsUnit(8f), row.y, Mathf.Max(10f, row.xMax - chip.xMax - StatsUnit(12f)), row.height), line, caption);
+                _energyLawsLinkLastArea = row;
+            }
+
+            if (DrawDeskChipButton(chip, label, chipCaption, false, !offered))
+            {
+                // what a player's own clicks would write, and nothing else: the LAWS tab, its Laws sub-screen, the category's filter
+                _consolidatedTab = ConsolidatedTab.PolicyLaws;
+                _policyLawsCategory = PolicyLawsCategory.Laws;
+                _lawBrowserFilter = LawBrowserFilter.ElectricityTax;
+                AudioDirector.Fire(AudioCue.FolderSwitch);
+            }
+        }
+
         // ---- P6-F2b (2026-09-21, §542): the four instruments as dials - the Energy sector's own, mapped and not doubled -------------------
 
         /// <summary>P6-F2b (§542): where the instruments' dials were laid out last frame - the film scrolls to them.</summary>
@@ -453,6 +512,7 @@ namespace PoliSim.UI
             }
             string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - FOUR OF THEM SET BELOW, THE SAME DRAFT AS THE SECTORS PAGE'S, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
             _energyInstrumentsLastArea = DrawPlateRows(instruments, areaInk, foot4, false, row => null);
+            DrawEnergyLawsLink(country);          // P6-F2c (§543): the one law category that reaches the layer, reachable from the rows its laws move
             DrawEnergyInstrumentDials(country);   // P6-F2b (§542): the four instruments as dials, under the rows that say what each reaches
         }
 
