@@ -6,7 +6,8 @@
 #   kind      file | baseline
 #   key       the file's path, or the sentinel's seed
 #   sha256    a file's state: SHA-256 of its bytes with every carriage return removed (working tree and blob are one state); a baseline: the sentinel's digest
-#   status    reviewed       - an adversarial review ran on this state; evidence is the reviewer's report under Reviews/, and it names the file (or the digest)
+#   status    reviewed       - an adversarial review ran on the CHANGE that left this state; evidence is the reviewer's report under Reviews/, and it names the file (or the digest).
+#                              Nothing here claims a file was audited WHOLE: a row says the last change to it was read by an independent reader, which is what s524's rule asks
 #             grandfathered  - the state the guard FOUND on 2026-09-21 and did not review; files only; the count is a ratchet (GrandfatheredCeiling) and only falls:
 #                              when such a file is edited, its new state needs a reviewed row, this row is removed and the ceiling lowered
 #   There is no waiver row. Reviewed rows are history and stay (the history pass looks up every commit since the guard). Add rows with Tools/review_row.ps1.
@@ -45,3 +46,5 @@ file	Assets/Scripts/Simulation/EnergyPassThrough.cs	687376765a27746b17b328b64f62
 file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	f667a63554796ab7b42f36f1e37694c633b0d5f504bfbb04ece6e4e297dfffe2	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Simulation/SovereignWealthFundSystem.cs	31a1049a924429f2447f94cdd171233491e50843d7ee29ca562a3e2a9732f7f1	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Simulation/TradeCosts.cs	d5610741e066a30a74804042e2e7f5c7066592b0ecd06c87515f88470194691e	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
+file	Assets/Scripts/Simulation/SimulationManager.cs	85c712fa89ab905cde07284a1ac35b9761c166c6463d5ebd00073ac58e391446	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	named into the pattern by ruling (s549); the state e0f5064 left - that commit changed one doc comment in it and both of its readers read the file; never audited whole
+file	Assets/Scripts/Simulation/SimulationManager.cs	8f39209bdb89fdeb69d64a1a22bd08a6657b5d4f64d49c3019a552b3d5b5241b	reviewed	2026-09-21	s544	Reviews/2026-09-21_s544_f2d_ministry_and_fleet.md	history: the blob e44f41a left (the landing loop at the top of the boundary, the preview's landing), superseded by P-A's comment
