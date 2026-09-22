@@ -96,7 +96,9 @@ namespace PoliSim.Elections
             var cabinet = new List<string>();
             for (int p = 0; p < parties.Count; p++)
             {
-                if ((result.Government.Cabinet & (1 << p)) != 0) { cabinet.Add(parties[p].Abbrev); }
+                // §575: the description is READ BY THE PLAYER (the election verdict's sentence) and by no lookup, so the parties are named as their own
+                // authority names them - the key would print Grune where the Bundeswahlleiter prints GRÜNE.
+                if ((result.Government.Cabinet & (1 << p)) != 0) { cabinet.Add(parties[p].ShortName); }
             }
             return new Formed(true, inCabinet, supports, declarationsSourced, string.Join("+", cabinet), null);
         }

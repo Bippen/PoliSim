@@ -123,7 +123,7 @@ namespace PoliSim.UI
                 foreach (PoliticalParty party in PartySystems.For(player.Id))
                 {
                     CompassPositions.Point? own = CompassPositions.Party(party);
-                    lines.Add(new LegendLine($"{party.Abbrev}  {(own.HasValue ? Pair(own.Value) : "no published pair")}", PoliSimTheme.TextSecondary, false, false));
+                    lines.Add(new LegendLine($"{party.ShortName}  {(own.HasValue ? Pair(own.Value) : "no published pair")}", PoliSimTheme.TextSecondary, false, false));
                 }
             }
             return lines;
@@ -254,10 +254,10 @@ namespace PoliSim.UI
                     Vector2 pixel = ToPlotPixel(plotRect, p.Value.LrEcon, p.Value.Galtan);
                     DrawCircle(new Rect(pixel.x - PartyDotDiameter * 0.5f, pixel.y - PartyDotDiameter * 0.5f, PartyDotDiameter, PartyDotDiameter),
                         _circleTexture, PoliSimTheme.TextSecondary);
-                    Vector2 tagSize = tagStyle.CalcSize(new GUIContent(party.Abbrev));
+                    Vector2 tagSize = tagStyle.CalcSize(new GUIContent(party.ShortName));   // §575: the tag is measured on what it draws
                     float tagX = Mathf.Clamp(pixel.x + PartyDotDiameter * 0.5f + 2f, plotRect.x, plotRect.xMax - tagSize.x);
                     float tagY = Mathf.Clamp(pixel.y - tagSize.y * 0.5f, plotRect.y, plotRect.yMax - tagSize.y);
-                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), party.Abbrev, tagStyle);
+                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), party.ShortName, tagStyle);
                 }
 
                 // 2. The sitting cabinet, a hollow ring in the country's ink.

@@ -1085,7 +1085,7 @@ namespace PoliSim.Simulation
                 // P3-A3: the alignment and the reasons travel with the side, so the ceremony prints the vote as it was.
                 foreach (PartyStance stance in StanceModel.Stances(country, concern))
                 {
-                    sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, Seats = stance.Seats, Side = stance.Side, Alignment = stance.Alignment, Reason = StanceModel.ReasonLine(stance), ReasonShort = StanceModel.ReasonShort(stance) });
+                    sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, ShortName = stance.Party.ShortName, Seats = stance.Seats, Side = stance.Side, Alignment = stance.Alignment, Reason = StanceModel.ReasonLine(stance), ReasonShort = StanceModel.ReasonShort(stance) });
                 }
             }
             country.Divisions.Append(title, date, alignment, passed, concern?.Direction ?? 0f, (int)axis, sides);

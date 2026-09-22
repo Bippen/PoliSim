@@ -182,7 +182,7 @@ namespace PoliSim.UI
         {
             bool inCabinet = false;
             if (cabinet != null) { foreach (string abbrev in cabinet) { if (abbrev == party.Abbrev) { inCabinet = true; break; } } }
-            return $"{party.Abbrev} — {party.Name} · {party.SeedSeats} SEATS{(inCabinet ? " · IN THE CABINET" : "")}";
+            return $"{party.ShortName} — {party.Name} · {party.SeedSeats} SEATS{(inCabinet ? " · IN THE CABINET" : "")}";
         }
 
         /// <summary>

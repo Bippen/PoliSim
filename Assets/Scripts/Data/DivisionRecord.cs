@@ -107,6 +107,9 @@ namespace PoliSim.Data
     public class DivisionSide
     {
         public string Abbrev;
+        /// <summary>§575: what the player READS - the election authority's own abbreviation (PoliticalParty.ShortName). The side is built from the
+        /// party, never persisted, so a null here is only an older in-memory record and the drawer falls back to <see cref="Abbrev"/>.</summary>
+        public string ShortName;
         public int Seats;
         public int Side;
         /// <summary>P3-A3 (2026-09-03): the stance model's alignment (−1 … +1) and the reasons that made it, as the vote was; null on a record that predates the model.</summary>

@@ -58,8 +58,14 @@ namespace PoliSim.Data
 
     public readonly struct PoliticalParty
     {
-        /// <summary>The abbreviation the country's own authority uses. The persisted key.</summary>
+        /// <summary>The abbreviation the country's own authority uses, FOLDED TO ASCII where the published one is not. THE PERSISTED KEY: ten save fields, every
+        /// harness fixture, the parliament seat tables, the ink and mark tables and every asset stem hold it (§566, and the hour `Grüne` arrived and took D18's
+        /// inventory red with it). It is never what a player reads - <see cref="ShortName"/> is.</summary>
         public readonly string Abbrev;
+        /// <summary>§575 (ruled 2026-09-22, §571 item 5): THE DISPLAY SHORT NAME - the election authority's own abbreviation as it publishes it, diacritics and all
+        /// (the Bundeswahlleiter's GRÜNE for Bündnis 90/Die Grünen). Every place a player READS an abbreviation takes this; every key, stem and lookup keeps
+        /// <see cref="Abbrev"/>. Defaults to the key, which is right for the fifty-two units whose authority publishes an ASCII abbreviation.</summary>
+        public readonly string ShortName;
         /// <summary>The name as published.</summary>
         public readonly string Name;
         /// <summary>CHES 2024 `lrecon`, 0 = left / more state, 10 = right / more market. `float.NaN` where no position is published for this unit — absence, never a centred stand-in.</summary>
@@ -184,13 +190,14 @@ namespace PoliSim.Data
             float lrGen = float.NaN, float environment = float.NaN, float regions = float.NaN,
             float spendVsTax = float.NaN, float immigratePolicy = float.NaN, float deregulation = float.NaN,
             float redistribution = float.NaN, float peopleVsElite = float.NaN, float antiEliteSalience = float.NaN,
-            float civLibLawOrder = float.NaN, float nationalism = float.NaN)
+            float civLibLawOrder = float.NaN, float nationalism = float.NaN, string shortName = null)
         {
             Environment = environment; Regions = regions; SpendVsTax = spendVsTax;
             ImmigratePolicy = immigratePolicy; Deregulation = deregulation;
             Redistribution = redistribution; PeopleVsElite = peopleVsElite; AntiEliteSalience = antiEliteSalience;
             CivLibLawOrder = civLibLawOrder; Nationalism = nationalism;
             Abbrev = abbrev;
+            ShortName = string.IsNullOrEmpty(shortName) ? abbrev : shortName;   // §575: the published abbreviation where it differs from the ASCII key
             Name = name;
             LrEcon = lrEcon;
             Galtan = galtan;
@@ -275,6 +282,16 @@ namespace PoliSim.Data
     /// </summary>
     public static class PartySystems
     {
+        /// <summary>§575: the DISPLAY short name for a key - the election authority's own abbreviation where it differs from the ASCII key
+        /// (<see cref="PoliticalParty.ShortName"/>). For the sites that hold a key and no party: the player's own party, a division's side. An
+        /// unknown key prints as itself, because a key the table does not hold is what the reader needs to see.</summary>
+        public static string ShortName(CountryId id, string abbrev)
+        {
+            if (string.IsNullOrEmpty(abbrev)) { return abbrev; }
+            foreach (PoliticalParty p in For(id)) { if (string.Equals(p.Abbrev, abbrev, System.StringComparison.Ordinal)) { return p.ShortName; } }
+            return abbrev;
+        }
+
         /// <summary>SOURCED chamber sizes: Riksdag 349, Bundestag 630 (2025), Assemblée nationale 577 (Art. LO119), Camera 400, Sejm 460, House 435. Each is stated in that country's returns file on disk.</summary>
         public static int ChamberSeats(CountryId id)
         {
@@ -339,7 +356,7 @@ namespace PoliSim.Data
             new PoliticalParty("CDU",   "Christlich Demokratische Union",   6.58f, 6.56f, 164, "mark_party_de_cdu", euPosition: 6.42f, lrGen: 6.58f, environment: 5.80f, regions: 3.67f, spendVsTax: 6.25f, immigratePolicy: 7.21f, deregulation: 6.17f, redistribution: 6.39f, peopleVsElite: 2.64f, antiEliteSalience: 2.75f, civLibLawOrder: 7.11f, nationalism: 5.86f),
             new PoliticalParty("AfD",   "Alternative für Deutschland",      7.63f, 9.39f, 152, "mark_party_de_afd", euPosition: 1.89f, lrGen: 9.26f, environment: 9.00f, regions: 4.25f, spendVsTax: 7.10f, immigratePolicy: 9.95f, deregulation: 6.60f, redistribution: 7.06f, peopleVsElite: 8.00f, antiEliteSalience: 9.00f, civLibLawOrder: 9.11f, nationalism: 9.57f),
             new PoliticalParty("SPD",   "Sozialdemokratische Partei",       3.47f, 3.61f, 120, "mark_party_de_spd", euPosition: 6.37f, lrGen: 3.47f, environment: 3.40f, regions: 6.33f, spendVsTax: 2.33f, immigratePolicy: 5.00f, deregulation: 3.33f, redistribution: 2.89f, peopleVsElite: 3.09f, antiEliteSalience: 2.38f, civLibLawOrder: 4.22f, nationalism: 3.29f),
-            new PoliticalParty("Grune", "Bündnis 90/Die Grünen",            3.37f, 1.61f,  85, "mark_party_de_grune", euPosition: 6.79f, lrGen: 3.06f, environment: 0.90f, regions: 5.67f, spendVsTax: 2.17f, immigratePolicy: 2.47f, deregulation: 3.50f, redistribution: 3.06f, peopleVsElite: 4.82f, antiEliteSalience: 2.50f, civLibLawOrder: 1.89f, nationalism: 1.29f),
+            new PoliticalParty("Grune", "Bündnis 90/Die Grünen",            3.37f, 1.61f,  85, "mark_party_de_grune", euPosition: 6.79f, lrGen: 3.06f, environment: 0.90f, regions: 5.67f, spendVsTax: 2.17f, immigratePolicy: 2.47f, deregulation: 3.50f, redistribution: 3.06f, peopleVsElite: 4.82f, antiEliteSalience: 2.50f, civLibLawOrder: 1.89f, nationalism: 1.29f, shortName: "GRÜNE"),
             new PoliticalParty("Linke", "Die Linke",                        1.37f, 2.29f,  64, "mark_party_de_linke", euPosition: 3.72f, lrGen: 1.42f, environment: 2.11f, regions: 7.00f, spendVsTax: 1.17f, immigratePolicy: 2.56f, deregulation: 1.50f, redistribution: 0.94f, peopleVsElite: 4.33f, antiEliteSalience: 6.88f, civLibLawOrder: 3.00f, nationalism: 1.71f),
             new PoliticalParty("CSU",   "Christlich-Soziale Union",         6.77f, 7.54f,  44, "mark_party_de_csu", euPosition: 5.50f, lrGen: 7.57f, environment: 6.43f, regions: 2.83f, spendVsTax: 5.88f, immigratePolicy: 7.54f, deregulation: 6.67f, redistribution: 6.93f, peopleVsElite: 3.88f, antiEliteSalience: 3.25f, civLibLawOrder: 7.57f, nationalism: 6.50f),
             new PoliticalParty("SSW",   "Südschleswigscher Wählerverband",  float.NaN, float.NaN, 1, "mark_party_de_ssw"),

@@ -5986,7 +5986,7 @@ namespace PoliSim.UI
                 : " (Formed on DERIVED red lines only - this country's declared refusals are not sourced.)";
             if (government.PlayerInCabinet)
             {
-                _pendingElectionVerdict = $"In office: the chamber formed a {government.CabinetDescription} government with {_playerCountry.PlayerPartyAbbrev} in the cabinet.{sourcedNote}";
+                _pendingElectionVerdict = $"In office: the chamber formed a {government.CabinetDescription} government with {PartySystems.ShortName(_playerCountry.Id, _playerCountry.PlayerPartyAbbrev)} in the cabinet.{sourcedNote}";
                 return;
             }
 
@@ -5994,7 +5994,7 @@ namespace PoliSim.UI
                 ? "supporting it from outside"      // Tidö's own distinction: support is not office.
                 : "in opposition";
             _pendingElectionVerdict = $"Out of office at year {_pendingElectionTurn}: the chamber formed a "
-                + $"{government.CabinetDescription} government with {_playerCountry.PlayerPartyAbbrev} {standing}.{sourcedNote}";
+                + $"{government.CabinetDescription} government with {PartySystems.ShortName(_playerCountry.Id, _playerCountry.PlayerPartyAbbrev)} {standing}.{sourcedNote}";
             _pendingElectionVerdictEndsGame = true;
         }
 

@@ -54,6 +54,10 @@ namespace PoliSim.UI
         private DocumentEntrance _entrance;
 
         /// <summary>Null when the document furniture is missing — the caller drops the ceremony and the resolution stays silent, which is exactly today's behaviour (degradation costs the ceremony, never correctness).</summary>
+        /// <summary>§575: what a division's side is CALLED on the sheet - the authority's own abbreviation, falling back to the key for a record built
+        /// before the side carried one.</summary>
+        private static string Shown(DivisionSide side) => string.IsNullOrEmpty(side.ShortName) ? side.Abbrev : side.ShortName;
+
         public static SigningScreen Build(Country country, DivisionRecord record, Action onSign)
         {
             Sprite frame = CanvasChrome.Sliced("ui_frame_ornate", 64f, 64f, 64f, 64f);
@@ -371,11 +375,11 @@ namespace PoliSim.UI
                 string verdict = side.Side > 0 ? "FOR" : side.Side < 0 ? "AGAINST" : "UNDECIDED";
                 Color ink = side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
                 string who;
-                if (group.Count == 1) { who = string.Format(CultureInfo.InvariantCulture, "{0} · {1}", side.Abbrev, side.Seats); }
+                if (group.Count == 1) { who = string.Format(CultureInfo.InvariantCulture, "{0} · {1}", Shown(side), side.Seats); }
                 else
                 {
                     var names = new List<string>(group.Count);
-                    foreach (DivisionSide member in group) { names.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}", member.Abbrev, member.Seats)); }
+                    foreach (DivisionSide member in group) { names.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}", Shown(member), member.Seats)); }
                     who = string.Join(", ", names);
                 }
                 PlateBody(stances, string.Format(CultureInfo.InvariantCulture, "{0} · {1}{2}", who, verdict,   // P3 close: "seats" dropped - the AGAINST rows wrapped at 1280
