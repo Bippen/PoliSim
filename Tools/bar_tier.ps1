@@ -38,11 +38,18 @@ try {
   # The roots the ledger reaches: runtime source. Data files, prep scripts and editor diagnostics with a money name stay REQUIRED on the
   # line below and are reached by the ledger's BASELINE pass (a moved sentinel needs a reviewed digest), not by a row of their own.
   $moneyRoots = '^Assets/Scripts/(Simulation|Data|Elections|Persistence)/'
+  # THE CANVAS SURFACES (s578, ruled 2026-09-22). A DRY FILM CANNOT CLAIM CANVAS TEXT: it runs without a window, so the real backbuffer is 640x480
+  # whatever geometry the run names, and the canvas-text guard says so and asserts nothing. Between 2026-08-28 and 2026-09-22 every film of these
+  # surfaces was dry or stopped before them, and the signing screen's stance captions clipped unseen for that whole time (PF-13). So a UI commit that
+  # touches one of these owes a REAL film of that surface, and every Canvas surface is filmed real at a track's close.
+  $canvas = 'SigningScreen|ElectionNightScreen|CountrySelectorScreen|CanvasChrome'
+  $canvasShots = @{ 'SigningScreen' = '89d_signing_entrance, 89e_signing_settled'; 'ElectionNightScreen' = '90*_electionnight_*'; 'CountrySelectorScreen' = '01_country_selector, 01g_party_picker, 01h_scenario_party_picker'; 'CanvasChrome' = 'every Canvas surface - it is the furniture all of them are built from' }
 
-  $ignored = @(); $docs = @(); $ui = @(); $sim = @(); $tooling = @(); $moneyHits = @()
+  $ignored = @(); $docs = @(); $ui = @(); $sim = @(); $tooling = @(); $moneyHits = @(); $canvasHits = @()
   foreach ($p in $paths) {
     $bare = $p -replace '\.meta$', ''
     $name = [IO.Path]::GetFileNameWithoutExtension($bare)
+    if ($name -match $canvas -and $canvasHits -notcontains $name) { $canvasHits += $name }   # s578: a Canvas surface, whatever tier its file lands in
     if ($p -match '^(Library|Logs|Temp|UserSettings|obj)/' -or $p -match '\.(slnx|sln|csproj)$') { $ignored += $p; continue }
     if ($p -match '\.md$') { $docs += $p; continue }
     $isSim = $false
@@ -105,6 +112,13 @@ try {
   if ($touched -contains 'UI') {
     "  film scope: REQUIRED - declare the sessions with Tools/film_scope.ps1 before the dry film; DryFilmScopeCheck fails the cheap bar on a film that ran a session its row does not name"
     "    last row : $lastScope"
+    if ($canvasHits.Count) {
+      "  canvas   : REQUIRED - a CANVAS surface moved: $($canvasHits -join ', ')"
+      "             A dry film measures nothing here (no window: the backbuffer is 640x480 and the canvas-text guard says it asserted nothing),"
+      "             so this item owes a REAL film that REACHES the surface - not -shotstop'd before it:"
+      foreach ($c in $canvasHits) { "               $c -> $($canvasShots[$c])" }
+      "             and at a track's close every Canvas surface is filmed real at 1280 AND 2560 (s578, PF-13)."
+    }
   }
   if ($touched -contains 'SIMULATION') {
     if ($moneyHits.Count) {
