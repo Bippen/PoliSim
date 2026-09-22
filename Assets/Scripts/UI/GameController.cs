@@ -4641,8 +4641,10 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         private const float RailIconGridUnits = 24f;
         private const float RailMarginUnits = 10f;
-        /// <summary>Board 1n's active cell: the area-ink wash's alpha; board 1n-r3 names the spine in grid units (3 u, RailSpineUnits).</summary>
-        private const float RailActiveWashAlpha = 0.12f;
+        /// <summary>Board 1n's active cell: the area-ink wash's alpha; board 1n-r3 names the spine in grid units (3 u, RailSpineUnits). §575 (flag (ii), ruled
+        /// 2026-09-21): 8 %, down from 12 % - Design measured the 7.5 px caption at 4.30:1 on the 12 % wash, under the text floor on Energy and on Sectors, and
+        /// ONE token lifts every active cell rather than six hand-set tints. Public so InkContrastCheck reads the token itself, never a copy of it.</summary>
+        public const float RailActiveWashAlpha = 0.08f;
         /// <summary>Board 1n-r2 (2026-08-28): the HOME cell's wash while the Desk is up - brass at 0.16 (`rgba(156,129,72,0.16)`), the spine brass at the nav cells' width.</summary>
         private const float RailHomeWashAlpha = 0.16f;
 
@@ -4652,7 +4654,7 @@ namespace PoliSim.UI
         // idiom (without it the rail is a strip; with it, a folder's edge) and it is the frame token
         // D10 row 8 asked for: not a hairline, not a shadow, the gap. The active tongue is the sheet's
         // own paper carried 2 px over the seam so no line stands between tab and document (the pulled-
-        // forward folder), with the area spine (3 u) on its left edge and the 12 % wash; an inactive
+        // forward folder), with the area spine (3 u) on its left edge and the 8 % wash (12 % until §575); an inactive
         // tongue is the same paper in the plate's recessed tint behind a 1 px hairline seam. No new
         // sprite: the tongue is the sheet's sliced paper (ui_panel_paper, clipped to the tongue so its
         // baked shadow does not fill the gap), the seam the hairline, the spine and wash the accent.
