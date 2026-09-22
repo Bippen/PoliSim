@@ -569,6 +569,56 @@ namespace PoliSim.EditorTools
         /// returns. The three simulation checks are NOT in it, for the cost reason recorded on
         /// <see cref="RunSimulationChecksFromMenu"/>.</para>
         /// </summary>
+        /// <summary>
+        /// §572 (2026-09-22, the efficiency review's loop change 1): **THE NAMED SUBSET** - the checks a caller names, in ONE launch,
+        /// under <c>-executeMethod PoliSim.EditorTools.CheckSuite.RunNamedBatch -checks=MetaTextCheck,CommentImmunityCheck</c>.
+        ///
+        /// <para><b>Why it exists.</b> Measured over the three passes of 2026-09-21/22: a cheap bar costs 44-55 s of which 23-26 s is
+        /// the checks and the rest is Unity's start, compile and domain reload; a full UI chain costs 9-12 minutes. Most of this
+        /// project's re-runs proved ONE guard - a widened pattern, a new enrolment, a stem rule - and paid the whole bar for it. The
+        /// subset pays the same fixed start and runs only what the caller is proving, so the do-check-do loop is seconds of work rather
+        /// than minutes.</para>
+        ///
+        /// <para>⚠ <b>It is not a substitute for the bar.</b> The tier's rule is unchanged: a commit runs its whole tier's bar. This is
+        /// the loop BEFORE the commit - the iteration that used to cost a chain each time. A name it does not recognise fails the run
+        /// rather than passing silently, because a subset that quietly ran nothing would be the worst of both.</para>
+        /// </summary>
+        public static void RunNamedBatch()
+        {
+            string arg = string.Empty;
+            foreach (string a in Environment.GetCommandLineArgs()) { if (a.StartsWith("-checks=", StringComparison.Ordinal)) { arg = a.Substring(8); } }
+            string[] wanted = arg.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+            if (wanted.Length == 0)
+            {
+                Debug.LogError("CHECKS: RunNamedBatch needs -checks=Name,Name - it ran nothing, which is not a pass.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            var table = new List<(string Name, Action Run)>();
+            var unknown = new List<string>();
+            foreach (string name in wanted)
+            {
+                string want = name.Trim();
+                bool found = false;
+                foreach ((string n, Action run) in Suite) { if (string.Equals(n, want, StringComparison.OrdinalIgnoreCase)) { table.Add((n, run)); found = true; break; } }
+                if (!found) { foreach ((string n, Action run) in Simulation) { if (string.Equals(n, want, StringComparison.OrdinalIgnoreCase)) { table.Add((n, run)); found = true; break; } } }
+                if (!found) { unknown.Add(want); }
+            }
+
+            if (unknown.Count > 0)
+            {
+                Debug.LogError($"CHECKS: RunNamedBatch does not know {string.Join(", ", unknown)} - the cheap and simulation tables are the enumeration.");
+                EditorApplication.Exit(1);
+                return;
+            }
+
+            Debug.Log($"CHECKS: running {table.Count} named - {string.Join(", ", table.ConvertAll(t => t.Name))} (a SUBSET, never a tier's bar).");
+            int worst = RunTable(table.ToArray(), "named", announceClean: true);
+            Debug.Log($"CHECKS: named subset exiting {worst}.");
+            EditorApplication.Exit(worst);
+        }
+
         public static void RunAllBatch()
         {
             var names = new string[Suite.Length];

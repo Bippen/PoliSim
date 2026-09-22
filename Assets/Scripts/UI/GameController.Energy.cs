@@ -546,7 +546,7 @@ namespace PoliSim.UI
             }
             else
             {
-                instruments.Add(new PlateRow("Retail intervention", "× THE SEEDED LEVIES · CUT ONE FOR ONE BY THE SUBSIDY", "THE ENERGY SECTOR'S SUBSIDY DIAL · THE BUDGET'S ENERGY LINE", PlateFigure((float)book.LevyScale, 2),
+                instruments.Add(new PlateRow("Retail intervention", "× THE SEEDED LEVIES · CUT ONE FOR ONE BY THE SUBSIDY", EnergyLedger.SupportShareNote(country.Id), PlateFigure((float)book.LevyScale, 2),
                     PlateBand.None, 0f, 0f, 0f, null, true, new[] { "SUBSIDY DIAL ▸ ENERGY LINE", "LEVY ▸ HOUSEHOLDS' PRICE" }, null, new[] { "DERIVED" }, false, chipsWithoutBand: true));
             }
             instruments.Add(new PlateRow("Market liberalisation", "POINTS BELOW THE SEED'S REGULATION · MARGIN TO HOUSEHOLDS", "THE ENERGY SECTOR'S REGULATION DIAL · STEINER, OECD 2000", PlateFigure((float)(EnergyLedger.LiberalisationGap(country) * 100.0), 0),

@@ -4393,7 +4393,7 @@ namespace PoliSim.Simulation
         /// <summary>
         /// EN-7a (2026-09-14): the Energy sector's SUBSIDY as retail intervention's money side - its cost (`SectorCouplings.EnergySupportCostTarget`)
         /// composed onto the book's energy line through <see cref="Country.AppliedEnergySupportCost"/>, the idiom the other dial costs use (§497's form:
-        /// the tracker rides the line's index). The line's move above its indexed path is what EN-4's levy rule reads (`EnergyLedger.Compute`), so the
+        /// the tracker rides the line's index). EN-4's levy rule reads this cost IN FULL and the line's own move at its sourced support share (`EnergyLedger.Compute`; FT-10 · P-A′, §553), so the
         /// subsidy takes the policy levy down one for one (the player's path rides prices alone, so FT-10 · P-A's share-of-path form is the same arithmetic here) and past the whole levy is taxpayers' support with no retail effect. Zero at the neutral 50;
         /// no line (Germany), nothing here - the subsidy's cost stays in the other sectors' target (`SectorCouplings.SupportCostTarget`).
         /// </summary>

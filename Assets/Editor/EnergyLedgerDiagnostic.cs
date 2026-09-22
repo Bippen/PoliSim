@@ -104,11 +104,13 @@ namespace PoliSim.EditorTools
                     line.Amount = seedAmount;
                     // one for one PRE-VAT: the levy is inside households' VAT base, so the bills move by the levy's change plus the VAT on households' share of it - and the state's VAT receipts move with them (the first run of this probe asserted the bills alone and read −1.11 for −1.00: the VAT on the levy)
                     double tol = 1e-6;
+                    double share = EnergyLedger.SupportShareOfEnergyLine(CountryId.France);   // FT-10 · P-A′: a billion on the LINE is the support share of a billion of support
+                    if (!(share > 0.5 && share < 0.9)) { ok = false; Debug.LogError($"ENERGY LEDGER: France's support share reads {share:F4} - the probe expects the sourced two thirds."); }
                     double vatOnLevy(EnergyLedger.Book a, EnergyLedger.Book b) => (a.Classes[0].Vat - b.Classes[0].Vat) * a.Classes[0].ConsumptionGwh / 1000.0;
                     double billsUp = (path.PaidHouseholds + path.PaidNonHouseholds) - (up.PaidHouseholds + up.PaidNonHouseholds), billsDown = (down.PaidHouseholds + down.PaidNonHouseholds) - (path.PaidHouseholds + path.PaidNonHouseholds), billsPast = (path.PaidHouseholds + path.PaidNonHouseholds) - (past.PaidHouseholds + past.PaidNonHouseholds);
-                    if (Math.Abs((up.PaidTaxpayers - path.PaidTaxpayers) - 1.0) > tol || Math.Abs((path.LevyRevenue - up.LevyRevenue) - 1.0) > 1e-6 || Math.Abs(billsUp - (1.0 + vatOnLevy(path, up))) > 1e-6 || Math.Abs(up.SupportCost - path.SupportCost) > 1e-6)
-                    { ok = false; Debug.LogError($"ENERGY LEDGER: a billion on France's energy line did not take a billion off the levy - taxpayers +{up.PaidTaxpayers - path.PaidTaxpayers:F4}, levy {path.LevyRevenue:F4} → {up.LevyRevenue:F4}, bills −{billsUp:F4} (the levy and its VAT {vatOnLevy(path, up):F4}), the scheme's cost {path.SupportCost:F4} → {up.SupportCost:F4}."); }
-                    if (!(down.LevyScale > 1.0) || Math.Abs((down.LevyRevenue - path.LevyRevenue) - 1.0) > 1e-6 || Math.Abs(billsDown - (1.0 + vatOnLevy(down, path))) > 1e-6) { ok = false; Debug.LogError($"ENERGY LEDGER: a billion cut from France's energy line did not put a billion on the levy (levy {path.LevyRevenue:F4} → {down.LevyRevenue:F4}, bills +{billsDown:F4})."); }
+                    if (Math.Abs((up.PaidTaxpayers - path.PaidTaxpayers) - share) > tol || Math.Abs((path.LevyRevenue - up.LevyRevenue) - share) > 1e-6 || Math.Abs(billsUp - (share + vatOnLevy(path, up))) > 1e-6 || Math.Abs(up.SupportCost - path.SupportCost) > 1e-6)
+                    { ok = false; Debug.LogError($"ENERGY LEDGER: a billion on France's energy line did not take its SUPPORT SHARE of a billion off the levy - taxpayers +{up.PaidTaxpayers - path.PaidTaxpayers:F4}, levy {path.LevyRevenue:F4} → {up.LevyRevenue:F4}, bills −{billsUp:F4} (the levy and its VAT {vatOnLevy(path, up):F4}), the scheme's cost {path.SupportCost:F4} → {up.SupportCost:F4}."); }
+                    if (!(down.LevyScale > 1.0) || Math.Abs((down.LevyRevenue - path.LevyRevenue) - share) > 1e-6 || Math.Abs(billsDown - (share + vatOnLevy(down, path))) > 1e-6) { ok = false; Debug.LogError($"ENERGY LEDGER: a billion cut from France's energy line did not put its support share of a billion on the levy (levy {path.LevyRevenue:F4} → {down.LevyRevenue:F4}, bills +{billsDown:F4})."); }
                     if (Math.Abs(past.LevyScale) > 1e-12 || past.LevyRevenue != 0.0 || Math.Abs(billsPast - (path.LevyRevenue + vatOnLevy(path, past))) > 1e-6 || !(past.SupportCost > path.SupportCost))
                     { ok = false; Debug.LogError($"ENERGY LEDGER: past the whole levy the floor did not hold - scale {past.LevyScale}, levy {past.LevyRevenue:F4}, bills moved {billsPast:F4} against the levy {path.LevyRevenue:F4} and its VAT {vatOnLevy(path, past):F4}."); }
                     if (!(up.ToStateTaxes < path.ToStateTaxes)) { ok = false; Debug.LogError("ENERGY LEDGER: the state's VAT receipts did not fall with the levy."); }
@@ -121,15 +123,61 @@ namespace PoliSim.EditorTools
             // (3b) FT-10 · P-A (§545, its second reader's finding): the page says ONE FOR ONE, and (3) proves that AT THE SEED only, where the old form and the share-of-path form are one by
             // construction. The claim that matters is about a PLAYED book ten years on: its driverless path rides prices alone, so K × (line ⁄ path − 1) must still be (line − path) ⁄ (seedLevy × P).
             // And the probe must discriminate: the same country under its AI ministry, whose path also rides real growth, must read the two forms APART - or the equality proves nothing.
-            sb.Append("\n    3b. ONE FOR ONE, AWAY FROM THE SEED: Poland played for ten years with a tenth on its energy line, the levy's two forms read together; Poland under its ministry, read apart\n");
+            sb.Append("\n    3b. THE PLAYER'S ARITHMETIC, AWAY FROM THE SEED: France played for ten years with six per cent more on its energy line, the levy's two forms read together; France under its ministry, read apart (France since P-A′: Poland's line carries no support, so its levy no longer answers it)\n");
             {
-                (double Scale, double OldForm, double LineOverPath, double P) played = LevyFormsAfter(CountryId.Poland, true, 10, 10f);
-                (double Scale, double OldForm, double LineOverPath, double P) ministry = LevyFormsAfter(CountryId.Poland, false, 10, 0f);
+                (double Scale, double OldForm, double LineOverPath, double P) played = LevyFormsAfter(CountryId.France, true, 10, 6f);
+                (double Scale, double OldForm, double LineOverPath, double P) ministry = LevyFormsAfter(CountryId.France, false, 10, 0f);
                 if (!(played.LineOverPath > 1.05) || !(played.Scale < 0.999) || !(played.Scale > 0.0)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): the played probe did not move the line where the levy could answer - line ⁄ path {played.LineOverPath:F4}, scale {played.Scale:F5}."); }
                 if (Math.Abs(played.Scale - played.OldForm) > 1e-5) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): in a PLAYED book the share-of-path form reads {played.Scale:F6} and one-for-one reads {played.OldForm:F6} ten years from the seed - the page's sentence is no longer the arithmetic (has the player's driverless path gained a growth term?)."); }
-                if (!(Math.Abs(ministry.Scale - ministry.OldForm) > 1e-4)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): under its ministry Poland's two forms read {ministry.Scale:F6} and {ministry.OldForm:F6} - the probe does not discriminate, so the played equality proves nothing."); }
+                if (!(Math.Abs(ministry.Scale - ministry.OldForm) > 1e-4)) { ok = false; Debug.LogError($"ENERGY LEDGER (3b): under its ministry France's two forms read {ministry.Scale:F6} and {ministry.OldForm:F6} - the probe does not discriminate, so the played equality proves nothing."); }
                 sb.Append(F("    played: line ⁄ path {0:F4}, P {1:F4} - share-of-path {2:F6}, one-for-one {3:F6} (apart by {4:E1}); under its ministry: line ⁄ path {5:F4} - share-of-path {6:F6}, the old form {7:F6} (apart by {8:F4}: the path's real growth, which P-A took out of the ratio)\n",
                     played.LineOverPath, played.P, played.Scale, played.OldForm, Math.Abs(played.Scale - played.OldForm), ministry.LineOverPath, ministry.Scale, ministry.OldForm, Math.Abs(ministry.Scale - ministry.OldForm)));
+            }
+
+            // (3c) FT-10 · P-A′ (§553): THE SHARE IS LIVE, THE DIAL IS WHOLE, SUPPORT MEETS ZERO. For each levied country at the seed, a thousandth of the line three ways: on the line's OWN
+            // path (the levy answers the support share of it - nothing where the share is none), as the DIAL's applied cost (one for one everywhere), and as the dial under neutral
+            // (one for one where the line carries support to withdraw; nothing where it carries none).
+            sb.Append("\n    3c. THE SUPPORT SHARE (P-A′): a thousandth of the energy line on its own path, as the dial's cost, and as the dial under neutral - what the levy answers\n");
+            {
+                SimulationRandom.Seed(777); EnergyMarket.ResetCalibration();
+                World w = WorldFactory.CreateDefault(); EnergyMarket.BeginTurn(w);
+                foreach (CountryId id in new[] { CountryId.France, CountryId.Sweden, CountryId.Italy, CountryId.Poland })
+                {
+                    Country c = w.GetCountry(id);
+                    SpendingLine line = null; foreach (SpendingLine l in c.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; } }
+                    if (line == null) { ok = false; Debug.LogError($"ENERGY LEDGER (3c): {id} carries no energy line."); continue; }
+                    double p = Math.Max(0.0001f, c.State.PriceLevel), share = EnergyLedger.SupportShareOfEnergyLine(id);
+                    EnergyMarket.Result r = EnergyMarket.Clear(c);
+                    EnergyLedger.Book path = EnergyLedger.Compute(c, r, p, 0.0);
+                    float kept = line.Amount, keptApplied = c.AppliedEnergySupportCost, step = kept * 0.001f;
+                    line.Amount = kept + step; EnergyLedger.Book own = EnergyLedger.Compute(c, r, p, 0.0);
+                    c.AppliedEnergySupportCost = keptApplied + step; EnergyLedger.Book dial = EnergyLedger.Compute(c, r, p, 0.0);
+                    line.Amount = kept - step; c.AppliedEnergySupportCost = keptApplied - step; EnergyLedger.Book under = EnergyLedger.Compute(c, r, p, 0.0);
+                    line.Amount = kept; c.AppliedEnergySupportCost = keptApplied;
+                    // LevyScaleAtDial reads the scale for a dial level NOT YET STANDING: it must be what Compute reads once that level's cost stands on the line (both sides of neutral)
+                    var dialLines = new System.Text.StringBuilder();
+                    foreach (float level in new[] { 20f, 40f, 60f, 90f })
+                    {
+                        double foretold = EnergyLedger.LevyScaleAtDial(c, level);
+                        float cost = Math.Max(SectorCouplings.SupportCost(c.State.NominalGdp, level, SectorCouplings.NeutralDialLevel, SectorCouplings.NeutralDialLevel), -(kept - keptApplied));
+                        line.Amount = kept - keptApplied + cost; c.AppliedEnergySupportCost = cost;
+                        double standing = EnergyLedger.Compute(c, r, p, 0.0).LevyScale;
+                        line.Amount = kept; c.AppliedEnergySupportCost = keptApplied;
+                        if (Math.Abs(foretold - standing) > 1e-4 * Math.Max(1.0, c.Environment.EnergySupportLineToLevySeed)) { ok = false; Debug.LogError($"ENERGY LEDGER (3c): {id}'s levy scale at dial {level:F0} is foretold {foretold:F6} and reads {standing:F6} once the cost stands."); }
+                        dialLines.Append(F("             dial {0,3:F0}: the scale foretold {1:F4}, standing {2:F4}\n", level, foretold, standing));
+                    }
+                    double tol = 2e-6 + 1e-4 * step, ownMove = path.LevyRevenue - own.LevyRevenue, dialMove = path.LevyRevenue - dial.LevyRevenue, underMove = under.LevyRevenue - path.LevyRevenue;
+                    double underExpected = Math.Min(step, share * kept);   // support cannot fall below zero
+                    if (Math.Abs(ownMove - share * step) > tol) { ok = false; Debug.LogError($"ENERGY LEDGER (3c): {id}'s own path moved {step:F5} bn and the levy answered {ownMove:F6} against the support share's {share * step:F6}."); }
+                    if (share == 0.0 && own.LevyScale != 1.0) { ok = false; Debug.LogError($"ENERGY LEDGER (3c): {id}'s line carries no support and its own move still scaled the levy ({own.LevyScale})."); }
+                    if (Math.Abs(dialMove - step) > tol) { ok = false; Debug.LogError($"ENERGY LEDGER (3c): {id}'s dial cost {step:F5} bn and the levy answered {dialMove:F6} - the dial is not read in full."); }
+                    if (Math.Abs(underMove - underExpected) > tol) { ok = false; Debug.LogError($"ENERGY LEDGER (3c): {id}'s dial under neutral by {step:F5} bn put {underMove:F6} on the levy against {underExpected:F6} (support to withdraw: {share * kept:F4} bn)."); }
+                    foreach (EnergyLedger.Book bk in new[] { own, dial, under }) { if (Math.Abs(bk.Gap) > 1e-9 * Math.Max(1.0, bk.PaidTotal)) { ok = false; Debug.LogError($"ENERGY LEDGER (3c): {id}'s book does not close (gap {bk.Gap:E2})."); } }
+                    sb.Append(F("    {0,-8} share {1:F4}, K {2:G5}: line {3:F3} bn, support in it {4:F3}; a step of {5:F5} bn - own path: levy −{6:F6}; as the dial's cost: −{7:F6}; the dial under neutral: +{8:F6}\n",
+                        id, share, c.Environment.EnergySupportLineToLevySeed, kept, path.BudgetSupport, step, ownMove, dialMove, underMove));
+                    sb.Append(dialLines);
+                }
+                EnergyMarket.ResetTurnState();
             }
 
             // (4) congestion: a probe on Sweden's links

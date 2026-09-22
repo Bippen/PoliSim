@@ -68,7 +68,7 @@ namespace PoliSim.EditorTools
                 for (int y = 1; y <= Years; y++) { float t = untouched.Term[id][y]; if (Math.Abs(t) > Math.Abs(worst)) { worst = t; worstYear = y; } }
                 // every term is the weight times the real change - the identity the boundary plans by
                 for (int y = 1; y <= Years; y++) { if (Math.Abs(untouched.Term[id][y] - EnergyPassThrough.WeightFraction(id) * untouched.RealChange[id][y]) > 1e-6f) { ok = false; Debug.LogError($"ENERGY PASS-THROUGH: {id}'s year-{y} term is not the weight times the real change."); } }
-                sb.Append(F("    {0,-8} first year {1:+0.0000;-0.0000} pp; largest over ten years {2:+0.0000;-0.0000} pp in year {3} with the levy at {4:F3} of its path (the AI ministry's own line moves reach the bill - the mechanism, not noise); real household price {5:F4} → {6:F4} $/kWh\n", id, first, worst, worstYear, untouched.LevyScale[id][Math.Max(1, worstYear)], untouched.RealPrice[id][1], untouched.RealPrice[id][Years]));
+                sb.Append(F("    {0,-8} first year {1:+0.0000;-0.0000} pp; largest over ten years {2:+0.0000;-0.0000} pp in year {3} with the levy at {4:F3} of its path (the AI ministry's own line moves reach the bill at the line's support share - France's alone since P-A′; the mechanism, not noise); real household price {5:F4} → {6:F4} $/kWh\n", id, first, worst, worstYear, untouched.LevyScale[id][Math.Max(1, worstYear)], untouched.RealPrice[id][1], untouched.RealPrice[id][Years]));
             }
 
             // (3) the mechanism: Poland's fleet's ETS price stepped fifty dollars per tonne from the top of year 1 - in the MARKET's currency, euro (EN-4d: the ETS is the fleet's carbon price; the national tax's zloty do not reach it)

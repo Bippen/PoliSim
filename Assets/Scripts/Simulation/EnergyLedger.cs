@@ -17,9 +17,11 @@ namespace PoliSim.Simulation
     /// components imply, levied on the stack it is levied on. Non-households bear the pre-VAT price - recoverable VAT is no cost - so their bill
     /// and their line in the ledgers exclude it, stated.</para>
     ///
-    /// <para><b>The support scheme.</b> The book's energy spending line (SpendingCategory.Energy) is the budget-financed support; it indexes like any
+    /// <para><b>The support scheme.</b> The budget-financed support is the SUPPORT IN the book's energy spending line (SpendingCategory.Energy) - since FT-10 · P-A′ (§553) the
+    /// line's own path at its SOURCED support share (SupportShareOfEnergyLine: France's two thirds; Sweden, Italy and Poland none) plus the subsidy dial's cost in full, where until
+    /// then the whole line was read as support; the line indexes like any
     /// other line (P5-B2). The bill-financed support is the policy levy - revenue following its base (P5-B3): the levy per kWh times the consumption.
-    /// The scheme's cost is one sum; the split is the policy: a budget line moved above its indexed path takes the levy down one for one, a line
+    /// The scheme's cost is one sum; the split is the policy: support moved above its indexed path takes the levy down one for one, support
     /// cut takes it up (the EEG's own history - levy until July 2022, the federal budget since), spread over every kWh in proportion to the seed's
     /// levies by class; a levy cannot fall below zero, and support above the whole levy is taxpayer-funded support with no retail effect.
     /// THE RULE'S FORM since FT-10 · P-A (§545): the line's move is read as a SHARE of its own path times K, the seed's line over the seed's levy. For the country the
@@ -92,6 +94,8 @@ namespace PoliSim.Simulation
             public double WholesalePerKwh;
             public ClassStack[] Classes;
             // ---- system cost
+            /// <summary>BudgetSupport, since FT-10 · P-A′ (§553): the SUPPORT in the budget's energy line - the line's own path at its sourced support share plus the subsidy dial's
+            /// cost in full, never below zero - not the whole line. The taxpayers' part of the scheme's cost, and what the levy answers.</summary>
             public double FuelVomCost, EtsCost, AdderCost, WholesaleOutlay, NetworkRevenue, LevyRevenue, BudgetSupport;
             public double FossilVariableCost => FuelVomCost + EtsCost + AdderCost;
             /// <summary>The wholesale outlay above the fossil variable cost - what pays the fleet's fixed costs and the non-fossil fleet; not modelled, printed.</summary>
@@ -116,7 +120,8 @@ namespace PoliSim.Simulation
             /// their consumption, the excise alone (households' VAT on it is not booked: the budget's VAT does not follow the retail price); the figure the
             /// boundary plans as a budget flow (FiscalPeriod.PlannedElectricityTaxRevenue). Already inside ToStateTaxes; never added to ReceivedTotal.</summary>
             public double ElectricityTaxRevenueChange;
-            /// <summary>The budget line's deviation from its indexed path, billions - the player's (or the AI ministry's) own doing.</summary>
+            /// <summary>The SUPPORT's deviation from the support's indexed path, billions - the player's (or the AI ministry's) own doing, at the line's support share, and the
+            /// dial's cost in full (FT-10 · P-A′; the whole line's deviation before it).</summary>
             public double SupportDeviation;
         }
 
@@ -133,6 +138,69 @@ namespace PoliSim.Simulation
             s.EnergyCongestionRentSeed = (float)b.CongestionRent;   // EN-3b: the seed's own rent is inside the seed's network tariff; only the rent above it is credited
             Write(country, b, first: true);
         }
+
+        /// <summary>
+        /// FT-10 · P-A′ (§553, landed §572 on the chair's ruling of §571): **THE SUPPORT SHARE OF THE BUDGET'S ENERGY LINE, READ BY ONE TEST FOR ALL FOUR** -
+        /// **Regulation (EU) 2016/1952 Annex II's CATEGORIES**: budget money for schemes of the KINDS the bill's policy components finance (renewable support,
+        /// capacity payments and cogeneration, coal industry restructuring, island compensation, the energy regulator), whether or not the bill charges that
+        /// component today. **The ruling's reason is the decision the page exists to offer**: the levy rule must let a player CREATE support where the bill carries
+        /// none, and a test that only matches a charge already on the bill cannot represent that. Annex II is also the source the stack already reads - the book's
+        /// policy levy IS its renewable + capacity + other components - so the test adds no source; it applies the one in use.
+        ///
+        /// <para>⚠ <b>§553 held this family because its four countries were read by TWO tests</b> - France by the categories, the other three by match-the-charge -
+        /// and the independent reader's measurement of both is the table in §553. These four shares are that reader's category-test figures, each with its own
+        /// composition below; the held review carries the per-line arithmetic (`PoliSim-captures/held/ft10_pap_2026-09-21/patches/review1.md`).</para>
+        ///
+        /// <para><b>FRANCE 76.29 %</b> - programme 345's actions 09 (renewables in metropolitan France), 11 (the non-interconnected zones' compensation), 12
+        /// (cogeneration, at the LFI's own périmètre measure) and 13 (demand response), over the line the book seeds (programme 345 + programme 174 as adopted).
+        /// Action 09 alone - the first cut's numerator - is 67.70 %; the PAP's own words put the other three under the same Annex II definitions.
+        /// <b>SWEDEN 36.0 %</b> - prop. 2025/26:1, utgiftsområde 21: appropriations 1:2, 1:4, 1:5 (*kraftlyftet*'s capacity support), 1:10 and 1:11 total
+        /// 2 859 451 tkr of the area. <b>ITALY 3.47 %</b> - legge di bilancio 2026, missione 10: cap. 7666 (30 M) and cap. 7660 (6.3 M) of 1 047 283 706.
+        /// <b>POLAND 97.95 %</b> - ustawa budżetowa 2026, dział 100: rozdział 10001, the coal-mining chapter, is 97.95 % of the line, and **Annex II's own words are
+        /// *coal industry restructuring*** - the chair's ruling states it counts, which the budget act itself does not say, and the page's row says so too.
+        /// The USA has no policy levy and Germany no energy line: the share is never read there.
+        /// </summary>
+        /// <summary>SOURCED - see the test above: programme 345's actions 09, 11, 12 (at the LFI périmètre) and 13 over the line the book seeds, read at 76.29 % by §553's independent reader against `pap345`/`sen312`.</summary>
+        public const double FranceSupportShareOfLine = 0.7629;
+
+        /// <summary>SOURCED - prop. 2025/26:1, utgiftsområde 21's five appropriations over the area.</summary>
+        public const double SwedenSupportShareOfLine = 0.360;
+
+        /// <summary>SOURCED - legge di bilancio 2026, missione 10's two chapters over the missione.</summary>
+        public const double ItalySupportShareOfLine = 0.0347;
+
+        /// <summary>SOURCED - ustawa budżetowa 2026, dział 100's rozdział 10001 over the dział, counted as Annex II's coal industry restructuring by the ruling of §571.</summary>
+        public const double PolandSupportShareOfLine = 0.9795;
+
+        public static double SupportShareOfEnergyLine(CountryId id)
+        {
+            switch (id)
+            {
+                case CountryId.France: return FranceSupportShareOfLine;
+                case CountryId.Sweden: return SwedenSupportShareOfLine;
+                case CountryId.Italy: return ItalySupportShareOfLine;
+                case CountryId.Poland: return PolandSupportShareOfLine;
+                default: return 1.0;                 // unsourced: the whole line (the USA's and Germany's is never read)
+            }
+        }
+
+        /// <summary>The page's words for the share, under the Retail intervention row's provenance.</summary>
+        public static string SupportShareNote(CountryId id)
+        {
+            switch (id)
+            {
+                // §572: one test for all four - the share the page prints is the Annex II categories' share of the line, and the row names the document it is read from.
+                case CountryId.France: return Words(id, "PLF 2026 · P345 09·11·12·13");
+                case CountryId.Sweden: return Words(id, "PROP. 2025/26:1 · UO21");
+                case CountryId.Italy: return Words(id, "LB 2026 · MISSIONE 10");
+                case CountryId.Poland: return Words(id, "UB 2026 · COAL RESTRUCTURING");
+                default: return "THE ENERGY SECTOR'S SUBSIDY DIAL · THE BUDGET'S ENERGY LINE";
+            }
+        }
+
+        /// <summary>§572: one sentence for every covered country - the dial in full, the line's own move at its share, and the document the share is read from.</summary>
+        private static string Words(CountryId id, string source) =>
+            "DIAL IN FULL · LINE " + (SupportShareOfEnergyLine(id) * 100.0).ToString("F0", System.Globalization.CultureInfo.InvariantCulture) + " % · " + source;
 
         /// <summary>The seed's levy revenue, billions of the book's dollars at the seed's prices: the catalog's levy per kWh by class times the class's consumption.</summary>
         public static double SeedLevyBillions(CountryId id)
@@ -230,6 +298,40 @@ namespace PoliSim.Simulation
             using (EnergyFleet.For(country)) { return ComputeOn(country, r, priceIndex, congestionCreditBillions); }   // §544: the fossil floors and caps the cost lines read are THIS country's fleet's
         }
 
+        /// <summary>
+        /// FT-10 · P-A′ (§553): the support in the line and the levy's scale, for a given subsidy-dial cost standing on the line - Compute's arithmetic, in one place. The line's OWN
+        /// path is what it carries less the dial's cost as it stands today (SC-1: a composed line is its own path plus the applied costs); the support is the own path at the sourced
+        /// share plus <paramref name="dialCost"/> in full, never below zero; its deviation from the support's path, over the line's path, times K is the levy's move.
+        /// </summary>
+        private static double LevyScaleWith(Country country, SpendingLine line, double dialCost, out double support, out double deviation)
+        {
+            double share = SupportShareOfEnergyLine(country.Id);
+            double own = line != null ? line.Amount - (double)country.AppliedEnergySupportCost : 0.0;
+            support = line != null ? Math.Max(0.0, share * own + dialCost) : 0.0;
+            deviation = line != null ? support - share * line.SeedAmount : 0.0;   // the SUPPORT's deviation from the support's path
+            double pathShare = line != null && line.SeedAmount > 0f ? deviation / line.SeedAmount : 0.0;   // over the LINE's path: K is the seed's line over the seed's levy, so the line's path is its unit
+            return SeedLevyBillions(country.Id) > 0 ? Math.Max(0.0, 1.0 - country.Environment.EnergySupportLineToLevySeed * pathShare) : 0.0;
+        }
+
+        /// <summary>
+        /// FT-10 · P-A′ (§553): the levy's scale with the Energy sector's SUBSIDY dial at <paramref name="subsidyLevel"/> and everything else as it stands - the dial's cost at that
+        /// level by `SectorCouplings.SupportCost` (the expression `EnergySupportCostTarget` lands on the line), bounded as the line is (it carries no negative spending, so a cost
+        /// under neutral takes at most the own path). What the page's captions are held to: where on the dial the levy reaches its floor, and whether the dial under neutral has
+        /// support to withdraw. Reads state, writes none.
+        /// </summary>
+        public static double LevyScaleAtDial(Country country, float subsidyLevel)
+        {
+            SpendingLine line = null;
+            foreach (SpendingLine l in country.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; break; } }
+            if (line == null) { return LevyScaleWith(country, null, 0.0, out _, out _); }
+            double own = line.Amount - (double)country.AppliedEnergySupportCost;
+            double cost = SectorCouplings.SupportCost(country.State.NominalGdp, subsidyLevel, SectorCouplings.NeutralDialLevel, SectorCouplings.NeutralDialLevel);
+            // §572 (the chair's ruling of §571: *support floors at zero and the levy with it*): the floor the DIAL can reach is the support's, which is the line's
+            // own path AT ITS SHARE - not the whole line. Clamping at the whole line let this reading say the floor was further down the dial than the book's own
+            // support reaches: the held code's defect, found by the review and fixed before landing.
+            return LevyScaleWith(country, line, Math.Max(cost, -Math.Max(0.0, SupportShareOfEnergyLine(country.Id) * own)), out _, out _);
+        }
+
         private static Book ComputeOn(Country country, EnergyMarket.Result r, double priceIndex, double congestionCreditBillions)
         {
             EnvironmentSeeds s = country.Environment;
@@ -244,18 +346,20 @@ namespace PoliSim.Simulation
             // the support scheme: the budget line and its deviation from the indexed path; the levy scaled the other way
             SpendingLine line = null;
             foreach (SpendingLine l in country.SpendingLines) { if (l.Category == SpendingCategory.Energy) { line = l; break; } }
-            b.BudgetSupport = line != null ? Math.Max(0f, line.Amount) : 0.0;
-            b.SupportDeviation = line != null ? line.Amount - line.SeedAmount : 0.0;
+            // FT-10 · P-A′ (ruled 2026-09-21, §553): the rule reads the SUPPORT in the line, not the whole line. The support is the line's own path at its SOURCED support share
+            // (SupportShareOfEnergyLine: what the country's own 2026 budget document says of the line funds the scheme the bill's levy otherwise funds) plus the Energy sector's
+            // subsidy cost IN FULL - that dial is retail intervention's money side by definition (S9), whatever else the line carries. Support cannot fall below zero: a dial under
+            // neutral takes away support that is there, never support that is not (Sweden, Italy and Poland carry none, so there the line's own move no longer reaches the levy).
+            b.LevyScale = LevyScaleWith(country, line, line != null ? country.AppliedEnergySupportCost : 0.0, out b.BudgetSupport, out b.SupportDeviation);   // one copy of the arithmetic: LevyScaleAtDial reads it too
             // FT-10 · P-A (ruled 2026-09-21, §545): the line's move is read as a SHARE of its own indexed path and K - the seed's line over the seed's levy - turns it into a share
             // of the levy. Before, the deviation in billions (riding the spending index: prices × RF-2's REAL GROWTH) stood over the levy's path (riding the price level alone, the
             // load being static): the price level cancelled, the growth index did not, and a cut line's scale compounded at the path's real growth for ever (Poland's past 10⁶ at t361).
-            // Exactly 1 with the line on its path (the quotient of one float by itself is 1), below 1 where raised, above where cut, 0 at the floor. Bounded: at most 1 + K (a line cannot
-            // go below zero - since SC-1 a dial's cost sits outside the own path's clamp band and meets only zero), and 1 + 0.8 K on the own path alone, which is all an AI book moves.
-            // THE PLAYER'S BOOK IS UNCHANGED BY THIS: its path rides prices alone, so K × (Amount ⁄ path − 1) is (Amount − path) ⁄ (seedLevy × P), the old expression, to float rounding - AT THE BOUNDARY,
+            // Exactly 1 with the line on its path (support and its path are one product), below 1 where raised, above where cut, 0 at the floor. Bounded: at most 1 + K × share (support
+            // cannot go below zero), and 1 + 0.8 K × share on the own path alone, which is all an AI book moves - so where the share is NONE an AI book's scale is 1 for ever.
+            // THE PLAYER'S BOOK KEEPS ONE FOR ONE: its path rides prices alone, so K × (the support's move ⁄ path) is (the support's move) ⁄ (seedLevy × P), billions over the levy's path, to float rounding - AT THE BOUNDARY,
             // where the index and this book read one price level. Between boundaries the page recomputes with the day's price level: the old form drifted with it through the year (a scale of
             // 0.50 read 0.51 by December at three per cent inflation), this one holds the boundary's figure. EnergyLedgerDiagnostic (3b) asserts the equality ten years from the seed.
-            double pathShare = line != null && line.SeedAmount > 0f ? (double)line.Amount / line.SeedAmount - 1.0 : 0.0;
-            b.LevyScale = SeedLevyBillions(country.Id) > 0 ? Math.Max(0.0, 1.0 - s.EnergySupportLineToLevySeed * pathShare) : 0.0;
+            // (the arithmetic itself: LevyScaleWith, below)
 
             // EN-7a: market liberalisation - the Energy sector's regulation gap below its seeded anchor; exactly zero at the seed (the level is the anchor)
             double liberalisation = LiberalisationGap(country);

@@ -167,8 +167,9 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>P6-F2b: the levy on the bill as the Subsidy dial rises - two links, both computed on a fresh world's Poland (a levy in its stack, an energy line in its book):
-        /// the subsidy's cost on the energy line rises with the dial (SectorCouplings.EnergySupportCostTarget at 40 and at 60), and the levy scale falls as the line rises
-        /// (EnergyLedger.Compute at the seed clearing, the line as seeded and ten per cent up). The sign is their product.</summary>
+        /// the subsidy's cost on the energy line rises with the dial (SectorCouplings.EnergySupportCostTarget at 40 and at 60), and the levy scale falls as that cost stands on
+        /// the line (EnergyLedger.Compute at the seed clearing, the line as seeded and with a tenth of it on top AS THE DIAL'S APPLIED COST - the dial's own route: since FT-10 ·
+        /// P-A′, §553, the levy reads the dial's cost in full and the line's own move at its support share, which is none in Poland). The sign is their product.</summary>
         private static int RetailInterventionSign(out string basis)
         {
             PoliSim.Data.World world = PoliSim.Data.WorldFactory.CreateDefault();
@@ -186,11 +187,12 @@ namespace PoliSim.EditorTools
             energy.SubsidyLevel = keptLevel;
             EnergyMarket.Result r = EnergyMarket.ClearAtSeed(pl.Id);
             double scaleSeed = EnergyLedger.Compute(pl, r, 1.0, 0.0).LevyScale;
-            float keptAmount = line.Amount; line.Amount = keptAmount * 1.1f;
+            float keptAmount = line.Amount, keptApplied = pl.AppliedEnergySupportCost, dialCost = keptAmount * 0.1f;
+            line.Amount = keptAmount + dialCost; pl.AppliedEnergySupportCost = keptApplied + dialCost;   // as SimulationManager's ApplyCostOnLine composes it: the tracker and the line together
             double scaleRaised = EnergyLedger.Compute(pl, r, 1.0, 0.0).LevyScale;
-            line.Amount = keptAmount;
+            line.Amount = keptAmount; pl.AppliedEnergySupportCost = keptApplied;
             int cost = costHigh > costLow ? 1 : costHigh < costLow ? -1 : 0, levy = scaleRaised > scaleSeed ? 1 : scaleRaised < scaleSeed ? -1 : 0;
-            basis = string.Format(System.Globalization.CultureInfo.InvariantCulture, "Poland: the subsidy's cost on the energy line {0:0.###} at 40 and {1:0.###} at 60 (SectorCouplings); the levy scale {2:0.####} on the seeded line and {3:0.####} on it +10 % (EnergyLedger.Compute)", costLow, costHigh, scaleSeed, scaleRaised);
+            basis = string.Format(System.Globalization.CultureInfo.InvariantCulture, "Poland: the subsidy's cost on the energy line {0:0.###} at 40 and {1:0.###} at 60 (SectorCouplings); the levy scale {2:0.####} on the seeded line and {3:0.####} with a tenth of the line on it as the dial's applied cost (EnergyLedger.Compute)", costLow, costHigh, scaleSeed, scaleRaised);
             return cost * levy;
         }
 

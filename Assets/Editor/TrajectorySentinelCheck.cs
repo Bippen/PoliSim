@@ -36,26 +36,35 @@ namespace PoliSim.EditorTools
     /// <para><b>P-B landed (2026-09-21, §552) and lowered them again:</b> eleven cells to six. Sweden's five water-value cells are DELETED - its congestion rent over the price level
     /// reads 0.000 % on both measures where it read 47.8 and 7.4, its tails 0.1 and 0.2 - and the one Swedish cell left, the industry price's LEVEL at 1.193 %, is the levy's
     /// part: K 40.2 on a levy of two hundredths of a cent, P-A′'s subject, re-cut with that cause.</para>
+    ///
+    /// <para><b>P-A′ landed (2026-09-21, §553) and lowered them a third time:</b> six cells to two. Sweden's, Italy's and Poland's four are DELETED - each reads 0.000 %: their
+    /// lines carry none of the scheme the bill's levy funds (each sourced from the country's own 2026 budget document), so a ministry's cut of the line no longer reaches the
+    /// levy. France's two stand, lower (18.394 and 4.789 where they read 27.176 and 7.075): two thirds of its line IS that support, so the rule still answers its ministry's
+    /// cut - the rule's bounded answer, and the only cause left.</para>
     /// </summary>
     public static class TrajectorySentinelCheck
     {
-        /// <summary>The baseline these digests are the first turns of: `traj_p6pb` - FT-10 · P-B (2026-09-21, §552): Sweden's water value in the seed's prices - each neighbour's block
+        /// <summary>The baseline these digests are the first turns of: `traj_p6pap` - FT-10 · P-A′ (2026-09-21, §553): the levy rule reads the SUPPORT in the budget's energy line -
+        /// the line's own path at its sourced support share (France's two thirds; Sweden, Italy and Poland none) and the subsidy dial's cost in full. France, Sweden, Italy and
+        /// Poland move from turn 2 on their own levies - the three whose line carries no support stop answering their ministries' cuts, and their real energy prices hold the seed's
+        /// figures for a thousand years; Germany moves from turn 3 through the euro zone's one rate and the USA from turn 3 through its currency, their REAL energy prices not at
+        /// all. Only AI-governed books change. Before it `traj_p6pb` - FT-10 · P-B (2026-09-21, §552): Sweden's water value in the seed's prices - each neighbour's block
         /// price deflated by its own price level before the weighting, the zone price carried by Sweden's level once. Sweden moves from TURN 1 on its own clearing (the three price
         /// levels already differ at the first boundary); the USA and Poland from turn 2 through `CurrencyStrength` (a floating currency follows its rate against its partners'
         /// average), in the fifth to eighth digit; Germany, France and Italy DO NOT MOVE AT ALL - no channel reaches a shared-currency country. Before it `traj_p6pa` - FT-10 · P-A (2026-09-21, §545): the levy scale reads the support line's move as a SHARE of its own path
         /// times K, the seed's line over the seed's levy - Poland, France, Sweden and Italy move on their own levies from turn 2; the USA's (no levy) and Germany's (no line) levy scales and REAL
         /// energy prices cannot move and do not, and their other rows move from turn 3 in the fifth decimal place by propagation (Germany through the euro zone's one rate, the USA through its
         /// currency and trade). Only AI-governed books change: a player's path rides prices alone and P-A is the old arithmetic there. Before it `traj_p6e1` - P6-E1's yield (2026-09-18, §538): jobbskatteavdraget in Sweden's income-tax yield, the lever seeded at the credited average on taxed income; before it `traj_p6d1` - P6-D1 (2026-09-17, §533): every pair of the six carries a sourced trade link (Eurostat 2023, goods and services, the exporter's report), replacing ten authored pairs and five absences; all six move through the trade balance and tariff revenue (was `traj_pn3`).</summary>
-        public const string BaselineLabel = "p6pb";
+        public const string BaselineLabel = "p6pap2";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_p6pb_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_p6pap2_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "798bfbee33545f2e745458922746b5806daa8663bd167495173fa2f4dd66aed2"),
-            (424242, "a0bc788f87020fa44328c5bf97dd6b45617d2f8c82cf8bea1f9b55ef5c94572a"),
+            (777, "ddc9d3fdf0b62a893ee08d514b984433a6a5820007e9f2e000fcb6a3fc3ff54b"),
+            (424242, "ceae8afba8898f82ed36aa93ad19e7237bc0cb16272fd3a99d78edf44adf6424"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------
@@ -78,25 +87,25 @@ namespace PoliSim.EditorTools
         public const double CellSlackPercent = 1.0;
 
         /// <summary>
-        /// FT-10's recorded cells - the cells over the clean band on `traj_p6pb`, 2026-09-21. LOWER IT AS THEY CLOSE, NEVER RAISE IT: six cells, four countries (eleven on `traj_p6pa`
-        /// before P-B, thirteen in three on `traj_p6e1` before P-A). The compounding term is gone (§545) and so is the water value read across price levels (§552); what stands is named
-        /// cell by cell in the table's CAUSE - the rule's bounded answer, and P-A′'s K (`EnergyRunawayDiagnostic` decomposes them).
+        /// FT-10's recorded cells - the cells over the clean band, measured on the landing of 2026-09-22. LOWER IT AS THEY CLOSE, NEVER RAISE IT: FOUR cells in two countries (six in four on
+        /// `traj_p6pb` before P-A′, eleven on `traj_p6pa` before P-B, thirteen in three on `traj_p6e1` before P-A). The compounding term is gone (§545), so is the water value read
+        /// across price levels (§552), and the rule reads the support in the line, not the line (§553); what stands is the rule's bounded answer to France's ministry, named in the
+        /// table's CAUSE (`EnergyRunawayDiagnostic` decomposes it).
         /// </summary>
-        public const int EnergyBreachCeiling = 6;
+        public const int EnergyBreachCeiling = 4;
 
-        /// <summary>CONVENTION: the causes a recorded cell may carry, printed on its line - what the cell waits on (P-B's water-value cause retired with its cells, §552).</summary>
-        private const string RuleAnswer = "EN-4's rule answering the ministry's cut of the line - bounded at 1 + 0.8 K on the ministry's own path, no tail",
-            LargeK = "P-A′ (ruled third): the rule reads the WHOLE energy line as levy support, so K is large - bounded, not right";
+        /// <summary>CONVENTION: the cause a recorded cell carries, printed on its line (P-B's water-value cause retired with its cells, §552; P-A′'s whole-line cause with its, §553).</summary>
+        private const string RuleAnswer = "EN-4's rule answering the ministry's cut of the line at its sourced support share - bounded at 1 + 0.8 K × share on the ministry's own path, no tail";
 
-        /// <summary>The recorded cells: country, series, measure, the ceiling in per cent (the 2026-09-21 measurement on `traj_p6pb` rounded up to a whole point; the five rows P-B did not touch read the same figures there), and the cause the cell waits on.</summary>
+        /// <summary>The recorded cells: country, series, measure, the ceiling in per cent (the 2026-09-21 measurement on `traj_p6pap` rounded up to a whole point), and the cause the cell waits on.</summary>
         private static readonly (string Country, string Series, string Measure, double CeilingPercent, string Cause)[] KnownBreaches =
         {
-            ("France", "household", "LEVEL", 28.0, LargeK),      // 27.176 at t56 (35.628 before P-A): K 13.4 - the levy is a small share of what the line funds
-            ("France", "industry", "LEVEL", 8.0, LargeK),        // 7.075 (9.275)
-            ("Italy", "industry", "LEVEL", 2.0, RuleAnswer),     // 1.003 at t73 (0.77, inside the band, before P-A: its shrinking path had damped the answer) - P-A opened this cell; when it reads under the band, DELETE the row and lower the count, never re-cut it
-            ("Poland", "household", "LEVEL", 3.0, RuleAnswer),   // 2.797 at t65 (30.946 and compounding before P-A) - the levy scale stands at 1.28 from there to t1000
-            ("Poland", "industry", "LEVEL", 3.0, RuleAnswer),    // 2.851 (31.544)
-            ("Sweden", "industry", "LEVEL", 2.0, LargeK),        // 1.193 at t93 (11.710 before P-B, 13.986 before P-A): the levy's part alone - K 40.2 on two hundredths of a cent; P-B closed Sweden's other five
+            // §572: the cells under the RULED test (Annex II's categories for all four). France's two fall with the share it reads; Poland's two stay because its
+            // share is nearly the whole line; Sweden's and Italy's CLOSE - their shares are small enough that the rule's answer is inside the clean band.
+            ("France", "household", "LEVEL", 21.0, RuleAnswer),   // 20.728 at t56 (27.176 before P-A′, 35.628 before P-A): K 13.4 x the share 0.763
+            ("France", "industry", "LEVEL", 6.0, RuleAnswer),     // 5.396 at t62 (7.075; 9.275)
+            ("Poland", "household", "LEVEL", 3.0, RuleAnswer),    // 2.740 at t65 (2.797 before P-A′): the coal chapter is nearly the whole line
+            ("Poland", "industry", "LEVEL", 3.0, RuleAnswer),     // 2.793 at t65 (2.851)
         };
 
         /// <summary>The bounds pass over the century's text. True when every cell holds: a clean cell inside the band, a recorded one under its ceiling and not slack, the count at its ratchet.</summary>
@@ -166,7 +175,7 @@ namespace PoliSim.EditorTools
             {
                 if (!seen.Contains(c + "/" + s + "/" + m)) { ok = false; sb.Append($"    ⚠ {c} {s} {m}: a recorded cell the century never produced - the table names a series the dump no longer carries.\n"); }
             }
-            sb.Append($"    {cells} cell(s) held; {breaches} over the clean band against the recorded {EnergyBreachCeiling} (P-A landed, §545; P-B landed, §552; P-A′ OPEN - `EnergyRunawayDiagnostic` decomposes them; lower the ceiling as they close).\n");
+            sb.Append($"    {cells} cell(s) held; {breaches} over the clean band against the recorded {EnergyBreachCeiling} (P-A, P-B and P-A′ landed - §545, §552, §553; what stands is EN-4's rule answering France's ministry at the line's support share - `EnergyRunawayDiagnostic` decomposes it; lower the ceiling if it closes).\n");
             RatchetLedger.Report("TrajectorySentinelCheck.ENERGY_BREACHES", breaches, EnergyBreachCeiling);
             if (breaches > EnergyBreachCeiling) { ok = false; }
             return ok;
