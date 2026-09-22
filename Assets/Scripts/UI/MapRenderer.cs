@@ -83,7 +83,7 @@ namespace PoliSim.UI
         /// longitude in degrees, WGS84, as published on the national reference the point is named after. No coastline, no
         /// projection beyond a flat plate over the six's own bounding box - "six plates on a plain paper field". Tagged
         /// AUTHORED-REFERENCE: the figures are quoted, not measured here, and the reference point is named so it can be checked.
-        /// The same table is delivered to Design as docs/COUNTRY_CENTROIDS.md.
+        /// The same table is delivered to Design as docs/data/COUNTRY_CENTROIDS.md.
         /// </summary>
         private static readonly Dictionary<CountryId, Vector2> CountryCentroids = new Dictionary<CountryId, Vector2>
         {

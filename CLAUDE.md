@@ -19,11 +19,11 @@
 | `archive/CLAUDE_LESSONS_2026-08.md` | the dated findings this file used to carry, verbatim, with the two notes on how to read their numbers |
 | `archive/CLAUDE_HEAD_LONGFORM.md` | this head as it stood on 2026-09-22, before it was condensed — the long form of every rule below |
 | `archive/DESIGN_REQUESTS.md` | every answered design ask |
-| `specs/` | `ENERGY_SPEC.md`, `TAX_SPEC.md`, `ELECTIONS_CAMPAIGN_SPEC.md` — the source specs |
-| `data/` | `SOCIETY_STATS.md` (the catalog and its five family spines), `ENERGY_LAYER_SPINE.md`, `COUNTRY_CENTROIDS.md` |
-| `generated/` | written by tools, never hand-edited: `LEVER_MAP.md`, `BUDGET_PREMISE.md`, `ENERGY_LAYER_PREMISE.md`, `POTENTIAL_PREMISE.md` — each named with its tool in `docs/generated/README.md` |
-| `play/` | `PLAY_PROTOCOL.md`, `PLAY_SHEET.md` |
-| `outbound/` | `SEND_PACKAGE.md` — the working sheet for whatever paste is pending |
+| `specs/` | `ENERGY_SPEC.md`, `TAX_SPEC.md`, `docs/specs/ELECTIONS_CAMPAIGN_SPEC.md` — the source specs |
+| `data/` | `SOCIETY_STATS.md` (the catalog and its five family spines), `docs/data/ENERGY_LAYER_SPINE.md`, `docs/data/COUNTRY_CENTROIDS.md` |
+| `generated/` | written by tools, never hand-edited: `docs/generated/LEVER_MAP.md`, `docs/generated/BUDGET_PREMISE.md`, `docs/generated/ENERGY_LAYER_PREMISE.md`, `docs/generated/POTENTIAL_PREMISE.md` — each named with its tool in `docs/generated/README.md` |
+| `play/` | `docs/play/PLAY_PROTOCOL.md`, `docs/play/PLAY_SHEET.md` |
+| `outbound/` | `docs/outbound/SEND_PACKAGE.md` — the working sheet for whatever paste is pending |
 
 ## ⚠ How to read a number quoted in the record
 

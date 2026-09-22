@@ -7,7 +7,7 @@ namespace PoliSim.Elections
     /// votes-to-seats. PURE FUNCTIONS, WIRED TO NOTHING (R-N2); the only caller is the editor
     /// backtest harness.
     ///
-    /// ⚠ **THIS IS NOT THE SPEC'S CHAIN.** `ELECTIONS_CAMPAIGN_SPEC.md` has still not arrived
+    /// ⚠ **THIS IS NOT THE SPEC'S CHAIN.** `docs/specs/ELECTIONS_CAMPAIGN_SPEC.md` has still not arrived
     /// (Phase 0's STOP, 2026-08-29), so §7's compatibility core, §8's loyalty damping and
     /// §26/§27's turnout and aggregation are NOT implemented here and are not guessed at. What
     /// this file holds is the SMALLEST defensible spatial model that can be measured against

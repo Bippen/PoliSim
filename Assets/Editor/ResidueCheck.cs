@@ -36,7 +36,7 @@ namespace PoliSim.EditorTools
             ("E-5..E-24", "OWNER ELIAS", "the twenty play-calibration verdicts - numbers awaiting a loop to judge them against"),
             ("E-25", "OWNER ELIAS", "C-C6's basis ruling - executes as written unless struck"),
             ("E-26", "OWNER ELIAS", "C-C11's recalibration recommendations - strike or bless, per line"),
-            ("E-27", "OWNER ELIAS", "the two spec-lets (POLISIM_TAX_SPECLET.md among them) - ruled before any code"),
+            ("E-27", "OWNER ELIAS", "the two spec-lets (docs/specs/TAX_SPEC.md among them) - ruled before any code"),
             ("E-28", "OWNER ELIAS", "C-D2's pool resolution - a design question, not a measurement"),
             ("E-29", "OWNER ELIAS", "C-D3's språkrör answer, if he wants the call rather than the record's"),
             ("E-34", "OWNER ELIAS", "the energy spec-let - RULED 2026-09-10 (§454); what stays his: the source docx's whereabouts and, optionally, IRENA's costs PDF (§455)"),
@@ -54,9 +54,8 @@ namespace PoliSim.EditorTools
         /// <summary>Documents that are an excluded owner's in their entirety, with the row that owns them.</summary>
         private static readonly Dictionary<string, string> ExcludedFiles = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "POLISIM_TAX_SPECLET.md", "E-27 (OWNER ELIAS) - the spec-let is ruled before any code; its fetch and its bills wait on that ruling" },
-            { "POLISIM_ENERGY_SPECLET.md", "E-34 (OWNER ELIAS) - the energy spec-let, RULED 2026-09-10 (§454) and kept excluded as the tax spec-let is: its [PROVISIONAL] rows are the docx and the IRENA download, Elias's" },
-            { "ENERGY_SYSTEM_ADAPTED.md", "E-34 (OWNER ELIAS) - reference-and-plan for the energy track; its provenance line waits on the source docx (§451)" },
+            { "docs/specs/TAX_SPEC.md", "E-27 (OWNER ELIAS) - the spec-let is ruled before any code; its fetch and its bills wait on that ruling" },
+            { "docs/specs/ENERGY_SPEC.md", "E-34 (OWNER ELIAS) - the energy spec-let, RULED 2026-09-10 (§454), merged with the adapted concept at §579: its [PROVENANCE] line still waits on the source docx (§451)" },
         };
 
         /// <remarks>A row id is `XX-N` or `XX-Nx` - one lowercase suffix letter for a row opened beside its parent (EN-3b, EN-4d); until 2026-09-12 (§469) the head stopped at the digits and read a lettered row's marker as its parent's, naming EN-3 for EN-3c.</remarks>

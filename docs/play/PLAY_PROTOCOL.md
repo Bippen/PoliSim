@@ -2,7 +2,7 @@
 
 > **RULED 2026-09-22 (§579, CL-5 closed): THE GAME IS RIGHT AND THE PROTOCOL WAS WRONG.** The run-up opening on 7 May 2029 and polling day at the election turn's boundary is D-23 (a) as ruled; the 18 January and 13 September 2026 this protocol used to name were the REAL Swedish election's dates, not the played game's. The protocol now reads the game's own calendar, and `PlayProtocolStaging` cuts the save on it - the dates below are **read from the save, never typed**. `CampaignCalendar.Sweden2026` remains the real election's calendar and is no longer what the play is cut on. E-39 is UNBLOCKED; DS-7 (b) - polling day on the calendar's date - fires after the first play, as sequenced.
 
-One play of Sweden's first election in the played game - the election turn's boundary, 31 December 2029 - from the run-up's first day to election night, on a stated seed, with the twenty-line sheet beside it and the save as the record. This is the protocol S-C3 ruled (`POLISIM_BACKLOG_PLAN.md`, §474); the play itself is Elias's.
+One play of Sweden's first election in the played game - the election turn's boundary, 31 December 2029 - from the run-up's first day to election night, on a stated seed, with the twenty-line sheet beside it and the save as the record. This is the protocol S-C3 ruled (`COMPLETED.md \x{a7}580`, §474); the play itself is Elias's.
 
 ## 1. The seed, stated
 
@@ -27,12 +27,12 @@ Four saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\Defaul
 1. Load `playtest_4_precampaign_day1`. The Desk opens on 7 May 2029, the run-up's first day; the rail's CAMPAIGN cell reads the run-up, which HAS BEGUN on that day (the staging asserts it).
 2. Play the run-up (26 weeks) and the campaign (8 weeks) to polling day, 31 December 2029, and through election night. The eight verbs of the run-up, the campaign's actions, the stories that break and their answers, the debate - every decision goes through the HQ and is queued on the record.
 3. Save at the end of the night (the slot save is enough; a named copy beside it keeps it).
-4. Fill **`PLAY_SHEET.md`** - one line per entry in its last column, the entry's "one thing to look for" as the question. Twenty lines, one each; a line may be "did not arise".
+4. Fill **`docs/play/PLAY_SHEET.md`** - one line per entry in its last column, the entry's "one thing to look for" as the question. Twenty lines, one each; a line may be "did not arise".
 5. The record of the play is the save: `PlayRecordDump.Run -save=<the saved file>` prints every queued decision (day, kind, target, outlay), every story answer and the streams' counts as a table, and that table goes into the record verbatim.
 
 ## 4. What the sheet is for
 
-`PLAY_SHEET.md` is GENERATED (`PlaySheetGenerator`) from `COMPLETED.md` §346 and the code as it stands - the twenty constants are read by reflection at generation, and `PlaySheetCheck` fails the cheap bar the day one moves until the sheet is regenerated. Only the last column is written by hand, and a regeneration keeps it. A constant marked `(was N at §346)` has moved since the list was made; the sheet says which.
+`docs/play/PLAY_SHEET.md` is GENERATED (`PlaySheetGenerator`) from `COMPLETED.md` §346 and the code as it stands - the twenty constants are read by reflection at generation, and `PlaySheetCheck` fails the cheap bar the day one moves until the sheet is regenerated. Only the last column is written by hand, and a regeneration keeps it. A constant marked `(was N at §346)` has moved since the list was made; the sheet says which.
 
 ## 5. After the play
 

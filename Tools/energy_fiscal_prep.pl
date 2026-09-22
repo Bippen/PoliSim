@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # energy_fiscal_prep.pl <sources-dir> <out-dir>
 #
-# Stage 4 of the energy track (EN-4, the fiscal layer; POLISIM_ENERGY_SPECLET.md S7): the retail stack's seed, DERIVED from the
+# Stage 4 of the energy track (EN-4, the fiscal layer; docs/specs/ENERGY_SPEC.md S7): the retail stack's seed, DERIVED from the
 # sources on disk - never typed. Adds to EnergyData/:
 #
 #   retail_2023.csv   per country × customer class: the 2023 consumption and the retail price's components per kWh in the country's

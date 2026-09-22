@@ -124,7 +124,7 @@ namespace PoliSim.Data
             // years); BLS series PRS85006092 (nonfarm business, output per hour, annual % change) for the USA 1.613 (sum 25.8
             // over 16 years) - a narrower perimeter than total economy, stated. One vintage, fetched 2026-09-05 through the
             // Eurostat and BLS APIs; the pandemic years are in. The old arguments (2.0 / 1.5 / 0.8 / 0.8 / 0.8 / 3.5) were total
-            // growth trends that carried the labour force implicitly; POTENTIAL_PREMISE.md measured what that did.
+            // growth trends that carried the labour force implicitly; docs/generated/POTENTIAL_PREMISE.md measured what that did.
             var usa = new Country(
                 CountryId.USA, "United States",
                 new EconomyState(gdp: UsaSeedGdp, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,

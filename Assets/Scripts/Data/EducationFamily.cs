@@ -5,7 +5,7 @@ namespace PoliSim.Data
     /// <summary>
     /// P5-C3 (2026-09-06) - THE EDUCATION FAMILY, the second society-stat family, on Design's grammar (board 9c, inherited by shape:
     /// "PISA mean → KEY·OPEN (band 350–550, higher ◂) · graduation % → KEY·BOUNDED · early leavers % → KEY·BOUNDED, lower ◂ · attainment by
-    /// level → DISTRIBUTION (2a's stacked bar, one row) · students/teacher → CARD-ONLY key") from the spine `EDUCATION_FAMILY_SPINE.md`.
+    /// level → DISTRIBUTION (2a's stacked bar, one row) · students/teacher → CARD-ONLY key") from the spine `docs/data/SOCIETY_STATS.md`.
     /// Per country the seeds the OECD and Eurostat flows gave (attainment by level 25–64, early leavers 18–24, students per teacher) and the
     /// bases the couplings measure against (real education spending per pupil at the seed). PISA and the graduation rate are FETCHES with no
     /// score (ruled 2026-09-06): their rows print the word and the source, and nothing here carries a figure for them.
@@ -68,7 +68,7 @@ namespace PoliSim.Data
             EducationSeeds s = country.Education;
             switch (country.Id)
             {
-                // EDUCATION_FAMILY_SPINE.md §1 (attainment, OECD EAG), §2 (early leavers, Eurostat edat_lfse_14, 2025), §3 (students per teacher, OECD EAG).
+                // docs/data/SOCIETY_STATS.md §1 (attainment, OECD EAG), §2 (early leavers, Eurostat edat_lfse_14, 2025), §3 (students per teacher, OECD EAG).
                 case CountryId.Sweden:  Set(s, 14.0f, 35.2f, 50.8f, 2025, 6.7f, 2025, 12.4f, 11.2f, 2024); break;
                 case CountryId.Germany: Set(s, 14.1f, 50.5f, 35.5f, 2025, 13.1f, 2025, 15.2f, 12.9f, 2024); break;
                 case CountryId.France:  Set(s, 16.1f, 40.6f, 43.4f, 2024, 7.2f, 2025, 18.1f, 14.7f, 2023); break;
@@ -77,7 +77,7 @@ namespace PoliSim.Data
                 case CountryId.USA:     Set(s, 7.7f, 40.1f, 52.2f, 2025, EducationSeeds.Absent, 0, 13.7f, 14.3f, 2024); break;
                 default: return;
             }
-            // The feedback pass's gaps (EDUCATION_FAMILY_SPINE.md §8): activity by attainment, earnings by attainment - the country's own figures, read at the source.
+            // The feedback pass's gaps (docs/data/SOCIETY_STATS.md §8): activity by attainment, earnings by attainment - the country's own figures, read at the source.
             switch (country.Id)
             {
                 case CountryId.Sweden:  Gaps(s, 88.7f - 78.2f, 77.9f, 100.5f, 124.3f); break;

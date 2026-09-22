@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # income_prep.pl <sources-dir> <out-dir>
 #
-# S1 of the backlog plan (POLISIM_BACKLOG_PLAN.md, ruled COMPLETED.md §474): the income-by-age data files for F4-1, the income
+# S1 of the backlog plan (COMPLETED.md \x{a7}580, ruled COMPLETED.md §474): the income-by-age data files for F4-1, the income
 # dimension of the cohort substrate - DERIVED from the sources on disk, never typed. Every input is a file the README lists by digest
 # under PoliSim-captures/sources/income/. Nothing in the runtime reads these files until F4-1's generator does.
 #

@@ -6,7 +6,7 @@ namespace PoliSim.Data
     /// P5-B7 (2026-09-05): POTENTIAL OUTPUT READS THE WORKFORCE. Before this pass EconomyState.PotentialGDP compounded at
     /// Country.PotentialGrowthRate - a seeded trend plus two ceilinged policy adjustments - whatever the working-age
     /// cohort did, so a shrinking country kept its output and (since P5-B3 put the tax bases on the wage bill) lost its
-    /// revenue against it: POTENTIAL_PREMISE.md measured Poland's potential at 31× its seed after a century while its
+    /// revenue against it: docs/generated/POTENTIAL_PREMISE.md measured Poland's potential at 31× its seed after a century while its
     /// labour × productivity read 17×, Italy 2.2× against 1.4×. Now potential is its two factors:
     ///
     /// <para>potential = the seed's potential × (labour input ÷ the seed's labour input) × the productivity index,

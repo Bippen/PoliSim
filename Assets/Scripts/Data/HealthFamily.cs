@@ -5,7 +5,7 @@ namespace PoliSim.Data
 {
     /// <summary>
     /// P5-C2 (2026-09-05, evening) - THE HEALTH FAMILY, the first society-stat family, built on Design's grammar (D15 item 3,
-    /// board 9c) from the spine `HEALTH_FAMILY_SPINE.md`. Per country: the seeds the OECD flows gave (coverage, treatable
+    /// board 9c) from the spine `docs/data/SOCIETY_STATS.md`. Per country: the seeds the OECD flows gave (coverage, treatable
     /// mortality, two waiting times, five supporting readouts) and the bases the couplings measure against (health spending
     /// per head and per age-cost unit at the seed, the minister's efficiency at the seed). The STATE the family moves lives on
     /// EconomyState (HealthCoverage, TreatableMortality, WaitCataractDays, WaitKneeDays) so the trajectory dump and the
@@ -134,7 +134,7 @@ namespace PoliSim.Data
             HealthSeeds s = country.Health;
             switch (country.Id)
             {
-                // OECD DF_HEALTH_PROT (TPRIBASI, COVGCMED), DF_AM (TRTM), DF_WAITING (WAIT_MEAN WTSP), DF_PC / DF_AC - HEALTH_FAMILY_SPINE.md §1-§3.
+                // OECD DF_HEALTH_PROT (TPRIBASI, COVGCMED), DF_AM (TRTM), DF_WAITING (WAIT_MEAN WTSP), DF_PC / DF_AC - docs/data/SOCIETY_STATS.md §1-§3.
                 case CountryId.Sweden:  Set(s, 100f, 100f, 100f, 2024, 45f, 2024, 60.2f, 141.3f, 2025, new[] { 123.1f, 62.0f, 206.0f, 3.4f, 4.9f }, 2023); break;
                 case CountryId.Germany: Set(s, 99.9f, 99.9f, 100f, 2024, 63f, 2022, HealthSeeds.Absent, HealthSeeds.Absent, 0, new[] { 251.5f, 180.5f, 381.5f, 7.9f, 7.0f }, 2023); break;
                 case CountryId.France:  Set(s, 99.9f, 99.9f, 100f, 2025, 46f, 2023, HealthSeeds.Absent, HealthSeeds.Absent, 0, null, 0); break;
@@ -152,7 +152,7 @@ namespace PoliSim.Data
             s.SpendPerAgeCostSeed = SpendPerAgeCost(country);
             s.DeathRateSeed = st.DeathRate;
             s.EfficiencySeed = Efficiency(country);
-            // HEALTH_FAMILY_SPINE.md §9: ln(last ÷ first) ÷ years of the OECD series (deaths per 100 000, age-standardised, total), 2000 (Italy 2003) to the latest published year.
+            // docs/data/SOCIETY_STATS.md §9: ln(last ÷ first) ÷ years of the OECD series (deaths per 100 000, age-standardised, total), 2000 (Italy 2003) to the latest published year.
             switch (country.Id)
             {
                 case CountryId.Sweden:  Trend(s, -0.02980f, 2000, 2024); break;   // 92 → 45

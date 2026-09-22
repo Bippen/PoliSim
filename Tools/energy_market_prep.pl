@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # energy_market_prep.pl <sources-dir> <out-dir>
 #
-# Stage 3 of the energy track (EN-3, the market layer; POLISIM_ENERGY_SPECLET.md S5-S6, ruled §454): the clearing's data files,
+# Stage 3 of the energy track (EN-3, the market layer; docs/specs/ENERGY_SPEC.md S5-S6, ruled §454): the clearing's data files,
 # DERIVED from the sources on disk - never typed. Adds to stage 2's EnergyData/:
 #
 #   dispatch_levels_2023.csv   per zone × block × category, the 2023 output level (MW) in the block's hours, the block's demand
@@ -218,7 +218,7 @@ my %usFuel; { my @rows = xlsx_sheet_rows(slurp("$src/eia_epa_07_04.xlsx"), 1); m
 my $hardCoalEur = $pink{coal} / $fx / (25.12 / 3.6); my $ligniteEur = $usFuel{lignite} / $fx * 3.412 * 1.05; my $gasEur = $pink{gasEu} / $fx / 0.29307 * 1.108; my $oilEur = $pink{brent} / $fx / 1.6998 * 1.06;
 # the USA in US$/MWh(NCV): EPA Table 7.4's delivered costs × 3.412 MMBtu/MWh with the same GCV→NCV factors
 my %usEur = (coal => $usFuel{coal} * 3.412 * 1.05, gas => $usFuel{gas} * 3.412 * 1.108, oil => $usFuel{oil} * 3.412 * 1.06);
-my %ets = (DE => 85.51, FR => 85.51, IT => 85.51, PL => 85.51, SE => 85.51, US => 0);   # ICAP Allowance Price Explorer, EU ETS secondary market 2023 mean (ENERGY_LAYER_SPINE.md §5); no federal carbon price in the USA
+my %ets = (DE => 85.51, FR => 85.51, IT => 85.51, PL => 85.51, SE => 85.51, US => 0);   # ICAP Allowance Price Explorer, EU ETS secondary market 2023 mean (docs/data/ENERGY_LAYER_SPINE.md §5); no federal carbon price in the USA
 my %avail = (coal => 0.85, gas => 0.85, oil => 0.85);   # [AUTHORED-DRAFT] technical availability of a thermal fleet net of outages; the ERAA de-rating row is BILLED
 {
     open my $o, '>:encoding(UTF-8)', "$out/variable_costs_2023.csv" or die $!;

@@ -5,7 +5,7 @@ namespace PoliSim.Data
 {
     /// <summary>
     /// P4-C3 (2026-09-04): the structural per-country parameters a law may move - the quantities the lever map
-    /// (LEVER_MAP.md §2) found no dial and no law reaching. Not player dials: each is a seeded constant of the model
+    /// (docs/generated/LEVER_MAP.md §2) found no dial and no law reaching. Not player dials: each is a seeded constant of the model
     /// (the natural rate of unemployment the Phillips curve reads, the debt-comfort anchor the fiscal reaction reads,
     /// the debt stock's average maturity, the market's risk-premium sensitivity, tax-collection coverage, the
     /// baseline government-consumption share) that an enacted law of a structural category composes on.

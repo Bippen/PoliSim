@@ -4,8 +4,8 @@ using PoliSim.Data.Generated;
 namespace PoliSim.Data
 {
     /// <summary>
-    /// THE ENERGY LAYER, STAGE 2 - THE PHYSICAL LAYER AS READOUTS (2026-09-10; POLISIM_ENERGY_SPECLET.md S1-S15 ruled §454; the data
-    /// ENERGY_LAYER_SPINE.md §455; the build §457). Six countries' fleets by the environment family's seven labels, the 2023 load folded
+    /// THE ENERGY LAYER, STAGE 2 - THE PHYSICAL LAYER AS READOUTS (2026-09-10; docs/specs/ENERGY_SPEC.md S1-S15 ruled §454; the data
+    /// docs/data/ENERGY_LAYER_SPINE.md §455; the build §457). Six countries' fleets by the environment family's seven labels, the 2023 load folded
     /// into three blocks and a peak, Sweden's four bidding zones with the six directed links between them, and the combustion CO₂ of the
     /// fuel the fleets burned - every figure from <see cref="EnergyLayerData"/>, itself generated from files derived from the sources of
     /// record. Pure functions over that catalog: nothing here holds state, nothing here writes <see cref="EconomyState"/>.

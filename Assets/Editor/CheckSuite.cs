@@ -276,7 +276,7 @@ namespace PoliSim.EditorTools
             ("PreWiringPremiseCheck", PreWiringPremiseCheck.Run),
 
             // CL-3 (2026-09-16, §523): the play protocol's two guards - the pre-campaign save cuts and loads back onto the run-up's first day
-            // (a save the protocol names cannot silently stop loading), and PLAY_SHEET.md is the sheet the code and §346 generate today
+            // (a save the protocol names cannot silently stop loading), and docs/play/PLAY_SHEET.md is the sheet the code and §346 generate today
             // (a constant that moves makes the sheet stale by name; Elias's column is the one column the compare ignores).
             ("PlayProtocolCheck", PlayProtocolCheck.Run),
             ("PlaySheetCheck", PlaySheetCheck.Run),
@@ -679,7 +679,7 @@ namespace PoliSim.EditorTools
             ("PreWiringPremiseCheck", PreWiringPremiseCheck.Run),       // the live documents' premise terms
             ("D18InventoryCheck", D18Inventory.Run),                    // the ask's inventory against the repo it describes
             ("DesignNotificationCheck", DesignNotificationCheck.Run),   // a cut screen told to the person drawing it
-            ("PlaySheetCheck", PlaySheetCheck.Run),                     // PLAY_SHEET.md against the code and its source record
+            ("PlaySheetCheck", PlaySheetCheck.Run),                     // docs/play/PLAY_SHEET.md against the code and its source record
             ("MojibakeCheck", MojibakeCheck.Run),                       // text decoded once too few times
             ("ResidueCheck", ResidueCheck.Run),                         // the residue, read off the live documents
         };

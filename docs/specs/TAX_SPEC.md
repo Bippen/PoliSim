@@ -1,14 +1,10 @@
+0
+0
 # The tax spec-let and sourcing bill (C-C12 / P-H1)
 
-**Status: DOCUMENT ONLY. No tax code is built from this until Elias rules on it.** Every line below is
-meant to be struck, amended or approved on its own.
-**Status: RULED 2026-08-31 (Elias, D-3): (c) NOW, (b) WHEN IT RUNS.** Neither branch is built yet, and
-the branch that will be built when it runs is **(b) pluggable schedules** — not (a)'s bracket table.
-**Status 2026-09-13 (`COMPLETED.md` §490): F4-4 LANDED - the schedule row on board 15b's grammar; F4-3 (Sweden's two figures) next.**
+**Status, one line (§579; five dated ones stood here and the record keeps them).** RULED 2026-08-31 (D-3): (c) now, (b) pluggable schedules when it runs - never (a)'s bracket table. Built since: F4-1 the income readout (§479), F4-2 the schedules as their statutes' own shapes (§488), F4-3 Sweden's two layers (§514), F4-4 the schedule row on board 15b (§490), F4-5 the lever's level as the schedule's own average rate on the income it taxes (§517). Italy stays BILLED to E-6. ⚠ §3's finding is the design reason and stays prominent: THREE OF SIX ARE NOT BRACKET TABLES - Germany's § 32a formula, France's bareme per part, Italy's three layers - so one grammar must draw six shapes.
 
-**Status 2026-09-13 (`COMPLETED.md` §488): F4-2 LANDED - the schedules as their statutes' shapes over the cohort incomes converted into each statute's currency, one dial shifting every taxed band, the response a ratio that is one at the seed; the row (F4-4, board 15b) and Sweden's two figures (F4-3) next.**
-
-**Status 2026-09-12 (`COMPLETED.md` §474): the sheets ruled - S7 STRUCK; the income dimension lands first as a readout (F4-1), then the schedules (F4-2), Sweden as one line with two layers (F4-3), the row (F4-4); the order is `POLISIM_BACKLOG_PLAN.md`.**
+⚠ **§3's finding is the design reason and stays prominent: THREE OF SIX ARE NOT BRACKET TABLES** - Germany's § 32a formula, France's bareme per part, Italy's three layers - so one grammar must draw six shapes.
 
 ⚠ **Why (c) is not a deferral in disguise.** The item is **blocked on D-4 whichever branch is chosen**:
 **a bracket schedule applied to a single average income is arithmetically identical to a flat rate**, so
@@ -105,7 +101,7 @@ will misrepresent the other three. **This is the single most important thing in 
 - **S2. ⚠ S1 is NOT sufficient for Germany, France or Italy.** Either (a) accept an approximation for
   those three and **say so on the screen**, in the `[AUTHORED-DRAFT]` idiom, or (b) give `TaxLine` a
   pluggable schedule with three implementations. (a) is cheap and honest; (b) is correct and is a
-  sizeable build. **This is the first thing to rule on.** **Ruled (b) by D-3; the schedule's form is `POLISIM_BACKLOG_PLAN.md` F4-2.**
+  sizeable build. **This is the first thing to rule on.** **Ruled (b) by D-3; the schedule's form is `COMPLETED.md \x{a7}580` F4-2.**
 - **S3. Revenue needs an income DISTRIBUTION, which this model does not have.** A bracket schedule
   applied to a single average income is arithmetically identical to a flat rate at the average's bracket
   — i.e. building S1 without a distribution buys nothing. The distribution comes from **the cohort

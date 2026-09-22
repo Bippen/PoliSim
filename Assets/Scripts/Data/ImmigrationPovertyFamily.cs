@@ -6,7 +6,7 @@ namespace PoliSim.Data
     /// P5-C6 (2026-09-06) - THE IMMIGRATION-AND-POVERTY-DEPTH FAMILY, the fifth society-stat family, on 9c's grammar inherited by shape ("irregular
     /// migration → KEY·OPEN with TWO-DEFINITION chip (Eurostat / DHS) and ABSENT where a year has no estimate · poverty gap % → KEY·BOUNDED ·
     /// underemployment % → KEY·BOUNDED · homelessness → KEY·OPEN with a DEFINITION chip per country"), from the spine
-    /// `IMMIGRATION_POVERTY_FAMILY_SPINE.md`. TWO DEFINITIONS WHERE THE SOURCES HAVE TWO, STATED: the five carry Eurostat's FLOW of third-country
+    /// `docs/data/SOCIETY_STATS.md`. TWO DEFINITIONS WHERE THE SOURCES HAVE TWO, STATED: the five carry Eurostat's FLOW of third-country
     /// nationals found illegally present in the year, the USA the DHS STOCK of unauthorized residents - never one axis; the five's poverty gap is
     /// Eurostat's median gap at the 60 % line, the USA's the OECD's (which reads ten points higher for the same countries), each captioned with its
     /// vintage. Homelessness carries each country's own definition and year (the OECD's table of who counts what).
@@ -58,7 +58,7 @@ namespace PoliSim.Data
             MigrationPovertySeeds s = country.MigrationPoverty;
             switch (country.Id)
             {
-                // IMMIGRATION_POVERTY_FAMILY_SPINE.md §1 (Eurostat migr_eipre 2024 flow per 10 000; DHS OHSS stock 1 Jan 2022), §2 (Eurostat ilc_li11 2025 MED_EI B_60; OECD IDD PG_INC_DISP PL_60),
+                // docs/data/SOCIETY_STATS.md §1 (Eurostat migr_eipre 2024 flow per 10 000; DHS OHSS stock 1 Jan 2022), §2 (Eurostat ilc_li11 2025 MED_EI B_60; OECD IDD PG_INC_DISP PL_60),
                 // §3 (Eurostat lfsi_sup_a / lfsi_emp_a 2024; BLS 2024), §4 (OECD AHD HC3.1.A1).
                 case CountryId.Sweden:  Set(s, false, 2.8f, 2024, 23.1f, false, 22.7f, 2025, 3.60f, 2024, 33f, 2017, "SURVEY 2017 · PIT · NO CHILDREN"); break;
                 case CountryId.Germany: Set(s, false, 29.9f, 2024, 21.7f, false, 31.6f, 2025, 1.18f, 2024, 31f, 2022, "REPORTING ACT 2022 · PIT · CHILDREN"); break;

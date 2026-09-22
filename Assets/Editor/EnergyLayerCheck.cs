@@ -10,7 +10,7 @@ using Debug = UnityEngine.Debug;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// Stage 2 of the energy track, its five gates (ENERGY_LAYER_SPINE.md §11; POLISIM_ENERGY_SPECLET.md §2 and S15; built §457).
+    /// Stage 2 of the energy track, its five gates (docs/data/ENERGY_LAYER_SPINE.md §11; docs/specs/ENERGY_SPEC.md §2 and S15; built §457).
     ///
     /// <para>1 THE FLEET - six countries × seven labels from the office of record, Ember beside each; nuclear, wind and solar agree
     /// within ten per cent or a gigawatt (the classes every source defines alike) or the run fails; the other labels are TAGGED

@@ -269,7 +269,7 @@ namespace PoliSim.EditorTools
                 {
                     foreach (ZipArchiveEntry entry in zip.Entries)
                     {
-                        if (entry.FullName == "SEND_PACKAGE.md")
+                        if (entry.FullName == "SEND_PACKAGE.md")   // s579: THE ZIP ENTRY'S OWN NAME, not a repository path - the document moved to docs/outbound/ and this key did NOT move with it
                         {
                             Debug.Log($"  {Path.GetFileName(zipPath)}: an OUTBOUND paste bundle (SEND_PACKAGE.md at its root) - not a delivery, not judged.");
                             return true;

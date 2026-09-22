@@ -5,7 +5,7 @@ namespace PoliSim.Data
     /// <summary>
     /// P5-C4 (2026-09-06) - THE INFRASTRUCTURE FAMILY, the third society-stat family, on 9c's grammar inherited by shape ("road quality 1–7 →
     /// KEY·BOUNDED with a DATED chip (WEF 2019) · congestion % → KEY·OPEN · road km/1 000 km² → SUPPORTING"), from the spine
-    /// `INFRASTRUCTURE_FAMILY_SPINE.md` (the WEF Global Competitiveness Report 2019 dataset, verified by content). Per country: road quality
+    /// `docs/data/SOCIETY_STATS.md` (the WEF Global Competitiveness Report 2019 dataset, verified by content). Per country: road quality
     /// (ROADINF, the 2019 normalised score - the survey ended with that edition, so the figure is DATED and the instrument prints the year) and
     /// road connectivity (ROADQUALIDX, 0–100 from travel speeds between the ten largest cities). Road length is ABSENT (the IRF World Road
     /// Statistics is paid) and congestion is a FETCH with no figure (the TomTom Traffic Index is a web report).
@@ -46,7 +46,7 @@ namespace PoliSim.Data
             InfrastructureSeeds s = country.Infrastructure;
             switch (country.Id)
             {
-                // WEF_GCI_4.0_2019_Dataset.xlsx - ROADINF 2019 score and rank of 141; ROADQUALIDX 2019 (INFRASTRUCTURE_FAMILY_SPINE.md §1-§2).
+                // WEF_GCI_4.0_2019_Dataset.xlsx - ROADINF 2019 score and rank of 141; ROADQUALIDX 2019 (docs/data/SOCIETY_STATS.md §1-§2).
                 case CountryId.Sweden:  s.RoadQuality = 83.9f; s.RoadQualityRank = 13; s.RoadConnectivity = 95.9f; break;
                 case CountryId.Germany: s.RoadQuality = 83.4f; s.RoadQualityRank = 15; s.RoadConnectivity = 95.1f; break;
                 case CountryId.France:  s.RoadQuality = 85.3f; s.RoadQualityRank = 10; s.RoadConnectivity = 96.6f; break;

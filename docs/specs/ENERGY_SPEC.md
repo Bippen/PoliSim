@@ -1,12 +1,195 @@
-# The energy spec-let and sourcing bill (stage 1 of `ENERGY_SYSTEM_ADAPTED.md`)
+0
+0
+# The energy system - the concept it was adapted from, and the spec-let that was ruled
 
-**Status: DOCUMENT ONLY. No energy code is built from this until Elias rules on it.** Every line of §6
-is meant to be struck, amended or approved on its own; §7 is a recommendation and is strikeable whole.
-The precedent is C-C12's `POLISIM_TAX_SPECLET.md` (E-27) and C-C13: the spec-let is ruled before any code.
+**Status, one line (§579; the dated ones are in the record).** The concept was adapted 2026-09-11 and the spec-let RULED 2026-09-10 (E-34, §454): S1-S15 as written, S14 amended 2026-09-12 (DS-4, §474), the forks S3 and S10 taking the recommendation. Built since through EN-4 to EN-8 and P6-F2 - the fleet, the connection queue, the AI energy ministry HELD; what each stage still owes is a feature-list row, not a line here.
 
-**Status: RULED 2026-09-10 (Elias, E-34; `COMPLETED.md` §454) - S1–S15 as written - **S14 amended 2026-09-12 (DS-4, §474)**, the two forks S3 (the P90 cut) and S10 (appended members) taking the recommendation, §8 as the order of work.** Stage 2's sourcing landed the same night (`ENERGY_LAYER_SPINE.md`, §455) and **stage 2's build landed after it (§457): `EnergyLayer`, `EnergyLayerData`, `EnergyLayerCheck`, `EnergyLayerDump` → `ENERGY_LAYER_PREMISE.md` - readouts, the family's writer unchanged until stage 3.** **Stage 3 (EN-3) LANDED 2026-09-11 (§458–§460): `EnergyMarket` clears every block of every zone; the power figure's writer is the dispatch and the S4 deviation is closed; its own BASELINE family (`traj_en3`).** Stage 4 (EN-4) is the next energy code. The ruling's words: *"continue: the three false lines, the spec-let's fifteen rulings, and stage 2's sourcing."*
+> ⚠ **Part I is REFERENCE MATERIAL, NOT A SPEC** - the same standing as the metric list at Playtest 5. It is kept because it is where every departure was stated with its reason; Part II is what was ruled and built from.
 
-**What this document is not.** `ENERGY_SYSTEM_ADAPTED.md` is the concept adapted to this game; the
+---
+
+## Part I - the concept, adapted (2026-09-11): what was taken, what was refused, and why
+
+**Provenance.** The source is an external concept document (ChatGPT, uploaded 2026-09-11), read in
+full. It is **reference material, not a spec** — the same standing as the metric list at Playtest 5.
+Its research is sound and its sources are real; what follows is the version that fits this game's
+architecture. Every departure is stated with its reason. **Nothing here is built until the spec-let
+is ruled** (the C-C12 / C-C13 / P5-C1 precedent).
+
+**Installed at root 2026-09-10 (`COMPLETED.md` §451) as REFERENCE-AND-PLAN.** Its standing: the plan
+of record for the energy track's eight stages, and a reference for the concept it adapts. ⚠ **The
+source docx is external reference material, not a spec, and it is NOT on disk** - no `.docx`
+matching it exists under the repo, `PoliSim-captures/`, `AssetPackArchive/` or the Design project's
+uploads as of the install; it is recorded by description only (a ChatGPT concept document,
+uploaded 2026-09-11 by its own dating - the day after the install date, which is the document's own
+statement and is kept as written). Should it land, it goes under `PoliSim-captures/sources/` with
+its digest, and this line changes to say so. **Stage 1 is `docs/specs/ENERGY_SPEC.md`** - the
+collision map, the sourcing bill with every series named, the sizing, and the strikeable design -
+**RULED 2026-09-10 as recommended (`COMPLETED.md` §454)**; stage 2's sourcing landed the same night as
+`docs/data/ENERGY_LAYER_SPINE.md` (§455) and its build after it (§457: the physical layer as readouts,
+`docs/generated/ENERGY_LAYER_PREMISE.md` its presentation); stage 3 (EN-3) built 2026-09-11 (§458–§460: the clearing,
+Sweden's zones against the NTCs, the power figure written by the dispatch); stage 4, the fiscal layer,
+is next (EN-4). Design's energy-map prototype is recorded against
+the spec-let's §3 as evidence, not a build item (§452). **No figure here is a datum**; every number in this document is an
+illustration and the spec-let says so of each.
+
+---
+
+## 1. What the concept assumes that this game does not have
+
+Five collisions, each of which would have been discovered expensively:
+
+| The concept assumes | This game holds | Consequence |
+|---|---|---|
+| A daily gameplay tick with hidden 15-minute or hourly slices | `DaysPerTurn = 365` — **one turn is one year**; the day loop exists but a *turn* is a year | 35,040 intraday slices × six countries per turn is not a cost this model can carry, and the player never sees an hour. **Refused.** |
+| One playable country | Six countries, all simulated, five run by AI governments | Anything built is either country-general or honestly absent for five, and says which |
+| A geographic map with plants, lines and animated flows | No geographic map exists — the world map is a six-node graph; board 4a's cartogram is *electoral* (area = k·mandat), not geography | **Map-first is refused for now.** D12 row 1 (a stylized six-country map) is an open Design row; the energy screen is instrument-first until a real map exists |
+| A technology R&D tree | No research system of any kind | **Deferred by name**, with its trigger: the day a research mechanic exists |
+| Plant-level and substation-level assets | No spatial substrate below the country, except Sweden's 29 electoral valkretsar | Fleet is modelled **by technology, not by plant**; zones only where they are real and sourced |
+
+**And one thing this game holds that the concept does not know about:** the environment family
+(P5-C5) already carries electricity mix by source, power CO₂ per head and transport CO₂ per head,
+seeded from EDGAR and Ember and cross-checked. **The energy system must become the mechanism
+underneath those readings, never a second set of numbers.** The single-book rider applies: no
+stored quantity may diverge from its presented value.
+
+## 2. What is kept, and why it is the good half
+
+- **The layered architecture** — physical → market → network → fiscal → political. It maps almost
+  one-to-one onto how this project already separates concerns, and it is why one event can
+  propagate: low wind → gas dispatch → import bill → wholesale price → industrial cost → inflation
+  → approval → parliament. This game already has the last four links.
+- **The two ledgers: "system cost" and "who pays".** The single best idea in the document, and it
+  is this project's own instinct — a subsidy does not lower a cost, it moves its incidence. It
+  matches the effectiveness card's flow-and-level pair and the attribution ledger's discipline.
+- **Merit-order clearing with an area price.** The one mechanic that makes cheap generation and
+  cheap delivered electricity different things, which is the concept's own first principle.
+- **Retail price = wholesale + network + policy + taxes.** This is where energy becomes political
+  and it lands directly on the existing tax and budget architecture.
+- **Installed ≠ dependable capacity**, and the reserve margin that follows from it.
+- **State-triggered events rather than random cards** — the existing catalogue's own idiom.
+- **Delegation with failure modes** — an energy ministry that can be slow, captured or
+  single-KPI-obsessed. This game already has ministers with loyalty, knowledge, efficiency and
+  popularity, and an AI finance ministry running sourced fiscal rules. Delegation is that pattern.
+- **A drillable "why did the price move?" decomposition.** The attribution ledger's shape, applied
+  to a new quantity.
+
+## 3. The adapted design
+
+### 3.1 Time and resolution — the central change
+
+**No intraday.** The year resolves as a **load-duration approximation**: three blocks — base, mid
+and peak — with hours-per-block sourced per country, plus a **winter-peak** case for the adequacy
+test. This is the standard annual capacity-expansion form, it preserves scarcity, merit order and
+reserve margin, and it costs the turn boundary a bounded amount of work. FT-9's rule applies to any
+shock: it enters the daily path over its duration so the year nets to its print.
+
+### 3.2 Zones — Sweden first, exactly as elections did
+
+Sweden's four *elområden* (SE1–SE4) are real, sourced (Energimarknadsinspektionen; Nord Pool's
+bidding-area documentation) and are the whole reason area prices are politics in Sweden. **Sweden
+gets four zones; the other five run as one zone each** until their zone structures are sourced —
+Italy's multiple zones and the USA's three interconnections are named as future items, not
+approximated. The architecture takes zones as data; the seed decides how many.
+
+### 3.3 The physical layer, per country
+
+Fleet **by technology**, not by plant: installed capacity × availability × resource factor, seeded
+from **Ember** (already verified in-project at P5-C5) and **Eurostat/EIA energy balances**.
+Hydro carries a reservoir state because Sweden and Italy are hydro systems and a reservoir is the
+one storage that must not be abstracted away. Demand from the substrate this game already has —
+population and cohorts (F2), GDP and the sector shares on Statistics — plus a sourced electrification
+trend and a weather draw on its own named stream.
+
+### 3.4 The market layer
+
+One annual clearing per block per zone: merit order over variable cost (fuel + carbon + variable
+O&M), constrained by inter-zone transfer capacity, producing an **area price** per zone and a
+congestion rent where a limit binds. A **scarcity term** when dependable capacity approaches
+residual peak. Negative prices permitted rather than special-cased. Fuel and carbon prices are new
+sourced series; the carbon price connects to the existing carbon tax, which currently reaches the
+CO₂ intensities as a readout (P5-C5) and would now reach them through dispatch — **that is the
+carbon tax's base move, already sheeted.**
+
+### 3.5 The fiscal layer — the two ledgers
+
+Every energy policy writes to both: **system cost** (what the electricity actually costs to
+produce and deliver) and **incidence** (who pays — households, industry, taxpayers, generators,
+the state). Retail price decomposes into wholesale, network, policy and tax, each traceable. This
+lands on the existing budget lines and tax instruments; **a support scheme is a spending line and
+its cost indexes like any other** (P5-B2), and revenue follows its base (P5-B3).
+
+### 3.6 Policy, as a matrix and not one slider
+
+The existing Deregulation/Nationalization dial stays but is **not** the whole control. Four
+independent instruments, each a dial or a law family: market liberalisation, retail intervention,
+investment planning, and state ownership — so "private generation + regulated retail" and
+"state-owned grid + liberal wholesale" are both reachable. Neither pole is correct; each buys
+something and costs something, measured. Laws reach the energy parameters the way the monetary
+regime's ten laws reach the Taylor constants.
+
+### 3.7 Delegation — the energy ministry
+
+The AI finance ministry's pattern: a mandate with weights (affordability, reliability,
+decarbonisation, independence, fiscal discipline, industrial competitiveness), a budget, and
+decisions it takes within them, **explained in plain language** through the attribution idiom. It
+inherits the minister attributes: efficiency scales delivery, knowledge narrows disclosure, loyalty
+drives resignation, popularity feeds approval. Its failure modes are the mechanism, not sabotage.
+
+### 3.8 What the player sees — instrument-first, not map-first
+
+Until a geographic map exists, the Energy screen is the Riksbank page's shape at a larger scale:
+the system's state as instruments, the price with its decomposition, the fleet as a distribution,
+the zones as a small multiple, the forecast as the graph idiom at 1l's weights, and the ministry's
+brief as the political half. **Every figure derived; absences drawn as absences.** When D12's
+stylized map lands, the zones can move onto it.
+
+## 4. Refused, deferred, and named
+
+| Item | Disposition |
+|---|---|
+| Intraday / 15-minute simulation | **Refused** — one turn is one year |
+| Plant-level fleet, substations, nodal flow | **Refused** — technology-level fleet; hidden nodes are not needed for the questions this game asks |
+| Animated flow map | **Refused for now** — no geographic map exists; revisit when D12's lands |
+| R&D technology tree | **Deferred by name**, trigger: a research mechanic exists |
+| Three separate markets (day-ahead / intraday / balancing) | **Collapsed to one clearing plus a scarcity term** |
+| Italy's zones, USA's interconnections and RTO structure | **Named future items** — sourced before built, never approximated |
+| Blackout cascade modelling | **Staged**: scarcity → controlled shedding is in; cascading failure is deferred |
+| Ownership as company-level markers | **Mapped** onto the existing nationalization dial and the sovereign wealth fund |
+
+## 5. Staging
+
+Each stage is its own BASELINE family where it touches the model, and **two families never land in
+one pass.**
+
+1. **The spec-let, ruled.** This document, sourced, sized, with the collision map against
+   `EconomyState` and the environment family — **before any code.**
+2. **The physical layer**: fleet, demand, availability, the three blocks, six countries, Sweden's
+   four zones. Readouts only; the environment family's existing figures become derived from it,
+   proving the single book.
+3. **The market layer**: merit order, area prices, congestion, scarcity, negative prices.
+4. **The fiscal layer**: the two ledgers, the retail decomposition, support schemes as spending
+   lines.
+5. **Policy and laws**: the four instruments, and a law category reaching the energy parameters.
+6. **The screen**, on Design's board.
+7. **The ministry**, on the AI finance ministry's pattern.
+8. **Events**, state-triggered, through the existing catalogue.
+
+## 6. The sourcing bill
+
+Ember (in-project, verified) · Eurostat energy balances (`nrg_bal_*`, already fetched for the
+electricity mix) · EIA for the USA · ENTSO-E for transfer capacities and load · Energimarknadsinspektionen
+and Nord Pool for Sweden's zones · IRENA 2024 for technology CAPEX and O&M · IEA for fuel prices
+and price-composition trends. **Every figure sourced with vintage and basis, or `[AUTHORED-DRAFT]`
+with its line. No figure from the concept document is a datum** — it is a research summary, and its
+numbers are illustrations.
+
+
+---
+
+## Part II - the spec-let, ruled: the stages, their sources and their bills
+
+**What this document is not.** `docs/specs/ENERGY_SPEC.md` is the concept adapted to this game; the
 concept itself is an external research summary. **No figure from either is a datum.** Every number in
 this document is either read off the repo (cited by file and line), read off a source reached today
 (cited by series), or marked `[AUTHORED-DRAFT]` on its own line. Where a source could not be reached
@@ -41,7 +224,7 @@ no wholesale price, no fuel price. There is no zone, no capacity, no load.
 recorded in §451 as a defect row):** the Environment plate's foot prints *"THE CARBON TAX'S BASE
 STAYS ON OUTPUT - MOVING IT HERE IS SHEETED, NOT BUILT"* (`GameController.Environment.cs:56`) and
 `SimulationManager.cs:2610`'s comment says the same; both have been false since §349 moved the base.
-`ENVIRONMENT_FAMILY_SPINE.md:3` carries the same sentence. The plate's foot is player-visible.
+`docs/data/SOCIETY_STATS.md:3` carries the same sentence. The plate's foot is player-visible.
 
 ## 2. The collision map — the whole risk
 
@@ -70,7 +253,7 @@ from the layer, or the layer does not touch it and says so on the screen.**
 | `PriceLevel` (P5-B6) | fuel prices, CAPEX and O&M are nominal series in their vintage's prices; the book is in current prices | every price series enters with its vintage and is carried by `PriceLevel` forward - nominal with nominal, never across (B6) |
 | `GDP`, `Population`, cohorts (F2) | demand's drivers | read-only inputs to the physical layer; the layer writes none of them |
 | ⚠ `Sector[Energy].OutputShareOfGdp` (descriptive) | the layer produces a real system cost; a second, unrelated "energy output share" beside it is two books | **stage 4 derives it** (system cost ÷ nominal GDP) or the row is removed from the Sectors screen for Energy and says why - ruled in §6 |
-| ⚠ the five Energy sector dials | the concept's four instruments (market liberalisation, retail intervention, investment planning, state ownership) vs the existing Subsidy / Regulation / Tax Credits / Research Grants / Nationalization-Deregulation rows | **mapped, not doubled**: Nationalization/Deregulation = state ownership; Subsidy = retail intervention's money side; Regulation = market liberalisation (0 light – 100 heavy inverted); Tax Credits = investment planning's incentive; Research Grants stays descriptive (no R&D system - refused in `ENERGY_SYSTEM_ADAPTED.md` §4). The Energy sector's five dials become the layer's instruments **with their existing save keys** (`SectorSubsidyOverrides`, `SectorDeregulationNationalizationOverrides` - append-only enums untouched) |
+| ⚠ the five Energy sector dials | the concept's four instruments (market liberalisation, retail intervention, investment planning, state ownership) vs the existing Subsidy / Regulation / Tax Credits / Research Grants / Nationalization-Deregulation rows | **mapped, not doubled**: Nationalization/Deregulation = state ownership; Subsidy = retail intervention's money side; Regulation = market liberalisation (0 light – 100 heavy inverted); Tax Credits = investment planning's incentive; Research Grants stays descriptive (no R&D system - refused in `docs/specs/ENERGY_SPEC.md` §4). The Energy sector's five dials become the layer's instruments **with their existing save keys** (`SectorSubsidyOverrides`, `SectorDeregulationNationalizationOverrides` - append-only enums untouched) |
 | ⚠ `PolicyDecision.EnergySpendingChange` → `BusinessConfidence` | once industrial electricity cost exists, this is a second channel for the same thing | **retired at stage 4** in favour of the industrial retail price → business confidence; until then untouched |
 | `SpendingCategory.Energy`, `ClimateAndEnvironment` and the indexation (`IndexSpendingLines`, `SimulationManager.cs:3860-3890`) | support schemes are spending lines and index like any other (P5-B2) | new lines are **new `SpendingCategory` members appended** (serialized enum) or sub-lines of `Energy`; ruled in §6 |
 | the AI finance ministry (§387–§388) | it moves the player's levers under the EU rule / US caps; support schemes are new levers | the ministry's rule set reads the new lines like any other; **the energy ministry (stage 7) does not touch the budget except through them** |
@@ -141,7 +324,7 @@ cities are public; capacities, loads, flows and weather are illustrative until t
 names exist. Per the spec-let, this map is deferred until D12 row 1's map lands — the prototype exists
 to see the toggle, not to pre-empt the ruling."* **Its figures are illustrations** - the cut capacities
 it draws (3 300 ⁄ 7 300 ⁄ 5 400) are not data here; the sourced figures are in
-`ENERGY_LAYER_SPINE.md` §4. Two consequences, ruled: **(i) S15 is reinforced** - the three snitt ARE the
+`docs/data/ENERGY_LAYER_SPINE.md` §4. Two consequences, ruled: **(i) S15 is reinforced** - the three snitt ARE the
 SE1–SE4 constraints, so the transfer capacities decide whether Sweden has zones at all, and the map is
 unreadable without them; **(ii) the instrument-first ruling stands** - one country of six with a map is
 a Sweden view, not the subsystem's home page, and the other five would have nothing to draw. **The
@@ -150,7 +333,7 @@ prints in Caution only where its cut is full.**
 
 **The other five run as one zone each, and the screen says so.** Germany-Luxembourg is one bidding
 zone in fact; France one; Poland one. **Italy has seven zones and the USA three interconnections
-with RTO markets inside them** - both are named future items in `ENERGY_SYSTEM_ADAPTED.md` §4 and
+with RTO markets inside them** - both are named future items in `docs/specs/ENERGY_SPEC.md` §4 and
 are *not approximated*: Italy clears as one zone with a printed note that its real market does not,
 the USA likewise. Interconnection with neighbours outside the six (Norway, Denmark, Finland, the
 Baltics, the Alps, Iberia, Canada) is **a net import series per country** from the balance
@@ -160,7 +343,7 @@ Baltics, the Alps, Iberia, Canada) is **a net import series per country** from t
 
 | # | quantity | source and exact series | state |
 |---|---|---|---|
-| 1 | electricity mix 2023, six countries | Ember Yearly Electricity Data via OWID grapher (in-project, `ENVIRONMENT_FAMILY_SPINE.md` §8, cross-checked §342) | **VERIFIED in-project** - the calibration target of stage 2 |
+| 1 | electricity mix 2023, six countries | Ember Yearly Electricity Data via OWID grapher (in-project, `docs/data/SOCIETY_STATS.md` §8, cross-checked §342) | **VERIFIED in-project** - the calibration target of stage 2 |
 | 2 | gross electricity production by fuel, 2023 | Eurostat `nrg_bal_peh` *Production of electricity and derived heat by type of fuel* (updated 2026-06-02 per the API) | **API answers** (`…/statistics/1.0/data/nrg_bal_peh?geo=SE&time=2023`); fetched for the mix cross-check, to be re-fetched whole per country |
 | 3 | complete energy balance, 2023 | Eurostat `nrg_bal_c` | API answers; named in the spine (`:43`) |
 | 4 | electricity supply, transformation, consumption, imports/exports | Eurostat `nrg_cb_e` | API answers; the block-energy gate and the net-import series |
@@ -179,7 +362,7 @@ Baltics, the Alps, Iberia, Canada) is **a net import series per country** from t
 | 17 | electrification trend of transport | Eurostat `road_eqs_carpda` (passenger cars by motor energy) for the stock share; EIA AEO for the USA | [PROVISIONAL]; else the term is zero and stated |
 | 18 | emission factors by fuel | IPCC 2006 Guidelines default factors (Vol. 2, Table 2.2) - the factors EDGAR itself applies | public; cited by table |
 
-**The outcome of the sourcing, 2026-09-10 (`ENERGY_LAYER_SPINE.md`, §455), row by row:** 1 verified
+**The outcome of the sourcing, 2026-09-10 (`docs/data/ENERGY_LAYER_SPINE.md`, §455), row by row:** 1 verified
 again (the seeds equal Ember 2023 to the decimal) · 2–7 fetched by API for five, on disk with digests · 8
 **substituted** - the hourly load came from energy-charts.info's republication of ENTSO-E (five
 countries) and from eSett's open data (SE1–SE4, the settlement authority); ENTSO-E stays the source of
@@ -201,7 +384,7 @@ from, and that is its whole standing.
 
 | ruling | how it is touched | what this document proposes |
 |---|---|---|
-| **The carbon tax's base move (§349, landed)** | the base is the taxed CO₂ - the layer changes *how* the field moves, not what the base is | the base stays; the power half of the field becomes derived (2.1). `ENERGY_SYSTEM_ADAPTED.md` §3.4 calls the move "already sheeted" - **it is landed**, and the stale sentences (§1) are the same error on the screen |
+| **The carbon tax's base move (§349, landed)** | the base is the taxed CO₂ - the layer changes *how* the field moves, not what the base is | the base stays; the power half of the field becomes derived (2.1). `docs/specs/ENERGY_SPEC.md` §3.4 calls the move "already sheeted" - **it is landed**, and the stale sentences (§1) are the same error on the screen |
 | **P5-B3** revenue follows its base | unchanged | the revenue at seed unchanged to the cent |
 | **P5-B2** spending lines persist and index | support schemes are lines | new lines appended to `SpendingCategory`, indexed by `IndexSpendingLines` with a driver in `SpendingDrivers` |
 | **P5-B6** current prices | every energy price series nominal in its vintage | carried by `PriceLevel`; the retail decomposition printed nominal |
@@ -212,7 +395,7 @@ from, and that is its whole standing.
 | **The Riksbank page / monetary regime laws** | the pattern for stage 5's law category ("laws reach the energy parameters the way the ten monetary laws reach the Taylor constants") | a fifth law category - which overlapped the "laws for the dials-only set" row (§378); **both answered by §474** (stage 5's category its own item, EN-7b; the wider set one category a session) |
 | **Numeric inertness (§402)** | every energy constant a tagged line | as everywhere |
 | **The single book** | the whole of §2 | the gates in §2 are the acceptance test of stage 2 |
-| **Board 4a (§438) / no geographic map** | zones drawn as a small multiple, not on a map | as `ENERGY_SYSTEM_ADAPTED.md` §3.8; D12 row 1 unchanged |
+| **Board 4a (§438) / no geographic map** | zones drawn as a small multiple, not on a map | as `docs/specs/ENERGY_SPEC.md` §3.8; D12 row 1 unchanged |
 
 ## 6. The design, to be struck or approved line by line
 
@@ -231,7 +414,7 @@ from, and that is its whole standing.
 - **S5. The ETS price is a sourced exogenous series distinct from `TaxType.CarbonTax`.** Without it
   the EU merit order is wrong at the first clearing. The player's carbon tax adds to it. **EN-4d (ruled 2026-09-11, built 2026-09-12, §467) read the statutes the other way: ETS-covered plant is exempt of the national carbon tax so the two prices do not stack - the fleet's carbon cost is the ETS alone, the tax reaches transport; applied at sector level for want of an installation register, the deviation stated.**
 - **S6. Merit order over variable cost, one clearing per block per zone, transfer-constrained,
-  with a scarcity term and negative prices permitted** (`ENERGY_SYSTEM_ADAPTED.md` §3.4). Stage 3.
+  with a scarcity term and negative prices permitted** (`docs/specs/ENERGY_SPEC.md` §3.4). Stage 3.
   Congestion rent booked to the grid owner in the incidence ledger.
 - **S7. The two ledgers land as one structure**: every policy writes a system-cost entry and an
   incidence vector (households, industry, taxpayers, generators, state). The retail price is the
@@ -253,7 +436,7 @@ from, and that is its whole standing.
   inflation except by the typed constant it was meant to replace.
 - **S13. No energy quantity is daily.** The clearing is annual at the turn boundary; a shock within
   the year enters the daily GDP path over its duration by FT-9 and nothing else. Stated on the screen.
-- **S14. ~~The screen after stages 2–5, on Design's board, once the redirect is recorded~~ AMENDED 2026-09-12 (DS-4, `COMPLETED.md` §474): the page ships STRUCTURALLY FIRST in the v3 grammar, the board second, read the D11 way against the built page** (2.3). Elias: *"Structural ship first in the v3 grammar, the board second, read the D11 way against a built page. The D19 way worked: real parts make a better ask than a description does. I ruled S14 and I am amending it."* Its home: the Sectors page now, the rail cell asked in D20 and taken only if the page proves it needs one (DS-4b). As it stood, a diagnostic dump (`EnergyLayerDump`, the `BUDGET_PREMISE.md` pattern) was the only presentation until the redirect was recorded - readable, generated, never a figure typed; the dump stays the record's presentation beside the page (EN-6).
+- **S14. ~~The screen after stages 2–5, on Design's board, once the redirect is recorded~~ AMENDED 2026-09-12 (DS-4, `COMPLETED.md` §474): the page ships STRUCTURALLY FIRST in the v3 grammar, the board second, read the D11 way against the built page** (2.3). Elias: *"Structural ship first in the v3 grammar, the board second, read the D11 way against a built page. The D19 way worked: real parts make a better ask than a description does. I ruled S14 and I am amending it."* Its home: the Sectors page now, the rail cell asked in D20 and taken only if the page proves it needs one (DS-4b). As it stood, a diagnostic dump (`EnergyLayerDump`, the `docs/generated/BUDGET_PREMISE.md` pattern) was the only presentation until the redirect was recorded - readable, generated, never a figure typed; the dump stays the record's presentation beside the page (EN-6).
 - **S15. Do not start stage 2 before the Sweden transfer capacities are in hand** (3.2). Four zones
   without the links between them is one zone drawn four times.
 
@@ -311,7 +494,7 @@ rose 28 % in a century of population decline with nothing burned).
 sized; S8 (the HICP pass-through) is its own pass still, opened as EN-5. **S8 landed the same day as its own pass (§465):** the household price's change relative to the general price level times electricity's sourced index weight (Eurostat `prc_hicp_inw` CP0451; the BLS CPI-U relative importance for the USA) is a price-level term on the Phillips map that expectations look through - stage 4 complete, two passes, one day. What landed against row 4's
 text, and where it deviates: (i) **the retail stack is decomposed per class** (households, non-households)
 into wholesale + a FITTED supply margin + network + policy levies + environmental tax + VAT - the
-wholesale from the dispatch, the rest Eurostat's 2023 components (`ENERGY_LAYER_SPINE.md` §6) carried by
+wholesale from the dispatch, the rest Eurostat's 2023 components (`docs/data/ENERGY_LAYER_SPINE.md` §6) carried by
 the price level, VAT at the implied rate; it reproduces the components at the seed and is written to
 the state each year and presented as written (the single-book rider). The margins are the layer's second
 set of fitted parameters, two per country - Germany +0.117 / +0.047, France +0.057 / +0.132, Italy +0.156 / +0.077, Poland −0.031 / +0.018, Sweden −0.007 / −0.019, the USA +0.135 / +0.082 $ per kWh in the book's dollars, households / non-households - counted with the market's ten
@@ -346,9 +529,9 @@ one. If the links cannot be sourced, Sweden runs as one zone with its four named
 and the four wait, exactly as Italy's seven and the USA's three do.
 
 **Ruled as recommended, 2026-09-10 (§454).** The links were sourced the same night (S15's condition
-met: Svenska kraftnät's own figures, `ENERGY_LAYER_SPINE.md` §4), so stage 2 lands Sweden's four zones,
+met: Svenska kraftnät's own figures, `docs/data/ENERGY_LAYER_SPINE.md` §4), so stage 2 lands Sweden's four zones,
 not one.
 
 **What this ruling does NOT foreclose:** the geographic map (D12 row 1), an R&D system (refused by
 name with its trigger), Italy's and the USA's zone structures, cascading-failure modelling, the
-1-in-N cold year - each named in `ENERGY_SYSTEM_ADAPTED.md` §4 with its disposition, none approximated.
+1-in-N cold year - each named in `docs/specs/ENERGY_SPEC.md` §4 with its disposition, none approximated.

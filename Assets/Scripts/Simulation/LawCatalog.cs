@@ -1891,7 +1891,7 @@ namespace PoliSim.Simulation
             },
             // ================================================================================================
             // P4-C3, category three - LABOUR-MARKET INSTITUTIONS (2026-09-04): the first category built from the
-            // lever map's unreached set (LEVER_MAP.md §2), reaching the NATURAL RATE OF UNEMPLOYMENT, which no dial
+            // lever map's unreached set (docs/generated/LEVER_MAP.md §2), reaching the NATURAL RATE OF UNEMPLOYMENT, which no dial
             // and no law reached before. Ten laws, each with one thirteenth-effect delta in percentage points
             // (DialMagnitudeScales x15 for the tier grid) and its own reading on the economic axis (LrEconToward10),
             // because a NAIRU move's sign does not tell a law's politics. Citations carry the catalog's classes:
@@ -2356,7 +2356,7 @@ namespace PoliSim.Simulation
             // class, reaching StructuralParameter.ElectricityTaxHouseholds / ElectricityTaxNonHouseholds (euros per MWh at x1 on the tier grid);
             // every one RequiresElectricityTaxStatute (the USA has no federal electricity excise). The ledger moves the retail stack's
             // environmental-tax component by the change within its coverage, the business rate never below the EU minimum, and books the excise
-            // change to the budget. Each precedent's act and size is read from its saved file (ENERGY_LAYER_SPINE.md §15); the law's size is
+            // change to the budget. Each precedent's act and size is read from its saved file (docs/data/ENERGY_LAYER_SPINE.md §15); the law's size is
             // authored in euros per MWh, cited in direction. Tax cuts read right, rises left.
             // ================================================================================================
 

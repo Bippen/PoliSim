@@ -6,7 +6,7 @@ namespace PoliSim.Data
     /// <summary>
     /// P5-C5 (2026-09-06) - THE ENVIRONMENT FAMILY, the fourth society-stat family, on 9c's grammar inherited by shape ("total CO₂/head → KEY·OPEN,
     /// lower ◂ · power / transport split → DISTRIBUTION of the key (stacked bar under it) · generation by source → DISTRIBUTION - the family picks
-    /// one"), from the spine `ENVIRONMENT_FAMILY_SPINE.md` (the EDGAR 2024 booklet, verified by content; World Bank populations for the per-head
+    /// one"), from the spine `docs/data/SOCIETY_STATS.md` (the EDGAR 2024 booklet, verified by content; World Bank populations for the per-head
     /// division). Per country: greenhouse gases per capita 2023 (the headline, all gases), CO₂ from the power industry and from transport per capita
     /// 2023. The electricity mix seeded 2023 (Ember, cross-checked §342) is the energy layer's calibration target; the plate shows the dispatched one.
     ///
@@ -77,7 +77,7 @@ namespace PoliSim.Data
             EnvironmentSeeds s = country.Environment;
             switch (country.Id)
             {
-                // EDGAR_2024_GHG_booklet_2024.xlsx: GHG per capita 2023; Power Industry and Transport CO₂ 2023 over WB SP.POP.TOTL 2023 (ENVIRONMENT_FAMILY_SPINE.md §1-§2).
+                // EDGAR_2024_GHG_booklet_2024.xlsx: GHG per capita 2023; Power Industry and Transport CO₂ 2023 over WB SP.POP.TOTL 2023 (docs/data/SOCIETY_STATS.md §1-§2).
                 case CountryId.Sweden:  s.GhgPerCapita = 4.76f;  s.PowerCo2PerCapita = 0.56f; s.TransportCo2PerCapita = 1.26f; s.MixShares = Mix(0.0f, 0.1f, 29.2f, 39.9f, 20.6f, 1.9f); break;
                 case CountryId.Germany: s.GhgPerCapita = 8.26f;  s.PowerCo2PerCapita = 2.13f; s.TransportCo2PerCapita = 1.68f; s.MixShares = Mix(24.6f, 15.1f, 1.4f, 4.2f, 27.7f, 12.6f); break;
                 case CountryId.France:  s.GhgPerCapita = 5.81f;  s.PowerCo2PerCapita = 0.35f; s.TransportCo2PerCapita = 1.79f; s.MixShares = Mix(0.3f, 5.8f, 65.2f, 10.8f, 9.7f, 4.4f); break;
