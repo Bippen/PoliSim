@@ -237,12 +237,12 @@ namespace PoliSim.Simulation
             if (mw > 0)
             {
                 // P6-F2e (§551): the connection queue's capacity binds the ministry as it binds the player - it orders what the queue has room for and says what it could not
-                double room = EnergyConnectionQueue.RoomMw(country, label);
-                if (EnergyConnectionQueue.RefusalFor(country, label, mw) != null)   // the queue's ONE rule - the inequality Place itself tests, never a second copy of it
+                double room = EnergyConnectionQueue.RoomMw(country, label, year);   // §575: the year the order will carry - the ministry decides AT the boundary for the year about to be played
+                if (EnergyConnectionQueue.RefusalFor(country, label, mw, year) != null)   // the queue's ONE rule - the inequality Place itself tests, never a second copy of it
                 {
                     double fits = room >= MinOrderMw ? room : 0.0;   // below the noise floor nothing is placed, and the whole step is what was deferred
                     decision.Deferred.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1}: {2} +{3:0} MW DEFERRED OF +{4:0} - THE CONNECTION QUEUE HAS ROOM FOR {5:0} MW: {6}", country.Id, year,
-                        EnergyLayerData.Labels[label].ToUpperInvariant(), mw - fits, mw, room, EnergyConnectionQueue.RefusalFor(country, label, mw)));
+                        EnergyLayerData.Labels[label].ToUpperInvariant(), mw - fits, mw, room, EnergyConnectionQueue.RefusalFor(country, label, mw, year)));
                     mw = fits;
                     if (mw < MinOrderMw) { return; }
                 }

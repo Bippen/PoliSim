@@ -160,8 +160,8 @@ namespace PoliSim.UI
                 var plus = new Rect(cx + chipW + StatsUnit(4f), line.y + (lh - chipH) * 0.5f, chipW, chipH);
                 if (DrawDeskChipButton(minus, "-", chipCaption, false, !can)) { EnergyFleet.Place(country, k, -step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary - the cached preview is of a fleet without it
                 // P6-F2e (§551): a step the connection queue has no room for is REFUSED, and the line says why - the step up draws disabled, the step down stands
-                string full = can ? EnergyConnectionQueue.FullText(country, k) : null;
-                double up = can ? EnergyConnectionQueue.StepUpMw(country, k, step) : step;   // a step larger than the line's room is the room - the last step lands on the published figure
+                string full = can ? EnergyConnectionQueue.FullText(country, k, year) : null;
+                double up = can ? EnergyConnectionQueue.StepUpMw(country, k, step, year) : step;   // a step larger than the line's room is the room - the last step lands on the published figure
                 if (DrawDeskChipButton(plus, "+", chipCaption, false, !can || full != null)) { EnergyFleet.Place(country, k, up, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }
                 double queued = EnergyFleet.QueuedMw(country, k);
                 string queuedText = can
@@ -180,7 +180,7 @@ namespace PoliSim.UI
             lineY += styles.CapH;
             // P6-F2e (§551): what the queue HOLDS - the operator's own published queue, line by line, with what stands in each - and whose queue it is; BILLED where none is published
             // in the regular face and the primary ink: the USA's five lines, every one filled, run to some hundred and forty characters - the bold caption face holds a hundred and thirty at 1280
-            PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), EnergyConnectionQueue.CapacityText(country), DeskCaption(8f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleLeft));
+            PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), EnergyConnectionQueue.CapacityText(country, year), DeskCaption(8f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleLeft));
             lineY += EnergyDecisionsQueueLineHeight;
             PoliSimWidgets.MeasuredLabel(new Rect(left, lineY, width, EnergyDecisionsQueueLineHeight), EnergyConnectionQueue.SourceText(country), small);
             lineY += EnergyDecisionsQueueLineHeight;

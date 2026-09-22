@@ -547,18 +547,18 @@ namespace PoliSim.Testing
                         }
                         else { Debug.LogError($"SHOT: no wind order could be placed - {energyStem}_decisions_ordered not filmed."); }
                         // P6-F2e (2026-09-21, §551): the queue FULL - solar steps placed until the queue refuses one, filmed with the step up disabled and the sentence on its line, and
-                        // every step withdrawn after the frame. Where the capacity is billed (Germany) no step is ever refused: nothing to film, and the rest frame already says BILLED.
+                        // every step withdrawn after the frame. §575: Germany's line is the EEG's annual volume, so the steps fill THAT YEAR's volume and the refusal is the statute's sentence - the same shot, in the source's own words. Where a technology's capacity is billed (no line at all) no step is ever refused: nothing to film, and the rest frame says BILLED.
                         if (player != null && fleetSim != null && EnergyConnectionQueue.LineOf(player.Id, 5) != null && EnergyFleet.CanOrder(player.Id, 5))
                         {
                             var steps = new System.Collections.Generic.List<EnergyFleet.Order>();
                             for (int guard = 0; guard < 4000; guard++)
                             {
-                                double up = EnergyConnectionQueue.StepUpMw(player, 5, EnergyFleet.StepMw(player.Id));   // the page's own step: the last one is the room
+                                double up = EnergyConnectionQueue.StepUpMw(player, 5, EnergyFleet.StepMw(player.Id), player.CalendarYear);   // the page's own step: the last one is the room
                                 EnergyFleet.Order step = up >= 1.0 ? EnergyFleet.Place(player, 5, up, player.CalendarYear, fleetSim.CurrentTurn) : null;
                                 if (step == null) { break; }
                                 steps.Add(step);
                             }
-                            bool refused = EnergyConnectionQueue.FullText(player, 5) != null && EnergyFleet.CannotPlaceWhy(player, 5, 1.0) != null;
+                            bool refused = EnergyConnectionQueue.FullText(player, 5, player.CalendarYear) != null && EnergyFleet.CannotPlaceWhy(player, 5, 1.0, player.CalendarYear) != null;
                             if (!refused) { Debug.LogError($"SHOT: the solar queue never refused a step - {energyStem}_decisions_queue_full not filmed."); }
                             // the queue's lines are one per order: a full queue is many steps, so its plate is scrolled to the technology lines, where the refusal stands
                             yield return Settle();

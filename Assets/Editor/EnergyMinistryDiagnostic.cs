@@ -151,77 +151,137 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>
-        /// P6-F2e (§551), asserted: the connection queue holds what the country's operator publishes and no more. For every line of every published queue - a build of the line's
-        /// whole figure stands, a megawatt more is refused with the queue's own sentence, a retirement is never refused and takes no room, a landed order frees its megawatts, and the
-        /// line's technologies share one room. Where the capacity is BILLED (Germany; a technology the published queue has no line for) an order of any size stands. And the
-        /// figures are the COUNTRY's: a second world's queue is empty whatever the first one holds (§544's class).
+        /// P6-F2e (§551; the third kind of source §575), asserted: a country's connection capacity holds what its SOURCE allows and no more, in the terms of the kind that source
+        /// is. For every line of every sourced country - a build of the line's whole figure for the year stands, a megawatt more is refused in the source's own words, a retirement
+        /// is never refused and takes no room, the line's technologies share one room, and the figures are the COUNTRY's (a second world's is empty whatever the first holds,
+        /// §544's class). Then the two kinds part, and that parting is the point of this assertion: on an OPERATOR QUEUE a landed order FREES its megawatts, because the stock is
+        /// what is in process; on a STATUTE a landed order frees NOTHING in its own year, because the volume was taken when it was awarded - and the next year's volume is whole,
+        /// at its own figure. A statute's schedule is asserted too: the years ascend, CapMw is the last volume named, and the convention past the last year and before the first
+        /// stands where the class note says it does. Where the capacity is billed (a technology its source has no line for) an order of any size stands.
         /// </summary>
         private static void QueueHoldsWhatIsPublished(StringBuilder sb, List<string> failures)
         {
-            sb.Append("    the connection queue's capacity (P6-F2e):\n");
+            sb.Append("    the connection capacity (P6-F2e; the statute kind, §575):\n");
             foreach (CountryId id in new[] { CountryId.USA, CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland })
             {
                 World a = WorldFactory.CreateDefault(), b = WorldFactory.CreateDefault();
                 Country c = a.GetCountry(id), other = b.GetCountry(id);
                 EnergyConnectionQueue.Published p = EnergyConnectionQueue.Of(id);
-                if (p == null) { failures.Add(F("{0}: the catalog holds no entry - a covered country is either published or billed", id)); continue; }
-                sb.Append(F("    {0,-8} {1}\n             {2}\n", id, EnergyConnectionQueue.CapacityText(c), EnergyConnectionQueue.SourceText(c)));
+                if (p == null) { failures.Add(F("{0}: the catalog holds no entry - a covered country is either sourced or billed", id)); continue; }
+                int year = c.CalendarYear;   // §575: the year an order placed here will carry - the one a statute's volume is counted in
+                bool statute = p.Kind == EnergyConnectionQueue.SourceKind.Statute;
+                sb.Append(F("    {0,-8} [{1}] {2}\n             {3}\n", id, p.Kind, EnergyConnectionQueue.CapacityText(c, year), EnergyConnectionQueue.SourceText(c)));
                 if (p.BilledWhy != null)
                 {
                     if (p.Lines.Length != 0) { failures.Add(F("{0}: billed and yet carries lines", id)); }
-                    if (EnergyFleet.CanOrder(id, 4) && EnergyFleet.Place(c, 4, 1e6, 2026, 0) == null) { failures.Add(F("{0}: the capacity is billed, so a terawatt of wind must stand - and it was refused", id)); }
+                    if (p.Kind != EnergyConnectionQueue.SourceKind.Billed) { failures.Add(F("{0}: billed and yet not of the billed kind - the page would name the wrong one", id)); }
+                    if (EnergyFleet.CanOrder(id, 4) && EnergyFleet.Place(c, 4, 1e6, year, 0) == null) { failures.Add(F("{0}: the capacity is billed, so a terawatt of wind must stand - and it was refused", id)); }
                     continue;
                 }
+                string fullSaid = statute ? "THE YEAR'S TENDER VOLUME IS TAKEN" : "THE QUEUE IS FULL";
+                string pastSaid = statute ? "THE ORDER IS PAST THE YEAR'S TENDER VOLUME" : "THE ORDER IS PAST THE QUEUE'S ROOM";
                 foreach (EnergyConnectionQueue.Line line in p.Lines)
                 {
-                    if (!(line.CapMw > 0) || string.IsNullOrEmpty(line.Made)) { failures.Add(F("{0} {1}: a line without its figure or without the publisher's cells it is made of", id, line.Name)); }
+                    double cap = line.CapMwIn(year);
+                    if (!(cap > 0) || string.IsNullOrEmpty(line.Made)) { failures.Add(F("{0} {1}: a line without its figure or without the source's own cells it is made of", id, line.Name)); }
+                    // §575: the schedule and the standing figure are ONE figure - CapMw is the last volume the statute names, and every reader goes through CapMwIn
+                    if (statute)
+                    {
+                        if (line.Schedule == null || line.Schedule.Length == 0) { failures.Add(F("{0} {1}: a statute's line without a schedule of years", id, line.Name)); continue; }
+                        for (int s = 0; s < line.Schedule.Length; s++)
+                        {
+                            EnergyConnectionQueue.Line.Volume v = line.Schedule[s];
+                            if (v.Through < v.Year) { failures.Add(F("{0} {1}: a volume named from {2} through {3} - the statute cannot stop speaking before it starts", id, line.Name, v.Year, v.Through)); }
+                            if (s > 0 && v.Year != line.Schedule[s - 1].Through + 1) { failures.Add(F("{0} {1}: the schedule gaps or overlaps at {2} - the one before it runs through {3}, and CapMwIn would read a year the statute did name as one it did not", id, line.Name, v.Year, line.Schedule[s - 1].Through)); }
+                        }
+                        int last = line.Schedule[line.Schedule.Length - 1].Through;   // the last year the STATUTE names, not the last the figure changes in
+                        if (line.NamedThrough != last) { failures.Add(F("{0} {1}: NamedThrough reads {2} and the schedule's last year is {3}", id, line.Name, line.NamedThrough, last)); }
+                        // §575: the convention is disclosed ON THIS LINE from the year after the statute stops naming it, and never in a year it names - the
+                        // row-wide clause of the first cut stayed silent through 2029 while wind (named to 2028) already ran on it, and a 2029 film frame showed it
+                        string mark = "(" + last + "'S VOLUME, BY CONVENTION)";
+                        string inNamed = LineSegment(EnergyConnectionQueue.CapacityText(c, last), line.Name), pastNamed = LineSegment(EnergyConnectionQueue.CapacityText(c, last + 1), line.Name);
+                        if (inNamed == null || inNamed.Contains("CONVENTION")) { failures.Add(F("{0} {1}: in {2}, a year the statute names, the page's line reads '{3}'", id, line.Name, last, inNamed ?? "nothing")); }
+                        if (pastNamed == null || !pastNamed.EndsWith(mark, StringComparison.Ordinal)) { failures.Add(F("{0} {1}: in {2} the line runs on the convention and the page's line reads '{3}' - it must end {4}", id, line.Name, last + 1, pastNamed ?? "nothing", mark)); }
+                        sb.Append(F("             {0}: in {1} the page reads '{2}'; in {3} '{4}'\n", line.Name, last, inNamed, last + 1, pastNamed));
+                        if (Math.Abs(line.CapMwIn(last) - line.CapMw) > 1e-6) { failures.Add(F("{0} {1}: CapMw reads {2:0} and the last volume the statute names is {3:0} ({4}) - two figures for one line", id, line.Name, line.CapMw, line.CapMwIn(last), last)); }
+                        if (Math.Abs(line.CapMwIn(last + 50) - line.CapMw) > 1e-6) { failures.Add(F("{0} {1}: past the last year the statute names, its last volume does not stand on", id, line.Name)); }
+                        if (Math.Abs(line.CapMwIn(line.Schedule[0].Year - 1) - line.Schedule[0].Mw) > 1e-6) { failures.Add(F("{0} {1}: before the first year the statute names, its first volume does not stand", id, line.Name)); }
+                        sb.Append(F("             {0}: the statute's schedule {1}, CapMwIn({2}) = {3:0} MW\n", line.Name, ScheduleText(line), year, cap));
+                    }
+                    else if (line.Schedule != null) { failures.Add(F("{0} {1}: an operator's line carries a schedule of years - one publisher, one date, one figure", id, line.Name)); }
                     int tech = -1; foreach (int t in line.Technologies) { if (EnergyFleet.CanOrder(id, t)) { tech = t; break; } }
                     if (tech < 0) { sb.Append(F("             {0}: no technology of the line can be ordered here - nothing to fill\n", line.Name)); continue; }
-                    EnergyFleet.Order whole = EnergyFleet.Place(c, tech, line.CapMw, 2026, 0);
-                    if (whole == null) { failures.Add(F("{0} {1}: the line's whole figure ({2:0} MW) was refused in an empty queue", id, line.Name, line.CapMw)); continue; }
-                    string why = EnergyFleet.CannotPlaceWhy(c, tech, 1.0);
-                    if (EnergyFleet.Place(c, tech, 1.0, 2026, 0) != null || why == null || !why.StartsWith("THE QUEUE IS FULL", StringComparison.Ordinal)) { failures.Add(F("{0} {1}: a megawatt past the line's figure stood, or was refused without the queue's sentence ({2})", id, line.Name, why ?? "no sentence")); }
-                    foreach (int t in line.Technologies) { if (t != tech && EnergyFleet.CanOrder(id, t) && EnergyFleet.Place(c, t, 1.0, 2026, 0) != null) { failures.Add(F("{0} {1}: {2} shares the line and took a megawatt from a full queue", id, line.Name, EnergyLayerData.Labels[t])); } }
-                    if (EnergyFleet.CannotPlaceWhy(c, tech, -1.0) != null) { failures.Add(F("{0} {1}: a retirement was refused by a full queue - a retirement is not a connection", id, line.Name)); }
-                    EnergyFleet.Order leaves = EnergyFleet.Place(c, tech, -100.0, 2026, 0);   // really placed: a retirement stands in a full line, takes no room and GIVES none
+                    EnergyFleet.Order whole = EnergyFleet.Place(c, tech, cap, year, 0);
+                    if (whole == null) { failures.Add(F("{0} {1}: the line's whole figure ({2:0} MW) was refused in an empty line", id, line.Name, cap)); continue; }
+                    string why = EnergyFleet.CannotPlaceWhy(c, tech, 1.0, year);
+                    if (EnergyFleet.Place(c, tech, 1.0, year, 0) != null || why == null || !why.StartsWith(fullSaid, StringComparison.Ordinal)) { failures.Add(F("{0} {1}: a megawatt past the figure stood, or was refused without the source's own sentence ({2})", id, line.Name, why ?? "no sentence")); }
+                    foreach (int t in line.Technologies) { if (t != tech && EnergyFleet.CanOrder(id, t) && EnergyFleet.Place(c, t, 1.0, year, 0) != null) { failures.Add(F("{0} {1}: {2} shares the line and took a megawatt from a full one", id, line.Name, EnergyLayerData.Labels[t])); } }
+                    if (EnergyFleet.CannotPlaceWhy(c, tech, -1.0, year) != null) { failures.Add(F("{0} {1}: a retirement was refused by a full line - a retirement is not a connection", id, line.Name)); }
+                    EnergyFleet.Order leaves = EnergyFleet.Place(c, tech, -100.0, year, 0);   // really placed: a retirement stands in a full line, takes no room and GIVES none
                     if (leaves == null) { failures.Add(F("{0} {1}: a retirement of 100 MW could not be placed in a full line", id, line.Name)); }
-                    if (Math.Abs(EnergyConnectionQueue.StandingMw(c, line) - line.CapMw) > 1e-6 || EnergyConnectionQueue.RoomMw(c, tech) > 1e-6) { failures.Add(F("{0} {1}: a retirement in the queue changed what stands in the line ({2:0} of {3:0} MW) - it gave room, or took it", id, line.Name, EnergyConnectionQueue.StandingMw(c, line), line.CapMw)); }
+                    if (Math.Abs(EnergyConnectionQueue.TakenMw(c, line, year) - cap) > 1e-6 || EnergyConnectionQueue.RoomMw(c, tech, year) > 1e-6) { failures.Add(F("{0} {1}: a retirement changed what stands against the line ({2:0} of {3:0} MW) - it gave room, or took it", id, line.Name, EnergyConnectionQueue.TakenMw(c, line, year), cap)); }
                     if (leaves != null) { EnergyFleet.Withdraw(c, leaves); }
-                    if (Math.Abs(EnergyConnectionQueue.StandingMw(other, line)) > 1e-9 || EnergyFleet.CannotPlaceWhy(other, tech, 1.0) != null) { failures.Add(F("{0} {1}: the second world's queue is not empty - the queue is shared between worlds", id, line.Name)); }
-                    if (EnergyConnectionQueue.FullText(c, tech) == null || EnergyConnectionQueue.StepUpMw(c, tech, EnergyFleet.StepMw(id)) >= 1.0) { failures.Add(F("{0} {1}: the line is full and the page would still offer a step, or would not say the queue is full", id, line.Name)); }
+                    if (Math.Abs(EnergyConnectionQueue.TakenMw(other, line, year)) > 1e-9 || EnergyFleet.CannotPlaceWhy(other, tech, 1.0, year) != null) { failures.Add(F("{0} {1}: the second world's line is not empty - the capacity is shared between worlds", id, line.Name)); }
+                    if (EnergyConnectionQueue.FullText(c, tech, year) == null || EnergyConnectionQueue.StepUpMw(c, tech, EnergyFleet.StepMw(id), year) >= 1.0) { failures.Add(F("{0} {1}: the line is full and the page would still offer a step, or would not say so", id, line.Name)); }
+                    // ⚠ HERE THE TWO KINDS PART (§575). An operator's queue is a stock: the landed order leaves it and its megawatts are the line's again, in the SAME year. A
+                    // statute's volume is a flow: it was taken when the connection was awarded, so landing frees nothing in that year - and it is the NEXT year that is whole.
                     EnergyFleet.Advance(c, whole.OnlineTurn, whole.OnlineYear);
-                    double offered = EnergyConnectionQueue.StepUpMw(c, tech, EnergyFleet.StepMw(id));
-                    if (offered > line.CapMw + 1e-6 || offered < 1.0 || EnergyFleet.CannotPlaceWhy(c, tech, offered) != null) { failures.Add(F("{0} {1}: in an empty line the page offers a step of {2:0} MW that the queue would refuse (the line holds {3:0})", id, line.Name, offered, line.CapMw)); }
-                    if (!whole.Landed || EnergyFleet.CannotPlaceWhy(c, tech, line.CapMw) != null) { failures.Add(F("{0} {1}: the order landed and its megawatts were not freed", id, line.Name)); }
-                    // THE MID-STATE: half a step short of the figure, the page's step is exactly that half, it can be placed, and then the line is full; and an order past the room that
-                    // is left says ROOM, not FULL (the review: the sentence said FULL of an empty queue)
-                    double stepMw = EnergyFleet.StepMw(id), half = Math.Floor(Math.Min(stepMw, line.CapMw) / 2.0);
-                    EnergyFleet.Order most = half >= 1.0 ? EnergyFleet.Place(c, tech, line.CapMw - half, 2026, 0) : null;
+                    if (!whole.Landed) { failures.Add(F("{0} {1}: the order did not land at its own turn", id, line.Name)); }
+                    int freeYear = statute ? year + 1 : year;
+                    double freeCap = line.CapMwIn(freeYear);
+                    if (statute)
+                    {
+                        if (EnergyFleet.CannotPlaceWhy(c, tech, 1.0, year) == null) { failures.Add(F("{0} {1}: the order landed and {2}'s volume was freed - a tender volume is taken when it is awarded, not when the plant connects", id, line.Name, year)); }
+                        if (EnergyConnectionQueue.RefusalFor(c, tech, freeCap + 1.0, freeYear) == null) { failures.Add(F("{0} {1}: {2} took a megawatt more than the statute names for it", id, line.Name, freeYear)); }
+                    }
+                    if (EnergyFleet.CannotPlaceWhy(c, tech, freeCap, freeYear) != null) { failures.Add(F("{0} {1}: {2} is not whole ({3:0} MW refused)", id, line.Name, statute ? freeYear + "'s volume" : "the landed order's room", freeCap)); }
+                    double offered = EnergyConnectionQueue.StepUpMw(c, tech, EnergyFleet.StepMw(id), freeYear);
+                    if (offered > freeCap + 1e-6 || offered < 1.0 || EnergyFleet.CannotPlaceWhy(c, tech, offered, freeYear) != null) { failures.Add(F("{0} {1}: in a whole line the page offers a step of {2:0} MW that would be refused (the line holds {3:0})", id, line.Name, offered, freeCap)); }
+                    // THE MID-STATE: half a step short of the figure, the page's step is exactly that half, it can be placed, and then the line is full; and an order past the room
+                    // that is left says ROOM (or, of a statute, PAST THE YEAR'S VOLUME), not FULL (the F2e review: the sentence said FULL of an empty queue)
+                    double stepMw = EnergyFleet.StepMw(id), half = Math.Floor(Math.Min(stepMw, freeCap) / 2.0);
+                    EnergyFleet.Order most = half >= 1.0 ? EnergyFleet.Place(c, tech, freeCap - half, freeYear, 0) : null;
                     if (most != null)
                     {
-                        double upMw = EnergyConnectionQueue.StepUpMw(c, tech, stepMw);
-                        string past = EnergyFleet.CannotPlaceWhy(c, tech, half + 1.0);
-                        if (Math.Abs(upMw - half) > 1e-6 || EnergyConnectionQueue.FullText(c, tech) != null) { failures.Add(F("{0} {1}: {2:0} MW short of the figure the page offers a step of {3:0} MW, or already says FULL", id, line.Name, half, upMw)); }
-                        if (past == null || !past.StartsWith("THE ORDER IS PAST THE QUEUE'S ROOM", StringComparison.Ordinal)) { failures.Add(F("{0} {1}: an order past the room that is left must say ROOM, and said: {2}", id, line.Name, past ?? "nothing")); }
-                        if (EnergyFleet.Place(c, tech, upMw, 2026, 0) == null || EnergyConnectionQueue.FullText(c, tech) == null) { failures.Add(F("{0} {1}: the last step of {2:0} MW was refused, or did not fill the line", id, line.Name, upMw)); }
+                        double upMw = EnergyConnectionQueue.StepUpMw(c, tech, stepMw, freeYear);
+                        string past = EnergyFleet.CannotPlaceWhy(c, tech, half + 1.0, freeYear);
+                        if (Math.Abs(upMw - half) > 1e-6 || EnergyConnectionQueue.FullText(c, tech, freeYear) != null) { failures.Add(F("{0} {1}: {2:0} MW short of the figure the page offers a step of {3:0} MW, or already says the line is full", id, line.Name, half, upMw)); }
+                        if (past == null || !past.StartsWith(pastSaid, StringComparison.Ordinal)) { failures.Add(F("{0} {1}: an order past the room that is left must say \"{2}\", and said: {3}", id, line.Name, pastSaid, past ?? "nothing")); }
+                        if (EnergyFleet.Place(c, tech, upMw, freeYear, 0) == null || EnergyConnectionQueue.FullText(c, tech, freeYear) == null) { failures.Add(F("{0} {1}: the last step of {2:0} MW was refused, or did not fill the line", id, line.Name, upMw)); }
                     }
                     else { failures.Add(F("{0} {1}: the mid-state could not be staged", id, line.Name)); }
-                    sb.Append(F("             {0}: {1:0} MW stood whole, a megawatt more was refused - {2}; landed, the room is the line's again; {3:0} MW short, the step is {3:0} and fills it\n", line.Name, line.CapMw, why, half));
+                    sb.Append(F("             {0}: {1:0} MW stood whole in {2}, a megawatt more refused - {3}; {4}; {5:0} MW short of {6}'s figure the step is {5:0} and fills it\n",
+                        line.Name, cap, year, why, statute ? F("landed, {0}'s volume is still taken and {1} is whole", year, freeYear) : "landed, the room is the line's again", half, freeYear));
                 }
                 for (int t = 0; t < EnergyLayerData.Labels.Length; t++)
                 {
                     int inLines = 0; foreach (EnergyConnectionQueue.Line line in p.Lines) { if (Array.IndexOf(line.Technologies, t) >= 0) { inLines++; } }
-                    if (inLines > 1) { failures.Add(F("{0}: {1} stands in {2} lines - LineOf would take the first and StandingMw would count an order in each", id, EnergyLayerData.Labels[t], inLines)); }
+                    if (inLines > 1) { failures.Add(F("{0}: {1} stands in {2} lines - LineOf would take the first and TakenMw would count an order in each", id, EnergyLayerData.Labels[t], inLines)); }
                 }
                 foreach (int t in new[] { 0, 1, 2 })
                 {
                     if (EnergyConnectionQueue.LineOf(id, t) == null && EnergyFleet.CanOrder(id, t))
                     {
-                        if (EnergyFleet.Place(c, t, 1e6, 2026, 0) == null || EnergyConnectionQueue.NoLineText(id, t) == null) { failures.Add(F("{0} {1}: the published queue has no line for it, so its capacity is billed and any size must stand - with the page's note", id, EnergyLayerData.Labels[t])); }
-                        sb.Append(F("             {0}: no line in the published queue - {1}\n", EnergyLayerData.Labels[t].ToUpperInvariant(), EnergyConnectionQueue.NoLineText(id, t)));
+                        if (EnergyFleet.Place(c, t, 1e6, year, 0) == null || EnergyConnectionQueue.NoLineText(id, t) == null) { failures.Add(F("{0} {1}: the source has no line for it, so its capacity is billed and any size must stand - with the page's note", id, EnergyLayerData.Labels[t])); }
+                        sb.Append(F("             {0}: {1}\n", EnergyLayerData.Labels[t].ToUpperInvariant(), EnergyConnectionQueue.NoLineText(id, t)));
                     }
                 }
             }
+        }
+
+        /// <summary>The one segment of a capacity line that belongs to the named line (the text between its separators) - null where the line is not on it (§575).</summary>
+        private static string LineSegment(string capacityText, string lineName)
+        {
+            foreach (string part in (capacityText ?? string.Empty).Split(new[] { " · " }, StringSplitOptions.None)) { if (part.StartsWith(lineName + " ", StringComparison.Ordinal)) { return part; } }
+            return null;
+        }
+
+        /// <summary>A statute line's schedule in the statute's own years, for the print: each year it names and the volume it names for it (§575).</summary>
+        private static string ScheduleText(EnergyConnectionQueue.Line line)
+        {
+            var parts = new List<string>();
+            foreach (EnergyConnectionQueue.Line.Volume v in line.Schedule) { parts.Add(F(v.Through > v.Year ? "{0}-{1} {2:0} MW" : "{0} {2:0} MW", v.Year, v.Through, v.Mw)); }
+            return string.Join(", ", parts);
         }
 
         /// <summary>
@@ -231,7 +291,7 @@ namespace PoliSim.EditorTools
         /// figure and the ministry asked to decide: it must place exactly the thousand that fits, say what it deferred in the queue's own words, and leave the line full.
         /// </summary>
         /// <summary>How a build's deferral opens (AiEnergyMinistry.Place): the country, the year the ministry decided in, the label, a plus. ONE format for the excuse in
-        /// <see cref="AssertMandates"/> - which no run reaches today: only capacity paths are asserted there, Germany's queue is billed and Italy's lines stand far above its statute's
+        /// <see cref="AssertMandates"/> - which no run reaches today: only capacity paths are asserted there, Germany's statutory volumes bind a YEAR (not a stock) and Italy's lines stand far above its statute's
         /// figures - and for <see cref="MinistryOrdersWhatFits"/>, which does run it.</summary>
         private static string DeferralPrefix(CountryId id, int decidedInYear, int label) => F("{0} {1}: {2} +", id, decidedInYear, EnergyLayerData.Labels[label].ToUpperInvariant());
 
@@ -249,7 +309,7 @@ namespace PoliSim.EditorTools
             sb.Append(F("    the ministry against a queue with 1 000 MW of room: placed {0}; deferred: {1}\n", placedWind != null ? F("WIND +{0:0} MW", placedWind.Mw) : "no wind", deferral ?? "nothing"));
             if (placedWind == null || Math.Abs(placedWind.Mw - 1000.0) > 1e-6) { failures.Add("the ministry did not place exactly the thousand megawatts of wind the queue had room for"); }
             if (deferral == null || !deferral.Contains("THE CONNECTION QUEUE HAS ROOM FOR 1000 MW") || !deferral.Contains("THE ORDER IS PAST THE QUEUE'S ROOM")) { failures.Add("the ministry's deferral does not say what the queue had room for, in the queue's own words"); }
-            if (Math.Abs(EnergyConnectionQueue.StandingMw(fr, wind) - wind.CapMw) > 1e-6) { failures.Add(F("after the ministry's order France's wind line holds {0:0} of {1:0} MW - not full", EnergyConnectionQueue.StandingMw(fr, wind), wind.CapMw)); }
+            if (Math.Abs(EnergyConnectionQueue.TakenMw(fr, wind, 2026) - wind.CapMw) > 1e-6) { failures.Add(F("after the ministry's order France's wind line holds {0:0} of {1:0} MW - not full", EnergyConnectionQueue.TakenMw(fr, wind, 2026), wind.CapMw)); }
             AiEnergyMinistry.Decision again = AiEnergyMinistry.Decide(fr, 2026, 0);
             if (again.Placed.Exists(o => o.Technology == 4) || !again.Deferred.Exists(x => x.StartsWith(DeferralPrefix(CountryId.France, 2026, 4), StringComparison.Ordinal) && x.Contains("THE QUEUE IS FULL"))) { failures.Add("asked again with the line full, the ministry placed wind, or did not say the queue is full"); }
         }
