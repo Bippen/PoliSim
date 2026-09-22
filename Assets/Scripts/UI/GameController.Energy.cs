@@ -439,9 +439,23 @@ namespace PoliSim.UI
                     PlateBand.Open, 0f, 250f, (float)wholesalePerMwh, peers.ToArray(), true, new[] { "THE RULE ROW BELOW IS ITS BODY", "THE ETS PRICE, NOT THE CARBON TAX" }, null, new[] { "DERIVED" }, false),
             };
             string foot1 = "THE STACKS, LEFT TO RIGHT: WHOLESALE · MARGIN · NETWORK · LEVIES · ENV. TAX · VAT, ON ONE SCALE · THE SINGLE BOOK: EVERY MONEY FIGURE IN " + EnergyLedger.BookCurrency + " AS THE STATE CARRIES IT; THE MARKET CLEARS IN ITS OWN CURRENCY AND THE CATALOG'S 2023 RATES REACH THE BOOK · THE OTHER FIVE'S TICKS ARE THEIR OWN CLEARINGS THIS TURN";
-            _energyPlateLastArea = DrawPlateRows(prices, areaInk, foot1, false, row => null,
-                extraRowHeightFor: (nameH, capH, srcH, smallH) => EnergyRuleRowHeight(nameH, capH, srcH),
-                drawExtraRow: (x, y, pad, styles) => DrawEnergyRuleRow(x, y, pad, styles, r, country.Id, priceIndex, sweden, marketUnit, wholesalePerMwh));
+            // §569 (2026-09-22, Design's carried row 1, answered as a DECLARED ORDER): the page opens on the four price READOUTS and nothing else - the rule row that used
+            // to ride this plate is the head of "WHY THE PRICE IS WHAT IT IS" below, where the reader goes once they have decided.
+            _energyPlateLastArea = DrawPlateRows(prices, areaInk, foot1, false, row => null);
+
+            // ---- THE DECISIONS: what the player moves on this page, at the top of it ------------------------------------------------
+            // §569: Design read the built order as *"readouts → rule → zones → Build and retire → capital → water/system/incidence → instruments → the dials.
+            // Two decisions, 900 px apart, each buried in a readout run."* The answer is an ORDER, not a redraw: the two decisions stand together under the readouts -
+            // the order table with its queue and mandate, and the four instrument dials with their one bill. Every row below is 15a's own; only the order and the
+            // three section captions are new.
+            GUILayout.Space(StatsUnit(8f));
+            DrawStatsSectionCaption("THE DECISIONS · WHAT YOU MOVE ON THIS PAGE");
+            DrawEnergyDecisionsPlate(country, areaInk);
+            DrawEnergyInstrumentDials(country);   // P6-F2b (§542): the four instruments as dials, with their one bill
+
+            // ---- WHY THE PRICE IS WHAT IT IS: the rule, the fleet and its zones, the water and the two ledgers --------------------
+            GUILayout.Space(StatsUnit(8f));
+            DrawStatsSectionCaption("WHY THE PRICE IS WHAT IT IS");
 
             // ---- plate 2: the fleet, investment absent under it, the zones with load growth absent under their loads ----------------
             float[] capacityShares = new float[EnergyLayerData.Labels.Length];
@@ -465,12 +479,15 @@ namespace PoliSim.UI
             string foot2 = sweden
                 ? "THE FLEET'S TWO BARS SHARE ONE ORDER, NOT ONE SCALE: A COLUMN READS SHARE OF THE FLEET, THEN SHARE OF THE POWER · FOUR BIDDING ZONES ON THE SEEDED LOADS, THE CHAIN'S THREE LINKS DRAWN IN THE GUTTERS THEY JOIN AT PEAK FLOW OVER CAPACITY; A LINK BINDS WHERE A BLOCK FILLS IT AND THE PRICES EITHER SIDE SPLIT · THE NEIGHBOURS OUTSIDE THE SIX ARE EXOGENOUS · NO QUANTITY MOVES DAILY"
                 : "THE FLEET'S TWO BARS SHARE ONE ORDER, NOT ONE SCALE: A COLUMN READS SHARE OF THE FLEET, THEN SHARE OF THE POWER · ONE ZONE ON THE SEEDED LOAD BLOCKS; THE NEIGHBOURS ARE EXOGENOUS · NO QUANTITY MOVES DAILY";
+            // §569: THE RULE ROW IS THIS SECTION'S HEAD - the price's own derivation, drawn above the fleet it derives from, then the zones row as before (the same
+            // pattern the water plate already uses: two extra rows, one height, one draw).
             DrawPlateRows(fleet, areaInk, foot2, false, row => null,
-                extraRowHeightFor: (nameH, capH, srcH, smallH) => EnergyZonesRowHeight(nameH, capH, srcH, sweden) + EnergyGapRowHeight(AbsentLoadGrowth),
-                drawExtraRow: (x, y, pad, styles) => DrawEnergyZonesRow(x, y, pad, styles, r, country.Id, marketUnit, sweden));
-
-            // ---- plate 2b (P6-F2, §539): the decisions - build and retire, the connection queue, the cost row BILLED --------------------------
-            DrawEnergyDecisionsPlate(country, areaInk);
+                extraRowHeightFor: (nameH, capH, srcH, smallH) => EnergyRuleRowHeight(nameH, capH, srcH) + EnergyZonesRowHeight(nameH, capH, srcH, sweden) + EnergyGapRowHeight(AbsentLoadGrowth),
+                drawExtraRow: (x, y, pad, styles) =>
+                {
+                    DrawEnergyRuleRow(x, y, pad, styles, r, country.Id, priceIndex, sweden, marketUnit, wholesalePerMwh);
+                    DrawEnergyZonesRow(x, y + EnergyRuleRowHeight(styles.NameH, styles.CapH, styles.SrcH), pad, styles, r, country.Id, marketUnit, sweden);
+                });
 
             // ---- plate 3: the water, aligned under the rule row's blocks, and the two ledgers on one scale ----------------------------
             var water = new List<PlateRow>();
@@ -564,9 +581,12 @@ namespace PoliSim.UI
                     PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LAWS ARE NOT OFFERED" }, null, new[] { "ABSENT · STATED" }, false, "THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE"));
             }
             string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - FOUR OF THEM SET BELOW, THE SAME DRAFT AS THE SECTORS PAGE'S, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
+            // §569: WHAT ELSE REACHES IT closes the page - the laws chip at the head of the instrument readouts, as Design's order puts it; the dials themselves are
+            // with the decisions at the top, because moving one is a decision and reading one is not.
+            GUILayout.Space(StatsUnit(8f));
+            DrawStatsSectionCaption("WHAT ELSE REACHES IT");
+            DrawEnergyLawsLink(country);          // P6-F2c (§543): the one law category that reaches the layer, at the head of the rows its laws move
             _energyInstrumentsLastArea = DrawPlateRows(instruments, areaInk, foot4, false, row => null);
-            DrawEnergyLawsLink(country);          // P6-F2c (§543): the one law category that reaches the layer, reachable from the rows its laws move
-            DrawEnergyInstrumentDials(country);   // P6-F2b (§542): the four instruments as dials, under the rows that say what each reaches
         }
 
         // ---- the rule on the price: one device, two part-lists; the wholesale row above is its head, the derivation its foot -----------
