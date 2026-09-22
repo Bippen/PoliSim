@@ -34,16 +34,25 @@ namespace PoliSim.UI
             public readonly string Value;
             public readonly string Delta;
             public readonly bool DeltaIsGood;
+            /// <summary>§566: the delta's own VALUE, where it has one - the ink is then <see cref="UiPalette.GetDeltaColor"/>'s reading of it, and a delta of zero takes
+            /// the neutral ink rather than the good one. NaN where the delta is categorical (an outlook's + or -, a projection's NEXT), which the flag above answers for.</summary>
+            public readonly float DeltaValue;
             public readonly IReadOnlyList<float> Series;
 
-            public HeadlineReading(string label, string value, string delta, bool deltaIsGood, IReadOnlyList<float> series)
+            public HeadlineReading(string label, string value, string delta, bool deltaIsGood, IReadOnlyList<float> series, float deltaValue = float.NaN)
             {
                 Label = label;
                 Value = value;
                 Delta = delta;
                 DeltaIsGood = deltaIsGood;
+                DeltaValue = deltaValue;
                 Series = series;
             }
+
+            /// <summary>The ink a drawer gives this reading's delta: the value's own where there is one, the flag's otherwise.</summary>
+            public Color DeltaInk => float.IsNaN(DeltaValue)
+                ? UiPalette.GetDeltaColor(DeltaIsGood ? 1f : -1f, higherIsBetter: true)
+                : UiPalette.GetDeltaColor(DeltaValue, higherIsBetter: true);
         }
 
         /// <summary>P2-1.4 (2026-09-02): the Budget screen's persistent header - the five fiscal readings a draft is
@@ -108,7 +117,13 @@ namespace PoliSim.UI
                 // tiles' old lesson. Billions is a fact about EconomyState.GDP, stated here rather than
                 // read from a StatNodeId (GetStatUnit(...).Value would throw inside OnGUI were the entry
                 // ever cleared - the sparkline crash is what an exception in a draw call costs).
-                new HeadlineReading("GDP", UiFormat.Money(state.NominalGdp, MoneyUnit.Billions), _lastGrowthPercent.ToString("+0.00;-0.00;0", CultureInfo.InvariantCulture) + "%", _lastGrowthPercent >= 0f, history?.Gdp.Quarterly),
+                // §566 (2026-09-22, Design's sitting part A item 10): NO DELTA UNTIL ONE EXISTS. The growth figure is computed at a turn's boundary and at no other
+                // time, so before the first boundary there is no reading - and the chip printed the format's zero section, "0%", in the GOOD ink, on the desk and on
+                // the Statistics tile, for the whole of turn 0. A figure that is only a placeholder is drawn as nothing; once a year has closed, the value's own ink
+                // reads it, and a genuine zero takes the neutral one (GetDeltaColor's own threshold), not the green.
+                new HeadlineReading("GDP", UiFormat.Money(state.NominalGdp, MoneyUnit.Billions),
+                    _simulationManager.CurrentTurn > 0 ? _lastGrowthPercent.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + "%" : null,
+                    _lastGrowthPercent >= 0f, history?.Gdp.Quarterly, _lastGrowthPercent),
                 new HeadlineReading("Unemployment", UiFormat.Number(state.Unemployment, 2) + "%", null, false, history?.Unemployment.Quarterly),
                 new HeadlineReading("Inflation", UiFormat.Number(state.Inflation, 2) + "%", null, false, history?.Inflation.Quarterly),
                 new HeadlineReading("Approval Rating", UiFormat.Number(state.ApprovalRating, 1), null, false, history?.ApprovalRating.Quarterly)
@@ -271,7 +286,7 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y + captionHeight + StatsUnit(2f), inner.width, numeralHeight), reading.Value, numeral);
                 if (!string.IsNullOrEmpty(reading.Delta))
                 {
-                    GUIStyle delta = DeskCaption(8f, UiPalette.GetDeltaColor(reading.DeltaIsGood ? 1f : -1f, higherIsBetter: true), bold: true);
+                    GUIStyle delta = DeskCaption(8f, reading.DeltaInk, bold: true);
                     PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.yMax - deltaHeight, inner.width, deltaHeight), reading.Delta, delta);
                 }
             }

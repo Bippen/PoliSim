@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -326,11 +327,15 @@ namespace PoliSim.EditorTools
             }
         }
 
+        /// <summary>The abbreviation as an ASSET STEM: lower-case, letters and digits only, and DIACRITICS FOLDED to their base letter
+        /// (§566, 2026-09-22 - the party table's names took their published spellings back, so Germany's Greens are `Grüne`; a file on
+        /// disk is `mark_party_de_grune` and always was. The name is the party's, the stem is the transport's).</summary>
         private static string Slug(string abbrev)
         {
             var sb = new StringBuilder();
-            foreach (char c in abbrev ?? string.Empty)
+            foreach (char c in (abbrev ?? string.Empty).Normalize(NormalizationForm.FormD))
             {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) == UnicodeCategory.NonSpacingMark) { continue; }
                 if (char.IsLetterOrDigit(c)) { sb.Append(char.ToLowerInvariant(c)); }
             }
 

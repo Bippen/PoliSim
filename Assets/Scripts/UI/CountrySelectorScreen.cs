@@ -240,6 +240,23 @@ namespace PoliSim.UI
                 Button button = CanvasChrome.FacedButton(column.transform, $"Party_{party.Abbrev}",
                     PartyLine(party, cabinet), PoliSimTheme.Display, 20,
                     PoliSimTheme.Hex(0xF0E7D8), new Vector2(PartyRowWidth, PartyRowHeight));
+                // §566 (2026-09-22, Design's sitting part A item 6): THE PARTY'S OWN MARK at the row's left, the delivered `mark_party_*` art the campaign's support
+                // plate already draws - the picker is where the player first meets these parties and it showed them as brass strips of text. A party with no mark on
+                // disk draws none (PartySystem.MarkName is null where the file does not exist, and inventing one is what PartyMarkCoverageCheck calls an error).
+                Texture2D markTexture = IconLibrary.GetPartyMark(party.MarkName);
+                if (markTexture != null)
+                {
+                    Image mark = CanvasChrome.AsAuthoredImage(button.transform, "Mark", CanvasChrome.Whole(markTexture, "mark_" + party.MarkName));
+                    mark.raycastTarget = false;
+                    mark.preserveAspect = true;
+                    RectTransform markRect = mark.rectTransform;
+                    markRect.anchorMin = new Vector2(0f, 0.5f);
+                    markRect.anchorMax = new Vector2(0f, 0.5f);
+                    markRect.pivot = new Vector2(0f, 0.5f);
+                    markRect.sizeDelta = new Vector2(PartyMarkSize, PartyMarkSize);
+                    markRect.anchoredPosition = new Vector2(PartyMarkInset, 0f);
+                }
+
                 LayoutElement rowLayout = button.gameObject.AddComponent<LayoutElement>();
                 rowLayout.preferredWidth = PartyRowWidth;
                 rowLayout.preferredHeight = PartyRowHeight;
@@ -283,6 +300,12 @@ namespace PoliSim.UI
 
         /// <summary>See <see cref="PartyRowWidth"/>.</summary>
         private const float PartyRowHeight = 30f;
+
+        /// <summary>§566: the party mark on a picker row - a square the row's own height less its padding, inset from the face's left edge by the same padding.</summary>
+        private const float PartyMarkSize = 22f;
+
+        /// <summary>See <see cref="PartyMarkSize"/>.</summary>
+        private const float PartyMarkInset = 12f;
 
         /// <summary>The way back out of the picker: the same height as a row, narrower, and on the paper
         /// face rather than the brass - 6b's own split, where the brass is the committing control and the

@@ -880,7 +880,7 @@ namespace PoliSim.UI
                 // The delta's rect is the DELTA style's own measured height (bold 7 → 9 px at 1600 stands
                 // taller than the 6.5 → 8 px caption whose height it borrowed on the first matrix: "0%"
                 // needs 11.2 tall in 10.0).
-                GUIStyle delta = string.IsNullOrEmpty(chip.Delta) ? null : DeskCaption(7f, UiPalette.GetDeltaColor(chip.DeltaIsGood ? 1f : -1f, higherIsBetter: true), bold: true);
+                GUIStyle delta = string.IsNullOrEmpty(chip.Delta) ? null : DeskCaption(7f, chip.DeltaInk, bold: true);
                 float deltaHeight = delta == null ? 0f : DeskCaptionHeight(delta);
                 var numeralRect = new Rect(inner.x, inner.y + captionHeight, Mathf.Max(1f, numeralRight - inner.x), Mathf.Max(1f, inner.yMax - deltaHeight - inner.y - captionHeight));
                 PoliSimWidgets.MeasuredLabel(numeralRect, chip.Value, numeral);

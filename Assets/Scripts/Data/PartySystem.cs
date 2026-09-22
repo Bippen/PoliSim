@@ -311,21 +311,21 @@ namespace PoliSim.Data
         private static readonly PoliticalParty[] SwedenParties =
         {
             new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f, lrGen: 3.74f, environment: 3.70f, regions: 5.29f, spendVsTax: 2.50f, immigratePolicy: 6.95f, deregulation: 3.67f, redistribution: 3.00f, peopleVsElite: 0.92f, antiEliteSalience: 2.67f, civLibLawOrder: 6.40f, nationalism: 4.50f,
-                leaders: One("Magdalena Andersson", "partiordforande")),
+                leaders: One("Magdalena Andersson", "partiordförande")),
             new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, "mark_party_se_sd", euPosition: 2.68f, lrGen: 8.53f, environment: 9.00f, regions: 5.29f, spendVsTax: 5.50f, immigratePolicy: 9.95f, deregulation: 4.57f, redistribution: 5.37f, peopleVsElite: 5.33f, antiEliteSalience: 8.00f, civLibLawOrder: 9.30f, nationalism: 9.50f,
-                leaders: One("Jimmie Akesson", "partiledare")),
+                leaders: One("Jimmie Åkesson", "partiledare")),
             new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, "mark_party_se_m", euPosition: 5.74f, lrGen: 7.58f, environment: 7.60f, regions: 5.71f, spendVsTax: 8.00f, immigratePolicy: 8.47f, deregulation: 8.27f, redistribution: 7.32f, peopleVsElite: 0.92f, antiEliteSalience: 2.33f, civLibLawOrder: 8.70f, nationalism: 7.10f,
                 leaders: One("Ulf Kristersson", "partiledare")),
-            new PoliticalParty("V",  "Vansterpartiet",                     1.89f, 2.42f,  24, "mark_party_se_v", euPosition: 3.32f, lrGen: 1.58f, environment: 1.40f, regions: 5.00f, spendVsTax: 0.50f, immigratePolicy: 3.05f, deregulation: 0.87f, redistribution: 1.37f, peopleVsElite: 3.92f, antiEliteSalience: 5.50f, civLibLawOrder: 2.10f, nationalism: 2.10f,
+            new PoliticalParty("V",  "Vänsterpartiet",                     1.89f, 2.42f,  24, "mark_party_se_v", euPosition: 3.32f, lrGen: 1.58f, environment: 1.40f, regions: 5.00f, spendVsTax: 0.50f, immigratePolicy: 3.05f, deregulation: 0.87f, redistribution: 1.37f, peopleVsElite: 3.92f, antiEliteSalience: 5.50f, civLibLawOrder: 2.10f, nationalism: 2.10f,
                 leaders: One("Nooshi Dadgostar", "partiledare")),
             new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, "mark_party_se_c", euPosition: 6.11f, lrGen: 5.95f, environment: 2.50f, regions: 4.29f, spendVsTax: 7.50f, immigratePolicy: 3.42f, deregulation: 8.53f, redistribution: 6.58f, peopleVsElite: 2.55f, antiEliteSalience: 2.17f, civLibLawOrder: 3.10f, nationalism: 2.90f,
-                leaders: One("Annie Loof", "partiledare")),
+                leaders: One("Annie Lööf", "partiledare")),
             new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, "mark_party_se_kd", euPosition: 5.35f, lrGen: 8.00f, environment: 7.40f, regions: 5.86f, spendVsTax: 6.50f, immigratePolicy: 8.26f, deregulation: 6.80f, redistribution: 6.58f, peopleVsElite: 2.27f, antiEliteSalience: 3.83f, civLibLawOrder: 7.90f, nationalism: 7.20f,
                 leaders: One("Ebba Busch", "partiledare")),
             // ⚠ TWO leaders, carried as two. Taking "the first" would drop Per Bolund, a real named
             // person, which the ruling forbids outright.
-            new PoliticalParty("MP", "Miljopartiet de grona",              3.16f, 1.95f,  18, "mark_party_se_mp", euPosition: 5.32f, lrGen: 2.74f, environment: 0.10f, regions: 4.43f, spendVsTax: 2.75f, immigratePolicy: 2.16f, deregulation: 3.47f, redistribution: 2.89f, peopleVsElite: 5.67f, antiEliteSalience: 2.67f, civLibLawOrder: 1.60f, nationalism: 1.70f,
-                leaders: new[] { new PartyLeader("Marta Stenevi", "sprakror"), new PartyLeader("Per Bolund", "sprakror") }),
+            new PoliticalParty("MP", "Miljöpartiet de gröna",              3.16f, 1.95f,  18, "mark_party_se_mp", euPosition: 5.32f, lrGen: 2.74f, environment: 0.10f, regions: 4.43f, spendVsTax: 2.75f, immigratePolicy: 2.16f, deregulation: 3.47f, redistribution: 2.89f, peopleVsElite: 5.67f, antiEliteSalience: 2.67f, civLibLawOrder: 1.60f, nationalism: 1.70f,
+                leaders: new[] { new PartyLeader("Märta Stenevi", "språkrör"), new PartyLeader("Per Bolund", "språkrör") }),
             new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, "mark_party_se_l", euPosition: 6.84f, lrGen: 6.74f, environment: 6.20f, regions: 4.71f, spendVsTax: 6.75f, immigratePolicy: 6.79f, deregulation: 7.33f, redistribution: 6.26f, peopleVsElite: 1.36f, antiEliteSalience: 2.17f, civLibLawOrder: 5.70f, nationalism: 3.90f,
                 leaders: One("Johan Pehrson", "partiledare")),
         };
@@ -337,13 +337,13 @@ namespace PoliSim.Data
         private static readonly PoliticalParty[] GermanyParties =
         {
             new PoliticalParty("CDU",   "Christlich Demokratische Union",   6.58f, 6.56f, 164, "mark_party_de_cdu", euPosition: 6.42f, lrGen: 6.58f, environment: 5.80f, regions: 3.67f, spendVsTax: 6.25f, immigratePolicy: 7.21f, deregulation: 6.17f, redistribution: 6.39f, peopleVsElite: 2.64f, antiEliteSalience: 2.75f, civLibLawOrder: 7.11f, nationalism: 5.86f),
-            new PoliticalParty("AfD",   "Alternative fur Deutschland",      7.63f, 9.39f, 152, "mark_party_de_afd", euPosition: 1.89f, lrGen: 9.26f, environment: 9.00f, regions: 4.25f, spendVsTax: 7.10f, immigratePolicy: 9.95f, deregulation: 6.60f, redistribution: 7.06f, peopleVsElite: 8.00f, antiEliteSalience: 9.00f, civLibLawOrder: 9.11f, nationalism: 9.57f),
+            new PoliticalParty("AfD",   "Alternative für Deutschland",      7.63f, 9.39f, 152, "mark_party_de_afd", euPosition: 1.89f, lrGen: 9.26f, environment: 9.00f, regions: 4.25f, spendVsTax: 7.10f, immigratePolicy: 9.95f, deregulation: 6.60f, redistribution: 7.06f, peopleVsElite: 8.00f, antiEliteSalience: 9.00f, civLibLawOrder: 9.11f, nationalism: 9.57f),
             new PoliticalParty("SPD",   "Sozialdemokratische Partei",       3.47f, 3.61f, 120, "mark_party_de_spd", euPosition: 6.37f, lrGen: 3.47f, environment: 3.40f, regions: 6.33f, spendVsTax: 2.33f, immigratePolicy: 5.00f, deregulation: 3.33f, redistribution: 2.89f, peopleVsElite: 3.09f, antiEliteSalience: 2.38f, civLibLawOrder: 4.22f, nationalism: 3.29f),
-            new PoliticalParty("Grune", "Bundnis 90/Die Grunen",            3.37f, 1.61f,  85, "mark_party_de_grune", euPosition: 6.79f, lrGen: 3.06f, environment: 0.90f, regions: 5.67f, spendVsTax: 2.17f, immigratePolicy: 2.47f, deregulation: 3.50f, redistribution: 3.06f, peopleVsElite: 4.82f, antiEliteSalience: 2.50f, civLibLawOrder: 1.89f, nationalism: 1.29f),
+            new PoliticalParty("Grune", "Bündnis 90/Die Grünen",            3.37f, 1.61f,  85, "mark_party_de_grune", euPosition: 6.79f, lrGen: 3.06f, environment: 0.90f, regions: 5.67f, spendVsTax: 2.17f, immigratePolicy: 2.47f, deregulation: 3.50f, redistribution: 3.06f, peopleVsElite: 4.82f, antiEliteSalience: 2.50f, civLibLawOrder: 1.89f, nationalism: 1.29f),
             new PoliticalParty("Linke", "Die Linke",                        1.37f, 2.29f,  64, "mark_party_de_linke", euPosition: 3.72f, lrGen: 1.42f, environment: 2.11f, regions: 7.00f, spendVsTax: 1.17f, immigratePolicy: 2.56f, deregulation: 1.50f, redistribution: 0.94f, peopleVsElite: 4.33f, antiEliteSalience: 6.88f, civLibLawOrder: 3.00f, nationalism: 1.71f),
             new PoliticalParty("CSU",   "Christlich-Soziale Union",         6.77f, 7.54f,  44, "mark_party_de_csu", euPosition: 5.50f, lrGen: 7.57f, environment: 6.43f, regions: 2.83f, spendVsTax: 5.88f, immigratePolicy: 7.54f, deregulation: 6.67f, redistribution: 6.93f, peopleVsElite: 3.88f, antiEliteSalience: 3.25f, civLibLawOrder: 7.57f, nationalism: 6.50f),
-            new PoliticalParty("SSW",   "Sudschleswigscher Wahlerverband",  float.NaN, float.NaN, 1, "mark_party_de_ssw"),
-            new PoliticalParty("BSW",   "Bundnis Sahra Wagenknecht",        2.78f, 7.06f,   0, "mark_party_de_bsw", euPosition: 2.42f, lrGen: 3.63f, environment: 7.22f, regions: 5.67f, spendVsTax: 2.20f, immigratePolicy: 8.63f, deregulation: 2.17f, redistribution: 2.00f, peopleVsElite: 7.00f, antiEliteSalience: 8.86f, civLibLawOrder: 6.25f, nationalism: 6.86f),
+            new PoliticalParty("SSW",   "Südschleswigscher Wählerverband",  float.NaN, float.NaN, 1, "mark_party_de_ssw"),
+            new PoliticalParty("BSW",   "Bündnis Sahra Wagenknecht",        2.78f, 7.06f,   0, "mark_party_de_bsw", euPosition: 2.42f, lrGen: 3.63f, environment: 7.22f, regions: 5.67f, spendVsTax: 2.20f, immigratePolicy: 8.63f, deregulation: 2.17f, redistribution: 2.00f, peopleVsElite: 7.00f, antiEliteSalience: 8.86f, civLibLawOrder: 6.25f, nationalism: 6.86f),
             new PoliticalParty("FDP",   "Freie Demokratische Partei",       7.58f, 3.22f,   0, "mark_party_de_fdp", euPosition: 5.84f, lrGen: 6.06f, environment: 6.70f, regions: 4.33f, spendVsTax: 8.83f, immigratePolicy: 6.06f, deregulation: 8.00f, redistribution: 8.11f, peopleVsElite: 3.90f, antiEliteSalience: 2.38f, civLibLawOrder: 2.67f, nationalism: 2.71f),
         };
 
@@ -353,7 +353,7 @@ namespace PoliSim.Data
         // parties that ran together but are not one party.
         private static readonly PoliticalParty[] PolandParties =
         {
-            new PoliticalParty("PiS",  "Prawo i Sprawiedliwosc",   2.52f, 8.45f, 194, "mark_party_pl_pis", euPosition: 3.10f, lrGen: 7.64f, environment: 7.71f, regions: 7.93f, spendVsTax: 3.69f, immigratePolicy: 8.75f, deregulation: 3.71f, redistribution: 2.61f, peopleVsElite: 4.57f, antiEliteSalience: 7.90f, civLibLawOrder: 8.31f, nationalism: 9.06f),
+            new PoliticalParty("PiS",  "Prawo i Sprawiedliwość",   2.52f, 8.45f, 194, "mark_party_pl_pis", euPosition: 3.10f, lrGen: 7.64f, environment: 7.71f, regions: 7.93f, spendVsTax: 3.69f, immigratePolicy: 8.75f, deregulation: 3.71f, redistribution: 2.61f, peopleVsElite: 4.57f, antiEliteSalience: 7.90f, civLibLawOrder: 8.31f, nationalism: 9.06f),
             new PoliticalParty("KO",   "Koalicja Obywatelska",     6.17f, 3.66f, 157, "mark_party_pl_ko", euPosition: 6.63f, lrGen: 4.93f, environment: 3.57f, regions: 3.57f, spendVsTax: 5.46f, immigratePolicy: 7.00f, deregulation: 6.71f, redistribution: 5.39f, peopleVsElite: 3.00f, antiEliteSalience: 2.55f, civLibLawOrder: 3.12f, nationalism: 3.56f),
             new PoliticalParty("TD",   "Trzecia Droga",            float.NaN, float.NaN, 65, "mark_party_pl_td"),
             new PoliticalParty("NL",   "Nowa Lewica",              2.32f, 1.75f,  26, "mark_party_pl_nl", euPosition: 6.90f, lrGen: 2.41f, environment: 1.86f, regions: 3.00f, spendVsTax: 1.92f, immigratePolicy: 3.15f, deregulation: 3.38f, redistribution: 2.37f, peopleVsElite: 5.00f, antiEliteSalience: 2.90f, civLibLawOrder: 2.07f, nationalism: 1.56f),
@@ -369,20 +369,20 @@ namespace PoliSim.Data
         private static readonly PoliticalParty[] FranceParties =
         {
             new PoliticalParty("UG",  "Union de la gauche (NFP joint candidacies)", float.NaN, float.NaN, 178, "mark_party_fr_ug"),
-            new PoliticalParty("ENS", "Ensemble (majorite presidentielle)",          6.18f, 4.09f, 150, "mark_party_fr_ens", euPosition: 6.27f, lrGen: 6.27f, environment: 5.67f, regions: 5.00f, spendVsTax: 6.50f, immigratePolicy: 5.73f, deregulation: 7.00f, redistribution: 6.20f, peopleVsElite: 2.71f, antiEliteSalience: 3.75f, civLibLawOrder: 5.80f, nationalism: 4.00f),
+            new PoliticalParty("ENS", "Ensemble (majorité présidentielle)",          6.18f, 4.09f, 150, "mark_party_fr_ens", euPosition: 6.27f, lrGen: 6.27f, environment: 5.67f, regions: 5.00f, spendVsTax: 6.50f, immigratePolicy: 5.73f, deregulation: 7.00f, redistribution: 6.20f, peopleVsElite: 2.71f, antiEliteSalience: 3.75f, civLibLawOrder: 5.80f, nationalism: 4.00f),
             new PoliticalParty("RN",  "Rassemblement National",                      6.00f, 8.36f, 125, "mark_party_fr_rn", euPosition: 2.18f, lrGen: 8.82f, environment: 8.00f, regions: 5.00f, spendVsTax: 4.33f, immigratePolicy: 9.55f, deregulation: 4.00f, redistribution: 4.70f, peopleVsElite: 7.00f, antiEliteSalience: 8.75f, civLibLawOrder: 8.83f, nationalism: 10.00f),
-            new PoliticalParty("LR",  "Les Republicains",                            7.82f, 7.18f,  39, "mark_party_fr_lr", euPosition: 5.27f, lrGen: 7.73f, environment: 7.33f, regions: 6.33f, spendVsTax: 7.33f, immigratePolicy: 8.36f, deregulation: 7.29f, redistribution: 7.40f, peopleVsElite: 3.00f, antiEliteSalience: 5.00f, civLibLawOrder: 7.83f, nationalism: 8.33f),
+            new PoliticalParty("LR",  "Les Républicains",                            7.82f, 7.18f,  39, "mark_party_fr_lr", euPosition: 5.27f, lrGen: 7.73f, environment: 7.33f, regions: 6.33f, spendVsTax: 7.33f, immigratePolicy: 8.36f, deregulation: 7.29f, redistribution: 7.40f, peopleVsElite: 3.00f, antiEliteSalience: 5.00f, civLibLawOrder: 7.83f, nationalism: 8.33f),
             new PoliticalParty("DVD", "Divers droite",                               float.NaN, float.NaN, 27, "mark_party_fr_dvd"),
-            new PoliticalParty("UXD", "Union de l'extreme droite (RN-Ciotti)",       float.NaN, float.NaN, 17, "mark_party_fr_uxd"),
+            new PoliticalParty("UXD", "Union de l'extrême droite (RN-Ciotti)",       float.NaN, float.NaN, 17, "mark_party_fr_uxd"),
             new PoliticalParty("DVG", "Divers gauche",                               float.NaN, float.NaN, 12, "mark_party_fr_dvg"),
-            new PoliticalParty("REG", "Regionaliste",                                float.NaN, float.NaN,  9, "mark_party_fr_reg"),
+            new PoliticalParty("REG", "Régionaliste",                                float.NaN, float.NaN,  9, "mark_party_fr_reg"),
             new PoliticalParty("HOR", "Horizons",                                    float.NaN, float.NaN,  6, "mark_party_fr_hor"),
             new PoliticalParty("DVC", "Divers centre",                               float.NaN, float.NaN,  6, "mark_party_fr_dvc"),
-            new PoliticalParty("UDI", "Union des democrates et independants",        float.NaN, float.NaN,  3, "mark_party_fr_udi"),
+            new PoliticalParty("UDI", "Union des démocrates et indépendants",        float.NaN, float.NaN,  3, "mark_party_fr_udi"),
             new PoliticalParty("SOC", "Parti socialiste (outside the UG banner)",    3.36f, 2.73f,   2, "mark_party_fr_soc", euPosition: 6.27f, lrGen: 3.45f, environment: 3.33f, regions: 4.50f, spendVsTax: 1.67f, immigratePolicy: 3.18f, deregulation: 3.43f, redistribution: 2.20f, peopleVsElite: 4.00f, antiEliteSalience: 4.25f, civLibLawOrder: 2.83f, nationalism: 2.75f),
-            new PoliticalParty("ECO", "Ecologistes",                                 2.30f, 1.70f,   1, "mark_party_fr_eco", euPosition: 6.20f, lrGen: 2.30f, environment: 2.00f, regions: 2.33f, spendVsTax: 1.33f, immigratePolicy: 1.60f, deregulation: 1.29f, redistribution: 1.40f, peopleVsElite: 5.33f, antiEliteSalience: 5.00f, civLibLawOrder: 2.17f, nationalism: 0.67f),
+            new PoliticalParty("ECO", "Écologistes",                                 2.30f, 1.70f,   1, "mark_party_fr_eco", euPosition: 6.20f, lrGen: 2.30f, environment: 2.00f, regions: 2.33f, spendVsTax: 1.33f, immigratePolicy: 1.60f, deregulation: 1.29f, redistribution: 1.40f, peopleVsElite: 5.33f, antiEliteSalience: 5.00f, civLibLawOrder: 2.17f, nationalism: 0.67f),
             new PoliticalParty("DIV", "Divers",                                      float.NaN, float.NaN,  1, "mark_party_fr_div"),
-            new PoliticalParty("EXD", "Extreme droite",                              float.NaN, float.NaN,  1, "mark_party_fr_exd"),
+            new PoliticalParty("EXD", "Extrême droite",                              float.NaN, float.NaN,  1, "mark_party_fr_exd"),
         };
 
         // ---- Italy: Camera dei deputati 2022. Units are the LISTS Eligendo reports. Sums to 400.
@@ -400,8 +400,8 @@ namespace PoliSim.Data
             new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21, "mark_party_it_aziv", euPosition: 6.79f, lrGen: 4.43f, environment: 4.14f, regions: 4.50f, spendVsTax: 4.33f, immigratePolicy: 3.77f, deregulation: 5.90f, redistribution: 4.77f, peopleVsElite: 2.43f, antiEliteSalience: 1.60f, civLibLawOrder: 2.83f, nationalism: 2.50f),
             new PoliticalParty("AVS",   "Alleanza Verdi e Sinistra",       float.NaN, float.NaN, 12, "mark_party_it_avs"),
             new PoliticalParty("NM",    "Noi Moderati",                    float.NaN, float.NaN,  7, "mark_party_it_nm"),
-            new PoliticalParty("SVP",   "Sudtiroler Volkspartei - PATT",   float.NaN, float.NaN,  3, "mark_party_it_svp"),
-            new PoliticalParty("PlusE", "Piu Europa",                      float.NaN, float.NaN,  2, "mark_party_it_pluse"),
+            new PoliticalParty("SVP",   "Südtiroler Volkspartei - PATT",   float.NaN, float.NaN,  3, "mark_party_it_svp"),
+            new PoliticalParty("PlusE", "Più Europa",                      float.NaN, float.NaN,  2, "mark_party_it_pluse"),
             new PoliticalParty("IC",    "Impegno Civico",                  float.NaN, float.NaN,  1, "mark_party_it_ic"),
             new PoliticalParty("ScN",   "Sud chiama Nord",                 float.NaN, float.NaN,  1, "mark_party_it_scn"),
             // The last two seats are OUTSIDE the Area Italia basis every row above uses, and the
@@ -410,7 +410,7 @@ namespace PoliSim.Data
             // them the chamber sums to 398, and rounding 398 up to 400 by inflating a party would
             // have been inventing seats to make a total come out.
             new PoliticalParty("MAIE",  "MAIE (circoscrizione Estero)",    float.NaN, float.NaN,  1, "mark_party_it_maie"),
-            new PoliticalParty("UV",    "Union Valdotaine (VdA college)",  float.NaN, float.NaN,  1, "mark_party_it_uv"),
+            new PoliticalParty("UV",    "Union Valdôtaine (VdA college)",  float.NaN, float.NaN,  1, "mark_party_it_uv"),
         };
 
         // ---- USA: House of Representatives, 119th Congress (2024). Sums to 435.

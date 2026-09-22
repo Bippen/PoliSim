@@ -187,7 +187,28 @@ namespace PoliSim.UI
                 default: return SystemArea.Political;
             }
         }
-        public static Color GetCountryColor(CountryId countryId) => GetAreaColor(CountryAreas[countryId]);
+        /// <summary>
+        /// §566 (2026-09-22, Design's sitting part B item 5): THE COUNTRY CHANNEL - the ink a country wears where countries are drawn TOGETHER (the compass's discs and
+        /// legend, the world map's chips). A registered table, not a lookup through <see cref="GetCountryArea"/>: read through the areas, six countries wore six area
+        /// accents chosen for other reasons, and two of them were one olive to a reader - Poland's bronze and the USA's ochre sat 8.5° apart in hue and 0.053 in
+        /// lightness, inside D16's fence on both axes (Design: *"six unregistered inks … olive ×2"*).
+        ///
+        /// <para><b>Five are the area accents they already were</b>, named here so the channel is a table rather than a side effect; <b>Poland's is the channel's own</b>,
+        /// re-seated to part from the USA's - the area's bronze stays the Sovereign Wealth Fund's, untouched, because that is chrome semantics and this is not.
+        /// <b>The fence binds INSIDE this channel</b> (D9 row 5: *"the floor binds within a channel, not across them"*) and <see cref="PoliSim.EditorTools"/>'s
+        /// CountryInkFenceCheck runs it on every pair in the cheap bar - the party inks' rule, one level up.</para>
+        /// </summary>
+        private static readonly Dictionary<CountryId, Color> CountryInks = new Dictionary<CountryId, Color>
+        {
+            { CountryId.Sweden, PoliSimTheme.Hex(0x1E746A) },   // teal, the Trade accent
+            { CountryId.Germany, PoliSimTheme.Hex(0xA14B76) },  // magenta, the Welfare accent
+            { CountryId.France, PoliSimTheme.Hex(0x9D5529) },   // orange, the Labor accent
+            { CountryId.Italy, PoliSimTheme.Hex(0x62579F) },    // indigo, the Sectors accent
+            { CountryId.Poland, PoliSimTheme.Hex(0x7B4B86) },   // plum, the channel's own - the bronze it wore was the USA's ochre to a reader
+            { CountryId.USA, PoliSimTheme.Hex(0x81641F) },      // ochre, the Political accent
+        };
+
+        public static Color GetCountryColor(CountryId countryId) => CountryInks[countryId];
 
         /// <summary>
         /// Political Systems Overhaul Part C: one distinct color per slice of an N-way categorical
