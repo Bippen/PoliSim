@@ -30,7 +30,7 @@ namespace PoliSim.Data
     /// moved participation (the table's own definition) and the same labour force scaled by the levers' deviation
     /// otherwise - the 15–19 and 65+ bands enter at their sourced rates, and a participation response of the bands a
     /// pension age crosses (PN-1's open item) reaches this input through the table it would move. Potential's 20–64
-    /// window, DS-3c's seam, is closed; the wage bill's base (`TaxBases`, WageBill) still reads the window and is its own
+    /// window, DS-3c's seam, is closed; the wage bill's base (`TaxBases`, WageBill) READS THIS INPUT since PN-3b (§577) and was its own
     /// family (PN-3b), measured in the same diagnostic.</para>
     /// </summary>
     public static class PotentialOutput

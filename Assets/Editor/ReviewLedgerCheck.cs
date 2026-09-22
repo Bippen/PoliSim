@@ -63,7 +63,7 @@ namespace PoliSim.EditorTools
         /// The money-path states the guard FOUND when it landed (2026-09-21, §546) and did not review - the files' states as of that day, each a `grandfathered` row. LOWER IT AS THEY ARE
         /// EDITED AND REVIEWED, NEVER RAISE IT: a grandfathered row whose file has moved on is stale and fails the check until it is removed, so the count only falls.
         /// </summary>
-        public const int GrandfatheredCeiling = 27;
+        public const int GrandfatheredCeiling = 26;
 
         private struct Row { public string Kind, Key, Sha, Status, Date, Record, Evidence, Note; public int Line; }
 

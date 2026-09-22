@@ -11,7 +11,7 @@ namespace PoliSim.EditorTools
 {
     /// <summary>
     /// PN-3 (2026-09-16, DS-3c §474): **THE PREMISE OF POTENTIAL'S 20–64 WINDOW, MEASURED BEFORE ANYTHING IS RE-FORMED.** Potential's labour input
-    /// (and the wage bill's base, which reads the same three factors) is the 20–64 cohort × the state's participation rate × (1 − U). The state's
+    /// (and the wage bill's base, which read the same three factors until PN-3b, §577) is the 20–64 cohort × the state's participation rate × (1 − U). The state's
     /// participation rate is a 15-AND-OVER rate by construction: `ParticipationRateTable.StructuralRate` is Σ(band × sourced rate) over the 15+ population,
     /// and `MacroSystem.ApplyLaborForceParticipationRate` reverts the state's rate toward it. So the input multiplies a count on one base by a rate on
     /// another, and an ageing pyramid moves both the same way - the 20–64 window shrinks AND the 15+ rate falls as the old grow - two ageing effects on one
@@ -24,7 +24,7 @@ namespace PoliSim.EditorTools
     /// It ASSERTS the identities: Σ(band × rate) = 15+ × structural ÷ 100 (the table's own definition), the 15+ form = the band form × (p ÷ structural), and -
     /// since the re-form (§522) - potential's labour input (`PotentialOutput.LabourInput`) IS the 15+ form, at the seed and after ageing. The gap between the
     /// window form and the band form after 25 years was the premise (measured 2026-09-16 before the re-form: −2.2 to −11.4 %) and is printed still, as the
-    /// deviation retired. Section 4 measures the same seam in the wage bill's base (`TaxBases`, WageBill), which still reads the window - PN-3b's premise.</para>
+    /// deviation retired. Section 4 measured the same seam in the wage bill's base (`TaxBases`, WageBill) while it still read the window - PN-3b's premise - and since PN-3b landed (§577) it ASSERTS that the base and potential's input are one expression, printing beside them what the window it left would have read.</para>
     /// </summary>
     public static class LabourInputWindowDiagnostic
     {
@@ -131,18 +131,26 @@ namespace PoliSim.EditorTools
                 }
                 sb.Append("\n    THE PREMISE (measured 2026-09-16, before the re-form): where the window's ratio sat below the band form's by more than the levers' deviation explains, the window was counting the pyramid's ageing twice - once in the count it took on a 20–64 base and once in the rate it took on a 15+ base. Since §522 potential's labour input is the 15+ form (asserted above); the window is printed as the deviation retired.\n");
 
-                // 4. PN-3b's premise, measured here and not re-formed: the wage bill's base reads the same window
-                sb.Append(F("\n    4. THE WAGE BILL'S BASE (TaxBases, WageBill) at year {0} - the same three factors × the real wage: its labour part against potential's input and against the window\n", Years));
+                // 4. PN-3b (§577): the wage bill's base IS potential's labour input × the real wage. This section opened as PN-3b's PREMISE - the base still read the
+                //    20-64 window - and is now its GUARD: the two are one expression (TaxBases.Level reads PotentialOutput.LabourInput), so any drift between them is a defect.
+                sb.Append(F("\n    4. THE WAGE BILL'S BASE (TaxBases, WageBill) at year {0} - PN-3b: its labour part against potential's input, and what the window it left would have read\n", Years));
                 foreach (Country c in world.Countries)
                 {
                     Reading r = at[Years][c.Id], s = seed[c.Id];
+                    // the base's own seed is that same input at the seed - Country.CaptureStructuralBases writes RevenueBaseSeeds from TaxBases.Level, and the real wage index is 100 there
                     float wageBillLabour = TaxBases.Level(TaxBaseDriver.WageBill, c) / Mathf.Max(1e-6f, c.State.RealWageIndex / 100f);
-                    float wageBillSeed = s.Win;   // the base's labour part at the seed is the window's seed (the real wage index is 100 at the seed)
-                    float baseRatio = wageBillLabour / wageBillSeed;
-                    sb.Append(F("    {0,-8} the base's labour part x{1:F4} · the window x{2:F4} · potential's input x{3:F4} · the base against potential's input {4:+0.00;-0.00} %\n",
-                        c.Id, baseRatio, r.Win / s.Win, r.Plus / s.Plus, 100f * (baseRatio / (r.Plus / s.Plus) - 1f)));
+                    float baseRatio = wageBillLabour / Mathf.Max(1e-6f, s.Plus);
+                    float inputRatio = r.Plus / s.Plus, windowRatio = r.Win / s.Win;
+                    float drift = 100f * (baseRatio / inputRatio - 1f);
+                    if (Mathf.Abs(drift) > 0.01f)
+                    {
+                        ok = false;
+                        Debug.LogError(F("LABOUR WINDOW: {0}'s wage-bill base drifts {1:+0.0000;-0.0000} % from potential's labour input - PN-3b made them ONE expression, so they cannot differ.", c.Id, drift));
+                    }
+                    sb.Append(F("    {0,-8} the base's labour part x{1:F4} = potential's input x{2:F4} · the window it left would read x{3:F4} ({4:+0.00;-0.00} % against the input)\n",
+                        c.Id, baseRatio, inputRatio, windowRatio, 100f * (windowRatio / inputRatio - 1f)));
                 }
-                sb.Append("    The wage bill still reads the window - its own family (PN-3b), opened with these figures; nothing here re-forms it.\n");
+                sb.Append("    PN-3b (§577): the base and the input are ONE expression now - the last column is the seam the re-form closed, read from the side the base sits on.\n");
             }
             finally { UnityEngine.Object.DestroyImmediate(go); }
             Debug.Log(sb.ToString());

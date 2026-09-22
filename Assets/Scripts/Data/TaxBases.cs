@@ -65,10 +65,14 @@ namespace PoliSim.Data
             switch (driver)
             {
                 case TaxBaseDriver.WageBill:
-                    return SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, country)
-                           * Mathf.Clamp(s.LaborForceParticipationRate, 0f, 100f) / 100f
-                           * Mathf.Clamp(100f - s.Unemployment, 0f, 100f) / 100f
-                           * Mathf.Max(0f, s.RealWageIndex) / 100f;
+                    // PN-3b (2026-09-22, §577): THE WAGE BILL IS THE PYRAMID'S LABOUR INPUT – TIMES THE REAL WAGE. Until this pass it was the 20–64 cohort × the
+                    // state's participation rate × (1 – U) × the real wage: a COUNT on one base times a RATE on another, which is the seam PN-3 (§522) retired from
+                    // potential. The state's rate is a 15-AND-OVER rate by construction (ParticipationRateTable.StructuralRate), so an ageing pyramid moved both
+                    // factors the same way and the base carried the ageing twice. Measured before the re-form, at year 25, the base's labour part against the input
+                    // potential already reads: Italy -12.68 %, Poland -12.34, France -7.37, Germany -7.11, the USA -3.45, Sweden -3.14.
+                    // ONE expression through PotentialOutput.LabourInput, which is that input: the two can never drift apart again, and the numeric-inertness rule
+                    // is kept (no stored intermediate Mono could round where the expression would not).
+                    return PotentialOutput.LabourInput(country) * Mathf.Max(0f, s.RealWageIndex) / 100f;
                 case TaxBaseDriver.Consumption:
                     return Mathf.Max(0f, s.Consumption);
                 case TaxBaseDriver.Housing:

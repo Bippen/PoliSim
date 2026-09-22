@@ -55,16 +55,21 @@ namespace PoliSim.EditorTools
         /// times K, the seed's line over the seed's levy - Poland, France, Sweden and Italy move on their own levies from turn 2; the USA's (no levy) and Germany's (no line) levy scales and REAL
         /// energy prices cannot move and do not, and their other rows move from turn 3 in the fifth decimal place by propagation (Germany through the euro zone's one rate, the USA through its
         /// currency and trade). Only AI-governed books change: a player's path rides prices alone and P-A is the old arithmetic there. Before it `traj_p6e1` - P6-E1's yield (2026-09-18, §538): jobbskatteavdraget in Sweden's income-tax yield, the lever seeded at the credited average on taxed income; before it `traj_p6d1` - P6-D1 (2026-09-17, §533): every pair of the six carries a sourced trade link (Eurostat 2023, goods and services, the exporter's report), replacing ten authored pairs and five absences; all six move through the trade balance and tariff revenue (was `traj_pn3`).</summary>
-        public const string BaselineLabel = "p6pap2";
+        /// <summary>PN-3b (2026-09-22, §577): the wage bill's base is PotentialOutput.LabourInput × the real wage, where it was the 20–64 cohort × the 15+ participation
+        /// rate - the seam PN-3 retired from potential, now off the base every wage-taxed instrument is levied on. Every AI book moves: five states take more revenue and run
+        /// smaller deficits at year 100 (France +33.5 % on the budget, Italy +20.2, Poland +10.7, Sweden +4.1, Germany +2.6; debt -19.8 to -2.3 %), and the USA's fiscal rule
+        /// spends the room instead - its government consumption stops being cut (4 053 at t20 and 2 056 at t60 on the old path; 4 338 at t40 and rising on this one) and its
+        /// deficit is 2.4 % wider. Before it 'p6pap2' - FT-10 P-A′ (§572).</summary>
+        public const string BaselineLabel = "pn3b";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_p6pap2_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pn3b_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "ddc9d3fdf0b62a893ee08d514b984433a6a5820007e9f2e000fcb6a3fc3ff54b"),
-            (424242, "ceae8afba8898f82ed36aa93ad19e7237bc0cb16272fd3a99d78edf44adf6424"),
+            (777, "c6f43e5eb6fc2e8164c9d8a446cf7fdae15e17d6dd4deb8e7290d25956f177e2"),
+            (424242, "f0cd44a335bfa22b76c31acbfdfb32a6f45682c5fb1dcbdcdc86b40be29598f7"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------
@@ -102,10 +107,10 @@ namespace PoliSim.EditorTools
         {
             // §572: the cells under the RULED test (Annex II's categories for all four). France's two fall with the share it reads; Poland's two stay because its
             // share is nearly the whole line; Sweden's and Italy's CLOSE - their shares are small enough that the rule's answer is inside the clean band.
-            ("France", "household", "LEVEL", 21.0, RuleAnswer),   // 20.728 at t56 (27.176 before P-A′, 35.628 before P-A): K 13.4 x the share 0.763
-            ("France", "industry", "LEVEL", 6.0, RuleAnswer),     // 5.396 at t62 (7.075; 9.275)
-            ("Poland", "household", "LEVEL", 3.0, RuleAnswer),    // 2.740 at t65 (2.797 before P-A′): the coal chapter is nearly the whole line
-            ("Poland", "industry", "LEVEL", 3.0, RuleAnswer),     // 2.793 at t65 (2.851)
+            ("France", "household", "LEVEL", 20.0, RuleAnswer),   // 19.454 at t48 on PN-3b (20.728 at t56 before it) (27.176 before P-A′, 35.628 before P-A): K 13.4 x the share 0.763
+            ("France", "industry", "LEVEL", 6.0, RuleAnswer),     // 5.064 at t56 on PN-3b (5.396 at t62 before it) (7.075; 9.275)
+            ("Poland", "household", "LEVEL", 3.0, RuleAnswer),    // 2.414 at t65 on PN-3b (2.740 before it) (2.797 before P-A′): the coal chapter is nearly the whole line
+            ("Poland", "industry", "LEVEL", 3.0, RuleAnswer),     // 2.461 at t65 on PN-3b (2.793 before it; 2.851)
         };
 
         /// <summary>The bounds pass over the century's text. True when every cell holds: a clean cell inside the band, a recorded one under its ceiling and not slack, the count at its ratchet.</summary>
