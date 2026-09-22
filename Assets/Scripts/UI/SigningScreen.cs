@@ -260,6 +260,13 @@ namespace PoliSim.UI
             // P3 close (2026-09-03): the layout is resolved NOW, not two frames on - the stance panel (§248, seventeen texts) needed
             // more layout passes than the entrance capture waits, and the canvas guard photographed its rects unlaid (89d).
             LayoutRebuilder.ForceRebuildLayoutImmediate(document.GetComponent<RectTransform>());
+            // PF-13 (2026-09-22, §578): TWICE, and the second pass is the fix. uGUI's `Text.preferredHeight` is computed at the rect's CURRENT width, so on the
+            // first pass a wrapped caption reports the height it would need at whatever width it had before the horizontal pass ran - the stance reasons asked for
+            // 22 px and needed 29.4, and drew their second line over the row beneath (measured by the canvas-text guard on 89d and 89e, at 1280). The second rebuild
+            // recomputes every preferred height against the widths the first pass settled, which is what the vertical pass then gives them. ⚠ A ContentSizeFitter
+            // would NOT do here: the group already drives these rects (childControlHeight), and the note above PlateImage is this file's own record of what happens
+            // when two things drive one rect.
+            LayoutRebuilder.ForceRebuildLayoutImmediate(document.GetComponent<RectTransform>());
             screen._entrance = document.AddComponent<DocumentEntrance>();
             screen._entrance.Controls = controls;
 
@@ -385,7 +392,7 @@ namespace PoliSim.UI
                 PlateBody(stances, string.Format(CultureInfo.InvariantCulture, "{0} · {1}{2}", who, verdict,   // P3 close: "seats" dropped - the AGAINST rows wrapped at 1280
                     string.IsNullOrEmpty(side.Reason) ? string.Empty : string.Format(CultureInfo.InvariantCulture, " {0:+0.00;-0.00}", side.Alignment)), ink);
                 string reason = string.IsNullOrEmpty(side.ReasonShort) ? side.Reason : side.ReasonShort;   // the plate takes the short form; the record keeps the full line
-                if (!string.IsNullOrEmpty(reason)) { PlateCaption(stances, reason); anyReason = true; }
+                if (!string.IsNullOrEmpty(reason)) { PlateReason(stances, reason); anyReason = true; }
             }
             if (record.Sides.Count == 0) { PlateCaption(stances, "no sides recorded for this division - it predates the map"); }
             else if (!anyReason) { PlateCaption(stances, "no reasons recorded - this division predates the stance model"); }
@@ -449,6 +456,22 @@ namespace PoliSim.UI
             Text caption = CanvasChrome.MakeText(parent, "Caption", text, PoliSimTheme.Document, 11, PoliSimTheme.TextSecondary, TextAnchor.MiddleCenter);
             caption.horizontalOverflow = HorizontalWrapMode.Wrap;
             caption.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
+        }
+
+        /// <summary>
+        /// PF-13 (2026-09-22, §578): A STANCE'S REASON WRAPS, AND ITS FLOOR IS TWO LINES. `PlateCaption`'s 16 px floor is one line, and a vertical layout group
+        /// compresses toward the FLOOR when its children ask for more than the panel has - so the reasons asked 30.4 px and were given 22.0 (measured on 89d and 89e
+        /// at 1280), drawing their second line over the row beneath. The floor here is two lines of the caption's own size, which is what a reason at this column's
+        /// width actually takes.
+        /// <para>⚠ THE PLATE'S HEIGHT IS NOT THE PLACE TO FIX THIS. Raising it from 200 to 240 px did move the rect (23.6 -> 28.6) and still left it short, and
+        /// a number tuned until Germany's nine parties fit is exactly what §432 found breaking on Italy's fourteen: the fix belongs on the row that wraps, not on
+        /// the container that happens to hold this country's chamber.</para>
+        /// </summary>
+        private static void PlateReason(Transform parent, string text)
+        {
+            Text reason = CanvasChrome.MakeText(parent, "Caption", text, PoliSimTheme.Document, 11, PoliSimTheme.TextSecondary, TextAnchor.MiddleCenter);
+            reason.horizontalOverflow = HorizontalWrapMode.Wrap;
+            reason.gameObject.AddComponent<LayoutElement>().minHeight = 32f;   // two lines at 11 pt in this family; one line still draws centred in it
         }
 
         private static void PlateBody(Transform parent, string text, Color? ink = null)
