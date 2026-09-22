@@ -218,6 +218,9 @@ namespace PoliSim.Testing
                 var culture = new System.Globalization.CultureInfo(Locale);
                 System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
                 System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+                // §568: the desk's own number locale rides on top of the requested one, exactly as it does in the game - so -shotlocale= moves the DATE names and
+                // proves the numbers do not move with them.
+                UiCulture.Install();
                 Debug.Log($"SHOT: thread culture overridden to {Locale}.");
             }
 

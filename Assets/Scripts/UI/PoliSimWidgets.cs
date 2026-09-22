@@ -336,6 +336,29 @@ namespace PoliSim.UI
 
         /// <summary>The rect a <see cref="Stamp"/> needs: the text's own size in its style plus the
         /// spec's padding (chip 1/7, stamp 3/9 - passed in), plus room for the border.</summary>
+        /// <summary>
+        /// §568 (2026-09-22, Design's drift row D3): THE STAMP'S ONE FACE. Four stamps stood in the game - a card's HOLDS TIME / CAN WAIT, the desk's BREAKING, the
+        /// GAME OVER plate and (since §565) the scenario verdict - and each named its own padding, border and tilt, so four faces said one thing. The face is stated
+        /// here once: the padding is proportional to the type it frames, the border is <see cref="StampBorder"/>, the tilt is <see cref="StampTilt"/>. What a caller
+        /// still chooses is the TYPE (a game-over plate is set larger than a card's chip) and the INK. The four-argument form below is the primitive underneath.
+        /// </summary>
+        public static Vector2 StampSize(string text, GUIStyle style) => StampSize(text, style, StampPadX(style), StampPadY(style), StampBorder);
+
+        /// <summary>See <see cref="StampSize(string, GUIStyle)"/> - the one face, drawn.</summary>
+        public static void Stamp(Rect rect, string text, GUIStyle style, Color ink) => Stamp(rect, text, style, ink, ink, StampBorder, StampTilt);
+
+        /// <summary>The stamp's frame, in pixels at any type size - a rubber stamp's edge does not grow with its letters.</summary>
+        public const float StampBorder = 1.5f;
+
+        /// <summary>The stamp's tilt, in degrees: struck by hand, and always the same hand.</summary>
+        public const float StampTilt = -2f;
+
+        /// <summary>The air each side of the letters: three fifths of the type's own size, so a big stamp is not a small one scaled by its border alone.</summary>
+        private static float StampPadX(GUIStyle style) => Mathf.Round(Mathf.Max(4f, style.fontSize * 0.6f));
+
+        /// <summary>See <see cref="StampPadX"/>: a sixth of the type's size above and below.</summary>
+        private static float StampPadY(GUIStyle style) => Mathf.Round(Mathf.Max(1f, style.fontSize * 0.16f));
+
         public static Vector2 StampSize(string text, GUIStyle style, float padX, float padY, float borderWidth)
         {
             GUIStyle probe = MeasuredScratch(style);

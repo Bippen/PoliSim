@@ -58,6 +58,8 @@ namespace PoliSim.EditorTools
             // §546 (2026-09-21): the review ledger reads the sentinel's digest table out of its source - a digest surviving in a comment is history, not the
             // declared baseline. (Its file-state hashes read BYTES, comments included, by design: a state is the whole file.)
             "ReviewLedgerCheck",
+            // §568 (2026-09-22): the locale check counts the ONE install site in the runtime - a commented-out call would be a second.
+            "NumberLocaleCheck",
         };
 
         /// <summary>

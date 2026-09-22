@@ -294,6 +294,7 @@ namespace PoliSim.EditorTools
             // check rather than a ratchet, because its right answer is ZERO and it is AT zero - a ratchet
             // would be a licence for a fifth statement to sit there being counted.
             ("SharedMidpointCheck", SharedMidpointCheck.Run),
+            ("NumberLocaleCheck", NumberLocaleCheck.Run),   // §568 (2026-09-22): the desk's one number locale, installed once at the game's start
             ("CountryInkFenceCheck", CountryInkFenceCheck.Run),   // §566 (2026-09-22): the six registered country inks against D16's fence, inside their own channel
             ("InkContrastCheck", InkContrastCheck.Run),   // P2-1.2 (2026-09-02): every ink pair at its use, WCAG ratio derived from the theme, floors 4.5 body / 3.5 caption
             ("RangeCaptionCheck", RangeCaptionCheck.Run),   // P4-B1 (2026-09-04): every dial ten bands, every band's direction the dial's own effect sign

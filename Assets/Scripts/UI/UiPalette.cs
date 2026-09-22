@@ -765,12 +765,14 @@ namespace PoliSim.UI
         {
             switch (kind)
             {
+                // §568 (2026-09-22, Design's drift row D7: *"the CTA class is wider than PF-5's four … at least six faces"*): A CALL TO ACTION WEARS THE FURNITURE
+                // UNTINTED. Brass where the click COMMITS something (introduce, appoint, create, dissolve, choose), paper where it NAVIGATES (close, page, load, search) -
+                // and the delivered plates are real-colour paper furniture, so untinted is what they were drawn to be. The green Implement and the red Remove were the
+                // retired pack's two faces for one class: what an action DOES is its label's business, and a sentence beside it says the rest (DrawSentenceAction).
                 case ButtonKind.Implement:
-                    return Darken(PositiveChangeColor, 0.15f);
                 case ButtonKind.Remove:
-                    return Darken(NegativeChangeColor, 0.1f);
                 case ButtonKind.Primary:
-                    return GetAreaColor(SystemArea.Political);
+                    return Color.white;
                 case ButtonKind.Tab:
                     // v2.0: an unselected folder tab is off-stock, NOT a darkened hue. The hue survives on
                     // its spine (ui_tab_spine), which is where per-area identity lives now - darkening the

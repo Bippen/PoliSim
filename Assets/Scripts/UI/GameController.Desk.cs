@@ -569,26 +569,19 @@ namespace PoliSim.UI
                 ("Net budget", _cachedNetBudgetImpactRaw, UiFormat.MoneyDelta(_cachedNetBudgetImpactRaw, MoneyUnit.Billions), true, DeskRangeNetBudgetShareOfGdp * gdp)
             };
 
-            // 1m-r2: rows 26 tall, the label at 12, the bar 66×9, the value mono 10.5 (a zero reads in
-            // the neutral ink - "zero is a reading, not an absence"; the bare centre-lined track IS
-            // the zero row's face).
-            float rowHeight = Mathf.Round(26f * uy);
-            float barWidth = Mathf.Round(66f * ux);
-            float barHeight = Mathf.Max(4f, Mathf.Round(9f * uy));
-            GUIStyle label = DeskBody(12f, PoliSimTheme.TextPrimary);
-            float valueWidth = Mathf.Round(58f * ux);
-            float labelWidth = Mathf.Max(1f, r.width - barWidth - valueWidth - Mathf.Round(12f * ux));
-            for (int i = 0; i < rows.Count; i++)
-            {
-                var row = rows[i];
-                var rowRect = new Rect(r.x, y, r.width, rowHeight);
-                PoliSimWidgets.MeasuredLabel(new Rect(rowRect.x, rowRect.y, labelWidth, rowHeight), row.label, label);
-                var bar = new Rect(rowRect.x + labelWidth + Mathf.Round(6f * ux), rowRect.y + (rowHeight - barHeight) * 0.5f, barWidth, barHeight);
-                DrawDeskDivergingBar(bar, row.value, row.range, row.higherIsBetter);
-                GUIStyle value = DeskCaption(10.5f, UiPalette.GetDeltaColor(row.value, row.higherIsBetter), false, TextAnchor.MiddleRight);
-                PoliSimWidgets.MeasuredLabel(new Rect(bar.xMax + Mathf.Round(6f * ux), rowRect.y, Mathf.Max(1f, rowRect.xMax - bar.xMax - Mathf.Round(6f * ux)), rowHeight), row.text, value);
-                y += rowHeight;
-            }
+            // §568 (2026-09-22, Design's drift row D2): BOARD 5c'S ARROWS, not a column of centred bars. The desk was the last surface in the game estimating an effect in
+            // its own grammar: every other one - the Budget's column, a sector card, the signing document's plate, election night's - draws EffectArrowsRenderer, where the
+            // arrows rise and fall from ONE hairline baseline and the figure sits under each. The eight readings are drawn as two panels of four, because eight lanes in a
+            // 250-unit column would shrink the captions to the floor; the renderer sizes its own lanes by their widest word and the guard reports it if they break.
+            float panelHeight = Mathf.Round(104f * uy);
+            GUIStyle arrowLabel = DeskBody(11f, PoliSimTheme.TextPrimary);
+            var arrows = new List<EffectArrow>(rows.Count);
+            foreach (var row in rows) { arrows.Add(new EffectArrow(row.label, row.value, row.higherIsBetter, row.text)); }
+            int half = Mathf.CeilToInt(arrows.Count * 0.5f);
+            EffectArrowsRenderer.Draw(new Rect(r.x, y, r.width, panelHeight), arrows.GetRange(0, half), arrowLabel);
+            y += panelHeight + Mathf.Round(4f * uy);
+            EffectArrowsRenderer.Draw(new Rect(r.x, y, r.width, panelHeight), arrows.GetRange(half, arrows.Count - half), arrowLabel);
+            y += panelHeight;
 
             y += Mathf.Round(6f * uy);
             if (!DeskHasDraftPending())
@@ -768,9 +761,9 @@ namespace PoliSim.UI
 
             GUIStyle chipStyle = DeskCaption(9f, PoliSimTheme.Caution, bold: true, anchor: TextAnchor.MiddleCenter);
             const string chipText = "BREAKING";
-            Vector2 chipSize = PoliSimWidgets.StampSize(chipText, chipStyle, Mathf.Round(7f * ux), Mathf.Round(2f * uy), 1.5f);
+            Vector2 chipSize = PoliSimWidgets.StampSize(chipText, chipStyle);   // §568: the stamp's one face
             var chipRect = new Rect(r.x + padX, y, chipSize.x, chipSize.y);
-            PoliSimWidgets.Stamp(chipRect, chipText, chipStyle, PoliSimTheme.Caution, PoliSimTheme.Caution, 1.5f, -2f);
+            PoliSimWidgets.Stamp(chipRect, chipText, chipStyle, PoliSimTheme.Caution);
 
             GUIStyle name = DeskCaption(9.5f, PoliSimTheme.TextPrimary, bold: true);
             float nameX = chipRect.xMax + Mathf.Round(9f * ux);
@@ -839,56 +832,18 @@ namespace PoliSim.UI
             // sparkline's slot (the line will start here), never a flat line that would imply a trend.
             float ux = r.width / DeskBoardInnerWidth;
             float uy = r.height / 53f;
-            float width = r.width / chips.Count;
+            // §568 (2026-09-22, Design's drift row D6): the readings are TILES here too - the same cell the Statistics head draws, at this band's own pitch. The gap
+            // between them is where the hairline divider stood; board 1m-r2's *"no plates"* is superseded by the 2026-09-22 ruling, and nothing else about the band moves.
+            float gap = Mathf.Round(4f * ux);
+            float width = (r.width - gap * (chips.Count - 1)) / chips.Count;
             float padX = Mathf.Round(6f * ux);
             float padY = Mathf.Round(4f * uy);
-            GUIStyle caption = DeskCaption(7.5f, PoliSimTheme.TextMuted);
-            GUIStyle numeral = DeskNumeral(17f, PoliSimTheme.TextPrimary);
-            float captionHeight = DeskCaptionHeight(caption);
             float sparkWidth = Mathf.Round(46f * ux);
             float sparkHeight = Mathf.Max(4f, Mathf.Round(10f * uy));
-
             for (int i = 0; i < chips.Count; i++)
             {
-                HeadlineReading chip = chips[i];
-                var plate = new Rect(r.x + i * width, r.y, width, r.height);
-                if (i > 0 && Event.current.type == EventType.Repaint)
-                {
-                    PoliSimTheme.Rule(new Rect(Mathf.Round(plate.x), plate.y + padY, 1f, Mathf.Max(1f, plate.height - padY * 2f)), PoliSimTheme.Hairline);
-                }
-
-                var inner = new Rect(plate.x + padX, plate.y + padY, plate.width - padX * 2f, plate.height - padY * 2f);
-                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y, inner.width, captionHeight), chip.Label.ToUpperInvariant(), caption);
-
-                bool hasSeries = chip.Series != null && chip.Series.Count >= 2;
-                float sparkX = inner.xMax - sparkWidth;
-                if (Event.current.type == EventType.Repaint)
-                {
-                    var spark = new Rect(sparkX, inner.yMax - sparkHeight, sparkWidth, sparkHeight);
-                    if (hasSeries)
-                    {
-                        GraphRenderer.DrawSparkline(spark, chip.Series, PoliSimTheme.TextSecondary);
-                    }
-                    else
-                    {
-                        DeskDottedBaseline(spark);
-                    }
-                    UiContainmentGuard.Check("Desk chip sparkline", spark, plate);
-                }
-
-                float numeralRight = sparkX - Mathf.Round(4f * ux);
-                // The delta's rect is the DELTA style's own measured height (bold 7 → 9 px at 1600 stands
-                // taller than the 6.5 → 8 px caption whose height it borrowed on the first matrix: "0%"
-                // needs 11.2 tall in 10.0).
-                GUIStyle delta = string.IsNullOrEmpty(chip.Delta) ? null : DeskCaption(7f, chip.DeltaInk, bold: true);
-                float deltaHeight = delta == null ? 0f : DeskCaptionHeight(delta);
-                var numeralRect = new Rect(inner.x, inner.y + captionHeight, Mathf.Max(1f, numeralRight - inner.x), Mathf.Max(1f, inner.yMax - deltaHeight - inner.y - captionHeight));
-                PoliSimWidgets.MeasuredLabel(numeralRect, chip.Value, numeral);
-
-                if (delta != null)
-                {
-                    PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.yMax - deltaHeight, Mathf.Max(1f, numeralRight - inner.x), deltaHeight), chip.Delta, delta);
-                }
+                var plate = new Rect(r.x + i * (width + gap), r.y, width, r.height);
+                DrawReadingCell(plate, chips[i], 7.5f, 17f, 7f, padX, padY, sparkWidth, sparkHeight);
             }
         }
 
@@ -996,7 +951,7 @@ namespace PoliSim.UI
             float uy = stage.height / DeskBoardInnerHeight;
             GUIStyle stampStyle = DeskNumeral(17f, PoliSimTheme.Bad, TextAnchor.MiddleCenter);
             const string stampText = "GAME OVER";
-            Vector2 stampSize = PoliSimWidgets.StampSize(stampText, stampStyle, Mathf.Round(16f * ux), Mathf.Round(4f * uy), 2.5f);
+            Vector2 stampSize = PoliSimWidgets.StampSize(stampText, stampStyle);   // §568: the stamp's one face
 
             GUIStyle reason = DeskCaptionWrapped(8.5f, PoliSimTheme.TextSecondary);
             reason.alignment = TextAnchor.UpperCenter;
@@ -1009,7 +964,7 @@ namespace PoliSim.UI
             PoliSimTheme.RoundedCard(plate, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
 
             var stampRect = new Rect(plate.center.x - stampSize.x * 0.5f, plate.y + Mathf.Round(12f * uy), stampSize.x, stampSize.y);
-            PoliSimWidgets.Stamp(stampRect, stampText, stampStyle, PoliSimTheme.Bad, PoliSimTheme.Bad, 2.5f, -2f);
+            PoliSimWidgets.Stamp(stampRect, stampText, stampStyle, PoliSimTheme.Bad);
             if (reasonHeight > 0f)
             {
                 var reasonRect = new Rect(plate.x + Mathf.Round(12f * ux), stampRect.yMax + Mathf.Round(6f * uy), reasonWidth, reasonHeight);

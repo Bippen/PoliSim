@@ -654,6 +654,9 @@ namespace PoliSim.UI
 
         private void Start()
         {
+            // §568 (2026-09-22, Design's drift row D1): THE DESK'S ONE NUMBER LOCALE, before anything draws - the machine's culture with the invariant number format,
+            // so a figure interpolated into a string reads the same as one through UiFormat. Dates keep the machine's culture: the calendar sheet is drawn from it.
+            UiCulture.Install();
             SetupCameraBackground();
 
             // World/SimulationManager are created immediately (the selector screen needs every
@@ -3978,6 +3981,18 @@ namespace PoliSim.UI
         /// slot (sized for the widest label a button can carry: Implement, Remove, Pending (NNd)) - one arithmetic for the tax
         /// row, the welfare row and every dial row, so their columns are one column down the sheet.
         /// </summary>
+        /// <summary>
+        /// §568 (Design's drift row D7): THE CALL TO ACTION'S ONE WIDTH - what the family's action column reserves, measured from the widest label the class uses
+        /// (<c>Pending (99d)</c>), for the calls to action that stand outside a ledger row: the budget bill's, a candidate's appointment, a reshuffle, a search.
+        /// Board 6a's column is where this number comes from, so a button in a card and a button in a row are the same button.
+        /// </summary>
+        private float CtaWidth()
+        {
+            float gap = _labelStyle.fontSize * 0.6f;
+            return Mathf.Ceil(Mathf.Max(_implementButtonStyle.CalcSize(new GUIContent("Implement")).x,
+                Mathf.Max(_removeButtonStyle.CalcSize(new GUIContent("Remove")).x, _pendingButtonStyle.CalcSize(new GUIContent("Pending (99d)")).x)) + gap);
+        }
+
         private void LedgerFamilyColumns(Rect fullRow, out Rect ledgerRect, out Rect verdictRect, out Rect actionRect)
         {
             float gap = _labelStyle.fontSize * 0.6f;
@@ -5417,9 +5432,9 @@ namespace PoliSim.UI
                     foreach (int fs in new[] { 15, 13, 12, 11, 10, 9, 8, 7 })
                     {
                         var style = new GUIStyle(_cardKindStyle) { fontSize = fs };
-                        Vector2 size = PoliSimWidgets.StampSize("HOLDS TIME", style, UrgencyChipPadX, UrgencyChipPadY, UrgencyChipBorder);
+                        Vector2 size = PoliSimWidgets.StampSize("HOLDS TIME", style);
                         Rect r = cursor.Place(size.x, size.y, captionHeight);
-                        PoliSimWidgets.Stamp(r, "HOLDS TIME", style, PoliSimTheme.Bad, PoliSimTheme.Bad, UrgencyChipBorder, UrgencyChipRotation);
+                        PoliSimWidgets.Stamp(r, "HOLDS TIME", style, PoliSimTheme.Bad);
                         LadderCaption(r, $"type {fs} ({Mathf.Round(size.x)}x{Mathf.Round(size.y)})", captionHeight);
                     }
                     break;
@@ -6264,11 +6279,11 @@ namespace PoliSim.UI
             Color verdictInk = won ? PoliSimTheme.Good : PoliSimTheme.Bad;
             string verdictText = won ? "SCENARIO COMPLETE" : "SCENARIO FAILED";
             GUIStyle verdictStamp = DeskCaption(9f, verdictInk, bold: true, anchor: TextAnchor.MiddleCenter);
-            Vector2 stampSize = PoliSimWidgets.StampSize(verdictText, verdictStamp, Mathf.Round(_labelStyle.fontSize * 0.5f), Mathf.Round(_labelStyle.fontSize * 0.14f), 1.5f);
+            Vector2 stampSize = PoliSimWidgets.StampSize(verdictText, verdictStamp);
             Rect stampRow = GUILayoutUtility.GetRect(10f, stampSize.y + _labelStyle.fontSize * 0.4f, GUILayout.ExpandWidth(true));
             if (Event.current.type == EventType.Repaint)
             {
-                PoliSimWidgets.Stamp(new Rect(stampRow.x, stampRow.y, stampSize.x, stampSize.y), verdictText, verdictStamp, verdictInk, verdictInk, 1.5f, -2f);
+                PoliSimWidgets.Stamp(new Rect(stampRow.x, stampRow.y, stampSize.x, stampSize.y), verdictText, verdictStamp, verdictInk);
             }
 
             var deskLabel = new GUIStyle(_labelStyle);
@@ -6313,8 +6328,8 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(24f);
-            GUIStyle dismissStyle = UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary);
-            if (PoliSimWidgets.Button("Close", dismissStyle))
+            // §568: Close NAVIGATES, so it wears paper at the class's one width - it was the brass Primary, the loudest face in the game, on a page whose work is done.
+            if (PoliSimWidgets.Button("Close", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))
             {
                 DismissScenarioVerdict();
             }
@@ -6741,6 +6756,18 @@ namespace PoliSim.UI
         /// "Econom-ic", so at that width the row goes without icons and the identity stays on the
         /// tongue above (a stated deviation from R-K6's "on the sub-tab rows", by width, never silent).
         /// </summary>
+        /// <summary>
+        /// §568 (2026-09-22, Design's drift row D10: *"sub-tab icons on 3 of 6 Laws sub-tabs, none on Politics"*): A ROW'S ICONS ARE THE ROW'S. Every tab in a row
+        /// carries one or none does - a row where some tabs have an area and some do not (Policy Web and Laws are cross-area by nature, and there is no icon to give
+        /// them) read as a row whose icons had gone missing. The fit test below decides whether the row CAN carry them; this decides whether it MAY.
+        /// </summary>
+        private static bool EveryAreaHasAnIcon(params UiPalette.SystemArea[] areas)
+        {
+            foreach (UiPalette.SystemArea area in areas) { if (IconLibrary.GetAreaIcon(area) == null) { return false; } }
+
+            return true;
+        }
+
         private bool SubTabRowFitsIcons(float share, params string[] labels)
         {
             GUIStyle active = BuildSubTabStyle(true);
@@ -6858,7 +6885,9 @@ namespace PoliSim.UI
             float subTabShare = SubTabShare(availableWidth, 2);
             // Instance #13: the row's height is measured once (SubTabRowHeight) and shared between the
             // buttons and the content reserve below - see the accessor's own doc for the ECB case.
-            bool statisticsIcons = SubTabRowFitsIcons(subTabShare, "Domestic", "International");
+            // §568 (D10): the row's icons are the row's - Domestic has no area of its own, so this row carries none either.
+            bool statisticsIcons = SubTabRowFitsIcons(subTabShare, "Domestic", "International")
+                && EveryAreaHasAnIcon(UiPalette.SystemArea.Neutral, UiPalette.SystemArea.Global);
             float subTabRowHeight = SubTabRowHeight(subTabShare, statisticsIcons, "Domestic", "International");
             DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory, subTabShare, subTabRowHeight);
             DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight, statisticsIcons ? UiPalette.SystemArea.Global : UiPalette.SystemArea.Neutral);
@@ -7081,14 +7110,14 @@ namespace PoliSim.UI
         private void DrawUrgencyChip(bool blocksTime)
         {
             string text = blocksTime ? "HOLDS TIME" : "CAN WAIT";
-            Vector2 size = PoliSimWidgets.StampSize(text, _cardKindStyle, UrgencyChipPadX, UrgencyChipPadY, UrgencyChipBorder);
+            Vector2 size = PoliSimWidgets.StampSize(text, _cardKindStyle);   // §568: the stamp's one face
 
             // ⚠ P6-A3 (2026-09-17): RESERVE WHAT THE ROTATION PAINTS. The stamp turns about its own centre,
             // so its corners leave the unrotated rect by half its width times the sine of the angle - about
             // two pixels at this size - while the reserve above was the UNROTATED size. This method's own
             // comment said "the reserve is the layout, the stamp is paint", which was true of the layout
             // and false of the pixels: playtest 6's finding 4 is a stamp sitting outside its panel.
-            float radians = Mathf.Abs(UrgencyChipRotation) * Mathf.Deg2Rad;
+            float radians = Mathf.Abs(PoliSimWidgets.StampTilt) * Mathf.Deg2Rad;
             float lift = Mathf.Ceil(size.x * 0.5f * Mathf.Sin(radians));
             float spread = Mathf.Ceil(size.y * 0.5f * Mathf.Sin(radians));
             Rect reserved = GUILayoutUtility.GetRect(size.x + spread * 2f, size.y + lift * 2f,
@@ -7096,7 +7125,7 @@ namespace PoliSim.UI
             var painted = new Rect(reserved.x + spread, reserved.y + lift, size.x, size.y);
             Color ink = blocksTime ? PoliSimTheme.Bad : PoliSimTheme.HairlineStrong;
             Color border = blocksTime ? PoliSimTheme.Bad : PoliSimTheme.Hairline;
-            PoliSimWidgets.Stamp(painted, text, _cardKindStyle, ink, border, UrgencyChipBorder, UrgencyChipRotation);
+            PoliSimWidgets.Stamp(painted, text, _cardKindStyle, ink, border, PoliSimWidgets.StampBorder, PoliSimWidgets.StampTilt);
 
             // The assert this class never had, at the one site that rotates: the rotated bounds against the
             // rect reserved for them. It is the ledger's own containment shape, one level up.
@@ -7113,10 +7142,8 @@ namespace PoliSim.UI
             return Mathf.Max(0f, _dossierCardStyle.border.top - _dossierCardStyle.padding.top);
         }
 
-        private const float UrgencyChipPadX = 7f;
-        private const float UrgencyChipPadY = 1f;
-        private const float UrgencyChipBorder = 1.5f;
-        private const float UrgencyChipRotation = -2f;
+        // §568: the stamp's padding, border and tilt are PoliSimWidgets' - one face for every stamp in the game (D3). What stays here is nothing: the four constants
+        // this file named were that face, stated a fourth time.
 
         /// <summary>Closes a card opened by BeginAreaCard and draws its area spine, using the rect GUILayout just resolved for the whole card - the height isn't knowable until now, which is the entire reason the spine is drawn here rather than up front. For a dossier card (see BeginAreaCard) this is also where the shoulder caption lands, for the same reason: the shoulder is part of the card's own background, and the card has no rect until now.</summary>
         private void EndAreaCard(UiPalette.SystemArea area)
@@ -7188,7 +7215,10 @@ namespace PoliSim.UI
             // Instance #13: one measured row height, shared with the content reserve below.
             // R-K6's icons ride this row only where every label still fits beside one in two lines -
             // decided once per row, measured, so the row stays even (see SubTabRowFitsIcons).
-            bool policyIcons = SubTabRowFitsIcons(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
+            // §568 (D10): the row's icons are the row's - Policy Web and Laws are cross-area and have none, so this row carries none. When they are given one, the row
+            // takes icons again with no further change here.
+            bool policyIcons = SubTabRowFitsIcons(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws")
+                && EveryAreaHasAnIcon(UiPalette.SystemArea.Labor, UiPalette.SystemArea.CrimeJustice, UiPalette.SystemArea.Sectors, UiPalette.SystemArea.Neutral, UiPalette.SystemArea.Trade, UiPalette.SystemArea.Neutral);
             float subTabRowHeight = SubTabRowHeight(subTabShare, policyIcons, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
             DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.Labor : UiPalette.SystemArea.Neutral);
             DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.CrimeJustice : UiPalette.SystemArea.Neutral);
@@ -9366,7 +9396,7 @@ namespace PoliSim.UI
                 //
                 // Contorting this into a fixed control set would also mean rendering N candidate buttons
                 // when there are no candidates, which is not a thing.
-                if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle))
+                if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))   // §568: paper, and the class's one width
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
                     float approvalBeforeReshuffle = _playerCountry.State.ApprovalRating;
@@ -9412,7 +9442,7 @@ namespace PoliSim.UI
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
             DrawMinisterAttributes(candidate);   // P2-5.2
-            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _implementButtonStyle))   // §568: brass, because appointing commits
             {
                 _playerCountry.CabinetMinisters[portfolio] = candidate;
                 _cabinetCandidatesByPortfolio.Remove(portfolio);
@@ -10077,7 +10107,7 @@ namespace PoliSim.UI
 
 
             height += _labelStyle.CalcHeight(new GUIContent(BuildBudgetBillStatusText()), textWidth) + _labelStyle.margin.vertical;
-            height += _neutralActionButtonStyle.fixedHeight + _neutralActionButtonStyle.margin.vertical;
+            height += _implementButtonStyle.fixedHeight + _implementButtonStyle.margin.vertical;   // §568: the budget bill's button, brass at the class's one width
             height += 8f;
 
             return height;
@@ -10324,7 +10354,8 @@ namespace PoliSim.UI
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
-            if (PoliSimWidgets.Button("Introduce Budget Bill", _neutralActionButtonStyle))
+            // §568: the budget bill's call to action is the family's - brass, because it commits, at the class's one width (PF-5's fourth sibling, and its last).
+            if (PoliSimWidgets.Button("Introduce Budget Bill", _implementButtonStyle, GUILayout.Width(CtaWidth())))
             {
                 _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
             }

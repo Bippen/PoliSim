@@ -247,6 +247,43 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(14f));
         }
 
+        /// <summary>
+        /// §568 (2026-09-22, Design's drift rows D6 and D13): **ONE CELL FOR A HEADLINE READING**, wherever it stands - the desk's foot, the Budget's header, the
+        /// Statistics head. Design: *"ten readouts, two faces … the strip as an integrated band with sparklines, Stats as bordered tiles without. D1-the-split allows
+        /// two documents; it does not require two faces for one row of figures."* The cell is a TILE (Elias's ruling: *"the ten readouts as tiles like the rest"*) -
+        /// the plate, the caption, the numeral, the delta in the value's own ink, and the kept history as a sparkline at the numeral's right in ONE NEUTRAL INK
+        /// (D13: the Laws chips drew a falling debt series in the red of its status, the desk drew every series neutral; a trend is history, and the verdict is the
+        /// delta's). A reading with no kept history draws the dotted baseline the strip already drew: the line will start here, and a flat line would imply a trend.
+        /// ⚠ This supersedes board 1m-r2's *"the strip is part of the sheet - no plates, a hairline divider between neighbours"* for the desk's foot, by the
+        /// 2026-09-22 ruling; what the board decided about pitch, type and the sparkline's place is unchanged and is drawn here.
+        /// </summary>
+        private void DrawReadingCell(Rect plate, HeadlineReading reading, float captionPx, float numeralPx, float deltaPx, float padX, float padY, float sparkWidth, float sparkHeight)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+
+            GUIStyle caption = DeskCaption(captionPx, PoliSimTheme.TextMuted);
+            GUIStyle numeral = DeskNumeral(numeralPx, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            PoliSimTheme.RoundedCard(plate, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
+            var inner = new Rect(plate.x + padX, plate.y + padY, plate.width - padX * 2f, plate.height - padY * 2f);
+            float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y, inner.width, captionHeight), reading.Label.ToUpperInvariant(), caption);
+
+            GUIStyle delta = string.IsNullOrEmpty(reading.Delta) ? null : DeskCaption(deltaPx, reading.DeltaInk, bold: true);
+            float deltaHeight = delta == null ? 0f : Mathf.Ceil(DeskCaptionHeight(delta));
+            float sparkX = inner.xMax - sparkWidth;
+            var spark = new Rect(sparkX, inner.yMax - sparkHeight, sparkWidth, sparkHeight);
+            if (reading.Series != null && reading.Series.Count >= 2) { GraphRenderer.DrawSparkline(spark, reading.Series, PoliSimTheme.TextSecondary); }
+            else { DeskDottedBaseline(spark); }
+            UiContainmentGuard.Check("Reading cell sparkline", spark, plate);
+
+            var numeralRect = new Rect(inner.x, inner.y + captionHeight, Mathf.Max(1f, sparkX - inner.x - padX), Mathf.Max(1f, inner.yMax - deltaHeight - inner.y - captionHeight));
+            PoliSimWidgets.MeasuredLabel(numeralRect, reading.Value, numeral);
+            if (delta != null)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.yMax - deltaHeight, Mathf.Max(1f, sparkX - inner.x - padX), deltaHeight), reading.Delta, delta);
+            }
+        }
+
         /// <summary>Board 2a's ten headline readings as compact plates in a 5-column grid: caption 7.5 in the muted ink, numeral 19 bold, the GDP delta or the outlook as mono 8 beneath; no keyline (the area key is the ledger rows' and the graphs', not a plate's - R-B5's reasoning), no 9-slice plate sprite (at this height its baked shadow ate the caption).</summary>
         private void DrawStatsHeadlinePlates(float contentWidth)
         {
@@ -266,7 +303,7 @@ namespace PoliSim.UI
             }
 
             float deltaHeight = anyDelta ? Mathf.Ceil(DeskCaptionHeight(DeskCaption(8f, PoliSimTheme.Neutral, bold: true))) : 0f;
-            float plateHeight = padY * 2f + captionHeight + StatsUnit(2f) + numeralHeight + deltaHeight;
+            float plateHeight = padY * 2f + captionHeight + StatsUnit(2f) + numeralHeight + deltaHeight + StatsUnit(4f);   // §568: the sparkline's own band, as the strip reserves it
             int rows = Mathf.CeilToInt(readings.Count / (float)columns);
             float totalHeight = rows * plateHeight + (rows - 1) * gap;
             Rect grid = GUILayoutUtility.GetRect(contentWidth, totalHeight, GUILayout.Width(contentWidth), GUILayout.Height(totalHeight));
@@ -276,19 +313,12 @@ namespace PoliSim.UI
             }
 
             float plateWidth = (grid.width - gap * (columns - 1)) / columns;
+            float sparkWidth = Mathf.Round(plateWidth * 0.34f);
+            float sparkHeight = Mathf.Max(4f, StatsUnit(10f));
             for (int i = 0; i < readings.Count; i++)
             {
-                HeadlineReading reading = readings[i];
                 var plate = new Rect(grid.x + (i % columns) * (plateWidth + gap), grid.y + (i / columns) * (plateHeight + gap), plateWidth, plateHeight);
-                PoliSimTheme.RoundedCard(plate, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
-                var inner = new Rect(plate.x + padX, plate.y + padY, plate.width - padX * 2f, plate.height - padY * 2f);
-                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y, inner.width, captionHeight), reading.Label.ToUpperInvariant(), caption);
-                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y + captionHeight + StatsUnit(2f), inner.width, numeralHeight), reading.Value, numeral);
-                if (!string.IsNullOrEmpty(reading.Delta))
-                {
-                    GUIStyle delta = DeskCaption(8f, reading.DeltaInk, bold: true);
-                    PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.yMax - deltaHeight, inner.width, deltaHeight), reading.Delta, delta);
-                }
+                DrawReadingCell(plate, readings[i], 7.5f, 19f, 8f, padX, padY, sparkWidth, sparkHeight);   // §568: the one cell
             }
         }
 

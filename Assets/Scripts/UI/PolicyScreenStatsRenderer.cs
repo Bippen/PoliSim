@@ -286,9 +286,11 @@ namespace PoliSim.UI
             UiContainmentGuard.Check("StatChip name line", nameRect, rect);
             UiContainmentGuard.Check("StatChip value line", valueRect, rect);
 
+            // §568 (2026-09-22, Design's drift row D13): the chip's sparkline is NEUTRAL, as the desk's is - it drew in the value's status ink, so a falling debt
+            // series (which is good) drew red on this page and grey on the desk. The VALUE keeps its judgment ink above; a trend is history, not a verdict.
             GraphRenderer.DrawSparkline(
                 new Rect(rect.xMax - sparkWidth - 4f, rect.y + (rect.height - sparkHeight) * 0.5f, sparkWidth, sparkHeight),
-                history, trendColor);
+                history, PoliSimTheme.TextSecondary);
         }
 
         /// <summary>
