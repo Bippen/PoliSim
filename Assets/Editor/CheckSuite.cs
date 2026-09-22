@@ -376,6 +376,34 @@ namespace PoliSim.EditorTools
         /// separate: `RunAllBatch` is the cheap once-per-session suite, this one is paid for on
         /// purpose.</para>
         /// </summary>
+        /// <summary>
+        /// ⚠ <b>THE WARM HOST'S BAR (§575).</b> The batch entry points above end with <c>EditorApplication.Exit</c>, which
+        /// <see cref="CheckExit.Collect"/> cannot suppress because it never reaches <c>Finish</c>: the warm Editor's first real use
+        /// ran the cheap bar correctly and then DIED of it, leaving its client waiting on a file the host would never write.
+        /// A bar run inside a host that must survive it is therefore the TABLE, which returns its worst code and exits nothing.
+        /// The batch entries stay exactly as they are - a cold <c>-executeMethod</c> bar's verdict IS the process's exit code.
+        /// </summary>
+        public static int RunTableNamed(string which)
+        {
+            switch ((which ?? string.Empty).Trim().ToLowerInvariant())
+            {
+                case "all":
+                case "cheap":
+                {
+                    var names = new string[Suite.Length];
+                    for (int i = 0; i < Suite.Length; i++) { names[i] = Suite[i].Name; }
+                    Debug.Log($"CHECKS: running all {Suite.Length} in one pass — {string.Join(", ", names)}.");
+                    return RunAll(announceClean: true);
+                }
+                case "sim":
+                case "simulation":
+                    return RunSimulation();
+                default:
+                    Debug.LogError($"CHECKS: RunTableNamed knows 'all' and 'sim', not '{which}'.");
+                    return 1;
+            }
+        }
+
         public static void RunSimulationBatch()
         {
             int worst = RunSimulation();

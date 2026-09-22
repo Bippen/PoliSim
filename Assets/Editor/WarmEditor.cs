@@ -119,6 +119,17 @@ namespace PoliSim.EditorTools
                         worst = Math.Max(worst, RunOne(Resolve(name.Trim()), name.Trim(), report));
                     }
                 }
+                else if (text.StartsWith("bar ", StringComparison.Ordinal))
+                {
+                    // §575: a BAR, run so the host SURVIVES it - CheckSuite.RunTableNamed returns the worst code where the
+                    // batch entry would have ended the Editor. This is the one command the loop actually needs from a warm host,
+                    // and the host's first real use is what found that it was missing.
+                    string which = text.Substring(4).Trim();
+                    var barWatch = Stopwatch.StartNew();
+                    worst = CheckSuite.RunTableNamed(which);
+                    barWatch.Stop();
+                    report.Append($"  bar {which,-54} {barWatch.Elapsed.TotalSeconds,7:F1} s  {(worst == 0 ? "ok" : "FAILED " + worst.ToString(CultureInfo.InvariantCulture))}\n");
+                }
                 else
                 {
                     report.Append($"  unknown command '{text}'\n");
