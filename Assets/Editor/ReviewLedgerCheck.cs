@@ -37,7 +37,7 @@ namespace PoliSim.EditorTools
     /// <para><b>What it does not see, stated.</b> It cannot tell a real review from a written one: it turns a silent omission into a false
     /// statement in the record, with a report committed beside it, and that is all a check can do. The money pattern is names, so a file
     /// that books money under another name is outside it (`SimulationManager.cs` WAS, and was named into the pattern by ruling on 2026-09-21, §549: *the fiscal path cannot sit
-    /// outside a money-path audit because of its name*; `MacroSystem.cs` still is, and the baseline pass is what reaches it). Data files and
+    /// outside a money-path audit because of its name*; `MacroSystem.cs` was too, named in by ruling on 2026-09-21 and built at §575; the baseline pass reaches whatever still books under another name). Data files and
     /// editor diagnostics the tier tool also calls money paths are left to the tool's printed line and the baseline pass. Deleted files
     /// need no row.</para>
     /// </summary>
