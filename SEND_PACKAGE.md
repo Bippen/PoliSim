@@ -29,3 +29,22 @@ The Energy page's order is its build order, not a composed one (row 1 below). Wh
 1. **The Energy tab, composed with its decisions as its spine.** The tab is whole now: build and retire with its refusals as sentences on the technology's own line, the connection queue with each operator's published capacity and the refusal past it, the mandate, the four instruments as dials with one bill, the laws chip. Its order is still the order it was built in - readouts, the decisions mid-page, more readouts, the dials at the foot. Asked, the D19 way, against the built page: the page composed around what the player DECIDES. Frames: `08_energy`, `_mid`, `_lower`, `_decisions`, `_decisions_ordered`, `_decisions_queue_full`, `_instrument_dials`, `_instrument_dials_dragged`, `_laws_link`.
 2. **C2's three density rows** - the family's key figure lifted into its header lane, a row opening in place on its name, the *Supporting readouts* row as one caption-register line at rest. **Your 16b, 16c and 16d stand as the answers; none is built yet.** They ride here so the density reading and the composition are judged together. Frames: `04b`-`04g`.
 3. **The rail's two token flags, from your 16a** - (i) the inactive glyph's derivation and (ii) the active cell's 12 % wash putting the 7.5 px caption at 4.30:1 (your proposal: 8 %, or the caption on plain tongue). Two facts from installing 16a that belong with them: the rail as built (1n-r3) draws every cell as a PAPER tongue, so the inactive glyph is the tab-swatch tint on paper, not the lift at 0.72 on the desk ground your first flag measures; and Energy's tint had to be DERIVED from your ink by the theme table's stated rule (oklch chroma ×0.78, lightness ×0.97: `#535D28`) because 16a delivers none - a rule that does not reproduce the six tints pass 3 delivered to the unit. Frames: the rail on every frame; `08_energy` (active), `07_politics` (inactive).
+
+   **Flag (ii) is BUILT, and both of your alternatives were taken (2026-09-22, §575 and §576).** The wash went to 8 % as you proposed, and it was measured rather than assumed: the model reproduces your reading of the 12 % wash (Sectors 4.33 against your 4.30). **8 % alone carried four of twelve areas over the 4.5 text floor and left eight between 4.10 and 4.19** - so your other alternative was taken as well and **the caption now sits on PLAIN TONGUE**: the wash stops at the caption band and runs the glyph's field only, the spine still runs the cell's full height. On plain tongue every area clears the floor. The twelve, as the check now prints them (ink, caption on plain tongue, and what the same ink would read on the 8 % and 12 % washes):
+
+   | area | ink | caption on plain tongue | on the 8 % wash | on the 12 % wash |
+   |---|---|---|---|---|
+   | Welfare | `#A14B76` | **4.53** | 4.10 | 3.90 |
+   | Political | `#81641F` | **4.54** | 4.14 | 3.95 |
+   | Trade | `#1E746A` | **4.55** | 4.16 | 3.97 |
+   | Labor | `#9D5529` | **4.55** | 4.16 | 3.98 |
+   | Infrastructure | `#3C6F7B` | **4.56** | 4.15 | 3.95 |
+   | SovereignWealth | `#826239` | **4.56** | 4.15 | 3.95 |
+   | Global | `#456C89` | **4.56** | 4.14 | 3.95 |
+   | Neutral | `#626873` | **4.57** | 4.19 | 4.01 |
+   | Sectors | `#62579F` | **5.06** | 4.57 | 4.33 |
+   | Fiscal | `#35619E` | **5.10** | 4.59 | 4.35 |
+   | CrimeJustice | `#9C4238` | **5.27** | 4.72 | 4.46 |
+   | Energy | `#566217` | **5.43** | 4.88 | 4.62 |
+
+   WCAG 2.x, derived from the theme tokens; the ground is the sheet's paper (`Card`) with the wash composited over it where a wash applies. The plain-tongue column is now ASSERTED by `InkContrastCheck` at the body floor, so the rail's caption is held by a verdict and not by a report. **Nothing is asked here** - it is the measurement behind the two changes, in case the numbers matter to the palette work.
