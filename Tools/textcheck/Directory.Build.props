@@ -1,0 +1,19 @@
+<Project>
+  <!--
+    §576 (2026-09-22): THE BUILD LANDS OUTSIDE THE REPOSITORY, AND NOW SO DOES NuGet's RESTORE.
+
+    §574 set BaseOutputPath and BaseIntermediateOutputPath in TextCheck.csproj, which is AFTER Microsoft.Common.props is
+    imported - so MSBuild warned MSB3539 on every build and NuGet wrote its restore artefacts to Tools/textcheck/obj/
+    anyway: inside the repository, which is the one thing that property was set to prevent. A binary or a stray file
+    under Tools/ is a file MojibakeCheck reads as "not UTF-8", which is what it caught on this runner's first build.
+
+    Directory.Build.props is imported BEFORE Microsoft.Common.props, so the paths set here are the ones NuGet and the
+    compiler both use. The paths are relative to this file's own directory, so they do not depend on the working
+    directory the build is started from.
+  -->
+  <PropertyGroup>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)..\..\..\PoliSim-captures\textcheck\bin\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\..\..\PoliSim-captures\textcheck\obj\</BaseIntermediateOutputPath>
+    <MSBuildProjectExtensionsPath>$(MSBuildThisFileDirectory)..\..\..\PoliSim-captures\textcheck\obj\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+</Project>
