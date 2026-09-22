@@ -677,27 +677,28 @@ namespace PoliSim.UI
 
             if (!_impactLedger.HasAnything)
             {
-                GUILayout.Label("You have not moved a dial yet, so the live series and the counterfactual are the same run. "
-                                + "The moment you do, the gap appears here with the reason beside it.", _labelStyle);
+                // the empty state is one line in the desk's caption face - a reading, not a paragraph
+                Rect empty = GUILayoutUtility.GetRect(10f, Mathf.Ceil(DeskCaptionHeight(DeskCaption(8.5f, PoliSimTheme.TextMuted))) + StatsUnit(4f), GUILayout.ExpandWidth(true));
+                if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(empty, "NO DIAL MOVED YET · THE LIVE SERIES AND THE COUNTERFACTUAL ARE ONE RUN · THE GAP APPEARS HERE WITH ITS REASONS", DeskCaption(8.5f, PoliSimTheme.TextMuted)); }
                 return;
             }
 
-            DrawImpactRow("GDP", "GDP", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
-            DrawImpactRow("Unemployment", "Unemployment", null);
-            DrawImpactRow("Inflation", "Inflation", null);
-            DrawImpactRow("Approval rating", "ApprovalRating", null);
-            DrawImpactRow("Poverty rate", "PovertyRate", null);
+            DrawImpactRow("GDP", "GDP", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), true);
+            DrawImpactRow("Unemployment", "Unemployment", null, false);
+            DrawImpactRow("Inflation", "Inflation", null, false);
+            DrawImpactRow("Approval rating", "ApprovalRating", null, true);
+            DrawImpactRow("Poverty rate", "PovertyRate", null, false);
             // Debt is carried in the same money as GDP, so it takes GDP's declared unit rather than a
             // MoneyUnit literal here - a literal would be a second place that knows what the seed's
             // money is, which is how the P2 unit bug spread across 21 sites.
-            DrawImpactRow("Government debt", "GovernmentDebt", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp));
+            DrawImpactRow("Government debt", "GovernmentDebt", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), false);
         }
 
         /// <summary>One stat's line: the divergence, then each family's share of it largest first, then
         /// the interaction. ⚠ A family whose share rounds away is dropped from the sentence rather than
         /// printed as a zero it is not - but the interaction is printed whatever its size, because its
         /// smallness is the reader's business as much as its largeness.</summary>
-        private void DrawImpactRow(string label, string statField, MoneyUnit? unit)
+        private void DrawImpactRow(string label, string statField, MoneyUnit? unit, bool higherIsBetter)
         {
             List<ImpactLine> lines = _impactLedger.LinesFor(_playerCountry, statField, out float divergence);
 
@@ -708,15 +709,24 @@ namespace PoliSim.UI
                 bool isInteraction = i == lines.Count - 1;
                 if (!isInteraction && Mathf.Abs(lines[i].Contribution) < ImpactRoundsAway(unit)) { continue; }
 
-                if (reasons.Length > 0) { reasons.Append("  ·  "); }
-                reasons.Append(lines[i].Family).Append(' ').Append(FormatImpact(lines[i].Contribution, unit));
+                if (reasons.Length > 0) { reasons.Append(" · "); }
+                reasons.Append(lines[i].Family.ToUpperInvariant()).Append(' ').Append(FormatImpact(lines[i].Contribution, unit));
             }
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(label, _labelStyle, GUILayout.Width(StatsUnit(140f)));
-            GUILayout.Label(headline, _labelStyle, GUILayout.Width(StatsUnit(120f)));
-            GUILayout.Label(reasons.ToString(), _labelStyle);
-            GUILayout.EndHorizontal();
+            // §564 (2026-09-22): the family's row, not three body-serif labels in a line (Design's sitting, part A item 9) - the stat's name in the desk's body face, the gap
+            // as a numeral in its own delta ink at the right, and the reasons as ONE caption line beneath in TextMuted, a row rule under each.
+            GUIStyle nameFace = DeskBody(12f, PoliSimTheme.TextPrimary);
+            GUIStyle figureFace = DeskNumeral(12f, UiPalette.GetDeltaColor(divergence, higherIsBetter), TextAnchor.MiddleRight);
+            GUIStyle reasonFace = DeskCaption(7.5f, PoliSimTheme.TextMuted);
+            float line = Mathf.Ceil(figureFace.CalcSize(new GUIContent("0")).y);
+            float reasonLine = Mathf.Ceil(DeskCaptionHeight(reasonFace));
+            Rect r = GUILayoutUtility.GetRect(10f, line + reasonLine + StatsUnit(6f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            float figureWidth = figureFace.CalcSize(new GUIContent(headline)).x + StatsUnit(4f);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, Mathf.Max(1f, r.width - figureWidth), line), label, nameFace);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.xMax - figureWidth, r.y, figureWidth, line), headline, figureFace);
+            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y + line + StatsUnit(1f), r.width, reasonLine), reasons.ToString(), reasonFace);
+            PoliSimTheme.Rule(new Rect(r.x, r.yMax - 1f, r.width, 1f), PoliSimTheme.RuleRow);
         }
 
         /// <summary>The threshold below which a contribution would print as a zero it is not. Money is

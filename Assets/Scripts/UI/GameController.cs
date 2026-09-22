@@ -431,12 +431,8 @@ namespace PoliSim.UI
         private readonly PoliticalCompassRenderer _politicalCompassRenderer = new PoliticalCompassRenderer();
         private readonly PieChartRenderer _dependencyRatioPieChart = new PieChartRenderer();
         private readonly PieChartRenderer _sectorEmploymentPieChart = new PieChartRenderer();
-        // Spending (29 categories) and tax revenue (13 types) both outgrew the eight-ink categorical
-        // cap, so they render as ranked single-ink bar ledgers rather than as pies - see
-        // UiPalette.GetCategoricalColor and RankedBarLedgerRenderer. Sector employment (8) sits exactly
-        // at the cap and stays a pie.
-        private readonly RankedBarLedgerRenderer _spendingAllocationLedger = new RankedBarLedgerRenderer();
-        private readonly RankedBarLedgerRenderer _taxRevenueLedger = new RankedBarLedgerRenderer();
+        // Sector employment (8) sits exactly at the eight-ink categorical cap (UiPalette.GetCategoricalColor) and stays a pie; spending (29 lines) and tax revenue
+        // (13 types) are over it and are the Budget's own ledger rows, never a chart (§564 retired the ranked bar ledgers that drew them on People's foot).
         private readonly HemicycleRenderer _hemicycleRenderer = new HemicycleRenderer();
 
         private readonly List<MapEventMarker> _mapEventMarkers = new List<MapEventMarker>();
@@ -3770,7 +3766,6 @@ namespace PoliSim.UI
             _crimeJusticeScrollPosition = GUILayout.BeginScrollView(_crimeJusticeScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Crime & Justice", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
-            GUILayout.Label("These six dials are now set exclusively by enacted law - see the Laws tab to enact or repeal one. The standalone Crime & Justice bill is retired as a player-facing action.", _labelStyle);
             GUILayout.Space(8f);
 
             // Annual cadence, so a bulletin rather than a chart - see PublishedFigure.
@@ -3779,19 +3774,16 @@ namespace PoliSim.UI
                 _labelStyle, moneyUnit: null);
             GUILayout.Space(8f);
 
-            Color crimeInk = UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice);
-            DrawDerivedStatRow("Police Funding", (_playerCountry.PoliceFundingLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
-                _playerCountry.PoliceFundingLevel.ToString("F0", CultureInfo.InvariantCulture), null, crimeInk);
-            DrawDerivedStatRow("Sentencing Severity", (_playerCountry.SentencingSeverity - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
-                _playerCountry.SentencingSeverity.ToString("F0", CultureInfo.InvariantCulture), "0 lenient - 100 harsh", crimeInk);
-            DrawDerivedStatRow("Bail Reform", (_playerCountry.BailReformLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
-                _playerCountry.BailReformLevel.ToString("F0", CultureInfo.InvariantCulture), "0 cash bail - 100 reformed", crimeInk);
-            DrawDerivedStatRow("Drug Policy", (_playerCountry.DrugPolicyLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
-                _playerCountry.DrugPolicyLevel.ToString("F0", CultureInfo.InvariantCulture), "0 decriminalized - 100 strict", crimeInk);
-            DrawDerivedStatRow("Judicial Funding", (_playerCountry.JudicialFundingLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
-                _playerCountry.JudicialFundingLevel.ToString("F0", CultureInfo.InvariantCulture), null, crimeInk);
-            DrawDerivedStatRow("Border Enforcement", (_playerCountry.BorderEnforcementLevel - MinPolicyDialLevel) / (MaxPolicyDialLevel - MinPolicyDialLevel),
-                _playerCountry.BorderEnforcementLevel.ToString("F0", CultureInfo.InvariantCulture), "0 open - 100 strict", crimeInk);
+            // §564 (2026-09-22): the six dials as the family's rows with NO KNOB (Design's sitting, part B item 3: a D13 row - the track, statute ticks, the law's name as
+            // provenance). Each is set by the laws in force and nothing else: the neutral level is the ghost tick, every law that moves the dial is a tick at its
+            // running sum, the standing tick is the figure, and the laws' names stand under the figure. The rows emit no control - there is nothing to disable.
+            DrawStatsSectionCaption("SET BY LAW · THE LAWS TAB ENACTS AND REPEALS · NO BILL HERE");
+            DrawLawSetDialRow("Police Funding", _playerCountry.PoliceFundingLevel, null, law => law.PoliceFundingDelta);
+            DrawLawSetDialRow("Sentencing Severity", _playerCountry.SentencingSeverity, "0 lenient - 100 harsh", law => law.SentencingSeverityDelta);
+            DrawLawSetDialRow("Bail Reform", _playerCountry.BailReformLevel, "0 cash bail - 100 reformed", law => law.BailReformDelta);
+            DrawLawSetDialRow("Drug Policy", _playerCountry.DrugPolicyLevel, "0 decriminalized - 100 strict", law => law.DrugPolicyDelta);
+            DrawLawSetDialRow("Judicial Funding", _playerCountry.JudicialFundingLevel, null, law => law.JudicialFundingDelta);
+            DrawLawSetDialRow("Border Enforcement", _playerCountry.BorderEnforcementLevel, "0 open - 100 strict", law => law.BorderEnforcementDelta);
 
             GUILayout.Space(10f);
             _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
@@ -3801,6 +3793,47 @@ namespace PoliSim.UI
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// §564 (2026-09-22): a dial SET BY LAW, as the family's row with no knob - the Crime & Justice six. The standing tick is the dial's level; the ghost tick
+        /// is the neutral level every law counts from; each enacted law that moves the dial paints a statute tick at the running sum after it, in order of
+        /// enactment; the laws' names stand under the figure as provenance and the name's second line counts them. No control is emitted.
+        /// </summary>
+        private void DrawLawSetDialRow(string name, float level, string endNames, System.Func<LawDefinition, float> deltaOf)
+        {
+            var names = new List<string>();
+            var stops = new List<float>();
+            float running = CrimeJusticeCouplings.NeutralDialLevel;
+            foreach (EnactedLaw enacted in _playerCountry.EnactedLaws)
+            {
+                LawDefinition law = LawCatalog.GetById(enacted.LawId);
+                if (law == null) { continue; }
+                float delta = deltaOf(law);
+                if (Mathf.Approximately(delta, 0f)) { continue; }
+                running = Mathf.Clamp(running + delta, MinPolicyDialLevel, MaxPolicyDialLevel);
+                names.Add(law.Name);
+                stops.Add(running);
+            }
+            Rect ledgerRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
+            LedgerRow.Draw(ledgerRect, name, level, level, MinPolicyDialLevel, MaxPolicyDialLevel,
+                level.ToString("F0", CultureInfo.InvariantCulture), null, endNames, true,
+                _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle,
+                ghost: CrimeJusticeCouplings.NeutralDialLevel,
+                figureSecondLine: names.Count == 0 ? null : string.Join(" · ", names).ToUpperInvariant(),
+                nameSecondLine: names.Count == 0 ? "SET BY LAW · NONE IN FORCE" : $"SET BY LAW · {names.Count} IN FORCE",
+                nameSecondLineInk: PoliSimTheme.TextMuted, figureSecondLineWide: true, knob: false);
+            if (Event.current.type == EventType.Repaint && stops.Count > 0)
+            {
+                // the statute ticks: one per law, at the level the dial reached after it - painted over the track the row just drew, in the ghost's ink
+                Rect track = LedgerRow.LastTrackRect;
+                float scale = LedgerRow.LastScale;
+                foreach (float stop in stops)
+                {
+                    float x = track.x + track.width * Mathf.InverseLerp(MinPolicyDialLevel, MaxPolicyDialLevel, stop);
+                    PoliSimTheme.Rule(new Rect(Mathf.Round(x - 0.5f * scale), track.y - 2f * scale, Mathf.Max(1f, scale), track.height + 4f * scale), PoliSimTheme.TextMuted);
+                }
+            }
         }
 
         /// <summary>
@@ -3974,11 +4007,7 @@ namespace PoliSim.UI
             GUILayout.Label("Every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Labor LAWS (the Laws tab) stack their own offsets on top of the statutory base these sliders set - a row's note names the law effect when one is moving its dial.", _labelStyle);
             GUILayout.Space(8f);
 
-            BeginAreaCard("LABOR MARKET BILL", UiPalette.SystemArea.Labor);
-            DrawLaborBillStatusAndIntroduce();
-            DrawLaborLiveEstimate();
-            EndAreaCard(UiPalette.SystemArea.Labor);
-
+            // §564 (2026-09-22): THE DIALS LEAD (Design's sitting, part B item 2) - the bill card follows them, then the graph and the population rows.
             DrawMinimumWageControl();
 
             // Pass 3 (coexistence ruling): the sliders show and edit the STATUTORY BASE - the
@@ -4013,17 +4042,25 @@ namespace PoliSim.UI
                 LaborDialTrailing("0 restrictive - 100 open", _playerCountry.ImmigrationPolicyBase, _playerCountry.ImmigrationPolicyLevel));
 
             GUILayout.Space(10f);
+            BeginAreaCard("LABOR MARKET BILL", UiPalette.SystemArea.Labor);
+            DrawLaborBillStatusAndIntroduce();
+            DrawLaborLiveEstimate();
+            EndAreaCard(UiPalette.SystemArea.Labor);
+            DrawTierBreakdownAfterRows();   // P4-B2: the labour bill's breakdown, after the rows - under its card now that the card follows the dials
+
+            GUILayout.Space(10f);
             _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true, moneyUnit: null);
 
+            // §564: the population as the family's read-only rows, not a sentence of six figures
             GUILayout.Space(8f);
             EconomyState demographicState = _playerCountry.State;
-            GUILayout.Label(
-                $"Population: {demographicState.Population:F1}M ({demographicState.PopulationGrowthRate:+0.0;-0.0}/1,000/yr) - " +
-                $"Birth {demographicState.BirthRate:F1}, Death {demographicState.DeathRate:F1}, Net Migration {demographicState.NetMigrationRate:+0.0;-0.0}, " +
-                $"Dependency Ratio {demographicState.DependencyRatio:F1}",
-                _labelStyle);
-
-            DrawTierBreakdownAfterRows();   // P4-B2: the labour bill's breakdown, after the rows
+            Color laborInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Labor);
+            DrawStatsSectionCaption("POPULATION · RATES PER 1 000 A YEAR");
+            DrawDerivedStatRow("Population", -1f, UiFormat.Number(demographicState.Population, 1) + " M", demographicState.PopulationGrowthRate.ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + " per 1 000", laborInk);
+            DrawDerivedStatRow("Births", -1f, UiFormat.Number(demographicState.BirthRate, 1), null, laborInk);
+            DrawDerivedStatRow("Deaths", -1f, UiFormat.Number(demographicState.DeathRate, 1), null, laborInk);
+            DrawDerivedStatRow("Net migration", -1f, demographicState.NetMigrationRate.ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture), null, laborInk);
+            DrawDerivedStatRow("Dependency", -1f, UiFormat.Number(demographicState.DependencyRatio, 1), "per 100 of working age", laborInk);
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
@@ -4035,16 +4072,11 @@ namespace PoliSim.UI
 
             string statusText = pendingBill != null
                 ? $"A Labor Market bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Labor Market bill currently before Parliament. Introduce your current draft as a bill below.";
-            GUILayout.Label(statusText, _labelStyle);
-
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && pendingBill == null;
-            if (PoliSimWidgets.Button("Introduce Labor Market Bill", _neutralActionButtonStyle))
+                : "No Labor Market bill before Parliament - the dials above are its draft.";
+            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
             {
                 _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts());
             }
-            GUI.enabled = ambientEnabled;
         }
 
         private void DrawLaborLiveEstimate()
@@ -4269,27 +4301,35 @@ namespace PoliSim.UI
         private void DrawInfrastructureContent()
         {
             DrawColoredLabel("Infrastructure", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure));
-            GUILayout.Label("Condition Index (0-100) per asset type - driven by the Infrastructure spending category in the Spending Policy tab, not a dial here.", _labelStyle);
             GUILayout.Space(8f);
 
-            // READ-ONLY rows, and deliberately not disabled sliders. Condition Index is an OUTPUT of the
-            // Infrastructure spending category, not a dial - there is nothing to drag under any
-            // circumstances - so LedgerRow.DrawReadOnly emits no control at all. A disabled slider is the
-            // right answer where a player COULD change a value but currently cannot (behaviour 5); here
-            // it would add a control this screen has never had and misstate what the player can do.
+            // §564 (2026-09-22): THE PLATE, not four bars under a sentence (Design's sitting, part A item 2). One row per asset in the People page's own plate grammar - the
+            // condition index as a bounded band 0-100 with the other five countries as peer ticks, the honesty chip DERIVED (a stock the model moves: decay every turn,
+            // investment from the Infrastructure line), the reached-by chip naming the line, and the foot saying there is no dial here and why. No control is emitted,
+            // as before: the index is an OUTPUT of the Infrastructure spending line, and a disabled slider would misstate what the player can do.
+            bool draftLive = false;
+            foreach (SpendingLine line in _playerCountry.SpendingLines) { if (InfrastructureFamily.IsInfrastructureLine(line.Category) && _spendingLineInputs.ContainsKey(line.Category)) { draftLive = true; } }
+            PlateFamily("Infrastructure", "THIS YEAR", "THE MODEL'S OWN STOCK · DECAY AND INVESTMENT");
+            var rows = new List<PlateRow>();
+            World world = _simulationManager.World;
             foreach (InfrastructureAsset asset in _playerCountry.InfrastructureAssets)
             {
-                Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-                LedgerRow.DrawReadOnly(
-                    rowRect,
-                    DisplayName.Of(asset.Type.ToString()),
-                    asset.ConditionIndex / 100f,
-                    asset.ConditionIndex.ToString("F0", CultureInfo.InvariantCulture) + " / 100",
-                    null,
-                    UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure),
-                    _labelStyle,
-                    _labelStyle);
+                var peers = new List<float>();
+                if (world != null)
+                {
+                    foreach (CountryId id in PeerOrder)
+                    {
+                        if (id == _playerCountry.Id) { continue; }
+                        InfrastructureAsset theirs = world.GetCountry(id)?.InfrastructureAssets.Find(a => a.Type == asset.Type);
+                        if (theirs != null) { peers.Add(theirs.ConditionIndex); }
+                    }
+                }
+                rows.Add(new PlateRow(DisplayName.Of(asset.Type.ToString()), "CONDITION INDEX 0–100 · HIGHER IS BETTER", "A STOCK · DECAY EVERY TURN · INVESTMENT FROM THE INFRASTRUCTURE LINE",
+                    PlateFigure(asset.ConditionIndex, 0), PlateBand.Bounded, 0f, 100f, asset.ConditionIndex, peers.ToArray(), false,
+                    new[] { "INFRASTRUCTURE LINE ▸ SPENDING" }, null, new[] { "DERIVED" }, draftLive));
             }
+            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure);
+            DrawPlateRows(rows, areaInk, "NO DIAL HERE · THE INFRASTRUCTURE LINE ON THE SPENDING TAB DRIVES THESE · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE", draftLive, row => null);
         }
 
         /// <summary>
@@ -6589,7 +6629,7 @@ namespace PoliSim.UI
             switch (_policyLawsCategory)
             {
                 case PolicyLawsCategory.LaborMarket: return "LABOR MARKET — DRAFTS UNTIL PARLIAMENT VOTES";
-                case PolicyLawsCategory.CrimeJustice: return "CRIME & JUSTICE — DRAFTS UNTIL PARLIAMENT VOTES";
+                case PolicyLawsCategory.CrimeJustice: return "CRIME & JUSTICE — SET BY LAW · THE LAWS TAB MOVES THESE";   // §564: no draft here since the bill was retired
                 case PolicyLawsCategory.Sectors: return "ECONOMIC SECTORS — DRAFTS UNTIL PARLIAMENT VOTES";
                 case PolicyLawsCategory.PolicyWeb: return "THE POLICY WEB — REFERENCE, LIVE";
                 case PolicyLawsCategory.Trade: return "TRADE — DRAFTS UNTIL PARLIAMENT VOTES";
@@ -9428,39 +9468,9 @@ namespace PoliSim.UI
             DrawEnvironmentFamilyPlate();   // P5-C5 (2026-09-06): family 4 of 6 on the shared core
             GUILayout.Space(10f);
             DrawMigrationPovertyFamilyPlate();   // P5-C6 (2026-09-06): family 5 of 6 on the shared core
-            GUILayout.Space(10f);
-
-            // 29 SpendingCategory members against an eight-ink cap, so this is a ranked ledger, not a
-            // pie. No index into GetCategoricalColor at all - which is the point: the old code walked
-            // to index 28 and the palette silently generated a hue for every one of them.
-            if (_playerCountry.SpendingLines.Count > 0)
-            {
-                var spendingRows = new List<(string Label, float Value)>();
-                foreach (SpendingLine line in _playerCountry.SpendingLines)
-                {
-                    spendingRows.Add((DisplayName.Of(line.Category.ToString()), line.Amount));
-                }
-                _spendingAllocationLedger.Draw($"{_playerCountry.Name}: Spending Allocation", spendingRows, _labelStyle,
-                    UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
-            }
-            else
-            {
-                GUILayout.Label($"{_playerCountry.Name}: Spending Allocation", _labelStyle);
-                GUILayout.Label("Detailed per-category spending breakdown not tracked for this country yet.", _labelStyle);
-            }
-            GUILayout.Space(10f);
-
-            // 13 TaxType members - also over the cap, same treatment.
-            EconomyState state = _playerCountry.State;
-            var taxRows = new List<(string Label, float Value)>();
-            foreach (TaxLine taxLine in _playerCountry.TaxLines)
-            {
-                if (!taxLine.IsImplemented) continue;
-                float revenue = TaxBases.Revenue(_playerCountry, taxLine);   // P5-B3: the turn's own accessor
-                taxRows.Add((DisplayName.Of(taxLine.Type.ToString()), revenue));
-            }
-            _taxRevenueLedger.Draw($"{_playerCountry.Name}: Theoretical Tax Revenue by Source", taxRows, _labelStyle,
-                UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), valueFormat: null, moneyUnit: MoneyUnit.Billions);
+            // §564 (2026-09-22): the two ranked bar ledgers that stood here - "Spending Allocation" (29 lines) and "Theoretical Tax Revenue by Source" (13 types), the
+            // old pack's full-width Fiscal-ink bars - are gone with their renderer (Design's sitting, part A item 1: *"the spending bars bleeding onto People's foot"*).
+            // The Budget's own tabs carry every line and every tax as the family's rows; People ends on its five family plates.
         }
 
         /// <summary>The honesty class printed on an instrument, the coalition page's own vocabulary: DERIVED / DECLARED / SOURCED / MEASURED.</summary>
@@ -9716,12 +9726,8 @@ namespace PoliSim.UI
         private void DrawTradePolicyContent(float contentWidth)
         {
             DrawColoredLabel("Trade Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
-            // Omnibus 2026-08-28 (roadmap item 4, the 2560 Trade wrap): every wrapping label on this
-            // screen takes the pane's MEASURED width - the free-aspect pass's fix, applied at the
-            // site it had missed. Width-less, the cost line wrapped after the "+" of "+$0/yr" at 2560
-            // (UiFormat.MoneyDelta's sign read as a break opportunity by a label laying out against
-            // an inferred width) while the other three sizes broke at spaces.
-            GUILayout.Label("The base rate and every partner override's RATE below are DRAFTS - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Setting whether a partner override exists at all stays an immediate, structural action (it starts at today's effective rate, so it changes nothing by itself); Reset returns a partner's draft to its standing override - the override itself moves only through the bill.", _labelStyle, GUILayout.Width(contentWidth));
+            // §564 (2026-09-22): the two mechanism paragraphs that opened this tab are cut (Design's sitting, part B item 1 - "the old pack whole"); the bill card's sentence
+            // names the bill, the partner's sentence names the override, and the dial's caption band names its range.
             GUILayout.Space(6f);
 
             BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
@@ -9748,12 +9754,11 @@ namespace PoliSim.UI
                 interactive: !baseRateInert);
             GUILayout.Space(10f);
 
-            GUILayout.Label("Set a specific tariff override on our imports from one partner - it beats the usual trade-bloc/base-rate resolution for that partner only. The partner mirrors any excess over its standing rate back onto our exports to them from the next boundary, and the change in the tariff take passes through to prices for a year. Reset returns a partner's DRAFT to its standing rate; the override itself moves only through a Trade bill - a cut is voted like a rise.", _labelStyle, GUILayout.Width(contentWidth));
+            DrawStatsSectionCaption("PARTNERS · AN OVERRIDE ON OUR IMPORTS BEATS THE BLOC AND BASE RATES FOR THAT PARTNER · THE PARTNER MIRRORS THE EXCESS ONTO OUR EXPORTS FROM THE NEXT BOUNDARY");
             GUILayout.Space(6f);
 
-            // Bars are sized relative to the largest volume across every partner (both directions
-            // share one scale) so the bars themselves stay comparable to each other, not just within
-            // one partner's own row.
+            // The arrows are sized relative to the largest volume across every partner (both directions
+            // share one scale) so they stay comparable to each other, not just within one partner's own row.
             float maxVolume = 1f;
             foreach (TradePartner link in _playerCountry.TradePartners)
             {
@@ -9786,52 +9791,30 @@ namespace PoliSim.UI
             // boundary - so the label names the timing rather than pretend a Reset click is instant.
             float retaliationOnOurExports = TradeSystem.GetRetaliatoryTariffRate(partner, _playerCountry, _world.TradeBlocs);
 
-            // ⚠ THE PARTNER IS A GROUP HEADER, exactly as a sector is on Economic Sectors. It was a plain
-            // label, which was survivable while its override slider sat tight beneath its button - but
-            // the behaviour-5 fix below adds a row, and the first capture after it made the boundaries
-            // genuinely ambiguous: with no separation, one partner's override row reads as belonging to
-            // the partner named beneath it. The name now carries the same weight Manufacturing/Retail do,
-            // and the volumes and tariffs follow as its context line.
+            // THE PARTNER IS A GROUP HEADER, exactly as a sector is on Economic Sectors - the name at the header's weight with the tariffs as its context line
+            // (the Sectors page's idiom, the one Design accepted). §564 (2026-09-22): the volumes are board 5a's trade arrows on one shared scale, and the override's
+            // toggle is the family's sentence-and-action row; the old pack's full-width bars and its green/red pair are gone (Design's sitting, part B item 1).
+            bool hasOverride = link.HasPlayerTariffOverride;
             GUILayout.BeginHorizontal();
             GUILayout.Label(partner.Name, _headerStyle, GUILayout.Width(GetSectorNameColumnWidth()));
             GUILayout.Label(
-                $"Exports={link.ExportVolume:F1}, Imports={link.ImportVolume:F1}, " +
-                $"Tariff on our exports={tariffOnOurExports:F2}%" +
-                (retaliationOnOurExports > 0f ? $" (of which {retaliationOnOurExports:F2} retaliation, in force from the next boundary)" : "") +
-                $", on our imports={tariffOnOurImports:F2}%" +
-                (link.HasPlayerTariffOverride ? " (override active)" : ""),
+                $"Tariff on our exports {UiFormat.Number(tariffOnOurExports, 2)}%" +
+                (retaliationOnOurExports > 0f ? $" (of which {UiFormat.Number(retaliationOnOurExports, 2)} mirrors our override, from the next boundary)" : string.Empty) +
+                $" | on our imports {UiFormat.Number(tariffOnOurImports, 2)}%" +
+                (hasOverride ? " | override active" : string.Empty),
                 _labelStyle);
             GUILayout.EndHorizontal();
 
-            GUILayout.Label("Exports:", _labelStyle);
-            UiPalette.DrawBar(link.ExportVolume / maxVolume, UiPalette.PositiveChangeColor, 10f);
-            GUILayout.Label("Imports:", _labelStyle);
-            UiPalette.DrawBar(link.ImportVolume / maxVolume, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade), 10f);
+            DrawPairTradeArrow("EXPORTS TO " + partner.Name.ToUpperInvariant(), link.ExportVolume, maxVolume);
+            DrawPairTradeArrow("IMPORTS FROM " + partner.Name.ToUpperInvariant(), link.ImportVolume, maxVolume);
 
-            float buttonWidth = _labelStyle.fontSize * 8f;
-            GUILayout.BeginHorizontal();
-            // ⚠ BEHAVIOUR 5 FIX, the same shape as DrawMinimumWageControl's. This used to emit a button
-            // AND a slider when an override existed, and a button ALONE when it did not - two different
-            // control counts on a condition the buttons themselves toggle, which is precisely the
-            // positional-control-ID desync DrawTaxPolicyContent's doc comment describes. Both controls
-            // are now always emitted; the slider is disabled when there is no override to move.
-            bool hasOverride = link.HasPlayerTariffOverride;
-
-            // Control 1 of 2 - the toggle. One button whose label and style switch, rather than two
-            // buttons in exclusive branches, so the control COUNT never depends on state.
-            //
-            // R-D2 (the clear-out kickoff, 2026-08-28): the second face of this button used to CLEAR
-            // the live override on the spot - an un-voted, instant cut back to the standing rate that
-            // ended the partner's mirrored tariff at the next boundary, the named gap pass 6 priced
-            // everything else around (roadmap, "the un-voted Reset-to-Default click"). Reset is an
-            // EDITING gesture now: it returns this partner's draft dial to the standing override and
-            // touches nothing live - the override's rate moves only through the Trade bill, a cut
-            // voted like a rise, 21 days and a division record like any other. Enabling is unchanged:
-            // the flag comes on at today's EFFECTIVE rate, so turning it on never itself changes the
-            // tariff (economically inert until a bill moves the rate). The alternative - the click
-            // filing a reset bill - is one routing change away if a playtest ever wants it.
-            if (PoliSimWidgets.Button(hasOverride ? "Reset draft" : "Set Override",
-                    hasOverride ? _removeButtonStyle : _implementButtonStyle, GUILayout.Width(buttonWidth)))
+            // Both controls are always emitted (the positional-control-ID rule): one button whose label and face switch, and the dial, disabled with no override to move.
+            // R-D2 (2026-08-28): Reset is an EDITING gesture - it returns this partner's draft dial to the standing override and touches nothing live; the override's
+            // rate moves only through the Trade bill. Setting one starts it at today's effective rate, so the click itself changes nothing.
+            string overrideSentence = hasOverride
+                ? $"An override stands on imports from {partner.Name} - its rate moves only through the Trade bill; Reset returns the draft below to the standing override."
+                : $"No override on imports from {partner.Name} - one starts at today's effective rate and changes nothing until a Trade bill moves it.";
+            if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
             {
                 if (hasOverride)
                 {
@@ -9843,15 +9826,15 @@ namespace PoliSim.UI
                     RecomputePolicyPreview();
                 }
             }
-            GUILayout.EndHorizontal();
 
-            // Control 2 of 2 - always drawn, disabled when there is no override.
+            // The dial - always drawn, disabled when there is no override. §564: named plainly ("Override rate" - the four-space indent was the old pack's nesting cue) and keyed
+            // per partner for its caption's presenter, so one partner's caption never speaks for another's.
             float standingOverride = hasOverride ? link.PlayerTariffOverride : tariffOnOurImports;
-            float newRate = DrawDialRow("    Override rate",
+            float newRate = DrawDialRow("Override rate",
                 standingOverride, GetPartnerTariffInput(link.PartnerId, standingOverride),
                 PartnerTariffOverrideMin, PartnerTariffOverrideMax, "F2", "%",
                 hasOverride ? "via the Trade bill" : "no override set",
-                hasOverride);
+                hasOverride, captionKey: "Override rate/" + link.PartnerId);
 
             if (hasOverride)
             {
@@ -9876,16 +9859,11 @@ namespace PoliSim.UI
 
             string statusText = pendingBill != null
                 ? $"A Trade bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Trade bill currently before Parliament. Introduce your current draft as a bill below.";
-            GUILayout.Label(statusText, _labelStyle);
-
-            bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && pendingBill == null;
-            if (PoliSimWidgets.Button("Introduce Trade Bill", _neutralActionButtonStyle))
+                : "No Trade bill before Parliament - the base rate and every override rate below are its draft.";
+            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
             {
                 _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
             }
-            GUI.enabled = ambientEnabled;
         }
 
         /// <summary>
@@ -9903,20 +9881,16 @@ namespace PoliSim.UI
             SwfDrawdownBill pendingBill = _simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId);
             bool fundExists = _playerCountry.SovereignWealthFund != null;
 
-            GUILayout.Label("Emergency Drawdown (standalone bill - does not wait for the annual budget)", _headerStyle);
-
-            string statusText = pendingBill != null
-                ? $"A drawdown bill is before Parliament - {pendingBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {pendingBill.DaysRemaining} day(s)."
-                : fundExists
-                    ? "No drawdown bill before Parliament. Introduce one to withdraw from the fund now rather than at the fiscal year."
-                    : "No fund exists to draw down. Create one through the annual budget first.";
-            GUILayout.Label(statusText, _labelStyle);
+            // §564 (2026-09-22): the family's rows - a section caption, the dial, what it would release as a read-only row, and the bill's call to action as the one-width
+            // button beside its sentence (it was a header sentence, a prose sentence, the dial, a prose sentence and a full-width paper button).
+            DrawStatsSectionCaption("EMERGENCY DRAWDOWN · A STANDALONE BILL · DOES NOT WAIT FOR THE ANNUAL BUDGET");
 
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && fundExists && pendingBill == null;
 
             // P5-1 (board 6a): the drawdown as a ledger row of the family - 0 to the cap, the same drawing.
             _swfDrawdownPercentInput = DrawDialRow("Fund drawdown", 0f, _swfDrawdownPercentInput, MinSwfDrawdownPercentOfGdp, MaxSwfDrawdownPercentOfGdp, "F1", "% of GDP", string.Empty);
+            GUI.enabled = ambientEnabled;
 
             if (fundExists)
             {
@@ -9924,16 +9898,19 @@ namespace PoliSim.UI
                 // and finding that out only after a multi-day vote would be the worst moment to learn it.
                 float requested = _playerCountry.State.NominalGdp * _swfDrawdownPercentInput / 100f;   // P5-B6: the book is nominal
                 float deliverable = Mathf.Min(requested, _playerCountry.SovereignWealthFund.TotalAssets);
-                string capped = deliverable < requested ? "  (CAPPED - the fund holds less than this)" : string.Empty;
-                GUILayout.Label($"Would release {UiFormat.Money(deliverable, MoneyUnit.Billions)} into the budget{capped}", _labelStyle);
+                DrawDerivedStatRow("Would release", -1f, UiFormat.Money(deliverable, MoneyUnit.Billions), deliverable < requested ? "capped by the fund" : "to the budget", UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth));
             }
 
-            if (PoliSimWidgets.Button("Introduce Emergency Drawdown Bill", _neutralActionButtonStyle))
+            string statusText = pendingBill != null
+                ? $"A drawdown bill is before Parliament - {UiFormat.Number(pendingBill.WithdrawalPercentOfGdp, 1)}% of GDP, resolves in {pendingBill.DaysRemaining} day(s)."
+                : fundExists
+                    ? "No drawdown bill before Parliament - one withdraws from the fund now, not at the fiscal year."
+                    : "No fund stands to draw down - the annual budget creates one first.";
+            if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
             {
                 _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
                     new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
             }
-            GUI.enabled = ambientEnabled;
         }
 
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern. Since pass 6 (2026-08-27) the estimate reads the change in the import-weighted average tariff the draft would charge, overrides included (see ParliamentSystem.GetTradeBillDirection).</summary>
@@ -9988,38 +9965,35 @@ namespace PoliSim.UI
             return bill;
         }
 
-        private void DrawSpendingSection()
+        /// <summary>
+        /// §564 (2026-09-22): LAST YEAR'S BOOK AS CLOSED - the fiscal report's lines as the family's read-only rows under a section caption, AFTER the dials (Design's
+        /// sitting, part A item 2: *"Spending opens on a prose ledger … before its dial rows"*). Until then nine body-serif sentences and a coloured net line stood at the
+        /// head of the page. The figures are the report's, unchanged; the net is the RECORDED balance, never a hand sum (pass 5).
+        /// </summary>
+        private void DrawLastYearBook()
         {
-            GUILayout.Label("Spending (Last Year)", _headerStyle);
-
+            Color ink = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
             FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+            DrawStatsSectionCaption("LAST YEAR — THE BOOK AS CLOSED");
             if (report == null)
             {
-                GUILayout.Label("No year advanced yet.", _labelStyle);
+                DrawDerivedStatRow("No year closed", -1f, "—", "at the year's end", ink);
                 return;
             }
-
-            // Pass 5 (2026-08-26): the net is the RECORDED balance, never a hand sum - the old sum here
-            // omitted SwfContribution (part of TotalSpending) and would now count the tariff twice,
-            // since Revenue already carries it. (Its Baseline + Discretionary terms did reconstruct G
-            // exactly; that was never the problem.) Same control count.
-            float net = report.BudgetBalance;
-
-            GUILayout.Label($"Revenue (tax, tariffs, fund draw): {UiFormat.Money(report.Revenue, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Baseline Government Spending: {UiFormat.Money(report.BaselineGovernmentSpending, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Discretionary Spending Change (this year): {UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Mandatory Spending: {UiFormat.Money(report.MandatorySpending, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Unemployment Benefit Cost: {UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Interest On Debt: {UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Welfare Program Cost: {UiFormat.Money(report.WelfareCost, MoneyUnit.Billions)}", _labelStyle);
-            GUILayout.Label($"Of which tariff revenue at the stated rates, before the fiscal stance: {UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions)}", _labelStyle);
+            DrawDerivedStatRow("Revenue", -1f, UiFormat.Money(report.Revenue, MoneyUnit.Billions), "tax, tariffs, fund", ink);
+            DrawDerivedStatRow("Baseline", -1f, UiFormat.Money(report.BaselineGovernmentSpending, MoneyUnit.Billions), "spending", ink);
+            DrawDerivedStatRow("Discretionary", -1f, UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions), "change this year", ink);
+            DrawDerivedStatRow("Mandatory", -1f, UiFormat.Money(report.MandatorySpending, MoneyUnit.Billions), "spending", ink);
+            DrawDerivedStatRow("Unemployment", -1f, UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions), "benefits", ink);
+            DrawDerivedStatRow("Interest", -1f, UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions), "on debt, automatic", ink);
+            DrawDerivedStatRow("Welfare", -1f, UiFormat.Money(report.WelfareCost, MoneyUnit.Billions), "programmes", ink);
+            DrawDerivedStatRow("Tariffs", -1f, UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions), "at the stated rates", ink);
             if (report.ElectricityTaxRevenue != 0f)
             {
                 // EN-7b: the electricity tax's receipts above the 2023 statute - a law in force moved them
-                GUILayout.Label($"Of which the electricity tax's change against its 2023 statute, before the fiscal stance: {UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions)}", _labelStyle);
+                DrawDerivedStatRow("Electricity tax", -1f, UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions), "vs the 2023 statute", ink);
             }
-            GUILayout.Space(6f);
-            DrawColoredLabel($"Net (this year's recorded balance): {UiFormat.MoneyDelta(net, MoneyUnit.Billions)}", _headerStyle, UiPalette.GetDeltaColor(net, higherIsBetter: true));
+            DrawDerivedStatRow("Balance", -1f, UiFormat.MoneyDelta(report.BudgetBalance, MoneyUnit.Billions), "as recorded", UiPalette.GetDeltaColor(report.BudgetBalance, higherIsBetter: true));
         }
 
         /// <summary>
@@ -10169,8 +10143,14 @@ namespace PoliSim.UI
             // its longest WORD, and "Sovereign" needs ~97px at the smallest supported font - more than the
             // 94px this column got at 16% on a 1227x690 window. Below this floor the category buttons
             // overflow their own column, which is the exact failure the rest of this screen just had.
+            // §564 (2026-09-22): the column is AS WIDE AS ITS WIDEST NAME, measured in the face the buttons are drawn in with the icon's inset - the ceiling of ten label
+            // fonts was sized for "Sovereign" and broke "Infrastructure" mid-word at 1280 ("Infrastructur / e", Design's sitting, part A item 2).
             float categoryColumnWidth = Mathf.Clamp(usableWidth * 0.16f, _labelStyle.fontSize * 7f, _labelStyle.fontSize * 10f);
-            float summaryColumnWidth = usableWidth * 0.34f;
+            // The extra the widest name needs comes out of the SUMMARY column, never the ledger's: the first film of this fix took it from the centre and "Means-Tested
+            // Welfare" lost the three pixels it had (four overflows on the Spending and Welfare tabs at 1280).
+            float categoryExtra = Mathf.Max(0f, BudgetCategoryColumnNeed() - categoryColumnWidth);
+            categoryColumnWidth += categoryExtra;
+            float summaryColumnWidth = usableWidth * 0.34f - categoryExtra;
             float centerColumnWidth = usableWidth - categoryColumnWidth - summaryColumnWidth;
             float totalRowWidth = categoryColumnWidth + columnSpacing + centerColumnWidth + columnSpacing + summaryColumnWidth;
 
@@ -10249,6 +10229,19 @@ namespace PoliSim.UI
 
             GUILayout.EndHorizontal();
             GUILayout.EndVertical();
+        }
+
+        /// <summary>§564: the width the widest single WORD of the category labels needs in the sub-tab face, plus the icon's inset and the button's own padding - so no label breaks inside a word.</summary>
+        private float BudgetCategoryColumnNeed()
+        {
+            GUIStyle style = BuildSubTabStyle(false);
+            float iconInset = Mathf.Round(style.fontSize * SubTabIconFontMultiple) + SubTabIconGap;
+            float need = 0f;
+            foreach (string word in new[] { "Tax", "Spending", "Welfare", "Infrastructure", "Sovereign", "Wealth", "Fund" })
+            {
+                need = Mathf.Max(need, style.CalcSize(new GUIContent(word)).x);
+            }
+            return Mathf.Ceil(need + iconInset + style.padding.horizontal + style.margin.horizontal + 4f);
         }
 
         private void DrawBudgetProcessCategoryButton(string label, BudgetProcessCategory category, UiPalette.SystemArea iconArea = UiPalette.SystemArea.Neutral)
@@ -11149,21 +11142,36 @@ namespace PoliSim.UI
         /// </summary>
         private bool DrawBillCallToAction(string statusText, bool pending, int daysRemaining)
         {
+            return DrawSentenceAction(statusText, pending ? $"Pending ({daysRemaining}d)" : "Introduce", !pending, pending ? _pendingButtonStyle : _implementButtonStyle) && !pending;
+        }
+
+        /// <summary>
+        /// §564 (2026-09-22): THE FAMILY'S FORM FOR A CALL TO ACTION, wherever one stands - a sentence saying what the action would do and, at its right, the family's ONE-WIDTH button in
+        /// the family's own column (<see cref="LedgerFamilyColumns"/>), rendered whether enabled or not. `DrawBillCallToAction` is one caller; the fund's create and dissolve, the
+        /// drawdown's introduce and a trade partner's override are the others. The sentence may carry its own ink (a drafted state in the draft's Caution ink).
+        /// </summary>
+        private bool DrawSentenceAction(string sentence, string label, bool enabled, GUIStyle face, Color? sentenceInk = null)
+        {
             Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
             LedgerFamilyColumns(fullRow, out _, out _, out Rect actionRect);
-            Rect sentence = new Rect(fullRow.x, fullRow.y, Mathf.Max(1f, actionRect.x - fullRow.x - _labelStyle.fontSize * 0.6f), fullRow.height);
+            Rect sentenceRect = new Rect(fullRow.x, fullRow.y, Mathf.Max(1f, actionRect.x - fullRow.x - _labelStyle.fontSize * 0.6f), fullRow.height);
             if (Event.current.type == EventType.Repaint)
             {
                 GUIStyle wrapped = new GUIStyle(_labelStyle) { wordWrap = true, alignment = TextAnchor.MiddleLeft };
-                PoliSimWidgets.MeasuredLabel(sentence, statusText, wrapped);
+                if (sentenceInk.HasValue) { wrapped = Inked(wrapped, sentenceInk.Value); }
+                // The name cell's own resort ladder (§A.9a): WRAP to the row's two lines at full size before shrinking. MeasuredLabel measures the sentence unwrapped
+                // and shrinks it to one line - the first film of §564 set the fund's sentence at the 8 px floor and still recorded it over by 16 px.
+                var content = new GUIContent(sentence);
+                if (wrapped.CalcHeight(content, sentenceRect.width) <= sentenceRect.height) { GUI.Label(sentenceRect, content, wrapped); }
+                else { PoliSimWidgets.MeasuredLabel(sentenceRect, sentence, wrapped); }
             }
             float buttonHeight = Mathf.Min(fullRow.height, Mathf.Ceil(_implementButtonStyle.CalcSize(new GUIContent("Introduce")).y));
             Rect button = new Rect(actionRect.x, fullRow.y + (fullRow.height - buttonHeight) * 0.5f, actionRect.width, buttonHeight);
             bool ambientEnabled = GUI.enabled;
-            GUI.enabled = ambientEnabled && !pending;
-            bool clicked = PoliSimWidgets.Button(button, pending ? $"Pending ({daysRemaining}d)" : "Introduce", pending ? _pendingButtonStyle : _implementButtonStyle);
+            GUI.enabled = ambientEnabled && enabled;
+            bool clicked = PoliSimWidgets.Button(button, label, face);
             GUI.enabled = ambientEnabled;
-            return clicked && !pending;
+            return clicked && enabled;
         }
 
         /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern.</summary>
@@ -11348,31 +11356,32 @@ namespace PoliSim.UI
             SovereignWealthFund fund = _playerCountry.SovereignWealthFund;
             bool draftExists = GetSwfExistsDraft(fund != null);
 
-            string toggleLabel = draftExists ? "Dissolve Fund (draft)" : "Create Fund (draft)";
-            GUIStyle toggleStyle = draftExists ? _removeButtonStyle : _implementButtonStyle;
-            if (PoliSimWidgets.Button(toggleLabel, toggleStyle))
+            // §564 (2026-09-22): the fund's existence as the family's call to action - a sentence saying what stands and what is drafted, the one-width button beside it
+            // (Design's sitting, part A item 2: paragraphs around a red Dissolve Fund). The sentence takes the draft's Caution ink while the draft differs from what stands.
+            bool existenceDrafted = draftExists != (fund != null);
+            string existenceSentence = fund != null
+                ? (existenceDrafted ? "A fund stands - drafted to dissolve when the annual budget bill passes." : "A fund stands.")
+                : (existenceDrafted ? "No fund stands - drafted to exist when the annual budget bill passes; its contribution is then a line on the book." : "No fund stands.");
+            if (DrawSentenceAction(existenceSentence, draftExists ? "Dissolve" : "Create", true, draftExists ? _removeButtonStyle : _implementButtonStyle, existenceDrafted ? PoliSimTheme.Caution : (Color?)null))
             {
                 _swfExistsDraft = !draftExists;
                 RecomputePolicyPreview();
             }
-
-            string standingText = fund != null
-                // Net position is signed deliberately - a net CREDITOR (Sweden is one from turn 1) shows
-                // a negative net position, and that is a real fiscal state rather than a display error.
-                ? $"Standing: fund exists. Total Assets: {UiFormat.Money(fund.TotalAssets, MoneyUnit.Billions)}  |  Government Debt (gross): {UiFormat.Money(_playerCountry.State.GovernmentDebt, MoneyUnit.Billions)}  |  Net Government Position: {UiFormat.MoneyDelta(_playerCountry.State.GovernmentDebt - fund.TotalAssets, MoneyUnit.Billions)}"
-                : "Standing: no fund exists. Creating one (once the annual budget bill passes) starts a new budget expense (the contribution) in exchange for market returns on its growing assets - it can also be drawn down during a recession or emergency instead of borrowing.";
-            GUILayout.Label(standingText, _labelStyle);
-
-            string estimateText = fund != null
-                ? $"Estimated this year - Contribution/Withdrawal: {_cachedSwfContributionText}, Returns: {_cachedSwfReturnsText}"
-                : "Estimated this year - not applicable (no fund).";
-            DrawColoredLabel(estimateText, _labelStyle, fund != null
-                ? UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true)
-                : UiPalette.GetDeltaColor(0f, higherIsBetter: true));
-            // The fund's own existence is a draft too: amber whenever the drafted existence differs from
-            // whether a fund actually stands today.
-            DrawDraftLabel(draftExists ? "Draft: fund drafted to exist." : "Draft: not implemented.", draftExists != (fund != null));
             GUILayout.Space(8f);
+
+            if (fund != null)
+            {
+                // The fund as it stands and this year's estimate, as the family's read-only rows. Net position is signed deliberately - a net CREDITOR (Sweden is one
+                // from turn 1) shows a negative net position, and that is a real fiscal state rather than a display error.
+                Color fundInk = UiPalette.GetAreaColor(UiPalette.SystemArea.SovereignWealth);
+                DrawStatsSectionCaption("THE FUND AS IT STANDS · THIS YEAR'S ESTIMATE");
+                DrawDerivedStatRow("Assets", -1f, UiFormat.Money(fund.TotalAssets, MoneyUnit.Billions), "the fund", fundInk);
+                DrawDerivedStatRow("Gross debt", -1f, UiFormat.Money(_playerCountry.State.GovernmentDebt, MoneyUnit.Billions), "government", fundInk);
+                DrawDerivedStatRow("Net position", -1f, UiFormat.Money(_playerCountry.State.GovernmentDebt - fund.TotalAssets, MoneyUnit.Billions), "debt less fund", fundInk);
+                DrawDerivedStatRow("Contribution", -1f, _cachedSwfContributionText, "this year", fundInk);
+                DrawDerivedStatRow("Returns", -1f, _cachedSwfReturnsText, "this year", UiPalette.GetDeltaColor(_cachedSwfReturnsEstimateRaw, higherIsBetter: true));
+                GUILayout.Space(8f);
+            }
 
             SovereignWealthFund standingDefaults = fund ?? new SovereignWealthFund();
 
@@ -11427,7 +11436,7 @@ namespace PoliSim.UI
             // and the bill leg stay for the day the spread is sourced; the bill carries the standing figure unchanged.
 
             GUILayout.Space(8f);
-            GUILayout.Label("Asset Class Mix (weights, normalized automatically - don't need to sum to 100)", _labelStyle);
+            DrawStatsSectionCaption("ASSET CLASS MIX · RAW WEIGHTS, NORMALISED TO 100 · THE FIGURE AT THE RIGHT IS EACH CLASS'S SHARE OF THE FUND");
 
             // ⚠ THE TRAILING COLUMN IS WHAT MAKES NORMALISED WEIGHTS LEGIBLE, and it is why the per-row
             // bars are gone rather than merely moved.
@@ -11509,17 +11518,8 @@ namespace PoliSim.UI
         {
             DrawColoredLabel("Spending Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
             // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class); the row and the mandatory marker say it.
+            // §564 (2026-09-22): THE DIALS LEAD. The book as closed (DrawLastYearBook) and the debt graph follow the two groups - the page opens on what the player moves.
             GUILayout.Space(8f);
-
-            // Moved here from the old combined "Trade & Spending" tab (Phase 4) - the last-turn
-            // fiscal report belongs next to the sliders it explains, not bolted onto Trade.
-            DrawSpendingSection();
-            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
-                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable");
-            GUILayout.Space(16f);
-
-            DrawInterestOnDebtRow();
-            GUILayout.Space(10f);
 
             // The per-row size bar is GONE, and its within-group scaling with it.
             //
@@ -11557,9 +11557,7 @@ namespace PoliSim.UI
             if (hasMandatory)
             {
                 float mandatoryMax = GroupSpendingMax(isMandatory: true);
-                GUILayout.Label(
-                    $"Mandatory (narrower range, higher approval cost) - bars to {UiFormat.Money(mandatoryMax, MoneyUnit.Billions)}",
-                    _headerStyle);
+                DrawStatsSectionCaption($"MANDATORY LINES · NARROWER RANGE, HIGHER APPROVAL COST · BARS TO {UiFormat.Money(mandatoryMax, MoneyUnit.Billions)}");
                 foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
                 {
                     if (!spendingLine.IsMandatory)
@@ -11576,9 +11574,7 @@ namespace PoliSim.UI
             if (hasDiscretionary)
             {
                 float discretionaryMax = GroupSpendingMax(isMandatory: false);
-                GUILayout.Label(
-                    $"Discretionary - bars to {UiFormat.Money(discretionaryMax, MoneyUnit.Billions)}",
-                    _headerStyle);
+                DrawStatsSectionCaption($"DISCRETIONARY LINES · BARS TO {UiFormat.Money(discretionaryMax, MoneyUnit.Billions)}");
                 foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
                 {
                     if (spendingLine.IsMandatory)
@@ -11589,14 +11585,13 @@ namespace PoliSim.UI
                     DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, discretionaryMax);
                 }
             }
-        }
 
-        /// <summary>Interest on Debt is SimulationManager's existing automatic GetInterestOnDebt calculation, not a seeded line - shown as a read-only, clearly-marked-automatic figure from last turn's FiscalTurnReport.</summary>
-        private void DrawInterestOnDebtRow()
-        {
-            FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            string valueText = report != null ? UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions) : "not yet computed (advance a year)";
-            GUILayout.Label($"Interest on Debt (automatic, last year): {valueText}", _labelStyle);
+            // §564: the book as closed and the debt path, after the dials (the interest line is one of the book's rows - a read-only, automatic figure).
+            GUILayout.Space(16f);
+            DrawLastYearBook();
+            GUILayout.Space(10f);
+            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
+                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable");
         }
 
         /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size, plus a bar sized relative to <paramref name="maxAmountInGroup"/> (its own Mandatory/Discretionary group's largest line) for an at-a-glance size comparison.</summary>

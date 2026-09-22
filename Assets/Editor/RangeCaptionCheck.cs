@@ -152,7 +152,7 @@ namespace PoliSim.EditorTools
                 case "Discretionary line": basis = "the figure set is the line's amount (ApplySpendingLineChanges, the nominal target) - P5-B5"; return 1;
                 case "Mandatory line": basis = "the figure set is the line's amount (ApplySpendingLineChanges, the nominal target) - P5-B5"; return 1;
                 case "General Base Tariff": basis = "the take is imports x rate (TradeSystem)"; return 1;
-                case "    Override rate": basis = "the take on this partner is its imports x rate (TradeSystem)"; return 1;
+                case "Override rate": basis = "the take on this partner is its imports x rate (TradeSystem)"; return 1;
                 case "Fund drawdown": basis = "the withdrawal is GDP x percent, booked as revenue (SimulationManager)"; return 1;
                 // P6-F2b (§542): the Energy tab's four instruments - the Energy sector's own dials under S9's names, each sign re-derived from the rule the captions speak to
                 case "Retail intervention": return RetailInterventionSign(out basis);

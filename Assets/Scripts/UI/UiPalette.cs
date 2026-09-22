@@ -232,11 +232,11 @@ namespace PoliSim.UI
         /// would come back. A series that outgrows the cap is not a palette problem to absorb here; it
         /// is a signal that the chart form is wrong.
         ///
-        /// WHAT TO DO INSTEAD OF CATCHING THIS: a series longer than eight renders as a ranked
-        /// single-ink bar ledger in its owning area's ink - see RankedBarLedgerRenderer. One ink,
-        /// sorted descending, every row carrying its own inline label, so there is no legend left to
-        /// disagree with the chart. Spending (29 categories) and tax revenue (13 types) both went that
-        /// way on 2026-08-10; sector employment (8) sits exactly at the cap and stays hue-keyed.
+        /// WHAT TO DO INSTEAD OF CATCHING THIS: a series longer than eight is not a chart - it is the
+        /// family's ledger rows in its owning area's ink, each row carrying its own name, so there is no
+        /// legend left to disagree with a chart. Spending (29 lines) and tax revenue (13 types) are the
+        /// Budget's rows (§564 retired the ranked bar ledgers that once drew them on People's foot);
+        /// sector employment (8) sits exactly at the cap and stays hue-keyed.
         /// </summary>
         public static Color GetCategoricalColor(int index)
         {
@@ -245,8 +245,7 @@ namespace PoliSim.UI
                 throw new System.ArgumentOutOfRangeException(
                     nameof(index), index,
                     $"The categorical palette holds exactly {MaxCategoricalSeries} aged inks and does not wrap. " +
-                    "A series longer than that must render as a ranked single-ink bar ledger " +
-                    "(RankedBarLedgerRenderer) rather than as a hue-keyed chart - see this method's doc comment.");
+                    "A series longer than that is the family's ledger rows, never a hue-keyed chart - see this method's doc comment.");
             }
 
             return CategoricalSeries[index];

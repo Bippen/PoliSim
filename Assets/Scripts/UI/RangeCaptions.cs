@@ -170,7 +170,7 @@ namespace PoliSim.UI
                 B("Wall", "Half of everything at the border. The take peaks; the shelves thin.", +1),
             }) },
             // The per-partner override: the same take on one partner, the excess over the standing rate mirrored back. Neutral = 0 %.
-            { "    Override rate", new Dial("    Override rate", "tariff take on this partner", +1, 0f, new[]
+            { "Override rate", new Dial("Override rate", "tariff take on this partner", +1, 0f, new[]
             {
                 B("None", "This partner pays the standing rate. Nothing to mirror.", 0),
                 B("Nominal", "A few points above the rate. The partner shrugs.", +1),

@@ -7,9 +7,8 @@ namespace PoliSim.UI
     /// the inline figures, and a trailing column. **The Budget screen's atom** - see
     /// COMPLETED.md §187 §A.9.
     ///
-    /// Its own file rather than another method on <see cref="PoliSimWidgets"/> for the same reason
-    /// <see cref="RankedBarLedgerRenderer"/> has one: this is a composite with its own geometry rules,
-    /// not a one-shot drawing helper.
+    /// Its own file rather than another method on <see cref="PoliSimWidgets"/> because this is a
+    /// composite with its own geometry rules, not a one-shot drawing helper.
     ///
     /// <para><b>The in-track standing/draft pair is the strongest idea in the v2.0 pack, and it is
     /// behaviour 1's primary carrier.</b> The enacted value is a hard tick on the track; the drafted
@@ -186,8 +185,12 @@ namespace PoliSim.UI
             float grain = 1f,
             string grainUnit = null,
             bool figureSecondLineWide = false,
-            GUIStyle nameFace = null)
+            GUIStyle nameFace = null,
+            bool knob = true)
         {
+            // `knob` (2026-09-22, §564 - the Crime & Justice rows): a dial the player cannot move at all draws the family's track, its ticks and its end-names and NO
+            // KNOB, and emits no control. Not `interactive: false` - that is a dial the player COULD move and now cannot (PENDING), and it wears the disabled knob
+            // to say so; a value set by law has no knob to disable. The track sprite is painted where the slider would have painted it, so the row is the same row.
             // `nameFace` (2026-09-21, Design's sighting on the Energy tab): the face the NAME is set in, where a page carries its row names at its own pitch. The row's geometry - its
             // height, its columns, the track, the caption band - stays `nameStyle`'s, so a dial drawn on such a page is the same dial and only its name changes size.
             // Board 9b (D15 item 2, 2026-09-05): `ghost` is the value the line stood at when the year opened - a third tick in TextMuted where the
@@ -280,11 +283,19 @@ namespace PoliSim.UI
                 LastStep = step;
             }
 
-            // ALWAYS emitted, enabled or not - see the control-ID note above.
-            bool ambient = GUI.enabled;
-            GUI.enabled = ambient && interactive;
-            float result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, KnobStyle(thumbStyle, scale, interactive));
-            GUI.enabled = ambient;
+            // ALWAYS emitted, enabled or not - see the control-ID note above. A knob-less row emits nothing: it is a reading, and paints the track itself.
+            float result = draft;
+            if (knob)
+            {
+                bool ambient = GUI.enabled;
+                GUI.enabled = ambient && interactive;
+                result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, KnobStyle(thumbStyle, scale, interactive));
+                GUI.enabled = ambient;
+            }
+            else if (Event.current.type == EventType.Repaint)
+            {
+                sliderStyle.Draw(trackRect, GUIContent.none, false, false, false, false);
+            }
             // P2-1.3 (2026-09-02): FINER STEP - the draft snaps to SnapStep, so a whole point is a value the
             // thumb can rest on rather than one it passes through; and the film records the range each pixel
             // covers, which is the reach a whole point needs (the driver fails a run where it exceeds the snap).

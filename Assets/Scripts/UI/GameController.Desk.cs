@@ -279,8 +279,10 @@ namespace PoliSim.UI
             // edge. Not the sprite button faces: at this size their 9-slice borders ate the label on
             // the first v3desk film.
             GUIStyle chipCaption = DeskCaption(9f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
-            string[] labels = { "PAUSE", "1×", "2×", "3×" };
-            GameSpeed[] speeds = { GameSpeed.Paused, GameSpeed.Normal, GameSpeed.Fast, GameSpeed.VeryFast };
+            // §564 (2026-09-22): the three RUNNING speeds only. PAUSE is the rail's chip (R-E1, DrawRailPauseChip) - the desk had two pause controls (Design's sitting,
+            // part A item 8), and the rail's is the one that also says PAUSED and RUN. With time paused no masthead chip is lit; the rail's chip is.
+            string[] labels = { "1×", "2×", "3×" };
+            GameSpeed[] speeds = { GameSpeed.Normal, GameSpeed.Fast, GameSpeed.VeryFast };
             const string savesLabel = "SAVES";
             float gap = Mathf.Round(4f * ux);
             float chipPad = Mathf.Round(8f * ux);
@@ -303,7 +305,7 @@ namespace PoliSim.UI
                 float width = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(labels[i])).x) + chipPad * 2f;
                 x -= gap + width;
                 bool selected = _gameSpeed == speeds[i];
-                bool disabled = (isTimePaused && speeds[i] != GameSpeed.Paused) || _isGameOver;
+                bool disabled = isTimePaused || _isGameOver;
                 if (DrawDeskChipButton(new Rect(x, chipY, width, chipHeight), labels[i], chipCaption, selected, disabled))
                 {
                     _gameSpeed = speeds[i];

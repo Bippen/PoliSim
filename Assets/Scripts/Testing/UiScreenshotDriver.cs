@@ -782,7 +782,10 @@ namespace PoliSim.Testing
                             var field = controller.GetType().GetField("_paidFamilyLeaveWeeksInput", BindingFlags.Instance | BindingFlags.NonPublic);
                             before = field?.GetValue(controller);
                             field?.SetValue(controller, (float?)60f);
-                            ScrollBy(controller, UiScreen.Height * 0.45f);   // the rows sit under the bill card; a fraction of the height, since the card scales with the face
+                            // §564 (2026-09-22): the dials lead the tab now - scrolled to the row's own laid-out rect (the card that stood above them is under them)
+                            float leaveY = RowTop(" / Paid Family Leave");
+                            if (leaveY < 0f) { Debug.LogError($"SHOT: {stem}_caption_drag - the Paid Family Leave row's geometry was not recorded; the frame is filmed at the page's head."); _failed++; }
+                            ScrollBy(controller, Mathf.Max(0f, leaveY - UiScreen.Height * 0.14f));
                         }
                         else
                         {
@@ -873,7 +876,11 @@ namespace PoliSim.Testing
                             AssertLedgerGeometryStable(restGeometry, stem);
                             // P5-B5 (2026-09-05): the same drag, scrolled to the rows - the figure, the band's instruments and a caption under
                             // drafted rows on film; the scroll is put back to the top before the drag is undone.
-                            ScrollBy(controller, 900f);
+                            // §564 (2026-09-22): to the DRAGGED row itself by its recorded geometry - the fixed 900 px reached the discretionary group only while the prose
+                            // summary block stood above the rows; it now follows them, and the frame is named for the drafted row.
+                            float educationY = RowTop(" / Education");
+                            if (educationY < 0f) { Debug.LogError($"SHOT: {stem}_rows_dragged - the Education row's geometry was not recorded; the frame is filmed at the page's head."); _failed++; }
+                            ScrollBy(controller, Mathf.Max(0f, educationY - UiScreen.Height * 0.14f));
                             yield return Settle();
                             yield return Capture(stem + "_rows_dragged");
                             ScrollBy(controller, 0f);
@@ -881,8 +888,12 @@ namespace PoliSim.Testing
                             yield return Settle();
                             // Board 15c (2026-09-13): the same tab scrolled past the summary block to its FIRST row - Social Security, the pension
                             // line - so the statutory mark beneath it (PN-1's path on the track and its sentence in the caption band) is
-                            // on film with the row it belongs to. The offset is the summary block's height at 1280, scaled with the screen.
-                            ScrollBy(controller, 470f * UiScreen.Height / 720f);
+                            // on film with the row it belongs to. §564 (2026-09-22): the row's OWN laid-out rect, read off LedgerRow.GeometryByRow at scroll zero - the fixed
+                            // offset was the prose summary block's height, and that block now follows the dials.
+                            // by the Social Security line the pension row sits under: the pension row itself is read-only, and only interactive rows are recorded
+                            float pensionY = RowTop(" / Social Security");
+                            if (pensionY < 0f) { Debug.LogError($"SHOT: {stem}_pension - the pension row's geometry was not recorded; the frame is filmed at the page's head, not at the row."); _failed++; }
+                            ScrollBy(controller, Mathf.Max(0f, pensionY - UiScreen.Height * 0.14f));
                             yield return Settle();
                             yield return Capture(stem + "_pension");
                             // Board 15c-r2 (2026-09-15): the same row in 2026 and in 2034 - the game's calendar stands at 2029 on film, so the RISING and HELD
@@ -1407,6 +1418,14 @@ namespace PoliSim.Testing
 
         /// <summary>R-D2's pair - see CaptureFilmGaps (d). Skips with a logged error, never a wrong
         /// capture, if the player has no trade partner or the reflection misses.</summary>
+        /// <summary>§564: the top of the FIRST ledger row whose geometry key ends with <paramref name="keySuffix"/> (scroll-content coordinates, as LedgerRow records them on Repaint), or -1 when no such row was drawn.</summary>
+        private static float RowTop(string keySuffix)
+        {
+            float y = -1f;
+            foreach (KeyValuePair<string, (Rect Name, Rect Track, Rect Figure, Rect Trailing)> g in LedgerRow.GeometryByRow) { if (g.Key.EndsWith(keySuffix) && (y < 0f || g.Value.Name.y < y)) { y = g.Value.Name.y; } }
+            return y;
+        }
+
         private IEnumerator CaptureTradeDraftReset(GameController controller)
         {
             FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -1433,9 +1452,12 @@ namespace PoliSim.Testing
             SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
             SetEnumField(controller, "_policyLawsCategory", "Trade");
             ResetScrolls(controller);
-            // 700px, not the sweep's 900: the first partner's header row stays in frame above its
-            // controls at 1600 (the 900px stop put the name just above the fold).
-            ScrollBy(controller, 700f);
+            // §564 (2026-09-22): to the first partner's own override row (the two preambles are gone, so a fixed offset would overshoot) - the header, the arrows and
+            // the sentence-and-action row stand above it within the margin.
+            yield return Settle();
+            float overrideY = RowTop(" / Override rate");
+            if (overrideY < 0f) { Debug.LogError("SHOT: 06m_policylaws_trade_draft_moved - the first override row's geometry was not recorded; the frame is filmed at the page's head."); _failed++; }
+            ScrollBy(controller, Mathf.Max(0f, overrideY - UiScreen.Height * 0.36f));
             yield return Settle();
             yield return Capture("06m_policylaws_trade_draft_moved");
 
