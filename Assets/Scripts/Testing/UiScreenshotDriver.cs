@@ -1653,13 +1653,13 @@ namespace PoliSim.Testing
         /// the assertion is skipped and SAID to be skipped, rather than counting as evidence — C-C9's
         /// assertion 4 is the precedent for reporting an untested thing as untested.</para>
         /// </summary>
-        private bool AssertCaptureIdentity(string name, Texture2D shot)
+        private bool AssertCaptureIdentity(string name, Texture2D shot, string claimed)
         {
-            if (!CaptureIdentity.Armed || string.IsNullOrEmpty(CaptureIdentity.Expected)) { return true; }
+            if (!CaptureIdentity.Armed || string.IsNullOrEmpty(claimed)) { return true; }
 
-            if (!CaptureIdentity.TryColorFor(CaptureIdentity.Expected, out Color32 want))
+            if (!CaptureIdentity.TryColorFor(claimed, out Color32 want))
             {
-                Debug.LogError($"SHOT: IDENTITY - '{CaptureIdentity.Expected}' is not a known surface, so {name} claims a "
+                Debug.LogError($"SHOT: IDENTITY - '{claimed}' is not a known surface, so {name} claims a "
                                + "screen the token palette cannot express. Add it to CaptureIdentity.Palette rather than "
                                + "letting the capture pass unchecked.");
                 return false;
@@ -1686,7 +1686,7 @@ namespace PoliSim.Testing
                 }
             }
 
-            Debug.LogError($"SHOT: IDENTITY MISMATCH on {name} - it claims '{CaptureIdentity.Expected}' and the written "
+            Debug.LogError($"SHOT: IDENTITY MISMATCH on {name} - it claims '{claimed}' and the written "
                            + $"frame carries the token of '{blamed}' (rgb {found.r},{found.g},{found.b}). This is S-20's "
                            + "defect: the capture wrote, the guards were silent, and the screen under test is not the "
                            + "screen in the file. Failing loudly rather than filing a picture of something else.");
@@ -1923,6 +1923,14 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // ⚠ PF-13 (2026-09-22, §578): THE CLAIM IS CONSUMED HERE, BEFORE ANYTHING CAN FAIL. S-20 reset it after a shot was written and on the identity
+            // failure itself, which left THREE exits that fail before writing - a null capture, a HEIGHT MISMATCH and a WIDTH MISMATCH - carrying the claim
+            // forward to the next capture that DID write. Measured on the film of 2026-09-22: 127 captures all reached the assert (126 proved, 1 mismatched) while
+            // only 88 wrote, so 38 failed on geometry after the assert and one of them handed its 'signing' claim to 92_saves_menu - the guard then named an
+            // innocent capture. A claim read once and cleared cannot be inherited, whatever happens next.
+            string claimed = CaptureIdentity.Expected;
+            CaptureIdentity.Expected = "imgui";
+
             Texture2D shot = ScreenCapture.CaptureScreenshotAsTexture();
             if (shot == null)
             {
@@ -1951,14 +1959,12 @@ namespace PoliSim.Testing
             //
             // The surface that ends up on top stamps a 4x4 token in the corner (`CaptureIdentity`), and
             // this reads it out of the texture just written. Claimed vs found, in the pixels.
-            if (!AssertCaptureIdentity(name, shot))
+            if (!AssertCaptureIdentity(name, shot, claimed))
             {
                 _failed++;
                 UnityEngine.Object.Destroy(shot);
-                // ⚠ The claim resets even on the FAILURE path. The first run of this trap did not, and one
-                // mismatched capture made every later shot in the run inherit the same claim and fail with
-                // it - a cascade that hides which capture was actually wrong.
-                CaptureIdentity.Expected = "imgui";
+                // The claim was already consumed above, so no later shot can inherit it - the cascade this reset once prevented (a
+                // mismatched capture making every later shot fail with the same claim) is now impossible on EVERY exit, not two of them.
                 yield break;
             }
 
@@ -1998,9 +2004,8 @@ namespace PoliSim.Testing
             _captured++;
             Destroy(shot);
 
-            // S-20: the claim resets to IMGUI after every shot, so a Canvas claim can never leak onto the
-            // next capture and quietly pass it. A caller that means a board says so, once, each time.
-            CaptureIdentity.Expected = "imgui";
+            // S-20, as PF-13 (§578) re-cut it: the claim is consumed where the capture BEGINS, not here - a caller that means a board
+            // says so once, each time, and no exit of this method can carry that claim into the next capture.
 
             if (!string.IsNullOrEmpty(StopAfter) && name == StopAfter)
             {
