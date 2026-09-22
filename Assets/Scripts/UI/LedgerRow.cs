@@ -27,7 +27,15 @@ namespace PoliSim.UI
         // P5-1 (2026-09-03, board 6a): 14 px @1x - the delivered ui_slider_track drawn at the height the board names.
         private const float RefTrackHeight = 14f;
         /// <summary>P5-1 (board 6a): the caption band UNDER the track where a dial's end-names sit ("0 nationalized" left, "100 deregulated" right) - furniture, never on the track.</summary>
-        private const float RefEndCaption = 12f;   // 12 - the caption face at 0.6 of a 17 px row needs 14 px; 10 was one short on film
+        /// <summary>§565 (2026-09-22, Design's sitting part B item 8 and PF-7): the lane under the track is the KNOB'S CLEARANCE plus the caption's own band. The knob is
+        /// centred on the track (board 6a: it is grabbed above and below it), so it reaches <see cref="RefKnobClear"/> below the track, and the caption band begins under its
+        /// foot. Until now the knob was top-aligned - IMGUI's own placement - and hung nine units into a band that began one unit under the track, so a range caption was
+        /// drawn THROUGH the knob and read as a sentence lying in the track lane (Design: *"the caption sentence runs across its own track"*).</summary>
+        private const float RefEndCaption = 17f;
+        /// <summary>The knob's reach below the track, and so the caption band's clearance: half the sprite's overhang, ((23 - 14) / 2), rounded up to a whole unit.</summary>
+        private const float RefKnobClear = 5f;
+        /// <summary>The caption band itself - the end-names' and the range caption's line. 12: the caption face at 0.6 of a 17 px row needs 14 px; 10 was one short on film.</summary>
+        private const float RefCaptionBand = RefEndCaption - RefKnobClear;
         /// <summary>P5-1 (board 6a): the knob, 15x23 @1x, uniform scale; the hit rect is the sprite rect.</summary>
         private const float RefKnobSpriteWidth = 15f;
         private const float RefKnobSpriteHeight = 23f;
@@ -596,15 +604,18 @@ namespace PoliSim.UI
         /// stopped inside the knob's face).</summary>
         public static float KnobWidth(float scale) => Mathf.Round(RefKnobSpriteWidth * scale);
         public static float KnobHeight(float scale) => Mathf.Round(RefKnobSpriteHeight * scale);
+        /// <summary>§565: the top of the knob's drawn sprite - the track's top lifted by the overhang it is centred by (the CONTROL's rect is still the track's, so nothing
+        /// about the slider's value, its travel or its grab moves; only the sprite is painted centred, through the style's overflow).</summary>
+        public static float KnobTop(Rect track, float scale) => track.y - Mathf.Round((KnobHeight(scale) - track.height) * 0.5f);
         /// <summary>Board 15c-r3: the sprite's own transparent margins, measured off the PNG's alpha (both faces, live and disabled, are 30x46 with the opaque
         /// face at x 3..26 and y 2..41): what covers the track is the FACE, not the rect, and a mark keyed to the rect misses by a fifth of a knob.</summary>
         private const float KnobFaceWidthFraction = 24f / 30f;
         private const float KnobFaceBottomFraction = 42f / 46f;
         /// <summary>The bottom edge of the knob's drawn FACE on <paramref name="track"/>, in the track rect's space - where the sprite's opaque rows stop.</summary>
-        public static float KnobFaceBottom(Rect track, float scale) => track.y + KnobHeight(scale) * KnobFaceBottomFraction;
+        public static float KnobFaceBottom(Rect track, float scale) => KnobTop(track, scale) + KnobHeight(scale) * KnobFaceBottomFraction;
         /// <summary>The bottom of the whole sprite, the face's soft rows included: on film those rows still read as knob, so a mark meant to show BENEATH the
         /// knob has to clear this, not the face (the first cut cleared the face by two pixels and read as a knob with a chin).</summary>
-        public static float KnobSpriteBottom(Rect track, float scale) => track.y + KnobHeight(scale);
+        public static float KnobSpriteBottom(Rect track, float scale) => KnobTop(track, scale) + KnobHeight(scale);
         /// <summary>Whether a mark at <paramref name="x"/> falls under the knob's face at <paramref name="knobX"/> - the knob is drawn before the caller's
         /// marks, so a mark inside this reach paints on the face and reads as shading on it unless it is drawn clear of the face.</summary>
         public static bool UnderKnob(float x, float knobX, float scale) => Mathf.Abs(x - knobX) <= KnobWidth(scale) * KnobFaceWidthFraction * 0.5f;
@@ -626,7 +637,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>P4-B2: the caption band beneath the last row's track - the rect <see cref="DrawEndNames"/> writes its two ends into.</summary>
-        public static Rect LastCaptionBand => new Rect(LastTrackRect.x, LastTrackRect.yMax + 1f * LastScale, LastTrackRect.width, RefEndCaption * LastScale);
+        public static Rect LastCaptionBand => new Rect(LastTrackRect.x, LastTrackRect.yMax + RefKnobClear * LastScale, LastTrackRect.width, RefCaptionBand * LastScale);
 
         /// <summary>P4-B2: the caption face the band is set in (the end-names' own), for a range caption drawn into the same band.</summary>
         public static GUIStyle CaptionStyle(GUIStyle figureStyle)
@@ -655,7 +666,7 @@ namespace PoliSim.UI
                 _endCaptionSourceSize = size;
             }
             Color ink = interactive ? PoliSimTheme.TextSecondary : PoliSimTheme.TextMuted;
-            var band = new Rect(track.x, track.yMax + 1f * scale, track.width, RefEndCaption * scale);
+            var band = new Rect(track.x, track.yMax + RefKnobClear * scale, track.width, RefCaptionBand * scale);
             string left = (m.Groups["n"].Value + " " + m.Groups["a"].Value).ToUpperInvariant();
             string right = (m.Groups["m"].Value + " " + m.Groups["b"].Value).ToUpperInvariant();
             LastEndNameLeftInk = _endCaptionStyle.CalcSize(new GUIContent(left)).x;
@@ -673,7 +684,7 @@ namespace PoliSim.UI
             // The band runs from the track's start to the rate cell's right edge and the measure right-aligns to the rate: a figure sits
             // under the rate, and a prose trailing (the tariff dial's "inert - bloc rates apply to every partner") has the track's
             // width too - the end-names, which own the track's band, are the exclusive other case.
-            var band = new Rect(track.x, track.yMax + 1f * scale, figure.xMax - track.x, RefEndCaption * scale);
+            var band = new Rect(track.x, track.yMax + RefKnobClear * scale, figure.xMax - track.x, RefCaptionBand * scale);
             Cell(band, trailingText.ToUpperInvariant(), caption, ink, TextAnchor.UpperRight);
         }
 
@@ -698,7 +709,12 @@ namespace PoliSim.UI
         {
             if (_knobStyle == null || !Mathf.Approximately(_knobScale, scale))
             {
-                _knobStyle = new GUIStyle(thumbStyle) { fixedWidth = KnobWidth(scale), fixedHeight = KnobHeight(scale) };
+                // §565: the thumb's RECT is the track's height, and the sprite is painted at its own 15x23 through the style's OVERFLOW - centred on the track, above and
+                // below it. The control's geometry is untouched (the rect the slider is given, the thumb's width, the travel), so no value, no drag and no grab changes;
+                // what moves is paint. A fixedHeight of the sprite's own 23 is what top-aligned it: IMGUI hangs a thumb from its rect's top.
+                float trackHeight = RefTrackHeight * scale;
+                int overhang = Mathf.RoundToInt((KnobHeight(scale) - trackHeight) * 0.5f);
+                _knobStyle = new GUIStyle(thumbStyle) { fixedWidth = KnobWidth(scale), fixedHeight = trackHeight, overflow = new RectOffset(0, 0, overhang, overhang) };
                 _knobDisabledStyle = new GUIStyle(_knobStyle);
                 Texture2D disabled = IconLibrary.GetChrome("ui_slider_knob_disabled");
                 if (disabled != null) { _knobDisabledStyle.normal.background = disabled; _knobDisabledStyle.hover.background = disabled; _knobDisabledStyle.active.background = disabled; _knobDisabledStyle.focused.background = disabled; }

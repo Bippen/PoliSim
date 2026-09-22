@@ -930,7 +930,7 @@ namespace PoliSim.UI
             TradePartner link = _playerCountry.TradePartners.Find(p => p.PartnerId == them.Id);
             if (link == null)
             {
-                DrawPairCollar("NO TRADE LINK", "THE MAP HOLDS NO TradePartner LINK BETWEEN THESE TWO. THIS IS NOT TRADE OF ZERO — NO VOLUME EXISTS TO BE ZERO. TARIFFS STILL READ: EACH SIDE'S RATE IS A FACT ABOUT THAT SIDE.");
+                DrawPairCollar("NO TRADE LINK", "THE MAP HOLDS NO TRADE LINK BETWEEN THESE TWO. THIS IS NOT TRADE OF ZERO — NO VOLUME EXISTS TO BE ZERO. TARIFFS STILL READ: EACH SIDE'S RATE IS A FACT ABOUT THAT SIDE.");
             }
             else
             {

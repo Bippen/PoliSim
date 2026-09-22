@@ -389,9 +389,11 @@ namespace PoliSim.UI
                 PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
             name.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 32f);
 
-            Text hue = CanvasChrome.MakeText(content.transform, "Hue", $"HUE: {DisplayName.Spaced(area.ToString()).ToUpperInvariant()}",
+            // §565 (2026-09-22, Design's sitting part A item 5): the card's SUBTITLE, in the country's own ink - the money it keeps its books in. It printed the name of
+            // the card's area token (*"HUE: SECTORS"*), which is the palette's word for the ink, not a fact about the country.
+            Text zone = CanvasChrome.MakeText(content.transform, "Zone", country.CurrencyZone.Name.ToUpperInvariant(),
                 PoliSimTheme.Display, 12, ink, TextAnchor.MiddleLeft, FontStyle.Bold);
-            hue.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
+            zone.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
 
             BuildFigureStrip(content.transform, country);
         }

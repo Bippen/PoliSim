@@ -4004,7 +4004,8 @@ namespace PoliSim.UI
             _laborMarketScrollPosition = GUILayout.BeginScrollView(_laborMarketScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Labor Market", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
-            GUILayout.Label("Every dial below is a DRAFT - nothing happens until you introduce them as one standalone bill, which resolves independently of the annual budget cycle. Labor LAWS (the Laws tab) stack their own offsets on top of the statutory base these sliders set - a row's note names the law effect when one is moving its dial.", _labelStyle);
+            // §565: the paragraph is cut - the bill card's sentence says the draft, and a row's own trailing names the law offset when one moves its dial.
+            DrawStatsSectionCaption("THE DIALS ARE ONE BILL'S DRAFT · A LAW IN FORCE STACKS ITS OFFSET ON THE ROW IT MOVES");
             GUILayout.Space(8f);
 
             // §564 (2026-09-22): THE DIALS LEAD (Design's sitting, part B item 2) - the bill card follows them, then the graph and the population rows.
@@ -4251,7 +4252,8 @@ namespace PoliSim.UI
                 return baseTrailing;
             }
 
-            string annotation = $"laws {effectiveValue - baseValue:+0.0;-0.0} -> {effectiveValue:F0} in effect";
+            // §565: the trailing is drawn in the DOCUMENT face (the caption's mono), which carries no arrow glyph - the law's offset and the composed value read as a pair.
+            string annotation = $"laws {effectiveValue - baseValue:+0.0;-0.0} · {effectiveValue:F0} in effect";
             return string.IsNullOrEmpty(baseTrailing) ? annotation : baseTrailing + " - " + annotation;
         }
 
@@ -6256,12 +6258,20 @@ namespace PoliSim.UI
             GUILayout.FlexibleSpace();
             GUILayout.BeginVertical(GUILayout.Width(UiScreen.Width * 0.52f));
 
-            var bannerStyle = new GUIStyle(_gameOverStyle);
-            bannerStyle.normal.textColor = won ? PoliSimTheme.Hex(0x8FBF7A) : PoliSimTheme.Hex(0xE0907E);
-            GUILayout.Label(won ? "SCENARIO COMPLETE" : "SCENARIO FAILED", bannerStyle);
+            // §565 (2026-09-22, Design's sitting part A item 7, D9 row 7): the verdict is a STAMP in the chrome's own face on PAPER - it stood as a coloured banner over
+            // bare desk, the one page in the game that spoke to the player without a sheet under it.
+            GUILayout.BeginVertical(_boxStyle);
+            Color verdictInk = won ? PoliSimTheme.Good : PoliSimTheme.Bad;
+            string verdictText = won ? "SCENARIO COMPLETE" : "SCENARIO FAILED";
+            GUIStyle verdictStamp = DeskCaption(9f, verdictInk, bold: true, anchor: TextAnchor.MiddleCenter);
+            Vector2 stampSize = PoliSimWidgets.StampSize(verdictText, verdictStamp, Mathf.Round(_labelStyle.fontSize * 0.5f), Mathf.Round(_labelStyle.fontSize * 0.14f), 1.5f);
+            Rect stampRow = GUILayoutUtility.GetRect(10f, stampSize.y + _labelStyle.fontSize * 0.4f, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.Stamp(new Rect(stampRow.x, stampRow.y, stampSize.x, stampSize.y), verdictText, verdictStamp, verdictInk, verdictInk, 1.5f, -2f);
+            }
 
             var deskLabel = new GUIStyle(_labelStyle);
-            deskLabel.normal.textColor = PoliSimTheme.TextOnDesk;
             var deskWrap = new GUIStyle(deskLabel) { wordWrap = true };
 
             GUILayout.Label($"{_scenario.Name} - {_playerCountry.Name}, turn {_simulationManager.CurrentTurn}", deskLabel);
@@ -6281,8 +6291,8 @@ namespace PoliSim.UI
             //     figure - rendering in another row's ink across two capture passes. DrawColoredLabel
             //     is this file's existing answer (set, draw, restore, one object), and it is why that
             //     helper exists at all.
-            Color metInk = PoliSimTheme.Hex(0x8FBF7A);
-            Color missedInk = PoliSimTheme.Hex(0xE0907E);
+            Color metInk = PoliSimTheme.Good;
+            Color missedInk = PoliSimTheme.Bad;
 
             foreach (ScenarioObjective objective in _scenario.Objectives)
             {
@@ -6292,7 +6302,7 @@ namespace PoliSim.UI
                 string figure = BuildObjectiveFigure(objective, state);
 
                 DrawColoredLabel($"{mark}  -  {objective.Description}", deskWrap, met ? metInk : missedInk);
-                DrawColoredLabel($"        {figure}", deskWrap, PoliSimTheme.TextOnDesk);
+                DrawColoredLabel($"        {figure}", deskWrap, PoliSimTheme.TextPrimary);
             }
 
             GUILayout.Space(16f);
@@ -6309,6 +6319,7 @@ namespace PoliSim.UI
                 DismissScenarioVerdict();
             }
 
+            GUILayout.EndVertical();   // the sheet
             GUILayout.EndVertical();
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
@@ -6361,7 +6372,7 @@ namespace PoliSim.UI
             float first = series[0];
             float last = series[series.Count - 1];
             string format = "F" + decimals;
-            lines.Add($"{name}: {first.ToString(format)}{unit} -> {last.ToString(format)}{unit} ({(last - first).ToString("+0." + new string('0', decimals) + ";-0." + new string('0', decimals))}{unit})");
+            lines.Add($"{name}: {first.ToString(format)}{unit} → {last.ToString(format)}{unit} ({(last - first).ToString("+0." + new string('0', decimals) + ";-0." + new string('0', decimals))}{unit})");
         }
 
         /// <summary>The final period's single largest-magnitude approval term, named - the one-line
@@ -6915,7 +6926,8 @@ namespace PoliSim.UI
 
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
-                BeginAreaCard("FEDERAL RESERVE", UiPalette.SystemArea.Political, blocksTime: true, dossier: true);
+                // §565 (Design's sitting part A item 4): the dossier names THIS country's central bank - the Riksbank's appointment stood under a card headed FEDERAL RESERVE.
+                BeginAreaCard(GetCentralBankName(PlayerCountryId).ToUpperInvariant(), UiPalette.SystemArea.Political, blocksTime: true, dossier: true);
                 DrawFedChairSelectionModal();
                 EndAreaCard(UiPalette.SystemArea.Political);
                 anyPending = true;
@@ -8685,7 +8697,8 @@ namespace PoliSim.UI
         private void DrawWorldMapContent()
         {
             DrawColoredLabel("World Map", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            GUILayout.Label("Hover a marker for a quick readout, click to pin it below. Colored dots are recent events - green helped, red hurt; size reflects how big a shock it was, and dots fade out over a few years.", _labelStyle);
+            // §565 (Design's sitting part A item 3): what the map DRAWS, in the desk's caption face - not instructions to the hand (*"Hover a marker …"*, *"Click a country marker …"*).
+            DrawStatsSectionCaption($"THE SIX · MARKERS ARE COUNTRIES · DOTS ARE EVENTS OF THE LAST FEW YEARS, GREEN HELPED AND RED HURT, SIZED BY THE SHOCK AND FADING WITH IT");
             GUILayout.Space(6f);
 
             Rect mapRect = GUILayoutUtility.GetRect(10f, WorldMapHeight, GUILayout.ExpandWidth(true));
@@ -8723,7 +8736,7 @@ namespace PoliSim.UI
             }
             else
             {
-                GUILayout.Label("Click a country marker or an event dot for details.", _labelStyle);
+                DrawStatsSectionCaption("NO COUNTRY PINNED");
             }
 
         }
@@ -8897,15 +8910,41 @@ namespace PoliSim.UI
         private void DrawCabinetManagementContent()
         {
             DrawColoredLabel("Cabinet", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            // R4-4: "most" is deliberate - Defense and Foreign Affairs ministers are decisions-only
-            // this pass (ruling R3), so the old "each appointed minister quietly nudges" wording
-            // would claim a passive effect four of six portfolios have and two do not.
-            // TURN->YEAR: "every turn" -> "every year", same sweep as everywhere else in this file.
-            GUILayout.Label("Most appointed ministers quietly nudge their own portfolio's existing channels every year just by serving, and any minister occasionally brings you a real decision with a few response options. Philosophy determines what KIND of decisions a minister brings, not how skilled they are - that's CompetenceBias, a separate trait. Reshuffling a minister costs a modest approval hit but can happen anytime. Pending decisions themselves now show under the Decisions tab.", _labelStyle);
+            // §565 (2026-09-22, Design's sitting part A item 3): the mechanism paragraph is cut - it named a hidden trait by its code name (*"that's CompetenceBias"*), and
+            // what it said about philosophy is the minister's own line, what it said about reshuffling is the button, and what it said about pending decisions is the rail's
+            // cell. The FOUR ATTRIBUTES' glossary, which repeated under every minister and every candidate, is this one caption at the head.
+            DrawStatsSectionCaption("LOYALTY: RESIGNS OR LEAKS UNDER PRESSURE · KNOWLEDGE: CAN THE MINISTRY ESTIMATE A DECISION · EFFICIENCY: THE PORTFOLIO'S SPENDING PER UNIT · POPULARITY: HOW A DECISION LANDS, AND WHAT DISMISSAL COSTS");
             GUILayout.Space(6f);
+
+            // §565 (Design's sitting part B item 7): the vacancies are ONE state, not four identical plates - the portfolios standing empty with no shortlist drawn, named in
+            // one panel, with one search that draws a shortlist for all of them. A portfolio whose shortlist is drawn keeps its own panel: the candidates are the page.
+            var unsearched = new List<CabinetPortfolio>();
+            foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                if (!_playerCountry.CabinetMinisters.ContainsKey(portfolio) && !_cabinetCandidatesByPortfolio.ContainsKey(portfolio)) { unsearched.Add(portfolio); }
+            }
+
+            if (unsearched.Count > 0)
+            {
+                GUILayout.BeginVertical(_boxStyle);
+                DrawColoredLabel(unsearched.Count == 1 ? "One portfolio stands vacant" : $"{unsearched.Count} portfolios stand vacant", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+                foreach (CabinetPortfolio portfolio in unsearched)
+                {
+                    DrawDerivedStatRow(GetPortfolioName(portfolio), -1f, "vacant", "no shortlist drawn", UiPalette.GetAreaColor(UiPalette.GetPortfolioArea(portfolio)));
+                }
+
+                if (DrawSentenceAction(unsearched.Count == 1 ? "A shortlist is drawn for the vacant portfolio; you appoint from it." : "One search draws a shortlist for every vacant portfolio; you appoint from each.",
+                        "Search", true, _implementButtonStyle))
+                {
+                    foreach (CabinetPortfolio portfolio in unsearched) { _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio); }
+                }
+                GUILayout.EndVertical();
+                GUILayout.Space(8f);
+            }
 
             foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
             {
+                if (unsearched.Contains(portfolio)) { continue; }   // named in the one vacancy panel above
                 DrawCabinetPortfolioPanel(portfolio);
                 GUILayout.Space(8f);
             }
@@ -9046,7 +9085,7 @@ namespace PoliSim.UI
             _parliamentScrollPosition = GUILayout.BeginScrollView(_parliamentScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Parliament", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            GUILayout.Label("Seats shift gradually with your ApprovalRating. The annual budget bill and any standalone bills are gated by Parliament - see the Budget Process tab to introduce one.", _labelStyle);
+            // §565 (Design's sitting part B item 4): the mechanism paragraph is cut - it named a field, and the chamber and every bill card say what it said.
             GUILayout.Space(6f);
 
             _hemicycleRenderer.Draw($"{_playerCountry.Name} - {PartySystems.ChamberSeats(PlayerCountryId)} seats", PlayerCountryId, _playerCountry.ParliamentSeats, _labelStyle);
@@ -9341,17 +9380,14 @@ namespace PoliSim.UI
             }
             else
             {
-                GUILayout.Label("Vacant.", _labelStyle);
+                // §565: a vacant portfolio reaches this panel only once its shortlist is drawn (the one vacancy panel above holds the rest), so the candidates ARE the panel.
+                DrawStatsSectionCaption("VACANT · THE SHORTLIST");
                 if (_cabinetCandidatesByPortfolio.TryGetValue(portfolio, out List<CabinetMinister> candidates))
                 {
                     foreach (CabinetMinister candidate in candidates)
                     {
                         DrawCabinetCandidateButton(portfolio, candidate);
                     }
-                }
-                else if (PoliSimWidgets.Button("Search for candidates", _neutralActionButtonStyle))
-                {
-                    _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
                 }
             }
 
@@ -9363,7 +9399,7 @@ namespace PoliSim.UI
         {
             GUILayout.Label(string.Format(CultureInfo.CurrentCulture,
                 "Loyalty {0:0} · Knowledge {1:0} · Efficiency {2:0} · Popularity {3:0}", minister.Loyalty, minister.Knowledge, minister.Efficiency, minister.Popularity), _labelStyle);
-            GUILayout.Label("loyalty: resigns or leaks under pressure · knowledge: can the ministry estimate a decision · efficiency: the portfolio's spending per unit · popularity: how a decision lands, and what dismissal costs", _labelStyle);
+            // §565: the glossary is the Cabinet screen's one caption at its head, not a repeat under every minister and every candidate.
         }
 
         private void DrawCabinetCandidateButton(CabinetPortfolio portfolio, CabinetMinister candidate)
@@ -11025,7 +11061,8 @@ namespace PoliSim.UI
             _sectorPolicyScrollPosition = GUILayout.BeginScrollView(_sectorPolicyScrollPosition, GUILayout.Height(scrollHeight));
 
             DrawColoredLabel("Economic Sectors", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
-            GUILayout.Label("Output/Employment/the sector's own metric are descriptive only for now - the five dials below nudge them, but they don't feed back into GDP/Unemployment. Every dial is a DRAFT across every sector - nothing happens until you introduce them all as one standalone bill, which resolves independently of the annual budget cycle.", _labelStyle);
+            // §565: the paragraph is cut to the two facts it carried that no row states - the readouts do not feed back, and the dials are one bill's draft.
+            DrawStatsSectionCaption("READOUTS ONLY · THE FIVE DIALS MOVE THEM AND NOTHING ELSE READS THEM · EVERY DIAL ACROSS EVERY SECTOR IS ONE BILL'S DRAFT");
             GUILayout.Space(8f);
 
             BeginAreaCard("ECONOMIC SECTORS BILL", UiPalette.SystemArea.Sectors);
