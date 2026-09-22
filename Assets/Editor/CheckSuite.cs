@@ -294,6 +294,7 @@ namespace PoliSim.EditorTools
             // check rather than a ratchet, because its right answer is ZERO and it is AT zero - a ratchet
             // would be a licence for a fifth statement to sit there being counted.
             ("SharedMidpointCheck", SharedMidpointCheck.Run),
+            ("DryFilmScopeCheck", DryFilmScopeCheck.Run),   // §574 (2026-09-22): a dry film ran the sessions its item named, and no others
             ("NumberLocaleCheck", NumberLocaleCheck.Run),   // §568 (2026-09-22): the desk's one number locale, installed once at the game's start
             ("CountryInkFenceCheck", CountryInkFenceCheck.Run),   // §566 (2026-09-22): the six registered country inks against D16's fence, inside their own channel
             ("InkContrastCheck", InkContrastCheck.Run),   // P2-1.2 (2026-09-02): every ink pair at its use, WCAG ratio derived from the theme, floors 4.5 body / 3.5 caption
@@ -685,6 +686,15 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>Runs the cheap suite and returns the WORST code any check wanted (0 = all clean).</summary>
+        /// <summary>§574: one check by name, for the warm host - the cheap and simulation tables are the enumeration, and a name outside them is null rather than a quiet nothing.</summary>
+        public static Action Find(string name)
+        {
+            foreach ((string n, Action run) in Suite) { if (string.Equals(n, name, StringComparison.OrdinalIgnoreCase)) { return run; } }
+            foreach ((string n, Action run) in Simulation) { if (string.Equals(n, name, StringComparison.OrdinalIgnoreCase)) { return run; } }
+
+            return null;
+        }
+
         private static int RunAll(bool announceClean) => RunTable(Suite, "cheap", announceClean);
 
         /// <summary>Runs one registration table of cheap-group checks and returns the WORST code any of them wanted

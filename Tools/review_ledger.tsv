@@ -60,3 +60,4 @@ baseline	777	ddc9d3fdf0b62a893ee08d514b984433a6a5820007e9f2e000fcb6a3fc3ff54b	re
 file	Assets/Scripts/Simulation/SimulationManager.cs	6bcb507abb2bbc9a6bf4c735bca4cfe6cc47099f67fefcfc99c91a7051a79b54	reviewed	2026-09-22	s572	Reviews/2026-09-22_s572_pap_landing.md	-
 baseline	424242	ceae8afba8898f82ed36aa93ad19e7237bc0cb16272fd3a99d78edf44adf6424	reviewed	2026-09-22	s572	Reviews/2026-09-22_s572_pap_landing.md	-
 file	Assets/Scripts/Simulation/EnergyLedger.cs	d308ffa80c5818e7d6e9ae1d7b783d6db61adec8608e0d932aded861c4e39672	reviewed	2026-09-22	s572	Reviews/2026-09-22_s572_pap_landing.md	-
+file	Assets/Scripts/Simulation/EnergyLedger.cs	df3427ae80729d4248c4951a62081f510bd13231fd12120692e95edf5d7ba61a	reviewed	2026-09-22	s574	Reviews/2026-09-22_s572_pap_landing.md	-

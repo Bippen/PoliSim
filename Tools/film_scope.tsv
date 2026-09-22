@@ -1,0 +1,19 @@
+# THE DRY-FILM SCOPE LEDGER (2026-09-22; COMPLETED.md s574). Read by Assets/Editor/DryFilmScopeCheck.cs (the cheap bar) and by Tools/bar_tier.ps1.
+# The tier has always said the dry film runs "every width and country the item names". The sitting pass of 2026-09-22 ran all twelve
+# sessions on every one of its ten items and measured the cost: 522 s a run against 145 s for the two sessions the item actually named,
+# 6.3 minutes an item, about an hour across the pass. The rule was right and it was not followed, so it is enforced here the way the
+# review ledger enforces its own: a row states what the item NAMES, the check reads the film's own log, and a film that ran sessions the
+# row does not name fails the bar.
+#
+# Columns, tab-separated: kind, label, sessions, date, record, why
+#   kind      scope
+#   label     the dry film's label - the log is PoliSim-captures/logs/<label>.log and the runner's own plan line is in it
+#   sessions  the sessions the item names, comma-separated, each Country@WxH exactly as the runner plans them (e.g. Sweden@1280x720)
+#   date      when the row was written
+#   record    the COMPLETED.md section the item lands under
+#   why       one clause: why these countries and widths, and no others
+#
+# Add rows with Tools/film_scope.ps1. There is no waiver row: a UI item that genuinely needs all twelve names all twelve, and the row
+# says why - the cost is then a decision on the record rather than a habit.
+kind	label	sessions	date	record	why
+scope	drypap2	Sweden@1280x720,France@1280x720	2026-09-22	s572	the two countries P-A-prime's shares move; the other four read the same levy rule with an unchanged share

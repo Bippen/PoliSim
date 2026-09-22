@@ -39,6 +39,8 @@ namespace PoliSim.EditorTools
         public static void Run()
         {
             CheckExit.ArmLogFold();
+            // §574: the probe's own guard - a measurement override left standing would silently re-answer every figure below.
+            if (EnergyLedger.SupportShareOverridden) { Debug.LogError("ENERGY LEDGER: a support-share override is standing at this probe's start - a measurement was left in place, and every figure below would be that measurement's."); CheckExit.Finish(1); return; }
             bool ok = true;
             var sb = new StringBuilder();
             sb.Append("=== ENERGY LEDGER (EN-4): the retail stack, the two ledgers, the support line, the congestion credit, the single book ===\n");

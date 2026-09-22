@@ -88,12 +88,24 @@ try {
     $atClose += 'the full trajectory dump with its old-beside-new diffs'
   }
   if ($touched -contains 'UI') {
-    $perItem += "the dry film of the touched screens (UiScreenshotCapture.RunDry under -batchmode, every width and country the item names, iterated until its guards are silent) + ONE filmed width at the item's end"
+    $perItem += "the dry film of the SESSIONS THE ITEM NAMES (UiScreenshotCapture.RunDry under -batchmode; declare them with Tools/film_scope.ps1 BEFORE the film and DryFilmScopeCheck holds the film to the row), iterated until its guards are silent) + ONE filmed width at the item's end"
     $atClose += 'the four-width film matrix'
   }
   if ($touched -contains 'SIMULATION' -and -not ($touched -contains 'UI')) { $atClose += 'the four-width film matrix' }
+  if ($touched -contains 'UI') {
+    $scopeFile = Join-Path $Root 'Tools/film_scope.tsv'
+    $declared = @()
+    if (Test-Path $scopeFile) {
+      foreach ($line in [IO.File]::ReadAllLines($scopeFile)) { $c = $line.Split("`t"); if ($c.Length -ge 6 -and $c[0] -eq 'scope') { $declared += "$($c[1]) -> $($c[2])" } }
+    }
+    $lastScope = if ($declared.Count) { $declared[-1] } else { 'NONE' }
+  }
   "  per item : $($perItem -join ' + ')"
   "  at close : $(if ($atClose.Count) { $atClose -join '; ' } else { '-' })"
+  if ($touched -contains 'UI') {
+    "  film scope: REQUIRED - declare the sessions with Tools/film_scope.ps1 before the dry film; DryFilmScopeCheck fails the cheap bar on a film that ran a session its row does not name"
+    "    last row : $lastScope"
+  }
   if ($touched -contains 'SIMULATION') {
     if ($moneyHits.Count) {
       "  review   : REQUIRED - money paths: $($moneyHits -join ', ')"

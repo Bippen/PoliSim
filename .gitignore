@@ -88,3 +88,7 @@ baselines/
 
 # Any asset-pack zip left at the root awaiting a decision - see AssetPackArchive/README.md
 /*.zip
+
+# §574: the standalone text-check runner builds into PoliSim-captures/textcheck; these are belt and braces
+Tools/textcheck/bin/
+Tools/textcheck/obj/

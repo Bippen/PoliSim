@@ -172,7 +172,32 @@ namespace PoliSim.Simulation
         /// <summary>SOURCED - ustawa budżetowa 2026, dział 100's rozdział 10001 over the dział, counted as Annex II's coal industry restructuring by the ruling of §571.</summary>
         public const double PolandSupportShareOfLine = 0.9795;
 
+        /// <summary>
+        /// §574 (2026-09-22, the efficiency pass): THE MEASUREMENT OVERRIDE. A share is measured by asking what the model does at a share the
+        /// sources do not carry - §553 measured two whole tests that way, by EDITING this file, relaunching, reading, and restoring it byte for
+        /// byte, twice per test. A diagnostic sets this instead and the measurement is a toggle inside ONE run: **2 minutes a family, measured
+        /// against the launch toll of 23 s a time.**
+        ///
+        /// <para>⚠ <b>Null is the sourced table, and null is what the game runs.</b> Nothing in the game writes this - it is set by a diagnostic, inside a
+        /// `try/finally` that puts it back, and `EnergyLedgerDiagnostic` asserts it is null at its own start and end. A field a measurement can
+        /// set is a field a defect can leave set: this project has three static-state defects on record this month, so the guard is the probe's
+        /// own, and the value is never read where a save, a bill or a book is written - only through this accessor, which the ledger already
+        /// funnels every read through.</para>
+        /// </summary>
+        public static System.Collections.Generic.Dictionary<CountryId, double> SupportShareOverride;
+
+        /// <summary>§574: the probe's own guard - true when a measurement override is standing, which no game run may see.</summary>
+        public static bool SupportShareOverridden => SupportShareOverride != null && SupportShareOverride.Count > 0;
+
         public static double SupportShareOfEnergyLine(CountryId id)
+        {
+            if (SupportShareOverride != null && SupportShareOverride.TryGetValue(id, out double measured)) { return measured; }
+
+            return SourcedSupportShareOfEnergyLine(id);
+        }
+
+        /// <summary>The table as the sources carry it - what the game always runs, and what the override above stands in front of for one measurement.</summary>
+        private static double SourcedSupportShareOfEnergyLine(CountryId id)
         {
             switch (id)
             {
