@@ -31372,3 +31372,92 @@ For these five an **interpolation hole is code, not text**: the literal is read 
 **Bars.** Tier SIMULATION + UI, review REQUIRED and run. The cheap bar **46 of 46** (`bar_pap3`), the simulation bar **55 of 55** (`simbar_pap2`), the dry film of the touched screens - **Sweden and France at 1280, the two countries this landing moves** - **0 failed, 0 overflows** (`drypap2`), and the film at 1280 on **France** (the country whose share moved most): **112 captured, 0 failed, 0 clipped edges** (`filmpap2_1280`).
 
 **⚠ And this is the first item landed on the new loop** (§573's review): `dotnet build` as the compile check (≈5 s), `MultiRun` running the ledger diagnostic, the pass-through probe and the sentinel in ONE Editor (79 s for three), the named subset for a single guard (25 s), and the dry film scoped to the countries the item names rather than all twelve sessions. **Measured wall from the first edit to the last green bar: 63 minutes**, against an afternoon for the same family's first cut.
+## 573. THE DEEP EFFICIENCY REVIEW — where the wall time actually goes, what was cut, what was kept, and the new loop proved on a real item (2026-09-22)
+
+**The ask** (Elias, `EFFICIENCY_REVIEW_PROMPT.md`, 2026-09-22): *"Target: a typical prompt from ~3 hours to ≤30 minutes of wall time, for the same scope of work. Not by splitting tasks … Find every cent: no saving is too small to list. Measured figures only; a proposed cut without a minutes figure is not a proposal."*
+
+### PART 1 · WHERE THE TIME WENT — three passes, measured
+
+**How.** Wall time from each session transcript's own timestamps (`scratchpad/eff/timeline.pl`: a tool result's gap from its call is TOOL time, an assistant message's gap is MODEL time), and every Unity launch from its runner's `EXIT … wall n s` line against the work the method itself reported (`launches.pl`). Startup is the difference. Unity's `Domain Reload Profiling` and `script compilation time` lines give the toll's composition.
+
+**The sitting pass of 2026-09-22 — 162 min of wall, seven commits, ten UI items.** The top ten sinks:
+
+| # | sink | min | share | how it was measured |
+|---|---|--:|--:|---|
+| 1 | dry film - 10 launches × 12 sessions | 89.4 | 55 % | runner walls; 64.1 min of it is the sessions' own work |
+| 2 | model thinking and writing | 26.6 | 16 % | transcript gaps at assistant turns |
+| 3 | films at one width - 15 launches | ~15.0 | 9 % | chain stamps (55-80 s each) |
+| 4 | other shell - reads, greps, status, git | 13.4 | 8 % | transcript, by command class |
+| 5 | simulation bar - 1 launch | 10.4 | 6 % | runner (work 10.2) |
+| 6 | cheap bars - 10 launches | 8.1 | 5 % | runner (work 4.0) |
+| 7 | writing perl patch files | 5.7 | 4 % | transcript |
+| 8 | document bars - 7 launches | 2.8 | 2 % | runner (work ≈ 0) |
+| 9 | dotnet compile checks | 0.2 | — | transcript |
+| 10 | git | 0.4 | — | transcript |
+
+**Inside those, the toll every launch pays before any work**: domain reload **1.2 s + 5.2 s**, compilation bookkeeping **2.8 s** with nothing changed and **8–17 s** after a source edit, and package/asset-database start-up that puts a do-nothing launch at **23 s wall**. Across the three passes: **156 Unity launches**, **336 min of Unity wall**, of which **127 min is toll**.
+
+**The other two passes, for shape.** The package pass (2026-09-21 21:00 → 09-22 09:07, 215 min active): 43 launches, 60.1 min of Unity, 28.0 min toll. The third-ruling pass (2026-09-21 15:33–20:59, 327 min): 68 launches, 164.6 min of Unity, 65.2 min toll - **44 of those launches ran ONE diagnostic each** (a dump, a probe, a mutation, the same again after an edit), 42.4 min of wall at a mean of 58 s.
+
+⚠ **The prompt's hypothesis - that startup dominates - is half right, and which half depends on the pass.** For a UI pass, startup is 21 % of Unity's wall and the dry film's own sessions are 55 % of everything. For a BASELINE-family pass, the single-diagnostic launches ARE mostly toll. Both are cut below, by different means.
+
+### PART 2 · THE STRUCTURAL FIXES, EACH WITH ITS MEASURED FIGURE
+
+**BUILT THIS PASS**
+
+- **(a-half) `MultiRun` - several methods, one Editor.** `-executeMethod PoliSim.EditorTools.MultiRun.Run -methods=A,B,C` invokes each by reflection, collects each exit code through `CheckExit.Collect`, times each, exits with the worst. **Measured: three diagnostics in one launch 79 s against 102 s run separately (3 × 34 s), and the saving grows with the batch - 23 s per method after the first.** On pass C's 44 single-purpose launches, batching in threes would have been ~15 launches: **≈ 11 min saved on that pass alone.**
+  - ⚠ **The static-state proof came first, as the prompt requires.** `TrajectorySentinelCheck` run alone in a fresh Editor and run THIRD in a batch behind two world-building energy diagnostics: **both seeds' digests and all six cells identical, byte for byte** (`sent_alone` vs `sent_batch`). This project had three static-state defects this month, so the proof is the gate and it is on record.
+- **(loop change 1) `CheckSuite.RunNamedBatch -checks=A,B,C` - the named subset.** **Measured: 25 s for three named checks**, against 44-55 s for the cheap bar and 9-12 min for a UI chain. Most re-runs in this month's passes proved ONE guard; §568's own enrolment fix would have cost 25 s instead of a 12-minute chain.
+- **(m) The dry film scoped to the countries and widths the item names.** The tier already allowed it (*"every width and country the item names"*) and the sitting pass ran all twelve sessions ten times anyway. **Measured: 2 sessions at one width = 145 s against 522 s for twelve - 6.3 min saved per item, ≈ 63 min over a ten-item pass.**
+- **(m) Bar ORDER: cheapest-failing first.** The P-A′ landing's first bar chain ran cheap → sim → dry → film and the dry film's three overflows surfaced at minute 18, behind a 13-minute simulation bar. Cheap → dry → film → sim surfaces them at minute 4. **Measured on this landing: ≈ 14 min.**
+
+**PROPOSED, WITH FIGURES**
+
+- **(a-full) A warm Editor** (Unity's own Claude Code plugin, or a file-bridge watcher). On top of `MultiRun` the remaining toll is ~23 s per BATCH: **≈ 6 min per pass**, plus the 8-17 s compile on every launch after an edit (**≈ 4 min per pass**). ⚠ Gate: the same static-state proof extended to an Editor that persists ACROSS calls, and the Game view's layout pinned for films (the 962-px maximized-view trap). **≈ 10 min/pass, medium risk.**
+- **(b) The text checks out of the engine.** The document bar is **23 s of wall for ≈ 0 s of work** - pure toll, seven times in the sitting pass. A standalone runner for the eight document checks and the source-text checks would make a document bar ≈ 1 s. **≈ 2.7 min/pass, low risk, one day of porting** (they read `Application.dataPath` and log through `UnityEngine.Debug`).
+- **(c) Assembly definitions.** Measured here: **2.8 s compile with nothing changed, 8-17 s after a source edit**, because Assembly-CSharp is 236 files and Assembly-CSharp-Editor 217 with no asmdef anywhere. Splitting runtime by subsystem (Simulation, Data, Elections, UI) would cut a UI-only edit's compile to its own assembly. **≈ 4.5 min/pass at 45 launches; risk: circular references between UI and Simulation are likely and would have to be broken first.**
+- **(d) Probes in-process.** §553's shares were measured *"by a measurement mutation, the file restored byte for byte"* - two extra launches per measurement. With `MultiRun` a mutation probe rides the batch. **≈ 2 min per measured family.**
+- **(e) Horizons.** The baseline dump writes 100-, 500- AND 1000-turn CSVs in one 513 s run. Per family the sentinel reads the 100 and the bounds pass the 100. **Dropping 500/1000 except at a track's close: ≈ 3.4 min per family.**
+- **(f) One records commit per pass.** Seven document bars in the sitting pass at 23 s = **2.7 min**, plus the model time of seven record sections.
+- **(i) `CLAUDE.md` is 14 730 lines / 1.38 MB**, `COMPLETED.md` 31 374 lines / 3.81 MB. Pruning the mechanical rules into hooks (reject double-encoded characters on write, refuse PowerShell's UTF-16 redirect, one green bar per commit as a pre-commit hook) and archiving `COMPLETED.md` older than the current month would cut the session's opening read. **No wall-time figure measured here - the session brief already exists (`Tools/session_brief.ps1`) - so it is proposed without one, which by this prompt's own rule makes it the weakest item on this list.**
+- **(k) Play mode without domain reload** for the film harness: the film's own launch pays the 6.4 s reload twice. **≈ 1.5 min/pass, gated on (a)'s proof.**
+
+### PART 3 · THE KEEP LIST — what caught a real defect this month, with the defect
+
+- **Measure before you fix** - §553 held a whole family because the measurement said its four countries were read by two tests.
+- **The sentinel** - caught this landing's own baseline move within 79 s, and in §566 it was the D18 checks that caught a rename breaking ten save fields.
+- **One green bar per commit on a simulation-touching commit** - the review ledger caught `SimulationManager` standing in an unreviewed state TODAY, mid-landing.
+- **One filmed width per UI item** - the dry film caught the landing's three overflows (a 107-character provenance sentence in a 306 px lane) and, in §564, four `Means-Tested Welfare` overflows from a column change.
+- **The overflow and containment guards** - they are what make a scoped dry film safe to scope.
+- **`CommentImmunityCheck`'s enrolment census** - it caught `NumberLocaleCheck` reading source without stripping comments, in the same bar that added it.
+- **Nothing on this list is cut.** The cuts above are to HOW OFTEN and IN WHAT ORDER these run, never to whether they run before a commit.
+
+### PART 4 · THE NEW LOOP
+
+**Do → check → do → check, with the checks in seconds.**
+
+1. **Edit.** Write the patch as a perl script (the quoting rule stands) or edit directly.
+2. **Compile check: `dotnet build` on the generated csproj pair - ≈ 5 s**, no Unity. Catches every syntax and type error before a launch is spent.
+3. **Targeted check: `RunNamedBatch -checks=…` (25 s)** for a guard, or **`MultiRun -methods=…` (79 s for three)** for diagnostics and the sentinel. Read the verdict, edit again.
+4. **At the item's close, in this order - cheapest-failing first**: the cheap bar (45 s) → the dry film scoped to the item's own countries and widths (145 s for two) → one filmed width (60 s) → the simulation bar (13 min) where the tier asks for it.
+5. **The heavy runs stay once per item**: the dump for a family, the four-width matrix at a track's close.
+
+### PART 5 · THE PROOF — P-A′ LANDED ON THE NEW LOOP
+
+**The item** (not the easiest on the backlog - the chair named it): FT-10 · P-A′, a BASELINE family held since §553, landed under §571's ruling. It needed a floor fix, four sourced shares, a new baseline family, the sentinel's cells lowered, a full adversarial review, the simulation bar, and a UI film.
+
+**Measured: 15:29:02 to 16:33:24 - 64 minutes**, first edit to the commit, including 8.5 min of baseline dump (the evidence, not overhead) and 19 min of a repeated bar chain that the new ORDER rule now prevents. Against it: §553's own words for the same family's first cut - *"landing it on a ruling is an afternoon"*.
+
+**Against the 30-minute target: 64 minutes, over by 34.** Where they went, and what would close the gap:
+
+| block | min | closes with |
+|---|--:|---|
+| the two bar chains (18 + 19) | 37 | the ORDER rule (≈14 min) and (a) the warm Editor (≈6) |
+| the baseline dump | 8.5 | (e) dropping 500/1000-turn horizons per family (≈3.4) |
+| model work: read the held diff, re-cut the shares, write the review | ~10 | nothing proposed - this is the work |
+| the landing's own three `MultiRun` rounds | 4 | (a) a warm Editor (≈1) |
+| records, rows, commit | 4 | (f) one records commit per pass |
+
+**With the ORDER rule alone the same landing is ≈ 50 min; with (a) and (e) it is ≈ 40.** The honest conclusion: **30 minutes is reachable for a UI item on the new loop, and not yet reachable for a BASELINE family that owes a dump and a review** - the dump alone is 8.5 min of arithmetic this project refuses to fake, and the review is the thing that caught the floor defect. **A figure that hit 30 by skipping either would be the gaming the ask forbids.**
+
+**Bars.** Tier TOOLING + DOCUMENTS for this record's own changes (`MultiRun`, `RunNamedBatch`): the cheap bar **46 of 46** (`bar_pap3`, the same bar that closed the landing), and the document bar with this record.
