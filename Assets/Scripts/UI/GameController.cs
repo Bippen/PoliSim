@@ -4654,7 +4654,7 @@ namespace PoliSim.UI
         // idiom (without it the rail is a strip; with it, a folder's edge) and it is the frame token
         // D10 row 8 asked for: not a hairline, not a shadow, the gap. The active tongue is the sheet's
         // own paper carried 2 px over the seam so no line stands between tab and document (the pulled-
-        // forward folder), with the area spine (3 u) on its left edge and the 8 % wash (12 % until §575); an inactive
+        // forward folder), with the area spine (3 u) on its left edge and the 8 % wash over the GLYPH'S FIELD only (12 % over the whole cell until §575/§576); an inactive
         // tongue is the same paper in the plate's recessed tint behind a 1 px hairline seam. No new
         // sprite: the tongue is the sheet's sliced paper (ui_panel_paper, clipped to the tongue so its
         // baked shadow does not fill the gap), the seam the hairline, the spine and wash the accent.
@@ -4760,6 +4760,7 @@ namespace PoliSim.UI
             float pad = RailCellPad(cell);
             float glyph = RailGlyphSize(cell);
             glyphSlot = new Rect(rect.x + (rect.width - glyph) * 0.5f, rect.y + pad, glyph, glyph);
+            float captionTop = glyphSlot.yMax + RailCaptionGap(cell);   // §576: known before the paint, because the wash now stops where the caption starts
 
             if (Event.current.type != EventType.Repaint)
             {
@@ -4776,7 +4777,11 @@ namespace PoliSim.UI
                 _railActiveTongueFace = face;
                 _railActiveTongueStrip = new Rect(rect.xMax - 1f, rect.y, RailTongueOverlapPx + 1f, rect.height);
                 _railActiveTongueSet = true;
-                PoliSimTheme.Rule(rect, wash);
+                // §576 (flag (ii), Design's SECOND alternative, ruled 2026-09-22): THE WASH STOPS AT THE CAPTION BAND. The 8 % wash of §575 lifted every
+                // active caption by about two tenths of a contrast point and carried four of twelve areas over the 4.5 text floor; the caption on PLAIN TONGUE
+                // carries all twelve, because the ink is then the same area ink on the same paper the sheet's own headers clear the floor on. The wash still
+                // marks the cell - it runs the glyph's field, from the tongue's top to the caption's - and the spine still runs the cell's full height.
+                PoliSimTheme.Rule(new Rect(rect.x, rect.y, rect.width, captionTop - rect.y), wash);
                 PoliSimTheme.Rule(new Rect(rect.x, rect.y, RailSpineWidth(), rect.height), spineInk);
             }
             else
@@ -4790,7 +4795,6 @@ namespace PoliSim.UI
                 PoliSimTheme.Rule(new Rect(rect.xMax - 1f, rect.y, 1f, rect.height), PoliSimTheme.Hairline);
             }
 
-            float captionTop = glyphSlot.yMax + RailCaptionGap(cell);
             GUIStyle captionStyle = RailCaptionStyle(cell, captionInk, active);
             // The weight yields before the size: the cell's width is the rail's fixed measure and the
             // caption already sits at the guard's floor at 1280, so a bold caption that does not fit

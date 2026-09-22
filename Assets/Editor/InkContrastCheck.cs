@@ -106,16 +106,19 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    {0} {1,-23} {2,-16} {3,6:0.00}  {4,5:0.0}  {5}\n", ok ? "ok  " : "FAIL", p.Ink + " " + Hex(p.InkColor), p.Ground, ratio, p.Floor, p.Use));
             }
 
-            // §575 (flag (ii), ruled 2026-09-21): THE RAIL'S ACTIVE CELL, REPORTED - its 7.5 px caption in the area ink on the sheet's paper under the area's own
-            // wash. It is NOT a verdict here, and the reason is the honest one: the ground is MODELLED (the tongue is the sheet's paper sprite, which `Card` stands
-            // for in this table) and, more to the point, the remedy is not this check's to force - the rule above is raise the ink or send the pair to Design, and
-            // twelve area inks are Design's palette (D17's fence), not a number a check may move. The model reproduces Design's own reading of the 12 % wash
-            // (Sectors 4.33 against their 4.30), which is why the columns are printed: 8 % lifts every cell by about two tenths, and on this ground that carries
-            // FOUR of twelve over the body floor. Design's own alternative in the same flag - the caption on plain tongue - is what would clear the rest.
-            sb.Append("\n    REPORTED, not a verdict: the rail's active caption on the area wash, at the old 12 % and at the token (§575, flag (ii)):\n");
+            // §576 (flag (ii)'s SECOND alternative, ruled 2026-09-22): THE RAIL'S ACTIVE CELL, REPORTED. The caption now sits on PLAIN TONGUE - the wash stops at
+            // the caption band and runs the glyph's field only - so the caption's own pair is the area ink on the sheet's paper, which the table above ALREADY asserts
+            // at the body floor (`Area.<name>` on `Card`). What is printed here is the measurement Design asked for and the reason the caption moved: at §575's 8 %
+            // wash only four of twelve areas cleared 4.5, and at the 12 % wash before it none of those four did but one. No text stands on the wash now; the glyph does,
+            // and a mark is not held to a text floor. ⚠ If a caption is ever drawn back onto the wash, these are the figures it would be held to.
+            sb.Append("\n    REPORTED (§576, flag (ii)): the rail's active cell - the caption on plain tongue, the wash on the glyph's field\n");
+            sb.Append("      area              ink       CAPTION on plain tongue    the wash's field at 8 %   at 12 %\n");
             foreach (UiPalette.SystemArea area in Enum.GetValues(typeof(UiPalette.SystemArea)))
             {
-                sb.Append(F("      {0,-16} {1,5:0.00} at 12 %   {2,5:0.00} at {3:0} %   {4}\n", area, Contrast(UiPalette.GetAreaColor(area), RailActiveGround(area, 0.12f)), Contrast(UiPalette.GetAreaColor(area), RailActiveGround(area, GameController.RailActiveWashAlpha)), GameController.RailActiveWashAlpha * 100f, Contrast(UiPalette.GetAreaColor(area), RailActiveGround(area, GameController.RailActiveWashAlpha)) >= BodyFloor ? "clears the body floor" : "under it - Design's, with the palette or the plain tongue"));
+                Color ink = UiPalette.GetAreaColor(area);
+                float plain = Contrast(ink, PoliSimTheme.Card);
+                sb.Append(F("      {0,-16}  {1,-8}  {2,5:0.00} {3,-20}  {4,5:0.00}                    {5,5:0.00}\n", area, Hex(ink), plain,
+                    plain >= BodyFloor ? "clears 4.5" : "UNDER 4.5", Contrast(ink, RailActiveGround(area, GameController.RailActiveWashAlpha)), Contrast(ink, RailActiveGround(area, 0.12f))));
             }
 
             sb.Append(F("\n=== P2-1.2: {0} pair(s), {1} below floor ===\n", pairs, failures));
