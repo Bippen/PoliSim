@@ -36,7 +36,11 @@ namespace PoliSim.EditorTools
         public static string CutAndVerify(string path, out SaveGame loaded)
         {
             loaded = null;
-            CampaignCalendar calendar = CampaignCalendar.Sweden2026;
+            // CL-5 RULED (2026-09-22, §579): THE GAME IS RIGHT AND THE PROTOCOL WAS WRONG. Until this day the save was cut on CampaignCalendar.Sweden2026 - the REAL
+            // Swedish election's dates - while the live day path reads the NEXT ELECTION TURN'S BOUNDARY, so the save opened years before any run-up began and the
+            // protocol's first step described a game that was not running (§558). The target is now the game's own run-up, computed from the same expression the day
+            // path uses, and the protocol takes its dates FROM THIS SAVE rather than from the calendar a person typed.
+            var calendar = new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(0)));
             DateTime target = calendar.PreCampaignStart;
             var goA = new GameObject("PlayProtocolStaging.A");
             var goB = new GameObject("PlayProtocolStaging.B");
@@ -58,7 +62,8 @@ namespace PoliSim.EditorTools
                 player.PlayerPartyAbbrev = largest.Abbrev;
                 player.PartyApprovalRating = player.State.ApprovalRating;
                 int days = 0;
-                while (sim.CurrentDate < target && days < 400) { sim.AdvanceDay(); days++; }
+                // §579: the game's run-up is four turns out, not seventeen days - the cap is the boundary's own distance plus a year's slack, and a day that does not move is the guard.
+                while (sim.CurrentDate < target && days < 2000) { sim.AdvanceDay(); days++; }
                 if (sim.CurrentDate != target) { return F("the manager advanced {0} days and stands at {1:yyyy-MM-dd}, not the run-up's first day {2:yyyy-MM-dd}", days, sim.CurrentDate, target); }
                 SaveGame save = SaveGameService.CreateSaveGame(sim, world, CountryId.Sweden, null);
                 SaveGameService.SaveToFile(path, save);
@@ -71,19 +76,22 @@ namespace PoliSim.EditorTools
                 SimulationManager simB = goB.AddComponent<SimulationManager>();
                 SaveGameService.RestoreInto(simB, loaded);
                 if (simB.CurrentDate != target) { return F("restored, the manager reads {0:yyyy-MM-dd}", simB.CurrentDate); }
-                if (calendar.PhaseOn(simB.CurrentDate) != CampaignPhase.PreCampaign) { return F("the calendar reads {0} on the restored date, not PreCampaign", calendar.PhaseOn(simB.CurrentDate)); }
+                if (calendar.PhaseOn(simB.CurrentDate) != CampaignPhase.PreCampaign) { return F("the GAME's calendar reads {0} on the restored date, not PreCampaign", calendar.PhaseOn(simB.CurrentDate)); }
                 if (simB.PlayerCountryId != CountryId.Sweden) { return "restored, the player is not Sweden"; }
                 // §558 (2026-09-21): THE PROTOCOL'S FIRST STEP, HELD. *"Load it. The Desk opens on 18 January 2026; the rail's CAMPAIGN cell reads the run-up."* A player with no
                 // party has no run-up and is refused every campaign verb (`AdvancePreCampaign`: no party index, no run) - and until this day the staging seated none, so the
                 // save the protocol opens on could not be played as the protocol says.
                 if (simB.PlayerPartyIndexForCampaign() < 0) { return "restored, the player has NO PARTY in the campaign - no run-up begins and every campaign verb is refused; the protocol's first step cannot be taken"; }
-                // ⚠ FOUND THE SAME DAY, AND NOT THIS TOOL'S TO SETTLE (§558): THE GAME DOES NOT RUN THE CALENDAR THE PROTOCOL NAMES. This file and the protocol read
-                // `CampaignCalendar.Sweden2026` - polling day 13 September 2026, the run-up from 18 January. The live day path reads the NEXT ELECTION TURN'S BOUNDARY
-                // (`SimulationManager.CurrentCampaignCalendar`: the epoch plus four turns), so in the game this save opens, no run-up begins on the save's day and polling
-                // day is years off. The phase assertion above holds the static calendar and says nothing about the game's. Printed every run, as a warning, until it is ruled.
+                // CL-5, CLOSED (2026-09-22, §579). The save is cut on the GAME's calendar now, so this is a record rather than a warning: the live day path reads the
+                // next election turn's boundary, and the day this save opens on is that election's run-up. ⚠ The guard is that the two agree AFTER the restore - if the
+                // boundary the restored turn points at were a different election, the save would open on a run-up the game is not about to run.
                 var live = new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(simB.CurrentTurn)));
-                Debug.LogWarning(F("PLAY PROTOCOL: ⚠ the protocol's calendar is Sweden2026 (run-up {0:yyyy-MM-dd}, campaign {1:yyyy-MM-dd}, polling day {2:yyyy-MM-dd}); THE GAME'S, on this save, is the election turn's boundary (run-up {3:yyyy-MM-dd}, campaign {4:yyyy-MM-dd}, polling day {5:yyyy-MM-dd}) - the run-up has {6} on the save's day. The protocol's first step reads a run-up the game does not begin.",
-                    calendar.PreCampaignStart, calendar.CampaignStart, calendar.ElectionDate, live.PreCampaignStart, live.CampaignStart, live.ElectionDate, simB.PlayerPreCampaign != null ? "BEGUN" : "NOT begun"));
+                if (live.ElectionDate != calendar.ElectionDate)
+                {
+                    return F("the save was cut for the election of {0:yyyy-MM-dd} and the restored turn points at {1:yyyy-MM-dd} - the save opens on a run-up the game is not about to run", calendar.ElectionDate, live.ElectionDate);
+                }
+                Debug.Log(F("PLAY PROTOCOL: the game's own calendar, which this save opens in - run-up {0:yyyy-MM-dd}, campaign {1:yyyy-MM-dd}, polling day {2:yyyy-MM-dd}; the run-up has {3} on the save's day. THE PROTOCOL TAKES ITS DATES FROM HERE (§579, CL-5): CampaignCalendar.Sweden2026 is the REAL election's calendar and is no longer what the play is cut on.",
+                    calendar.PreCampaignStart, calendar.CampaignStart, calendar.ElectionDate, simB.PlayerPreCampaign != null ? "BEGUN" : "not begun"));
                 return null;
             }
             finally
