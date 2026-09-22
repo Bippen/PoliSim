@@ -20,12 +20,11 @@ namespace PoliSim.UI
     /// </summary>
     public static class SeatMapRenderer
     {
-        private const int MinRows = 3;
-        private const int MaxRows = 24;
-        private const float DotFill = 0.62f;
-        private const float DotPitch = 1.35f;
-        private const float InnerRadiusFraction = 0.38f;
+        // §567 (2026-09-22, D8): the rings, the pitch and the dot are Hemicycle's - this file keeps only what is its own, the radius a preview column can spare.
         private const float RadiusInFontSizes = 4.2f;
+
+        /// <summary>The seats' places, reused between draws - one map is drawn per frame per card and the list would otherwise be a per-frame allocation on every one.</summary>
+        private static readonly List<Hemicycle.Seat> Seats = new List<Hemicycle.Seat>();
 
         private static float Radius(float width, GUIStyle captionStyle) =>
             Mathf.Min(width * 0.5f - 2f, Mathf.Round(captionStyle.fontSize * RadiusInFontSizes));
@@ -81,46 +80,20 @@ namespace PoliSim.UI
             int total = seatInks.Count;
             outer = Mathf.Min(outer, arc.height - 2f);
             if (outer < 6f) { return; }
-            float inner = outer * InnerRadiusFraction;
-            int rows = MinRows;
-            float gap, dot;
-            while (true)
-            {
-                gap = (outer - inner) / (rows - 1);
-                dot = gap * DotFill;
-                int capacity = 0;
-                for (int r = 0; r < rows; r++) { capacity += Mathf.FloorToInt(Mathf.PI * (inner + r * gap) / (dot * DotPitch)); }
-                if (capacity >= total || rows >= MaxRows) { break; }
-                rows++;
-            }
 
-            float radiusSum = 0f;
-            for (int r = 0; r < rows; r++) { radiusSum += inner + r * gap; }
-            var perRow = new int[rows];
-            int assigned = 0;
-            for (int r = 0; r < rows; r++)
-            {
-                perRow[r] = Mathf.RoundToInt(total * ((inner + r * gap) / radiusSum));
-                assigned += perRow[r];
-            }
-            perRow[rows - 1] += total - assigned;
-
+            // §567 (D8): the chamber's own arithmetic, shared with the Parliament page and the signing document - this file draws, and decides nothing about the shape.
+            float inner = outer * Hemicycle.InnerRadiusFraction;
+            int rows = Hemicycle.Rings(total, inner, outer, out float gap, out float dot);
+            int[] perRow = Hemicycle.Apportion(total, rows, inner, gap);
             var baseline = new Vector2(Mathf.Round(arc.x + arc.width * 0.5f), arc.yMax - 1f);
+            Hemicycle.Lay(baseline, total, perRow, inner, gap, Seats);
+
             Color previous = GUI.color;
-            int seat = 0;
-            for (int r = 0; r < rows && seat < total; r++)
+            for (int seat = 0; seat < Seats.Count; seat++)
             {
-                int rowSeats = Mathf.Min(perRow[r], total - seat);
-                float radius = inner + r * gap;
-                for (int i = 0; i < rowSeats; i++)
-                {
-                    float angle = rowSeats == 1 ? 90f : 180f - (180f / (rowSeats - 1)) * i;
-                    float rad = angle * Mathf.Deg2Rad;
-                    Vector2 p = baseline + new Vector2(Mathf.Cos(rad), -Mathf.Sin(rad)) * radius;
-                    GUI.color = seatInks[seat];
-                    GUI.DrawTexture(new Rect(p.x - dot * 0.5f, p.y - dot * 0.5f, dot, dot), Texture2D.whiteTexture);
-                    seat++;
-                }
+                Vector2 p = Seats[seat].Centre;
+                GUI.color = seatInks[seat];
+                GUI.DrawTexture(new Rect(p.x - dot * 0.5f, p.y - dot * 0.5f, dot, dot), Texture2D.whiteTexture);
             }
 
             GUI.color = previous;

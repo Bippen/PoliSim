@@ -14,11 +14,7 @@ namespace PoliSim.UI
     /// </summary>
     public static class CanvasPaint
     {
-        private const int MinRows = 3;
-        private const int MaxRows = 24;
-        private const float DotFill = 0.62f;
-        private const float DotPitch = 1.35f;
-        private const float InnerRadiusFraction = 0.38f;
+        // §567 (2026-09-22, D8): the rings, the pitch, the dot and the well are Hemicycle's - the same chamber the Parliament page and every bill card draw.
 
         /// <summary>The per-seat map: FOR left, UNDECIDED middle, AGAINST right, one dot per mandate, on a paper ground.</summary>
         public static Texture2D SeatMap(int width, int height, int forSeats, int undecidedSeats, int againstSeats, Color paper)
@@ -36,40 +32,17 @@ namespace PoliSim.UI
                 for (int i = 0; i < undecidedSeats; i++) { inks.Add(PoliSimTheme.TextMuted); }
                 for (int i = 0; i < againstSeats; i++) { inks.Add(PoliSimTheme.Bad); }
 
+                // §567 (D8): the chamber's own arithmetic, shared with the Parliament page and every bill card - this method paints pixels and decides nothing about the shape.
                 float outer = Mathf.Min(width * 0.5f - 2f, height - 2f);
-                float inner = outer * InnerRadiusFraction;
-                int rows = MinRows;
-                float gap, dot;
-                while (true)
+                float inner = outer * Hemicycle.InnerRadiusFraction;
+                int rows = Hemicycle.Rings(total, inner, outer, out float gap, out float dot);
+                int[] perRow = Hemicycle.Apportion(total, rows, inner, gap);
+                var seats = new List<Hemicycle.Seat>(total);
+                // the lay is in IMGUI's downward y; this painter writes bottom-up, so the baseline is the texture's own top and the centres come back below it
+                Hemicycle.Lay(new Vector2(width * 0.5f, height - 1f), total, perRow, inner, gap, seats);
+                for (int seat = 0; seat < seats.Count; seat++)
                 {
-                    gap = (outer - inner) / (rows - 1);
-                    dot = gap * DotFill;
-                    int capacity = 0;
-                    for (int r = 0; r < rows; r++) { capacity += Mathf.FloorToInt(Mathf.PI * (inner + r * gap) / (dot * DotPitch)); }
-                    if (capacity >= total || rows >= MaxRows) { break; }
-                    rows++;
-                }
-                float radiusSum = 0f;
-                for (int r = 0; r < rows; r++) { radiusSum += inner + r * gap; }
-                var perRow = new int[rows];
-                int assigned = 0;
-                for (int r = 0; r < rows; r++) { perRow[r] = Mathf.RoundToInt(total * ((inner + r * gap) / radiusSum)); assigned += perRow[r]; }
-                perRow[rows - 1] += total - assigned;
-
-                float baseX = width * 0.5f;
-                float baseY = height - 1f;   // painted top-down; flipped when written
-                int seat = 0;
-                for (int r = 0; r < rows && seat < total; r++)
-                {
-                    int rowSeats = Mathf.Min(perRow[r], total - seat);
-                    float radius = inner + r * gap;
-                    for (int i = 0; i < rowSeats; i++)
-                    {
-                        float angle = rowSeats == 1 ? 90f : 180f - (180f / (rowSeats - 1)) * i;
-                        float rad = angle * Mathf.Deg2Rad;
-                        FillCircle(pixels, width, height, baseX + Mathf.Cos(rad) * radius, baseY - Mathf.Sin(rad) * radius, dot * 0.5f, inks[seat]);
-                        seat++;
-                    }
+                    FillCircle(pixels, width, height, seats[seat].Centre.x, seats[seat].Centre.y, dot * 0.5f, inks[seat]);
                 }
             }
 

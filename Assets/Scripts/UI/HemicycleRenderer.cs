@@ -210,18 +210,9 @@ namespace PoliSim.UI
             LastRows = BoardRows;
 
             // ---- seats per ring, proportional to the ring's radius -----------------------------------
-            float radiusSum = 0f;
-            for (int r = 0; r < BoardRows; r++) { radiusSum += inner + r * ringGap; }
-            var perRow = new int[BoardRows];
-            int assigned = 0;
-            for (int r = 0; r < BoardRows; r++)
-            {
-                perRow[r] = Mathf.RoundToInt(total * ((inner + r * ringGap) / radiusSum));
-                assigned += perRow[r];
-            }
-
-            perRow[BoardRows - 1] += total - assigned;
-            if (perRow[BoardRows - 1] < 0) { perRow[BoardRows - 1] = 0; }
+            // §567 (2026-09-22, D8): the apportionment is Hemicycle's, shared with the bill cards' map and the signing document's painted vote. THE RING COUNT is this
+            // board's own (nine, fixed) rather than the grown one, which is the difference between the two sizes and the only one.
+            int[] perRow = Hemicycle.Apportion(total, BoardRows, inner, ringGap);
 
             // ---- the sector deal: positions by angle, parties dealt onto them ------------------------
             var slots = new List<(float Angle, int Ring)>(total);
