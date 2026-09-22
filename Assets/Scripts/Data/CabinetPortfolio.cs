@@ -14,7 +14,7 @@ namespace PoliSim.Data
     ///
     /// ROUND 4 BATCH R4-4 (2026-08-17) added Defense, ForeignAffairs and Education - the pattern
     /// proven, the expansion authored per the signed pre-report (consumed to COMPLETED.md §19 on
-    /// 2026-08-27 when the portraits landed; CLAUDE.md "Round 4 batch R4-4") and its seven recorded
+    /// 2026-08-27 when the portraits landed; docs/archive/CLAUDE_LESSONS_2026-08.md "Round 4 batch R4-4") and its seven recorded
     /// rulings. Economy/Trade &amp; Industry remains deliberately NOT defined -
     /// SectorType's own history (members added only when actually built, never as unused
     /// placeholders) is still the convention. ⚠ Passive competence is intentionally ASYMMETRIC

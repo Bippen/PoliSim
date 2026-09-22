@@ -15,7 +15,7 @@ namespace PoliSim.Simulation
     /// **This system must not change any simulation number.** It writes only to Published, and its noise
     /// draws from SimulationRandom's own PublicationRevision stream so publishing cannot perturb the draw
     /// sequence of events, SWF returns, Fed chair candidates, cabinet decisions or parliament jitter - see
-    /// CLAUDE.md's "Shared RNG structure can invalidate a validation method" for why that isolation is
+    /// docs/archive/CLAUDE_LESSONS_2026-08.md's "Shared RNG structure can invalidate a validation method" for why that isolation is
     /// load-bearing rather than tidiness.
     /// </summary>
     public static class PublicationSystem

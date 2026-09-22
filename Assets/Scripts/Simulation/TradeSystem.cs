@@ -17,7 +17,7 @@ namespace PoliSim.Simulation
     /// multiplier - so the primary balance, the debt stock, the debt ledger and the Budget
     /// accumulator all read it through the one real path. Before pass 5 this system added the figure
     /// to EconomyState.Budget alone (the cumulative display accumulator), the two-books defect F1
-    /// closed for interrupt impacts and CLAUDE.md "What remains dark" recorded for tariffs.
+    /// closed for interrupt impacts and docs/archive/CLAUDE_LESSONS_2026-08.md "What remains dark" recorded for tariffs.
     ///
     /// Tariffs COST something (pass 6, 2026-08-27 - the three forces in TradeCosts): the rate a
     /// partner charges on our exports now carries a retaliatory term mirroring the excess of our
@@ -185,7 +185,7 @@ namespace PoliSim.Simulation
         /// the retaliatory term the rate carries makes a country that mirrors an override collect
         /// the mirrored take too, and pass 6's price pass-through reads the CHANGE in this figure
         /// between two boundaries, so a country that retaliates pays its own price - recorded in
-        /// CLAUDE.md "Pass 6 ships").
+        /// docs/archive/CLAUDE_LESSONS_2026-08.md "Pass 6 ships").
         /// </summary>
         public static float ComputeTariffRevenue(Country country, World world)
         {

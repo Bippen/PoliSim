@@ -324,7 +324,7 @@ namespace PoliSim.UI
             }
         }
 
-        // Federal Reserve (USA only - see CLAUDE.md's "Federal Reserve" section). _fedChairCandidates
+        // Federal Reserve (USA only - see docs/reference/MODEL_REFERENCE.md's "Federal Reserve" section). _fedChairCandidates
         // is non-null exactly while the player must pick a new chair before Advance Turn can proceed;
         // _fedChairCandidatesForTurn records which upcoming turn they were generated for, so a pick
         // already resolved for that turn doesn't immediately regenerate a fresh set next frame (the
@@ -560,7 +560,7 @@ namespace PoliSim.UI
         private GUIStyle _calendarMonthStyle;
         private GUIStyle _calendarDayStyle;
         private GUIStyle _calendarMetaStyle;
-        /// <summary>Calendar Panel (the month page - see CLAUDE.md's "Calendar Panel" section for the data contract). Weekday header row and in-grid day numbers - both bold Display type, matching the pad's own month/day styling rather than inventing a third convention for one screen.</summary>
+        /// <summary>Calendar Panel (the month page - see docs/archive/CLAUDE_LESSONS_2026-08.md's "Calendar Panel" section for the data contract). Weekday header row and in-grid day numbers - both bold Display type, matching the pad's own month/day styling rather than inventing a third convention for one screen.</summary>
         private GUIStyle _calendarWeekdayStyle;
         private GUIStyle _calendarDayNumberStyle;
         /// <summary>Item 1a: the Division Records panel's mono date column — Courier per §A.4 (dates and timestamps are document artifacts). Built in InitializeStylesIfNeeded, sized in RescaleStylesToScreen.</summary>
@@ -2849,7 +2849,7 @@ namespace PoliSim.UI
             style.normal.textColor = previous;
         }
 
-        /// <summary>One dated item landing on a real calendar day. See CLAUDE.md's "Calendar Panel" data contract for which systems feed this and — just as deliberately — which are excluded.</summary>
+        /// <summary>One dated item landing on a real calendar day. See docs/archive/CLAUDE_LESSONS_2026-08.md's "Calendar Panel" data contract for which systems feed this and — just as deliberately — which are excluded.</summary>
         private readonly struct CalendarMarker
         {
             public readonly string Label;
@@ -3300,12 +3300,12 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Federal Reserve tab (Phase 4 - moved off the dashboard into its own home). For USA's
-        /// independent chair (see CLAUDE.md's "Federal Reserve" section): current chair's name/
+        /// independent chair (see docs/reference/MODEL_REFERENCE.md's "Federal Reserve" section): current chair's name/
         /// philosophy/description, and - on a turn where a new presidential term begins - the 2-3
         /// candidates as selectable buttons. For a country with no independent chair and an
         /// independent currency (Sweden, Poland), shows the player-controlled Interest Rate Change
         /// slider. For a Eurozone member (Germany/France/Italy), shows a much narrower National Rate
-        /// Push slider instead - see CLAUDE.md's "Eurozone Rate Voice" - this tab is that control's
+        /// Push slider instead - see docs/reference/MODEL_REFERENCE.md's "Eurozone Rate Voice" - this tab is that control's
         /// home regardless of which mechanic the player's country actually uses. The tab's own
         /// displayed name (both here and the tab bar button) now reflects the real institution per
         /// country too - see GetCentralBankName. Since pass 4 (2026-08-26) every branch also draws
@@ -3403,7 +3403,7 @@ namespace PoliSim.UI
                 }
                 else
                 {
-                    // Eurozone Rate-Voice mechanic (see CLAUDE.md's "Eurozone Rate Voice"): the
+                    // Eurozone Rate-Voice mechanic (see docs/reference/MODEL_REFERENCE.md's "Eurozone Rate Voice"): the
                     // shared rate is a GDP-weighted blend of all three members' own Taylor Rule
                     // readings (EurozoneRateSystem.GetBlendedSuggestedRate), not something any one
                     // member sets unilaterally - but whichever member the player is currently
@@ -3678,7 +3678,7 @@ namespace PoliSim.UI
             // to judge). At 5.5 the art is 78x100 px at 1600 (6.5x), 61x78 at the 1280 floor, 114x144
             // at 2560; the frame (148x184, the @2x of 74x92) is still never upscaled. Every caller's
             // row is a GUILayout horizontal whose height follows its tallest child, so the cost is
-            // measured, not assumed - see CLAUDE.md "Playtest 3, the rulings" for the row heights.
+            // measured, not assumed - see docs/archive/CLAUDE_LESSONS_2026-08.md "Playtest 3, the rulings" for the row heights.
             float height = _labelStyle.fontSize * 5.5f;
             float width = frame != null ? Mathf.Round(height * (74f / 92f)) : height;
             Rect rect = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width), GUILayout.Height(height));
@@ -7956,7 +7956,7 @@ namespace PoliSim.UI
             // set the two-line ledger pitch (66px / 5.3 laws per viewport at 1600); the two-line row was a
             // construction artifact of the wrap-first name ladder, and the boards drew one-line rows -
             // density was the original finding (A4 -> R-C1). Measured after the change on film; see
-            // CLAUDE.md "The continuation kickoff (2026-08-28)", Phase 1.
+            // docs/archive/CLAUDE_LESSONS_2026-08.md "The continuation kickoff (2026-08-28)", Phase 1.
             Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.LawBrowserRowHeight(_labelStyle), GUILayout.ExpandWidth(true));
 
             // Code-review pass (2026-08-25): stages the click into _pendingSelectedLawId instead of

@@ -954,7 +954,7 @@ namespace PoliSim.Data
             usa.BaseDebtInterestRateOverride = 3.3f;
             usa.RiskPremiumSensitivity = 0.05f;
 
-            // Independent Federal Reserve (see CLAUDE.md's "Federal Reserve" section): a non-null
+            // Independent Federal Reserve (see docs/reference/MODEL_REFERENCE.md's "Federal Reserve" section): a non-null
             // CurrentFedChair is what switches CurrencySystem.ApplyInterestRateChanges over to the
             // TaylorRule-plus-bias mechanic for USA specifically. This turn-0 default is a Moderate
             // placeholder, distinct from FederalReserveSystem.CandidatePool's election candidates,
@@ -1290,7 +1290,7 @@ namespace PoliSim.Data
         }
 
         /// <summary>
-        /// Phase 1 of the detailed spending portfolio (see CLAUDE.md's "Detailed Spending Portfolio")
+        /// Phase 1 of the detailed spending portfolio (see docs/reference/MODEL_REFERENCE.md's "Detailed Spending Portfolio")
         /// - USA only for now; the other five countries keep the legacy GovernmentSpendingRate +
         /// PolicyDecision category-delta mechanism unchanged (an empty SpendingLines list is the
         /// switch SimulationManager.ApplyDomesticPolicy checks). Amounts are real approximate FY2025

@@ -73,7 +73,7 @@ namespace PoliSim.Data
         /// <summary>Discretionary education spending change this turn - nudges BusinessConfidence over time; see MacroSystem.ApplyCategorySpendingEffects. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Education) rather than set directly by the player.</summary>
         public float EducationSpendingChange;
 
-        /// <summary>Discretionary justice spending change this turn (Phase 2 - see CLAUDE.md's "Detailed Spending Portfolio Phase 2") - nudges CrimeIndex down over time; see MacroSystem.ApplyCrimeIndex. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Justice) rather than set directly by the player.</summary>
+        /// <summary>Discretionary justice spending change this turn (Phase 2 - see docs/reference/MODEL_REFERENCE.md's "Detailed Spending Portfolio Phase 2") - nudges CrimeIndex down over time; see MacroSystem.ApplyCrimeIndex. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (Justice) rather than set directly by the player.</summary>
         public float JusticeSpendingChange;
 
         /// <summary>Discretionary homeland security spending change this turn (Phase 2) - no growth/confidence/CrimeIndex side-effect, only a (moderate) approval effect, mirroring DefenseSpendingChange's own "approval only" pattern. For a country with detailed SpendingLines, this is derived from SpendingLineChanges (HomelandSecurity) rather than set directly by the player.</summary>

@@ -1,0 +1,10059 @@
+# PoliSim - the dated findings from `CLAUDE.md` (2026-08 onward)
+
+> Moved out of `CLAUDE.md` on 2026-09-22 (`COMPLETED.md` §579), VERBATIM. Each of these is a finding with its date, its instance number or its supersession -
+> the story of how something was learned. The RULE each one left behind is a line in `CLAUDE.md`'s head with its § pointer; this is where the story lives.
+> Read by name, never auto-loaded, and never rewritten: a finding's words are the evidence that it happened.
+
+**174 sections.**
+
+## Landed findings, kept for search (moved out of the session-start head, s574)
+
+These were standing notes while their work was in flight; the work landed, and a note about landed work is reference, not a rule a
+session must carry. Each stays here verbatim so a search by name still finds it - what changed is that a session no longer READS them
+at its start. The head above measured 45 377 bytes with them and is measured again in COMPLETED.md s574 without.
+
+- **A dry film cannot represent a Canvas screen.** Its size seam is `UiScreen`, which the IMGUI styles read; a Canvas is scaled by the real backbuffer, 640×480 with no window, whatever geometry the run names. The canvas-text assert is the film's alone, and a Canvas screen's containment is proven by a film. The label table records only styled IMGUI draws, so a capture with no rows in it is a Canvas screen.
+- **Canvas type is authored in canvas units and rasterised at the scaler's fractional factor** (0.6569 at 1280×699). `CanvasChrome.MakeText` floors the product at the desk's 9 px caption floor and the host is `pixelPerfect`; what a Canvas screen should show at the smallest geometry beyond that floor is Design's (D21).
+- **The interrupt state is in every sweep** (`03b`/`03c`/`03d`, staged by the pending set and taken back). The urgency stamp reserves its rotated bounds and asserts them through the containment guard - the first assert on a rotated draw.
+- **Provenance goes behind the `†`, qualifiers stay** (D16 §2, applied to every surface at §530): the plate foot's seed line, the turnout caption's source and the Policy Web's DERIVED count are the tab's; BILLED, ABSENT, DATED, two-definitions and NO SOURCE stay. ⚠ `MeasuredLabel` is shrink-to-fit and forces word wrap OFF: a sentence that must wrap is drawn directly with a wrapping style at the height it measures.
+- **The trade matrix is Eurostat's, one vintage, the exporter's report** (`TradeMatrixTable`, §533): goods from Comext, services from `bop_its6_det`, the USA's rows the five's own books read from the other side, the book's dollars at the energy layer's ECB rate. Every pair of the six carries a link; `TradeMatrixDiagnostic` holds the world to the table. The sentinel's baseline is `p6d1`.
+- **Jobbskatteavdraget is in the yield** (`EarnedIncomeCredit.Live`, §538; the family `traj_p6e1`, the sentinel on it): the statute's arithmetic verbatim from SKV 433, verified to the krona; Sweden's income lever seeds at the credited average rate on taxed income (F4-5's rule applied to Sweden - 29.16, not the municipal 32.38 - so a point raises what the ministry prices), the anchored revenue, net of the credit as any realised figure is, does not move. The flag is never flipped back without a family of its own.
+- **Energy has its own rail cell** (DS-4b overruled by Elias, §536), **and since §556 (2026-09-21) its own icon and ink** - Design's board 16a: a solid bolt on the family's 24-grid, the olive `#566217` on paper and `#8A9648` at desk weight, the one empty sector of the area wheel (nearest neighbour Political, four times the hue floor). The Sectors stand-in stood in FOUR tables - `UiPalette`'s on-paper inks, the theme's accents, its desk weights and its tab-swatch tints - and an area ink lands in all four or the rail's inactive glyph keeps the old hue. **The named gap is closed and the one standing exception to one green bar per commit is retired: the cheap bar reads 44 of 44.** The rail's missing-icon fallback (`DrawRailInitial`) stays for the next area that arrives before its art.
+- **The Energy tab's first decision is build and retire** (`EnergyFleet`, §539): an order is MW of one technology in a year, it lands after the EIA's lead time (or a year's stated notice for a retirement) into a per-country delta that every fleet reader sees through `EnergyLayer.CapacityMw`, and the must-run levels of nuclear, wind and solar scale with it. Nothing is priced - IRENA's 2024 costs are BILLED and the cost row says so. The delta is derived from `Country.FleetOrders` (rebuilt at each year boundary, on load, cleared on a new world); AI states never order, so the sentinel holds.
+- **The AI energy ministry is built and HELD** (`AiEnergyMinistry.Live`, §544): mandates are the countries' own statutes fetched on the day (Poland BILLED, the USA nothing to answer), orders go through the player's queue with a `Reason`, and `EnergyMinistryDiagnostic` measures the failure modes the flip will be ruled on.
+- **The connection queue has a capacity, and it is the operator's own published queue** (P6-F2e, §551). `EnergyConnectionQueue` is a catalog, line by line as each operator publishes it - never authored, never pooled across technologies the publisher keeps apart; a technology with no published line is REFUSED with that sentence, and a country whose operator publishes no queue is BILLED (Germany - so the held ministry's flood there is unchanged; §551 asks the ruling on its source kind). Every order, the player's and the ministry's, goes through `EnergyFleet.Place`, which refuses past the room and says why; the page offers a step larger than the room AS the room (`StepUpMw`), and says FULL only when less than a whole megawatt is left. The money-path pattern names the file.
+- **The film harness opens on a real game with `-shotload=<save>`** (§560): the named save is loaded through the controller's one load path once the game has landed, its digest logged; the sweep's warm-up then plays the loaded game forward, and the modes that drive the campaign's own day path open on the save's day. **A fixture hides what a real game shows** - the sitting package's first three runs each stopped on a defect no film of a fresh world could reach. Every mode now prints the identity trap's count, not the sweep alone. ⚠ **Our own archive in `AssetPackArchive/` is a DELIVERY to `DeliveredAssetCheck` unless `SEND_PACKAGE.md` sits at its root**, and `ZipFile.CreateFromDirectory` on this machine writes BACKSLASH entry names - build an outbound zip entry by entry with forward slashes, or its manifest checks nowhere but Windows.
+- **Design's upload route takes 50 MB a file** (§562, 2026-09-22): a package of films is cut at 1280 only, every PNG through oxipng at level max (never `-a`, never JPEG - hairlines and type are the subject), the pixels PROVED by decoding both files and comparing bitmaps (GDI+ through `System.Drawing` is the decoder at hand; a mispairing must read DIFFERENT first), and split by area into archives under the limit when 197 optimised frames still run to 56 MB. The 2560 set stays on disk by frame name. oxipng is not installed on the machine: the official release binary is fetched to the session scratchpad, its digest recorded.
+- Turn-based (not real-time). One "turn" = one simulated period (e.g. a quarter or year — exact cadence still TBD).
+- Multiple playable/simulated countries: USA, Sweden, Germany, France, Italy, Poland. `WorldFactory.CreateDefault()` seeds the figures the user specified — policy rates, inflation, and USA/Poland unemployment and USA/Eurozone/Sweden/Poland potential growth — to real mid-2026 data; NAIRU, unspecified unemployment rates, government-spending shares, and starting GDP levels are stylized, directionally-realistic estimates, not researched figures (see comments in `WorldFactory.cs`).
+- Germany, France, and Italy form a shared Eurozone (one `CurrencyZone` instance, one interest rate for all three). Sweden and Poland are EU members but keep independent currencies/interest rates, matching how the real EU/Eurozone relationship works. The USA is fully independent (own currency zone, not an EU member).
+- The EU is modeled as a `TradeBloc`: near-zero internal tariffs between its five members (Germany, France, Italy, Sweden, Poland), one common external tariff rate applied by all of them to non-members (i.e. the USA).
+- Focus is on systemic feedback between policy levers and simulation state — domestic (tax/spending/approval), fiscal (debt/deficit/automatic stabilizers), political (elections, random events), and international (tariffs, bloc membership, bilateral trade) — not on map/geography, diplomacy, or military systems (those may come later).
+
+## Potential output reads the workforce (P5-B7, 2026-09-05)
+
+`EconomyState.PotentialGDP` is its FACTORS (`PotentialOutput.Potential`): the seed's potential × the labour input's ratio to the seed × a productivity index. The LABOUR INPUT (`PotentialOutput.LabourInput`) is employment - the labour force × (1 − `EconomyState.Unemployment`; FT-7's second seat, §394, where P5-B7 read the natural rate) - read every day, and **since PN-3 (2026-09-16, §522) the labour force is the pyramid's, not a window's**: the population aged 15 and over × `EconomyState.LaborForceParticipationRate` (`PotentialOutput.LabourForce`). The state's rate is a 15+ rate by construction (`ParticipationRateTable.StructuralRate` is Σ(band × sourced rate) over the 15+ population and the daily rule reverts toward it), so that product is Σ(band × rate) exactly while no lever has moved participation and the same labour force scaled by the levers' deviation otherwise. The 20–64 cohort × the 15+ rate it read before multiplied a count on one base by a rate on another, and an ageing pyramid moved both: `LabourInputWindowDiagnostic` measured the window 2 to 11 % below the pyramid's labour force after 25 years (Italy −11.4 %, Poland −10.0) before the re-form, and asserts the identity since. The wage bill's base (`TaxBases`, WageBill) still reads the window - PN-3b, its own family, measured in the same check; the PRODUCTIVITY INDEX (`Country.PotentialProductivityIndex`) compounds daily at the ledger's trend (`Country.ProductivityTrendGrowth`: the seeded trend plus the infrastructure and sector adjustments, which were always productivity channels, Q3). The seeded trend (`Country.BasePotentialGrowthRate`, the `potentialGrowthRate` constructor argument in `WorldFactory`) is now the SOURCED trend of real labour productivity per hour: the 2010–2025 mean of Eurostat nama_10_lp_ulc (RLPR_HW, % change on previous period) for the five - Germany 0.938, France 0.513, Italy 0.119, Poland 3.019, Sweden 1.019 - and of the BLS nonfarm-business series PRS85006092 (annual, output per hour) for the USA, 1.613; one vintage (fetched 2026-09-05), the pandemic years in, the US perimeter narrower than total economy and stated. `Country.PotentialGrowthRate` is DERIVED once a turn in `MacroSystem.ApplySectorGrowthEffect`: (1 + trend/100) × (labour now ÷ labour at the last turn) − 1 - so Okun's growth gap, the AI's budget rule and every other reader see the growth of the potential that is actually written. The seeds (`Country.PotentialGdpSeed`, `Country.PotentialLabourSeed`) are captured with the structural bases; a save from before this pass keeps the old compounding, stated at the call site; the preview clone carries the seeds. Before this pass potential compounded at the seeded trend whatever the cohort did - `POTENTIAL_PREMISE.md` measured Poland at 31× its seed after a century against 17× for labour × productivity - and, once the tax bases followed the wage bill (P5-B3), a shrinking country kept its output and lost its revenue. `PotentialOutputDiagnostic` asserts the factors, the derived rate and the sign of the workforce on all six. Never seed a growth rate that happens to reproduce a path: seed the factor's trend from its series and let the path follow.
+
+## Tax bases (P5-B3, 2026-09-05)
+
+A tax line's revenue is `TaxBases.Revenue`: the rate times its BASE, and the base is the sourced share of the SEED's GDP (`TaxBaseTable.BaseShareOfGdp`, D-16, the share table beneath) carried forward by the ratio of its own DRIVER (`TaxBases.Of`, `TaxBases.Level`): the wage bill (the 20–64 cohort × participation × (1 − unemployment) × the real wage) for income and payroll taxes, consumption for VAT, sales and excise, the housing stock at its price (population × house price index) for property tax, output itself for corporate, capital gains, carbon, estate, wealth and stamp duty (stated reasons in the enum). The references are captured at the seed by `Country.CaptureStructuralBases` (`Country.RevenueBaseSeedGdp`, `Country.RevenueBaseSeeds`); consumption's is taken on the first day, since the seed has no consumption before the first national-accounts step. Where output is the driver the arithmetic is D-16's unchanged. Before this pass every base was a fixed share of GDP (§312 measured the elasticity at exactly 1); now the elasticity is 1 to each base's own driver, so a recession that cuts jobs cuts payroll and income revenue beyond what output lost (`RevenueBaseDiagnostic` asserts both on the simulation bar, all six). The distribution channel waits on F4's income dimension. `CollectionEfficiency` still multiplies the total as the coverage bridge. The preview clone carries the seeds (`ClonePreviewCountry`), so the Budget's estimate reads the same base as the turn. No price term: the book is in constant prices (above).
+
+## A seed is held against a source in the source's own year and perimeter (PN-4, 2026-09-16, `COMPLETED.md` §519)
+
+**A euro figure of one year is never held against a line of another.** §518's pension gate compared the model's 2026 line, in euro, with ESSPROS's 2022 euro band and read Poland ×1.209 above it; decomposed (`PensionPaymentDiagnostic` section 5), the whole of it was the YEAR - the model's GDP in euro over 2022's (1.174) times the share's own 2022→2024 indexation (1.182) - and in the same year's band Poland is inside. Sweden's ×0.724 was the PERIMETER (COFOG counts general government, ESSPROS every scheme; Sweden's occupational pensions are 2.9 % of GDP outside the state) times a slip in the seed's own arithmetic (a top-up constant derived for a budget sum the code never made - 6.850 % of GDP against the 7.0 its comment cites). **The rule.** A seed typed from a source is compared with THAT source's share of the same vintage (the provenance guard: a hundredth of a point), and an independent source only in the same year and as a share of GDP; where the two sources' perimeters differ, the difference is printed with its sign and its name, and the only verdict formed is the one no perimeter can excuse (general government's old-age cash cannot exceed every scheme's every pension type). The book is in current prices: four years of nominal growth is a factor, not a divergence.
+
+## Spending line indexation (P5-B2, 2026-09-05)
+
+Every spending line is an amount in the country's unit that PERSISTS and, between the player's own changes, INDEXES to its driver where it has one (`SpendingDrivers`: pensions and retirement to the 65+ cohort, unemployment benefits and labour-market programmes to the unemployment rate, education and family lines to the 0–19 cohort, student aid to the 15–29, sickness and disability to the 20–64, the health lines to an age-cost index over the cohorts, municipal grants, justice, public services and housing to the population; defence, aid, culture, administration have no driver and hold their figure). The index is the RATIO of the driver's level now to its level at the last index (`SpendingLine.DriverReference`, captured at the seed by `Country.CaptureStructuralBases`); the seed anchor indexes by the same factor so the [0.2×, 3×] band follows the line. A line can be PINNED (`SpendingLine.Pinned`, `PolicyDecision.SpendingPinChanges`) - it takes no index until unpinned, and resumes from today - or SET to a figure (`PolicyDecision.SpendingNominalTargets`, clamped to the band). `SimulationManager.IndexSpendingLines` runs first in `ResolveSpendingForTurn`; it replaced the two potential-rate growth methods and the two bounded demographic pressures (§312 measured what they did: potential growth on every line, indexed to nothing). `SpendingIndexationDiagnostic` on the simulation bar asserts every line per driver on all six countries.
+
+**The AI's budget rule (a decision, [AUTHORED-DRAFT]):** a country the player does not govern also grows its lines at its real `PotentialGrowthRate` each year - the annual budget its ministry would pass, exactly what every line did before. The player's lines take their drivers only: the budget you set is still there next year, grown by what its drivers did; real provision grows only when you raise it.
+
+**THE BOOK IS IN CONSTANT PRICES - no price term on the lines, and why.** The sheet asked for inflation on every line; the first build had it, and the trajectory family showed what a price term is in this model: `PotentialGDP` grows at `PotentialGrowthRate` alone, GDP is solved against it, revenue is rates times that GDP, and the `Inflation` stat is a side book (the Phillips curve, read by the central bank, the real wage and approval) that no $B figure carries. Prices on the lines were real spending growing at the inflation rate: every country's lines from a fifth or a half of GDP to three times GDP inside sixty years, the output-gap fixed point pulled up by a G that outgrows potential, unemployment to zero, inflation to its cap, GDP past 1e38 by t340 (§314 has the year-by-year shares). Prices belong on the lines the day the book is in current prices - its own BASELINE family, sheeted as P5-B6. Anything that puts a nominal growth term on a $B figure in this model is making the same mistake.
+
+## Continuous Time Phase 3 — the money resolution goes daily, and the one constant that is a decision rather than a flow (2026-08-03)
+
+The fiscal engine's conversion to daily granularity. Structure first, then the finding, which is the part
+worth carrying into Phases 4 and 5.
+
+**The split.** `SimulationManager.AccrueDailyFiscalFlows` runs once per country per day inside
+`AdvanceDay` and charges `1/DaysPerTurn` of every flow: tax revenue, unemployment benefits, welfare cost,
+interest on debt, the SWF's contribution/return/draw, and the debt stock update that follows from them.
+The BUDGET RESOLUTION stays on the turn boundary — `ResolveSpendingForTurn` and every policy application
+around it are unchanged — because a budget passing is an event on a date, not a flow. The consequence is
+that a plan is resolved at one boundary and executed across the following 121 days, which is both what a
+budget *is* and the only causally possible ordering: the boundary that resolves a budget is 121 days of
+play before the next one. **A policy change's cash effect therefore lands one period after the boundary
+that made it**; its effect on the GDP identity's G term does not move, since `ApplyNationalAccounts` is
+Phase 5 and still reads the plan at the boundary that resolved it.
+
+The state this required is `SimulationManager.FiscalPeriod`, one per country, holding the plan the current
+days are executing plus a running sum of what they have accrued (closed out into `FiscalTurnReport` at the
+next boundary, so the report is now a genuine sum of 121 days rather than one step's figure). It exists
+because most of the daily step CAN be re-derived from persistent country state but government/mandatory
+spending cannot: for the five countries without a detailed `SpendingLines` portfolio the discretionary
+figure comes from `PolicyDecision.TotalDiscretionarySpending`, which exists only at a boundary. The period
+is seeded on first use — day 1 arrives 121 days before the first `AdvanceTurn`, and without a seed every
+country would spend nothing for its opening third of a year — derived directly from the seeded portfolio
+and deliberately NOT by calling `ResolveSpendingForTurn`, which is not idempotent.
+
+`SovereignWealthFundSystem.ApplyReturns` became `DrawPeriodReturn` and no longer mutates the fund: the
+return is drawn ONCE per period at the boundary and accrued daily. Drawing daily would consume 121x the
+RNG and invalidate every recorded baseline for no modelling gain.
+
+### The finding: a constant can be a DECISION rather than a FLOW, and decisions do not divide by 121
+
+The migration methodology asks which mathematical shape a constant is — linear, multiplicative,
+probability, or a clamp that does not shrink at all. Phase 3 found a fifth answer, and found it the
+expensive way.
+
+Every fiscal flow took the linear shape correctly and is exact by construction. But `ApplyRevenueAndSpending`
+also applies `GetFiscalReactionMultiplier`, and the first implementation recomputed it every day — the
+obvious "more continuous" choice, since it reads `DebtToGdpRatio` and the debt ratio now moves daily.
+**It failed the aggregation bar outright: Sweden 24.8% drift on budget balance, Germany 22.7%, against a
+3% bar** (`GovernmentDebt` 13.6% and 7.0%). The cause is not a coding error. `FiscalReactionSensitivity`
+is 1.5 and a single period moves a country's debt ratio by ten points or more, so a multiplier that
+re-reads that ratio every morning walks a long way down its own surplus over the period it is supposed to
+be governing. The turn form structurally could not do this — its debt stock moved exactly once — so daily
+recomputation was not a finer version of the validated model. It was a different model.
+
+Freezing it for the period passes at 0.45%/1.35%, and the argument for freezing is not that it passes.
+`GetFiscalReactionMultiplier`'s own doc comment describes "a country's own government modestly tightens…
+as debt rises above its `ComfortableDebtToGdpPercent` anchor" — that is a fiscal STANCE, and a stance is
+adopted when the budget is set, not re-derived daily. It still responds fully to the debt the country
+actually accumulated; it does so at the boundary, where every other budget decision in this game is made.
+`FiscalPeriod.PlannedFiscalReactionMultiplier` holds it, and `ApplyRevenueAndSpending` gained a `-1`
+sentinel override (this file's existing idiom) so the turn form's remaining caller, `PreviewTurn`, reads
+exactly as it did.
+
+**The generalisable question, for Phases 4 and 5:** is this constant a quantity that *flows*, or a
+decision that was *taken*? Only the first kind divides by 121. Phase 5's macro engine is full of the
+second kind.
+
+### Interest is the one deliberate difference from the turn form
+
+Interest stayed daily, and is why the residual is 1.35% rather than zero: it is charged on the debt the
+country holds today rather than the debt it held four months ago, so a country running down its debt pays
+slightly less over a period than the turn form charged it. That is a real modelling gain, not an error,
+and it is the whole of the remaining drift — every country's 120-turn debt lands 1–5% lower, all in the
+same direction.
+
+### Validation
+
+⚠ **CORRECTED 2026-08-10 — this section overstated what it had established.** As originally written it
+presented "39/39 within 3%" as validating the fiscal engine. **It validated the MIGRATION, not the
+engine.** The daily form was verified to reproduce the turn form, and it does, exactly — while the turn
+form was charging a full year of spending, revenue and interest every 121 days. Every number below is
+still true and still correctly measured; what was wrong was the conclusion drawn from them. Read this
+section as "the conversion is faithful", never as "the fiscal engine is right". See "A turn is now a
+year" below, and the verification-integrity note in the working discipline.
+
+Aggregation-equivalence 39/39 within 3%. Full matrix (15 scenarios x 100/500 turns) run before and after
+under the same seed against real Unity `6000.5.6f1`: **25 of 30 combinations byte-identical**, 1629 → 1637
+anomalies total, and the only categories that moved are the two directly downstream of the debt path
+(DebtToGdp swings 139 → 145, credit-rating notch moves 18 → 20). Inflation (1257), Unemployment (123) and
+InterestRate (92) are unchanged to the anomaly — read that with the file's own opening caveat about what
+an anomaly count does and does not cover. `DebtClampDiagnostic`: zero ceiling hits, zero negative-debt
+turns and zero runaway-guard hits, before and after. `CreditRatingAnchorCheck`: unchanged at 5/6, Poland's
+known expected failure.
+
+One tool is now slightly approximate and it is worth knowing: `DebtClampDiagnostic` reconstructs an
+"unclamped" debt as `previousDebt - budgetBalance` to detect clamp hits. With interest compounding within
+a period that reconstruction is no longer exact. It is a diagnostic rather than a gate, and its clamp-hit
+counts were zero in both runs, so nothing rests on it today.
+
+## The overflow assert, and what it found in its first run (2026-08-10)
+
+`UiOverflowGuard` hooks `PoliSimWidgets.MeasuredLabel` — the choke point for every shrink-to-fit label
+in the UI. It records anything still too wide after shrinking has hit the 8px floor, and the capture
+driver now **exits 1** on any distinct violation. Editor-only; compiled out of player builds.
+
+**Why it was worth building.** Clipping has recurred eleven times and every instance was found by a
+person, never by a check. Fifty-five screens have been captured and approved by eye with overflows in
+them — eye-approval is precisely what has been missing them.
+
+⚠ **The guard's own first version crashed the Editor.** It appended a violation per label *per frame*,
+so a few hundred settle frames became an unbounded list. Dedupe now happens at RECORD time with a
+200-entry hard cap. A guard that brings down the run it is guarding reads as flakiness, which is worse
+than no guard.
+
+**First run: 55 captured, 0 failed, 200 overflows (cap reached).** Almost all money figures in
+`LedgerRow`'s figure column, e.g. `"$1.62T" needs 22.9 in 11.3 at 8px`. The suspected cause was the
+trailing-column change of the same day raising `fixedTotal` into `Columns()`'s 0.35-floor squeeze.
+
+**RESOLVED 2026-08-11, and the suspect was innocent — see the next section. Every one of those 200
+was a false positive, including both figures quoted above.**
+
+## 188 commits existed on exactly one disk, and every check built that day pointed at sprites (2026-08-11)
+
+**The largest risk carried all day was not in the code.** `git status` showed `## main...origin/main
+[gone]`, which was read as *the remote is gone* and recorded as *"concurrent writers with no remote means
+a lost update has no recovery path at all."* Both halves of that were wrong in opposite directions, and
+the truth was worse than the diagnosis:
+
+- `origin` was **reachable the whole time** and had `main` at `1ee5fce`. What was missing was the LOCAL
+  TRACKING REF, not the remote.
+- Local was **188 ahead, 0 behind** — every commit since `1ee5fce` existed on one disk, in one
+  working tree, that a second agent was concurrently writing to. `git push` was a clean fast-forward and
+  had been available at any point.
+
+⚠ **A missing local tracking ref and a genuinely missing remote are indistinguishable from inside the
+repository**, and `[gone]` reads as the second. One `git ls-remote` separates them; nobody ran it for 188
+commits.
+
+**This is rule 14 pointed at the repo instead of at a sprite.** That day built four checks — coverage,
+containment, importer settings, party marks — every one of which asks *does this asset exist and is it
+correct*, and not one of which asks *does this work exist anywhere but here*. The enumeration gap was not
+inside any check; it was the population none of them was over. A backup is a check whose scope is the
+work itself, and it was the only one missing.
+
+**Standing consequence:** `git status -sb` is not a backup check. Confirm the remote is reachable and the
+branch is pushed, by fetching, not by reading a tracking line that goes stale silently.
+
+## The guards answer CONTAINMENT, not COMPOSITION — a green CheckSuite is not a visual pass (2026-08-11)
+
+**The Parliament legend's swatch and emblem sat pinned to the TOP of a row that had just become two
+lines tall, while the party name beside them was vertically centred.** Visibly misaligned. **Every check
+reported zero, and every one of them was right to.**
+
+| Check | Asks | Why it cannot see this |
+|---|---|---|
+| `UiOverflowGuard` | does this text fit the rect it was handed? | it fitted perfectly |
+| `UiContainmentGuard` | does this child rect sit inside its container? | it did |
+| `ScreenEdgeCheck` | does content sit on the clip rect's last pixel? | it did not |
+
+⚠ **All three enumerate ONE element at a time. Alignment is a relation BETWEEN elements, so it is
+outside every enumeration** — rule 14's shape applied to the visual class. There is no rect that is
+wrong; there are two rects that disagree.
+
+**And a fourth guard would not close it either.** Containment, overflow and clipping are decidable from
+geometry; *"these two things should share a baseline"* is a claim about intent that only the design
+knows. A check could compare baselines of adjacent GUILayout siblings, but it could not know which pairs
+are meant to align — and one that guessed would fire on every deliberate offset in the game.
+
+✅ **So the standing form: a clean CheckSuite means nothing overflows, escapes or clips. It does not mean
+the screen looks right.** Every conversion still needs a human looking at a capture, and this defect —
+like instance #12, and like the "Energy (Spending)" mislabel — was caught by looking, not by running.
+**Three defects this session found by eye after the checks went green.**
+
+## The reference-class trap — one shape, three instances, and a cheap guard (2026-08-11)
+
+**A name-keyed lookup crosses a category boundary without complaint.** Three instances in one week, all
+the same shape and all found by a capture rather than by review:
+
+| # | The lookup | Crossed into | Damage |
+|---|---|---|---|
+| 1 | copy the nearest `.meta` | icon template → **Chrome**, which needs `isReadable: 1` | first wired build rendered an empty desk |
+| 2 | copy the nearest `.meta` by filename | `emblem_party_*` (full-colour) → **`mark_party_*`** (white-on-alpha) | four marks imported DXT5 |
+| 3 | `DisplayName.Of(identifier)` | `SectorType.Energy` → **`PolicyNodeId.Energy`** | economic sector labelled "Energy (Spending)" |
+
+**The common structure: two things share a NAME while belonging to different classes**, and the lookup
+is keyed on the name. `Chrome/` and `Icons/` are both sprites; `emblem_party_*` and `mark_party_*` are
+both party art in one folder; `SectorType.Energy` and `PolicyNodeId.Energy` are both "Energy".
+**Adjacency is not sameness**, and every one of these reads as obviously correct at the call site.
+
+⚠ **`PolicyNodeId.Housing`'s own description says *"distinct from the HousingAssistance welfare
+program"*** — the collision was documented in the very table the lookup reads, and the lookup still
+crossed it. A warning in the data does not protect a lookup over that data.
+
+✅ **THE GUARD, and it is cheap: a name-keyed lookup must be scoped to ONE class, and the scope belongs
+in the API rather than in the caller's memory.** `DisplayName` now has two entry points —
+`Of` (curated policy names) and `Spaced` (spacing only) — so choosing wrongly requires naming the wrong
+method rather than forgetting a caveat. The same move as `InnerWidth`/`InnerHeight` and the three height
+accessors: **when two things must not be confused, give them two names.**
+
+## A next-steps marker is a claim like any other, and goes stale the same way (2026-08-11)
+
+Item 9 §A's **"⚠ NEXT SESSION STARTS HERE"** block said Budget was the only converted screen and offered
+*"Statistics, Politics/Parliament and Policy/Laws"* as the candidates for next. **Policy/Laws had been
+converted for a day** — `d3cd281` Labor Market, `df03e97` Crime & Justice and Sectors, `d4083fe` Trade.
+The marker was offering a finished screen as work.
+
+⚠ **This is worse than an ordinary stale status, and the difference is worth naming.** A stale claim in
+the body of a document misleads whoever reads that paragraph. **A stale next-steps marker is the FIRST
+thing read each session, so it misdirects the pass before anything else runs** — a pointer that outlived
+its target, rather than a claim that outlived its evidence.
+
+**The fix is not "remember to update it".** The marker now carries a line saying it is **derived, not
+narrated**, and states its derivation: `grep LedgerRow.Draw` over `GameController`, plus the commit
+history. Re-derive it at the start of a pass; do not edit it forward. The derived table found the true
+state in one command — the same move as re-deriving asset status from the filesystem under rule 12,
+applied to a plan instead of to a delivery.
+
+## A helper is not evidence its arithmetic is complete (2026-08-11)
+
+`PoliSimWidgets.InnerWidth` was built to end a subtraction that had been forgotten at four sites and
+hand-rolled at two. It shipped with **three of its four terms**, and the missing one —
+`container.margin.horizontal` — was wrong from the moment it was written, at every call site, for a full
+day, while four sites were presumed correct *because they now went through the helper.*
+
+⚠ **What made it invisible is that it had a name.** A raw subtraction invites checking; a call to
+`InnerWidth(availableWidth, _boxStyle)` reads as a solved case, and nobody re-derives a solved case.
+**Exactly the reference-class `.meta` trap one layer up**: "copy the reference meta" and "call the helper"
+both name a thing that looks decided.
+
+**What caught it: reviewing a SECOND implementation of the same idea.** `InnerHeight` arrived from
+another session with a fourth term already in it, and the only reason to look was that adopting foreign
+code demands a review that one's own does not. **Extracting a twin is the cheapest audit a helper ever
+gets** — and the twin here found a defect in the original.
+
+## The accessor pattern closed the label-clipping class where seven site-specific fixes did not (2026-08-11)
+
+The class's signature is **a constant standing in for measured content**. Seven site-specific fixes did
+not end it. Three accessors did, each replacing one constant, each read by BOTH the reserve and the
+drawing so the two cannot disagree:
+
+| Constant | Replaced by | Measures |
+|---|---|---|
+| `_labelStyle.fontSize + 8f + _buttonStyle.fixedHeight` | `CalendarAndSpeedControlsHeight` | the real status string, at the width it wraps into, in the style it renders in |
+| `_tabButtonStyle.fixedHeight` | `ConsolidatedTabRowHeight` | the larger of the base height and the stacked icon+label, plus row margin |
+| `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f` | `BudgetProcessHeaderHeight` | all five pieces drawn above the columns row |
+
+**Instance #12, measured against a fresh capture at every step:**
+
+| | Commit | L | T | R | B | clipped |
+|---|---|---|---|---|---|---|
+| before | — | 0 | 0 | **841** | **663** | 54 |
+| `InnerWidth` 4th term + tab margins | `f3cbea4` | 0 | 0 | 0 | **663** | 54 |
+| two accessors | `b16b816` | 0 | 0 | 0 | 0 / **1508** | 16 |
+| `BudgetProcessHeaderHeight` | `4dbb779` | 0 | 0 | 0 | 0 | **0** |
+
+Confirmed at **1600×929 and 2560×1419**. This is the same discipline `UiContainmentGuard`'s doc names for
+`StatTile`: one measurement, two readers.
+
+## You cannot measure what is not a value (2026-08-11)
+
+`headerAllowance` was a constant **because it had to be**: the three strings above the Budget columns row
+existed only as arguments to `GUILayout.Label`, and a string that exists only at its draw site cannot be
+measured by anything. The accessor was impossible until `BudgetProcessDescription` became a const and
+`BuildFullScreenInterruptText` / `BuildBudgetBillStatusText` became methods.
+
+⚠ **So "build it so it can be measured" is step ONE of the accessor pattern, not an incidental refactor
+that happened alongside it** — and it will recur at every remaining site, because every remaining
+constant-standing-in-for-content is standing in for something that is not yet a value. `BuildTimeStatusText`
+was the same move one screen earlier. Expect the split before expecting the accessor.
+
+## A measurement is only comparable to another taken at the same horizon (2026-08-11)
+
+**Debt-to-GDP, seed 777, real Unity, `-runmatrix`, measured at three horizons:**
+
+| | baseline (2026-07-22, 100/500) | 100 | 500 | **1000** |
+|---|---|---|---|---|
+| USA | ~142–143% | 138.2 | 143.0 | **154.7** |
+| Sweden | ~13% | 4.6 | 5.7 | **11.2** |
+| Germany | ~35% | 37.8 | 45.4 | **80.4** |
+| France | ~90% | 93.8 | 92.4 | **108.8** |
+| Italy | ~107% | 113.9 | 125.8 | **165.6** |
+| Poland | ~26% | 27.7 | 30.1 | **45.6** |
+
+⚠ **NOT ONE OF THESE IS AN EQUILIBRIUM. All six are still climbing at turn 1000**, several steeply —
+Germany nearly doubles between 500 and 1000, Italy adds 40 points. **The figures recorded on 2026-07-22
+as "Fiscal Reaction Function equilibria" are waypoints on a rising path**, and they have been quoted as
+equilibria in this file and the roadmap ever since.
+
+**How the error compounded, three times in one day, each time by comparing across horizons:**
+1. A **120-turn** `DebtClampDiagnostic` snapshot was compared against **100/500-turn** baselines, and
+   produced four wrong conclusions — USA "−4.3", France "+2.9", Germany "+2.9", Poland "+1.7", all
+   artifacts of the horizon mismatch.
+2. Corrected to a like-for-like 100/500 matrix, which said **"USA and France did not move, three others
+   are climbing"** — also wrong. They had not settled either; they merely passed near their baselines at
+   that horizon.
+3. At 1000 turns, **every** country is climbing. The distinction between "moved" and "did not move"
+   never existed.
+
+**The rule: a number is comparable only to one taken at the same horizon, and a number at the last turn
+measured is a WAYPOINT until a longer run says otherwise.** Record horizon and seed beside every figure.
+⚠ **And never write "equilibrium" for a value that has not been shown to stop changing** — the word
+asserts a property that only a longer run can establish, and once written it is quoted as though it had
+been.
+
+### ✅ ATTRIBUTED 2026-08-11 — pre-fix matrix run at `4de6a1e`, and the answer is PER COUNTRY
+
+Same seed, same 15 scenarios, real Unity, all three horizons, on the commit **before** `0386e83`
+(verified by the old form on the checked-out tree: `theoreticalRevenue * efficiency * multiplier +
+swfReturns` — returns added AFTER the multiplier).
+
+| | pre 100 | pre 500 | **pre 1000** | post 1000 |
+|---|---|---|---|---|
+| USA | 142.4 | 145.8 | **157.3** | 154.7 |
+| Germany | 38.5 | 45.7 | **81.3** | 80.4 |
+| Italy | 115.2 | 126.3 | **166.3** | 165.6 |
+| Poland | 29.9 | 32.3 | **48.9** | 45.6 |
+| **Sweden** | **−296.1** | **−287.9** | **−297.0** | +11.2 |
+| **France** | −69.1 | **−296.7** | **−299.0** | +108.8 |
+
+**Four countries diverge IDENTICALLY before and after.** USA, Germany, Italy and Poland climb on the same
+trajectory to within ~3 points at turn 1000. **`0386e83` is innocent for all four.** The Fiscal Reaction
+Function has never equilibrated for them — the 2026-07-22 figures were waypoints on the day they were
+recorded, and every "equilibrium" quoted since has been a waypoint quoted as a resting place.
+
+⚠ **THE DEFECT IS OLDER AND LARGER THAN THIS SESSION'S WORK, and Italy needs no separate explanation** —
+its "+7.0" was never attributable to the SWF change, and neither was anything else.
+
+**Two countries were PINNED AT THE −300% BOUND pre-fix.** Sweden sits at −296/−288/−297 and France
+reaches −299 — exactly the pinning Elias's 2026-08-02 ruling named as its first reason (*"France at −298%
+against a −300% bound is not a risk, it is already pinning"*). Post-fix they are at +11.2 and +108.8:
+real, unpinned values. **`0386e83` plus the bound removal did precisely what it was ruled to do**, and
+Sweden's ~13% baseline does not reproduce pre-fix either, so it was never the number to defend.
+
+### ⚠ THE ASYMMETRY, CORRECTED 2026-08-11 — both feedbacks are capped, and neither is pinned
+
+**This supersedes what this file said an hour earlier** (*"a positive feedback bounded only by
+`MaxDebtRiskPremium` against a negative feedback capped at 1.5"*). Read from the constants:
+
+```csharp
+RiskFreeDebtToGdpPercent = 60f     // premium starts above 60% debt
+DebtRiskPremiumRate      = 0.02f   // 2bp per excess point
+MaxDebtRiskPremium       = 5f      // caps at +5 percentage points
+```
+
+**The positive feedback is capped too.** And Italy at 167% is 107 points over the risk-free level, so its
+premium is `0.02 × 107 = 2.14pp` — **well under the 5pp cap. Italy is not pinned on either side.**
+
+⚠ **So the asymmetry is not bounded-versus-unbounded. Both are bounded, and they are mismatched in
+EFFECT: the interest side compounds on a STOCK while the revenue side is a multiplier on a FLOW.** A
+flow multiplier cannot out-run stock compounding at high debt no matter where its cap sits — which is
+why neither of the two candidate fixes examined so far touches the actual mechanism, and why the next
+attempt should not be a third change inside the same loop.
+
+### ⚠ The original FRF calibration was fitted in the HARNESS, and real Unity disagrees with it
+
+The 2026-07-22 sweep swept `FiscalReactionSensitivity` 0.05→5.0 and settled on **1.5 with bounds
+`[0.5, 1.5]`**, recording: *"Confirmed as a GENUINE equilibrium, not a slower transient — identical to
+four significant figures at turn 500, turn 1000, and turn 2000 in the harness."*
+
+**Real Unity, same no-policy baseline, 2026-08-11: 157.3 / 81.3 / 166.3 / 48.9 at turn 1000 and still
+climbing.** The harness reported four-significant-figure flatness for a system that diverges.
+
+⚠ **This is the standing rule — "real Unity is the standard of truth, not the standalone harness" — with
+a concrete instance attached, and the instance is worse than the rule's existing examples** because the
+harness did not merely disagree, it reported *stability* to four significant figures across three
+horizons. **Anything fitted in that same sweep inherits the doubt**, and the record names them: the
+sensitivity itself, and the `[0.5, 1.5]` bounds, which were fitted TOGETHER as a pair rather than
+independently. `ComfortableDebtToGdpPercent` does not — it was seeded from each country's real starting
+ratio, not swept.
+
+⚠ **A constant is only as trustworthy as the tool that fitted it**, and re-deriving this pair belongs in
+real Unity before either value is moved by hand.
+
+### ⚠ Byte-identical output is a result to DISTRUST, not a null to accept (2026-08-11)
+
+The FRF trend term's first matrix run came back **byte-identical to the run without it** — every country
+to the decimal, and the same 1682 anomalies. That reads as a clean null result: *the term is reachable,
+it simply does not help.*
+
+**It was a bug.** `DebtToGdpAtPeriodStart` was stamped BEFORE the multiplier was computed, so the trend
+term differenced the ratio against itself and was identically zero. The change was never exercised at
+all.
+
+⚠ **A change that alters nothing is indistinguishable from a change that is not reached** — and the
+default reading, "it did not help", is the flattering one. Only the *anomaly count* matching to the unit
+gave it away; equilibria matching could have been coincidence, but 1682 twice could not.
+
+**Same class as the grep that found nothing.** Both are absences presented as findings, and both feel
+like results. **The guard is the same shape too: before accepting a null, prove the code ran** — a
+deliberately wrong value, a log line, or an assertion that the new term is non-zero at least once. With
+the ordering corrected the term *was* reached, and the real result was 5.6× the anomalies for no
+restoring effect — which is a genuine finding, and the opposite of the one the first run implied.
+
+### ✅ THE DIAGNOSIS, read from the code 2026-08-11 — SATURATION, not a missing mechanism
+
+⚠ **THE HYPOTHESIS THIS DISPROVES, recorded because Elias raised it and it was reasonable:** *"the
+missing piece is a debt-level term in the primary balance response — real sovereigns run primary
+surpluses when debt is high, and if that isn't in there, that single absence explains everything."*
+**It is in there.** `GetFiscalReactionMultiplier`:
+
+```csharp
+float debtGap = country.State.DebtToGdpRatio - country.ComfortableDebtToGdpPercent;
+float multiplier = 1f + FiscalReactionSensitivity * debtGap / 100f;   // sensitivity 1.5
+return Mathf.Clamp(multiplier, 0.5f, 1.5f);
+```
+
+`DebtToGdpRatio` is the **STOCK**, measured against each country's own comfort anchor, and the sign is
+correct. **The restoring force exists and responds to exactly the quantity it should.**
+
+**THE DEFECT IS SATURATION.** The multiplier hard-clamps at **1.5**, reached once debt is 33.3 points
+above comfortable — and **1.5× effective revenue cannot cover interest running at 45.7% of all
+spending**. The stabiliser does not fail to respond; it responds, maxes out, and the gap keeps widening.
+
+⚠ **CORRECTION to this file's own earlier line, "the multiplier moves freely, not pinned."** True for
+Germany at ~1.27. **Italy at 1.446 is effectively saturated already** — it is the saturated case, not a
+country on the way to becoming one.
+
+**TWO FEEDBACKS, ASYMMETRICALLY BOUNDED — and that asymmetry is the mechanism.** `GetDebtRiskPremium`
+already responds to the debt stock (`excessDebtToGdp` above `RiskFreeDebtToGdpPercent`) and already
+reaches the live interest path via `effectiveRate = baseRate + premium * RiskPremiumSensitivity`. So the
+model contains a **positive** feedback (more debt → higher r → more interest → more debt) bounded only by
+`MaxDebtRiskPremium`, running against a **negative** feedback capped at 1.5. Both are present, both are
+correctly signed, and only one of them is tightly bounded.
+
+⚠ **A debt-responsive rate is therefore NOT an available fix — it is already there and is half the
+problem.** Adding one would sharpen the trap.
+
+**NO PRIMARY BALANCE EXISTS IN THE MODEL.** `budgetBalance = actualRevenue - totalSpending`, and
+`totalSpending` includes `interestOnDebt` as one of six terms. **Candidate examined and rejected on
+evidence:** Italy's headline −3.9 with 45.7% of spending on interest implies a primary surplus of roughly
+**+75** in the same units. Italy is already doing everything a primary-balance response would ask of it,
+so adding that term would change nothing for the country that most needs it.
+
+### ✅ THE DRIVER, INSTRUMENTED 2026-08-11 — INTEREST COMPOUNDING, not a pinned stabiliser
+
+> ✅ **CLOSED 2026-08-17 against the erosion commit** — the mechanism report derived that the
+> stock's compounding was missing the debt identity's −π·b term entirely (nominal rates charged
+> on a real stock), and the term now exists: see "The erosion term ships" below. The four-country
+> signature is broken as a class (USA reversed; the EU three halved); the RESIDUAL late-run climb
+> is a new, smaller, attributed question (instant repricing at premium-loaded zone rates — the
+> deferred R4 maturity lag's measured target), not this finding's.
+
+One 1000-turn baseline, seed 777, real Unity, logging `fiscalReactionMultiplier`, `interestOnDebt`,
+`budgetBalance`, debt and GDP per accrual for **Germany and Italy** — one climbing from a low base, one
+from an already-high one.
+
+| | multiplier (bounds 0.5–1.5) | interest as % of ALL spending |
+|---|---|---|
+| **Germany** early → late | 1.000 → 0.624 → **~1.27** | 6.3% → **25.7%** |
+| **Italy** early → late | 1.000 → 0.624 → **~1.19–1.45** | 20.5% → **45.7%** |
+
+**The stabiliser is NOT pinned.** It moves freely across the run — down to 0.62 while debt falls early,
+then back up above 1.0 as debt rises, sitting at ~1.27 (Germany) and ~1.19–1.45 (Italy) against a 1.5
+cap. **It is leaning hard in the correct direction and is simply being outrun.**
+
+⚠ **Interest goes from 6% to 26% of all spending in Germany, and from 20% to 46% in Italy.** By turn 1000
+Italy spends nearly half its budget servicing debt. The daily balance is only slightly negative
+(−0.9 / −3.9), so this is not profligacy — it is compounding on a stock the stabiliser can slow but not
+reverse.
+
+**Same mechanism in both, which is the stronger result**: Italy is simply further along, and its
+multiplier at 1.446 is approaching the 1.5 cap. **Italy is on a path to become the pinned case, without
+being it yet at turn 1000** — so the two hypotheses are not alternatives but stages, and a fix aimed only
+at the cap would arrive after the damage.
+
+## An absence claim greped from ONE FILE is rule 14 inverted (2026-08-11)
+
+⚠ **THIS ENTRY ORIGINALLY READ "A ruling with an unbuilt half is worse than an open question", and its
+worked example was false.** Corrected the same day, in place, with the original claim quoted rather than
+deleted — the discipline rule 10 requires for a reversal, applied to a lesson.
+
+**The false claim:** that the 2026-08-02 net-creditor ruling *"shipped half"* — the 1000% guard built,
+the cause-fix never written.
+
+**What is actually true: `0386e83` shipped BOTH candidate fixes**, and a future reader who finds one
+should not assume the other was declined:
+1. **Returns run INSIDE the fiscal reaction multiplier.** `SimulationManager.cs:2682` —
+   `(theoreticalRevenue * effectiveCollectionEfficiency + swfReturns) * fiscalReactionMultiplier`. The
+   comment names the old `... * multiplier + swfReturns` form as what it replaced.
+2. **`SwfStructuralDrawPercentPerYear = 3f`** — Norway's *handlingsregel*. The budget receives a smooth
+   draw proportional to fund SIZE; **the realised market return no longer reaches the budget at all**,
+   which also closed a double-count where the fund kept the return and the government spent it.
+
+**How the error was made: `grep` over `MacroSystem.cs` returned nothing, and that was reported as
+absence from the codebase.** The fix lives in `SimulationManager.cs`.
+
+⚠ **This is rule 14 inverted, and it happened IN THE ACT OF WRITING THE RULE 14 ENTRY.** The rule says a
+check is evidence only for claims its enumeration contains. A one-file grep enumerates one file; the
+claim was about the whole tree. **A passing check that cannot fail is one failure mode; an absence claim
+whose search cannot find is the mirror of it, and it is easier to make, because a grep returning nothing
+feels like a result.**
+
+**What it cost — three artifacts downstream of one grep:**
+- an **escalation** to Elias, in a `RULINGS NEEDED` block;
+- a **ruling made on a false premise** ("SWF cause-fix: BUILD"), for work already built;
+- a **worked example in the permanent record** — this entry — teaching the wrong lesson from it.
+
+**How it surfaced, which is the part worth keeping:** *no check found it.* It surfaced because the next
+pass opened `SimulationManager.cs` to build the thing, and the thing was there. **A grep-shaped error in
+a file nobody reopens would still be standing** — and would have been "confirmed" by every later reading
+of the document it had been written into.
+
+✅ **THE CHEAP GUARD, and it costs one command: before escalating an absence, search the whole tree, not
+the file you expect.** `grep -rn <symbol> Assets/Scripts/` would have returned line 2682 immediately.
+State the search that was run when reporting an absence, so its scope is visible to the reader the way a
+check's enumeration now is. **"I did not find it in X" and "it does not exist" are different claims**, and
+only the first is ever what a grep supports.
+
+**The original lesson still holds** where it applies — a ruling reads as closed, so nothing watches it,
+and when recording one it is worth recording which half is built. It just was not what happened here.
+
+## Rule 14, extended: a check is evidence only if it RUNS in the environment that cites it (2026-08-11)
+
+**Python is not installed on this machine.** The `py` launcher registers 3.11 at
+`C:\Users\elias\AppData\Local\Programs\Python\Python311\python.exe`, and that directory does not exist.
+
+**Four Python scripts are cited as evidence across `CLAUDE.md`, `COMPLETED.md`,
+`POLISIM_MASTER_ROADMAP.md` and `POLISIM_POLITICS_ELECTIONS_ROADMAP.md`. Not one of them could ever have
+run here.** This is not an incident hit while porting one of them; it is a property of the whole citation
+set, and it extends rule 14:
+
+> **A check is evidence only for claims its enumeration contains — and only if it runs in the environment
+> that cites it.**
+
+**Verified state of every cited check, 2026-08-11:**
+
+| Check | Runs here? | Evidence status |
+|---|---|---|
+| `DeliveredAssetCheck` | ✅ run, exit 0 | confirmed |
+| `ImporterSettingsCheck` | ✅ run, 149 sprites, 0/0 | confirmed |
+| `StatIconCoverageCheck` | ✅ run, 19 of 19 | confirmed |
+| `PartyMarkCoverageCheck` | ✅ run | confirmed (reports NOT PRESENT on `main`) |
+| `ScreenEdgeCheck` | ✅ run, verified both ways | confirmed — **C# port of the script below** |
+| `screenshot_edge_check.py` | ❌ never | superseded by the port |
+| `seat_allocation_check.py` | ❌ never | **read only** — Part D re-scoped accordingly |
+| `ledger_geometry_check.py` | ❌ never | **unread, unverified** — sole evidence about 1440p |
+| `usa_election_check.py` | ❌ never | scoped to item 10, out of scope until it is scheduled |
+
+⚠ **The dangerous property is not that a script cannot run — it is that its LAST REPORTED OUTPUT stays
+quotable in a document forever.** `screenshot_edge_check.py`'s "54/54 then 0/54" was cited in three
+documents as though it described the current build. It described a working tree that no longer exists,
+and `main` was clipping on 54 of 55 screens the whole time.
+
+## Nine checks existed and not one of them ever ran by itself (2026-08-11)
+
+**Audited after `ImporterSettingsCheck` reached "0 errors, 0 warnings", on the grounds that a clean
+result is only worth something if the check runs.** Every `*Check.cs` in `Assets/Editor/` was examined
+for `[InitializeOnLoadMethod]` and `[MenuItem]`:
+
+```
+AggregationEquivalenceCheck  MenuItem=0  InitializeOnLoad=0
+ChromeV2CoverageCheck        MenuItem=0  InitializeOnLoad=0
+CreditRatingAnchorCheck      MenuItem=0  InitializeOnLoad=0
+DeliveredAssetCheck          MenuItem=0  InitializeOnLoad=0
+ImporterSettingsCheck        MenuItem=0  InitializeOnLoad=0
+PartyMarkCoverageCheck       MenuItem=0  InitializeOnLoad=0
+PublicationCadenceCheck      MenuItem=0  InitializeOnLoad=0
+ScreenEdgeCheck              MenuItem=0  InitializeOnLoad=0
+StatIconCoverageCheck        MenuItem=0  InitializeOnLoad=0
+```
+
+**Nine of nine invokable only from a command line someone has to remember to type.** The premise that
+`DeliveredAssetCheck` fires on Editor open is false — §1F's *"run `DeliveredAssetCheck` and
+`StatIconCoverageCheck` on the next Editor open"* was a request for a human to remember, phrased as if it
+described automation. This is *"a delivery is not self-announcing"* pointed at the checks instead of the
+assets, and it is worse there: **a check nobody invokes goes silent without announcing it**, and its last
+known result stays quotable in a document indefinitely.
+
+⚠ **THE MECHANICAL CAUSE, WHICH IS WHY NOBODY JUST ADDED A MENU ITEM: every check ended in
+`EditorApplication.Exit`.** A menu item calling one would have closed the Editor on whoever clicked it,
+so batch-only was not a choice anyone made — it was the only shape available. `CheckExit.Finish`
+replaces those eight call sites and behaves identically under `-executeMethod` (verified: 0 on clean,
+1 on a known-clipped set) while merely recording the code when a suite is collecting.
+
+`CheckSuite` now runs the four project-scanning checks from a menu item and **once per Editor session**
+— not per domain reload, since a script edit reloads many times an hour and re-scanning 149 textures
+each time is how a check becomes the thing someone disables.
+
+⚠ `ScreenEdgeCheck` is **deliberately excluded from the automatic run**: it reads whatever PNGs are on
+disk, so on Editor open it would report on a capture set of unknown age, and a green result from stale
+captures is worse than none — it answers a question about a build nobody is looking at. It has its own
+menu item, to be run after a capture pass.
+
+## Re-verified on clean `main` — because the first runs were not (2026-08-11)
+
+⚠ **`ImporterSettingsCheck`'s 149/14/70 and `PartyMarkCoverageCheck`'s results were both produced in a
+working tree carrying a closed session's uncommitted code.** That tree no longer exists, and between
+`c1d11bc` and `857bc3e` the Editor assembly did not compile on `main` at all — so those numbers described
+an environment that never shipped. A green run in the wrong context is the defect this whole day is
+about; it applies to a check's own verification as much as to anything the check reports.
+
+Re-run on clean `main`, 0 compile errors: **149 sprites, 122 white-on-alpha / 26 full-colour / 1 tiling,
+0 errors, 70 warnings (26 compression + 44 mipmaps)** — reproduced exactly. `PartyMarkCoverageCheck`
+correctly reports `PARTY SYSTEM NOT PRESENT`, exit 0.
+
+The 14 asset fixes were never in doubt: each was verified per-file by before/after count at the point of
+edit, which is independent of the assembly state. It was the RUNS that needed redoing, not the fixes.
+
+## The third compression instance, and what finally caught it (2026-08-11)
+
+`icon_area_*` and `icon_nav_*` — 14 sprites, every navigation and area icon in the game — had imported as
+**DXT5** for their whole life. Block compression on white-on-alpha at icon size, which is the one damage
+vector §3's import spec exists to prevent.
+
+**The first two instances were fixed in place; the third was found by a check built wide enough to
+contain it.** §3's Chrome correction fixed Chrome. `mark_party_*` fixed four marks. Both were correct and
+neither could see the next one — `Stats/`, 43 files of the same rendering class one folder over, was
+already right, and nothing compared the two. `ImporterSettingsCheck` enumerates all 149 sprites under
+`Art/UI/`, classifies each by **treatment rather than folder**, and found the 14 on its first run.
+
+That is this project's standing answer to a defect fixed twice in place, applied for the fourth time
+(`MeasuredLabel` for clipping, `InnerWidth` for the box model, `UiOverflowGuard`/`UiContainmentGuard` for
+the two containment questions, now this). **The rule it confirms: after the second site-specific fix, the
+next thing to build is the check, not the third fix.**
+
+## Instance #4 of the wrong-plausible-mechanism pattern — and the phase split that caught it (2026-08-11)
+
+**The guard was measuring during the IMGUI Layout pass.** Raising its cap gave the true count: **608
+overflows, not 200** — 200 was the ceiling, not the number. Splitting by `Event.current.type` gave the
+real answer:
+
+```
+608  [Layout]        row.width = 1.0, -128.0, -157.8
+  0  [repaint]       row.width = 472.9 … 790.0,  squeeze = 1.000 everywhere
+```
+
+During Layout, `GUILayoutUtility` returns a dummy rect — measured here at width 1.0, and negative once
+a caller subtracts padding from it. Every width derived from it is meaningless, so every comparison
+against it "fails". **Nothing is drawn during Layout, so nothing can clip during Layout.**
+
+Both named suspects were cleared by measurement, not by argument:
+
+- **The trailing-column change.** At every real row width `fixedTotal` (406–505) sits well under
+  `available` (593–630); it never reaches the squeeze. Running the same build with the change disabled
+  produced **22 Repaint overflows** — the old caption bug at exactly 83.8px. The change *removes*
+  overflows. It was the fix, never the cause.
+- **The 0.35 squeeze floor.** `squeeze = 1.000` in all 106 Repaint geometries. It never engages at a
+  real row width. It is not too low; it is untested by any real layout, and appeared in the numbers
+  only because a bogus width forced it — pinning every column to floor × 0.35, which is precisely the
+  30.2 / 22.6 / 11.3 that got written up as evidence.
+
+⚠ **WHAT DISTINGUISHED THIS ONE, and the reason it is worth a section.** Neither reading the code nor
+measuring at a single site would have found it. Both suspects survive any amount of code reading, and
+a measurement at one site returns the same bogus width the guard already reported. What broke it was
+measuring **the same quantity across both event phases** and noticing that one of them was
+structurally meaningless. The generalisation: *when an instrument reports something implausible, check
+whether the instrument is sampling a state in which the quantity has no meaning* — before believing
+either the instrument or the theory that explains it.
+
+⚠ **AND THE MECHANISM THAT WAS WRONG WAS MINE**, proposed and written into this file the day before as
+"plausible, not measured". Recording the uncertainty honestly is what made it cheap to correct; it did
+not stop it from being wrong. Three counts to keep straight: **11 instances of the clipping class, 4
+of the wrong-plausible-mechanism pattern within it.**
+
+**Second lesson, unrelated to the class: the cap silently understated by two thirds.** A capped list
+bounds memory correctly and reports totals incorrectly. `TotalViolations` is now counted before the
+cap and the driver fails on that, printing how many went unprinted.
+
+## The widened guard: 144 at Repaint, and the class is NOT closed (2026-08-11)
+
+Coverage was widened past the single choke point, because hooking only `MeasuredLabel` instruments
+the labels that were *hardest* to fit and skips every label that fit on the first try.
+`LedgerRow.DrawNameCell`'s two fast paths draw through raw `GUI.Label`; each tests one axis and leaves
+the other unexamined. A vertical check was added at the same time — the row-pitch class had no
+coverage at all.
+
+**Result: 55 captured, 0 failed, 144 Repaint violations — 33 wide, 111 tall.** Two distinct defects,
+both invisible to the previous guard, both confirmed against the captures rather than argued.
+
+### The `wide` class — raw enum names, broken mid-word (33, 8 distinct)
+
+`MeansTestedWelfare` needs 183.1 in 123.0; `VeteransAffairsDiscretionary` needs 257.0 in 188.8. These
+are **unformatted enum identifiers reaching the UI** — no display-name formatter, so no space for the
+wrap to break on.
+
+⚠ **The failure is not what the check's name suggests, and the correction matters.** IMGUI does not
+overflow an unbreakable token — it breaks mid-word. `run_05c_budget_welfare_deep.png` renders
+`NegativeIncomeTax` as **"NegativeInco / meTax"**: measured as fitting, and unreadable. So the
+predicate (widest unbreakable run > column) selects the right rows, but the consequence is a mid-word
+break rather than a spill. *The check was right and the reasoning behind it was wrong* — which is the
+same shape as the section above, caught faster because the capture was looked at.
+
+The real fix is a CamelCase display-name formatter, which removes the cause and simultaneously gives
+the wrap something to break on. **Not yet done.**
+
+### The `tall` class — real geometry, currently inert ink (111, 14 distinct)
+
+Uniformly `needs 26.1 tall in 24.0 at 20px`, at `PolicyScreenStatsRenderer`'s stat chips.
+`LineHeightFor` returns `max(style.lineHeight, fontSize + 4)` = 24.0, but what renders is
+`CalcSize().y` = 26.1 — **a height derived from a font metric that is not the metric governing
+rendering.** Textbook row-pitch class.
+
+⚠ **Verified against pixels before being called a defect: it costs no ink today.** Three magnified
+crops (`tiles_3x`, `chips_5x`, `welfare_rows_3x`) show digits, capitals and the descender of "Poverty"
+all complete. The 2.1px shortfall lands in internal leading above the cap height. It is latent, not
+harmless — any glyph reaching higher in the line box (**Å / Ä / Ö, on a sv-SE machine**) or any font
+change makes it visible. Fixing it moves row pitch on every policy screen, so it is Elias's call, not
+a quiet edit.
+
+### A third defect, found by eye in the same captures and invisible to any text-fits-its-rect check
+
+`PoliSimWidgets.StatTile`'s delta label escapes the tile. Its cumulative `y` — padding, label, `20`,
+`valueHeight`, `9`, an 18px pill — exceeds `tileHeight` (92 × scale), so at 929px the green delta is
+drawn *below the tile's bottom edge*, colliding with the next tile's keyline
+(`run_02_statistics.png`, top-left). **This is text overlapping beyond its box, and it is what Elias
+reported.** The three clipping-#11 commits did not fix it and could not have.
+
+⚠ **No guard of this design can see it.** The label fits its own rect perfectly; the rect is in the
+wrong place. This validates text against the rect it was handed and never validates the rect against
+its parent. **Child-rect containment is a third axis of this class with zero coverage.**
+
+### All three fixed 2026-08-11 — 144 → 0, and what each one actually was
+
+**The tall class was padding, not leading.** Measured on TeX Gyre Pagella at 20px: `lineHeight`
+20.00, `CalcSize().y` 26.13 — the style's vertical padding, which `lineHeight` excludes and
+`GUI.Label` obeys. `LineHeightFor` now returns `CalcSize().y`. Third version of that function and the
+third distinct reason the previous metric was wrong: `fontSize + 4` was wrong per SIZE, `lineHeight`
+was right about the FONT but not about the STYLE. The lesson holds unchanged — *derive the budget from
+the quantity that governs rendering*.
+
+⚠ **A claim in the previous section was overstated and is corrected here.** It said ring-accented
+glyphs (Å/Ä/Ö) would lose ink. Measured: `CalcSize().y` is *identical* for ASCII, ring-accented
+capitals and digits at every size from 16 to 22 — Unity reports the line box, which does not vary with
+content. The under-provision was real; the specific harm predicted for it was not measured, and
+should not have been asserted.
+
+**StatTile's delta was two statements of one geometry.** The caller sized tiles at a flat `92 * scale`
+while the widget's cumulative `y` needs ~107 with a delta present. Now `PoliSimWidgets.StatTileHeight`
+walks the same named constants the drawing uses, and the caller asks. A magic number in the caller and
+a cumulative `y` in the widget is one more statement of the same fact than can be kept true.
+
+**The wide class needed no formatter — the names already existed.** `PolicyWebRenderer`'s node
+metadata already held "Means-Tested Welfare", "Capital Gains Tax", "Veterans Benefits (Mand.)":
+hand-written, correctly hyphenated, abbreviated to fit. No formatter produces those. The ledger simply
+was not asking. `DisplayName.Of` bridges the model enums to that table by name identity — a parse, not
+forty hand-maintained pairs — and falls back to a CamelCase splitter for the members with no node
+(`VeteransAffairsDiscretionary`). **Restating the strings was rejected outright**: that is the "two
+tables that agree until one is edited" failure already written up twice in this file.
+
+**Verification: 55 captured, 0 failed, 0 overflows, exit 0** — and confirmed against pixels, not just
+the counter. `NegativeInco / meTax` now sets as `Negative / Income Tax`; the delta sits inside its
+tile.
+
+## Child-rect containment: the second guard, BUILT 2026-08-11
+
+`UiContainmentGuard`, scoped to the three composite widgets that lay out a stack inside a fixed rect —
+`StatTile` (content stack vs tile), `LedgerRow` (four column rects vs row), `PolicyScreenStatsRenderer`
+(two line rects vs chip). Not a general container stack: that needs infrastructure this codebase does
+not have, and building infrastructure to satisfy a check is the wrong trade.
+
+**What it actually guards is a SEPARATION, not a rectangle.** Each of the three has a height accessor
+its caller uses to reserve space, and a drawing body that walks the same geometry independently.
+`StatTileHeight` walks the same named constants `StatTile` walks — correct today, and precisely the
+shape that drifts in silence: add an element to the stack, forget the accessor, and the tile overruns
+by exactly that element's height with nothing failing. Same reasoning as one accessor for arc and
+swatch, and `DisplayName.Of` over a copied table: make the agreement enforced rather than remembered.
+
+**Built with the overflow guard's lessons applied from the start rather than rediscovered:**
+Repaint-gated (Layout returns a dummy rect, which cost 608 false positives last time), deduped at
+record time with a hard cap (the first overflow guard appended per frame and took the Editor down),
+and `TotalViolations` counted before the cap (200 was read as a count when it was a ceiling).
+
+⚠ **PROVEN TO FIRE, not merely observed to pass.** A clean result from a new check is
+indistinguishable from a check that never runs — this project has been bitten by exactly that. So the
+tile height was temporarily reverted to the old `92 * scale` and the pass re-run: **40 escapes,
+"bottom by 13.0", content 92px in a 79px container.** It catches the defect it was built for. The
+other two sites are known live from earlier instrumentation: `LedgerRow.Columns` logged 106 Repaint
+geometries, and the stat chip's two rects produced 111 Repaint overflow violations before the
+`LineHeightFor` fix.
+
+**Both guards live and clean: 55 captured, 0 failed, 0 overflows, 0 escapes, exit 0.**
+
+The pair now covers both questions the class has ever failed on — *does the text fit its rect* and
+*does the rect fit its container* — which between them account for all eleven instances.
+
+## Caption column: fixed truncation, introduced unevenness (2026-08-10)
+
+`LedgerRow.Columns` now sizes the trailing column from its content, because that column holds two
+kinds of thing — figures (~57px) where the board specified it, and dial scale legends (160–243px)
+where it was reused. The 11%-of-row proportion served the first and truncated the second.
+
+⚠ **Known consequence, logged rather than left in a commit message: track lengths now vary between
+rows in the same group,** because each row's caption differs in width. Strictly better than
+truncation, but visibly uneven — the same dial range renders at different physical lengths, which
+weakens row-to-row comparison.
+
+**The proper fix is a per-screen shared caption width**, using the same group-maximum pattern as the
+spending bars: take the widest caption on the screen, give every row that width, and all tracks match
+again. It needs plumbing through the call sites rather than a change inside `LedgerRow`, which is why
+it was not done in the same pass.
+
+## Publication cadence, measured — five of six stats never revise (2026-08-10)
+
+`PublicationCadenceCheck` runs headless (`PublicationSystem.PublishDueFigures` is static, so no play
+mode) and measures twelve simulated years for the USA:
+
+| stat | 1st release | 1st PRELIMINARY | days PRELIMINARY | releases |
+|---|---|---|---|---|
+| Unemployment | day 36 | **never** | 0 | 143 |
+| Inflation | day 42 | **never** | 0 | 143 |
+| **Gdp** | day 1 | **day 119** | **1410** | 142 |
+| PovertyRate | day 638 | **never** | 0 | 11 |
+| Population | day 638 | **never** | 0 | 11 |
+| CrimeIndex | day 638 | **never** | 0 | 11 |
+
+⚠ **GDP is the only series with a revision stage.** The other five are single-estimate — published once
+and final immediately. The annual three are not "hard to catch preliminary"; they have no preliminary
+state to catch.
+
+**This reframes behaviour 6 rather than scheduling it.** Channel 1 (badge + reference period +
+publication date, carrying PUBLISHED-NESS) applies to all six and is where their information lives.
+Channel 2 (frame style, carrying REVISION STATUS) is meaningful for GDP alone; the other five always
+draw solid, which is correct and carries nothing. The channels are still right to be independent — they
+are simply not equally loaded, and only one series can ever exercise the second.
+
+**It also settled a rendering decision.** Eleven annual releases beside a daily live series reads as a
+broken graph rather than as a comparison, so the annual three render as BADGED FIGURES — value,
+reference period, publication date, no trend line — while the monthly and quarterly ones keep the
+comparison graph and its "compare against the live figures above" framing. A published annual figure is
+a bulletin, which is a stat block rather than a chart.
+
+⚠ **And it corrected an assumption in the capture driver.** GDP first reaches preliminary at **day 119**
+and holds it roughly a third of all days. The driver found one at day 1125 only because its own
+1095-day minimum was binding — not because the state was scarce. The wait was never the constraint.
+
+## Behaviour 5's hazard is BACKGROUND-STATE-DRIVEN control counts, not branching (2026-08-10)
+
+Behaviour 5 is written as *"every control renders every frame in the same order; 'not applicable' is a
+disabled state, never an omitted element."* Read literally that forbids any branch that changes how many
+controls a screen emits. **Read that way it is not checkable** — it flags correct code and it gave no way
+to rank the three sites a sweep turned up.
+
+The sweep came after two instances were found by hand during the v2.0 conversion (`DrawMinimumWageControl`
+returning early for a country with no statutory minimum wage; the partner tariff override emitting
+button+slider when set and button alone when not). Two in one tab is a pattern, so the rest of the
+codebase was swept rather than waiting to trip over a third: every control emission in `GameController`
+(24 methods), `GraphRenderer` and `LedgerRow`, checked for early returns and for conditionals guarding a
+control.
+
+**Result: zero remaining early returns, three conditional sites, ONE of them a real defect.** What
+separates them is not whether they branch — all three do — but **what drives the branch**:
+
+| site | branches on | verdict |
+|---|---|---|
+| interest rate (`GameController`) | `hasIndependentCurrency` | ✅ **fine, and correct by construction** — both branches emit exactly one slider; only the range and label differ |
+| cabinet reshuffle (`GameController`) | whether a portfolio is filled | ⚠ **breaks the wording, not the hazard** — `CabinetMinisters` is written only by `GameController` (verified: no simulation system touches it) and the screen has no sliders, so nothing can be mid-drag |
+| **`GraphRenderer.DrawPageRow`** | **`totalPages`, derived from `history.Count`** | ⛔ **the real one** — history grows every turn, so the count went 0→2 spontaneously, on screens that DO carry sliders below the graph |
+
+**So the checkable form of the rule is:** a screen's control count may not change as a result of state
+the player did not just change. Branching on something immutable for the screen's lifetime is fine.
+Branching on something the player toggles with the very control in question is fine, if nothing draggable
+is on screen. **Branching on something that moves in the background is the defect** — that is the only
+shape where a hot control's ID can shift underneath a drag.
+
+Two things worth keeping from how this one was found. `DrawPageRow` **already had the discipline one
+level too shallow** — its buttons were correctly `GUI.enabled`-disabled at the ends rather than omitted,
+inside a block that was itself omitted. And it was the only site of the three that could genuinely fire,
+while being the one nobody would have found by reading the screens that break — it lives in a shared
+renderer, so it was one bug in every place a graph sits above a slider.
+
+## A turn is now a year — the 3.017x fiscal defect (2026-08-10)
+
+Elias reported from a live Editor session: **spending was running a full year's deficit every turn.**
+He was exactly right about the symptom, and the mechanism was not where any of us expected.
+
+**Every fiscal quantity in this game is an annual-rate figure, and none of them was ever divided by a
+period.** The spending seeds are FY2025 federal outlays (`SocialSecurity 1530`, `Defense 850`, 25 lines
+totalling **$5,761B**); GDP is annual (`29000` = $29T); revenue is `GDP x rate x BaseShareOfGdp`;
+interest is an annual rate on the debt stock. A 121-day turn charged all of it every 121 days:
+**365/121 = 3.017x** too fast.
+
+**Three things this was NOT, each worth recording because each was a live hypothesis:**
+
+- **Not a `/91.25` quarter-versus-year divisor.** There is no `91.25` anywhere in the simulation, and the
+  only `365` in `SimulationManager.cs` is the SWF draw. The estimated ~4x was an eyeball reading of a
+  3.02x error.
+- **Not introduced by Continuous Time Phase 3.** Pre-Phase-3, `ApplyRevenueAndSpending` took the same raw
+  annual sums once per turn. Phase 3 preserved the magnitude exactly — `121 x (annual/121) = annual`.
+  The error predates the migration by the whole project.
+- **Not a verification-integrity failure.** See below.
+
+### The aggregation bar covered spending, passed, and was RIGHT to pass
+
+`AggregationEquivalenceCheck` compares `GovernmentDebt` and `BudgetBalance` — both spending-driven —
+turn-form against 121 daily steps. Its own doc comment says why it passed: *"Its flows are exact by
+construction (121 × flow/121)."* **That identity holds whether or not the annual figure was the right
+figure.**
+
+It is an **equivalence** check, not a **correctness** check. It answers "does the daily form reproduce
+the turn form?" and cannot answer "was the turn form right?" A faithful migration reproduces an error
+perfectly, and a faithful migration is exactly what it was built to verify.
+
+⚠ **The failure was in how the bar was read, including in this file.** Phase 3's validation notes were
+written as though 39/39 within 3% validated the fiscal engine. It validated the migration. **No check in
+this project has ever asserted that a turn's fiscal flows correspond to a turn's worth of real money** —
+that assertion did not exist to fail.
+
+### The same defect was found and fixed once before, in demographics
+
+`MacroSystem.YearsPerTurn`'s doc comment describes *"3x over-compounding via too many applications of an
+annual-scale rate"* — diagnosed and fixed there by scaling each turn's population growth to the turn's
+real-time slice. **The fiscal path had the identical defect and was never brought along.**
+`SwfStructuralDrawPerTurnFraction` was the single flow that did get the conversion, which is why it read
+as deliberate rather than as an oversight everywhere else.
+
+### The fix, and why this direction
+
+**Elias's ruling: move the turn to the year, not the flows to the turn.** `DaysPerTurn` 121 → 365 and
+`ElectionSystem.ElectionCycle` 12 → 4. The economy was already annual-per-turn in every respect, so
+making the calendar agree with the model is two constants; making the model agree with the calendar is a
+divisor on every flow plus a recalibration of every debt-anchored constant.
+
+**It cost one line each because every per-day constant was derived rather than typed** — `PerDayReversion`,
+`CrimeEffectsDailyScale`, `InfrastructureDecayRatePerDay`, `FiscalFlowPerDayFraction` all retune
+themselves. That discipline, chosen during Phase 0 for a different reason, is the whole reason this was
+cheap. `MacroSystem.YearsPerTurn` derives from `ElectionCycle` (`4f / ElectionCycle`) and lands at 1.0.
+
+⚠ **The two constants are a PAIR and must always move together.** They are the project's only two
+statements of turn length, and before this change they already disagreed by 0.5%: `121/365 = 0.3315`
+years per turn against `YearsPerTurn`'s `4/12 = 0.3333`. They now agree exactly at 1.0.
+
+### What the new baseline shows (seed 987654, 15 scenarios x 100/500)
+
+⚠ **Per-turn fiscal figures are UNCHANGED, and that is the point rather than a null result.** The flows
+were always one year's worth per turn; a turn is now a year, so they are correct without moving. Debt,
+GDP, unemployment, inflation and debt-to-GDP all land where they did (USA turn 100: debt 286074.4 →
+286074.6, DebtToGdp 139.2% both). What changed is what a turn *means*.
+
+| moved | before | after |
+|---|---|---|
+| USA population, turn 100 | 374.8M | **450.6M** — `YearsPerTurn` 0.333 → 1.0 |
+| USA population, turn 500 | 483.7M | 967.9M |
+| Italy population, turn 500 | 33.9M | **11.2M** |
+| calendar span, 100 turns | 33 years | 100 years |
+| elections in a 100-turn run | 8 | 25 |
+| SWF structural draw | 0.994%/turn | 3%/turn (= 3%/yr, correct) |
+
+Gates after the change: **aggregation-equivalence 39/39 within 3%** (max drift 1.36%, unmoved),
+**`CreditRatingAnchorCheck` 5/6** with Poland's known expected failure, anomalies **30 → 30**, no
+population clamp hits.
+
+⚠ **A 500-turn run is now 500 years, and the demographic tail is the honest consequence** — Italy falls
+to 11.2M under five centuries of sustained negative growth. That is arithmetic, not a bug, but the
+500-turn scenarios are now well past the horizon anything in this model is calibrated for, and results
+there should be read as a stress test rather than as a projection.
+
+**Every baseline captured before 2026-08-10 measured a 3.017x fiscal engine on a 121-day turn.** Anything
+validated against one needs re-checking against the new capture.
+
+## v2.0 preparation — three measured findings and one live defect (2026-08-03)
+
+Four pieces of groundwork Elias ordered before the v2.0 design brief goes out. Each produced something
+that changes what the brief can say, which is why they ran first.
+
+### 1. The render-order spike — the survey's assumption was HALF WRONG
+
+`RenderOrderSpike` layers three full-bleed colours (ScreenSpaceCamera Canvas red / IMGUI green /
+ScreenSpaceOverlay Canvas blue) and reads three known pixels out of the captured frame. Result:
+
+| Layer | Assumed | Measured |
+|---|---|---|
+| ScreenSpaceCamera Canvas | below IMGUI | **below IMGUI** ✅ |
+| ScreenSpaceOverlay Canvas | ABOVE IMGUI | **below IMGUI** ❌ |
+
+**IMGUI is always topmost; no Canvas render mode draws above OnGUI.** The hybrid survives — a Canvas
+screen simply requires `GameController.OnGUI` to early-return while it is up, which is the
+screen-granularity rule enforced by the renderer rather than by discipline. What does NOT survive is the
+survey's proposed transition: a Canvas overlay cannot fade in over an IMGUI screen. Transitions have to
+be driven from the IMGUI side (a full-screen IMGUI scrim CAN fade over everything) and handed off.
+
+⚠ **The first spike run reported "FAIL — assumption does not hold", and that verdict was worthless.**
+The screenshot showed IMGUI's band exactly where it belonged and *neither canvas drawn at all*, over a
+background colour no layer in the test used. Two harness bugs: `Camera.main` was reused untouched so its
+clear flags were whatever the default scene carried, and `Image` did not produce geometry. `RawImage` plus
+an explicitly-configured camera fixed both. **The lesson is not "check your spike" — it is that a spike
+which cannot draw its own control layers will still happily print a verdict about their order.** The
+rewritten version logs each canvas's mode, material, colour and world corners, and reports INCONCLUSIVE
+when no canvas drew, so the same false verdict cannot be produced silently again.
+
+✅ **CONFIRMED IN A BUILT PLAYER, 2026-08-03 — the residual risk is closed.** `PlayerSpikeBuilder` builds
+a standalone Windows player containing only the spike; it ran at 1600×900 and produced
+`outer=RED, band=GREEN, centre=GREEN` — identical to the Editor. **The whole hybrid rested on an
+Editor-only measurement of a compositing order, which is exactly the kind of result that can differ in a
+build.** It does not. The player writes its verdict to a text file rather than only to the log, because a
+player log lands in a per-user AppData path the caller then has to go and find.
+
+### 2. The font test — IMGUI carries more than expected, and the body face is where it breaks
+
+Two TTFs assigned to the existing `GUIStyle`s, nothing else changed, three variants captured across all
+seven screens (`none` = today's default, `period` = Palatino Linotype + Courier New, `legible` = Georgia +
+Consolas). Windows system fonts, so the test ran in a scratch copy — **they cannot ship in a build**, and
+production needs open-licensed equivalents.
+
+- **A display serif transforms the headers, and it costs one line per style.** This is the single
+  highest-return, lowest-risk change available to the aesthetic, and it is available in IMGUI today.
+- **A monospace body face is the expensive half.** Courier New pushed the Budget screen's explanatory
+  paragraph from 5 lines to 6 and the right column's estimate block off the bottom of the fold — roughly
+  35–40% more vertical space for the same words. Consolas cost far less (narrower, taller x-height) but
+  reads as a code editor rather than a document. **The typewriter face is an aesthetic win and a density
+  loss, and the Budget screen is where that trade gets decided.**
+- ⚠ **`PoliSimWidgets` builds its OWN `GUIStyle`s, so a font assigned to `GameController`'s 15 styles
+  never reaches it.** Every headline stat value, delta pill and badge stayed in the default font across
+  all three variants — visible in the captures as identical numbers under different headers. A real font
+  pass has to cover the widget library too, and that is not obvious from the call sites.
+
+### 3. Flags and emblems were delivered, imported — and unreachable for weeks
+
+All 6 `flag_country_*` and 4 `emblem_party_*` sprites sat under `Assets/Art/UI/`, which is **not** under a
+`Resources/` folder, and were referenced by zero lines of code. `Resources.Load` could never have found
+them; nothing referenced them, so nothing ever failed.
+
+⚠ **`DeliveredAssetCheck` passed on these, and was right to.** It asks *"did every delivered file land
+under `Assets/`"* — 191 of 191 entries across 7 zips, 0 missing. **A file existing under `Assets/` does not
+mean the game can load it.** `StatIconCoverageCheck` asks the runtime question but only covers the 19
+names the UI hard-codes. So: **an asset's status has TWO parts, DELIVERED and REACHABLE, and the project
+only had a check for the first.** This is working-discipline rule 12 one layer in — the cached-status
+lesson applied to the loader rather than to the inbox.
+
+Both categories are now under `Resources/`, have derived-name accessors (`IconLibrary.GetFlag`,
+`GetPartyEmblem`), and are drawn: flags in the country selector's button gutter, emblems in the hemicycle
+legend. **They are also the two categories that are NOT white-on-alpha** — a flag and a party emblem are
+authored in their own colours (the emblem SVGs carry `#E0B23C` and `#FFFFFF`), so the design brief must
+not blanket-require the tintable convention that governs every other category.
+
+**One thing the emblems broke, worth keeping:** drawn *instead of* the legend's colour swatch they looked
+better and destroyed the legend's correspondence with the chart — the swatch colour is what keys each row
+to its own arc of seats, and the emblem palette has no relationship to `GetCategoricalColor`'s
+golden-angle hues. Swatch retained, emblem placed beside it. **This is a small live answer to v2.0's
+eleven-hue question: a mark and a colour can carry identity together, and dropping the colour is not free
+wherever that colour is also keying a chart.**
+
+### 4. A LIVE DEFECT found by the font test, not caused by it
+
+**`PolicyScreenStatsRenderer.DrawChip` clips both its stat names and its values, in production, today.**
+Visible in the baseline capture as `Debt-to` / `Approval` / `Busines` / `Poverty` above vertically-cropped
+figures. Cause: `GUI.Label` into hardcoded rects (`18f` tall for the name, `20f` for the value, inside a
+`RowHeight = 44f`) while every style's `fontSize` scales with `Screen.height` — at 900px height the label
+font is 20px in an 18px box.
+
+**This is instance #8 of the exact class `PoliSimWidgets.MeasuredLabel` was built to end**, in a renderer
+that never adopted it. Not fixed here — it was found during a survey and fixing production UI mid-survey
+is the wrong moment — but it should be the first thing v2.0 touches on that screen, and it is a reminder
+that the helper only helps where someone remembered to call it.
+
+⚠ **Instance #9, found 2026-08-10 in a design specification rather than in code.** Pass 3's redrawn
+Budget board fixes the ledger row at `36px` and permits generated names to wrap to two lines at `13px`
+with `line-height 1.1`. That is `28.6px` inside `36px` — fine at 1080p, about 7px spare. But §3.2 of the
+asset request states the governing constraint in its own words: *"every style in this UI rescales with
+`Screen.height`, so there is no single fixed render size."* At 1440p the same name sets at ~`17.3px` and
+two lines become `38.1px` — **taller than the row meant to contain it.**
+
+Same defect, one layer earlier: a height fixed in absolute pixels while the type inside it scales.
+**`36px` is the value at 1080p, not the row height.** The fix is the one that worked at instances #1–#8
+— derive it from the font metric:
+
+```
+RowHeight = max(2 x LineHeightFor(nameStyle) + pad, SliderTrackHeight + pad)
+```
+
+The general lesson, now that it has appeared nine times: **a number that came out of a mockup is a
+measurement at one resolution, never a constant.** Catching this one in the spec rather than in a
+capture is the first time the class has been found before it shipped.
+
+### ⚠ THE MOCKUP-NUMBER RULE — and it is not only about resolution
+
+**Instance #10 arrived the same day, in the same file, from the same spec, and I had already written
+the warning one method above it.** `LedgerRow` derived its row height from the font metric — correctly,
+having just recorded why — and then took the spec's `250 / 150 / 88` column widths and scaled them by
+font size alone. The first live capture killed it: those measures are quoted against board 1b's ~1100px
+ledger panel, the actual centre column on this screen is ~745px, the three fixed columns summed to more
+than the row was wide, the track collapsed to its floor, and both figure columns rendered past the panel
+edge where they simply did not appear.
+
+**So the rule is wider than "derive from `Screen.height`".** A number on a design board is a measurement
+taken against *that board's* conditions — its resolution, its font size, **and its container width** —
+and every one of those varies here. Deriving against one axis while copying another still ships the bug.
+
+**Every remaining number the spec supplies is suspect until derived or explicitly confirmed as fixed.**
+Paddings, insets, tick sizes, the 14px scrollbar track, the 6px inset, the 40px minimum thumb, the 11px
+shrink floor, the 44/26/22px panel paddings. Each is a value at 1920×1080 in a container of a particular
+width. **Confirming one as genuinely fixed is a real answer** — some things should not scale, a hairline
+rule being the obvious case — but it has to be a decision that was taken, not a number that was copied.
+
+The tell, in both instances: the number arrived with no unit of comparison attached. `36px` and `250px`
+each looked like a constant because the board had nothing else in view to measure them against.
+
+### The screenshot harness, and the batchmode trap that cost the first attempt
+
+The project had **no screenshot tooling at all** (zero `ScreenCapture` references), so every visual
+confirmation had been Elias looking at his own Editor — fine in conversation, useless for an async report.
+`UiScreenshotDriver` + `UiScreenshotCapture` drive `GameController` to each screen by reflection and
+capture at end-of-frame. They live in the scratch copy, not the repo.
+
+⚠ **`WaitForEndOfFrame` NEVER RESUMES under `-batchmode`.** The first run attached, logged
+`driver attached, label=none, 640x480`, and hung with no error and no stack trace — a silent hang, the
+same failure shape `BatchSimulationRunner`'s own comment warns about. Running with a real Editor window
+fixes it and fixes the resolution at the same time, which matters more here than it looks: **every style
+in this UI derives its font size from `Screen.height`, so a 640x480 capture would have been a screenshot
+of font sizes no player ever sees.** Any future visual tooling in this project must not use `-batchmode`.
+
+## v2.0 wiring — the theme inversion, and two failures worth more than the feature (2026-08-03)
+
+The chrome pack went live at four shared chokepoints — `PoliSimTheme`, `UiPalette`, `PoliSimWidgets`,
+`GameController`'s style init — rather than across 80 draw methods. Because every screen already reads
+through those, the change propagates. Details are in the commit; three things belong here.
+
+### 1. A theme inversion is not a palette swap
+
+Going from light-on-dark to ink-on-paper invalidates every assumption about the GROUND, and those
+assumptions are scattered far from the palette:
+
+- **`DrawColoredLabel` MULTIPLIED `GUI.color`.** Correct while the ramp was near-white (white × hue =
+  hue) and useless at `#2B2620`, where near-black × hue is near-black. Every coloured header in the game
+  would have rendered as an identical dark smudge. It now sets the style's `textColor` for the call.
+  **The multiply was documented as deliberate**, which is exactly why it was easy to miss: the comment
+  explained *why* it was multiplicative without stating what it depended on.
+- **`MutedIconTint` was white @60%** — invisible on paper.
+- **Text needs a surface.** `_boxStyle` inherited `GUI.skin.box`; once the ink ramp landed, every label
+  inside a tab container was dark-on-dark and had effectively vanished. **Ink and paper are one change
+  and cannot ship apart.**
+
+The generalisable form: *when a theme's ground flips, grep for what assumed the old one — not for the
+colours, but for the OPERATIONS (multiply, lighten, alpha-over) that only make sense against it.*
+
+### 2. ⚠ A guard written for exactly one failure, which did not catch it
+
+`UiPalette.GetTintedChrome` calls `Texture2D.GetPixels`, which throws unless the texture is imported
+readable. The author knew, and wrapped it in a `try`/`catch` with a comment saying — accurately — that an
+escape here "would throw INSIDE OnGUI and take the entire UI down rather than degrading one button".
+
+**It caught `UnityException`. Unity throws `ArgumentException` for a non-readable texture, and
+`ArgumentException` does not derive from `UnityException`.** So the defence written for this precise
+failure let it through, and the first capture of the wired UI was an empty desk — no error visible in
+the game, just nothing drawn.
+
+It survived unnoticed only because every chrome sprite happened to be imported readable. The v2.0 metas
+were generated from `icon_stat_gdp.png.meta` per the asset request's §3, which carries `isReadable: 0` —
+**correct for icons, which are drawn with a `GUI.color` tint, and wrong for chrome, which is pixel-tinted.
+§3 does not draw that distinction and should.**
+
+Two lessons, and the second is the transferable one:
+
+1. Catch broadly at an `OnGUI` boundary. Any escape costs the whole frame, and the fallback here was a
+   complete working path — there is no failure mode where re-throwing served the player.
+2. **A guard is a hypothesis about how something fails, and hypotheses need testing.** This one had a
+   correct diagnosis, a correct remedy, and the wrong exception type, and nothing in between would ever
+   have revealed it. If a `catch` exists to prevent a specific disaster, provoke that disaster once.
+
+### 3. The delta pill was retired on someone else's judgment
+
+Asked whether a chip sprite was wanted for the signed delta on a stat tile, Design answered that it was
+not: on paper a delta is inked text, not a lozenge. That is now how it renders. **Worth recording because
+the question was posed as optional and the useful answer was "don't"** — the brief asked for judgment
+instead of a sprite, and got it. B2 is untouched: the ink is still chosen by whether the change is GOOD,
+never by whether the number rose.
+
+## Baseline validation after the 5e UI work (2026-08-01)
+
+**Run**: 100-turn `baseline` via `BatchSimulationRunner` against real Unity `6000.5.6f1`, executed by
+Elias after Master Sequence step 5e's UI batches, the Tax/Spending tab merge, the chrome wiring and the
+Budget Process layout fix. **Result: 96 anomalies. Verdict: consistent with documented baseline
+behaviour, no regression.** Recorded because it is the first full baseline since that body of work, and
+because a naive reading of the log looks alarming.
+
+**Why 96 is unremarkable**: it sits inside this project's own documented range for a 100-turn run - 28,
+34, 53, 56, 60, 74, 80, 86, 104, 106, 178 and 215 all appear in earlier validations above. Every entry
+is the known "swung X% in one turn" family across exactly four stats (`DebtToGdpRatio`, `Inflation`,
+`Unemployment`, `InterestRate`); **no new anomaly type**, no `exceeded`/`invalid`/NaN, no unbounded
+growth.
+
+**Sweden and France repeatedly reaching `DebtToGdpRatio` 0.00 is documented and intentional**, not new.
+It is the `Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt)` floor, already investigated
+twice - see "SpendingLine Amount Ceiling - Debt-to-Zero Fix" and "Fiscal Reaction Function" above, the
+latter of which explicitly records Sweden landing on the zero end of this spectrum as *"consistent with
+prior findings, not a new phenomenon"* and confirms France *"hits the identical floor via the identical
+mechanism"*. France only develops it from ~turn 75 here, which matches its far higher starting ratio.
+
+**The extreme percentages are a metric artifact, not instability** - worth writing down, because they
+are the most alarming-looking thing in the log and will recur in every future baseline. Every outsized
+figure has a tiny PRIOR value: 565.8% is `0.87 -> 5.80`, 1616.0% is `1.48 -> 25.47`, 1329.3% is
+`1.22 -> 17.51`, 419.4% is `4.24 -> 22.04`. Once debt sits near the floor, relative change explodes
+arithmetically - a 24-point move reported as 1616% purely because the denominator is near zero.
+`SimulationTestRunner` measures relative change with no absolute-magnitude floor.
+
+**What this run actually established**: every change since the last validated simulation state is
+UI-only (`GameController`, `UiPalette`, `IconLibrary`), and the single simulation-layer change in that
+window - extracting `ParliamentSystem.GetSeatWeightedAlignment` so `WouldBillPass` calls it, validated
+separately at 100-turn `parliamentstress` with zero new anomaly types - is a pure no-op extraction. So
+this is positive evidence that the 5e UI work did not disturb the simulation.
+
+**Two follow-ups identified, neither a defect, neither actioned:**
+1. **The anomaly detector is noisy by construction near zero.** An absolute-magnitude floor (ignore
+   swings where both values are below ~2.0) would collapse most of these 96 into silence and make a
+   genuine regression visible instead of buried in clamp noise. Small change to `SimulationTestRunner`;
+   deliberately NOT made here, since changing the detector in the same breath as reading its output
+   would destroy the comparability with every anomaly count recorded above.
+2. **Debt oscillating 0 -> 25% -> 0 is arguably poor simulation**, however intentional the clamp. That
+   is a design question for a future item, not a bug - flagged so it isn't rediscovered as one.
+
+## Simulation determinism, and two batch-run gotchas (2026-08-01)
+
+**The simulation is now deterministic under a seed, and that is a prerequisite for Master Sequence item
+9's Step A, not a convenience.** Step A's bar is "changes ZERO simulation numbers, proven by identical
+trajectories before and after". That was unfalsifiable before this work: six systems each held their own
+`new System.Random()`, clock-seeded, so two runs of IDENTICAL code differed (96 vs 97 anomalies on
+consecutive 100-turn baselines). Any before/after comparison would have been noise, and a published-value
+leak is exactly the small, slow divergence noise hides.
+
+All six now draw from `SimulationRandom` (commit `75fa05a`), seedable in one call, with
+`SimulationTestRunner` accepting `-seed=N` alongside `-turns` and `-scenario`. Unseeded remains the
+default, so real play still varies between playthroughs.
+
+**Proven, not assumed**: two independent 100-turn baseline runs at `-seed=12345` produced **all 85
+per-turn lines identical**, compared as VALUES via `diff`, not as anomaly counts. The count alone is
+insufficient - two runs can share a count while differing in values, which is the exact false pass this
+check exists to rule out.
+
+**The sixth source was nearly missed.** `SovereignWealthFundSystem` did not match the first audit's search
+pattern and was only caught by re-running the search after rewiring the other five. Left unseeded, one
+system would have kept re-randomising every run while everything appeared to work - defeating the proof
+silently. Re-check after a mechanical change; the first pass missed it.
+
+### Two operational facts about batch runs, both of which cost real time today
+
+1. **Seeded runs cannot be chained back-to-back.** After `SimulationTestRunner` finishes, the Unity
+   process lingers in the documented post-simulation exit hang and KEEPS THE PROJECT LOCK. The next run
+   is then refused and dies with `Exiting without the bug reporter. Application will terminate with
+   return code 1` after a ~24-line log with no script compilation in it. Any multi-run validation must
+   clear the previous process between runs, not loop.
+2. **Exit codes from these runs are meaningless - read the log.** A total failure to launch
+   (`Unity.dll failed to load`) reported **exit code 0** twice, because the shell pipeline succeeded even
+   though Unity produced nothing at all. Only `Sanity check complete` in the log proves a run happened.
+   Do not pipe Unity's own output to /dev/null: doing so hid that load failure through two wasted
+   attempts.
+
+**Editor install fragility.** Two Editor installs (6000.5.4f1, then 6000.5.6f1) broke with
+`Unity.dll failed to load`, each shortly after a Unity Hub self-update. The Hub application and the Editor
+share one directory tree (`G:\UNITY\Unity Hub\`, with `6000.5.6f1/` inside it alongside the Hub's own
+`ffmpeg.dll`/`dxcompiler.dll`), which is the likely mechanism. Reinstalling fixes it. Note that
+`Unity.dll`'s timestamp does NOT indicate whether a reinstall happened - installers preserve build-time
+timestamps, so an identical date is what a clean reinstall of the same version looks like. Test by
+launching, not by inspecting file metadata.
+
+## Shared RNG structure can invalidate a validation method (2026-08-01)
+
+**The finding, which is about validation methodology rather than about randomness.** Step A0 made the
+simulation reproducible by moving all six random consumers - Cabinet, Event, FederalReserve,
+ForeignPolicy, Parliament, SovereignWealthFund - from their own private `System.Random` instances onto a
+single shared stream. Reproducibility was achieved. Isolation was silently destroyed.
+
+With one shared stream, every consumer draws from the same sequence in call order. Adding a single new
+draw ANYWHERE shifts every subsequent draw for every other consumer. Step A was about to add exactly
+that: noise on preliminary published figures. Events would have fired on different days, SWF returns
+would have differed, Fed chair candidate sets would have changed, parliament seat jitter would have
+moved - with no bug anywhere in the new code.
+
+**Why that mattered far more than "the numbers would change".** Step A's entire acceptance bar is an
+identical-trajectory proof: run the seeded scenario before and after, and any difference means published
+values leaked into the simulation. RNG-sequence contamination would have produced a diff that is
+**indistinguishable from that leak** - same symptom, completely different cause. The proof would have
+fired correctly and pointed at the wrong thing, and the obvious response (hunt for the leak) would have
+found nothing, because there was none. A validation method had been quietly robbed of its meaning by a
+change made two commits earlier for an unrelated reason.
+
+**Resolved by per-stream seeding** (commit `121656f`): each consumer gets its own `System.Random` seeded
+from `masterSeed + streamOffset`. Same master seed reproduces every stream exactly, and adding, removing
+or reordering draws in one stream cannot perturb another. This is the isolation the ORIGINAL per-system
+instances had, now made reproducible instead of clock-dependent - strictly better than either the
+original design or A0's first attempt. `SimulationRandom.Stream` is append-only: its integer values are
+baked into each stream's seed, so renumbering silently changes every seeded run and invalidates any
+baseline captured beforehand.
+
+**Credit where due**: Elias caught this before it did damage, from the direction of "the revision noise
+draws from the shared generator". The premise cited - that SovereignWealthFundSystem and
+FederalReserveSystem still had isolated instances to follow as precedent - was no longer true, since A0
+had already replaced them. The underlying concern was correct and the situation was worse than described:
+the coupling already applied to all six systems, not merely to a hypothetical new consumer.
+
+### Standing note, alongside the six failure patterns
+
+**Any change to shared RNG structure can invalidate a validation method's ability to mean what it
+claims.** More generally: a proof is only as trustworthy as the assumptions underneath it, and those
+assumptions are usually implicit and rarely re-checked when unrelated code changes. Before relying on a
+validation result, ask what the method assumes and whether anything has changed underneath it. Two
+instances of this already exist in this project's history - the clock-seeded RNG that made
+identical-trajectory comparison unfalsifiable in the first place, and this shared-stream coupling that
+would have made it fire for the wrong reason.
+
+## Verification-integrity failures (2026-08-01)
+
+**A recurring class worth naming, because three instances occurred in rapid succession during Step A and
+none of them announced itself.** In each case the thing being CHECKED was fine; the CHECKING MECHANISM
+was compromised. That is far more dangerous than an ordinary bug, because the output still looks like a
+result - just a wrong one - and the natural response is to act on it.
+
+1. **Shared RNG coupling silently disarmed a proof.** Step A0 moved all six random consumers onto one
+   stream to make runs reproducible. That coupled them: any new draw added anywhere would shift every
+   other consumer's sequence. Step A was about to add exactly that (noise on preliminary published
+   figures). The resulting trajectory diff would have been **indistinguishable from the published-values
+   leak the identical-trajectory proof exists to detect** - the alarm would have fired correctly and
+   pointed at the wrong cause, and hunting for the leak would have found nothing, because there was none.
+   Fixed by per-stream seeding; see "Shared RNG structure can invalidate a validation method" above.
+
+2. **A `cleanup && capture` chain reported success while skipping the capture entirely.** The `rm` step
+   hit a file lock held by a lingering post-simulation Unity process, so `&&` short-circuited and the
+   Unity run never happened - while the task still reported exit code 0. Nothing in the output said
+   "no capture occurred"; it had to be inferred from an unexpected timestamp on a file that should have
+   been deleted. **Use `;` rather than `&&` between a cleanup step and the work it precedes**, and verify
+   the artifact exists afterwards rather than trusting an exit code.
+
+3. **An audit script fabricated a finding.** A one-liner checking csproj coverage used bad path escaping
+   and reported all 62 scripts as missing from a csproj that was demonstrably compiling them. It was
+   caught only because the claim contradicted something already known to be true - the build had just
+   succeeded. A less obviously absurd false positive would have been acted on.
+
+### Standing tooling gap: the local build does not see unregistered files
+
+`dotnet build Assembly-CSharp.csproj` compiles ONLY the files listed in that csproj. A newly created
+script that has not been added to it will be skipped entirely, so the build can pass while that file
+references members that do not exist - which is exactly what happened when `PublicationSystem.cs`
+referenced `Country.Published` before that field existed. **Unity compiles everything under `Assets/`**
+and refuses to run with `Scripts have compiler errors.`, so Unity catches it; the local build
+structurally cannot. Register a new file in the csproj BEFORE treating any local compile-check as
+evidence about it. Note also that Unity regenerates this csproj on import, which can drop manual entries.
+
+### The general rule
+
+**When a diagnostic produces a surprising result, check it against something already known to be true
+before acting on it.** All three failures above were caught that way - by noticing the result
+contradicted an established fact - and not by any tool failing loudly. A surprising diagnostic is
+evidence about the diagnostic at least as much as about the system under test.
+
+## Unity batch-run process policy (2026-08-01)
+
+**STANDING AUTHORIZATION.** Elias grants blanket, ongoing permission to force-kill `Unity.exe` and
+`UnityPackageManager.exe` processes for this project at any time, without asking first. This replaces the
+previous ask-every-time rule, which cost significant time across 5+ occurrences of the post-run hang.
+**The verification requirement stays**: always confirm with `Get-Process` afterwards that nothing remains.
+Only the permission request is removed, not the check.
+
+**CLEAR BEFORE, NOT AFTER.** A process-clear is now the mandatory FIRST step of every Unity invocation,
+not a reaction to a lock failure. The hang holds both the project lock (next run dies with
+`return code 1` after a ~24-line log) and file locks (`rm` fails with `Device or resource busy`), so
+clearing beforehand removes an entire class of wasted runs.
+
+**Never chain the clear to the run with `&&`** - see the verification-integrity note above, where exactly
+that pattern reported success while silently skipping the capture. Use `;`, and verify the artifact
+exists afterwards rather than trusting an exit code.
+
+Standard invocation:
+```
+1. Get-Process Unity,UnityPackageManager | Stop-Process -Force      (no permission needed)
+2. Get-Process ...                                                  (verify clear)
+3. Unity.exe -batchmode -nographics ... -logFile <path>              (separate command, not &&)
+4. Confirm "Sanity check complete" IN THE LOG - exit codes have been wrong 3+ times
+```
+
+### Root-cause investigation of the hang - findings, not attribution
+
+Every prior occurrence was attributed to Unity's startup Search/asset indexing. **The log evidence says
+otherwise**, and the real cause looks self-reinforcing:
+
+- `BatchSimulationRunner: exiting after wait.` - the message logged immediately before
+  `EditorApplication.Exit(0)` - **never appears in a hung run's log**.
+- Yet `Shut down.` IS the final line. So Unity reached shutdown; the PROCESS then failed to terminate.
+- The log also shows `Unexpected transport error from import worker 0 (possible crash). code=10054`,
+  with the worker left `WorkerState(Connected)`.
+- `[Indexing] Starting Initial Indexing for Assets` does appear, but indexing completes. The hang is
+  after `Shut down.`, not during indexing.
+
+**Hypothesis: a crashed/orphaned asset import worker prevents process termination.** This fits the
+otherwise-puzzling observation that the hang is MORE common after a force-kill: killing leaves the asset
+database and import-worker state inconsistent, the next run crashes a worker, the process won't exit, and
+it gets force-killed again. The workaround feeds the problem.
+
+**Untested fix to try first**: delete `Library/` once and let Unity rebuild it cleanly, with no
+force-kill during the rebuild - the only step that breaks the cycle rather than continuing it.
+
+**Needs external lookup (no web search available in-session):** the Unity 6000.5 batch-mode flag
+controlling asset import workers (something like `-importWorkerCount`, exact name and whether 0 is legal
+unconfirmed); whether `EditorApplication.Exit()` is documented to block while import workers are active,
+and the recommended batch-mode shutdown sequence; and whether Search indexing can be disabled per-project
+via a settings asset rather than a CLI flag.
+
+## The batch-run hang: actual root cause found and FIXED (2026-08-01)
+
+**Supersedes every earlier explanation in this file.** The recurring "Unity batch run never exits" problem
+was never Search indexing, and never the crashed asset import worker. **It was a bug in
+`BatchSimulationRunner` itself**, present since the tool was written.
+
+**The bug.** `Run()` subscribed `WaitThenExit` to `EditorApplication.update` and then set
+`EditorApplication.isPlaying = true`. Entering Play mode triggers a DOMAIN RELOAD, and a domain reload
+wipes all static state and unsubscribes every delegate. So the callback was destroyed by the very line
+that followed it, `_framesWaited` reset to 0, and nothing ever called `EditorApplication.Exit(0)`. Unity
+ran the simulation, logged its summary, and then sat in Play mode forever.
+
+**The diagnostic that identifies it**: `"BatchSimulationRunner: exiting after wait."` - logged
+immediately before the Exit call - **never appeared in ANY run's log**. That negative observation held
+across every occurrence, while indexing messages and worker crashes came and went. A symptom that is
+*always* present discriminates better than one that is merely often present.
+
+**The fix** (commit below): state moved from static fields into `SessionState`, which survives domain
+reloads, plus an `[InitializeOnLoadMethod]` that re-subscribes `WaitThenExit` after each reload. The exit
+path now survives the event that used to destroy it. `Exit(0)` is also called directly rather than
+setting `isPlaying = false` in the same frame, since leaving Play mode is itself asynchronous.
+
+**Verified**: first clean self-termination of the session - `EXIT LINE PRESENT: 1`, `Unity EXITED
+CLEANLY`, and 75 anomalies matching the baseline exactly, so shutdown behaviour changed while simulation
+behaviour did not.
+
+### Two wrong diagnoses, and why each survived so long
+
+1. **Search/asset indexing** (5 occurrences). Plausible because `[Indexing] Starting Initial Indexing`
+   appears in every log and the process spins at high CPU. But indexing COMPLETES well before the hang -
+   the hang is after `Shut down.`. Never tested, only assumed.
+2. **Crashed asset import worker.** Better evidenced - a real `code=10054` crash line, a worker left
+   `Connected`, and it neatly explained why the hang worsened after force-kills. **Disproved by testing
+   it**: disabling parallel import (`m_DesiredImportWorkerCountPctOfLogicalCPUs: 0`) removed the worker
+   crash entirely and the hang persisted completely unchanged.
+
+The second is the more instructive failure: a plausible mechanism, real supporting evidence in the log,
+and an elegant explanation for a puzzling correlation - and still a bystander. **A correlated symptom is
+not a cause, and the only thing that separated them was running the experiment.**
+
+### Note on the two changes made while chasing the wrong cause
+
+Both were kept, on their own merits rather than as fixes for this: parallel import disabled (removes a
+real crash, and the project is small enough not to need workers), and `Library/` deleted and rebuilt
+(cleared genuinely inconsistent state from prior force-kills). Neither fixed the hang.
+
+**`m_ParallelImport` does not exist in Unity 6000.5's EditorSettings.** Verified by searching
+`UnityEditor.CoreModule.dll` for it and every plausible variant; the only import-worker field is
+`m_DesiredImportWorkerCountPctOfLogicalCPUs`, which matches the "25% of logical cores" default. Setting
+it to 0 is how you get no workers in this version. Checking the binary mattered: a misspelled YAML key
+would have done nothing while looking correct.
+
+## Verification-integrity, instance 4 — the largest one (2026-08-01)
+
+Belongs with the three verification-integrity failures above, and dwarfs them. In this case the
+compromised checking mechanism was **the validation harness itself**, and it went undetected across five
+occurrences while the blame sat on Unity.
+
+**The bug.** `BatchSimulationRunner.Run()` subscribed `WaitThenExit` to `EditorApplication.update`, then
+set `EditorApplication.isPlaying = true` on the very next line. Entering Play mode triggers a domain
+reload, and a domain reload unsubscribes every delegate and wipes every static field - so the callback
+was destroyed immediately after being registered, and `EditorApplication.Exit(0)` was never reached.
+Fixed by holding state in `SessionState` (survives domain reloads) and re-subscribing via
+`[InitializeOnLoadMethod]`.
+
+**Five occurrences were blamed on Unity.** First on Search/asset indexing, later on crashed asset import
+workers. Both theories were coherent, both fit real log evidence, and the second even explained a
+genuinely puzzling correlation (the hang worsening after force-kills). Both were bystanders. The defect
+was in our own tooling the entire time, and every "workaround" was treating a symptom of our own bug.
+
+### The diagnostic lesson, stated generally
+
+**A symptom that is ALWAYS present discriminates better than one that is merely often present.**
+
+`"BatchSimulationRunner: exiting after wait."` was absent from every hung run - and, decisively, had
+never appeared in ANY run at all, including ones that looked fine. That constant negative was far more
+informative than the noisy positives that dominated attention: indexing messages and worker crashes both
+came and went across runs, which is exactly what a bystander looks like. **Read logs for what is
+reliably absent, not only for what is conspicuously present.** An expected line that never appears is a
+stronger signal than an alarming line that sometimes does.
+
+### Correlation versus cause: only the experiment settled it
+
+The import-worker theory was not defeated by better reasoning - the reasoning was fine. It was defeated
+by an experiment: disabling parallel import removed the worker crash **entirely**, and the hang persisted
+completely unchanged. **When two phenomena reliably travel together, separating them experimentally is
+often the only way to tell which is the cause.** Analysis can generate the hypothesis; only the
+intervention distinguishes it from its companions.
+
+### Open question raised by this, not yet investigated
+
+If the validation harness carried a bug this fundamental - never exiting, on every single run - for five
+occurrences without being suspected, **what else in the validation tooling is being trusted the same
+way?** `SimulationTestRunner` and the various diagnostic patterns have never themselves been validated;
+they are the instruments every "PASS" in this file was measured with. Worth an explicit review, on the
+principle that an unexamined instrument is an assumption. Note the related precedent already recorded
+above: the anomaly detector's percentage metric is mathematically meaningless near zero, which was found
+by inspection rather than by the detector ever complaining.
+
+**Occurrence, different tool, same procedure (2026-08-18).** `UiScreenshotCapture`/`UiScreenshotDriver` -
+not `BatchSimulationRunner` - wedged on a playtest-fix validation run: `Get-Process` showed the main
+Unity process's CPU time still climbing (~162s of CPU over a 30s sample) while the log had not gained a
+byte in 51 minutes, stalled one line after `AttachDriver`'s own "driver attached" line and a single
+"canvas seam never settled... capturing whatever is up" warning - zero captures written, and the
+discriminating negative held again: no completion/exit line ever appeared. Applied the standing
+procedure exactly (two-sample CPU-growth check, log-silence check, capture-count-on-disk check, the
+absent-exit-line check) rather than re-diagnosing from scratch - cost minutes, not a pass. Killed both
+`Unity` processes, confirmed clear via `Get-Process`, reran fresh at both widths; the second run
+completed normally. ⚠ **Root cause FOUND minutes later, corrected here rather than left as written above.** Not the same
+bug as `BatchSimulationRunner` at all, and self-inflicted: `UiScreenshotDriver`'s own class doc comment
+already says it plainly - "Captures happen after `WaitForEndOfFrame`, which is the only point IMGUI has
+actually composited - **and is why the runner cannot use `-batchmode`**." I ran it with
+`-batchmode -nographics` anyway, copying the invocation pattern from this session's pure-simulation
+diagnostics (`ItalyDebtMeasurementDiagnostic` etc.), where nographics is correct because nothing renders.
+For a tool that captures actual composited frames, `-nographics` disables the graphics device entirely,
+so `WaitForEndOfFrame` never fires and the very first `WaitForCanvasSettle` call blocks forever with
+growing CPU and total log silence - reproduced identically three times running. **Dropping both
+`-batchmode` and `-nographics` (a normal windowed Editor invocation) fixed it immediately**: the same
+capture pass that hung for 51 minutes completed cleanly in 67 seconds. The diagnostic procedure above
+(CPU growth + log silence + absent exit line) correctly identified WEDGED vs SLOW; what it could not do
+alone was locate the cause, because this occurrence's mechanism-level detail (which flag, which method)
+still had to come from reading the tool's own code once the procedure confirmed a genuine hang existed
+worth reading code over. **Lesson for next time**: `-nographics` is a per-tool decision, not a
+project-wide default - check whether the target method renders anything before adding it.
+
+## Narrow harness audit before Step A (2026-08-01)
+
+Scoped deliberately to what Step A's acceptance depends on, not an open-ended review. Three items.
+
+### 1. The identical-trajectory diff — VALIDATED, after fixing a defect in it
+
+**A defect was found in the comparison method itself, not the harness.** Every "identical trajectory"
+claim made earlier today used `grep '^Turn '`, which matches only the **anomaly lines**. The log also
+contains **600 full-state lines** per 100-turn run (`[baseline/100] Turn N | Country: GDP=…,
+Unemployment=…, …`, i.e. 100 turns x 6 countries) beginning with `[scenario/turns]`, and those were never
+being compared. A change that shifted simulation values without crossing an anomaly threshold would have
+passed silently - precisely the small, slow drift a published-value leak causes.
+
+**Validated by negative control**, because a comparison never shown to fail on a real difference has not
+been validated: `OkunCoefficient` was changed 0.5 -> 0.5001 (0.02%), the seeded run repeated, and the
+full-state diff caught it at **Turn 4** as `GovernmentDebt=42358,1 -> 42358,2`. Change reverted and
+verified clean against HEAD afterwards. Sensitivity to one digit in the fourth significant place is
+ample for leak detection.
+
+**Use the full-state lines for any before/after proof:**
+```
+grep "^\[baseline/100\] Turn" <log> > state.txt      # 600 lines, the real trajectory
+grep "^Turn " <log>                                   # anomalies only - NOT sufficient
+```
+
+### 2. Anomaly detector near-zero defect — FIXED, and it changes historical counts
+
+`CheckSwing` computes a relative percentage, which is meaningless when both values are near zero:
+`DebtToGdpRatio` 1.48 -> 25.47 reported as "swung 1616.0%". The pre-existing `< 0.01f` guard was far too
+low to suppress it. Added `MinMagnitudeForSwingCheck = 2f`, requiring **both** values to be under the
+floor before suppressing - so a genuine move out of the near-zero range (0.87 -> 5.80) is still reported,
+and only tiny-to-tiny noise is filtered.
+
+**DISCONTINUITY WARNING.** This lowers anomaly counts versus every historical figure recorded in this
+file (28, 34, 53, 56, 60, 74, 80, 85, 86, 96, 97, 104, 106, 178, 215 all predate the fix). **Do not
+compare a post-fix count against a pre-fix one and read the drop as an improvement in the simulation** -
+nothing about the simulation changed, only what gets counted. Post-fix counts are comparable only with
+each other.
+
+### 3. Seeded reproducibility — CONFIRMED on values
+
+Two seeded runs at `-seed=12345` on different HEADs (before and after the batch-exit fix) produced
+**600/600 identical full-state lines**. That confirms both that seeding works and that the harness exit
+fix did not perturb the simulation.
+
+### Out of scope, logged not chased
+
+A general review of the diagnostic tooling was explicitly excluded. Open question still standing: the
+harness carried a fatal bug for five occurrences without being suspected, and `SimulationTestRunner`'s
+other checks (finite-value checks, threshold constants like `MaxUnemploymentPercent`) have never been
+validated against known-bad input the way the diff now has been.
+
+## Verification-integrity instance 6 — the worst of the set (2026-08-01)
+
+**Why this one is worse than instances 1-5: a clean diff was exactly what success would have looked
+like.** The other five produced output that was wrong in some noticeable way once examined. This one
+would have produced the precise result that means "everything is correct", and there would have been no
+reason to look further.
+
+**The setup.** Step A's acceptance is an identical-trajectory proof: run the seeded scenario before and
+after, and any difference means published values leaked into the simulation. `PublicationSystem` is
+DATE-DRIVEN - releases fire on "first Friday", "the 12th", "t+30 after quarter end".
+
+**The trap.** `SimulationTestRunner` called `AdvanceTurn` directly and never called `AdvanceDay`, and
+`AdvanceTurn` only READS `CurrentDate` without advancing it. So the calendar was frozen at EpochDate for
+every batch run ever performed. Wiring `PublicationSystem` into the daily loop would have meant it
+published **nothing** during validation. The diff would have come back byte-identical, Step A would have
+been marked validated with "zero simulation change", and the feature would never have executed once.
+
+**Caught before running it**, by asking where the harness advances time rather than assuming it did -
+prompted by the standing question of what else the validation tooling was being trusted to do.
+
+### The wider hole this exposed
+
+This was never a Step A problem. `AdvanceDay` is the entry point for everything the continuous-time
+migration introduced, so a frozen calendar means **none of it has ever been exercised in validation**:
+fiscal-year budget pauses, Fed meeting cadence, `StatHistory`'s multi-resolution Daily/Weekly/Monthly/
+Quarterly bucketing, and every day-driven mechanic since. `StatHistory.Append(CurrentDate, ...)` has been
+recording the identical date for every turn of every run in this project's history.
+
+Every "validated against real Unity" claim in this file, prior to commit `e15cb49`, describes a
+frozen-calendar configuration the game itself can never be in.
+
+### TWO BASELINE DISCONTINUITIES ON THE SAME DAY - read historical numbers with care
+
+Both landed 2026-08-01, and both change anomaly counts for reasons unrelated to simulation quality:
+
+1. **Anomaly-detector floor** (`MinMagnitudeForSwingCheck = 2f`) - suppresses near-zero percentage
+   artifacts that were silently padding counts. LOWERS counts.
+2. **Calendar now advances** (`e15cb49`) - date-driven events fire in batch for the first time. Direction
+   unknown until measured, but trajectories legitimately change.
+
+**Every anomaly count and trajectory baseline recorded in this file before 2026-08-01 measured a
+frozen-calendar world with an inflated counter.** Do not compare a post-fix count against a pre-fix one
+and read the difference as the simulation improving or regressing. Only post-fix numbers are comparable
+with each other.
+
+### Correction: the calendar fix changed NO trajectories (measured 2026-08-01)
+
+Commit `e15cb49`'s message predicted trajectories would change once the calendar advanced. **They did
+not.** Measured: the 600 full-state lines from the calendar-driven baseline
+(`stepA_baseline_calendar_e15cb49.log`) are byte-identical to the frozen-calendar baseline. The
+75 -> 69 anomaly change came entirely from the detector floor, not the calendar.
+
+**Why**, established by tracing the callers rather than assuming: every date-driven GATE lives in the UI
+layer. `UpdateFedChairSelectionState` exists only in `GameController`; the budget-process pause is
+consumed there too. `SimulationManager.AdvanceTurn` reads `CurrentDate` solely to stamp
+`History.Append`. Batch mode drives the simulation directly, so those gates are structurally unreachable
+from it - the calendar advancing cannot change what they do, because they are never called.
+
+**The fix is still correct and was still necessary**, for a different reason than stated:
+`AdvanceDay()` is now actually invoked in batch runs, which is what allows `PublicationSystem` to execute
+during validation at all. Without it, Step A's proof would have been vacuous. `StatHistory` also now
+receives advancing dates rather than the same date every turn.
+
+**Verification that the calendar genuinely advances** (since trajectories can no longer serve as
+evidence): the harness raises an anomaly whenever `DaysPerTurn` calls to `AdvanceDay` fail to cross a
+turn boundary. Zero such anomalies across 100 turns, which requires the date to have advanced 12,100
+days - roughly 33 simulated years.
+
+**Revised discontinuity guidance**: only ONE of today's two changes actually moves the numbers. The
+anomaly-detector floor does; the calendar fix does not. Pre- and post-`e15cb49` trajectories are directly
+comparable.
+
+**Standing caveat this exposes**: batch validation exercises `SimulationManager` only. Every
+player-facing gate and interrupt - budget-process pauses, Fed chair selection, cabinet decisions,
+foreign-policy meetings - lives in `GameController` and is invisible to it. That is a real limit on what
+"validated against real Unity" means in this file, and it is why live-Editor confirmation has repeatedly
+caught things batch runs could not.
+
+## Master Sequence step 9, Step A — DONE (2026-08-01)
+
+Release calendar, published series and the revision mechanic. Commit `e3a0feb`, with the data model in
+`8e63a6f` and the seed infrastructure in `75fa05a`/`121656f`.
+
+**Built.** `PublishedData`/`PublishedSeries`/`PublishedEntry` on `Country` (never on `EconomyState`);
+`ReleaseCalendar` implementing the seed file's [VERIFIED] rules as date arithmetic; `PublicationSystem`
+called once per simulated day from `AdvanceDay`. Revisions APPEND rather than overwrite, so a player who
+acted on a preliminary figure can still see the number they acted on. Preliminaries are a noisy estimate
+OF the true value, so a revision always converges toward reality rather than being an arbitrary jump.
+
+**Six stats publish, not 29** - only those with a real release rule in the seed data. Inventing a cadence
+for something like `ConsumerConfidence` would be the fabrication the `[GAP]` discipline forbids; the rest
+keep reading live until a schedule is sourced.
+
+### Validation - five checks, and why the last one is the one that counts
+
+1. `EconomyState.cs` unchanged, so the 55 simulation call sites reading `country.State.X` cannot reach a
+   published value.
+2. Only `ReleaseCalendar`, `PublicationSystem` and `SimulationManager` reference `Published` anywhere
+   under `Assets/Scripts/Simulation`.
+3. **600/600 full-state lines byte-identical** to the baseline at `-seed=12345`. Zero simulation change.
+4. The diff can actually detect a difference - negative control, `OkunCoefficient` 0.5 -> 0.5001 (0.02%),
+   caught at Turn 4.
+5. **`PublicationSystem` actually executed: 7087 published entries.**
+
+**Check 5 is the one a clean diff would have hidden**, and it is the difference between this being a
+proof and a formality. A trajectory diff returns identical both when the feature is correctly inert AND
+when it never ran at all. Checks 1-4 were all satisfiable by an implementation that did nothing.
+
+The count corroborates the release RULES too, not just execution: 12,100 simulated days is ~33.1 years,
+predicting ~397 monthly unemployment and ~397 monthly inflation entries per country, USA GDP at three
+estimates per quarter (~397) against the EU five at two (~265), plus ~99 annual - **~7080 predicted
+against 7087 observed**.
+
+### What this validation does NOT cover
+
+It proves publishing does not DISTURB the simulation. It does not prove the published figures are
+CORRECT - that reference periods carry the right lag, that revisions land on the right dates, or that the
+preliminary/revised distinction behaves as intended. `ReleaseCalendar` is pure date arithmetic and
+directly testable; that check is still outstanding and belongs before Step B builds release-point graphs
+on top of it.
+
+## Verification-integrity instance 5 — a correct measurement, over-read (2026-08-01)
+
+**Distinct from instances 1-4 and 6, and worth separating: this check was not broken.** It ran correctly,
+measured exactly what it measured, and reported a true number. The failure was in what that number was
+taken to mean.
+
+**What happened.** Step A's validation counted **7087 published entries** and treated that as evidence the
+publication system worked. The count was accurate. Publication genuinely ran 7087 times, on genuinely
+correct dates - the schedule was right, and the count corroborated it against a predicted ~7080.
+
+**What it did not show, at all: whether a single published VALUE was correct.** Nearly every one was the
+same stale figure. A count proves cadence. It is silent on content, and no amount of agreement between
+predicted and observed *counts* can say otherwise.
+
+**How the real defect surfaced**: only by dumping actual entries and reading them. Q1 2026 Revised, Q1
+2026 Final and Q2 2026 Revised all read `28999,3` - and that collision was the decisive clue precisely
+because it is STRUCTURAL rather than magnitude-based. A wrong-looking number invites argument about
+tolerance; **two different reference periods resolving to an identical figure cannot be explained by
+noise at all.** Look for impossible relationships between values, not just implausible values.
+
+**A wrong inference worth recording**, because it was reasonable and still wrong: the preliminary figures
+varied (29363,6, 29062,6) while the revised ones were identical, which suggested "the preliminary path
+works, the revision path is broken - compare them." Both called the same broken `ReadLiveValue`. The
+preliminary's variation was ±1.5% publication noise around the *same stale value*, and both observed
+figures sit inside that band. **Apparent variation is not evidence of a live read.** There was no working
+path to compare against, so that comparison would have found nothing.
+
+### The general rule
+
+**Ask of every check: what does this prove, and what does it merely appear to prove?** A count proves
+frequency. A checksum proves equality. An identical-trajectory diff proves nothing changed - not that
+anything ran. Each answers a narrower question than it feels like it answers, and the gap between the two
+is where a validated-looking feature hides being broken.
+
+## Harness audit — general tooling review (2026-08-01)
+
+Prompted by six verification-integrity instances in a single step. The question asked of every check:
+**what does this prove, and what does it merely appear to prove?**
+
+### Coverage, measured rather than assumed
+
+| Check | Fields covered | Assessment |
+|---|---|---|
+| `CheckFinite` (NaN/Infinity) | **29 of 29** `EconomyState` floats, plus Country-level fields | Complete. Proves what it appears to. |
+| `CheckSwing` (>20% turn-over-turn) | **5 of 29** — GDP, Unemployment, Inflation, InterestRate, DebtToGdpRatio | **Major gap.** See below. |
+| Range checks (negative / absurd) | **4 of 29** — GDP, Unemployment, Inflation, GovernmentDebt | Narrow, but the four most load-bearing. |
+
+### The swing check covers 5 of 29 tracked values
+
+**This is the instance-5 pattern in the harness's own headline metric.** "N anomalies detected" is the
+number every validation writeup in this file quotes as a health signal. It is overwhelmingly composed of
+swing anomalies - and the swing check is *structurally incapable* of seeing 24 of the 29 tracked values,
+because `Snapshot` stores only five fields to compare against.
+
+A runaway in `PovertyRate`, `CrimeIndex`, `Population`, `LaborForceParticipationRate`, `Consumption`,
+`Investment`, `ConsumerConfidence`, `CorruptionIndex` or 16 others would produce **zero** swing anomalies
+and a clean-looking run. Only a NaN or a negative GDP/debt would catch it, and only for the four
+range-checked fields.
+
+So: the anomaly count proves *those five fields* stayed within 20% turn-over-turn. It does not prove the
+simulation is healthy, and it has been read as though it did.
+
+### NOT fixed unilaterally — logged as an Open Question
+
+Extending `Snapshot` to all 29 fields is the obvious fix, and it is deliberately NOT done here, because
+it is a judgment call with real consequences rather than a clear defect:
+
+- It would be the **third baseline discontinuity in one day** (after the near-zero floor and the calendar
+  fix), further breaking comparability with every historical count.
+- Several of the 24 uncovered fields legitimately move sharply - `NetMigrationRate` and
+  `PopulationGrowthRate` are small numbers where ordinary variation crosses 20% easily. Coverage could
+  bury real signal in noise, which is how the near-zero defect caused harm in the first place.
+- The right threshold is likely per-field rather than one global 20%, and choosing 24 thresholds is a
+  design task, not a mechanical one.
+
+**Open Question for Elias**: extend swing coverage to all 29 fields (and with what thresholds), extend to
+a chosen subset, or leave at five and simply stop describing the anomaly count as a whole-simulation
+health measure? The last option costs nothing and removes the misreading, which may be the honest
+minimum.
+
+### What was verified as sound
+
+`CheckFinite`'s 29/29 coverage is genuinely complete - every `EconomyState` float plus several
+Country-level fields. Whatever else the harness misses, it cannot miss a NaN.
+
+## Verification-integrity instance 7 — a trusted source that was simply wrong (2026-08-01)
+
+**A new variant of the class, and the first that no amount of checking my own work would have caught.**
+
+The six previous instances all shared a shape: a checking mechanism that was broken, absent, or narrower
+than it appeared. Instance 7 is different. Nothing in the process malfunctioned. The figures were
+sourced deliberately by someone with web access, recorded in a file built specifically to be the
+project's ground truth, and marked `[VERIFIED]`. The check *was* "this was sourced carefully by a person
+who could actually look it up" — and that turned out not to be sufficient.
+
+**What happened.** `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` recorded housing cost overburden rates as
+Germany 9.7, Poland 6.1, Sweden 5.1, France 3.9. Those are real Eurostat figures. They are also the
+**"Two adults" household-type subset**, not the headline whole-population indicator (`ilc_lvho07a`).
+The correct whole-population 2024 figures are Germany 12.0, Sweden 10.6, EU average 8.2. Sweden differs
+by more than 2x between variants — 5.1 versus 10.6 versus 10.8 for the "18–64" cut. *(⚠ Amended
+2026-08-27: the "two adults" attribution was RETRACTED by the seed doc the same day from the API's own
+structure — `ilc_lvho07a`'s dimensions are `freq · unit · rskpovth · age · sex · geo · time`, with no
+household-type axis; the wrong figures were simply another variant. The whole-population figures and
+the variant-axis lesson stand; `POLISIM_SEED_DATA_MACRO_OVERHAUL.md` "CORRECTION TO THE CORRECTION" is
+the authority.)*
+
+**Why it is worth a numbered entry rather than a footnote.** The seed file *already contained an
+explicit warning about exactly this trap*, two sections earlier:
+
+> **CRITICAL METHODOLOGY WARNING:** youth unemployment *rate* and *ratio* are different measures and are
+> frequently confused in published tables.
+
+The same mistake was then made again in the very next data section. Knowing a trap exists, and having
+written the warning yourself, does not prevent walking into it — because the failure is not one of
+attention but of *not recording which variant a number belongs to at the moment you write it down*.
+
+**The practical lesson, which is narrower and more useful than "double-check sources":** when a
+statistical indicator has multiple published variants, **record WHICH variant explicitly alongside the
+value** — the indicator code, the population base, the threshold — not just the number and the year.
+`Germany 9.7` is unfalsifiable after the fact. `Germany 9.7 (ilc_lvho07a, two-adults households, >40%
+of disposable income, 2024)` announces its own scope and would have been caught on sight.
+
+This applies directly to every remaining `[VERIFIED]` figure in the seed file. Gini already carries a
+methodology warning; productivity already carries a source-conflict warning. Youth unemployment,
+life expectancy and real wage growth do not, and have not been re-checked against this failure mode.
+
+**What it does NOT mean.** It is not an argument for distrusting the seed file or for filling gaps by
+inference — the opposite. The file remains the only real-data ground truth available in this project,
+and the correction arrived through exactly the right channel: Elias re-checked and supplied a fix. The
+lesson is about metadata discipline when recording figures, not about the sourcing itself.
+
+### Consequence for Step C1 — the coverage question resolved in the unexpected direction
+
+Three claims existed about housing cost overburden coverage across the six playable countries. The
+directive claimed complete coverage ("all EU five"). The seed file's original figures implied 4 of 6 —
+which my first C1 gap report reported, correctly catching the directive's overstatement but trusting the
+underlying numbers. The corrected figures give **2 of 6**: Germany and Sweden only, with Italy, France
+and Poland known solely to be below 9.0, and the USA not obtainable at any comparable threshold.
+
+So the C1 gap report was right that the directive overstated coverage, and wrong about the actual
+number, in the same direction it was investigating. Coverage was worse than the pessimistic reading.
+
+This inverts the metric decision. Housing cost overburden was recommended as C1's primary stat partly
+because it was believed better covered; it is now covered **half as well** as homeownership rate
+(2 of 6 versus 4 of 6), and its remaining gaps are harder — three Eurostat lookups plus one country
+where no comparable figure exists at any threshold. The directive's *other* reasons for preferring it
+(it measures affordability stress rather than tenure, and responds to interest rates and housing
+assistance, both live levers here) are untouched and still good.
+
+**Escalated to Open Questions, not decided.** Choosing between coverage and interest-rate
+responsiveness is a judgment about how C1 should play, not a data question. See
+`COMPLETED.md` §23 (the register's B1/B6, migrated 2026-08-26) for the three options and the per-option gap lists (was `STEP_C1_HOUSING_GAP_REPORT.md`, consolidated 2026-08-02).
+
+### Instance 7, follow-up — why this indicator defeated ordinary care, and the rule that follows
+
+A gap-closing attempt on the three missing overburden figures failed, and the reason upgrades instance 7
+from "a mistake was made" to "a bare figure for this indicator is meaningless".
+
+**Eurostat publishes at least eight variants under the one name** "housing cost overburden rate": whole
+population, two adults, 18–64, 65+, cities, rural areas, tenant at market price, tenant at reduced price,
+owner with mortgage, owner without mortgage, and by income quintile. **Sweden alone reads 5.1 / 10.6 /
+10.8 / 17.9** depending which is pulled. The original error was not carelessness about an obscure
+distinction — it was picking one of eight equally-real published numbers, all correctly labelled at
+source, and recording only the digits.
+
+**Secondary sources make it worse.** Visual Capitalist, explicitly citing Eurostat 2024, publishes
+Denmark at 22.7% and Norway at 21.0% against Eurostat's own 14.6% for Denmark. Reputable outlet, correct
+attribution, different variant, no label. A reader checking "does this match Eurostat?" would find the
+citation correct and the number wrong.
+
+**The rule, and it generalizes past this indicator:** when a statistical indicator has multiple published
+variants, **record WHICH variant alongside every value — never just the number.** The indicator code,
+the population base, the threshold, the year. `Germany 9.7` cannot be checked after the fact.
+`Germany 9.7 (ilc_lvho07a, two-adults households, >40% of disposable income, 2024)` announces its own
+scope and is falsifiable on sight.
+
+Corollary for sourcing sessions: **a summary article is not a database.** Eurostat's own 2024 article
+names only the extremes — five countries above 9.0%, three below 4.0% — which is why Italy, France and
+Poland could be *bounded* to 4.0–9.0 but not valued. That bound is a real, honestly derived constraint
+and is recorded as `[BOUNDED]`, deliberately distinct from `[VERIFIED]` and `[GAP]`. **A bound is not a
+value and must never be seeded as one.**
+
+### C1 metric decision — homeownership over overburden (Elias, 2026-08-01)
+
+**The directive's recommendation is reversed.** Overburden remains the better *concept* — affordability
+stress rather than tenure, responsive to interest rates and housing assistance, both live levers — and
+that reasoning was never wrong. It lost on data honesty: 2 of 6 verified means seeding four countries
+from a range, which is inventing precision.
+
+Homeownership carries 4 of 6 verified and preserves the sharpest real contrast in the seed data,
+**Germany ~47% versus Poland ~87%** — genuine, culturally rooted, and enough on its own to make housing
+policy play differently between countries without a single invented figure.
+
+Overburden is **deferred, not dropped**; it returns as a secondary metric if exact `ilc_lvho07a`
+whole-population figures are obtained, which requires direct database access rather than search.
+
+Worth recording as a decision pattern: *the better mechanic lost to the better-sourced one.* When those
+conflict on this project, coverage wins, because an invented seed is undetectable later while a missing
+secondary metric is merely absent.
+
+### Instance 7, refinement — the variant space is consistently larger than the warning written for it
+
+Youth unemployment was re-checked against instance 7's failure mode. **The existing seeds survive**:
+Italy 20.1 and France 18.7 are genuine 15–24 *rates*, not ratios, independently confirmed for June 2025
+against an EU average of 14.8%, with Eurostat's definition on record. The rate-vs-ratio warning already
+in the seed file did its job.
+
+But the re-check found a **second variant axis the warning did not name: age bracket.** Eurostat
+publishes both 15–24 and 15–29 series, crossed with rate-vs-ratio, giving four variants rather than two.
+EU 2025 reads 14.8% (15–24 rate), 11.7% (15–29 rate), 6.3% (15–29 ratio). Sweden sits on the fault line:
+**22.2% (15–24 rate) versus 12.2% (15–29 ratio)** — both real, both correctly attributed, differing by
+nearly 2x.
+
+**Recorded as a refinement of instance 7 rather than a new instance**, because the mechanism is
+identical. What is new is the pattern across two indicators:
+
+| Indicator | Variants the warning implied | Variants that actually exist |
+|---|---|---|
+| Housing cost overburden | 3 | **8+** |
+| Youth unemployment | 2 (rate/ratio) | **4** (rate/ratio × 15–24/15–29) |
+
+**The generalizable form: variant space is consistently larger than the warning written for it.** In both
+cases the warning was correct, useful, and one dimension short. So a warning that enumerates variants
+must be read as **"at least these"**, never as "these" — an enumeration is a floor, not a boundary. The
+practical consequence is that "I checked it against the documented warning" is not sufficient
+verification; the question is whether any *undocumented* axis exists, which is a different and harder
+question.
+
+This is itself a verification-integrity shape: the warning is the checking mechanism, and a check that is
+sound but incomplete reads exactly like a check that is sound.
+
+### Homeownership carries the same risk, unresolved, and C1 now depends on it
+
+Life expectancy, real wages and homeownership have not been re-checked. Life expectancy is likely
+low-risk — period versus cohort is the main axis, and 84.1 for Italy/Sweden is plausible for period.
+**Homeownership is not low-risk and is now urgent**, because the C1 decision made it the primary housing
+metric. Its axes: Eurostat measures share of *population* in owner-occupied dwellings (EU 68.4%), while
+US Census and most OECD reporting measure share of *households* owning; Eurostat additionally splits
+nationals-only from all residents.
+
+**Inspection of the existing table suggests the mixing may already be present**, without needing new
+sourcing: Germany carries two figures from two bases (46.7 in 2022 versus "Eurostat nationals-only 52.3
+in 2024", a 5.6-point spread) and the row settles on ~47 without saying which; Poland's ~87 sits against
+a Eurostat line elsewhere in the same file reading "Poland nationals 87.9%"; and the USA's 65.3–65.9
+matches the US Census household-based rate, not Eurostat's population base. So the four `[VERIFIED]`
+rows may span two or three denominators — each correct for its own source, and not comparable as a set.
+
+**This blocks C1 ahead of the two remaining lookups.** Sourcing Italy and Sweden before fixing the basis
+would add a fourth and fifth variant rather than completing a set. Recommended basis: OECD
+household-based, since USA and France are already there and the USA has no Eurostat figure at all.
+
+### Instance 7, third confirmation — promoting the pattern to a STANDING RULE
+
+Homeownership was re-checked on a single basis. **The suspicion was correct and understated.** Germany's
+spread is three-way, not two:
+
+| Basis | Germany |
+|---|---|
+| OECD, share of households owning | **41.0** |
+| Dwelling-based (2022) | ~46.7 |
+| Eurostat, nationals only | 52.3 |
+
+**11.3 points across three definitions**, every one correct for its own source, plus Eurostat's
+population-based measure (68.4% EU) as a fourth axis. The figure this project had been carrying — ~47 —
+was the middle one, and no row recorded which.
+
+That makes three indicators, each checked against its own documented warning, each hiding a further axis:
+
+| Indicator | Warning implied | Actually exists |
+|---|---|---|
+| Housing cost overburden | 3 | **8+** |
+| Youth unemployment | 2 | **4** |
+| Homeownership | (none written) | **4+** |
+
+**STANDING RULE — for any cross-country statistic, assume an undocumented variant axis exists until
+proven otherwise, and record the basis alongside every value as a matter of course.** Not "when the
+indicator looks tricky" — always. Three for three is no longer an observation about particular
+indicators; it is the base rate.
+
+The corollary that keeps biting: **checking a figure against the documented warning is not verification.**
+It confirms the axes someone already knew about, which is exactly the subset guaranteed not to contain
+the error. This is the verification-integrity class in its purest form — the check is sound, incomplete,
+and indistinguishable from complete at the moment you run it.
+
+### Consequence — the C1 margin narrowed, and a claim of mine needed correcting
+
+Single-basis coverage is **3 of 6 for homeownership versus 2 of 6 for overburden**, not the 4-of-6 that
+justified the decision. **The decision holds** — three same-basis figures still beat two, and
+overburden's missing three are unobtainable by search while homeownership's are ordinary lookups — but
+by one country rather than two, and Poland leaves the verified set (its ~87.9 is a Eurostat nationals
+line).
+
+I had also argued the decision preserved "the sharpest real contrast, Germany ~47% against Poland ~87%."
+**That pair is not usable as stated** — two bases, which is the error being corrected. What survives:
+Germany **41.0 against an OECD average of 70.1** is a real same-basis contrast and *more* extreme than
+~47 implied, so the German outlier is intact and better evidenced; Poland is directional only until
+sourced on the OECD basis.
+
+Recorded because the earlier, stronger claim is in this file's history and should not be left standing.
+
+**Real wage growth is now the last unverified indicator before C3.**
+
+## Step B2 wired in — sub-screen granularity, and what "deliberately unwired" cost (2026-08-02)
+
+`4869476`. Yesterday B2's rendering was committed **built but unwired**, on the correct reasoning that
+`GetConsolidatedTabArea` answers `PolicyLaws` with `Sectors` and driving a stat row off it would print
+sector stats on the Labor and Crime & Justice screens. That call was right *at tab granularity*. The
+mistake was stopping there: **one level down, the mapping is exact**, and the evidence was already in the
+file. Every policy sub-screen declares its own area for its own bill card — `DrawLaborMarketTab` draws
+"LABOR MARKET BILL" as `SystemArea.Labor`, and so on. The two new `GetPolicyScreenArea` overloads read
+that same declaration, so the stat row cannot disagree with the card directly beneath it.
+
+`GetConsolidatedTabArea`'s own doc comment says it picks hues for **visual distinctness**, not
+correctness — `PolicyLaws` got `Sectors` because that colour was unclaimed. It should never be read as a
+semantic mapping by anything, and now carries a cross-reference saying so.
+
+**The dead-code finding that prompted this.** All four files added 2026-08-01 had **zero callers**:
+`CreditRatingSystem` (none), `DerivedStats` (only `CreditRatingSystem`), `PolicyScreenStats` (none),
+`PolicyScreenStatsRenderer` (none) — plus `GraphRenderer.DrawSparkline` and `IconLibrary`'s Stats path,
+both reachable only from the dead renderer. 641 lines with no entry point. Only one piece of that was
+flagged at the time. **A session that ends with "built but not wired" should state the full reachability
+picture, not just the one piece it consciously chose not to connect.**
+
+**`CreditRatingSystem` is still uncalled**, and that is now recorded in the roadmap as an open placement
+question rather than quietly fixed. C4 computes correctly and anchors to 5 of 5 verifiable real ratings,
+but where a sovereign rating belongs in the UI is a design decision, not a wiring detail.
+
+### Two real findings from the edge list, neither invented to fill a gap
+
+- **No `Infrastructure` policy node has a single Policy Web edge.** The Infrastructure screen therefore
+  draws no stat row at all. That is the honest output of a real gap — the row appears by itself the day
+  an edge is added, with no change at the call site.
+- **`Fiscal` derives 7 stats**, because all 13 `TaxType`s and all 14 spending lines run through the same
+  two channels (approval on a hike; revenue/outlay feeding `DebtToGdp`). Hence the 4-stat cap with the
+  remainder *stated* ("+N more affected - see Policy Web") rather than silently trimmed. Tax and Spending
+  showing the same four stats is correct, not a bug — they genuinely move the same things.
+
+`MeasureHeight` and `Draw` both route through one private `ComputeLayout`, so reserved and drawn height
+are the same calculation rather than two that agree until one is edited — the StatTile duplicate-
+formatter lesson applied to layout. No stable-control-layout exposure: the row emits only
+`GUILayoutUtility.GetRect` plus `GUI.Label`/`DrawTexture`, and no interactive control allocates an ID, so
+a chip count changing between frames cannot desync a drag in progress.
+
+**Validation.** Unity 6000.5.6f1 batch compile: **0 errors** — the real compiler, which is what caught
+the invented `MutedTextColor` yesterday when `dotnet build` did not. The csproj blind spot does not apply
+here (existing files were edited, and their `<Compile Include>` entries already existed), but
+registration was confirmed before trusting the build regardless. `dotnet build --no-incremental`: **12
+distinct warnings, 1 UAC1001 + 11 UAC1009 — identical to yesterday**, none in the touched files. The
+10-turn batch run's 17 anomalies are the documented pre-existing Sweden/France debt-to-zero baseline (see
+"SpendingLine Amount Ceiling - Debt-to-Zero Fix"); an OnGUI-only change cannot reach simulation math,
+which `BatchSimulationRunner` exercises without ever calling `OnGUI`. **Not visually confirmed** — added
+as review item 10, and it is the only item there where rejection would mean a Policy Web *edge* is wrong
+rather than something merely looking bad. *(Confirmed 2026-08-02 — see `COMPLETED.md` section 16.)*
+
+### Also fixed: four `.meta` files were never committed
+
+`e185a72`. The four `.cs` files added 2026-08-01 were committed without their Unity `.meta` files, while
+all 62 other script metas in the repo are tracked. The GUID lives in the meta, not the source, so a fresh
+clone would have had Unity mint new ones and any future serialized reference to these types would have
+resolved differently between machines. **Staging a new `.cs` in a Unity project means staging its `.meta`
+in the same commit.**
+
+### Corrections to this file's own environment notes
+
+- **`-logFile <path>` IS honoured on 6000.5.6f1.** The note above ("Unity 6000.5 ignores `-logFile`") is
+  wrong as stated. Direct evidence from this session: the run wrote 135,445 bytes to the custom path at
+  10:20:03, while `Logs/Editor.log` (786,438 bytes) and `Logs/Editor-prev.log` sat untouched from
+  2026-08-01. The original observation was real but the cause was misattributed — most likely the stale-
+  log confusion described alongside it, not the flag being ignored. **Timestamping the log per run is
+  still the right practice**, which is what makes this verifiable at all.
+- **"`&`-invoking Unity returns before the work finishes" — confirmed again, the hard way.** `Unity.exe`
+  is a GUI-subsystem binary, so PowerShell's `&` does not wait: `$LASTEXITCODE` came back empty and the
+  log did not exist yet, which looked like a failed launch when Unity was in fact mid-compile. Poll the
+  log for a terminal marker (`exiting after wait` / `Sanity check complete` / `error CS`), or
+  `Wait-Process` on the PID.
+- **`[regex]::Escape` combined with `-SimpleMatch` silently finds nothing.** A csproj registration check
+  reported `GameController.cs = 0` — the escape produced `GameController\.cs` and `-SimpleMatch` then
+  searched for that literal. It reported "not registered" for a file that has been registered for
+  months. Use one or the other, never both, and treat a *universal* negative from a verification check as
+  evidence the check is broken rather than the code.
+
+---
+
+## Step C4 placed, and its first trajectory validation fails (2026-08-02)
+
+`3d77b11`. Elias overruled the escalation from earlier the same session, correctly: placement is not the
+kind of genuine design fork working-discipline item 4 covers — it is the same reasoning applied to every
+other stat — and leaving C4 uncalled was *blocking* validation rather than protecting it.
+
+**Placement (PROVISIONAL).** Credit Rating joins the dashboard tile grid directly after Debt-to-GDP. A
+sovereign rating is a judgment *about* a fiscal position, so it sits beside the number it is mostly a
+judgment about. Computed every frame rather than cached — caching is exactly how a rating could come to
+disagree with the debt figure rendered next to it. Only a Positive or Negative outlook draws a pill:
+`StatTile`'s pill is binary (good/bad) and "Stable" is genuinely neither, so colouring it either way
+would assert something the model does not claim.
+
+### The tile was not what made validation possible — the harness change was
+
+**A dashboard tile is `OnGUI` code, and `BatchSimulationRunner` never calls `OnGUI`.** Placing C4 on the
+dashboard would have left it exactly as unreachable from a batch run as it was before. `SimulationTestRunner`
+now evaluates both A4 and C4 per turn, per country, inside `CheckAnomalies`, which is what actually put
+them under the matrix. **Worth remembering the next time "wire it in" is offered as a route to
+validation: wiring into the UI and wiring into the harness are different things, and only one of them is
+checkable headlessly.**
+
+**Why pure display arithmetic needs coverage at all.** Neither can change a simulation number. But
+`CreditRatingSystem.Evaluate` ends in `Mathf.RoundToInt(notches)` followed by a clamp, and
+`RoundToInt(NaN)` is **0**, which clamps to **AAA**. A non-finite deficit or growth term would not crash
+and would not look wrong — it would render the best possible rating on a broken country. That is the
+StatTile failure shape again (a plausible-looking wrong number), and only an input finiteness check
+surfaces it.
+
+### Results — full matrix, 15 scenarios × 100 and 500 turns, `-seed=777`, real Unity 6000.5.6f1
+
+**A4 — PASSES.** Zero finiteness failures across all 30 runs, all six countries, every turn:
+`GdpPerCapita`, `TaxBurdenPercentOfGdp`, `SpendingPercentOfGdp`, `DeficitPercentOfGdp`,
+`RealGdpGrowthPercent` and every sector share. The "NOT trajectory-validated" caveat `70798e9` shipped
+with is discharged.
+
+**C4 — FAILS. 3,421 anomalies**, every one a rating moving more than four notches in a single turn.
+
+> ⏩ **This records the state on 2026-08-02 BEFORE the A1 cadence fix, and is not current status.** Elias
+> ruled the fix should be review cadence rather than damping. C4's implementation is now **complete**, the
+> anchors still hold 5 of 5, and the residual anomalies were attributed to the debt-to-zero bimodality
+> rather than to the rating. See "A1 implemented" further down this file.
+
+| Country | Anomalies |
+|---|---|
+| Sweden | 1,761 |
+| France | 1,117 |
+| Germany | 240 |
+| USA / Italy / Poland | 0 |
+
+**282 are full-ladder 16-notch moves — AAA to CCC and back the following turn.** Present in plain
+`baseline` at both horizons, so this is not a stress-scenario artifact.
+
+**The cause is pinned by deduction from the logged data, not guessed.** The anomaly message includes the
+effective debt burden precisely so this is answerable without another run. At each of those moments the
+burden is 0–45%, which `BurdenCurve` maps to 0–1 notches ((0,0) and (70,0) are its first two points), and
+the growth term contributes at most ±0.5. **Only the deficit term can supply the remaining 5–16 notches**,
+and it is `notches += (deficitPercent - 3) / 3` — no cap, no smoothing. Worked back: Sweden turn 78
+(burden 44.5%, AAA→B) implies a ~45%-of-GDP single-turn deficit; France turn 73 (burden 77.3%, AAA→A)
+implies ~17%.
+
+**Escalated rather than fixed, and this is not the earlier over-escalation repeating.** C4's curve was
+calibrated against 5 of 5 verifiable real-world ratings, and the USA's AA+ *depends specifically* on its
+deficit exceeding 3% — the exact term every plausible fix modifies. Capping it, averaging it over turns,
+or rating off a smoothed fiscal position all change what that calibration runs through, so this is a
+re-calibration against the real anchors rather than a tweak. Guessing a smoothing window would quietly
+invalidate the one thing that made C4 credible. Recommendation and the interim options are in the
+roadmap's Open Questions.
+
+**The tile is live and honest about which countries it is wrong for**: correct for USA, Italy and Poland;
+visibly thrashing for Sweden, France and Germany.
+
+### Anomaly-count bookkeeping
+
+New anomalies carry a `[DERIVED]` prefix so they stay separable from the counts quoted throughout this
+file, which all predate this coverage — **this is a third baseline discontinuity for anomaly counts, and
+the READ FIRST note at the top of this file governs it like the other two.** The checks are additive and
+pure (no `SimulationRandom` draws, no mutation), so they cannot alter a trajectory; determinism under
+`-seed` is preserved, and the run confirmed "SimulationRandom seeded with 777 - this run is reproducible."
+
+Per-scenario split (total / derived / pre-existing) is in `Logs/a4c4_matrix_20260802.log`. Note the
+pre-existing counts are **not** comparable to older recorded figures: those were taken at different seeds
+and across two prior discontinuities.
+
+### One more environment note
+
+Reading a Unity log while Unity still holds it throws `IOException` (file in use) from
+`File.ReadAllText`. `Select-String` opens shared and works fine. Poll with `Select-String`, or wait for
+process exit before reading the whole file.
+
+---
+
+## A1 implemented: rating by scheduled review — anchors hold, thrash does NOT clear (2026-08-02)
+
+`a4155ca`. Elias's ruling: fix the thrash by review **cadence**, not by damping. Implemented as specified.
+**The acceptance bar was "the 3,421 anomalies must be GONE, not merely reduced". They are not gone.**
+
+### What was built
+
+**Changes WHEN the rating is computed, not HOW.** The formula body moved verbatim out of `Evaluate` into
+`EvaluateFrom(debtToGdp, riskPremiumSensitivity, deficit, growth)`; `BurdenCurve`, the reserve-currency
+discount, the deficit divisor and the growth thresholds are untouched, and both the live path and the
+scheduled review call the same method so they cannot drift into two formulas.
+
+**Cadence: annual, on each country's own fiscal-year start** (USA 1 Oct, EU five 1 Jan). Justified rather
+than defaulted — agencies review once or twice a year; the date already exists as
+`FiscalYearData.GetFiscalYearStart` and is already what `ReleaseCalendar` treats as the boundary annual
+figures settle on, so it adds no date rule and no parallel timer; and it is the same boundary the budget
+process turns on, so a review lands when the year it judges has closed.
+
+**The settled deficit is derived from the debt stock, and that is the substantive fix.** The thrash came
+from `FiscalTurnReport.BudgetBalance` — one 121-day turn's balance. A year's deficit is by definition the
+year's increase in indebtedness, so with both stocks recorded it is exact rather than smoothed:
+
+    Debt = (d/100) * Y   =>   deficit%(of current GDP) = d_now - d_prev * (Y_prev / Y_now)
+
+Both readings come from `PeriodClosingValues` on the **same** quarterly boundaries, which is why
+`ClosingStat.DebtToGdpRatio` deliberately shares GDP's period rule.
+
+**On reusing `PeriodClosingValues` rather than a parallel store, as instructed:** it is keyed by
+`PublishedStat`, which has no debt member. Rather than add one — that enum makes a deliberate claim that
+only stats with a REAL release rule appear in it, and a never-published member would contradict it and
+make `Latest()` a permanent null trap — the key was widened to a new `ClosingStat` superset. One store,
+one recording pass, an explicit exhaustive map that throws on drift.
+
+### Validation 1 — the 5-anchor calibration check: 5 of 5 PASS, unchanged
+
+Run **before** the matrix, as instructed. New `CreditRatingAnchorCheck` runs headlessly with **no Play
+mode** (the formula is pure arithmetic), so it takes seconds.
+
+| Anchor | Debt | Effective burden | Result | Expected |
+|---|---|---|---|---|
+| Sweden | 35.0% | 35.0% | AAA | AAA ✓ |
+| Germany | 63.0% | 63.0% | AAA | AAA ✓ |
+| France | 116.0% | 116.0% | AA− | AA− ✓ |
+| Italy | 138.0% | 138.0% | BBB+ | BBB+ ✓ |
+| USA | 124.0% (deficit 6.4%) | 63.2% | AA+ | AA+ ✓ |
+
+**This is the FIRST EXECUTABLE version of this check.** The original calibration (`76a8f35`) was done by
+hand and recorded only in a commit message, so "passes unchanged" means "reproduces the five results
+recorded there", not "matches a previous script". Codifying it was overdue: an anchor check that exists
+only in prose cannot be re-run after a change, which is exactly what this work needed it for.
+
+The USA anchor is the one with a tunable input, so the check reports the band rather than only that one
+value passes: **the USA holds AA+ for deficits in [4.6%, 7.5%] of GDP**, and the anchor uses 6.4% — near
+the middle, not balanced on an edge.
+
+### Validation 2 — full matrix: 3,421 → 1,416. Reduced 59%, NOT eliminated
+
+15 scenarios × 100 and 500 turns, `-seed=777`, real Unity 6000.5.6f1, 0 compile errors.
+
+| | Before | After |
+|---|---|---|
+| Sweden | 1,761 | 616 |
+| France | 1,117 | 567 |
+| Germany | 240 | 103 |
+| USA / Italy / Poland | 0 | **0** ✓ |
+| Finiteness failures | 0 | **0** ✓ |
+
+The "countries currently at zero must stay at zero" requirement is met.
+
+**A defect in the check itself was found and fixed mid-validation.** An intermediate run showed 1,446 with
+30 new Italy anomalies, all on turn 1. `CreditRating.AAA` is enum value 0, so the pre-run snapshot
+recorded an unrated country as AAA and every country's **first** review registered as a spurious
+multi-notch downgrade. The check now compares two *reviewed* ratings only. Same
+confident-wrong-default failure the tile guards against with its em dash — an unrated sovereign is not a
+top-rated one.
+
+### Why the residual is NOT a rating defect — the discrepancy, reported rather than tuned away
+
+Elias's instruction was to report a discrepancy rather than adjust until it passes, because *"a
+calibration that needs tuning to survive a change in read-timing is telling you something about the
+fiscal position being read."* That is exactly what happened.
+
+**The settled ANNUAL deficit ranges from −135.5% to +170.8% of GDP**, and 773 of 1,416 flagged readings
+exceed ±20%. The review is reading correctly; what it reads is not credible. Sweden's `DebtToGdpRatio` in
+plain `baseline` runs 21.8% → 0.90% → **0.00%** by turn 50 and stays pinned there, while stress scenarios
+show the same stock spiking back to ~44% and collapsing again within a year.
+
+**That is the already-documented debt-to-zero bimodality** (CLAUDE.md, "SpendingLine Amount Ceiling —
+Debt-to-Zero Fix"; "Both Sweden and France settle at `DebtToGdpRatio` = 0.0% by turn 500"), and it is
+roadmap failure pattern 4, bimodal attractors. The affected set — **Sweden, France, Germany** — is the
+documented set. USA, Italy and Poland, whose debt trajectories are well-behaved, produce zero anomalies
+both before and after.
+
+**No review cadence can stabilise a rating over a debt stock that oscillates between 0% and 45% of GDP
+inside a year, and none should.** A sovereign whose debt genuinely moved like that *would* be downgraded
+repeatedly. Reporting the downgrade is correct behaviour; the input is what is wrong. Damping it — the
+option Elias rejected — would have hidden this rather than surfaced it.
+
+**Conclusion: C4's implementation is COMPLETE and correct, and the cadence fix worked as intended. The
+blocker moves upstream** to the debt-to-zero defect — a pre-existing simulation-model problem C4 is merely
+the first stat to read year-over-year. Tracked as `MISSING_PREREQUISITES.md` section F1; recorded as an
+upstream dependency rather than left looking like unfinished rating work.
+
+### C4 is the first instrument that makes the bimodality player-facing
+
+**Worth recording separately, because it changes the DEFECT's priority rather than the rating's status.**
+Until now the debt-to-zero bimodality was a **log-only** finding: it lived in anomaly counts, batch-run
+summaries and this file's own prose. Nothing on screen reported it, and a player could run 100 turns as
+Sweden without ever being told their national debt had reached exactly zero and stayed there.
+
+The credit rating tile changes that. It sits in the dashboard grid, visible on every tab, and reports its
+input faithfully — so a debt stock swinging 0% to 45% and back inside a year now surfaces as a rating
+visibly collapsing and recovering. **The defect did not get worse; it got a display.**
+
+Consequences, both now recorded in the roadmap: its **priority rises** (it blocks a step AND is
+player-visible, neither of which was true before), and **it must not be fixed by damping the rating** —
+that option was raised and explicitly rejected in A1, and doing it now would return the defect to log-only
+while making C4 dishonest. A derived stat that stayed calm while its inputs did this would be the broken
+one.
+
+### A further verification-integrity variant, per Elias's note
+
+C4 was reported as "calibrated against 5 of 5 verifiable anchors" while **nothing called it**. Those
+anchors were hand-fed static debt/deficit/growth values, so the calibration proved the formula computes
+correctly at five points and said nothing about behaviour across a trajectory. The thrash appeared the
+moment it became reachable and was fed real simulated state.
+
+**The class: a correct measurement taken under conditions the system will never actually run in.** The
+check was sound; its conditions were not representative. This is why the anchor check is now executable
+and the harness evaluates the rating per turn — a static check and a trajectory check answer different
+questions, and only the second one notices this.
+
+---
+
+## Verification-integrity instance 9 — an enum whose zero value is a meaningful state (2026-08-02)
+
+**The defect was in the check, not the system under test.** Same class as instances 4–8: the checking
+mechanism was compromised while the thing being checked was fine.
+
+**What happened.** `SimulationTestRunner`'s rating-thrash check snapshots each country's rating before the
+run and flags any single-turn move beyond four notches. The snapshot is taken before day one, when no
+review has run yet — so it recorded `country.Rating.Rating`, which was the **default** value of the
+`CreditRating` enum.
+
+```csharp
+public enum CreditRating
+{
+    AAA = 0, AAplus = 1, AA = 2, ...
+}
+```
+
+**`AAA = 0`, and `default(CreditRating)` is therefore AAA.** An unrated country snapshotted as
+*top-rated*. Then each country's first scheduled review set its real rating, and the check read that as a
+downgrade from AAA:
+
+```
+[DERIVED] Turn 1 Italy: CreditRating moved 7 notches in one turn
+          (AAA -> BBB+, reviewed burden 138,0%, settled deficit n/a%)
+```
+
+Italy at 138% debt is *correctly* BBB+ — it is one of the five calibration anchors, and it passes. Nothing
+moved. **30 anomalies were fabricated for Italy alone**, and Italy had been at zero before the change, so
+this read as a regression caused by the cadence work. It was not.
+
+**Why it is worth a numbered instance rather than a footnote.** The zero value of an enum is not neutral
+when zero is itself a meaningful state. `CreditRating` is ordered best-to-worst by design — the ordering
+*is* the semantics, and `InterpolateCurve`/`Mathf.Clamp` depend on it — so AAA has to be 0. The bug is not
+the enum; it is that **"no value yet" and "the best possible value" became indistinguishable**, and a
+zero-initialised field silently chose the flattering one.
+
+**This is the same shape as two other findings on the same feature, which is what makes it a pattern:**
+
+| Where | The confident wrong default |
+|---|---|
+| `Evaluate` | `Mathf.RoundToInt(NaN)` is 0 → clamps to **AAA**. A broken country renders as top-rated |
+| Dashboard tile | An unreviewed rating would render as **AAA** rather than "not yet rated" |
+| Harness snapshot | An unreviewed rating snapshots as **AAA**, so a first rating reads as a downgrade |
+
+All three resolve the same way and all three are now fixed: carry an explicit
+`HasBeenReviewed`/`float?`-style "no value yet" flag rather than letting a zero-initialised field stand in
+for one. The tile renders an em dash; the harness compares only two *reviewed* ratings; `EvaluateFrom`
+takes `float?` for the terms that may not be computable.
+
+**STANDING RULE:** when an enum's zero value is a real, meaningful state — especially a *good* one — a
+zero-initialised field cannot distinguish "unset" from that state. Either carry an explicit "has a value"
+flag, or reserve slot 0 for a `None`/`Unrated` member. Do not rely on the default being obviously wrong
+at a glance: here it was obviously wrong only for Italy, whose real rating happens to be far from AAA. The
+same bug on Sweden or Germany — both genuinely AAA — would have produced **no anomaly at all** and stayed
+invisible.
+
+**How it was caught:** the number moved in the wrong direction. The cadence change should only ever have
+*reduced* anomalies, and Italy went from 0 to 30. A change that improves one metric while regressing
+another in a way the change cannot explain is worth attributing before reporting either number.
+
+---
+
+## Verification-integrity instance 10 — three broken verification scripts in one day (2026-08-02)
+
+**This instance is not really about PowerShell.** It is about the fact that on a single day, three
+separate verification scripts returned **clean, confidently-formatted, universally-negative results**, and
+all three were wrong. Each was caught only because the answer contradicted something already known — not
+by anything in the output itself.
+
+| # | The script | What it reported | Why it was wrong |
+|---|---|---|---|
+| a | csproj registration check | `GameController.cs = 0` — i.e. **nothing** registered | `[regex]::Escape` combined with `-SimpleMatch` searched for the literal `GameController\.cs` |
+| b | delivered-sprite check | **no** macro sprites delivered | Pattern `stat_*.png` does not match `icon_stat_gdp.png` — the `icon_` prefix |
+| c | zip-import verification | **all 84** `Macro_Data_UI` files zero-length, i.e. every asset pack NOT imported | `.Length` on a `PSCustomObject` collides with the intrinsic member and returned nothing, so the `> 0` filter dropped everything |
+
+**How each was actually caught** — and note that in every case the catch was external to the check:
+
+- (a) `GameController.cs` has been registered for months, so "0 registered" was impossible.
+- (b) The record said 42 sprites were delivered; the "bad pattern" reading was only preferred over the
+  "not delivered" reading after re-checking.
+- (c) `icon_stat_gdp.png` had been read as a 256×256 image earlier in the same session, so "zero-length"
+  was known to be false.
+
+**Each of these came within one step of a false report.** (b) *was* briefly reported as "no sprites
+delivered" and had to be corrected in the visual review record (now `COMPLETED.md` section 16).
+(c) would have declared four
+fully-imported asset packs broken and blocked a cleanup on fictional missing files.
+
+### Why a universal negative is the dangerous shape specifically
+
+A partial negative invites scrutiny — *"why did these three fail and not the others?"* A **universal**
+negative reads as a clean, decisive finding: *nothing is registered, nothing was delivered, nothing was
+imported.* It looks like signal precisely when it is most likely to be the check itself failing, because
+the commonest script defects — a bad pattern, a wrong operator, a property collision — break **every**
+comparison identically rather than a few of them.
+
+The three failures above share no technology and no author error in common. What they share is shape.
+
+### STANDING RULE — self-test before interpreting
+
+**Any verification script capable of returning a universal negative must first run itself against a
+known-good case and print the result.** The self-test output has to appear *before* the findings, so that
+"the script is broken" and "the finding is real" are distinguishable **at read time** — not afterwards, by
+someone happening to notice a contradiction with something they already knew.
+
+The rewritten zip check does exactly this and is the reference implementation:
+
+```
+Indexed 544 distinct basenames under Assets/
+SELF-TEST icon_stat_gdp.png -> 1 hit(s), first size 3441 bytes (must be > 0)
+```
+
+If that line reads `0 hit(s)` or `0 bytes`, every result below it is void, and that is visible immediately
+rather than three paragraphs of confident output later.
+
+**Corollary:** a check whose known-good case cannot be named is not yet a check. If there is no example
+that *must* pass, there is no way to tell a working script from a broken one, and the output cannot be
+trusted in either direction.
+
+This joins instances 4–9 in the same class — **the checking mechanism was compromised, not the thing
+checked** — and is the first to yield a rule about how checks must be *written* rather than about what to
+be suspicious of after the fact.
+
+---
+
+## Debt-to-zero: mechanism CONFIRMED, and it is the floor clamp — but not the whole story (2026-08-02)
+
+Investigation only. **Nothing was implemented**, per Elias's explicit gate: *"three wrong theories preceded
+the right one on the Unity hang; confirm before building."*
+
+**Method.** `Assets/Editor/DebtClampDiagnostic.cs` — a temporary tool reading **only public API**, with no
+production code instrumented. The pre-clamp value is *reconstructed* rather than observed:
+`ApplyRevenueAndSpending` computes `Clamp(GovernmentDebt - budgetBalance, 0, maxDebt)`, so last turn's
+stored debt minus this turn's `FiscalTurnReport.BudgetBalance` is exactly the value that went into the
+clamp. Comparing it against what was stored says, per turn, whether a bound bound.
+
+### Confirmed
+
+**1. The floor is the mechanism. `SimulationManager.cs:2145`:**
+
+```csharp
+state.GovernmentDebt = Mathf.Clamp(state.GovernmentDebt - budgetBalance, 0f, maxDebt);
+```
+
+Baseline, seed 777, 120 turns:
+
+| Country | Floor hits | Ceiling hits | Net-creditor turns | Final debt/GDP |
+|---|---|---|---|---|
+| Sweden | **67 / 120** | 0 | **120 / 120** | 0.00% |
+| France | **14 / 120** | 0 | 56 | 0.00% |
+| Germany | 0 | 0 | 0 | 38.57% |
+| USA / Italy / Poland | 0 | 0 | 0 | healthy |
+
+**2. The ceiling is never involved.** Zero hits for all six countries. `MaxDebtToGdpPercent = 300f` plays
+no part in this defect — worth stating because "a clamp" could reasonably have meant either bound.
+
+**3. Elias's premise is correct, and stronger than stated.** Sweden is a net creditor from **turn 1** — SWF
+203.4 against debt 137.9 — and by turn 16 its net position is **−599**. The single-turn excursion below
+zero reaches **−64.3% of GDP**. The simulation is not approximating a country near zero debt; it is
+suppressing a large, persistent, genuinely negative net position. That is Norway, which is the country
+this project already used to calibrate SWF returns.
+
+**4. The affected set is exactly "countries whose SWF drives net position negative", and this explains
+Germany.** Germany showed 0 floor hits in baseline yet contributed 103 matrix anomalies, which looked like
+a contradiction. It is not: **Germany's anomalies occur ONLY in `swfstress`** (14 at 100 turns, 89 at 500),
+and its `swfstress` debt trajectory is 57.2% → **0.0%** → 10.4% → **0.0%** → 24.8% → **0.0%** → 80.1% →
+**0.0%**. Same mechanism; Germany just needs the SWF push to reach the floor. Baseline anomalies are
+Sweden and France only — precisely the two countries that hit the floor in baseline.
+
+### NOT confirmed — what removing the clamp would and would not fix
+
+**The clamp creates the BOUNCE, but it does not create the underlying volatility.** Sweden's per-turn
+budget balance in baseline runs +79.1, +16.0, +48.0, +0.8, +30.2, **−39.8**, +10.5, +14.9 … That
+oscillation is upstream of the clamp and would survive its removal.
+
+So the honest split:
+
+- **Removing the floor should eliminate the 0.00% pinning and the bounce off zero** — the specific artifact
+  where a stock is held at a bound and then released. That much follows directly from the evidence.
+- **It is NOT established that the rating thrash disappears entirely.** If net debt trends smoothly to
+  −64% of GDP the effective burden sits far below the curve's first breakpoint and the rating is a stable
+  AAA — but a net position *oscillating* around a negative value would still produce year-over-year
+  changes, and whether those alone clear the 4-notch threshold is not answered by this data.
+
+**Recommended check to run WITH the implementation, not after it:** re-run this same diagnostic with the
+floor removed and compare the per-turn `budgetBalance` series — unchanged, as it must be if the change is
+purely to the stock — alongside the resulting year-over-year debt deltas. If the deltas fall below the
+notch threshold, the fix is complete; if they do not, the residual is budget-balance volatility and is a
+separate defect that was hidden behind this one.
+
+**Second-order consequence worth designing for deliberately:** with debt clamped at zero, interest on debt
+is zero, so a net creditor currently earns **nothing** on its net assets. Removing the floor without
+deciding how negative debt interacts with `GetInterestOnDebt` would silently create either free money or a
+new asymmetry. This is a design decision, not an implementation detail.
+
+### Method note — the diagnostic's first output was unusable, and the self-test rule caught it
+
+The first version wrote `{x:F2}` into a comma-separated file under a Swedish locale, so decimal commas
+split every row into the wrong fields and the parse reported Germany at 4644% debt. **The integer summary
+counts were unaffected**, which is exactly how a half-broken output misleads — part of it looked right.
+
+Fixed with `InvariantCulture` and a semicolon separator, and the tool now prints a **self-test first**, per
+the standing rule from verification-integrity instance 10:
+
+```
+SELFTEST seed Sweden   debtToGdp=35.00% debt=217.00 gdp=620.00
+SELFTEST seed Germany  debtToGdp=63.00% debt=2961.00 gdp=4700.00
+```
+
+Those are the seeded values and the C4 calibration anchors. If they do not read that way, everything below
+is void — visible before any finding is interpreted rather than after.
+
+---
+
+## The sparkline crash — two transferable lessons (2026-08-02)
+
+Fixed in `e9e3f6a`; the defect itself is written up in `COMPLETED.md` section 16, with the stack trace.
+Two points generalise well beyond it.
+
+### 1. Sharing an algorithm was right. Sharing its constants was not.
+
+`5701a04` deliberately reused `GraphRenderer.DrawLine` for the sparkline *"so a sparkline can't disagree
+with its full-size counterpart"*. That reasoning was sound and is still sound — one Bresenham
+implementation, one behaviour. What went wrong is that the shared helper also carried the **full-size
+graph's dimensions**: `SetPixelSafe` bounds-checked against `TextureWidth`/`TextureHeight` (300×90) and
+strided by 300, while the sparkline handed it a 72×20 buffer.
+
+**A helper shared across callers must take everything that varies between them as a parameter.** A
+constant baked into a shared helper is an assumption about *one* caller, silently imposed on all of them.
+The giveaway here was in plain sight: a method named `SetPixelSafe` that is only safe for one buffer size.
+
+### 2. The defect survived because its only entry point required `OnGUI`
+
+`DrawSparkline` calls `GUI.DrawTexture`, which throws outside `OnGUI`. So **no headless test could reach
+the arithmetic at all** — not because anyone decided against testing it, but because there was no callable
+surface that didn't drag the GUI in. It shipped, passed a build, passed a matrix run, and was only caught
+by a human opening the screen.
+
+The fix was to split the pure part out: `BuildSparklinePixels(width, height, history, color, maxPoints)`
+returns a `Color[]` and touches no GUI. `GraphRendererDiagnostic` now covers **336 width × height ×
+series-shape combinations**, which would have caught this before it ever rendered.
+
+**STANDING RULE: where pixel or layout maths sits behind a GUI-only entry point, extract the maths.** The
+test for whether this applies: *can I call the calculation from a batch-mode Editor method?* If not, the
+calculation cannot be regression-tested, and every future change to it is unverifiable by anything except
+a human looking at a screen. Other places this likely applies, unaudited: `MapRenderer`'s projection maths,
+`PolicyWebRenderer`'s node layout, `HemicycleRenderer`'s seat arc, `PoliticalCompassRenderer`'s scaling.
+
+---
+
+## P2 — the unit bug: investigation, and one recommended approach (2026-08-02)
+
+**Not patched.** The spec asked for investigation and a single proposal, on the explicit grounds that *"a
+unit-aware formatter applied inconsistently is exactly how this bug survived two previous fixes."*
+
+### Finding 1 — the base unit is BILLIONS, and it is consistent
+
+Checked against seeds rather than assumed. USA GDP `29000` = $29,000B = **$29T**; `GovernmentDebt` 35960 =
+124% of GDP; `SocialSecurity` 1530 = $1.53T against a real ~$1.5T; `Defense` 850 = $850B against a real
+~$850B; Sweden's SWF 195 ≈ its real AP-fund total. Every stored currency value is on the same scale.
+
+**So there is no second, worse problem.** The spec flagged inconsistent units as the outcome that would
+matter more; it is not the case. Seven currency fields on `EconomyState` (`GDP`, `Budget`, `TradeBalance`,
+`Consumption`, `Investment`, `PotentialGDP`, `GovernmentDebt`), plus `SpendingLine.Amount`,
+`SovereignWealthFund.TotalAssets` and all twelve `FiscalTurnReport` money fields — all billions.
+
+⚠ **One genuine exception, and it is a derived value, not a stored one.** `DerivedStats.GdpPerCapita`
+returns **thousands per person** (billions ÷ millions), which its own doc comment states. Any formatter
+that assumes "currency ⇒ billions" would render it a million times too large. It is not currently
+displayed anywhere — but A4's remaining work is precisely to surface it, so the formatter must handle a
+per-stat unit rather than one global one.
+
+### Finding 2 — the formatter is magnitude-aware and unit-blind
+
+```csharp
+if (magnitude >= 1_000f) return (value / 1_000f).ToString("0.#") + "k";
+```
+
+`FormatAxisValue(29000)` → `"29k"`. The arithmetic is right for a base unit of 1. The suffix ladder was
+added after the `StatTile` "9,3" bug specifically so magnitude could not be lost — and it works, but it is
+scaling from the wrong starting point.
+
+### Finding 3 — 21 display sites, and the game states its units NOWHERE
+
+| Path | Sites | Symptom |
+|---|---|---|
+| Via `FormatAxisValue` | 4 — graph axis labels ×3, published-graph empty state, "latest:" overlay, B2 chips (`Gdp`, `TradeBalance`) | `"29k"` for $29T |
+| Raw `F1`, no suffix, no unit | 17 — GDP/Government Debt/Budget Balance tiles, Statistics GDP line, cumulative budget, trade balance, Revenue/Interest/Welfare/Tariff report rows, SWF panel (assets, gross debt, net position), interest-on-debt row, spending line amounts + implied change, world-map tooltip, Policy Web spending popup, turn log, `[DEBUG]` dump | `28999,3` bare |
+| Preview panel | 1 — "Net Budget Impact" | bare |
+| **Sparklines** | 0 | **unaffected** — they draw shape only, no text |
+
+Not one site prints a currency symbol or a unit. `GameController.cs:4652` even computes a local named
+`impliedDollarChange` and renders it as a bare number.
+
+### Recommendation — ONE approach: a per-stat unit on a single money formatter
+
+**Render `$29.0T`, not `29000` and not `29k`.** Concretely:
+
+1. **One entry point**, `UiFormat.Money(float value, MoneyUnit unit)`, where `MoneyUnit` is `Billions`
+   (everything stored) or `Thousands` (`GdpPerCapita`). It normalises to a base amount and then picks
+   `$X.XT` / `$XXXB` / `$XXM` — so the suffix describes the real magnitude rather than the storage scale.
+2. **The unit travels with the stat, not with the call site.** Extend the existing per-stat metadata
+   (`PolicyWebRenderer.StatInfo` already carries `HigherIsBetter` per `StatNodeId`; `PolicyScreenStats`
+   already switches per stat) with a unit. Graph axes then ask the series what it is instead of assuming.
+3. **Retire `FormatAxisValue` for currency.** It stays for non-currency axes (rates, indices) where a bare
+   `F1` is right. A currency axis that calls it becomes a compile-time impossibility if the axis takes a
+   `MoneyUnit`-bearing descriptor rather than a raw float.
+
+**Why this over the alternatives.** *Raw plus a unit label* ("29000 ($B)") keeps the reading burden on the
+player on every screen and still shows a five-digit number where "$29T" would do. *Differing by context* —
+tiles one way, axes another — is precisely the inconsistency that let this survive two fixes; the same
+number would read differently on two screens a click apart.
+
+**The property that matters most is that inconsistency becomes hard rather than merely discouraged.**
+Two prior fixes were correct in isolation and failed because nothing prevented the next site from doing
+something else. Carrying the unit on the stat, and making the currency path require it, is what stops a
+22nd site from being added wrong.
+
+**Scope: ~21 call sites, one new formatter, one metadata addition.** No simulation change whatsoever —
+every stored value keeps its current number and unit.
+
+### IMPLEMENTED 2026-08-02 — built exactly as recommended, plus four findings
+
+`UiFormat.Money(value, MoneyUnit)` in `Assets/Scripts/UI/UiFormat.cs`, verified by
+`MoneyFormatDiagnostic` (`Assets/Editor/`), **6 of 6 checks PASS** in real Unity 6000.5.6f1. USA GDP
+`29000` now renders **`$29.0T`**; the seed table (`35960` → `$36.0T`, `1530` → `$1.53T`, `850` → `$850B`,
+Sweden's SWF `195` → `$195B`) all render at true magnitude. No simulation file was touched.
+
+**The unit is a required parameter, not a defaulted one**, on `GraphRenderer.Draw`/`DrawPublished`/
+`DrawNeutral` and on `PieChartRenderer.Draw`. Every one of the ~19 call sites now states either a unit or
+an explicit `moneyUnit: null`. That is the recommendation's "inconsistency becomes hard" property made
+real: a new currency graph cannot be added silently, because it will not compile without answering the
+question. `FormatAxisValue` survives for rates and indices and now carries a NON-CURRENCY ONLY warning.
+
+**Finding 1 — the 21-site enumeration was low.** The real count is closer to 30. The fiscal report has
+**eight** money rows plus a net line, not the four the investigation listed, and **two pie-chart legends**
+(Spending Allocation, Theoretical Tax Revenue) print billions through `PieChartRenderer`'s
+`valueFormat` and were missed entirely — that widget was never inspected because the investigation
+searched display sites in `GameController`, and the chart's formatting lives one file away. *Lesson: an
+enumeration built by grepping the file where the symptom was seen will miss the widgets it delegates to.*
+
+**Finding 2 — the worst-stated unit in the game was `" units"`.** Three preview-panel figures (SWF
+contribution, SWF returns, Net Budget Impact) called `FormatEstimate(value, " units")`, rendering
+`+120.00 units` for $120 billion. Now `FormatMoneyEstimate`, rendering `+$120B (±$9.60B)`.
+
+**Finding 3 — the formatter must pin its culture, and this machine proves why.** The first version used
+the ambient locale and produced **`$29,0T`** on this sv-SE machine: a Swedish decimal comma against a US
+dollar sign. Money now formats in `InvariantCulture`. Two reasons, and the second is the stronger: the
+amounts are US dollars in every country's UI, so the separator should match the symbol; and a
+locale-dependent formatter **cannot have a fixed-string regression test**, which is intolerable for the
+one function that has now been wrong three times. Non-money numbers keep their existing locale
+formatting — nothing else changed. Note the project's own history: the "9,3" incident was a
+comma-decimal figure clipped in a narrow rect.
+
+**Finding 4 — round-then-tier is a real bug, and only the diagnostic caught it.** The first version
+rounded the dollar amount to three significant digits and then chose a tier, which requires dividing by
+a negative power of ten. `1e-9` is not exactly representable, so `$999.97B` came back a hair below
+`1e12`, missed the trillions tier and printed **`$1000B`**. Fixed by rounding in the already-scaled
+domain and promoting a tier on carry. **This is the case for the diagnostic existing at all**: it is
+invisible at every seed value, appears only within 0.003% of a tier boundary, and no visual review would
+ever have found it.
+
+**Two OnGUI-safety points, both from the sparkline lesson.**
+- `CHECK 6` proves `Money` cannot throw on NaN/±Infinity/`float.MaxValue`. It renders nonsense
+  (`$NaN`, `$InfinityT`) and **survives**, which is the correct bar for a function every draw call
+  reaches — an exception inside `OnGUI` aborts the frame and blanks the screen.
+- The tile call sites state `MoneyUnit.Billions` directly rather than
+  `GetStatUnit(StatNodeId.Gdp).Value`. That `.Value` would throw inside `OnGUI` if the metadata entry
+  were ever cleared, and billions is a fact about `EconomyState.GDP` (a field) rather than about the
+  stat table. **Generic code that formats an arbitrary stat still asks the metadata** — the per-stat
+  graph, the B2 chips, and both GDP graphs do — which is exactly the split the metadata exists for.
+
+⚠ **NOT VISUALLY CONFIRMED.** Review item 3 stays open, and items 7/8 are now unblocked rather than
+passed. Arithmetic being right is not the same as a graph reading well, which is the whole reason those
+items were sequenced behind this one.
+
+---
+
+## P4 — the clipping class: audit, and why a shared helper is warranted (2026-08-02)
+
+**Not patched.** Sixth and seventh recurrences of one class; the spec asked whether a shared helper ends
+it. **It would, and the evidence is stronger than expected — the fix already exists and was applied to one
+field of one widget.**
+
+### Item 6 is literally the "9,3" bug again, in the same file, one field away
+
+`PoliSimWidgets.StatTile` builds its label style as `new GUIStyle(GUI.skin.label)`, which **inherits
+`wordWrap = true`**, and draws it into a fixed `12f * scale`-tall rect with a `MiddleLeft` anchor. A label
+too wide for the tile wraps to two lines, and two lines vertically centred in a one-line box lose their
+tops and bottoms — exactly "the text above is cut off" on `DEBT-TO-GDP` and similar.
+
+The `StatTile` **value** field has carried the fix for this since the "9,3" incident, and its own comment
+names the cause:
+
+> *"this style inherits wordWrap from GUI.skin.label, and the anchor is a BOTTOM one - so a value too wide
+> for the tile wrapped, and the bottom anchor rendered only the LAST wrapped line."*
+
+The value got `wordWrap = false` plus shrink-to-fit. **The label, ten lines above it in the same method,
+did not.** That is the whole argument for a helper: the correct fix was written, proven, commented — and
+then not reused even within its own widget.
+
+### Item 5 is the width variant
+
+`DrawSubCategoryButton` uses `GUILayout.Button(label, style, ExpandWidth(true), MinHeight(...))`. Five
+buttons share the Policy/Laws row (Labor Market, Crime & Justice, Economic Sectors, Policy Web, Trade); the
+row has no width budget, so when natural widths exceed the container the last one — Trade — clips.
+
+### The class, across seven known instances
+
+Manufacturing sector label · World Map country names · TaxLine/WelfareProgram rows · Policy Web category
+headers · Policy/Laws "Trade" · Budget tile labels · StatTile values (fixed).
+
+**Every one is the same root shape: a text rect sized by a hardcoded constant instead of by measuring the
+string in the style it will actually be drawn in.**
+
+### Recommendation — `PoliSimWidgets.MeasuredLabel`
+
+One helper that takes the rect, the text and **the style it will actually render in**, then:
+- measures via `style.CalcSize`/`CalcHeight` against that style, not a smaller stand-in;
+- sets `wordWrap = false` and **shrinks the font until it fits**, never truncating — the value field's
+  existing approach, because shrinking makes a figure smaller but never *different*, which is the property
+  that mattered for "9,3" and matters identically for a clipped label;
+- recomputes per frame, since every style in this project rescales with the window;
+- leaves an explicit margin so nothing sits flush against a boundary.
+
+For the width variant, the same helper answers "how wide does this row actually need to be", which is what
+`DrawSubCategoryButton`'s container needs in order to stop over-committing.
+
+**Do not fix items 5 and 6 in place.** Six prior site-specific fixes have not ended this; a seventh will
+not either. The helper plus a sweep of the seven known sites is the same amount of work with a different
+outcome.
+
+---
+
+## `icon_stat_interestrate` — delivered weeks before anyone noticed (2026-08-02)
+
+**Elias pointed out that the icon already existed**, in `Policy rate icon design.zip` at the project root.
+`MISSING_PREREQUISITES.md` section E had it as *"REQUEST SENT, awaiting delivery"*. Both statements were
+written from the same accurate information; nothing reconciled them.
+
+**The import, done the established way.** `icon_stat_interestrate.png` (256×256 RGBA, verified by PNG
+signature and header, white-on-alpha with coverage in line with an existing stat icon) to
+`Assets/Resources/Art/UI/Stats/`, its 24×24 `currentColor` SVG source to `Stats/Source/`, both with
+hand-written `.meta` files. The PNG's is **byte-identical to `icon_stat_gdp.png.meta` apart from its
+guid**, which is what §3 of the request document prescribes, and the two new guids were checked against
+all 296 `.meta` files in the project for collisions. Zip archived to `/AssetPackArchive/`.
+
+**The brief was met**: a `%` — a slash with two dots — over a rising stepped line. Distinct from
+`icon_stat_inflation`'s price tag, which mattered because the two sit adjacent on the Fiscal stat row and
+one is a lever the player pulls while the other is an outcome they observe.
+
+### The verification point: file-on-disk is not the property that matters
+
+The import was confirmed by **loading through `Resources.Load`** — `IconLibrary.GetStat`, the exact path
+the game uses — not by finding the file. A hand-written `.meta` is precisely the case where those two
+answers can differ: the file can be present and correct while a malformed importer block leaves it
+unloadable, and `IconLibrary`'s null-on-missing contract would then swallow the failure silently.
+
+### `StatIconCoverageCheck`, and why a null-on-missing contract needs one
+
+`Assets/Editor/StatIconCoverageCheck.cs` enumerates every `StatNodeId`, resolves its icon name through
+`PolicyScreenStatsRenderer.GetIconName` and reports any that does not load. **18 of 18 present.**
+
+The contract that made this icon's absence invisible is a *good* contract — a missing sprite draws
+nothing rather than a stand-in that would imply the wrong stat, and it is what lets a new stat land ahead
+of its art. But a failure mode designed to be silent in play needs somewhere it is loud, and there was
+nowhere: the gap was eventually found by cross-referencing requested names against the disk **by hand**.
+This is that cross-reference, made runnable. `GetIconName` went from private to public for it — the
+standing rule from the sparkline crash applied to a lookup instead of to maths: where the only entry
+point is a draw call, extract the part a batch-mode method can reach.
+
+### Two lessons, both about how the gap survived rather than about the icon
+
+- **A delivery is not self-announcing.** This is the *second* asset delivered and left unimported while a
+  document reported it outstanding; `menu_pattern_tile.png` is the first and is still open. The register
+  cannot detect a zip appearing at the project root. That is exactly why the unarchived zip is kept as a
+  visible reminder — and why "awaiting delivery" is a status worth re-checking against the filesystem
+  rather than trusting.
+- **A correct derivation against the wrong list still misses.** The macro icon pack derived its stats
+  from the 29 fields on `EconomyState` — code-grounded, and the right instinct. `InterestRate` is not one:
+  it lives on `CurrencyZone`, because a rate belongs to a currency zone rather than to one country's
+  economy (the Eurozone five share one). It was structurally invisible to that derivation while being a
+  `StatNodeId`, a `PolicyNodeId` target, a Taylor Rule input, and the headline figure on two screens.
+  **Enumerate the display enum, not the storage struct** — anything the UI can show needs an icon
+  regardless of which type owns the field.
+
+⚠ **This puts review item 10's pass in further doubt.** It was reviewed with the Interest Rate chip's
+label sitting flush left where the missing icon would have been, so the row's spacing is not what was
+confirmed. That is now the *second* caveat on item 10, alongside its sparklines never having rendered at
+turn 0.
+
+---
+
+## `menu_pattern_tile.png` imported, and "awaiting delivery" made checkable (2026-08-02)
+
+The second of the two delivered-but-unimported assets, and the one that had sat longest. Its zip was kept
+unarchived at the project root **on purpose**, as a visible reminder — a convention that worked in the
+sense that the reminder survived, and failed in the sense that nothing acted on it for weeks.
+
+### The import, and the one deliberate departure from the icon convention
+
+`Assets/Resources/Art/UI/Textures/menu_pattern_tile.png` — a new folder, with a hand-written folder
+`.meta` alongside the texture's own. A seamless 256px dot lattice plus 135° hatch, white on transparent at
+very low alpha (sampled 0, 6 and 21 of 255), so it reads as texture on a wash rather than as a pattern.
+
+**Wrap Mode `Repeat`, where every icon in this project is `Clamp`.** Verified as the *only* difference
+from `icon_stat_gdp.png.meta` besides the guid, by diffing the two files. The delivery's own README
+specifies it, and it is load-bearing rather than cosmetic: the tile is drawn with
+`GUI.DrawTextureWithTexCoords` at one repeat per 256px of screen, so `Clamp` would not throw or warn — it
+would stretch the edge pixel across the whole display, which looks like a deliberate gradient rather than
+a broken import. That is precisely the class of failure this project keeps finding, so
+`StatIconCoverageCheck` now asserts `wrapMode == Repeat` rather than merely that the texture loads.
+
+`IconLibrary.GetTexture` is a separate accessor from `Get`/`GetStat` for the same reason: these two
+categories are *used* differently, not merely stored apart, and one accessor would invite an icon drawn
+tiled or a tile imported clamped.
+
+**Wired into `DrawCountrySelector`**, which drew no background at all before. The flat wash is drawn
+whether or not the texture resolves, so a failed import degrades to a plain dark panel — a fine screen —
+instead of taking the wash down with it.
+
+### Rule 12, and why the check is on the zip rather than on the register
+
+Two assets, two documents, same shape: `icon_stat_interestrate` recorded as *"REQUEST SENT, awaiting
+delivery"* on the day it arrived, and `menu_pattern_tile.png` named as a gap in three places while sitting
+in a zip twenty feet away. **Neither register was wrong when written.** A register is only as current as
+its last edit; nothing watches the project root; a delivery does not announce itself. Both were closed
+only because Elias said the file already existed — which is not a mechanism.
+
+`DeliveredAssetCheck` compares **what was delivered against what exists**, which is the one comparison
+that cannot go stale.
+
+**Proven against the real defect before being trusted**, per the standing self-test rule: with the tile
+temporarily withdrawn it reported `MISSING PoliSim GUI redesign.zip: menu_pattern_tile.png`, `18 of 19
+asset entries present`, and exited 1. Restored: 0 gaps, 7 packs, 191 asset entries, exit 0. A check that
+has never been observed failing is not evidence of anything.
+
+**It also retired a hand-verified claim.** The archive README's table (84/84, 42/42, 24/24, 20/20, 2/2)
+was produced by a manual reconciliation; the check reproduced every figure independently, and can now
+re-derive them on demand. The reverse direction is covered too — an asset deleted *after* its pack was
+archived reports as a REGRESSION rather than going unnoticed.
+
+**The alias map is the part that decides whether this check survives.** The GUI redesign pack shipped
+`icon_<area>` and the project imports area icons as `icon_area_<SystemArea>`, so 16 entries would report
+as permanent false misses. They are mapped, and the mapping was verified against the files on disk rather
+than taken from the archive README's "and so on". A check that cries wolf gets ignored, and an ignored
+check is worse than none because it looks like coverage.
+
+### The general form of the lesson
+
+**A status describing the outside world is a cached value, and needs an expiry.** "Awaiting delivery",
+"blocked on X", "not yet sourced" all describe something outside the repository, and every one of them
+goes stale silently. Where the underlying fact is mechanically checkable — a file's existence, an asset
+resolving, a package version — the check belongs in `Assets/Editor/` next to the others, and the document
+should point at it rather than restate its answer.
+
+---
+
+## The debt floor removed — and the finding that it was never the rating thrash's cause (2026-08-02)
+
+Elias's ruling implemented: the zero floor on `GovernmentDebt` is gone, debt may go negative, and a net
+creditor earns nothing on its position. Validated against the full matrix at 100 and 500 turns, seed 777,
+real Unity 6000.5.6f1, **with a like-for-like before/after run** — the change was stashed, the pre-change
+matrix captured, then restored. Comparing two differently-seeded runs would have attributed RNG drift to
+the change, which is verification-integrity instance 8's exact lesson.
+
+### The numbers, by anomaly class
+
+| Anomaly | BEFORE | AFTER | |
+|---|---|---|---|
+| `DebtToGdpRatio swung` | 6,225 | **2,507** | −60% |
+| `CreditRating moved` | 1,416 | **1,394** | −1.6% |
+| `Inflation swung` | 1,305 | 1,305 | unchanged |
+| `Unemployment swung` | 116 | 116 | unchanged |
+| `InterestRate swung` | 93 | 93 | unchanged |
+
+**The three unchanged rows are as informative as the two that moved.** Byte-identical counts across
+inflation, unemployment and interest rates are direct evidence the change touched the debt stock and
+nothing else — a fiscal change leaking into the macro engine would have shown here first.
+
+### THE FINDING: the floor caused the debt bimodality, and did NOT cause the rating thrash
+
+This is the question the roadmap explicitly gated success on, and the answer is **no**.
+
+- **Debt swings fell 60%**, and the 0.00% pinning is gone entirely. Sweden no longer bounces 0%↔44%; it
+  crosses into net-creditor territory smoothly and stays there. The mechanism confirmation was right.
+- **Rating moves fell 1.6%** — from 1,416 to 1,394. That is noise. **The rating thrash was never the
+  floor's doing.**
+
+Two independent measurements agree, which is why this is stated as a finding rather than a suspicion.
+`DebtClampDiagnostic`'s year-over-year test — which isolates the DEBT term by evaluating the rating curve
+with the deficit and growth terms omitted — reports **0 notch moves in 117 years for the USA, Sweden,
+Germany and Poland**, 1 for Italy and 9 for France. The debt stock's own contribution to the rating is now
+almost perfectly stable. Yet the matrix still logs 1,394 multi-notch moves.
+
+**The residual is the deficit term**, exactly as the A1 write-up suspected when it recorded a settled
+annual deficit ranging −135.5% to +170.8% of GDP. That is a separate defect, and the floor was hiding it
+by making the debt stock's own noise so large that nobody could see past it. **Step C4's closure now waits
+on THAT**, not on this.
+
+### A second bound was needed, and it is a decision Elias has not made
+
+Removing the floor outright produced an unbounded NEGATIVE runaway: **Sweden reached −615% of GDP** over
+120 turns and France −359%. That is roadmap failure pattern 3 with the sign flipped, so the change could
+not pass its own validation bar without a bound.
+
+**The cause is structural.** `ApplyRevenueAndSpending` computes
+`actualRevenue = theoretical * efficiency * fiscalReactionMultiplier + swfReturns` — SWF returns are added
+*after* the multiplier, so the one stabiliser that would push back against a growing surplus cannot reach
+them, while the fund compounds at a rate that structurally exceeds trend GDP growth. That is the same
+asymmetry `MaxSwfToGdpPercent` already exists to bound, now visible from the other side.
+
+**Bounded symmetrically at −300% of GDP**, reusing the existing constant. The number is not an arbitrary
+mirror: Norway — the country this project used to calibrate SWF returns, and the real world's most extreme
+net creditor — holds a fund worth roughly 2.5× GDP, so a net position near −250% is the empirical outer
+edge and the bound sits just beyond it. With it, Sweden settles at −220% and France at −298%.
+
+⚠ **France reaches the bound and sits near it, which is the shape the floor's own defect had.** France is
+also the only country still showing meaningful year-over-year rating movement (9 of 117 years, up to 2
+notches). It is the remaining problem case and should be treated as one.
+
+⚠ **The bound is MY call, not Elias's.** His ruling covered removing the floor and the interest treatment;
+it did not cover what happens at the negative extreme, because the runaway was not known until the floor
+came off. Logged in Open Questions with the alternative — fixing the SWF-returns asymmetry directly rather
+than bounding its symptom — which is the more principled fix and a much larger change.
+
+### Why a net creditor earns nothing, and why that is not the whole answer
+
+Without the guard, negative debt times a positive rate is negative interest, which flows through as a
+REDUCTION in total spending — free money that grows with the surplus and compounds. That would have been a
+worse defect than the one being fixed, and it would have looked like a well-run economy rather than a bug.
+
+Zero is the conservative half of Elias's ruling. Interest earned on net assets is real, and modelling it is
+deliberately deferred: the SWF already models the return on government assets, so paying a second return
+on the same position here would double-count it.
+
+---
+
+## P4 — the label-clipping class, fixed with one helper (2026-08-02)
+
+`PoliSimWidgets.MeasuredLabel` and `MeasuredWidth`. The audit's recommendation, built as specified:
+measure in the style the text actually renders in, force `wordWrap` off, shrink rather than truncate,
+recompute per frame, and reserve space for whatever shares the rect.
+
+### The two reported sites
+
+- **Item 6 — `StatTile`'s label.** The "9,3" bug one field away from its own fix, in the same method:
+  `new GUIStyle(GUI.skin.label)` inherits `wordWrap = true`, drawn into a fixed `12f * scale` rect with a
+  middle anchor, so `DEBT-TO-GDP` wrapped to two lines and both lost their tops and bottoms.
+- **Item 5 — `DrawSubCategoryButton`'s width.** `ExpandWidth(true)` with no width budget: GUILayout
+  divides the row evenly, so when natural widths exceed the container the longest labels lose their
+  tails, and Trade — last in the row — is where it shows. **`MinWidth` is what `ExpandWidth` was
+  missing**: "take a share" never said "and this much is the minimum I need".
+
+### Two more found in the same widget, neither reported
+
+Both are the same class in quieter form, and both were found by reading `StatTile` rather than by looking
+for them:
+
+- **The suffix ran off the tile.** The value was fitted to the *full* inner width, then the suffix drawn
+  at `x + valueSize.x` — so a value wide enough to fill the tile pushed its own unit past the edge. The
+  value now reserves the measured suffix width before shrinking.
+- **`subLabel` was given `innerWidth` while starting at the delta pill's right edge**, so its rect
+  overran the tile by exactly the pill's width.
+
+### What was deliberately NOT touched, and why
+
+Three of the seven audited sites — the sector name column, World Map country names, and Policy Web
+category headers — **already measure correctly against the right style**, each from its own earlier fix.
+They were left alone. Refactoring working, visually-confirmed code onto a new helper is churn with real
+regression risk, and the helper's value is in being the answer for the *next* site rather than in
+rewriting the sites that already got it right.
+
+**That is the honest scope: two reported sites fixed, two latent ones found and fixed, five left
+standing.** The class is not "closed" by fiat — it is closed when the next label added goes through the
+helper instead of re-deriving the fix, and this is the first time there is something to go through.
+
+---
+
+## Verification-integrity instance — "appears nowhere" is FALSE for a restated level series (2026-08-02)
+
+**The most important lesson from the API work, because it is the one where the rule was wrong rather than
+the practitioner.**
+
+Rule 5f-ter in the seed file distinguishes a REVISION from an ERROR by asking whether the disputed value
+survives anywhere in the source: *"a revision leaves the old value in the historical record or adjacent
+periods; an error leaves no trace because there was never anything to leave."*
+
+**That reasoning holds only where the source preserves vintages.** OECD's GDP-per-hour series does not —
+a revision **restates every year at once**, so the pre-revision figure vanishes from the live API
+completely, in every year and every cross-section.
+
+### What actually happened
+
+France's productivity seed of **90.86** was searched across its full 2010–2024 series and a 41-country
+2024 cross-section. It appeared nowhere. Every observation in that search was correct. **The conclusion
+drawn from them was wrong** — 90.86 was the right figure on its own vintage, confirmed later against a
+DBnomics snapshot (2026-04-07) reading **90.8595608458969**, alongside the USA's "~97" reading
+**97.0466946503153**. Both original seeds were right; the live series had simply been restated, five of
+six countries upward by 1.0–2.3%.
+
+**A correct-but-superseded value produces exactly the fingerprint the rule assigns to an error — and the
+more exhaustively you search the live source, the more confident you become of the wrong verdict.**
+
+### What saved the figure was the GATE, not the TEST
+
+The test pointed at ERROR. What prevented a correct `[VERIFIED]` figure being overwritten was rule
+5f-bis's second condition — *the method must have reproduced an anchor in the same session* — which could
+not be met on first contact with a new API. **The default held and the file won.**
+
+That condition had been recorded a few hours earlier as a conservative inconvenience, with a note that it
+"can never declare an error on first contact... conservative by design". **It is the only reason the data
+survived.** A defensive rule justifies itself the first time it fires against a conclusion that looked
+airtight, and this is that occasion.
+
+### The standing form
+
+> **"Appears nowhere in the source" distinguishes error from revision ONLY where the source preserves
+> vintages. For a restated level series it distinguishes nothing. Check a third-party archive with
+> per-snapshot retrieval dates — DBnomics mirrors OECD SDMX and is reachable where `sdmx.oecd.org` is
+> not — BEFORE concluding a value never existed.**
+>
+> **And record the RETRIEVAL DATE beside every value from such a series, not just the reference year.**
+> Without it, a superseded figure and a wrong figure are indistinguishable by any available test.
+
+### Two hypotheses built on the bad verdict, both dead
+
+Both were mine, and both were confident:
+
+- *"90.86 is a pre-revision France 2023, and the direction is wrong for it"* — the vintage used to reason
+  about direction was a **secondary aggregator's**, not OECD's. Against the real archived OECD vintage the
+  direction reverses. **A secondary source's vintage cannot calibrate a primary source's revision.**
+- *"90.86 may be Germany 2022 pre-revision"* — archived Germany 2022 is 92.4008. The 90.9 that made the
+  story attractive was a one-decimal coincidence in an aggregator. Declining to log that as a
+  verification-integrity instance on one decimal of secondary evidence was the correct call.
+
+**The generalisable point beyond APIs:** an exhaustive search that returns nothing is evidence about the
+*source as it exists now*, never about whether a value was ever true. Absence is only evidence of error
+when the source is capable of remembering.
+
+## v2.0 chrome placement track closed (2026-08-12) - six placements, one defect found by set comparison
+
+Four commits closed the roadmap's `"six real IMGUI placements"` list: `7933696` (`ui_banner_hold` +
+`ui_calendar_pad`), `4192042` (sub-tab ink fix + harness corrections), `a220849` (`ui_tab_spine`),
+`fc16304` (`ui_folder_dossier` + `ui_portrait_frame`). Every run validated in real Unity 6000.5.6f1:
+57-58 captures, 0 failed / 0 overflows / 0 escapes, `ScreenEdgeCheck` 0 clipped, three sets
+(`holdcal_*`, `spineink_*`, `dosport_*`). Commit messages carry the per-placement detail; the
+findings that generalise are recorded here.
+
+### A face swap changes what ink reads on it - the two are one decision
+
+`cbdde4e` replaced the selected sub-tab's brass with the pale `ui_subtab_on` paper face and left the
+Primary kind's cream text in place. Cream on pale paper: "Domestic" was unreadable in every capture of
+the new set, and **the commit that introduced it had its own capture run, approved by eye, with the
+defect on screen** - the recorded limit of eye checks, recurring. What actually caught it was comparing
+the new set against the PRE-conversion `accessors_*` set side by side: readable white-on-brass beside
+unreadable cream-on-paper. **A single capture set shows you a state; only two sets show you a
+regression.** Fixed in `4192042` per A.8's own spec (active = bold inkText, inactive = inkFaint),
+re-inked only inside the face-loaded block so the degraded fallback keeps the cream that suits brass.
+
+### The capture set's paused/running split was a coincidence of two unrelated constants
+
+The warm-up stops on a preliminary release, which lands on turn 3 - an election eve - so the fed-chair
+pause was live in EVERY main capture, of every set ever taken. Two consequences, both now pinned in the
+harness rather than left to luck: `CaptureHeldState` drives to an election eve through the real
+`AdvanceDay`/`AdvanceTurn` pair and captures the HELD banner on a standard tab AND on Budget
+full-screen (an injected candidate list would light only the Budget site, which reads the field
+directly, while the calendar site's flag is recomputed per frame from election timing - half-real
+evidence); `01b_running_strip` captures at turn 0, the one moment guaranteed unpaused. My own first
+comment on `CaptureHeldState` claimed the opposite failure ("the banner exists in NO capture") -
+wrong within the hour, corrected in `4192042`. **A claim about what a capture set contains is itself
+a cached value; the set is the authority.**
+
+### Placement notes that will matter later
+
+- **Native-pixel chrome bounds type that sits on it.** The dossier shoulder band is ~13px at every
+  resolution (9-slice fixed bands do not scale), so its caption is a FIXED 11px, deliberately exempt
+  from `RescaleStylesToScreen` - a scaled caption would overflow the band at 1440p. Same reasoning
+  bounds the calendar pad's slice geometry and the portrait frame's bezel inset.
+- **`ui_portrait_frame_oval` is Canvas-path** (manifest: "Canvas hero size"), joining the seals and
+  scrim. The IMGUI roster frame reshaped `DrawPersonPortrait`'s rect from square to the frame's own
+  74x92 proportion - safe because ScaleAndCrop has always cropped to the given rect.
+- **The date's carrier moved.** `BuildTimeStatusText` no longer prefixes the date; the calendar pad
+  owns it in both states. The running form is now the invented-but-minimal "Clock running"; the paused
+  form keeps every reason, which was the load-bearing part.
+- **`GUI.DrawTexture`'s Vector4 borderWidths edge order was sidestepped, not resolved**: every
+  9-slice this pass draws goes through a `GUIStyle` with a `RectOffset` border, whose edge order is
+  unambiguous. If anyone later needs the Vector4 overload, verify the order by render first.
+
+## The capture driver's state axes - pinned, incidental, never captured (2026-08-12, report only)
+
+Requested by Elias after the HELD-state finding: the harness had full SCREEN coverage and half the
+STATE coverage, and nothing reported it. This enumerates the axes a capture can land on, derived from
+`UiScreenshotDriver` plus GameController's conditional draws. **Report, not fixes** - per the request,
+the length of the list is itself the finding. The set-comparison method this feeds is now
+working-discipline rule 15 (three layers: guards answer containment, one set answers plausibility,
+only the old-beside-new diff answers regression).
+
+### PINNED - deliberately produced by the driver, guaranteed in every set
+
+1. **Draft state** - SWF drafted with diverged weights; all 29 spending lines drafted, alternating
+   sign (B1's hatch/pencil/figure carriers render).
+2. **Publication state** - warm-up stops on a PRELIMINARY release (badged + dashed on screen).
+3. **History depth** - >=3 years, so graphs plot, pagination is real, the map has trade lines.
+4. **Scroll depth** - three per sub-screen (top / rows / deep).
+5. **Sub-screen coverage** - every sub-selector enumerated from the table in the driver.
+6. **Interrupt HELD** - CaptureHeldState, real election-eve trigger, standard tab + Budget full-screen
+   (new 2026-08-12).
+7. **Interrupt RUNNING** - 01b_running_strip at turn 0 (new 2026-08-12).
+8. **Resolution** - 1600x929 every run; 2560x1419 confirmed once by ruling (2026-08-11). 1920x1080 and
+   a deliberately narrow window remain uncaptured (already recorded in the roadmap).
+
+### INCIDENTAL - present in some sets by coincidence, guaranteed by nothing
+
+1. **The fed-chair pause during the main set** - the warm-up's preliminary-release stop happens to land
+   on an election eve. Was the only HELD coverage for every set before 2026-08-12.
+2. **Random events** - dosport happened to catch a BREAKING banner (trade summit); most sets have none.
+   Map event markers likewise.
+3. **The economy itself** - the warm-up is UNSEEDED, so every figure differs run to run (AA+ vs AAA
+   between consecutive 2026-08-12 sets). Fine for chrome; it means set comparison is structural/by-eye,
+   never pixel-wise, and no capture is reproducible.
+
+### NEVER CAPTURED - state the harness has never put on screen
+
+1. **A cabinet with ministers** - every capture has all portfolios VACANT: the roster with portraits,
+   competence rows, reshuffle flow, and the candidate-search results have never been in any set. (The
+   portrait frame shipped verified via the fed-chair picker only - same DrawPersonPortrait path, but
+   the roster context itself is unseen.)
+2. **A pending CABINET decision card** and **a pending FOREIGN POLICY meeting card** on Decisions - the
+   dossier treatment is verified only on FEDERAL RESERVE.
+3. **The BUDGET PROCESS pause** - the annual budget introduce flow, its dossier card, and the Budget
+   full-screen banner during it (the 91 capture shows the fed-chair reason there, not the budget one).
+4. **Any pending bill mid-countdown** - TaxProgramBill, WelfareProgramBill, the five tier-3 standalone
+   bills, a BudgetBill mid-vote: every pending-bill card, countdown and division/lean readout under a
+   REAL bill has never been captured (the live-estimate renderers show from drafts; the pending state
+   does not).
+5. **Game over** - the losing-election path and _gameOverStyle banner.
+6. **An election turn itself / election results** - the held pass stops on the EVE by design.
+7. **Any country but the USA** - never captured: the Eurozone shared-currency branches (no independent
+   rate controls), the EU-membership tariff view, a non-Fed institution name on the central-bank tab,
+   and - largest - **the legacy spending UI**: five of six countries have no SpendingLines portfolio
+   and draw the four category sliders instead of the 29-line ledger. A whole alternate Budget
+   sub-screen, never in any set.
+8. **A STANDING sovereign wealth fund** - the driver drafts one; the post-enactment standing-fund UI is
+   unseen.
+9. **A pending Implement/Remove program bill** - the tax-line/welfare-program toggle flow mid-bill.
+10. **Any locale but sv-SE** - every capture renders OS-culture dates ("januari"); the open 1D.3 locale
+    decision has never had its EN rendering captured.
+
+The axis that bit on 2026-08-12 (interrupt state) was #6/#7 - pinned only after it bit. Items 1-3 of
+"never captured" are the same shape: Decisions-tab states that the warm-up cannot reach determin-
+istically, which is exactly where the next silent coverage gap lives.
+
+## The scope correction (2026-08-12, Elias) - every visual confirmation is one country in one state
+
+**Every visual-confirmation claim this project holds - instance #12's closure, the clipping class at
+zero, the four screen conversions, the chrome placements - is scoped to the USA, in the default
+capture state, and says so now** (amendments in the roadmap entries that make each claim). This is
+rule 14 at the largest scale it has appeared: `ScreenEdgeCheck` and the guards enumerate SCREENS,
+and nobody had enumerated STATES - the state-axis report above is that enumeration, and the country
+axis is its widest gap. Five of six countries have never been photographed, and they reach code the
+USA does not: the legacy four-slider spending UI (five countries), the Eurozone shared-currency
+branches (three), the EU tariff view (five), the non-Fed central-bank naming (five).
+
+Ruled sequencing: **capture coverage before new features** - both 1a and the Canvas pilot wait on it.
+The orphan rulings landed at the same time (all eight dispositioned; folder faces become their own
+pass; frame_ornate joins the Canvas set; four marked served-by-current-treatment, revivable).
+
+## Country coverage - all six countries photographed for the first time (2026-08-12)
+
+12 capture runs (6 countries x 1600x929 and 2560x1419), 676 captures total, each set through
+`ScreenEdgeCheck` at its own size. Every automated check clean on every set: 0 failed, 0 overflows,
+0 escapes, 0 clipped - and per rule 15 those answer containment, so the different-code screens were
+then eyeballed per country. **Two composition defects and one stale-record finding, reported before
+fixing per Elias's instruction:**
+
+### Finding 1 - the ECB sub-tab label garbles when SELECTED, at 1600-class sizes only
+
+Germany and Italy (France same branch): "European Central Bank (ECB)" wraps to three lines on the
+SELECTED `ui_subtab_on` face and overflows the face upward, garbling into the content panel's top
+edge. Clean when INACTIVE on the same screen (two lines), clean at 2560x1419 (fits two lines), clean
+for every shorter institution name ("Sveriges Riksbank" and "Narodowy Bank Polski (NBP)" both fit).
+**Both guards structurally blind to it**: it is a BUTTON label (UiOverflowGuard hooks MeasuredLabel),
+and it garbles in the panel interior (ScreenEdgeCheck reads the screen's edge pixels). Only the eye
+catches it, which is rule 15's point. The USA never showed it because "Federal Reserve" is short -
+the defect was reachable only through the country axis.
+
+### Finding 2 - the empty Mandatory spending group leaks its divide-by-zero guard into the UI
+
+All five non-USA countries have no Mandatory spending lines, so Budget/Spending renders the
+"Mandatory (narrower range, higher approval cost) - bars to $100k" header over ZERO rows -
+`GroupSpendingMax`'s 0.0001f guard, formatted as a real money figure. A header with no group and a
+nonsense denominator. USA never showed it because USA has mandatory lines.
+
+### Finding 3 - the coverage premise itself was stale (recorded in the Overview correction above)
+
+"The legacy four-slider spending UI, live and reachable by five countries" was the stated premise of
+this pass, inherited from the Overview's "empty for five of the six" line - which predates
+`SeedGenericSpendingLines`. Reality: all six countries have portfolios (5 generic lines vs USA's
+25), the LedgerRow conversion HOLDS on the 5-line sets, and the legacy category-delta path is
+unreachable for every seeded country. The pass was still right to run - it found two real defects
+and the actual per-country deltas - but its premise was a cached claim nobody re-derived, the exact
+shape rule 12 names.
+
+### What the sets confirmed clean, per country
+
+- **Sweden / Poland** (independent currency): 10-tile dashboard with Currency Strength, own
+  central-bank tab with rate slider (Riksbank / NBP), 5-line spending ledger with B1 amber drafts,
+  Parliament hemicycle + converted legend, empty-Decisions state ("No pending decisions." - a
+  never-captured axis, now covered incidentally). HELD honestly skipped: the fed-chair mechanic is
+  USA-only, logged by the driver rather than mislabelled.
+- **Germany / France / Italy** (Eurozone): 9-tile dashboard WITHOUT Currency Strength (correct -
+  shared currency), ECB tab with National Rate Push slider and shared-rate text, findings 1-2 as
+  above, everything else clean at both sizes.
+- **USA** (re-run under the new driver): 58 captures per size including both interrupt states,
+  clean at both sizes - the first USA set at 2560x1419 since the 2026-08-11 ruling run.
+
+Set-comparison note (rule 15's measured limit): the warm-up is unseeded, so USA figures differ from
+the dosport_* set (economy re-rolled); the comparison was structural.
+
+## Instance 13 of the label-clipping class, and the two fixes from country coverage (2026-08-12)
+
+### Instance 13 - the ECB sub-tab, the first instance reached through the COUNTRY axis
+
+The class's thirteenth confirmed instance, and the first whose trigger was a country rather than a
+window size or a label edit: "European Central Bank (ECB)" wraps to three lines on the SELECTED
+sub-tab face at 1600-class sizes, and GUILayout's own wrap-height derivation laid the button out two
+lines tall - the text centred and overflowed both edges, garbling into the panel above. Eleven prior
+capture passes could not have seen it: every one photographed a country whose institution name fits.
+**Fix: `SubTabRowHeight`** - the row's tallest label measured at the row's own share width in the
+active face's style, floored at the tab-bar height, imposed via `GUILayout.Height` and subtracted
+by the same tab's content reserve. One measurement, two sites (the instance-12 discipline); measuring
+at the share width is the safe direction, since ExpandWidth can only widen a button, which wraps
+fewer lines than measured.
+
+**Sibling survey (named, not fixed, per Elias):** other chrome whose size is a constant or a fixed
+fraction while its text can grow:
+
+1. **The main tab bar** - `ConsolidatedTabButtonHeight` accounts for icon + label at an ASSUMED two
+   lines (`lineHeight * 2f`), not a measured wrap at the actual share width. Six fixed English
+   labels today; a narrow-enough window or a renamed tab could produce the three-line case.
+2. **The dossier shoulder caption** - fixed 11px type in the fixed ~13px baked band, wordWrap off,
+   width = card minus a constant. The horizontal variant: a longer kind string than today's four
+   would clip rightward with nothing measuring it.
+3. **The calendar pad's three text rects** - fixed fractions of the pad with font sizes derived by
+   ratio, never measured against content ("2045 - T19" at high turns is wider than "2029 - T3").
+4. **The Budget category COLUMN** - same style family, but VERTICAL: GUILayout resolves a vertical
+   child's width before its height, so its wrap heights are correct - confirmed by capture ("Sovereign
+   Wealth Fund" wraps cleanly). Named to record why it is NOT a sibling.
+
+### Finding 2's fix, and the sentinel survey
+
+Empty spending groups now render nothing (ruled A): a group header is furniture for its group, and
+suppressing it keeps `GroupSpendingMax`'s 0.0001f guard where it belongs - in the arithmetic.
+**Sentinel survey (a divide-by-zero guard formatted as a display value is a class):** exactly ONE
+site ever formatted its sentinel - the one fixed. `GraphRenderer`'s two range guards and
+`LedgerRow`'s span guard feed pixel math only; `PoliSimWidgets`' epsilon is a comparison. **One
+named residual**: a group whose lines are all exactly $0 would resurface the "" header through
+the same string - unreachable from seed data, approachable by a player cutting every line toward
+zero. Recorded rather than engineered around.
+
+### Finding 3, restated the honest way (per Elias)
+
+The coverage pass's premise ("the legacy four-slider UI is live for five countries") was a stale
+cached claim - and the pass was still right to run, **because it justified itself on what it found,
+not on what it was predicted to find**: two real defects reachable only through the country axis,
+the per-country deltas confirmed working (Currency Strength tile presence, central-bank naming,
+5-line ledgers), and the stale premise itself. A pass justified by its predictions would have been
+cancelled on discovering the premise wrong; a pass justified by coverage cannot be.
+
+## The state axes pinned, and the DivisionLog correction (2026-08-12)
+
+### Pinned through real paths (-shotstates; USA st2/, Germany st/, Sweden st/ sets, all edge-clean)
+
+- **Cabinet search and appointed roster** - candidates from the public pool, ministers appointed the
+  way the UI appoints them. The portrait frame verified at its actual roster site.
+- **The cabinet-decision dossier** - real rolls from ministers actually serving (fired within 0-91
+  days on all three countries).
+- **The budget-process pause** - the real fiscal date (USA: 244 days), with the BUDGET PROCESS
+  dossier, the full-screen budget banner, and the multi-reason hold banner ("choose the next Fed
+  Chair; introduce the annual budget bill") all on screen for the first time.
+- **A pending bill of every introducible type** - 6 of 7 on USA/Germany, 7 of 7 on Sweden, whose
+  seeded standing fund is what makes IntroduceSwfDrawdownBill accept; the false elsewhere is the
+  real precondition, not an error.
+- **en-US locale** (locusa1600) - decimal-point rendering captured beside eleven sv-SE sets.
+
+**The measured lesson of the pass**: the first version advanced 1460 days on three countries and
+pinned NEITHER the budget pause NOR a meeting - `TryOpenBudgetProcess` and
+`TryRollForeignPolicyMeeting` are the CONTROLLER's daily calls, which sim-side `AdvanceDay` never
+runs. The driver now makes the same calls play makes (`4836c59`). A state that will not arm under
+the harness is evidence about the harness's model of a day, not about the state.
+
+### Still unpinned, with the reason named
+
+- **The foreign-policy-meeting dossier** - the decision search stops on whichever fires first, and
+  cabinet decisions always won. Drivable: a search variant that keeps rolling past pending cabinet
+  decisions. Small refinement, not a model change.
+- **An election resolving** - leaves NO observable UI state: no record, no results screen. Needs a
+  model record (the Canvas election night's own dependency). Same shape as the stamps - and see below.
+- **Game over** - drivable in principle (force approval below threshold); left for a deliberate pass.
+
+### ⚠ THE STAMPS RULING'S PREMISE WAS WRONG WHEN MADE - DivisionLog has existed since 2026-08-10
+
+The 2026-08-12 ruling ("the stamps have nothing to stamp - no history list, no outcome field, no
+record anywhere") was made TWO DAYS AFTER `a7bd40d` built exactly that record:
+`Country.Divisions`, a `DivisionLog` of the last 24 divisions - title, date, alignment, passed,
+division number - appended by `ParliamentSystem.RecordDivision` from EIGHT resolution sites
+covering every bill type. Zero UI readers: built-but-uncalled, the state this project mistakes for
+absent. **Consequence: roadmap item 1a (resolved-bill history) is mostly DONE on the simulation side**
+- what remains is the UI (a Recent Divisions block on Parliament, where the stamps then have their
+state to mark) plus whatever retention/enrichment the Canvas election night needs. The absence claim
+was an ungrepped absence claim - the same shape rule 14's SWF instance already recorded.
+
+## Item 1a closed; the absence-claim class named with a guard; the day-tick artifact (2026-08-12)
+
+### The Division Records panel - built, verified at both sizes on two countries
+
+`DrawRecentDivisions` (`ab1b72f`) is the first reader of `Country.Divisions`: number + title,
+mono ISO date, the same diverging lean bar the live estimate draws, and the verdict stamps -
+`ui_stamp_carried`/`ui_stamp_rejected`, WoA on paper, INK weights (Good/Bad; the lifted set is
+desk-only). NOT LedgerRow: its columns are policy-control furniture and its read-only form is a
+condition gauge - a verdict is not a meter. Verified: div2 sets, USA + Germany x 1600 + 2560, six
+real divisions per set (bills resolved through the real countdown path), 0 failed / 0 overflows /
+0 escapes / 0 clipped on all four; rule-15 comparison against the st2/cov sets shows the panel as
+the one structural addition, hemicycle and legend unchanged. **The stamps ruling is closed with
+real state.**
+
+### The absence-claim class, now at SIX instances, and the guard that follows
+
+Elias named four: the SWF one-file grep, `icon_stat_interestrate`'s stale status, the section-E
+drift, and the stamps ruling. **This session added two of its own while correcting the fourth**:
+"an election resolving leaves no observable UI state" (DrawElectionResultsScreen existed; the
+DRIVER's turn path never ran CheckElection) and CaptureHeldState's first comment ("the banner
+exists in NO capture" - every capture was HELD). The stamps instance and both of this session's
+were NOT failed searches - **no search was ever run**. Each was inferred from reading behaviour at
+one altitude: ApplyBillResult (a callee, missing its caller's bookkeeping), the sim's turn path
+(missing the controller's), the warm-up's shape (missing its coincidence). The SWF guard ("name
+the search") could not hold, because there was nothing to name.
+
+**The guard, both halves:**
+> **Before recording an absence as a blocker, name the search that establishes it - pattern and
+> scope quoted. If there is no search to name, the claim is INFERRED FROM READING: say so, and name
+> what was read - because a reading covers the code it read, not the model.** Absence of a record
+> is established by searching for WRITERS, not by reading one applier; absence of a behaviour is
+> established by driving the REAL entry path, not a partial one.
+
+### The day-tick artifact - three families in one pass, and a refactor question it raises
+
+`sim.AdvanceDay` is not a play-day. GameController.Update's day loop also makes: the two arm
+calls (`TryOpenBudgetProcess`, `TryRollForeignPolicyMeeting`), the EIGHT bill countdowns
+(`Advance*BillDay`), and post-turn `CheckElection`. The driver discovered each by pinning
+nothing, measuring, and adding the controller's own calls (`4836c59`, `c82315f`, `dfeb7cf`).
+**Every "never captured" entry recorded before this was partly a driver artifact.** The driver now
+carries a COPY of the controller's day-tick list - which will drift silently the day Update gains
+an eleventh call. Raised in the session report: extract the controller's sim-side day tick into
+one method both call.
+
+### Election-night scoping (report only, per the earlier directive)
+
+- **What the log does NOT carry and the election screen needs: an ElectionRecord.** DivisionLog is
+  bill votes; elections leave only a transient `ElectionResult` discarded on dismissal. Election
+  night wants persisted: approval at election vs threshold, margin, won/lost, the turn, and the
+  seat composition at the time (for the declaration-wave beat). Few per game (one per cycle) -
+  keep all, no retention rule needed.
+- **DivisionLog retention: 24 is right.** "Recent votes" is the panel's claim; the election screen
+  reads elections, not divisions. Enrichment at WRITE time is the only kind possible - and D2's own
+  ruling already rejects the ayes/noes headcount the Canvas division bar would want: alignment is
+  the honest scalar. The Canvas division bar inherits D2's blocker, not a log gap.
+
+### NEW FINDING - the election reveal's body ink, from the screen's first capture ever
+
+`DrawElectionResultsScreen` prints its body ("Approval Rating: 5,0 (needed 35 to win)",
+"Margin: -30,0") in the PAPER ink ramp on the BARE DESK - near-invisible. Only the brick headline
+and the brass button read. The ink-needs-paper inversion class, on the one screen that never had
+paper under it - reachable only by pinning the state, which is the coverage argument made twice in
+one day. Not fixed silently; raised in the report.
+
+## The full roadmap reconciliation (2026-08-12)
+
+Ruled by Elias: every planning document brought into agreement with the code, the commits, and each
+other. Eleven documents on main + the stranded branch's elections roadmap enumerated; none
+unanticipated; ROADMAP_BRIEF and the claude_* research docs confirmed already deleted (search:
+`git ls-files "*.md"`, whole tree). The per-document deltas live in the reconciliation commits
+(bfbd9ba..the final one); what generalises:
+
+- **Two riding fixes**: the election reveal's body ink (TextOnDesk - desk ground takes the desk ink)
+  and `AdvanceCountryDayTick` (the sim-side day tick extracted; controller and driver share one list,
+  ending the copy-drift class that produced three findings in one day). Both verified by the rec run:
+  every state pin identical (244-day budget pause, 6 divisions), 73/0 clean, the 88a body legible.
+- **The turn length had four stale statements** in the roadmap alone (121-day claims surviving
+  d8f55ce's 365); the 2026-08-11 turn-1000 ruling itself carried one, corrected a fortiori.
+- **Both "9"s recorded as a numbering collision; item 10 defined on main for the first time** - it was
+  cited three times and defined nowhere. Its spec is the stranded branch's roadmap; its gate is
+  13 Sept 2026; its collision map is the branch's own section 1 plus the main-side consequences
+  (emblem_party_* retires with PartyArchetype, PartyInks re-keys, ElectionSystem replaced wholesale -
+  which is why the ElectionRecord waits, R2).
+- **The mirrors pattern ended**: three generated request-mirrors deleted at answered+delivered+imported,
+  each carrying its own stale OPEN header - the two-documents-one-fact drift in its purest form.
+- **The directive and F1 both held closures ten-plus days stale** in the optimistic direction (A4 "not
+  done" after it shipped) AND the pessimistic (F1 "awaiting sign-off" after supersession) - staleness
+  has no preferred sign.
+- **No drift check exists between CLAUDE.md and the roadmap** - CheckSuite's suite is six checks, all
+  asset/upstream; stated per the run-the-drift-check instruction.
+- Verification: all six checks green post-push (DeliveredAsset 0 missing; ImporterSettings 149/0/0;
+  StatIcon 19/19; PartyMark honest not-present; ChromeV2 both directions; Upstream 0 ahead).
+
+**Left at the coherent boundary, stated rather than thinned**: migrating the finished 2026-08-12
+blocks (chrome table detail, coverage, state pins) from the roadmap's item-9-v2.0 section into
+COMPLETED.md; migrating the two consumed Open-Questions rulings (1440p, reporting-lag); a line-level
+audit of CLAUDE.md itself (644KB - its 2026-08-12 entries are current and its historical eras carry
+the discontinuity banners); the three asset-folder READMEs.
+
+## The Canvas pilot - the country selector, and the patterns seven screens copy (2026-08-12)
+
+Ruled by Elias: a pilot in the strict sense - decisions made deliberately and recorded, not
+improvised per screen later. Built, verified at 1600x950 and 2560x1440 (59 captures each, 0
+failed / 0 overflows / 0 escapes / 0 clipped), full round trip on film: Canvas entry (01), a
+reflection-driven selection exiting the screen exactly like a click, IMGUI dashboard back with
+zero residue (01b), 57 further IMGUI captures unchanged against the rec set per rule 15 - the 01
+diff IS the deliberate replacement.
+
+### The seam (the piece most likely to matter)
+
+A four-phase machine in GameController: CoverIn (IMGUI scrim to FULL opacity - A.13's 85% hold is
+a declared deviation, a swap behind 85% shows through), swap, Reveal (the scrim fades OVER the
+live Canvas - possible precisely because IMGUI is always topmost, the same measured fact that
+forces the suppression), live (IMGUI draws ONLY the hold banner: B8 survives by render order),
+CoverOut on selection, Restore at OnGUI's end. Phases advance on the Layout event only.
+**EIGHT seam defect classes named at the machine**, seven in advance and one found by the pilot's
+own first run: a THROWING screen builder aborted OnGUI mid-Layout (the exact Layout/Repaint
+corruption the machine exists to prevent, arriving through an exception) and retried every frame
+because the failure flag was only set on a null RETURN. Class 8: any build failure - null or
+throw - fails INTO the IMGUI degradation path exactly once, loudly.
+
+### How Canvas content gets captured (the coverage gap, closed in the pilot)
+
+`ScreenCapture` reads the composited backbuffer, so captures and `ScreenEdgeCheck` see Canvas
+content natively - no harness change needed there. What DID need building: the driver waits on the
+seam's own flags (`CanvasTransitionSettled` + `CanvasSelectorActive` - three states two
+booleans carry) instead of frame counts, and drives Canvas state through the SAME
+`SelectPlayerCountry` the click path uses. ⚠ NAMED, not solved: `UiOverflowGuard` and
+`UiContainmentGuard` hook IMGUI and are structurally blind to Canvas - the Canvas cousin of the
+clipping class (uGUI `Text` clips silently inside a fixed `sizeDelta`) currently has NO guard.
+The 01a "yielding" capture pins the moment, not the wash - two frames into CoverOut the alpha is
+frame-rate-dependent and can be imperceptible; recorded honestly rather than retimed.
+
+### Which disciplines carry, per the charter
+
+- **3.0a tinting: CARRIES.** WoA tints via `Image.color` (the same multiply); real-colour art
+  stays white. Verified on the runtime-tinted `ui_tab_spine` hue strips.
+- **Importer families: CARRY UNCHANGED.** Canvas reads the same textures through IconLibrary;
+  `Sprite.Create` wraps at runtime; no importer settings changed.
+- **Slicing: CARRIES, third convention resolved in ONE place.** `CanvasChrome.Sliced` takes the
+  manifest's L/R/T/B @2x unhalved and maps to `Sprite.Create`'s X=left Y=bottom Z=right W=top;
+  `pixelsPerUnitMultiplier = 2` renders slices @1x.
+- **Measured-not-constant sizing: DOES NOT CARRY as-is.** Canvas screens are composed at the
+  1920x1080 reference (the board basis - spec px are canvas units) under a scaler; retained-mode
+  layout groups own both reserve and draw, so the accessor discipline has no analogue. The failure
+  class to watch instead is silent Text clipping (above).
+- **Rule 15: CARRIES.** Backbuffer captures diff identically.
+- **Stable control layout: transforms into seam class 1** (Layout-event-only phase advancement).
+- Legacy uGUI `Text` by recorded decision; TMP deferred until a screen needs masks/effects.
+- `menu_pattern_tile` now has TWO call sites: the Canvas ground (primary) and IMGUI's
+  `DrawMenuBackground` (the live degradation path - a broken canvas build costs the new look,
+  never the ability to start a game).
+
+### Composition notes from the captures (not fixed)
+
+- Poland's hue strip (SovereignWealth brown) is low-contrast against the manila folder - plainly
+  visible at 2560, near-invisible at 1600. An ink-contrast question for the boards, not a bug.
+- Flags render horizontally centred; the board reads as left-aligned. Declared with V-C1..V-C3.
+
+## Canvas screen 2 - the signing ceremony (1g), and a count correction (2026-08-12)
+
+### ⚠ COUNT CORRECTION first: there are THREE §A.14 Canvas screens, not eight
+
+The pilot record's "the patterns seven screens copy" conflated the EIGHT DESIGN BOARDS (1a-1h,
+which cover every screen including the IMGUI conversions) with the CANVAS subset. §A.14 defines
+three: country selector (1f, done), signing (1g, done below), election night (1h, R2-gated). The
+copy-audience for the pilot's patterns is the remaining Canvas work - election night when item 10
+opens, and any screen §1C.4 adds later. Same absence-guard moral as ever: the number was cited,
+never enumerated.
+
+### The pick and the build
+
+Signing (1g): the only remaining ungated §A.14 screen AND the selector's true nearest neighbour -
+full-screen takeover, clean swap, document over the wash, no mid-screen IMGUI compositing. Data
+fully carried by `DivisionRecord`; consumes `ui_seal_official`, `ui_seal_state`,
+`ui_frame_ornate` (its B-ruled Canvas-path purpose), the per-state canvas brass buttons, and
+gives `ui_scrim_takeover` its canvas-side call site (the wash under the document). Verified both
+sizes (77 captures each, 0 failed/overflows/escapes/clipped): document up (89), seal beat
+mid-drop (89a), Parliament restored with zero residue (89b). **B8 on film**: the hold banner draws
+IMGUI-side above the live takeover.
+
+### Patterns ADDED to the discipline statement
+
+- **Mid-game takeovers STOP THE CLOCK** - Update gate + day-loop re-check. The selector never
+  exposed this (the no-selection gate already froze time); days ticking behind a ceremony would
+  resolve more bills behind the document.
+- **CoverIn no longer suppresses** - it overlays the LIVE dashboard and is now exactly symmetric
+  with Restore. The selector masked this too: behind it was only the void.
+- **The ceremony trigger fires ONLY from play's own day tick** (high-water mark by
+  `DivisionRecord.Number`, since the log evicts) - harness sim-advances never fire ceremonies,
+  and the driver pins the screen through the same queue (`TriggerSigningForNewestDivision`).
+- **Canvas brass button**: uGUI `Button` + `SpriteSwap` over the delivered state strips.
+- **Diverging lean bar as a two-Image widget** - retained-mode's `DrawDivergingBar`.
+- **`ui_frame_ornate` as border-only sliced Image** (`fillCenter = false`).
+- Build failure DROPS the ceremony (class 8): a dropped ceremony is a silent resolution - today's
+  exact behaviour, so degradation costs the moment, never correctness.
+- The tint-family class visited this screen too: `ui_seal_state` is WoA and printed WHITE on
+  paper untinted - caught by eye in the first sgn run, fixed to the institution ink (`38363c6`).
+
+### The Canvas text guard - SCOPED, not built (awaiting ruling)
+
+**What it enumerates:** every active uGUI `Text` under every loaded Canvas at check time - walk
+`GetComponentsInChildren<Text>()` after `Canvas.ForceUpdateCanvases()`, flag
+`preferredHeight > rect.height` (and width when wrapping is off). Driver-attachable beside the
+existing guards, asserting after each Canvas capture into the run summary.
+**What it cannot see (rule 14):** screens not instantiated at check time (our canvases build on
+demand - coverage equals the states the driver pins, like every guard); `Overflow`-mode text
+that ESCAPES rather than clips (containment, needs an ancestor-bounds sweep); a fitting Text
+whose RECT clips against an ancestor mask (bounded extension, not v1); TMP if it ever arrives
+(different preferred-size API - that belongs to the deferred-TMP record); non-text content.
+**Cost: CHEAP** - ~40 lines, legacy-Text-only, no layout-system internals beyond preferredHeight.
+Recommend building on ruling.
+
+## The Canvas track close-out: text guard built, tint accessors, loose ends (2026-08-12)
+
+Ruled and executed the same day the scoping above was written.
+
+### CanvasTextGuard - built EXACTLY as scoped (`6adb7c6`)
+
+`Assets/Scripts/Testing/CanvasTextGuard.cs`, the scoping's limits recorded verbatim in the class
+doc. What the scoping named, the build kept: CLIP (`preferredHeight > rect.height`) and ESCAPE
+(wrap off, `preferredWidth > rect.width`) under one summary; `-1`/"VERIFIED NOTHING" when zero
+texts enumerate, counted as a FAILURE by the driver (PartyMarkCoverageCheck's precedent - a probe
+over an empty set must not report clean); a both-directions SELF-TEST before the first assert
+(known-clipping probe + known-fitting probe on a throwaway canvas), so a broken probe fails the
+run instead of blessing it. Driver-attached after each Canvas capture (01 selector, 89 signing),
+enumeration counts in the run summary, `Finish` fails on any violation.
+
+**Verified live, both sizes**: `SELFTEST canvas-text -> OK`; 50 texts asserted on the selector,
+5 on the signing document, 0 violations across 2 asserts, at 1600x950 and 2560x1440, all other
+counts clean (77 captures, 0 failed/overflows/escapes/clipped each). The guard asserts on TWO
+pinned Canvas states because two exist - coverage equals pinned states, per its own limits.
+
+### The tint-family accessors - the sixth instance needs a compiler error, not an eye (`6adb7c6`)
+
+After the class's FIFTH visit (the seal above), `CanvasChrome` gained the pair the ruling asked
+for: `TintedImage` (WoA - the ink is a REQUIRED argument) and `AsAuthoredImage` (real-colour -
+locked white, no caller can tint). Every chrome `Image` in `CountrySelectorScreen` (hue strip,
+flag) and `SigningScreen` (masthead seal, official seal, stamp, ornate frame) now constructs
+through one of the two, so the family choice is forced at the call site. **Two sites stay raw
+with the constraint named in place**: the SIGN button face and the folder-card face are `Button`
+raycast surfaces (`raycastTarget` must stay true; the accessors lock it false) and each needs a
+non-white degradation/hover colour - "if it doesn't fit, say why rather than forcing it".
+`SigningScreen.cs.meta` rode this commit: the signing commits had missed it, the exact
+meta-generated-after-commit trap; this pass ran Unity BEFORE committing so the guard's own meta
+could not repeat it.
+
+### The WIN reveal pinned; the FP variant was already built (`5eb5dc7`)
+
+The queued driver touch, folded in while the ceremony idioms were warm. Section F pins BOTH
+reveal forms in one chain: approval forced HIGH at the first election turn ->
+`88w_election_reveal_win` (green RE-ELECTED, 60,0 against the 35 threshold, on film at
+`winusa1600`, 78 captures all clean) -> a win's dismissal sets no state, returns to the
+dashboard -> the SAME search runs to the next election for the existing loss chain (88a/88b,
+both re-verified). The election search existed once, was about to exist twice, and became
+`AdvanceToElectionTurn` - the copy-drift shape `AdvanceCountryDayTick` just ended, declined at
+birth this time. The FP-meeting search variant queued alongside was found ALREADY BUILT (C2's
+continuation loop, `84b_meeting_decisions`) - stated, not re-built.
+
+### Track 3 executed (`10f713e`)
+
+The manifest's 11 `!`-rows deleted from disk (+ metas) *(⚠ amended 2026-08-27: the PNGs and metas
+only — the commit touched no `.svg`, and all eleven SVG sources are still under `Chrome/Source/`; the
+one-line correction — delete them or record their retention in the manifest — is a roadmap item)*,
+verified absent from code first: zero
+exact-name references (the GameController scrollbar hits are the v2 `_v`/`_h` names; IconLibrary's
+is a doc comment), zero GUID references in any scene/prefab/asset. `DeliveredAssetCheck`'s
+superseded allowance landed IN THE SAME COMMIT, reading the manifest's own `!` rows rather than a
+duplicated list, each skip logged (`supd ... not a regression`) so the allowance stays visible.
+Verified: 0 missing with 21 supd skips across the two archived chrome packs; ChromeV2CoverageCheck
+50/50 both directions (no logic edit needed - its stale "removable once confirmed" wording and the
+manifest's comment block were updated to the removed-by-ruling reality); UpstreamCheck green; the
+full 78-capture run compiles and stays clean post-deletion. **The `!` rows STAY in the manifest** -
+they are the allowance's source now, and the manifest comment says so.
+
+### What this close-out leaves
+
+- **Folder-tongue faces (`ui_tab_folder_*`)** - ruled B, its OWN pass (an IMGUI change to every
+  screen's tab bar; needs its own full rule-15 cycle). The one remaining ungated startable item.
+- **Reconciliation residue** (COMPLETED migration of finished v2.0 blocks, asset READMEs) - folds
+  into whatever next touches those documents.
+- **The big gates, untouched by ruling**: item 10 priced after 13 Sept 2026; the fiscal-divergence
+  pass PARKED; save/load 2nd in the execution order. Sequencing is Elias's conversation, not a pass.
+
+## The folder-tongue pass - the tab bar's real §A.7 anatomy (2026-08-16, `9497673`)
+
+Startable row 3, the close-out's one remaining ungated item, and with it **item 9-v2.0 has no
+ungated work left** - what remains of v2.0 (the Canvas ELECTION NIGHT screen) is item-10-gated. The
+consolidated bar's six tabs move off the interim brass/paper treatment (`ButtonKind.Tab`/
+`TabSelected`, kept intact as the wholesale degradation path AND as the old country-selector
+degradation screen's button style, which this pass deliberately does not touch) onto
+`ui_tab_folder_on/_off/_hover` via `UiPalette.BuildFolderTabStyle`.
+
+### What placing three sprites actually took
+
+- **Real-colour furniture means the SELECTED label flips cream→ink.** The interim treatment printed
+  cream on brass; on the paper tongue that is the sub-tabs' exact ink-needs-paper inversion class
+  (`4192042`), caught at build time this once rather than by capture. Inactive labels take
+  `PoliSimTheme.InkOnStock` (`#45392A`, §A.7's own inactive type value - the paper ink ramp's faint
+  values die on the mid-tone stock). The selected ICON tints area ink rather than white for the
+  same reason; full ink strength stays the selected tongue's privilege, matching the spine rule.
+- **The measured constants beat the manifest's stated one.** The manifest says the off tongue "sits
+  12px lower"; the PNGs' own alpha puts the visible edges at y=3/14/20 @2× (on/hover/off) -
+  `FolderOnTongueTop`/`FolderHoverTongueTop`/`FolderOffTongueTop` = 2/7/10 @1×, constant SCREEN
+  pixels at every window size because they live inside `GUIStyle.border`'s top band, which IMGUI
+  never scales. The `ui_tab_spine` strip now rides each tongue's real edge (hover-aware via a
+  `Contains` check on the inactive tongues), inset 3px so its rounded ends stay inside the tongue's
+  own corner curve.
+- **The stacked-icon inset DERIVES instead of being the Phase C constant**: off-tongue drop + spine
+  height + 2px of air, through `ConsolidatedTabIconTopInset()` - one accessor read by the reserve
+  (`ConsolidatedTabButtonHeight`) and the imposition (`DrawConsolidatedTabButton`), the instance-#12
+  separation. The bar is ~9px taller for it, and the same inset serves both states so selection
+  never shifts layout.
+- **The joined look is a DEFERRED PAINT, not a z-order.** The content sheet draws after the bar and
+  would close the active tongue with its baked top keyline. So: the bar-to-sheet gap goes to zero
+  (`BuildFolderTabStyle` zeroes clone `margin.bottom`; `ConsolidatedTabRowHeight` keeps only the
+  top margin; one `tabPanelGap` local feeds both the Space and the content-height budget), and the
+  selected tab's button lays out and click-handles in bar order through a FULLY INVISIBLE clone,
+  its visuals painted by `DrawActiveFolderTongue` after the tab switch, extended
+  `FolderTongueJoinOverlap` (2px) down over the keyline. Painting the tongue twice instead would
+  double its baked semi-transparent shadow into a visible rim. Control count and order are
+  untouched - the stable-control-layout guarantee needs the CONTROL every frame, not its pixels.
+- **One approximation, recorded rather than engineered around**: hover is a STATE of the unselected
+  style and IMGUI has one `border` per style, so the hover face renders under the off face's 17px
+  top inset instead of its ideal 16 - one @1× pixel of extra top-band compression, invisible at
+  both capture sizes.
+- **§A.7's `0 14px` strip inset** keeps tongues off the sheet's rounded top corners
+  (`FolderTabStripSideInset`, constant px by the same unscaled-border reasoning; the width budget
+  shrinks in the same expression).
+- **Degradation is wholesale, per-frame, one authority**: `_folderTabsLive` (all three faces
+  resolve, refreshed in `RescaleStylesToScreen`) gates every branch the pass added - faces, gap,
+  reserve, insets, deferred paint - so a missing sprite degrades the whole bar to the interim
+  treatment coherently, never one mixed tongue.
+
+### Verification (the full rule-15 cycle the ruling asked for)
+
+Real Unity 6000.5.6f1, USA, `-shotstates`, both sizes: **78 captures each at 1600×950 and
+2560×1440 - 0 failed / 0 overflows / 0 escapes / 0 canvas-text violations (2 asserts, selftest
+OK), exit 0 both runs** (`fldusa1600`/`fldusa2560`). MSBuild compile check green before the first
+Unity run. Sets compared against `winusa1600` and `grdusa2560` (the close-out's own sets) by eye
+per rule 15: the tab-bar diff IS the deliberate change - selected tongue paper/forward/joined,
+inactive tongues stock/lower/tucked behind the sheet edge, spines on the real edges, labels
+legible both ways at both sizes - and nothing else moved structurally (unseeded warm-up, so every
+figure differs; the comparison is structural per rule 15's measured limit). The Budget screen's
+wider bar is that screen's own pre-existing layout, confirmed present in the baseline crop before
+being dismissed.
+
+### ✅ VERIFICATION GAP CLOSED (2026-08-26) — all three entries verified live in Elias's Editor session
+
+All three entries below ran their checklists in a live Editor session, 2026-08-26, and passed:
+
+1. **Folder tongues — VERIFIED.** The hover face lifts, the spine strip rides the edge up with
+   it, and a real mouse click lands on the deferred-painted active tab — all three
+   never-on-film behaviours seen working live.
+2. **Save/load layer 3 + F5/F9 + the saves menu — VERIFIED.** The full checklist ran: drafts
+   captured and restored across F5/F9, the game back at the saved date paused on the saved
+   country, dashboard sane, and the saves menu exercised live.
+3. **The §5 portrait register side-by-side — PASSED.** The painted plate belongs beside the
+   existing register — Design's own named gate for the batch of nine. **D1's batch of nine is
+   UNBLOCKED**: the verdict goes to Design in the next send package (recorded in the request
+   doc's header and §5), and `MISSING_PREREQUISITES.md` §D1 flips from our-side-gated to
+   waiting-on-Design's-delivery.
+
+*The original entries are kept below as the record of what was open and why — historical from
+here down.*
+
+### ~~⚠ OPEN VERIFICATION GAP (2026-08-16)~~ — three folder-tongue behaviours have NEVER been seen
+
+Recorded as OPEN, not assumed good, per rule 14: the driver has no mouse, and Editor access is
+currently unavailable, so there is **no path to close this until access returns**. What has never
+been on film:
+
+1. **The hover face** (`ui_tab_folder_hover`) — an inactive tongue lifting on mouse-over.
+2. **The spine's hover shift** — the area strip should ride UP from the off edge (10px) to the
+   hover edge (7px) as the tongue lifts, via the `Contains` check.
+3. **A real CLICK on the deferred-painted active tab** — the invisible-clone button has only ever
+   been "clicked" by the driver's reflection path, never by a mouse.
+
+**The thirty-second close, for the next person in the Editor**: enter Play, hover each inactive
+tab (tongue lightens and lifts, strip rides the edge up with it), click any tab (selection moves,
+the newly active tongue paints forward and joined, the click lands even though the active tab's
+in-bar pixels are painted after the sheet). Anything off → the folder-tongue entry above has every
+constant and mechanism. When done, flip this block to CLOSED with what was seen.
+
+**SECOND ENTRY (2026-08-16) — the save/load UI-DRAFT round trip.** The batch round-trip
+diagnostic proves layers 1 and 2 (world + pending state) but structurally cannot reach layer 3:
+the draft capture pair lives in GameController and the batch has no OnGUI and no keyboard. Never
+exercised: `CaptureUiDrafts`/`RestoreUiDrafts` against a live controller, and the F5/F9 debug
+hook itself (new-Input-System path). **The two-minute close**: enter Play, pick a country, drag a
+few tax/welfare/sector sliders WITHOUT introducing them, note the values, press **F5** (console:
+`SAVE: wrote ...`), exit Play, enter Play again, pick any country, press **F9** — the game must
+come back at the saved date PAUSED, on the saved country, with the dragged draft values intact
+and the dashboard sane. Then advance a few days and confirm bills/interrupts behave. Anything
+off → the save/load entry below has the mechanism. Neither entry in this block is assumed-good
+until its checklist runs.
+
+**THIRD ENTRY (2026-08-17) — the §5 portrait REGISTER side-by-side.** The portrait PoC
+(`portrait_cabinet_defense_katarzyna_ekelund`, 512×640 opaque painted plate) is IMPORTED beside
+sixteen 256×256 transparent-background flat busts — a register no portrait has ever shipped in,
+which is exactly Design's own named gate for the batch of nine. The batch stays GATED until this
+runs. **The two comparison shots, specified**: (1) the Cabinet roster with the PoC beside an
+existing minister's portrait at roster size (both inside `ui_portrait_frame` — does the opaque
+plate sit in the brass bezel as an upgrade or as a mismatch against its transparent-bust
+neighbours?); (2) the same pairing at the other display scale (1600-class vs 2560-class window)
+— the register question is a legibility question at the SMALL size. Zero prep needed: the PoC
+resolves through `IconLibrary.GetCabinetPortrait` the moment Defense's Reformist is appointed
+via the Cabinet tab. Verdict → Design; the batch of nine unblocks or the register adjusts.
+
+## The repository weight finding (2026-08-16, measured before diagnosed)
+
+### The numbers
+
+| Measure | Value |
+|---|---|
+| `.git` on disk | **755 MiB** (pack 742.03 MiB across 3 packs, 3,986 in-pack objects; 10.82 MiB loose) |
+| Blobs in all history | 2,845 |
+| `screenshots/` blobs | **1,073 unique = 873.7 MiB uncompressed — ~85-90% of the pack** (PNGs neither delta nor deflate) |
+| All other blobs | 1,772 = 105.8 MiB uncompressed, which packs small: mostly CLAUDE.md's own revisions (600+ KB each, text) plus ~2.6 MiB of fonts — the three largest non-capture blobs in history |
+| Tracked capture paths | **2,003** (→ the 1,073 unique blobs: ~930 tracked PNGs are byte-identical duplicates across sets) |
+| Working tree captures | 5,316 PNGs, **5.1 GiB**, all dated 2026-08-11..16 — **~1 GiB/day** |
+| First capture commit | `30a6287`, 2026-08-10 17:24 ("Stand up the capture harness in the repo"); 24 commits touched `screenshots/` in the six days since |
+| Confirmed NOT tracked | `AssetPackArchive/` (1.9 MiB at this 08-16 measurement; ~4.3 MB at the 2026-08-26 re-check, classification unchanged — disk only), `baselines/` (11 MiB), `Library/`/`Temp/`/`obj/`/`Logs/` (gitignored) — **no other weight class exists** |
+| Remote | `github.com/Bippen/PoliSim` — the history weight is on the remote too |
+
+So the shape is: **the captures are in history**, they went in with the harness itself on
+2026-08-10, and in six days they became ~nine-tenths of the repository. Everything else about the
+repo is healthy — a ~15-25 MiB project wearing a 742 MiB pack.
+
+### What was DONE (prevention, `9f4ec0d` — nothing destroyed, no hash touched)
+
+- `screenshots/` relocated wholesale to the sibling **`../PoliSim-captures/`** (5,316 files, disk
+  move). The 2,003 tracked PNGs left the index — a tip deletion, explicitly NOT a recovery: every
+  blob stays in the pack and on the remote, every cited hash stays valid.
+- One shared out-of-tree default (`UiScreenshotDriver.DefaultOutputDirectory`) now feeds the
+  driver, `UiScreenshotCapture`'s `-shotdir=` fallback and `ScreenEdgeCheck` — the check reads
+  where the driver writes, one line to move it again. `/screenshots/` gitignored defensively.
+  Compile-checked green both assemblies; the next capture run is the real-Unity validation (rule
+  0's tooling tier — no Editor available today).
+- Rule 15 gained its retention policy (roadmap): one baseline per axis plus the run under
+  judgment; an older set is evidence while its finding is open and prunable once the finding is
+  recorded. Applied today that keeps ~1.9 GiB and marks **~3.2 GiB prunable — proposed, not
+  executed.**
+
+### The history question — RULED YES 2026-08-16, deferred to its own gated pass
+
+Deleting the captures from the tip recovers **zero bytes**: every clone still downloads the 742
+MiB pack. Only a history rewrite (`git filter-repo` dropping `screenshots/` from every commit)
+recovers the ~**730 MiB**, and it costs: **every commit hash after `30a6287` changes**, which
+invalidates every hash cited across CLAUDE.md, the roadmap and COMPLETED.md (this file alone
+cites dozens); the remote needs a force-push and any other clone a re-clone; and it wants a fresh
+full backup first.
+
+**Elias's ruling (2026-08-16): the rewrite happens — but as its OWN gated pass, after save/load
+(item 8) ships, never riding a feature pass.** Its gate list, so the pass that runs it starts
+complete: (1) a fresh full backup of the repository first; (2) a citation sweep over every hash
+after `30a6287` in CLAUDE.md / the roadmap / COMPLETED.md, mapping old→new or annotating them as
+pre-rewrite citations; (3) the force-push and re-clone coordination. Until that pass runs, the
+742 MiB pack is a known, accepted cost. **Pruning of superseded capture sets in
+`../PoliSim-captures/` was approved at convenience in the same ruling** (see rule 15's retention
+policy in the roadmap).
+
+## Save/load mechanism report (2026-08-16) — item 8's shape, derived from the code as it stands
+
+The two 2026-08-01 rulings stand unchanged (Newtonsoft — `com.unity.nuget.newtonsoft-json` 3.2.1,
+confirmed in the manifest; all three layers). This report is the mechanism UNDER those rulings,
+written against the real state surface, not the remembered one. Re-derived first, per rule 12:
+`persistentDataPath|JsonConvert|CaptureSaveState` still has zero hits — no persistence code exists.
+**One exception, better than remembered: the RNG layer is already BUILT for this.**
+`SimulationRandom` carries `MasterSeed` (always exists, clock-drawn on first use precisely so an
+unseeded real playthrough is saveable), `CaptureDrawCounts()`/`RestoreState()` with fast-forward,
+append-only `Stream`-enum tolerance for old saves — and `SimulationRandomRestoreDiagnostic` already
+proves the continuation-after-restore property in batch mode. The rest of the design below follows
+the pattern that layer set.
+
+### One root shape, three captures
+
+```
+SaveGame {
+  int SaveVersion;                          // format epoch — see version policy below
+  DateTime SavedAtUtc;
+  CountryId PlayerCountryId;
+  int MasterSeed;                           // SimulationRandom.MasterSeed
+  Dictionary<Stream,int> RngDrawCounts;     // SimulationRandom.CaptureDrawCounts()  [BUILT]
+  int CurrentTurn;  DateTime CurrentDate;   // SimulationManager's two private-setter properties
+  World World;                              // the whole graph, close to as-is (Decision 1)
+  SimulationPendingState Sim;               // SimulationManager.CaptureSaveState()  [layer 2]
+  UiDraftState Ui;                          // GameController.CaptureUiDrafts()      [layer 3]
+}
+```
+
+- **`SimulationPendingState`** is the explicit, reviewable object the 2026-08-01 implementation
+  note asked for, over the 14 private structures inventoried today: `_fiscalPeriods`,
+  `_pendingBudgetProcessByCountry` (HashSet → array), `_pendingBudgetBillByCountry`, the two NESTED
+  bill dicts (tax, welfare), the five single-slot bill dicts (labor, crime/justice, sector, trade,
+  SWF drawdown), `_pendingForeignPolicyMeetingByCountry`, `_pendingCabinetDecisionsByCountry`, and
+  `_lastFiscalReports` + `_lastEventsByCountry` (INCLUDED: the dashboard and fiscal panel read
+  them, and a reload that blanks the BREAKING banner mid-event is a lie of omission).
+- **`UiDraftState`** covers the controller's ~30 draft fields inventoried at GameController lines
+  147-299: the six draft dictionaries (tax, welfare, 5× sector, spending, partner-tariff), the
+  ~18 nullable dials (labor/crime/justice/family/immigration/SWF settings/minimum wage/tariff),
+  `_swfExistsDraft`/`_swfDrawdownPercentInput`, `_interestRateChangeInput`, `_gameSpeed`,
+  `_isGameOver`/`_gameOverReason`/`_pendingElectionResult`/`_pendingElectionTurn`,
+  `_fedChairCandidates` + `_fedChairCandidatesForTurn` (the Fed Chair interrupt lives HERE, not in
+  the manager), and the signing ceremony's division-number high-water mark. Losing any of these is
+  the original 5c incident again.
+
+### The five hazards, each named from the actual code
+
+1. **`CurrencyZone` shared identity is load-bearing.** Germany/France/Italy hold ONE instance;
+   naive JSON writes three copies and a naive load creates three zones — the shared-rate mechanic
+   silently dies, and everything LOOKS fine. `PreserveReferencesHandling.Objects` on the World
+   serialization ($id/$ref), plus a restore-time assert that the three are reference-equal.
+2. **References into the graph re-RESOLVE, never re-deserialize.** `GameController._playerCountry`
+   and every cached Country ref must come from `world.GetCountry(savedId)` after restore — a
+   second deserialized copy is the same identity bug as #1 by another door.
+3. **readonly collections + populated defaults = append-duplication.** Newtonsoft POPULATES an
+   existing collection; fields initialized at declaration (`Sectors = new List<Sector>()`, every
+   `StatHistory` series, `DivisionLog.Entries`, `PublishedData.Entries/Series`) get doubled unless
+   handled: `ObjectCreationHandling.Replace` for settable members, and for the `readonly` ones
+   (unsettable by construction) a resolver/converter that CLEARS before populating. This is the
+   single most likely silent-corruption source in the whole system.
+4. **Private cadence/counter state must ride along or mechanics quietly reset:**
+   `MultiResolutionSeries._lastDailyDate/_lastWeeklyDate/_lastMonthlyDate/_lastQuarterlyDate`
+   (append cadence — omitted, every resolution double-appends on the first post-load day) and
+   `DivisionLog._lastNumber` (division numbering — omitted, numbers restart and the signing
+   ceremony's high-water trigger misfires). `[JsonProperty]` on those five fields.
+5. **Two key/tuple shapes JSON cannot express as-is:** `PublishedData.PeriodClosingValues` is
+   `Dictionary<(ClosingStat, DateTime), float>` — a tuple KEY needs a converter (serialize as a
+   list of `{stat, periodStart, value}`); and `_pendingCabinetDecisionsByCountry`'s
+   `List<(CabinetPortfolio, CabinetDecision)>` value-tuples round-trip as Item1/Item2 — works, but
+   the capture object should carry a small named pair instead, since the capture layer exists
+   anyway. (A restored `CabinetDecision` is a VALUE COPY of a static `DecisionPool` entry, and
+   that is fine: `ResolveCabinetDecision`'s reference-equality removal compares against the same
+   restored instance the UI read from `GetPendingCabinetDecisions` — verified at the call sites,
+   lines 619-633.)
+
+### Where saves live, and how they are written
+
+`Application.persistentDataPath/saves/` (`%USERPROFILE%\AppData\LocalLow\<company>\PoliSim\saves\`)
+— outside the repository by construction, which the repository-weight finding above now makes a
+requirement rather than a preference. Atomic write: serialize to `slot.json.tmp`,
+`File.Replace` over `slot.json` keeping `slot.json.bak` — a crash mid-save must not destroy the
+previous save, or the system reintroduces the exact loss it exists to prevent. Plain JSON, no
+compression first pass (a save is a few hundred KB; `StatHistory` dominates and is capped).
+
+### Version tolerance, given that item 10 replaces the political model wholesale
+
+✅ **RULED A, 2026-08-16 (Elias): refuse-load with a plain message, `SaveVersion` bump on model
+swaps, no migration machinery pre-release.** The policy below is now the ruling, not a
+recommendation.
+
+- **`SaveVersion` int, starting at 1.** `TypeNameHandling.None` always (no `$type` — rename
+  tolerance and the standard Newtonsoft security posture). `MissingMemberHandling.Ignore`.
+- **Additive model changes cost nothing by construction**: new fields default, removed fields are
+  ignored, new RNG streams start fresh (the append-only enum rule already models this).
+- **Item-10-class swaps are SAVE-BREAKING BY DECLARATION, not migrated.** `ParliamentSeats` is
+  keyed by the archetype enum, which item 10 retired; `ElectionSystem` was replaced wholesale. The
+  loader refuses a save whose `SaveVersion` predates the break, with a message that says so
+  plainly — pre-release, migration machinery is work item 10 would immediately invalidate.
+  **Item 10's collision map gains one line: bump `SaveVersion`.** Revisit migration at the first
+  build that ships to anyone.
+
+### Validation shape (buildable in batch mode, no live Editor needed)
+
+`SaveLoadRoundTripDiagnostic`, `-batchmode`: seeded run N turns → capture + serialize →
+deserialize + restore into a FRESH manager/world → run the original AND the restored M further
+turns → compare trajectories field-by-field. That is `SimulationRandomRestoreDiagnostic`'s
+check-2 shape generalized to the whole state, and it catches every hazard above except the UI
+layer: the draft round-trip needs a driver pass, which queues behind Editor access with the
+folder-tongue gap. Real-Unity full-matrix validation applies on top, per rule 0 — this touches
+simulation state.
+
+### Deliberately NOT serialized, so absence reads as decision
+
+GUI styles/textures/fonts (rebuilt every frame), the policy-preview cache (recomputes), scroll
+positions and selected tab/category (navigation, cheap to add later if exact-seat resume is ever
+wanted), and `CabinetSystem.DecisionPool` (authored content, not state).
+
+## The history rewrite — executed 2026-08-16, on its gate list, in order
+
+The ruled pass (see "The repository weight finding" above for the ruling and its gates). What
+happened, in the order it happened:
+
+- **Backup first, verified**: `C:\Users\elias\PoliSim-backup-2026-08-16` (a different physical
+  drive, outside `G:\UNITY`) — 778 MiB, working tree + `.git` complete (Library/Temp/Logs/obj
+  excluded as regenerable caches; `.git/logs` reflogs explicitly included after robocopy's `/XD
+  Logs` name-match caught them), 1342/1342 files, HEAD and all three branch refs matching, `fsck`
+  connectivity clean. GitHub held pre-rewrite state as the second copy until the force-push.
+- **The rewrite**: `git filter-repo --path screenshots --invert-paths` (v2.47.0, run from a
+  scratchpad-local embeddable Python — nothing installed on the system). **Pack: 742.03 MiB →
+  4.92 MiB**; objects 3,986 → 3,298; 112 of 335 commits re-hashed (the pre-capture era kept its
+  hashes). All three branches rewrote: `main`, `stranded/politics-elections`, **and
+  `frf/trend-term` — a third branch the gate list did not name**, included because a fresh clone
+  fetches every branch, so leaving it on old history would have kept the old pack reachable and
+  defeated the pass.
+- **The citation sweep**: every 7-40 char hex token in the 121 tracked text files checked against
+  the commit-map. **76 citations rewritten across 6 files** (CLAUDE.md 32, roadmap 40, one each in
+  MISSING_PREREQUISITES / the screen spec / GameController / UiPalette); 141 more cited unchanged
+  pre-capture commits and stand; **zero ambiguous, zero citations to commits that never existed**
+  (the two unmapped hex tokens are the screen spec's Claude Design project id and
+  ProjectVersion.txt's Unity build revision — benign, named so nobody re-investigates them).
+  Commit-MESSAGE citations were rewritten by filter-repo itself; every message-cited hash resolves,
+  verified across all three branches.
+- **Verification**: fresh clone at **4.89 MiB**, five swept citations `git show`n in the clone with
+  matching subjects (including `30a6287`, the new identity of the old first-capture commit), the
+  six asset checks run in the clone.
+
+⚠ **THE STANDING FACT this entry exists to carry: any commit hash recorded before 2026-08-16 in
+chat logs, external notes, or anything else outside this repository NO LONGER RESOLVES** unless it
+predates the capture era. The lookup path for archaeology is the backup above (pre-rewrite history
+intact, reflogs included) — or the commit-map. ⚠ **CORRECTED 2026-08-25: the commit-map is not
+"beside" the backup — that line was never checked and was wrong.** It lives where `git filter-repo`
+actually wrote it: `G:\UNITY\Projects\PoliSim\.git\filter-repo\commit-map`, 335 entries, in the
+repo the rewrite ran against. The backup was deliberately never itself rewritten (that is its whole
+purpose as the pre-rewrite pin), so it never had a `filter-repo` directory to carry one. In-repo
+documents were swept and are correct.
+
+### Post-push close-out (2026-08-16, same day)
+
+- **The force-push landed whole** (run by Elias's explicit command after the permission layer
+  correctly held it): all three branches forced-updated. `UpstreamCheck` against the real remote:
+  0 ahead, resolving. A fresh clone FROM GITHUB — what the world sees, not what local state says —
+  downloads **4.89 MiB**, carries all three branches, and resolves the swept citations.
+- **GitHub's own size metric still reports ~746 MiB** — the anticipated server-side GC lag after a
+  force-push, NOT a failure: unreachable objects linger on GitHub until its background maintenance
+  collects them, but no clone downloads them (the 4.89 MiB clone is the proof). **Re-check
+  ~2026-08-23**; if it still reads ~746 MiB then, GitHub support can force a GC.
+- **The approved pruning executed**: `../PoliSim-captures/` went from **5,316 files / 5.1 GiB to
+  1,533 files / 1.8 GiB** (3,783 files, ~3.3 GiB freed). Kept, per the recorded retention policy:
+  the main-sweep pair per size (`fldusa*` newest + `winusa1600`/`grdusa2560` predecessors, held
+  until the folder-tongue gap closes), all twelve country-coverage sets (`cov*`), the newest
+  state-pin sets (`st2usa1600`, `stgermany1600`, `stsweden1600`, the four `div2*`), and the locale
+  set (`locusa1600`) — 24 label families. Everything pruned had its findings recorded.
+
+## Save/load BUILT and gate-green (2026-08-16) — item 8's core, on the mechanism as reported
+
+Implemented exactly to the mechanism report above, hazards first per the pass directive, and
+accepted by `SaveLoadRoundTripDiagnostic`: **12 of 12 scenarios (all six countries as player ×
+seeds 777 and 424242) — 8 continuation turns identical field-by-field, restore-point snapshot
+identical, original and re-serialized-restored saves string-equal, end-state saves string-equal,
+zone identity asserted on every load, RNG draw counts exact, version gate refusing as ruled,
+atomic file IO with .bak proven. Exit 0.**
+
+### What was built, where
+
+- `Assets/Scripts/Persistence/SaveGame.cs` — the root shape + `SimulationPendingState` (the 14
+  pending structures) + `UiDraftState` (~30 controller drafts) + `PendingCabinetDecisionRecord`.
+- `Assets/Scripts/Persistence/SaveGameService.cs` — Newtonsoft settings (PreserveReferences /
+  MissingMember.Ignore / TypeNameHandling.None), the version gate (ruling A verbatim in the
+  message), `CaptureZoneGroups` + `AssertZoneIdentity` (hazard 1, throws on a split zone),
+  `RestoreInto` (ONE orchestrator pairing RNG restore with manager restore - the
+  AdvanceCountryDayTick one-list lesson applied at birth), atomic `SaveToFile` (tmp → Replace →
+  .bak), `persistentDataPath/saves/` default.
+- `SimulationManager.CaptureSaveState()`/`RestoreSaveState(...)` — the explicit pending-state pair;
+  `FiscalPeriod` promoted to public-nested so mid-period accruals persist whole.
+- `GameController.CaptureUiDrafts()`/`RestoreUiDrafts(...)` + `RestoreFromSave` (hazard 2: every
+  controller ref re-resolved by id from the restored world) + the **F5/F9 debug entry point**
+  (new-Input-System `Keyboard.current`, since `activeInputHandler: 1` makes legacy `Input` throw —
+  caught at build time by checking before writing the obvious thing). Loads always resume PAUSED.
+  A null-Ui save (batch-written) treats every logged division as already-seen rather than
+  replaying up to 24 ceremonies.
+- Hazard 4's five private fields carry `[JsonProperty]` (`MultiResolutionSeries._last*Date` ×4,
+  `DivisionLog._lastNumber`); hazard 5's tuple-keyed dictionary rides a private list surrogate on
+  `PublishedData`.
+- `Assets/Editor/SaveLoadRoundTripDiagnostic.cs` — the gate. Mirrors the controller's day order
+  exactly (AdvanceDay → AdvanceCountryDayTick → AdvanceTurn), saves MID-TURN at day 37 with three
+  player bills 11 days into their 21-day countdowns plus two never-counting bills on a neighbour,
+  a Finance minister appointed so cabinet decisions roll and resolve through the restored-copy
+  path, and compares by reflection over EconomyState (28 fields - a new field joins the compare
+  without editing the diagnostic) plus counts, cadence, division numbers and pending day-counters.
+
+### The finding the gate caught (one, and exactly where the report pointed)
+
+**The first run failed all 12 scenarios the same way: `PeriodClosingValues` restored as 0 entries
+on every country** - serialized fine, silently discarded on load. Isolated OUTSIDE Unity against
+the project's own Newtonsoft DLL: under default `ObjectCreationHandling.Auto`, Json.NET treats a
+READABLE collection member as populate-in-place - during deserialization it calls the surrogate's
+GETTER, populates the temporary list the getter returns, and never calls the setter, so the data
+lands in a throwaway. **`ObjectCreationHandling.Replace` on the `[JsonProperty]` is load-bearing**
+and is commented as such at the site. This is hazard 5's class (the report's "murky
+converter-on-unwritable-member path" suspicion, manifested one door over), caught by the master
+string-equality assert on its first run - which is the argument for that assert existing.
+
+### Honest scope, restated
+
+Layers 1 and 2 are batch-proven. **Layer 3 (UI drafts) and the F5/F9 hook are NOT** - no OnGUI or
+keyboard in batch - and are recorded as the second entry in the OPEN VERIFICATION GAP block above,
+with the two-minute Editor checklist. **No load/save UI this pass** (ruled: batch-proven system
+with a debug entry point beats a UI over an unproven one); the menu is the next pass. Saves live
+outside the repository at `persistentDataPath/saves/` and nothing writes them into the tree.
+
+## The saves menu (2026-08-16) — item 8's UI pass, on clean history
+
+The discoverable path over the batch-proven core, IMGUI per the ruling — and the spec was checked
+before building, per the same ruling's own condition: **the v2 screen spec is SILENT on save/load**
+(no §A surface mentions it; §A.14's Canvas set is a closed three), so dashboard furniture
+contradicts nothing.
+
+- **The screen**: `DrawSavesMenuScreen`, an EXCLUSIVE screen state like the selector and the
+  reveal — an IMGUI overlay cannot stop events reaching controls drawn under it, so a modal here
+  IS a screen swap. Update holds the clock while it is open. Reached by a **Saves** button on the
+  speed row (the one panel visible on every tab), enabled THROUGH game over by composed
+  `GUI.enabled` — a game-over player is exactly who most needs Load.
+- **List** from `SaveGameService.ListSaves` (root-header reads, cached on open, never per-frame
+  disk polling): name, country, turn, in-game date, saved-at. **An incompatible save still LISTS**,
+  disabled with its reason in the row — a save that vanishes from the menu reads as data loss.
+- **Load** defers to `_pendingLoadPath`, executed at Update's safe point beside F5/F9 — a load
+  swaps the world, and doing that mid-OnGUI is the Layout/Repaint corruption class. Confirmation
+  ("Replace unsaved game?") appears only when days have advanced past the last save/load/new-game
+  stamp; **draft-only changes deliberately do not trip it**, stated here rather than silently true.
+  Every confirm beat is the SAME button re-labelled, never an extra control.
+- **Save-as** with `SanitizeSaveName` (dots stripped — they would collide with the .bak/.tmp
+  scheme); overwrites keep .bak and the status line says so. **Delete** removes the save AND its
+  .bak/.tmp, two-beat confirmed, the story stated in the footer verbatim.
+- **Driver**: `92_saves_menu` joins the main sweep — two saves written through the real service
+  (`zz_driver_capture_*`, deleted after the capture), the menu opened through the controller's own
+  `OpenSavesMenu`.
+
+**Verified**: 79 captures × both sizes (`sav2usa1600`/`sav2usa2560`), 0 failed / 0 overflows /
+0 escapes / 0 canvas violations, and the first capture run caught two composition defects fixed
+before the final sets — Unity's default grey TextField on paper (now `UiPalette.BuildTextFieldStyle`,
+plate ground + ink) and the Saves button on the smaller tab metric floating short of the speed
+buttons (now the same `_buttonStyle` base as its neighbours). Rule-15 diff against `fldusa*`: the
+speed row's five-button rank and the new screen are the deliberate changes; nothing else moved.
+**The round-trip diagnostic was not re-run and did not need to be** — this pass touched no
+serialization or capture/restore surface (`ListSaves`/`DeleteSave`/`SanitizeSaveName` are additive
+reads beside it). ⚠ The OPEN VERIFICATION GAP block stands untouched: this pass pins the SCREEN;
+the live click-through of load/save and the layer-3 round trip still wait on Editor access.
+
+## Aggregation-equivalence re-proven on the 365-day turn (2026-08-16)
+
+A directed CT-Phase-1 pass arrived built on a stale premise — Phase 1 (and 2, and 3) shipped
+2026-08-02/03 (`321a10e`/`275e014`, Phase 3 in two parts) and their daily systems are live in
+`AdvanceDay`, re-verified at the call sites before reporting. The pass was stopped at its premise
+per rule 4 rather than run; what it DID surface as genuinely open was this: **every
+aggregation-equivalence figure on record predates discontinuity 3** — the phases were validated
+against a 121-day turn, and the check was never explicitly re-run after `DaysPerTurn` became 365
+(the constants derive themselves from `DaysPerTurn`, so they retuned; the derivation had simply
+never been re-MEASURED).
+
+**Re-run fresh on HEAD (post-365, post-save/load, post-rewrite): 39 of 39 within the 3% bar,
+selftest OK, exit 0.** What the check enumerates (rule 14): Phases 1–3 only — per-sector
+Output/Employment/Metric, infrastructure ConditionIndex, the labor/crime set (LFPR,
+OrganizedCrime, Corruption, CrimeIndex, PrisonPopulation, the confidence drift), and per-country
+GovernmentDebt/BudgetBalance/SwfTotalAssets. It says nothing about Phases 4–5, which do not exist
+yet. Largest observed drift: Germany BudgetBalance 1.36% — the Phase 3 within-period feedback
+residual the check's own doc names as EXPECTED, comfortably inside the bar.
+
+**Two seam questions from the directed pass, answered from the record rather than re-derived**:
+sector output reaching the display live is a RECORDED DECISION, not a leak (`PublishedStat`'s own
+doc: only stats with a sourced release rule publish; everything else reads live until a schedule
+is sourced); and the multi-resolution buckets have been POPULATED in every validation since the
+calendar fix (`e15cb49`), but their CONTENT divergence (Daily genuinely differing from Quarterly
+once daily systems vary intra-turn) has never been asserted by any check — a one-line residual
+that belongs in whatever tooling the Phase 4 pass builds.
+
+## Continuous Time Phase 4 — Demographics daily (2026-08-16, `37c9003`)
+
+Run in the directive's order, each gate before the next; the full arithmetic is in the commit and
+the checks — this entry carries what the next phase needs.
+
+### Step 0 — the untainted baseline, dual-purpose as recorded
+
+`TrajectoryBaselineDump` (new, `Assets/Editor/`): every public `EconomyState` field by reflection
+(28 today — a field added later joins the dump unedited) plus `Country.PotentialGrowthRate` and
+the zone rate, per country per turn, seeds 777/424242 × 100/500/1000 turns, written OUT OF TREE
+(`../PoliSim-captures/trajectories/`, ~20 MB — the repository-weight lesson applied before the
+first file existed). Label `pre4_18fe08d`. **This baseline is simultaneously the Phases 1–3
+full-matrix re-baseline at the current era** (post-365-day turn, post-rewrite, post-save/load) —
+the thing the 2026-08-16 39/39 equivalence run had only partially discharged.
+
+### Step 1 — the throwaway diagnostic earned its gate
+
+`Phase4YearsPerTurnDiagnostic`, run BEFORE any conversion existed: **9/9.** The project's two
+turn-length statements agree exactly (`ElectionCycle`=4 → `YearsPerTurn`=1.0 ==
+`DaysPerTurn`/365); the MEASURED population step applies exactly one year of an annual per-1000
+rate per turn at both signs (reversion pinned to a no-op so the factor is isolated); the drift
+constants measure to spec. Its one first-run FAIL was the probe's own tolerance —
+`Mathf.Approximately` at 1e-8 against a subtraction of two ~10.6 floats whose representation
+noise is ~2e-7 — fixed as a PROBE defect with the reasoning at the site. A gate that fails
+self-honestly before blessing anything is the discipline working, and is why the gate exists.
+
+### Step 2 — the classification, published before the arithmetic
+
+Seventeen constants, five dispositions, the stance-vs-flow question asked of each:
+
+| shape | constants | transform |
+|---|---|---|
+| Accumulating flows (no target) | `BirthRateSecularDeclineRate`, `DependencyRatioDriftSensitivity`, `DeathRateAgingDriftSensitivity`, `MigrationAgingDriftSensitivity` | LINEAR ÷ `DaysPerTurn` (the `ApplyCrimeEffects` precedent) |
+| Reverting quantity | `PopulationGrowthReversionSpeed` | `PerDayReversion` (Phase 2's shared helper) |
+| Annual rate applied to a stock | the `YearsPerTurn` population factor | **NEW SHAPE — the POWER SLICE**: `(1 + r/1000·Y)^(1/DaysPerTurn)`, algebraically exact at constant rate; a `sliceFraction==1` branch keeps the turn form bit-identical for PreviewTurn |
+| Level→offset sensitivities | `FamilyPolicyBirthRateSensitivity`, `ImmigrationPolicyNetMigrationSensitivity` | **NONE** — recomputed fresh each application; scaling would change what a slider position MEANS |
+| Target-shapers | `PopulationGrowthRateSensitivity`, `MaxPopulationGrowthRateDeviation` | **NONE** — they shape the reversion TARGET; no time dimension (the deviation cap is the table's own named ceiling trap) |
+| Clamps | the eight Min/Max bounds | **NONE** — approach speed changes, bounds do not |
+
+Nothing ambiguous — no shape went to rulings. Calls moved to `AdvanceDay` ahead of the Phase 2
+block (LFPR now reads daily-moving `DependencyRatio`/`NetMigrationRate` gaps, which is the point);
+the `ResolveSpendingForTurn` ordering contract holds by construction (the boundary day's
+`AdvanceDay` completes first); one stated 1/365 timing shift — a boundary-committed
+Family/Immigration policy change reaches the rates from the next day (Phase 3's
+cash-lands-next-period precedent in miniature). `YearsPerTurn`'s doc comment stopped narrating
+the 121-day era as current.
+
+### The finding — the buckets had never been fed
+
+`History.Append` sat in `AdvanceTurn` from Phase 0 until this pass: the multi-resolution buckets
+BUILT for daily data never received a daily offer, so Daily/Weekly/Monthly/Quarterly held
+identical one-point-per-turn series straight through Phases 1–3's genuinely daily variation —
+plumbing unexercised because nothing asserted its output, the rule-14 class exactly. Moved to
+`AdvanceDay` (each resolution's own gate accepts at its cadence, the class doc's stated intent);
+the preview-clone phantom-point protection STRENGTHENS (AdvanceDay never runs on clones). On a
+boundary day the point records before the macro core applies — a one-day presentation shift on
+turn-stepped stats, stated at the site.
+
+### Step 3 — equivalence, buckets, matrix
+
+- **Equivalence: 61 of 61 on the FIRST conversion** (39 existing + 16 demographic + 6 bucket
+  asserts). Demographic max drift **0.0042%** (Sweden Population — the expected
+  reversion-path residual) against the 3% bar. Enumeration extended: Sweden (growing) and Germany
+  (shrinking), both with policy dials off-neutral so the non-conversions are exercised.
+- **The bucket assert** (enumeration in its comment, per rule 14): a real 200-day sim, then for
+  PovertyRate and DebtToGdpRatio three families — cadence (D=200/W=29/M=7/Q=3, within one),
+  daily-variation (distinct consecutive dailies), resolution-divergence (Daily tail ≠ Quarterly
+  last). It owns bucket PLUMBING, not value correctness (the matrix owns values) and says nothing
+  about turn-stepped stats.
+- **The matrix** (full trajectory diffs vs `pre4_18fe08d`, ~1.08M comparisons): demographic fields
+  move by the intended smoothing (rates ≤0.58%, Population ≤0.85% at 1000 turns, accumulating
+  smoothly — no compounding); **LFPR ≤0.0033% end-of-run, `Country.PotentialGrowthRate`
+  byte-identical everywhere** (the per-country tables are in the run log; note the directive's
+  premise correction: potential growth's writers are infrastructure+sectors, so demographics
+  reaching it unchanged is the expected result, not a surprise); GDP below every section's
+  top-14; Unemployment 0.257% momentary / 0.001% end; 6 of 30 fields byte-identical across whole
+  trajectories. **Every large relative spike was traced to raw values and is a metric artifact**:
+  France's growth rate crossing zero at t103 (abs dev 0.0006 per-1000), Italy's approval hitting
+  its 0 floor one turn apart (abs dev 0.002 points), Poland's approval collapse near zero (abs
+  0.012 points). Reported, not tuned away. The 1000-turn runs: nothing newly divergent at depth.
+
+### The methodology verdict, for Phase 5
+
+1. **The taxonomy is now sufficient for first-try conversion** — Phase 4 passed equivalence
+   without iteration. Phase 5's risk is NOT shape classification; it is the feedback WEB (Phase
+   3's within-period-feedback lesson, which will be everywhere in the GDP identity).
+2. **Two shapes joined the table** (recorded there): the annual-rate POWER SLICE — and Phase 5
+   should note `ApplyPotentialGdpGrowth` (`PotentialGDP × (1 + rate/100)` per turn) is exactly
+   this shape; and TARGET-SHAPERS take no transform — the Taylor rule's
+   `InflationGapWeight`/`OutputGapWeight` are the same class *(since pass 4, 2026-08-26, the
+   second is `UnemploymentGapWeight` — same class)*.
+3. **The throwaway-diagnostic gate re-earned its place** and Phase 5 should open with one: pin
+   the no-feedback paths (PotentialGDP growth at fixed rate; expectations adaptation at pinned
+   inflation) before the web is touched.
+4. **The diff tooling needs an absolute-deviation column before Phase 5** — the GDP identity is
+   full of signed, zero-crossing quantities (TradeBalance, output gap, budget balance), and this
+   matrix produced three relative-metric artifacts that each cost an investigation. Cheap fix,
+   real cost avoided.
+5. **Phase 5 starts fresh, never at the end of a long session** — the notes' own instruction,
+   restated here so it survives this pass's momentum. It did: this pass stops at the boundary.
+
+## Continuous Time Phase 5 — the core macro engine daily, and ITEM 7 CLOSES (2026-08-16, `22e2b49`)
+
+Run on its gate list: the absolute-deviation diff column FIRST (`TrajectoryDiffCheck`, committed
+separately at `0034eff`, self-tested on a known zero-crossing and validated against the real Phase
+4 France case); the untainted `pre5_0034eff` baseline; then `Phase5NoFeedbackDiagnostic` (4/4 —
+PotentialGDP independent under a 30% actual shock; two turns of daily published-data AND
+period-closings corruption moving NO simulated state, which also proves the credit-rating path
+dynamically; the Phillips step blind to a +10pt rate while the identity feels it). The up-front
+ruling was respected throughout: **no FRF value moved** — the sweep owns calibration, now
+sequenced after this phase in the daily regime (its queue entry carries the ruling and its
+starting conditions).
+
+### The story of the phase: four shapes failed, one pattern answered
+
+The equivalence bar rejected the first daily form of every response-side mechanism, each failure
+measured and kept in the code comments where the shape now lives:
+
+1. **Self-referencing Okun reversion** (PerDayReversion, the "obvious" form): 325% drift at an 8%
+   drive — the reversion and the growth response fight day-by-day across the NAIRU crossing where
+   the turn form applies both against the period-start state at once.
+2. **Per-day-base growth percents**: a second-order (log-vs-linear) residual of 0.21 unemployment
+   points on the USA's seeded 13% output gap.
+3. **A live identity attractor**: PotentialGDP compounding daily under the identity lands GDP
+   0.65% high — inside GDP's own bar, but Okun amplifies it to a failing 0.34 points.
+4. **Daily inflation expectations**: 6–10% drift with NO fixable variant, because the turn
+   semantics — adapt once toward the period's CLOSING print — is boundary-anchored by definition.
+
+All four resolve into **Phase 3's fixed-period-reference pattern**: Okun's reversion references
+period-open unemployment (LINEAR distribution — exact for fixed references, where PerDayReversion
+is exact for self-referencing forms — a distinction now IN the translation table); the growth
+increment is measured against period-open GDP; the identity's attractor anchors at period-open
+PotentialGDP; and expectations stay AT the boundary as a period stance. The identity itself takes
+the phase's one genuinely new shape, the **AFFINE POWER SLICE** (`A^(1/D)` on the contraction with
+the geometric partial sum on the attractor term — D compositions telescope exactly to the turn
+map at constant inputs; iterating the raw turn map daily was rejected as different, unvalidated
+dynamics). After the fourth reference: **equivalence 81/81 NEAR-EXACT — GDP 0.0001%, unemployment
+0.006%, at the violent 8% drive.** C/I are logged as INFO with their display-semantics reasoning
+(nothing reads them back; the two regimes report different, individually-correct levels).
+
+### The matrix, both columns, and the signature that had to reproduce
+
+Six configurations (2 seeds × 100/500/1000) against `pre5_0034eff`: **13 of 30 fields
+byte-identical in every configuration** (Population at literal zero — Phase 4 untouched). The
+movers are the converted quantities feeling the daily path they previously sampled at boundaries:
+unemployment max 0.51 points at the one-time t1 regime seam, ending 0.003–0.024; GDP ≤1.0%
+momentary, ≤0.64% at t1000; rates ≤0.3 points of discrete-meeting steps; approval ≤2.8 points
+momentary (its million-percent relatives are the 0-floor artifact — the absolute column's third
+vindication in one pass). Debt ends 1.9–4.6% apart on 1000-YEAR cumulative paths, and **the
+four-country divergence signature reproduces within ~1 point** (USA 154.7→155.9, Germany
+80.4→80.1, Italy 165.6→165.9, Poland 45.6→46.0; Sweden 11.2→10.6, France 108.8→108.9) — the pass
+condition stated up front: not fixed, not worsened. `SaveLoadRoundTripDiagnostic` re-run for
+`FiscalPeriod`'s three new anchor fields: **12/12 clean.**
+
+### The item-7 close-out verdict
+
+- **The taxonomy's final state** (all in the translation table — `COMPLETED.md` §28 since 2026-08-27,
+  when the roadmap's PART ONE migrated): linear slice, PerDayReversion,
+  probability, clamps-never-scale, sensitivities/target-shapers take nothing, the power slice,
+  the affine power slice, and the governing distinction the whole migration ends on: **linear
+  distribution for fixed references, compounding for self-references, and boundary residence for
+  boundary semantics.** The stance-vs-flow question, asked constant by constant, was the method.
+- **What the feedback web did that shape classification couldn't predict**: nothing broke as a
+  SHAPE — every failure was an interaction (interleaving, amplification, anchor drift) that only
+  the equivalence bar could see, which is the strongest possible argument for the
+  equivalence-first discipline the migration was built on.
+- **The sweep's starting conditions** are recorded in its queue entry: same measured divergence
+  baseline, daily interest against the live stock, values untouched and awaiting calibration in
+  the regime they will live in.
+- **The hybrid simulation is over.** Every economic quantity now moves on the day its history
+  point records; the boundary keeps what belongs to it — resolutions, plans, stances, elections,
+  events. PreviewTurn keeps every turn form as its own single-step estimator, correctly.
+
+## The FRF sweep — empty, and empty is the deliverable (2026-08-16, `afe0f24`)
+
+The ruled re-derivation of the harness-fitted pair, in real Unity, in the daily regime. The
+seven-point grid is enumerated in `FrfSweepDiagnostic`'s own doc (S ∈ {1.5, 2.5, 4, 6, 10} at
+[0.5, 1.5], the [0.8, 1.5] floor arm, the [0.5, 1.25] wall-direction probe; two seeds, six
+countries, 200 turns each, judged at the ruled 100–200 window; 1000-turn shape checks at S=2.5
+and 4 only). The consts became sweep-settable fields — defaults proven bit-identical against the
+`post5` trajectory at t200 to the decimal — with the revenue-capacity wall enforced in the hook
+itself. The byte-identical-distrust rule ran as a per-point flag; every point was measurably
+reached (the U=1.25 probe's one-decimal identity at seed 777 concealed real sub-decimal
+differences — USA's stance grazes 1.26 near t150, so even the tighter cap participates briefly).
+
+**The map**: at turns 100–200 the CURRENT pair is defensible — no country's stance saturates
+(USA peaks at 1.238), slopes near-flat, mechanism present and correctly signed, which is the
+standing scoping's own bar. At the 1000-turn diagnostic horizon, S=2.5–4 lands the climbers
+10–20 points lower with terminal slopes roughly halved (USA 142.5/135.4 vs 155.9; slopes
++0.014…+0.037/turn) — **strictly milder, never converging**. S≥6 destabilizes into limit cycles
+(France swings 32 points in 50 turns at S=10; stances slam floor-to-free). The loosened floor
+[0.8, 1.5] is catastrophic — five countries spiral to −300…−1010% ratios on compounding
+surpluses. Stances at t1000 sit at 1.32–1.46: approaching the cap while already outrun,
+confirming the record's stages-not-alternatives reading empirically.
+
+**The verdict, per the directive's own framing**: NO PAIR CONVERGES WITHIN THE WALL, and that is
+the finding, not a failure — a flow multiplier cannot outrun stock compounding at high debt
+wherever its cap sits. Values untouched. **The next fiscal-engine item is the stock-versus-flow
+mechanism report** (the candidates live outside the flow loop: maturity structure, inflation
+erosion of the nominal stock, primary-surplus rules above thresholds) — **its own pass with its
+own ruling, deliberately not started at this pass's tail.**
+
+> ✅ **QUEUE ENTRY CLOSED 2026-08-17** — the report ran (the stock-vs-flow mechanism report,
+> `bcbba47`; consumed to `COMPLETED.md` §22, 2026-08-26), Elias ruled R1–R5, and the erosion term shipped against this entry: see "The
+> erosion term ships" below. Primary-surplus rules died in the report on the Italy evidence;
+> maturity structure is R4, deferred-pending-measurement — and the erosion pass delivered its
+> measurement (the residual climb is concentrated exactly where instant repricing at
+> premium-loaded zone rates exceeds π).
+
+**The harness comparison, as scoped**: the standalone harness no longer exists on disk (verified —
+`G:/UNITY/Projects` holds PoliSim and the captures sibling, nothing else), so the
+tool-disagreement map reduces to its one recorded instance: at this exact pair the harness
+claimed four-significant-figure stability across three horizons for a system real Unity shows
+diverging. Every sweep number is real Unity; there is no harness left to disagree at the new
+points, and nothing fitted by it should be trusted without the re-derivation this sweep just
+performed for its most consequential output.
+
+**Sequence state after this pass**: item 7 closed, item 8 shipped, the sweep closed empty —
+**Round 4 is the next Master Sequence item**, scoped fresh per its own gate against both finished
+foundations (daily simulation, gated legislation), with Step C folded in per R1. Dated edges:
+the GitHub GC re-check falls due ~2026-08-23 (one command); the Editor checklist stays
+access-gated.
+
+## Round 4 batch R4-1 — C3 ships inputs-only, and the batch shape holds (2026-08-16)
+
+The pilot batch for the Round 4 shape, run against pre-batch HEAD `cb79713` with all six scoping
+rulings approved. One commit carries the whole batch (this record included), per the directive.
+
+### Step 0 caught the scoping snapshot twice — both flagged, neither absorbed
+
+- **The seed doc at HEAD says 4/6 + 2/6, not the scoping table's "6/6 both"**: youth unemployment
+  is 6/6 `[VERIFIED]` (EU five Eurostat `une_rt_m` `PC_ACT` SA 15-24; USA BLS CPS `LNS14024887`
+  **16-24, never to be "corrected"**; France>Italy real on this vintage), but life expectancy is
+  4/6 `[VERIFIED]` with **France flag `p` and Poland flag `ep` — PROVISIONAL-seedable**, per the
+  doc's own words good enough to seed and never to be quoted as settled. The flags ride inline on
+  the `WorldFactory` seed lines and in the roadmap's corrected R4-1 row.
+- **The batch brief said "both are annual-class"; the SOURCE says youth-U is monthly** — the same
+  monthly LFS/Employment-Situation family as headline unemployment at both agencies. Wiring
+  follows the source: YouthUnemployment shares Unemployment's first-Friday rule, LifeExpectancy
+  joins the Population/PovertyRate/CrimeIndex annual group.
+
+### What shipped
+
+Two `EconomyState` fields (28 → 30 public fields), both **inputs-only per the standing Round 4
+ruling** — youth-U reverts to baseline + 2× the unemployment-vs-NAIRU gap (the documented youth
+cyclicality multiplier), life expectancy to baseline − 0.08/pt excess poverty + up to 1.5 years
+for an implemented UniversalHealthcare program (zero-gap holds because every country starts with
+it UNIMPLEMENTED — the dependency is documented at the method). Neither wanted a write-back, so
+the rulings-stop never fired. Both daily-native via the taxonomy's standard shapes (parameterized
+turn form whose only caller is the equivalence check + `PerDayReversion` wrapper); clamps
+[0, 60] (Spain 55.5 / Greece ~60 crisis peaks) and [60, 95]. Zero-gap seeding from one authority;
+publication, `StatHistory` buckets, and two Domestic-screen **Society** ledger rows (youth-U
+gauged /100; life expectancy **negative-fill, no gauge — years are not a share, §A.9b**) — the
+pilot's display answer is the Derived-panel ledger pattern, icon-free, with StatNodeId/icon
+promotion deferred as an arc-level asset-batching decision.
+
+### The bar, run in full
+
+- **Equivalence 88/88 within 3%** (self-tests intact). The four new rows land at 0.0002–0.0006% —
+  the stated expectation was EXACT-by-construction (constant-target PerDayReversion telescopes to
+  the turn step), so that is float noise, and this section carries no Phase-3-class drift budget.
+  The bucket assert now enumerates THREE series — YouthUnemployment added, asserted not assumed
+  (D=200/W=29/M=7/Q=3, daily variation, resolution divergence). LifeExpectancy is deliberately NOT
+  in the bucket assert: no-policy poverty never exceeds baseline, so its flat daily series is
+  CORRECT and the variation assert would report correctness as failure.
+- **The matrix, 2 seeds × 3 horizons vs `pre_r4_1_cb79713`: 30 of 30 shared fields byte-identical
+  in all six configurations**, with exactly `YouthUnemployment` and `LifeExpectancy` named NEW.
+  The byte-identical-distrust rule INVERTS here by design: inputs-only + no RNG stream consumption
+  means bit-for-bit zero movement of pre-existing state is the claim under test, and it held
+  everywhere. (Field arithmetic, for the next reader: the dump carries 2 non-EconomyState extras —
+  `Country.PotentialGrowthRate`, `Zone.InterestRate` — so pre CSV = 28+2 shared, post = 30+2.)
+- **`TrajectoryDiffCheck` gained the NEW-FIELD ALLOWANCE** this round makes necessary: B-only
+  FIELDS are named and excluded (a round that adds state would otherwise exit-2 on its own
+  success); A-only fields stay fatal (deleted state), and extra B keys inside shared fields stay
+  fatal (differing runs).
+- **Save/load 12/12 clean**, reflection compare at 30 EconomyState fields — both new fields inside
+  the reflected set, surface growth 28→30 verified rather than assumed.
+- **The publication seam, verified at the seam** (`PublicationCadenceCheck`, which iterates the
+  enum — zero edits needed): YouthUnemployment first release day 36, 143 releases/12yr — the same
+  row as Unemployment; LifeExpectancy first release day 638, 11 releases — the same row as the
+  annual group; neither invents a revision cycle.
+- **Captures 80 @1600×950 / 79 @2560×1440, 0 failed, 0 overflows both.** The one-capture asymmetry
+  is the known warm-up variance, chased not absorbed: the 1600 run found 1 cabinet decision after
+  91 days (captured `84b_meeting_decisions`), the 2560 run hit a foreign-policy meeting at day 0
+  with 0 cabinet decisions. Eyeball: the Society block renders at both sizes — youth-U 10.4% live
+  (above its 9.5 seed with unemployment above NAIRU: the cyclical channel visibly working),
+  life expectancy 79.0 gauge-free with the CDC seed intact under generational reversion.
+
+### Batch-shape verdict (the pilot's actual deliverable)
+
+**The bar is right-sized — nothing was too heavy, nothing was missing that mattered.** One tool
+gap was predicted-by-construction and is now standing equipment (the diff allowance); the
+publication check needed zero work because it iterates the enum — the pattern to preserve.
+Two decisions the pilot sets for the remaining batches: display lands icon-free via ledger rows
+(no per-batch asset work), and **`PreviewTurn`/PolicyPreview intentionally untouched** — inputs-only
+stats show no next-turn preview line; a preview estimator per new stat is a follow-on if wanted,
+not an accidental omission. Candidates noted for follow-on rulings, not built: a youth-retraining
+term (RetrainingProgramLevel → youth-U), life-expectancy secular drift (the BirthRate precedent).
+
+**C2 basis status for the swap clause**: the seed doc's 🔴 on real wages ("mixes three bases, must
+not be seeded as-is") is **still unreconciled** — an Elias-sourced data task, not a build task.
+Per the approved order's clause: unresolved at R4-2's start ⇒ C1 (housing) builds next.
+
+**One workflow trap for the tooling record**: Windows PowerShell 5.1 `Start-Process -Wait` waits
+for the process TREE, and a batch Unity run can leave a `Unity.Licensing.Client` child idling
+indefinitely — the wait then hangs forever after Unity itself exits. Wait on
+`-PassThru`+`.WaitForExit()` (the process alone) instead; one diff run wedged 24 minutes this way
+before diagnosis.
+
+## Round 4 batch R4-2 — C2 ships on the proven shape (2026-08-16)
+
+Second batch on the R4-1 shape, against pre-batch HEAD `019a314`, with the real-wage basis
+blocker resolved by ruling up front: **the stat seeds as an INDEX, base 100 at epoch per country**
+(the HPI convention for the HPI reason), the simulation consumes growth, the level is display
+furniture, and cross-country level comparison is explicitly not claimed. The seed doc's §5 🔴 is
+now a 🟡 convention with the reasoning recorded in place — the incoherence finding kept verbatim,
+only its consequence changed. **The model needed no level, so the named RULINGS-stop never fired.**
+
+### Step 0 caught the scoping snapshot again — the R4-1 pattern is now a trend
+
+"Gini 6/6 (normalize the US basis first)" was wrong on both halves at HEAD: the set is
+**5/6 `[VERIFIED]`** (Eurostat `ilc_di12` 2024, no flags, four anchors reproduced exactly at the
+API) **plus USA 39.5 `[ESTIMATED]`** — OECD IDD with reference year 2019 carried forward (band
+38.5–41.0) on the square-root equivalence scale, which produces a different Gini FROM IDENTICAL
+DATA than Eurostat's modified-OECD scale: documented-irreconcilable, comparable in spirit and
+never in construction. And the "normalize first" instruction was already closed at source —
+39.5 is 0–100 at the origin (OECD publishes 0.395), so there is NO conversion step and no
+factor-of-100 opportunity. Both corrections ride inline on the `WorldFactory` seed lines.
+
+### What shipped
+
+Two `EconomyState` fields (30 → 32), both inputs-only. **Gini** is the PovertyRate idiom exactly:
+reverts (slower — 0.1, inequality is structural) toward `BaselineGini` pushed by the unemployment
+gap and pulled by implemented welfare programs (transfer-heavy sensitivities at half poverty
+scale), income tax **signed** against a new `Country.BaselineIncomeTaxRate` anchor (captured in
+`SeedTaxLines`, the one place the seeded rate exists — `TaxLine.Rate` is player-mutable with no
+stored seed, which is why the anchor must be its own field; abolishing the income tax RAISES
+inequality through the same coefficient), and the minimum wage against its existing anchor.
+Clamped [15, 65] (the Nordic floor era to South Africa's ~63). **RealWageIndex** is the
+PotentialGDP idiom, not a reversion — a wage level is a stock of accumulated growth — compounding
+per turn at trend pass-through (1:1 on `PotentialGrowthRate`, the textbook long-run relation,
+which is why the index needs NO per-country growth seed) plus labour-market tightness minus
+**signed** inflation surprise (settlements anchor to expectations; the sign is the seed doc's own
+Poland-2024 story, "strong nominal growth plus rapidly falling inflation"). Daily form is the
+annual-rate POWER SLICE; growth is clamped ±10/turn, the level deliberately unbounded.
+
+**Publication, stated at source per the directive**: Gini is annual **by the same-release
+argument youth-U used for monthly** — literally the same survey release as the poverty rate at
+both sources (EU-SILC; the Census Income & Poverty report). Real wages are monthly-with-CPI for
+the USA **by source** (BLS Real Earnings ships on CPI day — §5's own recorded release date), with
+the EU five following the family cadence per the unemployment precedent (no separate rule in the
+seed file; not invented, extended). Verified at the seam: Gini day 638 / 11 releases in 12 years
+(PovertyRate's exact row), RealWageIndex day 42 / 143 (Inflation's exact row), no invented
+revision cycles.
+
+### An R4-1 escape, caught and fixed here
+
+`EconomyState.Clone()` never received the two C3 fields — a clone silently reset
+YouthUnemployment/LifeExpectancy to their ctor defaults. Harmless in practice only because Clone
+feeds PreviewTurn's throwaway, which computes neither; any future Clone consumer would have read
+fabricated values. Fixed with all four Round 4 fields and a warning comment at the call: **every
+new EconomyState field goes to the ctor AND to Clone**, and the batch checklist now carries it.
+
+### The bar
+
+- **Equivalence 95/95 within 3%**, new rows at 0.0000–0.0019% — float noise, per the stated
+  exact-by-construction expectation (constant-target reversion; constant-growth power slice).
+  The enumeration drives every C2 input channel at once on the two structural opposites (USA:
+  Gini outlier WITH a minimum wage; Sweden: near the equality floor WITHOUT one).
+- **Buckets**: RealWageIndex IN (the clearest daily-native series — compounds by construction),
+  **Gini EXCLUDED with the numerical variant of the LifeExpectancy reason**: PerDayReversion(0.1)
+  times a no-policy target wiggle lands the daily increment at float32 epsilon on a ~30-point
+  value — the variation assert would measure rounding, not plumbing.
+- **Matrix 6/6 vs `pre_r4_2_019a314`: 32 of 32 shared fields byte-identical**, exactly `Gini` and
+  `RealWageIndex` named NEW — the directive's own stated inputs-only test, met bit-for-bit.
+- **Save/load 12/12** at 32 reflected fields (30→32 verified in the compare).
+- **Captures 79/79 at both sizes, 0 failed, 0 overflows** — symmetric this run (the warm-up found
+  the same states both times). Society carries four rows: Gini gauged on its genuine 0–100 scale;
+  **Real wages negative-fill per §A.9b, decided deliberately as the directive required** — a
+  base-100 index is unbounded by construction, any fill denominator would be an invented ceiling;
+  the trailing text carries the one honest comparison ("index, 100 = start of term"). The Gini
+  label's two-line wrap at 1600 renders clean.
+
+### Batch-shape verdict (what R4-2 adds to the arc)
+
+**The shape held with zero new tooling** — the diff allowance, the exclusion-with-reason pattern,
+and the enum-iterating cadence check all absorbed the batch as designed; nothing was too heavy,
+nothing missing. What R4-2 adds: (1) the **step-0 scoping-snapshot correction is now 2-for-2**
+and should be treated as expected batch work, not a surprise; (2) a new stat class entered the
+inventory — the **compounding index** (PotentialGDP idiom, power slice, §A.9b display, no
+level seed) — R4-3's HPI is the same class and should reuse all of it; (3) the **ctor+Clone
+pairing** joins the checklist after the R4-1 escape. Follow-on candidates noted, not built: a
+Gini→ApprovalRating channel (inequality as a political force), a real-wage→ConsumerConfidence
+channel, and C5's productivity coupling replacing the 1:1 pass-through — all write-backs or new
+couplings, all separately-ruled per the standing posture.
+
+**R4-3 handoff (C1 housing)**: overburden-primary with USA-on-homeownership is the recorded
+ruling; its step 0 confirms that and the seed rows against the doc at HEAD (homeownership 4/6 +
+2 honest estimates with stated bands; HPI index-100 — the convention R4-2 just built the class
+for; the EU-five overburden `[VERIFIED]` closure of 2026-08-02). Monetary-coupled by design
+(reads the policy rate, writes nothing back) — inputs-only holds without a new ruling.
+
+## Round 4 batch R4-3 — C1 ships housing, the arc's first monetary coupling (2026-08-16, recorded 2026-08-17)
+
+Third batch on the R4-1 shape, against pre-batch HEAD `9d5f077`. One provenance note the prior
+records never needed: **the batch session was interrupted between updating the roadmap row and
+writing this record/committing** — the close-out happened 2026-08-17 from the session's persisted
+run logs (`r43_*.log`), with every source file verified older than the bar that tested it, so the
+tree committed is bit-for-bit the tree that passed. Every number below is from those logs, not
+from memory.
+
+### Step 0 — CLEAN, and the correction streak ends at two
+
+The doc at HEAD matched the handoff for the first time: overburden EU-five `[VERIFIED]`
+whole-population `ilc_lvho07a` (`rskpovth=TOTAL` — the variant recorded per the doc's own rule for
+this unusually variant-prone indicator; Sweden alone reads 5.1/10.6/10.8/17.9 across published
+cuts, and 10.6 is the one seeded); homeownership 3/6 `[VERIFIED]` OECD AHD (USA 65.3, France 58.5,
+Germany 41.0 — the genuine structural outlier) + 3 `[ESTIMATED]` via the doc's own fitted bridge
+with stated 95% bands (Poland 86.8 [78.4–95.2], Italy 74.4 [66.8–82.1], Sweden 62.1 [54.9–69.4]);
+HPI index-100, the R4-2 class's third member. Step 0 stays mandatory — 2-for-2 became 2-for-3,
+not zero-for-anything.
+
+### What shipped
+
+Three `EconomyState` fields (32 → 35), inputs-only, and **the arc's first monetary coupling,
+one-way by construction**: all three read `CurrencyZone.InterestRate` against the zone's new
+epoch anchor and write nothing back to the rate, the zone, or any monetary quantity — stated at
+the MacroSystem C1 header for the mechanism report's namespace claim. The anchor is
+`CurrencyZone.BaselineInterestRate` (the `BaselineIncomeTaxRate` logic verbatim: the live rate is
+player-mutable with no stored seed, so the anchor is captured in the ctor, the one place the
+seeded rate exists) with a **−1 sentinel and a read-only `HousingRateAnchor` fallback**: a
+pre-R4-3 save deserializes to the sentinel and reads gap 0 — the rate channel INERT, exactly the
+behaviour that save had before the field existed — and the fallback deliberately never writes the
+field, so loading an old save never fabricates an epoch the world was not created with.
+
+- **HousingOverburden** (% of population spending >40% of disposable income on housing) — the
+  PovertyRate idiom: reversion 0.15 toward baseline + 1.5/pt of rate above the anchor − 4× an
+  implemented HousingAssistance's generosity fraction (the program's own dedicated stat, stronger
+  than its poverty side-effect); clamp [0, 50] over Greece's recorded 28.9 EU max. **THE USA
+  ASYMMETRY IS DELIBERATE EVERYWHERE**: US sources measure >30%/>50% of gross income where
+  Eurostat measures >40% of disposable — no comparable figure exists, so per the recorded ruling
+  `Country.TracksHousingOverburden=false` carries the fact into the model (early-out), the UI
+  (row ABSENT, not zero — drawing "0.0%" would fabricate a figure no source publishes), the
+  release calendar (a country never publishes a stat it does not track) and the equivalence
+  check (the USA-unmoved assert).
+- **Homeownership** (% of HOUSEHOLDS, OECD AHD basis only — population-basis figures are a
+  different, larger number) — all six, the USA's PRIMARY housing metric per the ruling.
+  Generational reversion 0.05 (the LifeExpectancy class — tenure is a stock that turns over in
+  years), −0.5/pt rate drag, +2× HousingAssistance; clamp [10, 95] around Germany's real 41.0
+  and Poland's 86.8.
+- **HousePriceIndex** — the R4-2 compounding-index kit verbatim (power slice, growth clamp
+  ±10/turn, level floor, base 100 at epoch, §A.9b negative-fill display): growth = 1:1 trend
+  pass-through − 0.5× the rate gap, SIGNED — cheap credit inflates house prices, the
+  best-documented rate channel of the three; tightening drags by the same coefficient.
+
+Two structural notes. **The ctor+Clone checklist entry died structurally**: `Clone()` was a
+positional hand-list into the ctor — the shape R4-1 proved drifts silently — and EconomyState is
+pure value state, so it is now `MemberwiseClone()`: absorbs every future field with no list to
+forget, and skips the ctor's seed-time fallback branches a copy should never re-run. The one
+residue is a warning at the method: a future REFERENCE-TYPE field makes it a shallow copy of that
+field and must be revisited. And **HPI is deliberately NOT in the publication enum**: real HPIs
+are quarterly, but the seed doc records no housing-price release rule and no same-release bridge
+to any wired family, so it stays LIVE-UNTIL-SOURCED — Step A's other branch, first exercised by
+Round 4 here; wiring t+65 from general knowledge would be exactly the fabrication the enum's doc
+comment forbids. HousingOverburden and Homeownership publish annual on the same-release argument
+(the SILC / annual-survey family — PovertyRate/Gini's row).
+
+In passing, comment-only: six stale "121 daily steps" comments in
+`AggregationEquivalenceCheck` (pre-existing, from before the DaysPerTurn 121→365 fix — the loops
+always referenced the constant, so behaviour was right and the comments lied) now say
+DaysPerTurn; the one surviving "121" is the verbatim quote of the original phase directive, which
+was true when written and stays a quote.
+
+### The bar
+
+- **Equivalence 104/104 within 3%** — the C1 enumeration drives Sweden (tracks overburden, own
+  zone) and the USA (does not) through both input channels at once: rate +2 over the anchor,
+  HousingAssistance implemented at generosity 60. New rows at 0.0000–0.0019% against the stated
+  exact-by-construction expectation (constant-target reversions; constant-growth power slice),
+  and **the asymmetry assert held: USA overburden EXACTLY 0, turn form and a full turn of daily
+  steps alike, under the same drives** — the ruling enforced as a check, not a comment.
+- **Buckets**: HousePriceIndex IN (compounds daily regardless of the rate path — the
+  RealWageIndex reasoning), asserted D=200/W=29/M=7/Q=3 + daily variation + resolution
+  divergence. Overburden/homeownership EXCLUDED on a **third variant of the
+  exclusion-with-reason pattern**: their targets move only when the policy rate steps at a
+  discrete meeting, so whether a 200-day no-policy window shows variation depends on the
+  central-bank calendar, not on bucket plumbing — the assert would test the wrong thing.
+- **Matrix 6/6 vs `pre_r4_3_9d5f077`: 34 of 34 shared fields byte-identical in every
+  configuration**, exactly `Homeownership`/`HousePriceIndex`/`HousingOverburden` named NEW — the
+  inputs-only inversion held bit-for-bit a third time. Note it holds THROUGH the monetary
+  coupling: a no-policy run never moves the rate off its anchor, so the gap term is structurally
+  zero there — the coupling is live only when someone actually moves the rate, which is the
+  design. (Field arithmetic: pre CSV = 32+2 shared, post = 35+2.)
+- **Save/load 12/12 clean at 35 reflected fields** (32→35 verified in the compare).
+  `BaselineInterestRate` rides `CurrencyZone`'s normal serialization on new saves; pre-R4-3
+  saves take the sentinel path by construction.
+- **Cadence at the seam** (the enum-iterating check, zero edits a third time): USA
+  HousingOverburden **never / 0 releases — the calendar guard live at the seam**; Homeownership
+  day 638 / 11 releases in 12 years (the annual group's exact row); HPI has no row because it
+  has no publication — the absence is the design, not a miss.
+- **Captures 79/79 at both sizes, 0 failed, 0 overflows, symmetric.** Society carries the
+  housing three for the EU five and exactly two housing rows for the USA — homeownership leads
+  with the "(primary metric)" tail, house prices §A.9b negative-fill, and the overburden row is
+  absent: the ruling visible on screen.
+
+### Batch-shape verdict, and which parts of the bar R4-4 inherits
+
+Third consecutive batch with **zero new tooling** — the diff allowance, exclusion-with-reason
+(now three variants), and the enum-iterating cadence check absorbed a monetary-coupled batch
+unchanged. What R4-3 adds to the arc: the **epoch-anchor + sentinel-fallback pattern** for
+measuring live policy against creation-time state without breaking old saves, and the namespace
+statement the mechanism report will need — housing owns the one-way rate READ; nothing in Round 4
+writes the rate path.
+
+**R4-4 (Defense/Foreign Affairs/Education portfolios) is a CONTENT batch, and per the scoped
+plan this verdict states which parts of the stat bar apply to it**: the pre-report with the
+minister name list for Elias's sign-off per ruling 6 (original fictional persons, rule 9's
+unreversed half); captures at both sizes (new screens/rows are its real surface); the save
+round-trip (ministers persist — verify, don't assume); and the matrix as PURE REGRESSION — no
+new `EconomyState` fields, so the diff allowance should name ZERO new fields, with one question
+R4-4's step 0 must answer before trusting byte-identical as its bar: whether the new portfolios'
+decisions consume the shared RNG stream (if they do, trajectory movement is EXPECTED and must be
+judged, not asserted away). Aggregation-equivalence and cadence apply only as
+unchanged-regression — no new daily model, no new published stat. Follow-on candidates noted,
+not built, all write-backs and separately-ruled per the standing posture: a housing-supply /
+construction channel (HPI ↔ Investment), and overburden → ApprovalRating (housing stress as a
+political force).
+
+## Round 4 batch R4-4 — the three portfolios ship, and the content-batch bar form holds (2026-08-17)
+
+The first CONTENT batch of the arc, built against pre-batch HEAD `dd3ccfc` only after all seven
+pre-report rulings were recorded (R1 names signed as checked-on-2026-08-17; R2–R3 as recommended
+with R3's asymmetry reasoning written down; R4 coexist with FA-competence independence and the
+cadence comment corrected; R5 parity; R6 the concrete two-part criterion; R7 defaulted).
+Everything below is against `POLISIM_R4_4_PREREPORT.md`, which remains the scoping record. *(⚠ Amended
+2026-08-27: the pre-report was consumed and deleted when D1's nine portraits landed, per the 2026-08-26
+retention ruling — its name list, collision search and rulings are `COMPLETED.md` §19; git history holds
+the file at `dd3ccfc`.)*
+
+### What shipped
+
+**Defense, ForeignAffairs, Education join `CabinetPortfolio`** (appended — append-only enum
+growth keeps every pre-R4-4 save loading unchanged), with 9 signed ministers (3 per portfolio,
+one per philosophy, the Part A global-pool structure) and 18 decision scenarios (9 pools × 2,
+Part A parity per R5), every magnitude inside the authored envelope (|Approval| ≤ 2,
+|Budget| ≤ $250B, |youth-U| ≤ 1.5, |TradeBalance| ≤ 0.5 — actual maxima: 1.5 / 180 / 1.2 / 0.4).
+`CabinetDecisionOption` gained the two ruled shock fields (R2): **TradeBalanceShock** (the
+`ForeignPolicyMeetingOption` precedent verbatim — that struct's "the one field
+CabinetDecisionOption doesn't have" comment corrected in place) and **YouthUnemploymentShock**
+(the mean-reverting-stat rule; youth-U has no downstream readers, so the rule-11 audit is
+empty). Defense writes Budget/Approval only and NEVER touches `SpendingCategory.Defense` —
+spending lines stay the player's lever. No scenario promises a legislative act: bills are
+Part B's channel, decisions are executive.
+
+**The R3 asymmetry, built as ruled and recorded everywhere it shows**: Education's competence
+is LIVE — the one model term of the batch, a target-side reduction in
+`ApplyYouthUnemployment` (the ApplyPovertyRate idiom exactly; the "youth retraining" follow-on
+the R4-1 record itself named). Defense and ForeignAffairs are DECISIONS-ONLY, their
+CompetenceBias values authored but inert (no call site reads them), stated at the pool, at
+`CabinetPortfolio`, at `CabinetMinister`, and in the Cabinet screen's intro text — which now
+says "most appointed ministers" because "each" would claim a passive effect two portfolios
+don't have. ForeignAffairs is fully independent of `ForeignPolicySystem` this batch (R4
+coexist); the seam is recorded as a possible follow-on ruling, not built.
+
+UI: `GetPortfolioName` gained the three cases — that switch IS the scoped lookup the
+pre-report's hazard note requires, so "Education" never routes through `DisplayName` and
+reference-class-trap instance #4 (against `SpendingCategory.Education`/`PolicyNodeId.Education`)
+never gets its chance. `GetPortfolioArea`: ForeignAffairs → Trade, Education → Labor, Defense
+rides the Political default (R7 defaulted). The `cabinetstress` worst-case selector learned the
+two new shock fields — without that line it would have silently under-stressed the new channels.
+
+**The ForeignPolicySystem cadence comment** is corrected in this commit (comment-only, the
+121-sweep precedent): 0.01/day was calibrated as "~1.2 meetings per 121-day turn"; at
+`DaysPerTurn = 365` it is ~3.65 expected per turn (97% ≥ 1) while the per-day experience — one
+meeting per ~100 days — is unchanged. **The pacing question is hereby flagged for playtesting,
+deliberately not tuned: is ~3.65/turn intended, or inherited?**
+
+**D1 unblocked on this commit**: the portraits request is WRITTEN into
+`CLAUDE_DESIGN_ASSET_REQUEST.md` §5 (converted from "known future need — NOT yet requestable"),
+all nine filenames derived from the signed names; `MISSING_PREREQUISITES` §D1 moved to
+WRITTEN-NOT-SENT (the E2 convention — sending is Elias's action) and the waiting-on-another-task
+count dropped to 1. Until art lands the nine render the pre-existing procedural-placeholder null
+branch — verified on camera, below. COMPLETED §2's lasting limitation is struck through in place.
+
+### The bar, in its content-batch form — every item as the ruled inheritance statement
+
+- **Trajectory matrix, the R6(i) criterion: 6/6 configurations vs `pre_r4_4_dd3ccfc`, 37 of 37
+  fields byte-identical, ZERO fields named NEW.** The no-appointment isolation derivation held
+  bit-for-bit — and per the ruling's own framing, any movement would have been a broken
+  isolation claim, a finding rather than noise. (Pre-batch code was verified identical to
+  `9f12c96` — the pre-report commit touched only .md files — and the baseline was still dumped
+  fresh at `dd3ccfc` rather than relabeled: verify, don't assume.)
+- **Cabinetstress, the R6(ii) criterion, vs its own fresh pre-batch baseline runs (500 turns ×
+  seeds 777/424242): ZERO new anomaly types** — the census is swing-only on the same four
+  fields (Inflation/Unemployment/DebtToGdpRatio/InterestRate), all on the five NPC countries,
+  before and after — **with counts landing EXACTLY on baseline: 83/83 and 69/69.** The
+  byte-identical-distrust rule was applied to that suspicious equality and the runs are
+  demonstrably different: USA's own per-turn lines differ on 203 of 500 (s777, first divergence
+  turn 21 — the first new-portfolio decision landing) and 346 of 500 (s424242), and s424242's
+  anomaly line-set differs while its count ties. Six ministers firing instead of three moves
+  the played country and never pushes any NPC swing across a threshold — executive shocks at
+  event scale behaving exactly as scoped.
+- **Equivalence 105/105 within 3%** — one row ADDED, not inherited silently: the R3 term is a
+  change to an existing daily model, and the standing bar's own "any new daily model,
+  enumeration stated" clause covers a new term in one. `Sweden.YouthU+EducationMinister`
+  (appointment picked deterministically by max bias — GenerateCandidates shuffles, and two
+  worlds calling it in sequence would draw different orders) landed at 0.0002% — the stated
+  exact-by-construction expectation. The 6 Consumption/Investment INFO lines are count-identical
+  to R4-3's log (the documented Phase 5 display-semantics rows, not counted, not new).
+- **Save/load 12/12 clean at 35 reflected fields — with the new-portfolio keys actually
+  crossing a save**: the round-trip diagnostic now appoints Defense alongside FinanceTreasury,
+  so a new-portfolio appointment and any pending decision it rolls round-trip in the bar run
+  itself. Enum growth is append-only; old saves contain no new keys by construction.
+- **Cadence: the enum-iterating check's stat table is md5-identical to R4-3's** — the pure
+  unchanged-regression the inheritance statement prescribed for a batch with no published stat.
+- **Captures 81 @1600 / 82 @2560, 0 failed, 0 overflows** — including TWO NEW PINNED STATES
+  built for exactly the surfaces the bar names, because the warm-up's natural search kept
+  hitting 0 cabinet decisions and the top-anchored roster capture cannot reach panels four
+  through six: `82c_cabinet_new_portfolios` (the roster's new bottom half — all three panels,
+  headers in their ruled hues, names/philosophies/descriptions clean, and the procedural
+  placeholders visibly distinct from the painted portraits above them) and
+  `82d_cabinet_new_decision` (one REAL decision rolled from the live pools — never fabricated —
+  pinned, captured as a HOLDS-TIME cabinet dossier with both authored options and the
+  paused-time banner naming it, then cleared so the pending gate cannot wedge later states;
+  Defense's "Veterans' Commemoration Package" at 1600, Education's "Apprenticeship Guilds
+  Revival" at 2560). The one-capture asymmetry is the known warm-up variance again
+  (`84b_meeting_decisions` at 2560 only — chased, not absorbed). Captures re-ran after a
+  driver-only edit; no simulation code changed after the matrix/equivalence runs.
+
+### The verdict — what a content batch taught that the stat batches couldn't
+
+**The bar form held with one deliberate extension and one new tool-class.** The extension:
+"equivalence applies only as unchanged-regression" was premised on no new daily model, and the
+moment ruling R3 added a model term the premise shifted — the check followed the code (one row,
+exact). The lesson for future content batches: **a content batch's bar is a function of its
+rulings, not its label** — R3 quietly made this a one-term model batch, and the bar noticed.
+The new tool-class: the PINNED capture state. The stat batches' surfaces (ledger rows) always
+render; interactive content is probabilistic, and a bar that names "the decision screen" cannot
+depend on a 12%/turn roll landing during a warm-up — pin real content, capture, clear. That
+pattern (and its never-fabricate rule) is now standing equipment for content work. Also
+confirmed at scale: the enum-iterated automation surface (stress appointments, capture search,
+the cadence check) absorbed three new portfolios with zero edits beyond the worst-case
+selector's two new terms — the R4-1 "pattern to preserve" verdict, now proven on a batch that
+tripled the roster.
+
+Anomaly-count identity (83/83, 69/69) deserves its one-line honest reading: it is NOT evidence
+the batch changed nothing (the distrust check proved otherwise) — it is evidence that
+event-scale executive shocks on the played country do not propagate 20% swings into NPC
+countries, which is the isolation the scoped plan claimed.
+
+### R4-5 handoff (C5 productivity — the LAST Round 4 batch, per Elias's B4 priority ruling)
+
+GDP per hour worked, OECD PPP basis. Step 0 confirms the **6/6 `[VERIFIED]` single-basis,
+single-vintage seed** against the doc at HEAD (the scoping table's cleanest seed row — but the
+step-0 correction streak stands at 2-of-4, so run it anyway). Display is **own-past-only** per
+the OECD caution recorded in the scoping. The one known question — coupling productivity into
+`PotentialGrowthRate` — is **already ruled OUT of Round 4** (ruling #4: deferred, with rule 11's
+ceiling audit attached whenever it returns), so R4-5 ships inputs-only on the standing posture
+with no new ruling needed beyond its pre-report's own step-0 confirmation. After R4-5, Round 4's
+Step C is complete except C4, which stays sequenced behind the stock-vs-flow mechanism report
+per the F1 chain.
+
+## Round 4 batch R4-5 — C5 productivity ships, and the arc closes (2026-08-17)
+
+The fifth and last batch, against pre-batch HEAD `453e23f`, LAST per Elias's standing B4 priority
+ruling. Its second job — the Round 4 close-out — follows the batch record below.
+
+### Step 0 — CLEAN, and the arc's correction tally closes at 2-of-5
+
+The scoping claim ("6/6 `[VERIFIED]`, one basis, one vintage") is TRUE at HEAD: the seed doc's §6
+live table is all-OECD (`DSD_PDB` · `GDPHRS` · `ACTIVITY=_T` · `USD_PPP_H` · `PRICE_BASE=V` ·
+ref year 2022 · **live vintage retrieved 2026-08-02**, all nine key dimensions recorded). The
+directive's expected hazard — the Sweden ~70 / Poland ~24.5 Statista split — is SUPERSEDED
+history, not a live basis problem: those were the placeholders the doc's own source-conflict
+warning targeted, replaced by the OECD pull, and the warning survives below the table as audit
+trail. So "3-for-3 corrections expected" did not materialize; the tally ends **2 corrections in
+5 batches** — enough to keep step 0 mandatory forever, which is the tally's real lesson. Two
+caveats ride into the seed comments per the doc's own rules: the series RESTATES WHOLESALE (the
+retrieval date is part of the basis — the 2026-04 archive differs 1–2.3% at the identical key),
+and 2022 is the newest COMPLETE same-basis cross-section (mixing France/USA 2024 values in would
+fabricate a cross-section that never existed).
+
+### What shipped
+
+One `EconomyState` field (35 → 36): **Productivity**, GDP per hour worked, USD PPP — seeded as
+the six real levels with per-line basis comments (Germany 94.54 · USA 90.83 · Sweden 89.95 ·
+France 86.32 · Italy 78.20 · Poland 54.09), the ordering matching the doc's own recorded
+qualitative claims (Italian stagnation, Polish catch-up). Deliberately the **minimal member of
+the compounding class**: the RealWageIndex kit with its two cyclical terms removed — growth is
+pure 1:1 trend pass-through on `PotentialGrowthRate`, which is consistent-by-construction with
+the wage index's own `RealWageProductivityPassThrough` constant and preserves the seed doc's
+euro-area/US divergence through the existing per-country trend seeds with no new figure. Power
+slice daily, growth clamp ±10/turn, level floor, level unbounded. `Clone()` needed nothing —
+MemberwiseClone absorbed the field, the R4-3 structural fix earning its keep a second time.
+
+**Inputs-only at its strictest**: the stat reads exactly one input and NOTHING consumes it — the
+PotentialGrowthRate coupling is ruled OUT of Round 4 (ruling #4), and the wage index's direct
+trend read is UNTOUCHED. Both directions of the productivity coupling go on the write-back queue
+below. **Publication: live-until-sourced, the branch's second member** — §6 records basis and
+vintage in full but NO release rule and no same-release bridge, so the stat displays live rather
+than publishing on an invented calendar (the absence is documented at the `PublishedStat` enum
+beside HPI's). **Display: §A.9b negative-fill decided deliberately** — unlike the two index
+siblings the level is REAL, but it is still unbounded and any fill denominator would be an
+invented ceiling. The trailing text is the OECD's own usage rule ("$ per hour (PPP), against
+your own past"); the Society ledger shows only the player's country, so the OECD's
+own-past-only caution is satisfied structurally, and the text keeps it honest anyway.
+
+### The bar — the arc's fifth green run, every number on prediction
+
+- **Equivalence 110/110 within 3%** — Germany (highest level) and Poland (lowest level, fastest
+  catch-up trend — the largest possible telescoping error if the slice took the wrong shape) at
+  0.0007%/0.0015%; nothing to drive because the model's one input never moves in the check.
+  **Buckets: Productivity IN** (pure trend compounding — strictly monotone dailies, the cleanest
+  variation case in the set), asserted D=200/W=29/M=7/Q=3 + variation + divergence.
+- **Matrix 6/6 vs `pre_r4_5_453e23f`: 37 of 37 shared fields byte-identical**, exactly
+  `Productivity` named NEW — the inputs-only inversion, bit-for-bit, a fifth and final time.
+- **Save/load 12/12 clean at 36 reflected fields** (35→36 verified in the compare).
+- **Cadence: the stat table md5-identical a third consecutive time** — live-until-sourced means
+  no new row, and the check proves the absence rather than assuming it.
+- **Captures 81/81 at both sizes, 0 failed, 0 overflows, symmetric.** Society carries six rows;
+  Productivity renders beside Real wages (Labor ink, negative-fill) and the warm-up's own
+  trajectory shows the trend channel working on camera — USA 96.5 at turn 3 against the 90.83
+  seed, which is three years of ~2% compounding to the decimal. No pinned state needed: a
+  ledger row always renders, which is exactly why R4-4 needed the pinned pattern and the four
+  stat batches never did.
+
+---
+
+## ROUND 4 CLOSE-OUT — the arc verdict (2026-08-17)
+
+**Five batches, ~36 hours of shipped work, zero rollbacks, zero post-ship defects found so far.**
+EconomyState grew 28 → 36 tracked fields (seven new stats + the R4-2/R4-3 index conventions),
+the cabinet grew 3 → 6 portfolios (9 ministers, 18 scenarios, 2 shock channels, 1 model term),
+and every batch shipped against a fresh baseline with its full bar green on the first run —
+except R4-4's captures, which needed the driver extended, and that extension is itself the arc's
+tooling contribution.
+
+**What the batch discipline proved, stated as the five records prove it:**
+
+1. **Step 0 pays for itself**: 2 corrections in 5 batches (R4-1's provisional flags and
+   monthly-class wiring; R4-2's 5/6+ESTIMATED and already-closed normalization), both caught
+   before a wrong number entered code. The two CLEAN batches don't argue for skipping it — they
+   argue the streak is unpredictable.
+2. **The bar is a function of the rulings, not the batch label**: R4-4 entered as "content, no
+   stat bar" and left with an equivalence extension because one ruling (R3) added a model term.
+   The check follows the code.
+3. **Byte-identical is a usable criterion when it is DERIVED**: three stat batches and one
+   content batch held 37-of-37 bit-for-bit because isolation was proven structurally
+   (inputs-only; empty appointments; per-consumer RNG streams) — and when counts landed
+   suspiciously equal (83/83, 69/69), the distrust rule found real movement underneath rather
+   than accepting the coincidence.
+4. **Enum-iterated automation absorbs growth**: the stress appointments, capture search, cadence
+   check and reflection-based save compare took three new portfolios and one new field with two
+   edited lines between them (the worst-case selector's new terms).
+5. **Exclusion-with-reason beats blanket coverage**: three recorded bucket-exclusion variants
+   (flat-is-correct, float32-epsilon, calendar-dependent) each name why the assert would measure
+   the wrong thing — the anomaly-coverage philosophy from the file's own preamble, applied in
+   miniature.
+
+**THE WRITE-BACK RULING QUEUE — the arc's noted-not-built follow-ons, consolidated in one place
+as the standing queue.** Each entry is a separately-ruled future item carrying a rule-11
+stacking audit when it comes up; none is scheduled; the inputs-only posture holds until a ruling
+says otherwise:
+
+| # | coupling | origin | the audit it will need |
+|---|---|---|---|
+| Q1 | Gini → ApprovalRating (inequality as a political force) | R4-2 | ApprovalRating's combined formula |
+| Q2 | RealWageIndex → ConsumerConfidence | R4-2 | confidence inputs |
+| Q3 | Productivity ↔ PotentialGrowthRate (either direction — the ruling-#4 deferral) | scoping + R4-5 | **PotentialGrowthRate's heavily-stacked ceiling — the named rule-11 case** |
+| Q4 | Productivity replacing RealWageIndex's direct trend read | R4-5 | wage-index growth channel |
+| Q5 | Productivity cyclical terms (labour hoarding; investment deepening) | R4-5 | none if kept self-contained; Investment read otherwise |
+| Q6 | HPI ↔ Investment (housing-supply/construction channel) | R4-3 | Investment's GDP identity |
+| Q7 | HousingOverburden → ApprovalRating (housing stress as politics) | R4-3 | ApprovalRating (stacks with Q1) |
+| Q8 | LifeExpectancy secular drift (the BirthRate precedent) | R4-1 | none — self-contained |
+| Q9 | FA/Defense passive competence channels (their authored biases are inert) | R4-4 | per-channel |
+| Q10 | FA ↔ ForeignPolicySystem seam (absorb: philosophy-differentiated meeting pools) | R4-4 | none economic — content/design |
+
+(The R4-1 youth-retraining candidate left this queue by SHIPPING as R4-4's Education competence
+term — the queue's first graduation, and the template: one ruling, one audit, one batch.)
+
+**Also flagged, non-coupling:** the ForeignPolicySystem meeting cadence (~3.65/turn at 365-day
+turns — intended or inherited?) is a PLAYTESTING question, deliberately not tuned in code.
+
+### THE BOARD — where the project stands after Round 4 (the next sequencing conversation starts here)
+
+| item | state | gate |
+|---|---|---|
+| **Stock-versus-flow mechanism report** | NEXT fiscal item; its namespace is claimed and waiting (bond/debt-instrument space explicitly unclaimed by Round 4; candidates recorded: maturity structure, inflation erosion of the nominal stock, primary-surplus rules) | its own pass with its own ruling — deliberately not started at this close-out's tail |
+| **C4 / credit-rating follow-ons** | parked | behind the mechanism report (§F1 chain) |
+| **Item 10** | gated | 13 Sept 2026; collision map stands |
+| **GitHub GC re-check** | dated edge | ~2026-08-23, one command |
+| **Editor checklist** | parked | access-gated |
+| **D1 portraits** | request SENT 2026-08-17 (Elias) | delivery lands when it lands — import per §3 treatment rules; `ImporterSettingsCheck`/`DeliveredAssetCheck` absorb the 18 files; placeholder rendering until then |
+| **Write-back ruling queue Q1–Q10** | standing, unscheduled | one ruling + one audit each, per the posture |
+
+**Round 4 is closed in the Master Sequence (item 6 → DONE), the roadmap block moved to
+`COMPLETED.md` §19, and the roadmap is smaller than it was this morning — which is the standing
+pattern doing what it says.**
+
+## The erosion term ships — the debt identity's missing −π·b, and what it did to the signature (2026-08-17)
+
+Rulings R1–R5 recorded; built against pre-change HEAD `bcbba47` with the baseline
+(`pre_erosion_bcbba47`) dumped before the line was written. **This is a RECALIBRATION BY
+CONSTRUCTION — the fourth baseline discontinuity, listed in the table at the top of this file:
+every debt-side figure recorded before this commit was measured on an engine missing a textbook
+term.** Non-debt figures remain comparable — verified below at the strongest possible level.
+
+### What shipped
+
+One guarded line at the stock update (`ApplyRevenueAndSpending`):
+`GovernmentDebt = clamp(GovernmentDebt × (1 − π/100)^fraction − budgetBalance, guard, ceiling)`.
+Per R2's declaration (now a stated model property in the "Accounting Convention" section near the
+top of this file): the model's dollars are constant-price units, `GovernmentDebt` is the one
+nominal quantity, and this factor is the bridge. Symmetric per R3 — the factor applies to
+whichever position exists and shrinks it toward zero under inflation; deflation grows it,
+correctly signed, no special case. **Shape (the taxonomy): an annual rate on a SELF-REFERENCE,
+so the daily form is the COMPOUNDING (power) slice** — at constant π the slices compose to the
+turn factor exactly; the interleaving with the daily balance subtraction is Phase-3-class
+within-period feedback, budgeted as such. Zero new state: the reflection compare and save/load
+were CONFIRMED untouched, not assumed (12/12 at 36 fields, same as R4-5).
+
+### The bar
+
+- **Equivalence 112/112 within 3%.** The erosion enumeration (stated): a violent 8% drive on
+  the two structural extremes — Italy (highest ratio, largest term) and Sweden (near-zero debt,
+  term must stay negligible while the SWF path runs), π held constant by construction of the
+  validation accruals. Expectation stated up front as NOT exact-by-construction (the affine
+  interleaving is Phase 3's own drift class): Italy landed 0.14%, Sweden 2.21% — the larger
+  relative figure on a tiny stock, the absolute column's standing caveat. The pre-existing
+  Phase 3 rows now exercise the term at seed inflation as well.
+- **The matrix, judged on both columns as an intended change**: debt-side quantities move;
+  macro paths are UNTOUCHED at the strongest checkable level — France's Inflation and GDP are
+  **identical to the digit** pre-vs-post through its largest excursion window, which proves the
+  term writes the stock and nothing else reaches the macro engine.
+- **The magnitude check the directive required — the term sits at π·b, verified twice.**
+  Algebraically: the 8% equivalence drive's turn form IS `stock × 0.92 − balance`, verified
+  against the daily form. Inside the live feedback web: USA's t1→t2 step decomposes EXACTLY —
+  pre-run Δdebt +1534.4; post-run +895.2; difference −639.2 = erosion −861.9 (2.331% × stock,
+  π·b to the decimal) + FRF give-back +222.7 (the multiplier loosening at the lower ratio). The
+  year-one gap (916 ≈ π·b on the seed stock) closes the same arithmetic from the other side.
+- **Save/load 12/12 at 36 reflected fields; captures 81/81 both sizes, 0 failed, 0 overflows.**
+  Rule-15 on the debt surfaces: at the identical warm-up state the debt tile reads $38.7T (was
+  $40.8T), the ratio 129.4% (was 136.4%), **the rating tile re-derives to AAA (was AA+)** —
+  C4's reader responding to the recalibrated ratio through its normal derivation — and Budget
+  Balance shows the FRF's endogenous offset (−$5.44T vs −$4.85T). GDP, unemployment, inflation,
+  approval, and the whole Society block are pixel-consistent with the pre-erosion captures.
+
+### The signature's fate, recorded with the divergence's own precision (both seeds; s777 quoted)
+
+| | pre t100→t200→t1000 | post t100→t200→t1000 | the verdict, per country |
+|---|---|---|---|
+| USA | 140.1 → 139.8 → 155.9 | 125.9 → 122.3 → **114.7** | **REVERSED — declines monotonically through t1000 at both seeds** (s424242: 123.8/119.9/119.9). Still moving at t1000 (−0.005/turn): a waypoint, NOT an equilibrium |
+| Germany | 38.0 → 38.9 → 80.1 | 35.0 → 35.6 → 64.2 | window slope reduced; t1000 −16; late slope −30% |
+| Italy | 114.6 → 116.0 → 165.9 | 109.8 → 111.7 → 139.8 | **level −5 by t100 and late slope −40%, but the WINDOW slope is NOT reduced** (+0.019 vs +0.014/turn; same at s424242) — the FRF loosens against the term locally and the two forces re-balance at a lower level. Stated by the letter: 3 of 4 climbers meet "slopes reduced or reversed at the window"; Italy meets the force's existence by level and long horizon instead |
+| Poland | 28.0 → 28.3 → 46.0 | 26.6 → 26.7 → 39.5 | window slope reduced; t1000 −6.5 |
+| Sweden | 4.5 → 6.2 → 10.6 | 4.4 → 6.0 → 9.5 | **settled shape HELD** (both seeds) |
+| France | 94.1 → 88.9 → 108.9 | 89.2 → 70.5 → 96.7 | held at s424242 (90.1/83.8/96.6). At s777: a ONE-SEED damped overshoot — under identical macro forcing (π/GDP bit-identical pre-vs-post), sustained 4.2–4.6% inflation eroded France below its comfortable anchor, the FRF loosened toward its floor, deficits returned, and it recovered to a NEW band (84–96) held for 650 turns. Bounded, recovering, never creditor-side: **R3's hazard never engages — this is R1's restoring force overshooting through the FRF floor, not a destabilization of R3's class.** Not a stop; recorded as the term's one overshoot mode |
+
+**No equilibrium is claimed anywhere.** USA declines through t1000; Germany/Italy/Poland still
+climb at 60–70% of the pre rate. The 1000-turn shape check therefore does NOT earn the word,
+and the engine's open question CHANGES CHARACTER rather than closing outright: it is no longer
+"the stock has no restoring force" (it does now, at π·b, proven to the decimal) — it is "the
+three Eurozone climbers' instant repricing at premium-loaded zone rates (6–15% nominal) still
+exceeds π late-run." **That is precisely the deferred R4 maturity lag's target, and this pass
+delivered the measurement R4 was deferred pending**: the residual climb is concentrated
+exactly where spot-rate repricing outruns erosion, and nowhere else (the USA, whose blended
+3.3% override IS a frozen maturity treatment, is the one country that reversed).
+
+**R3's symmetric branch, stated honestly**: code-verified (the factor applies to either sign by
+construction, exercised at +8% in the equivalence drive) but UNEXERCISED live — a 500-turn
+swfstress run (86 anomalies, the scenario's historically-elevated class, zero new types by
+census) produced zero negative ratios: no scenario at HEAD creates a net creditor since SWF
+returns were routed through the multiplier. The creditor branch waits for a live creditor; its
+safety case is structural (self-limiting factor + the −1000% guard).
+
+### Closures and the queue
+
+- **The divergence finding (2026-08-11) and the FRF sweep's queue entry CLOSE against this
+  commit** — closure notes annotated at both sections in place.
+- **F1 queues as the NEXT FISCAL ITEM** (per R5): the interrupt layer's `BudgetImpact` writes
+  the display accumulator only and has never touched the debt stock — its own small pass, where
+  option text and fiscal reality get aligned at event scale.
+- **R4 (maturity effective-rate lag): deferred-pending-measurement, and the measurement now
+  exists** (above). When Elias rules it in, it runs against THIS commit's fresh baselines with
+  its own attribution, per one-change-per-baseline.
+
+## The maturity rate-lag ships — R4 closes, and the lag's true character is measured (2026-08-17)
+
+Ruling R4, ruled IN with the erosion pass's measurement as its warrant; built against `685ebd5`
+with **`post_erosion` as the baseline** (the standing label — same commit, no re-dump needed and
+none faked). Discontinuity #5 in the table above, MEASURED NARROW: exactly {GovernmentDebt,
+Budget} moved of 38 dumped fields, and stable-rate figures are effectively comparable across it.
+
+### What shipped
+
+`Country.AverageDebtMaturityYears` (structural, seeded from real debt-office data, source and
+date per line) and `Country.EffectiveDebtInterestRate` (the mechanism's ONE piece of state, −1
+sentinel per the R4-3 pattern — pre-mechanism saves and fresh worlds initialize to the current
+issuance rate, bit-for-bit the old charge, so behavior diverges only when rates move).
+`GetDebtIssuanceRate` = (override where set, else zone spot) + premium × sensitivity — **the
+premium reprices at ISSUANCE ONLY** (a market price set at auction; existing bondholders keep
+their coupons), and `AdvanceEffectiveDebtRate` rolls the blended rate toward it at
+1/M per year (the PerDayReversion slice daily; advance-then-charge in both fiscal forms).
+**The USA override RETIRES INTO the mechanism as its issuance-rate claim** — reserve-currency
+yield anchoring named as the boundary (Treasury auctions clear near the blended rate regardless
+of the model Fed's excursions), the lag applying uniformly to all six. Preview-clone hand-list
+extended (the R4-1 escape lesson applied to Country's list); the trajectory dump gained
+`Country.EffectiveDebtRate` as its third extra so the lag is decomposable in every future
+baseline; the round-trip diagnostic snapshots the new state explicitly.
+
+**Seeds** (searched 2026-08-17): USA 5.9 `[VERIFIED]` (Treasury WAM ~70–72 months, 2025);
+France 8.5 `[VERIFIED]` (AFT 8y180d at 2026-05-31); Poland 5.65 `[VERIFIED-secondary]` (2024);
+Italy 7.0 `[ESTIMATED]` band 6.9–7.7 (MEF, mixed vintages); Sweden 4.75 `[ESTIMATED]` from
+Riksgälden's 3.5–6y TIME-TO-REFIXING steering range — which for a REPRICING lag is the
+mechanism-relevant basis, stated not glossed; **Germany 7.0 — the batch's one REPORTED [GAP]**,
+seeded `[ESTIMATED]` band 6–8 bounded by Finanzagentur portfolio structure. **The ruled
+band-sensitivity rider resolves it: the whole mechanism moves Germany's ratio ≤ 0.1 points at
+every horizon, so any M in [6, 8] is inside noise — BAND-STABLE, the estimate STANDS**, no desk
+graduation needed (annotated at the seed line).
+
+### The bar
+
+- **Equivalence 117/117 within 3%** — the lag enumeration at a +4-point spot drive: Italy
+  (spot-priced, premium-loaded) 1.12% on the rate and 0.50% on debt (the moving-premium target,
+  the stated Phase-3 class); the USA near-EXACT (0.0017% — constant override target telescopes);
+  and **the ANCHORED assert held: USA effective rate 3.685 under the +4 drive, reverting toward
+  its 3.36 blended target and ignoring the driven spot — the override-subsumption boundary
+  claim verified at the mechanism level**, before any trajectory ran.
+- **The matrix, judged (count-reconciliation per the rider: pre CSV = 36+2 shared, post =
+  36+3): 36 of 38 shared fields byte-identical in all six configurations** — the moved set is
+  exactly {GovernmentDebt, Budget}, `Country.EffectiveDebtRate` named NEW, and the macro engine
+  provably untouched a second time. End-state debt differences: 0.02% both seeds.
+- **Save/load 12/12 clean at 36 reflected EconomyState fields, with the new Country-level state
+  snapshotted explicitly** — a load that dropped `EffectiveDebtInterestRate` would now fail the
+  compare rather than silently reverting a game to instant repricing via the sentinel.
+- **Captures 81/81 both sizes, 0 failed, 0 overflows**; rule-15 on the debt tiles: the warm-up
+  screen is value-identical to the erosion era ($38.7T / 129.4% / AAA) — the USA control
+  visible on-screen.
+
+### The analysis — what the lag actually is, measured
+
+- **The USA control: HELD, direction zero** — identical to `post_erosion` at one decimal at
+  every horizon, both seeds (end-state 0.02%). No stop; the override captured nothing the
+  subsumption loses, because the subsumption kept its claim.
+- **The Eurozone climbers: ≤ 0.2 ratio-points of movement at every horizon, both seeds** — and
+  this is the pass's honest headline finding: **at stable-rate baselines a converged lag IS
+  instant repricing.** The zone rate holds ~5.51 flat through the ruled window and drifts slowly
+  late; a 7-year lag shadows a slow drift with modest delay, so the interest actually paid is
+  nearly what spot charged. The erosion pass's attribution is hereby REFINED, not retracted:
+  the residual climb is driven by the LEVEL of premium-loaded nominal rates exceeding π — the
+  lag changes WHEN that level arrives, not WHETHER. The maturity mechanism's value at these
+  baselines is REGIME INSURANCE (rate spikes, the S≥6 limit-cycle class, policy-driven rate
+  paths a player produces) plus realism — not a signature-changer. Slopes did not visibly
+  reduce toward the USA's shape; the record says so plainly.
+- **France's s777 overshoot: FED, moderately, still bounded.** Trough 5.6 points deeper (32.5
+  vs 38.1 at t275), recovery ~100 turns longer (t350: 63.2 vs 84.0) — the recovery leg's
+  mechanism is clean (the lag holds the dive-era cheaper blended rate into the recovery, so
+  deficits rebuild the ratio more slowly); the deeper trough is measured-not-fully-decomposed.
+  Reconverged by t500 (87.3 vs 87.4), identical at t1000 (96.7). One seed; s424242's France is
+  unchanged (90.0/96.6). The finding, per the directive: a lag interacting with an overshoot
+  FEEDS this one — amplitude up, period up, stability unchanged.
+- **The decomposition, three parts without pretense**: (1) the stable-rate NULL is itself the
+  measured decomposition — converged r_eff = spot, gap growth ≈ 0, which the climbers' ≤0.2
+  confirms; (2) in rate-MOVE regimes the signs close in both directions — turn 1's rate-CUT
+  cycle has the maturity era paying MORE (mat t1 debt 2683.4 vs 2677.8: the lag slows the
+  benefit of cuts exactly as it slows the pain of hikes), and the equal-stock turn (Italy
+  t2→t3, stocks 0.07% apart) closes to first order: measured gap 8.54 vs interest differential
+  ~12.3 minus FRF give-back and within-turn integration, terms of the derived sign and size;
+  (3) the EXACT closure lives where it belongs — the 117/117 equivalence bar, which is the
+  turn-vs-daily algebra verified at machine precision. The erosion pass's without-remainder
+  standard is met at the algebra level; the trajectory level closes to first order with the
+  integration term named.
+- **Sweden holds** (4.4/8.8, identical both eras). **The creditor-gap one-liner, standing in
+  the scenario record**: R3's symmetric erosion branch remains code-verified and
+  live-unexercised — no scenario at HEAD builds a net creditor (swfstress 500t: zero negative
+  ratios); its safety case is structural.
+- **The equilibrium word: NOT EARNED.** The t1000 shapes are the erosion pass's — USA still
+  declining, three climbers still climbing at 60–70% of pre-erosion rates — and the lag moved
+  none of them materially. Waypoints, all. The two-identity-terms sentence stays holstered.
+
+### Closure
+
+**R4 CLOSES against this commit, with the measurement that ruled it in and the measurement it
+produced**: the residual-attribution warrant was correct about mechanism and refined about
+regime — instant repricing is gone from the model (the last of the mechanism report's two
+identity gaps), and its trajectory effect at no-policy baselines is deliberately, measurably
+small. The per-tranche form stays rejected (its reason — state cost for the same aggregate
+effect — holds a fortiori now the aggregate form is measured). **F1 is the next fiscal item**
+(Phase 2 of the standing close-out directive): the interrupt layer's BudgetImpact routing.
+
+## F1 ships — the interrupt layer's budget impacts reach the books (2026-08-17)
+
+Ruling R5's item, built as the close-out's Phase 2 against fresh baselines at `b05150f`
+(`pre_f1_b05150f`, plus fresh cabinetstress envelope runs — 83/69, reproducing the R4-4-era
+counts at the new HEAD). The defect, restated from the mechanism report: every interrupt-layer
+`BudgetImpact` wrote `state.Budget` only — the cumulative display accumulator — while the debt
+stock moves solely by `budgetBalance`, so "Bank it against the debt: +200" had never touched the
+debt path. (One correction to F1's first statement, made at the derivation: **the writers were
+exactly two** — `CabinetSystem.ApplyDecisionOption` and `ForeignPolicySystem.ApplyMeetingOption`;
+`EconomicEvent` carries no budget field.)
+
+**The routing, derived before wiring**: every authored impact is a ONE-TIME SETTLEMENT — no
+recurring cost exists in any pool — so the honest entry is STOCK-SIDE, and one kind suffices:
+`SimulationManager.ApplyOneTimeBudgetImpact` moves the stock (clamped exactly as the main update
+clamps) and records the SAME entry in the accumulator, which thereby becomes a TRUE READING of
+the one real path — the parallel ledger retired, which was the defect. **The boundary, named for
+future authors at the helper**: a recurring cost is the budget process's channel and must never
+be expressed as a repeated interrupt impact. The `CabinetDecisionOption` doc's original
+"contained landing spot" reasoning is corrected in place — the containment argument survives;
+it just stopped being fictional.
+
+### The bar
+
+- **Equivalence 117/117 unchanged** — zero new rows BY DERIVATION, stated: an instantaneous
+  apply has no daily shape (the same reason no interrupt shock has ever had one).
+- **Matrix 6/6 vs `pre_f1_b05150f`: 39 of 39 fields byte-identical, zero NEW** — a no-policy
+  run resolves no interrupt, so the criterion returned to byte-identical and held.
+- **Cabinetstress: counts EXACTLY baseline (83/83, 69/69), zero new anomaly types — and the
+  distrust rule closed at the dollar**: 485 of 500 USA turn lines differ; the first gap is
+  **+100.0 exactly** (one authored face value, a −100 cost landing on the stock), and by turn 6
+  the post-run sits BELOW base — a +200 windfall banked against the debt, working for the first
+  time. Movement face-value-bounded, signs both directions, relatively vanishing as the economy
+  grows (the t500 stock prints identically at display precision against 3.6×10⁸).
+- **Save/load 12/12** — the round-trip's pending interrupts (Defense/FinanceTreasury decisions
+  with BudgetImpact-carrying options) cross the save and resolve onto the debt path post-load.
+- **Captures 81/81 both sizes, 0 failed, 0 overflows** — no display change: the Budget tile's
+  semantics are unchanged (it was always the cumulative; it is now a faithful one).
+
+**F1 closes.** The fiscal queue emptied with it: the mechanism report's findings are all
+dispositioned — R1–R3 shipped (erosion), R4 shipped (maturity lag), R5 shipped (this), F2
+recorded as a known artifact.
+
+## The derived close-out sweep — every open item at HEAD, dispositioned (2026-08-17)
+
+Phase 3 of the close-out directive. The enumeration was DERIVED from the five records at HEAD
+(roadmap, this file, `MISSING_PREREQUISITES`, COMPLETED's limitation notes, the write-back
+queue), not inherited from any brief — briefs have been stale twice, and this sweep found a
+third instance (B6, below). Every item gets exactly one disposition; "gated on nothing" was
+treated as a contradiction to resolve, and none survived.
+
+### Closed in this pass
+
+| item | what closed it |
+|---|---|
+| **B6** (register): the deferred overburden items | Answered by R4-3 in full — exact `[VERIFIED]` values superseded the `[BOUNDED]` placeholders, the USA methodology decided by ruling — and the entry never absorbed it. The register's own E1/E2 answered-but-not-absorbed pattern, instance three. Closed in place. |
+| **F-register's C4 gate** ("waits on the parked fiscal-divergence pass") | The pass SHIPPED (report `bcbba47`, erosion `685ebd5`, lag `b05150f`). Gate dissolved; C4's supplier is now §A1's ruling alone, with the 5-anchor re-run flagged to use post-erosion baselines. The register's "waiting on another task" count: **0**. |
+| **The fiscal queue itself** | R1–R3, R4, R5 all shipped; the divergence finding and sweep queue entry closed against their commits in place. |
+
+### Gated, each gate NAMED — the complete list
+
+| item | the gate |
+|---|---|
+| Item 10 (elections/parties territory) | **the date: 13 Sept 2026**; collision map stands |
+| A1 — C4's deficit-term damping (now the only thing before C4 closes) | **a ruling of Elias's**, then one calibration pass |
+| A3 — cabinet appointment confirmation vote | ~~a ruling of Elias's~~ — ⚠ two-authors artifact: A3 was already RESOLVED 2026-08-02 (unilateral; `COMPLETED.md` §23); this row re-derived from the pre-resolution details block. Struck 2026-08-26 |
+| D1 — the nine cabinet portraits | **delivery** (request sent 2026-08-17; import checks standing) |
+| E2 — `mark_party_us_lib` | **Elias sending the written request**, then delivery |
+| E3 — Design's rasterization diff | **a rasterizer existing on this machine** |
+| The Editor checklist (save/load pass) | **Elias's hands-on Editor session** |
+| GitHub GC re-check | **the date: ~2026-08-23** (one command; not due at this sweep) |
+| FA meeting cadence (~3.65/turn, intended-or-inherited) | **playtesting** |
+| TMP migration | **a screen needing masks/effects** (none exists; the v2.0 narrative screens would be the first) |
+| Anomaly swing-coverage extension | **the recorded condition: something slipping through unnoticed** |
+| Ongoing-process budgets / full interrupt system (Phase 0's deliberate slice) | **a design-arc ruling** — Part B owns law-passing; the fuller system is next-arc material |
+| R3's creditor-branch live exercise | **a scenario that builds a net creditor** (none exists at HEAD; code-verified meanwhile) |
+| F2 — the rate-cap nominal-on-real artifact | **any future nominal-rates work** (recorded property, softened in practice by the maturity lag) |
+
+*(⚠ Amended 2026-08-27, Elias's ruling: the E3 row's supplier was never Claude Design — their half
+closed 2026-08-17; ours is a tooling pass (a working render path, or a rasterizer installed here), so
+E3 left the blocked register for the roadmap's live list (item 7). A prerequisite filed under the wrong
+supplier lapses, because nobody on either side is waiting for it.)*
+
+### The standing queues, confirmed
+
+**Q1–Q10 (the write-back ruling queue)**: confirmed a ruling queue by design — every entry names
+its origin, its trigger (a ruling of Elias's electing it), and the rule-11 audit it will carry;
+none is scheduled; the fiscal arc changed none of their premises (the productivity couplings
+Q3–Q5 and the housing pair Q6–Q7 are exactly as recorded). **Deferred items' reasons re-verified
+at HEAD**: per-tranche maturity (state cost for the same aggregate effect — holds a fortiori now
+the aggregate form is measured), TMP (as gated above), the Phase-0 interrupt slice (as gated
+above). Nothing deferred has lost its reason.
+
+### THE FINAL BOARD
+
+Every open item above is gated on a **date** (13 Sept; ~23 Aug), a **delivery** (D1; E2→E3), an
+**access** (the Editor session; a rasterizer), a **ruling** (A1, A3, the Q-queue, the design
+arc), or **play** (the cadence question; the creditor scenario; the swing condition). The next
+sequencing conversation is the one the erosion close-out named: design-led — what the game DOES
+next — with the Q-queue and the v2.0 arc as its standing menu and A1 as its one quick fiscal
+errand.
+
+**And the sentence the sweep leaves true: nothing on this roadmap is open except what waits on
+the world.**
+
+## The Progress2 delivery — one mark, one portrait proof, and a byte-faithful re-delivery (2026-08-17)
+
+Three dispositions, exactly as directed — never one import.
+
+**Origin verification, per the standing discipline**: 81 files, all rooted under
+`assets/polisim_ui_v2/`, zero executables, zero path escapes. Byte-diff against disk: **54 of 56
+PNGs IDENTICAL** (re-delivery), **exactly 2 NEW** — `mark_party_us_lib` and the §5 portrait PoC —
+**zero DIFFERS**. All 19 "differing" SVGs proved LINE-ENDINGS ONLY against the git-CRLF disk
+copies (verified with `--strip-trailing-cr`, per-file). Design's stale-file deletion note
+verified a NO-OP: `find Assets -name "canvas_*" -o -name "emblem_state_seal*"` → **0** (E1/E2's
+renames had already closed them; re-executing a cleanup was correctly refused).
+
+**The mark** (`mark_party_us_lib`, 128×128 WoA, class keystone): imported to `Emblems/` with meta
+from `mark_party_us_dem` — **the MARK family per §3.0a, not `emblem_*` and not Design's own
+"meta from Chrome/" suggestion** (both are WoA-class, the mark family is the exact
+reference) — fresh GUID, SVG to `Emblems/Source/`. `ImporterSettingsCheck` green with the WoA
+family classification read from pixels. ⚠ The orphan accounting: on MAIN,
+`PartyMarkCoverageCheck` reports **"PARTY SYSTEM NOT PRESENT on this branch — VERIFIED
+NOTHING"** — the honest output; the accounting that gains this mark runs on
+`stranded/politics-elections` when item 10's gate opens. Art-on-main, orphan-by-sequencing,
+the other four marks' recorded status.
+
+**The portrait PoC** (`portrait_cabinet_defense_katarzyna_ekelund`, 512×640 @2×): imported to
+`Portraits/` (meta from the Portraits family, fresh GUID; SVG opens `Portraits/Source/` — the
+first portrait source on disk). **The import check caught a real defect on its first run**: the
+blind-copied family meta RESCALED 512×640 → 512×512 (`nPOTScale` was never exercised by sixteen
+square-POT sources — the family meta was right for the family's envelope, silently wrong for the
+first non-POT member; the reference-class trap's benign cousin). Fixed with the one deliberate
+divergence — `nPOTScale: None`, the Chrome convention — re-run green, unscaled. **The batch of
+nine inherits this meta, not the fed-chair one.** DeliveredAssetCheck absorbed the zip: 77/77
+asset entries present. Full suite: 5/5 green after the fix.
+
+**The two §5 answers, derived and recorded in the request doc (the deliverable back to Design)**:
+(1) **envelope ACCEPTED** — the 16 are 256×256 transparent-bust Default-textures drawn
+ScaleAndCrop into a 74:92 roster rect; 512×640's 0.80 aspect matches that crop to 0.5% (the
+squares lose ~20% of width to it), and the importer clears it as-is; the real question is
+REGISTER, which is the Editor gate's. (2) **vignette FRAME-OWNED, confirmed by what shipped** —
+the 16 bake no vignette; the only oval vignette in the project is `ui_portrait_frame_oval`'s
+alpha (Design's own manifest), delivered and UNWIRED pending the Canvas path; the PoC's baked
+glow is an opaque painted ground, rect-safe by pixel inspection. §5-vs-§3.2 resolves: **bake the
+art, never the cutout.** The third gate — the register side-by-side — is the OPEN VERIFICATION
+GAP block's third entry, two shots specified, zero prep.
+
+**The R5 hex exchange**: GATED BY NAME on item 10 (13 Sept) — no LP/Sweden `DisplayColor` seeds
+exist on main to send; recorded in §1G so Design waits on a calendar, not on us. **The carried
+strip-cut diff**: Design's half CLOSED in their manifest (6/6 re-raster identical); our half
+remains E3, gated on a rasterizer — status split recorded at E3, nothing ambiguous.
+
+## Two closures, and the board ends at all-gates (2026-08-17)
+
+**A1/C4 — CLOSED.** Ruled proceed; `CreditRatingAnchorCheck` ran against current HEAD (erosion +
+maturity + F1 all shipped since the flag's post-erosion label — the rating reads today's
+trajectories): **5 of 6 PASS, every calibration anchor HELD with zero drift**, the USA's
+deficit-window condition included (AA+ for deficits in [4.6%, 7.5%]; the anchor uses 6.4%). The
+one FAIL is Poland's EXPECTED fail — the recorded monotonicity limitation, a known property
+since 2026-08-02 and not part of the 5-anchor bar. The meaningful reading, per the directive:
+the anchors were calibrated against a divergence that no longer exists and SURVIVED its removal
+— they encode seed-state fiscal positions, not trajectory artifacts, so the fiscal arc's
+recalibrations passed through them cleanly. **C4 closes; A1 closes with it** (thrash closed by
+cadence long ago; the deficit term validates unrecalibrated; the cap-and-average recommendation
+stays recorded as the answer if the term ever drifts). **The F register's count: ZERO.**
+
+**The strip-cut diff — both halves dispositioned, ours to the component.** Design's half: closed
+in their manifest (6/6 re-raster identical). Ours: ATTEMPTED, not merely re-gated —
+`StripCutDiffCheck` now exists (standing equipment: enumerate Source/ SVGs with sibling PNGs,
+render at exact size, tolerant structural compare — channel tolerance 32, 2% mismatch budget,
+UNRASTERIZABLE-HERE named per file). The attempt found and named the real blocker, probed not
+guessed: the machine's one rasterizer (the built-in vectorgraphics module) tessellates every
+SVG, but its `RenderSpriteToTexture2D` path yields a BLANK texture under the batch harness —
+three runs with mismatch shares equal to each PNG's ink coverage, identical to the decimal
+across two different sprite framings, and the dumped probe artifact viewed as an empty sheet.
+One true parse limit besides (`ui_slider_track`'s SVG `<pattern>`). **E3's gate is sharpened
+from "a rasterizer exists" to "a rasterizer whose OUTPUT is comparable"** — the compare
+machinery is finished and waiting; the harness's own first two runs are recorded inside the
+check as the defect they were.
+
+**THE BOARD, confirmed at all-gates**: item 10 (13 Sept) · D1's batch of nine (the Editor
+register side-by-side — OPEN VERIFICATION GAP third entry) · the R5 hex exchange (item 10) ·
+E2's branch accounting (item 10) · E3 (a working raster path) · the Editor checklist (hands-on
+session) · the GC re-check (~08-23) · FA cadence (playtesting) · TMP (a masks/effects screen) ·
+swing coverage (its condition) · the interrupt-system slice (design-arc ruling) · A3 (ruling) ·
+Q1–Q10 (rulings) · R3's creditor branch (a scenario that builds one) · F2 (future nominal-rates
+work). **Nothing ungated remains. Nothing on this roadmap is open except what waits on the
+world — and the F register, born 🔴, ends empty.**
+
+## Q3 ships as Design B — the queue's second graduation, and the first of the re-rooting kind (2026-08-17)
+
+Rulings R-Q3a (Design B: byte-identical is the bar AND the claim — the R4-4 inversion), R-Q3b
+(1:1 per the audit) and R-MS2 (the canonical six steps, now in the roadmap) recorded; built
+against `pre_q3_6d6decb`. **The premise correction, stated as ruled**: the pass brief's
+"trajectory-moving by construction" was WRONG for the correct design — the derivation found it
+(the Q3 coupling report, consumed to `COMPLETED.md` §22, 2026-08-26), the stop held, and the
+ruling picked truth over motion.
+**Q3's trajectory movement arrives when Q5's cyclical pair lands in the now-correct pipe.**
+
+### What shipped
+
+The causal re-rooting, five small edits: `Country.ProductivityTrendGrowthRate` (−1 sentinel +
+read-only fallback property — the R4-3 pattern, keeping pre-Q3 saves and every ordering
+bit-exact); the finalizer (`ApplySectorGrowthEffect`) now writes the ledger's sum AS trend
+productivity growth and pipes `PotentialGrowthRate` from it at 1:1 (same sum, same clamps, one
+finalizer); `ApplyRealWageIndex` and `ApplyProductivity` read the trend at source — the
+pass-through constant's name is finally literally true; the preview hand-list carries the field
+(exact-by-fallback would be a coincidence to a future edit; exact-by-copy is not). HPI's trend
+read: untouched, as the report scoped. RealWageIndex's cyclical terms: untouched, per the
+ruling. **The audit rode along as ruled: zero new ceiling headroom at 1:1; the two contributors,
+their caps, the ±1.0 all-sources ceiling and the [0, 8] range stand exactly as they were — and
+every future productivity-mover now enters potential AND wages coherently through this pipe,
+folding into the ceiling at its own ruling.**
+
+### The bar — byte-identical as claim, met exactly
+
+Equivalence **117/117 unchanged** (zero new rows by derivation: no daily shape changed, every
+reader's input value identical through the pipe). Matrix **6/6 vs `pre_q3_6d6decb`: 39 of 39
+fields byte-identical — zero moved, zero NEW — both stated up front, both held**; a single
+moved value would have been the re-rooting doing more than re-rooting, a stop and a finding,
+and there was none. Save/load **12/12** untouched-confirmed; cadence **md5-identical**; no
+captures — no display changed (the UI's potential stat reads the same field; stated, not
+assumed).
+
+### The template amendment — standing equipment for the rest of the queue
+
+**Graduations now come in two kinds, with different honest bars:**
+- **Coupling-adds-force** (the Education term; Q1 Gini → Approval next; Q2 after): a real new
+  force enters the web — the bar is DECOMPOSABLE MOVEMENT (magnitude visible in the
+  diagnostics, sitting where the derivation says).
+- **Re-rooting** (Q3): the web's causes are corrected without changing its values — the bar is
+  BYTE-IDENTICAL, and any movement is the pass having done more than it claimed.
+
+One ruling, one audit, one baseline, one kind — named up front. Q1 is next: the other kind,
+its own baseline, decomposable movement against ApprovalRating's combined formula.
+
+## Q1 ships — Gini → Approval, the first force-kind graduation, and the two templates side by side (2026-08-17)
+
+Rulings R-Q1a/b/c recorded; built against `pre_q1_c9c4ec8`. One constant
+(`GiniApprovalSensitivity = 0.05` — 1.0 EQUILIBRIUM point per Gini point through the 0.05
+reversion, the honest unit, band 0.5–1.5 ruled), one term in the standing delta formula
+(`−0.05 × (Gini − BaselineGini)` — the paidLeave/welfare gap idiom exactly, zero at seed for
+all six, turn-boundary-resident so NO daily shape and NO equivalence rows, by derivation).
+**No new field** — `BaselineGini` has existed since R4-2 (the brief's "new Country field
+snapshotted" was stale at ruling time; flagged in the MS II transcription, save/load
+untouched-confirmed instead).
+
+**The containment check caught an R4-1-class escape BEFORE the bar**: `BaselineGini` was never
+in the preview clone's hand-list (nothing preview-relevant read it until today), and
+`ApplyApprovalRating` runs in preview — without the added line, previews would compute the gap
+against the 30f field default, a phantom −0.5/turn for the USA at its 39.5 seed. Caught by
+derivation, fixed in the same commit, recorded here as the pattern's third appearance (ctor
+hand-list, Country hand-list at R4, Country hand-list again).
+
+### The bar — the force-kind template, met exactly
+
+- **Matrix 6/6 vs `pre_q1_c9c4ec8`: 38 of 39 byte-identical — ApprovalRating the ONLY moved
+  field** (the containment claim verified: approval's readers are elections/seats/UI, none in
+  a no-policy run's economy). Movement: maxABS 0.117 points (t848 USA), end-state 0.035 — the
+  predicted ≤~0.2 class from the flat Gini's ±0.15 wiggle. (The 73% relative max is the
+  near-zero-denominator artifact; judged on the absolute column per the tool's own rule.)
+- **The decomposition, erosion-standard, WITHOUT REMAINDER**: at USA t199→t200 with
+  boundary-time Gini 39.54 (gap +0.04): predicted Δdiff = −0.05×gap − 0.05×accumulated-diff =
+  −0.0040; measured −0.0040, at the dump's four decimals.
+- **Equivalence 117/117 unchanged** (turn-boundary term — the zero-rows reason derived, then
+  verified). **Save/load 12/12; cadence md5-identical.**
+- **Cabinetstress 83/83, 69/69 with ZERO differing log lines — and the distrust rule closes it
+  structurally**: the scenario's per-turn log and anomaly snapshot BOTH omit ApprovalRating,
+  and approval feeds nothing the scenario logs — the instruments are blind to the one moved
+  variable; the term's execution in the shared AdvanceTurn path is what the matrix already
+  proved. Bounded-and-explained, the explanation being blindness, verified against the
+  runner's own field lists.
+- **No captures**: approval displays at one decimal; the warm-up-state term is ±0.003 —
+  display-invisible, derived and stated.
+
+### The two templates, demonstrated in practice (the record the amendment asked for)
+
+Back to back: **Q3 (re-rooting)** — 39/39 byte-identical, zero moved, and any movement would
+have been failure; **Q1 (force)** — exactly one moved field, movement decomposed to the stated
+magnitude without remainder, everything else byte-identical as the CONTAINMENT half of the
+same discipline. The two bars are the same epistemology pointed at different claims: identity
+where the pass claims nothing changed, decomposability where it claims one thing did. **Q2
+inherits the force template next — with the transcribed warning that its natural gap is
+growth-versus-trend (real wages have no baseline level), a different shape than Q1's,
+derived not assumed.**
+
+## The "two entry crashes" that were never crashes — ChromeV2CoverageCheck's un-converted Exit (2026-08-18)
+
+**Both reported crashes — "died at native boot" (2026-08-17 ~17:02) and "dies during asset
+import, further in" (2026-08-18 ~12:04) — were the same event, and it was not a crash.** Every
+interactive Editor open since `1f93730` has self-terminated cleanly about a minute in:
+`CheckSuite`'s on-open run reaches check 5, `ChromeV2CoverageCheck` PASSES, and its final line
+was a direct `EditorApplication.Exit(ok ? 0 : 1)` — the one check of six never converted to
+`CheckExit.Finish`. `CheckExit.Collect` can only intercept `Finish`; a direct `Exit` sails
+through `_collecting`, so the check *succeeding* closed the Editor with return code 0.
+**The regression is `1f93730` itself (2026-08-11, "Make the checks actually run") — the commit
+whose entire purpose was removing exactly these calls missed two in this file while wiring the
+file into the on-open suite.** Verified against both candidate commits: the direct `Exit` calls
+are present in `1f93730`'s own version, so Track 3 (`10f713e`) inherited, not introduced, them.
+
+**Why six days of validation never saw it**: `ScheduleOnEditorOpen` guards on
+`Application.isBatchMode`, so every batch run — the project's entire validation path — skips
+the suite. Only interactive entry trips it, and (per the log rotation, which keeps two
+sessions) the Editor was not opened interactively between the regression and 2026-08-17. The
+perceived difference between the two "crashes" was warm-up time, not depth: 17:02's
+warm-Library session died ~19s in (read as boot death), 12:04's Hub cold start ran a upm
+refresh and import settle first and died ~81s in (read as import death). **This is the
+batch-blindness class from the roadmap's failure-pattern list — `BatchSimulationRunner` never
+calls `OnGUI`, and it never runs interactive-only `[InitializeOnLoadMethod]` paths either.**
+
+**The machine evidence that separated "crash" from "scripted exit"**, recorded because the tail
+of a log discriminates where the report cannot: both sessions' `Logs/Editor.log` end in Unity's
+full graceful sequence (layout saves → `Shut down.` → leak check); the import worker's own log
+ends `"Editor requested this worker to shutdown with reason: Editor is closing down"` and
+`return code 0` with **no asset mid-import** (`Prepare: ... reloaded= 0`); `UnityBugReporter.log`
+(with `StartBugReporterOnCrash: 1` set in both sessions) untouched since 2026-08-10; zero
+Unity.exe dumps in WER/CrashDumps and zero Application-log crash events across the window; and
+the two session logs within 10 bytes of each other — a deterministic exit, not a fault. The
+diagnostic that actually identified the site is the standing lesson from the batch-hang record
+pointed the other way: **`UPSTREAM:` (check 6, due immediately after Chrome) was reliably
+ABSENT from every interactive log, while "CHROME COVERAGE OK" was reliably the LAST check line
+before shutdown.** The always-absent line names the exact statement that killed the session.
+Dispositioned honestly: the machine DOES carry real GPU-stack faults (the 2026-08-10 22:07
+multi-process WER cluster that fired the bug reporter, an `IntelGraphicsSoftware.exe` dump
+2026-08-16) — whatever the earlier driver-side thread diagnosed, it was a different, real event;
+`-force-d3d11` was never applied (today's full boot command line captured, no such flag) and no
+driver action is part of this fix. Suspect 3 (Library rename) was not exercised — correctly,
+since two consecutive graceful sessions through boot, import, and all five checks are evidence
+against poisoned Library state, and the fix required no deletion of anything.
+
+**The fix**: the two calls become `CheckExit.Finish(1)` / `CheckExit.Finish(ok ? 0 : 1)` —
+behaviour under `-executeMethod` is identical by `Finish`'s own contract, so the batch entry
+point documented in the check's header is unchanged. **Validated at both required layers**:
+headless compile check (`Assembly-CSharp-Editor.dll` rebuilt, `CompileScripts` 23.5s, zero
+`error CS`, "Exiting batchmode successfully now!") and the one layer batch cannot answer —
+a real interactive entry, which survived 156s (the old death point ×2) with all six checks
+complete and `UPSTREAM: tracking origin/main, 0 commit(s) ahead` finally in an interactive log.
+
+**The rule-14 lesson, applied to the rule's own author**: `1f93730`'s claim was "the checks now
+run from a menu item without quitting the Editor," and that claim was verified for the checks
+that used `Finish` — but "no direct `EditorApplication.Exit` remains in any Suite member" was
+never asserted, and one grep would have been the whole proof. A conversion commit's bar is the
+ABSENCE of the old pattern, not the presence of the new one. The grep is now on record:
+`Suite` members must contain no direct `EditorApplication.Exit`; batch-only tools
+(`BatchSimulationRunner`, the diagnostics, `UiScreenshotCapture` — whose
+`[InitializeOnLoadMethod]` is correctly `SessionState`-gated to capture runs) keep theirs.
+
+## Q2 ships — real wages → consumer sentiment, the single book, and the fifth fixed reference (2026-08-18)
+
+Rulings R-Q2a/b/c recorded and built: **form A** (stateless effective-confidence factor) with
+the SINGLE-BOOK RIDER, **0.5% consumption per pp of sustained wage-growth gap** (band
+0.25–0.75 ruled), and the **shared realized-growth helper**
+(`MacroSystem.RealWageGrowthPerTurnPercent`, extracted VERBATIM from `ApplyRealWageIndex` so
+the refactor is bit-identical — Q5's seam, where trend-vs-realized will split). Built against
+`pre_q2_a8fd830`; derivation in the Q2 coupling report (consumed to `COMPLETED.md` §22,
+2026-08-26).
+
+**The single book, audited at HEAD** (the rider: effective confidence is the ONLY confidence
+anything economic or visible reads; the stored field is the policy-drift base, named as such):
+routed — the turn identity (`ApplyNationalAccounts`), the daily identity's level AND
+contraction share (`ApplyNationalAccountsDaily`, one local for both lines), and
+`PolicyScreenStats.ReadLiveValue`, the sole numeric display path (the renderer draws through
+it; `PublicationSystem` deliberately excludes confidence from published stats per its own
+fabrication note). Justified exceptions — `SimulationTestRunner.CheckFinite` stays on the BASE
+(the persisted quantity that can go non-finite; effective is a pure function of it and three
+finite-checked inputs), and the two policy writers (healthcare, UBI) write the BASE, because
+they ARE the policy drift. `EconomyState.ConsumerConfidence`'s doc comment now states the base
+semantics; the field name is kept for the save shape. **Hand-list: NO addition needed and
+VERIFIED, not assumed** — the helper's seven inputs are all carried (ctor: NAIRU +
+PotentialGrowthRate; Q3's line: ProductivityTrendGrowthRate; `State.Clone()`: the four state
+fields). No new state is form A's whole point.
+
+**THE FIFTH FIXED REFERENCE — found by the bar, fixed by the established pattern.** The first
+build read the gap LIVE in the daily identity, and the equivalence check caught it:
+`USA@8%shock.Unemployment` failed at **11.78%** drift. The causal probe (s=0 re-run: the row
+back to 0.0057%) proved the factor was the cause — by experiment, per the correlation-vs-cause
+rule. The mechanism is exactly the class the potential anchor solved: a live within-period
+input diverges from the turn form's boundary read under large intra-period movement. Fix:
+`FiscalPeriod.WageGrowthGapAtPeriodOpen` (captured at both boundary sites), read by the daily
+identity via the anchored `EffectiveConsumerConfidence` overload — a stance, adopted where
+every other planning quantity is (the `PlannedFiscalReactionMultiplier` idiom). The turn form
+and the display read live (a boundary call and a live surface respectively). ⚠ Flagged: if the
+displayed chip should show the PERIOD stance instead of the live value, that is a one-line
+change. Old-save posture BETTER than its three siblings: a zero anchor means factor 1 —
+pre-Q2 behaviour for the loaded period's remainder, self-correcting at the next boundary; no
+guard needed.
+
+### The bar — erosion posture, run in the ruled order
+
+- **The s=0 negative control FIRST, run TWICE** (once per plumbing shape): pre-anchor plumbing
+  — all 6 dumps SHA256-identical to `pre_q2_a8fd830`; anchored plumbing — all 6 identical
+  again. The plumbing proven inert before the force arrived, both times.
+- **Matrix 6/6 vs `pre_q2_a8fd830`: 15 of 39 fields byte-identical at every horizon, both
+  seeds** — the moved 24 all downstream of Consumption, judged on the absolute column: top
+  movers ApprovalRating maxABS 0.064 pts, TradeBalance 0.028, Zone.InterestRate 0.0084 pp,
+  Inflation 0.0128 pp (t2 Poland, the transient), Budget endRel 0.016%. **PotentialGDP
+  EXACTLY unmoved everywhere** — the attractor pins the recalibration by construction.
+- **The decomposition, erosion standard**: chain identity `relC_t ≈ relGDP_{t−1} + s·gap_t`
+  holds with mean residual ~1.1e-4, max 3.5e-3 (the within-turn feedback, stated); maxRelC
+  0.37% and maxRelGDP 0.098% (both at Poland's t2 seed-convergence transient — deterministic,
+  bit-identical across seeds, decaying by t5, named in the report so it is never read as a
+  defect). Okun tail ≤0.038 pp U; Phillips ≤0.013 pp π; monetary ≤0.0094 pp policy rate.
+  **The fiscal tail MEASURED, not assumed**: |ΔDebt-to-GDP| ≤ 0.040 ratio-pts at any horizon
+  (typical ≤0.01), end-debt ≤8.6e-5 relative — (r−g−π)·b moved by exactly this much.
+- **Equivalence 117/117 with the anchor** (116/117 live — the caught row above). Enumeration:
+  Sectors ×3/sector, Infrastructure decay, Phase 3 fiscal, Phase 4 demographics, Phase 5 macro
+  (GDP/PotentialGDP/U/π/πe at 2%/8% shock states × USA/Italy, C/I as INFO rows), plus the
+  bucket asserts.
+- **Save/load 12/12 clean.** `EconomyState` untouched; `FiscalPeriod` gains ONE float with the
+  stated zero-degradation — the Phase 5 anchor class exactly.
+- **Cadence: table identical across builds, zero FAIL rows** — publication scheduling is
+  calendar-driven and the change touches no publication code.
+- **The scenario matrix, like-for-like at seed 777** (pre side = the s=0 build, byte-identity
+  proven, run through the same instrument): **24 of 30 (scenario, horizon) anomaly counts
+  EXACT; six flips of ±1–2** (cabinetstress/100 +1, welfarestress/100 +2, swfstress/100 +1,
+  sustainedexploit/100 −1, stress/500 −1, demographicpolicystress/500 +1) — borderline
+  >20%-swing entries flipping under a ≤0.1% GDP recalibration. **Zero new anomaly TYPES**:
+  both runs contain exactly four kinds (DebtToGdpRatio/Inflation/InterestRate/Unemployment
+  swings; 1759 → 1762 entries), zero finite or range violations. **Cabinetstress bounded and
+  explained**: counts 36→37 (t100), 74→74 (t500); per-turn log lines differ (28/30, 115/126)
+  by the recalibration's first decimal on GDP (~0.02%) with U/π mostly rounding away — the
+  DIFFERING lines prove the factor executes in the scenario path, so the exact count matches
+  are the instrument's coarseness, not non-execution (the distrust rule answered
+  structurally). The t500 cabinetstress-74 vs baseline-90 split exists at s=0 too —
+  pre-existing, not Q2's.
+- **No captures, derived and stated** (the Q1 class): the chip renders F2; the factor's
+  display delta at any warm-up-reachable state is ≤0.005, so the rendered text cannot change.
+  ⚠ Elias may override; a capture pass would then run rule-15 against the `f1usa` sets.
+
+### The standing equipment (the F1 lesson generalized, per the ruling)
+
+**NO STORED QUANTITY MAY DIVERGE FROM ITS PRESENTED VALUE.** Where a derived "effective" form
+of a stored quantity exists, the effective form is the single book: everything economic and
+every display reads it; the stored field is a named base; any surface that must show the base
+labels it as the base. First instance: ConsumerConfidence (this pass). Any quantity acquiring
+an effective form later (BusinessConfidence is the obvious candidate) inherits this rider by
+default rather than by a fresh ruling.
+
+**Step 1 of Master Sequence II closes** — three graduations, the templates demonstrated in
+all three variants: Q3 (re-rooting: byte-identical, movement would be failure), Q1 (force,
+containment-clean: one moved field, decomposed without remainder), **Q2 (force,
+baseline-active: recalibration by construction — smallness is the claim, the off-switch
+byte-identity control is the proof of plumbing, and the decomposition-plus-measured-tails is
+the proof of the force)**. The queue's remainder (Q5–Q10) waits at its named triggers. Step 2
+(causality legibility) is NEXT, inheriting by name: R-Q1c's approval no-ceiling, the
+confidence single-book founding and its base/effective distinction (this pass), the coupling
+graph as built, and the preview hand-list assertion question.
+
+## Step 2 v1 ships — the approval ledger, the trace panel, and the two standing checks (2026-08-18)
+
+Rulings R-S2a–e built as ruled: term ledger + trace panel (phase 1), term-level only under the
+honesty classes, the LIVE model, approval end-to-end first, the ledger persisted.
+
+**The ledger** (`ApprovalAttribution` on `Country` — NEVER EconomyState: the dump reflects
+EconomyState, and recording is observation). The boundary terms are recorded by
+`MacroSystem.RecordApprovalAttribution`; events record BY OBSERVATION at the call sites —
+snapshot approval around the write, record the applied post-clamp delta with date and label
+(zero signature changes in the political systems; the FiscalTurnReport
+recorded-not-recomputed principle) — eleven sites: the eight bill types, cabinet options,
+foreign-policy options, boundary events, and the reshuffle. TWO ledgers persist per country
+(R-S2e): the CLOSED period (the panel's subject) and the ACCRUING one, so a mid-period save
+cannot silently drop events — the exact failure the no-case predicted, now asserted
+impossible by the RT diagnostic's explicit ledger checks. Old saves: null → "no period
+recorded yet".
+
+**THE OBSERVATION GATE DID ITS JOB — three catches, each a story the bar was built to tell:**
+1. **The first build recorded the formula's own locals in place, and the gate caught a
+   ONE-ULP codegen shift** (all 6 dumps differed; measured: 38/39 fields byte-identical,
+   ApprovalRating alone moved ≤5.6e-6 starting at a value-dependent point, USA t79 s777 —
+   extending the locals' lifetimes changed the method's float emit). Resolution:
+   `ApplyApprovalRating` keeps its EXACT pre-ledger body, and the recorder is an AUDITED
+   RECOMPUTATION — the twin warning sits on the method, and the boundary audit is the
+   enforcement. The gate then passed: **6/6 SHA256-identical, twice** (re-verified after
+   every later fix).
+2. **The self-audit caught the first-boundary open** (observed Δ 0.0000 vs terms −1.29: a
+   ledger lazily created AFTER the formula opens at the post-formula value — 241 ATTRIB
+   errors). Fix: `EnsureAccruing` runs before the formula at the boundary site.
+3. **The twin-drift detector debugged ITSELF** (61 remaining ATTRIB: a legitimate clamp at
+   100 followed by a boundary event pulling approval back inside — the detector tested the
+   close-time value). Fix: `ApprovalAfterFormula` recorded, clamp legitimacy tested against
+   the value the formula actually left. **Final: RT 0 ATTRIB, matrix 0 ATTRIB.**
+
+**The trace panel** (`StatTracePanel`): click a stat chip (invisible overlay on every chip,
+every frame — stable control layout; selection flips ONLY on the Layout event so Layout and
+Repaint always agree). LedgerRow grammar, negative fill throughout (§A.9b — signed unbounded
+terms have no denominator). Approval: period header (open → close, Δ), signed term rows with
+misery sub-gaps indented and zero-rows skipped, sustained gap terms carrying EQUILIBRIUM
+framing (term ÷ `ApprovalReversionSpeed` — R-Q1c's drug-policy composition made visible),
+dated event rows capped at 4 with a STATED "+N more" omission row, the audit footer.
+Confidence: the single book — policy base × wage-sentiment factor (the PERIOD STANCE via
+`GetWageGrowthGapAtPeriodOpen`, the number the identity consumed) = effective. **Bounded at
+12 visible rows with an internal scroll** — the first capture set measured a busy period
+reaching the screen edge; the second measured the event-date column clipping; both fixed and
+re-captured. Integrated at both chip sites, height budgeted like the stat row's own.
+
+**The preview-parity diagnostic** — standing equipment, menu + batch, run in this bar.
+Enumeration (rule 14): SEVEN terms asserted exact (Reversion, TaxHike@0, Spending@0, Welfare,
+PaidLeave, DrugPolicy, Gini — inputs the preview does not advance); FIVE expected-different
+BY DESIGN (Growth + the four misery gaps — the preview models the COMING period; printed,
+never asserted, and an escape in THEIR constants is outside this check's evidence, stated so
+it is never cited for it). **Result: 7 of 7 × 6 countries.** `PolicyPreview.ApprovalTerms`
+carries the clone's ledger; the clone hand-list gains a FRESH ledger (a shared reference
+would corrupt the real period's attribution).
+
+### The bar, final state
+
+6/6 dumps SHA256-identical to `pre_s2_5084236` · RT 12/12 with the explicit save-time-vs-
+restored ledger assertions (closed AND accruing) and EconomyState's reflected count unchanged
+at 36 · equivalence 117/117 (approval is not among its rows; recording is boundary-resident)
+· matrix: all 30 (scenario, horizon) anomaly counts IDENTICAL to the post-Q2 run, zero
+ATTRIB · parity 7/7×6 · captures `93_trace_approval`/`93b_trace_confidence` at 1600 and 2560
+(83 shots per size — the 81 standing screens unchanged in count plus the two new), the panel
+iterated twice on the eye-check before passing. ⚠ **Visual work is built-not-confirmed until
+Elias sees the `s2usa*_93*` captures.**
+
+### Deferred, with triggers
+
+Tooltips-as-pointers (trigger: discoverability feedback from FA-cadence/Step 3 playtesting) ·
+the causal-graph screen (trigger: the ledger carries a second stat's terms — the term IDs ARE
+the stat→stat edge list; derived, never authored) · narrative layer (only-if-ever, generated
+from the ledger) · ~~the fiscal chain's panel section (data exists in FiscalTurnReport;
+trigger: the first playtest asking "why did the deficit move")~~ **TRIGGERED (2026-08-18) —
+see below, moved to queued** · BusinessConfidence's effective form inherits the single-book
+rider by default (Q2's standing equipment).
+
+⚠ **FIRED, not deferred any longer.** Italy Debt Crisis's own playtest session is the first
+playtest asking exactly that question, per its own ship record. Moved from this deferred list
+to `POLISIM_MASTER_ROADMAP.md`'s live section as queued, unbuilt work — the data still exists
+in `FiscalTurnReport` per the note above, so the build itself remains cheap; only its status
+changed, from hypothetical to live.
+
+**Step 3 (challenge-mode scoping) UNBLOCKS** — R-S2d's first slice has shipped; scenario
+authoring reads this feature's output, per the spine.
+
+## Step 3's slice ships — "Inherit the Fund", the format, and R3's creditor branch CLOSED BY EXERCISE (2026-08-18)
+
+Rulings R-S3a–f built. The deliverable is the FORMAT (`ScenarioDefinition` + the four objective
+forms + `ScenarioLibrary`); the slice is one scenario proving it end-to-end through the four
+scoped seams — entry at `SelectPlayerCountry`, evaluation at the `CheckElection` post-turn hook,
+ending on the existing `_isGameOver`/`_gameOverReason` path, persistence as one id plus counters
+in `UiDraftState`. The definition is never serialized: the save carries the id and progress, and
+the definition is looked up from the library at load (the `FiscalTurnReport` record-values-not-
+formulas principle), with a save naming a removed scenario REFUSED loudly rather than silently
+resumed as free play.
+
+**THE CREDITOR BRANCH, CLOSED BY EXERCISE — and both arms were observed in one run.** R3's
+symmetric erosion arm had been code-verified since 2026-08-17 and never executed: no scenario at
+HEAD created a net creditor. This one starts Sweden at −50% of GDP, and the headless run
+(seed 777, no policy) decomposed every period's debt move into its two arms:
+
+| turn | stock | erosion arm | budget balance |
+|---|---|---|---|
+| t1 | −267 | **+6.2** (shrinking a NEGATIVE stock toward zero) | +36.4 |
+| t8 | +21 | **+0.4** (near zero, because the stock is) | +40.0 |
+| t12 | +75 | **−1.4** (shrinking a POSITIVE stock — the debtor arm) | +3.5 |
+
+**Ruling R3's claim was "the term shrinks whichever position exists toward zero", and that is now
+MEASURED rather than reasoned** — the sign of the erosion contribution follows the sign of the
+stock, through the crossover, in a single trajectory. The scenario doubles as the coverage gap's
+closure exactly as scoped.
+
+**⚠ THE MEASUREMENT ALSO CORRECTED THE SCENARIO'S OWN PREMISE, and the correction is kept in the
+authored text rather than quietly fixed.** The scenario was drafted with erosion as the
+antagonist. The decomposition says the STRUCTURAL DEFICIT is: ~+42/turn against Sweden's ~620
+GDP versus erosion's ~+6, so a no-policy run exhausts a −310 inheritance by turn 8 and erosion is
+about a seventh of the move. The premise and the `ScenarioLibrary` doc comment were rewritten to
+match the measurement — the real dilemma is fiscal, and the no-policy run LOSES (1 of 3
+objectives at seed 777), which is the shape a challenge should have. **Whether a skilled line
+wins is a playtest question and is NOT claimed here.**
+
+### The bar
+
+- **The default-path gate: 6/6 dumps SHA256-identical to `pre_s3_deff6dd`** — the seed-delta seam
+  is exactly where scenario machinery could leak into a sandbox game, and it does not.
+- **The scenario run reported as its own trajectory**, never diffed against a baseline (a
+  different world by design), with the creditor decomposition above and an assert that the branch
+  actually ran — `ScenarioSliceDiagnostic` fails if the stock is never negative at a boundary,
+  because a start that does not exercise it is a defect in the deltas.
+- **A run in progress crosses a save**: id, counters, per-objective state compared field by
+  field, and — the claim that matters — **evaluation fires again on the restored progress**
+  (post-load boundary measured at turn 3). "The counters persisted" and "it still works after a
+  load" are different claims; only the second is the feature.
+- **Equivalence 117/117, RT 12/12, parity 7/7 × 6** — all untouched-confirmed.
+- **Captures both sizes**: `94_scenario_entry` (deltas visible in the real UI: −$330B, −50.0%
+  debt-to-GDP, AAA outlook+), `94b_scenario_in_progress`, `94c_scenario_verdict`.
+
+### Three capture-pass defects, each caught by looking rather than by a guard
+
+1. **A capture named for a state it did not show.** `94c` was pinned with the shared
+   `MaxStateSearchDays` bound (4 years), but the scenario starts mid-run in the driver, so the
+   bound expired at turn 11 of 12 and the image was the DASHBOARD under a verdict's name. Fixed by
+   bounding the loop by the turns actually needed, and the driver now **logs an error if the
+   verdict is not on screen** — the capture asserts its own name.
+2. **Desk ink, second occurrence in this screen family.** The verdict draws on the one ground with
+   no paper under it, and the paper palette's change colours read as near-black there.
+3. **COPIED GUIStyles SHARE THEIR GUIStyleState.** Building `metStyle`/`missedStyle`/`figureStyle`
+   as copies and assigning each a colour left exactly one line — the MISSED row's figure — in
+   another row's ink, across two capture passes. **This is why `DrawColoredLabel` exists in this
+   file** (set, draw, restore, one object); using it fixed all three lines. The lesson generalises:
+   in this codebase, tint a style at the call site, never fork it.
+
+⚠ **Visual work is built-not-confirmed until Elias sees the `s3usa*_94*` captures.**
+
+### What the slice leaves for the remaining five
+
+The format's claim is that Italy, Poland, The Disinflation and The Unequal Recovery are SUBSETS of
+this shape (Wage Boom stays sequenced behind Step 5 by its own dependency). Two named gaps: the
+`Sustained` objective form is BUILT BUT UNEXERCISED — the slice needs only `Terminal` and
+`NeverBreach`, so the first scenario using it is also its first test; and the epilogue's v1
+limitation stands as ruled (final ledger + `StatHistory`, with per-scenario term accumulation the
+named upgrade). **If a scenario needs a new `ObjectiveKind`, that is a finding about the grammar
+to be recorded, not a special case to be written.**
+
+## Q5 ships — labour hoarding, the model's first CLOSED FEEDBACK LOOP, and its gain MEASURED not trusted (2026-08-18)
+
+Rulings R-Q5a–e built: **R-Q5a = B1** (additive cyclical force through wages — A was a display,
+B2 a re-rooting that deferred the question); **R-Q5b = two channels**, both claims stated in code
+at both sites (bargaining power vs. hoarding-linked output per hour); **R-Q5c** = h = 0.4 pp of
+productivity growth per pp of unemployment gap; **R-Q5d** = R-Q3b **amended** (potential reads
+trend alone; the Productivity stat and real wages read trend + cycle) — recorded as an amendment
+with its reason, not a correction: the 1:1 pipe was right for trend-only productivity, and it
+refines under its first cyclical load; **R-Q5e** = investment deepening deferred as its own pass,
+on the finding that no capital stock exists anywhere in the model AND — the stronger reason —
+measured I/GDP is flat (19.5–20.9% across a 1000-turn run), so there is nothing cyclical to
+deepen from even if a stock existed.
+
+**The build**: `MacroSystem.ProductivityCycleGrowthPerTurnPercent` is the one new function — h ×
+(NAIRU − U), computed once and threaded as a parameter into `ApplyProductivity` (beside the
+trend, inside the shared ±10 pp clamp) and into `RealWageGrowthPerTurnPercent` (added to the
+trend at the same 1:1 pass-through, inside the wage equation's own ±10 pp clamp). **The
+period-open anchor was applied PREEMPTIVELY** — before any equivalence run, not after a
+failure — because the shape (a daily-moving driver inside a compounding power slice) is exactly
+Q2's measured failure class; `FiscalPeriod.UnemploymentAtPeriodOpen` already existed as Okun's own
+fixed reference, so the anchor cost nothing new. **R-Q5b's two channels are stated as two doc
+comments sharing one driver** (`RealWageTightnessSensitivity`'s comment now names the bargaining
+claim explicitly and points at the hoarding term as the deliberately-separate second claim) —
+and the reported finding the ruling asked for: at h = 0.4 the two channels are NOT numerically
+distinguishable from one 0.7 term anywhere inside the wage equation itself; the only observable
+difference is that hoarding also moves the Productivity stat. The separation is a claim about
+causation, not an arithmetic one.
+
+**R-Q3b's finalizer comment now states the amendment inline**, at the exact two lines that
+assign potential from the ledger: a cyclical term there would be a cyclical potential feeding
+Okun's own growth gap, which is the structural reason (not a preference) that potential reads
+trend alone while the two cyclical consumers read trend + cycle.
+
+### THE LOOP, MEASURED — the pass's headline, exactly as demanded
+
+**The circuit**: U gap → productivity cycle (h) → wage growth (1:1) → Q2's sentiment gap →
+effective consumer confidence → Consumption → GDP → Okun → U gap. This is the model's **first
+genuine closed feedback loop** built entirely from couplings this sequence added — every prior
+Q1–Q3 pass was a chain or a re-rooting.
+
+**Link-by-link (single period, +1 pp tightness impulse, three countries, real functions with the
+cycle in vs. forced to zero)**: cycle +0.400 pp → wage growth +0.400 pp (identical across USA/
+Sweden/Poland, since the term is additive and driver-only) → Q2's gap 0.300 → 0.700 → effective
+confidence 1.00150 → 1.00350 → **consumption +0.1997%**, all three countries agreeing to four
+decimals — the chain is exact and country-independent by construction, exactly as the additive
+form predicts.
+
+**The realized gain, measured end-to-end through the real day loop** (`Q5LoopGainDiagnostic`,
+run under both the h = 0 control build and the h = 0.4 build, same +1 pp impulse): a period's
+end-of-period tightness retained **0.3223 pp per pp of impulse under h = 0** (USA 0.32231,
+Sweden 0.32261, Poland 0.32238 — Okun's own reversion, present in both runs) and **0.3524 pp
+under h = 0.4** (0.35205 / 0.35263 / 0.35213). **The difference — the loop's own contribution —
+is 0.0297 / 0.0300 / 0.0298, essentially uniform across three structurally different economies**
+(the USA's near-frozen output gap, Poland's volatile one, Sweden's persistent surplus all
+produce the same gain, because the loop's linear terms don't depend on the level any of them sit
+at). **Measured mean ≈ 0.0298 against the derivation's 0.075 × 0.4 = 0.0300 — agreement to
+within 1%.** The derivation predicted correctly; nothing else is in the path.
+
+**Stability, stated as observed rather than as arithmetic**: gain 0.03 against Okun's own
+`UnemploymentReversionSpeed` = 0.7/turn is stable by roughly 20×, and — because the measurement
+confirms the gain is linear in h — the margin is structural: h would need to reach the
+neighbourhood of 13 (32× the ruled value, and far outside the ±10 pp clamps both consumers
+share) before the loop could threaten Okun's reversion. **This loop cannot run away at any
+magnitude this model's own clamps allow.**
+
+### The bar
+
+- **s=0 byte-identity control, run twice as the ruling anticipated** (a compile-only fix landed
+  between attempts — widening then correctly re-narrowing `MacroSliceFractionPerDay`'s
+  accessibility — with no behavioural change either side): **6/6 dumps SHA256-identical to
+  `pre_q5_3d4bdf2` on the run that matters**, proving both that the plumbing is inert at h = 0
+  and that the R-Q5d finalizer-comment change disturbed nothing.
+- **h = 0.4 matrix: 14 of 39 fields byte-identical.** Top-10 movers by relative magnitude, judged
+  on the absolute column per the tool's own rule: `Productivity` and `RealWageIndex` are the
+  DIRECT movers (19.66% / 19.76% relative, tracking each other almost exactly — the same 1:1
+  cyclical driver); every other mover (`Inflation` maxABS 0.024 pp, `InflationExpectations`
+  0.018 pp, `GovernmentDebt`/`Budget` sub-0.05% relative, `TradeBalance` maxABS 0.054,
+  `Zone.InterestRate` maxABS 0.016 pp, `ApprovalRating` maxABS 0.124 pts, `HousePriceIndex`
+  1.28% relative) is downstream of the chain above, each smaller than the last — a decomposable
+  cascade, not an unexplained scatter. The 14 byte-identical fields are exactly the ones the
+  chain never reaches (population/demographic/political-event fields).
+- **Equivalence 117/117, both builds.** New rows: the wage and productivity daily forms are now
+  driven from the SAME period-open anchor in both the turn-step and the daily-step comparison
+  arms (`AggregationEquivalenceCheck`'s wage/productivity sections), which is the equivalence
+  claim this term actually makes — an anchored driver telescopes exactly through the power
+  slice, which a live one would not have (Q2's own measured failure, avoided by construction).
+- **Save/load untouched-confirmed**: RT 12/12 clean. No new persisted field — the anchor is
+  `FiscalPeriod.UnemploymentAtPeriodOpen`, which already existed and already persisted for
+  Okun's own use.
+- **Matrix: 7 of 30 (scenario, horizon) anomaly counts moved, by exactly ±1 each, ALL at the
+  500-turn horizon and NONE at 100** (`tariffoverride`, `welfarestress`, `swfstress`,
+  `phase2stress`, `crimejusticestress`, `cabinetstress`, `parliamentstress` — the last at t100
+  instead of t500). **Zero new anomaly types, zero ATTRIB errors.** The 500-only pattern is
+  itself the explanation: a term whose per-turn effect is a fraction of a point needs many turns
+  to compound a borderline anomaly across a swing threshold, exactly the class the sub-0.03-point
+  absolute deviations in the diff table above predict. **Cabinetstress bounded-and-explained**:
+  74→75 at t500, one count, same class as its six siblings, no new type.
+- **Captures: the Statistics/Domestic screen's Productivity and Real-wages rows both change and
+  both render cleanly** (checked at both sizes) — Productivity moved from its pre-Q5 value under
+  the cyclical term, no clipping, no overlap, the existing `DrawDerivedStatRow`/§A.9b negative-fill
+  treatment unchanged and correct for the now-genuinely-cyclical figure.
+
+### Wage Boom Management — authorable
+
+**Yes, under the shipped B1**, and it is now the natural next content pass: a tight-start
+scenario (`U` seeded below NAIRU) puts the player directly inside the measured loop above,
+managing a boom the model's own productivity/wage/sentiment circuit is amplifying by the
+measured ~3%. It would be the first exercise of Step 3's still-unexercised `Sustained` objective
+form (an inflation-band condition held for N consecutive turns is the natural win condition), and
+its difficulty is now a MEASURED claim rather than a hoped-for one: the loop is real, it is
+small, and containing it before it compounds through 500 turns of neglect is exactly what the
+matrix's own 500-vs-100 signature just demonstrated happens if nobody manages it.
+
+### Step 5 closes
+
+The spine's remainder: Step 4 (13 Sept, Sweden votes) and Step 6 behind it; scenario content
+(Italy, Poland, The Disinflation, The Unequal Recovery, and now Wage Boom Management) behind
+Step 3's shipped format. Q5 was the last item Master Sequence II named explicitly — the queue's
+remainder (Q6–Q10) sits at its own triggers, unchanged by this pass.
+
+## Wage Boom Management — MEASURED AND DROPPED, not shipped (2026-08-18)
+
+**⚠ Corrects the framing above, not silently — Q5's own record was accurate as written (the loop
+exists and is real); this pass found a SEPARATE, pre-existing constant forecloses the specific
+scenario regardless.** Full record: the Wage Boom measurement report (consumed to
+`COMPLETED.md` §22, 2026-08-26). **Zero production
+code changed** — every file this pass touched is under `Assets/Editor/`, confirmed via
+`git status`, so the pass's own "default-path byte-identity" bar is trivially satisfied rather
+than needing a redundant trajectory dump; `ScenarioLibrary` still carries only "Inherit the
+Fund".
+
+**The finding, measured twice on two different premises, both falsified by the same constant.**
+Premise 1 ("manage an inherited boom"): Okun's `UnemploymentReversionSpeed` (0.7/turn) closes any
+tested unemployment impulse (1.5–4.5 pp below NAIRU) to within noise of NAIRU by turn 2–3,
+regardless of size — a one-turn inflation blip (peak 2.55–2.71% vs. a 2% target), gone by turn
+4–5. **On the ~12–30 turn horizon a playable scenario needs, there is nothing left to manage by
+turn 3.** Premise 2, reframed after premise 1 failed ("sustain a boom against the model's own
+reversion"): measured **impossible with every available lever, including the interest rate cut
+to its absolute 0% floor** — a −1.75 pp cut, +15%/turn sustained spending, and doing nothing all
+produced the identical result, one consecutive turn with the gap ≥1 pp. Unwinnable, which is
+worse than "too easy": a player who cannot move the needle with the strongest tools available
+correctly reads the scenario as broken.
+
+**The 150–200 turn "drift" that looked like a slow boom is mostly something else entirely,
+traced rather than assumed.** The SAME climb (2%→3%+ inflation) appears starting from Sweden's
+own unmodified seed with zero deliberate impulse, and the jumps land at the identical turn
+number (t80, then t110) across four independently-configured same-seed runs — the signature of
+`EventSystem`'s random `InflationShockPoints` rolls, not the wage-boom mechanism. The one
+component genuinely traceable to Q5's loop is real but small: a +0.29 pp persistent inflation
+premium at turn 150, comparing a 3 pp-impulse run against the zero-impulse baseline once both
+have reverted on unemployment — an order of magnitude too small and too slow to anchor a
+session-length scenario, though a single realistic rate hike (applied once, left alone — NOT
+re-applied every turn, which was round 1's own measurement error and hit the 15% ceiling by
+turn 4–7, producing an artifact recession) does reduce it monotonically and safely.
+
+**A separate, independently-reached finding**: USA is disqualified for this scenario family
+regardless of Q5 — its Fed-Chair-driven rate mechanism is dominated by the ALREADY-MEASURED
+(Q5 report) structural −14.5% output-gap distortion, driving the suggested rate to the 0% floor
+within ~30 turns regardless of realized inflation running at 3–3.5%. Recorded for whoever next
+touches USA's monetary mechanism; not fixed here.
+
+**The Sustained objective form's first exercise — on a synthetic diagnostic, since nothing real
+shipped to carry it.** `SustainedObjectiveDiagnostic` drives a throwaway, never-shipped
+`ScenarioDefinition` through the real `ScenarioEvaluator`/save code. All three asked questions
+answered: (1) **evaluates exactly as designed** — `ConsecutiveTurns` tracked a real streak,
+`Met` flipped at precisely the turn `RequiredTurns` was reached, and satisfying it early
+confirmed does NOT end the scenario early, the verdict still waits for `EndTurn`; (2) **the
+margin reporting has a confirmed, specific gap** — the shipped verdict screen's figure line
+(`GameController.cs:4141`) is generic across every `ObjectiveKind` and for a satisfied 20-turn
+streak rendered only `"+1.14"` against the final turn's raw value, saying nothing about the
+streak that actually decided `Met`; `ObjectiveProgress.ConsecutiveTurns` already carries the
+right number, the verdict screen simply never reads it — not fixed this pass, deferred to
+whichever scenario exercises the form for real; (3) **survives a save crossing mid-sustain,
+exactly** — captured at `ConsecutiveTurns=1` (not yet `Met`), round-tripped intact through a
+real save/load, and continued counting correctly on the restored world (1→2) with zero new
+persistence work beyond what Step 3 already shipped.
+
+**Format verdict: moot, not "subset."** The mechanism disqualified the scenario before the
+format's own grammar was ever in question — nothing here suggests the four `ObjectiveKind`s are
+insufficient; `Sustained` worked exactly as designed the moment it had a condition worth
+measuring.
+
+**What's next**: **The Disinflation** — the deepest coupled chain the model owns, the legibility
+panel now exists to trace exactly what this report had to reconstruct from raw dumps, and its
+premise works WITH Okun's reversion rather than fighting it, unlike this one. The Unequal
+Recovery (reads Q1's Gini-gap output) is the credible second choice. Content work continues
+behind Step 3's format until 13 Sept opens Step 4.
+
+## The Disinflation — MEASURED AND DROPPED too, and it's now a NAMED PATTERN, not two isolated results (2026-08-18)
+
+**⚠ Corrects the claim directly above, not silently — "works WITH Okun's reversion rather than
+fighting it" was the reasoned expectation before measuring, and it was wrong: the SAME
+reversion constant forecloses this scenario too, from the opposite direction.** Full record:
+the Disinflation measurement report (consumed to `COMPLETED.md` §22, 2026-08-26). Zero
+production code changed (confirmed via
+`git status`, every touched file under `Assets/Editor/`); `ScenarioLibrary` still carries only
+"Inherit the Fund".
+
+**The half-life, measured first as required: undefined — effectively infinite.** Ten runs
+(Poland at four rate levels 0/1.5/3/5 pp; Sweden at three; Germany with and without its Eurozone
+push; Italy uncontested), each seeded with inflation AND expectations elevated to 10%, 30 turns
+real day-loop: **every configuration ends within a point of where it started**, regardless of
+lever, regardless of magnitude. `ApplyPhillipsCurveInflation` makes an elevated-inflation-at-NAIRU
+start a fixed point BY CONSTRUCTION (inflation falls only when unemployment sits in genuine
+slack above NAIRU, and expectations only adapt toward realized inflation, which itself never
+moves without that slack) — and sustained slack is exactly what Wage Boom Management already
+measured as unreachable. **Okun's `UnemploymentReversionSpeed` pulls unemployment back to NAIRU
+from EITHER side**: Wage Boom found it prevents sustaining TIGHTNESS below NAIRU; this pass
+finds the identical constant prevents sustaining SLACK above NAIRU. Same cause, opposite
+direction, both dead.
+
+**The levers, quantified rather than waved at.** Poland's terminal inflation across
+0/1.5/3/5 pp one-time hikes: 9.343% → 9.244% → 9.146% → 9.017% — **a consistent ≈−0.065 points
+of relief per point of hike**; reaching 2% from 10% at that rate would need roughly a 120-point
+hike, an order of magnitude past `CurrencySystem.MaxInterestRate` (15%). Sweden: ≈−0.08/pp, same
+order. **The Eurozone's automatic mechanism makes it WORSE**: Germany's shared rate auto-climbed
+to 8.6% via `EurozoneRateSystem`'s own Taylor-rule blend with ZERO player input and still
+produced no measurable disinflation (10.12% at both t1 and t30); the player's own maximum
+capped push (±0.75, `EurozoneRateSystem.cs:32`) is **literally invisible against that** — t30
+inflation identical to three decimals with or without it. **Ruled on the Eurozone ambiguity by
+measurement**: a shared zone rate is a genuine, interesting constraint for a scenario where
+player action is decisive, and disqualifying for one needing a large lever, because the
+automatic mechanism already moves further than the player ever could and the result is still
+nothing.
+
+**A second, independent kill-shot, new to this pass**: elevated inflation alone — cleanest in
+Sweden's run, whose own unemployment transient is small — crashes `ApprovalRating` from ~47
+below the 35-point `ElectionSystem.LosingThreshold` within **3–7 turns across all five
+configurations**, via the standing misery-index mechanism, before any lever could plausibly show
+results even if one bit. A scenario here risks an automatic election-loss game-over before its
+own management phase begins.
+
+**TWO DROPS IS NOW A NAMED PATTERN, per the instruction that two would be.** This is not "wrong
+premise" twice — it is ONE finding encountered from two directions: `UnemploymentReversionSpeed`
+as currently tuned forecloses the entire class of "move the unemployment gap away from NAIRU and
+hold it there" scenarios, regardless of direction, country, or lever. A model-balance finding for
+whoever next scopes labour-market content or a rebalancing pass — not fixed by either content
+pass, per the same standing discipline both reports hold to.
+
+**What's next, now measured rather than assumed**: **Italy debt start** — its difficulty source
+(the debt identity, post-erosion/maturity) is the best-validated, most-measured mechanism in the
+whole model, the opposite risk profile from the two drops above, and structurally untouched by
+either finding. The Unequal Recovery (Gini-gap via Parliament) is the second candidate,
+similarly untested by either drop. Content work continues behind Step 3's format until 13 Sept
+
+## Italy Debt Crisis ships — the third scenario content pass, and the first of three to SURVIVE (2026-08-18)
+
+Full measurement: the Italy debt measurement report (consumed to `COMPLETED.md` §22,
+2026-08-26). Where Wage Boom Management and The
+Disinflation both dropped on `UnemploymentReversionSpeed` foreclosing every tested lever from
+either direction, Italy's difficulty source is the debt identity, a different mechanism entirely
+— and it bites. Seven same-seed configurations (165% debt-to-GDP start, seed 777) spread from
+52.63% to 109.60% debt-to-GDP by t30 on the player's own choice of instrument alone, identical
+through t1 (FRF's own first-turn reaction dominates regardless of policy) and diverging smoothly
+from t2 — the same clean attribution signature as every prior pass. **Spending cuts compound**
+(−0.16 pp/pp at 10% accelerating to −1.90 pp/pp at 30%, the debt-stock/interest feedback working
+*for* the player once the stock falls) while **VAT hikes plateau** (−0.43 to −0.90 pp/pp,
+non-accelerating). The −20%-spending-only package alone clears a 95% terminal target by t20
+(92.60%, cross-validated identically by both the pre-authoring diagnostic and
+`ItalyDebtCrisisSliceDiagnostic`'s isolated run).
+
+**The approval-survival question — the one that killed Disinflation independently — was measured
+early, per the standing practice, and Italy clears it.** `ApprovalAttribution`'s misery index
+carries exactly four terms (`MiseryUnemployment`, `MiseryInflation`, `MiseryCrime`,
+`MiseryCorruption`) — confirmed by reading the struct directly: **no debt term of any kind**, so
+165% debt-to-GDP does not independently crash approval the way elevated inflation did. Spending
+cuts cost **≈−0.017 approval points per point of cut** (linear, tiny); VAT hikes cost **≈−1.50
+points per point of VAT** — a real, ~90× steeper parliamentary tax than the spending-cut channel,
+the same order-of-magnitude shape as Disinflation's rate-hike tension, except here the player has
+a strictly better instrument available. The one genuinely risky line tested (+6pp VAT, no cuts)
+dips to 39.48–39.66 across t2–t5 before recovering — close enough to threaten a `Sustained`
+attempt, nowhere near the 30-point `no_collapse` floor. **A real, quantified, playstyle-dependent
+tension, not a flaw to smooth away**: cuts-heavy lines are the safe, efficient path; VAT-heavy
+lines are harder on the room and less effective on the ratio besides.
+
+**Country/mechanism ruling, applying both standing constraints**: USA stays disqualified (the Fed
+Chair's structural output-gap distortion pins the suggested rate near 0% regardless of the debt
+path); the Eurozone's monetary agency is effectively nil for the player (Disinflation's own
+finding — the automatic Taylor-blend move dwarfs the capped player push). For Italy this is not a
+gap, **it is the scenario's actual premise**, and the measurement confirms the remaining fiscal
+tools are more than sufficient alone — so the fiscal-only framing ships as the authored premise's
+own text, not an apology.
+
+### Authored: `ItalyDebtCrisis()` in `ScenarioLibrary.cs`
+
+Terminal `debt_down` (≤95% by turn 20), Sustained `keep_the_room` (≥40 approval for 10
+consecutive turns — **the format's `Sustained` form's first real exercise**, per Step 3's own
+standing note that the first scenario to use it is also its first test), NeverBreach
+`no_collapse` (≥30 approval).
+
+**Exercising `Sustained` for real found and fixed a genuine pre-existing defect in
+`ScenarioEvaluator`**, not a new one: `Met` was recomputed from the CURRENT streak every
+boundary, so a later broken streak silently un-set an already-earned achievement. Fixed to be
+STICKY — `state.Met = state.Met || state.ConsecutiveTurns >= objective.RequiredTurns` — matching
+this class's own already-ruled design intent (satisfying the streak early does not end the
+scenario early, which only makes sense if the achievement persists to be judged at `EndTurn`
+rather than re-litigated every turn after). `ConsecutiveTurns` itself is unchanged — still the
+honest streak length the panel and epilogue read; only `Met`'s stickiness changed. This shipped
+on the synthetic diagnostic that exercised `Sustained` in Step 3's own pass, undetected until a
+scenario actually authored a real streak requirement — exactly the gap Step 3's note flagged.
+
+**`GameController.cs:4141` fixed as instructed** — the generic inline margin-figure construction
+is replaced by `BuildObjectiveFigure`, which branches on `ObjectiveKind`: non-`Sustained`
+objectives keep the plain margin line; `Sustained` objectives now report the streak itself
+("held for N of M required turns" once earned, "reached the M-turn streak earlier (currently at
+N)" if since broken post-stickiness, "never reached the M-turn streak (currently at N)" if never
+earned) alongside the latest margin. A Sustained objective's own verdict-screen line now
+describes the streak, not a bare threshold comparison it was never measuring in the first place.
+
+**The legibility trace panel — which chain steps it shows, and which it leaves dark, stated
+explicitly per this pass's own instruction.** `StatTracePanel.SupportsTrace` covers exactly two
+stats: Approval and ConsumerConfidence. For a debt-focused scenario, that means Approval's own
+ledger IS traceable (a player can click through and see the misery terms, confirming directly
+that debt is not among them), but **the fiscal chain itself — the erosion term, the maturity
+rate-lag, the FRF's own reaction decomposition, `DebtToGdpRatio`'s path — has no panel section at
+all.** This is Step 2's own named deferred item ("the fiscal chain's panel section... trigger: the
+first playtest asking 'why did the deficit move'") **firing here**: a scenario whose entire
+premise is the debt identity is exactly the situation that trigger was written for. Not built in
+this pass — the data already exists in `FiscalTurnReport` per Step 2's note, so the deferral
+remains cheap, but it is now a live, named gap rather than a hypothetical one.
+
+### The bar
+
+Compile clean throughout. **Default-path: 39/39 fields byte-identical** to
+`traj_post_q5_s777_t1000.csv` (neither dropped pass touched production code, so this is the last
+validated production baseline). **RT 12/12** (6 countries × 2 seeds). **Equivalence 117/117.**
+`ItalyDebtCrisisSliceDiagnostic` against the REAL evaluator: a no-policy line LOSES (107.99%
+debt, margin −12.99; `keep_the_room` and `no_collapse` both met on a 20-turn streak); a real
+−20%-consolidation line (via `SpendingLineChanges`, matching §1's measured package) WINS (92.60%,
+margin +2.40; full streak); a save/load crossing mid-`Sustained`-streak (turn 8, streak=8,
+`Met=False` at save) restores intact and continues evaluating correctly. Captures at both 1600
+and 2560 for `95_italydebt_entry` / `95b_italydebt_in_progress` / `95c_italydebt_verdict`, the
+assert-own-name guard passing at the log level (`"SHOT: Italy Debt Crisis verdict pinned at turn
+23 (end turn 20)."`) both sizes. In both tested lines `keep_the_room` never came close to
+breaking (streak=20 both) — the report's own finding that spending-cut-only lines are the
+approval-safe path, not a diagnostic gap.
+
+### The capture-vs-diagnostic discrepancy, investigated rather than shipped unexplained
+
+**`95c_italydebt_verdict` shows a LOST verdict** (107.2% debt, margin −12.2; `keep_the_room`
+never reaches its streak) for the same −20% consolidation package the isolated diagnostic shows
+WINNING cleanly. Root-caused, not assumed: `ScenarioEvaluator.EvaluateAtBoundary` compares
+`EndTurn` as an ABSOLUTE turn number (`currentTurn < definition.EndTurn`, `ScenarioEvaluator.cs:138`)
+— correct and harmless in real play, where `StartScenario` is only ever reachable from a fresh
+game's country selector at turn 0, so `EndTurn` is effectively relative to a start that is always
+zero. The capture driver is not a fresh game: it runs "Inherit the Fund" and a long stretch of
+other captures first, on one continuous `SimulationManager` clock, so `StartScenario(italySlice)`
+fires at the shared session's turn 12 — leaving Italy 8 of its intended 20 turns, nowhere near
+enough even for a package calibrated to just clear 95% over the full 20. **This is not new**:
+`94c_scenario_verdict` ("Inherit the Fund") in this SAME driver run also shows "SCENARIO FAILED"
+— by design there (that capture block applies zero player policy on purpose, and correctly
+misses its poverty objective by exactly 1.0 point with a full streak on the other two) — but
+Italy's block explicitly intends to "show the scenario actually being played" per its own code
+comment, and the mid-run start defeats that intent for this one image. **Not a scenario-balance
+defect** (the isolated, fresh-start diagnostic is the authoritative source, and it is clean) and
+**not an assert-own-name violation** (the capture is honestly named "verdict" and honestly shows
+one — a lost one — and the guard's own job is catching a capture that doesn't show what it
+claims, which this does). **Not fixed here**: making Italy's own driver block show a win would
+need either reordering the driver's block sequence (touches "Inherit the Fund"'s own already-
+shipped capture budget, out of scope) or an implausibly extreme package (contradicts the
+approval-survival finding this report is built on). Named and left as a driver-only,
+capture-quality limitation, not a blocking one.
+
+### Format verdict
+
+**Subset, confirmed rather than assumed.** No new `ObjectiveKind` was needed — Italy is the first
+REAL exercise of the already-built `Sustained` form (previously only synthetic-diagnostic-tested)
+and needed nothing else, matching Step 3's own prediction that the remaining slate are subsets of
+its shape. The one defect the exercise found (`Met` non-stickiness) was in the existing
+`Sustained` implementation, not evidence the grammar itself needed to grow.
+
+**Two of five remain untested by any prior finding**: Poland convergence (growth vs. overheating
+from productivity convergence, not an engineered gap) and The Unequal Recovery (Gini-gap via
+Parliament). Content work continues behind Step 3's format until 13 Sept opens Step 4.
+
+## First real playtest session — two defects fixed, seven findings sorted (2026-08-18)
+
+Seven playtest findings, sorted per instruction: two fixes this pass, five scoped only (their own
+package follows this entry). Two carry-overs from Italy Debt Crisis recorded live above (the
+fiscal panel's trigger fired; the `EndTurn` capture artifact is shared with "Inherit the Fund").
+**UI-only bar per working-discipline rule 0**: compile check plus a smoke run — no simulation math
+changed, so the full matrix/equivalence/RT bar does not apply. The smoke run here is unusually
+thorough (a full 90-capture pass, both sizes, twice) because getting it green surfaced two
+unrelated pre-existing defects along the way, both named and disposed of below.
+
+### Fix 1 — the signing ceremony dropped an official seal on REJECTED bills too
+
+**Derived which bug it was before touching anything, per instruction.** Read both stamp-draw
+sites (`GameController.DrawRecentDivisions`, `SigningScreen.BuildDivisionPlate`) and the full
+`WouldBillPass`/`RecordDivision`/`DivisionLog.Append` chain first — all of it branches correctly
+on `record.Passed`, and the `ui_stamp_carried`/`ui_stamp_rejected` PNGs themselves are correctly
+labeled (composited onto a dark ground and read directly - "CARRIED"/"REJECTED", no swap). **The
+CARRIED/REJECTED stamp was never the bug.** The real one: `SigningScreen.Build` built the
+`SealLanding` (the official wax seal, `ui_seal_official`) and the "SIGN" button **unconditionally**
+for every division, passed or failed — a false player-facing claim (the seal is the head-of-
+state's act of enactment; a rejected bill was never enacted, there is nothing to sign), not a
+cosmetic slip, exactly the distinction the instruction asked to establish before fixing.
+
+**Fix**: the seal/button now branch on `record.Passed`. Passed keeps the wax seal + "SIGN"
+unchanged. Failed builds an invisible `SealTimer` object instead — `SealDrop` only ever animates
+its own `RectTransform` (confirmed by reading the class: no `Image` dependency), so the identical
+settle-timer contract (`Sign()`/`Sealed`) drives the seam forward either way, just with nothing
+visible dropping — and the button reads "FILE" instead of "SIGN". The landing zone's 104×104 slot
+stays reserved in both branches, so the button sits in the identical position regardless of
+verdict.
+
+**Verified structurally, a more precise bar than a screenshot for this fix**: `SigningStampFixDiagnostic`
+(new) calls the real `SigningScreen.Build` directly for a synthetic passed and a synthetic failed
+`DivisionRecord`, then asserts the resulting GameObject hierarchy rather than eyeballing pixels —
+does a `Seal` Image exist (only for passed), does a `SealTimer` exist with no Image (only for
+failed), does `SealDrop` start inactive either way, does the button's Label text read exactly
+"SIGN" or "FILE". **All assertions pass, both branches.** This is resolution-independent (the fix
+is conditional object creation, not layout), so one structural run stands in for "both sizes"
+here — there is no per-width variant of this defect to re-check.
+
+### Fix 2 — the Budget Process tab nested two scrolls, one of them dead
+
+**Enumerated project-wide rather than fixing what was noticed, per instruction.** Search: every
+`BeginScrollView` call site under `Assets/Scripts` — **18 total, 2 files** (17 in
+`GameController.cs`, 1 in `StatTracePanel.cs`). Checked each for literal nesting (a second
+`BeginScrollView` before the first's matching `EndScrollView`): **exactly one nested pair found.**
+Every other tab/sub-tab scroll is a single, switch-dispatched leaf — Statistics/Decisions/
+Demographics/PolicyLaws-per-sub-tab/Politics-per-sub-tab/Budget-per-category each open one scroll
+apiece, mutually exclusive with their siblings, never nested. `StatTracePanel`'s own bounded
+12-row internal scroll (Step 2's already-documented, deliberate exception) is never reached while
+any `GameController` scroll is open at either of its two call sites (PolicyLaws, Budget) - both
+pin the stat row and trace panel ABOVE the tab's own scroll, by existing design.
+
+**The one real pair**: `DrawBudgetProcessTab`'s outer `_budgetProcessRowScrollPosition`
+(horizontal, wrapping the whole three-column row) around the inner `_budgetProcessCenterScrollPosition`
+(vertical, the center column's own). The outer one is DEAD: the code's own 2026-08-01 comment
+already states the three columns are guaranteed to sum to less than `contentWidth`, so "the row
+cannot scroll horizontally at any window size" - true then, still true now, just never acted on.
+**Fixed**: outer `BeginScrollView`/`EndScrollView` removed (kept the `BeginHorizontal` it wrapped,
+sized identically), the now-dead `_budgetProcessRowScrollPosition` field deleted. The inner scroll
+is kept, named, and deliberate — the center column's content genuinely varies by category and
+does overflow `columnsHeight`.
+
+**Captures both sizes, rule 15**: `05_budget`/`05a_budget_tax` at 1600 and 2560 — one scroll
+(visible on the center column only), the three-column layout fits naturally, no horizontal
+scrollbar, nothing clipped.
+
+### A driver-tooling detour, disposed of rather than left blocking
+
+Getting a clean capture pass hit two SEPARATE pre-existing problems, neither in the two fixes
+above, both named and closed:
+
+1. **The capture batch wedged, three times running, always at the exact same point** (the first
+   `WaitForCanvasSettle`, zero captures, total log silence). Root-caused rather than assumed the
+   same as the standing `BatchSimulationRunner` hang (it isn't — see the correction on that
+   record): `UiScreenshotDriver`'s own class doc says plainly it cannot run under `-batchmode`
+   because captures need real `WaitForEndOfFrame` compositing, and `-nographics` (copied from this
+   session's pure-simulation diagnostics, where it's correct) disables the graphics device
+   entirely. Dropping both flags fixed it immediately — the same pass that hung 51 minutes
+   completed in 67 seconds.
+2. **Italy Debt Crisis is the LAST scenario in `ScenarioLibrary.All`, and nothing ever clears its
+   verdict overlay.** Every earlier scenario's dangling `_scenarioVerdictPending` gets silently
+   cleared by the NEXT scenario's own `StartScenario` call ("Inherit the Fund"'s clears when
+   Italy's starts) - Italy has no successor, so its verdict stayed pinned over every capture after
+   it, under the WRONG names (`89_signing_document` showed the Italy verdict screen, not a signing
+   ceremony - confirmed this was ALREADY true of the very first `italydebt`-labeled run, so it
+   predates this pass entirely and was simply never looked at that far down the sequence before).
+   **Fixed at the driver level only**: `_scenarioVerdictPending` cleared directly via reflection
+   after the verdict capture, NOT through `GameController.DismissScenarioVerdict()` - that method
+   sets `_isGameOver = true` permanently (the real player's only path, correctly, since dismissing
+   a scenario's verdict really does end the run) - which would have corrupted every capture after
+   it. This is driver cleanup, the same "reach into private state rather than widen production's
+   surface" idiom the whole file already uses, not a dismissal a player took.
+
+**⚠ NAMED, NOT FIXED — a third, DEEPER thing the above surfaced, out of scope for this pass.**
+`StartScenario` also calls `SelectPlayerCountry(Italy)`, and nothing ever switches back to the
+driver's default country (USA) afterward. Once Italy's own dangling verdict was cleared, the
+driver's REMAINING sections (signing ceremony, election reveal) kept running - but against Italy
+as the live-selected country, while the driver's OWN local `player`/`_countryId` variables (set
+once, early, before any scenario ever ran) still reference USA. The captures after the fix are no
+longer BLOCKED, but several are now semantically confusing (e.g. Italy's own annual budget-process
+pause fires instead of the intended USA signing-ceremony state) because of this desync. Both fixes
+in this pass were verified through paths that do not depend on this section (the structural
+diagnostic for Fix 1; the EARLY, pre-Italy-block Budget captures for Fix 2), so it did not block
+either. Left named rather than chased, per the same "stop at the boundary" this pass was scoped
+to: fixing it properly means deciding what the driver's post-scenario country state SHOULD be,
+which is a driver-design question, not a one-line reflection call.
+
+### A fourth, pre-existing, unrelated finding surfaced by the log, also named and not chased
+
+`ATTRIB: USA approval ledger FAILS its audit at 2050-12-26` appeared in both clean 1600 runs,
+identically. Traced to the driver's own election-forcing code (`player.State.ApprovalRating =
+60f;`, a raw un-ledgered write used to guarantee an election WIN gets captured) - the self-audit
+is correctly flagging that write as an unexplained approval mover, exactly the failure mode its
+own message names ("An approval writer is not recording - find it"). The writer in question is
+the TEST HARNESS, not production code. Not fixed here - out of scope for this pass, and the audit
+doing its job correctly on a driver artifact is a different situation from the audit being wrong.
+
+## The country-selection capture-driver leak - fixed, driver-only (2026-08-24)
+
+Reported as "Italy's scenario switches the live player-country and nothing switches it back."
+Investigated to a real mechanism rather than patched by guess: `SelectPlayerCountry` is, by design,
+a one-time, permanent commitment - a real player picks their country exactly once per session, and
+there is still no in-game "change country" feature to undo, which is correct and untouched.
+`UiScreenshotDriver` (`-shotcountry=`) reuses that same permanent, no-undo call reflectively as a
+disposable per-run label. Every *normal* exit already self-terminates the whole Editor process via
+`Finish()` -> `EditorApplication.Exit()`, which is what actually clears the state - nothing survives
+process death to leak into a later session. **The one real gap: `Start()` had no guarantee covering
+an UNCAUGHT exception after the country switch**, and because `UiScreenshotCapture.Run()`
+deliberately runs WITHOUT `-batchmode` (a real, interactive Editor window - `WaitForEndOfFrame`
+needs one), that gap could strand Play Mode on the requested country with no in-game way back
+(`SelectPlayerCountry`'s own selector gate is permanently one-directional once set).
+
+**Verdict: driver-only, not a correctness bug reaching a real player** - confirmed by tracing every
+code path that could touch `_selectedPlayerCountryId`; none exists outside `SelectPlayerCountry`
+itself, and `SaveLoadRoundTripDiagnostic`/`SimulationTestRunner`/`BatchSimulationRunner` never
+instantiate `GameController` at all, so none of them can reach this state by construction.
+
+**Fix, symmetric with the entry it mirrors**: `GameController.ResetPlayerCountrySelection()`, the
+documented counterpart to `SelectPlayerCountry` (clears the selection back to null - real play never
+calls it). `UiScreenshotDriver.Start()`'s whole body is now wrapped in `try`/`finally`: the `finally`
+unconditionally calls `ResetPlayerCountrySelection` via reflection (the same `Invoke` helper the
+entry call already used, widened to `params object[]`) and guarantees the run's own `Finish()` fires
+exactly once via a `_finishCalled` guard - the driver's own "verdict dismissal," guaranteed once
+entered, the same discipline the election reveal/Cabinet decision/Foreign Policy meeting dismissals
+already follow.
+
+## Turn -> Year (2026-08-24)
+
+Per CLAUDE.md's own "A turn is now a year" entry (2026-08-10, `d8f55ce`): a turn IS a year, not an
+approximation, so every player-facing surface reading "Turn N" should read "Year N." Internal
+surfaces (dumps, checks, logs, trajectory labels, this file's own vocabulary, `EndTurn`/`AdvanceTurn`
+internals, `SaveGame.CurrentTurn`'s serialized field name) stay unchanged - display-only, on purpose.
+
+**39 surfaces found by an exhaustive sweep of `Assets/Scripts/UI/`, cross-checked two independent
+ways** (a targeted agent survey, then a raw `grep` for every `"...[Tt]urn..."` string literal across
+the whole folder, hand-filtered for `return`/`returns` false positives) - **37 direct swaps, 2
+non-trivial, both ruled rather than forced:**
+
+- **The horizon selector's "Full Turn" -> "1 Year."** The one label of the four (`1 Day`/`1
+  Week`/`1 Month`/`Full Turn`) that broke its own siblings' "1 [Unit]" pattern, because a turn wasn't
+  previously a round real-world unit worth counting "1" of. "1 Year" both fits the pattern and is
+  shorter than "Full Turn" was, so the original width concern (`GameController.cs`'s own comment on
+  the label) is eased, not reintroduced.
+- **The calendar pad's `"{year} · T{turn}"` -> just `"{year}"`.** Now that a turn IS a year,
+  `CurrentTurn` and the pad's own `date.Year` are the same count wearing two labels. **Ruling: show
+  the REAL calendar year everywhere; drop the redundant elapsed-turn suffix here specifically**
+  rather than relabel it `" · Y{turn}"` - two numbers that agree is pure redundancy, and two that
+  read as disagreeing (elapsed count vs. absolute year, offset by the seed epoch) would be worse.
+  Absolute years were already what the pad had on hand, are the more evocative choice for a
+  document-styled desk UI, and are the same choice the Calendar Panel below inherits rather than
+  invents a second epoch decision.
+
+**Validation**: real Unity 6000.5.6f1. Trajectory (seed 777, 100 turns, before vs. after) **600/600
+full-state lines byte-identical**, 38/38 anomalies match exactly. Save/load: `RT: PASS - 12 scenarios
+(6 countries x 2 seeds) round-trip clean` - unchanged. Captures at 1600x929 (before/after pair,
+direct rule-15 image diff) and at 1600x929 + 2560x1419 with full state-pinning (`-shotstates`):
+59/59 and 78/78 captured, **0 overflow / 0 escape / 0 canvas-text-violation at every size** -
+including the two non-trivial surfaces and the state-gated screens (election reveal, game-over
+banner) the width risk ("Year 2031" is wider than "Turn 5") was named against.
+
+## Calendar Panel (2026-08-24)
+
+Replaces the old dashboard (country header + headline stat-tile grid) in the persistent left
+column's scrollable slot with a real month page: a weekday-aligned day grid (days already past
+marked "X," today highlighted), a "This Month" ledger of every dated item landing in the displayed
+month, and the country-name-plus-year header the old dashboard carried, preserved verbatim.
+`DrawPolicyControls`'s "This Year's Policy" live-preview panel is UNTOUCHED and still draws directly
+below it in the same scroll view - deliberately not tab-owned (its own doc comment), so it stays
+reachable without tab-hopping. The small pinned calendar pad (`DrawCalendarPad`, month/day/year,
+outside the scroll view beside the speed controls) is also UNTOUCHED - kept on purpose, since the
+panel below it is scrollable-away-from and the pad's whole point is a glance at today regardless of
+scroll position, the same reasoning that already keeps the speed controls pinned beside it.
+
+### What the left overview showed, and what happens to it - named, not silently dropped
+
+Investigated before removing anything (`DrawHeadlineStatTiles`'s and `DrawPolicyPreview`'s own
+call-site history, read in full):
+
+- **The stat-tile grid is fully duplicated, byte-for-byte, on Statistics -> Domestic** -
+  `DrawHeadlineStatTiles` is the SAME method, same call, both places. Nothing is lost in raw-number
+  terms; several stats (GDP, Unemployment, Inflation, Approval, Poverty, Debt-to-GDP) sit beside a
+  history graph there the old dashboard never had. Four (Currency Strength, Government Debt, Credit
+  Rating, Budget Balance) get no richer treatment at either location - for those four specifically
+  the Statistics tab shows the literal identical plain tile, so there is truly nothing to lose beyond
+  the tab click itself. **What genuinely is lost: the "glance from any tab" convenience** - a real,
+  bounded trade, made deliberately for a genuinely new capability rather than a redundant one.
+- **`DrawPolicyPreview` ("This Year's Policy") is confirmed duplicated identically at the Budget
+  Process tab** (`DrawLegislativeSupportEstimate`'s own column calls the same parameterless method).
+  Kept anyway, exactly where it was, because its OWN doc comment states its placement is deliberate
+  precisely so a player never has to tab-hop to see it - removing it from the always-visible column
+  would contradict the reason it was put there, so it stays.
+- **The country-name-plus-year header had NO other home anywhere in the UI** (full-file search for
+  `_playerCountry.Name` as a persistent header - every other occurrence is a one-off screen title or
+  embedded mid-sentence). Preserved as this panel's own first line, unchanged.
+- **`DrawTopBanner` (game-over / BREAKING event banner) and `DrawPolicyControls`'s wrapper are
+  untouched.** `DrawPolicyControls` turned out to have NO gameplay sliders left in it at all by this
+  point (every lever had already migrated to its own tab or the Budget Process tab in an earlier
+  pass) - it is now just the header/toggle wrapper around `DrawPolicyPreview`, confirmed by reading
+  it in full before assuming otherwise.
+
+No delivered or requested chrome asset exists for a bigger calendar (`ChromeManifest.txt`,
+`CLAUDE_DESIGN_ASSET_REQUEST.md`, `POLISIM_V2_SCREEN_SPEC.md` all searched - `ui_calendar_pad` is the
+only calendar sprite anywhere). The panel is entirely procedural chrome (`PoliSimTheme.RoundedCard`/
+`Rule`/`Pill`, the same fallback family `DrawCalendarPad` already uses when its own sprite is
+missing) - no asset request blocks this.
+
+### The data contract - the extension point for the law system and the fiscal legibility panel
+
+**Read existing data, built no store.** Every marker is computed fresh each `OnGUI` call from
+already-existing, already-computed state (`SimulationManager`'s public `Get*` API, `ReleaseCalendar`,
+`Country`'s own lists, `GameController`'s own `_mapEventMarkers`) - nothing here is new persisted
+state, and nothing here can move a trajectory (confirmed: 600/600 state lines byte-identical, before
+vs. after, at the seed this section's own validation used).
+
+**The governing question for every source, catalogued from the real code rather than assumed**: does
+a PENDING (future) instance carry a computable date, and does a RESOLVED (past) instance retain one?
+A day that happened is a fact even when the day it will happen was never knowable in advance - the
+two directions are independently answerable and answered separately below.
+
+| Source | Future | Past | In the panel? |
+|---|---|---|---|
+| `FiscalYearData.GetFiscalYearStart` | Exact, fixed `(month, day)`, every year | Exact (same rule) | ✅ one marker, carries BOTH the budget-process-open fact and the credit-rating-review fact - confirmed coincident by reading `CreditRatingSystem.ReviewIfDue`, which reuses the identical date |
+| `ReleaseCalendar.IsReleaseDay` (6 `PublishedStat`s) | Exact date arithmetic, no RNG in the date itself | Exact (same rule) | ✅ every day of the displayed month checked against every tracked stat |
+| Pending bill `DaysRemaining` (all 8 types - `BudgetBill` + 6 standalone + `SwfDrawdownBill`) | Exact: `today + DaysRemaining` | n/a (resolves into a division) | ✅ one marker per currently-pending bill |
+| `ElectionSystem.IsElectionTurn` | Exact date (turn N -> `EpochDate.AddDays(N*365)`), but **not** always the same day-of-year (see the leap-day finding below) | Only the single most-recently-resolved election is held, transiently, discarded on dismissal - **no persisted log exists** (the still-open `ElectionRecord` gap this file already names elsewhere) | ✅ future only |
+| `Country.Divisions.Entries` (`DivisionRecord.Date`, all 8 resolution sites, up to 24 retained) | n/a (already resolved by definition) | Exact, real, stored `DateTime` | ✅ past, bounded to the retained 24 |
+| `EventSystem` roll + `MapEventMarker.TurnFired` | **Unknowable** - a 12%/turn roll with no schedule | A fired marker's `TurnFired` converts to an exact date via the same epoch formula - "a day that happened is a fact" - but only within the 6-turn fade window `GameController` already tracks, and that window is UI-only, not save-persisted | ✅ past only, bounded to the 6-turn window |
+| `CabinetSystem` decisions | **PROBABILITY-ONLY, NO TRACE** - 12%/minister/turn roll | **NO TRACE** - `ResolveCabinetDecision` applies the effect and removes the pending entry; no date stamp is ever written anywhere | ❌ excluded, both directions |
+| `ForeignPolicySystem` meetings | **PROBABILITY-ONLY, NO TRACE** - 1%/day roll | **NO TRACE** - same shape, `ResolveForeignPolicyMeeting` | ❌ excluded, both directions |
+
+**A structural finding worth carrying forward, found while building the epoch conversion rather than
+assumed**: `DaysPerTurn = 365` is a fixed day COUNT, not "the next January 1st" - so turn N's date
+(`EpochDate.AddDays(N * 365)`) is always exact but is **not** guaranteed to land on the same
+day-of-year across different turn numbers. Concretely: turn 1 = 2027-01-01, turn 2 = 2028-01-01, but
+turn 3 = **2028-12-31**, one day short of the next January 1st, because 2028 absorbed a leap day the
+365-day span didn't account for. Every date conversion in `BuildCalendarMonthMarkers` uses the exact
+`EpochDate.AddDays(...)` formula for this reason - never a fixed month/day assumption from a turn
+number.
+
+**Confirmed by the captures, not just reasoned about**: the "busy fiscal month" pinned state (USA,
+October) shows the fiscal-year/credit-rating marker landing on the SAME day as three of the six
+publication markers (`PovertyRate`/`Population`/`CrimeIndex` all publish annually on the fiscal-year
+date too) - four coincident markers on one day, exactly the clustering this data contract's own
+table predicts and exactly why "an empty calendar validates nothing" mattered enough to pin
+deliberately rather than trust the ordinary warm-up to produce it by luck.
+
+### Validation
+
+Real Unity 6000.5.6f1. **Trajectory (seed 555, 100 turns, before vs. after all of the panel's own
+work including two follow-up geometry fixes) 600/600 full-state lines byte-identical, 30/30
+anomalies match exactly** - GameController.cs is structurally unreachable from
+`SimulationTestRunner`/`BatchSimulationRunner` (confirmed during the country-leak investigation
+above), so this is a proof by construction as much as by diff. Save/load: `RT: PASS - 12 scenarios (6
+countries x 2 seeds) round-trip clean` - unchanged.
+
+Captures at 1600x929 and 2560x1419, `-shotstates` (full state coverage), pinned specifically on the
+three states an empty calendar could never validate: a month with marked events (the ordinary
+warm-up already produces this - publication markers accumulate over the 3+ year warm-up regardless),
+a month-boundary flip (a NEW driver step, `CaptureCalendarMonthBoundary`-shape: advances to the last
+day of the current month, captures, advances one more real day into the next month, captures again -
+confirmed the grid, weekday alignment and ledger all regenerate correctly for the new month with zero
+staleness), and the busy fiscal month (the existing budget-process-pause search already lands
+`CurrentDate` exactly on the country's fiscal-year date, which is where this state was pinned for
+free).
+
+**Two real defects found and fixed by the guards/eye, both already-catalogued classes in this
+project rather than novel ones - recorded because the class recurring is the point:**
+
+1. **Day-cell height, `UiOverflowGuard`, 2,004 violations.** The first version sized cells from a
+   flat `30f * scale` guess unrelated to `_calendarDayNumberStyle`'s real size (which scales off
+   `labelFontSize`, a different base). Fixed via `Mathf.Max(lineHeight, fontSize + 4f)` -
+   `LedgerRow.Height`'s own formula - which closed most but not all of the gap (over-by dropped from
+   10.7 to 1.6). **The residual was CLAUDE.md's own already-documented "tall class" defect** -
+   `lineHeight` excludes a style's vertical padding, which only `CalcHeight` (what `GUI.Label`
+   actually obeys) accounts for. Final fix: measure via `CalcHeight` against real sample content, one
+   accessor read by both the grid's row reserve and the cell's own text rect.
+2. **Ledger date-column width, caught by eye at 2560px, not by any guard.** A hardcoded
+   `GUILayout.Width(40f)` wrapped ("10" over "/1") at larger window sizes - it never CLIPPED (so
+   `UiOverflowGuard` stayed clean throughout), just wrapped, which is why only a capture at the wider
+   size caught it. Fixed by measuring the widest possible date string (`"12/31"`) against the real
+   style instead of a flat constant - the same "a number that came out of a mockup is a measurement
+   at one resolution, never a constant" lesson this file has already recorded from several other
+   sites, recurring at a new one.
+
+Both fixes re-verified clean (0 overflow / 0 escape / 0 canvas-text-violation, 80/80 captured) at
+both sizes before being accepted.
+
+## Law System MVP Slice (2026-08-24)
+
+Proves the architecture end to end on ONE category (Crime & Justice) before any authoring
+marathon, per the scoping package: browser -> bill -> vote -> enacted -> dial effect -> ledger
+term -> repeal. Four laws (`LawCatalog.All`). Deliberately not started: a second category, a
+generic dial-dictionary shape for categories that aren't flat-float (Sectors), prerequisites,
+conflicts.
+
+### The data shape - laws are DELTAS, not absolute overrides
+
+`LawDefinition` (`Assets/Scripts/Data/LawDefinition.cs`) mirrors `CrimeJusticePolicyBill`'s own
+six-float shape 1:1, reinterpreted as NUDGES rather than the slider bills' absolute-set
+convention. This is the load-bearing ruling, and it resolves three forks at once:
+
+- **Composability.** Two enacted laws that touch the same dial stack additively instead of one
+  clobbering the other - the same "ministers quietly nudge their portfolio's existing channels"
+  idiom Cabinet's own passive competence effect already established, applied to legislation.
+- **Repeal.** Subtracting the same delta back out is the natural inverse, and it's what makes the
+  bar's "decomposable, without remainder" requirement checkable to begin with - enact then repeal
+  nets to EXACTLY the pre-enactment value (verified below, both through the real vote path and
+  directly). This is a deliberate divergence from the `TaxProgramBill`/`WelfareProgramBill`
+  toggle-only repeal precedent (`IsAdd`, leaves the underlying `Rate`/`GenerosityLevel` untouched) -
+  that precedent works because those dials are each owned by exactly one mechanism; a law's dial
+  can be touched by several laws at once, so a toggle would leave the wrong cumulative value behind.
+- **Cost.** One `EnactmentApprovalCost` float per law, charged once on passage - a real field, not
+  a placeholder, but its four seeded values (0.5-1.5) are illustrative gameplay-tuning numbers, the
+  same "not researched, stated plainly" convention every other approval-cost constant in this file
+  already carries.
+
+**Prerequisites and conflicts: deferred to v2, not built - ruled per the package's own suggestion**
+("a law that can't conflict is simpler and may be enough to prove the shape"). Since deltas stack
+additively, two laws pulling the same dial in opposite directions simply partially cancel - a
+legitimate outcome, not a broken one - so no conflict system is needed for CORRECTNESS at this
+scale, only as a future authoring nicety. No fields are reserved for it; adding them later is a
+pure additive save-shape change (Newtonsoft's `MissingMemberHandling.Ignore` already covers it).
+
+`EnactedLaw` (`Assets/Scripts/Data/EnactedLaw.cs`) is the per-country persisted record - `LawId` +
+`EnactedOn`, `[Serializable]` to match `DivisionRecord`'s own precedent. `Country.EnactedLaws` is a
+`List<EnactedLaw>`, not a `Dictionary<LawId,bool>` - matching this codebase's dominant "collection
+of things a country has" shape (`TaxLines`/`Sectors`), not the `Dictionary` shape reserved for
+closed structural enums with a hard one-per-key constraint (`CabinetMinisters`/`ParliamentSeats`).
+A bare bool would discard exactly the provenance this project has otherwise consistently kept -
+`DivisionLog` exists for precisely this reason. Deliberately NOT in `ClonePreviewCountry`'s
+hand-list, matching `CabinetMinisters`/`Divisions`' own omission - nothing in the `PreviewTurn`
+pipeline ever reads or mutates it, since bill resolution (the only writer) runs from the day-tick
+loop, never from a preview.
+
+### The bill path - a new bill kind, generalized rather than reusing an existing one
+
+`LawBill` (`Assets/Scripts/Data/LawBill.cs`) mirrors `TaxProgramBill`/`WelfareProgramBill`'s own
+`{Type/IsAdd, DaysRemaining}` shape almost exactly (`LawId`/`IsRepeal`, `DaysRemaining`) - a new
+bill kind, not a `PolicyDecision` field and not a reuse of `CrimeJusticePolicyBill`, because a
+law's payload (a fixed named preset) is structurally different from either: `PolicyDecision`'s
+override fields carry an absolute value the player just set, and `CrimeJusticePolicyBill` IS that
+absolute-value carrier for this category; a law bill carries only an identity (which cataloged law)
+plus a direction (enact or repeal), letting the SAME bill type serve any future category without a
+per-category subclass.
+
+`SimulationManager._pendingLawBillsByCountry` is `Dictionary<CountryId, Dictionary<string,
+LawBill>>` - the nested shape `_pendingTaxProgramBillsByCountry`/`_pendingWelfareProgramBillsByCountry`
+already use, for the identical reason: multiple different laws (each independently enacted or
+repealed) can have their own bill pending for the same country at once, just never two for the SAME
+law simultaneously (`IntroduceLawBill` refuses a second bill for a LawId already pending, the same
+guard `IntroduceTaxProgramBill` uses). `AdvanceLawBillsDay` mirrors `AdvanceTaxProgramBillsDay`'s
+own per-day countdown/resolve loop, wired into `AdvanceCountryDayTick` alongside the other eight
+day-tick calls.
+
+`ParliamentSystem.GetLawBillDirection(Country, LawBill)` reuses `GetCrimeJusticeBillDirection`'s
+own sign convention verbatim, applied to a law's deltas instead of a slider's absolute submitted
+value - funding/reform-coded deltas positive, harsher/stricter-coded deltas negative, a repeal
+negating every term. `WouldBillPass`/`GetSeatWeightedAlignment`/`RecordDivision` are untouched,
+fully generic reuse - the scoring core was already bill-agnostic (`WouldBillPass(Country, float)`),
+confirmed by the research pass before any code was written. `ApplyLawBillResult` mirrors
+`ApplyCrimeJusticeBillResult`'s own shape (FAIL charges `BillFailedApprovalCost`, PASS delegates to
+the apply callback) - no new pattern invented at the scoring/recording layer at all.
+
+`SimulationManager.ApplyLawBillEffects` builds a throwaway `PolicyDecision` from the current dial
+values plus the law's signed deltas (pre-clamped to `[MinPolicyDialLevel, MaxPolicyDialLevel]`
+BEFORE being written into the decision - not left to the Apply-methods' own clamp, because a
+repeal subtracting from a low value can compute a raw negative number, and `PolicyDecision`'s "-1
+sentinel means no change" convention would silently swallow a negative as a no-op if it slipped
+through unclamped) and feeds it into the EXISTING `ApplyCrimePolicyChanges`/
+`ApplyCrimeJusticeDeeperChanges` - the same "reuse the plumbing" pattern
+`ApplyCrimeJusticeBillEffects`/`ApplyLaborBillEffects` already establish. **This is the whole
+mechanism's key property**: a law's effect and `CrimeJusticePolicyBill`'s own effect terminate in
+the identical two methods, so the actual dial-mutation code path - and everything downstream of it
+(CrimeIndex, BusinessConfidence, Investment) - is 100% shared between the old slider mechanism and
+the new law mechanism. Only "what values get plugged in" differs.
+
+**A real, defensive idempotency guard, found while validating (not reachable through the real UI
+today, but a genuine latent bug)**: without it, enacting an already-enacted law would apply its
+delta a SECOND time (moving the dial further, not a no-op) and add a duplicate `EnactedLaws` entry;
+repealing a law that isn't enacted would apply the inverse delta with nothing to undo, moving the
+dial the WRONG way. `DrawLawCard` only ever offers "Enact" while `!enacted` and "Repeal" while
+`enacted`, and `IntroduceLawBill` already refuses a second pending bill for the same LawId - so
+neither path is reachable through play as it stands - but the guard (`bill.IsRepeal ==
+!alreadyEnacted` short-circuits to a no-op) closes the class outright rather than relying on two
+UI-layer checks staying in sync forever. Confirmed by a direct test (below): re-enacting an
+already-enacted law leaves every value bit-identical; re-repealing an unenacted one does too.
+
+### Enacted state - save shape
+
+`SaveGame.SimulationPendingState.PendingLawBills` (`Dictionary<CountryId, Dictionary<string,
+LawBill>>`) joins the other 14 pending structures - 15 in all as of this slice.
+`CaptureSaveState`/`RestoreSaveState` copy it the same one-level-deep way the two other nested-dict
+fields (`PendingTaxProgramBills`/`PendingWelfareProgramBills`) already do. `Country.EnactedLaws`
+rides the World layer's own serialization, no separate capture needed - the same "a plain List<T>
+field on `[Serializable] Country` needs no extra plumbing" property `TaxLines`/`Sectors` already
+have. `SaveLoadRoundTripDiagnostic` was extended to actually EXERCISE both: one law directly
+enacted before the save (the `CabinetMinisters` direct-assignment idiom), a second law's bill
+introduced and left pending - not left to round-trip empty, since an empty collection proves
+nothing about the nested-dictionary copy path specifically (the exact class of bug the original
+save/load pass found on `PublishedData.PeriodClosingValues` - a populate-in-place hazard on a
+readable member that needs `ObjectCreationHandling.Replace`, silently dropped without it).
+
+### The sliders' fate - RULED: read-only summary, for this one category, in this slice
+
+The Crime & Justice tab's six sliders (`DrawCrimeJusticeTab`) are converted to a READ-ONLY
+summary. The standalone `CrimeJusticePolicyBill` submission ("Introduce Crime & Justice Bill") is
+retired as a player-facing action - going forward, these six dials are set exclusively by enacted
+law. **Reasoning**: a slider the player could still move while laws also moved the same dial is
+the two-books problem again, named explicitly in the scoping package as the thing to avoid - and
+this is the one ruling of the five that actually resolves it for the MVP's category, rather than
+just naming the problem and leaving it live. The other two candidate outcomes were considered and
+rejected: full coexistence is the two-books problem BY DEFINITION; retiring the underlying
+mechanism entirely (deleting `CrimeJusticePolicyBill`/its save fields/its Apply pipeline) is a
+backend/save-shape change the scoping package's own "small, scoped, contained UI change" framing
+doesn't ask for, and it isn't necessary for the read-only conversion to be honest - the class stays
+in code, fully intact, simply unreachable from the UI.
+
+**Deliberately NOT a rip-out**: `CrimeJusticePolicyBill`/`IntroduceCrimeJusticeBill`/
+`AdvanceCrimeJusticeBillDay`/`GetPendingCrimeJusticeBill` and `SimulationPendingState.
+PendingCrimeJusticeBills` all stay fully intact in code. Only the player-facing submission UI (the
+six draft sliders, the "Introduce Crime & Justice Bill" button, `DrawCrimeJusticeBillStatusAndIntroduce`/
+`DrawCrimeJusticeLiveEstimate`/`BuildCrimeJusticeBillFromDrafts`, now deleted as genuinely dead code)
+is removed. The six `_xInput` draft fields, their `GetXInput` accessors, and `UiDraftState`'s
+capture/restore of them are untouched - nothing sets them anymore in real play, so they stay
+permanently null. Harmless: nothing reads them for anything player-visible once this tab stopped
+writing to them, and touching that plumbing (a save-shape/UI-state change with no behavioral
+payoff) is exactly the kind of extra surgery the scoping package's "not a marathon" framing rules
+out.
+
+**Scope boundary, named rather than silently generalized**: this ruling and its implementation
+cover Crime & Justice ONLY. The other seven bill-gated tabs (Labor, Sectors, Trade, the Budget
+Process categories) are completely untouched by this slice - their own sliders coexist with
+whatever laws might target their dials in a future category, and each future category's own
+slider-conversion is its own small follow-up, not automatic. The two-books problem remains latent
+there until a category actually gets laws.
+
+### The browser UI - a sixth `PolicyLawsCategory`, on ledger grammar
+
+`PolicyLawsCategory` gains a sixth member, `Laws`, alongside the existing five - not a new
+top-level `ConsolidatedTab` (which would need a new tab-bar icon asset and reflow the six-tab-row
+math for no reason; `DrawPolicyLawsTab`'s own sub-tab dispatch is exactly the right level for a
+sixth kind of policy content). `DrawLawsTab`: header, a category filter row (`LawBrowserFilter`
+{All, CrimeJustice} via the same generic `DrawSubCategoryButton<T>` every other sub-tab filter
+already uses - a real filter mechanism even though only one category exists to filter to, per the
+browser requirement's own "category filter" line item), then one `DrawLawCard` per catalog entry.
+
+Each card - name, an ENACTED/not-enacted status (area-accent ink for enacted, muted for not, no
+good/bad color judgment on the STATUS itself - the same restraint C4's rating tile applies to a
+"Stable" outlook it doesn't want to assert a direction for), description, every nonzero dial delta
+as a `LedgerRow.Cell` pair (measured, never-clipping - the ledger grammar the browser requirement
+names explicitly), the enactment cost, then either the enact/repeal action button or - if a bill is
+already pending for this law - its countdown plus a live PASS/FAIL estimate via
+`DrawBillLiveEstimate`, the SAME shared widget `DrawCrimeJusticeLiveEstimate` used before its own
+removal and every other bill tab still uses. `DrawPendingLegislation` (the consolidated Parliament-
+tab pending-bill list) gained a law-bill loop alongside its existing eight, so a pending law bill is
+visible from the general Parliament view too, not only from inside the Laws browser - and resolved
+law bills show up in `DrawRecentDivisions`' existing Division Records panel automatically, since
+`RecordDivision` is called generically for every bill kind including this one.
+
+The Cabinet candidate card's browse -> detail -> action shape was the closer precedent in the end,
+not `DrawPendingLegislation`/`DrawPendingBillCard` - a law is a persistent catalog entry with a
+long-lived status (enacted or not), not a transient pending item, so "list of named things, each
+with its own detail and action" fit better than "list of bill-shaped things with a verdict."
+
+### The legibility bar - the trace panel doesn't exist, so this follows the Q1/Q3 precedent instead
+
+Confirmed by dedicated research before any ruling: "the trace panel" the bar names is not built
+code anywhere in this project. It is exactly and only MASTER SEQUENCE II Step 2 ("Causality
+legibility") in the roadmap - explicitly unscoped, gated on unrelated work, with three bracketed,
+unchosen candidate surfaces (trace panel? tooltip chains? ledger annotations?). The real Q1/Q3
+"byte-identical"/"decomposition without remainder" bar this session's own spec borrowed its
+language from is a DEVELOPER-SIDE, commit-time hand-verification discipline, never a runtime
+player-facing panel - confirmed by reading Q1's own validation section, which produces exactly this
+shape: a targeted before/after diff proving isolation, plus a hand-decomposed check at one
+transition, not a new permanent UI surface.
+
+**Ruling: this slice satisfies the bar the same way Q1/Q3 already do**, and explicitly hands the
+UI-surface question to Step 2 rather than inventing a panel: a named, bounded decomposition-
+without-remainder proof, run and reported below (both through the real vote path and via a direct
+reflection-based check isolated from vote-outcome uncertainty), documented here exactly as this
+file already documents every other coupling's decomposition. Player-facing legibility, to the
+extent this slice provides any, comes from the browser's own detail cards - every enacted or
+pending law's dial deltas are permanently visible on the Laws tab, which is itself a form of
+legibility (an enacted law's effect is enumerable/inspectable on demand), just not the causal
+"why did this stat move" trace the roadmap's Step 2 is scoped to eventually answer.
+
+### The bar - both trajectory claims, verified, not assumed
+
+**Byte-identical for the default (no-law) path**: real Unity 6000.5.6f1, seed 777, 100-turn
+baseline, run TWICE - once on a pristine `git stash -u`'d tree at the pre-slice commit, once on
+this slice's full tree (`git stash pop`, all 9 files restored, confirmed no compile errors from
+Unity's own compiler, the standing "the local `dotnet build` cannot see an unregistered new file"
+gap sidestepped by using the real compiler for genuinely new files). **All 600 per-turn state lines
+byte-for-byte identical** (`diff` exit 0), and anomaly counts matched exactly (37/37) - this is a
+proof by construction as much as by diff: `_pendingLawBillsByCountry` is empty unless
+`IntroduceLawBill` is called, which nothing but the new UI ever does, so every new method this
+slice added is a genuine no-op on the default path.
+
+**Force-kind, decomposable without remainder**: a throwaway Edit-mode diagnostic (never committed,
+matching this project's established convention for this class of check), two parts:
+
+1. **Through the real public path** (`IntroduceLawBill` -> 21 real day-ticks via
+   `AdvanceCountryDayTick` -> resolution, no reflection): enacting "Truth in Sentencing Act"
+   (SentencingSeverityDelta +15, BailReformDelta -8, cost 1.0) against the seeded seat composition
+   PASSED, and every value landed EXACTLY on the predicted target - SentencingSeverity 50 -> 65.0000,
+   BailReform 50 -> 42.0000, ApprovalRating 50 -> 49.0000, all checked to 4 decimals. `EnactedLaws`
+   gained exactly one entry. The REPEAL vote, under the same (unchanged) seat composition,
+   deterministically FAILED - a structural property of the linear-sign scoring model, not bad luck:
+   repeal's direction is the exact negation of enact's, `GetSeatWeightedAlignment` is linear in the
+   bill's sign, and `ParliamentSystem.UpdateSeats` only runs from `AdvanceTurn`, which a 42-day,
+   zero-turn-boundary diagnostic never calls - so if enact's alignment is positive, repeal's is its
+   exact negation, always. Worth recording as a general property of this codebase's repeal-by-
+   symmetric-bill pattern, not specific to laws: a repeal immediately following its own enactment
+   under an unmoved Parliament will always fail, and a real player would only see a repeal
+   opportunity after political drift across real turns shifts seat composition.
+2. **Direct, reflection-based, decoupled from vote-outcome luck** (a fresh, isolated world/manager -
+   reusing state from step 1 was tried first and produced a genuinely confusing double-enactment,
+   corrected below): `ApplyLawBillEffects` invoked directly for enact, then again for enact on an
+   already-enacted law (idempotency), then repeal, then again for repeal on an already-repealed law
+   (idempotency, the other direction). Enact: SentencingSeverity 50 -> 65.0000, BailReform 50 ->
+   42.0000, ApprovalRating 50 -> 49.0000 (all exact). Re-enact: every value BIT-IDENTICAL to the
+   post-enact state - the guard holds. Repeal: SentencingSeverity/BailReform net to EXACTLY
+   50.0000/50.0000 - decomposable without remainder. Re-repeal: bit-identical to the post-repeal
+   state - the guard holds both directions.
+
+**A diagnostic self-correction, worth keeping** (this file's own "when a diagnostic produces a
+surprising result, check it against something already known to be true" rule, applied to a check I
+wrote myself): a first version of the direct-apply check also asserted "no other `EconomyState`
+field moves" - and it failed, on GDP/Inflation/Unemployment. This was the DIAGNOSTIC being wrong,
+not the code: those fields genuinely drift over the 21 real days the cycle advances (Continuous
+Time Phases 1-5 run regardless of any law bill), and - when the vote passes -
+SentencingSeverity/BailReform changing is EXPECTED to ripple further, through the SAME pre-existing,
+already-validated `MacroSystem.ApplyCrimeIndex -> CrimeIndex -> ApplyCrimeEffects ->
+BusinessConfidence -> Investment -> GDP` channel `CrimeJusticePolicyBill`'s own dials have always
+driven. A law bill writes the identical `Country` fields via the identical
+`ApplyCrimePolicyChanges`/`ApplyCrimeJusticeDeeperChanges` methods, so it ripples exactly the same
+way - "no other field moves" was never the right claim; "the DIAL values move by exactly the
+declared delta" is, and that's what actually got checked once the wrong assertion was removed.
+
+**Save/load**: `SaveLoadRoundTripDiagnostic`, 12/12 scenarios (6 countries x 2 seeds) clean - `RT:
+PASS`, reflecting 36 public `EconomyState` fields (unchanged by this slice - laws touch only
+`Country`-level state) plus the string-equal serialize/restore/re-serialize chain, with one law
+directly enacted and a second law's bill left genuinely pending across the save, both round-tripping
+correctly through the nested-dictionary copy path.
+
+**Captures**: both sizes (1600x929, 2560x1419), `-shotstates` (full state coverage). Two driver
+gaps found and fixed before the run was trustworthy - both would have silently under-covered the
+new screen despite a clean guard summary: `Laws` was missing from `UiScreenshotDriver.SubScreens`'s
+generic per-tab table (so the main sweep never visited it at all - fixed, now captured as
+`06f_policylaws_laws`/`_rows`/`_deep`), and the per-sub-tab pending-bill capture loop had no `Laws`
+entry either (fixed, `85g_bill_laws`). The pinned state - "laws both available and enacted" - is
+built the same deterministic way section A's `CabinetMinisters` pin is: one law (`truth_in_sentencing_act`)
+enacted via DIRECT real-API assignment rather than a real vote (guaranteeing the state regardless
+of seat-composition luck), a second, DIFFERENT law's bill (`cash_bail_reform_act`) introduced in the
+same "pending bills, LAST" batch every other bill type already uses, the other two catalog laws
+left untouched as plain "available." **87 captured, 0 failed, 0 text overflow, 0 containment
+escape, 0 canvas-text violation, at both sizes.** Visually confirmed by eye, not just by guard
+(rule 15's own standard - guards answer containment, not composition): the Laws browser renders
+correctly at both the pinned and default states (ENACTED badge + Repeal button, not-enacted cards
+with their Enact buttons, every delta right-aligned and legible, category filter functional,
+description text wrapping cleanly), and the converted Crime & Justice tab renders its six dials as
+static filled gauge bars at their neutral 50 value with the trailing hint text preserved and no
+dangling interactive control.
+
+A one-line Unity analyzer warning (UAC1001, `EnactedLaws`'s element type missing `[Serializable]`)
+surfaced on the first capture run and was closed by adding it to `EnactedLaw` (cosmetic only -
+Newtonsoft, not Unity's own serializer, is what save/load actually uses - but cheap, and it matches
+`DivisionRecord`'s own precedent for the identical shape: a record type sitting in a `List<T>`
+field directly on `[Serializable] Country`). Confirmed gone on the very next run, and confirmed no
+NEW warnings were introduced anywhere else - every warning present in the final capture log
+(`Published`, `Rating`, `PolicyDecision`'s override dictionaries, `CabinetMinisters`,
+`ParliamentSeats`) predates this slice.
+
+### RULINGS NEEDED - recap, for the record
+
+- **The sliders' fate: RULED - read-only summary**, Crime & Justice only, this slice. Reasoning and
+  scope boundary above.
+- **Prerequisites/conflicts: RULED - deferred to v2**, fields not reserved. Reasoning above.
+- **The fork the derivation surfaced: the legibility bar's "trace panel" doesn't exist as built
+  infrastructure.** Handled by following the Q1/Q3 developer-side decomposition precedent instead of
+  inventing a player-facing panel, and naming the absence explicitly rather than silently
+  substituting something else in its place - the same pattern Q1's own validation section already
+  established for exactly this situation.
+
+## Law content marathon - STOPPED at 38/50, a real fix found, a real UI finding surfaced (2026-08-25)
+
+Target was 50 laws, batches of ~10, an architecture check riding inside the content pass. Stopped
+after batch 3 (38 laws) on the marathon's own explicit stop condition - "the browser stops being
+navigable" - confirmed by capture inspection, not assumed. The bigger result of the three batches
+that did run: a genuine composition bug in the enact/repeal mechanism, found only because this pass
+finally exercised a realistic multi-law scale, fixed, and re-verified.
+
+### What shipped - 34 new laws (4 -> 38), real-world-grounded, three research passes
+
+Three parallel research agents covered policing/border, sentencing/corrections/bail, and drugs/
+courts across all six seeded countries plus the genre's own vocabulary, each confirmed/directional/
+genre-idiom labeled per candidate. Curated into three batches, each deliberately rebalancing the
+dial coverage the prior batch left thin (batch 1 leaned hard on SentencingSeverity - the richest
+real-world-documented axis by a wide margin - batch 2 pushed PoliceFunding/JudicialFunding/
+BorderEnforcement, batch 3 filled remaining corrections/courts content and gave BorderEnforcement a
+genuine strict/lenient spread). Final composition: SentencingSeverity 19 of 38 laws (exactly half -
+reported honestly, not force-balanced away - real criminal-justice policy genuinely is
+sentencing-dominated as a topic), JudicialFunding 11, DrugPolicy 9, BorderEnforcement 9,
+PoliceFunding 7, BailReform 6.
+
+A magnitude taxonomy (MINOR +-3..6 / MODERATE +-7..14 / MAJOR +-15..22 / SWEEPING +-23..30) was
+stated once in `LawCatalog`'s own class doc comment and applied consistently by every law's own
+rationale comment, per rule 5 - no delta is "a number chosen to feel balanced." Every law's comment
+states CONFIRMED/DIRECTIONAL/GENRE-IDIOM and, where real, names the actual policy and country (Three
+Strikes Law, California 1994; Sweden's 2023 Tidö gang-crime sentencing escalation, verified via
+search; Germany's 2024 Cannabisgesetz; Illinois' 2023 full cash-bail abolition; Poland's Belarus
+border wall, 187km/~$407M, 2022; Italy's Fini-Giovanardi drug law, struck down by its own
+Constitutional Court in 2014; and more - full citations live in each law's own comment in
+`LawCatalog.cs`, not restated here).
+
+### The wanted-effects log - eight axis-level gaps, none forced into the six dials
+
+Recorded in `LawCatalog`'s own class doc comment (the permanent home for this list, not this file):
+a police-tactics/search-authority axis (stop-and-frisk, no-knock, qualified immunity, civil asset
+forfeiture - including the anti-mafia confiscation variant); a surveillance/data-collection axis
+(predictive policing, DNA/forensic databases, facial recognition); a custody-capacity/conditions
+axis (prison ownership, overcrowding standards - the ECHR's Torreggiani v. Italy ruling); a
+court-process-efficiency axis (plea bargaining, speedy trial, digitization - money alone doesn't buy
+throughput); a judicial-independence-structure axis (Poland's 2015-2023 disputes - a governance
+question, not a budget line); a public-health axis (harm reduction, needle exchange, supervised
+consumption); a federalism axis (US state-level cannabis legalization under a stricter federal
+regime); an accountability/transparency axis (officer civil liability, oversight boards, body-camera
+footage release mandates). None forced in - a few laws (stop-and-frisk-adjacent Gang Crime Sentencing
+Escalation's search-power piece, Italy's anti-mafia confiscation) use a WEAK, explicitly-labeled
+funding/severity proxy where the real law bundles an unrepresentable core alongside a representable
+remainder; the rest simply don't have a law authored for them.
+
+### The real finding: composition breaks at the clamp boundary, and it was fixable
+
+**Not a contrived case.** The end-of-marathon bar's own "composition test with a realistic set
+enacted" - ten laws a real government might plausibly pass together, several pushing
+SentencingSeverity - drove that dial to its 100 ceiling with room to spare (raw sum 121). Repealing
+the full set, in reverse order, landed SentencingSeverity at **29.0000, not 50.0000** - a 21-point
+deficit exactly matching the headroom the clamp had absorbed during enactment. With 19 of 38 laws
+touching this one dial and several at MAJOR/SWEEPING magnitude, three or four ordinarily-plausible
+enactments reach this ceiling on their own - this was always going to surface with real play, not
+just a ten-law stress test.
+
+**Root cause.** `ApplyLawBillEffects`'s first version mutated the dial incrementally -
+`Clamp(currentValue + thisLaw'sSignedDelta, 0, 100)` - reading whatever the CLAMPED prior value
+happened to be as the base for the next law. Clamping is not linear or invertible: once a value has
+been silently capped, an increment computed against that capped value no longer corresponds to the
+uncapped total, and repealing the same set in any order subtracts each law's full nominal delta from
+a chain of values that already "spent" some of that delta's effect on the ceiling - a structural
+overshoot below the true baseline, not a rounding artifact. Every SINGLE-law and small-stack test run
+in batches 1-3 passed cleanly because none of them individually reached a clamp boundary - the bug
+was real from the first commit and invisible until a genuinely realistic-scale composition test ran.
+
+**The fix - recompute from source of truth, not incremental mutation.** `Country.EnactedLaws` is
+already the authoritative record of which laws are active; the fix (`RecomputeCrimeJusticeDialsFromEnactedLaws`)
+treats each of the six dials as a PURE function of that list - sum every currently-enacted law's
+delta on a dial from the seeded 50 baseline, clamp exactly once, set the dial - recomputed in full on
+every enact and every repeal rather than nudged incrementally. This is correct for ANY history of
+enactments and repeals in ANY order, because there is no accumulated clamped state left to disagree
+with a fresh recomputation - not merely "fixed for the one sequence that was tested." An `EnactedLaws`
+entry citing a law no longer in `LawCatalog` (a hypothetical stale save after a future content
+removal) is skipped rather than crashing, the same "missing entry, not a crash" idiom `LawCatalog.GetById`
+already documents.
+
+**Re-verified, not assumed fixed.** The same realistic ten-law set: enact-side unchanged (100.0000 on
+the clamped dial, matching the pre-fix run exactly - the fix doesn't change what a single pass of
+enactments produces, only what repeal recovers), full repeal now nets **every one of the six dials
+back to EXACTLY 50.0000**, including the one that saturated. Every batch's own decomposition
+spot-checks and stacking tests (which never touched the clamp) re-run byte-identical after the fix,
+confirming it changes behavior only where the old mechanism was actually wrong. Default-path
+byte-identity re-confirmed a third time (600/600 lines, seed 777) with the fix in place - the
+recompute path is only ever reached from a bill that actually resolves, so a no-law playthrough is
+untouched by construction, verified rather than assumed.
+
+### Composition testing, generalized beyond single-law decomposition
+
+Three new check shapes ran across the batches, on top of the MVP slice's own single-law
+enact/repeal proof:
+- **Same-dial stacking** (batch 1, SentencingSeverity; batch 2, PoliceFunding): independent laws
+  enacted together land EXACTLY on baseline + sum of their deltas; full repeal nets back to EXACTLY
+  the pre-stack value.
+- **Mixed-sign stacking** (batch 3, BorderEnforcement, deltas +26/+14/-20): proves composition holds
+  when laws pull a dial in opposite directions within the same stack, not just when they agree.
+- **The realistic multi-dial set** (end of marathon, ten laws across five dials): the one that found
+  the clamp-boundary bug above - every dial checked simultaneously, deliberately including a
+  clamp-saturating case rather than avoiding one.
+
+### The stop: both symptoms the marathon's own condition named were confirmed present, not assumed
+
+At 38 laws (batch 3's capture), inspected directly rather than inferred: the category filter has
+been non-functional since batch 1 - every authored law shares the single Crime & Justice category,
+so "All" and "Crime & Justice" render an identical list, and the filter has never once narrowed
+anything. Card volume: roughly 1.3 cards fit in one screen-height at either capture size, so the full
+38-card list is roughly 27 screen-heights of scrolling with no way to jump or search. The
+populated-enacted-list capture (below) sharpened this further: even with 8 of the visible laws
+genuinely enacted, the two cards at the TOP of the list are both "not enacted" - there is no sort or
+filter by enacted status either, so confirming "what's currently in force" requires scanning the
+whole list regardless of how it's filtered. Both symptoms the stop condition named by name -
+"category filter insufficient" and "cards too many to scan" - are independently, visibly true at 38
+laws, not a marginal call.
+
+**Recommendation, not a ruling**: a second, smaller axis (Sub-tags within Crime & Justice - e.g.
+Sentencing/Policing/Drugs/Courts/Border - that `LawBrowserFilter` could actually filter against) or a
+compact list-plus-detail-panel pattern (rows collapse to name + status + one-line summary; a click
+expands the full card) would both directly address the two named symptoms without a category-system
+redesign. Twelve more laws (to reach 50) were not authored - continuing onto an already-strained
+browser would only make the finding this pass exists to report worse, per the marathon's own
+instruction not to entrench a bad abstraction by filling it with content.
+
+### The bar, run in full against the 38 laws actually authored
+
+**Default-path byte-identity**: confirmed three times independently (catalog growth alone, seed 777
+100-turn baseline, 600/600 lines byte-identical, 37/37 anomalies exact both before/after each check;
+the mechanism fix, same result a third time) - re-derived per check via a temporary revert of
+`LawCatalog.cs` to its pre-marathon (4-law) content and a fresh baseline run, not assumed inert by
+argument alone.
+
+**Composition with a realistic set**: the ten-law multi-dial test above - all six dials land exactly
+on their expected composed value (including the clamped one), full repeal nets every dial back to
+EXACTLY 50.0000.
+
+**Save/load with a dozen laws in force**: `SaveLoadRoundTripDiagnostic` extended from the MVP slice's
+one enacted + one pending to twelve enacted (drawn across all three batches and every dial, not a
+repeated pair) plus two pending bills - `RT: PASS - 12 scenarios (6 countries x 2 seeds) round-trip
+clean`, reflecting 36 `EconomyState` fields (unchanged - laws touch only `Country`-level state).
+
+**Full captures, pinned on a populated browser and a populated enacted list**: `UiScreenshotDriver`'s
+law pin extended from one law to eight enacted (spanning every dial) plus two pending, at both sizes
+- 87/87 captured, 0 failed, 0 text overflow, 0 containment escape, 0 canvas-text violation. Visually
+confirmed - the populated-enacted-list capture is what surfaced the sharper version of the
+navigability finding above (enacted laws scattered through an unsortable list, not grouped or
+flagged in the summary view).
+
+### Verdict on "is fifty the right number"
+
+**No - not at this browser, not without the UI fix above landing first.** This isn't a content
+saturation finding (34 more real, groundable candidates existed in the research pool when the
+marathon stopped, and probably several times that many exist for a category this well-documented
+globally) - it's the marathon's own explicit "the browser stops being navigable" condition, actually
+firing, with both named symptoms independently confirmed. Report to Elias for a ruling on the browser
+fix; 12 more laws (Crime & Justice's own real-world content is nowhere near exhausted) are ready to
+resume the moment a fix lands, using the same batch/composition-check/capture discipline this pass
+established.
+
+## Rule 13 — concurrent working copies, named at the filesystem level (2026-08-25)
+
+**No rule 13 existed before this entry.** Searched first, not assumed: every `.md` file on both
+copies of this repository, grepped for "rule 13" - zero hits. The number sat unclaimed between
+rule 12 and rule 14. This fills it, rather than folding the finding into rule 14 by proximity,
+because the shape is a level down from what rule 14 covers - see below.
+
+**The hazard.** `C:\Users\elias\PoliSim-backup-2026-08-16` was built 2026-08-16 as a frozen
+pre-rewrite backup during the history-rewrite pass (see "The history rewrite — executed
+2026-08-16" above) - explicitly not meant to be worked in. It is a complete Unity project with its
+own `.git`, independently committable, independently launchable, on a different physical drive
+from `G:\UNITY\Projects\PoliSim`. Nothing in the rewrite pass's own writeup, in Unity Hub's
+project list, or anywhere in this project's working discipline named "a second, independently
+git-committable copy of the repo now exists on disk" as a live risk.
+
+**What actually happened, derived from reflog and commit metadata across both copies, not
+assumed:**
+- G:'s reflog records twenty ordinary `commit:` actions running 2026-08-17 14:59:17 through
+  2026-08-18 23:34:15 - Master Sequence II Steps 2-3, Q2 and Q5 shipping, three scenario-content
+  passes (Wage Boom Management and The Disinflation measured and dropped, Italy Debt Crisis
+  shipped), a first playtest session. A `commit:` reflog entry only exists on a repo that a local
+  `git commit` actually targeted - this is direct evidence G: was the working copy for that
+  stretch, not an inference from timestamps alone.
+- C:'s reflog shows a gap over the EXACT same window: last activity 2026-08-16 17:16:55, next
+  activity 2026-08-24 21:26:43. Zero local commits on C: for eight days. C: was demonstrably not
+  in use while G: was.
+- Six of G:'s twenty commits (through `ed07333`) reached `origin` by push during that window and
+  were later pulled into C: when it resumed on 08-24 - confirmed because C:'s own reflog never
+  records those six hashes as local `commit:` actions; C: only has them as received history.
+  **The other fourteen stayed local to G:, unpushed, for eight days** - real, shipped, reviewed
+  work (Italy Debt Crisis specifically survived where two other scenario passes were measured and
+  dropped) sitting on one disk with no remote copy. Recoverable only because this was found before
+  anything overwrote it, not because anything protected it.
+- Found by accident: a routine "which project path does the Editor actually use" check, prompted
+  by an unrelated question, surfaced Unity Hub's registry pointing at G: while the active session
+  work for the past week had in fact been happening in C:.
+
+**This is the 2026-08-11 "188 commits existed on exactly one disk" incident again (rule 14), one
+level down.** That incident was two writers on the SAME repository with a missing local tracking
+ref standing in for a missing remote. This is two entirely separate repositories, at two different
+filesystem paths, each with its own remote, its own reflog, its own committable history - and rule
+14's own checks (`git status -sb`, `DeliveredAssetCheck`, `UpstreamCheck`, everything in
+`CheckSuite`) all run inside ONE repo and are structurally blind to whether a second one exists.
+Rule 14 asks "is my local history pushed." Nothing asked "is there a second copy of this
+repository, anywhere, that a session might be writing to instead."
+
+**STANDING RULE 13: a second physical copy of this repository - on another drive, in a backup
+folder, anywhere outside the one path Unity Hub and the active session both point at - is a
+concurrent-writer hazard exactly like rule 14's, and it is invisible to every check rule 14
+already built.** The only way to know is to ask, at the filesystem level, before trusting either
+copy:
+1. **Unity Hub's registered project list** (`%APPDATA%\UnityHub\projects-v1.json`) and the
+   `Editor.log`/`Editor-prev.log` startup path (`%LOCALAPPDATA%\Unity\Editor\`) - for which copy
+   interactive sessions actually use.
+2. **Each candidate copy's own reflog, for the same date range** - `git reflog show --date=iso`,
+   read for which one (if either) was actually written to, not assumed from where a session
+   happens to be rooted.
+3. **`git fetch` plus `git cat-file -e <hash>` across copies** - to confirm whether one copy's
+   unique commits are reachable from another's object store at all, rather than assuming a shared
+   `origin` means shared history. It does not: divergent local commits are invisible to every
+   other copy until pushed.
+
+**Practical corollary, stated because it is what just cost eight days of unpushed work sitting on
+one disk:** creating a second complete copy of a live repository - for any reason, including "just
+a backup" - is the moment to also decide, explicitly, which one is the working copy going forward,
+and to make the other one either read-only or genuinely non-launchable (unregistered from Hub,
+`ProjectSettings` removed or renamed, or simply never opened) before the next session starts. A
+backup that stays fully launchable is not a backup with a hazard attached to it later; it is a
+second working copy that has not diverged yet.
+
+### Addendum — the naming lesson, and the recovery method generalized (2026-08-25)
+
+**A directory whose name asserts a role it no longer has is the two-books class at the filesystem
+level.** `PoliSim-backup-2026-08-16` was named for the one day it was created; the name never
+updated when its role did, and for eight days it silently WAS the working copy while still being
+called "backup" - a name is a claim about state, and this one went stale exactly the way a status
+line in a document goes stale (this file's own "a count in prose is a cached value with no
+expiry," and `CLAUDE_DESIGN_ASSET_REQUEST.md`'s own repeatedly-stale header, applied to a folder
+instead of a document). **Nobody audits a backup** - the whole point of the label is "safe to
+ignore," which is exactly backwards the one time the label stops being true. Retired to
+`PoliSim-ARCHIVE-DO-NOT-OPEN-2026-08-16` for this reason specifically: the rename IS the fix, not
+a side effect of one - a name that states the current prohibition rather than the past reason the
+folder exists.
+
+**Rule 13's rename-only step, actually finished (2026-08-25).** The rename to `DO-NOT-OPEN` above
+was never the whole remediation - rule 13's own text says a live copy must be made "either read-only
+or genuinely non-launchable... before the next session starts," and a renamed folder with an intact
+`.git` is still exactly that: launchable, just under a name that asks nicely not to be. Found still
+live nine days later, by a `/code-review` cwd investigation that happened to fall back to
+`C:\Users\elias` (the harness's own default when no explicit path is given) and land one directory
+short of it. Defanged by renaming `ProjectSettings` to `ProjectSettings.RETIRED` **inside** the
+archive - Unity Hub and the Editor both key off `ProjectSettings/ProjectVersion.txt` to recognize a
+launchable project, so this removes the ONE property that was actually the hazard (launchability)
+while leaving `.git` completely untouched. That distinction matters here specifically: the archive's
+own git state - the pre-rewrite commit hashes, the `filter-repo` commit-map correspondence recorded
+in "Closed — the archive's two non-main branches" above - is the archive's entire remaining value.
+Stripping `.git` would have destroyed the one thing worth keeping while fixing a hazard a rename
+alone can fix. Reversible: restoring the original folder name restores a fully working project,
+which is the point - this is a lock, not a demolition.
+
+**Standing habit, stated because the incident above is the instance of it**: every harness/tool
+invocation in this project passes an explicit project path (`G:\UNITY\Projects\PoliSim`) rather than
+relying on whatever directory a session happened to default to - `/code-review`'s own fall-back to
+`C:\Users\elias` is what surfaced the archive still being live. A habit stated is a habit auditable.
+
+**The recovery method, generalized because it worked and will be needed again.** A `commit:`
+reflog entry is the strongest available evidence for where a commit was authored - it can only
+exist on the repo a local `git commit` actually targeted, unlike a commit's own author/committer
+timestamp fields, which travel with the commit wherever it is copied and prove nothing about which
+copy created it. Conversely, **a gap in one copy's reflog across a date range is direct evidence
+that copy was idle for that range** - not proof by itself (a reflog can in principle be pruned or
+expire), but corroborating evidence that held up here against two independent checks agreeing with
+it (Hub's registry and the Editor.log startup path both pointed at the same copy the reflog
+evidence did). **The general method, for any future divergence question**: pull
+`git reflog show --date=iso main` on every candidate copy, find the date range in question, and
+read which copy shows ordinary `commit:` actions there versus which shows a gap - a shared
+`origin` proves nothing about which copy did the work; only each copy's own reflog does.
+
+### Closed — the archive's two non-main branches, verified rewrite residue, not unique work (2026-08-25)
+
+`frf/trend-term` and `stranded/politics-elections` on the retired archive show `ahead N, behind N`
+against origin with matching counts (61/61, 35/35) - the archive's own tips
+(`47e249c...`/`228a111...`) are **pre-rewrite hashes, and both are keys in the real commit-map**
+(`.git/filter-repo/commit-map` in this repo, 335 entries - not "beside" the archive, a stale claim
+corrected above). Both map exactly to origin's actual current tips (`561bfa7...`/`ca6c510...`),
+confirmed against a fresh fetch, not a cached ref. Fully explained, nothing at risk, nothing
+unique - recorded in the archive's own `ARCHIVE-NOTE.md` with the full table, specifically so this
+does not get re-investigated the next time someone notices the same `ahead/behind` line.
+
+**Second instance of the class named in `POLISIM_MASTER_ROADMAP.md` item 13** ("a stale lock read
+as litter" - the 2.2-hour-old `.git/index.lock` with no live process, where "no process is running
+now" and "no session owns this" were shown to be different propositions). This time it wasn't a
+lock file: renaming the retired archive failed on the first attempt with "Cannot rename the item...
+because it is in use," because both tool shells still had their working directory rooted inside
+it - a filesystem operation blocked by a process nobody was tracking, the same shape, different
+mechanism. Fixed by moving both shells out first; the general lesson item 13 already states covers
+this too.
+
+## Progress4 delivered - the law browser board (§7), and three relay classes ported (2026-08-25)
+
+**Origin verification, before anything else touched it.** `AssetPackArchive/PoliSim v2 Design
+Progress (1).zip` (the " (1)" a browser dedup suffix from Design's own side, not a version number)
+inventoried clean: 6 files, no executables, no path escapes, every SHA-256 in its own manifest
+verified against the real bytes. `PoliSim v2 Screens.dc.html` carries all nine screens 1a-1i
+(1a-1h matching this file's own established board history exactly), confirming
+`data-screen-label="1i Law browser board"` is genuinely present, not asserted. Renamed on import to
+`PoliSim v2 Design Progress4.zip` - the archive already held Progress2/Progress3, and the delivered
+filename was never a real sequence number - with the original name recorded here rather than
+silently lost. Manifest's own claim ("zero new sprites... a report of 'nothing found' is a PASS")
+verified against the inventory directly: no PNG/SVG among the six files besides the one 1920x1080
+reference render, which is reference material, not a delivered asset, and lives out-of-tree beside
+the other captures (`../PoliSim-captures/design-boards/`) rather than in git history - the
+repository-weight lesson applied before a second 1MB PNG could repeat it.
+
+**`LAW_BROWSER_BOARD_RULINGS.md`** copied to the repo root as delivered - the board's rulings in
+written form, the build target for the browser rebuild's next pass, not re-derived from a chat
+paraphrase of it.
+
+**Three relay classes, read in full and independently verified before porting - not copied on the
+strength of the delivery alone:**
+
+- **The pronoun class.** Name the human's obligations by role, never by a pronoun that can flip
+  ownership on relay. Confirmed against this file's own record: a message earlier the same session
+  read "sending is yours" while §7's status line and §5's addendum both said, in this document,
+  "sending is Elias's" - two independently-written places agreeing, one relayed paraphrase
+  disagreeing with both. **Write "sending is Elias's," never "sending is yours."**
+- **The name-trap class.** Verify a document by its content, never by its filename. On Design's own
+  side, `CLAUDE_DESIGN_ASSET_REQUEST.md` named a stale 1034-line copy with no §5 and no §7, while
+  the current 1709-line content sat in a hash-suffixed working copy from a repeated upload -
+  delivered-vs-reachable inverted, correct name wrong bytes. This project's own rule 12 already
+  says "re-derive from the filesystem, not a cached claim"; this is the same discipline pointed at
+  a filename instead of a status line. Pin line count and section presence in a manifest, not the
+  name - exactly what this entry's own origin verification did above.
+- **The flipped-addressee class.** A prompt written for one agent, relayed to another - the tell is
+  an acceptance bar the recipient structurally cannot run. A validation bar ("trajectory
+  byte-identical, save/load untouched-confirmed, captures pinned") reaching an agent with no repo,
+  no build and no capture ability is the signature, not the content of the bar itself. Before
+  relaying an instruction between two collaborating sessions, check whether the recipient can
+  actually execute what it asks for; if it cannot, the work was never theirs to receive.
+
+**Two items carried forward, not resolved by the delivery itself:** the citation slot
+(`LAW_BROWSER_BOARD_RULINGS.md`'s Portugal/Law 30/2000 example is Design's placeholder for the
+shape, not a record - `LawCatalog`'s own comment for `drug_decriminalization_act` is the real
+source, and is being reconciled against it in the same pass); and the category filter's underlying
+inertness, which the board's counted/hatched chips make visually undeniable (`All - 38`,
+`Crime & Justice - 38`, five chips at `- 0`) without themselves fixing it - a legibility fix and a
+bug report about the same fact, kept as two named items per the delivery's own explicit warning not
+to let one read as having resolved the other.
+
+**The citation slot, closed.** Every one of the 38 `LawCatalog` entries now carries a
+`LawDefinition.Citation` - a one-sentence, UI-facing distillation of the same CONFIRMED/DIRECTIONAL/
+GENRE-IDIOM grounding each law's own code comment already stated, surfaced in the browser's detail
+pane for the first time. `drug_decriminalization_act`'s reconciled against its own comment exactly:
+Portugal's Law 30/2000, not the board's placeholder wording. The four original MVP-slice laws
+predate the marathon's per-law research discipline and never had a comment to distill from; their
+Citations are grounded independently rather than backfilled with false precision.
+
+## Post-Progress4: a Unity hang investigated, and a mockup number caught inside its own fix (2026-08-25)
+
+**The hang, diagnosed rather than re-run blind.** After Progress4 landed, four consecutive
+attempts at an automated windowed screenshot capture hung, each reportedly stalling right after the
+`WaitForCanvasSettle` seam-settle warning ("canvas seam never settled... capturing whatever is up")
+with no further log output - the exact shape of the 2026-08-18 `UiScreenshotDriver` incident above,
+and of the "Start Indexing on Editor startup" environment hang this file already records recurring
+across five consecutive windowed-capture attempts once before (see "Real-Unity Validation is the
+Standard Path," the backup-scene note). Before a fifth blind attempt: read `WaitForCanvasSettle`'s
+own code rather than guessed - it is a bounded 600-frame loop with no stray `yield break` blocking
+the fall-through, so it cannot itself hang; the real risk sits one line later, at `Capture`'s own
+`WaitForEndOfFrame`, the same call this file's own class doc already names as the one place a real
+hang lives. **Found the fallback path was unfalsifiable** - the seam warning proves the trigger
+fired, not that execution survived past it - so two trace lines were added (`WaitForCanvasSettle`'s
+own completion, `Capture`'s entry into `WaitForEndOfFrame`) before touching anything else, per the
+standing rule that a fallback with no trace is its own defect independent of the root cause.
+
+No log from the four hung attempts survived - neither this project's own `Logs/` nor Unity's
+global `Editor.log` had anything from today, and no `Unity.exe` process was left running after the
+reboot Elias had already done - so the four failures themselves could not be autopsied directly.
+One checkable, previously-named-but-never-isolated lever remained: `Temp/__Backupscenes/0.backup`,
+left behind by a prior force-kill and flagged once before (Phase 2 screenshot attempts, above) as an
+unconfirmed contributing factor to the "Start Indexing" hang. It was present, freshly timestamped.
+Deleted, then one instrumented run: clean end to end, 63/63 captured, 0 overflows, 0 escapes, the
+seam warning never firing once - including through every new Laws-tab screen. **Correlated, not
+proven** - one clean run against four failures, with the Editor version, a machine reboot, and the
+backup-scene deletion all changing at once - stated honestly per this file's own "only the
+experiment settled it" standard, not claimed as a root cause found.
+
+**The interactive-session-health gate's SECOND instance (2026-08-25, evening):** a batch launch
+failed with HRESULT 0x8007007E (module not found), then a partial run lost `dotnet.exe` mid-compile
+("is not recognized"), then a third launch failed cold - and the cause was **Unity Hub's own
+installer (`UnityHubSetup-3.21.0-x64` + an `old-uninstaller`) rewriting the 6000.5.6f1 editor tree
+mid-run**, caught by CreationTime fingerprints (whole-tree file re-creation minutes old, content
+timestamps intact) and files still appearing 17 seconds before the check. Diagnosed read-only,
+waited out with a process watcher, everything green after - nothing killed, nothing retried blind.
+The gate, stated once for both instances: **before launching Unity from a harness, the machine's
+interactive surface must be quiescent** - an Editor session, a force-kill's backup scene, or an
+installer rewriting the install can each present as an inexplicable hang or module-not-found, and
+the first checks are process list + freshly-created files, not a re-run.
+
+**The historical-present-tense trap, hit exactly as a reading hazard, not a policy violation.**
+Reaching for "the correct Unity path," a plain search of this file surfaces `6000.5.4f1` first, in
+sentences that read as current fact in isolation - "a real, working Unity 6000.5.4f1 install exists
+at `G:\UNITY\Unity Hub\6000.5.4f1\Editor\Unity.exe`" - because that IS what "Real-Unity Validation
+is the Standard Path" said, truthfully, on the day it was written. Launching that exact path today
+failed with "the file could not be found": the directory is gone from disk, and only `6000.5.6f1`
+remains - consistent with, not contradicting, this file's own already-recorded 2026-08-01 update
+entry a few sections above, which explicitly rules that older paths are left as historical record
+and "read version numbers in historical narrative entries as of that entry's own date, not as
+current state." Nothing here needed correcting - that policy is sound and stays. The finding is
+narrower: a plain grep for a path string cannot itself tell present-tense historical narration from
+current fact, and will surface the nearer or more numerous hits first regardless of date. **Read the
+"Editor version update" entry itself before trusting any other line in this file that names a Unity
+path** - it is the one place current truth lives, and it says so explicitly.
+
+**A mockup number, this time found inside a fix for the mockup-number rule.** A code review of the
+Laws-tab rebuild (15 findings, all fixed - correctness bugs: a stale selection surviving a filter
+change, an unbounded detail pane able to overflow its tab, a sticky header misaligned whenever a
+filtered list was short enough to skip its own scrollbar, an unfloored `scrollHeight` reaching
+negative, a mid-frame selection-commit hazard this file already named and fixed once in
+`StatTracePanel`, a game-over lock that disabled browsing along with the action it was meant to
+gate, a dormant hardcoded category string; plus reuse/efficiency cleanup - closed one of them,
+"`LawRowColumns` floors nothing but `nameWidth`," by adding font-derived floors and a squeeze,
+explicitly modeled on `LedgerRow.Columns`' own precedent. **The floor multipliers (6x/6.5x/3x
+font size) were themselves picked without checking against a real capture - the identical mistake
+the fix was written to prevent, aimed at a floor instead of a literal number.** At this tab's actual
+operating width (1600x929, `_labelStyle.fontSize` 20 via `RescaleStylesToScreen`'s own clamp), the
+three floors together exceeded every one of their proportional counterparts and bound
+unconditionally, starving the name column to ~113px - the verification capture (not inspection)
+caught 68 text-overflow violations across 17 law names on the very next run. Recalibrated
+(2.5x/3x/2x) to sit below the proportional values at the one width this codebase has actually
+measured, same as `LedgerRow.Columns` is itself only verified at its own captured widths; re-run
+clean, 0 overflows. **The lesson restated once more because it recurred inside its own fix**: a
+number - or a floor built from one - is unfalsifiable until it has been checked against a real
+capture, and reviewing a diff by reading it is not the same discipline as running it.
+
+## Law content marathon, resumed and closed: batches 4-5, 38 -> 50 (2026-08-25)
+
+**Resumed at the marathon's own stopping point**, now that the browser fix above has landed - the
+close-out's own verdict ("not a content saturation finding... 12 more laws... ready to resume the
+moment a fix lands") was the standing authorization, not a fresh decision. Batch 4 (38 -> 44): 287(g)
+immigration enforcement agreements (the real opposite of this catalog's own Sanctuary City Policy),
+hot spot policing, veterans treatment courts, a financial crimes/AML unit, Stand Your Ground, and
+Italy's Rognoni-La Torre anti-mafia asset confiscation law - the last one deliberately exercising the
+wanted-effects log's own pre-authorized "weak funding/severity proxy, stated explicitly" allowance
+for a real mechanism (non-conviction asset forfeiture) this six-dial space cannot represent. Batch 5
+(44 -> 50): the federal Bail Reform Act's pretrial preventive-detention standard, Illinois' 1964
+percentage-bail deposit program, drug-free zone sentencing enhancement, Plan-Colombia-style
+interdiction funding, National Guard border deployment, pretrial services agency establishment.
+
+**Deliberately diversified away from SentencingSeverity.** The original close-out found 19 of 38
+laws already touch it - the dial nearest saturation. Of these 12, only four touch it at all (two
+lenient, two severe); BailReform, PoliceFunding, BorderEnforcement, and JudicialFunding each pick up
+several genuine primaries instead, specifically to make the re-run below a harder test than the
+original, not an easier one.
+
+**The saturating composition re-run, promised at close-out for whenever the catalog reached this
+population - run, not assumed.** `LawCompositionDiagnostic` (new) enacts 27 of the 50 laws through
+`SimulationManager`'s own real `ApplyLawBillEffects` (by reflection, the same idiom `UiScreenshotDriver`
+already uses on `GameController`'s private state - the real code path under test, not a
+reimplementation of it that could quietly drift from what ships), with each dial's expected value
+computed independently by summing `LawCatalog`'s own delta fields for the enacted set - not a
+hand-computed number, so the check is correct regardless of arithmetic mistakes in choosing the law
+list and stays correct if any delta is ever retuned. Result: **four of six dials (PoliceFunding,
+SentencingSeverity, JudicialFunding, BorderEnforcement) hit and clamp at the 100 ceiling
+simultaneously** - a harder exercise of 555f4cc's fix than the original close-out's one-dial test -
+and full repeal nets **exactly** 50.0000 on every dial, all six. The mechanism generalizes correctly
+past the population it was proven against; nothing strained at 45+, which is itself the result, per
+the standing instruction that a strain there would be a finding, not a tuning target.
+
+**The rest of the close-out bar, re-run at 50 rather than assumed to still hold**:
+`SaveLoadRoundTripDiagnostic`'s enacted-law list extended with three laws from the two new batches
+(including the weak-proxy anti-mafia law, proving a law whose own comment documents an unrepresented
+mechanism round-trips no differently than a clean single-effect one) - 12/12 scenarios (6 countries x
+2 seeds) round-trip clean. Full capture bar re-run at the new count: 63/63 captured, 0 failed, 0 text
+overflow, 0 containment escape, 0 canvas-text violation - "All - 50" / "Crime & Justice - 50"
+confirmed on the chip counts by direct capture, not by arithmetic. Default-path byte-identity holds
+by construction this time, not merely by re-derivation: a full-tree grep confirms `LawCatalog.All` is
+read only from `GameController`'s own UI layer, never from `SimulationManager`'s tick path, so
+catalog growth alone cannot move an unmodified game's trajectory - a structural guarantee stronger
+than the repeated empirical re-checks the original marathon relied on for the same claim.
+
+**Fifty of fifty, Crime & Justice.** The marathon's original target, reached after the one real
+blocker (browser navigability) that stopped it at 38 was fixed rather than worked around.
+
+## The detail-pane width, ruled and built (2026-08-25)
+
+**The ruling first, since the build changed shape twice from what it predicted.** Derived from the
+actual layout constants, not guessed: at 1600px the detail pane's nominal share (`rightColumnWidth *
+0.44 - 10`) measures 348px, comfortably more than the ~290px the MAGNITUDE row's two fixed-width
+children need - the pane was never genuinely too narrow, it was simply never held to its own share
+(`GUILayout.BeginVertical()` with no `GUILayout.Width`, unlike the list column three lines above).
+Severity: information loss, not cosmetic - the clip was horizontal, and the pane's own new vertical
+scroll (this session's earlier fix) cannot reach across an axis it doesn't scroll.
+
+**The build took three real fixes to close one symptom, each only visible after an actual capture -
+exactly the discipline this file keeps re-learning applies to floors and literals alike, now shown to
+apply to a missing width option too.**
+
+1. **The container's own width.** Constraining `BeginVertical` alone changed nothing the capture
+   could see - a plain Vertical/Horizontal group sets LAYOUT allocation only; it creates no GUIClip
+   region, so content past its bounds still rendered, unclipped. Only a ScrollView's own `GUI.BeginGroup`
+   genuinely clips, and it clips to whatever width IT is told - which nothing set explicitly. Confirmed
+   by direct instrumentation (`Debug.Log` of `GUILayoutUtility.GetLastRect()`, cross-checked against a
+   pixel crop of the boundary) rather than re-theorizing after the first capture looked unchanged: the
+   pane's own background genuinely stopped at the right x once the ScrollView itself got the width
+   option too. Clipping was fixed at that point, not before.
+2. **Word-wrap that never wrapped.** Inside that now-correctly-clipping region, `DrawLawDetailPane`'s
+   plain `GUILayout.Label(text, _labelStyle)` calls kept requesting their NATURAL, single-line width -
+   `GUIStyle.CalcSize` reports the unwrapped size regardless of `wordWrap`, which only engages once a
+   width is actually given (`CalcHeight(content, width)`). Text kept extending past the clip and simply
+   disappearing there - identical, on screen, to "nothing was fixed," which is exactly why step 1's fix
+   read as a no-op until the rect log proved the container was correct and the label input wasn't.
+   Fixed by threading the pane's real content width into `DrawLawDetailPane` and giving every wrapping
+   label an explicit `GUILayout.Width`.
+3. **The name/status split, calibrated three times.** The header row's name label and status badge
+   share one line via `FlexibleSpace()`; reserving the status's own `CalcSize` width (+12, then +24)
+   clipped its last character both times - a small, consistent, systematic underestimate, not a
+   one-off rounding error. Reserving from the WIDEST possible status string instead ("ENACTMENT
+   PENDING") stopped the clipping, but on its own starved the name column so badly on a short title
+   that it word-wrapped into an unreadable one-word-per-line tower. Fixed by keeping the worst-case
+   reserve (proven clip-free) and adding a floor - name never drops under half the pane's content
+   width - which trades a rare law's status wrapping to two lines for a title that never does.
+
+**Verified at both reference widths, not just the one that clipped**: 1600 and 2560, `0 text
+overflow(s)`/`0 containment escape(s)`/`0 canvas text violation(s)` at each, `not enacted` and the
+full MAGNITUDE step run confirmed fully visible by direct pixel crop at the pane's own measured right
+edge - not inferred from the guard's silence, which does not instrument plain `GUILayout.Label` calls
+and would have said nothing was wrong at every intermediate, still-broken step above. One remaining,
+explicitly accepted, non-information-loss cosmetic effect: at 2560 the name wraps to three lines where
+it fit on two before any of this landed, because the header font itself scales with `Screen.height` -
+the floor's absolute room is proportionally less extra at a taller window than the raw pixel increase
+suggests. Not fixed further; nothing here is invisible or unreachable, which is the bar that mattered.
+
+## Decision density re-measured at 50 laws, and the GC gate closes (2026-08-25)
+
+**The question the marathon was built to answer, asked the same way it was asked before.**
+The Playtest-1 scoping package §3 (2026-08-18; consumed to `COMPLETED.md` §21, 2026-08-26)
+measured the automatic (non-bill) prompt rate
+analytically, from the model's own constants, at ≈5/year for a USA game, and RULED that the gap
+"reads as content, not pacing — the law system is positioned to answer it without touching this
+table at all... it increases how much is worth doing at each of the interrupts already there." Fifty
+laws exist now. This is the re-measurement — **same method, same table, constants re-read at HEAD by
+grep rather than quoted from the 08-18 document**, so the comparison is like-for-like and the
+numbers below are the code's, not the memo's.
+
+**Prompts per year, at HEAD:**
+
+| source | rate | constant at HEAD (verified) |
+|---|---|---|
+| Foreign Policy meeting | ≈3.65/yr | `MeetingChancePerDay = 0.01f` (`ForeignPolicySystem.cs:32`), rolled daily × 365, × `ForeignPolicyCadenceMultiplier` (1 in free play AND in both shipped scenarios — `ScenarioLibrary.cs:90`, `:210`) |
+| Cabinet decision | 0.12 × N/yr, N ≤ 6 | `DecisionChancePerTurn = 0.12f` (`CabinetSystem.cs:48`), one Bernoulli per appointed minister per turn (`TryRollDecisions`, `:449`); `CabinetPortfolio` has six members (`CabinetPortfolio.cs:28`) → **0.72/yr at a full cabinet** |
+| Annual budget process | 1/yr, certain | `TryOpenBudgetProcess` from the day tick (`SimulationManager.cs:165`, `:1616`) |
+| Fed Chair term | 0.25/yr, USA only | `UpdateFedChairSelectionState` fires on `IsElectionTurn(CurrentTurn+1)`, `ElectionCycle = 4` (`ElectionSystem.cs:33`; `GameController.cs:3031`) |
+| **Election reveal** — *ruled INTO the table 2026-08-25 (Elias): the reference measurement is now complete* | 0.25/yr, EVERY country | `CheckElection` on every `ElectionCycle` boundary (`GameController.cs:4436`) — a blocking reveal the 08-18 table omitted; the Fed-term row rides the same cycle |
+
+**Total, with the reveal ruled in: 5.87/yr for a USA game with all six ministers appointed, 5.62 for
+the five others; ≈5 with "a handful" — the 08-18 figure, which counted four sources, was 5.62/5.37
+on the same basis. UNCHANGED by the law system either way — by construction, not by coincidence.** Not one constant in the table
+moved between 08-18 and HEAD, and the law system adds nothing to `AdvanceCountryDayTick`'s automatic
+sources: a law reaches Parliament only when the player introduces it (`IntroduceLawBill`), resolves
+on the same 21-day countdown as every other bill (`BillDurationDays = 21`, `ParliamentSystem.cs:23`),
+and fires no roll of its own. The prompt rate is the number the marathon was never going to move,
+and it didn't.
+
+**Two honest notes on the table itself, neither changing the comparison.** (1) The 08-18 table
+OMITS the election reveal — `CheckElection` fires on every `ElectionCycle` boundary for every
+country (`GameController.cs:4436`), a real blocking interrupt at 0.25/yr that the Fed-term row
+happens to ride the same cycle as; counting it puts USA at 5.87/yr and the non-USA five at 5.62. Left
+out of the headline so the number stays like-for-like; flagged for the ruling below. (2) The signing
+ceremony (`_signingQueue.Enqueue`, `GameController.cs:1593`) is a blocking interrupt on every
+resolved division — but it fires only downstream of a bill the PLAYER introduced, so it is excluded
+by the 08-18 memo's own rule ("bills are pure player agency"), and correctly so.
+
+**The second number — the one the ruling said would move — meaningful choices available per year:**
+
+| enactable, named, player-initiated | 2026-08-18 | HEAD |
+|---|---|---|
+| Tax programs (`TaxType`, add/remove, multiple pending) | 13 | 13 |
+| Welfare programs (`WelfareProgramType`, add/remove, multiple pending) | 6 | 6 |
+| Laws (`LawCatalog.All`, enact/repeal, **multiple pending at once** — `_pendingLawBillsByCountry` is the same nested-dict shape as the program bills, `SimulationManager.cs:750`) | 0 | **50** |
+| **named enactables** | **19** | **69 (×3.6)** |
+| dial-bundle bills (Labor · Crime & Justice · Sectors · Trade · SWF drawdown), one slot each, plus the omnibus Budget | 6 | 6 — but the six Crime & Justice dials are now DRIVEN BY LAWS (the MVP slice's read-only conversion), so the one continuous bundle that overlapped the new menu no longer competes with it |
+
+**Per year, the calendar imposes no cap on laws at all**: 21-day resolution with no concurrency
+limit across distinct laws means all fifty could in principle be before the House inside one year.
+The binding constraint moved from the calendar to APPROVAL — `EnactmentApprovalCost` of 0.5–1.5 per
+passage (the 27-law composition set costs ≈25 approval against a start near 45–48), plus
+`BillFailedApprovalCost` on every failed vote. How many of the fifty a given Parliament would PASS is
+a `WouldBillPass` direction question this pass did not measure; the composition diagnostic enacts
+directly, by design, to test the mechanism rather than the politics.
+
+**Which reading the measurement supports: the second, unambiguously.** If the 08-18 gap was "the
+game interrupts too rarely," fifty laws did not answer it and could not have — the prompt rate is
+identical to the constant. If the gap was "nothing to DO between interrupts" — which is what the
+08-18 ruling itself said it was, before any law existed — then it is answered on the numbers: in
+the one category that offered six continuous dials behind one bundled vote, the player now has
+fifty named, individually-costed, real-world-grounded choices, browsable by status and enactable
+several at a time, with every composition of them landing exactly. **The 08-18 ruling's own
+prediction is confirmed to the letter: the table did not move, the menu did.** What this pass cannot
+say — and the 08-18 memo could not either — is whether that reads as a closed gap to a PLAYER; that
+is a playtest question, not a constant, and the only measurement that answers it is the next
+playtest. The 08-18 memo's one deferred item — a LIVE simulated count of the Foreign Policy rate
+(the daily roll skips while a meeting sits unresolved, `SimulationManager.cs:843`, so the realized
+rate depends on how fast the player answers) — remains unrun and unneeded unless a playtest
+disputes the analytic figure.
+
+**The ~23 Aug GitHub GC gate, closed while the sources were open.** Two days past its date; the
+one command was `curl https://api.github.com/repos/Bippen/PoliSim` → `"size": 9221` KB (~9.0 MiB),
+against the ~746 MiB GitHub reported on 08-16 immediately after the force-push (local pack for
+comparison: 6.93 MiB, `git count-objects -vH`). GitHub's own background maintenance collected the
+unreachable objects, as the 08-16 entry anticipated; no support ticket.
+
+## Step 2's third section ships — the debt ledger and the fiscal trace, and three findings the bar surfaced (2026-08-25)
+
+**The trigger, closed.** Step 2 deferred the fiscal chain's panel section with a named trigger —
+"the first playtest asking why did the deficit move" — and Italy Debt Crisis's playtest session
+fired it on 08-18: a debt scenario whose whole chain (erosion, the maturity lag, the FRF's response,
+interest) had no panel section, and the Italy pass reconstructed it from raw dumps by hand. Ruled
+to build 2026-08-25 (Elias); built as the third `StatTracePanel` section, on the Debt-to-GDP chip,
+answering that question or failing it. **The panel is now three sections** — Approval (Class A
+formula terms + Class B events), Consumer Confidence (the single book), Debt (this) — and the
+click-a-chip grammar, the Layout-only commit, the LedgerRow rows and the negative fill are unchanged.
+
+**What the section shows, and under which honesty class.** One period of the debt STOCK, then the
+ratio's own identity:
+
+| row | class | how it is known |
+|---|---|---|
+| Primary balance (before the reaction) | A, by observation | −Σ over the period's days of (revenue at stance 1 − non-interest spending), the daily write's own values |
+| Fiscal reaction on revenue · `stance ×m` | A, by observation; the stance is C | −Σ of revenue × (1 − 1/m), m the FROZEN period multiplier (`FiscalPeriod.PlannedFiscalReactionMultiplier`) — the number the identity consumed, never the live one |
+| Interest at the issuance rate · `open→close %` | A, by observation | +Σ of debt × the day's issuance rate slice |
+| Maturity lag · `blended pays open→close % vs issuance` | A, by observation | +Σ of (interest charged − interest at issuance) — negative while the blended rate the stock still pays sits below today's price |
+| Inflation erosion (−π·b) · `π open→close %` | A, by observation | Σ of debt × (erosionFactor − 1), on the ACTUAL daily stock |
+| Clamp at guard/ceiling / Residual (rounding, audited) | the compounding class's named residual | observed − recorded, per day, in double: the guard/ceiling truncation when it bound, float rounding otherwise; skipped under $50M |
+| Events this period | B, dated | interrupt BudgetImpacts (cabinet, foreign policy) and a scenario's seed delta, observed at the write, post-clamp |
+| footer: Terms + events = Δ — audited at the boundary (N days) | the self-audit identity | `DebtLedgerRecorder.CloseAtBoundary`, ATTRIB: on red |
+| Debt-to-GDP Δ pp — the ratio's own identity, exact | an identity from four recorded anchors | stock change at closing GDP + GDP's movement on the opening stock; no residual; GDP's OWN drivers are Class D and are stated as not this section's claim |
+
+**Why the debt step decomposes EXACTLY here where the offline erosion-standard decomposition
+carried a remainder.** The stock moves daily (`ApplyRevenueAndSpending`, one slice per day, `debt =
+debt × e − balance`). The offline work reconstructed a period as π·b on an average stock plus an
+interleaving remainder; the ledger instead OBSERVES `debt × (e − 1)` on the actual stock each day
+and sums — so the interleaving is inside the term, not beside it, and the compounding class's
+residual is empty by construction. What remains is float rounding, carried in `ClampLoss` under the
+approval ledger's own observed-minus-terms definition (0.0043 on the USA's ~$37T stock; 0.0003 on
+Italy's — noise, as the audit expects). Built on the machinery that existed rather than inventing
+attribution: `DebtAttribution` is `ApprovalAttribution`'s shape (closed + accruing on `Country`,
+never EconomyState); `DebtLedgerRecorder` is `ApprovalLedgerRecorder`'s lifecycle with `RecordDay`
+at `AccrueDailyFiscalFlows`' own write (the three extra inputs — the stock the charge read, the
+issuance rate just targeted, the blended rate just advanced — read from the same state before the
+write, so the split is the model's own pair), `RecordEvent` at the two F1 sites and the scenario
+seed (opening at the PRE-write stock on first touch — the first-boundary-open class, closed by
+construction), and `CloseAtBoundary` where the `FiscalTurnReport` closes. **The single-book
+rider holds**: every figure is recorded at the write, never recomputed for display; the one
+recomputation (the erosion factor, the same expression on the same state) is what the twin-drift
+detector polices. The preview clone carries null fiscal ledgers by the hand-list.
+
+**The bar, Step 2's own, third application:**
+
+- **Trajectory byte-identical — verified, not assumed** (the ulp lesson): 100-turn baseline, seed
+  777, pre-change vs post-change, **600/600 full-state lines identical, 37/37 anomalies**. The
+  debt ledger's self-audit and twin-drift detector ran at every one of those 600 boundaries:
+  **0 ATTRIB**.
+- **The sum-check self-audit, extended, enumeration stated**: `|observed Δ − (terms + events +
+  clamp)| ≤ max(0.01, 2e-4 × max(|open|,|close|))` at every boundary, plus the twin-drift check
+  (a non-trivial ClampLoss on a period the clamp never bound). It enumerates the DAILY stock update
+  and the two F1 writers and the scenario seed; it does NOT enumerate tariff revenue, which never
+  touches the stock (below).
+- **Save/load with the fiscal ledger crossing per R-S2e**: `SaveLoadRoundTripDiagnostic` asserts
+  the closed period (term sum, 365 days, events) AND the accruing one (37 observed slices at the
+  save point) explicitly — **RT: PASS 12/12**, 0 debt-ledger failures.
+- **Preview parity — extends or not, stated**: it does NOT assert or print any fiscal term, BY
+  DESIGN — every one is accrued across 365 daily slices on a moving stock (the Phase-3 within-period
+  class), while the preview runs the single-step turn form on a clone that never enters the daily
+  path; their agreement is the aggregation-equivalence bar's question (117/117 within 3%), and no
+  fiscal term sits on the "unadvanced inputs" side of parity's boundary. What it DOES assert is the
+  hand-list property: the real accruing debt ledger is byte-untouched across a preview — **7/7 × 6
+  asserted, fiscal ledger untouched × 6**; the enumeration is in the class doc and the run log.
+- **Captures, rule-15, both sizes, pinned on Italy mid-scenario** — the state that fired the
+  trigger — plus the USA on the main state sweep. 1600: the base 63-shot sweep **63/63, 0/0/0**
+  (the standing screens did not move); the state pass **98/98, 0/0/0** with FIVE assert-own-name
+  guards (`93`, `93b`, `93c`, `94b`, `95b`/`95d`) all silent. `93c_trace_debt`: USA, $38.7T →
+  $39.3T (+$610B), primary deficit +$683B, tightening stance ×1.09 pulling −$473B, interest
+  +$1.31T, lag −$1.21B, erosion −$912B at π 2.3%, audited. `95d_italydebt_trace_debt`: Italy at
+  turn 18 with the −20% package in force, $2.77T → $2.77T (+$6.3B), a −$556B primary surplus
+  against a +$472B reaction GIVE-BACK at stance ×0.568 (the FRF loosening hard at 109% against
+  Italy's 138% comfort anchor — the mechanism the Italy report measured, now on a panel), interest
+  +$158B, lag −$5.4B, erosion −$62.7B: the terms close on the observed change. **2560: the state
+  pass 98/98, 0/0/0, all five guards silent**; `95d` at that size shows the whole section above
+  the fold — five terms, the audit footer closing at +$6.19B, the ratio identity's header
+  (−0.61 pp) with its two rows on the scroll — and the 1600 frames show four of the terms with
+  the rest reachable. Sets: `fiscal1600s4_*`, `fiscal2560s_*` (the state passes), `fiscal1600_*`
+  (the base sweep).
+
+**Three findings the bar surfaced, all pre-existing, all fixed in this pass — each one a "checking
+mechanism compromised" case in its own way:**
+
+1. **Every law vote wrote approval outside the ledger.** The round-trip run showed 24 `ATTRIB:`
+   approval-audit failures — the player country of every scenario, at the boundary closing the
+   period in which the harness introduces its coverage bills, off by exactly −3.0000. Pinned:
+   `AdvanceLawBillsDay` called `ApplyLawBillResult` with no observation around it, unlike the
+   other eight bill types — so a failed law vote's `BillFailedApprovalCost` (1.5, and the harness's
+   two coverage law bills both fail in a no-op world: 2 × 1.5) and a passed law's
+   `EnactmentApprovalCost` both moved approval with no ledger entry, since the MVP slice on 08-24.
+   **Unnoticed because the RT harness's own verdict line does not grep ATTRIB** — today's earlier
+   batches 4–5 RT log carries the identical 24 lines under "RT: PASS". Fixed by the established
+   observation idiom; **24 → 0 on the same harness**, the like-for-like proof. On the most-used
+   bill type in the game, a player's approval trace would have failed its audit on every vote.
+2. **The trace panel measured itself against a row cap, never against the host.** The first
+   `93c` at 1600 ran the section's last rows past the window on the Budget tab's budget-pause state
+   (~7 rows of room under the chips) with every containment guard silent — each cell fit its own
+   rect. `MeasureHeight`/`Draw` now take the host's remaining height and scroll internally past it.
+   ⚠ A first cut at 0.6 of the host would have cut the APPROVAL section on PolicyLaws from its
+   approved twelve rows to five — a silent regression of `s2usa*_93*`, a set awaiting Elias's eyes;
+   the share is the WHOLE remaining height, so where twelve rows fit they still show. What did
+   change in that set: the approval box now ends at the tab's bottom instead of the screen edge
+   (ten rows above its scroll at 1600, was twelve flush) — stated here because rule 15 compares
+   sets, and this is the diff.
+3. **Two driver defects in the Italy block, one of them since Step 3.** The block's fixed eleven
+   in-progress turns had drifted past `EndTurn` as earlier blocks lengthened the shared session
+   clock (the recorded `EndTurn`-as-absolute artifact, worse): the verdict screen — exclusive — was
+   up for `95b` and `95d`, which is how the debt trace's assert-own-name caught it (no host draws
+   under an exclusive screen, so the panel's pending toggle never applies). And `95b`'s approval
+   trace had been silently ABSENT since Step 3: the panel's chip TOGGLE applies only when a host
+   draws a Layout, so the "Inherit the Fund" block's close-toggle (queued under its own verdict
+   screen) and Italy's open-toggle collapsed into a close. Fixed: the loop stops two turns short of
+   `EndTurn` wherever the clock stands; the driver states its selection absolutely
+   (`StatTracePanel.RequestSelection`, production clicks keep the toggle); and every trace capture
+   now asserts the panel is open on the stat its name claims (`93`, `93b`, `93c`, `94b`, `95b`,
+   `95d`), `95b` additionally that no verdict is pending.
+
+**The seam fallback question from this morning, closed by these runs.** The armed trace fired
+twice per state pass ("canvas seam never settled" → "seam-settle fallback complete, handing control
+back to the caller") and the run continued to 98/98 both times. The fallback works; the warning is
+the post-Italy signing block's standing driver artifact (a takeover that never goes active on the
+switched player), and the four hangs were never this path.
+
+**What remains dark, named with its class rather than approximated:**
+
+- **GDP's own drivers** — Class D. The ratio identity shows GDP's movement as one exact term; WHY
+  GDP moved is the identity's business (the confidence single book, Okun, the productivity pipe)
+  and is deliberately not claimed on this section.
+- **The daily interleaving** — inside the terms by observation, but not visible per day. The
+  section is period-grain by the scoping's rule 1 (a surface showing daily numbers for period
+  terms lies); the day-by-day path is the equivalence check's territory.
+- **Tariff revenue never touches the stock** — `TradeSystem` adds it to the `Budget` display
+  accumulator only; the debt stock moves by `budgetBalance` and F1 impacts alone. The ledger
+  records what the model does, so the section is consistent with the model; the gap is a model
+  property of the same shape F1 closed for interrupt impacts, stated here, not changed.
+  *(✅ CLOSED 2026-08-26 — pass 5 of the ruled build order, "Pass 5 ships" below: the take is a
+  planned period flow accrued inside `ApplyRevenueAndSpending`; the accumulator reads it through
+  `budgetBalance`; the section needs no change because the ledger's primary-balance term carries it
+  as revenue.)*
+- **No fiscal ledger on the preview side** (above) — the turn form has none, by design.
+- **At 1600 on the Budget host, four of the section's nine rows sit above the fold**; the rest
+  are on the panel's own scroll, and 2560 shows more. A legibility cost at one size, not an
+  information loss.
+
+**Open, for a ruling (not blocking):** the round-trip harness's verdict line should count ATTRIB
+lines and fail on them — it is the one standing harness that runs boundary audits and the one
+whose "PASS" hid finding 1 for a day. *(✅ RULED YES and BUILT 2026-08-25 — ruling 1, the
+log-error fold, next section; the open flag annotated closed 2026-08-26.)*
+
+## The log-error fold, and the harness sweep it prompted (ruling 1, 2026-08-25)
+
+**Ruled YES (Elias): a harness's summary line and exit code must be the CONJUNCTION of everything
+the run asserted — not only what its own code counted.** "RT: PASS" and exit 0 standing over 24 red
+`ATTRIB:` audits for a day is the instance. And: sweep every other harness for the same shape; any
+diagnostic that prints a failure it does not fold into its exit code gets folded in, or gets a
+stated reason. This is the record of both.
+
+**The mechanism.** `CheckExit.ArmLogFold()` subscribes to `Application.logMessageReceived` for the
+rest of a run; every Error/Exception/Assert logged after it — the harness's own, or one raised deep
+in the simulation it drives — is folded into `CheckExit.Finish`, which then exits nonzero even if
+the harness computed 0, and says so (the count and the first line, so the flip is never silent). Off
+until armed, so a harness with a legitimate expected-error path is unaffected until it opts in
+(none has one today). The capture driver, which lives in the runtime assembly and cannot reference
+the Editor-only `CheckExit`, carries its own copy of the same subscription.
+
+**The sweep — 39 harnesses (every `Assets\Editor\*.cs` that exits, plus `SimulationTestRunner` and
+`UiScreenshotDriver`), enumerated.** The one global finding first: **NO harness anywhere subscribed
+to the log stream or grepped a log — every one could see only the red lines it printed itself.**
+`ATTRIB:` fires at exactly four sites (`ApprovalLedgerRecorder`/`DebtLedgerRecorder.CloseAtBoundary`,
+×2 each), all reached only from `AdvanceTurn` — so "can host an ATTRIB" is exactly "calls
+`AdvanceTurn`." The four buckets:
+
+- **EXPOSED-EXTERNAL — runs `AdvanceTurn`, its own reds folded, but would swallow an ATTRIB (the
+  ruling's shape). Now armed:** `SaveLoadRoundTripDiagnostic` (the instance), `PreviewParityDiagnostic`,
+  `ItalyDebtCrisisSliceDiagnostic`, `Phase5NoFeedbackDiagnostic`, `ScenarioSliceDiagnostic`,
+  `SustainedObjectiveDiagnostic` — the six validation gates — plus `AggregationEquivalenceCheck`
+  (armed defensively; it uses `AdvanceDay` only, so it cannot host an ATTRIB today, but the arm is
+  free). **`BatchSimulationRunner`** (the 100/500-turn matrix runner, and the worst case: it exited
+  `EditorApplication.Exit(0)` UNCONDITIONALLY — CLAUDE.md's own "the matrix bar greps ATTRIB
+  externally" was not a supplement to an exit code, it was the ONLY signal) is now routed through
+  `CheckExit.Finish` with the fold armed in its post-domain-reload callback (where the Play-mode
+  ATTRIB actually fires); its anomaly detector stays `LogWarning`-only and deliberately un-folded —
+  anomalies are MEASURED and judged (stress scenarios flag legitimately), not asserted, so only an
+  Error-level audit failure gates. **`UiScreenshotDriver`** (the second instance — the record already
+  showed it exiting 0 with the 2050-12-26 ATTRIB in "both clean 1600 runs") now folds via its own
+  subscription, and its two election-forcing raw approval writes (`= 60f` WIN, `= 5f` LOSS) — the
+  source of that exact ATTRIB — are now recorded as labeled harness events, so a clean capture has
+  nothing to fold.
+- **EXPOSED-OWN — has red lines in its own code that miss its exit (5).** The driver (above, ~18
+  uncounted `LogError` sites plus its "verified nothing" warnings — all now folded). `SimulationTestRunner`
+  (its entire anomaly detector is `LogWarning`-only with no exit code in the file at all — now
+  gated through `BatchSimulationRunner`'s fold for ATTRIB; anomalies stay measured, above).
+  `PartyMarkCoverageCheck` ("PARTY SYSTEM NOT PRESENT → Finish(0)" is the honest-nothing state,
+  item-10-gated, and its tolerated-gaps line — both STATED-REASON in the code, left as-is).
+  `ScreenEdgeCheck` and `UiScreenshotCapture` (each has a `ScreenMarginFraction`/Game-View reflection
+  warning documented as best-effort — STATED-REASON, left as-is; the capture's real exit is the
+  driver's, now folded).
+- **ALWAYS-ZERO by design (measurement/dump tools), STATED-REASON — and, where they run
+  `AdvanceTurn`, ALSO now armed** so a measurement taken while the model's self-audit is failing
+  surfaces rather than being trusted: `DisinflationMeasurementDiagnostic`, `ItalyDebtMeasurementDiagnostic`,
+  `FrfSweepDiagnostic`, `Q5LoopGainDiagnostic`, `WageBoomMeasurementDiagnostic` (1/2/3),
+  `TrajectoryBaselineDump` — all armed (they still exit 0 normally; the fold only bites on a red
+  audit). `PublicationCadenceCheck` (measurement, no `AdvanceTurn` — reason stated, not armed).
+  `DebtClampDiagnostic` and `SwfReturnsDiagnostic` use a RAW `Exit(0)` and are explicitly TEMPORARY
+  mechanism-investigation tools in no gate — left with their stated reason rather than rewired.
+  `CheckSuite` is the Editor-open menu runner (`Exit` would close Unity) — reason stated.
+- **FOLDED already — own reds feed the exit AND cannot host an ATTRIB (no `AdvanceTurn`), no change
+  (14):** `ChromeV2CoverageCheck`, `CreditRatingAnchorCheck` (with its documented Poland exclusion),
+  `DeliveredAssetCheck`, `GraphRendererDiagnostic`, `ImporterSettingsCheck`, `LawCompositionDiagnostic`,
+  `MoneyFormatDiagnostic`, `Phase4YearsPerTurnDiagnostic`, `SigningStampFixDiagnostic`,
+  `SimulationRandomRestoreDiagnostic`, `StatIconCoverageCheck`, `StripCutDiffCheck`, `TrajectoryDiffCheck`,
+  `UpstreamCheck`.
+
+**Proof — validated by NEGATIVE CONTROL, not only by a clean pass** (a guard never shown to fire on
+a real difference is unvalidated — this file's own standing rule). Clean state: `SaveLoadRoundTrip`
+re-run exits 0, 0 ATTRIB, RT: PASS — green stays green through the armed guard. Then the exact
+incident reproduced: the law-vote `RecordEvent` delta temporarily forced to 0f (the pre-fix
+behaviour), re-run — **`RT: PASS` still printed on its own line (the harness's `failures` counter saw
+nothing, exactly the incident), but the process exited 1**, with `CHECKEXIT: the run reported code 0
+but logged 24 error(s) during it - exiting 1. First: "ATTRIB: USA approval ledger FAILS its audit…"`.
+The guard catches precisely what the harness's own counter cannot; the control edit was reverted and
+re-verified clean. The invariant that falls out, stated so the next harness inherits it: **if you
+advance turns and use `CheckExit.Finish`, arm the fold** — a red line nothing counted is still a
+failure.
+
+## Live playtest 2 (2026-08-25) — three defects fixed, three scoped for rulings, one finding to Design
+
+**Finding 1 — the ATTRIB (Sweden approval ledger, 2027-01-01, explained − observed = exactly
++1.5000). FIXED, negative-controlled. The writer, as the ruling demanded it named:** the
+foreign-policy meeting's **"Send substantial aid" (+1.5)** — the only +1.5-face approval writer
+reachable in the first period (cabinet decisions first roll AT a boundary, economic events fire
+inside boundary processing after the formula's EnsureAccruing, reshuffle is −2, bill costs are
+−1.5). The class is boundary-timing's "write lands before open": `ApprovalLedgerRecorder.RecordEvent`'s
+lazy `EnsureAccruing` created the accruing ledger AFTER the event's own write, so a first-touch
+event opened the period at the POST-write approval — the event in Events, its effect outside
+[open, close], the audit over-explained by exactly that delta. 2027-01-01 is the FIRST boundary
+(epoch 2026-01-01, one-year turns): a fresh Sweden game whose first observed approval event was a
+mid-year meeting. **The debt twin closed this exact class by construction on 2026-08-18**
+(`DebtLedgerRecorder.EnsureAccruing`'s own doc: "every writer passes the stock AS IT WAS BEFORE ITS
+OWN WRITE ... the first-boundary-open class the approval ledger's audit caught, closed here by
+construction") — the approval recorder never received the same closure. The fix mirrors the twin:
+`EnsureAccruing` now REQUIRES `openingApproval`; `RecordEvent` passes current − appliedDelta; the
+boundary caller passes `approvalBeforeFormula`, and `RecordApprovalAttribution`'s call does too —
+which also closes the preview-clone shape (accruing=null clone running the formula) by
+construction. Tolerance untouched, per the ruling.
+
+**Proof:** `LedgerFirstTouchDiagnostic` (new harness, fold-armed per the invariant) reproduces the
+exact shape deterministically — a meeting-shaped +1.5 observed event on day 30 of a fresh Sweden
+world as the approval ledger's first touch, plus the debt sibling (a seed-shaped debt event before
+day 1, pinning the twin's pre-write open against regression). Pre-fix: exit 1, ATTRIB at Sweden
+2027-01-01, gap +1.5000 — the playtest failure to the digit — plus the explicit window assertion
+("opened at 51.5000, pre-event was 50.0000"). Post-fix: exit 0, and the FISCALREAD line is
+byte-identical across the fix (the recorder writes no simulation state — bookkeeping only). RT:
+12/12 clean, 0 ATTRIB, exit 0.
+
+**Finding 2 — "Surplus while borrowing" (the Derived row). Hypothesis REFUTED at the formula; the
+labeled primary line built per the ruling.** `BudgetBalance` is NET of interest —
+`ApplyRevenueAndSpending` puts `interestOnDebt` inside `totalSpending` and takes
+`budgetBalance = actualRevenue − totalSpending` — so the Derived row's `−report.BudgetBalance`
+already was the real balance; the single-book rider was not violated on that screen. The primary
+balance now appears AS the labeled second line the ruling specified: "Primary deficit/surplus … of
+GDP, excl. interest", from the SAME report (`DerivedStats.PrimaryDeficitPercentOfGdp` =
+−(BudgetBalance + InterestOnDebt)), never a separate computation. Verified numerically (FISCALREAD
+Sweden: revenue 396.7, spending 191.5 incl. interest 17.3, balance 205.2 = 31.68% of GDP, primary
+222.5 = 34.36% — sums exact) and by eye at 2560 (`play2fixb2560_02a_statistics_domestic_rows`: USA
+Deficit 5.6% / Primary deficit 1.2% — the 4.4pp interest wedge is precisely what the line exists to
+make visible). Recorded, not fixed: Sweden's measured year-1 structural surplus (~32% of GDP —
+revenue 396.7 vs spending 191.5 on GDP ~648) is a SEED-calibration scale question, not a display
+one; it rides with the Sweden budget-depth scoping (playtest item 4), revenue side included.
+
+**Finding 3 — compass labels off their dots. FIXED, two iterations, both sizes.** Cause: the label
+pass decluttered label-vs-LABEL only (each pushed below the previous), with every label hard-wired
+to the dot's right — so displaced labels floated with nothing tying them home, and the first label
+in the chain kept its natural y ON the dot row, running across its neighbours' dots ("United
+States" over the cluster). Iteration 1: leader lines when displaced beyond ~a label height,
+left-side flip at the plot's right edge, clamp into the plot. Its own capture showed the residual
+(label-vs-DOT collisions unhandled — USA still crossed the row), so iteration 2 pushes any label
+whose rect would cross another country's dot below that dot, leader carrying the pairing. Verified
+`play2fixb1600/2560_07b_politics_compass`: dot row fully clear, six labels legible, every displaced
+label leader-tied. The lesson, again: the first capture after a fix is the fix's own negative
+control — iteration 1 "worked" and its capture said otherwise.
+
+**Playtest items 4/5/6 are SCOPED, not built** (rulings needed — reports delivered in-session:
+Sweden budget depth as a per-country content pass; Riksbank independence options A/B/C; law
+pros/cons derivation vs authored-with-derived-check). **Item 7** (law-page clutter at 50 laws) was
+recorded as §7.1 of the request doc with the `capfold` captures — Design's board, Design's
+iteration; ANSWERED AND BUILT 2026-08-26 as Board 1j (entry below), §7.1 since migrated to
+`COMPLETED.md` §24 in the consolidation. **Parliament with real parties/mandates** is item 10
+(13 Sept), where the finding already lands.
+
+## Item 6 BUILT — the declared coupling table and the derived "Expected effects" (2026-08-25, ruled)
+
+**The extraction.** The Crime & Justice system's eleven dial→stat edges moved from MacroSystem's
+scattered `internal const`s into `CrimeJusticeCouplings` — one declared home the Apply* formulas
+THEMSELVES read (`ApplyCrimeIndex`/`ApplyOrganizedCrimeIndex`/`ApplyCorruptionIndex`/
+`ApplyPrisonPopulationRate`/the approval formula and its ledger twin all reference the qualified
+names; values and doc comments carried verbatim). The table's `All` rows cite the same consts with
+the sign AS APPLIED, so any text derived from it is the model's own book, quoted — the twin-drift
+lesson applied to prose. A SECOND existing consumer surfaced during the sweep:
+**PolicyWebRenderer's dial lines already hand-rendered the same eleven sensitivities** — re-pointed
+mechanically (identical strings and arithmetic; collapsing its switch into a table loop is possible
+and deliberately not done in the extraction pass).
+
+**The bar, met exactly:** trajectory dumps before and after
+(`traj_precouple_*`/`traj_postcouple_*`, 2 seeds × {100, 500, 1000} turns), diffed —
+**byte-identical, 39 of 39 fields, all six pairs.** A moved edge could not have changed value in
+transit and provably did not.
+
+**The renderer** (`DrawLawDetailPane`, after the delta rows): per-stat long-run target shifts
+summed as Σ(dial delta × signed sensitivity) over the table — neutral derived direction and size,
+no authored valence, "(contested)" carried per-edge (bail→crime), zero-stat rows omitted, and the
+honest caption ("as the dials settle, before dial clamps" — face deltas, the delta rows' own
+basis). **The model's coupling gaps ship visible, per the ruling** — a sentencing law's
+incarceration line comes only through its bail delta, because SentencingSeverity has no prison
+edge; the gap list (no sentencing→prison, no border beyond organized crime, no dial→budget) is
+logged in the table's own doc as the couplings-pass input.
+
+**Verified with eyes at both sizes** — which took its own iteration: the effects band sits between
+the driver's generic scroll stops (the detail pane's short scroll CLAMPS under both 900px and
+2200px, showing only the tail), so a bespoke stop was added (`06g_laws_expected_effects`, the
+`85f_bill_tax_rows` idiom — only the detail pane scrolled, 0.3 × screen height). The capture shows
+Truth in Sentencing deriving **Crime Index −1.36 pts (contested)** (15×−0.08 + −8×+0.02, exact)
+and **Incarceration Rate +16.00 per 100k** (−8×−2.0 — the gap on screen). Sweeps clean at 64/64,
+0 ATTRIB, both sizes (`couple2s1600/2560`).
+
+## Item 4 BUILT — Sweden's real budget structure as decomposition (2026-08-25, ruled)
+
+**The content.** `SeedSwedenSpendingLines` replaces Sweden's generic 5-line seed with the state
+budget's real 27 utgiftsområden consolidated to **24 lines** (USA's granularity): UO26
+statsskuldsräntor EXCLUDED (interest stays the automatic `GetInterestOnDebt`, the USA seed's own
+rule), UO5→UO7 as InternationalAid, UO18+UO19 as RegionalPlanningAndDevelopment. **Sourced,
+dated, basis stated** (rules 5/9/12): regeringen.se "Statens budget i siffror", per-område
+prognosis from the 2026 ekonomiska vårpropositionen, rounded bn SEK, retrieved 2026-08-25 — the
+SEK figures are SHARE WEIGHTS onto the game's own GDP × GovernmentSpendingRate total
+(decomposition, not recalibration, per the ruling; the level question and the recorded
+revenue-side seed artifact both belong to the later ruled recalibration pass). Exact-sum via the
+remainder technique (MunicipalGrants, the largest line). Seventeen new `SpendingCategory` members,
+APPEND-ONLY (the enum serializes into saves), named generically for reuse. UO9 wires into
+`HealthcareSpendingChange` beside HHSDiscretionary (one country has each, never both — the
+Transportation/InfrastructureAndDevelopment idiom; zero at seed). UO11 maps to `SocialSecurity`
+deliberately: the demographic pension-pressure channel now points at Sweden's real pension line —
+inert today (pressure fires only when deaths exceed births; Sweden seeds 10.8 vs 9.5, the gap
+clamps to zero), armed for when the demographics turn.
+
+**Two stated deviations from the ruling, both with measured reasons:**
+1. **All lines are DISCRETIONARY** — for a detailed portfolio G derives from the discretionary
+   line total and mandatory routes separately (`ResolveSpendingForTurn`), mandatory lines grow on
+   their own path and take demographic pressure, and carry their own approval weighting: flipping
+   any flag CHANGES FLOWS. The flags flip in the recalibration pass under the full sim-math bar.
+   The Mandatory-header-over-zero-rows defect closes for Sweden the way the bar's own clause
+   anticipated — the 2026-08-12 empty-group suppression (`hasMandatory` guard) now covers
+   Sweden's zero-mandatory set; the captures show the 24-line discretionary list with no phantom
+   header.
+2. **The trajectory bar is NOT byte-identical, and cannot be for any line-count change** — G
+   re-derives every turn from a FLOAT SUM over the lines (`GetSpendingLineTotal`), and a 24-term
+   sum rounds differently from a 5-term sum of the same total by ~1 ulp per turn. Measured, not
+   argued: at the **century horizon (t100) the divergence is Sweden-only and ulp-class — worst
+   field `Budget` at 0.005% relative (3.2e-4 absolute), debt 2e-4 absolute** — and stays that
+   class for any horizon a game reaches; by t1000 the model's own feedback (approval clamp events
+   near t972, the recorded debt-runaway region) amplifies the ulp seed chaotically to percent
+   scale (`diff_sweden_*` logs, postcouple vs postsweden, both seeds). The mechanism is unchanged
+   — same formulas, same couplings, pressure channels inert — the 7th decimal of G's float
+   representation is the entire cause. ⚠ Lesson for the next bar: `TrajectoryDiffCheck` **exits 0
+   on a completed comparison with differences** — it gates comparability, not identity; a chain
+   that guards on its exit code alone reads "measured divergence" as "clean". Read the
+   byte-identical count line.
+
+**The rest of the bar:** RT 12/12 clean (save/load with the new line set crosses), 0 ATTRIB
+everywhere; captures both sizes as Sweden (`sweden1600/2560`, 62/62, 0 failed) — the 24 lines
+render with live sliders, per-line dollar/draft/%GDP columns, names wrapping without overflow
+(guards 0). Germany/France/Italy/Poland stay on the generic seed until their own ruled passes.
+
+## Board 1j implemented — Design's own answer to §7.1, read from their project and built (2026-08-26)
+
+**The source.** Elias pointed the claude_design MCP (the `DesignSync` surface) at Design's project
+("PoliSim v2 Design Progress", `b3dec27b-…`). The root `PoliSim v2 Screens.dc.html` is Design's
+LIVE board and carries one screen the imported Progress4 pack does not: **`1j Law browser at 50`**
+— their §7.1 answer, drawn the day after the finding was sent. The board is the spec (the root
+rulings doc is unchanged 1i); its own caption states the frame: "§7.1 answered without
+re-litigating anything. The three drawn answers stand; only AVAILABLE changes."
+
+**Built, as drawn:** the category chips step down (the count moves into the summary line — "50
+laws - all CRIME & JUSTICE - N in force - M before the house"); the ORDER control takes their
+space (STATUS-THEN Magnitude/A-Z/Cost, magnitude default) with a real search slot (paper-idiom
+TextField, name-contains); **AVAILABLE renders as four magnitude BANDS** under the default order —
+the stepped rule promotes from forty repeating cells to four band captions ("SWEEPING - 4
+available - dial movement ±23-30"), and available rows drop to three cells; the category cell
+retires from every row (name takes its share); the header simplifies to STATUTE/APPROVAL; pending
+rows carry their real countdown ("- VOTE IN {d}d", `LawBill.DaysRemaining` — an IMGUI text
+adaptation of the drawn chip); the detail pane gains the kicker ("CRIME & JUSTICE - MAJOR - N OF
+M IN CLASS", position by A-Z within tier), the band range restated beside the magnitude steps,
+the two-column IF ENACTED dial grid with direction arrows, and IF PUT TO THE HOUSE TODAY with
+**per-party stance rows from real data** (each archetype's actual seats; FOR/AGAINST by fiscal
+stance against the bill's direction). The board's sticky band headers become plain caption rows
+(IMGUI has no sticky inside a scroller — the same stated adaptation 1i's column header took).
+
+**Three collisions with standing records, resolved explicitly, none silently:**
+1. **Valence-coloured dial arrows** (the board draws green/red) — NOT taken: collides with the
+   delta-row rule ("a dial's sign has no inherent value judgment the model makes") and item 6's
+   ruled neutral-derived honesty. Layout is the board's; the ink discipline is Elias's ruling.
+2. **Seat headcounts** ("168 of 435 - needs 218", per-party FOR·118) — NOT built:
+   `GetSeatWeightedAlignment`'s own doc forbids exactly this ("NOT a headcount… no seats-based
+   majority threshold anywhere in this model"), and Design's own Pass-3 **D2** ruling struck
+   headcounts. Stance sign + real seats are shown; the lean bar stays the decided quantity.
+3. **"Next sitting May 12"** — stays unbuilt; the recorded no-sitting-calendar reason carries
+   from 1i verbatim. The pending rows' VOTE-IN countdowns are the real datum in that slot.
+   Also resolved by construction: the board's DRAWN-SLOT citation (Portugal placeholder) — the
+   shipped pane already prints `LawCatalog`'s own recorded source.
+
+**Verification — UI-only bar, and the captures were the negative control three times over:**
+compile clean ×3; sweeps 64/64, 0 ATTRIB, guards 0 at every pass — and the EYE caught what guards
+cannot, three times: (1) the search field's MinWidth+ExpandWidth grabbed the row remainder and ran
+past the panel (control rects are unguarded); (2) the pane's new rows used ExpandWidth inside the
+detail scroll view and tracked CONTENT width, clipping at the viewport — fixed to explicit
+`contentWidth` rects; (3) the ORDER row's full three-phrase labels summed past the panel budget at
+BOTH sizes and silently widened the whole box (the sub-tab strip clipped at the window edge) —
+compressed to caption-carries-"STATUS, THEN" + variant-word buttons. Final captures
+`board1jc1600/2560_06f*` + `06g` clean at both sizes; the 1600 sub-tab strip's slight edge-kiss
+is the pre-1j baseline, observed unchanged. The saves-menu `BuildTextFieldStyle` precedent
+supplied the paper field (its own comment names the dark-chrome-on-paper class the first capture
+hit).
+
+**Also read from the project, per the ask:** `support.js` (the dc-runtime the board loads —
+render-side only, nothing to implement) and the §5 portrait PoC
+(`portrait_cabinet_defense_katarzyna_ekelund`) — viewed against the board's register description;
+it is the repo's already-imported 08-17 PoC (hash-verified at import). ⚠ One tool note for the
+record: `DesignSync get_file` caps at 256 KiB and returned the 604 KB PNG TRUNCATED — project↔repo
+byte-identity is not verifiable through that channel; the import-time hash check remains the
+authority. The §5 batch stays gated on Elias's Editor register side-by-side, unchanged.
+
+## The free-aspect overflow class — enumerated, fixed, and the minimum window ruled (2026-08-26)
+
+**The finding IS the window size.** Elias's playtest screenshot showed four overflow instances on
+the Laws surface with every guard silent. The Editor's own layout file
+(`UserSettings/Layouts/default-6000.dwlt`, modified the session's morning) records the Game view at
+**1640×707 free-aspect** — a third size the capture matrix had never seen, whose ~860px right
+column matches the screenshot's estimated width. Free-aspect play produces geometries the two-size
+matrix never exercises; that, not any single label, was the defect.
+
+**The ruling, stated:** minimum supported window **1280×720**; the capture matrix permanently
+gains **1640×707** (the observed real size) beside 1600×900 and 2560×1440, and this pass ran all
+four. Below 1280×720 nothing is promised.
+
+**Enumerated (the capture at the real size was the enumeration instrument), fixed, dispositioned:**
+1. **The sub-tab "Law..." truncation and its whole family** — root: THREE compounding wideners,
+   found one under the next. (a) *The width-less-label class at a new site*: the Laws intro
+   paragraph requested its natural unwrapped width (CalcSize ignores wordWrap with no width) and
+   silently stretched the whole box at EVERY size — it had been clipping at the box edge in the
+   2560 captures all along, guard-blind (a width-less label's rect IS its natural size). Same fix
+   as its two recorded predecessors: explicit measured width; the summary line, bottom-bar
+   affordability label, and the shared `DrawBillLiveEstimate` labels (via an opt-in wrapWidth,
+   the four other callers byte-identical) took the same treatment. (b) *The inner-width split*:
+   list+detail spent the OUTER availableWidth inside the box's padded interior — a constant
+   ~28px box overflow at every size; the "Laws" tab's long-standing edge-kiss at 1600, taken for
+   baseline twice, was THIS. Split now derives from `InnerWidth`. (c) *The ORDER row at the
+   floor*: its measured one-row minimum (~640px) exceeds 1280's inner (~585px), so the search
+   slot now REFLOWS onto the summary line by measured fit (bucket a pure function of window
+   size — Layout/Repaint agree). Status chips share-capped like every other chip row.
+2. **The kicker's mid-token wrap** — did not reproduce on HEAD (the 1jc explicit-width fixes);
+   wraps at spaces at all four sizes.
+3. **The description clipping at the pane fold** — the horizontal half was (1a/1b)'s
+   ExpandWidth-stretch; resolved with them. The vertical half-line at a scroll edge is standard
+   scrollview behavior, unchanged.
+4. **List rows cut off** — (1b)'s stretch; resolved with it. Plus the one instance the floor
+   sweep MEASURED: the 1j "APPROVAL" header caption needed 42.5px in 39.9 at the 8px shrink
+   floor — curated abbreviation ("APPR.") below the guard's own measured threshold, the D7 idiom.
+5. **New at 1640×707, guard-caught:** the policy-screen stat chips' `MinChipWidth` constant
+   (calibrated per-font at one aspect) left name columns of 83.6px against "Labor Force
+   Participation" needing 89.2 AT THE SHRINK FLOOR — a name no shrink can save.
+   `ComputeLayout` now ALSO floors the chip width by the widest shown name measured at the
+   floor size plus the chip's fixed parts, and drops chips-per-row until every chip holds its
+   own name (measure and draw stay one calculation).
+
+**Verification:** four size-iterations of compile+capture, final `fd1280/fd1640/fd1600/fd2560`
+all 64/64, **0 overflows, 0 escapes, 0 ATTRIB**, and the eye confirms composition: the floor
+reflows the search slot, 1640/1600 keep the inline form, every tab and chip fully inside the
+window, rule-15 against the prior sets showing only the intentional diffs (the intro finally
+wrapping INSIDE the box; the edge-kiss gone).
+
+**The machine gate's THIRD instance, same morning:** Unity Hub's installer
+(`UnityHubSetup-3.21.0` + `old-uninstaller`, started the minute Elias's session ended) rewrote
+the editor tree again mid-pass — 0x8007007E on launch, diagnosed read-only by process list +
+CreationTimes, waited out by watcher, everything green after. A stale `Temp/UnityLockfile` with
+no owning process was left alone and Unity cleared it on the next launch, as it does. The gate's
+first checks remain: process list + freshly-created files, never a blind re-run.
+
+## Item 5 NAMED — the player-set rate as a deliberate choice (2026-08-25, ruled: C now, B the destination)
+
+The naming pass, exactly as ruled. **Player-facing:** the Federal Reserve tab's
+independent-currency branch (Sweden, Poland) now carries its honesty paragraph above the slider —
+"The real {bank} sets its policy rate independently of the government. This game deliberately
+hands you the central bank, so monetary policy stays a lever you own - a gameplay choice, stated
+plainly, not a claim about how {country}'s institutions work" — the counterpart of the Eurozone
+Rate-Voice paragraph that has carried the same honesty register since that mechanic shipped, and
+the Italy-scenario precedent of a premise as authored text. Verified on the capture
+(`item5sweden_07d_politics_federalreserve`: Sveriges Riksbank, text above the slider, 62/62 sweep
+clean). **Doc-facing:** `PolicyDecision.InterestRateChange` states the choice and the recorded
+destination. **The destination and its two gates live in the roadmap's Step 4 block:** option B —
+independence with appointment influence, the Fed Chair mechanism generalized
+(`Country.CurrentFedChair` non-null is already the entire gate) — behind (1) the Taylor-path
+output-gap distortion fix (the recorded finding that pins the suggested rate to the 0-floor;
+Q5/Step-5-adjacent) *— ✅ CLEARED 2026-08-26 by pass 4 ("Pass 4 ships" below)* — and (2) item
+10's own machinery, appointments being political-game material — *now B's only remaining gate*.
+Option A (chair-less Taylor-following) is rejected in the record: it spends Sweden/Poland's full
+monetary agency — the only two countries that have it — while inheriting the distortion, with
+nothing gameplay-shaped in return.
+
+**The roadmap, brought current in the same pass — re-derived, not appended.** It had NO entry for
+anything since 08-24 (confirmed by grep: zero hits for "decision density," "law," "50," or "Screen
+1i" before this pass), and one bullet — "NOT STARTED: item 8 (zero persistence code exists), item
+7 Phases 4–5, item 6" — that had been false for nine days while the same file's own Master Sequence
+record and `COMPLETED.md` §19 said otherwise. Both fixed by strike-through with the date, per the
+document's own convention; the "Board state, RE-DERIVED 2026-08-25" block names its sources (the
+commit log, this file's entries by title, the curl, the grep); the Master Sequence II spine
+re-checked and found unchanged (Steps 1–3, 5 done; 4 gated 13 Sept; 6 behind it); the riding-gates
+table's GC row closed, D1 re-verified, and the Editor checklist row now carries the capture-set
+reviews including the shipped browser. `COMPLETED.md` gains §20 as the pointer the three-way test
+requires.
+
+## The fiscal seed recalibration ships — build-order item 1, the SIXTH baseline discontinuity (2026-08-26)
+
+**Trajectory-moving by construction, named a recalibration throughout, terminal-interactive as
+ruled** — six rulings taken in two terminal batches, every one recorded where it lands. The pass
+resolves the item-4/playtest-2 artifact class at its root: the five EU countries taxed the
+general-government base and spent barely half its perimeter.
+
+**§1 — the state, measured before proposing (`FiscalRecalDiagnostic`, new, retained; seed 777).**
+The perimeter bug confirmed exactly as briefed: year-1 primary balances SE +14.15 / DE +16.32 /
+FR +19.49 / IT +22.51 / PL +18.17 % of GDP — G at real government-consumption levels (18–26%,
+actually correct), transfers almost entirely absent (mandatory 0, welfare 0, benefits 0.7–2.0) —
+with the FRF then crushed to 0.58–0.76 by t2–t3, suppressing revenue ~10pp below target forever
+to paper over the seed. The USA was the control: federal/federal perimeter, mandatory 13.8%
+seeded, primary −2.38 vs the real −2.7 (CBO FY2025). **The item-4 "32%" reconciled, not
+absorbed**: that was a live-session Budget-display reading; the harness measures the same defect
+at +14.15 at T1 — one defect, two surfaces, both recorded. *(Tool correction, visible not
+silent: the diagnostic's first run labeled `FiscalTurnReport.SwfReturns` "swfDraw%" — that field
+is the accrued REALISED fund return (fund-side only, can be negative); the 3%/yr structural draw
+rides inside Revenue and is not separately reported. Relabeled `swfRealisedRet%`.)*
+
+**§2 — the ruled pairs (terminal batch 1+2, all sourced, dated, one basis per side).** Revenue
+targets → Eurostat `gov_10a_taxag` 2024 (API vintage 2026-07-21): DE 40.9ᵖ · FR 45.3 · IT 42.5 ·
+PL 37.6 · SE 42.2; CE re-solved 0.8393/0.7494/0.9424/0.8931/0.7895. Primary targets → 2025
+actuals (Eurostat April-2026 EDP deficits; ECB GFS D.41 interest 2025-Q4 DE 1.10/FR 2.20/PL
+2.51/SE 0.61, IT ≈3.9 derived): **DE −1.6 · FR −2.9 · IT +0.8 · PL −4.8 · SE −0.7.** Mechanism
+(ruled): G untouched (it matches real consumption; raising it breaks the C+I+G+NX identity — the
+USA PotentialGDP lesson); the missing ~20%-of-GDP enters as MANDATORY transfer lines —
+**SocialSecurity = real old-age cash benefits** (Eurostat `gov_10a_exp` GF10.02/**D62** 2024 —
+deliberately the cash item, not the function total that bundles in-kind elderly care: DE 9.0ᵖ /
+FR 12.4ᵖ / IT 13.6 / PL 10.4 / SE 7.0 — arming `ApplyDemographicPensionPressure` at each real
+pension line) plus **IncomeSecurity as the solved residual**. Sweden per its own ruling: UO10/11/12
+flip mandatory (the item-4 flag ruling, executed), the SocialSecurity line constructed at the
+full 7.0% (UO11's 1.19 + the out-of-budget pension system 5.81), IncomeSecurity 9.73, G falling
+26 → 20.38. **USA: NO CHANGE, ruled** (the control was already honest; its interest runs 4.24%
+vs the real 3.2% — a premium-formula property, recorded, not a seed pair). The model books tax
+revenue only, so both sides sit ~5–7pp under real general-government totals; **the primary
+balance is the anchored quantity.**
+
+**Sweden's ruled follow-up — PotentialGDP re-solved in-pass**: the G-flip opened a ~2–3% gap
+(t1 growth +0.5% vs 1.5% potential); `SwedenPotentialSolveDiagnostic` (new, retained; the USA
+`--usapotgdp` idiom as a two-stage sweep) solved **614.25**, at which GDP=620 is its own
+turn-1-consistent fixed point (t1 619.99, err 0.005). Baked with the USA-style comment.
+
+**Italy Debt Crisis re-premised (terminal ruling: stabilize ≤145 by t30).** The re-measurement
+(`recal_italymeasure.log`): under honest calibration the FRF + erosion bring 165% → 148.3
+no-policy by t30 themselves, and the lever spread narrowed 57 points → ~5 (a −20% discretionary
+cut buys 2.5 where it bought 17). The ≤95-by-t20 consolidation triumph was the suppressed-revenue
+era's artifact; the honest scenario is stabilization — which is real Italy. EndTurn 20→30, target
+95→145; winners: cut20+VAT25 143.1 (margin 1.9, holds the room), VAT28 143.2 (breaks the
+40-streak at 39.9 — the instrument tension, sharpened), cut30 144.4 thin; the slice diagnostic's
+win-line re-authored to the mixed package and **all three claims green** (no-policy fails by 3.3;
+the winnable line wins; the Sustained streak crosses a save 8→9). **Inherit the Fund's premise
+HOLDS unchanged** (same lose-1-of-3 shape, creditor branch exercised both arms).
+
+**The bar, largest form, all green:** T1 primaries land on target (SE −0.64 / DE −1.50 / FR
+−2.30 / IT +0.59 / PL −5.36 — within the sources' own precision; FRF now 0.97–1.18);
+equivalence 117/117 within 3% + bucket asserts (the @shock INFO probe rows byte-identical
+pre/post — the standing Q2-era residual class); anchors 5/6 with Poland's expected fail (seed
+positions untouched by design); RT 12/12 both seeds with the version gate exercised — **no
+`SaveVersion` bump: WorldFactory-only, no shape change, a loaded save carries its own seeds by
+construction and the RT continuation proves it**; fresh `traj_postrecal_*` baselines (2 seeds ×
+100/500/1000, dumped AFTER the potential bake); captures at ALL FOUR sizes
+(`recal1280/1640/1600/2560`, 64/64 each, 0 overflows, 0 escapes, 0 canvas violations, 0 ATTRIB)
+— the Budget mandatory groups now populated for all six are on film.
+
+**The signature — the fiscal engine's first measurement under honest calibration** (judged at
+the ruled 100–200 window; t1000 diagnostic only; both seeds agree): **USA** 127.8 → ~125 (t100)
+→ 122.5 (t200), drifting mildly DOWN (erosion on a 128% stock outweighs the −2.4 primary);
+**Sweden** 35 → ~25–28, stable (the collapse-to-creditor era gone); **Germany** 63 → ~67–68,
+the mild honest climber; **France** 116 → 123 (t100) → 113 (t200), oscillating under the FRF;
+**Italy** 138–142 → ~150 (t200), the true slow climber — surplus loses to 5.4% interest, the
+scenario premise now true at seed; **Poland** 59 → ~70 then STABILIZED 69–73 through t500 by a
+1.18 multiplier — the stabilizer genuinely stabilizing the slate's honest expander. **The
+restoring force binds in the window.** At t1000 (diagnostic): Germany/Italy/Poland reach the
+300% `MaxDebtToGdpPercent` ceiling (seeds 777/424242 vary) — the recorded mechanism limit ("a
+flow cannot outrun stock compounding") now expressed at real calibration levels; the ceiling, a
+"calibrated gameplay bound no country has ever reached", is reached at the millennium horizon.
+Recorded; the window verdict stands; "equilibrium" remains unearned.
+
+**The ruled order's dependency note, honored:** the other four countries' decomposition passes
+now decompose CORRECT totals. Pass 2 (the couplings pass) follows on the `traj_postrecal_*`
+baselines.
+
+## The Crime & Justice couplings pass ships — build-order item 2, the gap list consumed (2026-08-26)
+
+**The input was the table's own logged gap list** (no sentencing→prison, no dial→budget,
+BorderEnforcement single-edge); terminal-interactive, force-kind per edge, four terminal rulings.
+
+**E1 — SentencingSeverity → PrisonPopulationRate, S = 1.6 (ruled at parity, band 1.0–2.0).** The
+NRC's 2014 assessment anchors it: the US 1980–2010 prison tripling was entirely policy, through
+admissions AND time served "in almost equal measure" — so the time-served channel sits at parity
+with the drug-policy admissions channel (1.6). One term in the existing lagged-stock target
+(0.15/turn reversion, ~4.3-year half-life — the honest dynamics were already built), one table
+row; the pane picked it up with zero renderer changes. **The pane's headline before/after: Truth
+in Sentencing's Incarceration line +16 → +40.0 per 100k** (its sentencing effect had reached the
+pane only through its bail delta — the gap a player saw first, closed).
+
+**E2 — dials → budget, LINE-RESIDENT AND FEEDING G (ruled — the physically honest option over
+the clean 7th-term).** Enforcement costs land on REAL spending lines (USA Justice +
+HomelandSecurity — CBP/ICE's actual federal line; Sweden UO4 rättsväsendet + UO8 Migration; the
+four generics PublicServices until their decomposition passes), flowing into the
+national-accounts G term through the existing discretionary sum — no money invented outside the
+line structure the recalibration just made honest. NEUTRAL-ANCHORED: zero at dial 50 / prison at
+baseline (the status-quo apparatus is already inside the recalibrated seed totals), which is what
+makes the no-law path byte-identical by construction. Magnitudes ruled as judgment-with-anchors,
+banded: full-swing shares Police 0.30% / Judicial 0.15% / Border 0.15% of GDP (between the USA's
+federal justice perimeter ~0.3% and Sweden's general-government ~1.6%), and the incarceration
+variable cost at **1.0 GDP-per-capita per inmate-year** (anchors: BOP FY2024 COIF $47,162 ≈ 0.5
+GDPpc; Kriminalvården ~€117k ≈ 2.2 — the real cross-country spread, midpoint stated as judgment).
+The stateless-target-on-stateful-line problem solved by two additive Country trackers
+(`AppliedJusticeEnforcementCost`/`AppliedBorderEnforcementCost` — each boundary applies the
+DIFFERENCE; old saves load 0 and self-correct). The pane gains the **Budget cost (% of GDP/yr)**
+line carrying the direct shares plus the incarceration tail — the full honest chain on the row a
+player reads: *sentencing → prison stock (lagged) → budget*.
+
+**E3 — BorderEnforcement's second edge DECLINED by ruling, reasons recorded** in the dial's own
+doc and the table header: the migration channel belongs to ImmigrationPolicyLevel (0.1/pt, the
+recorded anti-double-counting design), the single-channel scoping was itself a ruling, Angelucci
+2012's −0.4..−0.8 says the marginal effect is modest — and the dial gained a budget edge anyway.
+**Single direct edge ruled honest, not incomplete.** Also consumed: PolicyWebRenderer's
+restated-literal edge weights folded to table const refs (the drift class the extraction flagged),
+plus its new sentencing-prison and three dial→DebtToGdp edges and tooltip lines.
+
+**The bar, force-kind, post-recal era — all green:** the wired-inert control FIRST (all five new
+constants at 0 with the full plumbing live: **6 of 6 dumps byte-identical** to `pre_couplings` ≡
+`traj_postrecal_*`); then the ruled values, and **the no-law path stayed byte-identical, 6 of 6**
+— the neutral-anchor claim proven, not assumed. The measured decomposition
+(`CouplingsPassDiagnostic`, new, retained; Truth in Sentencing + Three Strikes on USA, 30 turns
+vs a same-seed control): prison target **603.0 exact** (531 + 1.6×35 + 2.0×8), the stock filling
+541.8 → 602.4 on the reversion lag; `appliedCost` decomposing exactly against live GDP (37.55 at
+t30 = 71.4/100k × ~52.5k). Composition PASS (27-law enact/repeal, ceilings reached and released,
+repeal nets 50.0000); equivalence 117/117 (the Phase-2 row drives SentencingSeverity and now
+exercises the new term); RT 12/12 with the two new fields crossing saves (additive, no
+`SaveVersion` bump); captures at ALL FOUR sizes (`coup1280/1640/1600/2560`, 64/64, all guards 0,
+0 ATTRIB via the armed folds) — the 06g pane with the prison and budget lines is on film.
+
+**Two measured properties, recorded not retuned:** (1) the applied-delta idiom composes with
+discretionary line growth — past cost applications ride the same PotentialGrowthRate path as
+every appropriated dollar, so the line's cost portion runs above the instantaneous target
+(+46% at t30: line-delta 54.7 vs applied 37.6) — bounded by ClampToSeedRange, deterministic,
+and defensible (the target floors new appropriations; it does not cap the stock); (2) **the
+sentencing package LOWERS debt-to-GDP (−1.93 pts at t30) despite its cost** — the pre-existing
+crime→BusinessConfidence→investment channel outweighs the new ~0.1%-of-GDP/yr budget edge, so
+tough-on-crime currently pays for itself in this model. A model-balance observation for a future
+pass, stated here rather than tuned away inside a coupling pass.
+
+**For pass 3 (the second law category), as the brief asks:** the line-resident enforcementCost
+template is the piece that generalizes — any future category's dials can price their regime
+through real spending lines the same way — and the prison edge deepens sentencing-adjacent
+content specifically. The catalog's own wanted-effects log (the eight axes) and its out-of-scope
+note remain the candidate map; the budget mechanism no longer constrains the choice.
+
+## The second law category ships — Labor Market, coexistence by ruling (2026-08-26)
+
+Pass 3 of the ruled order (build-order item 3). Derivation first, per the charter: a six-reader
+sweep at HEAD scored Labor vs Housing vs Sectors on the §1 criteria — Labor has SIX existing
+dials and the game's richest visible-stat surface; Sectors is dict-shaped (needs a LawDefinition
+VARIANT) and consequence-thin (descriptive stats, hard-isolated from the core loop — the natural
+THIRD, after a sector→core coupling pass); Housing FAILS the dial-space test (~1.5 axes, HPI has
+no policy input at all — a 4-6-new-dials pass, said not smuggled, declined). **Terminal rulings:
+Labor Market; ALL SIX LaborPolicyBill dials join the category (family and immigration laws are
+genuinely labor-market statutes); per-dial magnitude scales on the shared grid; and the
+deliberate override — the Labor tab KEEPS ITS SLIDERS ("coexistence"), the opposite of C&J's
+read-only conversion.**
+
+**The coexistence design (the override's engineering):** each labor dial splits into a
+bill-owned STATUTORY BASE (`Country.*Base`, six additive fields, −1 old-save sentinel adopted at
+`RestoreSaveState`) plus a law-owned OFFSET (pure sum of enacted labor deltas), composed by
+`RecomputeLaborDialsFromEnactedLaws` as effective = clamp(base + Σ), clamped ONCE at composition
+and never persisted into either component. Bills write base (`ApplyLaborBillEffects` rewritten;
+`GetLaborBillDirection` measures bill-vs-base), laws stack on top, and the recompute is the sole
+writer of the effective dials — the 555f4cc pure-function lesson, now with TWO writers and one
+composition. `LaborLawCompositionDiagnostic` (new, retained) proves it: stacking exact at every
+batch boundary, full repeal exact to base, **bill/law ORDER INVARIANCE** (bill-then-laws ≡
+laws-then-bill on all six dials and both bases), **repeal-to-BILL-base** exact, cross-category
+isolation (a C&J law's recompute is an exact labor no-op and vice versa), and the **Sweden
+gate** (a minimum-wage law leaves `MinimumWagePercentOfMedian` untouched where
+`!MinimumWageImplemented`, and `GetLawBillDirection` skips the term — the `country` parameter's
+first real use, via `MinimumWageDeltaIndex`). The Labor tab's sliders now show and edit the
+BASE, with the two-books note per row ("laws +N → M in effect" in the trailing column) — the
+coexistence made legible, not hidden.
+
+**The catalog: 50 Labor Market laws in five batches of ten (100 total, 50/50 by category).**
+Charters per batch, C&J discipline verbatim (CONFIRMED/DIRECTIONAL/GENRE-IDIOM citation voice,
+tier-stated deltas, approval-cost conventions): B1 the flagship dials at documented depth
+(Raise the Wage at +16 Kaitz = SWEEPING via the ×2 scale; the UK Wages Councils abolition as
+MinWage's real down direction; the Working Time Directive vs El Khomri opposed pair; the honest
+note that statutory-leave ROLLBACKS found no clean citation, twice); B2 the demographic
+rebalance (Rodzina 500+, the UK two-child limit as Family's down direction, the EU
+temporary-protection opening vs Denmark's paradigm shift); B3 multi-dial composition (the
+flexicurity package = labor's first WEAK-PROXY use — EPL has no dial, only the representable
+remainder authored; the demographic-response triple-dial); B4 the MINOR-heavy administrative
+tier, deliberately diversified AWAY from the two dials nearing ceiling (Family 92, Retraining
+94 on the running sum); B5 the close, designed to SATURATE — the all-50 composition genuinely
+reaches Retraining raw 104.0 and Family raw 101.0 (both logged by the harness's own
+saturation-evidence lines) and releases them exactly on full repeal. **The labor wanted-effects
+log** (LawCatalog class doc): unionization/collective-bargaining structure (zero code presence,
+grep-confirmed), gig/platform classification, EPL strictness, unemployment-insurance rules,
+statutory-minimum-wage INTRODUCTION (the `MinimumWageImplemented` flip is a new mechanism —
+said, not smuggled), licensing/safety/retirement-age — logged, not force-fit.
+
+**The generality finding, reported not absorbed (the §3 bar's own sentence):**
+`CrimeJusticeCouplings.AggregateLawEffects` could NOT render the new category's edges — its stat
+enum, dial switch and table are C&J-typed, and a labor law fed to it yields a silently EMPTY
+list. The declared-table architecture is PER-CATEGORY, not category-generic: `LaborCouplings`
+(new) is the second declared table — ten constants moved VERBATIM from MacroSystem (the C&J
+extraction pattern; MacroSystem and PolicyWebRenderer read the table's qualified names), ten
+edges with per-unit sensitivities (the two /100f divisors are the formulas' own per-100-Kaitz
+application, quoted), minimum-wage edges GATED on the statutory-wage fact exactly as the sim
+gates them, contested flags on the minimum-wage employment edge (CBO/Card-Krueger) and the
+overtime work-sharing edge. The pane dispatches on `law.Category` for the dial grid (real-unit
+labels: "Kaitz pts", "weeks") and the expected-effects block; the rendering loop is
+shape-identical — one new table per category, zero renderer work.
+
+**The browser returns, verified against the 1j/1i boards:** the chip row is back exactly as the
+step-down note promised (counted 1i form "All - 100 / Crime & Justice - 50 / Labor Market - 50";
+no hatched "- 0" chips render because every enum member is populated — 1i's five hatched chips
+were drawn categories that never entered the enum), and **the category filter genuinely narrows
+for the first time** — the inertness bug closed by content, exactly as LawBrowserFilter's doc
+predicted. The category cell returned at the 1i ratio share (0.19, re-derived not copied), the
+summary line dropped its "all CRIME & JUSTICE" literal, LawCategoryLabel gained "LABOR MARKET",
+per-law surfaces (row accent, ENACTED color) carry the law's own category area, and the
+tab-level area went Neutral (no single system owns a two-category screen). Stated adaptations:
+the header captions STATUTE/CATEGORY/APPROVAL (magnitude stays uncaptioned — the stepped rule is
+self-carrying); the compact row's category token right-slides beside cost (variants never
+interleave within a group). `DialMagnitudeScales` (LawCatalog) normalizes real-unit dials onto
+the shared 3/6/14/22/30 grid (MinWage ×2 — Fight-for-$15 ≈ SWEEPING, a Mindestlohn-scale +6 ≈
+MODERATE; weeks ride the grid at ×1); `LawDialSigns` grew to twelve in lockstep.
+
+**The bar — all green:** default-path BYTE-IDENTITY 6/6 (`traj_post_labor_*` ≡
+`traj_post_couplings_*`, both seeds, all three horizons — the couplings-era baselines STAND; no
+new discontinuity, by construction and now by hash). RT **12/12** with laws from BOTH categories
+crossing the save (15 C&J + 4 labor enacted through the real recomputes, 3 pending law bills,
+and the six base fields snapshotted by name). Equivalence 117/117. Composition: C&J 27-law
+re-run exact at the 100-law catalog; labor saturating run as above. Captures at ALL FOUR sizes
+(`labor1280/1640/1600/2560`, 99/99 each, 0 overflows / 0 escapes / 0 violations, ATTRIB clean
+via the armed folds). **The floor sweep earned its keep:** the first 1280×720 run recorded 22
+overflows — the returned category cell's full tokens bottoming the shrink ladder ("CRIME &
+JUSTICE needs 67.5 in 57.6 at 8px"), long statute names shrunk past the floor after the cell
+took its share back from the name, and one pre-existing trace-panel row surfaced by the richer
+pin state. Fixed on the codebase's own ladders, not absorbed: a measured 70px short-token
+threshold (`LawCategoryCellLabel` — the "APPR." idiom; above it the full token shrinks to the 1i
+spec's own dimmed-token size), `LedgerRow.NameCell` made public (wrap-to-two-lines before
+shrink, §A.9a) for both law-row name variants, and a curated trace-row name. One 1280 run then
+logged 3 "Event in buffer is already marked as handled" errors with an abnormal editor exit —
+re-run clean end-to-end; recorded as this environment's known windowed-capture flake class, not
+a regression. The 85g pin is now two-category WITH both recomputes invoked (the pinned dials
+match what real enactment produces — the C&J read-only tab photographs law-driven values for the
+first time, a stated baseline change).
+
+**Decision density re-run (same method, constants re-read at HEAD by grep):** named enactables
+**119** (13 TaxType + 6 WelfareProgramType + 100 LawCatalog) vs the 69 the first category
+produced (×1.72) and the 08-18 memo's 19 (×6.3). The automatic prompt table is UNCHANGED
+(MeetingChancePerDay 0.01, DecisionChancePerTurn 0.12, ElectionCycle 4, BillDurationDays 21 —
+all re-verified): ≈5.87/yr USA, 5.62 elsewhere. The dial-bundle row still tabulates 6 slots,
+never summed — with the annotation now reading differently per category: C&J's slot retired
+player-facing (the read-only ruling), Labor's slot COEXISTS with the law menu by design (the
+base is itself a player instrument, not a competing book).
+
+**The generalization verdict — what the third category inherits:** HELD from C&J: extend the
+enum not the dial shape; the same-class float-field path (the doc's own reservation for non-dict
+categories); the pure-function recompute idiom; the whole generic bill pipeline (introduce/
+advance/apply, saves, division records — zero touches); the magnitude grid, citation voice,
+batch charters, per-batch boundary checks, saturating close, weak-proxy rule and wanted-effects
+log; the 1j return paths, exactly as documented in place. GENERALIZED WITH CHANGES: the
+recompute anchors at PER-COUNTRY baselines (seeds/bases), not the uniform 50; the magnitude grid
+needs per-dial scales for real-unit dials; the coupling surface is one declared table PER
+category plus a pane dispatch; `LawDialSigns`/`DialMagnitudeScales` are hand-lockstep arrays
+(documented on all three declarations). DID NOT GENERALIZE: the read-only sliders ruling — it
+was a per-category ruling, and its alternative (coexistence) costs real machinery (six base
+fields, a bill rewrite, save adoption, an order-invariance proof) that the read-only path never
+needed; a third category should expect that same fork as a terminal question, with both designs
+now proven. Sectors, the standing third candidate, additionally needs its LawDefinition variant
+(dict-shaped) and a consequence surface before its laws are worth authoring.
+
+Stopped at the boundary. Pass 4 (the Riksbank-B gate-1 fix) follows and is not this pass.
+
+## Pass 4 ships — the Taylor path reads the unemployment gap; Riksbank-B gate 1 CLEARED (2026-08-26)
+
+Pass 4 of the ruled build order (build-order item 4, the Riksbank-B gate-1 fix). **The rulings were
+taken BY THE PASS, on the recommendations of a terminal batch that was reported twice without a
+ruling arriving (rule 4's own fallback for a reversible call, recorded here so it never reads as
+drift): (1) fix the RULE, not the seeds; (2) the rule reads the unemployment gap (B2) with an
+explicit `TaylorRule.UnemploymentGapWeight = 1.0f` stated as a textbook convention; (3) the
+SEVENTH baseline discontinuity accepted as the price, by construction; (4) one always-drawn reading
+line on each branch of the central-bank tab; (5) the identity's government-consumption block queued
+as a named-trigger roadmap item. Overrule = revert `513b348` (the build) and the closing commit;
+every baseline is labelled (`traj_pre_pass4_*` / `traj_post_pass4_*`).**
+
+**The defect, measured at HEAD before anything (fresh `pre_pass4` dumps, both seeds, the ruled
+100–200 window).** `GetSuggestedInterestRate` read `0.5 × (GDP − PotentialGDP)/PotentialGDP` — the
+raw LEVEL gap — and that gap is a persistent per-country level, the fixed point of the identity's
+own dynamics: the growth-inclusive ratio map `r* = [s + (1−s)·(G+NX)/Pot] / [(1+g) − (1−s)·a]`
+reproduces the dumps to ~0.02 pp (G is discretionary-only, C+I ≈ 0.79 of GDP, the attractor
+anchors period-open potential while the ratio divides by period-close potential, and that (1+g)
+alone is ~2.5–3 pp of the USA's −14.5%). No `PotentialGDP` value closes it — `r* = 1` needs Pot ≈
+6,960, a 76% GDP collapse — which "Discretionary Spending Growth" had already proved in July before
+naming `OutputGapWeight` "a separate decision, not made here". Re-measured (the script reproduces
+the Q5 §3 table digit for digit on the Q5-era dump): level gap USA −14.5 (sd 0.6, unchanged),
+Poland **−6.9** (the Q5 table said −4.5 — the recalibration turned the EU-five gaps from drifting
+series, sd 2–3, into stable negative levels, sd < 0.9; at session length Poland/Germany/Italy/
+France are unchanged to two decimals and only Sweden moved, +1.7 → −2.2), Italy −4.5, Germany
+−2.7, Sweden −0.8, France −0.5; every country's unemployment gap −0.03 ± 0.19 on both seeds.
+
+| | gap t1 | gap band t100–200 min/mean/max | suggestion t100–200 mean (s777 / s424242) | at the floor | realized t100→t200 |
+|---|---|---|---|---|---|
+| USA | −14.70 | −15.9 / −14.3 / −12.4 | **0.01 / 0.02** | **98 and 95 of 101 turns** | 0.00 → 0.00 |
+| Poland | −4.90 | −10.0 / −7.7 / −6.6 | 1.43 / 1.13 | 63 of the first 100 | 3.75 (player-set) |
+| Italy | −1.34 | −5.3 / −3.9 / −2.4 | 2.13 / 4.23 | 0 | zone |
+| Germany | −0.39 | −3.9 / −1.8 / −0.2 | 6.51 / 7.01 | 0 | zone |
+| France | +1.14 | −2.0 / +0.1 / +1.6 | 6.77 / 6.55 | 0 | zone |
+| Sweden | −0.56 | −3.2 / −1.4 / +0.1 | 3.77 / 3.47 | 0 | 1.75 (player-set) |
+| ZONE blend | | | 5.65 / 6.26 | | 5.59 → 5.96 / 5.42 → 6.51 |
+
+USA inflation averaged 3.5–3.7% through that window with the suggestion at zero. **The chair
+differentiation had collapsed to the bias** (`FedChairDifferentiationDiagnostic`, new, seed 777,
+all eight chairs forced): five of eight — every Moderate at or below 0 and both Doves — ran the
+IDENTICAL trajectory at 0.00%; the hawk-vs-dove spread was 1.500 pp at t50 and t100 against a bias
+difference of 3.00; inflation between the extremes differed by 0.08 pp. And a runaway nothing
+watched: with the rate at 0 the housing rate gap sat at −3.75 forever and `ApplyHousePriceIndex`
+compounded the USA index at +3.9%/turn — 102 → 3,970 at t100 → **177,959 at t200** — invisible to
+the five-field swing check.
+
+**The fork, derived and ruled.** (A) fix the seeds — rejected on the record above and the map: the
+honest A is a government-consumption term in the identity and six re-solved potentials, a
+seventh-scale discontinuity across all six countries and Okun's anchor, and the gap DRIFTS 1–3 pp
+over the first ~50 turns for four countries regardless (only the two solved seeds, USA 33260 and
+Sweden 614.25, start at their fixed point), so the rule would need B afterward anyway. (B) fix the
+rule — the codebase's own "gaps, not absolute levels" principle applied to the one path it had
+missed — and the shape of "the structural baseline" decided it: a seed-anchored constant fails
+Poland/Germany/Italy by 1.5–2 pp (the drift); a measured per-country constant is a cached value in
+rule 12's shape whose 100-turn and 1000-turn means disagree by 1–2 pp; a slow running estimate
+(EWMA) needs a new `EconomyState` float, per-country seeding, a NaN sentinel (−1 is a valid gap)
+and a time constant — and it would read a DIFFERENT cycle: the model's own cyclical output gap
+leads the unemployment gap by one turn with the OPPOSITE sign to Okun (cross-correlation +0.87 at
+lag +1; GDP blips revert within a turn and the difference-form Okun reads the reversion as a
+downturn), the coded Okun's effective turn-level slope is −0.08 not −0.5, and NO level Okun exists
+to map one gap into the other. **B2 — `UnemploymentGapWeight × (NAIRU − U)` — with NAIRU as the
+structural baseline: the seeded per-country constant TEN other consumers already read (Phillips,
+Okun's reversion, poverty, LFPR, youth-U, Gini, real wages, hoarding, crime, approval), centred for
+every country, and the variable the Phillips curve drives inflation with.** The weight 1.0 is
+Taylor's 0.5 × Okun's textbook 2 — the Fed's own published substitution — stated as a convention
+because the model cannot derive it; its stakes were measured first (1.0 vs the model-native 0.71:
+0.06 pp). The inflation-only alternative (weight 0) was measured too and is honest to record: at
+no-policy B2 ≈ inflation-only within 0.05 pp everywhere (the term is +0.05 ± 0.2 pp), and
+`WageBoomMeasurementDiagnostic`'s `usa_3pp_60t_fedchair` shows why nothing can separate them there
+— a 3-pp tightness impulse is gone before the first turn boundary (U 1.00 → 4.02 at t1; Okun's
+0.7/turn reversion), so no boundary reading ever sees it. B2 was kept on the dual-mandate grounds:
+the chairs' own descriptions are employment-mandate text, Riksbank-B needs the mandate, and the
+B2+Phillips loop is negative feedback at ≈ −0.03/turn after damping (the persistent level-gap
+channel it replaces was the original crash-loop's source). Eight adversarial verifiers and a
+completeness critic ran over the derivation before the terminal batch; two refutations were adopted
+(Sweden/Poland are NOT byte-identical under any B — the partner-rate channel; "no new constant"
+was wrong — `OkunCoefficient` is private and the weight is a convention) and one review claim was
+itself wrong (it reported no `pre_pass4` label; the six files exist).
+
+**The build (`513b348`).** `TaylorRule`: `UnemploymentGapWeight`, `GetUnemploymentGapPercent`,
+`GetGapTermPercentagePoints`; `OutputGapWeight` removed; `GetOutputGapPercent` kept as a reference
+reading nothing consumes; the class doc rewritten (it was still "pure reference data — never called
+from AdvanceTurn"; it is consumed live by the chair path, the zone blend and the preview).
+`TrajectoryBaselineDump` reads `Taylor.GapTermPp` through the rule's accessor, so the column
+follows whatever the rule reads. `DrawFederalReserveTab`: one always-drawn Label per branch — the
+USA's reading + lean = target (held within 0–15%) with the 15%/turn damping named
+(`FederalReserveSystem.RateAdjustmentSpeed` made public for it), the Eurozone blend with the
+member's own reading, Sweden/Poland's advisory reading ("an independent Sveriges Riksbank on the
+same rule would read …", Riksbank-B's first visible artefact); the Eurozone paragraph's
+"inflation/output-gap situation" became "inflation and labour-market situation". Doc corrections
+in place (the closing commit): the components list and the Economic Theory bullet (both said
+reference-only), the Status paragraph, the turn-1 note (the GDP level shock was addressed and its
+landing has drifted to −0.21% at HEAD; the unemployment spike survives — U 4.5 → 5.26 — judge any
+gap consumer from t5), the Turn-1 GDP Consistency chain (predates pass 4; pass 4 leaves turn 1
+byte-identical because the rule's first application follows period 1; 33260 not re-solved), the
+target-shaper note, the two July entries that deferred `OutputGapWeight` and the playtest-2
+gates paragraph (dated pointers, not rewrites), `PolicyDecision.InterestRateChange`'s gate text,
+the `EconomyState.PotentialGDP`, `EurozoneRateSystem` and `Phase5NoFeedbackDiagnostic` comments
+that still said the rule read the output gap, and `COMPLETED.md` §22's Q5-table framing and
+"USA disqualified" line.
+
+**The bar — trajectory-moving, judged at the ruled window, ATTRIB clean on every run** (the bar
+script's own `ATTRIB` counts were a case-insensitive false positive on `…OnLoadAttributes`;
+case-sensitive grep reads zero in every log).
+- **The centerpiece, all six + the zone, before → after (s777 / s424242, t100–200 means):** USA
+  suggestion 0.01 → **5.82** / 0.02 → **6.12**, floor turns 98 → **0** / 95 → **0**, realized rate
+  0.00 → 4.8–5.8 / 5.5–6.5; Poland's hidden reading 1.43 → 5.27 / 1.13 → 5.06 (floor 63 → 0);
+  Italy 2.13 → 3.98 / 4.23 → 6.17; Germany 6.51 → 7.35 / 7.01 → 8.14; France 6.77 → 6.73 / 6.55
+  → 6.58; Sweden 3.77 → 4.51 / 3.47 → 4.17; **zone blend 5.65 → 6.42 (+0.77) / 6.26 → 7.22
+  (+0.96)**, realized zone rate at t200 5.96 → 6.82 / 6.51 → 7.37. The gap term itself averages
+  +0.04 pp (USA) — the rule now reads inflation with a live cyclical nudge, which is the design.
+  **The signature is dead: no country's suggestion touches the floor anywhere in the window.**
+- **Differentiation restored, damping stable** (the diagnostic re-run at 200 turns): hawk-vs-dove
+  spread **2.78 pp at t50, t100 and t200** (bias difference 3.00; the 0.22 is the damped path
+  trailing a moving target), **0 of 8 chairs at the floor** at every waypoint, all eight on
+  distinct trajectories, inflation dove-minus-hawk +0.147 pp at t100 and t200; max single-turn
+  rate move 0.30 pp (was 0.56), 13–16 direction reversals in 200 turns — the target's own turns,
+  not the every-turn overshoot cycle the undamped mechanic produced.
+- **Force-kind decomposition of the rate chain, erosion standard:** the chain identities
+  `relC_t ≈ relGDP_{t−1} + ln(cIF_B/cIF_A)` and the I twin close with mean |residual| 2.0e-4 (C)
+  and 7.3e-4 (I), max 2.6e-3 (t5, the confidence factor) for the USA on s777, 2.1e-4 / 6.5e-4 on
+  s424242; Germany and Italy ~1e-4; Sweden 2e-5 with a zero rate term. Window ΔGDP/GDP: **USA
+  −2.73% = ΔC −3.32% + ΔI −2.26% + ΔNX −0.01% + Δ(G + reversion) +2.85%** (the 0.5 attractor
+  gives back half, as the identity implies; s424242 −2.87%); Germany and Italy −0.37% (the zone
+  rate +0.76 pp over the window); **Sweden +0.10% and Poland +0.01%, entirely ΔNX — the
+  partner-rate channel (`CurrencySystem.ApplyCurrencyStrength`), the critic's prediction at its
+  measured size.**
+- **The controls:** Sweden's and Poland's `Zone.InterestRate` max |Δ| = **0** over 500 turns on
+  both seeds (player-set; their trajectories move only through the partner channel). `PotentialGDP`
+  EXACTLY unmoved everywhere (the attractor pins it), the demographics block, `ConsumerConfidence`
+  base and the crime/corruption stocks byte-identical: **`TrajectoryDiffCheck` 6/6 pairs, 14 of 42
+  fields byte-identical on every pair.** Movers, all downstream of the rate: the three Taylor
+  columns and `Zone.InterestRate` (USA), `HousePriceIndex`, `CurrencyStrength` (USA +25–33, the
+  dollar on a 5-point differential), `ApprovalRating` (USA +2–3 points), `Country.EffectiveDebtRate`
+  (Germany/Italy +0.8–1.1 pp as the higher zone rate reaches issuance through the maturity lag),
+  `Inflation` (USA −0.3 pp max), `Unemployment` (largest move 0.15 pp, at t5–t7), `GDP` (USA
+  −2.3% at t100, −3.2% at t500).
+- **The seventh discontinuity, by construction (table row 7 at the top of this file):** the USA's
+  level gap the rule stops reading WORSENS −14.3 → −16.6% (GDP −2.3% at t100, −2.9% at t200
+  against the pre path), inflation 2.81 → 2.55 at t100, debt-to-GDP 125.9 → 128.7% (the
+  denominator; USA debt interest is anchored by `BaseDebtInterestRateOverride` and does NOT read
+  the policy rate), the house-price index 3,970 → 418 at t100 and 177,959 → 1,156 at t200 (the
+  runaway ends; homeownership 67.2 → 64.7). **t1000, a diagnostic never a target:** the higher zone
+  rate moves WHEN the pre-existing Eurozone debt divergence reaches its ceiling, not whether
+  (Germany 98 → 143% at t900, both runs at the 300% ceiling by t1000; Italy at the ceiling from
+  t800 in both), the erosion pass's own lesson; USA approval sits ~3 points higher throughout on
+  the lower inflation.
+- **Equivalence 117 of 117 within 3%** (the six C/I INFO rows unchanged in kind). **Save/load
+  round-trip PASS, 12 scenarios (6 countries × 2 seeds)** — the rule adds no state.
+- **The scenario matrix like-for-like at seed 777** (15 scenarios × 100/500, pre side run at HEAD
+  before the build): **8 of 30 anomaly counts EXACT, the other 22 within ±4** (max +4 at
+  baseline/500 and sustainedexploit/500; −3 at stress/100, welfarestress/100,
+  parliamentstress/100); **zero new anomaly kinds** — the same five in both logs (Inflation/
+  Unemployment/InterestRate/DebtToGdpRatio swings, CreditRating moves; 1,589 → 1,616 entries,
+  interest-rate swings 96 → 91 as the rate no longer decays toward a percent-swing-screaming
+  zero); every scenario's per-turn lines differ from turn 2 on (28/30, 124/126 — the rate
+  executes in every path). **Cabinetstress bounded and explained:** counts 32 → 34 (t100), 69 →
+  72 (t500); the USA line at t25 reads rate 0.06 → 5.26%, GDP −2.6%, inflation 3.18 → 2.89,
+  debt-to-GDP +3.1 pp — Fed chair decisions read a suggestion that now moves, by design.
+- **Captures at the four ruled sizes: USA at the four ruled sizes — 1280×720 (rendered 1280×699), 1640×707 (1640×686), 1600×950 (1600×929), 2560×1440 (2560×1419) — 64/64 each, 0 failed, 0 overflows, 0 containment escapes; Sweden and Germany at 1600×929 for the other two branches, 62/62 each, clean; the three new lines confirmed BY EYE on the `p4*_07d_politics_federalreserve` sets (the USA target line wraps inside the panel at 1280 with the zero-lean chair reading 0,00 and the 0–15% hold stated; the Riksbank advisory line above the slider reading 2,40%; the ECB blend 5,35% beside Germany's own 5,54%).**
+
+**The Eurozone amendment (dated 2026-08-26, correcting the Disinflation post-mortem's monetary
+half and the Italy entry's country/mechanism ruling).** Under the fixed rule the zone blend sits
++0.8 to +1.0 pp higher in the window because Germany's and Italy's level gaps no longer drag it.
+Re-measured with `DisinflationMeasurementDiagnostic` §4 (the 10% start, 30 turns): Germany's
+shared rate auto-climbs to **10.03% by t30 (was 8.63)** and inflation ends **10.05 (was 10.12)**;
+Italy's zone rate 7.67 (was 6.69), inflation 9.73 (was 9.78); the maximum ±0.75 push still leaves
+t30 inflation **identical to three decimals** (10.050 with or without it). The finding's STRUCTURE
+stands with refreshed numbers — the automatic blend moves further than the player ever could and
+the result is still nothing, because the reversion, not the rate, is what forecloses disinflation;
+the approval kill stands untouched. Poland's and Sweden's own lines move only through the partner
+channel (Poland no-policy 9.34 → 9.37).
+
+**USA's monetary-scenario disqualification: AMENDED, not lifted whole.** The rule-based half is
+gone — in `usa_3pp_60t_fedchair` the Fed's rate now reads 3.94% at t1, 4.73 at t10, 4.99 at t30,
+5.79 at t60 (before: 3.19 decaying to 0.00 by t30) — and the chairs differentiate. The
+reversion-based half stands exactly as the named pattern says: the 3-pp impulse is closed before
+the first boundary in both runs, so "hold the gap off NAIRU" scenarios remain foreclosed for every
+country, the USA included. What the USA regains is the inflation-management family where the lever
+is the inflation gap — the Fed chair's response is real, differentiated by chair, and bounded.
+
+**Riksbank-B: gate 1 CLEARED.** Gate 2 (item 10's appointment machinery) is its only remaining
+gate. Recorded for that build: Poland's hidden reading (1.4 → 5.3 at the window), the advisory line
+already on the Sweden/Poland tab, and the seed transient — a rule reading (NAIRU − U) at t1–t3
+sees Sweden −1.2 and Poland −2.65 (deterministic, gone by t5), so an independent Riksbank would
+open with three artefact-driven turns unless the build anchors or skips them.
+
+**What remains dark, stated:** the level output gap is still the identity's accounting hole
+(roadmap trigger item); B2 vs inflation-only is a design choice the no-policy runs cannot
+adjudicate; `TaylorRule.GetOutputGapPercent` is a reference reading nothing consumes; the
+capture guard does not measure flow-layout labels, so the three new lines are confirmed by eye on
+the `07d_politics_federalreserve` sets, not by the overflow count.
+
+Stopped at the boundary. Pass 5 (tariff-to-stock) follows and is not this pass.
+
+## Pass 5 ships — tariff revenue reaches the books; the ruled build order CLOSES (2026-08-26)
+
+Pass 5 of the ruled build order (build-order item 5, tariff-to-stock, the F1-shaped fix).
+**Terminal-interactive as ruled; the rulings were taken BY THE PASS on the terminal batch's
+recommendations where the terminal drew no answer (pass 4's precedent, rule 4's reversible-call
+form): (1) the routing is a FLOW, not a stock settlement; (2) revenue-neutral at seed by a
+closed-form CollectionEfficiency decrement per country; (3) the free-lever finding ships as a
+recorded exploit class with the tariff-cost mechanics queued at a named trigger, not smuggled in as
+a second force. Overrule = revert `6b93a1c` (the build), `ad82104` (the plumbing) and the closing
+commit; the baselines are `traj_pre_pass5_*` / `traj_ctrl_pass5_*` / `traj_post_pass5_*` /
+`traj_post_pass5b_*`.**
+
+**The defect, restated from "What remains dark" and verified at HEAD.** `TradeSystem.ApplyTradeEffects`
+computed tariff revenue (Σ ImportVolume × the rate we charge that partner — static volumes, rates
+from override → bloc-internal → bloc-external → base), added it to `EconomyState.Budget` alone (the
+cumulative display accumulator) and handed the figure to `FiscalTurnReport.TariffRevenue`; the debt
+stock moves only by `budgetBalance` inside `ApplyRevenueAndSpending` (accrued daily) and by F1's
+one-time impacts, and `GetTotalTaxRevenue` skips `TaxType.Tariffs` by design. Two books for one
+quantity — the exact shape F1 closed for interrupt impacts — and the Budget screen's "Net (matches
+this year's Budget change)" line was a HAND SUM that added `TariffRevenue` on top of `Revenue` and
+mixed a per-turn change with a level, which `FiscalTurnReport`'s own doc forbids.
+
+**§1 — measured before wiring (`TariffTakeDiagnostic`, new, retained; seed 777; the real path and the
+pure sum asserted equal for all six).** The take at seed rates, its weight, and what routing it
+un-neutralized would do to the primaries pass 1 landed:
+
+| | imports (% GDP) | take / turn | % of GDP | % of year-1 tax revenue | seed-neutral CE (Δ) | primary t1: landed → un-neutralized | every partner at 50%: % of GDP |
+|---|---|---|---|---|---|---|---|
+| USA | 283 (0.98) | 8.49 | 0.029 | 0.16 | 0.6129 → 0.6119 (−0.0010) | −2.38 → −2.35 | 0.49 |
+| Germany | 595 (12.7) | 4.08 | 0.087 | 0.21 | 0.8393 → 0.8375 (−0.0018) | −1.50 → −1.42 | 6.33 |
+| France | 365 (11.4) | 2.69 | 0.084 | 0.19 | 0.7494 → 0.7480 (−0.0014) | −2.30 → −2.22 | 5.70 |
+| Italy | 240 (10.4) | 0.24 | 0.010 | 0.03 | 0.9424 → 0.9422 (−0.0002) | +0.59 → +0.60 | 5.22 |
+| Poland | 155 (18.5) | 0.74 | 0.088 | 0.23 | 0.8931 → 0.8910 (−0.0021) | −5.36 → −5.27 | 9.23 |
+| Sweden | 140 (22.6) | 1.01 | 0.163 | 0.39 | 0.7895 → 0.7865 (−0.0030) | −0.64 → −0.48 | 11.29 |
+
+Volumes are static, so the take's share of GDP decays — by t100 to 0.004% (USA), 0.038% (Sweden),
+0.040% (Germany), 0.038% (France), 0.005% (Italy), 0.003% (Poland).
+
+**The routing claim, derived rather than inherited.** F1's stock-side answer was derived FROM the
+fact that every interrupt impact is a one-time settlement, and F1's own helper doc names the
+boundary: *a recurring cost is the budget process's channel and must never be expressed as a
+repeated interrupt impact.* Tariff revenue recurs every period, so by F1's own rule it is a FLOW:
+`FiscalPeriod.PlannedTariffRevenue`, set at the boundary from the figure `TradeSystem` reports
+(rates and volumes as they stand after that turn's tariff decisions) and seeded before turn 1 from
+the same pure function (`TradeSystem.ComputeTariffRevenue`), accrued daily inside
+`ApplyRevenueAndSpending` as one more revenue term — **inside the fiscal-reaction multiplier** (the
+2026-08-02 "all revenue inside the multiplier" ruling; it is also what keeps the debt ledger's
+`revenue/m` split exact with no new term — a flow added after the multiplier would be misattributed
+to the reaction effect) and **outside CollectionEfficiency** (customs are not the tax
+administration's collection). The stock claim each shape makes: flow → the primary balance, the FRF
+stance, the ledger's primary-balance term and the Budget accumulator all read it through the one real
+path; stock → it would bypass the FRF and the primary balance and be the repeated settlement F1
+forbids. `TradeSystem` no longer writes `State.Budget`; the accumulator reads the take through
+`budgetBalance` — the F1 "true reading" form, the parallel book retired. The daily shape is the
+mandatory-spending shape exactly (a fixed period figure sliced by `FiscalFlowPerDayFraction`): exact
+by construction on the BUDGET DELTA between the turn and daily forms, and on the STOCK it inherits the
+erosion-interleaving drift class every flow has (~0.002% of Germany's stock at 3% inflation — the
+verifier's figure, the mandatory-spending analogy holding to the letter); the debt ledger's split
+cancels algebraically, so no revenue-composition change can trip the ATTRIB audit — only an
+unrecorded writer can, and this pass adds none. Both validation hooks carry the plan; the preview
+threads its clone's figure into its own fiscal step so `NetBudgetImpact` stays true. Timing: the take
+used to be booked at the boundary that computed it; it is now the FOLLOWING period's flow — the
+resolution-then-execution shape every other flow already has — and `FiscalTurnReport.TariffRevenue`
+reports the tariff portion that actually accrued.
+
+**The recalibration interaction — revenue-neutral at seed, on the anchored-primary rule.** Pass 1
+solved CE = (real tax-to-GDP target)/(implied revenue-to-GDP) with no tariff flow in the fiscal
+path, and its bar was "T1 primaries land on target": **the primary balance is the anchored
+quantity.** Routing the take on top would move every landed primary by the take's size (the table:
+Sweden −0.64 → −0.48, against a 0.06 landing residual) — a silent loosening of a calibration that
+shipped two passes ago. Each country's CE therefore falls by exactly seedTake/seedTheoretical (the
+table's deltas; USA 0.6129 → 0.6119 … Sweden 0.7895 → 0.7865), a pass-1-shaped adjustment stated as
+such, which leaves year-1 actual revenue and the landed T1 primaries unchanged by construction. The
+perimeter argument the derivation first reached for — "the real targets already contain customs
+duties, so a separate flow double-counts" — is recorded as **UNVERIFIED-EXTERNAL** after the
+adversarial pass: customs are ESA 2010 **D.2121** (the derivation's D.2122 was wrong), EU customs
+duties are traditional own resources booked to the EU-institutions sector (S.212), and Eurostat's
+`gov_10a_taxag` carries both an S13 and an S13_S212 variant — pass 1's record does not say which it
+pulled, so whether the EU five's targets contain customs is not knowable from the project's files;
+for the USA (Treasury receipts include a customs line) it is plausible and equally unverified here.
+The neutrality rests on the anchored primary, not on the perimeter. The honest residual, stated:
+with static volumes the tariff share decays while the CE decrement is permanent, so long-run revenue
+sits BELOW the pre-pass path by at most the seed share (≤0.16% of GDP, Sweden; decaying toward it)
+— the trade model's static-volume placeholder, not this pass's; indexing volumes to GDP would move
+NX and is queued with the trade-cost item below.
+
+**The trade-war content interaction — what changes meaning when tariffs are real money.** (a) The
+player's tariff levers now reach the debt: `TradePolicyBill.NewBaseTariffRate` and the per-partner
+overrides (0–50%) are fiscal instruments, and the Budget screen's tariff line is a true accrual. (b)
+The "General Base Tariff" dial is INERT for the five EU countries and always was — `GetTariffRate`'s
+precedence never reaches an EU member's `BaseTariffRate` (every partner is a fellow member or the USA
+through the bloc's external rate); only the USA's base rate does anything, and only overrides move an
+EU member's take (recorded on the dial's doc; a legibility fix rides the next Trade-tab pass). (c)
+**The free lever, measured:** imports are static and nothing retaliates (no event, law, cabinet or
+foreign-policy mechanic touches a partner's rates or volumes; `TradeBalanceShock` nudges NX, never
+volumes or revenue), and **the vote is no brake at all**: `GetTradeBillDirection` reads only the base
+rate (overrides excluded by stated simplification), an overrides-only bill therefore has direction 0,
+and `WouldBillPass` returns true unconditionally at direction ~0 — for all six countries. The real
+brakes are the 21-day bill delay, one pending trade bill at a time, the 0–50% clamp, and the
+un-voted "Set Override" click. So a 50% override on every partner is a costless revenue button worth
+5–11% of GDP per year for the EU five (Sweden 11.3, Poland 9.2, Germany 6.3, France 5.7, Italy 5.2;
+USA 0.5). `TariffTakeDiagnostic` measures it — under the old books Sweden's take rose 1.01 → 70.00
+per turn and its debt path did not move (t30 33.8 → 33.8: the money never left the display); under
+the routed books **Sweden's debt-to-GDP falls 33.8 → 24.7 by t30 (−9.2 ratio-points in thirty
+turns, 36.2 → 23.6 already at t10)** — and that is the SMALL half, because the FRF loosens as the
+ratio falls below Sweden's comfort anchor and gives the windfall back as tax relief (a virtue of the
+inside-the-multiplier placement: outside it the 70/turn would land raw). The large half is the
+partners': Sweden's 50% halves Germany's, Poland's and the USA's effective exports on those links
+(`effectiveExports = ExportVolume × (1 − tariff)`), and NX enters the identity one-for-one — the
+lever is beggar-thy-neighbour before it is self-enrichment. Measured at t30 against the same-seed
+control: **Poland GDP −0.77% and debt-to-GDP +0.7 ratio-points, Germany −0.47% and +0.4, the USA
+−0.02% and 0.0** — smaller than the first-order export cut (the identity's reversion toward potential
+and Okun absorb part of an NX shock), real, and answered by nothing. Import-side
+symmetry (imports falling with our tariff) was considered and REJECTED on its own arithmetic: C and I
+are not net of imports in this identity, so `effectiveImports × (1 − τ)` would RAISE NX and GDP by
+imports × τ with no offset — a mercantilist free lunch on top of the revenue (Sweden +11% of GDP
+again). Ruled: ship the
+routing alone (one force per baseline; the fix is correct regardless) and queue **tariff costs** — price
+pass-through to inflation and/or partner retaliation, plus overrides entering the vote — as a named
+trigger: the first content or playtest pass that touches a Trade bill, and before item 10 opens the
+political game to real parties. *(✅ CLOSED 2026-08-27 — pass 6, "Pass 6 ships" below: all three
+mechanics shipped — the wedge passes to prices for a year, partners mirror an override's excess, overrides
+enter the vote as the average tariff; volumes indexed to GDP stays queued. Sweden's 33.8 → 24.7 is now
+33.8 → 27.5 with GDP −5.9% and the bill failing at seed.)*
+
+**The third writer, found by the adversarial pass and closed in the same pass — the retirement is
+complete, not partial.** With `TradeSystem`'s write gone, one display-only write of `State.Budget`
+remained: `ApplySwfDrawdownBillEffects` debited the fund and wrote the accumulator, and the debt
+stock never saw it — a passed SWF emergency drawdown DESTROYED fund assets without lowering debt,
+while its own doc claimed "the drawdown reaches debt the same way a surplus does" and F1's helper
+doc claimed "the writers were exactly two". It is a one-time settlement, so it takes F1's own path:
+`ApplyOneTimeBudgetImpact` (stock down by the withdrawal, the accumulator recording the same entry)
+with `DebtLedgerRecorder.RecordEvent` at the resolution site, exactly as the cabinet and
+foreign-policy sites observe theirs. Off the no-policy trajectory (no drawdown ever passes there),
+so the baselines hold — and since neither the dumps nor the round-trip harness resolve a drawdown
+(the round-trip only snapshots the pending bill's days; checked, not assumed), a dedicated check
+exists: `SwfDrawdownBooksDiagnostic` (new, retained) pins a house that passes expansionary bills,
+introduces a 2%-of-GDP drawdown for Sweden, lets the real 21-day resolution site resolve it, asserts
+the fund, the stock and the accumulator all moved by the delivered withdrawal, then runs a full
+period so the debt ledger's boundary audit judges the stock that moved off-path — an unrecorded
+writer would ATTRIB there and fold the exit. **PASS on the shipped code: delivered 12.4 (2% of
+Sweden's GDP), fund 195.0 → 182.6, debt 217.0 → 204.6, Budget 0 → 12.4, the boundary audit green.**
+`State.Budget` now has exactly three
+writers and all three are true readings of the one real path: `budgetBalance`, F1 impacts, and the
+drawdown.
+
+**The build.** `TradeSystem.ComputeTariffRevenue` (pure); `ApplyTradeEffects` returns it and no longer
+writes `Budget`; `FiscalPeriod.PlannedTariffRevenue`/`AccruedTariffRevenue` (a pre-pass-5 save's period
+reads 0 for its remainder and self-corrects at the next boundary — the `WageGrowthGapAtPeriodOpen`
+posture; no `SaveVersion` bump, additive; and a pre-pass-5 save keeps its own un-decremented CE on
+`Country`, so it runs permanently +take against a fresh game — 0.03–0.16% of GDP, the recalibration's
+own coexistence posture); `ApplyRevenueAndSpending(…, tariffRevenue, …)`; the daily accrual, the
+boundary re-plan, the seed period, both validation hooks and the preview threaded; the equivalence
+check's three Phase-3 row pairs plan each country's own seed take; `DrawSpendingSection` reads
+`report.BudgetBalance` as the net (the hand sum had omitted the SWF contribution and, after the
+routing, would have counted the tariff twice — its Baseline + Discretionary terms DO reconstruct G
+exactly, and the `FiscalTurnReport` doc that said otherwise is corrected) and labels revenue "tax,
+tariffs, fund draw" with "of which tariff revenue at the stated rates (before the fiscal stance)" —
+the accrual is the stance-1 figure, what `TradeSystem` computed, while `Revenue` carries it times
+the period's multiplier (0.97–1.18), said on the label rather than hidden; `WorldFactory` CE
+decrements with the anchored-primary note; `FiscalRecalDiagnostic`'s implied-multiplier
+reconstruction gains the tariff in its denominator (it had overstated the FRF by take/(theo·CE),
+Sweden +0.39%); `DerivedStats`' tax burden now includes customs, as a tax burden should. The
+wired-inert control was a routing constant held at the old book (`ad82104`).
+
+**The bar — force-kind, on the pass-4 era.**
+- **Fresh `pre_pass5` baselines (2 seeds × 100/500/1000): byte-identical to `post_pass4` 6/6** — the
+  pass-4 closing commit's nits proven inert, the era established.
+- **Wired-inert control: `ctrl_pass5` byte-identical to `pre_pass5` 6/6** (`ad82104`, the whole
+  path built and held at the old book) — the plumbing live at zero.
+- **Equivalence 117 of 117 within 3%** (enumeration stated: the tariff flow rides the Phase-3 rows at
+  Sweden's 1.01 and Germany's 4.08, and the erosion/lag rows at their countries' takes — a linear
+  slice of a fixed period figure, exact on the Budget delta, drift-class on the stock like every
+  flow). **Save/load round-trip PASS 12/12** (the new `FiscalPeriod` fields ride the whole-object
+  save; the re-serialize string equality covers them). **Preview parity 7 of 7 asserted terms for
+  all six** — the clone's tariff figure threaded, the real ledger byte-untouched across a preview.
+- **The diffs 6/6 vs `pre_pass5`: the moved set is EXACTLY {`Budget`, `GovernmentDebt`,
+  `Country.EffectiveDebtRate`} — 39 of 42 fields byte-identical on every pair (236 of 253
+  country-series), the macro engine untouched by construction** (a revenue flow reaches the
+  balance and the stock and nothing else; the only feedback out of the stock is the ratio's risk
+  premium, ≤0.004 pp on the effective rate). The decomposition through the chain (tariff take →
+  revenue → balance → debt): **at t1 the stock differs by the neutrality residual alone** — USA +0.02
+  on 36,977, Sweden −0.016 on 217, Germany +0.06, France +0.05, Italy −0.03, Poland +0.001 (the
+  daily identity's within-period GDP drift against the seed-solved decrement); **the Budget
+  accumulator reads exactly −take per turn against the pre path** (USA −8.51 at t1, −17.06 at t2 …
+  −1,215 at t100) — the size of the false reading the parallel book had been adding all along, now
+  gone; and the stock drifts UP thereafter by the static-volume shortfall, which the FRF and erosion
+  absorb almost entirely: the naive accumulated shortfall Σ take·(g_s − 1) is the upper envelope and
+  the observed stock difference is 58% of it at t10, 11% at t100, 5% at t500 (USA; the stabiliser's
+  own stance responding to the ratio). **The fiscal tail against the honest signature, both seeds:
+  debt-to-GDP higher by +0.10 (USA), +0.16 (Sweden), +0.11 (Germany), +0.08 (France), +0.01
+  (Italy), +0.18 (Poland) ratio-points at the ruled 100–200 window, ≤+0.22 at any horizon to
+  t500** — the price of the static-volume placeholder, stated with the item that would remove it.
+- **The scenario matrix like-for-like at seed 777 (pre side = pass 4's post matrix, the same
+  simulation code as `pre_pass5` by hash): 29 of 30 anomaly counts EXACT** (stress/100 +1 — one
+  borderline debt-ratio swing entry, 23 → 24 of that kind); zero new anomaly kinds (the same five,
+  1,616 → 1,617 entries); and every differing per-turn line differs in `GovernmentDebt`/
+  `DebtToGdpRatio` ONLY — GDP, unemployment, inflation and the rate print identically in all 30
+  runs (the containment class, seen through the matrix's own instrument). The `tariffoverride`
+  scenario (USA: Germany 40%, France 0% from t1) is the matrix's own view of the routed take: the
+  USA books ~60/turn where it booked nothing, and its debt runs 200 lower at t25 (59,284 → 59,084;
+  ratio 129.6 → 129.2) with GDP identical to the digit; the baseline run shows the neutral case's
+  static-volume tail instead (USA debt +191 at t100, ratio 128.7 → 128.8).
+- **Captures at the four ruled sizes (USA — the Budget screen's Spending section is where the
+  display changed): 1280×720, 1640×707, 1600×950 and 2560×1440, 64/64 each, 0 failed, 0 overflows,
+  0 containment escapes; the three changed lines confirmed BY EYE on `p5usa2560_05b_budget_spending`
+  — "Revenue (tax, tariffs, fund draw): $5.76T", "Of which tariff revenue at the stated rates,
+  before the fiscal stance: $8.49B" (the measured USA take to the digit), "Net (this year's recorded
+  balance): −$1.66T".** ATTRIB clean on every run (case-sensitive grep). **Which code each run saw,
+  stated:** the dumps, diffs, equivalence, round-trip, parity and matrix ran at the routing build
+  (before the drawdown closure and the comment corrections landed); the captures and the closing
+  re-verification — `post_pass5b` byte-identical to `post_pass5` 6/6 (the drawdown path is off the
+  no-policy trajectory), round-trip 12/12 (the new `FiscalPeriod` fields cross the save), equivalence
+  117/117, the tariff diagnostic with the partners' damage, the scenario slice ("Inherit the Fund"
+  still loses 1-of-3 at t12 on no policy, its designed shape; the creditor branch exercised; the run
+  crosses a save intact — both halves clean, unchanged by the routing), and the drawdown books check
+  — ran at the shipped code.
+
+**The board, stated once as the order closes.** Five of five shipped on 2026-08-26 (the fiscal seed
+recalibration, the Crime & Justice couplings, the Labor Market category, the Taylor gap term, tariff
+revenue to the books). What remains: **Step 4 — item 10, the political game** (13 Sept 2026 is
+effectively here: the seed-data refresh from the real result, the Italy allocator, the collision-map
+disposition, `ElectionRecord`, election night, the R5 hex exchange and E2's accounting; Riksbank-B
+now behind that single gate); **the queued-and-triggered shelf** (the identity's government-
+consumption block, the causal-graph screen — trigger already fired —, per-scenario term
+accumulation, investment deepening, the icon promotion, and now tariff costs); **the world's items**
+(§S the send package with §8/§9 and the D1 verdict waits on Elias's send; D1's nine wait on Design's
+delivery; E2/E3 ride item 10 and a working raster path); and **the play gates** — the next
+playtest's own named items: decision density READING as closed, Riksbank-B's felt verdict, the Trade
+bill's new fiscal reach. Nothing in the order is left half-built; the shelf holds only named
+triggers.
+
+Stopped at the boundary. **The ruled build order is CLOSED — all five items shipped 2026-08-26.**
+
+## Pass 6 ships — tariffs cost: the free lever answered; the eighth discontinuity is policy-path (2026-08-27)
+
+Pass 6, the first item consumed from the queued shelf (pass 5's "tariff costs" trigger — *the first
+content or playtest pass that touches a Trade bill, and before item 10 opens the political game to real
+parties* — both halves met). **The rulings were taken BY THE PASS in rule 4's reversible-call form,
+each a one-literal or one-line revert, and are stated here so none reads as drift: (1) the tariff
+wedge is a PRICE-LEVEL term on the Phillips map for the year it lands, and expectations LOOK THROUGH
+the part of it that actually printed (the realized, clamped contribution — never the planned figure,
+which inverts at the zero floor on a cut); (2) the denominator is GDP; (3) partners answer the EXCESS
+of an override over the standing rate, one for one, instantly and without memory — cuts and base-dial
+hikes unanswered — computed from the overrider's own link, never stored; (4) overrides enter the vote as
+the change in the IMPORT-WEIGHTED AVERAGE tariff the bill would charge, on the fiscal axis, sign-only
+as every vote is — flagged first below and RULED BY ELIAS 2026-08-27, accepted as shipped, with the
+reasoning recorded so it never reads as an approximation: a tariff is a tax on imports, so the fiscal
+axis is not a stand-in pending item 10 but the correct axis for a revenue instrument, the same
+treatment every other revenue instrument already gets; when trade gains its own axis the literal
+reverts, and until then the alternative is leaving the lever free, which is what this pass exists to
+close; (5) `ImportPricePassThrough =
+1.0` is DERIVED from static volumes, its corroboration UNVERIFIED-EXTERNAL, its stakes measured at 0.5;
+(6) no approval charge on a passed hike; (7) one build commit for three channels; (8) the eighth
+baseline discontinuity is counted as a POLICY-PATH row — the no-policy trajectories are byte-identical
+across it; (9) static volumes stay static, deferred with the `Δtake → Δτ̄ × m` dependency recorded in
+code; (10) the inert base-tariff dial legibility fix folded in. Overrule = revert `4650a76` (the
+build), `4352665` (the plumbing) and the closing commit — or zero the one `TradeCosts` constant; the
+baselines are `traj_pre_pass6_*` / `traj_ctrl_pass6_*` / `traj_post_pass6_*`.**
+
+**The defect, restated from "Pass 5 ships" and verified at HEAD.** With tariff revenue real money, a 50%
+override on every partner was a costless revenue button worth 5–11% of GDP per year for the EU five:
+imports static (`effectiveImports = ImportVolume`), nothing retaliated (no event, law, cabinet or
+foreign-policy mechanic touched a partner's rate), and the vote was no brake — `GetTradeBillDirection`
+read only the base rate, so an overrides-only bill had direction 0 and `WouldBillPass` returned true
+unconditionally. Re-verified at `bb5e37e` by the extended instrument before any wiring (§1 below): the
+overrider's own GDP, unemployment and approval print `+0.00` against the control on every line — the
+money never cost anything.
+
+**§1 — measured before wiring (`TariffCostsDiagnostic`, new, retained; run at the plumbing commit with
+every `TradeCosts` constant at 0 — the old books; seed 777, 30 turns, each country in turn at the cap on
+every partner from t1, against one shared no-policy control).** The six-country lever under the old
+books, the first time the other five were run as trajectories rather than seed arithmetic:
+
+| overrider | take/turn (vs control) | debt-to-GDP t10 / t20 / t30 (control → lever) | Δ t30 | own GDP / U / approval t30 | partners' GDP t30 |
+|---|---|---|---|---|---|
+| USA | 141.50 (8.49) | 130.0→128.5 / 129.2→127.9 / 129.2→128.2 | −1.1 | +0.00% / +0.00 / +0.0 | DE −0.93%, FR −0.80%, SE −1.13%, PL −0.33% |
+| Sweden | 70.00 (1.01) | 36.2→23.6 / 34.9→24.1 / 33.8→24.7 | −9.2 | +0.00% / +0.00 / +0.0 | USA −0.02%, DE −0.47%, PL −0.77% |
+| Germany | 297.50 (4.08) | 65.4→56.7 / 67.3→58.6 / 67.5→59.3 | −8.2 | +0.07% / +0.00 / +0.0 | USA −0.08%, FR −1.74%, IT −1.98%, PL −1.73%, SE −3.10% |
+| France | 182.50 (2.69) | 120.7→113.0 / 124.6→116.8 / 125.0→117.5 | −7.5 | +0.07% / +0.00 / +0.0 | USA −0.06%, DE −1.33%, IT −1.18% |
+| Italy | 120.00 (0.24) | 142.8→134.7 / 146.6→138.3 / 149.9→141.7 | −8.2 | +0.06% / +0.00 / +0.0 | DE −0.99%, FR −0.85% |
+| Poland | 77.50 (0.74) | 71.7→58.7 / 71.2→61.6 / 71.1→64.0 | −7.0 | +0.00% / +0.00 / +0.0 | USA −0.01%, DE −0.67%, SE −1.67% |
+
+Sweden's row reproduces pass 5's record to the digit (33.8 → 24.7; partners −0.02/−0.47/−0.77%). The
+20 directed links of a fresh world carried no retaliatory term, the six first-boundary pass-through
+figures were 0, and every overrides-only bill scored direction 0 and auto-passed — the plumbing live at
+zero, `ctrl_pass6` byte-identical to `pre_pass6` 6/6 (SHA-256; `pre_pass6` itself byte-identical to
+`post_pass5b` 6/6, the era).
+
+**The three forces, derived — one declared table, `TradeCosts` (the third, after `CrimeJusticeCouplings`
+and `LaborCouplings`), every consumer BRANCHING on its constant, never multiplying by it (a `× 0f` can
+still flip a `−0f` and move float codegen — the pass-4 one-ulp lesson), the constants kept after the
+build so each channel is revertible by one literal.**
+
+*Pass-through.* A tariff change is a one-time change in the price LEVEL; `Inflation` is an annual rate
+and a turn is a year, so the level move prints as a one-year rate impulse. With static volumes
+`take/GDP = τ̄ × m` (import-weighted average tariff × import share), so the roadmap's own `τ × import
+share × pass-through` applied to the CHANGE is exactly `PlannedTariffPassThroughPp = φ × 100 ×
+(take_new − take_prev) / GDP` — the take `ApplyTradeEffects` reports at this boundary against the closing
+period's `PlannedTariffRevenue`, read before the re-plan overwrites it. No new anchor state, and exactly
+`0f` on every no-policy boundary (the same pure sum on unchanged state). `φ = 1.0` is DERIVED from the
+static-volume placeholder — with imports static the same quantity sells at the same pre-tariff price and
+the whole take is paid by domestic buyers, border incidence 100% by construction; the border-price
+literature's near-complete pass-through corroborates it but is NOT the source (the repo holds no
+citation), recorded UNVERIFIED-EXTERNAL in pass 5's form, and its stakes measured at 0.5 rather than
+asserted (below). The term rides the daily Phillips level map inside inflation's one ceiling, BOTH
+bounds of `Clamp(0, MaxInflationPercent)` — rule 11 by folding — as a second, guarded statement after
+the untouched base print, and `ApplyPhillipsCurveInflation` RETURNS what actually printed (the clamped
+print with the term minus without it), kept on the period as `AppliedTariffPassThroughPp`. **Expectations
+look through that realized contribution at the boundary** (`ApplyInflationExpectations`' new SECOND
+parameter, named at the call so a positional slip can never bind it to the adaptation speed): a level
+term is not a rate change, adaptive expectations describe the RATE, and fed in, half of a one-off level
+shift would become permanent inflation by this model's own recorded fixed point (elevated inflation at
+NAIRU never decays; the rate lever ≈ −0.065 pp per pp) — Sweden at the cap +5.6 pp forever, an approval
+equilibrium ≈ −45. Rejected on its own arithmetic: looking through the PLANNED figure — a cut of the
+50% override plans −11.1 pp, the Phillips value goes to ≈ −9 and clamps to 0, and `(0 − (−11.1))` would
+ratchet expectations UP by 5.6 on a tariff CUT, the artefact with its sign flipped. With the applied
+value the target is by construction the no-wedge print, in `[0, 30]` at either bound; the removal case
+below is the proof. Everything else reads HEADLINE, no code change: approval's misery term
+(`InflationApprovalSensitivity 0.4 × |π − 2|`), poverty (`0.3 × |π − 2|`), the real-wage surprise
+(`−0.3 × (π − E)`, so the whole bump is a surprise for the year and `WageGrowthGapAtPeriodOpen` carries a
+ONE-period confidence haircut into `EffectiveConsumerConfidence` inside `[0.7, 1.3]` — ≈ 1.7% of consumer
+confidence at Sweden's cap; the `RealWageIndex` level shift itself is recorded and read by nothing in the
+identity, said plainly), the Taylor rule (+1.5 pp suggested per pp) → chair / ECB blend at GDP weight →
+rates → C/I, and debt erosion reads the same `state.Inflation` in the update and the ledger twin. The
+denominator is GDP (the model's dollar unit and the deflator in the erosion term); Consumption would read
+≈ 1.5× larger. Nothing credits reduced import leakage — `effectiveImports` is untouched and the pass-5
+import-side-symmetry ruling stands.
+
+*Retaliation.* No partner behaviour existed to derive from (verified again: `retaliat|reciproc|Relations|
+Goodwill|Diplomatic` over `Assets/Scripts` — only an event's name), so the rule is a first cut, recorded
+as such: *a partner answers the EXCESS of our override over the rate we would otherwise charge it, one
+for one.* `TradeSystem.GetTariffRate` is now `GetOwnTariffRate + GetRetaliatoryTariffRate` over one
+`GetStandingTariffRate` precedence (the pre-pass-6 body, no arithmetic in the split), the retaliatory term
+computed from the OVERRIDER's own link — never stored on the partner's, so the one-directional invariant
+holds at the state level (an AI link is never written) while a non-player's RESOLVED rate now responds to
+the player's override (CLAUDE.md's "one-directional by construction" bullet amended, dated). Everything
+downstream followed with no further code: our `effectiveExports` on the link fall by the mirrored rate,
+the partner's `ComputeTariffRevenue` collects the mirrored take, and the Trade tab's partner row reads it.
+Properties, stated: cuts unanswered (the excess floors at 0 — no reciprocal-liberalization lever
+appears; `tariffoverride`'s France-0% leg: excess 0, France still charges 3); base-dial hikes unanswered
+(a country's base rate IS its standing rate — a stated residual, deferred: needs a seed-anchored base
+reference; the dial is voted; reach 0.49% of USA GDP); instant and memoryless (the 21-day bill delay is
+the lag on the player's side; a lagged/decaying response needs a `TradePartner` field, a `Clone()` line
+and a save-shape change — deferred); cannot recurse (`GetStandingTariffRate` never reads an override).
+Bound, stated correctly: `own ≤ 50` and `excess ≤ 50 − 0`, so the sum is < 100 and `(1 − τ/100)` never
+goes negative; at seed rates the reachable maximum is 50 (Sweden's 50 on Germany: 0.1 + 49.9), and a USA
+player who first zeroes its base rate and then sets a 50% override makes Germany charge 53 — no cap. The
+excess form equals `Max(standing, override)` at the seeded symmetric rates; it is chosen because it
+reads as what it is and floors nothing. Rejected: a pure mirror (reciprocity — a second new lever); writing
+the AI partner's own override (violates the invariant, needs three writers and persistence). Ordering:
+`ApplyTradeEffects` plans `TradeBalance` and the take from ONE rate state at ONE boundary, so an
+override's revenue and its retaliation always land in the same period. **The second-order channel,
+stated:** the retaliator's take rises too, so under the pass-through it pays its OWN price — a trade war
+costs both sides. The preview shows the retaliation the COMMITTED overrides draw (the clone's links carry
+them); drafts never reach the preview (`BuildPlayerDecision` carries no tariff terms), so a draft's cost
+has its own surface on the bill card (below).
+
+*Override cost.* The SWF-analogy exclusion rested on a missing conversion factor onto the fiscal scale;
+a per-partner override is a tariff rate in the very points the base term already scored. But an
+unnormalized per-partner sum is a partner-count artefact (three links vs five scoring the same policy
+differently), so the direction is the CHANGE IN THE IMPORT-WEIGHTED AVERAGE TARIFF the bill would charge —
+the τ̄ the pass-through uses — in points: for a country whose whole import set resolves at its base rate
+(the USA) a base-only bill scores `NewBase − Base` exactly as before; for an EU member, whose base rate is
+never charged, a base-only bill scores 0 — correct, and the old formula's nonzero reading for it was a
+phantom. The vote reads the SIGN (`GetSeatWeightedAlignment`), so the magnitude is a label, not a lever:
+R4 converts "free" into "contested on the fiscal axis" — at the seed composition (net −0.036) every
+tariff hike fails with the standing 1.5-point cost and every cut passes, exactly as every income-tax hike
+already does. **This is the pass's taste-adjacent call**: the fiscal axis is the model's only axis, no
+protectionism axis exists (`protectionis|Ideology`: NOT FOUND), and item 10 will re-seed parties from
+the 13 September result — so scoring trade on it one pass before real parties land extends the base
+term's existing convention rather than inventing the claim, and is one literal to revert
+(`OverrideDirectionWeight = 0f` restores the overrides-only auto-pass). Named alternative: hold channel 3
+until item 10 gives trade its own axis, with a diplomatic/volume penalty as the interim cost. *(Ruled by
+Elias 2026-08-27, accepted as shipped: a tariff is a tax on imports, so the fiscal axis is the CORRECT
+axis for a revenue instrument — not an approximation pending item 10 — and the same treatment every
+other revenue instrument already gets; when trade gains its own axis the literal reverts; until then
+the alternative is leaving the lever free, which is what this pass exists to close.)* Not closed,
+recorded: the un-voted "Reset to Default" click is a free instant cut that ends retaliation next
+boundary *(✅ closed 2026-08-28, R-D2 of the clear-out kickoff — the click edits the draft, never the
+live state; the cut rides the bill like the rise)*; the harness `PolicyDecision` path bypasses the
+vote (its privilege for every lever). No approval charge on a passed hike — a fourth force and a new
+approval writer.
+
+**The build (`4650a76`; plumbing `4352665`).** `TradeCosts.cs` (three constants, the harness-only
+measurement scale); `TradeSystem` (the split, `GetRetaliatoryTariffRate`); `FiscalPeriod.PlannedTariffPassThroughPp`
+/ `AppliedTariffPassThroughPp` (planned at the re-plan BEFORE the overwrite, both 0 at seed; the whole-object
+save carries them, no `SaveVersion` bump), `FiscalTurnReport.TariffPassThroughPp`; the daily Phillips
+call storing the return; the boundary look-through from the CLOSING period's applied value captured
+before `ResetAccrual` (the ordering trap, named in the code); `GetTradeBillDirection(country, bill,
+world)`; `SimulationManager.EstimateTradeBill` — a draft's cost from the REAL functions on two throwaway
+clones (never a hand sum, pass 5's own lesson; the currency factor and the partners' mirrored rates inside
+the figure); the preview threading `previewTariffRevenue` into the wedge with `TryGetValue` (a preview
+seeds nothing) and the look-through. Trade tab: the partner row's "(of which X retaliation, in force
+from the next boundary)" — the row reads live while the books charge boundary-planned rates, so the label
+names the timing; the paragraph's "doesn't affect what that partner charges" corrected; the bill card's
+cost line ("At these rates: tariff take … ; partners' mirrored tariffs move our trade balance by … ;
+prices +x.xx pp this year"); the Trade stats line "Tariff pass-through to prices (last year)"; the
+ride-along — the General Base Tariff dial disabled for a bloc member with "inert — bloc rates apply to
+every partner" as its trailing text (one control either way). Policy Web: `TariffPolicy → Inflation`
+(raises) and `→ TradeBalance` (lowers) added, and the existing `→ DebtToGdp` edge's `Increases: true`
+corrected to `false` — a sign slip against the edge's own definition since pass 5 made the take real
+revenue. The round-trip coverage set gained a standing override and a pending Trade bill in the PLUMBING
+commit, so the control proved the coverage change itself inert. `TariffCostsDiagnostic` (new, retained):
+six overriders at both φ, the removal case, the votes, folded asserts.
+
+**The bar — containment on the no-policy path (the diff enumerates the no-policy trajectory only and is
+evidence for containment, not for any channel being live — rule 14), force on the policy path.**
+- **Fresh `pre_pass6` baselines (2 seeds × 100/500/1000): byte-identical to `post_pass5b` 6/6** (SHA-256) — the era.
+- **Wired-inert control: `ctrl_pass6` byte-identical to `pre_pass6` 6/6** (`4352665`, the whole plumbing live at zero — the load-bearing inertness proof).
+- **`post_pass6` byte-identical to `pre_pass6` 6/6** (SHA-256) — the build moves NO no-policy trajectory:
+  every force multiplies an override that does not exist on that path, and `ImportVolume`/`ExportVolume`
+  have no writer outside `TradePartner`'s constructor, so the take is the same pure sum at every
+  no-policy boundary. This is the predicted result, stated in advance; it is containment evidence only.
+- **The six `TrajectoryDiffCheck` pairs vs `pre_pass6`: `42 of 42` byte-identical on every pair**, no NEW
+  field (nothing joined `EconomyState`), exit 0 — the moved set on the no-policy baselines is EMPTY.
+- **Equivalence 117 of 117 within 3%** (enumeration stated: the pass-through is NOT in this bar — its
+  macro rows call the one-argument Phillips form, and no row drives an override; the six standing
+  `(INFO)` shock rows are the same six pass 5's log carried). **Save/load round-trip PASS 12/12** (the two
+  new `FiscalPeriod` floats and `FiscalTurnReport.TariffPassThroughPp` cross by the whole-object save; the
+  new coverage override and pending Trade bill cross with them; `RT: reflecting 36 public EconomyState
+  fields` unchanged). **Preview parity 7 of 7 asserted terms for all six** (the misery gaps stay
+  expected-different by design; the real ledger untouched across a preview).
+- **The scenario matrix like-for-like at seed 777 (pre side = pass 5's post matrix, the same simulation
+  code as `pre_pass6` by hash): 28 of 30 anomaly counts EXACT; the two that move are exactly the
+  predicted `tariffoverride` cells, +2 each (100 and 500)** — Germany's own pass-through year (its
+  mirrored take on the USA's 40% rises +44.4/turn, +0.94 pp for a year, a 31% one-turn swing against the
+  20% bar, then the return swing) — **zero new anomaly kinds** (the same kinds; `Inflation swung` 1,392 →
+  1,396 entries, the other three counts unchanged). Per-turn lines identical in 26 of 30 cells; the four
+  that differ are the four defended in advance and nothing else: `stress`/100 and /500 (the USA's +1
+  base-point years: GDP, GovernmentDebt, one Inflation and one InterestRate print) and `tariffoverride`/100
+  and /500 (GDP, GovernmentDebt, DebtToGdpRatio, Inflation, InterestRate — the USA's wedge, Germany's mirror
+  on the USA's 120 of exports, Germany's own wedge and the ECB blend it moves).
+- **`TariffCostsDiagnostic` at the build — `TARIFFCOSTS: PASS`, every folded assert held:** the 20
+  directed links of a fresh world carry no retaliatory term and the six first-boundary wedges are 0 (the
+  no-override path is inert at the build exactly as at the control); with the forces on, every partner
+  of every overrider charges exactly 50.00% at t1 (the mirror, asserted on all 20 links), the wedge
+  prints at t2 for all six, the overrides-only bill has nonzero direction for all six, and the removal
+  case's look-through identity holds at every event-free boundary. ATTRIB 0 (case-sensitive), 0 compile errors.
+- **Captures at the four ruled sizes (USA — the Trade policy screen and the Policy Web are where the display changed): 1280×720, 1640×707, 1600×950 and 2560×1440, 64/64 each, 0 failed, 0 overflows, 0 containment escapes, 0 canvas violations; plus Sweden at 1280×720 (62/62, the same zeros) for the bloc-member dial.** Read BY EYE beside the `p5usa*` sets: the bill card gained its cost line ("At these rates: tariff take $8.49B/yr (+$0); partners' mirrored tariffs move our trade balance by +$0/yr; prices +0,00 pp this year"), the chip row grew from one chip (Debt-to-GDP) to three (Inflation, Debt-to-GDP, Trade Balance — the two new edges), the override paragraph reads the mirror, and Sweden's General Base Tariff row draws disabled with "inert - bloc rates apply to every partner" and "n/a". One cosmetic nit, recorded: at 2560 the cost line wraps after the "+" of "+$0/yr" (the 1280 floor wraps cleanly). **ATTRIB 0 on every log (case-sensitive grep), 0 compile errors; which code each run saw: every bar run above ran at the build commit `4650a76`.**
+
+**The free lever, re-measured — new books beside old (the plumbing-commit run and the build run of the
+same instrument, seed 777, 30 turns).**
+
+The overrider, new books (φ = 1.0), each country at the cap on every partner from t1 — the take is the
+same 5–11% of GDP it was, and it now costs something:
+
+| overrider | take/turn | inflation t1 → t2 → t3 (control t2) | expectations t3 (ctrl) | trade balance t1 (ctrl) | GDP t2 / t30 | unemployment t2 / t30 | approval t2 / t30 | debt-to-GDP t30, ctrl → lever (Δ new; Δ old books) |
+|---|---|---|---|---|---|---|---|---|
+| USA | 141.50 | 2.32 → 2.68 → 2.21 (2.25) | 2.29 (2.32) | −158.4 (−41.3) | −0.20% / −0.17% | +0.10 / +0.00 | −0.3 / +0.1 | 129.2 → 128.4 (−0.9; −1.1) |
+| Sweden | 70.00 | 1.64 → **11.82** → 0.28 (1.45) | 0.77 (1.47) | −77.1 (−15.1) | **−5.02% / −5.87%** | +2.50 / −0.07 | **−6.2 / −6.2** | 33.8 → 27.5 (−6.3; −9.2) |
+| Germany | 297.50 | 2.92 → 8.70 → 2.28 (3.00) | 2.50 (2.99) | −260.0 (+70.0) | −3.45% / −4.38% | +1.75 / −0.03 | −4.0 / +2.1 | 67.5 → 62.0 (−5.5; −8.2) |
+| France | 182.50 | 3.19 → 8.29 → 2.59 (3.19) | 2.76 (3.15) | −185.0 (−8.0) | −2.69% / −3.44% | +1.36 / −0.02 | −3.3 / +1.6 | 125.0 → 120.1 (−4.9; −7.5) |
+| Italy | 120.00 | 2.81 → 7.56 → 2.13 (2.69) | 2.37 (2.72) | −127.5 (−15.2) | −2.46% / −3.20% | +1.23 / −0.02 | −3.2 / +1.4 | 149.9 → 144.3 (−5.6; −8.2) |
+| Poland | 77.50 | 1.40 → 9.78 → 1.06 (1.15) | 0.70 (1.30) | −81.3 (−8.2) | −4.38% / −2.81% | +2.21 / −0.08 | −5.0 / −3.5 | 71.1 → 66.2 (−4.9; −7.0) |
+
+The wedge prints for exactly one year (t2) and returns (t3), and expectations FALL rather than ratchet —
+the look-through adapts toward the no-wedge print, and that print is lower than the control's because
+the trade war's own slack (unemployment +2.5 at t2 for Sweden) pulls the Phillips value down. The
+retaliation is the real cost: NX −62 for Sweden at t1 (−77.1 vs −15.1), GDP −5% in the year it lands and
+−5.9% at t30; the debt windfall survives but shrinks (the FRF still gives part of it back, and the
+denominator now falls). Approval: Sweden and Poland — the two with player-set rates and the largest import
+shares — stay 3–6 points below the control at t30; the Eurozone three recover past it by t30 as the
+ECB blend, the revenue and the growth-gap term work through (Germany −4.0 at t2, +2.1 at t30). The
+moved set at t30 is 20–22 of 36 `EconomyState` fields per overrider (GDP, Inflation, Unemployment,
+Approval, Budget, TradeBalance, C, I, expectations, confidence, debt, poverty, LFPR, youth unemployment,
+Gini, real wages, housing, productivity, crime; the demographics block and `PotentialGDP` untouched).
+
+The partners — the second-order channel, measured: under Sweden's lever every partner charges Sweden
+50.00% from t1 and collects the mirrored take (USA +11.75/turn, Germany +32.43, Poland +17.47), pays its
+OWN pass-through year (USA +0.04 pp, Germany +0.69 pp — 3.64 vs 3.00 at t2 — **Poland +2.11 pp**, 3.09
+vs 1.15) and keeps the export loss pass 5 measured to the digit (GDP t30 −0.02% / −0.47% / −0.77%), with
+debt-to-GDP now LOWER by 0.1 / 0.6 / 1.1 ratio-points (the mirrored revenue) and approval −0.8 for Poland,
++0.2 for Germany. Under Germany's lever the five partners' own wedges are +0.24 (USA), +3.06 (France),
++3.27 (Italy), **+6.04 (Poland)** and **+5.63 (Sweden)** pp — a German trade war costs Sweden 3.1% of GDP
+and 5.6 pp of inflation for a year while Germany's own bump is 6.2 pp.
+
+**φ's stakes, measured at 0.5 (the same six runs with the pass-through halved):** the printed wedge
+halves (Sweden t2 6.26 instead of 11.82, Germany 5.59 instead of 8.70, Poland 5.13 instead of 9.78; the
+partners' own wedges likewise — Poland +1.06 under Sweden's lever), the year-1 approval hit shrinks by
+≈ 1–2 points (Sweden −4.0 instead of −6.2 at t2, −5.7 instead of −6.2 at t30; Germany −2.7 instead of
+−4.0), the Eurozone rate response softens (Germany's t3 rate 3.44 vs 3.85) — and **GDP, unemployment,
+the trade balance and the debt path are unchanged to the digit** (Sweden −5.02% / −5.87%, −6.3
+ratio-points at either φ). The invented constant prices the POLITICAL cost of the lever; the real cost is
+the retaliation and does not depend on it.
+
+**The removal case — the clamp-safe look-through's proof (Sweden at the cap from t1, the un-voted
+Reset before t3):** t1 take 1.01, applied 0, print 1.64, expectations 2.00 → 1.82 (identity holds); t2
+take 70.00, applied +11.13, print 11.82, expectations 1.82 → 1.26 (the identity check skipped — a
+boundary event shocked inflation after expectations adapted — but the target `11.82 − 11.13 = 0.69` is
+what 1.26 is halfway to); t3 take 70.00, applied 0, print 0.28, expectations 1.26 → 0.77 (holds); **t4 —
+the cut year — take 1.01, planned wedge −11.13, print floored at 0.00, APPLIED −1.14 (the base print was
+1.14), expectations 0.77 → 0.95** (holds: the target is the no-wedge print 1.14, not `0 − (−11.13) =
++11.13`, which the planned form would have produced — an expectations ratchet of +5.2 on a tariff CUT);
+t5 print 1.39, expectations 0.95 → 1.17 (holds); t6 print 1.43, expectations 1.17 → 1.30 (holds), the
+control at 1.35 — the episode leaves no trace in the rate expectations beyond the slack it caused.
+
+**The vote:** the overrides-only bill (every partner at the cap, the base rate restated) now reads
++47.00 (USA), +49.28 (Sweden), +49.32 (Germany), +49.26 (France), +49.90 (Italy), +49.53 (Poland) points
+of average tariff — contested — and **WOULD FAIL at the seed parliament for all six** (net stance −0.036;
+under the old books all six read direction 0 and auto-passed). Not free; a cut still passes.
+
+**What remains dark, stated:** trade volumes indexed to GDP (the static-volume tail pass 5 priced; when
+it lands the wedge must become `Δτ̄ × m` with an explicit rate anchor or volume growth would print as
+inflation — recorded in the code); retaliation against a base-dial hike (no excess to mirror — needs a
+seed-anchored base reference); retaliation memory or lag (no diplomatic state exists); the un-voted Reset
+click (→ a NAMED roadmap gap, Elias 2026-08-27 — the same shape as the lever this pass priced, a live
+path around the pricing); the harness path around the vote; an approval charge on a passed tariff hike (R6, not built); the
+sign-only vote on the fiscal axis pending item 10's trade axis (R4, the flagged call); the recorded model
+property the wedge was shaped around — elevated inflation at NAIRU as a fixed point — stands untouched.
+
+**The board, stated.** The queued shelf loses its first item. What remains: **Step 4 — item 10, the
+political game** (13 Sept 2026); the shelf (the identity's government-consumption block, the
+causal-graph screen — trigger fired —, per-scenario term accumulation, investment deepening, the icon
+promotion; and now, from this pass, volumes indexed to GDP and a trade axis for the vote); the world's
+items (§S the send package; D1's nine; E2/E3); and the play gates — decision density READING as closed,
+Riksbank-B's felt verdict, **the Trade bill's costs felt** (the bill card's cost line, the partner row's
+retaliation, the inflation year).
+
+Stopped at the boundary.
+
+## The Policy Web edge sweep — Elias's pass-6 follow-up (2026-08-27)
+
+**The Policy Web edge sweep (2026-08-27, Elias's pass-6 follow-up: "worth a sweep rather than a fix").**
+The `TariffPolicy → DebtToGdp` sign slip was one instance of a class — a sign correct when written that
+went stale when the mechanism beneath it changed — so all 93 declared edges were checked against the
+formulas as they stand after passes 3–6 (six read-only verifiers by area, an adversarial refuter on each
+of the 24 flags; 21 confirmed, 3 refuted). **Twelve distinct defects, all fixed in `PolicyWebRenderer.
+BuildEdges` (UI-only; the edge list feeds only the web's chords and the policy screens' chip rows —
+`GetStatsForArea` counts edges and never reads `Increases`):** (1) four inverted SIGNS, all born in the
+Crime & Justice couplings pass (`a7e00e3`, 2026-08-26) — `SentencingSeverity → PrisonPopulation` drawn
+`false` when harsher sentencing RAISES the incarceration rate (the NRC time-served channel that pass
+added), and the three line-resident budget edges `PoliceFunding/JudicialFunding/BorderEnforcement →
+DebtToGdp` drawn `false` (they had taken the tax group's sign; a dial that spends money raises the ratio,
+exactly as every `AddSpending` DebtToGdp edge already says); (2) `SwfAssetAllocation → DebtToGdp` drawn
+`true` "as neutral" — there is no neutral encoding, `Increases` is rendered as a signed colour, and a
+higher equities weight raises the expected return the structural draw books as revenue, so `false`;
+(3) three WEIGHTS left at the `1f` default inside groups that carry a declared denominator —
+`BailReform → Crime` (0.02 drawn as thick as police funding's 0.16), `DrugPolicy → PrisonPopulation` and
+`JudicialFunding → PrisonPopulation` (the couplings pass declared the group's denominator at the
+sentencing edge and left these two at 1) — now the table's own ratios, and the three budget edges
+weighted by their declared per-point costs; (4) three welfare POVERTY weights that had never matched the
+constants (UniversalHealthcare 2 vs 4, HousingAssistance 2 vs 3, ChildcareSubsidies 1.5 vs 3 — restated
+literals from the renderer's first commit), now read through `MacroSystem.GetPovertyReductionSensitivity`
+/ `GetWelfareApprovalSensitivity` so they cannot drift again; (5) the PHANTOM `PolicyNodeId.Tariffs`
+edges — `TaxType.Tariffs` never gets a `TaxLine`, so neither the hike-approval nor the revenue channel
+exists for it; removed from the tax loop, the node kept as a zero-edge signpost with honest text (the
+real lever is Tariff Policy). **One class of omission fixed by the same convention:** every welfare
+program's cost is a real spending flow (`GetTotalWelfareCost → totalSpending`) and no welfare node drew
+the `DebtToGdp` edge every spending node draws — the couplings pass's own rule that money reaching the
+debt path targets DebtToGdp — so `AddWelfare` now draws it (the Welfare screen's chip row gains
+Debt-to-GDP). **Refuted flags, recorded so they are not re-raised:** `RetrainingProgram → Unemployment`
+(the flag's claim about pass 3 was wrong; the weight is right), `SwfContributionRate → DebtToGdp` (nothing
+beneath it changed) and the pass-6 `TariffPolicy → DebtToGdp` weight (a misreading of the diff).
+**Reported, not drawn — the file's own convention is that indirect effects are not second direct edges
+(the interest-rate comment):** the incarceration variable cost reaching the debt path through
+PrisonPopulation (Sentencing/DrugPolicy/BailReform → DebtToGdp), `MinimumWage → Approval` through Gini,
+`FamilyPolicy → DependencyRatio` through BirthRate, `TariffPolicy → Gdp` through TradeBalance, UBI's and
+childcare's tilt of Okun's reversion speed; and three the sweep names as real gaps for a later pass —
+`InterestRateDecision → DebtToGdp` (a direct interest-cost channel, but false for the USA whose debt rate
+is anchored — the edge would need a per-country truth the widget has no way to draw), and two generic-line
+folds (`InfrastructureAndDevelopment` onto the Transportation node, `HealthcareAndSocialCare` onto
+HHSDiscretionary, so the non-USA portfolios' lines draw the growth and confidence edges their USA twins
+draw). **Verified under rule 0's UI-only bar:** compile clean; a full capture sweep at 1600×950 (USA) 64/64, 0 overflows / 0 containment escapes / 0 canvas violations, ATTRIB 0; the web renders and the Welfare screen's chip row now carries Debt-to-GDP beside Approval, Poverty and Consumer Confidence — the one visible change. The fix is `56c5163`; the three channels the sweep named but could not draw honestly are a roadmap entry beside the Reset-click gap.
+
+## The seventh request sent, E3's supplier corrected, two deletions by ruling (2026-08-27)
+
+**The send.** On Elias's instruction the codebase-derived asset request went to Claude Design's project
+(`PoliSim v2 Design Progress`, `b3dec27b-620b-452a-9783-e8317cbec4d9`) through `DesignSync` — the first
+send made from this side rather than by hand. **Two paths, deliberately:** in place at
+`uploads/CLAUDE_DESIGN_ASSET_REQUEST.md` (the path all four earlier plans wrote, and the one Design has
+read) and at a new dated folder `send/design_request_2026-08-27/` carrying the request, `ATTACHMENTS.md`
+(what is asked, in send order; what comes back), `SHA256SUMS.txt`, and the eight captures §2/§3 cite
+under `captures/` (12 files written, listed back). Elias's reason for the second path is now a recorded
+lesson: **an in-place overwrite of a file Design has already read produces nothing that looks new** —
+it cost a round-trip on the previous send. **Readback hash-verified on both paths:** `get_file` returned
+each document complete and CRLF-intact (`truncated:false`); transcribed byte-for-byte and hashed, both
+readbacks equal the repo file's digests exactly — `9a464915c8ee1e087637a3f7b9ce18db7f160ed1607c3b550f0e0729cbf24eec`
+(CRLF as uploaded, 29,571 bytes) and `bf7c2263fe7a00a7b544fa0f7b731daf1e04de09fde850ac2169c6f2f3757cfb`
+(LF-normalized, 29,170 bytes), `diff` identical. The PNGs cannot be read back through this channel
+(the 256 KiB cap, recorded 2026-08-26), so their digests travel in `SHA256SUMS.txt` for Design to check.
+`MISSING_PREREQUISITES.md` §S records the send; §D1 is no longer behind it; the 1j courtesy note was not
+part of the instruction and stays unsent (Elias's). **One tool fact for the record:** `list_projects`
+returns only projects the login can write to and came back EMPTY for this project, whose `get_project`
+nevertheless reports `canEdit: true` — the full id had to be recovered from the 2026-08-26 session's
+transcript (the repo's copies elide it to `b3dec27b-…`). It is now in §S so nobody digs for it again.
+
+**E3's supplier, corrected (Elias's ruling).** The rasterization diff sat under "Waiting on Claude Design"
+though Design's half closed 2026-08-17; ours is a tooling pass (a working `RenderSpriteToTexture2D` path)
+or a rasterizer installed on this machine — no external party owes anything. *A prerequisite attributed
+to the wrong supplier is one that lapses, since nobody on either side is waiting for it.* Moved to the
+roadmap's live list (item 7) with a tombstone in the register; the 2026-08-17 register table above
+carries a dated amendment.
+
+**Two deletions, both Elias's one-line rulings.** (1) **The eleven superseded chrome SVG sources** under
+`Chrome/Source/` (+ metas) — Track 3 (`10f713e`) had removed the PNGs only, and this file's own Track-3
+entry said "deleted from disk"; the per-state SVGs Design shipped supersede the strips, and keeping both
+was the two-tables problem in another costume. `ChromeManifest.txt`'s `!` block records the deletion;
+its rows stay because `DeliveredAssetCheck` matches archived entries by stem — re-run after the deletion:
+**0 missing from 0 root zips, 0 missing from archived packs**, every pack `ok`, the eleven `.svg` entries
+logged `supd` beside their `.png` twins (delivery.zip: 2 of 20 present, 18 superseded-by-ruling);
+`ChromeV2CoverageCheck` **50/50 both directions**. (2) **The three dead design-pack widgets** —
+`PoliSimWidgets.SupportBar`, `StandingDraftPair`, `DraftTrack` — rejected 2026-08-01 (`COMPLETED.md` §29)
+and on disk with zero callers for 26 days; removed, a dated comment in their place naming where each
+idea survives (`LedgerRow`'s draft column and `DrawDraftLabel`; `UiPalette.DrawDivergingBar`); the three
+`GameController` comments that cited them as the road not taken now say so in the past tense
+(`ThresholdBar`, which only `SupportBar` called, stays — not in the ruling). **Bar (rule 0, UI-only):**
+compile clean (`StatIconCoverageCheck` batch run, exit 0, 0 `error CS`, 19/19) and a smoke capture sweep
+at 1600×929 as USA — **64 captured, 0 failed, 0 text overflows, 0 containment escapes, 0 canvas
+violations, 0 ATTRIB**.
+
+**Ruled and recorded, no action:** the stranded-branch and item-10 material stays in
+`MISSING_PREREQUISITES.md` §D0 rather than returning to the roadmap (blocked on item 10; the roadmap is
+for startable work — that is what the split is for); the nine unbuilt screen-spec clauses (roadmap item
+4) are NOT started — §V is the higher-leverage item and needs Elias first.
+
+**Harness note:** a PowerShell function parameter named `$args` is shadowed by the automatic variable —
+the first bar run launched Unity with `-logFile` alone and every step "passed" in seconds. The step
+function's parameter is now `$unityArgs`; the run that counts is the second.
+
+## Progress5 — the batch of eight verified on the six-step bar, imported, and verified by loading (2026-08-27)
+
+**The pack.** `PoliSim v2 Design Progress5.zip` (450,309 bytes, SHA-256
+`C9B265661D38ED77C280F628D44A5BDE02BBB534A11F729C265F805AE65B109F`) arrived the same evening the seventh
+request was sent, answering §1 in full; Elias placed it straight in `AssetPackArchive/` rather than at the
+project root (`DeliveredAssetCheck` covers it there — 16 of 16 present after import). **Provenance:**
+`Zone.Identifier` `ZoneId=3`, `HostUrl=https://claude.ai/` — the same claude.ai download signature as the
+four packs before it. The manifest declares 16 files (8 PNG + 8 SVG) with pinned sizes and says §2/§3 came
+back as boards, not files.
+
+**1 · Security, by content.** Every PNG opens with `89 50 4E 47 0D 0A 1A 0A` and its IHDR reads 512×640,
+bit depth 8, colour type 6 (RGBA) — the PoC's exact envelope. All eight SVGs were read in full, not only
+pattern-matched: 42–47 elements each, exclusively `svg`/`rect`/`path`/`ellipse`/`circle` with
+`fill`/`stroke`/`stroke-width`/`opacity`; the scan for `<script`, `on*=`, `javascript:`, `href`/`xlink:href`,
+`<foreignObject`, `<image`, `<use`, `<!ENTITY`, `<!DOCTYPE`, `data:`, `<style`, `@import`, `url(` found
+nothing in any file. `viewBox 0 0 256 320` on all eight — rendered at 2× to 512×640, as the manifest says.
+
+**2 · Completeness, programmatically.** The expected stems were DERIVED from `CabinetSystem.CandidatePool`
+(the Defense/ForeignAffairs/Education entries) by the `Slug()` rule and `diff`ed against the delivered
+stems: **0 missing, 0 unexpected, every name spelled exactly** — the rename-that-looks-like-an-omission
+class (`icon_crime` → `icon_area_crimejustice`) had no instance. Every stem has both a PNG and an SVG;
+the manifest's pinned byte sizes matched the files 16 of 16. §2 and §3: the live `PoliSim v2 Screens.dc.html`
+now carries `1k Calendar panel board` and `1l Graph weight ruling` (fifteen screen labels in all), read
+from Design's project and recorded in `POLISIM_V2_SCREEN_SPEC.md` §A.16; nothing in the zip claims them.
+
+**3 · The conventions.** Decoded pixels (System.Drawing, every 4th pixel): all eight fully opaque — 0
+translucent, 0 transparent — **0% white, 105–164 distinct 5-bit colours, mean RGB in the 90s/80s/70s** —
+full-colour painted busts, the Portraits class, correctly NOT white-on-alpha (the PoC reads the same:
+174 colours, 0% white). Names derived from the enum and the pool (above). Destination
+`Assets/Resources/Art/UI/Portraits/` for the PNGs and `Portraits/Source/` for the SVGs — under `Resources/`
+where `IconLibrary` loads. Sprite mode: the Portraits template is textureType Default, `spriteMode 0`
+(a Texture2D drawn by `GUI.DrawTexture`, never `Resources.Load<Sprite>`), one image per file — no strip.
+
+**4 · Import.** Metas hand-written by copying the PoC's own PNG meta and SVG meta and changing the guid
+line ALONE (verified: each new meta differs from its template by exactly that one line — nPOTScale None,
+alphaIsTransparency 0 on an opaque plate, compression kept per the full-colour ruling, mipmaps off, wrap
+Clamp); 16 fresh GUIDs from `/dev/urandom`, collision-checked against the 440 existing `guid:` values
+(0 collisions, 0 pre-existing duplicates); copies `cmp`-identical to the pack. Nothing edited under
+`Assets/` while Unity ran.
+
+**5 · Verified by loading, not by finding — `PortraitCoverageCheck` (new, `Assets/Editor/`, in
+`CheckSuite`).** It enumerates every `CabinetMinister` in `CabinetSystem.CandidatePool` and every `FedChair`
+in `FederalReserveSystem.CandidatePool` by reflection (the pools are private statics — the check derives
+from the pool the roster draws from and keeps no list of its own), plus every sitting
+`Country.CurrentFedChair` in `WorldFactory.CreateDefault()`, and loads each through
+`IconLibrary.GetCabinetPortrait`/`GetFedChairPortrait` — the game's path. **25 of 25 pool members resolve**
+(18 ministers across six portfolios + 7 chairs): the sixteen older at 256×256 DXT5, the PoC and the eight
+new at 512×640 DXT1 (compression kept, the 3.0b ruling); the sitting chair Harriet Ellsworth reported with
+no portrait and not counted — none was ever requested. A pool member with no portrait FAILS the check;
+the log fold is armed. `CheckExit`'s self-test loads a known portrait first.
+
+**6 · The four standing checks, all green:** `DeliveredAssetCheck` **0 missing from 0 root zips, 0 missing
+from archived packs** (Progress5.zip 16 of 16); `StatIconCoverageCheck` **19 of 19**; `ChromeV2CoverageCheck`
+**50 of 50 both directions**; `ImporterSettingsCheck` **148 sprites, 0 errors, 0 warnings** (WhiteOnAlpha
+112, FullColour 27 → 35, Tiling 1). Compile clean after the two comment repoints (`error CS` 0).
+
+**What it closes and what it does not.** §D1 CLOSES — the cabinet set is complete, 18 of 18 ministers
++ 7 Fed chairs, `MISSING_PREREQUISITES.md` §D1 a tombstone. **The eight are BUILT-NOT-SEEN** (§V): the PoC
+alone passed the register side-by-side; the batch on the roster beside the sixteen squares is the eye's
+question. `POLISIM_R4_4_PREREPORT.md`'s retention trigger fired — consumed to `COMPLETED.md` §19 (the
+name list, the four-part collision search, the seven rulings) and deleted; `CabinetSystem.cs` and
+`CabinetPortfolio.cs` repointed. The request doc is EMPTY of live asks (§0 the state, §4 the costed set,
+§5 the conventions — the next ask starts from §4). **Boards 1k and 1l are NOT implemented — by Elias's
+ruling they wait behind §V**; they are roadmap live items 8 and 9 with the rulings in the screen spec.
+One thing worth an eye beyond the roster: the new PNGs are 49–59 KB against the PoC's 604 KB — the same
+planar register at the same size, but flat colour where the PoC carried more tonal texture; the
+side-by-side that judged the PoC should be repeated with one of the eight beside it.
+
+## Playtest 3 — the Compass Y axis diagnosed, the portrait draw size measured, the declutter survey (2026-08-27)
+
+**What happened.** Elias ran §V's seventeen-item checklist in one Editor session: 12 of 17 pass, ten
+surfaces cleared to `COMPLETED.md` §34 (the list is there), three findings in priority order. All three
+carried the same instruction — measure first, change nothing — and that is what this entry records:
+**no code behind any finding was changed.** One file was added: `Assets/Editor/CompassAxisDiagnostic.cs`,
+a read-only diagnostic (not in `CheckSuite.Suite` — it is a measurement, not a coverage check; run by
+`-executeMethod PoliSim.EditorTools.CompassAxisDiagnostic.Run`, log `compass_axis_20260827_*.log`).
+
+**Finding 1 — the Compass "only appears to operate on the x-axis": MODEL cause.** The diagnostic
+prints, per country at turn 0 (`WorldFactory.CreateDefault()`), the per-sector `RegulationLevel`, the
+implemented-welfare count and generosity mean, the raw axis values from the renderer's own
+`GetFiscalSizeAxisValue`/`GetRegulationWelfareAxisValue`, and the plotted position under the renderer's
+`PadRange` (15% of range, or a flat ±5 when the range is under 1) and `InverseLerp` rule, replicated from
+its private helpers so the renderer stayed untouched. Enumeration: six countries, eight sectors each,
+six welfare programs each.
+
+| country | avg regulation (8 sectors) | welfare implemented | Y raw | X raw | ty | pixel y of 600 |
+|---|---|---|---|---|---|---|
+| USA | 50.00 (all 50.0) | 0/6 (all off @50) | 25.000 | 21.624 | 0.500 | 300.0 |
+| Sweden | 50.00 | 0/6 | 25.000 | 36.521 | 0.500 | 300.0 |
+| Germany | 50.00 | 0/6 | 25.000 | 36.670 | 0.500 | 300.0 |
+| France | 50.00 | 0/6 | 25.000 | 42.060 | 0.500 | 300.0 |
+| Italy | 50.00 | 0/6 | 25.000 | 34.650 | 0.500 | 300.0 |
+| Poland | 50.00 | 0/6 | 25.000 | 33.675 | 0.500 | 300.0 |
+
+X raw range 20.436 (padded 18.56…45.13 — the six dots spread from tx 0.115 to 0.885); **Y raw range
+0.000** (padded 20.00…30.00 by the ±5 rule) — every dot at the plot's mid-line, a 0.0 px band. The plot
+is not at fault: the auto-scale spreads any real range over the full height (X proves it), and the
+range label "Y: regulation & welfare generosity, 20…30" is the padded band of a constant, honestly
+printed. The constant has two halves, both by seed: `Sector.RegulationLevel` defaults to 50
+(`Sector.cs:47`) and no seed sets it; `WelfareProgram.IsImplemented` is false for all 36 programs at
+seed. And both stay constant for the AI five: `RegulationLevel`'s only writer is
+`ApplySectorPolicyChanges` (`SimulationManager.cs:2796`, the player's PolicyDecision) and
+`IsImplemented`'s only non-harness writer is `ApplyWelfareProgramBillResult` (`ParliamentSystem.cs:389`,
+the player's bill) — no AI system moves either. So the five AI dots hold Y = 25 for the whole game;
+only the player's dot can leave the line, through the sector regulation dials or a welfare bill, and
+even then it moves alone. **Not fixed.** The fix is a model question and Elias's ruling: a per-country
+seed spread for regulation and/or implemented welfare moves every no-policy baseline (regulation feeds
+the sector model; an implemented program spends — a discontinuity row either way), while a Y axis
+re-derived from data that already varies at seed changes what the compass claims to show. Neither is
+a plot change.
+
+**Finding 2 — the eight portraits "render too small to judge": one number governs.** All three
+portrait surfaces — the roster (`GameController.cs:7755`), the candidate card (`:7819`), the Fed chair
+card (`:3235`) — size through the one method `DrawPersonPortrait` (`:3263`):
+
+```
+height = _labelStyle.fontSize * 3.2f;                       // :3272 — THE governing number
+width  = Mathf.Round(height * (74f / 92f));                 // :3273 — the frame's @1x proportion
+art    = rect inset by PortraitFrameArtInset = 5f per side // :683, :3281-3283
+fontSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.022f), 16, 28)   // RescaleStylesToScreen, :2341
+```
+
+| window | label font | portrait rect | ART drawn | 512×640 source minified | 256×256 source minified |
+|---|---|---|---|---|---|
+| 1280×720, 1640×707 | 16 | 41×51 | **31×41 px** | 16.5× | 8.3× (+20% width crop) |
+| 1600×900 / Editor 1600×929 | 20 | 51×64 | **41×54 px** | 12.5× | 6.2× (+20% crop) |
+| 2560×1440 | 28 (32 clamped) | 72×90 | **62×80 px** | 8.3× | 4.1× (+20% crop) |
+
+Mipmaps are OFF on every portrait by the 2026-08-11 importer ruling, so a 12.5× minification samples
+roughly one texel in 150 — the sparkle on top of the smallness; the 74:92 rect crops the squares' width
+by 20% under `ScaleAndCrop`. The frame `ui_portrait_frame.png` is 148×184 (the @2x of 74×92) and draws
+at 0.35× (1600) / 0.49× (2560) of its texel size — the rect matches the frame's design size only at
+2560. No second number clamps a taller portrait: each caller's row is a GUILayout horizontal whose
+height follows its tallest child, so a larger multiplier grows the card. **Nothing changed** — the size
+is Elias's ruling. Two facts for that ruling: the roster's three portfolio panels sit side by side, so
+the portrait competes with the minister's name, philosophy and description for the panel's width; and
+the `UiOverflowGuard` captures at the four sizes are the check a new multiplier must pass.
+
+**Finding 3 — "hard to tell due to clutter and poor placement": the survey, nothing cut.** Items 4,
+11, 12, 13 and 14 as one finding; Elias's instruction: remove unnecessary text and headers as the
+Budget screen already does; survey by category first. The reference: `DrawTaxLineRow` (`:8709-8712`)
+— one ledger row per instrument (name, standing tick, draft knob, figure, unit, revenue), the button and
+the verdict WORD on the row, "the estimate's prose collapses to the verdict word it was carrying" — and
+`DrawDerivedStatsRow`'s own conversion (`:7107-7111`, "a column can be read down instead of a sentence
+read across"). Categories: **(a)** carries information the player needs at that moment; **(b)** explains
+something better learned once and then assumed; **(c)** restates what an adjacent element already says.
+**Two host corrections:** the primary-balance line lives on **Statistics › Domestic** (`:5412`), not the
+Budget tab, and the pass-through line on **Statistics › International** (`:5558`), not Policy/Laws › Trade.
+
+*The law browser at 50* (`DrawLawsTab` `:5901`, the pane `:6592`, the bar `:6798`):
+- "Laws" box header (`:5917`) — **(c)**, the selected "Laws" sub-tab chip sits directly above it.
+- The intro paragraph "Named presets over the existing dial space … nothing happens until Parliament
+  resolves it." (`:5928`) — **(b)**.
+- Category chips "All - N / Crime & Justice - N / Labor Market - N" (`:5945-5951`) — **(a)**, controls.
+- Summary line "N laws - n in force - p before the house" (`:5973`) — **(c)**: the three counts are the
+  "All - N" chip and the "IN FORCE - n" / "BEFORE THE HOUSE - p" group captions.
+- "ORDER - STATUS, THEN" caption (`:5986`) — **(b)** (the fixed primary sort, learned once); the
+  Magnitude / A-Z / Cost buttons — **(a)**.
+- "SEARCH" + the field (`:6933`) — **(a)** (an IMGUI field has no placeholder; the word is the field's name).
+- Status chips All statuses / Enacted / Pending / Available (`:6004-6007`) — **(a)** as controls, with a
+  **(c)** of vocabulary: the same three states are named again by the group captions in other words
+  (Enacted ≠ IN FORCE, Pending ≠ BEFORE THE HOUSE).
+- Column header STATUTE / CATEGORY / APPROVAL (`:6240-6255`) — STATUTE **(c)** (a list of statutes needs
+  no caption saying so), CATEGORY **(c)** (the cell's tokens name themselves), APPROVAL **(a)** (a bare
+  "3.5" needs its unit; it is the one caption carrying a fact).
+- Group captions "IN FORCE - n" / "BEFORE THE HOUSE - n" / "AVAILABLE - n" (`:6269`, `:6296`) — **(a)**:
+  status is carried by the group, not a column.
+- Band captions "MINOR - 12 available - dial movement ±3-6" + the stepped rule (`:6354`) — the class name
+  and the rule **(a)**; "12 available" **(a)** (the band's own count); "dial movement ±3-6" **(b)**.
+- Rows (`:6385`): glyph bar (category colour) **(a)**; name, with "- VOTE IN 12d" on pending rows **(a)**;
+  category token **(a)** under "All", **(c)** whenever one category chip is active (every row repeats
+  it); magnitude steps **(a)**; cost figure **(a)**.
+- Bottom bar: "Approval on hand: 45.0" (`:6803`) — **(c)**, the header strip prints "Approval: …" on
+  every screen (`:3754`); "Affordable now: 12 of 50 shown" **(a)** as a count, "(cost <= approval on
+  hand)" **(b)**.
+- Detail pane kicker "CRIME & JUSTICE - MAJOR - 3 OF 10 IN CLASS" (`:6634`) — category **(c)** (the
+  row's token and glyph colour), class **(c)** (named again by "MAGNITUDE: MAJOR" three lines down),
+  "3 OF 10 IN CLASS" **(b)** at best.
+- Name + status word "ENACTED / not enacted / ENACTMENT PENDING" (`:6642-6644`) — **(a)**.
+- Description (`:6647`) — **(a)**.
+- "MAGNITUDE: MAJOR" + steps + "±15-22" (`:6660-6665`) — the steps **(a)**; the word **(c)** with the
+  kicker; the range **(b)**.
+- "IF ENACTED - DIAL MOVEMENT" caption + the grid (`:6675-6676`) — **(a)**.
+- "EXPECTED EFFECTS" + the effect lines (`:6697-6702`) — **(a)**; the trailing sentence "Long-run target
+  shifts, from this law's dial deltas and the model's own couplings - as the dials settle, before dial
+  clamps." (`:6704`, `:6721`) — **(b)**.
+- Citation (`:6727`) — **(a)** (content, not chrome).
+- "Enactment cost: 3.5 approval (paid once, on passage)" (`:6728`) — the figure **(c)** (the row's
+  APPROVAL cell), "(paid once, on passage)" **(b)**.
+- "IF PUT TO THE HOUSE TODAY" (`:6733`) — **(a)** as the estimate's title; the pending line **(a)**;
+  `DrawBillLiveEstimate` (`:3532`): "Bill direction: Expansionary (+3.0)" — the word **(a)**, the
+  number **(b)**; "Current seat composition: WOULD PASS" — the verdict **(a)**, the framing phrase
+  **(b)** (the Budget row keeps only the verdict word); the diverging bar **(a)**; the party stance
+  rows "Social Democrats - 120 seats … FOR" (`:6897`) — **(a)**, the estimate's evidence.
+- The action button "Enact/Repeal {name}" (`:6756`) — **(a)**.
+
+*The trace panel* (`StatTracePanel.cs`; the same rows on both hosts):
+- Approval header "Approval — period ended Aug 1, 2027: 48.2 → 46.9 (−1.30)" — **(a)**.
+- Term rows (name / signed figure) — **(a)**; the trailing "≈ −4.0 sustained" on sustained terms —
+  **(b)** (an equilibrium projection explained nowhere on screen); the four indented misery sub-rows
+  — **(a)**.
+- "Events this period" + dated rows + "+N more events" — **(a)** (the stated omission).
+- Footer "Terms −1.10 + events −0.20 = −1.30 — audited at the boundary." — **(c)** (the sum is the
+  header's delta) + **(b)** ("audited at the boundary").
+- Confidence header "Consumer confidence — this period's single book" — the name **(a)**, "single
+  book" **(b)** (a design term); rows "Policy base (healthcare/UBI)", "Wage-sentiment factor (period
+  stance) ×1.0000 / gap +0.00 pp", "Effective — what the economy reads" — the figures **(a)**, the
+  three parentheticals/dashes **(b)**.
+- Debt header "Debt — period ended …: $X → $Y (+$Z) · ratio a% → b%" — **(a)**.
+- Money terms "Primary balance (before the reaction)", "Fiscal reaction on revenue", "Interest at the
+  issuance rate", "Maturity lag", "Inflation erosion (−π·b)", "Clamp … / Residual (rounding, audited)"
+  — the names and figures **(a)**; the trailing texts "a primary deficit", "stance ×1.00", "blended pays
+  … vs issuance", "(rounding, audited)" — **(b)**; the rate and π figures in the trailing column
+  ("3.20→3.35%", "π 2.0→2.1%") — **(a)**.
+- Debt footer "Terms … + events … = … — audited at the boundary (365 days)." — **(c)** + **(b)**.
+- Ratio header "Debt-to-GDP +1.20 pp — the ratio's own identity, exact; GDP's drivers are not this
+  section's claim" — the figure **(a)**, the clause **(b)**; its two rows — **(a)**.
+- Host chrome: no caption of its own (the header row names the stat); the chip row's "+N more affected
+  - see Policy Web" — **(a)**.
+- **Placement (not a category):** on Policy/Laws the panel opens between the chip row and the tab's
+  content and takes up to the whole host height (`MaxShareOfHostHeight 1f`, `:5799-5803`), so an open
+  trace shrinks the law browser under it — items 4 and 11/12 interact. On Budget Process it opens in the
+  centre column above the line items (`:8452-8456`) — the same shape.
+
+*The primary-balance line* (Statistics › Domestic, `DrawDerivedStatsRow` `:7100`): "Derived" box header
+— **(b)** (the rows name themselves); GDP per capita, Tax burden, Government spending, Deficit/Surplus,
+Primary deficit/surplus — **(a)**; the trailing "of GDP" / "of GDP, excl. interest" — **(a)** (units);
+"Sector shares of GDP" caption + eight rows — **(a)**. **Placement:** the fifth row of a box under six
+headline tiles, on a page the Budget balance is not on.
+
+*The pass-through line* (Statistics › International, `DrawTradeStatsContent` `:7937`): "Trade" section
+header — **(a)** (a marker on a long page: map, trade, activity); "Overall Trade Balance: $X" — **(a)**;
+"Tariff pass-through to prices (last year): +0.00 pp of inflation" — **(a)**, "(last year)" **(b)**; the
+graph "Trade Balance" — **(a)**, its title **(c)** with the line above. **Placement:** the realized
+figure sits under the world map while its forecast twin — "prices +0.00 pp this year" on the Trade bill
+card (`:8171`) — sits on the policy screen where the tariff is set: two readings of one quantity on two
+screens.
+
+**Load-bearing, flagged, untouched:** B1's amber draft cue (the hatched span between standing tick and
+draft knob on every Budget line row, `LedgerRow.Draw`) and B8's interrupt line
+(`DrawFullScreenPendingInterruptBanner`, `:8358`, on the Budget Process host of the fiscal trace). The
+cut list is Elias's; nothing here was removed.
+
+## Playtest 3, the rulings — the seed spread's mechanism, the portrait multiplier, the cut (2026-08-27)
+
+**The three rulings, in Elias's order.** (1) COMPASS: option (i), a per-country seed spread for sector
+regulation and implemented welfare programs, from real data per the standing rule — because the
+diagnostic proved something larger than the compass: every sector in every country defaults to
+regulation 50, no country has an implemented welfare program at seed, and neither has an AI writer, so
+five of six countries have no regulatory or welfare identity at all in a game premised on six distinct
+countries; option (ii) would have hidden the finding. "Do NOT invent a spread; if the figures need
+sourcing, say so and Elias will source them." (2) PORTRAITS: raise the multiplier at
+`DrawPersonPortrait`, one number, with the row-height cost at 1280 stated. (3) THE CUT: execute the
+survey's own classification — every (c) and (b) cut, every (a) kept; B1's amber cue and B8's interrupt
+line untouchable; the placement findings are moves, not deletions, reported separately. Commits:
+`6df94de` (the seed mechanism), `4e5adbf` (portraits + the cut), then the records.
+
+### 1. The seed spread — the mechanism built, the figures Elias's to source
+
+**The figures need sourcing, and the mechanism does not wait for them.** The seed file carries no
+regulation figure and no welfare-program figure for any country (its welfare-adjacent figures are the
+spending LINES — the mandatory transfer block, the healthcare line — not programs). So `6df94de`
+builds the whole mechanism and leaves every slot at the pre-ruling value with a `⚠ [PLACEHOLDER]` tag;
+`MISSING_PREREQUISITES.md` §F names the two datasets (OECD PMR for regulation; the statutory-coverage
+facts plus OECD SOCX spending-by-function for welfare), the mapping onto each dial, and the proposed
+implemented-program table for Elias to confirm. A sourced value dropped into a slot is the whole
+remaining work.
+
+**The form — anchored, and why that is the only honest one.** This model is a DEVIATION model
+throughout: every effect measures a gap from a `Baseline*` anchor seeded equal to the sourced figure
+("so a fresh game opens at zero gap rather than a turn-1 shock" — `Sector.cs`, the minimum wage, paid
+leave, the prison rate, Gini, the housing pair, all of them). The sourced figures those anchors hold
+ALREADY CONTAIN each country's real regulation and real welfare state: France's output shares are the
+shares of a regulated France; Sweden's poverty rate, Gini, life expectancy and spending seeds are those
+of a country that runs universal healthcare. Seeding "France regulation 65" or "Sweden healthcare
+implemented at 85" as a LIVE deviation from the uniform 50 / from nothing would therefore subtract the
+welfare state from figures that already include it — the perimeter-rule class of seed bug ("taxing one
+perimeter and spending another"), in a new costume. Measured against the code, the live form would on
+day one: push every EU sector's output target below its sourced share (`ApplySectorEffects`, a
+permanent −k×15 gap); add the programs' full cost ON TOP of the sourced spending lines
+(`GetTotalWelfareCost`: healthcare alone 10% of GDP × generosity — France's primary balance from −2.9
+to about −12% of GDP); pull poverty, Gini and life expectancy away from their sourced anchors
+(`ApplyPovertyRate`/`ApplyGini`/`ApplyLifeExpectancy` — the latter's own doc comment predicted exactly
+this: "if countries ever start with the program implemented, their BaselineLifeExpectancy must absorb
+the starting lift or every seeded value drifts upward from turn one with no player action"); lift the
+EU five's approval equilibrium by ~3 points (`GetWelfareApprovalEffect`, a stock term); and run the
+level-driven confidence flow every turn (`ApplyWelfareProgramEffects`: +0.03 × generosity of business
+confidence per turn toward the 1.3 cap — a permanent GDP tailwind for five countries, invented). So
+the seed is built in the anchored form:
+
+- `Sector.BaselineRegulationLevel` (new, default 50; `Clone()` copies it) — `ApplySectorEffectsInternal`
+  measures `regulationAdjustment` from it instead of `NeutralPolicyDialLevel`. The other four sector
+  dials keep the uniform 50 (not in the ruling; the same finding, flagged in §F).
+- `Country.BaselineWelfarePrograms` (new) — the portfolio AS SEEDED, a snapshot `SeedWelfarePrograms`
+  takes and nothing mutates. `MacroSystem.WelfareEffectDelta(country, f)` = Σf over the live implemented
+  programs − Σf over the seeded ones, in list order; EVERY welfare effect now reads it — the
+  unemployment reversion tilt, the poverty reduction, the healthcare life-expectancy lift, the Gini
+  reduction, the housing pair (`GetImplementedGenerosityFraction`), the approval term and its ledger
+  twin (`GetWelfareApprovalEffect`, so the trace's "Welfare vs baseline" row is now literally that),
+  the two confidence flows (applied only when the deviation is nonzero) — and
+  `SimulationManager.GetTotalWelfareCost` books live cost minus seeded cost (a removal below the seed
+  books NEGATIVE cost: spending below the sourced line, which is right). The preview clone hand-lists
+  the anchor (the R4-1 Clone-escape class).
+- `WorldFactory.SeedSectorRegulation(country, countryWide, (SectorType, level)…)` sets level AND anchor
+  together; `SeedWelfarePrograms(country, (Type, implemented, generosity)…)` builds the six programs in
+  the fixed order and snapshots them. Six placeholder lines each.
+
+**Byte identity, by construction and then measured.** While every anchor is 50 and every seeded
+portfolio is empty, each delta is `live − 0f`, which is `live` exactly; the live sums accumulate in the
+same order with the same expressions as before; the confidence flows apply in the same program order.
+The bar measured it: `traj_post_seedspread` ≡ `traj_pre_seedspread` **6 of 6** (both seeds, 100/500/1000
+turns; SHA-256 `97E52CB1…`, `EF5BB339…`, `2AA232DA…`, `07BA2FE4…`, `F9AE3C41…`, `0A4609A9…` — the same
+six digests as `traj_post_pass6`, so the no-policy trajectory has not moved since pass 6 either).
+Save compatibility: Newtonsoft leaves a missing field at its initializer (`50f`; an empty list), so a
+pre-ruling save loads to the pre-ruling behaviour; the RT diagnostic covers the new fields the day a
+seeded value exists (a field that failed to round-trip would then diverge the post-load path).
+
+**What the ruling expected, corrected.** "This moves every no-policy baseline — take the discontinuity
+row … note that it changes what five countries do rather than only how they are measured." Under the
+anchored form it does NOT move the no-policy baselines — not now, and not when the figures land: it
+changes what the five countries ARE (their dial positions, the programs on their tabs, their place on
+the compass), and what they DO the moment anything moves a dial, because the move is measured from a
+real position rather than from a uniform placeholder. No discontinuity row is written, because none
+occurred; the row is drafted here for the one case that would need it: **if Elias rules for the
+live-deviation form instead**, the revert is one subtraction per site — `BaselineRegulationLevel` →
+`NeutralPolicyDialLevel` in `ApplySectorEffectsInternal`, and the `− WelfareSum(BaselineWelfarePrograms…)`
+term dropped from `WelfareEffectDelta` and `GetTotalWelfareCost` — and THAT commit takes the row
+("row 9, seed identity: every figure ever recorded on the five AI countries' no-policy paths").
+
+*(✅ Confirmed 2026-08-28 — R-C3 of the continuation kickoff, with the sourced seeds in (`915c800`): the
+anchored form stands — "sourced seeds move what the countries are, not what they do unprompted." A6 is
+retired from `MISSING_PREREQUISITES.md` §A; the live-deviation revert above stays as the recorded
+alternative, unexercised. The figures themselves were confirmed the same day (R-C4; basis notes in
+`POLISIM_SEED_DATA_MACRO_OVERHAUL.md` §8).)*
+
+### 2. The portraits — 3.2 → 5.5, the cost measured
+
+`DrawPersonPortrait` (`GameController.cs`, `height = fontSize × 5.5`). Art drawn: **61×78 px at
+1280×720 and 1640×707 (font 16), 78×100 px at 1600×900 (font 20), 114×144 px at 2560×1440 (font 28)**;
+the 512×640 batch minified 8.3× / 6.5× / 4.4× (was 16.5× / 12.5× / 8.3×); the 256×256 squares 4.1× /
+3.3× / 2.2× with the 20% width crop; the frame (148×184) drawn at 0.48× / 0.59× / 0.84× of its texels —
+never upscaled. Why 5.5 and not 8: the portrait's WIDTH comes out of the card's text column (the
+roster's three portfolio panels sit side by side), and 5.5 is the largest step that keeps the card's
+height governed by its text at every size — measured, not assumed, on the Fed-chair cards (the same
+`DrawPersonPortrait` and the same name/philosophy/description/button card as the cabinet candidate;
+the capture harness's cabinet state has every portfolio vacant, so the Fed cards are where the
+portraits are on film): **at 1600 the two cards' button rows sit at y = 555 and 718 before
+(`p6usa1600`) and after (`pt3usa1600`) — pitch 163 px, cost 0 px; at 1280 (`pt3usa1280b`) a card is
+141 px tall with a 133 px text column (name, a two-line description, the button) against an 88 px
+portrait rect — the text column governs, cost 0 px.** The portrait first grows a card at a ONE-line
+description (by ≈8 px at 1280), or at a multiplier of about 8.3 (fontSize × 8.3 = the text column) —
+5.5 sits well under both. The aliasing half of the finding is the importer, not the multiplier —
+mipmaps are off on the portraits by the 2026-08-11 ruling (made for chrome drawn 1:1); a portrait
+drawn at 6× minification wants mipmaps or a pre-shrunk 128×160 variant. Not changed here (an importer
+ruling); flagged for Elias.
+
+### 3. The cut — executed by category, nothing by taste
+
+Every (c) and (b) from the survey (the entry above), cut; every (a) kept. In code (`4e5adbf`):
+
+- **Law browser** (`DrawLawsTab`): the "Laws" box header (c); the intro paragraph (b); the summary line
+  (c) — its row survives only as the search slot's reflow home at the narrow floor; "ORDER - STATUS,
+  THEN" (b); STATUTE and CATEGORY column captions (c) — `DrawLawRowHeader` draws APPROVAL alone; the
+  band captions' "dial movement ±3-6" (b) and the detail pane's range beside the steps (b) —
+  `LawMagnitudeRangeLabel` deleted with its last caller; the category token under a single-category
+  chip (c) — `LawRowColumns(…, showCategory, …)` collapses the cell to 0 and the name takes the width,
+  header and rows reading one input (`LawCategoryColumnShown`); "Approval on hand" (c) and "(cost <=
+  approval on hand)" (b) — the bottom bar is one line, "Affordable now: n of N shown";
+  `CountPendingLawBills` deleted with the summary line.
+- **Detail pane**: the kicker line (c)+(c)+(b) whole — the class keeps ONE copy, the MAGNITUDE line's
+  word over the steps (one copy of a (c) pair stays; cutting both would remove the information, which
+  is not what (c) means); the two "Long-run target shifts…" sentences (b); "Enactment cost: … (paid
+  once, on passage)" (c)+(b); `DrawBillLiveEstimate(…, terse: true)` for this pane only — "Bill
+  direction: Expansionary" without the number (b) and the verdict word alone without "Current seat
+  composition:" (b), the Budget row's precedent; the four policy-screen bill cards were not in the
+  survey and keep the full form byte-for-byte.
+- **The reserve, re-derived**: `scrollHeight` was `availableHeight − fontSize × 15` — a constant standing
+  in for measured content (instance #12's class) sized while the header and paragraph were drawn;
+  with both cut it over-reserved ~4 lines, dead space at the bottom of a fifty-row list. Now measured
+  from the chrome actually drawn (the three chip rows' own heights, the reflowed search row when it
+  exists, the column header, the spacings, the bottom bar, the box padding, half a line of margin).
+  Verified at the floor: `pt3usa1280b_06f` shows the bottom bar inside the box with no dead space and
+  the containment guard silent.
+- **Trace panel** (`StatTracePanel`): "≈ x sustained" trailing (b) — `Term` loses its `sustained`
+  flag; both audit footers (c)+(b); the confidence section's four mechanism notes (b) — "Consumer
+  confidence" / "Policy base" / "Wage-sentiment factor" / "Effective", the gap figure kept; the debt
+  section's trailing mechanism texts (b) — "a primary deficit", "stance ×1.00", "blended pays … vs
+  issuance", "(rounding, audited)" — the rate and π FIGURES kept; the ratio header's clause (b).
+  ⚠ No capture state opens the trace panel (the harness never clicks a chip), so this part of the
+  cut is verified by compile and code, not on film — Elias's eyes, or a harness state to add.
+- **Statistics › Domestic**: the "Derived" box header (b). **Statistics › International**: "(last
+  year)" (b); the "Overall Trade Balance: $X" label and the graph's "Trade Balance" title were a (c)
+  pair — the copy that stays carries the figure: the graph title is now "Trade balance −$42.2B".
+- **Untouched, as ruled:** B1's amber draft cue (`LedgerRow.Draw`'s hatched span) and B8's interrupt
+  line (`DrawFullScreenPendingInterruptBanner`). Not touched, as instructed: the three placement
+  findings (the trace panel between the chips and the tab content; the primary-balance line on
+  Statistics rather than beside the Budget balance; the realized pass-through on a different screen
+  from its forecast twin) — moves, reported separately.
+
+**What the film shows at fifty (rule 15, the harness's eyes; Elias's are the verdict).** The browser
+opens on its chips and the first band; the four sizes read as one screen. Two residuals the cut could
+not reach, both with their governing number named so nothing is adjusted blind: (1) **the row pitch** —
+`DrawLawListRow` reserves `LedgerRow.Height(_labelStyle) × 1.4` per law (the "two lines for a wrapped
+name" allowance), ≈ 66 / 78 / 84 px at 1280 / 1600 / 2560, so the list viewport holds 2.5 / 4.5 / 5.5
+laws — a hundred laws are twenty screens of scrolling at 1600; the text cut gave the list back about
+four lines, the pitch is where the rest is. (2) **the selected law's name at 1600** breaks mid-word
+("Cash Bail Abolitio / n Act") — pre-existing (`p6usa1600_06f` shows the same), the header-font name in
+a label capped at half the pane's width (`DrawLawDetailPane`, `nameWidth = max(50%, pane − status)`)
+where a single word is wider than the label; clean at 1280 and 2560. Both are Elias's call; neither
+was a category.
+
+**The bar (`6df94de` + `4e5adbf`, one run, logs `PoliSim-captures\logs\*_seedspread_20260827_*.log`).**
+Dumps: `post_seedspread` ≡ `pre_seedspread` 6 of 6 (above). `AggregationEquivalenceCheck`: 117 of 117
+within 3% plus the bucket asserts. `SaveLoadRoundTripDiagnostic`: PASS, 12 scenarios clean.
+`PreviewParityDiagnostic`: 7 of 7 asserted terms for all 6 countries, no clone escape. Matrix s777: 30
+cells complete, its 1,644 result lines identical to `matrix_post_pass6_s777_20260827_183757.log`.
+Captures: `pt3usa1640` (1640×686), `pt3usa1600` (1600×929), `pt3usa2560` (2560×1419) and `pt3usa1280b`
+(1280×699) — 64 screens each, 0 text overflows, 0 containment escapes, 0 canvas violations. ⚠ The bar's
+first 1280 run (`pt3usa1280`) captured at 1600×929 — the harness logged "driver attached … 1600x929",
+the Editor's remembered Game-view size on the first windowed launch after the batch runs — and was
+re-run as `pt3usa1280b` at a true 1280×699; the four sizes above are the ones judged. ATTRIB: 0 in every
+log. The `CompassAxisDiagnostic` was not re-run — nothing at the seed changed, by construction and by
+the dumps.
+
+## The omnibus pass, Phase 1 — the chrome sweep (2026-08-28)
+
+Elias's omnibus kickoff (2026-08-28) installed Working Discipline v2 (Phase 0, `0dc3ed8`; rules 0–15
+migrated verbatim to `COMPLETED.md` §35) and executed the roadmap's live items in one pass. Phase 1 is
+roadmap item 4 in full, item 5 per R-K6, boards 1k and 1l per R-K3, and the two law-browser residuals
+per R-K4/R-K5 — eleven units, each compiled and captured at the touched sizes before its commit (rule
+1's per-item bar), every capture 64 of 64 with the three guards silent unless stated.
+
+**Units and commits.**
+- `f92e14f` — §A.6's RUNNING status plate (one Label, a procedural `#EDE2CB` card under it, `1px
+  #C9BA9B` edge and the `8px #3E8A5F` lamp as Repaint overlays; "Clock running" → "Time running");
+  B5's disabled speed-button face — `ButtonKind.Disabled` wears `ui_btn_disabled` untinted with
+  `mutedInk` text, GUI.enabled-off for the click, rendered never omitted; five §A.2 tokens re-derived
+  against `PoliSimTheme.cs` (R-K10): `ruleRow #D5C8AB`, `borderPaper #CBBC9D`, `borderPlate #C9BA9B`,
+  `mutedInk #9A917D`, `deskCaption #8D7D5F` — FIVE without a constant, not the sweep's three; two were
+  already bare literals in the Canvas screens — plus `TextOnPlate #3D372E` and `DisabledFace #DDD2B8`.
+  Two fix-forwards on the plate (`c188b28`, `adcb52e`): top-aligned it read as a slider track, and
+  `BuildCardStyle`'s `ui_panel_paper` 9-slice is all edge at one line of height — the plate is drawn
+  flat, its 6/10 padding read as a ratio to its 10.5 type (the lamp's own rule).
+- `c188b28` + `da6a684` — §A.8's right-aligned screen caption and the 2px closing rule on the three
+  sub-tab rows (`DrawScreenCaption`; one accessor, `ScreenCaptionBlockHeight`, feeds the five content
+  reserves; captions this session's wording — "DOMESTIC BULLETIN — DESK READINGS, LIVE", "THE NATIONAL
+  ASSEMBLY — {seats} SEATS" with the real seat sum, "LABOR MARKET — DRAFTS UNTIL PARLIAMENT VOTES", …);
+  R-K6's eight `icon_area_*` promoted to the sub-tab rows through the new `IconLibrary.GetAreaIcon`:
+  Labor / Crime & Justice / Sectors / Trade on Policy/Laws, Global on Statistics › International,
+  Welfare / Infrastructure / Sovereign Wealth on the Budget category column, 16px on the board's 13.5px
+  type, area-ink tint. ⚠ The first capture showed the Policy/Laws row's labels broken to three lines
+  and mid-word beside a 24px icon at 1600 — instance #13's class at a new site (the row height was
+  measured at the bare share). `SubTabRowFitsIcons` now decides ONCE per row whether every label fits
+  beside an icon in two lines with no word broken; `SubTabRowHeight` measures with the reserve when
+  icons are on; a row that cannot carry them goes without — at 1600 the Policy/Laws row has no icons
+  (a width-dependent deviation from R-K6, stated), Statistics and Budget carry theirs.
+- `adcb52e` — §A.3's third column wired (`PoliSimTheme.TabSwatchTint`, six snapped values, ink
+  fallback): the inactive folder tongue's icon prints in the tab-swatch tint instead of muted white;
+  §A.11's urgency chip as a rotated bordered stamp (`PoliSimWidgets.Stamp`/`StampSize`, GUI.matrix
+  around the rect centre, an overlay in a GUILayout-reserved rect — 1.5px border, −2°, HOLDS TIME in
+  `#9C4238`, CAN WAIT in `#8A7A5C` on `#B7A98C`) — the generic stamp treatment is the same widget with
+  the 2–3px / −2°…−6° arguments, built but with no second caller yet; the 2560 Trade wrap by measured
+  width — which did NOT stop the break after the "+" of "+$0/yr" (`omni_c2560`): the sign glyph is a
+  break opportunity to the text engine at any width.
+- `f145ba2` — the label residues as the row family: the Fed tab re-measured at three multi-figure
+  sentence labels (one per branch — the chair's rule reading, the independent advisory reading, the
+  Eurozone blend) plus the shared-rate line, each now `DrawDerivedStatRow` rows (name, figure,
+  trailing) at the same fixed ordinals; International's pinned country readout (eight "Name: value"
+  labels) as rows — the event panel keeps its BREAKING-banner wording on purpose; the Trade bill card's
+  cost line as three rows whose cells shrink and never wrap — the structural answer to the "+" break.
+  Fix-forwards: the card's narrow name column shrank "Trade balance, partners' mirrored tariffs" to a
+  different size from its siblings (D7's objection) — short names, mechanism in the trailing column;
+  the "held within 0-15%; the rate moves 15% of the way each year" trailing text overflowed a 195px
+  trailing cell at the 1280 floor (4 guard hits, `omni_h1280`) — "band 0-15%; closes 15% of the gap per
+  year", `omni_i1280` clean.
+- `6c1483a` — `AreaIconCoverageCheck` (enumerates the ten `SystemArea` members other than Neutral
+  through `GetAreaIcon`, format asserted RGBA32, and every `PartyArchetype` emblem through
+  `GetPartyEmblem`, resolution only — full-colour art, block compression ruled acceptable 2026-08-11)
+  armed in `CheckSuite` (eight checks). ⚠ Its first run asserted RGBA32 on the emblems too and
+  reported all four DXT5 as DAMAGED — the check's error, not the import's, recorded in its header.
+  Green: 14 of 14. The 25 `Stats/` sprites and the six unloaded chrome names recorded as HELD STOCK in
+  `IconLibrary`'s docs (R-K6); the sitting Fed chair's row recorded as a deliberate text treatment, no
+  Design ask.
+- `3fa3eb2` — board 1k (R-K3, §A.16): `PoliSimTheme.Stroke` (a diagonal rule through GUI.matrix); the
+  spent day's numeral crossed at 1.5px@1600 / 2px@2560 (window-height scaled), 55% ink, −24°, inset
+  2px, in the widest numeral's box so every strike is the same length (a 3× zoom of the 2560 grid
+  showed a single-digit day's strike at four pixels when the box was the glyph's own); the " X" suffix
+  gone (row-height sample "99"); the ledger row carries the grid's own 5px area dot; a day at the
+  four-dot cap earns the 2px ink underline; header, month page and ledger one sheet with 1.5px section
+  rules. Flip instant, measurements measurements, `ui_calendar_pad` and the locale honesty untouched.
+- `2b698b0` — board 1l (R-K3): `DrawLine` takes a thickness (rows below the plotted pixel, the old 2px
+  form generalised); history 3 buffer px, projection 2 at 3 on / 2 off (from "skip every 3rd"),
+  threshold 1 (unchanged), sparklines `max(2, round(height/34))`, release ticks weight + 2 = 5px; the
+  deltas, the PRELIMINARY badge and the 1px revision frame untouched; the 300×90 buffer stands (R-G5).
+  `GraphRendererDiagnostic` 3 of 3 (the 336-combination sweep). The eye's check: four stacked graphs
+  at 2560 (`omni_e2560_02a_statistics_domestic_deep`) — history plainly outranks the amber reference.
+- `14740e2` — §A.13's two unbuilt rows, re-derived against the seam (R-K10): rows 1–3 are the IMGUI
+  half (lock; 180ms cover; the hold-and-swap at 100% by declared deviation), row 5 is `SealDrop`'s
+  own 1.3 → 1.0 / 140ms (a declared deviation from the envelope's 1.15 / 120ms, kept because §1g is the
+  ceremony's own spec); rows 4 and 6 had no implementation. `SigningScreen.DocumentEntrance`: 260ms
+  ease-out cubic rise from −24px with the −0.6° settle; the SIGN/FILE button's CanvasGroup invisible
+  and non-interactable until 460ms, then a 200ms fade; `CanvasTransitionSettled` composes
+  `EntranceSettled` so the driver never films the button mid-fade. The ceremony has no capture state in
+  the driver's default set — verified by compile and the seam's flag, listed as such.
+- `476c66c` — R-K4: `DrawLawListRow` reserves `LedgerRow.Height` (two lines for a wrapped name)
+  plus the Budget rows' 10px gap in place of the 1.4× reservation. **Measured on film** (pitch / laws
+  per viewport, before → after): 1280 — 66px / 2.5 → 55px / 2.5 (the §A.8 caption block took the gain
+  at the floor); 1600 — 80px / 4.5 → 66px / 5.3; 2560 — 85px / 6.1 → 68px / 7.6. The 1j board's ~27 is
+  a one-line row; the ledger row is two lines by construction (the wrap-first name ladder) — a one-line
+  row type is a different row, Elias's call (RULINGS NEEDED). R-K5: `DrawLawNameLadder` — the selected
+  law's name at a width measured from the status actually drawn (capped at half the pane), wrapping at
+  word boundaries to two lines at full size and shrinking only past that (floor 8px); "Cash Bail
+  Abolition Act" no longer breaks inside "Abolition" at 1600.
+
+**Consumed rulings:** R-K3 (1k, 1l), R-K4, R-K5, R-K6 (icons, held stock, `ui_btn_disabled`, the
+sitting chair, the check), R-K10 (the §A.2 token count, the §A.13 rows, the Fed label count — three
+sentence labels, not the pass-4 count). **Deviations, stated:** the sub-tab icons drop where the row
+cannot hold them (by width); the RUNNING plate is drawn procedurally (no sprite exists for it); the
+seal beat keeps §1g's timing. **The 1920×1080 capture argument** is Phase 7's closing matrix.
+
+## The omnibus pass, Phases 2–6 — the causal graph, the scenario measurement, the seed spread sourced, the raster diff, the four decompositions (2026-08-28)
+
+**Phase 2 — R-K1, the causal graph on the Policy Web (`a267fd6`).** The ledgers' term IDs became the
+derived edge list: `PolicyWebEdge` carries an `EdgeProvenance` (Derived / Declared) and its ledger term;
+every edge a ledger term records — `ApprovalAttribution`'s TaxHikePenalty, SpendingEffect, WelfareEffect,
+PaidLeaveEffect, DrugPolicyEffect; `DebtAttribution`'s PrimaryBalanceEffect for every money lever and
+InterestAtIssuance for the policy rate; the confidence book's policy base — draws solid, and every other
+edge stays DECLARED (the formula it cites, no term behind it yet) and draws dashed at 55% ink. `StatWebEdge`
+is the graph's own kind: GrowthEffect, the four misery gaps, Erosion and InterestAtIssuance as stat → stat
+chords in the Stats wedge, listed on the stat panel as "moved by" / "feeds" with their terms; GiniEffect and
+the wage-sentiment factor have no node and are said so. `IsLiveFor` is the per-country set — the policy
+rate's issuance edge draws for the five and not for the USA (`BaseDebtInterestRateOverride`); the chips
+and both panels read the player country's set. The two generic-line folds: a non-USA Infrastructure &
+Development / Healthcare & Social Care line reads onto the Transportation / HHS nodes. Indirect effects
+stay undrawn; the authored array survives as the declared set (one provenance swap restores it). Bar:
+dumps 6/6 byte-identical to `traj_pre_seedspread_*`, captures `omni_p2_1600` / `omni_p2_2560` 64/64 clean.
+**Consumed:** R-K1 in full (derived edges, the declared idiom, per-country sets, the two folds, no new screen).
+
+**Phase 3 — R-K2, both remaining scenarios measured and dropped (`11c28a2`).**
+`ScenarioCandidateMeasurementDiagnostic` (retained, the §22 precedent; seed 777, 30 turns, the real
+`SimulationManager`) ran both candidates as policy lines before anything was authored. *Poland convergence*
+fell to the §22 root cause a third time: real wages track `PotentialGrowthRate` one-for-one, so a player can
+only add the tightness term, and `UnemploymentReversionSpeed` (0.7/turn) closes it — wage growth ≥ trend +
+0.5 pp held 0 turns on the no-policy and stimulus lines and 2 turns under an overheat line (+40%
+discretionary two years running, the policy rate to 0; deepest tightness −1.34 pp for one turn); inflation
+never left [1, 4] on any line (max 2.77), so the fail condition is unreachable and "≥ 2%" is met 28 of 30
+turns with no policy. *The Unequal Recovery* (USA, BaselineGini +6 → 45.5, hostile seats P52/C60/Ce52/N36)
+fell to a DIFFERENT root cause, in the political model: the transfer programs are the only levers strong
+enough (3–4 Gini points each at full generosity against 0.08/pt for income tax and 0.02/pt for the wage
+floor), every one is an expansionary bill, and under `PartyArchetypeData` the Progressive and Conservative
+seat targets are identical at every approval level (base 0.32/0.32, sensitivity 0.35/0.35), so the expected
+expansionary alignment is −0.0015 × Nationalist seats — negative everywhere (−0.036 at seed, −0.006 at
+approval 100, −0.09 at approval 30); an expansionary bill passes only by ±1-seat jitter (once, at t14, on a
+line whose approval had already saturated at 100). Failable (no-policy Gini 45.47 against 39.5), winnable
+only on the harness's un-voted path (38.65, with debt at 233% of GDP), impossible in play. Not tuned around.
+`ScenarioLibrary` stays at two; its header carries the disposition. **The political-model fact is new and
+belongs to item 10:** in the pre-item-10 game no expansionary bill passes on any drift path except by
+jitter — the return trigger for the scenario is the party re-seeding. **Consumed:** R-K2.
+
+**Phase 4 — R-K9, the seed spread sourced (`915c800`), every figure `[PROVISIONAL - session-sourced
+2026-08-28, Elias to confirm]`.** Regulation from the OECD PMR 2023-24 (2023 methodology): the economy-wide
+workbook `PMR-Indicator_Econwide_2023-24-and-2018_02.02.2026.xlsx` (oecd.org, SHA-256 D0EBCFC7…) cross-
+checked against the SDMX API (`OECD.ECO.GCRD,DSD_PMR@DF_PMR,1.3`) — identical to seven decimals; the
+published "OECD average" (1.3464) and the 38-member simple mean (1.3460) differ by 0.0004, which licenses
+the mean for the sector series where no published average exists. §F's mapping as written — level = 50 ×
+PMR / average, clamped 10–90: USA 58.6, Sweden 29.9, Germany 44.9, France 45.7, Italy 45.7, Poland 39.6;
+sector overrides against the sector means (energy 1.3134, e-communications 1.3056, retail 1.0409): Energy
+37.5 / 41.7 / 17.3 / 30.6 / 27.4 / 52.5, Telecommunications 55.9 / 59.2 / 53.3 / 50.5 / 28.4 / 37.5, Retail
+75.5 / 27.4 / 42.9 / 90 / 90 / 51.0 (France 3.00 and Italy 1.93 clamp). Welfare from SOCX public social
+expenditure, % of GDP, 2021 (the latest year all six report the programme breakdown; dataflow
+`OECD.ELS.SPD,DSD_SOCX_AGG@DF_SOCX_AGG,1.0`): healthcare from Health TP41 (not the USA — not universal
+coverage, the spend stays in the budget line), childcare from Family in-kind TP51/K, housing from TP82,
+means-tested from Other social policy areas TP91; generosity = spend / cost share × 100, clamped: USA 15.0 /
+15.7 / 56.8; Sweden 8.8 / 69.5 / 25.2 / 100; Germany 2.6 / 99.9 / 35.2 / 100; France 20.3 / 96.5 / 42.1 /
+100; Italy 26.0 / 68.8 / 2.7 / 58.8; Poland 2.1 / 46.1 / 1.6 / 80.8. Caveats for the confirmation:
+Germany's Bürgergeld is booked under Unemployment in SOCX (its 2.6 understates); childcare clamps at 100
+for three countries (real family in-kind spending exceeds the model's 1%-of-GDP full-generosity cost; the
+ECEC-only reading would give USA 31.5, SWE 100, DEU 81.0, FRA 100, ITA 49.4, POL 67.8); 2021 is a pandemic
+year; Poland's housing line is TP822. Bar: `traj_post_phase4` ≡ `traj_pre_seedspread` 6/6 — the anchored
+form holds under real seeds; `CompassAxisDiagnostic` Y raw 37.5 (Poland) … 57.3 (France), a 19.8-unit
+spread over 461 of 600 px; captures `omni_p4_1600` / `omni_p4_1280` 64/64 and `omni_p4_swe1600` 62/62
+clean. The compass, the Sectors tab and the Welfare tab join §V. **Consumed:** R-K9.
+
+**Phase 5 — R-K8, the rasterization diff closed (`a15c0c1`).** The Unity path probed once more per the
+ruling — a WINDOWED run (the capture harness's own condition) is still blank (every mismatch equals the
+file's ink share, worstΔ 255, the probe PNG an empty 367-byte sheet), so `RenderSpriteToTexture2D` itself
+is the defect; five minutes of the 90-minute bound. resvg: linebender/resvg v0.47.0 `resvg-win64.zip` (the
+newest release with a Windows build AND a publisher digest; v0.48.1 ships no Windows asset), SHA-256
+5684e59c… verified against the GitHub release digest before unpacking, installed out-of-tree at
+`PoliSim-captures\tools\resvg-0.47.0` (exe SHA-256 433A7C74…). `StripCutDiffCheck` takes
+`-stripcutrasterizer=<resvg.exe>`, one process per SVG at the sibling PNG's size, read back through the
+same decoder as Design's file. Two conventions, printed per file: `currentColor` → `#ffffff` where the root
+carries no `color` attribute (50 files; `icon_area_labor.svg` carries it and passed untouched,
+`icon_area_global.svg` lacks it and failed at 36.7% until resolved), and a text-bearing SVG above budget is
+TEXT (fonts differ; the three stamps 6–15%), neither drift nor pass. Result: 77 of 90 within the 2% budget
+— the six per-state canvas buttons 6/6 at 0.04–0.05% (R-K8's closing condition). Named: `ui_slider_track`
+(24×24 source vs 256×28 strip, aspect kept → 28×28). **Two real findings for Design:** `ui_hatch_draft.png`
+shows the pattern's rotate(45) applied to the stripes but not to the tiling (16 px horizontal period where
+the rotated tile gives 22.6; resvg cuts 22) — the shipped PNG is not a faithful cut of its SVG; and nine
+Stats icons sit 0.06–1.2 pp over the 2% budget (2.06–3.21%) on a family of 42 that runs 0.5–3.2% in a
+continuum — antialiasing at a 10.7× upscale of 24-unit strokes, the budget set blind before any comparable
+output existed; left as it is, RULINGS NEEDED. **Consumed:** R-K8.
+
+**Phase 6 — R-K7, the four decompositions on Sweden's method, one commit per country.** The rule as
+applied (the deviation from Sweden's shape, with its reason): Sweden's pass flipped its cash-transfer
+utgiftsområden to mandatory inside its decomposition and added the out-of-budget pension top-up and the
+residual; the other four received that layer from the recalibration as `SeedMandatoryTransferLines`
+(SocialSecurity / IncomeSecurity at general-government size). So each decomposition weights the country's G
+total with the state budget's NON-transfer areas and carries no mandatory line — the identifiable
+cash-transfer areas are left to the block, the same layer counted once. Interest excluded everywhere (the
+USA/Sweden rule); debt redemption and tax refunds booked as expenditure excluded (financing / revenue side);
+EU contributions and transfers to sub-national government in where the document carries them (Sweden's
+UO27 / UO25 precedent); the largest included line the remainder. Every bar: compile, `traj_post_p6_<cc>`
+diffed against the previous baseline (all six pairs differ; 16–20 of 42 fields byte-identical; the rest
+summation-order noise — largest relative mover a near-zero Taylor gap term, largest absolute a cumulative
+Budget accumulator after ~480 turns, every level field within 1e-4 — because the G total is unchanged and
+the effect lines fire only on player changes), the country's capture 62/62 with the three guards silent,
+ATTRIB 0.
+- **Germany (`6307dce`)** — bundeshaushalt.de `HH_2026_ALL.csv` (every Titel of the 2026 Soll; SHA-256
+  3E0CC5A4…), by Einzelplan and Kapitel; 694.27 bn reconciled to the published Kernhaushalt 524.54 within
+  5.2 bn. Base 449.60 = 694.27 − Epl 32 (33.65) − the Aufbauhilfe double count (2.50) − Kap 1102 Rente
+  (140.01) − Kap 1101 Bürgergeld (55.50) − Kap 1701 family (13.01). Sondervermögen in (Bundeswehr → Defense
+  108.61, SVIK → InfrastructureAndDevelopment 58.07, KTF → ClimateAndEnvironment 37.58), EU own resources as
+  EuMembershipFee 43.61; 18 lines, FinancialAdministration (Epl 60's core, 47.35) the remainder. Distortion
+  measured: Defense 5.07% of GDP (GF02 1.4), Education 0.81% (GF09 4.5) — the federal-state property.
+- **Italy (`ad7b240`)** — RGS BDAP dataset `spd_lbf_spe_elb_cap_01_2026` (CKAN dump 07b33430…; SHA-256
+  D9E89E65…), CP A1 by missione/programma; spesa finale 923.12 = the RGS's 923.1. Base 532.22: titolo III
+  (330.04) out; 034 interest (103.04) out; 025 previdenza (112.70) and 024 assistenza (69.27) to the block;
+  029-005 tax refunds (105.89) out. Health a real line (003-006 the SSN 93.23 + 020); 004-010 the EU budget
+  participation 39.25; 011's tax-credit outlays kept; 23 lines, MunicipalGrants (61.33) the remainder.
+  Distortion: Defense 1.14% (1.3), Education 2.62% (4.0), Health 3.40% (6.6).
+- **Poland (`d33e1ae`)** — the act (Dz.U. 2026 poz. 62), Załącznik nr 2 by dział from gov.pl's annex archive
+  (SHA-256 84C84E20…), thousand PLN read out of the PDF's content streams through the fonts' ToUnicode
+  maps (no PDF tool exists on this machine); 32 działy sum to 918,940,000 exactly. Base 527.75 = 918.94 −
+  757 interest (90.39) − 753 ubezpieczenia (195.97) − 855 Rodzina (97.92) − 852 pomoc społeczna (6.91); 758
+  split into EU own resources (41.59 → EuMembershipFee) and the rest (120.94 → MunicipalGrants, remainder);
+  16 lines. Distortion: Defense 3.73% (2.9), Education 1.58% (5.6 — the school subsidy sits in 758), Health
+  1.85% (6.1).
+- **France (`e04f238`)** — LOI n° 2026-103 du 19 février 2026 as adopted (TA n° 227, assemblee-nationale.fr,
+  SHA-256 5AD09939…; Légifrance refuses scripted downloads), État B (CP total 593,890,071,649 = budget.gouv.fr's
+  593.9 bn) and État A's two prélèvements. Base 406.63 bn = 593.89 − Remboursements et dégrèvements (145.60)
+  − charge de la dette (58.62) − SNCF Réseau debt charge (0.66) − Solidarité (31.28), Régimes sociaux (6.07),
+  Monde combattant (1.73), Aide à l'accès au logement (16.57) to the block + PSR collectivités (44.82 →
+  MunicipalGrants) + PSR Union européenne (28.44 → EuMembershipFee). Écologie split by programme (203+205 →
+  Transportation 4.92; 345+174 → Energy 10.71; the rest → Climate 7.14); 22 lines, Education (Enseignement
+  scolaire + Recherche, 121.25) the remainder. Distortion: Defense 3.92% (1.9), Education 7.16% (5.1), Health
+  0.11% (8.9 — the Assurance maladie is outside the state budget).
+**Consumed:** R-K7 (Germany → France → Italy → Poland in effort order; the order of landing was Germany,
+Italy, Poland, France because Italy's and Poland's sources came through first).
+
+## The omnibus pass, Phase 7 — the closing gate (2026-08-28)
+
+**What ran, in order (`bar_phase7.ps1`, every step a separate Unity launch, ATTRIB 0 in every log):** the
+capture matrix at 1280×720 (`omni_final_1280`, 64/64), 1600×900 (`omni_final_1600`, 64/64), 1920×1080
+(`omni_final_1920`, 64/64 — the first set at the most common desktop size) and 2560×1440 (`omni_final_2560`,
+64/64), the two text guards silent on all four; `ScreenEdgeCheck` on each set; the closing dump
+`traj_post_omnibus` — byte-identical to `traj_post_p6_fr` 6/6 (nothing moved after France) and diffed
+against `traj_pre_seedspread` on all six pairs (16–18 of 42 fields byte-identical; the rest the four
+decompositions' summation-order noise — every rate within 1e-4, the large-magnitude accumulators in the
+last float ulp); `AggregationEquivalenceCheck` 117 of 117 within 3%; `SaveLoadRoundTripDiagnostic` PASS,
+12 scenarios (6 countries × 2 seeds); `PreviewParityDiagnostic` 7 of 7 asserted terms for all six;
+`DeliveredAssetCheck` 0 missing; `PortraitCoverageCheck` 25 of 25; `AreaIconCoverageCheck` 14 of 14; the
+matrix `-runmatrix -seed=777` — 30 of 30 cells complete with the exit marker, compared cell by cell
+against `matrix_s777_seedspread_20260827_230413.log` (the last matrix before the pass): 27 of 30 anomaly
+counts identical; `welfarestress` 100/500 moved 35 → 33 and 76 → 73 because the USA now opens with three
+real programs implemented (Phase 4), so the stress cell's implement-everything lands on anchored baselines
+— a policy-path force, the kinds unchanged (Inflation / Unemployment / InterestRate / DebtToGdpRatio) and
+the turn-1 DebtToGdp swing gone; `parliamentstress`/500 moved 94 → 93 on a single 20%-threshold crossing
+with every listed swing differing in the second decimal (last-ulp noise from the decompositions). No new
+anomaly kind anywhere.
+
+**The rule-15 diff (old beside new, structural, by eye — the set is `pt3usa*`).** `capdiff.ps1` ranked the
+64 screens per size by sampled-pixel mismatch to steer the eye (the warm-up is unseeded, so every figure
+differs and the median sits at 12–15%): the top movers are the touched screens — the cabinet (the 5.5×
+portraits), the Fed tab's rows, the Trade card's rows, the graph weights on the Domestic deep capture, the
+seeded Sectors tab, the Decisions' stamp — each read beside its pt3 counterpart at 1600 and on the new
+1920 set: the running plate, the held strip, the captions, the calendar sheet, the compass spread, the
+Budget lists, the saves sheet all as built.
+
+**The one defect the gate caught, and it is this pass's own: instance #14 of the label-clipping class.**
+`ScreenEdgeCheck` flagged the four Laws captures at 1280, 1600 and 2560 (`06f_policylaws_laws`, its
+`_rows`/`_deep` states and `06g_laws_expected_effects`): content flush on the right margin column (545 /
+754 / 1190 px of it — the panel's paper itself), and the pt3 capture beside it fits. At 1920 the same
+overflow is there (the caption "THE STATUTE BOOK — 100 LAWS, BILLS TO THE HOUS|" and the "Laws" tab cut at
+the frame) but under the 2% margin column, so the check passed it — the check reports flushness, never
+overrun magnitude, as its header says. **Measured, not inferred:** a temporary probe (never committed;
+`LawsProbe` lines on the Laws tab's first Repaint, `probe_laws_*.log`) logged every group's laid-out
+width at 1600×929: the area 814.1; the sub-tab row and the caption 814; inside `DrawLawsTab`,
+`lawsInnerWidth` 770.1, `categoryShare` 251.4, and the category, order, status and list/detail rows all
+at 786 — so the Laws box (786 + its own 28 px padding) became 814, the whole area, and the outer
+Policy/Laws box 842, 28 px past the frame. The cause: `lawsInnerWidth` and the chip-row shares were taken
+one box level in from the AREA, while the Laws box sits inside the outer box's `_boxStyle` padding — two
+levels. The fix (`a331e82`): `lawsOuterInnerWidth = InnerWidth(availableWidth, _boxStyle)` is the budget the
+Laws box is drawn into; `lawsInnerWidth` and both `SubTabShare` calls derive from it. Re-probed: rows 754,
+the Laws box 782, the outer box 810 on the 814 area. `ScreenEdgeCheck` after the fix: 0 clipped at all four
+sizes (64 captures each), both text guards silent. Whether the anchor's layout already
+overflowed by less is not verified — the pt3 capture's paper ends at the frame while today's ran past it,
+and the probe measures only the present; the record claims the measured cause and the measured fix.
+
+**The re-capture then showed a second member of the class on the same screen — R-K5's own residual, in
+the same commit.** The detail pane's status read "not enac|" at 1280 where the pt3 capture showed it whole.
+A second probe (never committed; `LAWSPROBE` lines, `shot_probe_detail1280_*.log`) read the pane's real
+rects at 1280×699: `contentWidth` 214.4 against a 225.4 px viewport (`detailPaneWidth` 241.4 less the 15 px
+scrollbar and its 1 px margin); the MAGNITUDE row 278.5 wide — its label sized to "MAGNITUDE: MODERATE",
+its steps fixed — and the un-widthed action button ("Enact Cash Bail Abolition Act") both past the content
+width, so the scroll view laid every row out at that wider width (the name/status row read 274.5 wide with
+its cells at 4–113 and 117–223), drew the horizontal scrollbar that is visible across the pane at 1280 and
+1600 in every capture back to Phase 2 (and by the arithmetic at pt3's width too), and the `FlexibleSpace`
+between the name ladder and the status cell pushed the cell to that wide right edge, past the viewport;
+once R-K5 sized the cell to its text instead of to "ENACTMENT PENDING", the tail was hidden. The probe also
+read IMGUI collapsing the two cells' adjacent margins to the larger of the two (the status at x=117 after a
+ladder ending at 113, not 121), so a row budgeted at `contentWidth` ran 1.6 px past the viewport by itself.
+The fix, in `a331e82`: the status sits directly after the name and the ladder gives up that one collapsed
+margin, so the row's extent is the description label's own; the MAGNITUDE label is capped at what the pane
+leaves beside the steps and wraps; the button takes the labels' extent in a wrapping copy of the neutral
+action style that follows its source through `RescaleStylesToScreen`. Two earlier attempts are recorded in
+the code: subtracting both styles' full margins (the wrong quantity, 16 px for a 4 px gap), and dropping
+the `FlexibleSpace` alone (right, and it did restore the status — an intermediate capture was misread as
+"still cut" and cost a re-capture — but the row still ran past the viewport and the two wide rows still set
+the content wider). Read by eye at 1280 and 1600 after the fix: no horizontal scrollbar, the status whole,
+the name at its ladder size, the button folded. The lesson is the thirteenth's and the fourteenth's again,
+one level further in: a scroll view's content is as wide as its widest child, so every child of a pane that
+clips must be given the pane's width — the un-widthed button was the kind of row the 2026-08-25 pass's own
+comment in `DrawLawDetailPane` warned about, three screens' worth of edits later.
+
+**Consumed:** the closing gate as Discipline v2 rule 1 defines it; the 1920×1080 argument (roadmap item
+4's last bullet).
+
+## The continuation kickoff — the queue drained, the one-line row, the diff budgets, the film gaps, the seed debts (2026-08-28)
+
+Elias's continuation kickoff (2026-08-28, "drain the queue, close the film gaps") pre-issued the four pending
+rulings with the recommended answers as pre-rulings, each strikeable in the kickoff message (none struck),
+built the one unit those rulings unlocked, and converted the last verified-by-code caveats into captures.
+Anchor `dc6f491`; Working Discipline v2; five phases, each its own commit, staged by explicit path; the
+sim-math bar ran once, where a seed value changed (Phase 4). Nothing dropped (rule 10's order was 4, 3, 2;
+the budget held).
+
+**Phase 0 — the queue drained (`2f77bd1`).** R-C1…R-C4 and R-C7 written into their owning documents:
+`MISSING_PREREQUISITES.md` §A's A4–A6 tombstoned as ruled (the omnibus report's "~27px" corrected to the
+rulings doc's "~27 rows per screen" — the 1i board's rows sit on a 32 px pitch); §F tombstoned as CONFIRMED,
+its sourcing body moved to the seed doc's new §8 with the six caveats as basis notes under the variant-axis
+rule and two standing notes (the re-source trigger for a post-pandemic SOCX common year; the childcare-clamp
+compression, known and accepted because the constant is what the budget books); §P gained R-C7's context
+line; the R-C3 confirmation was written under "Playtest 3, the rulings" §1 above, where the anchor is
+documented; `WorldFactory.cs`'s slot tags read "mapping confirmed by Elias 2026-08-28 (R-C4)" — comments
+only, compile-checked. One judgment call logged: the kickoff's parenthetical "Poland's housing clamp at 90"
+was read as §F's caveats 5 and 6 as written (Poland's housing line is TP822; the retail clamp at 90 is
+France's and Italy's).
+
+**Phase 1 — the one-line row (R-C1, `a7d877d`).** Derived, not picked: board 1i (`board_1i_law_browser.png`,
+1920×1080) sets its statute rows on a 32 px pitch with a 14 px bold name — 2.29 name-fonts per row, ~26 rows
+in its 835 px scroller. On this UI's px basis the row is `LedgerRow.OneLineHeight` (one line of the name
+plus the ledger convention's 6-at-13 px padding) and the Budget rows' flat 10 px gap: 37 / 43 / 55 px pitch at
+1280 / 1600 / 2560 — 2.31 / 2.16 / 1.96 name-fonts per row, the board's class. The grid (`LawRowColumns`): a
+one-line name cannot wrap, so it takes the shrink path (`LedgerRow.Cell` → `MeasuredLabel`,
+shrink-never-truncate) at full weight, and the name has priority on width — the caller measures the widest
+visible name per row family once per frame (full rows in the name cell, compact AVAILABLE rows across name +
+magnitude) and the fixed cells give ground together toward their font floors, never below; if the floors
+still cannot carry the widest name at the 8 px guard floor, the category token steps out for the frame (the
+R-K6 shape, by width, stated). ⚠ The first capture measured ONE need over both families and dropped the
+token at 1280 for a row family that was not on screen — corrected before the bar (`cont_p1` → `cont_p1b`).
+The column header and the band captions follow the one-line height (the captions at 1.2× the row, as
+before); `MinMeasuredLabelFontSize` public for the grid's floor test; the detail pane untouched. **Measured
+on film** (the `_rows` captures, viewport ÷ pitch): 1280 — 3 → 5 laws (55 → 37 px); 1600 — 5 → 8 (66 → 43);
+2560 — 7 → 11 (68 → 55). The cost, stated: at 1600 the longest statute names ("Rehabilitation-Centered
+Corrections Model", "287(g) Immigration Enforcement Agreements") print at ~13–14 px against the row's 20;
+at 1280 the widest at ~10 px — legal (the guard silent), read beside the captures. Bar: `cont_p1b_*` 64/64 at
+all four sizes, both text guards silent, `ScreenEdgeCheck` 0 clipped ×4 — the class closed at the omnibus
+gate did not reopen. R-C8 rode the unit: the courtesy note's "one honest gap" paragraph became the
+convergence statement (still unsent, sending Elias's); the rulings doc's dated line; §V's row.
+
+**Phase 2 — the diff budgets (R-C2, `283e4ba`).** The nine Stats icons at 2.06–3.21 % were each rendered
+beside their resvg counterpart with a per-pixel mismatch mask: every mismatched pixel lies on a stroke
+silhouette where both renderers put ink and disagree on coverage — antialiasing at a 10.7× upscale of
+24-unit strokes; ink-vs-void disagreements are 0–76 pixels in eight of them and 378 (0.58 %) in
+`icon_stat_population`, at the three figures' overlapping shoulders. The prison bars read 3.21 % with not
+one pixel of shape difference: the flat share measured PERIMETER. All 90 comparable pairs measured the same
+way (`stripcut_family.csv`): EDGE (coverage disagreement) 0.14–1.55 mismatched pixels per boundary pixel of
+Design's silhouette; STRUCTURE (a pixel solidly inked in one render, void in the other) at most 0.58 % for a
+sound pair, 3.6–11 % for the three text stamps (fonts, exempt by name as before), 48.5 % for the hatch tile
+(§E5). The bars, each with its reason in the check's header (rule 6): STRUCTURE ≤ 1.0 % of the canvas (above
+the sound family with margin, a third of the smallest defect ever measured, a ninth of one missing 24-unit
+stroke piece); EDGE ≤ 2.0 per boundary pixel (29 % above the family's maximum; a one-pixel stroke offset or
+weight change reads three or more). A file passes only when both hold; the flat 2 % is gone. Re-sweep: 86 of
+90 within budget (the nine included), 3 text-bearing, 1 unrasterizable (the slider strip's aspect), 1 FAILED
+— the hatch tile at 48.5 % structure, already §E5's ask; the check's per-file figures reproduce the offline
+measurement to the digit. No pair turned out to be a Design-side defect beyond it.
+
+**Phase 3 — the capture states (R-C6, `548a558`).** Seven captures added to the driver's MAIN sweep so every
+omni set carries them, each a UI-state pose that moves no model: `06h/06i/06j_policylaws_trace_*` (approval,
+confidence, the fiscal chain) through `StatTracePanel.RequestSelection` with assert-own-name before the
+shutter — the 93-series idiom, which lived behind `-shotstates` and so was in no omni set;
+`06k/06l_policylaws_policyweb_node_*` by setting the two private selection fields the way a click sets them
+(`IncomeTax` pinned, then `Approval`); `89d_signing_entrance` two frames after the canvas goes live (§A.13
+row 4's document rising, row 6's SIGN button still invisible) and `89e_signing_settled` once the seam reports
+the entrance settled, staged the way the rejected-form capture stages a ceremony — one `DivisionRecord`
+appended through `DivisionLog.Append`, then `TriggerSigningForNewestDivision` — and run last in the pass so
+the appended record is not on the Parliament tab's list in the tab captures. Bar: `cont_p3_*` 73/73 at all four sizes, both text guards silent, the three canvas asserts clean, `ScreenEdgeCheck` 0 clipped ×4 (the seven surfaces read by eye at 1600, the pinned node's readout on the `_rows` twins); the
+no-policy trajectories byte-identical to `traj_post_omnibus` 6 of 6 (SHA-256 B14824EB / 4B936887 / C9E4F01F / B66B19A5 / 5AB4658A / 6D00383D at both seeds, all three horizons) — a capture state may pose the UI, never move the model.
+
+**Phase 4 — the §B debts (R-C5, `e08c8c0`).** The OECD Affordable Housing Database's HM1.3 workbook is
+reachable on the OECD file host (`webfs.oecd.org/Els-com/Affordable_Housing_Database/HM1-3-Housing-tenures.xlsx`,
+OECD 2025 edition; the www host serves a bot-check page — that is what "do not parse" had meant). Sheet
+HM1.3.1, share of households by tenure, 2024 or latest: owner = own outright + owner with mortgage. The basis
+is the seed's own to the digit — Germany 40.96, Switzerland 38.20 (2023), Slovak Republic 93.45, OECD 70.07,
+USA 65.31 (ACS 2023) reproduce the anchors that stood in the file — so the three fitted-bridge estimates were
+replaced by same-basis figures, each inside its 95 % band (Sweden 62.1 → 58.2, Italy 74.4 → 75.2, Poland 86.8
+→ 84.7), and France's 58.5 was the same file's 58.56 rounded down (→ 58.6). The vintage debt closed: the
+anchors are this edition's 2024 column (EU-SILC 2024); the by-year annex is quoted in seed §1. The real-wage
+row: a same-basis set for all six, derived from Taxing Wages 2.1 (single worker at 100 % AW, gross before
+taxes and net after taxes, national currency; seven key dimensions, all stated) deflated by the national
+CPI's annual-average growth (eight dimensions, all stated): real net 2024 USA 1.29, SWE 2.78, DEU 2.50,
+FRA 1.45, ITA −0.66, POL 7.51 (real gross 1.39 / 1.65 / 2.81 / 1.89 / 2.12 / 8.21) — recorded, nothing seeded
+(R4-2), and it does not reproduce the press-cited 2.7 / 2.2 / 0.7 for Italy / Germany / France, which the
+record says. **A seed change on four countries, so the sim-math bar:** the trajectory dump (`traj_cont_p4_*`, 36 public `EconomyState` fields per country per turn) against `traj_post_omnibus_*` — **41 of 42 fields byte-identical across the whole trajectory at both seeds and all three horizons**, the one mover `Homeownership` itself (max relative 6.28 % at turn 1, Sweden — the 3.9-point seed delta, constant to the end: the anchored form moves what a country IS and nothing downstream reads the stat); `AggregationEquivalenceCheck` 117 of 117 within 3 %; `SaveLoadRoundTripDiagnostic` 12 of 12 clean; `PreviewParityDiagnostic` 7 of 7 for all six; the 30-cell matrix at seed 777 (100 and 500 turns) like-for-like against `matrix_post_omnibus_s777_20260828_020738` — 30 of 30 anomaly counts identical, the same four kinds (`InterestRate` / `Inflation` / `Unemployment` / `DebtToGdpRatio` swung), not one (turn, country, stat) tuple different; ATTRIB 0 in every log.
+
+**Phase 5 — the gate and the records (the records commit following `e08c8c0`).** the closing sets `cont_final_1600` (USA, 73/73) and `cont_final_swe_1600` (Sweden, 71/71 — no fed-chair HELD pair on a country without an independent chair), both text guards silent, the three canvas asserts clean, `ScreenEdgeCheck` 0 clipped on both; Sweden's Homeownership row on film at 58.2 % (`cont_final_swe_1600_02a_statistics_domestic_deep`); the eight armed checks — delivered assets 0 missing, importer settings 148 sprites with 0 errors, stat icons 19 of 19, portraits 25 of 25, area icons and emblems 14 of 14, chrome 50 of 50 in both directions, the party-mark check verifying nothing by design (no party system on this branch), and `UpstreamCheck` exit 1: 52 commits ahead of `origin/main`, above its 10-commit threshold — the work exists on one disk, and the push is Elias's. `MISSING_PREREQUISITES.md` §V regenerated as
+the final review checklist — every row on film, every row naming its capture, the two Editor-only ⚠ rows
+gone; `RULINGS NEEDED` reduced to Elias-in-person items (the sends, §V, §P, 13 September).
+
+## The clear-out kickoff — the riders, the Reset click, the push, the send package, the §V index, the playtest saves (2026-08-28)
+
+Elias's clear-out kickoff of 2026-08-28: the rest divides into what a session can finish and what is
+physically Elias's; this pass finished the first set and reduced the second to single gestures.
+Explicitly not swept: the trigger-queued items whose triggers have not fired (term accumulation,
+investment deepening, the government-consumption block, pass 6's deferred set) — pulling them forward
+would be speculative construction. Anchor `2f42deb`; six commits; one unit, one commit, by path.
+
+**Phase 0 — the two riders (`4df1dbc`).** (a) `LAW_BROWSER_BOARD_RULINGS.md`'s 2026-08-28 annotation had
+"this board's one-line ~27 px" — the omnibus report's misreading of "~27 rows per screen", propagated by
+the session into the annotation; it now reads "this board's 32 px one-line pitch (~27 rows per screen)",
+per `a7d877d`'s derivation, the ✅ line untouched. (b) R-D3 in `StripCutDiffCheck`: a `DeferredPairs`
+table by name, each entry a dated pointer to the ask on file — `ui_hatch_draft` (the tiling rotation,
+48.5 % structure; the shipped PNG presumed canonical; `CLAUDE_DESIGN_ASSET_REQUEST.md` §E5). A deferred
+pair is measured and printed with its figures, marked DEFERRED, never a FAIL; any OTHER pair over budget
+still fails — by name, never by class. The header states when the deferral dies: the day Design's §E5
+answer lands, in the commit that imports it, and the pair must then pass on its own; a deferral without
+an ask on file is not allowed. Re-run: exit 0 — 86 of 90 within the two bars, 3 text-bearing, 1 deferred,
+1 unrasterizable (the slider strip), 0 FAILED. ⚠ The first re-run failed to compile on an `out`
+variable behind a short-circuit `&&` (definite assignment) — fixed before the run that counts.
+
+**Phase 1 — the Reset click, draft-only (R-D2, `4e44777`).** The named gap (roadmap, "the un-voted
+Reset-to-Default click"): the button's second face cleared the live override on the spot — an un-voted,
+instant cut back to the standing rate that ended the partner's mirrored tariff at the next boundary. Its
+queue trigger ("before item 10 opens the vote to real parties") is a dated deadline sixteen days out, so
+it cleared now, in the minimal honest shape: Reset is an EDITING gesture. "Reset draft" calls
+`ResetPartnerTariffDraft(partnerId)` — the draft entry dropped (so `GetPartnerTariffInput` falls back to
+the live override), the preview cache invalidated — and writes nothing live; the override's rate moves
+only through the Trade bill, a cut voted like a rise, 21 days and a division record. Set Override is
+unchanged (the flag comes on at today's effective rate — economically inert until a bill moves it). The
+tab's paragraph says so. The alternative — the click filing a reset bill — is one routing change away if
+a playtest ever wants it. On film, in the main sweep (`CaptureFilmGaps` (d)): the first partner's override
+flag on at the effective rate (what Set Override does; no model movement even if days later advance), the
+draft dial moved +10 through the slider's own dictionary and captured (`06m_policylaws_trade_draft_moved`
+— 13.00 % amber against 3.00 % standing), then `ResetPartnerTariffDraft` by reflection and captured again
+(`06n_policylaws_trade_draft_reset` — the draft back at 3.00 % beside an override still active and
+"Reset draft" still offered); both writes undone afterwards. ⚠ The first bar folded on the driver's own
+assert-own-name: it tested "draft key absent" after the reset, but the dial row rewrites its dictionary
+entry every frame with the slider's current value — the right test is "draft value equals the live
+override, and the live override unmoved"; corrected, the bar ran clean. Bar: `clear_p1c_*` 75/75 at all
+four sizes, both text guards silent, `ScreenEdgeCheck` 0 clipped ×4; the no-policy trajectories
+byte-identical to `traj_post_omnibus` 6 of 6. Records: the roadmap's queue entry tombstoned with its
+date; this file's two pass-6 mentions carry dated amendments.
+
+**Phase 2 — the push (R-D1, the flagged assumption, not struck).** The procedure, no step skipped:
+`git fetch origin` — the remote tip `e86c79dc9819c11e9ca4e843a79894de9e9c6ace` (2026-08-26, "The second law category ships"), an ancestor of local HEAD with nothing on `origin/main` unknown to local history (`HEAD..origin/main` empty; 55 commits to push, the post-rewrite line intact); `git push --force-with-lease=main:e86c79dc9819c11e9ca4e843a79894de9e9c6ace origin main` → `e86c79d..4e44777  main -> main`; `git fetch origin` again → `origin/main` = `4e4477755f90572d0c862a6087ed7656ccb876fb` = local HEAD, CONFIRMED. No credential prompt (the credential manager held the token; `GIT_TERMINAL_PROMPT=0`, `GCM_INTERACTIVE=never` so a prompt would have failed fast, not hung), no lease rejection, no retry. `UpstreamCheck`'s convention ("the push is Elias's") was amended for this one push by this kickoff and is recorded here; the four commits after it (Phases 3–6) are local and under the check's own 10-commit threshold — the convention is back with Elias.
+
+**Phase 3 — the send package (`d30eb1a`).** `SEND_PACKAGE.md` at the repo root: the courtesy note
+(`1a4fd172…`, 6,664 bytes) to a new dated path in Design's project, and the request doc through §E5
+(`4f7ee0d2…`, 17,632 bytes) to the same two paths the 2026-08-27 send used; the glance after the paste is
+the readback hash against the two digests; what comes back (Design's §E5 answer) and where it lands (the
+import commit that removes the R-D3 deferral) are written out. Sending stays Elias's.
+
+**Phase 4 — the §V index (R-D5, `076273a`).** `Tools/sv_index.ps1` reads §V's table under "# V." and writes
+`../PoliSim-captures/sv_index.html`: one section per row in checklist order, every backticked capture
+token expanded against the capture folder — the checklist's own shorthand read as written (a "_06i_…"
+continuation of the previous token's prefix up to its size slot, "_rows" / "_deep" as the scrolled
+variants of every base named so far in the row, an ellipsis as the previous token's screen tail,
+character-class globs through PowerShell's own wildcards) — every matching file linked, the 1600 one
+previewed inline, a token that matches nothing listed as missing rather than dropped. Tooling in-tree,
+output out of tree, nothing binary committed. ⚠ Two of the checklist's own conventions defeated the
+first cut (the digit-led continuation tokens; the ellipsis — which also needs the script saved with a
+BOM, or PowerShell 5.1 reads the "…" as three bytes of ANSI); both read as written now.
+
+**Phase 5 — the playtest saves (R-D4, bounded — cheap, so built; `8c7081b`).** The save carries the whole
+simulation state and the controller's draft layer (round-trip 12/12), so authored states cost a driver
+mode, not infrastructure: `-shotsaves` stages the three on the warmed-up game BEFORE the sweep's own
+harness drafts (diverged SWF weights, drafted spending lines) go in — a playtester opens a clean book —
+and writes each through `SaveGameService.CreateSaveGame` / `SaveToFile` into the real saves directory,
+filming each state once. USA: `playtest_1_trade_bill_costs` (a partner override drafted so the Trade bill
+card shows its cost rows; navigation is not saved by design — the file name says where to look) and
+`playtest_3_dense_midgame` (the budget-process pause, pending cabinet decisions and a foreign-policy
+meeting by the bounded searches, one bill of every type, twelve enacted laws). Sweden:
+`playtest_2_riksbank_rate_decision` (a rate decision drafted on the Riksbank tab, the load opening on
+option C's naming — the verdict's surface). ⚠ The first cut named this save for a pending Riksbank
+appointment and asserted on one; it refused to write, correctly — on `main` no chair is seeded for Sweden
+(Riksbank-B's appointment machinery ships with item 10, §D0), so no appointment can be pending; the
+staging was re-cut to the verdict's actual surface.
+
+**Phase 6 — the gate and the records.** the eight armed checks green — delivered assets 0 missing, importer settings 148 sprites with 0 errors, stat icons 19 of 19, portraits 25 of 25, area icons and emblems 14 of 14, chrome 50 of 50 in both directions, the party-mark check verifying nothing by design, and `UpstreamCheck` exit 0 (four local commits, under its 10-commit threshold); the strip-cut sweep green with its one named deferral (Phase 0); the touched screens captured and edge-checked per unit (`clear_p1c_*` 75/75 at four sizes, 0 clipped); the no-policy trajectories byte-identical to `traj_cont_p4` 6 of 6 (Phase 1 moved no byte); ATTRIB 0 throughout. `MISSING_PREREQUISITES.md` re-derived to LIVE-ONLY: every
+tombstoned section's body migrated verbatim to `COMPLETED.md` §38a; the register re-derived to what waits
+(the paste, the coupling queue at its triggers, item 10 and its riders, Design's §E2/§E4/§E5, §V's sitting,
+§P's play); §V gains the Reset pair's row; §P gains the load-play-judge lines. The board after this pass:
+machine side idle, the remote holding the tree through Phase 1; Elias's side five gestures and no sixth.
+
+## UI v3.0 Phase A — the census, the shell and the rail, the instrument inventory, the ask (2026-08-28)
+
+**Authority:** Elias's `Direction.zip` of 2026-08-28 — `POLISIM_UI_V3_DIRECTION.md` (the founding document, rulings V3-R1…V3-R4, installed at the repo root `c90da2d`) and `KICKOFF_V3_PHASE_A_2026-08-28.md` (both archived out of tree at `../PoliSim-captures/inbox/`). Anchor `29801d0`, verified, tree clean. Phase A is deliberately measure-and-structure: the shell is built because it is architecture; everything else is measured so Design draws The Desk against facts; **The Desk itself is not built** (Phase B, on the board).
+
+**Phase 0 — the direction installed (`c90da2d`).** The direction doc at the root, CRLF; the roadmap's v3.0 era header quoting the sequence as written (Phase A now · the send · Phase B on the boards · Phase C · item 10 born on the v3 shell with the OPEN-state fallback); the root-document count re-derived (eleven). The zip left the root so `DeliveredAssetCheck` reads no unfinished delivery.
+
+**Phase 1 — the census and the (c) cut (`23cbb84`).** The film (`clear_p1c_1920_02*`, `clear_p1c_1280_02_statistics`) and the code enumerated every text element on the landing screen (Statistics › Domestic, `_consolidatedTab`'s initialiser — nothing resets it) and the OPEN chrome column: **65 element kinds — (a) 44 · (b) 18 · (c) 3 kinds, four text elements.** The classes are the direction's ((a) load-bearing / (b) restating an instrument that exists or could / (c) decoration; unsure between (a) and (b) is (a)) — the playtest-3 lineage restated. The (c) set died: the collapsed "Show tab guide" button and its paragraph naming the pre-consolidation ten tabs (`_showTabGuide` and its two sites, `DrawPolicyControls`), the trailing hedge "Projection only, not a guarantee." (`DrawPolicyPreview`), the instruction "Compare against the live figures above." (`DrawDomesticStatisticsContent`). Every (b) stands for the board. Two observations logged, not acted on: the graph's change label prints in the OS culture (`+2,5%`) where the tiles print invariant — an existing inconsistency, not v3's; the harness captures carry the held state, so "Time running" is on film only in `01b_running_strip`. Bar: `v3p1_1600` 75/75, guards silent, 0 clipped, ATTRIB 0. The table is Annex A of the request (`CLAUDE_DESIGN_ASSET_REQUEST.md` §1).
+
+**Phase 2 — the shell and the rail (V3-R2, `8e162b1`).** *State.* `ShellFoldState { Open, Folded }` (`Assets/Scripts/UI/ShellFoldState.cs`); the player's per-screen overrides in `GameController._shellFoldOverrides`, keyed by `ShellScreenKey()` (Statistics / Policy-Laws / Politics by sub-screen, Budget by tab — its five categories are one ledger behind a category rail — Decisions and Demographics by tab); `DefaultShellFold()` — Budget FOLDED (Elias's 2026-08-01 whole-window directive, now this state), Statistics › Domestic FOLDED (the oversight default carried by the current landing screen until Screen 0 exists), everything else OPEN; `EffectiveShellFold()` = lock → override → default; `SetShellFold` / `ToggleShellFold` (internal, the harness's handles); persisted as `UiDraftState.ShellFoldOverrides` (`Dictionary<string,int>`, null on every earlier save → defaults, an unknown value reads OPEN; `CaptureUiDrafts` / `RestoreUiDrafts`; no save-version bump, additive). *The frame.* `OnGUI`: `folded` replaces `budgetFullScreen`; `leftColumnWidth = folded ? RailWidth() : areaWidth × LeftColumnWidthFraction`; folded → `DrawFoldedRail` then the content column without tongues (`tabRowsHeight = 0`), the folded interrupt banner drawn and measured above the sheet (`DrawFoldedInterruptBanner` → `BuildFoldedInterruptText(includeBudgetProcess)`, generalised from the Budget tab's `DrawFullScreenPendingInterruptBanner`, which is gone with its `BudgetProcessHeaderHeight` term; the Canvas seam's banner reads the same builder with the Budget pause left out as before), `DrawActiveFolderTongue` skipped and `_activeTongueStyle` nulled. *The rail* (`DrawFoldedRail`, on the column's own `_boxStyle` sheet): six `DrawRailNavCell`s in the tongues' order — a square paper button, the tongue's own icon at the tongue's own size (`RailIconSize` = `ConsolidatedTabIconFontMultiple` × tab type), the active one in area ink behind `UiPalette.DrawCardSpine` at `TabSpineHeight()`, the others in `PoliSimTheme.TabSwatchTint` (§A.3's third column), a missing sprite degrading to the tab's initial; a spacer; `DrawRailCalendarChip` (the pad's sprite drawn whole at cell size — 9-sliced, its baked bands would eat the face — month and day at the pad's ratios, the bands sized from `CalcSize` of the strings drawn, the day shrinking to fit); `DrawRailStatusDot` (the lamp at the spec's 8/10.5 ratio to tab type; HELD = `DrawHeldLamp`, the amber dot with §A.6's glow as four stepped halos from rule 10's primitives; RUNNING = the green dot, no glow); the toggle. **The rail's measure is derived from the icons' own 24-unit grid** (`RailIconGridUnits`, `RailMarginUnits` 10 each side → `cell = icon × 44/24`): **55 px at 1080p** (tab 26 → icon 30), **39 px at 720p** (icon 21), **64 px at 1440p** (icon 35), **46 px at the 1600×929 view** (icon 25); `RailWidth() = cell + _boxStyle.padding.horizontal`. Every cell's rect is asserted inside the rail's rect (`UiContainmentGuard.Check`, the guard's fourth stack-in-a-fixed-rect site, its doc amended). *The toggle* (`DrawFoldToggle`): one control in either state — "‹" folds, "›" unfolds — at the bottom of the chrome in both (the OPEN strip's right end beside the status line, `CalendarAndSpeedControlsHeight` subtracting its width and margins from the status wrap width; the rail's bottom cell); on a locked screen it wears `ButtonKind.Disabled` (B5: rendered, never omitted) and ignores the click. **The lock (the one deviation, R-A1 below):** the Budget ledger's OPEN state is not legal — the first `v3a` smoke film at 1600 showed the three-column row squeezed (category labels wrapping mid-word) with twenty `LedgerRow` containment escapes in 106/136-px containers — and making it legal would be the per-element redesign of a deep screen the direction rules out; so `ShellFoldLocked()` (Budget) makes the fold its shell state without a player flip; the harness sweeps and pairs the other screens and says in the log that no pair exists there. *Four defects the film found and fixed on the way:* (1) a stat tile's value printed near-white when the OS cursor rested on it — `GUI.Label` draws the hover state, and `PoliSimWidgets.Sized` inked only `normal` (now all four states, and `MeasuredScratch` copies them); (2) the chip's month band was sized from `GUIStyle.lineHeight` (the font's line spacing, 11.4 px at 9 px) where the guard measures `CalcSize` (14.8 px, padding included) — 44 overflows, now sized from the string drawn; (3) **the label-clipping class's instance #15:** the rail's width took ~75 px from the Budget ledger's centre column at 1280×720, and "not implemented" no longer fit the figure column (60.6 px needed in 57.4 at the 8-px floor, twelve captures), then "Universal Healthcare" / "Negative Income Tax" no longer fit the name column (74 in 71.4) — closed the class's own way in `LedgerRow`: the figure column asks what it is holding (`FigureNeed`, capped like the trailing column, the track giving ground) and the name cell gains §A.9a's missing rung, two lines at a reduced size before one line at the floor (`DrawNameCell`: largest size first, the widest unbreakable run and the wrapped height both checked); (4) `ScreenEdgeCheck` flagged the folded, running landing frame at 1280 — the bottom margin line carries 36 grain speckles on every 1280 frame (Manhattan distance ≤ 39 against the desk sample, one- and two-pixel runs at the grain tile's 128-px seams; real content measures 60+), and the count had been hidden because the tab tongues make the TOP line flush too (the asymmetry rule), which the folded frame without tongues no longer does — flushness is now the longest contiguous content run (`FlushMinPixels` reinterpreted, the measurement in the check's header). *The harness* (`UiScreenshotDriver`): after every screen's default capture `SweepOtherFoldState` flips, settles (the guards fire on Repaint — one sweep at scroll zero covers a scroll view's whole content), flips back; `CaptureFoldPair` films the other state for one screen per column-layout class — the landing screen (`02a_statistics_domestic_open`), Parliament (`07a_politics_parliament_folded`), the Canvas class (`89e_signing_settled_open`, identical by construction: a live Canvas suppresses the IMGUI frame), the Budget class having one state; the HELD captures (90/91) swept too. Records: `POLISIM_V2_SCREEN_SPEC.md` §A.5's dated v3.0 paragraph.
+
+**The Phase 2 bar (`v3a_*`, USA, four sizes):** 1280 / 1600 / 2560 — 78 captured each (75 states + 3 pairs), 0 text overflows, 0 containment escapes, 0 canvas text violations, `ScreenEdgeCheck` 0 clipped (78 / 79 / 78); 1920 — the same on the re-run (78, 0 / 0 / 0, 0 clipped) after the first attempt died in a sporadic Editor crash on Mono's finalizer thread after nine captures (crash report `Crash_2026-08-28_114730838`; the code it ran passed at the other three sizes); ATTRIB 0 throughout; the eight armed checks green (delivered assets 0 missing from 0 root zips, importer settings 148 sprites 0 errors, stat icons 19 of 19, portraits 25 of 25, area icons and emblems 14 of 14, chrome 50 of 50 both directions, the party-mark check verifying nothing by design, `UpstreamCheck` exit 0). Trajectories: `traj_v3a_*` against `traj_cont_p4_*` IDENTICAL 6 of 6 (SHA-256 `80E0C878` / `85135B71` / `35C0F578` at seed 777, `57C77CC4` / `A76586BC` / `A86A81F7` at 424242; the dump ran on the Phase 2 code, every later edit being UI, harness or editor) — the shell is chrome; a differing byte would have failed the phase. Between two harness runs the same date shows different figures on the landing tiles (4.37 → 4.69 unemployment on 30 Jan 2029) — a harness-run difference (the running phase before the warm-up advances days by frame timing), not a code one; the headless trajectories are the identity gate.
+
+**Phase 3 — the instrument inventory (`5443342` for the harness; the table is Annex B).** `GameController.DrawInstrumentLadder` (harness-only; `_instrumentLadder` is set by nothing but the driver's `-shotladder` mode, `SetInstrumentLadder`) draws one kind per capture on a paper sheet at a descending run of sizes, each rung by the instrument's own renderer on the live game's data with a Courier caption of its size; instruments that carry type take `LadderStyle(rung, full)` — body type scaled with the rung, floored at the guard's 8 px. Twenty kinds (`map compass web sparkline chipstrip tile graph trace sheet chip stamp stampchip steps hemicycle pie flag icon row bars dot`), filmed at 1280×720 and 1920×1080 (`v3a_ladder_<size>_ladder_<kind>`, 23 captures each, exit 0); the guards' counts on a ladder run are the rungs that broke, reported not gated (the OVERFLOW lines are the breaks' second witness — the chip's day numeral at the 24-px cell, the sheet's at its narrowest rungs, the ledger's sub-rows at 240). **Findings, stated plainly:** the direction's "approval face with its nine-term attribution" does not exist as a face or a dial — the attribution is `StatTracePanel`'s thirteen-row ledger (twelve Class-A terms and ClampLoss; the nine are the non-misery terms), no gauge by its own ruling, and a face would be a new instrument for the board to draw first; the direction's "sparkline strip at 1l's weights" carries no 1l weights — `DrawSparkline` is a one-pixel line with no projection segment, the weights are `GraphRenderer`'s; the map is six illustrative nodes, not geography, and its names collide at every size ("United States" / "France"); the compass emits its axis captions outside its rect (not self-contained as drawn); the hemicycle (340×190) and the pie (⌀120) are constants and do not shrink. Measured minimums: the map 360×216 with its names (the nodes and lines alone 120×72); the compass 240×240 with names at 8-px type (dots alone 90); the policy web 240 with labels at 9 px (the ring alone 180); the sparkline 36×10 (comfortable 54×15), the chip strip 280 wide at 9 px; the stat tile at scale 0.8 (264×98) with its label, the hero figure alone to 0.3 (99×37); the graph 240 wide at 9-px furniture; the attribution ledger 360 wide at 13 px (its indented sub-rows break at 240); the calendar sheet 420 wide at its own type (the weekday row clips at 320); the chip a 32-px cell; the sprite stamp 68×20, the procedural chip 9-px type, the HELD lamp 8 px with its glow; the stepped rule 32×8; the flag 24×16; the icons 12 px; the read-only ledger row at 10-px type; the bars 40×14. (The ladder's first film missed the trace panel — its selection commits inside `MeasureHeight`, which every host calls before `Draw` and the ladder had not — and framed the hemicycle's legend 9 px short; both re-filmed.)
+
+**Phase 4 — the ask (`afd95bc`).** `CLAUDE_DESIGN_ASSET_REQUEST.md` §1 "The eighth request — two boards for UI v3.0, Phase A": board one "Screen 0, The Desk, folded" and board two "the rail", at 1280×720 first, against Annex A (the census), Annex B (the inventory with measured minimums) and Annex C (the captures in the package); the hard constraints from the direction (the text budget — captions at mono 9.5 and instrument labels only; no new hues or fonts or Canvas; delivered sprites plus primitives, gaps costed as follow-ups; the rail's required contents; the instant flip; the floor first) and the three deviation conventions (neutral valence, no invented data, IMGUI adaptations declared). The status header re-derived (one live ask). `SEND_PACKAGE.md` regenerated so one send carries §E5 and the v3 ask with the annex captures (54 digest rows: the note unchanged from its recorded hash `1a4fd172…12a8a`, the request doc at `91701ce7…`, twelve screen captures, forty ladder films); sending is Elias's.
+
+**Phase 5 — the gate and the records.** The gate, sized to what shipped (UI, harness, editor; no simulation change): the `v3a_*` family at four sizes — every screen in its default fold state plus the three fold pairs, 78 per size, the two text guards and the containment guard silent in BOTH states (the harness sweeps the other state on every screen), `ScreenEdgeCheck` 0 clipped at all four under its run-length rule; the ladder films at two sizes (23 each, 0 failed, exit 0); the trajectories byte-identical to `traj_cont_p4` 6 of 6; the eight armed checks green; ATTRIB 0 throughout; the sporadic 1920 crash re-run clean. `MISSING_PREREQUISITES.md` §V gains the shell's rows and the ladder films (and the R-D2 row the clear-out's migration had merged with the homeownership row is unmerged — an escaped pipe), §E6 the boards, §S regenerated for the one send; the §V index regenerated (24 rows, 205 `v3a` links, 0 tokens unmatched); the roadmap re-derived: Phase A closed, Phase B WAITING on Design's boards (correctly not live), Phase C queued behind it; `COMPLETED.md` §39.
+
+**Rulings consumed:** V3-R1 (the thesis, no new idiom), V3-R2 (the fold, built as ruled but for R-A1), V3-R3 (the text budget, applied to the census and the ask), V3-R4 (defaults canonical on film, both states legal, one pair per class). **Reversible calls made under rule 4, one line each:** R-A1 the Budget lock (above; revert = `ShellFoldLocked()` returning false, and the row would need re-deriving at column width); R-A2 the rail's order (navigation at the top, the strip's three at the bottom — the open column folded, not reshuffled); R-A3 the toggle as a glyph pair "‹ ›" (words would spend the rail's text budget); R-A4 the folded banner's wording names each reason's tab and says the speed controls are on the unfolded desk; R-A5 the fold keyed by sub-screen except Budget (one ledger); R-A6 the four film-found fixes taken in this pass rather than filed (the film found them, each is a few lines, the bar re-ran under them). **Deviations, stated:** the Budget class has no fold pair on film (R-A1); the census counts (b) restatements the board must resolve, none cut. **RULINGS NEEDED:** none.
+
+## The stage-prep micro-pass — R-SP1…R-SP5 (2026-08-28)
+
+**What it was.** Five pre-issued rulings between Phase A's close (`e605b25`) and the boards' arrival: two standing amendments (the push, "every reachable state"), and three instrument defects the boards should not inherit. Records `COMPLETED.md` §40; commits `86d9c35` · `a69b2be` · `373ea07` · `c9c3c05` · the records commit.
+
+**R-SP1 — the push, STANDING.** Sessions push at pass end, fast-forward only: `git fetch origin`; `origin/main` an ancestor of HEAD; `git push origin main` (no force flag of any kind, ever, from a session); re-fetch; `origin/main == HEAD`. Any other state stops the session with the exact state handed to Elias — force is his alone. `UpstreamCheck` (`WarnAheadOf = 10`) stays the tripwire, now a threshold a session clears. The procedure is a script in the session scratchpad (`push_ff.sh`), fail-fast (`GIT_TERMINAL_PROMPT=0`, `GCM_INTERACTIVE=never`).
+
+**R-SP2 — "legal in every reachable state", STANDING.** V3-R4's "legal in both states" amended; a lock (R-A1's form) makes a state unreachable, recorded per screen; the harness sweeps only reachable states (`SweepOtherFoldState` / `CaptureFoldPair` already skip a locked screen).
+
+**R-SP3 — the second sparkline is the first.** `PolicyScreenStatsRenderer.DrawChip` → `GraphRenderer.DrawSparkline` → `BuildSparklinePixels`, one renderer, R-G4's floor on it since the omnibus (`thickness = max(2, round(rectHeight/34))` device px). No bypass, no call site moved; the eye pair on film (`sp1_1280_*`, `sp1_2560_*`). Annex B I4 corrected.
+
+**R-SP4 — the compass contains everything it draws.** `PoliticalCompassRenderer.Footprint(countries, plotSize, availableWidth, labelStyle)` = the plot square + the caption band at the captions' width (wrapped, never shrunk); `Draw` puts the plot top-left and the two captions beneath, inside the rect, and asserts all three through `UiContainmentGuard`. Callers reflow: `GameController.DrawPoliticalCompassContent` reserves the footprint (`CompassScrollGutter` 18) and the ladder's compass rung captions it. Measured: widths 350 / 451 / 526 / 651 at 1280 / 1600 / 1920 / 2560; height 428 at 1600 (372 plot + 56 band); at 1280 the plate scrolls past the first page (legal — the rect is honest and the sheet scrolls).
+
+**R-SP5 — the map's names on §A.9a's ladder.** `MapRenderer.PlaceLabels`: full name → ISO 3166-1 alpha-3 (`Iso3Codes`) → shrink to the clearing width (floor 8 px) → recorded violation, never nudged; `MinLabelSeparationPx = 4`; the renderer publishes `LastMinLabelSeparation`, `LastLabelRung`, `LastLabelRects`, `LastLabelViolation`. `UiScreenshotDriver.AssertMapLabelSeparation` asserts the floor after `02b_statistics_international` (a miss is a `LogError`); the ladder's map rungs caption `rung N gap G`. Screens: 19.5 / 25.8 / 22.8 / 17.7 px at rung 1. Ladder: 480×288 rung 3 gap 5 · 360×216 rung 3 gap 11 · 240×144 rung 4 gap 0 — the floor with names is 360×216, measured.
+
+**Two environmental facts for the next runner:** a windowed capture can log `UnityConnectWebRequestException: Token Exchange failed` once and the driver's error fold then exits 1 with clean counters (re-run; say so); the same client can stall a capture step for minutes with the log silent and two `Unity.exe` alive, after which the step completes clean (the sp4 1920 step: 14:39:03–14:48:34). Neither is the code's. **The 1920 watch line (the consolidation rider, 2026-08-28):** three environmental events landed on 1920×1080 runs in one day — the Mono finalizer crash (`Crash_2026-08-28_114730838`), the licensing fold, the nine-minute stall — the class is environmental and the response is re-run, but the size now has a named pattern: a fourth event on 1920 is a count, not a surprise, and a 1920 step that goes quiet gets ten minutes before it is killed.
+
+## UI v3.0 Phase B — Screen 0, The Desk, and the rail re-skinned (2026-08-28)
+
+**What landed.** Design's boards 1m ("Screen 0 — The Desk, folded", 1280×720) and 1n ("the rail") and the §E5 answer, on the live screens file the day the ask was sent; Screen 0 built the same day against them. Records `COMPLETED.md` §41; the boards as read `POLISIM_V2_SCREEN_SPEC.md` §A.17; the build's reversible calls R-B1…R-B14.
+
+**Where the Desk lives.** `Assets/Scripts/UI/GameController.Desk.cs` — a `partial` companion of `GameController` (the class went `partial` for it; nothing else moved). `_onDesk` is the state (not persisted; `SelectPlayerCountry` sets it; any rail icon clears it; the calendar chip and the open document's own icon set it again); `ShellScreenKey` returns `"Desk"`, `DefaultShellFold` FOLDED, `ShellFoldLocked` true — so the Desk has one legal state and the harness's fold sweep skips it; OnGUI branches to `DrawDeskStage(tabContentHeight, rightColumnWidth, isTimePaused)` before the tab switch.
+
+**The two laws the file is built on.** *Layout:* the board's rects at 1280×720 (the sheet's inner area 1118×660 — `DeskBoardInnerWidth/Height`) scaled by the inner area's ratio (`Board(x, y, w, h)` inside `DrawDeskStage`); every instrument is a rect, the calendar's month grid alone a GUILayout island. *Type:* `DeskPx(boardPx)` = the board's px × `Screen.height / 720`, floored at `PoliSimWidgets.MinMeasuredLabelFontSize`; `DeskCaption` (Courier, the document face — caps at the call sites), `DeskBody` (Pagella), `DeskNumeral` (the header's bold), every state inked (`Inked`).
+
+**Facts for the next runner, each paid for on film.** (1) `GUILayoutUtility.GetRect` hands back a 1×1 dummy on the LAYOUT event; a `BeginArea` keyed to it lays its contents out one pixel wide — `_deskInnerRect` caches the Repaint rect for the other events. (2) `LedgerRow.DrawReadOnly` is the gauge lane: at 13 px type its bar slot and name column make a ~40 px row and wrap a short name — a compact ledger is two `MeasuredLabel`s on one rect at its own pitch (`DrawDeskTermRow`, the calendar rows). (3) The tab-button sprite faces cannot take 8-px labels (the 9-slice borders eat them) — small controls are `DrawDeskChipButton`: a bordered plate (`StockOff` / `Brass` when selected / muted when disabled) with a caption over an invisible `GUI.Button(GUIStyle.none)`, drawn every event. (4) The OPEN panel's cached effect TEXTS carry "(±…)" margins that overflow a narrow numeral column; the Desk formats from the cached scaled FIGURES (`_cached…Scaled`, invariant) and states the margin once (C19). (5) `UiPalette.DrawDivergingBar` keys its ink to the SIGN (a vote alignment); a stat bar keys to GOOD — `DrawDeskDivergingBar`.
+
+**The instruments' sources.** Map `_mapRenderer.Draw` (clicks ignored on the stage); compass `_politicalCompassRenderer.Footprint`/`Draw` (the plot = the 240 square less the caption band); ledger `StatTracePanel.BuildApprovalDeskTerms(country)` (the panel's own term names, now constants shared with `BuildApprovalRows`); effects `PolicyInputsChangedSinceLastPreview`/`RecomputePolicyPreview` and the `_cached…Scaled` figures at `_previewHorizon`; calendar `BuildCalendarMonthMarkers` + `DrawCalendarMonthGrid`, the ledger rows rect-drawn; event `_simulationManager.GetLastEvent`; strip the tiles' list (`DrawHeadlineStatTiles`'s tuple, duplicated by design — one source to keep in step) with `StatHistory` quarterly series; game over `_isGameOver`/`_gameOverReason`. The bars' display ranges are the `DeskRange*` constants — presentation, declared.
+
+**The rail (1n).** `DrawRailNavCell`: active = `!_onDesk && tab == _consolidatedTab`; the 12 % wash (`RailActiveWashAlpha`) and the 3 px-at-39 spine (`RailSpineWidthAt39`); the click logic is R-B2's. `DrawRailCalendarChip`: an invisible button to the Desk under the painted chip; the hairline between month and day. `BuildFoldedInterruptText(includeBudgetProcess, includeSpeedHint)`: the speed hint off on the Desk.
+
+**The harness.** `01c_desk` (RUNNING, turn 0) · `01d_desk_held` · `01e_desk_event` (the card staged from `EventSystem.EventPool[0]` by reflection into `SimulationManager._lastEventsByCountry`, restored) · `01f_desk_gameover` (the election-loss string as `CheckElection` prints it, restored); `AssertDeskState`; `SetPrivateField(controller, "_onDesk", false)` before the tab loop — a tab set by field alone would otherwise film the stage under a document's name.
+
+**§E5.** `StripCutDiffCheck.SourcelessByDesign` (the slider strip; a source under a listed name is a FAIL); the hatch pair still `DeferredPairs` — the re-export's period is 32 px against the PNG's 16 (measured on the PNG's alpha profile along `x + y`); the re-cut ask with the figures is in the request doc's §E5. Run the diff with `-stripcutrasterizer=G:\UNITY\Projects\PoliSim-captures\tools\resvg-0.47.0\resvg.exe` (the path was not on record before this pass).
+
+## UI v3.0 Phase C — the defaults settled, the note to 1i–1n, one current paste (2026-08-28)
+
+**What it was.** The era's closing pass (R-PC1…R-PC4): three of Phase B's calls ratified standing, the fold defaults ruled as a table, the courtesy note rewritten 1i–1n-aware, the send package regenerated as the one current paste. Records `COMPLETED.md` §42.
+
+**The fold-default table is the single source** (`POLISIM_UI_V3_DIRECTION.md`, the fold section): a screen defaults FOLDED only if its content is designed for the full-width stage — today the Desk (R-B3) and the Budget ledger (R-A1), both locked; everything else OPEN. `GameController.DefaultShellFold` returns FOLDED for `_onDesk || Budget` and OPEN otherwise; `ShellFoldLocked` is the same pair. A new screen enters the table with a line there before it ships. Statistics › Domestic is OPEN again (it carried FOLDED as the Desk's stand-in from Phase A until Phase B); its film pair is now `..._folded`.
+
+**Ratified standing (R-PC1):** R-B2 the ways home (the calendar chip; the open document's icon clicked again), R-B3 the Desk's lock, R-B4 the effects card's eight — the debt-to-GDP / currency estimates, if ever wanted, are a simulation feature with its own measurement pass (candidate slot: after item 10), never a UI patch. Design's live screens file carries the same three under board 1m as accepted corrections.
+
+**The era's live edge, for the next runner:** v3.0 Phases A–C are closed. Two externals only — Design's hatch re-cut (§E5; on arrival: import over `Source/ui_hatch_draft.svg`, run `StripCutDiffCheck` with `-stripcutrasterizer=G:\UNITY\Projects\PoliSim-captures\tools\resvg-0.47.0\resvg.exe`, lift `DeferredPairs` in the same commit if in budget) and 13 September (item 10, election night on the v3 shell). §P (the three felt verdicts) is Elias's, on the real stage now. The send package (`SEND_PACKAGE.md`) is two documents — the 1i–1n note and the request doc — and states that it supersedes every earlier package.
+
+## UI v3.1 Phase A — one frame, the structural home, the annexes (2026-08-28)
+
+**What it was.** The first live sitting's verdict, built where it could be built the same day: the OPEN state retired on a duty audit (no orphan), a HOME cell on the rail, every annex the v3.1 request names measured, the request installed, the paste regenerated. Records `COMPLETED.md` §44; the audit is the request doc's Annex A.
+
+**ONE FRAME.** `ShellFoldLocked()` is `true` and `DefaultShellFold()` FOLDED on every screen; `EffectiveShellFold()` therefore never returns OPEN and the OnGUI `else` branch (the chrome column, the tongues) is dead — marked, kept one pass with `ShellFoldState`, `_shellFoldOverrides` and the OPEN-only methods for the harness's historical states; v3.1 Phase B deletes them. The fold pair captures (`_folded` / `_open`) no longer exist; `CaptureFoldPair` logs ONE FRAME on every screen.
+
+**The rail now (top to bottom).** HOME — the flag (`DrawRailHomeCell`, full colour, `round(icon × 1.15)` wide at 3:2, a hairline-strong rule beneath via `DrawRailHomeSeparator`; active in brass while `_onDesk`) · the six document icons · the calendar chip (the second way home) · the lamp · **PAUSE / RUN** (`DrawRailPauseChip`, R-E1a: a `DrawDeskChipButton`; RUN restores `_lastRunningSpeed`; disabled while `isTimePaused || _isGameOver`). The folded banner (`BuildFoldedInterruptText`) returns `GAME OVER - {reason}` first when the game is over — behaviour #8 for the game-over hold on every screen.
+
+**The annexes' tooling, for the next measurement.** `deadspace.ps1 -Prefix <family>` (the scratchpad) — dead-space share per screen at 1280/2560 by paper-tolerance blocks over the sheet region, LockBits not GetPixel; the contrast ratios are one awk line over the hex pairs (`COMPLETED.md` §44 quotes the table); Annex B's cells come from the rail's own derivation (`RailCellWidth`) and crops of the matrix; Annex E is read off `DrawDomesticStatisticsContent` / `DrawInternationalStatisticsContent` and the methods they call.
+
+**The era's live edge.** Phase B WAITING on boards 1n-r2 / 1m-r2 / 2a and the density-token and contrast tables; the hatch's second re-cut is on the live project (a 16 px period, 8 px duty — the measured figures) and its import is the §E5-close micro-pass's; 13 September. *(Superseded the same night — the section below.)*
+
+## UI v3.1 Phase B — the five answers built: the §E5 close, D6, D4, 1n-r2, 1m-r2, 2a (2026-08-28)
+
+**What it was.** Design answered the ninth request in full the evening it was sent; this pass built the five answers in order, one unit one commit (`1d9926d` §E5 · `342d266` D6 · `a47fc1b` D4 · `ac29e73` 1n-r2 · `e72646c` 1m-r2 · `96bc38e` 2a; records `eab4edb`), against the `v31b_*` matrix. Records `COMPLETED.md` §45; the boards and tables as read are the spec's §A.18.
+
+**The tokens now (D4, mechanical).** `ScreenMarginFraction` = `ColumnSpacingFraction` = 0.012, `SectionSpacingFraction` = 0.02; the paper box `_boxStyle` padding 10/10/8/10 — **and its drop shadow outside the rect** (`StyleBoxAsPaper`: `overflow` 14/14/10/26, measured from `ui_panel_paper`'s alpha — the shadow had sat INSIDE the rect since v2.0, so every padding token counted from the rect, not the paper; content was flush with the paper's edge and the last row of every scroll view stood in the bottom shadow; no layout width moved); the dossier card 14+8/14/22/14; `PoliSimWidgets` tile pads 12/11/16/6/14, label 11; tile grid gap 6s; `LedgerRow.Height` = max(2·line, 8s + line) + 4s, `OneLineHeight` = line + 4s (no caller today), `LawBrowserRowHeight` = line + 6s (R-C1, frozen — the law browser's four sites); `GraphRenderer` display height clamp(0.085h, 56, 110) over the 300×90 buffer; calendar cell gap 2s; radii 16/13/11/10/9; body type clamp(0.024h, 17, 30); the mono meta floor 10 (`_calendarMonthStyle`, `_calendarMetaStyle`, `_divisionMetaStyle`); the Desk caption floor 9 (`DeskCaptionFloorPx`). Headers, banner, tab-derived icons unchanged. D4's two box rows name one style (20 px per nesting level, not 16).
+
+**The inks now (D6).** `TextMuted` #665E4F · `Good` #2E7048 · `Caution` #8F6900 (TEXT) · `Draft` #BE8A00 (FILL — its own literal now: threshold lines, the preliminary frame, the draft knob, the hatch, the BREAKING banner on the dark desk) · `Neutral` #5F6672 (text; the Neutral area ink stays #6D7480) · `Global` #47708E · `Political` #8A6B21 (both `UiPalette.AreaColors` and `PoliSimTheme.AreaAccents`); the selected chip's caption TextPrimary on brass. Re-measured (Annex F): TextMuted 5.22/4.98, Good 4.86, Neutral 4.72, Global 4.31, Political 4.07; Caution 4.09/3.90 and TextPrimary-on-brass 4.03 short of D6's 4.5 / 5.5 — filed back as numbers.
+
+**The rail now (1n-r2).** `DrawRailCell` — the bare glyph at `RailGlyphSize` = 22/39 of the cell, a caption in mono at 7.5/39 of the cell (floor 8) in TextSecondary, the area ink and bold when active (the weight yields before the size when bold does not fit — POLITICS at 1280), the 1n wash + spine, a faint stock wash under the cursor; captions DESK · STATS · DOCKET · PEOPLE · BUDGET · LAWS · POLITICS; home = the flag over DESK, brass wash 0.16 + spine on the Desk; the cell height from `RailCellHeight`; the width unchanged (`RailCellWidth`). Redrawn glyphs: refused by 1n-r2, costed.
+
+**The Desk now (1m-r2).** `DeskBoardInnerWidth/Height` 1156×680; the placements in `DrawDeskStage` (masthead 28; 440/250/440 at gap 13; map 320, ledger 244, compass 250, effects 314, calendar 420, reservation 144; the strip's rule at 620 and the strip at 627–680, integrated: dividers, no plates); the stage's box laid out at `availableHeight + padding.vertical` (the frame already took the reserve). Empty states: `StatTracePanel.ApprovalDeskTermNames` rows with em dashes + the `FIRST ATTRIBUTION` chip (`DeskFirstAttributionDate` = `EpochDate + (turn+1) × DaysPerTurn`); `DeskHasDraftPending` (the rate dial is the preview's one draft input) gates the dashed no-draft caption; `DeskDottedBaseline` for a chip without a history; `DrawDeskEventReservation` (a `DeskDashedFrame` with two captions). `BuildHeadlineReadings` is the ONE list for the strip and the Statistics plates.
+
+**Statistics now (2a; `GameController.Statistics.cs`).** `DrawDomesticStatisticsContent(contentWidth)`: `DrawStatsHeadlinePlates` (5 columns) · `DrawStatsFiscalPosition` (one printed axis: max(30 %, the group's max to the next 10 %); a not-yet-computed row says so; GDP per capita a bare level) · `DrawStatsSectorShares` (one stacked bar, normalised; a two-column legend) · `DrawStatsGraphGrid` (three GUILayout columns of `(contentWidth − 2·gap)/3`; the graphs handed `StatsGraphLabelStyle` = 12 px bold, from which the renderer derives its axis/change/pager styles once) · `DrawStatsSocietyRows` (two columns: gauge / row-end sparkline / nothing; the overburden row absent by ruling) · `DrawStatsPublishedBand` (the KEY on the rule — `DrawStatsPublishedKey`; the bulletin under the third column). `StatsContentWidth` derives the width from the sheet on the Layout event (the scrollbar subtracted). `StatsUnit(boardPx)` scales lengths as `DeskPx` scales type (R-B10). International: `DrawWorldMapContent` + `DrawTradeStatsContent`, E24 gone. Retired: `DrawHeadlineStatTiles`, `DrawDerivedStatsRow`.
+
+**§E5.** The hatch pair after Design's third cut: 7.42 % structure, edge 0.02; 64/76 px are rasterizer edge coverage (alpha 160 vs 96–152 across the 128 threshold), 12 solid-vs-void (1.17 %). `StripCutDiffCheck.DeferredPairs` keeps it with this measurement; the class doc says why the "dies when the answer lands" rule cannot apply; **RULING NEEDED (Elias):** viewed-not-counted (recommended), a fourth cut, or a classifier refinement (still 1.17 %).
+
+**ONE FRAME is now the only code (unit 7).** The OPEN branch, the fold state (`ShellFoldState`, `_shellFoldOverrides`, `ShellScreenKey`, `DefaultShellFold`, `ShellFoldLocked`, `EffectiveShellFold`, `SetShellFold`, `ToggleShellFold`), the chrome column's methods, the tongues, the fold toggle, `UiDraftState.ShellFoldOverrides` and the harness's fold pair are deleted (`COMPLETED.md` §45, unit 7). OnGUI: the rail (`DrawFoldedRail`), the column gap, `DrawFoldedInterruptBanner` measured, then the Desk or the document at `tabContentHeight = InnerHeight(areaHeight) − banner`. A v3.0 save's `ShellFoldOverrides` key is ignored on load. There is no fold to assert, sweep or film.
+
+**The gate.** The full matrix twice — `v31b_*` on the boards (`96bc38e`) and `v31bf_*` on the final code (`c3b7c63`): 79 captured at each of four sizes, 0 overflows, 0 escapes, 0 canvas violations, 0 clipped, ATTRIB 0; `traj_v31bf_*` ≡ `traj_v31_*` ≡ `traj_v3c_*` 12/12; the eight checks green both times. Films of one code differ run to run only by the Fed-chair candidate draw (unseeded, UI-side) and the cursor — a harness seed for the draw is a candidate, not done. Dead space re-measured (`deadspace_v31bf.md`): up on content-short screens, down on the re-composed one — Annex C carries it.
+
+**The era's live edge.** v3.0 A–C and v3.1 A–B closed. Nothing of v3.x is out for signature — no live ask (the request doc's status line; §4 holds the next: redrawn rail glyphs, refused as costed; Annex C's corrections and the dead-space finding are Design's next look). Elias's: the hatch pair's bar ruling (§E5), §P's three felt verdicts, the sitting on the `v31bf_*` film (§V's five new rows). 13 September (item 10, election night born on the v3 shell). Nothing of v3.x is startable by a session today. *(The hatch ruling landed later the same night — the section below.)*
+
+## The hatch ruling executed — §E5 closed end-to-end (2026-08-28, the same night)
+
+**The ruling (Elias, on §45's one RULING NEEDED):** the hatch pair takes the three text stamps' treatment — named **"diagonal-tile, viewed not counted"**, the measurement the record, no fourth cut, the classifier untouched.
+
+**Executed (`StripCutDiffCheck`).** A second named table, `ViewedNotCountedPairs` — pairs whose over-budget reading is measured renderer difference: measured and printed with their figures every run, marked VIEWED, never a FAIL and never a pass; the exemption by name (or the stamps' structural `<text>` mark), never by class — holds `ui_hatch_draft` with re-cut #3's full measurement (7.42 % structure, edge 0.02; 64/76 mismatched px straddle alpha 128, 12 solid-vs-void = 1.17 %). `DeferredPairs` stands EMPTY (the deferral retired; R-D3's mechanism kept for the next ask-on-file case), and the named branch runs before the deferral check so a ruled pair can never silently re-enter DEFERRED. **Verified at HEAD with resvg 0.47.0 (`stripcut_ruling_20260828.log`): 86 of 90 comparable pairs within budget; 4 viewed not counted (3 text-bearing fonts + 1 ruled by name); 0 deferred; 0 unrasterizable-here; 0 FAILED — exit 0.** The pair's eye-diff joined §V (`%TEMP%\stripcut_fail_ui_hatch_draft.png`, rewritten each run, beside Design's cut).
+
+**§E5 is closed end-to-end, both sides** — Design's half (three cuts; the slider strip sourceless-by-design) and Elias's bar ruling. The register row and section in `MISSING_PREREQUISITES.md` read CLOSED and retire at the next re-derivation; `COMPLETED.md` §46 is the record; the request doc is deliberately untouched (the §S package's recorded digest must keep matching the pasted file — the bar was Elias's own question, never an ask to Design). The live edge loses one item: Elias's remaining gestures are the §S paste, the §V sitting, §P's three felt verdicts, and 13 September.
+
+**The sitting's third finding (2026-08-28, later the same night — D7 opened).** Elias, from the sitting: *the Policy Web should be bigger, more understandable, and use the page's dead space.* Filed as §V's finding-3 row, in his words. Split per the R-E2 precedent (structural interim ours the same day, the face Design's): SCALE ships as the Policy Web micro-pass's R-W1 (the web takes the full sheet); COMPREHENSION opens as **ask D7 — board 2b, "the Policy Web, drawn to be read"** — the v3.1 era's tenth-request seed, drawn against Annex G (the micro-pass measures it). R-W2 binds the board: content stays derived-only, edges from the model's own tables, DERIVED/DECLARED visible, neutral ink on effects; weight-as-thickness, arrowheads and a legend MAY be encoded (flagged as new UI content); invented edges, valence colours and narrative groupings may NOT. The micro-pass's own section below carries the build.
+
+## The film seeded and the cursor parked — rule-15 diffs earn determinism (2026-08-28, the same night)
+
+The ratified candidate from §45's gate paragraph. `UiScreenshotDriver.Start` seeds `SimulationRandom` (`FilmSeed = 777`, the trajectory baselines' own seed) before any day advances — the Fed-chair candidate draw and every warm-up consumer replay the same sequence every run — and `ParkCursor()` (`SetCursorPos(0,0)`, the harness's one P/Invoke; the Game View sits at the screen origin, so (0,0) is its tab strip, never a game pixel) removes the resting mouse from the film. **Proven with two full 1280×720 sweeps of one code (`det_a_*` / `det_b_*`, each 79 captured / 0 failed): 76 of 79 frames byte-identical by SHA-256.** The three that differ are wall-clock frames with causes on record — `01a_selector_yielding` and `89d_signing_entrance` (mid-envelope animation frames that pin presence, not pixel values, per their own in-code comments) and `92_saves_menu` (the harness's own `zz_driver_capture_*` saves print the real save minute — 19:18 vs 19:19 UTC, viewed on both films). One deliberate discontinuity: the first seeded family differs once from every unseeded family (`v31bf_*` and back) on random-dependent surfaces; from `det_*` on, films of one code compare byte-for-byte outside the three named clock frames. Records: `COMPLETED.md` §47. **⚠ A FOURTH CLOCK, found 2026-09-15 and HELD (§509, §510):** play's own day clock runs in real time (a second a day at Normal). A slow frame between the running captures and the warm-up let it tick a day, and that day opens the incoming government's budget window, which only the controller's tick opens. Every frame after the warm-up then differed by the machine's speed: Italy's and France's turn-0 frames read JAN 2, Germany flipped between two runs, and Poland's wrapped banner tripped the edge guard. `UiScreenshotDriver` now primes the controller's accumulator an hour short of a day from `SelectPlayerCountry` through the warm-up, and `ReportClockBeforeWarmup` fails the film if a day ran. A film before §510 may carry the race. **Also measured and NOT held (§510):** a rail tongue's fade after a tab switch, and the Budget heading's fade, differ between two runs of one code by a few thousand pixels inside that cell. Compare two films with those cells excluded, or read the difference's box before calling it a change.
+
+## The Policy Web micro-pass — R-W1 full sheet, Annex G, ask D7 (2026-08-28 late night)
+
+**The sitting's third finding** (*bigger, more understandable, use the dead space*) split per R-E2: scale same-day, comprehension to Design. **R-W1:** `DrawPolicyWebTab`'s diagram rect is the scroll viewport itself (full width, viewport height, drawn first; floor 0.5·h kept, the 0.92·h ceiling gone; the duplicate in-sheet title dropped — the frame's caption names the screen; the explainer below the web). Occupancy 41.1/46.2/48.2/74.6 → **56.1/59.8/62.1/74.6 %** of window at the four sizes; the fold-clip at rest gone. Proofs: `pweb_*` 4×79/0; byte-diff vs `det_a` — only the seven policy-web frames differ from code (`01_country_selector` joined the envelope class: the Italy card mid-settle, viewed); `traj_pweb_*` ≡ `traj_v31bf_*` 6/6; edge check 316/0; the eight checks green (⚠ they run as eight `-executeMethod <Check>.Run` calls — `CheckSuite` has NO batch entry; two exit-1s tonight were that wrong entry point, no check ever failed). **The census** (`PolicyWebCensus`, new): 73 nodes (55+18; Fiscal 28), edges 121 = 73 derived + 48 declared (USA 120), stat→stat 7, Tariffs (Tax Line) the one edge-less node. **Ask D7 / board 2b** installed as the request doc's §2 against Annex G (occupancy, ring arithmetic — height-bound with the header margin on all sides, the board's question — label ladder 16/21/25/29 headers / 17/22/26/30 node, census, readout contents verbatim, film crops); R-W2 binds it (derived-only, DERIVED/DECLARED visible, neutral effect ink; legend/weight/arrowheads MAY, invented edges/valence/groupings may NOT). The package regenerated: ONE live ask, rows n of N, digest `85690abf…` (65 004 CRLF). **The era's live edge:** the tenth request rides the §S paste; Elias's gestures — the §S paste, the §V sitting (finding 3's row and the `pweb_*` frames included), §P, 13 September. Commits `c6cd7d3` · `3b85543` · `7959477` · `e30c82b` + the close. Records: `COMPLETED.md` §48; the overnight report carries the night's full call log.
+
+## Elections Day-1 — the seat rung at 5/6, the vote rung opened (2026-08-29)
+
+**The spec ARRIVED later the same day** (third attempt) and passed Phase 0's content check — 44 sections, §42 the causal chain, §44 the last — installed verbatim at root before anything was built on it. `ELECTIONS_GAP_TABLE.md` classifies all 44 (EXISTS 3 · EXTENDS 10 · NEW 22 · N/A 9, each N/A reasoned per R-EL7) and reconciles D0: **this spec IS item 10's political model.** Three classification findings worth carrying: §19's actual-vs-perceived split already exists as `PublicationSystem`'s preliminary/revised figures; §31's "why you won" table is the approval attribution ledger pointed at a vote share; §24's regional data is already sourced, so regions are modelling not research. **§40 diverges by ruling** — its ScriptableObjects and 13-manager MonoBehaviour tree lose to R-EL1 (catalogs in code) and R-N2 (no wiring); its modularity is kept as one concern per pure static class. **The §39 chain's first half is built** (§7 `Compatibility.cs` 9/9 · §8 `PreferenceModel.cs` · §26 `TurnoutModel.cs` · §27 `RegionalAggregation.cs`, 20/20), with `SimulationRandom.Stream.ElectionNoise = 7` **appended** (baselines re-proven 6/6 identical). ⚠ **§8 reverses both Phase-4 deviation signatures** — the empty-quadrant newcomer 60.19 % → 12.27 %, the incumbent 25.22 % → 53.86 % — and regional noise cancels to 0.3474 pp national from 0.9482 pp regional, within a hair of 1/√8. Records: `COMPLETED.md` §50.
+
+## Elections Day-2 — the gate FAILED; nothing wired (2026-08-29)
+
+**R-EL13 gated wiring on the re-backtest, and the re-backtest failed it.** §8 loyalty improves three countries sharply (Sweden 3.25 → **1.75**, Poland 6.99 → **3.84**, Germany-8 5.78 → **4.66** pp MAD) and §27 regional structure corrects the CSU deviation from candidacy facts alone (+7.36 → **−3.68**, zero fitted parameters — the CSU contests one Land of sixteen). **Italy REGRESSED 5.61 → 6.69**, so the gate failed, **Part 4 did not run, and R-N2 still stands unbroken.** The seat half passed unchanged (five chambers at deviation 0; the deliberate Poland signature still 70). ⚠ **Italy's cause, and the next unit:** 2018→2022 is the set's most volatile pair (FdI ×6.7, M5S halved), so a UNIFORM loyalty of 60 is simply false there — the layer is right, the global constant is wrong, and §5/§8 say loyalty is per-group. **The constant was deliberately NOT re-fitted to open the gate.** Second known limit: §27 and §8 do not compose yet (Germany's both-layers run is worse than §8 alone) because the regional run damps toward the NATIONAL prior — per-region priors are the fix, a data item not a defect. ⚠ **A self-inflicted test flaw, caught before reporting:** the first Germany run compared nine parties (SSW added for §27) against Day-1's eight-party figure; `GERMANY-8` recomputes to 5.78 exactly, which is also the proof the harness reproduces Day-1 rather than quoting it. **R-EL12 resolved: Nebraska LB3 NOT ENACTED** (cloture failed 31–18, indefinitely postponed at sine die) — district method stands, with a dated-variant requirement and a January-2027 expiry recorded. **13 September is now honestly a re-seeding exercise, not a playable election** — the seat side is ready, the vote side did not clear its gate. New code: `RegionalVoteModel.cs`, `land_votes_2025.csv` (sums cross-checked exactly). Records: `COMPLETED.md` §51; the Day-2 report (retired at C-G1, 2026-08-31; R-EL13's FAIL is carried in the elections log and the gap table). **Nothing in the elections track is wired to anything (R-N2), and four separate proof runs today confirmed the trajectory baselines byte-identical 6/6 with all eight checks green.**
+
+**The allocators (`Assets/Scripts/Elections/`, all pure and unwired).** `SeatAllocation.cs` (divisor methods + per-district sum) · **`ElectoralCollege.cs` (R-EL8)** — winner-take-all as the state choice plus Maine's and Nebraska's district method from Me. 21-A §802 / Neb. §32-710 + §32-1038(1); **312/226 EXACT** from seven sourced pluralities, with the forced-WTA counterfactual printed beside it because ME-2 and NE-2 cancel (the overnight match was luck) · **`Rosatellum.cs` (R-EL9)** — Italy's floored Hare ×2 from DPR 361/1957 art. 83; **Camera 2022 proportional stage EXACT, all eleven lists**, reproducing the 1 % strip, the 1–3 % transfer and SVP-PATT's 0.42 % minority admission; lett. g)'s divisor is the ADMITTED lists (the other reading is nine seats out). ⚠ Two standing cautions: **Nebraska's LB3 may repeal the district method** (`[UNCONFIRMED]`), and **Italy's comune-level open-data CSV must not be fed into the allocation** (its `VOTILISTA` sums undershoot the *cifre elettorali* by 2.6–4.6 %). **Seat table: 5 of 6 exact** (Sweden, Germany, Poland-real, Italy-PR, USA-EC); France is structurally out — two-round SMD has no national allocation, and modelling it needs 577 × 2 constituency results.
+
+**The vote rung (`VoteModel.cs` + `VoteShareBacktest.cs`) — a DECLARED PLACEHOLDER, not the spec's chain.** A 2-D Gaussian electorate over the two sourced CHES axes, proximity choice by softmax, four parameters, zero party-specific constants; sourced positions and salience in, official returns as the target. Calibrated MAD: **Sweden 3.25 · Italy 5.61 · Germany 5.78 · Poland 6.99 pp** (prior, zero fitted parameters: 6.4–10.3); France 1.16 and USA 0.00 are structure not skill. **The two deviation signatures — empty-quadrant inflation and large-party under-prediction — are one missing layer stated twice: §8 loyalty damping, the highest-value unit in the plan. §27 regional structure is second (CSU +7.4 pp is its target).** When the spec lands, its chain REPLACES `VoteModel.cs` wholesale.
+
+**The 13 September minimum (Sweden votes; item 10's gate).** Everything measurable already exists: the Swedish allocator is exact and proven, the 2022 seed data is sourced with exact counts, and a re-seeding pass is all the gate needs. The one thing it lacks is WIRING — which R-N2 forbids by standing rule, so it is Elias's decision, not a gap. Records: `COMPLETED.md` §49; the Day-1 report (retired at C-G1, 2026-08-31; its measurements are in `COMPLETED.md` and the elections log) carries the tables, the call log and five RULINGS NEEDED (first among them: paste the spec, in pieces if it is large).
+
+## W-E1 — Campaign HQ, the first Track E screen (2026-08-29)
+
+**The first screen of a new class, not a re-skin.** `GameController.Campaign.cs` draws Campaign HQ in the v3 idiom — the folded rail plus one full-bleed sheet, the **Desk's own** 1156×680 board and its 440 / 250 / 440 columns, `DeskPx` type floored at D4's 9 px, ledger rows at the Desk's pitch — and reuses `DeskCaption`/`DeskBody`/`DeskNumeral`/`DrawDeskChipButton` directly rather than restating them, so the two stages share **one** type ladder. Six plates: §9 resources, §9/§10 organisation, §20–§22 the race as polled, §12 today's queue, §3 what the phase permits, and the campaign-window strip. ⚠ **R-N2 is held structurally:** the screen draws only when `_campaignScreen` has a value and the only setter is `internal SetCampaignScreen`, called by the screenshot driver (`-shotcampaign`) and nothing else — the `DrawInstrumentLadder` precedent. The branch sits beside `_onDesk` so the rail is real, but there is **no rail cell, no tab, no save hook, no gameplay path**; wiring at W-G1 is adding the rail cell and nothing else. **Every figure is derived and the boundary is stated:** the poll is a real `PollingSystem.Conduct` draw against Sweden's SOURCED 2022 vector, momentum a real `MomentumTracker` decay, action costs read from `CampaignActions.Spec`, the legality list from `CampaignLegality`, the perceived-economy index (31.0/100) from `PerceivedPerformance.Perceived` on the **live** country; war chest, volunteers and office upkeep are `[AUTHORED-DRAFT]` staging, logged as such by the pass, with W-F5 named as what sources party finances. **W-B10's rule reaches the view through the TYPE** — the screen is handed a `Poll`, which cannot express a truth — and the ± is drawn as a shaded band *under* the point estimate rather than printed beside it, because the interval is the width of what is known. **The five `mark_party_*` sprites got their first call site:** `IconLibrary.GetPartyMark` takes the **full file stem** (`"mark_party_se_s"`), the same key `PartyMarkCoverageCheck` uses, so there is one convention rather than two. Filmed at 1280/1600/1920/2560, three staged days each (pre-campaign empty states, mid-campaign full ledgers, an over-committed day), `ScreenEdgeCheck` clean, guards silent. ⚠ **Two defects the film caught, both fixed at the measurement:** `CampaignActions.Spec` throws for §3's preparation verbs, so the queue is now `TheEight` ∩ legality (a pre-campaign day correctly shows the empty state); and two label-clipping instances of the known class — the momentum caption took a board-derived 9 px slot against an 11.2 px glyph box (now `DeskCaptionHeight`, and the row pitch too), and the poll's methodology line used `MeasuredLabel`, whose guard measures the *one-line* form and so flagged a genuinely wrapping caption (now `GUI.Label` + `UiContainmentGuard` against its own wrapped height, the Desk's established pattern, measured before the rows are budgeted). **The methodology line was NOT trimmed to fit** — "(SAMPLING ERROR ONLY)" is the honest scope of the ±. Records: `COMPLETED.md` §52; `ELECTIONS_PROTOTYPE_LOG.md` carries the calls.
+
+## W-E3 — the action screen, and an estimate that earns its range (2026-08-29)
+
+**The item's bar was "ranges, never false precision", so the range was built before the screen was.** `CampaignActions.ResolveBand` evaluates §42's chain at the ends of the uncertainty in what the player ACTUALLY measures — polled salience and issue-match; audience is structural (Sweden's sourced 2022 electorate), credibility is the party's own record, spend is exact. The band's width is therefore a propagated measurement rather than an authored ±, and §21's bigger sample visibly narrows it. ⚠ **`ChainBandHarness` proves the shortcut instead of asserting it:** `ResolveBand` evaluates only two CORNERS, exact only while persuasion is monotone in both inputs, so the harness sweeps 41×41 points for each of §12's eight actions — **13 448 interior points, none outside the band** — and the method's doc states that a future non-monotone stage forces it to become a sweep. Also asserted: a wider interval gives a wider estimate (span 1 034 vs 103), a perfect measurement collapses the band to a point, an unpolled quantity yields **no** estimate rather than a wide one (§36), and W-B3's structural bar survives the widening. **The screen** reuses Campaign HQ's board and primitives outright (one type ladder, not two) and puts **§42's chain on screen for the first time** — reach → exposure → salience → relevance → credibility → persuasion/enthusiasm, with the invariant printed: zero any stage and the effect is zero. **Every option carries its own band on ONE shared scale**, because the decision is *which* action to run and that is a comparison; a per-row scale would make a 5 000 kr social post look as promising as a 500 000 kr TV buy. ⚠ **Five defects, and every one passed every guard** (all five fitted their rects perfectly): enthusiasm rendered as `3,477 — 3,477`, a range that is not a range; `Reach 94 613` — **B3's culture class in code written today**; the masthead calling the action screen "CAMPAIGN HQ"; a ~60 % empty sheet, which was a DESIGN failure (the screen could not answer the question it exists for) fixed by adding real derived content rather than shrinking the board; and `TOP OF SCALE 1`, a safe fallback leaking onto the screen as a fact. That five-for-five record is the standing argument for the screen class's four-width film and for a human reading it. **Model finding recorded, not papered over:** enthusiasm carries NO measurement uncertainty because §42 derives it from exposure and credibility, neither polled — possibly wrong about the world, but a change there is a model change with its own reason, never a width invented at the drawing layer. **A finding made visible:** `Interview` at 0 kr and 2 h draws one of the longest bands on the sheet — W-B3's "interviews-only is optimal" lifted out of a harness log, and exactly the input W-B9's ruling wants for media INTEREST as the scarce resource. Records: `COMPLETED.md` §53; `ELECTIONS_PROTOTYPE_LOG.md`. The play-calibration list opens after W-E4.
+
+## W-E4 — the polling screen, and §21's decision made arithmetic (2026-08-29)
+
+**§21 is one sentence and the screen exists to serve it:** *"the player should have to decide whether additional information is worth the cost."* A decision needs both sides priced, so the right column puts kronor against **percentage points of precision**, and every ± is DERIVED from the offer's sample size by `PollingSystem.MarginOfErrorPp` — the same function a conducted poll reports with, so the price list cannot promise an accuracy the polls then fail to deliver. The filmed ladder at S's polled 31.6 %: tracker n=600 / 40 000 kr / ±3.7 (baseline) · standard n=1 200 / 120 000 kr / ±2.6 / **73 433 kr per point gained** · regional n=2 400 / 260 000 kr / ±1.9 / **118 294 kr** · full programme n=6 000 / 620 000 kr / ±1.2 / **228 048 kr**. **Each point costs more than the last, which is √n arithmetic and not a design choice** — the sample sizes and prices are `[AUTHORED-DRAFT]` (W-F5 sources them), the ladder's shape is not authored at all. ⚠ **The judgement this item turned on: regional / demographic / turnout depth is deliberately NOT folded into the cost-per-point figure.** One number per row would have been tidier and sortable, but those are different KINDS of answer rather than narrower ones, and averaging a capability into a precision score would hide exactly the trade §21 says the player must make. **The screen states what money cannot buy on the sheet that sells precision** — §20's late swings, turnout, undecided voters, tactical voting and house lean are named as NOT in the ±, which is sampling error and nothing else (W-B10). §22's momentum takes the centre column with the half-life the code uses, stating that it cannot be made permanent (a lasting gain is reputation, §38 — a different stock) and that it moves where the race APPEARS to be without touching the preference underneath. **Two defects, both caught by the guards this time:** a 446-px caption in a 425-px slot at 1280, fixed by splitting the row into two caption lines rather than abbreviating (what an offer IS and what its precision COSTS are two facts); and a 1.1 px height overflow at **1920 only**. ⚠ **The durable fact behind the second: Pagella and the mono document face do not share a line box** — at 1920 an 11 px mono caption is 21.2 px tall against a 13 px body's 20.1, and `DeskPx`'s integer rounding makes the crossover width-dependent, so **a row measuring its height from one face and drawing a label in the other is a latent clip**; such rows now take `Mathf.Max` of both (three instances this session). **Both genuine overflow classes today appeared at exactly ONE of the four widths**, which is the concrete case for the screen class's four-width film. **The three Track E screens are now one loop** — HQ shows the race as polled, the action screen prices what you could do about it as a range whose width is your own measurement error, the polling screen sells narrower measurement and quotes what each point costs; both ends derive from the same `MarginOfErrorPp` and cannot contradict each other. **`ELECTIONS_PLAY_CALIBRATION.md` is now open** (the W-B3/W-B10 ruling's trigger — E1/E3/E4 complete): six entries, `PersuasionPerCompatibilityPoint` first, each with what is measured, what would settle it and what must NOT be done meanwhile; the enthusiasm-vs-salience model question and earned-media dominance are carried there with their rulings attached so neither is re-solved as tuning. Records: `COMPLETED.md` §54.
+
+## W-C1 — AI parties on the player's own system, and the environment's dominant strategy measured (2026-08-29)
+
+**§32's five personalities run THE SAME campaign system the player does, choosing by §33's expected value — pure, unwired, harness-driven.** `CampaignAi.cs` (the `PersonalityCatalog`, the `AiView`, `Evaluate`/`Choose`, `CampaignIntelligence`), `CampaignRun.cs` (an AI-only campaign over W-B1's calendar, W-B2's resources, W-B3's chain, W-B10's polls, W-A1's loyalty and §8's preference — the one place the truth lives), `CampaignAiHarness.cs`; `SimulationRandom.Stream.CampaignAi = 8` APPENDED, nothing live drawing from it. ⚠ **The item's bar is a TYPE:** an AI decides only from an `AiView`, which is built from a `Poll` (cannot carry the truth), from `IssueMeasurement`s a commissioned poll returns with the ± its sample size buys, and from public facts — reflection finds no truth-shaped member, `Evaluate` takes the view, the personality, a pool and the reserve and nothing else, and an AI without a poll gets only BLIND estimates (a flat prior over 0–1, never a wide guess); the never-polling chaotic party's 284 decisions were all blind. **§33's score is in ONE unit — compatibility points — with no authored kronor-to-votes rate:** §42's band through `ResolveBand` on the MEASURED inputs (the same function W-E3 prices with) × affinity × probability of success, money priced at the action's OWN §35 efficiency at its smallest outlay (`CostWeight` = how much less efficiency a bigger outlay may keep), money otherwise a CONSTRAINT (a reserve released at the personality's `SpendPace`, so a 500 000 kr television buy is saved for — the establishment party is the only one that does, three times), hours the binding resource (value per hour), a risk factor on the band's relative width. ⚠ **The first draft priced money against a daily budget and no money action ever scored — replaced, and logged.** **The done-when:** deterministic (seed 777 twice → digest `d7670f735d1b8864`, shares bit-identical, 56 of 56 days, no money negative) · **five different mixes — MET where the environment can distinguish, PENDING where it cannot, printed with the measurements:** chaotic and populist differ from every other (min L1 0.604 / 0.504), grassroots least broadcast, establishment most television, professional most polling (8) and never blind, populist ends at 0 kr against the professional's 1.44 m, chaotic most variable across seeds (0.161 vs ≤ 0.039); **professional / establishment / grassroots are indistinguishable (L1 0.013–0.024) because all three interview all day** — the free national interview (W-B3's recorded dominance, W-B9's mechanism absent) beats every other action for any expected-value chooser, and a local action reaches a fraction of one region against a national one's whole electorate (W-B3's placeholder reach; W-B4/B11's volunteer-hours). ⚠ **Recorded as `PEND`, riders placed on W-B9 and W-B4/B11 (those lines become assertions there with no affinity changed), nothing forced** — an affinity big enough to make the grassroots party knock doors here would be a number chosen to pass a test. **Two findings beyond the item:** (1) **the chain saturates at the real national audience** — every rational party delivers +197 to +225 compatibility points and `ElectionScales` clamps at 100, so the final shares are the clamp's arithmetic; W-B3's +0.19 pp/week was at a 100 000 audience and at 6.5 million the linear-in-audience-and-repetition chain is 65× that — a MECHANISM question (bounded reach, repeated-exposure decay, media interest) before a calibration one, the constant untouched, the calibration list's entry 1 gaining the measurement; (2) door-to-door at 2 % of a region per five hours is 16 000 doors in Stockholm — reach must become an absolute count at W-B4/B11. **Staging classes stated:** SOURCED prior/2018/loyalty/valkretsar/EB105 salience (climate .26 crime .18 defence .17 education .16; *"threats to democracy"* billed — no §6 slot); DERIVED compatibility at the fixed point where an idle campaign reproduces 2022 exactly (asserted); `[AUTHORED-DRAFT]` flat match 0.5, credibility 0.6, equal 2.4 m war chests, every personality parameter (tabled in the log; calibration entry 7). Not built by ruling: the attack verb (W-B8), the poll in the score (W-E2's swing index, §18's events), pre-campaign days, momentum shocks. Records: `COMPLETED.md` §55; `ELECTIONS_PROTOTYPE_LOG.md` W-C1; gap table rows 32–33 discharged.
+
+## W-B6 — campaign strategy (§11): five trade-offs as modifiers over the chain, no dominant strategy (2026-08-29)
+
+**A strategy is multipliers on §42's stages — never an action, never a vote delta.** `CampaignStrategy.cs`: reach and credibility multiply the chain's INPUTS (a zero anywhere still annihilates the effect), persuasion / enthusiasm / salience-shift multiply its outputs, the result is the same `ChainTrace` every consumer reads, `None` is the identity (asserted — every earlier measurement stands). ⚠ **Every multiplier depends on WHO the group is** — loyalty (swing = 1 − loyalty/100) and whether it prioritises the message's issue (`Prioritises`: weight at or above the group's mean) — which is what makes each strategy a trade-off: the same strategy lifts one group and lowers another. The five as the spec's bullets turned into shapes (magnitudes `[AUTHORED-DRAFT]`, tabled in the log): Broad — reach ×1.15, persuasion ×0.85, polarisation ×0.5 · Base — enthusiasm ×(1 + 0.6·loyalty), persuasion ×(1 − 0.5·swing) · Swing — persuasion ×(0.7 + 0.8·swing), enthusiasm ×(1 − 0.3·loyalty) · Negative — 60 % of persuasion lands AGAINST the target through the new `CampaignPressure.AddAgainst` (still a compatibility pressure, recomputed by `PreferenceModel`), own ×0.8, credibility ×0.9 (backlash as an expected cost; the seeded event is W-B8's), media ×1.5 (carried for W-B9, read by nothing yet) · Populist — focus group ×1.5 / ×1.3, other groups ×0.6. **The done-when:** seven trade-off assertions on one rally for a loyal group (85) and a swing group (20) — all as the spec states them — and a **30-electorate sweep** (loyal share × focused/diffuse × opponent strength, the W-B3 week under each strategy, the outcome in the model's own units): **Base 21, Broad 6, Populist 3, Swing 0, Negative 0 — no strategy wins every cell.** ⚠ **Two findings recorded, not tuned:** Swing Voter and Negative Campaign win nowhere at these magnitudes and this metric (Swing's loyal-group enthusiasm cost outweighs its swing gain; Negative's 60 % against a symmetric opponent is worth less than its own 20 % cut plus the credibility cost) — calibration entry 8; and Base's 21 of 30 is the enthusiasm conversion (60 000 vs 40 000), a §26/W-D1 weighting rather than the harness's. **The AI runs strategies now:** professional → Swing, populist → Populist, establishment → Broad, grassroots → Base, chaotic → Negative (its target the leading OTHER party in the latest poll it has seen — from a `Poll`, never the truth); the modifiers apply to the AI's own estimate exactly as to the world's response; the electorate is one group at W-A1's weighted mean loyalty (89.7) until W-F4's groups. W-C1's digest moves (`463560d1…`), every C1 assertion still passes, its `PEND` lines unchanged. Records: `COMPLETED.md` §56; `ELECTIONS_PROTOTYPE_LOG.md` W-B6; gap table row 11 discharged.
+
+## W-B9 — the media system (§13/§14): media interest as availability, coverage that cannot spiral (2026-08-29)
+
+**The standing ruling executed here and nowhere else:** earned media is free because someone else decides whether to book you, so the scarce resource is media INTEREST — `MediaSystem.cs`: each day the outlets allocate their interview slots in proportion to `1 − exp(−(coverage + 0.15·|momentum| + 0.8·polled share + events))`; a party at 4 % with no coverage is booked by no outlet whatever it would pay, the same party after a day of news is booked seven times, the interview's spec is still 0 kr with no cap (asserted). ⚠ **Bookings are a LEDGER** (`MediaInterest.BookingLedger`, entitlement carried day to day): per-round booking let two parties take every slot in the country, per-day rounding starved the fourth (19 %, eight weeks unbooked) — the ledger gives 82/82/57/38 of 270 over a month at steady interest and nothing to a party under every threshold. **Coverage is a stock that cannot spiral** — a 3-day news-cycle half-life (distinct from momentum's 7, the second mechanism W-B10 named) and a saturating gain `1 − exp(−raw)`: a spike follows its curve to 1.7e-16, a year of maximal news peaks at exactly the ceiling 4.85, interest stays under 1; the day's gain shocks §22 momentum at 1.5 pp per unit, bounded because the gain is. **§14:** an outlet is a reach ceiling and an audience composition; one climate message ×1.90 per head through the young-urban outlet against the older-rural one, a crime message ×2.00 the other way, identical through the general outlet — the audience decides. ⚠ **The media landscape bounds what a national action reaches** (`NationalAudience`): television across the television outlets (0.80 — through the largest alone it was dominated by digital), digital the platforms' 0.55, a social post the party's own following (polled share × 0.30), an announcement the press's interest; W-B3's placeholder addressed the whole electorate with everything, and the AI campaign's compatibility bonuses fell from +197…+225 (all clamped) to **+7…+37** with `PersuasionPerCompatibilityPoint` untouched — the mechanism half of C1's saturation finding. **The AI under the media exposed three C1 defects, fixed and logged:** money priced on the whole spend scored every money action exactly zero at `CostWeight` 1.0 (increment-priced now; cross-seed variability 0.652 → 0.029), the reserve spent daily meant no party polled again (the poll's price is kept back once due), and two saving rules for television were both worse than none — **no saving rule; a budget plan is W-B5's campaign manager's.** C1's harness now: 20 assertions green, 7 `PEND` with blockers named — grassroots separates from both media personalities (0.71/0.61, the W-B9 rider half discharged), chaotic distinct (0.477) and most inconsistent day to day (1.035); professional ≈ establishment (0.101) and the advertising claims wait on **W-B5**, rallies and door-to-door on **W-B4/B11**. 14 of 14 in `MediaHarness`; archetype outlets, real reach and followers billed; `AddShock` left for debates, scandals, events. Records: `COMPLETED.md` §57; `ELECTIONS_PROTOTYPE_LOG.md` W-B9; calibration entry 9; gap table rows 13–14 discharged.
+
+## W-B11 — Get-Out-The-Vote (§26): volunteer-bound contacts, per region and per party (2026-08-29)
+
+**Mobilization is contacts, per region AND per party, through `TurnoutModel`'s input — never a new term.** `GotvModel.cs`: four operations with cost, volunteer-hours and weight per contact (`[AUTHORED-DRAFT]`); `Contacts` bounded by money AND hours (1 m kr with 0 hours knocks 0 doors — asserted); `mobilization = 50 + 50 × (1 − exp(−contacts per eligible / 0.5))`, so an unworked region is at base by construction and no budget passes 100; `RegionalMobilization` holds every party's contacts in every valkrets and produces turnout, region votes and the nation's eligible-weighted figure. `TurnoutModel` keeps no party term (its rule stands) — a party's supporters turn out at its own mobilization, everyone else's at 50. **Done-when on the 29 valkretsar:** S knocks 80 000 doors in three — Stockholm 84.21 → 85.03 %, Skåne södra → 86.41 %, Gotland → 89.07 %; **the other 26 at exactly base, bit for bit; the other seven parties unchanged in all 29**; S's Stockholm share 30.80 → 31.47 % with SD's votes unchanged to the vote. Every party's whole chest on the doors nationwide: 85.26 %, inside 2002–2022's [80.11, 87.18] ± 2 (`ElectionsData/sweden/turnout_history.md`, SOURCED/PROVISIONAL — 2002–2010 written from the recorder's knowledge of val.se's series, to be read back); unlimited lifts: 100 % and not a vote more. 10 of 10. Base turnout SOURCED (84.21 %) and uniform; eligible per valkrets DERIVED as 2018 valid ÷ 87.18 % (7.43 m vs 7.78 m true — the per-valkrets counts billed). ⚠ **C1's PEND clearance: none cleared, one changed for the worse, honestly.** Door-to-door in the AI campaign now reaches the doors volunteers can knock (~3 000 an action, not W-B3's 2 % of a region = 16 000); at the 0.55 per-contact weight nobody knocks doors, and the grassroots separation W-B9 produced was the placeholder's — `2a-iv` back to `PEND` on W-B4 (offices grow volunteers) and calibration entry 10 (persuasion per personal contact — the canvassing literature, billed); nothing raised to keep it green. Riders: W-D1 runs `RegionVotes` on election day with the accumulated contacts; W-F4 brings per-valkrets eligible counts. Records: `COMPLETED.md` §58; `ELECTIONS_PROTOTYPE_LOG.md` W-B11; gap table row 26 extended.
+
+## W-D1 — election day (§27): every valkrets counted, noise on its own stream, 1/√n on the real 29 (2026-08-29)
+
+**`ElectionDay.Count`: per region, W-B11's `RegionVotes` (eligible × preference × each party's supporters' turnout — where the ground game lands), then §27's `Final Vote = Expected Vote + Election Noise` as Day-1's `ApplyNoise` on the region's shares at the declared 1.2 pp, back to whole votes against the region's votes cast; the nation the vote-weighted sum of regions, never a mean of shares.** Every draw from the caller's `System.Random` — the harness passes `SimulationRandom`'s `ElectionNoise` stream, so one election re-runs under a seed without re-running the economy. **Done-when:** seed 777 twice → digest `7b7ce512348e9941`, every regional count identical, seed 778 differs; over 400 replays the regional σ is 1.167 pp (the declared 1.2 less re-normalisation's 3 %) and **the national σ 0.259 pp against 0.260 predicted by σ/√N_eff, N_eff = 20.15 of the 29 valkretsar by eligible weight** — Day-1's 1/√n law, now on the real unequal regions to a third of a percent. The count is a count: regions sum to votes cast to rounding, the nation to the regions (6 272 372 of 6 272 383), turnout W-B11's exactly (84.43 %), σ = 0 reproduces the expected result to the vote, 29 × 8. 10 of 10. `CampaignRun.Result` now carries the campaign's accumulated door contacts (`Gotv`) and the valkrets names (the W-B11 rider discharged). Not here: seats (W-D2), voter groups (one vector per region until W-A2/W-F4 — the API already takes a per-region array), tactical voting (W-A4). National uncertainty at these magnitudes is a quarter of a point — inside §27's band; whether it is *felt* is a play question on Day-1's declared `RegionalNoiseSigmaPp`. Records: `COMPLETED.md` §59; `ELECTIONS_PROTOTYPE_LOG.md` W-D1; gap table row 27 extended.
+
+## W-D2 — vote-to-seat on the live path (§28): Sweden's procedure end to end, 2022 seat-for-seat (2026-08-29)
+
+**`SeatConversion.cs` is vallagen 14 kap. over `SeatAllocation`'s exact arithmetic:** eligibility (4 % nationally or 12 % in a valkrets for its fixed seats only), the 310 fixed seats distributed among valkretsar by eligible voters (the 310th-part rule: Stockholms län 39, Gotlands län 2), the modified odd-number method within each, the totalfördelning over 349, **återföring** (a party over its total returns its weakest fixed seats, re-allocated within the valkrets under every party's cap — the 2018 reform), the 39 adjustment seats where each party's next comparison number is highest; `Sweden(ElectionDay.Result)` is the live path. **Done-when:** 2022's exact national counts regionalised by the 2018 distribution and fed through the full procedure — **107 / 73 / 68 / 24 / 24 / 19 / 18 / 16 seat for seat**, fixed 105/69/67/17/23/10/11/8 + adjustment 2/4/1/7/1/9/7/8, none returned. 12 of 12. ⚠ **The branches were made to fire, not asserted vacuously:** the 12 % rule (L at 35 % of Gotland, 0.25 % nationally: 1 of Gotland's 2 fixed seats and nothing else); återföring — the first synthetic (KD's whole vote in Stockholm) exercised nothing because fixed seats follow ELIGIBLE voters (12 of 19); a low-turnout Stockholm (every other party's vote cut 70 %) gives KD 24 fixed against 21 entitled, **3 returned**, every party at its total, Stockholm still at 39. W-D1's counted election (seed 777) converts to S 108 / SD 73 / M 67 / V 24 / C 25 / KD 18 / MP 18 / L 16 — a quarter-point of noise is three seats. Derived and billed: eligible per valkrets (2018 valid ÷ 87.18 %) hence the fixed seats per valkrets `[DERIVED] [PROVISIONAL]`; the real 2022 per-valkrets seat table and eligible counts billed (W-F1) — totals independent of both unless a seat is returned. Finding: the adjustment tier carries the small parties (KD 9 of 19, L 8 of 16). Records: `COMPLETED.md` §60; `ELECTIONS_PROTOTYPE_LOG.md` W-D2; gap table row 28 extended.
+
+## P-A1 — the meta-text census and cut; `MetaTextCheck` the ninth check (2026-08-29)
+
+**Playtest 1's first finding answered:** 131 developer-facing strings off the player's surfaces. **The guard first** — `MetaTextCheck` scans every string literal in `Assets/Scripts/UI/*.cs`, `LawCatalog.cs` and `Assets/Scripts/Data/*.cs` with comments stripped (only text that can reach a label counts) against the banned classes stated in its header: builder completion/progress words, internal references (`§`, `R-XN`, `board 1m`…), build vocabulary (`Master Sequence`, `step 5d`, `this pass`, `harness`…), data-class tags (`[AUTHORED-DRAFT]`, `PROVISIONAL`, `IS DERIVED`…), research-status vocabulary (`CONFIRMED -`, `GENRE-IDIOM`, `DIRECTIONAL`); an allowlist with reasons (`PRELIMINARY`/`FINAL` on published figures, a law's `not implemented` state, the Policy Web's `DERIVED`/`DECLARED` idiom, `SCENARIO COMPLETE`). Armed in `CheckSuite` (nine checks now) and every bar. ⚠ **The census before: 124 + 7 hits — and what Elias remembered as "COMPLETED" in the laws tab was the citation class:** 103 citations printed with their research-status prefix (*CONFIRMED - the US Truth in Sentencing…*), 3 mid-citation status words, 17 section signs on the three Track E screens, one *EVERY FIGURE ON THIS SHEET IS DERIVED*, one `[AUTHORED-DRAFT]`, six *Master Sequence step 5d* / *this pass* explainers, ten `(R-K1, …)` parentheticals in Policy Web node text. **The cut, by class, at the source:** citations lose their prefix (the bookkeeping stays in the comments beside each law); the Track E captions are rewritten in the player's language (*§42'S CHAIN — EVERY STAGE MULTIPLIES* → *HOW A MESSAGE BECOMES VOTES — …*; *ARE [AUTHORED-DRAFT]; THE ± FIGURES ARE DERIVED FROM THEM* → *ARE ILLUSTRATIVE; THE ± FIGURES FOLLOW FROM THE SAMPLE SIZES*; *IT IS NOT AN AUTHORED MARGIN* → *THE MARGIN IS MEASURED, NOT INVENTED*); the explainers drop the step references. Nothing shortened to fit. **After: 0 hits.** Filmed: the Track E screens at four widths (`pa_campaign_<w>_*`), the sweep at 1280 and 2560 (`pa_sweep_<w>_*`), `ScreenEdgeCheck` clean. Records: `COMPLETED.md` §61; §P/§V.
+
+## P-A2 — the "as published" graph block dies; the mechanism proven untouched (2026-08-29)
+
+**Playtest 1's second finding answered as a DISPLAY cut.** `DrawStatsPublishedBand`, its key and `PublishedSeriesFor` and the three renderers that existed only for it are gone from Statistics; the sheet ends on the Society rows. `PublicationSystem`, every `Published` series, the release calendar and the revision mechanic are untouched, and the PRELIMINARY / FINAL chips and revision frames stay on the main graphs where they already live. ⚠ **Proven, not asserted:** `PerceivedPerformanceHarness` line 5 reads the SOURCE of `PerceivedPerformance.Perceived` and asserts it reads `country.Published` and never `country.State` — a future edit that quietly reads State fails the harness; 5 of 5. Filmed in the `pa_sweep_<w>_02a_statistics_domestic*` frames. Records: `COMPLETED.md` §62; §P/§V.
+
+## W-E2 — the campaign map: 29 valkretsar as polled, the swing index, §36's gate as absence (2026-08-29)
+
+**The fourth Track E screen** (`GameController.CampaignMap.cs` on the shared board, harness-only through `SetCampaignMapScreen` — R-N2): a hand-laid 5 × 10 cartogram of the 29 valkretsar (`SwedenCartogram`, no geography claimed, no sprite invented) and a swing ledger. **A valkrets's reading is a `Poll` of it or nothing** (`SwingRegions.FromPoll`): leader, runner-up, the gap, the gap's own error (the two ± in quadrature) and §25's index `100 × max(0, 1 − gap/20)` all DERIVED from the polled shares; `TooCloseToCall` = the lead inside its own error. ⚠ **§36's gate is ABSENCE, not blur:** an unbought valkrets carries no reading — a "?" over the ledger rows' draft hatch — and the ledger beside it is empty with the two offers' prices and the ± each buys (`MarginOfErrorPp` on the player's share: ±10 for the breakdown, ±6 for the programme) instead of a guess; a blurred regional reading would be the information the gate exists to withhold. **The done-when, on film at four widths:** the same day three ways — nothing bought (29 hatched), the regional breakdown (82 per valkrets: 29 read, 11 swing regions, **19 too close to call**, every one drawn dashed rather than a leader picked by a hair), the full programme (206 per valkrets: 12 swing, 13 too close — six dashed frames turn solid, the ± halve). The truth polled is 2018's eight-party per-valkrets counts (the only eight-party per-valkrets vector on disk; W-F1 bills 2022's). `[AUTHORED-DRAFT]`: `FullScaleGapPp 20`, `CampaignMapSwingFrameIndex 60`, the layout. ⚠ **Fix-forward and a correction to §61:** P-A1's "1280" campaign film was 1918 × 953 (the first GUI launch after a kill kept the old window size — the quirk on record); the first true 1280 run came here and found P-A1's caption *… EVERY STAGE MULTIPLIES* 1.1 px over at the 8 px floor — fixed (*EACH*), the 1280 family re-filmed on the fixed code, 0 overflows. Records: `COMPLETED.md` §63; `ELECTIONS_PROTOTYPE_LOG.md` W-E2; gap table rows 24–25; §V's map row.
+
+## W-B7 — debates (§15): a coverage and momentum shock, never a share (2026-08-29)
+
+**`Debates.cs`: a debate is a sequence of exchanges, each a pair of §15's seven moves resolved as `skill × prepared × ownership × clash + event`** — the move's §16 attribute blend, §35's curve on preparation hours (floor 0.7), the topic's ownership (0.8–1.2), the move-pair clash table (an attack into silence ×0.6, into a counterattack ×0.8 against ×1.25, into a defence ×0.9 against ×1.15; an empty counterattack ×0.7; a subject change hands the next topic to the changer), and one Gaussian draw at σ 4 on the appended `Debate = 9` stream. **`DebateResult` carries performances, the margin, a coverage shock and a momentum shock — and no share, vote, preference or party member** (the W-B3 bar, by reflection); both shocks scale with the margin, §22's "strong debate ≈ +2 pp" anchoring the rate (`0.20 pp per point`; a 10-point rout is +2.0 pp, 0.5 after two weeks). **Done-when:** seed 777 twice → six exchanges bit-identical, another seed or plan differs; applied to `MediaCoverage` and `MomentumTracker` the result moves both (+0.66, ±2.17 pp) while **the recomputed preference is bit-identical** — the polls move because momentum shifts where the race appears to be. 14 of 14: the orator wins the emotional debate 400/400, the prepared twin 400/400, the home-ground twin 400/400 (⚠ after a first ownership test that alternated the topic between both grounds and measured nothing — 199/400 — corrected to vary only ownership). **The AI campaign holds two debates** (days 20 and 41, the two leaders of the PUBLISHED poll, each on its personality's plan and its own ground with an unnamed `[AUTHORED-DRAFT]` candidate; seed 777: M beats S by 2.8, SD beats S by 9.5, ±0.55 / ±1.89 pp) — the C1 harness asserts them, every C1 line holds. Findings: upsets rare at σ 4 against a 20-point skill gap (calibration entry 11); `ChangeSubject` on home ground hits the 100 ceiling — a clamp that binds hides magnitude, recorded not tuned. Riders: W-E5 draws the exchanges; W-B8 is the same shock seam; W-B5 owns preparation hours; W-C2 makes the AI react to the last move. Records: `COMPLETED.md` §64; `ELECTIONS_PROTOTYPE_LOG.md` W-B7; gap rows 15–16.
+
+## W-B8 — scandals (§17): a lifecycle, seven distinct responses, two stocks at two speeds, no game over (2026-08-29)
+
+**`Scandals.cs`: a scandal breaks with a coverage shock, the party responds once from §17's seven on the evidence AS IT SEES IT (§36: the truth ± 0.25, never the truth), the aftermath runs day by day with one seeded draw on the appended `Scandal = 10` stream for the evidence to surface, and an exposed response (Deny, AttackSource) caught out ESCALATES — the cost multiplies, the story restarts.** `ScandalOutcome` carries coverage per day, a momentum shock, a lasting credibility cost and who went — **no share, no preference, no party, and no member that could end a campaign** (by reflection). ⚠ **Damage lands on two stocks at two speeds and nowhere else:** momentum (§22, decays on its own half-life), coverage (§13, the news cycle), and CREDIBILITY — the stock §42's chain multiplies by — so the preference recomputed from the same compatibility is bit-identical and the same rally persuades less in exact proportion (382 → 350, 91.6 %). **Done-when, 15 of 15:** deterministic (seed 777 twice; 75 of 200 denials caught out at evidence 0.5); the seven responses pairwise distinct in mean or spread by ≥ 0.90 over 400 seeds (Deny 11.5 ± 9.0 · Apologize 9.9 · Explain 10.8 · AttackSource 12.3 ± 4.0 · Ignore 13.2 · Resign 7.2 · SacrificeStaff 11.7); §17's two sentences as measurements — the apology the largest momentum decline (−3.9 pp) and among the smallest lasting costs, the denial the smallest immediate cost and the widest spread, worst against strong evidence (16.0 vs 14.4) and best against weak (5.3 vs 7.2); a resignation replaces the candidate and the campaign goes on; the worst case costs 45 % of credibility, never an ending. ⚠ The first table's caught denial (×3) was no worse than ignoring — "catastrophic" not realised; ×6 set at design time as the shape the sentence demands. The AI campaign stages one (day 30, S, MAJOR corruption, seen 0.59 → the professional explains; −2.4 pp, six days, credibility 0.600 → 0.550 on the live figure only; every C1 line holds); dynamic generation is a later item. Findings: ignoring is never right at these numbers; no AI resigns (W-C2, W-F6). Records: `COMPLETED.md` §65; `ELECTIONS_PROTOTYPE_LOG.md` W-B8; calibration entry 12; gap row 17.
+
+## W-A4 — tactical voting, threshold form (§23): the belief from the published poll, lending in play, abandonment when hopeless (2026-08-29)
+
+**`TacticalVoting.cs` (pure, unwired, no stream): an aware voter reads the last PUBLISHED poll and believes a party clears the threshold with P = Φ((polled − T) / σ), σ the poll's own error widened by `BeliefSigmaPp` 1.0 pp (§20: polls miss by more than their margin).** Where the race is IN PLAY the bloc LENDS — each partner's aware, willing voters (awareness × `MaxLendFraction` 0.15 × affinity 1 − |Δlrgen|/10, CHES 2024) move to the threatened party up to what it needs to stand one belief-sigma clear, weighted by the pivotality 4P(1 − P); where it is HOPELESS the party's own aware voters ABANDON it for the bloc (§23's example), weighted by ((1 − P)(1 − 2P))² below even odds. Mass conserved to the bit, every flow on a ledger; no threshold → the identity, asserted. **Done-when, 12 of 12:** L at 3.5 / 3.75 / 4.0 / 4.25 / 4.5 % gains +1.18 / +1.18 / +1.00 / +0.72 / +0.43 pp; 6 % nothing; 1.5 % loses 0.62 pp; SCB's May 2022 PSU (`ElectionsData/sweden/psu_2018_2022.md`, SOURCED via the PxWeb API) against the September count — near-threshold error 3.12 → 1.00 pp, whole vector 13.27 → 10.08; L 3.47 → 4.63 (count 4.68), MP 3.37 → 4.46 (5.16). ⚠ The constants were fixed before the 2022 run and not moved after it, but the FORM was chosen with the PSU on the table — in-sample for the form, and the record says so. ⚠ 2018's KD (3.09 → 3.84 against 6.42) is a quarter reproduced; the layer is the last week's switch, not four months of campaign. Blocs are the harness's staging (2022: M/KD/L/SD v S/V/C/MP; 2018: the Alliance, the red-greens, SD outside), not a catalog. Findings: lending overshoots at even odds (L 4.0 → 5.0 %); the lenders pay where the count says they gained (SD). Riders: W-G1 wires it between the final tracker and the count (never on truth); W-E1/E5 a "stödröst" reading as a range; W-F4 awareness per group; a final-week poll of record billed. Records: `COMPLETED.md` §66; `ELECTIONS_PROTOTYPE_LOG.md` W-A4; calibration entry 13; gap row 23.
+
+## W-B4 — campaign offices (§10): organisation as local reach, volunteers recruited, a daily operation into the ground game, maintenance paid or starved (2026-08-30)
+
+**`CampaignOffices.cs`: an office is organisation in a region, and organisation is what local reach was pretending to be** — W-B3's placeholder gave every rally the whole region wherever it was held; now the local audience is the electorate × (`VisitFraction` 0.25 + 0.75 × influence), influence = volunteers recruited (+5 a day to 150) over capacity, so a visit without an office draws a quarter and an office opened late is worth less. `OfficeNetwork.Open` pays 100 000 kr or refuses; `Day` pays 2 000 kr maintenance per office or STARVES it (no recruits, no operation, influence −0.10), recruits, and runs each office's own ground operation (`OperationsPerDay`, door-knocking) into `RegionalMobilization` (W-B11 → W-D1), bounded by money and volunteer-hours; the office's hours also raise the region's ceiling on the party's door-to-door actions (`RegionAudience.VolunteerHours`). **Done-when, 11 of 11:** the office region has 450 h a day a region without has none of; 50 000 kr knocks 2 400 doors without and 4 200 with; 81 900 doors over 60 days in its region and none elsewhere; a full office's rally audience four times a visit's; mobilisation 58.0 there and exactly 50 everywhere else, turnout 87.18 → 89.98 %, +7 859 votes; the same money, three offices against ten thin — 14 248 against 0 votes at 1.5 M kr, ⚠ **spreading first wins at 4 M kr** (fixed costs against §35's concavity — measured, not asserted). The AI campaign stages an office plan per personality ([AUTHORED-DRAFT] 6/4/3/2/1 in the largest valkretsar, 2 000 kr a day each; siting by swing is W-B5/W-C2's); every C1 line holds, 1h added (S 3 offices 910 000 kr 59 200 doors … V 6 / 1 665 000 / 103 000). **C1 PEND 8 → 7: 2a-iv CLEARED** (grassroots separates 0.490 / 0.450 — by its rallies in six full regions, honestly not by door-knocking); 2a-ii / 2b re-labelled W-B5/W-C2 (the staged plan), 2c re-labelled calibration entry 10 (the door-to-door ACTION still buys nothing a rally does not). Findings: a concentrated network saturates on its volunteers (22 534 votes from 2.4 M up); ten thin at a prototype budget mobilise nothing; where there is no office, local reach FELL. Riders: W-B5 staff fill `StaffCapacity` 3 and site offices; W-C2 opens/closes on the swing index; W-E2 an office region as a bought reading at 300. Records: `COMPLETED.md` §67; `ELECTIONS_PROTOTYPE_LOG.md` W-B4; calibration entry 14; gap row 10.
+
+## W-B5 — staff (§9, prototype depth): five roles, a salary a day on the ledger, a bonus on the action the role touches, the manager's budget plan; §37 deferred (2026-08-30)
+
+**`CampaignStaff.cs`: a hire is a multiplier on the actions its role touches, a salary a day (1 800 kr) and nothing else — except the campaign manager, whose effect is a DECISION RULE, the `BudgetPlan`:** half of each day's release set aside while a planned television buy is short, the fund spendable on television and on nothing else (`AiView.TelevisionFund`), the fund paying first — the "budget plan" W-B9 found a greedy AI cannot improvise, and `Evaluate`'s no-saving rule stands verbatim. The media advisor ×1.20 on an interview's and an announcement's audience; the digital strategist ×1.25 on a post's and a digital ad's; the pollster ×1.5 on the party's own sample at the same price; the field organizer ×1.5 on an office's recruiting and capacity. `PayDay` pays member by member; an unpaid member gives nothing that day and is not dismissed; the ledger counts the unpaid days. **§37's progression is DEFERRED and recorded in the type** — `CampaignStaffMember` has no experience, level, speciality or growth member (by reflection); §9's other four roles wait with it. **Done-when, 10 of 10:** interview 9 720 → 11 664 persuasion (rally to the bit the same); post reach 75 854 → 94 818; poll 1 200 → 1 800 respondents, ± 2.59 → 2.12 pp, 120 000 kr both; an office 225 volunteers not 150; the fund holds 500 000 kr on day 24 of an even release where a party without a manager never has it; five on the roster 9 000 kr a day to the krona; the HQ screen's ORGANISATION ledger carries a PAYROLL row (`CampaignSnapshot.StaffMember.SalaryPerDay`), filmed at four widths. The AI campaign stages hires per personality ([AUTHORED-DRAFT]: professional manager + pollster, 1 buy; populist manager + digital strategist, 1; establishment manager + media advisor, 2; grassroots field organizer; chaotic nobody); every C1 line holds, 1i added — ⚠ the parties GO BROKE before polling day (S 10, SD 38, M 6, V 12 unpaid staff-days of 120 / 60): offices, operations and payroll are fixed daily costs the pace does not see; a plan over every fixed cost is §9's manager in full (W-C2). **C1 PEND 7 → 4: 2a-ii, 2d, 2e-ii CLEARED** (the populist 0.419 from its nearest; the grassroots party advertises 0 % against 30 / 40 %; the establishment buys 2 television spots against 1, 1, 0, 0 — the count is the staged plan's, which is what a plan is); 2a-iii (prof/est 0.061 — equal money with a plan makes the two rational personalities the same campaign) and 2e (the media book the newsworthy) re-labelled W-C2 / W-F5. Finding: the field organizer is capacity, not speed (×1.5 on rate and capacity nearly cancel — day 29 instead of 30). Records: `COMPLETED.md` §68; `ELECTIONS_PROTOTYPE_LOG.md` W-B5; calibration entry 15; gap rows 9 and 37.
+
+## W-C2 — opponent reactivity (§32/§33 on §36's terms): a contested region defended, an attack answered, the personality deciding what a reaction is made of (2026-08-30)
+
+**`CampaignReactivity.cs`: `PublicActivity` is what every party can SEE of every other and nothing more** — decayed counts of visible local acts per region (a rally 1, a town hall or a canvassing day 0.5; never the doors an office knocked) and of attacks by attacker on target, on a `HalfLifeDays` 7 news half-life, read as a region's PRESSURE, its PUSH (the largest single opponent's concentration there — one party working a region is a threat in a way eight parties passing through is not) and the attacks aimed at oneself. No member of it could hold a truth, by reflection, the bar `AiView` is held to. **The rule decides WHERE and WHETHER; the personality decides WHAT** (`CampaignAi.Reactions`): §33's expected value cannot see a threatened region, so reallocation is a RULE as the manager's plan is — a party past its `DefenceThreshold` 1.0 ÷ `Reactivity` opens an office in the contested region if it can keep it ten days and meanwhile makes the local act **its own affinities prefer among those the day's PACE can carry**; a party attacked past its threshold answers with **the message its own affinities prefer**, on **the issue its own measurement makes most salient** (never `TrueSalience` — §36), ONE answer at a time on a weekly cooldown however many parties attack. Reactivity by §32: professional 1.0, establishment 0.7, grassroots 0.6, populist 0.5, chaotic 0.0. **Done-when, 9 of 9** (W-C1's staging, L replaced by a scripted player working Blekinge län days 5–45 and attacking S daily; ten seeds, the same seeds unscripted as control): S puts **8 of its 9 local acts** into Blekinge with the script and **0 of 8** without (0.0  % → 88.9  % pooled) and **opens an office there**; C is **0 of 598** against 0 of 595 and opens none; M (0.7) 4 of 8. S acts there in 8 of 10 seeds, first act a mean 2.0 days after the script begins. The attack is answered by the party that looks (S 6.9 → 7.0) and **never by the party that does not** (C 0.0 in both arms). Digest `9ca2e429d9d641e4` twice; the scripted party's 120 actions and 3 600 000 kr through the ordinary seams. Findings: **the rational personalities scarcely campaign locally at all** (S 0.9 local acts a campaign against C's 59.8 — the reaction is 8 of S's 9, so 2a counts acts and prints the denominator rather than quoting a percentage of it); **answers are tempo-bound, not attack-bound** (one a week is a ceiling near 8 and the chaotic party's negative campaign already presses S against it in the CONTROL — what an attack changes is WHOM a party answers); the establishment never crosses its own answer threshold, the negative campaign being aimed at the polled leader. ⚠ **A per-attacker cooldown made five personalities into one** (S answered 15 times in 60 days; 2a-ii, 2a-iv and 2f all failed) — fixed structurally (one answer at a time; the reaction paid from the day's pace, not the war chest), never by a moved constant. **C1: 1h re-derived** for offices opened in reaction (staged + reacted, volunteers bounded not equated); ⚠ **2a-iv cleared at W-B4 goes back to PEND — est/grass 0.291 against 0.300** (prof/grass 0.347) because reactivity puts the broadcast party on the ground: nine thousandths, and **not** to be recovered by moving a threshold, a cooldown or an affinity; it waits on **W-F5** (unequal war chests and paces — what separates two parties that both react). PEND 4 → 5, harness exits 0. **Not built here and re-homed:** W-B5's finding 2 (the manager's plan over EVERY fixed cost) was written against W-C2; W-C2's done-when is reactivity and that is what shipped — the plan still covers television only, and the work goes to W-F5 or its own item. Records: `COMPLETED.md` §69; `ELECTIONS_PROTOTYPE_LOG.md` W-C2; calibration entry 16; gap rows 32–33.
+
+## W-D3 — coalition formation (§29): compatibility and negotiating power derived, red lines derived AND declared, the chamber's own investiture rule doing the work (2026-08-30)
+
+**`CoalitionFormation.cs`: §29 with no authored coalition score anywhere.** Compatibility DERIVED from CHES 2024 (`lrgen` ideological; `lrecon`/`galtan`/`eu_position` policy, the 1–7 EU scale rescaled, NaN axes skipped not centred); **negotiating power DERIVED as Banzhaf pivotality** from the seat distribution alone; **red lines in two KINDS** — DERIVED (a position distance) and DECLARED (a party's dated public commitment, cited) — **and two STRENGTHS**, will-not-sit-with and will-not-depend-on, because Sweden 2022 turns on exactly that difference; **a basis is mandatory and the constructor refuses an empty one**. **The mechanism is Sweden's own rule:** negative parliamentarism (elected unless an absolute majority votes against), with ABSTENTION as a real third answer — without it the rule is arithmetic in disguise. Two further derived rules were needed: **support is a COMPARISON** (a party supports a cabinet only if no party left out of it suits it better — no constant, so nothing can be tuned to make a government form), supporter conflicts resolved by negotiating power; and **a government must be one nobody walks out of** (payoff = office share × cabinet agreement, zero outside the cabinet — Gamson's law, not our preference; iterated to a fixed point). **Done-when, 16 of 16.** THE SECOND CLAUSE: **S+SD is 180 of 349, an absolute majority, and the formation refuses it** (`DERIVED: CHES lrgen gap 4.79 > 4.50`) — one of **120** arithmetic majorities refused, each with its line and basis printed — and **remove the red lines, change nothing else, and S+SD becomes viable in the same chamber**. The 2022 distribution returns the government that formed: **cabinet M+KD+L 103, carried from outside by SD's 73 = 176**, cohesion 88.9, `ConfidenceAndSupply` — the Tidö arrangement of 2022-10-14, and adding C costs SD's support so the larger cabinet cannot govern. A new election is REACHABLE (150/100/99, every pair refusing: `NewElection`, 0 viable) and **not designed out** (same seats, no red lines: a government forms). Findings: ⚠ **negotiating power is not seat count** — SD (73) and M (68) have IDENTICAL Banzhaf pivotality 23.6 %, and V/C/KD/MP/L are 3.6 % each across 16–24 seats; the sourced positions carry Sweden's cordon on ONE axis with slack (a single `lrgen` threshold in **[1.79, 2.58)**, window 0.79, separates the four that refused SD from the three that governed with it — the shipped two-axis gaps remain a fit chosen knowing the answer, and the harness says so); **only one declaration is load-bearing**, measured one at a time (C↔SD CORROBORATED, the galtan rule already reaches it; M,KD,L↔SD — no SD ministers — LOAD-BEARING, drop it and the outcome is a grand coalition); ⚠ **without the defection rule the formation returned arithmetic, not politics** (S+M+C+KD+L, 234 seats, a bloc nobody proposed). **Deferred with the reason:** §29's leader compatibility and personal relationships have NO SOURCE — inventing them is the authored score §29 must not have, and the harness asserts by reflection that no member carries them; government COLLAPSE is in the enum and never produced (nothing advances time inside a mandate yet). Records: `COMPLETED.md` §70; `ELECTIONS_PROTOTYPE_LOG.md` W-D3; calibration entry 17; gap row 29; `ElectionsData/sweden/coalition_declarations_2022.md` (SOURCED, cited, vintages stated).
+
+## W-D4 — post-election attribution (§31): the approval ledger pointed at vote share, and an IDENTITY rather than a tolerance (2026-08-30)
+
+**`VoteAttribution.cs`: §31's "why you won / why you lost" as a LEDGER in `ApprovalAttribution`'s idiom** — contributions RECORDED where they land (`PartyLedger.PersuasionByAction` per §12 action kind, `PersuasionAgainstMe`, `Result.PersuasionPerParty`), never recomputed. Ten sources: the party's own eight actions, the attacks aimed at it, and every other party's campaigning as ONE bloc. **Why Shapley:** a party's final share is NOT linear in the pressures (compatibility is, but `PreferenceModel` normalises across parties), so leave-one-out would not sum and would need a residual line to hide the gap; Shapley's efficiency axiom makes `Σ lines == close − baseline` an IDENTITY and its symmetry axiom means no source is privileged by being considered first. 2^10 = 1 024 preference evaluations per party — which is exactly why the opponents are one bloc rather than sixty-four sources, an aggregation honest about what it does not know. **Done-when, 8 of 8:** largest residual across all eight parties **1.77e-16 of a share** against a stated 1e-12 (floating-point noise, not modelling slack — the worst case is PRINTED rather than a bound asserted); the ledger opens and closes on the campaign's own BaselineShares/FinalShares (5.55e-17); **no line can be authored prose — the instrument carries no string field or property at all, by reflection**; every declared source is swept; an action the party never took contributes EXACTLY zero; the same seed returns the same lines. Findings: ⚠ **the free interview dominates the ledger in a third instrument** (SD's interviews +2.744 pp of a +1.45 pp net movement — larger than the result itself; W-B3/W-E3 recorded it as a mechanism question and C1's PENDs rest on it); the ledger **corroborates the standing design question** against W-B4/W-B11 (five of SD's eight action lines exactly zero, all the local and paid ones — a second independent measurement, nothing adjusted per the 2026-08-30 ruling); ⚠ **a party's own campaigning is not the biggest thing that happens to it** (`OpponentCampaigns` is the largest line in S's ledger, −1.342 pp — §31's example shows the player only their own doings, and a screen that hid the rivals' would misattribute the result to them). **Deliberately without a line, recorded because it is the first question a reader asks:** momentum, coverage, debates and scandals move the POLL and hence what the campaign chose to do, not the true preference — their effect is already inside the action lines and a line of their own would double-count; turnout and tactical voting are a later stage (this ledger explains the PREFERENCE share, and the seat result needs a second instrument across W-D1's and W-A4's stages). Records: `COMPLETED.md` §71; `ELECTIONS_PROTOTYPE_LOG.md` W-D4; gap row 31.
+
+## W-E5 — the debate screen (§15 on §36's terms): three states, the model's own ceiling drawn, an exchange that has not happened drawn as ABSENT (2026-08-30)
+
+**`DebateScreenSnapshot.cs` + `GameController.CampaignDebate.cs`: the fifth Track E screen**, same 1156×680 board, same 440/250/440 columns and same primitives as HQ, action, polling and map. ⚠ HARNESS ONLY, R-N2 to W-G1. Left THE PODIUMS (each candidate's five §16 attributes, labelled game fiction); middle PREPARATION (hours, topics, and **§35's curve quoted as the multiplier it is** — a player who buys hours should see what the hours bought); right THE FLOOR and THE VERDICT. **The screen's ceiling is the model's:** `DebateResult` has no share, no preference, no party standing (by reflection since W-B7), so the verdict reports the performance indices, the margin and the TWO SHOCKS — coverage and momentum — and says so; a screen ending "+1.2 % in the polls" would invent the one number §15 refuses to produce. **An unrun exchange is an em dash, never a zero** (1m-r2), and the mid-debate figure is the RUNNING MEAN labelled with its count, because the performance index is a mean over ALL exchanges. **Done-when, filmed in three states at 1280/1600/1920/2560** (twelve captures): `prep` (nothing said), `midway` (a genuine PREFIX — the debate is run ONCE through `Debates.Resolve` on the `Debate` stream at FilmSeed 777 and the midway film is its first 3 of 6 exchanges, so the states cannot disagree), `verdict` (performance 65.3 / 52.9, margin 12.4 pts, coverage shock 1.24, momentum shock 2.49 pp). All four widths exit 0 with **0 text overflows and 0 containment escapes**; `ScreenEdgeCheck -edgepattern=we5_debate_*.png` exit 0 over 76 captures. ⚠ **The guards were not silent first:** the first film exited 1 with **12 text overflows** — the three footnotes used `MeasuredLabel`, a SINGLE-LINE widget that shrinks to fit and trips the guard when it cannot; the siblings' wrapped-note idiom is `GUI.Label` with `CalcHeight` for the width plus `UiContainmentGuard.Check`. Converted, the guards went silent. Recorded rather than quietly fixed: the guard caught a real defect on a new screen. Riders: the worklist calls it a modal and it ships as a full STAGE like its siblings (a modal needs a scrim, a dismiss affordance and a return target no Track E screen has — a re-skin of the same board if Design wants one, the R-E2 precedent); no ownership or clash column on the exchange rows (both in the model, eight columns do not fit at 1280); W-F6 sources the real leaders' names. Records: `COMPLETED.md` §72; `ELECTIONS_PROTOTYPE_LOG.md` W-E5.
+
+⚠ **W-E5 addendum — a SECOND guard fired:** `MetaTextCheck` (P-A1's ninth check) exited 1 on the finished screen — the podium head read "THE PODIUMS — SECTION 16 ATTRIBUTES", an internal spec reference on a player surface, exactly the class P-A1 armed against. Fixed, and the same class fixed where the token list does NOT reach ("GAME FICTION", "THE MODEL'S", "THIS SCREEN WILL NOT CLAIM IT" all address a builder) — the guard is the floor, not the ceiling. Re-run: MetaTextCheck exit 0, four widths exit 0 (0 overflows, 0 containment escapes), ScreenEdgeCheck exit 0 over 76 captures. **Two guards fired on this screen and both were right**, which is better evidence than a first-time pass: it shows they bind on new work.
+
+## W-E6 — election night (board 1h, §30): the count arriving by constituency, a gate that makes a premature result impossible, and calls that cannot be contradicted (2026-08-30)
+
+**`ElectionNight.cs` + `ElectionNightScreen.cs` — board 1h, THE LAST UNBUILT BOARD of §A.14**, the Canvas slot reserved since v2; `ElectionNightFilm.cs` is the staging the harness and the film SHARE so the two count one election; `SimulationRandom.Stream.ElectionNight = 11` APPENDED, never inserted. ⚠ HARNESS ONLY, R-N2 to W-G1. **RULE 1 — no result exists before its constituency declares:** the tally is not revealed, it is COMPUTED at every instant from the declared set and nothing else, and an undeclared constituency carries `null` votes, so a screen cannot draw a figure that has not happened. Asserted by INDEPENDENT RE-DERIVATION: 392 states over 8 seeds, **0 early appearances**, absence never zero. **RULE 2 — a call cannot be contradicted:** each undeclared constituency is bounded by its own ELIGIBLE electorate (published before the night; a hard cap since turnout cannot exceed 100 %), and a call is made only when it holds at BOTH extremes, with the seats at those extremes from **`SeatAllocation`, the allocation the backtest reproduces 2022 with seat-for-seat** (re-proven here: S 107/107 … L 16/16). Asserted: **1 849 call-instants over 8 seeds, 0 contradicted**. **Filmed in four states of ONE seeded night** — early (min 30, 4 of 29, 0 calls), partial (59, 16 of 29, 3), called (151, 28 of 29, 7), final (240, 29 of 29, 11) — at 1280/1600/1920/2560, sixteen captures, all four widths exit 0 with 0 overflows and 0 containment escapes, MetaTextCheck exit 0, ScreenEdgeCheck exit 0 over 32 captures. Calls become safe progressively (S from 6 of 29, SD 8, M 11, C 23, V 25, KD 27, MP 28) and **L, the largest party and the bloc majority only at 29 of 29** — the 2022 chamber telling the truth about itself. Findings: ⚠ **a guarantee calls later than a projection would** (the trade the item bought; tightening it needs a SOURCED turnout ceiling, which is empirical rather than certain and would weaken "cannot" to "has never" — recorded as a rider, not taken); the threshold calls carry the drama instead, seven of eleven landing before the end; ⚠ **§A.14's chip wording did not survive contact with the system** — it specifies "348 OF 350 SEATS DECLARED", but seats here are allocated NATIONALLY and are not declared one at a time, so the chip reads CONSTITUENCIES. Declared deviations: **V-N1** flat paper and one shadow plate (no delivered sprite, 1g's V-S1); **V-N2** the wave/count-up/stamp BEATS not animated (an animation no capture can check is a claim no reviewer can test — the four states are the honest subset; the beats stay in the spec for the wiring item); **V-N3** the swing column omitted (a swing needs the previous election beside this one; the night's model carries one) — named rather than faked. Two defects found en route and recorded: `DestroyImmediate` tearing a Canvas child out mid-frame in play mode, and a capture path ending on a bare `yield break` without reaching the driver's `Finish`. Records: `COMPLETED.md` §73; `ELECTIONS_PROTOTYPE_LOG.md` W-E6.
+
+## W-E7 — results and attribution (§30 + W-D4's ledger): every figure counted, derived or published, and the one §30 asks for that the screen refuses to invent (2026-08-30)
+
+**`ResultsScreenSnapshot.cs` + `GameController.CampaignResults.cs` — the sixth Track E screen and the last IMGUI one**, same 1156×680 board and 440/250/440 columns as its five siblings. ⚠ HARNESS ONLY, R-N2 to W-G1. Left THE COUNT (votes, share, seats, movement against a NAMED prior election); middle THE CONSTITUENCIES (§30's regional results, largest first, each with its leader); right WHY (W-D4's ledger unaltered — the screen adds no interpretation, because if it did the sum would stop being a proof and become a story). **The done-when — every figure traces — met by keeping three classes apart.** COUNTED: votes, seats (`SeatAllocation`, the allocation reproducing 2022 seat-for-seat), the regional table. DERIVED **and proven against a sourced answer**: 2018's seats are computed by that same allocation rather than typed in, and the comparison validates itself — **S shows +7 (100→107), L shows −4 (20→16), the real 2018→2022 changes**. PUBLISHED: turnout 84.21 % of 7 775 390 eligible, Valmyndigheten's basis. ⚠ **Two figures were wrong on the first film and are recorded, not quietly fixed:** turnout read 85.88 % (the eight parties' votes over a DERIVED electorate) and 6 377 718 was labelled "VALID VOTES" when the official valid total is 6 477 970 (minor parties this model does not carry). Neither touched a seat, but **a results screen is exactly where a derived figure gets mistaken for a published one** — so turnout quotes the source and the total says what it is: the votes these parties took, with shares stated as being of that total. **§30's demographic block is drawn ABSENT** — young/older/urban/rural/income have no answer while the electorate is ONE GROUP (`ElectionDay.cs:28`, `CampaignRun.cs:91`, `TacticalVoting.cs:19` and four more name W-F4), and §0.4 forbids inventing demographics; five em-dash rows under a stated reason, the W-E6 V-N3 / W-E2 §36 convention. **Filmed in two states — `largest` (S) and `lost_ground` (L, four seats down)** — at 1280/1600/1920/2560, eight captures, all four widths exit 0 with 0 overflows and 0 containment escapes, MetaTextCheck exit 0, ScreenEdgeCheck exit 0 over 84 captures. *A results screen only ever seen on a win is one where nobody has checked the signs.* The W-E5 lesson carried — wrapped notes use `GUI.Label` with `CalcHeight`, and the guards were silent first time. **This item introduces no [AUTHORED-DRAFT] value at all.** Records: `COMPLETED.md` §74; `ELECTIONS_PROTOTYPE_LOG.md` W-E7; gap row 30 (and row 15, which W-E5 had left unflipped).
+
+## W-E8 — the coalition screen (§29 on §36's terms): the arithmetic, what it would have allowed, and the difference between a refusal someone uttered and a distance this model measured (2026-08-30)
+
+**`CoalitionScreenSnapshot.cs` + `GameController.CampaignCoalition.cs` + `CoalitionFilm.cs` — the SEVENTH AND LAST Track E screen, and TRACK E IS NOW COMPLETE.** ⚠ HARNESS ONLY, R-N2 to W-G1. `CoalitionFilm` is staging the screen and the HARNESS now SHARE, so the two cannot disagree about which coalitions are possible (the `ElectionNightFilm` precedent); all 16 coalition assertions still hold on the shared path. **The screen's one real decision, and §36 decides it:** a DECLARED line is public — a party said it, the citation is on disk — so the screen states it flatly and names who holds it; a DERIVED line is this model reading a gap, which nobody has uttered, so it is drawn as the DISTANCE it is under a heading saying so. Showing a measured gap as a refusal would put words in a party's mouth. **And the middle column shows the 120 arithmetic majorities a red line refused**, because a screen showing only what CAN form teaches that arithmetic is the whole story. **Done-when — three outcome states, all falling out of the model rather than staged:** `confidence_and_supply` (2022 as it happened — M+KD+L in cabinet, 103, carried by SD; 1 viable, 120 refused), `new_election` (the 150/100/99 chamber, the harness's reachability proof drawn; 0 viable), `majority` (the same 2022 seats with the DECLARED lines dropped — S+M+C+KD+L, 234, 14 viable — the counterfactual showing what those declarations do, agreeing exactly with W-D3's own measurement). Filmed at 1280/1600/1920/2560, twelve captures, all four widths exit 0 with 0 overflows and 0 containment escapes, MetaTextCheck exit 0, ScreenEdgeCheck exit 0. **No [AUTHORED-DRAFT] value is introduced.** Records: `COMPLETED.md` §75; `ELECTIONS_PROTOTYPE_LOG.md` W-E8; gap row 29.
+
+## W-B12 — the campaign manager's full cost plan (§9): the pace releases against what is LEFT after the organisation is paid, and one C1 line crossed that nobody predicted (2026-08-30)
+
+**`BudgetPlan.DailyFixedCost` + `CommittedToOrganisation(daysLeft)` + `StaffRoster.DailySalaryBill()` in `CampaignStaff.cs`, and one cap in `CampaignRun`.** ⚠ HARNESS ONLY, R-N2 to W-G1. W-B5 built the manager's plan over TELEVISION alone and measured what that left out: **every party in the AI campaign went broke before polling day** (of 120 staff-days — SD 38 unpaid, V 12, S 10, M 6). **The cause was structural, not a shortage: the pace released money for ACTIONS against the whole war chest, while the payroll and the offices were charged from that same chest afterwards, so the two claims on the money never met until the money ran out.** The plan now carries the payroll plus every office's maintenance and operation, **recomputed each morning** (a party that hires or opens an office today has a different bill tomorrow), and the pace's release is capped by `money − CommittedToOrganisation(daysLeft)` instead of by `money`. **A party without a manager has no plan and no such discipline, which is exactly the difference §9 says a manager makes.** **Done-when, and it is PARTLY met — stated rather than rounded up:** four of the five managed parties reach **zero** unpaid staff-days (S 10→0, M 6→0, KD 0, L 0) and the two unmanaged parties are unchanged at 12 (the intended shape), but ⚠ **SD retains 6 of its 38**. It is **not** a W-C2 reaction office — 1h shows SD at 4 staged + **0** in reaction — it is the populist's `spendPace` 1.6 against four offices' opening capital and a planned buy. **Capital is deliberately NOT in the daily bill** (a one-off commitment folded into a per-day figure misstates both), and that choice is what the residual sits on: named, so it can be reversed knowingly, and treated as a residual to measure rather than a constant to move. ⚠ **C1's PEND lines re-measured, and one moved from an unexpected direction: `prof/est` crossed 0.30 for the FIRST time, 0.061 → 0.306.** W-B5 sent that convergence to W-C2/W-F5 on the theory that unequal war chests would separate the two rational planners; **what actually separated them was the manager's plan** — a planner and a non-planner spend differently even on EQUAL money, which is a better answer than the one predicted and came from an item nobody expected to supply it. ⚠ **And `est/grass` moved AWAY from the line, 0.291 → 0.269** — precisely the shape the 2026-08-30 ruling anticipated for that pair (*"that is a finding about the model, not a rounding problem"*), except that it was W-B12 rather than W-F5 that moved it. **Nothing was tuned**; 2a-iii and 2a-iv stay PEND with their measurements printed. Harness reads ALL ASSERTIONS PASS; 5 PENDING. **No [AUTHORED-DRAFT] value is introduced** — `DailyFixedCost` is summed from constants W-B4/W-B5 already logged, deliberately, so the item could not be accused of buying its own done-when. R-N2 held: `traj_wb12_*` identical to `traj_run_*` **six of six** by SHA-256, zero `ATTRIB`, nine checks exit 0. Records: `COMPLETED.md` §76; `ELECTIONS_PROTOTYPE_LOG.md` W-B12; `ELECTIONS_PLAY_CALIBRATION.md` entry 18; gap row 9.
+
+## W-F1 — Sweden's 2022 returns by constituency (§0.4): the model counts the election that happened, and the seat table that was right for the wrong reason (2026-08-30)
+
+**`ElectionsData/sweden/valkrets_votes_2022.csv` — 29 valkretsar × 8 parties in ABSOLUTE counts, plus eligible voters and ballots cast per constituency**, from Valmyndigheten's own per-constituency backend (`resultat.val.se/data/resultat/val2022/RD_{01..29}_S.json`, `rakningstillfalle "slutlig"`). ⚠ HARNESS ONLY, R-N2 to W-G1. Until today the only per-constituency ABSOLUTE counts on disk for all eight parties were **2018's**, and nine code paths read that file as if it were the electorate. **The verification is one pass over two independent downloads:** aggregate the 29 per-constituency files, compare against the national file and `returns_2022.md`, and **eleven column sums match exactly** (valid 6 477 970 · eligible 7 775 390 · cast 6 547 801 · all eight party totals) — parse, aggregation and completeness validated together; code 30 returns 404, which is itself the check that Sweden has 29 constituencies. ⚠ **THE HEADLINE — W-D2's central claim was resting on a synthetic chamber.** "Sweden 2022 reproduces seat-for-seat through the live path" was previously measured on the 2022 NATIONAL counts spread over 29 constituencies by 2018's distribution, so **the totals were right BY CONSTRUCTION** (the national counts were exact, so the national totalfördelning could hardly miss) and the 29-constituency procedure — fixed seats, the 12 % rule, where the 39 adjustment seats land — was being asked a smoothed question. **On the real counts it still reproduces 107/73/68/24/24/19/18/16, 8 of 8 exact**, but the fixed/adjustment split moved for four parties: **KD's fixed seats were understated by THREE** (10 → 13, adjustment 9 → 6), S 105 → 104, V 17 → 16, MP 11 → 10, and Stockholms län's fixed seats 39 → 40. **The seat table was right; the account of how Sweden produces it was not.** ⚠ **And a 4.5 % error in the electorate retired:** eligible per valkrets was DERIVED as 2018 valid ÷ a national turnout, putting the electorate at **7 429 141 against the published 7 775 390 — 346 249 voters short** — because one national turnout was applied uniformly to constituencies whose real turnout ran **77.22 % (Malmö kommun) to 87.56 % (Västra Götalands läns västra), a 10.3 pp spread**, so the error did not cancel; `Turnout2018` is retired as an eligible-derivation at all four sites and `turnout_history.md`'s bill is marked PAID. ⚠ **Two of the "ten consumers" were reading 2018 CORRECTLY and were deliberately NOT repointed:** `CompositionHarness` and `GateReRun` use it as **the PRIOR for a backtest of 2022** (exactly as Germany's 2021 Land votes are the prior for its 2025 case), and repointing them would have let the model see the answer it is scored against — both keep 2018 with the reason written at the site, and SWEDEN 2022's MAD is unmoved at 1.47 pp, which is the proof the backtest stayed clean. **R-N1: the 2022 file keeps the 2018 file's ROW ORDER** (the backend puts Stockholms kommun first) because every consumer keys regions by INDEX, so the repoint changes the numbers and nothing else and every moved figure stays attributable; **columns 1–10 are the 2018 shape exactly** so a consumer repoints by changing a filename. **Everything that moved on a player-facing screen, reported:** the campaign map now reads **13/16 swing constituencies** (was 11/12) and **20/18 too close to call** (was 19/13) — real 2022 is MORE contested than 2018's shape implied; election night calls S's threshold from **8 of 29** (was 6) and C's from **25** (was 23) with 0 of 1834 call-instants contradicted; election day counts 6 564 111 of 7 775 390; a full office's Stockholm audience 1 006 456 (was 934 883). ⚠ **C1's PEND lines did not move at all** (prof/est 0.306, est/grass 0.269, identical to W-B12) — which **rules out the data vintage** as the explanation and leaves the separation question exactly where the ruling put it. **No [AUTHORED-DRAFT] value is introduced.** R-N2 held: `traj_wf1_*` identical to `traj_run_*` six of six, zero `ATTRIB`; nine checks exit 0; eight films exit 0 with 0 overflows and 0 containment escapes; both ScreenEdgeCheck patterns exit 0. Records: `COMPLETED.md` §77; `ELECTIONS_PROTOTYPE_LOG.md` W-F1; `ElectionsData/sweden/turnout_history.md` (bill PAID); gap row 27.
+
+## W-F6 — the party leaders (§0.4): the names are SOURCED to the parties themselves, the characters stay game fiction, and MP turns out to have two of them (2026-08-30)
+
+**`ElectionsData/sweden/party_leaders_2022.md` — the eight Riksdag parties' leaders at 2022-09-11, each cited to THAT PARTY'S OWN WEBSITE as it stood within days of the poll**, retrieved through the Internet Archive so every citation carries an exact capture timestamp. ⚠ HARNESS ONLY, R-N2 to W-G1. **Why this source and not an encyclopaedia: a party is the authority on who leads it, and an archived capture is the only way to ask that question of September 2022 rather than of today — five of the eight have changed leader since.** S: *"partiordförande och Sveriges statsminister"* (2022-08-10). SD: the party's own page title, *…sverigedemokraternas-partiledare* (2022-09-30). V: *"är Vänsterpartiets partiledare sedan den 31 oktober 2020"* (2022-09-05). M, C, L: named repeatedly on their own election-night front pages. MP: *"Språkrör och riksdagsledamot"* (2022-09-11). **THE LINE THIS ITEM DOES NOT CROSS:** what is sourced is the **NAME and the OFFICE, nothing else** — the nine `CandidateProfile` attributes (charisma, competence, authenticity and the rest) remain **`[AUTHORED-DRAFT]` game fiction and the debate screen keeps saying so**, because sourcing a real person's NAME does not license inventing their CHARACTER and §0.4 is not suspended because a public figure is famous; the comment at the staging site now says exactly that so the next reader cannot mistake a sourced label for a sourced number. ⚠ **KD's citation is weaker than the other seven and the file marks it rather than smoothing it over:** KD's own site is JavaScript-rendered, so its archived captures carry NO static role text; the party's own site gives a representatives page and publishes her speeches as its Riksdag voice, and the OFFICE is carried instead by the **Tidö agreement**, a primary document already SOURCED on disk (`coalition_declarations_2022.md`) and signed by the four party leaders — seven citations are the party saying it in its own words, one is an inference from two primary documents, and the file says which is which. ⚠ **THE FINDING — MP has TWO leaders and the model has room for one:** Miljöpartiet is led by two *språkrör* (Märta Stenevi and Per Bolund in 2022) and has been since 1984, while `CandidateProfile` is one person, §15's debate seats one candidate and §29's compatibility compares one to one. **Taking "the first one" would silently drop Bolund and print something false about a real party with a real name on it**, so the file names BOTH, states that the model carries one, and the gap is billed in `MISSING_PREREQUISITES.md` as a design question for §15/§29 rather than resolved inside a data item whose done-when is to source names. ⚠ **Leader RELATIONS stay deferred and stay asserted ABSENT** — `CoalitionHarness.cs` proves by reflection that no leader-relationship field exists in the coalition instrument, and real names made adding a relations matrix tempting, which is exactly the temptation §36 exists to refuse: a relationship nobody has measured is not data. **No [AUTHORED-DRAFT] value is added**; two labels change from placeholder surnames to sourced full names. Nine checks exit 0; the campaign family re-filmed at four widths with the longer names, guards silent, ScreenEdgeCheck exit 0; R-N2 held six of six, zero `ATTRIB`. Records: `COMPLETED.md` §78; `ELECTIONS_PROTOTYPE_LOG.md` W-F6; `MISSING_PREREQUISITES.md` (the MP finding); gap row 16.
+
+## W-G1 — the wiring (item 10): PartyArchetype retired for 53 real parties, six real chambers, an election on the country's own law, and the one question that stopped the rail cell (2026-08-30)
+
+**R-N2 RETIRES HERE**, in one isolated commit that is its own revert handle. **`PartyArchetype` is gone** — four generic fictional archetypes (ProgressiveAlliance, ConservativeUnion, CentristCoalition, NationalistFront) shared identically by all six countries because no party data was on disk when they were written — replaced by **53 real parties**, each carrying the position CHES 2024 (GPS 2019 for the USA) publishes and the seats its own country's most recent election gave it. **`ParliamentConstants.TotalSeats = 200`**, whose own comment called it "an arbitrary round number for a clean visualization", becomes six real chamber sizes — **Sweden 349, Germany 630, France 577, Italy 400, Poland 460, USA 435** — each reconciling to its seat total exactly; ⚠ **Italy took two extra units to reconcile and they were NOT invented** (the per-list totals summed to 398; the missing two are named in the returns file itself and sit outside the Area Italia basis — one MAIE deputy in the overseas constituency, one Union Valdotaine in Valle d'Aosta — and rounding 398 up by inflating a party would have been inventing seats to make a total come out). **`SaveVersion` bumps 1 → 2**, exactly the "model SWAP that re-keys persisted state" `SaveGameService`'s own comment named in advance; older saves are refused plainly, no migration. **THREE REPLACEMENTS THAT WERE NOT MECHANICAL:** (1) ⚠ **seats no longer drift with approval** — `ParliamentSystem.UpdateSeats` recomputed every country's chamber EVERY TURN from `ApprovalRating` with a per-archetype `ApprovalSensitivity` (+0.35 establishment, −0.90 protest) plus step and jitter; **no such figure is published for a real party by CHES, GPS or anyone**, inventing 53 of them is what §0.4 forbids, and the behaviour was wrong anyway because **a parliament's composition does not drift week by week with the government's approval — it changes at an election**, which is what item 10 builds (`MaxSeatsChangePerTurn`, `MaxSeatJitter`, `MinTargetShare` retire with it); (2) **`GetSeatWeightedAlignment` was RE-EXPRESSED, not left alone** — the plan flagged that "bill scoring stays" is not a no-op and it was right: it summed four hand-set stances over a fictional 200-seat denominator and now sums each party's stance DERIVED from published CHES `lrecon` as `(5 − lrecon)/5` over the real chamber, and ⚠ **a unit with no published position contributes nothing AND leaves the denominator**, so the alignment is over the MEASURED chamber and a new `MeasuredSeatShare` reports coverage — the Laws screen draws such a party **UNMEASURED, never UNALIGNED**, because the two look alike and mean opposite things; (3) **party inks take the election authority's published HUE at the desk's own saturation and value** (Valmyndigheten's `fargkod` from the same JSON backend W-F1 used — S #FF0000, MP #008000 and six more — are screen primaries that would tear a hole in a paper sheet measured at S 0.23–0.58, V 0.35–0.49), while ⚠ **the other five countries get NO ink and `HasPartyInk` returns false**, because picking 30 colours by eye for real organisations would be invention and probably wrong. ⚠ **BOTH FLAGGED TRAPS CLOSED: `MacroSystem.YearsPerTurn` read `4f / ElectionSystem.ElectionCycle`** — the macro model's entire time base hanging off the system item 10 replaces, so a careless move would have shifted **every macro trajectory in every country for a reason with nothing to do with elections** and made W-G2 unanswerable; it is now `SimulationManager.DaysPerTurn / 365f`, the project's OTHER statement of turn length, giving the identical 1.0, and **`Phase4YearsPerTurnDiagnostic` passes 9 of 9**. **And `ElectionRecord` went onto `Country` inside `World`** — a layer `SaveLoadRoundTripDiagnostic` round-trips field by field across 6 countries and 2 seeds — rather than following the `FedChairCandidates` precedent into `UiDraftState`, whose layer that diagnostic's own header calls "structurally out of reach (no OnGUI in batch)": putting the record where the harness can see it was worth more than matching a precedent the harness cannot. ⚠ **R3's verification obligation is DISCHARGED**: `PartyMarkCoverageCheck` flipped from *"PARTY SYSTEM NOT PRESENT — VERIFIED NOTHING"* to real accounting — **53 seeded parties, 1 with a resolving mark, 52 without, 0 errors** (`MarkName` is deliberately NOT derived from the abbreviation: a derived name would claim a mark for all 53 and the check treats claimed-but-unresolvable as an ERROR). ⚠ **TWO OF SIX COUNTRIES HOLD A REAL ELECTION AND THE OTHER FOUR SAY WHY NOT** — Poland allocates dHondt in **41 districts with no national compensatory tier**, France elects 577 seats in **two rounds**, Italy is **mixed** with `[UNCONFIRMED]` per-party totals, the US House is **435 FPTP districts**; running any through a national PR allocator would produce a chamber their law does not produce, so the chamber is left untouched and the record carries the reason in plain English — §36's absence rule applied to a SYSTEM rather than a figure. ⚠ **A DEFECT FOUND IN THIS ITEM'S OWN FIRST CUT:** it seated chambers from the vote model's BARE national layer, which `CompositionHarness` had already measured at **MAD 3.25 pp against 1.47 pp** with the loyalty layer — and at a seat cliff that is not a rounding matter: it gave **BSW 97 Bundestag seats having really won NONE** and Sweden's M 33 of its real 68. Re-routed through `PreferenceModel.Preference` over the last election as prior with loyalty from the two before it (the exact arrangement the backtest reports 1.47 pp for; the sourced Germany 2021 half re-derived from the per-Land counts on disk and checked to 0.01 pp), **Sweden lands S 106 / SD 72 / M 66 / V 24 / C 22 / KD 23 / MP 19 / L 17 against a real 107/73/68/24/24/19/18/16.** ⚠ **Germany still does not, and it is REPORTED rather than tuned:** BSW missed the 5 % threshold by **0.02 pp** (4.98 %) and the FDP by 0.7 pp, so a model with ~1.5 pp of error lands on the wrong side of that cliff and ninety seats move — **a threshold is where this model is weakest, and Germany 2025 is where that weakness is largest**; Sweden has no comparable case (nearest to the 4 % line was L at 4.61 %, seated at 17 against a real 16). ⚠ **THE FINDING THAT STOPPED THE RAIL CELL, AND IT IS ONE QUESTION, NOT TWO:** `ElectionSystem`'s own class comment has always recorded that *"this game never assigns the player's own government a party identity"*, and that single fact blocks two separate pieces of this item — **the election cannot decide whether the player won** (there is no party for the vote model to award the player's fate to, so the approval threshold stays EXACTLY as it was, unchanged, and the vote model runs beside it producing a real chamber) and **the rail cell cannot be added** (`CampaignSnapshot` requires a player party, a war chest, a poll carrying the player's index, staff, offices and a day's queue, **none of which exists in the live game**, and a rail cell opening a screen with an invented party and an invented war chest would put fiction on a surface whose entire discipline is that its figures are real). **Both reduce to: who is the player, in party terms?** — a design question, Elias's to answer, and one W-G1 is not entitled to settle by picking something plausible; the eight Track E screens stay harness-reachable until it is, which is exactly where they already were, with the reason now named precisely. ⚠ **STANDING GAP: the electorate does not yet move with the simulation** (§8 couples it to the economy; nothing does that yet), so two elections in one game return the same chamber — named rather than papered over with a jitter that would look like change without being it. **No [AUTHORED-DRAFT] value is introduced.** **Verified:** nine checks exit 0; **`ElectionDayReachDiagnostic` ALL PASS** (all six countries reach an election turn from a new world with no exception, correct chamber sizes, four with reasons stated); `SaveLoadRoundTripDiagnostic`, `Phase4YearsPerTurnDiagnostic`, `SwfDrawdownBooksDiagnostic`, `ScenarioCandidateMeasurementDiagnostic`, `SeatConversionHarness` (**Sweden 2022 still reproduces seat-for-seat, 8 of 8, through the entire refactor**), `CampaignAiHarness` and `CoalitionHarness` all exit 0. Records: `COMPLETED.md` §79; `ELECTIONS_PROTOTYPE_LOG.md` W-G1.

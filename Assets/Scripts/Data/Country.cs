@@ -816,7 +816,7 @@ namespace PoliSim.Data
         /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)
         /// means CurrencySystem bypasses PolicyDecision.InterestRateChange entirely and instead sets
         /// InterestRate to TaylorRule.GetSuggestedInterestRate plus this chair's RateBias each turn -
-        /// see FederalReserveSystem and CLAUDE.md's "Federal Reserve" section.
+        /// see FederalReserveSystem and docs/reference/MODEL_REFERENCE.md's "Federal Reserve" section.
         /// </summary>
         public FedChair CurrentFedChair;
 

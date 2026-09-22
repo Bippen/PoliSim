@@ -7,12 +7,12 @@ namespace PoliSim.Simulation
     /// Taylor rule: the "suggested" policy rate from a country's inflation gap and its CYCLICAL
     /// gap - read as the unemployment gap against the country's own NAIRU, NOT the raw level gap
     /// between GDP and PotentialGDP (pass 4 of the ruled build order, 2026-08-26; the record is
-    /// CLAUDE.md "Pass 4 ships - the Taylor path reads the unemployment gap").
+    /// docs/archive/CLAUDE_LESSONS_2026-08.md "Pass 4 ships - the Taylor path reads the unemployment gap").
     ///
     /// Why the unemployment gap. The level gap (GDP - PotentialGDP)/PotentialGDP is a persistent
     /// per-country LEVEL in this model, not a cycle: it is the fixed point of the identity's own
     /// dynamics (G was discretionary-only until T-3 form A, §507, made it the sourced consumption share; C+I ~0.79 of GDP, the attractor anchors period-open
-    /// potential), so no seed value can close it - CLAUDE.md "Discretionary Spending Growth"
+    /// potential), so no seed value can close it - docs/reference/MODEL_REFERENCE.md "Discretionary Spending Growth"
     /// proved that in 2026-07 and the pass 4 derivation measured it again at HEAD: USA -14.5% for a
     /// thousand turns (sd 0.6), Poland -7, Italy -4.5, Germany -2.7. Weighted at 0.5, that term
     /// pinned the USA's suggestion at the 0-floor for 95-98 of the 101 turns of the ruled window

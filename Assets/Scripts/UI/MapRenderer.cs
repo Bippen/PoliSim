@@ -672,7 +672,7 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Normalized 0-1 severity derived from the SAME shock fields the 8-&gt;24 event pool already
-        /// has (see CLAUDE.md's "Expanded Event Pool" for the documented per-field envelope this
+        /// has (see docs/reference/MODEL_REFERENCE.md's "Expanded Event Pool" for the documented per-field envelope this
         /// normalizes against) - no new "severity" field invented on EconomicEvent itself, just a
         /// UI-side reading of data that's already there.
         /// </summary>

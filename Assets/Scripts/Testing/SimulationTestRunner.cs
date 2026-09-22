@@ -492,7 +492,7 @@ namespace PoliSim.Testing
 
         /// <summary>
         /// Pushes all 4 new Phase 2 categories (Justice/HomelandSecurity/Energy/Housing - see
-        /// CLAUDE.md's "Detailed Spending Portfolio Phase 2") to their max +30%/turn every turn,
+        /// docs/reference/MODEL_REFERENCE.md's "Detailed Spending Portfolio Phase 2") to their max +30%/turn every turn,
         /// sustained for the whole run - the same "sustained extreme, no reset" stress pattern that
         /// originally found the SpendingLine compounding-growth bug, now confirming the new effects
         /// (BaselineCrimeIndex, BaselinePovertyRate, an extra BusinessConfidence nudge) stay bounded.
