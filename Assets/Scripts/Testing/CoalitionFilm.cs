@@ -52,6 +52,6 @@ namespace PoliSim.Testing
         /// argument for existing is that two surfaces must not disagree about which coalitions are
         /// possible, and keeping a second copy here would have been exactly that.</summary>
         public static List<RedLine> AllLines() =>
-            DeclaredRedLines.For(PoliSim.Data.CountryId.Sweden, PoliSim.Data.PartySystems.For(PoliSim.Data.CountryId.Sweden));
+            DeclaredRedLines.For(PoliSim.Data.CountryId.Sweden, PoliSim.Data.PartySystems.For(PoliSim.Data.CountryId.Sweden), PoliSim.Data.ElectionVintage.Sweden2022);   // K-1: the staging is 2022's seats, so its lines are 2022's
     }
 }

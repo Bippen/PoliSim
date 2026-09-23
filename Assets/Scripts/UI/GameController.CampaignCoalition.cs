@@ -242,8 +242,8 @@ namespace PoliSim.UI
                 foreach (RedLine line in declared)
                 {
                     DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight),
-                        s.PartyNames[line.A] + " will not " + (line.BlocksSupport ? "depend on " : "sit with ") + s.PartyNames[line.B],
-                        line.BlocksSupport ? "nor support" : "would support", name,
+                        s.PartyNames[line.A] + " will not " + (line.OneWay ? "sit in or back a cabinet with " : line.BlocksSupport ? "depend on " : "sit with ") + s.PartyNames[line.B],
+                        line.OneWay ? "one way" : line.BlocksSupport ? "nor support" : "would support", name,
                         DeskCaption(10f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight));
                     y += rowHeight;
                 }

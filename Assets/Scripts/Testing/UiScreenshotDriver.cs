@@ -3871,9 +3871,10 @@ namespace PoliSim.Testing
                 // `ElectionNightFilm.Votes2018` the results screen already compares against, so the two
                 // screens cannot disagree about the swing any more than they can about who won.
                 // Items 1-3 (2026-09-10): the staged fixture IS Sweden 2022, so its comparison stays 2018 (sourced, national, on
-                // the complete count only); the formation is run on the fixture's chamber once it is complete.
+                // the complete count only); the formation is run on the fixture's chamber once it is complete - with 2022's
+                // declarations (K-1: the seated ones are 2026's, and 2022's count on them forms a government 2022 never saw).
                 GovernmentFormation.View stagedGovernment = state.Complete
-                    ? GovernmentFormation.ViewOf(CountryId.Sweden, parties, state.SeatsOnCounted, null)
+                    ? GovernmentFormation.ViewOf(CountryId.Sweden, parties, state.SeatsOnCounted, null, ElectionVintage.Sweden2022)
                     : null;
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 ElectionNightScreen screen = ElectionNightScreen.Build(state, parties, "SWEDEN",

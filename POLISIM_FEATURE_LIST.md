@@ -45,6 +45,10 @@ read at every session's start; this file is the open rows. The claim convention 
 
 ## Elias's, unchanged
 
+- **K-1f — how the formation holds a declared prime-ministerial candidacy.** OPEN, a ruling, filed 2026-09-24 (`COMPLETED.md` §603). With M, KD and L's lines on SD lifted by their 2026 declarations, nothing declared keeps S and M apart. What does in reality is the rival candidacies: M's Kristersson [MSD-P1], and KD's refusal of Andersson [KD-I1]/[KD-I3]. The pairwise model cannot hold a candidacy. Measured:
+  - On the seated chamber, only C's one-way line on V stops the formation reaching S+M+C+KD+L.
+  - In play, the pinned film's own year-32 election forms S+M+C+KD+L, and the player's S stays in office where 2022's lines had put it out.
+  - The question: should a declared prime-ministerial candidacy become a shape (for example, a cabinet containing two parties whose declared candidates are rivals is refused), or stay a stated gap?
 - **OP-1 — losing office: continue in opposition, or end the run?** Opened 2026-09-12 (DS-6, `COMPLETED.md` §474) as a sheet, not a build: *"a real design question, answerable only after a campaign is played."* D-5 (a) stands - lose-only - until then; "win" is the stamp's text, seat change plus in-government. **Re-affirmed 2026-09-15 (§503):** *"OP-1 stands unruled; D-5 (a) holds until a campaign is played."*
 - **The nine `[GAP]` seed figures** in `COMPLETED.md` §188 (the seed-data overhaul, retired 2026-09-02) —
   each named there with what would source it. **Elias's to source, never to invent**; a `[GAP]` stays a
@@ -77,7 +81,7 @@ read at every session's start; this file is the open rows. The claim convention 
 
 ## The calendar's
 
-- **K-1** — the seed refresh from Sweden's real result, **13 September**. **IN PROGRESS 2026-09-23 (ordered in six parts): part (0), the out-of-sample test, DONE and kept - `COMPLETED.md` §601; part (1), the 2026 chamber, LANDED - §602 (the seats, the prior and the per-valkrets returns; 2022 pinned for the backtests; the cartogram column and the ink ladder held for Design as K-1c/K-1d; the no-policy dump byte-identical to `pp4`).**
+- **K-1** — the seed refresh from Sweden's real result, **13 September**. **IN PROGRESS 2026-09-23 (ordered in six parts): part (0), the out-of-sample test, DONE and kept - `COMPLETED.md` §601; part (1), the 2026 chamber, LANDED - §602 (the seats, the prior and the per-valkrets returns; 2022 pinned for the backtests; the cartogram column and the ink ladder held for Design as K-1c/K-1d; the no-policy dump byte-identical to `pp4`); part (2), the 2026 declarations, LANDED - §603 (C's line on V as a new one-way shape; on the seated chamber the formation gives S+C+MP carried by V; the S-M gap filed as K-1f for Elias).**
 - **K-2** — Svenska kraftnät's report on changing Sweden's bidding-zone division (the government's commission of 15 May 2025, extended May 2026 to a report on structural congestion, *"första steget i en formell översyn"*), due to the ministry **29 January 2027**. **Defence clause: reporting is not enacting, and only an enacted change moves the seed** - the four zones and their links (`docs/data/ENERGY_LAYER_SPINE.md` §4) stand until a decision is in force. Added 2026-09-10 (`COMPLETED.md` §456).
 
 ## Standing findings that own no item

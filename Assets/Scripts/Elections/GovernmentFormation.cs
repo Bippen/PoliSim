@@ -23,7 +23,7 @@ namespace PoliSim.Elections
     /// <para>⚠ <b>THE COMPATIBILITY MATRIX IS DERIVED FROM SOURCED POSITIONS, AND THE RED LINES ARE
     /// NOT ALL SOURCED.</b> Compatibility comes from each party's own CHES figures through §29's existing
     /// `CoalitionCompatibility`, so any country whose parties carry positions gets a real matrix.
-    /// **Declared red lines are political FACTS and exist on disk for Sweden 2022 only**; every other
+    /// **Declared red lines are political FACTS and exist on disk for Sweden only** (2026's in the game, 2022's for the backtests); every other
     /// country runs on DERIVED lines alone. That is a stated limitation, not a silent one — a government
     /// formed without a country's real declarations can be one that country would never form, and
     /// `Formed.DeclarationsSourced` carries the answer to any caller that needs to say so.</para>
@@ -69,11 +69,14 @@ namespace PoliSim.Elections
         /// has no player party, when its parties carry no positions, or when the chamber is empty. ⚠ **A
         /// reason is returned rather than a default**, because "no government could be formed" and "the
         /// player is out of office" are different states and only one of them should end a game.</para>
+        ///
+        /// <para>K-1 (2026-09-23): <paramref name="vintage"/> picks the declarations - the seated election's in the game; a
+        /// backtest that asserts 2022's government pins <see cref="ElectionVintage.Sweden2022"/>.</para>
         /// </summary>
-        public static Formed Form(Country country)
+        public static Formed Form(Country country, ElectionVintage vintage = ElectionVintage.Seated)
         {
             if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] seats, out CoalitionResult result,
-                    out bool declarationsSourced, out string reason))
+                    out bool declarationsSourced, out string reason, vintage))
             {
                 return Formed.None(reason);
             }
@@ -184,8 +187,10 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The formation on a chamber given as seats per party abbreviation - what a night's final count
-        /// seats. A seeded party the count does not carry holds no seats in it.</summary>
-        public static View ViewOf(CountryId country, IReadOnlyList<string> abbrevs, IReadOnlyList<int> seatsByAbbrev, string playerParty)
+        /// seats. A seeded party the count does not carry holds no seats in it. K-1: <paramref name="vintage"/> picks the
+        /// declarations - a staged 2022 count forms on 2022's (the film's fixture), everything else on the seated election's.</summary>
+        public static View ViewOf(CountryId country, IReadOnlyList<string> abbrevs, IReadOnlyList<int> seatsByAbbrev, string playerParty,
+            ElectionVintage vintage = ElectionVintage.Seated)
         {
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
             if (parties == null || parties.Count == 0) { return new View { HasGovernment = false, Reason = "no party system is seeded for this country" }; }
@@ -197,7 +202,7 @@ namespace PoliSim.Elections
                     if (string.Equals(abbrevs[k], parties[p].Abbrev, StringComparison.Ordinal)) { seats[p] = seatsByAbbrev[k]; break; }
                 }
             }
-            if (!TryFormSeats(country, parties, seats, out CoalitionResult result, out bool sourced, out string reason))
+            if (!TryFormSeats(country, parties, seats, out CoalitionResult result, out bool sourced, out string reason, vintage))
             {
                 return new View { HasGovernment = false, Reason = reason };
             }
@@ -247,7 +252,7 @@ namespace PoliSim.Elections
 
         /// <summary>The formation itself - the chamber's seats, the derived compatibility, the declared red lines and the chamber's own rule - shared by <see cref="Form"/> and <see cref="Cabinet"/>.</summary>
         private static bool TryFormChamber(Country country, out IReadOnlyList<PoliticalParty> parties, out int[] seats,
-            out CoalitionResult result, out bool declarationsSourced, out string reason)
+            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated)
         {
             parties = null; seats = null; result = null; declarationsSourced = false; reason = null;
             if (country == null) { reason = "no country"; return false; }
@@ -260,18 +265,18 @@ namespace PoliSim.Elections
                 country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held);
                 seats[p] = held;
             }
-            return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason);
+            return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason, vintage);
         }
 
         private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
-            out CoalitionResult result, out bool declarationsSourced, out string reason)
+            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated)
         {
             result = null; declarationsSourced = false; reason = null;
             int totalSeats = 0;
             foreach (int s in seats) { totalSeats += s; }
             if (totalSeats <= 0) { reason = "the chamber holds no seats"; return false; }
             double[,] compatibility = Compatibility(parties);
-            List<RedLine> lines = DeclaredRedLines.For(country, parties);
+            List<RedLine> lines = DeclaredRedLines.For(country, parties, vintage);
             declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
                 negativeRule: ChamberRules.UsesNegativeParliamentarism(country));

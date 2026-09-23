@@ -92,7 +92,7 @@ namespace PoliSim.EditorTools
 
             // --- Sweden 2022: the answer is a matter of public record, not of the model's opinion. ---
             // K-1 (2026-09-23): the world seats 2026's chamber now, so the 2022 record is tested on 2022's chamber, set for the
-            // three formations and restored - the backtest keeps asserting the government that actually formed from it.
+            // three formations and restored, with 2022's declarations - the backtest keeps asserting the government that actually formed from it.
             Country sweden = world.GetCountry(CountryId.Sweden);
             string swedenSaved = sweden.PlayerPartyAbbrev;
             var seatedChamber = new Dictionary<string, int>(sweden.ParliamentSeats);
@@ -101,11 +101,11 @@ namespace PoliSim.EditorTools
             for (int p = 0; p < swedenParties.Count; p++) { sweden.ParliamentSeats[swedenParties[p].Abbrev] = CampaignAiHarness.Seats2022[p]; }
 
             sweden.PlayerPartyAbbrev = "M";
-            GovernmentFormation.Formed asM = GovernmentFormation.Form(sweden);
+            GovernmentFormation.Formed asM = GovernmentFormation.Form(sweden, ElectionVintage.Sweden2022);
             sweden.PlayerPartyAbbrev = "SD";
-            GovernmentFormation.Formed asSd = GovernmentFormation.Form(sweden);
+            GovernmentFormation.Formed asSd = GovernmentFormation.Form(sweden, ElectionVintage.Sweden2022);
             sweden.PlayerPartyAbbrev = "S";
-            GovernmentFormation.Formed asS = GovernmentFormation.Form(sweden);
+            GovernmentFormation.Formed asS = GovernmentFormation.Form(sweden, ElectionVintage.Sweden2022);
             sweden.PlayerPartyAbbrev = swedenSaved;
             sweden.ParliamentSeats.Clear();
             foreach (KeyValuePair<string, int> seat in seatedChamber) { sweden.ParliamentSeats[seat.Key] = seat.Value; }
@@ -136,6 +136,51 @@ namespace PoliSim.EditorTools
                 failures.Add("Sweden 2022: S counted as in cabinet");
                 Debug.LogError("OFFICE: Sweden 2022 puts Socialdemokraterna in the cabinet. It lost office in 2022; a rule that "
                                + "keeps the largest party in government regardless of the arithmetic is not an office test.");
+            }
+
+            // --- K-1 (2026-09-23): THE ONE-WAY SHAPE. C refuses any cabinet that contains V; nothing refuses V's support of a cabinet C
+            // sits in. The shape first on its own, then as the seated chamber's formation reads it: over EVERY viable government, C is
+            // never in or behind a cabinet with V, and at least one has V carrying a cabinet C sits in (the permission is live). ---
+            var oneWay = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: true, basis: "probe", oneWay: true);
+            var symmetric = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: true, basis: "probe");
+            var cabinetOnly = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: false, basis: "probe");
+            bool shapeHolds = oneWay.RefusesSupport(0, 1) && !oneWay.RefusesSupport(1, 0)
+                && symmetric.RefusesSupport(0, 1) && symmetric.RefusesSupport(1, 0)
+                && !cabinetOnly.RefusesSupport(0, 1) && !cabinetOnly.RefusesSupport(1, 0);
+            int cIndex = -1, vIndex = -1;
+            var seatedSeats = new int[swedenParties.Count];
+            for (int p = 0; p < swedenParties.Count; p++)
+            {
+                seatedSeats[p] = swedenParties[p].SeedSeats;
+                if (swedenParties[p].Abbrev == "C") { cIndex = p; }
+                if (swedenParties[p].Abbrev == "V") { vIndex = p; }
+            }
+            CoalitionResult seatedFormation = CoalitionFormation.Form(seatedSeats, GovernmentFormation.Compatibility(swedenParties),
+                DeclaredRedLines.For(CountryId.Sweden, swedenParties), negativeRule: true);
+            bool wiredOneWay = false;
+            foreach (RedLine line in DeclaredRedLines.For(CountryId.Sweden, swedenParties))
+            {
+                if (line.Kind == RedLineKind.Declared && line.A == cIndex && line.B == vIndex && line.OneWay) { wiredOneWay = true; }
+            }
+            int cBit = 1 << cIndex, vBit = 1 << vIndex, breaches = 0, vCarriesC = 0;
+            foreach (GovernmentOption g in seatedFormation.Viable)
+            {
+                bool vInCabinet = (g.Cabinet & vBit) != 0;
+                if (vInCabinet && ((g.Cabinet & cBit) != 0 || (g.Support & cBit) != 0)) { breaches++; }
+                if ((g.Cabinet & cBit) != 0 && (g.Support & vBit) != 0) { vCarriesC++; }
+            }
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "\n    --- K-1: the one-way line (C refuses any cabinet containing V; V's support is not refused) ---\n"
+                + "    the shape: one-way refuses A->B only {0}; symmetric both ways {1}; cabinet-blocking neither way {2}; the seated C->V line is wired one way: {6}\n"
+                + "    the seated chamber: {3} viable government(s); C in or behind a cabinet with V: {4}; V carrying a cabinet C sits in: {5}\n",
+                oneWay.RefusesSupport(0, 1) && !oneWay.RefusesSupport(1, 0), symmetric.RefusesSupport(0, 1) && symmetric.RefusesSupport(1, 0),
+                !cabinetOnly.RefusesSupport(0, 1) && !cabinetOnly.RefusesSupport(1, 0), seatedFormation.Viable.Count, breaches, vCarriesC, wiredOneWay));
+            if (!shapeHolds || !wiredOneWay || cIndex < 0 || vIndex < 0 || breaches > 0 || vCarriesC == 0)
+            {
+                failures.Add("K-1: the one-way line");
+                Debug.LogError($"OFFICE: the one-way line does not hold - the shape {(shapeHolds ? "ok" : "WRONG")}, the wired C->V line {(wiredOneWay ? "one way" : "NOT one way")}, {breaches} viable government(s) put C in or behind "
+                               + $"a cabinet with V, {vCarriesC} let V carry a cabinet C sits in. ⚠ C's declaration (coalition_declarations_2026.md) refuses the first "
+                               + "and no fetched source that names a mechanism refuses the second; either failing means the formation no longer reads what C said.");
             }
 
             // --- No player party: a reason, never a verdict. ---

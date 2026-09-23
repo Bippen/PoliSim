@@ -33356,3 +33356,91 @@ The regenerated budget premise reads what it should: §1's residuals 0.985 (driv
 - The trajectory dump `k1ch` (above). The cheap bar **47 of 47** (`k1_602_cheap`) and the simulation bar **56 of 56** (`k1_602_sim`). After this record and the rows were written, the document checks were re-run on the final tree: `MojibakeCheck`, `DryFilmScopeCheck` and `ReviewLedgerCheck`, **3 of 3** (`k1_602_named`).
 - The dry film `dry602` (Sweden at 1280 with the state pins; scope declared): **167 measured, 0 failed, 0 overflows, 0 escapes, 0 errors, exit 0**.
 - The real film `film602_1280` (Sweden, the whole pinned sweep, reaching election night's Canvas): **167 captured, 0 failed, 0 text overflows, 0 canvas-text violations across 6 asserts** (the picker frames `01g`/`01h` and the night `88n` among them). It exits 1 on the edge guard's 11 NOT FLUSH frames, the same 11 as `film600_1280` (84, 85a-85e, 85g, 87, 87b, 93, 94b): a standing state this change did not move. §600's film logged 12 errors; this one logs 11. **PF-16's clipped who-governs block did not recur, and that is not a fix.** The night's content changed with the chamber: the pinned sweep's night now reads a cabinet of 117 seats where §600's read 110, and swings against SWEDEN 2026. So this film says nothing about whether the defect is gone, and PF-16 stays open. Read on the frame: the count's seat changes run from 2026's seats (S 94, −5), the swing column says *"against SWEDEN 2026"*, and the cartogram's caption still says 310 fixed seats (board 4a's column, K-1c).
+
+## 603. K-1 PART (2) - THE DECLARED POSITIONS AS OF THE 2026 ELECTION; A THIRD RED-LINE SHAPE, ONE WAY, BECAUSE C'S LINE ON V IS NEITHER OF THE MODEL'S TWO (2026-09-23)
+
+**The order:** *"The declared positions as of the 2026 election replace 2022's in the formation model — the Liberals' March 2026 acceptance of SD in government, the M–SD agreement of 1 April 2026, and C excluding both SD and V — each sourced and dated."*
+
+**Sourced, never recalled:** `ElectionsData/sweden/2026/coalition_declarations_2026.md` (SOURCED). It has a register of 52 pages saved under `raw/declarations/`, every sha256 listed and verifying. It went through three rounds of independent verification before it was wired:
+- **Round one** found the first draft wrong in six places. The key one: its "C line on V, first found 2026-01-30" was a Nerikes Allehanda article of 2026-01-28 reposted by a C district, not a party statement. KD's 2022 line had been kept, where KD's own words (Busch, via Bulletin 2026-09-08) lift it.
+- **Round two** found six more, among them that C itself floated a pure S minority V would have to let through (Bulletin citing Expressen, 2026-09-18).
+- **Round three** re-wrote the file's wiring statements to the shape below and its measured outcomes, and checked them against the code and the probe's log.
+
+The file's formation block is what the code wires.
+
+**The lines, as of the 2026 election** (`DeclaredRedLines.For`, `ElectionVintage.Seated`):
+- **C ↔ SD, support-blocking** (2022's strength, restated): C will not sit in or support a government that depends on SD or gives it influence. Sources: the installation speech 2025-11-13 [C-P5]; 2026-01-28 [C-P1]; 2026-01-30 [C-I10]; 2026-08-11 [C-P2]; 2026-09-08 [C-I1]; after the election, 2026-09-14 [C-I6].
+- **C → V, ONE WAY (new):** C will not sit in, support or let through a cabinet that contains V. First found 2026-01-28 [C-P1], then 2026-01-30 [C-I10], 2026-04-21 [C-I3] and 2026-09-08 [C-I1] (*"hellre till extraval"*); after the election, 2026-09-14 [C-I6] and 2026-09-18 [C-I8].
+- **M, L and KD ↔ SD: LIFTED, no line.**
+  - M by the M–SD agreement of 2026-04-01 ([MSD-P1]; that page does not itself put SD in government, and the independent reports [MSD-I1]–[MSD-I4] carry the term).
+  - L by its agreement of 2026-03-13 [L-P1] and its board's decision reported the same day [L-I1].
+  - KD by its own words as reported 2026-09-08 [KD-I2]. That is secondary transmission; KD's primary is a GAP.
+- The 2022 lines stay addressable as `ElectionVintage.Sweden2022` for the backtests.
+
+**The new shape, and why it was built rather than squeezed.** `RedLine` had two strengths, both symmetric:
+- *Cabinet-blocking*: "I will not sit with you".
+- *Support-blocking*: "I will not be in or support a government that depends on you".
+
+C's line on V is neither. C refuses any cabinet that contains V, and no fetched source that names a mechanism has C refuse V as a mere supporter. TV4 2026-01-30 has that door *"inte formellt stängd"*, and C floated the pure S minority. Cabinet-blocking would let C prop up a cabinet with V in it, which is what C refuses. Support-blocking would stop V tolerating a cabinet C sits in, which nothing refuses on C's side. The declarations file's own rule is that a declaration the pairwise model cannot hold needs a new shape or a stated gap, never a squeeze into a pair no party declared.
+
+So `RedLine.OneWay` (`CoalitionFormation.cs`):
+- The refusal runs from A to B only. A will not sit in or support a cabinet containing B.
+- B may support a cabinet A sits in, and the two may both support one.
+- `RefusesSupport(p, q)` is the one predicate `SupportBlocked` reads. `SupportersOf`'s second rule, which parts supporters who refuse each other, skips a one-way line.
+- Every symmetric line behaves exactly as before, and every derived line and every 2022 line is symmetric.
+- The coalition screen names a one-way line in its own words. No staged screen reaches that text yet (its film stages 2022's lines), and that is stated.
+
+**MEASURED FIRST: the formation on the seated 2026 chamber** (`Formation2026Diagnostic`, a new printing tool: S 99, SD 62, M 70, V 30, C 25, KD 22, MP 22, L 19; majority 175; negative rule; `k1_603_formation2`):
+
+| the lines | the formation |
+|---|---|
+| **2026's, as wired (C → V one way)** | **ConfidenceAndSupply: cabinet S+C+MP (146), supported by V to 176, opposed 173 - the only viable government** |
+| C ↔ V as a symmetric support-blocking line | MajorityCoalition S+M+C+KD+L (235), opposed 114; 8 viable |
+| C ↔ V at cabinet-blocking strength | the same as wired |
+| no C–V line | S+M+C+KD+L (235) |
+| 2022's declarations on the 2026 chamber (part (1)'s interim state) | S+M+C+KD+L (235) |
+| the derived lines alone | S+M+C+KD+L (235) |
+
+**Read plainly:**
+- **The C–V line is load-bearing, and its shape decides the government.** Everything short of it forms a five-party grand coalition no party declared.
+- With it, S+C+MP governs on V's votes. That depends on V supporting a cabinet V is not in, which **V's own in-or-against demand [V-P1] refuses**. The pairwise model cannot hold that demand, and it stays on the file's "cannot hold" list.
+- **What rules out S with M in reality** (the rival prime-ministerial candidacies: Kristersson [MSD-P1]; KD's refusal of Andersson [KD-I1], [KD-I3]) is likewise not held. Where the one-way line is absent, nothing in the model stops S and M governing together.
+- This is the government part (4) marks provisional. It is the model's answer, not a claim about what the Riksdag will vote.
+
+**IN PLAY: the same gap, one election later (found by the film, filed as K-1f for Elias).** The pinned sweep plays Sweden to its own election at year 32. Its count seats S 94, M 70, SD 63, KD 27, V 27, MP 24, C 24, L 20.
+- On 2022's lines (`film602`) the chamber formed M+KD+L carried by SD, and the player's S went out of office.
+- On 2026's lines (`film603b`) it formed **S+M+C+KD+L (235)**, and S stays IN OFFICE. The game then reaches a frame no earlier film reached (`88c_after_election_night`).
+- The lifted SD lines were what had kept S and M apart there. Nothing declared keeps them apart now. On this chamber the one-way line's alternative cannot pass (arithmetic, not a run: S+C+MP with V is 169 seats, and M, SD, KD and L hold 180, an absolute majority against it), and the rival prime-ministerial candidacies are not held.
+- This is the model reading its sourced inputs, not a defect in the wiring. How the formation should hold a declared prime-ministerial candidacy is a shape the model does not have, and choosing one is a ruling (K-1f, Elias's).
+
+**The backtests stay on 2022:**
+- `CoalitionFilm.AllLines` (the coalition harness and screen, staged on 2022's seats) pins 2022's lines.
+- The office test's 2022 record forms on 2022's chamber and 2022's lines (`GovernmentFormation.Form(country, vintage)`): M+KD+L, SD supporting.
+- The staged election-night film's final formation pins 2022's lines (`ViewOf(..., vintage)`) because its count is 2022's. Without that pin its final frame would have shown 2022 forming a grand coalition. The review found it (below).
+
+**Guarded:** `OfficeTestDiagnostic` (in the simulation bar) now checks four things:
+- The shape on its own: one way refuses A→B only, symmetric refuses both ways, cabinet-blocking neither.
+- That the seated C→V line is wired one way.
+- That no viable government on the seated chamber puts C in or behind a cabinet with V.
+- That at least one lets V carry a cabinet C sits in, so the permission is live.
+
+**Reviewed before the commit** (two independent lenses, one on the one-way semantics and one on the vintage threading; both compiled the staged `CoalitionFormation.cs` outside Unity and reproduced the measured rows). One defect and a set of nits were found, all fixed:
+- **The defect:** the staged 2022 night's formation read the seated lines. It is now pinned.
+- **The nits:**
+  - The office guard could not tell one-way from cabinet-blocking on this chamber, so it now reads the wired line itself.
+  - The basis strings overstated "no source" and are now qualified: "no fetched source that names a mechanism".
+  - The bases omitted [C-I10] and [C-I8], and they are added.
+  - M's lift is cited to the reports that carry the SD-in-government term, and L's to the board's decision.
+  - SD's absence no longer drops the C–V line.
+  - The class doc's "support is refused in BOTH directions" is scoped to symmetric lines.
+- **Left as stated, not fixed:** the office guard does not exercise the co-support permission (C and V both supporting one cabinet). The review's standalone probe confirmed the code allows it.
+
+**Measured, the trajectory:** the no-policy dump is **byte-identical to `pp4`** on both seeds (`k1dl`). The declarations reach the player's path, not the economy's fields. The sentinel did not move and no review row is owed.
+
+**Evidence.** Tier SIMULATION + UI. Everything was re-run on the final tree, after the review's fixes:
+- The trajectory dump `k1dl2`: byte-identical to `pp4` on both seeds.
+- The cheap bar **47 of 47** (`k1_603b_cheap`) and the simulation bar **56 of 56** (`k1_603b_sim`). The office test's new block reads: the shape holds, the seated C→V line is wired one way, 1 viable government, 0 breaches, 1 government with V carrying C.
+- The dry film `dry603` (declared): **167 measured, 0 failed, 0 overflows, 0 escapes, 0 errors, exit 0**.
+- The real film `film603b_1280`: **167 captured, 0 failed, 0 canvas-text violations across 6 asserts** (the picker's frames with the new cabinet marks among them). It exits 1 on the edge guard's NOT FLUSH frames, now 12. The eleven standing ones are unchanged. The twelfth is `88c_after_election_night`, reached for the first time because the player stays in office (above). It is the same class and the same numbers (right-edge run 620 at zero margin, the pause banner wrapping to three lines; `COMPLETED.md`'s record of the class).
+- The first pass of these runs was cut short when the review's defect was found: its films were stopped, and one real film ran on the pre-fix tree and is discarded (`film603_1280`, not evidence).
+- The declarations file's three verification rounds are above; `government_2026.md` is part (4)'s.

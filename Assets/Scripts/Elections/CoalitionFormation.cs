@@ -29,6 +29,12 @@ namespace PoliSim.Elections
     /// <see cref="BlocksSupport"/> is "I will not be in, or support, a government that depends on
     /// you" — the Centre Party's position, which is why a bloc with the arithmetic to govern did
     /// not. A line that blocks support always blocks the cabinet too.
+    ///
+    /// <para>K-1 (2026-09-23): a THIRD shape, <see cref="OneWay"/>, because Sweden 2026 turns on it: the Centre Party
+    /// will not sit in, support or let through any cabinet that CONTAINS the Left Party, and no fetched source that names a
+    /// mechanism has it refuse the Left Party as a mere supporter of a cabinet it sits in (`coalition_declarations_2026.md`). Neither symmetric
+    /// strength says that: cabinet-blocking would let C prop up a cabinet with V in it, support-blocking would stop V
+    /// tolerating a cabinet C is in. A one-way line refuses from <see cref="A"/> to <see cref="B"/> only.</para>
     /// </summary>
     public readonly struct RedLine
     {
@@ -36,17 +42,26 @@ namespace PoliSim.Elections
         public readonly int B;
         public readonly RedLineKind Kind;
         public readonly bool BlocksSupport;
+        /// <summary>K-1: the refusal runs from <see cref="A"/> to <see cref="B"/> only - A will not sit in, or support, a
+        /// cabinet that contains B; B may support a cabinet A sits in, and the two may both support one. Implies
+        /// <see cref="BlocksSupport"/> in A's direction. False for every derived line and every line before K-1.</summary>
+        public readonly bool OneWay;
         /// <summary>The derivation, or the citation and its vintage. Never empty — a red line without a basis is an authored coalition score, which §29 must not have.</summary>
         public readonly string Basis;
 
-        public RedLine(int a, int b, RedLineKind kind, bool blocksSupport, string basis)
+        public RedLine(int a, int b, RedLineKind kind, bool blocksSupport, string basis, bool oneWay = false)
         {
             if (a == b) { throw new ArgumentException("a party cannot red-line itself"); }
             if (string.IsNullOrEmpty(basis)) { throw new ArgumentException("a red line needs its basis"); }
-            A = a; B = b; Kind = kind; BlocksSupport = blocksSupport; Basis = basis;
+            if (oneWay && !blocksSupport) { throw new ArgumentException("a one-way line refuses support in its direction, so it blocks support"); }
+            A = a; B = b; Kind = kind; BlocksSupport = blocksSupport; Basis = basis; OneWay = oneWay;
         }
 
         public bool Covers(int x, int y) => (A == x && B == y) || (A == y && B == x);
+
+        /// <summary>Whether this line stops party <paramref name="p"/> supporting a cabinet that contains party <paramref name="q"/>:
+        /// a symmetric support-blocking line in either direction, a one-way line only from its A to its B.</summary>
+        public bool RefusesSupport(int p, int q) => BlocksSupport && (OneWay ? A == p && B == q : Covers(p, q));
     }
 
     /// <summary>
@@ -203,8 +218,9 @@ namespace PoliSim.Elections
     /// 1. Every subset of parties is a candidate cabinet (the chamber is a handful of parties).
     /// 2. A cabinet is refused outright if any red line falls between two of its members.
     /// 3. Its supporters are the parties outside it that no `BlocksSupport` line separates from
-    ///    any cabinet member — support is refused in BOTH directions, because "I will not prop up
-    ///    a government containing you" and "I will not be propped up by you" are both real.
+    ///    any cabinet member — for a symmetric line support is refused in BOTH directions, because "I will not prop up
+    ///    a government containing you" and "I will not be propped up by you" are both real; a one-way line (K-1) refuses
+    ///    only from its A to its B, and never parts two supporters.
     /// 4. The cabinet is viable if it wins its investiture: a majority for it, or under the
     ///    negative rule, fewer than an absolute majority against it. Parties that support it do
     ///    not vote against it; every other party does.
@@ -441,7 +457,8 @@ namespace PoliSim.Elections
                 for (int i = 0; i < lines.Count && !changed; i++)
                 {
                     RedLine line = lines[i];
-                    if (!line.BlocksSupport || line.A >= n || line.B >= n) { continue; }
+                    // K-1: a one-way line refuses the other party's CABINET, never its company among the supporters.
+                    if (!line.BlocksSupport || line.OneWay || line.A >= n || line.B >= n) { continue; }
                     if ((support & (1 << line.A)) == 0 || (support & (1 << line.B)) == 0) { continue; }
                     int weaker = power[line.A] < power[line.B] ? line.A
                         : power[line.B] < power[line.A] ? line.B
@@ -454,7 +471,7 @@ namespace PoliSim.Elections
             return support;
         }
 
-        /// <summary>Whether a support-blocking red line separates a party from any cabinet member.</summary>
+        /// <summary>Whether a support-blocking red line separates a party from any cabinet member - a one-way line only in its own direction (K-1).</summary>
         private static bool SupportBlocked(int p, int cabinet, int n, IReadOnlyList<RedLine> lines)
         {
             for (int i = 0; i < lines.Count; i++)
@@ -463,7 +480,7 @@ namespace PoliSim.Elections
                 if (!line.BlocksSupport) { continue; }
                 for (int q = 0; q < n; q++)
                 {
-                    if ((cabinet & (1 << q)) != 0 && line.Covers(p, q)) { return true; }
+                    if ((cabinet & (1 << q)) != 0 && line.RefusesSupport(p, q)) { return true; }
                 }
             }
 
