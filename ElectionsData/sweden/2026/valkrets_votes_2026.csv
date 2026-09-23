@@ -1,0 +1,58 @@
+# Sweden Riksdag 2026 - per-valkrets results, ABSOLUTE counts [SOURCED] [PROVISIONAL]
+# source: Valmyndigheten, https://resultat.val.se/data/resultat/val2026/RD_{NN}_S.json for NN = 01..29
+#   (the official machine-readable backend of the result presentation at
+#   https://resultat.val.se/val2026/RD?r=S), rakningstillfalle "slutlig" [final count], each file's
+#   senasteUppdateringstid between 17 and 19 September 2026 (latest 19 September 2026 11:27:07); the 29 files
+#   fetched 2026-09-23 and saved byte-exact as raw/resultat_val2026_RD_{NN}_S.json (SHA-256 in
+#   raw/SHA256SUMS.results.txt). Code 30 returns 404, which is itself the completeness check: Sweden has
+#   exactly 29 riksdagsvalkretsar. Result fixed by Valmyndigheten's decision of 2026-09-19, Dnr VAL-735-2026.
+# ALL ELEVEN COLUMN SUMS VERIFIED against the published national figures (RD_S.json and the decision's Bilaga 1):
+#   valid 6,767,429; eligible 8,051,355; cast 6,834,413; S 1,895,989; M 1,343,448; SD 1,183,248; C 475,780; V 568,781; KD 417,490; L 361,187; MP 414,307 - ALL ELEVEN MATCH EXACTLY.
+# EVERY CELL CROSS-CHECKED TWICE MORE, independently: (1) the decision PDF's Bilaga 1 per-valkrets pages
+#   (raw/beslutsprotokoll-resultat-riksdagen-2026.pdf) - party votes, valid, invalid, cast, eligible: 0 differences;
+#   (2) sheets Antal_valkrets and Valdeltagande_valkrets of Valmyndigheten's final-count workbook
+#   (raw/roster-per-distrikt-slutligt-antal-roster-inklusive-totalt-valdeltagande-riksdagsvalet-2026.xlsx) - party
+#   votes, valid (= the sum of all 124 party columns), cast, eligible: 0 differences.
+# SAME 29 UNITS AS 2022: each 2026 file carries 2022 comparison fields (antalRosterForegaendeVal,
+#   antalRostberattigadeForegaendeVal) and for all 29 valkretsar they equal valkrets_votes_2022.csv exactly
+#   (valid, eligible, the eight party columns) - the boundaries and names did not change.
+# ROW ORDER IS THE 2022 FILE'S (itself the 2018 file's), DELIBERATELY (W-F1, R-N1): every consumer keys regions by
+#   INDEX, so the repoint changes the NUMBERS and nothing else. The JSON backend's own code order differs
+#   (01 Stockholms kommun, 02 Stockholms län, ...).
+# COLUMNS ARE THE 2022 FILE'S EXACTLY (12 columns, same header), so a consumer repoints by changing the filename.
+#   Seats per valkrets are NOT here (a 13th column would break ElectionsDataCatalogGenerator's 12-cell assertion):
+#   they are in valkrets_seats_2026.csv.
+# 'valid' is ROSTER SOM PAVERKAR MANDATFORDELNINGEN (rosterPaverkaMandat.antalRoster) - the count the seat
+#   allocation runs on. It excludes blank and invalid ballots, so 'cast' minus 'valid' is those; and the party
+#   columns do not sum to 'valid' either, because parties below the threshold ("Övriga anmälda partier", and in
+#   Örebro län Örebropartiet, which the backend shows separately there) make up the remainder.
+valkrets;valid;S;M;SD;C;V;KD;L;MP;eligible;cast
+Stockholms län;887078;229173;211111;132386;69312;71843;50651;58824;50638;1067786;894975
+Stockholms kommun;652543;171898;124639;54512;63857;85059;25450;46361;72681;765741;657346
+Uppsala län;265992;72015;48826;41523;20548;25773;17672;13246;22199;309503;268548
+Södermanlands län;190962;58319;37380;38535;10664;14005;10977;8654;9254;229643;192969
+Östergötlands län;311207;88267;63956;57496;21213;21957;20539;15308;17510;367216;314364
+Jönköpings län;236678;62904;46733;48704;16567;14106;24225;10874;9032;279116;239023
+Kronobergs län;128547;35565;25662;26144;8008;9798;10256;5626;5714;151714;129871
+Kalmar län;161796;46974;30324;34565;10365;9930;13575;6888;6686;191157;163784
+Gotlands län;41526;12920;7599;5601;4457;2799;2175;2193;3274;48457;42094
+Blekinge län;104309;29892;19092;25467;5672;6113;7601;5066;3985;123336;105592
+Skåne läns västra;200979;52352;40449;48361;10700;15713;10538;11487;8803;246258;202987
+Skåne läns södra;271168;61755;63035;53632;21600;16340;14469;17665;19638;313228;273715
+Skåne läns norra och östra;206399;47960;43027;56307;10953;12279;14154;11348;7529;248840;208648
+Malmö kommun;212965;61724;35076;28110;12475;36572;6927;9820;19754;268096;214802
+Hallands län;230235;58887;53723;45064;17369;12095;16228;13695;10124;268141;232599
+Västra Götalands läns västra;258972;65532;55689;47131;19093;16417;18690;16376;16323;297310;261335
+Västra Götalands läns norra;176511;50431;33642;38116;10217;12524;12248;8677;7966;210272;178492
+Västra Götalands läns södra;146081;39892;28563;30302;9781;10365;11502;6804;6299;174222;147515
+Västra Götalands läns östra;179042;50259;35717;38357;11654;10390;14363;7924;7282;210115;181302
+Göteborgs kommun;380417;103234;69144;44996;24749;57509;18463;22580;34440;463162;383254
+Värmlands län;184781;57395;37149;36422;11185;10740;12668;8208;8064;219440;186980
+Örebro län;203013;61609;35795;36056;11605;15874;12589;9000;9901;238804;205043
+Västmanlands län;176628;53813;34854;35997;9360;14087;9894;8893;6600;213804;178614
+Dalarnas län;187850;55451;34477;41863;12200;10814;13294;7579;8913;223713;190170
+Gävleborgs län;184537;58720;32717;39727;11180;12469;11411;7434;7780;222363;186702
+Västernorrlands län;158985;54658;25812;30481;10988;10072;11156;5868;7315;189562;160841
+Jämtlands län;86814;27343;15148;15272;8745;5227;4736;3072;5762;103333;87920
+Västerbottens län;181055;66875;27859;23081;13025;16915;10697;6337;13552;213705;182781
+Norrbottens län;160359;60172;26250;29040;8238;10996;10342;5380;7289;193318;162147

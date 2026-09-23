@@ -33275,3 +33275,41 @@ The regenerated budget premise reads what it should: §1's residuals 0.985 (driv
 **The row, retired verbatim from `POLISIM_FEATURE_LIST.md`:**
 
 - **PF-15 — the desk's reading-chip strip draws the credit rating in a 14.6 px row.** OPEN, found 2026-09-23 (§598) by the repaired state pins: on the desk frame the film reaches between `89c` and `88n` (Sweden re-seated on the way to its election night) `DrawDeskChipStrip` → `DrawReadingCell` gives the credit-rating figure ("AAA", 17 px) a row 14.6 px tall, 2 px short - where the held-desk frames `01d`-`01f` give the same cell 29.6. The overflow guard reports it on every pinned dry session. What shortens the strip on that frame is not measured. **→ ✅ CLOSED 2026-09-23 - `COMPLETED.md` §600 (the padding gives way, never the figure; the pinned dry session clean)**
+
+## 601. K-1 PART (0) - THE OUT-OF-SAMPLE TEST, ONCE AND KEPT: THE MODEL'S OWN 2026 PREDICTION FROM THE 2022 SEED AGAINST THE REAL RESULT (2026-09-23)
+
+**The order** (K-1, from Valmyndigheten's final result, fixed 19 September 2026): *"First, the out-of-sample test, once and kept: the model's own prediction for 2026, run from the 2022 seed, against the real result — per party, before anything is refreshed."* This § is that test and nothing else; no part of the seed moved before it ran.
+
+**The real result, fetched, never recalled** (`ElectionsData/sweden/2026/`, SOURCED): Valmyndigheten's decision on the Riksdag election (*beslutsprotokoll*, Dnr VAL-735-2026, fixed 2026-09-19) and its protocol, the per-valkrets results as the authority publishes them (29 valkrets JSON files plus the national one), the fixed-seat and seat-distribution workbooks, the pages they were found on, and `raw/SHA256SUMS.results.txt`. Two catalogs are derived from them in the 2022 files' row order: `valkrets_votes_2026.csv` (valid votes per party per valkrets, eligible and cast) and `valkrets_seats_2026.csv` (fixed, adjustment and total seats per party per valkrets), described in `returns_2026.md`. An independent verifier checked them against the raw files before the test ran. The total is 6,767,429 valid votes; 6,660,230 went to the eight parties the model carries and 107,199 (1.58 %) to all others. The chamber is 349 seats. The allocator control below also checks the counts: the statute's own procedure run on them lands on the decision's chamber to the seat.
+
+**What "the model's own prediction" is.** `NationalElection.TryPredictShares(Sweden)`: the fitted electorate, CHES 2024 positions, the 2022 shares as the prior and 2018→2022 loyalty, blended by `PreferenceModel`. It is campaign-free. It reads no World, no date and no seed, so running it "from the 2022 seed" needs no simulated run, because the electorate does not move with the simulation (`TryElectorate`'s standing gap). **It is an ex-ante forecast, checked here:** since the last commit before the polls closed (`8c727ae`, 2026-09-13), `NationalElection.cs` and `PreferenceModel.cs` are unchanged and `VoteModel.cs` changed only a doc comment's path. `PartySystem.cs`'s Swedish rows changed only in two display names (V's and MP's diacritics, §575); their positional and numeric fields are byte-identical. The campaign path is NOT run: its code changed after polling day, and it depends on the player's party.
+
+**Built.** `Assets/Editor/OutOfSample2026Diagnostic.cs` runs once and keeps its record. It first guards that the seed is 2022's: the live prior must equal the generated 2022 catalog's shares (rounded as the table is), and the seeded seats must equal the 2022 count through `SeatConversion.Sweden`. It refuses to run once the seed moves and refuses to overwrite its record. It reads the two 2026 catalogs at run time and prints their sha256 in the record. Beside the prediction it prints two benchmarks on the same basis: the no-change forecast (the 2022 shares) and the bare spatial layer (`VoteModel.PredictShares`). It is not enrolled in any bar. **The first launch threw a `FormatException`** on an alignment specifier (`{4,+6:…}`) before it wrote anything. The fix was `,6:`, and the second launch wrote the record.
+
+**The record, kept:** `ElectionsData/sweden/2026/oos_prediction_2026.md` (DERIVED, written at 3f53655). Shares are over the eight parties, in %:
+
+| | real | model | dev pp | no-change | dev pp | spatial | dev pp | seats real | seats model |
+|---|---|---|---|---|---|---|---|---|---|
+| S | 28.47 | 30.47 | +2.00 | 30.80 | +2.34 | 30.41 | +1.95 | 99 | 106 |
+| SD | 17.77 | 20.57 | +2.81 | 20.86 | +3.10 | 20.32 | +2.55 | 62 | 72 |
+| M | 20.17 | 18.83 | −1.34 | 19.40 | −0.77 | 9.43 | −10.74 | 70 | 66 |
+| V | 8.54 | 6.85 | −1.69 | 6.86 | −1.68 | 7.28 | −1.26 | 30 | 24 |
+| C | 7.14 | 6.29 | −0.86 | 6.81 | −0.33 | 4.71 | −2.43 | 25 | 22 |
+| KD | 6.27 | 6.62 | +0.35 | 5.42 | −0.84 | 13.58 | +7.32 | 22 | 23 |
+| MP | 6.22 | 5.46 | −0.76 | 5.16 | −1.06 | 7.88 | +1.66 | 22 | 19 |
+| L | 5.42 | 4.90 | −0.52 | 4.68 | −0.74 | 6.38 | +0.96 | 19 | 17 |
+
+**The mean absolute deviation** over the eight: the model 1.29 pp, the no-change forecast 1.36 pp, the bare spatial layer 3.61 pp. **Seats, total absolute error out of 349:** 36 both as the game seats the prediction and through the two-tier procedure, against 38 for the no-change chamber.
+
+**Read plainly** (these readings come from the table):
+- The prediction is prior-dominated, because loyalty keeps 78–96 % of each party's 2022 share. It beats no-change by 0.07 pp and two seats, which is a thin edge, not a demonstrated skill.
+- It moved five of the eight away from their 2022 shares in the direction the result then went: S and SD down, KD, MP and L up.
+- It moved M and C the wrong way (down, where both rose) and left V where it was (−0.01; V rose 1.68).
+- Its largest misses are the two it held too high, SD (+2.81) and S (+2.00), and V held too low (−1.69).
+- Everything outside the eight is unrepresentable (1.58 % of the valid vote).
+
+**The allocator control, on the REAL 2026 counts.** The national modified Sainte-Laguë (`SeatAllocation.AllocateWithThreshold`) and the full two-tier procedure (`SeatConversion.Sweden`) are each **0 seats off** the decision's chamber. The two-tier procedure's fixed seats per valkrets, derived from the election-day eligible counts, are **4 seats off** the decision's own fixed-seat column. The statute has the fixed seats decided from the roll by 30 April, not derived afterwards. What the live game reads after K-1 is part (1)'s decision, recorded there.
+
+**Not represented, and said so in the record:** the parties outside the eight; anything between 2022 and 2026 (the economy, approval, leaders, polls); turnout; differential regional swing; campaign effects and tactical voting.
+
+**Evidence.** Tier SIMULATION: the staged set holds the 2026 data under `ElectionsData/`, which `bar_tier.ps1 -Staged` counts as simulation input. The diagnostic itself is tooling. The cheap bar is **47 of 47** (`k1_601_cheap`) and the simulation bar **56 of 56** (`k1_601_sim`). Nothing that runs moved: no seed, no table, no code path a game reads. No review row is owed, because the sentinel did not move and nothing books money.

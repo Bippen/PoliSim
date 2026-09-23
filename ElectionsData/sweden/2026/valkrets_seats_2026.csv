@@ -1,0 +1,44 @@
+# Sweden Riksdag 2026 - seats per valkrets and party, fixed + adjustment [SOURCED] [PROVISIONAL]
+# source: Valmyndigheten's decision of 2026-09-19, Dnr VAL-735-2026, "Fördelning av mandat i riksdagen och
+#   fastställande av vilka kandidater som valts till ledamöter och ersättare" (raw/beslutsprotokoll-resultat-riksdagen-2026.pdf,
+#   https://www.val.se/download/18.7faaad3f1a0b0c300e4282/1789822515986/beslutsprotokoll-resultat-riksdagen-2026.pdf):
+#   'fixed' = Bilaga 3's per-valkrets header "<valkrets>: N mandat" (fixed constituency seats; equal, all 29, to
+#   raw/fasta-valkretsmandat-val-2026.xlsx, Valmyndigheten's apportionment decision of 2026-05-05);
+#   'adjustment' and the *_adj columns = the adjustment seats Bilaga 6 places in that valkrets (equal, cell by cell,
+#   to Bilaga 1's "Varav utj." column); 'total' and the party columns = Bilaga 1's per-valkrets "Mandat"
+#   (equal, cell by cell, to partiMandat.antalMandat in raw/resultat_val2026_RD_{NN}_S.json).
+# No fixed seat was returned (Bilaga 5, återföring: every party's fixed seats <= its national entitlement).
+# VERIFIED: fixed sums to 310, adjustment to 39, total to 349; per party (total, of which adjustment):
+#   S 99 (5 adj); M 70 (2 adj); SD 62 (2 adj); C 25 (8 adj); V 30 (3 adj); KD 22 (2 adj); L 19 (8 adj); MP 22 (9 adj) - each equal to Bilaga 1/4/6 and RD_S.json.
+# A party's FIXED seats in a valkrets = its party column minus its *_adj column.
+# Row order = valkrets_votes_2026.csv (the 2022/2018 order). InvariantCulture integers.
+valkrets;fixed;adjustment;total;S;M;SD;C;V;KD;L;MP;S_adj;M_adj;SD_adj;C_adj;V_adj;KD_adj;L_adj;MP_adj
+Stockholms län;41;2;43;12;10;6;3;4;2;3;3;1;0;0;0;0;0;0;1
+Stockholms kommun;29;5;34;9;6;3;3;4;1;3;5;1;0;1;0;0;0;1;2
+Uppsala län;12;1;13;4;2;2;1;1;1;1;1;1;0;0;0;0;0;0;0
+Södermanlands län;9;2;11;3;2;2;1;1;1;0;1;0;0;0;1;0;0;0;1
+Östergötlands län;14;1;15;4;3;3;1;1;1;1;1;0;0;1;0;0;0;0;0
+Jönköpings län;11;2;13;3;2;3;1;1;1;1;1;0;0;0;0;0;0;1;1
+Kronobergs län;6;0;6;2;2;2;0;0;0;0;0;0;0;0;0;0;0;0;0
+Kalmar län;7;1;8;2;2;2;1;0;1;0;0;0;0;0;1;0;0;0;0
+Gotlands län;2;0;2;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0
+Blekinge län;5;0;5;2;1;2;0;0;0;0;0;0;0;0;0;0;0;0;0
+Skåne läns västra;9;3;12;3;2;3;1;1;0;1;1;0;0;0;1;0;0;1;1
+Skåne läns södra;12;1;13;3;3;2;1;1;1;1;1;0;0;0;0;0;1;0;0
+Skåne läns norra och östra;10;2;12;3;2;3;1;1;1;1;0;0;0;0;1;0;0;1;0
+Malmö kommun;10;1;11;3;2;1;1;2;0;1;1;0;0;0;0;0;0;1;0
+Hallands län;10;3;13;3;3;2;1;1;1;1;1;0;1;0;0;1;0;0;1
+Västra Götalands läns västra;11;2;13;3;3;2;1;1;1;1;1;1;1;0;0;0;0;0;0
+Västra Götalands läns norra;8;2;10;3;2;2;0;1;1;1;0;1;0;0;0;0;0;1;0
+Västra Götalands läns södra;7;0;7;2;2;2;0;0;1;0;0;0;0;0;0;0;0;0;0
+Västra Götalands läns östra;8;1;9;3;2;2;1;0;1;0;0;0;0;0;1;0;0;0;0
+Göteborgs kommun;18;0;18;5;3;2;1;3;1;1;2;0;0;0;0;0;0;0;0
+Värmlands län;9;1;10;3;2;2;1;1;1;0;0;0;0;0;0;1;0;0;0
+Örebro län;9;3;12;3;2;2;1;1;1;1;1;0;0;0;1;0;0;1;1
+Västmanlands län;8;1;9;3;2;2;0;1;0;1;0;0;0;0;0;0;0;1;0
+Dalarnas län;9;2;11;3;2;2;1;1;1;0;1;0;0;0;0;1;0;0;1
+Gävleborgs län;9;1;10;3;2;2;1;1;1;0;0;0;0;0;1;0;0;0;0
+Västernorrlands län;7;1;8;3;1;2;1;0;1;0;0;0;0;0;1;0;0;0;0
+Jämtlands län;4;0;4;2;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0
+Västerbottens län;8;1;9;3;1;1;1;1;1;0;1;0;0;0;0;0;1;0;0
+Norrbottens län;8;0;8;3;2;2;0;1;0;0;0;0;0;0;0;0;0;0;0

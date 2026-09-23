@@ -74,7 +74,7 @@ read at every session's start; this file is the open rows. The claim convention 
 
 ## The calendar's
 
-- **K-1** — the seed refresh from Sweden's real result, **13 September**.
+- **K-1** — the seed refresh from Sweden's real result, **13 September**. **IN PROGRESS 2026-09-23 (ordered in six parts): part (0), the out-of-sample test, DONE and kept - `COMPLETED.md` §601.**
 - **K-2** — Svenska kraftnät's report on changing Sweden's bidding-zone division (the government's commission of 15 May 2025, extended May 2026 to a report on structural congestion, *"första steget i en formell översyn"*), due to the ministry **29 January 2027**. **Defence clause: reporting is not enacting, and only an enacted change moves the seed** - the four zones and their links (`docs/data/ENERGY_LAYER_SPINE.md` §4) stand until a decision is in force. Added 2026-09-10 (`COMPLETED.md` §456).
 
 ## Standing findings that own no item
