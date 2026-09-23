@@ -74,16 +74,21 @@ namespace PoliSim.EditorTools
         /// debt ratio 24.20 → 24.19 on seed 777 and 33.21 → 33.63 on 424242 - the AI ministry's threshold rule, whose net-expenditure cap reads the labour step as
         /// potential growth and cuts less (`PensionParticipationProbe`), and whose binding years move under a small perturbation. Before it 'ft16' - FT-16 (§585);
         /// 'ft14' and 'pn1d2' were byte-identical to it.</summary>
-        public const string BaselineLabel = "pp3";
+        /// <summary>§599 (2026-09-23, ruled): WHERE A COUNTRY'S EFFECT WAS MEASURED, THE MEASUREMENT IS THE STEP - France reads Rabaté &amp; Rochut's +20.9 pp and
+        /// Germany Geyer &amp; Welteke's +13.5 pp directly (the formula gave France 25.3); the four unmeasured countries keep the sourced rate × the median hazard
+        /// and move against 'pp3' only by spillover (Italy through the zone rate, the others through their currencies; 1.2e-4 at most). At year 100: France +0.77 % labour force, +0.78 to +0.83 % GDP; Germany +0.24 %, +0.25 to +0.26 %. France's century
+        /// debt ratio moves −0.08 points on one seed and +0.70 on the other: recorded, by the same ruling, as NO MEASURABLE FISCAL EFFECT, not a finding.
+        /// Before it 'pp3' - §596.</summary>
+        public const string BaselineLabel = "pp4";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pp3_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pp4_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "45ef1055382d9ef31c9b779e932f4cabbdab46f33cea68d1d9402252732a49ca"),
-            (424242, "f9e2af13e4fa24985798baf7102c7e5d259b3c57a425e0c7ada76d196af28b42"),
+            (777, "6f6788f1c3f6cb5a7618d7fc8229dba013e4465c9e10da8d28b482ed1cecb684"),
+            (424242, "7ca9d665354f196082377526816c179d22975b6d6c185b3ec30b66669d322db5"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------

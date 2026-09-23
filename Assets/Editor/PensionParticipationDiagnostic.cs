@@ -9,12 +9,13 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// PN-1's other half (2026-09-23, §596): THE PARTICIPATION RESPONSE, EXPLAINED PER COUNTRY AND ASSERTED. On a fresh world, for each of the six:
     /// (1) the response is ZERO at the seed year's age - the tables are the seed's structure; (2) the statute's own path after the seed - the
-    /// no-policy run's move - year by year: the age, the ages crossed, the step (the sourced rate before the lower age × the hazard, named with its
-    /// source), and the structural rate with the response against the pyramid's alone, the pyramid held at the seed so the response is read alone;
+    /// no-policy run's move - year by year: the age, the ages crossed, the step (§599: the country's measured effect where one exists, else the sourced
+    /// rate before the lower age × the median hazard, named with its source), and the structural rate with the response against the pyramid's alone, the pyramid held at the seed so the response is read alone;
     /// (3) the dial: an age set by a bill two years above and two below the seed's, the structural rate's move and the labour force's in percent,
     /// signed (a raised age adds participation, a lowered one removes it); (4) THE PENSION LINE'S SAVING UNCHANGED: the line's driver
     /// (SpendingDrivers.StatutoryPensionAge) is the headcount at or above the age in force, bit for bit, with the response in place;
-    /// (5) the one country the source measured at a statutory age - France - against Rabaté &amp; Rochut's +20.9 pp. Exit 1 on any failed assertion.
+    /// (5) §599: France's and Germany's steps ARE their measured effects (20.9 and 13.5 pp) and the four others carry none, with the formula's overshoot on
+    /// France printed beside the measurement. Exit 1 on any failed assertion.
     /// </summary>
     public static class PensionParticipationDiagnostic
     {
@@ -29,21 +30,21 @@ namespace PoliSim.EditorTools
             string F(string format, params object[] args) => string.Format(Inv, format, args);
 
             sb.Append("=== PensionParticipationDiagnostic (§596): the bands a pension age crosses, per country ===\n");
-            sb.Append("    source: Atav, Jongen & Rabate (2021), IZA DP 14150, Table B.1 - employment effect = the rate just before the age x the hazard at it\n\n");
+            sb.Append("    source: Atav, Jongen & Rabate (2021), IZA DP 14150, Table B.1 - a country's measured effect where one exists; else the rate just before the age x the table's median hazard\n\n");
             World world = WorldFactory.CreateDefault();
             foreach (Country c in world.Countries)
             {
                 if (!PensionAgeStatute.Has(c.Id) || c.Cohorts == null || ParticipationRateTable.For(c.Id) == null) { sb.Append(F("    {0}: no statute, pyramid or table - no response\n", c.Id)); continue; }
                 float[] rates = ParticipationRateTable.For(c.Id);
                 float seedAge = PensionParticipationResponse.ReferenceAge(c.Id);
-                float hazard = PensionParticipationResponse.Hazard(c.Id);
-                string hazardSource = PensionParticipationResponse.HazardIsCountrys(c.Id)
-                    ? (c.Id == CountryId.France ? "Rabate & Rochut 2019, the country's own" : "Geyer & Welteke 2019 (an ERA), the country's own")
-                    : "the table's median of eight increases (no study of this country in it)";
+                bool measured = PensionParticipationResponse.TryMeasured(c.Id, out float measuredEffect);
+                string stepSource = measured
+                    ? (c.Id == CountryId.France ? F("MEASURED in France: Rabate & Rochut 2019, NRA 60->61, +{0:0.0} pp", 100f * measuredEffect) : F("MEASURED in Germany: Geyer & Welteke 2019, women's ERA 60->63, +{0:0.0} pp", 100f * measuredEffect))
+                    : F("no study measured it: the sourced rate before the age x the table's median hazard {0:0.###}", PensionParticipationResponse.MedianHazard);
                 int keptYear = c.CalendarYear;
                 float keptOverride = c.PensionAgeOverride;
                 float pyramidSeed = ParticipationRateTable.StructuralRate(c.Id, c.Cohorts.Counts);
-                sb.Append(F("  {0}: the age at the seed {1}; hazard {2:0.###} ({3})\n", c.Id, PensionAgeStatute.Format(seedAge), hazard, hazardSource));
+                sb.Append(F("  {0}: the age at the seed {1}; the step - {2}\n", c.Id, PensionAgeStatute.Format(seedAge), stepSource));
 
                 // (1) zero at the seed
                 c.CalendarYear = PensionAgeStatute.SeedYear; c.PensionAgeOverride = -1f;
@@ -60,9 +61,10 @@ namespace PoliSim.EditorTools
                     lastAge = age;
                     float with = ParticipationRateTable.StructuralRate(c);
                     float lower = Mathf.Min(seedAge, age);
-                    float step = PensionParticipationResponse.RateAtAge(rates, lower - 1f) * hazard;
-                    sb.Append(F("      {0}: the statute steps to {1} - the ages {2} to {1} crossed, step {3:0.0} pp ({4:0.0} % before {2} x {5:0.###}); structural {6:0.000} % against the pyramid's {7:0.000} ({8:+0.000;-0.000} pts)\n",
-                        year, PensionAgeStatute.Format(age), PensionAgeStatute.Format(lower), 100f * step, 100f * PensionParticipationResponse.RateAtAge(rates, lower - 1f), hazard, with, pyramidSeed, with - pyramidSeed));
+                    float step = PensionParticipationResponse.Step(c.Id, rates, lower);
+                    string stepWhy = measured ? "measured" : F("{0:0.0} % before {1} x {2:0.###}", 100f * PensionParticipationResponse.RateAtAge(rates, lower - 1f), PensionAgeStatute.Format(lower), PensionParticipationResponse.MedianHazard);
+                    sb.Append(F("      {0}: the statute steps to {1} - the ages {2} to {1} crossed, step {3:0.0} pp ({4}); structural {5:0.000} % against the pyramid's {6:0.000} ({7:+0.000;-0.000} pts)\n",
+                        year, PensionAgeStatute.Format(age), PensionAgeStatute.Format(lower), 100f * step, stepWhy, with, pyramidSeed, with - pyramidSeed));
                     Assert(age > seedAge ? with > pyramidSeed : with < pyramidSeed, F("{0} {1}: the statute's step moves the structural rate the age's way", c.Id, year));
                 }
                 if (Mathf.Abs(lastAge - seedAge) < 1e-4f) { sb.Append("      the statute holds the seed's age to 2040 - the no-policy run does not move here\n"); }
@@ -114,11 +116,20 @@ namespace PoliSim.EditorTools
                 sb.Append('\n');
             }
 
-            // (5) France against its own study: Rabate & Rochut 2019, the NRA 60 -> 61, +20.9 pp at 45 % x 0.50
+            // (5) §599: where a country's effect was measured, the measurement IS the step; the formula's overshoot on France is printed beside it
             float[] fr = ParticipationRateTable.For(CountryId.France);
-            float frStep = 100f * PensionParticipationResponse.RateAtAge(fr, PensionParticipationResponse.ReferenceAge(CountryId.France) - 1f) * PensionParticipationResponse.Hazard(CountryId.France);
-            sb.Append(F("  France's step {0:0.0} pp against Rabate & Rochut's measured +20.9 pp (45 % x 0.50 in Table B.1)\n", frStep));
-            Assert(Mathf.Abs(frStep - 20.9f) < 5f, "France: the model's step is within 5 pp of the study measured in France");
+            float frSeed = PensionParticipationResponse.ReferenceAge(CountryId.France);
+            float frStep = 100f * PensionParticipationResponse.Step(CountryId.France, fr, frSeed);
+            float frFormulaOwn = 100f * PensionParticipationResponse.RateAtAge(fr, frSeed - 1f) * 0.50f;   // the study's own hazard, Table B.1
+            float frFormulaMedian = 100f * PensionParticipationResponse.RateAtAge(fr, frSeed - 1f) * PensionParticipationResponse.MedianHazard;
+            sb.Append(F("  France's step {0:0.0} pp - the measurement (Rabate & Rochut 2019, +20.9 pp). The model's formula beside it: {1:0.0} pp with the study's own hazard 0.50 ({2:+0;-0} % over the measurement), {3:0.0} pp with the median 0.425 ({4:+0;-0} %); the paper's own product for the study, 45 % x 0.50 = 22.5 pp (+8 %)\n",
+                frStep, frFormulaOwn, 100f * (frFormulaOwn / 20.9f - 1f), frFormulaMedian, 100f * (frFormulaMedian / 20.9f - 1f)));
+            Assert(Mathf.Abs(frStep - 20.9f) < 1e-3f, "France: the step IS the measured effect, 20.9 pp");
+            Assert(PensionParticipationResponse.TryMeasured(CountryId.Germany, out float deStep) && Mathf.Abs(100f * deStep - 13.5f) < 1e-3f, "Germany: the step IS the measured effect, 13.5 pp");
+            foreach (CountryId unmeasured in new[] { CountryId.Sweden, CountryId.Italy, CountryId.Poland, CountryId.USA })
+            {
+                Assert(!PensionParticipationResponse.TryMeasured(unmeasured, out float _), F("{0}: no measured effect - the formula x the median stands", unmeasured));
+            }
 
             sb.Append(failures == 0 ? "\n=== PensionParticipationDiagnostic: ALL ASSERTIONS PASS ===\n" : F("\n=== PensionParticipationDiagnostic: {0} FAILURE(S) ===\n", failures));
             if (failures == 0) { Debug.Log(sb.ToString()); CheckExit.Finish(0); } else { Debug.LogError(sb.ToString()); CheckExit.Finish(1); }
