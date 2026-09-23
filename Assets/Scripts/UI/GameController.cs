@@ -9063,15 +9063,18 @@ namespace PoliSim.UI
         private const float DocketButtonWidthAt1149 = 150f;
         private const float DocketPlateWidthAt1149 = 340f;
 
-        /// <summary>P6-6: the cost line in the Budget's words and ink - a cost in Bad, a saving in Good, neither when nothing is modelled.</summary>
+        /// <summary>P6-6: the cost line in the Budget's words and ink - a cost in Bad, money in in Good, neither when nothing is modelled. PF-14 (§591): the sign is the
+        /// model's - `ApplyOneTimeBudgetImpact` ADDS the figure to the budget, so a positive one is money in (the pool's windfalls and collections) and a negative one a cost
+        /// (its hirings and maintenance); until §591 the line read it the other way round, and every option spoke the opposite of what choosing it did to the balance.
+        /// The figure is the budget's own delta, signed as the Budget's impact line signs it.</summary>
         private void DrawCabinetOptionCostLine(CabinetDecisionOption option)
         {
             bool hasCost = Mathf.Abs(option.BudgetImpact) >= 0.005f;
-            float costBillions = AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry);
+            float budgetDeltaBillions = AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, _playerCountry);
             string text = !hasCost ? "Cost of this option · no budget figure modelled"
-                : costBillions > 0f ? $"Cost of this option {UiFormat.MoneyDelta(costBillions, MoneyUnit.Billions)}"
-                : $"Saving from this option {UiFormat.MoneyDelta(costBillions, MoneyUnit.Billions)}";
-            DrawColoredLabel(text, _labelStyle, !hasCost ? PoliSimTheme.TextSecondary : costBillions > 0f ? PoliSimTheme.Bad : PoliSimTheme.Good);
+                : budgetDeltaBillions < 0f ? $"Cost of this option {UiFormat.MoneyDelta(budgetDeltaBillions, MoneyUnit.Billions)}"
+                : $"Revenue from this option {UiFormat.MoneyDelta(budgetDeltaBillions, MoneyUnit.Billions)}";
+            DrawColoredLabel(text, _labelStyle, !hasCost ? PoliSimTheme.TextSecondary : budgetDeltaBillions < 0f ? PoliSimTheme.Bad : PoliSimTheme.Good);
         }
 
         /// <summary>P2-4.3's arrows for one option, the renderer's own (5c) - the shocks the option carries, each with its unit.</summary>
