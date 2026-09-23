@@ -55,9 +55,13 @@ namespace PoliSim.Simulation
     /// their per-country distance from the retired seeds is in the record (`COMPLETED.md` §195).</para>
     ///
     /// <para>⚠ <b>The substrate's calendar.</b> The seeded pyramid is the 2024 stock (Eurostat
-    /// 1 January; the US Census 1 July). The game opens on 2026-01-01, so `WorldFactory` walks the
+    /// 1 January; the US Census 1 July). The seed is walked to 1 January of the epoch's year (2026). ⚠ Since §604 the game opens on 1 October
+    /// 2026, so the substrate stands NINE MONTHS behind the clock: turn t steps the publisher's year 2026 + t (1 January to 1 January) across the
+    /// clock's 1 October to 30 September, and a reader that pairs the pyramid with `Country.CalendarYear` reads the population as it stood nine months
+    /// before its date - stated, not walked on (a further three quarters' walk is its own family). When this was written the game opened on
+    /// 2026-01-01, so `WorldFactory` walks the
     /// seed two neutral years along the publisher's trajectory (<see cref="WalkToEpoch"/>) — no figure
-    /// typed, and the substrate year is the calendar year from then on. Beyond the projection's last
+    /// typed, and the substrate year was then the calendar year (since §604 it trails it by nine months, above). Beyond the projection's last
     /// year (2100) the last published pyramid is the anchor for every later year: the population
     /// holds its 2100 shape, displaced only by the levers. Stated rather than extrapolated.</para>
     /// </summary>

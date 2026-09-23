@@ -14,7 +14,7 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// CL-3 (2026-09-16, §523; the plan's S-C3): **THE STAGED SAVE AT THE PRE-CAMPAIGN'S FIRST DAY.** The play protocol opens on a save cut
     /// here: the seed world with Sweden as the player, advanced day by day from the epoch to the first day of the 26-week run-up
-    /// (`CampaignCalendar.Sweden2026.PreCampaignStart`, 2026-01-18 - 17 days in), and written with the save service the game itself uses.
+    /// (the game's own run-up, `new CampaignCalendar(TurnBoundary(NextElectionTurnAfter(0))).PreCampaignStart` - 4 February 2030 since §604's epoch; it was CampaignCalendar.Sweden2026's 2026-01-18 until CL-5), and written with the save service the game itself uses.
     /// The seed is stated on the save (`MasterSeed`, 777 - the harness's own, so a played run and a filmed one open on one world) and the
     /// protocol document names it. Nothing is drafted into it: a playtester opens a clean book. **The player is seated as the largest party of Sweden's seeded chamber**
     /// (§558 - the fresh game's own fallback and the film harness's seat; until 2026-09-21 the staging seated none, and a player with no party has no run-up).
@@ -115,7 +115,7 @@ namespace PoliSim.EditorTools
             string failure = CutAndVerify(path, out SaveGame loaded);
             if (failure != null) { Debug.LogError("PLAY PROTOCOL: the pre-campaign save was NOT staged clean - " + failure); CheckExit.Finish(1); return; }
             Debug.Log(F("PLAY PROTOCOL: staged {0} ({1} bytes, sha256 {2}…) - format {3}, seed {4}, Sweden, {5:yyyy-MM-dd} = the run-up's first day ({6} weeks before the campaign, {7} before polling day {8:yyyy-MM-dd}).",
-                path, new FileInfo(path).Length, Digest(path), loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, CampaignCalendar.DefaultPreCampaignWeeks, CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks, CampaignCalendar.Sweden2026.ElectionDate));
+                path, new FileInfo(path).Length, Digest(path), loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, CampaignCalendar.DefaultPreCampaignWeeks, CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks, new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(0))).ElectionDate));
             CheckExit.Finish(0);
         }
     }

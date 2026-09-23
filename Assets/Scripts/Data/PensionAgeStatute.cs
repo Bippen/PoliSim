@@ -85,7 +85,7 @@ namespace PoliSim.Data
             public string SourceFile;
         }
 
-        /// <summary>The model's first calendar year - the game's epoch (SimulationManager.EpochDate, 2026-01-01); the CSV was fetched 2026-09-12 and its figures are that year's.</summary>
+        /// <summary>The model's first calendar year - the year of the game's epoch (SimulationManager.EpochDate, 2026-10-01 since K-1's §604; 2026-01-01 before it); the CSV was fetched 2026-09-12 and its figures are that year's.</summary>
         public const int SeedYear = 2026;
 
         /// <summary>SFB 2 kap. 10 c §: the riktålder computed in a year is in force the sixth year after it - the horizon a Swedish path is dated to.</summary>

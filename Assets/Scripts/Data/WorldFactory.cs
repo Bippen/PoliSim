@@ -1039,7 +1039,8 @@ namespace PoliSim.Data
                 // EconomyState derives from it; F4-2's schedules and PN-2's payment readout are its readers.
                 Generated.CohortIncomeSeeds.Apply(country.Cohorts, country.Id);
                 // F2 step 4 (2026-09-02): the pyramid IS the demography now. The seed is the 2024 stock;
-                // the game opens in 2026, so the seed is walked two neutral years along the publisher's
+                // the game opens in 2026 (on 1 October since §604 - the walk still ends at 1 January 2026, nine months
+                // behind the clock; CohortDemographics says so), so the seed is walked two neutral years along the publisher's
                 // own trajectory, and the eight demographic scalars the constructor above seeded (the
                 // crude rates, the population, the dependency ratio) are OVERWRITTEN with readings of the
                 // walked pyramid - the constructor's figures were the retired rules' seeds and are kept

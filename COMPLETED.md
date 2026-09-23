@@ -33444,3 +33444,85 @@ So `RedLine.OneWay` (`CoalitionFormation.cs`):
 - The real film `film603b_1280`: **167 captured, 0 failed, 0 canvas-text violations across 6 asserts** (the picker's frames with the new cabinet marks among them). It exits 1 on the edge guard's NOT FLUSH frames, now 12. The eleven standing ones are unchanged. The twelfth is `88c_after_election_night`, reached for the first time because the player stays in office (above). It is the same class and the same numbers (right-edge run 620 at zero margin, the pause banner wrapping to three lines; `COMPLETED.md`'s record of the class).
 - The first pass of these runs was cut short when the review's defect was found: its films were stopped, and one real film ran on the pre-fix tree and is discarded (`film603_1280`, not evidence).
 - The declarations file's three verification rounds are above; `government_2026.md` is part (4)'s.
+
+## 604. K-1 PART (3) - THE GAME STARTS ON 1 OCTOBER 2026, AFTER THE NEW RIKSDAG CONVENED; MEASURED FIRST, ITS OWN FAMILY `k1ep` (2026-09-24)
+
+**The order:** *"The game's start moves to after the election so the seated chamber is true on day one; measure what that moves first, since every statute path reads the calendar year, and land it as its own family."*
+
+**The date, sourced** (`ElectionsData/sweden/2026/government_2026.md`, 28 pages saved, verified):
+- The new Riksdag convenes at the roll-call on Monday 28 September 2026, 11.00 (RF 3 kap. 10 §: *"på den femtonde dagen efter valdagen"*; riksdagen.se [RD-N19], [RD-RMO]).
+- The session opens on 29 September.
+- **`SimulationManager.EpochDate` = 1 October 2026** (it was 1 January 2026, an arbitrary choice). That is the first day after both dates, and the one on which a quarter and a month begin cleanly:
+  - The inherited GDP quarter is exactly 1 July - 30 September 2026 (`PublicationSystem`: the epoch's eve, less three months).
+  - The USA's turn becomes its federal fiscal year.
+  - Turn 4's boundary, the game's first election, is **30 September 2030**, 22 days after Vallagen's second Sunday of September (8 September 2030). Under the old start it fell on 31 December 2029, nine months early.
+  - **Every turn boundary now falls in the calendar year 2026 + turn**: 0 misses from turn 0 to turn 1000, against 998 under the old start, which lagged a year from turn 3. That lag was what the pension line and the energy fleet had been reading all along.
+
+**MEASURED BEFORE IT LANDED, in three dumps (100 turns, both seeds):**
+- **The move alone** (`ep1`): the trajectory moves, first on row 7.
+- **The attribution run** (`ep1old`): the same move, with `CommitCalendarYear` computing the year on the OLD start's day count. It was a scratch probe, never committed. **It is byte-identical to `pp4` on both seeds.** So the move reaches the no-policy economy through `Country.CalendarYear` and nothing else: the pension line's statutory-age cohort at the boundary, the participation response's age in force (read daily since §596), and the energy fleet's year.
+- **The final tree** (`k1ep`) is byte-identical to `ep1`; the comments and the save bump move nothing.
+
+**What moves, per country** (`Tools/traj_diff.pl pp4 ep1 <seed> 100 first`, the new `first` mode, which prints where each country first diverges):
+
+| country | first differs | why |
+|---|---|---|
+| Germany, Italy, USA | turn 1 (the budget, the debt, the effective debt rate) | their 2027 statute steps now land on day 92 of turn 0 (1 January 2027), not at turn 1's boundary |
+| France | turn 2 | its next statutory step is 2028's |
+| Sweden, Poland | turn 4, through their currencies alone (`CurrencyStrength`, `TradeBalance`) | their own ages do not step in the window (Sweden 67 to 2032, Poland fixed) |
+
+- The early turns move little. At turn 20 GDP moves under 0.6 % everywhere, most in France (−0.52 % on seed 777, −0.21 % on 424242) and Germany (+0.19 % and +0.08 %).
+- **The debt ratio (`EconomyState.DebtToGdpRatio`, nominal debt over nominal GDP) moves systematically:**
+  - France is lower on 99 of 100 turns on both seeds (24.12 → 23.99 % at turn 100 on seed 777, 33.91 → 31.13 on 424242).
+  - Germany is higher on 94 and 95 (31.43 → 33.04; 33.61 → 33.71).
+  - Italy is within 0.1 point; Poland, Sweden and the USA do not move.
+  - Turns 1-5 are identical across the seeds, so the effect is deterministic: the statutes arrive about nine months earlier in game time. Only its size at turn 100 depends on the seed.
+  - §599's ruling (a direction that flips between seeds) does NOT cover it, and it is recorded as the family's effect.
+  - Germany's rise has a plausible mechanism, §596's: the ministry reads a labour-supply step as potential growth and cuts less. That mechanism was not measured; no ministry-off probe was run.
+  - **Corrected before the commit:** the first draft of this record, and of the sentinel's doc, divided nominal debt by REAL GDP (FT-13's error, repeated). It read Germany +13.0 points and France −20.6, and called it seed noise under §599. The review caught it (below).
+
+**What the dump cannot see, measured separately:**
+- **Budget windows** (`BudgetWindowDiagnostic`): every country's arrival window opens on day one (2026-10-02). The five calendar-year budgets then open their fiscal-year window again on 1 January 2027, tick 92. So the player meets two budget processes for fiscal 2027 in the first 92 days. That is measured and stated, not changed (the arrival window is C-C2's rule; the fiscal year is the country's).
+- **Publications** (`PublicationCadenceCheck`): the first GDP preliminary lands on day 121 (day 119 under 1 January). The ratchet of one holds.
+- **The play calendar** (`PlayProtocolCheck`): the save cut on the game's own calendar opens on the run-up of **4 February 2030**. The campaign opens 5 August 2030 and polling day is 30 September 2030 (they were 2029 dates).
+- **The pension diagnostics** (`PensionAgeDiagnostic`, `PensionParticipationDiagnostic`, `PensionPaymentDiagnostic`): clean on the moved clock.
+
+**Stated, not changed:**
+- **The population's pyramid is walked to 1 January 2026** (`WorldFactory.WalkToEpoch`), so on day one it stands nine months behind the clock. A walk of a further three quarters is its own family, and mixing it in would have made this dump's diff unreadable.
+- **Statutes now step on 1 January, inside a turn** (day 92), where the boundary readers step at the October boundary. That is inherent in any start that is not 1 January.
+
+**Landed, in one commit:**
+- The epoch.
+- The comments that stated the old date as current, and those the review found:
+  - the epoch's doc; the budget window's measurement note;
+  - `CohortDemographics` (now stating the nine-month lag) and `WorldFactory`'s walk;
+  - `PensionAgeStatute.SeedYear`; `PublicationSystem` (with the annual series' day 457); `PublicationCadenceCheck`;
+  - the turn-year ruling in `GameController`; `EnergyConnectionQueue`'s year notes;
+  - `PlayProtocolStaging`'s printed polling day and doc; `PLAY_PROTOCOL.md`'s five dates (the save is re-staged by part (5)).
+- `CommitCalendarYear`'s doc, which said *"nothing in the daily arithmetic reads it"*. That has been false since §596 and is corrected.
+- The save format 23 → 24: a v23 save's date and turn were cut against 1 January.
+- `ElectionsData/sweden/2026/government_2026.md` and its 28 raw pages, which the epoch's doc cites: sourced and verified in three rounds, the last six wording defects applied by hand from the verifier's exact replacements.
+- The sentinel re-based from `pp4` to **`k1ep`** (digests 0234e49d… and 54cd5886…, recomputed from the dumps' text through turn 20 by the sentinel's own rule; the same computation reproduces `pp4`'s recorded digests).
+- `Tools/traj_diff.pl`'s `first` mode; its default output is byte-identical to before.
+
+**Reviewed** (a money path: `SimulationManager.cs`; and the baseline): One independent read-only reader (`Reviews/2026-09-24_s604_epoch.md`, the report verbatim with what was done about each finding).
+- **Confirmed:** the one-constant move is correct at every reader of the epoch it enumerated, and the calendar facts, the first-divergence table (with the statute steps that explain each row), the digests and the save bump all hold.
+- **Refuted:** the debt reading (fixed above).
+- **Found stale or false** (all fixed):
+  - comments stating the old calendar as current (the population's substrate year, the turn-year ruling's premise, the energy queue's year notes, the staging's printed polling day and its doc);
+  - two over-statements in `CommitCalendarYear`'s own new doc ("written only here", "day 92 of every turn");
+  - the epoch doc stating the Riksdag's 28 and 29 September as past;
+  - `traj_diff.pl`'s new mode skipping absent fields.
+- **Its risk R2 is stated in `PublicationSystem`:** the five calendar-year countries' annual series now first publish on day 457 (1 January 2028), not day 365.
+- The attribution probe's one-line patch is recorded in the review file, so the run can be repeated.
+- Rows: `SimulationManager.cs` at its reviewed state, and both `k1ep` digests. `PensionAgeStatute.cs` and `EnergyConnectionQueue.cs` changed in comments only, which the ledger accepts on their reviewed states.
+
+
+**Evidence.** Tier SIMULATION + UI (a comment in `GameController.cs` makes it UI; the dates on screen moved anyway).
+- **The dumps:** `ep1`, `ep1old` and `k1ep`, both seeds, as above.
+- **The date-bearing checks on the moved clock** (`k1_604_named1`): `PublicationCadenceCheck`, `PlayProtocolCheck` and the three pension diagnostics, **5 of 5**. `BudgetWindowDiagnostic` ran on its own (`k1_604_budgetwindow`).
+- **`docs/generated/POTENTIAL_PREMISE.md`** regenerated: its no-policy century rows moved with the family.
+- **The simulation bar on the final tree:** **56 of 56** (`k1_604_sim2`; the sentinel reads `k1ep`'s digests as the baseline's, and the energy bounds hold: 26 cells, 4 recorded).
+- **The cheap bar on the final tree: 47 of 47** (`k1_604_cheap2`). Its first run failed on one check (`k1_604_cheap`), `ReviewLedgerCheck`. `EnergyConnectionQueue.cs`'s comment edit sits inside a provenance block, which the ledger's rule reads as a change a review must see, even though the comment-only verdict accepts it (the author ran the runner on the pair: ACCEPT). The reviewer had read that file and prescribed that edit (D9), so its row cites the s604 review with that note, and the re-run is clean.
+- **The dry film `dry604`** (declared): **167 measured, 0 failed, 0 overflows, 0 escapes, 0 errors, exit 0**.
+- **The real film `film604_1280`:** **167 captured, 0 failed, 0 canvas-text violations across 6 asserts**. It exits 1 on the edge guard's 12 NOT FLUSH frames, the same 12 as `film603b_1280` (the banner-wrap class, §603).

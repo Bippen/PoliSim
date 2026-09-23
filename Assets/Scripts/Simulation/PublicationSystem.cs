@@ -34,7 +34,9 @@ namespace PoliSim.Simulation
         /// does not begin the day the player does.
         ///
         /// Without it, suppressing pre-epoch releases leaves the GDP graph empty until roughly day 120 -
-        /// the first full quarter ends 31 March and its advance estimate lands ~30 April - which hides
+        /// the first full quarter ends 31 December (31 March under the 1 January epoch before K-1) and its advance estimate lands at
+        /// day 121 (§604, measured by `PublicationCadenceCheck`; its annual series for the five calendar-year countries first publish on 1 January 2028,
+        /// day 457, where they published on day 365 - 2026's year starts before the epoch and is suppressed, the review's reading of `ReleaseCalendar`) - which hides
         /// the reporting lag for a third of the first year, exactly when a player is forming their model
         /// of how the game works.
         ///

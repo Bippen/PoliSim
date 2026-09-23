@@ -4618,7 +4618,8 @@ namespace PoliSim.UI
         /// TURN->YEAR RULING (non-trivial #1 of 2): this used to append " · T{turn}" after the year -
         /// harmless while a turn was ~121 days and the two numbers meant different things, but now that
         /// a turn IS a year, `CurrentTurn` and `date.Year - SeedEpochYear` are the same count wearing
-        /// two labels. The ruling, since the package this pass swept from didn't settle it: show the
+        /// two labels. (Since §604's 1 October epoch they agree only October to December; January to September the
+        /// calendar year is turn + 1 - the ruling to show the calendar year stands, and is the reason it does.) The ruling, since the package this pass swept from didn't settle it: show the
         /// REAL calendar year everywhere and drop the elapsed-turn suffix here specifically, rather than
         /// relabel it " · Y{turn}" - two numbers that agree would be redundant, and two that read as
         /// disagreeing (elapsed count vs. absolute year, offset by the seed epoch) would be worse.

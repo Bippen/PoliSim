@@ -34,7 +34,7 @@ namespace PoliSim.EditorTools
         private const int DriverCeilingDays = 1825;
 
         /// <summary>⚠ A RATCHET, measured 2026-09-01, not authored: exactly ONE stat (GDP, first
-        /// preliminary at day 119) reaches a preliminary state inside the driver's ceiling. Every other
+        /// preliminary at day 121 since K-1's 1 October epoch, §604; day 119 under 1 January) reaches a preliminary state inside the driver's ceiling. Every other
         /// series is FINAL on first release and has no revision stage at all. **Raise it when another
         /// series gains one; a fall below it is the driver's warm-up strategy breaking.**</summary>
         private const int ReachablePreliminaryRatchet = 1;
@@ -143,7 +143,7 @@ namespace PoliSim.EditorTools
             // until `AnyPreliminary` reports one. If no stat ever reaches PRELIMINARY inside the driver's
             // ceiling, that strategy silently becomes a spin to the ceiling that films the wrong state -
             // which is S-20's family exactly. Measured 2026-09-01: exactly ONE stat qualifies (GDP, at
-            // day 119), so the ratchet is 1. Raise it when another series gains a revision stage; a fall
+            // day 121 since K-1's epoch, §604), so the ratchet is 1. Raise it when another series gains a revision stage; a fall
             // below it is the strategy breaking, and it fails here rather than in a film nobody re-reads.
             // ⚠ A FLOOR ratchet: the measurement must not fall BELOW the bound, because the driver's
             // warm-up breaks when this goes DOWN. The direction is CARRIED rather than implied - reporting

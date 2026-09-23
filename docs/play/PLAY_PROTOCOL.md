@@ -1,8 +1,8 @@
 # The play protocol (CL-3, `COMPLETED.md` §523)
 
-> **RULED 2026-09-22 (§579, CL-5 closed): THE GAME IS RIGHT AND THE PROTOCOL WAS WRONG.** The run-up opening on 7 May 2029 and polling day at the election turn's boundary is D-23 (a) as ruled; the 18 January and 13 September 2026 this protocol used to name were the REAL Swedish election's dates, not the played game's. The protocol now reads the game's own calendar, and `PlayProtocolStaging` cuts the save on it - the dates below are **read from the save, never typed**. `CampaignCalendar.Sweden2026` remains the real election's calendar and is no longer what the play is cut on. E-39 is UNBLOCKED; DS-7 (b) - polling day on the calendar's date - fires after the first play, as sequenced.
+> **RULED 2026-09-22 (§579, CL-5 closed): THE GAME IS RIGHT AND THE PROTOCOL WAS WRONG.** The run-up opening on the game's own calendar and polling day at the election turn's boundary is D-23 (a) as ruled (7 May and 31 December 2029 when ruled; 4 February and 30 September 2030 since K-1 moved the game's start to 1 October 2026, §604); the 18 January and 13 September 2026 this protocol used to name were the REAL Swedish election's dates, not the played game's. The protocol now reads the game's own calendar, and `PlayProtocolStaging` cuts the save on it - the dates below are **read from the save, never typed**. `CampaignCalendar.Sweden2026` remains the real election's calendar and is no longer what the play is cut on. E-39 is UNBLOCKED; DS-7 (b) - polling day on the calendar's date - fires after the first play, as sequenced.
 
-One play of Sweden's first election in the played game - the election turn's boundary, 31 December 2029 - from the run-up's first day to election night, on a stated seed, with the twenty-line sheet beside it and the save as the record. This is the protocol S-C3 ruled (`COMPLETED.md §580`, §474); the play itself is Elias's.
+One play of Sweden's first election in the played game - the election turn's boundary, 30 September 2030 (since K-1's §604; 22 days after the statute's second Sunday of September) - from the run-up's first day to election night, on a stated seed, with the twenty-line sheet beside it and the save as the record. This is the protocol S-C3 ruled (`COMPLETED.md §580`, §474); the play itself is Elias's.
 
 ## 1. The seed, stated
 
@@ -15,7 +15,7 @@ Four saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\Defaul
 
 | save | cut by | what it opens on |
 |---|---|---|
-| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: 7 May 2029, the first day of the 26-week run-up of the game's own election (the next election turn's boundary; `PlayProtocolStaging` computes it as the live day path does, and the staging PRINTS the three dates every run), Sweden, the player seated as the largest party of the seeded chamber (§558), a clean book - nothing drafted |
+| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: 4 February 2030 (since §604), the first day of the 26-week run-up of the game's own election (the next election turn's boundary; `PlayProtocolStaging` computes it as the live day path does, and the staging PRINTS the three dates every run), Sweden, the player seated as the largest party of the seeded chamber (§558), a clean book - nothing drafted |
 | `playtest_2_riksbank_rate_decision.json` | the film harness, `-shotsaves`, Sweden | felt verdict 2 ("still not independent"): a rate decision drafted on the Riksbank tab |
 | `playtest_1_trade_bill_costs.json` | the film harness, `-shotsaves`, the USA | felt verdict 1: the Trade bill open with its costs on screen |
 | `playtest_3_dense_midgame.json` | the film harness, `-shotsaves`, the USA | the dense mid-game: the budget-process pause, pending cabinet decisions, a foreign-policy meeting, one bill of every type |
@@ -24,8 +24,8 @@ Four saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\Defaul
 
 ## 3. The play
 
-1. Load `playtest_4_precampaign_day1`. The Desk opens on 7 May 2029, the run-up's first day; the rail's CAMPAIGN cell reads the run-up, which HAS BEGUN on that day (the staging asserts it).
-2. Play the run-up (26 weeks) and the campaign (8 weeks) to polling day, 31 December 2029, and through election night. The eight verbs of the run-up, the campaign's actions, the stories that break and their answers, the debate - every decision goes through the HQ and is queued on the record.
+1. Load `playtest_4_precampaign_day1`. The Desk opens on 4 February 2030, the run-up's first day; the rail's CAMPAIGN cell reads the run-up, which HAS BEGUN on that day (the staging asserts it).
+2. Play the run-up (26 weeks) and the campaign (8 weeks) to polling day, 30 September 2030, and through election night. The eight verbs of the run-up, the campaign's actions, the stories that break and their answers, the debate - every decision goes through the HQ and is queued on the record.
 3. Save at the end of the night (the slot save is enough; a named copy beside it keeps it).
 4. Fill **`docs/play/PLAY_SHEET.md`** - one line per entry in its last column, the entry's "one thing to look for" as the question. Twenty lines, one each; a line may be "did not arise".
 5. The record of the play is the save: `PlayRecordDump.Run -save=<the saved file>` prints every queued decision (day, kind, target, outlay), every story answer and the streams' counts as a table, and that table goes into the record verbatim.

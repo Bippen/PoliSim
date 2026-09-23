@@ -51,14 +51,16 @@ namespace PoliSim.Simulation
     /// id and written at run time.</para>
     ///
     /// <para><b>A STATUTE'S YEAR IS THE CALENDAR'S, AND THE GAME'S TURN IS 365 DAYS (§575, disclosed).</b> The turn's year drifts against the calendar by about a
-    /// quarter of a day a turn (the boundary EnergyFleet.Advance counts is 365 days; the calendar's year is not), so across a century two turns can report the same calendar
-    /// year and another can be skipped. A statute's volume is the CALENDAR year's, so two turns inside one calendar year SHARE that year's volume and a skipped year's volume
+    /// quarter of a day a turn (the boundary EnergyFleet.Advance counts is 365 days; the calendar's year is not), so across a century two turns could report the same calendar
+    /// year and another be skipped - under the 1 January epoch. Since §604's 1 October epoch every boundary to turn 1000 falls in the year 2026 + turn, with no
+    /// repeat and no skip; the rule below stands for the drift that remains inside a turn. A statute's volume is the CALENDAR year's, so two turns inside one calendar year SHARE that year's volume and a skipped year's volume
     /// is never drawn. That is the statute read as written rather than a per-turn allowance invented to be tidy, and it is what the page prints: the year it names is the year
     /// it counted.</para>
     ///
     /// <para><b>THE YEAR IS PASSED, NEVER INFERRED (§575).</b> Every read that can depend on a year takes it as an argument - the year the order being tested will CARRY, which is
     /// what <c>EnergyFleet.Place</c> writes into it. It is NOT read off <c>Country.CalendarYear</c> here, and the reason is measured: the AI ministry decides AT the boundary for
-    /// the year about to be played (<c>SimulationManager</c> passes the turn after this one while the country still carries the year just finished), so a rule that inferred the
+    /// the year about to be played (<c>SimulationManager</c> passes the turn after this one; since §604 the country carries that same year at the boundary, and the coming turn
+    /// is three months of it and nine of the next), so a rule that inferred the
     /// year would have counted the ministry's orders against a year they were not placed in - and a per-year volume that never sees its own orders is no limit at all.</para>
     /// </summary>
     public static class EnergyConnectionQueue

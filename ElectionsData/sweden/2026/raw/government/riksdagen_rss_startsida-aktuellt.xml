@@ -1,0 +1,202 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Riksdagen - RSS</title>
+    <link>https://www.riksdagen.se/</link>
+    <atom:link href="https://data.riksdagen.se/dokumentlista/?utformat=rss" rel="self" type="application/rss+xml" />
+    <description>RSS från riksdagen 
+			</description>
+    <language>sv</language>
+    <copyright>Riksdagen</copyright>
+    <lastBuildDate>Wed, 23 Sep 2026 23:27:50 +0200</lastBuildDate>
+    <category>Riksdagen</category>
+    <ttl>20</ttl>
+    <image>
+      <title>Riksdagen - RSS</title>
+      <link>https://www.riksdagen.se/</link>
+      <url>https://data.riksdagen.se/dataset/img/rdlogotyp.png</url>
+      <width>98</width>
+      <height>26</height>
+    </image>
+    <webMaster>riksdagsinformation@riksdagen.se (Riksdagsförvaltningen)</webMaster>
+    <item>
+      <title>Riksdagen deltar vid den 81:a generaldebatten under FN:s generalförsamling</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagen deltar med en delegation till generaldebatten under FN:s generalförsamling i New York den 21–26 september.
+		  &amp;nbsp;2026-09-22 11:03:13</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cmsdc222417-fc6b-49a2-952a-5bffbc7f0a3csv</link>
+      <guid>https://data.riksdagen.se/dokument/cmsdc222417-fc6b-49a2-952a-5bffbc7f0a3csv</guid>
+      <pubDate>Tue, 22 Sep 2026 11:48:14 +0200</pubDate>
+    </item>
+    <item>
+      <title>Invalda ledamöter efter valet 2026 </title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>I riksdagen finns 349 ledamöter. Här ser du de ledamöter som valdes in vid riksdagsvalet 2026, sorterade i bokstavsordning. Den nya riksdagen börjar sitt arbete i samband med uppropet den 28 september. Fram till dess sitter den gamla riksdagen kvar.
+		  &amp;nbsp;2026-09-21 14:55:00</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cmsb5703984-9f71-4b8b-9ab1-dbf921381a77sv</link>
+      <guid>https://data.riksdagen.se/dokument/cmsb5703984-9f71-4b8b-9ab1-dbf921381a77sv</guid>
+      <pubDate>Mon, 21 Sep 2026 14:55:09 +0200</pubDate>
+    </item>
+    <item>
+      <title>Den nya riksdagen efter valet </title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Den 13 september var det val i Sverige. Det slutliga valresultatet är fastställt och nu är det klart hur riksdagens 349 platser, mandat, ska fördelas mellan de åtta partier som fick minst fyra procent av rösterna vid riksdagsvalet 2026.
+		  &amp;nbsp;2026-09-19 21:40:00</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cmsad780a37-f1ae-4d47-a4a7-b6ea2a69a21esv</link>
+      <guid>https://data.riksdagen.se/dokument/cmsad780a37-f1ae-4d47-a4a7-b6ea2a69a21esv</guid>
+      <pubDate>Sat, 19 Sep 2026 21:41:11 +0200</pubDate>
+    </item>
+    <item>
+      <title>Talmannen ger sonderingsuppdrag till Magdalena Andersson (S)</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Talman Andreas Norlén har i dag, efter samtal med företrädare för riksdagspartierna och en överläggning med de vice talmännen, gett Magdalena Andersson (S) i uppdrag att sondera förutsättningarna för att bilda regering.
+		  &amp;nbsp;2026-09-18 15:41:00</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cmse396c91a-ef46-4f54-88c6-10a144af63fcsv</link>
+      <guid>https://data.riksdagen.se/dokument/cmse396c91a-ef46-4f54-88c6-10a144af63fcsv</guid>
+      <pubDate>Fri, 18 Sep 2026 15:41:16 +0200</pubDate>
+    </item>
+    <item>
+      <title>Talmannen träffar partiföreträdare</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagens talman Andreas Norlén samråder fredagen den 18 september med partiföreträdare. Detta är ett led i processen för att ta fram förslag till ny statsminister.
+		  &amp;nbsp;2026-09-17 19:57:14</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cmse079b81f-1751-4f2b-9207-259be4dc8450sv</link>
+      <guid>https://data.riksdagen.se/dokument/cmse079b81f-1751-4f2b-9207-259be4dc8450sv</guid>
+      <pubDate>Thu, 17 Sep 2026 20:11:57 +0200</pubDate>
+    </item>
+    <item>
+      <title>Talmannen inleder process för regeringsbildning</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagens talman Andreas Norlén inleder processen med att ta fram förslag till ny statsminister.
+		  &amp;nbsp;2026-09-17 14:41:03</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cms6291f93c-a728-4498-a0b9-e30f36627e3fsv</link>
+      <guid>https://data.riksdagen.se/dokument/cms6291f93c-a728-4498-a0b9-e30f36627e3fsv</guid>
+      <pubDate>Thu, 17 Sep 2026 14:44:21 +0200</pubDate>
+    </item>
+    <item>
+      <title>Nu räknas rösterna</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Den 13 september var det val i Sverige. Just nu räknas rösterna. Valmyndigheten fastställer det slutgiltiga resultatet i valet till riksdagen cirka en vecka efter valdagen. Du kan se det preliminära valresultatet på Valmyndighetens webbplats. När det slutgiltiga valresultatet är klart kommer du att kunna se mandatfördelningen mellan partierna på riksdagens webbplats.
+		  &amp;nbsp;2026-09-14 00:00:01</description>
+      <link>https://resultat.val.se/val2026/RD?r=P</link>
+      <guid>https://resultat.val.se/val2026/RD?r=P</guid>
+      <pubDate>Sun, 13 Sep 2026 23:59:06 +0200</pubDate>
+    </item>
+    <item>
+      <title>Kvällsföreläsningar i Riksdagsbiblioteket</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Under hösten bjuder Riksdagsbiblioteket in till en serie kvällsföreläsningar där aktuella, historiska och framtida politiska frågor står i fokus.
+		  &amp;nbsp;2026-09-11 09:02:40</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cmsaca522fc-ae82-4b4f-b064-a91c18105750sv</link>
+      <guid>https://data.riksdagen.se/dokument/cmsaca522fc-ae82-4b4f-b064-a91c18105750sv</guid>
+      <pubDate>Fri, 11 Sep 2026 09:17:16 +0200</pubDate>
+    </item>
+    <item>
+      <title>Om framtid och motståndskraft på den parlamentariska Östersjökonferensen</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Den 30 augusti–1 september hölls den 35:e parlamentariska Östersjökonferensen (BSPC) i Lübeck, Schleswig-Holstein, Tyskland. Rubriken för årets konferens var "Youth. Set. Sail. For a Thriving Baltic Sea Region" och konferensens generaldebatt handlade om framtiden för Östersjöregionen.
+		  &amp;nbsp;2026-09-03 15:48:06</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cmsc5b19f6d-58be-4936-aa74-3036b0f2ff3bsv</link>
+      <guid>https://data.riksdagen.se/dokument/cmsc5b19f6d-58be-4936-aa74-3036b0f2ff3bsv</guid>
+      <pubDate>Thu, 3 Sep 2026 15:53:55 +0200</pubDate>
+    </item>
+    <item>
+      <title>Andre vice talmannen deltog i nordiskt-baltiskt talmansmöte på Island</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Andre vice talman Julia Kronlid (SD) deltog den 26–27 augusti i det årliga nordisk-baltiska talmansmötet som i år ägde rum i Reykjavik, Island. Ukrainas talman Ruslan Stefanchuk var inbjuden som särskild gäst under mötet.
+		  &amp;nbsp;2026-08-28 08:30:13</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cms215d0ba3-0892-4285-9a49-bdd58871d934sv</link>
+      <guid>https://data.riksdagen.se/dokument/cms215d0ba3-0892-4285-9a49-bdd58871d934sv</guid>
+      <pubDate>Fri, 28 Aug 2026 13:39:04 +0200</pubDate>
+    </item>
+    <item>
+      <title>Riksdagsledamöter observerar parlamentsvalet i Kazakstan</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Den 23 augusti hålls parlamentsval i Kazakstan. Sex svenska riksdagsledamöter ingår i en internationell delegation som observerar valet.
+		  &amp;nbsp;2026-08-21 11:17:41</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cms19a5520a-8df0-4547-853d-eb41e40284f1sv</link>
+      <guid>https://data.riksdagen.se/dokument/cms19a5520a-8df0-4547-853d-eb41e40284f1sv</guid>
+      <pubDate>Fri, 21 Aug 2026 11:37:52 +0200</pubDate>
+    </item>
+    <item>
+      <title>Skärpta villkor för anhöriginvandring</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagen säger ja till regeringens förslag som innebär bland annat att reglerna om vem som kan beviljas uppehållstillstånd som anhörig anpassas till EU:s rättsliga miniminivåer.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skarpta-villkor-for-anhoriginvandring_hd01sfu37/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skarpta-villkor-for-anhoriginvandring_hd01sfu37/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:27:18 +0200</pubDate>
+    </item>
+    <item>
+      <title>Skärpta villkor för friskolesektorn</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagen sa ja till regeringens lagförslag som innebär skärpta villkor för friskolesektorn. Bland annat ska ett så kallat värdeöverföringsförbud införas i tre situationer: vid nyetablering, ägandeförändring och tillsynsföreläggande.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skarpta-villkor-for-friskolesektorn_hd01ubu30/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skarpta-villkor-for-friskolesektorn_hd01ubu30/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:27:01 +0200</pubDate>
+    </item>
+    <item>
+      <title>Insatser för barn och unga ska kunna beslutas utan samtycke</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Socialnämnden i en kommun ska kunna besluta om insatser till barn, unga och deras vårdnadshavare även utan de berördas samtycke. Riksdagen sa ja till regeringens förslag.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/forebyggande-insatser-inom-socialtjansten-till_hd01sou39/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/forebyggande-insatser-inom-socialtjansten-till_hd01sou39/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:26:45 +0200</pubDate>
+    </item>
+    <item>
+      <title>Ja till regelverket kring Sveriges utrikes underrättelsetjänst</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Sverige inrättar en ny myndighet för att stärka den svenska underrättelseverksamheten. Riksdagen sade ja lagändringarna som behöver göras för att Sveriges utrikes underrättelsetjänst, Und, ska kunna inleda sin verksamhet den 1 januari 2027.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/sveriges-utrikes-underrattelsetjanst_hd01uu24/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/sveriges-utrikes-underrattelsetjanst_hd01uu24/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:26:27 +0200</pubDate>
+    </item>
+    <item>
+      <title>Utlänningar ska betala skälig ersättning för tandvård</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagen sa ja till regeringens förslag om nya regler om tandvårdsavgifter för vissa utlänningar. Förslaget innebär att sökande av internationellt skydd och vissa andra utlänningar ska betala skälig ersättning till Migrationsverket för tandvård som inte kan anstå. Detta gäller de som har fyllt 18 år och som har en inkomst eller egna tillgångar.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skyldighet-att-betala-for-tandvard-nya-regler_hd01sou40/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skyldighet-att-betala-for-tandvard-nya-regler_hd01sou40/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:26:10 +0200</pubDate>
+    </item>
+    <item>
+      <title>Ett nytt straffrättsligt påföljdssystem ska införas</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagen sa ja till regeringens förslag om ett nytt straffrättsligt påföljdssystem.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/ett-nytt-straffrattsligt-pafoljdssystem_hd01juu48/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/ett-nytt-straffrattsligt-pafoljdssystem_hd01juu48/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:25:54 +0200</pubDate>
+    </item>
+    <item>
+      <title>Ny lagstiftning ska ersätta lagen om vård av unga (LVU)</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagen sa ja till regeringens förslag att den nuvarande lagen med särskilda bestämmelser om vård av unga (LVU) ersätts av två nya lagar.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/for-barns-rattigheter-och-trygghet-en-ny-lag-om_hd01sou38/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/for-barns-rattigheter-och-trygghet-en-ny-lag-om_hd01sou38/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:25:36 +0200</pubDate>
+    </item>
+    <item>
+      <title>Reglerna skärps för unga brottslingar</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Riksdagen sa ja till regeringens förslag om regelskärpningar för unga lagöverträdare.
+		  &amp;nbsp;2026-08-13 18:00:00</description>
+      <link>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skarpta-regler-for-unga-lagovertradare_hd01juu41/</link>
+      <guid>https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/skarpta-regler-for-unga-lagovertradare_hd01juu41/</guid>
+      <pubDate>Thu, 13 Aug 2026 18:25:18 +0200</pubDate>
+    </item>
+    <item>
+      <title>Justitieutskottet ställer sig bakom skärpta regler för unga brottslingar</title>
+      <author>riksdagsinformation@riksdagen.se</author>
+      <description>Regeringen har föreslagit flera regelskärpningar för unga lagöverträdare. Bland annat ska straffbarhetsåldern sänkas till 14 år för allvarliga brott och ungdomsreduktionen minskas för lagöverträdare under 18 år och avskaffas helt för unga myndiga. Justitieutskottet föreslår att riksdagen ska säga ja till förslaget men V, C och MP reserverar sig mot delar av det.
+		  &amp;nbsp;2026-08-12 11:27:43</description>
+      <link>https://www.riksdagen.se/sv/aktuellt/aktuelltnotiser/_cms029ad3c8-4f86-4f2e-926a-d9e2ca40e75esv</link>
+      <guid>https://data.riksdagen.se/dokument/cms029ad3c8-4f86-4f2e-926a-d9e2ca40e75esv</guid>
+      <pubDate>Wed, 12 Aug 2026 11:39:02 +0200</pubDate>
+    </item>
+  </channel>
+</rss>

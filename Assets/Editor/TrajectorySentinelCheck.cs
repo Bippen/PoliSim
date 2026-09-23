@@ -79,16 +79,24 @@ namespace PoliSim.EditorTools
         /// and move against 'pp3' only by spillover (Italy through the zone rate, the others through their currencies; 1.2e-4 at most). At year 100: France +0.77 % labour force, +0.78 to +0.83 % GDP; Germany +0.24 %, +0.25 to +0.26 %. France's century
         /// debt ratio moves −0.08 points on one seed and +0.70 on the other: recorded, by the same ruling, as NO MEASURABLE FISCAL EFFECT, not a finding.
         /// Before it 'pp3' - §596.</summary>
-        public const string BaselineLabel = "pp4";
+        /// <summary>§604 (2026-09-24, K-1 part (3)): THE GAME STARTS ON 1 OCTOBER 2026, after the Riksdag elected on 2026-09-13 convened. The move reaches the
+        /// no-policy economy through `Country.CalendarYear` ALONE - with the year computed on the old start's day count the century is byte-identical to 'pp4'
+        /// ('ep1old'). Germany, Italy and the USA first move at turn 1 (their 2027 statute steps land inside turn 0), France at turn 2, Sweden and Poland at
+        /// turn 4 through their currencies alone. Debt as % of nominal GDP at turn 100: Germany 31.43 -> 33.04 on 777 and 33.61 -> 33.71 on 424242,
+        /// France 24.12 -> 23.99 and 33.91 -> 31.13; the sign holds on both seeds (France lower on 99 of 100 turns, Germany higher on 94 and 95) and turns
+        /// 1-5 are identical across them - a SYSTEMATIC effect of the statutes arriving about nine months earlier in game time, not seed noise, and
+        /// §599's ruling (a sign that flips) does not cover it; its size at turn 100 depends on the seed. Before it 'pp4'; K-1's
+        /// parts (1) and (2) ('k1ch', 'k1dl2') were byte-identical to it.</summary>
+        public const string BaselineLabel = "k1ep";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pp4_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_k1ep_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "6f6788f1c3f6cb5a7618d7fc8229dba013e4465c9e10da8d28b482ed1cecb684"),
-            (424242, "7ca9d665354f196082377526816c179d22975b6d6c185b3ec30b66669d322db5"),
+            (777, "0234e49db8d4b35c2e7808f4f94592a792f802602556f885a2b5dd2de7d920a5"),
+            (424242, "54cd5886e0c9d1e82d3b0084339ae36db63a393eeff97f305f0e0c3769f6d1bf"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------

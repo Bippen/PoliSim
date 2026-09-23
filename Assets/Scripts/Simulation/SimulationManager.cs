@@ -215,9 +215,16 @@ namespace PoliSim.Simulation
         /// </summary>
         public const int DaysPerTurn = 365;
 
-        /// <summary>The in-game calendar's epoch (Turn 0's date) - a clean, honestly-arbitrary flavor choice, not independently researched, chosen to roughly align with this project's own "seeded with real mid-2026 policy rates" starting data (see WorldFactory).</summary>
+        /// <summary>The in-game calendar's epoch (Turn 0's date). K-1 part (3) (2026-09-24, §604): **1 October 2026**, after the Riksdag elected on
+        /// 2026-09-13 convenes (28 September, fixed by RF 3:10) and its session opens (29 September, scheduled - riksdagen.se as of
+        /// 2026-09-23), so the seated chamber is true on day one
+        /// (`ElectionsData/sweden/2026/government_2026.md`). It was 1 January 2026, an honestly-arbitrary choice. The move reaches the no-policy
+        /// economy through ONE channel, measured: `Country.CalendarYear` (the statute readers) - with the year computed on the old start's day
+        /// count the century is byte-identical to the old family. Every boundary now falls in the calendar year 2026 + turn (the old start
+        /// lagged a year from turn 3), turn 4's boundary - the first election - is 30 September 2030, 22 days after the statute's second
+        /// Sunday of September, and the inherited GDP quarter is exactly July-September 2026.</summary>
         /// <summary>Game start. Public since Step A: PublicationSystem must know it to suppress releases for reference periods that predate the simulation, which have no data behind them.</summary>
-        public static readonly System.DateTime EpochDate = new System.DateTime(2026, 1, 1);
+        public static readonly System.DateTime EpochDate = new System.DateTime(2026, 10, 1);
 
         /// <summary>Advances one day at a time via AdvanceDay, driven by GameController's own real-time speed-controlled Update loop - never touched by PreviewTurn's own throwaway clone, so a live slider drag can never leak a phantom day into the real calendar.</summary>
         public System.DateTime CurrentDate { get; private set; } = EpochDate;
@@ -2025,12 +2032,14 @@ namespace PoliSim.Simulation
             // amending budget (ändringsbudget) instead of governing a year on its predecessor's.
             //
             // ⚠ IT ALSO FIXES AN OFF-BY-ONE THAT COST FIVE COUNTRIES A WHOLE YEAR, measured before
-            // this line was written (BudgetWindowDiagnostic): the epoch is 1 January and five of six
+            // this line was written (BudgetWindowDiagnostic): the epoch was then 1 January and five of six
             // countries budget on the calendar year, but the day tick runs AFTER AdvanceDay has moved
             // the date to the 2nd - so 1 January 2026 was never seen by this check and the window did
             // not open until 1 JANUARY 2027, 365 ticks in. The USA, whose year starts 1 October,
             // waited 273. The finding called this "waiting for the calendar's next cycle"; it was
-            // worse than that, and the measurement is in the record.
+            // worse than that, and the measurement is in the record. K-1 (§604) moved the epoch to 1 October
+            // 2026: every arrival window opens on day one (2026-10-02), and the five calendar-year budgets
+            // open their fiscal-year window again on 1 January 2027, tick 92 - measured, stated, not changed.
             //
             // ⚠ ONE WINDOW ONLY, and the flag is what makes it once: a government gets its arrival
             // budget, not a permanently open process. It rides the save (see CaptureSaveState), or a
@@ -2059,7 +2068,10 @@ namespace PoliSim.Simulation
 
         /// <summary>PN-1's driver (2026-09-16, §520): the clock's calendar year committed to every country (Country.CalendarYear), so a reader without a
         /// clock - the pension line's driver, which counts the cohorts at or above the age the statute has in force THIS year - reads the year the turn is
-        /// in. Called where the clock is set or moved: SetWorld, RestoreSaveState, AdvanceDay. An int, written only; nothing in the daily arithmetic reads it.</summary>
+        /// in. Called where the clock is set or moved: SetWorld, RestoreSaveState, AdvanceDay. An int, written here and copied onto the preview clone. ⚠ Since §596 the daily arithmetic
+        /// DOES read it (the participation response's age in force, `PensionParticipationResponse`), and K-1's epoch move reaches the economy through it
+        /// alone (§604's attribution run). With a 1 October start the year turns on day 92 of turn 0 (1 January 2027), a day later about every four
+        /// turns - 93 from turn 2, 116 by turn 100 - the 365-day turn against the calendar.</summary>
         private void CommitCalendarYear()
         {
             if (_world == null) { return; }
