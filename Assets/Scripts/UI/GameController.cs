@@ -3889,7 +3889,7 @@ namespace PoliSim.UI
         /// A dial with no catalog entry draws nothing (RangeCaptionCheck fails the bar on one).
         /// </summary>
         /// <returns>P5-B5: whether a caption was painted this Repaint - a spending row lays its instruments around it when it was.</returns>
-        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, bool endPieces = false)
+        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, bool endPieces = false, float endPieceLeftInk = -1f, float endPieceRightInk = -1f)
         {
             if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return false; }
             int band = RangeCaptions.BandIndex(draft, min, max);
@@ -3908,6 +3908,13 @@ namespace PoliSim.UI
             {
                 // The end-names sit at the band's ends (LedgerRow); the middle three fifths is the clear width between them.
                 area = new Rect(area.x + area.width * 0.2f + clear, area.y, area.width * 0.6f - clear * 2f, area.height);
+            }
+            if (endPieces && endPieceLeftInk >= 0f && endPieceRightInk >= 0f)
+            {
+                // PF-2 (§592): the pieces as they will be drawn bound the lane, not a fifth each - the caller measured them in their caption-state form
+                Rect drawnLane = LedgerRow.LastCaptionBand;
+                float l = drawnLane.x + endPieceLeftInk + clear, r = drawnLane.xMax - endPieceRightInk - clear;
+                area = new Rect(l, area.y, Mathf.Max(0f, r - l), area.height);
             }
             if (area.width <= 8f) { return false; }
             int size = Mathf.Max(8, Mathf.RoundToInt(RangeCaptionFontAt1280 * _labelStyle.fontSize / 14f));
@@ -3942,7 +3949,8 @@ namespace PoliSim.UI
                 // of "Discretionary line" and "Mandatory line" need 468-583 px in a band of 163-179 (804 in 428 at 2560) and have never drawn at either filmed
                 // width - the band between a spending row's instruments is a third of a dial's. That is P5-B5's row and its own finding (the feature list's
                 // appendix, PF-2), not this item's to fix; the spending row's fallback - instruments in the band - is its designed path, so it is not told here.
-                if (!endPieces) { UiOverflowGuard.Check(b.Line, new Vector2(lineWidth, area.height), new Vector2(area.width, area.height), size); }
+                // PF-2 (§592): the spending rows' lines were cut to fit the lane their instruments leave, so from §592 the guard is told on those rows too.
+                UiOverflowGuard.Check(b.Line, new Vector2(lineWidth, area.height), new Vector2(area.width, area.height), size);
                 return false;
             }
             float total = withName ? nameWidth + lineWidth : lineWidth;
@@ -11771,9 +11779,14 @@ namespace PoliSim.UI
             if (Event.current.type == EventType.Repaint)
             {
                 // Two literal keys so RangeCaptionCheck's enumeration of the drawn dials reads them off this file.
+                // PF-2 (§592): the caption's lane is what the instruments leave AS DRAWN in their caption-state pieces (PF-8's rule on the end-names), measured here
+                // before either is painted - the fixed middle three fifths was 163-179 px at 1280 and no line of the twenty fitted it
+                SpendingCaptionPieces(spendingLine, out string pieceLeft, out string pieceRight);
+                GUIStyle pieceFace = LedgerRow.CaptionStyle(_labelStyle);
+                float leftInk = Mathf.Ceil(pieceFace.CalcSize(new GUIContent(pieceLeft)).x), rightInk = Mathf.Ceil(pieceFace.CalcSize(new GUIContent(pieceRight)).x);
                 bool captionShown = spendingLine.IsMandatory
-                    ? DrawRangeCaption("Mandatory line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true)
-                    : DrawRangeCaption("Discretionary line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true);
+                    ? DrawRangeCaption("Mandatory line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true, endPieceLeftInk: leftInk, endPieceRightInk: rightInk)
+                    : DrawRangeCaption("Discretionary line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true, endPieceLeftInk: leftInk, endPieceRightInk: rightInk);
                 DrawSpendingLineInstruments(spendingLine, captionShown);
             }
 
@@ -12095,9 +12108,27 @@ namespace PoliSim.UI
             string left = face.CalcSize(new GUIContent(leftFull)).x <= end ? leftFull : leftShort;
             string next = "NEXT " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions);
             string right = next;   // 9b: NEXT alone - the delta moved under the figure (SpendingDeltaText)
+            float leftEnd = end, rightEnd = end;
+            if (captionShown)
+            {
+                // PF-2 (§592): while the caption speaks the ends draw their caption-state pieces at their own measured width - the lane the caption was laid in
+                SpendingCaptionPieces(line, out left, out right);
+                leftEnd = Mathf.Ceil(face.CalcSize(new GUIContent(left)).x) + 1f;
+                rightEnd = Mathf.Ceil(face.CalcSize(new GUIContent(right)).x) + 1f;
+            }
             Color ink = PoliSimTheme.TextSecondary;
-            GUI.Label(new Rect(band.x, band.y, end, band.height), left, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, ink));
-            GUI.Label(new Rect(band.xMax - end, band.y, end, band.height), right, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperRight, clipping = TextClipping.Clip }, ink));
+            GUI.Label(new Rect(band.x, band.y, leftEnd, band.height), left, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, ink));
+            GUI.Label(new Rect(band.xMax - rightEnd, band.y, rightEnd, band.height), right, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperRight, clipping = TextClipping.Clip }, ink));
+        }
+
+        /// <summary>PF-2 (§592): a spending row's instruments while its range caption speaks - the shortest pieces that still say the row's state: a coarse step (BR-1's
+        /// rule: stated on the row, never discovered) or else the driver's short name, PINNED or NO DRIVER; and NEXT with its figure. The ratio is the first thing dropped.</summary>
+        private void SpendingCaptionPieces(SpendingLine line, out string left, out string right)
+        {
+            SpendingDriver of = SpendingDrivers.Of(line.Category);
+            left = LedgerRow.LastStep > 1f ? "BY $" + LedgerRow.LastStep.ToString("0.#", CultureInfo.InvariantCulture) + "B"
+                : line.Pinned ? "PINNED" : of == SpendingDriver.None ? "NO DRIVER" : SpendingDrivers.Short(of, _playerCountry);
+            right = "NEXT " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions);
         }
 
         /// <summary>

@@ -69,6 +69,8 @@ namespace PoliSim.EditorTools
                     RangeCaptions.Band b = dial.Bands[i];
                     if (string.IsNullOrWhiteSpace(b.Name) || string.IsNullOrWhiteSpace(b.Line)) { failures.Add($"'{dial.Key}' band {i}: an empty name or line"); }
                     if (b.Line != null && b.Line.Length > 96) { failures.Add($"'{dial.Key}' band {i} ('{b.Name}'): the line runs {b.Line.Length} characters - past the band at 1280"); }
+                    bool spendingRow = dial.Key == "Discretionary line" || dial.Key == "Mandatory line";   // PF-2 (§592): the lane between a spending row's instruments
+                    if (spendingRow && b.Line != null && b.Line.Length > RangeCaptions.SpendingLineCaptionMax) { failures.Add($"'{dial.Key}' band {i} ('{b.Name}'): the line runs {b.Line.Length} characters - past the {RangeCaptions.SpendingLineCaptionMax} a spending row's lane holds"); }
                     // The neutral band by the catalog's own band rule (integer, not a float compared with a float: the
                     // first run of this check read band 4's centre 0.45 as below 0.5 − 0.05 by one ulp and failed nine dials).
                     int neutralBand = RangeCaptions.NeutralBand(dial);
