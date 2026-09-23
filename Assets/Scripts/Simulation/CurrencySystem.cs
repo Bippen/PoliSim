@@ -38,7 +38,7 @@ namespace PoliSim.Simulation
         /// Country.CurrentFedChair (USA, for now) bypasses PolicyDecision.InterestRateChange
         /// entirely - see FederalReserveSystem.ApplyFedChairInterestRate. A CurrencyZone shared by
         /// more than one country (Germany/France/Italy, the Eurozone) uses EurozoneRateSystem's own
-        /// GDP-weighted, Taylor-Rule-blended mechanic instead - see that class. Every other country
+        /// HICP-country-weighted, Taylor-Rule-blended mechanic instead - see that class. Every other country
         /// (an independent, single-country zone - Sweden, Poland) has its own decision's
         /// InterestRateChange applied directly as a raw rate delta, unchanged from before.
         /// </summary>

@@ -3404,7 +3404,7 @@ namespace PoliSim.UI
                 else
                 {
                     // Eurozone Rate-Voice mechanic (see docs/reference/MODEL_REFERENCE.md's "Eurozone Rate Voice"): the
-                    // shared rate is a GDP-weighted blend of all three members' own Taylor Rule
+                    // shared rate is a blend of all three members' own Taylor Rule, weighted by their HICP country weights (FT-16, §585),
                     // readings (EurozoneRateSystem.GetBlendedSuggestedRate), not something any one
                     // member sets unilaterally - but whichever member the player is currently
                     // controlling now gets a real, bounded push on top of that blend (reusing the
@@ -3413,13 +3413,13 @@ namespace PoliSim.UI
                     // control). Superseded the original country-selection Part 1 framing, which
                     // described this as fully read-only before this mechanic existed.
                     GUILayout.Label(
-                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' combined GDP - a simplified version of the real ECB's \"capital key.\" As {_playerCountry.Name}'s governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
+                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on. As {_playerCountry.Name}'s governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
                         _labelStyle);
                     // Pass 4 (2026-08-26): the blend and this member's own reading, so the push has a
                     // visible reference. Omnibus 2026-08-28: three rows of the row family (blend, own
                     // reading, the shared rate), same fixed ordinals ahead of and after the slider.
                     DrawDerivedStatRow("Blended rule reading this year", -1f,
-                        $"{EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}%", "GDP-weighted across the three members", politicalInk);
+                        $"{EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}%", "weighted by household spending", politicalInk);
                     DrawDerivedStatRow($"{_playerCountry.Name}'s own reading", -1f,
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);

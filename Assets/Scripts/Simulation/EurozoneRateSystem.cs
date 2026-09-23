@@ -7,9 +7,11 @@ namespace PoliSim.Simulation
     /// <summary>
     /// The Eurozone's shared-rate mechanic: each member sharing a CurrencyZone (Germany/France/Italy,
     /// currently the only zone shared by more than one country - see CurrencySystem.
-    /// SharesCurrencyZoneWithOthers) gets a "voice" on the shared rate proportional to its own share
-    /// of the three countries' combined GDP (a simplified version of the real ECB's "capital key" -
-    /// not a precise replica), applied to its own TaylorRule.GetSuggestedInterestRate reading - a
+    /// SharesCurrencyZoneWithOthers) gets a "voice" on the shared rate proportional to its HICP COUNTRY WEIGHT - its share of the members'
+    /// household consumption in current prices (FT-16, ruled 2026-09-23, §585; SOURCED: Eurostat, HICP metadata `prc_hicp_esms`, updated
+    /// 2026-02-04: "The country weights are derived from National Accounts data for the HFMCE expressed in euros" - household final monetary
+    /// consumption expenditure; the ECB's target is the euro area HICP those weights aggregate). Until §585 the weight was REAL GDP, which let a
+    /// member's weight fall as its prices rose. Applied to each member's own TaylorRule.GetSuggestedInterestRate reading - a
     /// member with severe inflation or a tight labour market (its unemployment against its NAIRU;
     /// the rule reads that gap since pass 4, 2026-08-26) pulls the shared rate more than a smaller,
     /// calmer one, the same directional logic as the real ECB Governing Council. Whichever member the
@@ -37,7 +39,7 @@ namespace PoliSim.Simulation
         private const float RateAdjustmentSpeed = 0.15f;
 
         /// <summary>
-        /// This turn's GDP-weighted blend of every member's own TaylorRule.GetSuggestedInterestRate
+        /// This turn's HICP-country-weighted blend (<see cref="HicpCountryWeight"/>) of every member's own TaylorRule.GetSuggestedInterestRate
         /// reading, sharing <paramref name="zoneMember"/>'s CurrencyZone. <paramref name="zoneMember"/>
         /// itself is used directly for its own contribution (rather than re-reading it from
         /// <paramref name="world"/>) so this works correctly for SimulationManager.PreviewTurn's
@@ -48,8 +50,15 @@ namespace PoliSim.Simulation
         public static float GetBlendedSuggestedRate(World world, Country zoneMember)
         {
             CurrencyZone zone = zoneMember.CurrencyZone;
-            float totalGdp = Mathf.Max(0f, zoneMember.State.GDP);
-            float weightedSum = totalGdp * TaylorRule.GetSuggestedInterestRate(zoneMember);
+            // One basis per blend (the s585 review's F1): before the first day's national accounts write consumption, every member reads 0 and the
+            // blend would fall to one member's own reading - the zone blends on nominal GDP until consumption exists for every member.
+            bool consumptionWritten = zoneMember.State.Consumption > 0f;
+            foreach (Country member in world.Countries)
+            {
+                if (member.Id != zoneMember.Id && member.CurrencyZone == zone && member.State.Consumption <= 0f) { consumptionWritten = false; }
+            }
+            float totalWeight = consumptionWritten ? HicpCountryWeight(zoneMember) : Mathf.Max(0f, zoneMember.State.NominalGdp);
+            float weightedSum = totalWeight * TaylorRule.GetSuggestedInterestRate(zoneMember);
 
             foreach (Country member in world.Countries)
             {
@@ -58,13 +67,22 @@ namespace PoliSim.Simulation
                     continue;
                 }
 
-                float gdp = Mathf.Max(0f, member.State.GDP);
-                totalGdp += gdp;
-                weightedSum += gdp * TaylorRule.GetSuggestedInterestRate(member);
+                float weight = consumptionWritten ? HicpCountryWeight(member) : Mathf.Max(0f, member.State.NominalGdp);
+                totalWeight += weight;
+                weightedSum += weight * TaylorRule.GetSuggestedInterestRate(member);
             }
 
-            return totalGdp > 0f ? weightedSum / totalGdp : TaylorRule.GetSuggestedInterestRate(zoneMember);
+            return totalWeight > 0f ? weightedSum / totalWeight : TaylorRule.GetSuggestedInterestRate(zoneMember);
         }
+
+        /// <summary>FT-16 (§585): a member's HICP country weight before normalising - its household consumption at current prices (the identity's real
+        /// Consumption × its price level), Eurostat's HFMCE in the model's terms. ⚠ The model's consumption is one flat share of output for every country
+        /// (`MacroSystem.BaseConsumptionRate`), so today these weights read as NOMINAL GDP shares to within a thousandth - the ruling's "nominal shares"
+        /// either way - and they do not reproduce Eurostat's published country weights (prc_hicp_cow: Italy's share of the three runs some four points above
+        /// the model's); sourced consumption shares would be their own ruling. Zero before the first day's national accounts have written consumption - the
+        /// blend then uses nominal GDP (<see cref="GetBlendedSuggestedRate"/>).</summary>
+        public static float HicpCountryWeight(Country member)
+            => Mathf.Max(0f, member.State.Consumption) * Mathf.Max(0.0001f, member.State.PriceLevel);
 
         /// <summary>Sums every member's PolicyDecision.InterestRateChange, each clamped individually to [-MemberRatePushRange, +MemberRatePushRange] before summing - in practice only ever nonzero for whichever member the player is currently controlling.</summary>
         private static float GetMemberPush(World world, CurrencyZone zone, Dictionary<CountryId, PolicyDecision> decisions)

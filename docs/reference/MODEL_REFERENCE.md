@@ -2762,7 +2762,7 @@ this shared rate as read-only "by design," which was accurate under the old mech
 logged open item, so there was nothing to formally resolve there, just implement.
 
 - **`EurozoneRateSystem`** (new file, `EurozoneRateSystem.cs`): `GetBlendedSuggestedRate(world,
-  zoneMember)` computes a GDP-weighted average of every member's own `TaylorRule.
+  zoneMember)` computes a weighted average (⚠ since FT-16, `COMPLETED.md` §585, the weight is the member's HICP country weight - its household consumption at current prices, Eurostat's HFMCE basis - not the real GDP this paragraph was written for) of every member's own `TaylorRule.
   GetSuggestedInterestRate` reading, sharing `zoneMember`'s `CurrencyZone` - a simplified version of
   the real ECB's "capital key" concept (not a precise replica), recomputed fresh every turn since GDP
   changes. A member with severe inflation or a large output gap pulls the shared rate more than a
@@ -2802,7 +2802,7 @@ logged open item, so there was nothing to formally resolve there, just implement
 - **UI** (`GameController.DrawFederalReserveTab`): a Eurozone-member player now sees a real "National
   Rate Push" slider (reusing `_interestRateChangeInput`, just bounded to `EurozoneRateSystem.
   MemberRatePushRange` instead of the generic `InterestRateChangeRange`), replacing the old read-only
-  framing - the explanatory text was rewritten to describe the GDP-weighted Taylor-Rule blend and the
+  framing - the explanatory text was rewritten to describe the GDP-weighted (since FT-16, §585: HICP-country-weighted) Taylor-Rule blend and the
   player's own bounded push accurately, rather than the superseded "no single member state can set it
   unilaterally... read-only by design" framing that predated this mechanic.
 - **Validated**: full real-Unity matrix (`BatchSimulationRunner -runmatrix`, all 12 scenarios x

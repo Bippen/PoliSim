@@ -60,16 +60,20 @@ namespace PoliSim.EditorTools
         /// smaller deficits at year 100 (France +33.5 % on the budget, Italy +20.2, Poland +10.7, Sweden +4.1, Germany +2.6; debt -19.8 to -2.3 %), and the USA's fiscal rule
         /// spends the room instead - its government consumption stops being cut (4 053 at t20 and 2 056 at t60 on the old path; 4 338 at t40 and rising on this one) and its
         /// deficit is 2.4 % wider. Before it 'p6pap2' - FT-10 P-A′ (§572).</summary>
-        public const string BaselineLabel = "pn3b";
+        /// <summary>FT-16 (2026-09-23, §585): the euro zone's rate blends its members' Taylor readings by their HICP country weights - household consumption at current
+        /// prices, Eurostat's HFMCE basis - where it weighted by REAL GDP. Germany's weight at year 100 is 0.626 against 0.619, France 0.271 against 0.276, Italy 0.103
+        /// against 0.105; the zone's rate moves +0.0007 pp at t100, and the three euro states and, through trade and currency, the other three move in late digits.
+        /// A control dump of the tree without the change was byte-identical to 'pn3b', so the whole diff is this change. Before it 'pn3b' - PN-3b (§577).</summary>
+        public const string BaselineLabel = "ft16";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pn3b_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_ft16_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "c6f43e5eb6fc2e8164c9d8a446cf7fdae15e17d6dd4deb8e7290d25956f177e2"),
-            (424242, "f0cd44a335bfa22b76c31acbfdfb32a6f45682c5fb1dcbdcdc86b40be29598f7"),
+            (777, "d11ce4c293c099ab9ca90ce4cb66442cb407d475f4599106585cc6832b76447c"),
+            (424242, "193241569609eb4e01ec7e2cbddc9f20d023e5244dd49fb3f4cb7ad1c6609be1"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------
