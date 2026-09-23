@@ -3863,7 +3863,7 @@ namespace PoliSim.UI
         /// Emits exactly one control, always, enabled or not.
         /// </summary>
         private float DrawDialRow(string name, float standing, float draft, float min, float max,
-            string format, string suffix, string trailing, bool interactive = true, float tickStep = 0f, string captionKey = null, GUIStyle nameFace = null)
+            string format, string suffix, string trailing, bool interactive = true, float tickStep = 0f, string captionKey = null, GUIStyle nameFace = null, string bandNote = null)
         {
             // P5-1 (board 6a, 2026-09-03): the family's track, ticks, knob, pencil slot and end-names on every dial. The board's
             // verdict and action cells are NOT drawn on a ledger with no bill to judge and no action: on film they cost the
@@ -3877,8 +3877,27 @@ namespace PoliSim.UI
                 changed ? draft.ToString(format, CultureInfo.InvariantCulture) + suffix : null,
                 trailing, interactive,
                 _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, tickStep: tickStep, nameFace: nameFace);
-            if (interactive && Event.current.type == EventType.Repaint) { DrawRangeCaption(name, captionKey ?? name, result, standing, min, max); }
+            bool captionPainted = interactive && Event.current.type == EventType.Repaint && DrawRangeCaption(name, captionKey ?? name, result, standing, min, max);
+            if (!captionPainted && !string.IsNullOrEmpty(bandNote) && Event.current.type == EventType.Repaint) { DrawDialBandNote(bandNote); }
             return result;
+        }
+
+        /// <summary>PF-9 (§593): a dial's standing note - the laws' offset and the level in effect - in the caption band, at its DRIVER end: from the left end-name's
+        /// measured ink and the range caption's clearance (the band's own left edge where the row has no end-names), in the band's caption face and muted ink, up to
+        /// the right end-name's clearance. The range caption displaces it while it speaks (the band's one line). A note the lane cannot hold is TOLD to the guard.</summary>
+        private void DrawDialBandNote(string note)
+        {
+            Rect band = LedgerRow.LastCaptionBand;
+            if (band.width <= 8f) { return; }
+            float clear = Mathf.Round(RangeCaptionClearanceAt1280 * _labelStyle.fontSize / 14f);
+            bool ends = LedgerRow.LastHadEndNames;
+            float left = band.x + (ends ? LedgerRow.LastEndNameLeftInk + clear : 0f);
+            float right = band.xMax - (ends ? LedgerRow.LastEndNameRightInk + clear : 0f);
+            GUIStyle face = Inked(new GUIStyle(LedgerRow.CaptionStyle(_labelStyle)) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, PoliSimTheme.TextMuted);
+            string text = note.ToUpperInvariant();
+            Vector2 need = face.CalcSize(new GUIContent(text));
+            UiOverflowGuard.Check(text, need, new Vector2(Mathf.Max(0f, right - left), band.height), face.fontSize);
+            GUI.Label(new Rect(left, band.y, Mathf.Max(0f, right - left), band.height), text, face);
         }
 
         /// <summary>
@@ -4047,28 +4066,28 @@ namespace PoliSim.UI
             _paidFamilyLeaveWeeksInput = DrawDialRow("Paid Family Leave",
                 _playerCountry.PaidFamilyLeaveWeeksBase, GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeksBase),
                 MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, "F0", string.Empty,
-                LaborDialTrailing("weeks", _playerCountry.PaidFamilyLeaveWeeksBase, _playerCountry.PaidFamilyLeaveWeeks));
+                "weeks", bandNote: LaborDialInForce(_playerCountry.PaidFamilyLeaveWeeksBase, _playerCountry.PaidFamilyLeaveWeeks));
 
             _overtimeRegulationInput = DrawDialRow("Overtime / Working-Hour Regulation",
                 _playerCountry.OvertimeRegulationBase, GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationBase),
                 MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty,
-                LaborDialTrailing("0 unregulated - 100 strict", _playerCountry.OvertimeRegulationBase, _playerCountry.OvertimeRegulationLevel));
+                "0 unregulated - 100 strict", bandNote: LaborDialInForce(_playerCountry.OvertimeRegulationBase, _playerCountry.OvertimeRegulationLevel));
 
             _retrainingProgramInput = DrawDialRow("Workforce Retraining Programs",
                 _playerCountry.RetrainingProgramBase, GetRetrainingProgramInput(_playerCountry.RetrainingProgramBase),
                 MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty,
-                LaborDialTrailing(null, _playerCountry.RetrainingProgramBase, _playerCountry.RetrainingProgramLevel));
+                null, bandNote: LaborDialInForce(_playerCountry.RetrainingProgramBase, _playerCountry.RetrainingProgramLevel));
 
             GUILayout.Space(8f);
             _familyPolicyInput = DrawDialRow("Family Policy",
                 _playerCountry.FamilyPolicyBase, GetFamilyPolicyInput(_playerCountry.FamilyPolicyBase),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty,
-                LaborDialTrailing("0 minimal - 100 pro-natalist", _playerCountry.FamilyPolicyBase, _playerCountry.FamilyPolicyLevel));
+                "0 minimal - 100 pro-natalist", bandNote: LaborDialInForce(_playerCountry.FamilyPolicyBase, _playerCountry.FamilyPolicyLevel));
 
             _immigrationPolicyInput = DrawDialRow("Immigration Policy",
                 _playerCountry.ImmigrationPolicyBase, GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyBase),
                 MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty,
-                LaborDialTrailing("0 restrictive - 100 open", _playerCountry.ImmigrationPolicyBase, _playerCountry.ImmigrationPolicyLevel));
+                "0 restrictive - 100 open", bandNote: LaborDialInForce(_playerCountry.ImmigrationPolicyBase, _playerCountry.ImmigrationPolicyLevel));
 
             GUILayout.Space(10f);
             BeginAreaCard("LABOR MARKET BILL", UiPalette.SystemArea.Labor);
@@ -4268,21 +4287,16 @@ namespace PoliSim.UI
             };
         }
 
-        /// <summary>The Labor tab's two-books note (pass 3, coexistence ruling 2026-08-26): a
-        /// dial row's trailing column gains "laws +N -> M in effect" whenever enacted labor laws
-        /// offset that dial away from its statutory base - the coexistence made LEGIBLE per row
-        /// rather than hidden. Pure string content on an always-drawn label; control count never
-        /// moves (behaviour 5).</summary>
-        private static string LaborDialTrailing(string baseTrailing, float baseValue, float effectiveValue)
+        /// <summary>The Labor tab's two-books note (pass 3, coexistence ruling 2026-08-26): "laws +N · M in effect" whenever enacted labor laws
+        /// offset a dial away from its statutory base - the coexistence made LEGIBLE per row rather than hidden; null when they do not.
+        /// PF-9 (§593, Design's answer to the sitting): the note is no longer the right end-name's suffix - it outgrew the end-name's fifth and
+        /// took the range caption's lane at 1280 - but the caption band's own line at its driver end, and the end-name keeps its figure
+        /// (`DrawDialRow`'s bandNote). Pure string content; control count never moves (behaviour 5).</summary>
+        private static string LaborDialInForce(float baseValue, float effectiveValue)
         {
-            if (Mathf.Abs(effectiveValue - baseValue) < 0.05f)
-            {
-                return baseTrailing;
-            }
-
-            // §565: the trailing is drawn in the DOCUMENT face (the caption's mono), which carries no arrow glyph - the law's offset and the composed value read as a pair.
-            string annotation = $"laws {effectiveValue - baseValue:+0.0;-0.0} · {effectiveValue:F0} in effect";
-            return string.IsNullOrEmpty(baseTrailing) ? annotation : baseTrailing + " - " + annotation;
+            if (Mathf.Abs(effectiveValue - baseValue) < 0.05f) { return null; }
+            // §565: the band is drawn in the DOCUMENT face (the caption's mono), which carries no arrow glyph - the law's offset and the composed value read as a pair.
+            return $"laws {effectiveValue - baseValue:+0.0;-0.0} · {effectiveValue:F0} in effect";
         }
 
         /// <summary>
@@ -4307,9 +4321,9 @@ namespace PoliSim.UI
                 GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedianBase),
                 MinMinimumWagePercent, MaxMinimumWagePercent, "F0", "%",
                 hasStatutoryWage
-                    ? LaborDialTrailing("% of median wage", _playerCountry.MinimumWagePercentOfMedianBase, _playerCountry.MinimumWagePercentOfMedian)
+                    ? "% of median wage"
                     : "none - collective bargaining",
-                hasStatutoryWage);
+                hasStatutoryWage, bandNote: hasStatutoryWage ? LaborDialInForce(_playerCountry.MinimumWagePercentOfMedianBase, _playerCountry.MinimumWagePercentOfMedian) : null);
 
             if (hasStatutoryWage)
             {
