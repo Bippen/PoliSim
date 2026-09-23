@@ -264,8 +264,16 @@ namespace PoliSim.UI
             GUIStyle caption = DeskCaption(captionPx, PoliSimTheme.TextMuted);
             GUIStyle numeral = DeskNumeral(numeralPx, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             PoliSimTheme.RoundedCard(plate, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
-            var inner = new Rect(plate.x + padX, plate.y + padY, plate.width - padX * 2f, plate.height - padY * 2f);
             float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            // PF-15 (§600): THE PADDING GIVES WAY, NEVER THE FIGURE. The desk's board is scaled to the height the frame leaves it (uy = inner height / 680) and its
+            // type to the screen (DeskPx), so a frame that leaves the desk less height shrinks the tile and not the figure: at 88 % of the board height the strip's
+            // tile was 46.6 px, and caption 12 + delta 12 + pads 8 left the credit rating's 17 px "AAA" a 14.6 px row (GDP's figure hid the same row by shrinking
+            // to its width). Where the figure's measured height does not fit, the vertical padding is taken back first, down to none; past that the guard reports.
+            float figureNeed = Mathf.Ceil(numeral.CalcSize(new GUIContent(string.IsNullOrEmpty(reading.Value) ? "0" : reading.Value)).y);
+            float deltaNeed = string.IsNullOrEmpty(reading.Delta) ? 0f : Mathf.Ceil(DeskCaptionHeight(DeskCaption(deltaPx, reading.DeltaInk, bold: true)));
+            float shortfall = figureNeed - (plate.height - padY * 2f - captionHeight - deltaNeed);
+            if (shortfall > 0f) { padY = Mathf.Max(0f, padY - Mathf.Ceil(shortfall * 0.5f)); }
+            var inner = new Rect(plate.x + padX, plate.y + padY, plate.width - padX * 2f, plate.height - padY * 2f);
             PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y, inner.width, captionHeight), reading.Label.ToUpperInvariant(), caption);
 
             GUIStyle delta = string.IsNullOrEmpty(reading.Delta) ? null : DeskCaption(deltaPx, reading.DeltaInk, bold: true);
