@@ -19,18 +19,14 @@ file	Assets/Scripts/Simulation/EnergyLedger.cs	7c35e1ec002d7d0ac82be1a5d515d5c1a
 file	Assets/Scripts/Simulation/EnergyLedger.cs	89d2cde964420e222190a1cfcaa484143bf2384a288940d14e97b40ff8e13e30	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	FT-10 P-A; two readers; comments alone changed after the second, said in the evidence header
 baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
-file	Assets/Scripts/Data/BudgetBill.cs	74d099af77ba830df100c6355f6d21a119b6bbefc6cbc641f0df32076aa86b9d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/CarbonRateStatute.cs	82018dbcf43ff683a194a5e261214e8ed220cb2617a90662ee6a7f55eda3ee5d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/DebtAttribution.cs	aec4c070ec7b8f20c0580f84efaddbf2dacf09b339b26e61929bf7d14775d901	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/EconomyState.cs	f99a3c9d69b753c6f6df9d6848a716dfb5ccfbaf4e7558c5c80b45f743d6a063	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/FiscalYearData.cs	2ba5b2d984b84b5afd776a1137e5bf3840e6d0c168970b8bb9a01b3baa9f0015	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/PensionAgeStatute.cs	971d424239acc6849d55413d8d7265d230b0f6f794212180cb76385d3f32d8b0	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/PensionPayment.cs	48c6493f89f6805fccc6474dfeb8883bf613da0a44fc374e4c1f8db4afd4b51d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/PortfolioEffectiveness.cs	117f10a07b2269d9f5e9ef2150efccb4caf89b50a7df1ca83ca6900c7f03f911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/ProgramBill.cs	476f48d616dbd343b1056d935c79aafa7285328492732c9678bbc12e2fca1f6d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SovereignWealthFund.cs	912beeb8330e91b26f47db86181df52494e9321314067d927ba1d7813345950e	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/SpendingDrivers.cs	141c6e997d2e35727e837343aa641c4691d735bb9e284ae334c448801bff55ce	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxBaseTable.cs	4b19b2dfe322a91772e6396aeb81714605a3403b4b395ae01c512aefc8e64cfe	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxLine.cs	b4f96655f47666b49d1aa72429b89696d7c210ac1f9c7c274e3a087991e4aed4	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -71,3 +67,8 @@ baseline	424242	f0cd44a335bfa22b76c31acbfdfb32a6f45682c5fb1dcbdcdc86b40be29598f7
 baseline	777	d11ce4c293c099ab9ca90ce4cb66442cb407d475f4599106585cc6832b76447c	reviewed	2026-09-23	s585	Reviews/2026-09-23_s585_ft16_hicp_weights.md	traj_ft16 seed 777 - FT-16, the euro zone's rate by HICP country weights; control ctl585 == pn3b
 baseline	424242	193241569609eb4e01ec7e2cbddc9f20d023e5244dd49fb3f4cb7ad1c6609be1	reviewed	2026-09-23	s585	Reviews/2026-09-23_s585_ft16_hicp_weights.md	traj_ft16 seed 424242 - FT-16, the euro zone's rate by HICP country weights; control ctl585 == pn3b
 file	Assets/Scripts/Simulation/AuthoredImpactScale.cs	5f503ec586800837a37a2488b3d36711419ae6d35ef25d5d46f11c2e626aecfd	reviewed	2026-09-23	s587	Reviews/2026-09-23_s587_ft14_nominal_sizing.md	FT-14: sized on nominal GDP; named into the money pattern by this review (F2)
+file	Assets/Scripts/Data/BudgetBill.cs	aa68dcdac94e7781bda2b9cf076e11743b566019633eac344ca9128d51450cea	reviewed	2026-09-23	s590	Reviews/2026-09-23_s590_pn1_dial.md	PN-1's dial: the pension age as a Budget-bill lever; traj_pn1d == ft14
+file	Assets/Scripts/Data/PensionAgeStatute.cs	40f193171a90ae41719ad1e4f20ba548393ea6b33d0001e85873a15d83c394a7	reviewed	2026-09-23	s590	Reviews/2026-09-23_s590_pn1_dial.md	PN-1's dial: the pension age as a Budget-bill lever; traj_pn1d == ft14
+file	Assets/Scripts/Data/PensionPayment.cs	55e007b341ec287e6353d90ee64d832ace96cb5d4f09f8291554a929fb63f872	reviewed	2026-09-23	s590	Reviews/2026-09-23_s590_pn1_dial.md	PN-1's dial: the pension age as a Budget-bill lever; traj_pn1d == ft14
+file	Assets/Scripts/Data/SpendingDrivers.cs	844827b35585b8a4e8e97c4e54fbfdd99cbacf0167fc91482675f8ba6d18d535	reviewed	2026-09-23	s590	Reviews/2026-09-23_s590_pn1_dial.md	PN-1's dial: the pension age as a Budget-bill lever; traj_pn1d == ft14
+file	Assets/Scripts/Simulation/SimulationManager.cs	07d079f5be15e0d0586ebe3c1df22bb6476020cbeb4aa6cc3bdb8b09ab49458b	reviewed	2026-09-23	s590	Reviews/2026-09-23_s590_pn1_dial.md	PN-1's dial: the pension age as a Budget-bill lever; traj_pn1d == ft14

@@ -365,6 +365,22 @@ namespace PoliSim.UI
                 B("Deregulated", "Owners answer to markets. Output and lobbying high.", +1),
                 B("Hands off", "The state has left the building. Output at the ceiling.", +1),
             }) },
+            // PN-1's dial (§590, DS-3): the pension age on its 60–70 track. SpendingDrivers.StatutoryPensionAge: the pension line follows the people at or above the age in
+            // force, so a higher age is fewer pensioners and a smaller line. Neutral = 65, the track's middle. The model reads no participation response (PN-1's deferred
+            // BASELINE half), so no line claims the older worker stays at work.
+            { "Pension age", new Dial("Pension age", "the pension line", -1, 0.5f, new[]
+            {
+                B("Early release", "Pensions from sixty. The line carries a generation.", +1),
+                B("Generous", "An early exit for most. The line runs heavy.", +1),
+                B("Relaxed", "More pensioners than custom. The line is larger.", +1),
+                B("Accommodating", "A year under the custom. The line a shade over.", +1),
+                B("Customary", "Retirement at sixty-five. The line as the pyramid has it.", 0),
+                B("Deferred", "A year past custom. Fewer pensioners; a lighter line.", -1),
+                B("Extended", "Two years on. The line eases; the pyramid does not.", -1),
+                B("Late", "The line is smaller. Nobody is asked to keep working.", -1),
+                B("Very late", "Few reach it young. The line is lean.", -1),
+                B("Terminal", "Pensions from seventy. The line at its floor.", -1),
+            }) },
         };
     }
 }

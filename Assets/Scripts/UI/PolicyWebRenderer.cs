@@ -1390,9 +1390,11 @@ namespace PoliSim.UI
                 lines.Add($"Approval multiplier: {GetApprovalMultiplier(category):F1}x (Mandatory baseline is {MacroSystem.MandatorySpendingApprovalMultiplier:F1}x, the strongest)");
                 if (category == SpendingCategory.SocialSecurity && PensionAgeStatute.Has(country.Id))
                 {
-                    // PN-1 (2026-09-13): the pension age's statute, one rule per country - the sentence the carbon rate's node prints for its statute (EN-4e);
-                    // the age reaches nothing in the model yet (the driver is the BASELINE half, deferred by ruling) - it is printed as the law's own figure
-                    lines.Add("Between decisions the pension age moves as the law moves it: " + PensionAgeStatute.Caption(country.Id));
+                    // PN-1 (2026-09-13): the pension age's statute, one rule per country - the sentence the carbon rate's node prints for its statute (EN-4e).
+                    // §520 made the age the line's driver; §590 made it a lever - a passed bill's age stands in place of the law's until a bill returns it.
+                    lines.Add(PensionAgeStatute.IsOverridden(country)
+                        ? "The pension age stands at " + PensionAgeStatute.Format(country.PensionAgeOverride) + ", set by a passed bill; the law's own path: " + PensionAgeStatute.Caption(country.Id)
+                        : "Between decisions the pension age moves as the law moves it: " + PensionAgeStatute.Caption(country.Id));
                 }
                 return true;
             }

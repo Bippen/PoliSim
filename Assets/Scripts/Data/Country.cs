@@ -161,6 +161,12 @@ namespace PoliSim.Data
         /// (SpendingDrivers.Level, StatutoryPensionAge) counts the cohorts at or above the age the statute has IN FORCE this year
         /// (PensionAgeStatute.AgeInForce). The seed year until the clock runs. The preview's clone carries it - the R4-1 hand-list, audited by field (§506).</summary>
         public int CalendarYear = PensionAgeStatute.SeedYear;
+        /// <summary>PN-1's DIAL (2026-09-23, §590; DS-3: "a passed bill's figure wins"): the pension age a PASSED budget bill set, in years - negative while the
+        /// statute's own figure stands, which is every country at the seed and every AI government (nothing in the AI's rule sets it). Read through
+        /// <see cref="PensionAgeStatute.AgeInForce(Country, int)"/>, so the pension line's driver, the payment readout and the row all read one figure. It
+        /// persists until a bill sets another or returns the statute's. Additive to the save: a save from before reads the statute's, as it always did.
+        /// The preview's clone carries it (the R4-1 hand-list, audited by field, §506).</summary>
+        public float PensionAgeOverride = -1f;
         /// <summary>The AI finance ministry (§388): the debt ratio at the seed, and at the top of the last two turns - the US rule's trigger reads the ratio above
         /// its seed and rising two years running (the debt-limit logic). 0 = not yet observed; a save from before the ministry seeds itself on first sight.</summary>
         public float DebtRatioSeed;

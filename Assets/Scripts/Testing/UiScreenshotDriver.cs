@@ -928,6 +928,29 @@ namespace PoliSim.Testing
                                 pensionYear.SetValue(controller, null);
                             }
                             else { Debug.LogError("SHOT: board 15c-r2 - GameController._pensionRowYearForFilm was not found; the 2026 and 2034 pension frames are NOT filmed."); }
+                            // §590: PN-1's DIAL - the row drafted two years past the age standing, its range caption held (the clock pinned on-drag), then the age SET BY
+                            // A PASSED BILL a year under the law with no draft, so the law's ghost mark and its label are on film. Both put back before the next frame.
+                            var pensionInput = controller.GetType().GetField("_pensionAgeInput", BindingFlags.Instance | BindingFlags.NonPublic);
+                            var pensionPlayer = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country;
+                            if (pensionInput != null && pensionPlayer != null && PensionAgeStatute.Has(pensionPlayer.Id))
+                            {
+                                float lawAge = PensionAgeStatute.AgeInForce(pensionPlayer.Id, pensionPlayer.CalendarYear);
+                                RangeCaptionPresenter.Reset();
+                                RangeCaptionPresenter.ClockOverride = 0f;
+                                pensionInput.SetValue(controller, (float?)Mathf.Min(BudgetBill.PensionAgeMax, Mathf.Round(lawAge) + 2f));
+                                yield return Settle();
+                                yield return Capture(stem + "_pension_dial_drafted");
+                                pensionInput.SetValue(controller, null);
+                                RangeCaptionPresenter.ClockOverride = null;
+                                RangeCaptionPresenter.Reset();
+                                float keptOverride = pensionPlayer.PensionAgeOverride;
+                                pensionPlayer.PensionAgeOverride = Mathf.Max(BudgetBill.PensionAgeMin, Mathf.Round(lawAge) - 1f);
+                                yield return Settle();
+                                yield return Capture(stem + "_pension_dial_set_by_bill");
+                                pensionPlayer.PensionAgeOverride = keptOverride;
+                                yield return Settle();
+                            }
+                            else { Debug.LogError("SHOT: §590 - GameController._pensionAgeInput or the player's country was not found, or the country has no pension statute; the dial frames are NOT filmed."); _failed++; }
                             ScrollBy(controller, 0f);
                             yield return Settle();
                         }

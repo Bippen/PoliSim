@@ -52,7 +52,7 @@ namespace PoliSim.Data
         public static double AverageBenefitPerYear(Country country, int year)
         {
             if (country == null) { return 0; }
-            float age = PensionAgeStatute.Has(country.Id) ? PensionAgeStatute.AgeInForce(country.Id, year) : 0f;
+            float age = PensionAgeStatute.Has(country.Id) ? PensionAgeStatute.AgeInForce(country, year) : 0f;
             if (age <= 0f) { return 0; }
             double heads = PensionersMillions(country, age);
             return heads > 0 ? LineBillions(country) * 1e9 / (heads * 1e6) : 0;

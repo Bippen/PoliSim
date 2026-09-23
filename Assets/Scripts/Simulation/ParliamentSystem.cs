@@ -136,6 +136,21 @@ namespace PoliSim.Simulation
                 if (line.Amount <= 0f) { continue; }
                 yield return new KeyValuePair<SpendingCategory, float>(kvp.Key, (kvp.Value / line.Amount - 1f) * 100f);
             }
+            // §590 (the review's F3): PN-1's dial weighs as the move it makes on the pension line - the line follows the people at or above the age in force
+            // (SpendingDrivers.StatutoryPensionAge), so an age set by the bill is the line's change by the ratio of the two headcounts, weighed on the vote, on the
+            // line's axes and as a cut to its recipients exactly as the same change asked as a percentage. Until this the chamber read no pension move at all, and a
+            // bill raising the age to 70 passed as neutral.
+            if (bill.PensionAgeSet && PensionAgeStatute.Has(country.Id))
+            {
+                int year = country.CalendarYear;
+                float standing = PensionAgeStatute.AgeInForce(country, year);
+                float set = bill.PensionAge < 0f ? PensionAgeStatute.AgeInForce(country.Id, year) : Mathf.Clamp(bill.PensionAge, BudgetBill.PensionAgeMin, BudgetBill.PensionAgeMax);
+                double before = PensionPayment.PensionersMillions(country, standing), after = PensionPayment.PensionersMillions(country, set);
+                if (before > 0.0 && System.Math.Abs(after - before) > 1e-9)
+                {
+                    yield return new KeyValuePair<SpendingCategory, float>(SpendingCategory.SocialSecurity, (float)((after / before - 1.0) * 100.0));
+                }
+            }
         }
 
         /// <summary>F4-4: the line's rates after a bill's figures - the bill's where it carries one (clamped 0–100), the standing one elsewhere, −1 the statute's.</summary>
@@ -491,6 +506,10 @@ namespace PoliSim.Simulation
             // not something either existing apply function owns (they both assume the fund's existence
             // is already settled).
             applySpendingAndSwf(country, bill);
+
+            // PN-1's dial (§590, DS-3): "a passed bill's figure wins" - the pension age the bill carries replaces the statute's, or returns it (a negative figure);
+            // clamped to the dial's own track. Nothing else moves here: the pension line follows the new age through its driver at the next index.
+            if (bill.PensionAgeSet) { country.PensionAgeOverride = bill.PensionAge < 0f ? -1f : Mathf.Clamp(bill.PensionAge, BudgetBill.PensionAgeMin, BudgetBill.PensionAgeMax); }
 
             float taxHikePenalty = MacroSystem.TaxHikeApprovalSensitivity * totalHike;
             country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - taxHikePenalty, 0f, 100f);

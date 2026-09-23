@@ -128,6 +128,13 @@ namespace PoliSim.Data
             return age;
         }
 
+        /// <summary>PN-1's dial (§590, DS-3): the age in force for THIS country - a passed bill's figure where one stands
+        /// (<see cref="Country.PensionAgeOverride"/>), else the statute's for the year. Every reader of the model's age reads this one.</summary>
+        public static float AgeInForce(Country country, int year) => country.PensionAgeOverride >= 0f ? country.PensionAgeOverride : AgeInForce(country.Id, year);
+
+        /// <summary>Whether a passed bill's figure stands in place of the statute's (§590).</summary>
+        public static bool IsOverridden(Country country) => country.PensionAgeOverride >= 0f;
+
         /// <summary>
         /// The year the statute has dated without a figure - board 15c's third mark, a word in the caption since 15c-r2 (never a tick): for an indexed rule, the first year its statute has published no figure for, and never a
         /// year already past - the year after the horizon while the calendar is inside it, THIS year once the calendar has passed it (the age in

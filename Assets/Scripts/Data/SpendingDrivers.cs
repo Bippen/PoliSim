@@ -88,7 +88,7 @@ namespace PoliSim.Data
                     // PN-1's driver (§520): the cohorts at or above the age in force in the country's calendar year, the straddled band by its fraction -
                     // PensionPayment's own headcount, so the driver and the payment readout count one set of people
                     return cohorts != null && PensionAgeStatute.Has(country.Id)
-                        ? (float)PensionPayment.PensionersMillions(country, PensionAgeStatute.AgeInForce(country.Id, country.CalendarYear))
+                        ? (float)PensionPayment.PensionersMillions(country, PensionAgeStatute.AgeInForce(country, country.CalendarYear))
                         : Level(SpendingDriver.Elderly65Plus, country);
                 case SpendingDriver.Youth0To19: return cohorts != null ? cohorts.InAgeRange(0, 19) : country.State.Population;
                 case SpendingDriver.WorkingAge20To64: return cohorts != null ? cohorts.InAgeRange(20, 64) : country.State.Population;
@@ -138,7 +138,7 @@ namespace PoliSim.Data
         {
             if (driver == SpendingDriver.StatutoryPensionAge && country != null && PensionAgeStatute.Has(country.Id))
             {
-                return PensionAgeStatute.Format(PensionAgeStatute.AgeInForce(country.Id, country.CalendarYear)).ToUpperInvariant() + "+";
+                return PensionAgeStatute.Format(PensionAgeStatute.AgeInForce(country, country.CalendarYear)).ToUpperInvariant() + "+";
             }
             return Short(driver);
         }

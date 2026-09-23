@@ -159,11 +159,28 @@ namespace PoliSim.EditorTools
                 case "Market liberalisation": return LiberalisationSign(out basis);
                 case "Investment planning": basis = "the Tax Credits dial under its instrument's name (S9): MacroSystem's sector sensitivity, by sign"; return MacroSystem.SectorDialOutputSign("Tax Credits");
                 case "State ownership": basis = "the Nationalization / Deregulation dial under its instrument's name (S9): MacroSystem's sector sensitivity, by sign"; return MacroSystem.SectorDialOutputSign("Nationalization / Deregulation");
+                case "Pension age": return PensionAgeSign(out basis);
                 default:
                     int sector = MacroSystem.SectorDialOutputSign(key);
                     basis = sector != 0 ? "MacroSystem's sector sensitivity, by sign" : "no coupling known for this dial";
                     return sector;
             }
+        }
+
+        /// <summary>PN-1's dial (§590): the pension line's driver as the age rises - SpendingDrivers.Level(StatutoryPensionAge) on a fresh world's Sweden with the age SET BY A
+        /// BILL at 63 and at 67 (the override the dial writes, so the check reads the dial's own route into the driver, not the statute's). Fewer people at or above the age is
+        /// a smaller driver and, by the index, a smaller line.</summary>
+        private static int PensionAgeSign(out string basis)
+        {
+            PoliSim.Data.World world = PoliSim.Data.WorldFactory.CreateDefault();
+            PoliSim.Data.Country se = world.GetCountry(PoliSim.Data.CountryId.Sweden);
+            if (se == null || se.Cohorts == null) { basis = "Sweden carries no pyramid - nothing to derive the sign from"; return 0; }
+            float kept = se.PensionAgeOverride;
+            se.PensionAgeOverride = 63f; float low = PoliSim.Data.SpendingDrivers.Level(PoliSim.Data.SpendingDriver.StatutoryPensionAge, se);
+            se.PensionAgeOverride = 67f; float high = PoliSim.Data.SpendingDrivers.Level(PoliSim.Data.SpendingDriver.StatutoryPensionAge, se);
+            se.PensionAgeOverride = kept;
+            basis = string.Format(System.Globalization.CultureInfo.InvariantCulture, "Sweden: the pension line's driver {0:0.###} M at an age set to 63 and {1:0.###} M at 67 (SpendingDrivers.StatutoryPensionAge through the override)", low, high);
+            return high > low ? 1 : high < low ? -1 : 0;
         }
 
         /// <summary>P6-F2b: the levy on the bill as the Subsidy dial rises - two links, both computed on a fresh world's Poland (a levy in its stack, an energy line in its book):

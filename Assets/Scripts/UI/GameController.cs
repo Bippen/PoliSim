@@ -246,6 +246,9 @@ namespace PoliSim.UI
         // draft.
         /// <summary>P5-B5: the spending drafts are nominal FIGURES (a line's drafted amount), not percentages; a line with no entry stands where it is.</summary>
         private readonly Dictionary<SpendingCategory, float> _spendingLineInputs = new Dictionary<SpendingCategory, float>();
+        /// <summary>PN-1's dial (§590): the pension age drafted on the Budget's pension row, in years; null where the player has not moved it. Rides the
+        /// omnibus BudgetBill like every Budget draft - a PASSED bill is the only way it reaches the model (DS-3).</summary>
+        private float? _pensionAgeInput;
         private float _interestRateChangeInput;
 
         // Master Sequence step 5d: the Trade tab's General Base Tariff Rate draft - an ABSOLUTE target
@@ -979,6 +982,7 @@ namespace PoliSim.UI
             _sectorDeregulationInputs.Clear();
             _spendingLineInputs.Clear();
             _partnerTariffInputs.Clear();
+            _pensionAgeInput = null;   // §590: the pension-age draft is not carried in a save's UI layer - a load resumes on the age standing
 
             if (ui != null)
             {
@@ -4481,6 +4485,7 @@ namespace PoliSim.UI
                 foreach (KeyValuePair<WelfareProgramType, float> kv in draft.WelfarePrograms) { h = h * 31 + (int)kv.Key; h = h * 31 + kv.Value.GetHashCode(); }
                 h = h * 31 + draft.SwfContributionRatePercent.GetHashCode(); h = h * 31 + (draft.SwfShouldExist ? 1 : 0); h = h * 31 + draft.SwfDomesticAllocationPercent.GetHashCode();
                 h = h * 31 + draft.SwfEquitiesWeight.GetHashCode(); h = h * 31 + draft.SwfBondsWeight.GetHashCode(); h = h * 31 + draft.SwfInfrastructureWeight.GetHashCode(); h = h * 31 + draft.SwfRealEstateWeight.GetHashCode();
+                h = h * 31 + (draft.PensionAgeSet ? 1 : 0); h = h * 31 + draft.PensionAge.GetHashCode();   // §590: the pension-age dial rides the bill, so a move of it re-runs the preview
                 return h;
             }
         }
@@ -10518,6 +10523,14 @@ namespace PoliSim.UI
               .Append(draft.SwfBondsWeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
               .Append(draft.SwfInfrastructureWeight.ToString("R", CultureInfo.InvariantCulture)).Append(':')
               .Append(draft.SwfRealEstateWeight.ToString("R", CultureInfo.InvariantCulture));
+            // §590 (the review's F1): the pension age rides the bill - without it here a move of that dial alone left the impact panel on the last figure, and the next
+            // lever touched took its effect as its own. The bracket schedule was missing the same way since F4-4 and is added with it.
+            sb.Append("|P").Append(draft.PensionAgeSet).Append(':').Append(draft.PensionAge.ToString("R", CultureInfo.InvariantCulture));
+            foreach (KeyValuePair<TaxType, float[]> brackets in draft.BracketRates)
+            {
+                sb.Append("|B").Append((int)brackets.Key);
+                if (brackets.Value != null) { foreach (float r in brackets.Value) { sb.Append(':').Append(r.ToString("R", CultureInfo.InvariantCulture)); } }
+            }
             return sb.ToString();
         }
 
@@ -10579,8 +10592,25 @@ namespace PoliSim.UI
             bill.SwfInfrastructureWeight = GetSwfInfrastructureWeightInput(standingDefaults.InfrastructureWeight);
             bill.SwfRealEstateWeight = GetSwfRealEstateWeightInput(standingDefaults.RealEstateWeight);
 
+            // PN-1's dial (§590): the drafted pension age rides the bill where it differs from the age standing; a draft back on the statute's own figure
+            // returns the statute (a negative figure), so a bill can undo a bill
+            if (_pensionAgeInput.HasValue && PensionAgeStatute.Has(_playerCountry.Id))
+            {
+                int year = _simulationManager != null ? _simulationManager.CurrentDate.Year : PensionAgeStatute.SeedYear;
+                float standing = PensionAgeStatute.AgeInForce(_playerCountry, year);
+                if (Mathf.Abs(_pensionAgeInput.Value - standing) > PensionAgeMonth * 0.5f)
+                {
+                    bill.PensionAgeSet = true;
+                    bool statutes = Mathf.Abs(_pensionAgeInput.Value - PensionAgeStatute.AgeInForce(_playerCountry.Id, year)) <= PensionAgeMonth * 0.5f;
+                    bill.PensionAge = statutes ? -1f : _pensionAgeInput.Value;
+                }
+            }
+
             return bill;
         }
+
+        /// <summary>CONVENTION: one month in years - the pension dial snaps to it, as the statutes write their ages in years and months.</summary>
+        private const float PensionAgeMonth = 1f / 12f;
 
         /// <summary>
         /// Political Systems Overhaul Part B, full rollout: the Tax Policy category's sliders/toggles
@@ -11802,9 +11832,12 @@ namespace PoliSim.UI
         /// <para>The kind is 9c's chip under the name; under the figure, where the figure comes from (THE STATUTE's OWN, or CARRIED FROM the horizon - 9b's
         /// second line, drawn wide: the figure cell is 57 px at 1280 and the first film shrank the 17 characters into it, so the line runs left from the
         /// figure's edge over the row's foot, below the band); the caption band's driver end the statute's citation ▏ NEXT with the state's sentence
-        /// (`PensionAgeStatute.MarkSegments`), measured and shortened by rank - the state's answer never dropped. ⚠ The row is NOT a
-        /// lever: the pensions driver is the BASELINE half, deferred by ruling with the dial (§489); the override state both boards draw (a passed bill's
-        /// figure, the ghost tick at the statute's, the hairline from the ghost) is drawn the day the driver gives the row a bill.</para>
+        /// (`PensionAgeStatute.MarkSegments`), measured and shortened by rank - the state's answer never dropped.</para>
+        ///
+        /// <para>§590 (DS-3): THE ROW IS A LEVER. The driver (§520) gave it a bill: the knob is the draft, in months, riding the Budget bill; a passed bill's
+        /// age stands in place of the law's (SET BY A PASSED BILL under the figure) and the law's figure stays on the track as the override's ghost - half ink,
+        /// joined to the knob by the dotted hairline and labelled LAW where the state's own label does not already name it. The dial's range caption displaces
+        /// the band's sentence while it speaks. The participation response (the BASELINE half) is still not built: an older age shrinks the line, nothing else.</para>
         /// </summary>
         private void DrawPensionAgeRow()
         {
@@ -11812,17 +11845,28 @@ namespace PoliSim.UI
             PensionAgeStatute.Rule rule = PensionAgeStatute.Of(country.Id);
             if (rule == null) { return; }
             int year = _pensionRowYearForFilm ?? (_simulationManager != null ? _simulationManager.CurrentDate.Year : PensionAgeStatute.SeedYear);
-            float age = PensionAgeStatute.AgeInForce(country.Id, year);
+            // PN-1's DIAL (§590, DS-3): the row is a lever now. The figure standing is a passed bill's where one stands, else the statute's; the knob is the
+            // draft, which rides the Budget bill; the law's own figure stays on the track as the override's ghost. A film pinned to another year reads the statute.
+            float statuteAge = PensionAgeStatute.AgeInForce(country.Id, year);
+            bool overridden = PensionAgeStatute.IsOverridden(country) && !_pensionRowYearForFilm.HasValue;
+            float age = overridden ? country.PensionAgeOverride : statuteAge;
+            float draft = _pensionAgeInput ?? age;
             PensionMarkState state = PensionAgeStatute.MarkState(country.Id, year);
-            const float TrackMin = 60f, TrackMax = 70f;
+            const float TrackMin = BudgetBill.PensionAgeMin, TrackMax = BudgetBill.PensionAgeMax;
             string kind = rule.Kind == PensionAgeRule.LifeExpectancyIndexed ? (country.Id == CountryId.Sweden ? "INDEXED · RIKTÅLDER" : "INDEXED · ISTAT") : rule.Kind == PensionAgeRule.Scheduled ? "SCHEDULED" : "FIXED";
             // under the figure, 9b's second line: where the figure comes from - drawn by the row, which lifts the figure onto the track's line to make the room
-            string provenance = PensionAgeStatute.FigureProvenance(country.Id, year).ToUpperInvariant();
+            string provenance = overridden ? "SET BY A PASSED BILL" : PensionAgeStatute.FigureProvenance(country.Id, year).ToUpperInvariant();
+            bool changed = Mathf.Abs(draft - age) > PensionAgeMonth * 0.5f;
             Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-            LedgerRow.Draw(rowRect, "Pension age", age, age, TrackMin, TrackMax,
-                PensionAgeStatute.Format(age), null, null, false,
+            float result = LedgerRow.Draw(rowRect, "Pension age", age, draft, TrackMin, TrackMax,
+                PensionAgeStatute.Format(age), changed ? PensionAgeStatute.Format(draft) : null, null, true,
                 _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, tickStep: 1f,
-                figureSecondLine: provenance, nameSecondLine: kind, figureSecondLineWide: true);
+                figureSecondLine: provenance, nameSecondLine: kind, figureSecondLineWide: true,
+                grain: PensionAgeMonth);   // §590 review F2: the row's grain is the MONTH - on the default grain the drag snapped to 0.1 year first, and France's 62 y 9 m and Italy's 67 y 3 m could not be reached
+            // the statutes write ages in years and months, so the dial snaps to the month; a draft back on the standing figure is no draft
+            float snapped = Mathf.Round(result * 12f) / 12f;
+            _pensionAgeInput = Mathf.Abs(snapped - age) <= PensionAgeMonth * 0.5f ? (float?)null : snapped;
+            draft = _pensionAgeInput ?? age;
             if (Event.current.type != EventType.Repaint) { return; }
 
             Rect track = LedgerRow.LastTrackRect;
@@ -11832,7 +11876,9 @@ namespace PoliSim.UI
             float X(float a) => track.x + track.width * Mathf.Clamp01((a - TrackMin) / (TrackMax - TrackMin));
             Texture2D tick = IconLibrary.GetChrome("ui_slider_tick");
             float tickW = Mathf.Max(2f, 2f * scale);
-            float knobX = X(age);
+            // §590: the knob is the draft; the statute's marks stand at the LAW's figure, which is the knob's only while no bill has set another and nothing is drafted
+            float knobX = X(draft);
+            float lawX = X(statuteAge);
             float lineY = track.y + track.height * 0.5f;
             Color prev = GUI.color;
             void Tick(float x, float top, float height, Color ink)
@@ -11866,7 +11912,7 @@ namespace PoliSim.UI
             // the track: what the state draws - figures only, each a value at its position
             var labels = new List<string>();
             var labelX = new List<float>();   // board 15c-r3: the tick each label names, so a run the track cannot hold keeps the last figure OVER its own tick
-            float spanLeft = knobX, spanRight = knobX;
+            float spanLeft = lawX, spanRight = lawX;
             Color labelInk = PoliSimTheme.TextMuted;
             PensionAgeStatute.PathPoint[] ahead = PensionAgeStatute.TicksAhead(country.Id, year);
             switch (state)
@@ -11874,17 +11920,17 @@ namespace PoliSim.UI
                 case PensionMarkState.HeldWindow:
                 {
                     // the law's mark at the knob's own value, bracketing the face so it shows above and below it - law and figure at one value; the span is the window it holds
-                    StateTick(knobX, PoliSimTheme.TextMuted);
+                    StateTick(lawX, PoliSimTheme.TextMuted);
                     int since = PensionAgeStatute.InForceSince(country.Id, year);
-                    labels.Add(PensionAgeStatute.Format(age) + " · " + (since == rule.DatedTo ? Y(since) : Y(since) + "–" + Y(rule.DatedTo)) + " · HELD");
-                    labelX.Add(knobX);
+                    labels.Add(PensionAgeStatute.Format(statuteAge) + " · " + (since == rule.DatedTo ? Y(since) : Y(since) + "–" + Y(rule.DatedTo)) + " · HELD");
+                    labelX.Add(lawX);
                     labelInk = PoliSimTheme.TextPrimary;
                     break;
                 }
                 case PensionMarkState.RisingWindow:
                 case PensionMarkState.ClosedSchedule:
                 {
-                    float lastX = knobX;
+                    float lastX = lawX;
                     foreach (PensionAgeStatute.PathPoint p in ahead)
                     {
                         float x = X(p.Age);
@@ -11894,7 +11940,7 @@ namespace PoliSim.UI
                         lastX = Mathf.Max(lastX, x);
                         spanLeft = Mathf.Min(spanLeft, x); spanRight = Mathf.Max(spanRight, x);
                     }
-                    Dotted(Mathf.Min(knobX, lastX), Mathf.Max(knobX, lastX));
+                    Dotted(Mathf.Min(lawX, lastX), Mathf.Max(lawX, lastX));
                     if (state == PensionMarkState.RisingWindow)
                     {
                         // an open end: the hairline carries on one tick-pitch past the last published tick and stops in air - no tick, no cap, no year
@@ -11926,10 +11972,24 @@ namespace PoliSim.UI
                     break;
                 }
                 default:
-                    labels.Add(PensionAgeStatute.Format(age) + " · NO PATH");
-                    labelX.Add(knobX);
+                    labels.Add(PensionAgeStatute.Format(statuteAge) + " · NO PATH");
+                    labelX.Add(lawX);
                     labelInk = PoliSimTheme.TextPrimary;
                     break;
+            }
+            // §590: a figure set by a bill or drafted away from the law - the law's own figure stays on the track as a ghost, half ink, and joined to the knob by the
+            // dotted hairline, so the player sees how far from the statute the dial stands; the held window already marks the law's figure, so it is not marked twice
+            if (Mathf.Abs(draft - statuteAge) > PensionAgeMonth * 0.5f)
+            {
+                if (state != PensionMarkState.HeldWindow) { StateTick(lawX, PoliSimTheme.Tint(PoliSimTheme.TextMuted, 0.5f)); }
+                Dotted(Mathf.Min(lawX, knobX), Mathf.Max(lawX, knobX));   // in every state: a schedule's own hairline runs from the law AHEAD, not back to the knob (film590de)
+                if (overridden && state != PensionMarkState.HeldWindow)   // the held window's own label already names the law's figure (film590: "67 · 2026–2032 · HELD   LAW 67")
+                {
+                    // the run keeps its last label when crowded, so the law's is last: under a bill's figure it is the one thing the player must not lose
+                    labels.Add("LAW " + PensionAgeStatute.Format(statuteAge));
+                    labelX.Add(lawX);
+                    spanLeft = Mathf.Min(spanLeft, lawX); spanRight = Mathf.Max(spanRight, lawX);
+                }
             }
 
             // the labels: one run above the track, centred on what they name and kept inside it - figures and their years, nothing else
@@ -11958,6 +12018,8 @@ namespace PoliSim.UI
             // never dropped. The cuts that set this: the first dropped from the end and cut the answer, the second ran sentences under the knob, the third
             // stopped the band at the track's end, the fourth shrank Poland's and France's sentences into the label's floor, the fifth set the provenance at the
             // band's height under a figure centred on the whole row, and the figure's glyphs ran into it.
+            // §590: the dial's range caption, mid-drag and its fade, speaks in the band - the band's one line, so the statute's sentence gives way to it while it is painted
+            if (DrawRangeCaption("Pension age", "Pension age", draft, age, TrackMin, TrackMax)) { return; }
             Rect band = LedgerRow.LastCaptionBand;
             if (band.width > 8f)
             {

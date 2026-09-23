@@ -53,6 +53,14 @@ namespace PoliSim.Data
         public float SwfInfrastructureWeight;
         public float SwfRealEstateWeight;
 
+        /// <summary>PN-1's dial (§590, DS-3): whether the bill sets the pension age, and the age it sets in years - a NEGATIVE figure returns the statute's own.
+        /// Unset (every bill the dial did not touch), the age stands as it is.</summary>
+        public bool PensionAgeSet;
+        public float PensionAge = -1f;
+
+        /// <summary>CONVENTION: the dial's track, the row's own 60–70 (board 15c) - a bill's figure is clamped to it.</summary>
+        public const float PensionAgeMin = 60f, PensionAgeMax = 70f;
+
         public int DaysRemaining;
     }
 }
