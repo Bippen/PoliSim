@@ -38,6 +38,11 @@ namespace PoliSim.EditorTools
     {
         private const string RequestFile = "CLAUDE_DESIGN_ASSET_REQUEST.md";
 
+        /// <summary>Where the answered asks went, their request tables with them (§582). ⚠ A row cut there is
+        /// still a row Design was once asked to draw, so the rows are read from both files and the notice from
+        /// the live one only - the notice is what goes out with the next return.</summary>
+        private const string ArchiveFile = "docs/archive/DESIGN_REQUESTS.md";
+
         /// <summary>The heading that opens the section Design is told to read first.</summary>
         private const string NotificationHeading = "TO DESIGN, WITH THE NEXT RETURN";
 
@@ -84,15 +89,27 @@ namespace PoliSim.EditorTools
             var untold = new List<string>();
             int tableRows = 0;
 
-            for (int i = 0; i < lines.Length; i++)
+            // The rows: the live file's, then the archive's after them, so the notice's range still indexes the live file alone.
+            string archivePath = Path.Combine(Directory.GetCurrentDirectory(), ArchiveFile);
+            if (!File.Exists(archivePath))
+            {
+                Debug.LogError("DESIGNNOTIFY: " + ArchiveFile + " is not on disk, so the answered asks' rows were checked for NOTHING "
+                               + "rather than found clean.");
+                CheckExit.Finish(1);
+                return;
+            }
+            var rows = new List<string>(lines);
+            rows.AddRange(File.ReadAllLines(archivePath));
+
+            for (int i = 0; i < rows.Count; i++)
             {
                 if (start >= 0 && i >= start && i < end) { continue; }   // the notice itself is not a row
 
-                Match id = RowId.Match(lines[i]);
+                Match id = RowId.Match(rows[i]);
                 if (!id.Success) { continue; }
 
                 tableRows++;
-                if (!lines[i].Contains(CutTag)) { continue; }
+                if (!rows[i].Contains(CutTag)) { continue; }
 
                 string rowId = id.Groups[1].Value;
                 cutRows.Add(rowId);
@@ -107,7 +124,7 @@ namespace PoliSim.EditorTools
 
             var sb = new StringBuilder();
             sb.Append("=== S-39: a cut screen must be told to the person drawing it ===\n");
-            sb.Append("    THE ENUMERATION: ").Append(tableRows).Append(" request row(s) in ").Append(RequestFile)
+            sb.Append("    THE ENUMERATION: ").Append(tableRows).Append(" request row(s) in ").Append(RequestFile).Append(" and ").Append(ArchiveFile)
               .Append("; ").Append(cutRows.Count).Append(" tagged ").Append(CutTag).Append("; ")
               .Append(untold.Count).Append(" of those not named in the notice.\n");
             sb.Append("    The notice section is '").Append(NotificationHeading).Append("'")

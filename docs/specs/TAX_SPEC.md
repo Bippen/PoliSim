@@ -101,7 +101,7 @@ will misrepresent the other three. **This is the single most important thing in 
 - **S2. ⚠ S1 is NOT sufficient for Germany, France or Italy.** Either (a) accept an approximation for
   those three and **say so on the screen**, in the `[AUTHORED-DRAFT]` idiom, or (b) give `TaxLine` a
   pluggable schedule with three implementations. (a) is cheap and honest; (b) is correct and is a
-  sizeable build. **This is the first thing to rule on.** **Ruled (b) by D-3; the schedule's form is `COMPLETED.md \x{a7}580` F4-2.**
+  sizeable build. **This is the first thing to rule on.** **Ruled (b) by D-3; the schedule's form is `COMPLETED.md §580` F4-2.**
 - **S3. Revenue needs an income DISTRIBUTION, which this model does not have.** A bracket schedule
   applied to a single average income is arithmetically identical to a flat rate at the average's bracket
   — i.e. building S1 without a distribution buys nothing. The distribution comes from **the cohort

@@ -31853,3 +31853,1170 @@ State, and B6's honesty channels stay where P-A2 moved them.
 drawing a cut screen without being told."* Recorded as **S-39** — a finding of its own, not a footnote to
 this errand, because the band was one instance and the gap is the class.
 
+
+
+## 582. FT-13 MEASURED, THE DESIGN REQUEST CUT TO ITS LIVE ASK, THE FEATURE LIST TO ITS OPEN ROWS (2026-09-23)
+
+**The ruling** (Elias, 2026-09-23): FT-13 first - measure, propose, apply nothing until ruled; then the Design request's cut as its own pass, with the feature list's closed tracks migrating in the same pass. One report. The Unity plugin for Claude Code, asked to be evaluated first, is **not installed** (`claude plugin list` shows only `productivity`); it was read at its marketplace pin (`Unity-Technologies/unity-agent-plugin` `ba48956`, 0.1.6-beta) in the session's scratchpad and nothing was installed - reported to Elias, not recorded as a build.
+
+**FT-13 - MEASURED AND PROPOSED, NOTHING APPLIED.** (1) The bisection, free: year-100 debt over NOMINAL GDP (`GovernmentDebt / (GDP x PriceLevel)`) read off every stored `traj_*_s777_t100.csv` from `p5fisc2` to `pn3b` in order. **No family leaves §388's picture:**
+
+| family | USA | Italy | Sweden | France | Germany | Poland |
+|---|---|---|---|---|---|---|
+| `p5fisc4` (§388) | 139.2 | 55.5 | 29.0 | 48.0 | 39.1 | 19.2 |
+| `p5seat2` | 142.9 | 37.9 | 29.3 | 37.5 | 37.0 | 16.6 |
+| `en4e` | 140.3 | 47.5 | 26.5 | 38.3 | 39.3 | 14.3 |
+| `f4s2` | 115.9 | 47.0 | 25.9 | 29.9 | 36.3 | 26.4 |
+| `pn3` | 119.0 | 48.2 | 25.5 | 29.0 | 33.4 | 12.7 |
+| `p6pap2` | 119.0 | 42.7 | 23.5 | 30.8 | 32.8 | 10.7 |
+| `pn3b` (current) | 116.7 | 38.9 | 22.1 | 24.2 | 31.5 | 9.4 |
+
+The same century read as `GovernmentDebt / GDP` - nominal over REAL - gives `pn3b` **USA 841.0, Italy 291.8, Sweden 178.8**: the dump's three figures to the decimal (`p5fisc4` would have read 1173.0 on the same formula). (2) The suspect against §388's own finding: the dump's harness is `TrajectoryBaselineDump`'s line for line (one `PolicyDecision.None()` per country, the same object handed to `AdvanceTurn` each turn), and the withdrawal §388 installed runs INSIDE `AdvanceTurn` (`AiFinanceMinistry.Withdraw` after `ApplyDomesticPolicy`) - so the dump neither bypasses it nor sees it regress; the figures prove the dump's world IS the baseline's. (3) The cause is the dump's column: `PotentialPremiseDump` writes `GovernmentDebt / Mathf.Max(1f, GDP) * 100` where `EconomyState.DebtToGdpRatio` divides by `NominalGdp` - a B6 crossing ("nominal with nominal, real with real, never across"). `DomesticMoneyBasisDiagnostic` carries the same expression at the seed only, where the price level is 1. **Proposed:** the column reads `c.State.DebtToGdpRatio`, the dump is regenerated, its FT-13 banner comes out, §388 stands as written. Owed to Elias: the ruling.
+
+**The Design request - 234 502 → 34 058 bytes.** The live file keeps the 2026-09-21 night status, D21, the notice to Design (S-39's), the count rule, §4, §5 and the D18 generated block under a heading of its own; everything answered moved VERBATIM to `docs/archive/DESIGN_REQUESTS.md` (the path `CLAUDE.md`'s table already named, and which did not exist): the earlier STATUS heads, the ninth to eleventh requests with Annex G, §0, §E5, and D9-D20 with D18's prose, one bracketed line marking where the generated block stayed. Proved by script: 349 + 1371 original lines = 1720, each in exactly its destination, in order. **The keys stayed where they are read:** `D18Inventory` splices and reads its block in the live file; `DesignNotificationCheck` found all 24 request rows inside the ninth request (§1), so it now reads rows from both files and the notice from the live one - **24 rows, E17 told**, as before.
+
+**The feature list - 241 183 → 38 233 bytes before FT-13's line.** F1-F6, P2, Playtest 4 to 6 and the four Design-answer sections (P3-P6), with the appendix's closed rows (PF-1/4/5/7/8/13, CL-1/2/3/5, EN-3/3b/4/4c/4d/4e/5/6/8, F4-1..5, PN-2/3/3b/4, BR-1, the streamlining review, D-16, RS-1, SC-1, D20 and the struck lines), moved VERBATIM to §583 below, headings demoted one `#` as §197/§198 did. Every row moved ended on a closed marker by `ResidueCheck`'s own rule: **residue 1 → 1 (CL-4)**. Kept open by reading, not by marker: FT-10 (its row still says P-A′ HELD, which `COMPLETED.md` §573-§575 overtook - stale, flagged), EN-3c (deferred to trigger T-8), PN-1, EN-7, the review's unexecuted proposals. Pointers re-cut where a line lost its target: `ERRANDS.md` E-40 and the appendix's *"verbatim in P2 above"*.
+
+**A defect found on the way:** §579's sweep wrote the six characters `\x{a7}` where a section sign belonged - fixed in `POLISIM_FEATURE_LIST.md` (3), `docs/archive/CLAIM_CONVENTION_AND_DISCIPLINE.md`, `docs/play/PLAY_PROTOCOL.md`, `docs/specs/TAX_SPEC.md`; **two comments keep it**, `Tools/income_prep.pl` and `Tools/pension_prep.pl` - the second is a money path, so a comment fix owes a review (§579's rule).
+
+**Evidence.** `s582_named`: `DesignNotificationCheck`, `ResidueCheck`, `MojibakeCheck`, `DocumentClaimCheck`, `D18InventoryCheck` 5 of 5 clean; the cheap bar **47 of 47** (`s582_bar`, the 1453 trajectory artefacts verified by digest, residue 1) and again on the tree committed with this line in it (`s582_bar2`). Tier TOOLING - one Editor check and documents.
+
+
+## 583. THE FEATURE LIST'S CLOSED TRACKS, RETIRED FROM `POLISIM_FEATURE_LIST.md` (2026-09-23, §582's pass)
+
+> ⚠ **Mechanical migration.** Every heading below is demoted by exactly one `#` so this text cannot open a top-level section of the record; no other byte of it was changed. It stood in `POLISIM_FEATURE_LIST.md` until 2026-09-23 - the closed tracks in their order, then the appendix's closed rows in theirs. Anything below that reads as open was closed by a later line of its own row, or is indexed from the live list's appendix.
+
+## F1 — ✅ COMPLETE 2026-09-01 (`COMPLETED.md` §§178–180)
+
+⚠ **A player can start a Sweden game, reach election night from the game itself, and watch 29 of 29
+constituencies declare from the model's own count.** Filmed at 1280×720 and 2560×1440 **from the model,
+not from the staged fixture** — every prior election-night film was of a fixture, which exercises the
+screen and says nothing about the model. `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` reads **0**.
+
+*The original text is kept below, because the ORDER it prescribed is what made the result honest.*
+
+## F1 (as written) — The runtime data layer, and everything it unblocks
+
+**The largest correctness gap in the game: board 1h is built, filmed, delivered, and unreachable.** The
+root is that `ElectionsData/` lives outside `Assets/`, so only editor code can read it — which makes
+`RegionalVoteModel` unreachable, which means the live election produces no per-constituency count, which
+means election night has nothing honest to draw.
+
+Build it in dependency order, each step landing with its proof:
+
+1. **The generated catalog moves into the runtime assembly WHEN A RUNTIME CONSUMER EXISTS** — not before.
+   ⚠ A data layer landing ahead of its consumer is queued art in another costume.
+2. **`RegionalVoteModel` wired into the live election path**, with the measurement that proves it now runs
+   and produces the per-region result.
+3. **The live election produces a real per-constituency count.**
+4. **Board 1h reachable from a player path**, the count real, filmed at 1280/2560, `MetaTextCheck` and the
+   edge checks silent.
+
+⚠ **Wire nothing that makes a check green and a screen a lie** — no one-constituency "night", no 2022
+counts standing in for a simulated election. If a step cannot be honest, **stop that step and report its
+remainder in order.**
+
+**Done when:** a player can start a Sweden game, reach election night from the game itself, and watch
+constituencies declare from the model's own count.
+
+*Carries the old rows: `M-D1` (step 1) · `M-B4` (step 2) · `M-B5` (step 3) · `M-S7` (step 4) · and the
+ratchets `UnwiredSubsystemCheck.UNREACHABLE` and `PlayerReachabilityCheck.UNREACHABLE_TAKEOVER` fall out of
+step 4 rather than being worked directly.*
+
+## F2 — The cohort substrate, P-I2 stage 3 onward
+
+The spec-let is ruled and stages 1–2 have landed. **This is the risky half and it is BASELINE** — it lands
+one family at a time with the per-country explanation, or it does not land.
+
+- **D-15 (c) stands:** scale the whole pyramid toward the sourced projection. Nothing anchors the level,
+  and converging a rate would slow divergence **while looking like an improvement**.
+- The four steps as sized: catalog the two projections → rebuild the step → hindcast against the
+  publisher's intermediate years → trajectory suite, **ratchet lowered not removed**.
+- ⚠ **The Eurostat trap rides with it:** the age dimension holds **110 categories mixing single years with
+  aggregates**. A band build must **filter, never sum** — a naive sum reads **44.8M for a country of
+  12.1M**.
+- Then the collision map's dangerous half: retire the eight demographic scalars, **re-point both player
+  levers in the same pass** (three dead levers would be a pattern, not an accident), and keep
+  `NaturalBirthRate`/`NaturalNetMigrationRate`'s **anchor semantics** or every demographic policy effect
+  loses its zero and starts compounding.
+
+**Done when:** population, dependency ratio and participation are derived from cohorts, both demographic
+levers measurably move the model, and the family is explained per country.
+
+> **2026-09-02 — step 4 landed (`COMPLETED.md` §195):** population, the crude rates and the dependency
+> ratio are readings of the substrate; the two levers are LIVE (`LeverLivenessCheck`) at their old
+> magnitudes with anchor semantics kept; the `f2s4` family is explained per country.
+>
+> **2026-09-02 — step 5 landed (`COMPLETED.md` §199):** participation by age fetched (Eurostat
+> `lfsa_argan` 2024 for the five, BLS CPS LNU series 2024 for the USA, every id verified against its title
+> page) and `LaborForceParticipationRate` anchored on the participation the pyramid implies
+> (`ParticipationRateTable.StructuralRate`); the two authored demographic proxies on participation and the
+> typed baseline are retired; the `f2s5` family explained per country. **The done-when is met.** What F2
+> still carries is the voter-group view (F3's), not a clause of its own.
+
+*Carries: `M-B2` (D-15 stage 3) · `M-B3` (the substrate wired) · `M-D2` (the two projections) · and
+`CohortAgingStepDiagnostic.RUNAWAY` falls out of the rebuilt step.*
+
+## F3 — The voter groups over the substrate, and the FdI chain
+
+Voter groups become a **view** over F2's cohorts, **never a parallel population**: a predicate over cohorts
+plus a non-demographic axis, `PopulationShare` **computed and never seeded**, shares summing to 1 and
+covering the eligible population — **asserted**, the way the approval ledger asserts its identity.
+
+Then C-D1's Swedish marginals (billed: SCB per-valkrets, ⚠ PxWeb is POST-only), then per-group loyalty,
+then **re-run the Italy 2022 test**: with per-group loyalty and the media/momentum layers live, is FdI's
+**4.35 → 29.27** surge reachable?
+
+> **2026-09-02 — the age marginals are on disk (`COMPLETED.md` §213, `ElectionsData/sweden/VALKRETS_POPULATION_README.md`):**
+> SCB's 2024 population by single year of age for all 290 municipalities, mapped to the 29 valkretsar by
+> Vallagen's own lists and reconciled to SCB's national total to the person. Education and income marginals
+> still billed. **The consumer landed the same morning (§214):** `SwedishValkretsPopulation2024`, a
+> generated catalog under `GeneratedCatalogCheck`; `CohortVoterGroups.ForValkrets`, whose 29 views each
+> sum to 1 (Editor-consumed: the campaign has no age-group mechanic, so the view waits on the per-group
+> design); and the campaign's regions now carry the ELIGIBLE electorate — Valmyndigheten's roll, not the
+> 18+ resident count, which runs 3–16 % above it (non-citizen adults, most in the four metropolitan
+> valkretsar) — for the ground game. **Next in F3:**
+> per-group loyalty stays Elias's (ITANES); the Italy re-run waits on it.
+>
+> **2026-09-02 — the income and education marginals are on disk too (`COMPLETED.md` §215, the same
+> README):** SCB's income classes by municipality and age band (16 888 suppressed cells under 3 persons,
+> the residual measured per valkrets-band at 0.32 % net, and the table found NOT additive to the person —
+> SCB's disclosure control) and education level by municipality, single year and sex (reconciled to the
+> person per level). C-D1's three marginals are all discharged; the view's non-demographic axis has its
+> data and waits on the per-group design.
+
+⚠ **Reachable is the strongest validation this model can get; unreachable is a named ceiling. Do not tune
+toward it.**
+
+*Carries: ~~`M-B6` (D-10 (a), `TacticalVoting` wired) · `M-D4` (a live poll, so the tactical layer has polled
+shares to read)~~ — **both discharged 2026-09-02 (`COMPLETED.md` §212): election night applies the tactical
+layer to the campaign's shares, believing the campaign's last tracker; BASELINE for election outcomes, first
+measured at the first counted campaign** · and E-1's ITANES registration WAS the blocker on per-group loyalty (landed 2026-09-10, §442–§445),
+which is Elias's.*
+
+## F4 — The tax instruments
+
+Downstream of F2's income dimension **by the spec-let's own §S3** — a bracket schedule over a single
+average income is **arithmetically identical to a flat rate**. When the substrate carries income:
+**(b) pluggable schedules**, per D-3, **not bracket tables** — Germany's tariff is a formula, France's a
+quotient familial, Italy three layers, and **no table represents any of them**.
+
+Sweden's blended 52 retires into kommunal + statlig, which is BASELINE and takes its own explained family.
+The five billed countries' sourcing can proceed at any time and is **not wasted whichever branch runs**.
+
+> **2026-09-02 — the bill, checked (`COMPLETED.md` §211, `ElectionsData/tax/README.md`):** Germany
+> (§32a EStG's 2026 formula, verbatim), France (the 2026 barème per part, two official pages agreeing)
+> and the USA (Rev. Proc. 2025-32's tables and standard deduction) are SOURCED; Poland's PIT scale is;
+> Italy is still billed (its portals are JavaScript shells to a batch fetch). **Later the same day (§216):**
+> the OASDI wage base (the SSA's own Federal Register notice, $184,500 for 2026), CSG/CRDS (URSSAF's 2026
+> table) and Poland's levy and contributions (the Sejm's consolidated acts via its ELI API) are SOURCED;
+> Italy's Gazzetta PDF turned out to be scanned, so Italy alone stays billed — `ERRANDS.md` E-6 is the ask. Germany's formula and France's quotient confirm the spec-let's
+> warning against brackets-as-data. Nothing built: F4 waits on the income dimension - **which is scheduled (§474): F4-1 the readout → F4-2 the schedules → F4-3 Sweden → F4-4 the row; the sheets ruled, the order `COMPLETED.md §580`.**
+
+*Carries: `M-B7` (D-11 (c)) and, adjacent, `D-16`'s landing — see the appendix.*
+
+> **2026-09-04 — D-16 (a) landed (`COMPLETED.md` §282):** the sourced per-country base table for the five is what the game runs on, `CollectionEfficiency` is the coverage bridge, and a point of income tax now costs each country its own base's worth. Nothing else of F4 moved: the schedules still wait on the income dimension.
+
+## F5 — The five CHES axes (the afternoon that was a bill)
+
+S-4's premise was false: all five undefined axes are published columns in `CHES_2024_final_v2.csv`, already
+parsed for the four we took, **44 parties, every cell populated**. They are banked in
+`ElectionsData/positions/party_positions.md`.
+
+⚠ **Do not wire an axis whose endpoints are unread.** The codebook is behind subsetted-font ciphers, and
+**S-37 says a bound is a direction as well as a number** — an inverted axis reverses every comparison and
+goes on looking like it works. **Read the endpoints, or wire nothing.** D-18 stands.
+
+*Carries: `M-S15`.*
+
+> **2026-09-02 — wired (`COMPLETED.md` §200).** The endpoints are READ: `pdftotext` (it ships with Git for
+> Windows) extracts the codebook's text, and all five definitions are quoted verbatim in
+> `party_positions.md` and on `PoliticalParty`'s five new fields. The 31 CHES-positioned EU units carry
+> them, matched to their CSV rows on their own `lrecon`/`galtan` pair; `IdeologyVector.FromParty` builds all
+> eight §4 axes with the two inversions stated per axis (S-37). ⚠ Nothing on the live path reads an
+> `IdeologyVector` yet — the voter groups' own axis positions are F3's other half, and until they exist the
+> eight axes meet nothing. D-18 is lifted by quotation, not by inference.
+
+## F6 — What the campaign still lacks to be played
+
+In order of what a player would notice first:
+
+1. **C-N1's ruling, then its build.** Media and momentum currently **terminate at the poll** —
+   `MomentumTracker.Apply`'s only call sites are inside `PollingSystem.Conduct`, and election day counts
+   true preference. Either perception-only media **is** the design and the record must say **no amount of
+   coverage changes a vote**, or coverage reaches persuasion and it is a **§42 chain change with its own
+   family**. Rule it in the register, then build the ruled branch.
+2. **C-N2** — optimising personalities refuse the action they most prefer (door affinity 2.2 × enthusiasm
+   1.6, still zero doors). ⚠ A **§12 verb-set question — fix the mechanism, adjust no affinity.**
+3. **C-R4** — the war chest and the win/lose rule, so a campaign has **stakes and an ending**.
+
+> **2026-09-02 — where F6 stands.** Items 1 and 2 landed (`COMPLETED.md` §194, §193); C-N7's attempt to
+> let the AI value coverage exposed C-N1's magnitude (§196); **Elias ruled D-20 (a), the table is
+> re-authored as fractions of an act's own reach, and C-N7 landed with the personalities holding — L1
+> 0.405 (§208).** One finding from it is Elias's: the grassroots parties make no news and are never
+> booked (C-N8, §208). The September-vs-boundary fork is sheeted as D-23, (a) taken, strikeable (§209). C-R4's ruling half is
+> done (§135); its build half, `C-R4b`, has its first step: `CampaignRun` is a stepper (`Begin` /
+> `StepDay` / `Finish`, §202), digest-identical, and its second: `LiveCampaignSetup` builds Sweden's
+> `Setup` from the runtime tables and the harness stages through it (§203), digest-identical again —
+> and its third: the player's campaign runs in `SimulationManager`'s day loop before each election
+> boundary and survives a save by replay (§204) — Sweden's only, the player's party AI-played until the
+> HQ queue exists — and its fourth (4a): the rail's CAMPAIGN cell opens the HQ over the live campaign,
+> re-read every draw (§205), a screen to watch, not yet to act from — and its fifth: election night
+> counts the campaign's shares, the campaign staged on the vote model's own compatibility (D-21, §206),
+> so the campaign has stakes and an ending — and 4b: the HQ's chips queue the player's party's day,
+> the queue persisted and replayed (§207); the interview offered as a request the outlets may book
+> (4c, §210). **F6 is played end to end for Sweden.** **What it lacks:** a region picker and an issue
+> for the message (design surfaces — the campaign map, the action screen); scandals and events in the
+> live run (§17's generation needs figures nobody has); a second staged country (D-22 waits on the
+> first play); the September calendar (D-23, (b) is the branch after the first play). The live HQ's first sight, the first
+> pressed chip and the first counted campaign are owed to the visual review and the first play.
+>
+> **The second country, sized 2026-09-02 and not started:** Germany has everything the prediction
+> needs (`TryCompatibility` works, EB105 salience is on disk — cost of living 36 → Economy, immigration
+> 14; the rest of its top five have no §6 slot, as Sweden's first has none) and lacks two things: a
+> runtime catalog of the 16 Länder's valid votes (`land_votes_2025.csv` is on disk and verified already on the
+> Sweden catalog's shape, §475; the generator's German branch ~2 h), and **a personality cast for real German parties — a characterisation,
+> Elias's to rule (D-22, open), not a draft to type overnight.** Sweden's cast was authored under W-C1
+> and has run for a week; a second one lands the same way or not at all. **DS-9 (§474): confirmed, after Sweden is played - `COMPLETED.md §580` S-C5.**
+4. **The play-calibration list**, once the loop is playable — its constants are judged by playing, which is
+   Elias's, and the list exists for exactly that sitting.
+
+---
+
+## P2 — PLAYTEST 2 (2026-09-02): Elias's rows, verbatim
+
+> **Recorded 2026-09-02, first and verbatim, as the sitting's rows.** Elias's kickoff, in his words:
+> *"Append these as the feature list's next section. Record the findings first, verbatim, dated, as the
+> sitting's rows. Work down in order, continuously; one commit per item, one green bar per commit, R-SP1
+> push, decisions sheeted and self-taken, one report at end of budget. Screen items film at 1280/2560;
+> the four-width matrix once at the section's close. Conventions unchanged: no transcribed counts, no
+> invented figures, evidence binds where the change lives."*
+>
+> The rows below are the sheet as sent. Execution lands in `COMPLETED.md` records, one per item, and
+> each row here gains a pointer to its record as it closes — the row's text is never edited forward.
+
+---
+
+### Track 0 — defects (wrong on screen; before anything else)
+
+**P2-0.1 — The deficit basis bug.** Measure first: which figure on Statistics › Domestic mixes a
+national-unit (SEK) line with a USD total. The likeliest seam is the budget decomposition's sourced
+lines against the USD seed. Trace every money figure on that screen to its basis; fix at the seam,
+never at the display; state the correction per country. *Done when:* every money figure on the
+screen carries one basis and a harness asserts it. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §217: the seam was the one-time settlements (authored on the USA seed's scale, applied unscaled), not a SEK line; `DomesticMoneyBasisDiagnostic` measured it red and holds it green.**
+
+**P2-0.2 — The legacy election result.** Establish whether `ElectionSystem`'s approval-threshold
+"Re-Elected" path still fires now that C-R4b gives the player a party. If it does, retire it — the
+last D0 clause — so the only election outcome the player ever sees is election night's count and
+C-R4's win/lose rule. *Done when:* one election path exists and a harness proves the old one is
+unreachable. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §218: it fired on every election and drew OVER election night; retired with `ElectionSystem`'s threshold members, election night is the takeover with C-R4's verdict on its foot, `OfficeTestDiagnostic` proves the old path gone.**
+
+**P2-0.3 — The campaign announces itself.** Campaign start is an interrupt: the clock HELDs, the
+banner names it, and HQ opens (the Fed-chair pause is the template). Election night is entered the
+same way — never a screen the player can miss. *Done when:* a Sweden game cannot pass campaign
+start or election night without the player dismissing an interrupt, filmed. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §219: the opening is a state-derived hold on the Fed-chair template (banner, HQ opens itself, TAKE THE TRAIL), election night names itself on the banner; `-shotinterrupts` proves both held clocks on a played Sweden game at 1280 and 2560.**
+
+**P2-0.4 — Budget balance shows the year, not the cumulative.** The Domestic series becomes annual
+(per fiscal year); cumulative belongs to debt, which already has its own row. *Done when:* filmed,
+and the annual series sums to the debt delta. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §220: the headline and the Budget row read the closed year, `StatHistory.BudgetBalanceAnnual` is the series, and the diagnostic proves the series plus erosion, settlements and clamp sum to the debt delta on every country.** **→ §371 (2026-09-07): the state's `Budget` field itself is the cumulative this row moved the screen off - a running sum of settlements - and is now documented at the field with `RunningBalanceSum` as its honest twin; not renamed, it is a trajectory column.**
+
+### Track 1 — the frame and the quick wins (every screen)
+
+**P2-1.1 — No gaps.** The sheet meets the rail and the window edge-to-edge: no paper margin, no
+gap between the rail and the sheet, on every screen. One frame token change, filmed on all screens
+at the close. *Done when:* the edge check reports the sheet flush on all four sides. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §221: three literals to zero, the sheets expand to the frame (the margin had hidden a per-tab band under every sheet), `ScreenEdgeCheck` re-derived (theme reference, strict zero-margin flushness) and clean on all screens at 1280 and 2560.**
+
+**P2-1.2 — Contrast, round two.** D6 aimed at 4.5:1 and two targets missed (Caution 4.09/3.90,
+TextPrimary-on-brass 4.03). Re-measure every ink pair at its real size after P2-1.1, and raise the
+faint inks until every body-text pair clears 4.5 and every caption pair clears 3.5. Token values
+only; if a target cannot be met without a new hue, that pair goes to Design. *Done when:* the
+measured table is in the record with no pair below its floor. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §222: the sheet's two misses are caption uses that clear 3.5; the body-floor failures were eight area inks, Good on the inset and the delta green D6 never reached - all raised hue-held; `InkContrastCheck` derives the table from the tokens every run.**
+
+**P2-1.3 — The Budget sliders.** Longer track, thinner height, finer step; the description texts
+under each slider cut (the (b)/(c) taxonomy applied to Budget). *Done when:* filmed, and a slider
+can be set to any whole percentage point without overshoot. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §223: the fixed columns take less of the row, the bar is half as tall with a narrower knob, the draft snaps to a tenth, the header and mechanism paragraphs are cut, and every film fails if any ledger row's range per pixel exceeds the snap.**
+
+**P2-1.4 — Persistent fiscal header on Budget.** Balance, debt, debt-to-GDP, revenue and spending
+totals visible at all times on the Budget screen, derived, in the chip-strip idiom. *Done when:*
+filmed in scrolled and unscrolled states. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §224: the desk's chip strip became an idiom and the Budget header draws it with five derived fiscal readings above the columns, outside their scroll; filmed at scroll zero, rows and deep at 1280 and 2560.** **→ §371 (2026-09-07): a sixth reading, *Lines · share of GDP* - this year over nominal GDP and NEXT at potential growth and the printed inflation - the one figure that says the player's lines fall from 42 % to 21 % of GDP over a century of no decisions (§367).**
+
+### Track 2 — Budget effects, redesigned
+
+**P2-2.1 — Retire the 1D/1W/1M/1Y horizons.** The effects panel becomes: the budget delta on the
+right, always; and as a slider moves, the affected categories surface with an arrow per category —
+direction up/down, length scaled by estimated magnitude, colour by the existing direction-aware
+`GetDeltaColor` (an effect on an outcome is already coloured by that rule; the neutral-ink ruling
+covers dial arrows, not outcome effects). Ranges never false precision — the deterministic
+preview's point with its scope stated (C-C1's precedent). *Done when:* filmed in rest and mid-drag
+states, and every arrow's length traces to the preview's own figure. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §225: the enum, the rescaling and sixteen scaled copies are gone from the Budget and the Desk card; `EffectArrowsRenderer` draws an arrow per outcome the draft moves from the full-turn point, the budget delta above it; filmed at rest and mid-draft at 1280 and 2560.**
+
+**P2-2.2 — Parliamentary support as seats.** The hemicycle in the Budget preview colours **each
+mandate** for/against/undecided, computed from the parties' stances on the draft; the same
+component replaces the lean bar on every law-support preview. *Done when:* the per-seat map's
+counts equal the existing stance arithmetic to the seat, on Budget and on Laws. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §226: every law-support preview and the pending-law card draw a per-seat map from `ParliamentSystem.SeatSides`, the one enumeration the verdict sums; OfficeTestDiagnostic holds the sides to the stance arithmetic for every country, axis and direction.**
+
+### Track 3 — Politics
+
+**P2-3.1 — The hemicycle draws seats.** Individual mandates, not curved bands — 349 dots for
+Sweden, party-coloured, sorted by bloc then by mandates. Party list sorted by mandates with the
+blocs drawn as groups (W-D3's bloc data). *Done when:* filmed, and the dot count equals the
+chamber. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §227: rings chosen by capacity so every mandate is a distinct dot, parties by bloc then mandates from the 2022 table, the legend grouped with a header per bloc, and the driver holds the dot count to the chamber on every parliament capture.**
+
+**P2-3.2 — The compass converts.** Axes become CHES `lrecon` (economic left–right) × `galtan`
+(liberal–conservative), both wired at F5 with endpoints read. Parties at their published positions;
+a country at the seat-weighted mean of its chamber; the government's point marked. Axis labels in
+the conventional words. *Done when:* every point traces to a CHES row or a seat-weighted
+derivation, no authored position anywhere. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §228: fixed 0–10 CHES scales, parties at published pairs, countries and the sitting cabinet at seat-weighted means (`CompassPositions`, `GovernmentFormation.Cabinet`), a legend column naming every point; the old policy blends moved to `PolicyStanceAxes` for the Statistics comparison; OfficeTestDiagnostic re-derives every point.**
+
+**P2-3.3 — The compass gains history and the electorate.** A trail of each country's point over
+time (it moves at elections and government changes — store it per turn, draw it faint); and the
+electorate's position from the voter groups over the cohorts (F3's substrate: the eligible
+population's compatibility-weighted mean). Design's compass r2 board refines the composition; the
+data ships now. *Done when:* the trail reproduces the stored history exactly and the electorate
+point derives from cohorts. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §229: three parallel history lists appended at every close and drawn as stored; the electorate at the compatibility-weighted mean over `NationalElection.TryCompatibility`'s arrays; both re-derived in the simulation diagnostics.**
+
+**P2-3.4 — The Riksbank panel.** More of what the model holds: the current rate, the reaction
+function's inputs (the model's inflation and output readings), and the **projected rate path** from
+the Taylor rule applied to the preview's projection — derived, with the scope stated. *Done when:*
+the projected path equals the rule evaluated on the projection, asserted. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §230: `PolicyPreview` carries the previewed year's readings and the rule on them, `RatePathProjection` is the chair's own arithmetic on today's and the preview's readings, the panel shows the rate, the inputs and the three-step path with its scope, and `PreviewParityDiagnostic` re-derives every figure.**
+
+### Track 4 — the Design batch (re-composition; the dead-space paradox says spacing won't fix these)
+
+**P2-4.1 — Film every screen as Elias saw it** at 1280/1600/2560 after Track 1 lands, with the
+dead-space measure per screen, as the annex. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §231: `ScreenEdgeCheck` prints each capture's ground-coloured share and the pass's mean and emptiest; the sweep filmed at 1280×720, 1600×950 and 2560×1440 (`p2an*`), the per-screen table in the record.**
+
+**P2-4.2 — Install the ask (D10)** in the request doc, one ask, rows: (1) **International** —
+modernise and re-compose (the country pages are built structurally; every gap the model cannot
+fill is named); (2) **Docket** — re-compose, add a minister-alerts region (ministers who have
+something to say), and per-decision cost-and-impact with arrows; (3) **People** — re-compose from a
+rolling list of unconnected stats into instruments over the cohort substrate; (4) **Laws** — the
+browser streamlined and the enactment page decluttered; (5) **Politics** — the per-seat hemicycle,
+the bloc grouping, compass r2 with trail and electorate; (6) **the law-result screen** — full
+frame, not a square on black: the vote as a per-seat map, the estimated impact as arrows, the
+citation; (7) **the election-result screen** — the same treatment, with the campaign's attribution
+ledger beside the count; (8) **the frame** — sheet-to-rail-to-edge tokens; (9) **contrast** — any
+pair P2-1.2 could not clear. Drawn at 1280 first; Elias's verbatim complaints as the annex's first
+page. Regenerate the package; **binary artifacts are uploaded, not described.** Sending stays
+Elias's. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §232: D10 installed as the one live ask with its nine rows and three-page annex; `docs/outbound/SEND_PACKAGE.md` regenerated with every film by name, size and digest; sending stays Elias's.**
+
+**P2-4.3 — The structural halves that need no board:** the law-result and election-result screens
+get their full-frame content now (per-seat vote map from P2-2.2, effect arrows from P2-2.1, the
+attribution ledger), in the v3 idiom; the Docket gets a minister-alerts region fed by whatever the
+cabinet already emits. Boards refine. *Done when:* filmed, nothing is a square on black. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §233: divisions carry their sides and the turn's estimate, `CanvasPaint` paints them for the Canvas screens, the signing ceremony and election night anchor to the frame with the map, the citation, the arrows and the live campaign ledger; the Docket names ministers with something to say and draws every option's cost and shocks as arrows.**
+
+### Track 5 — cabinet mechanics (a new system; one page, then build)
+
+**P2-5.1 — The design page.** Ministers gain four attributes — loyalty, knowledge, efficiency,
+popularity — each with one mechanical consequence the player can feel: **efficiency** scales the
+portfolio's spending effectiveness; **knowledge** narrows the preview's error on that portfolio's
+figures; **popularity** feeds approval through the existing cabinet portfolio terms; **loyalty**
+drives resignation and leak events under pressure. Attributes are `[AUTHORED-DRAFT]` for fictional
+ministers (the Fed-chair candidate pool is the precedent), never invented for a real person. One
+page; take the recommendation and log it strikeable. *Done when:* the page is in the record with
+each consequence's owning term named. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §234: the page - efficiency a multiplier on three portfolios' spending sensitivities (BASELINE), knowledge as disclosure not accuracy (SAFE), popularity on the option's approval figure and the dismissal cost (SAFE), loyalty as resignation and leak events under pressure (BASELINE), the liveness check to gain an attribute enumeration; five decisions logged strikeable.**
+
+**P2-5.2 — Build per the page**, SAFE where the terms already exist, BASELINE where a new term
+enters the model (efficiency on spending effectiveness will); families explained per country.
+Minister alerts on the Docket become real events from these attributes. *Done when:* each attribute
+measurably moves the model through its named term and the lever-liveness check sees all four. **→ ✅ CLOSED 2026-09-02, `COMPLETED.md` §235: the four attributes on eighteen authored candidates, efficiency on three portfolios' spending sensitivities, popularity on the option's approval figure and the dismissal cost, knowledge as the Docket's disclosure, loyalty as resignation and leak events on the Docket; `LeverLivenessCheck` enumerates the four.**
+
+---
+
+### Yours (appendix rows)
+
+Play it again after Track 0 lands — the deficit figure, the single election path, and the campaign
+interrupt are the three things that change what you see first. The Design paste when D10 is
+installed. The two stat-icon PNGs and the ITANES registration, still open.
+
+---
+
+> **Section closed 2026-09-02.** Every row above points at its record (`COMPLETED.md` §217–§235); the four-width matrix at the close is §236, and the end-of-budget report went to Elias with it.
+
+
+
+## PLAYTEST 4 (2026-09-04): Elias's rows, verbatim
+
+⚠ **The row names are the sheet's own (`P4-A1` …). The block above headed `# P4` is the three items of 2026-09-03 (`P4-1` … `P4-3`); the two prefixes coincide and the row names do not.** *"Append as the next section; record the five screenshots and the findings verbatim first. Work down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and self-taken, one report at end of budget. Screens film at 1280/2560; the matrix at the close."*
+
+**The five screenshots:** not on disk at the sheet's arrival (2026-09-04 — `PoliSim-captures\Elias Screenshots` holds E-8's eleven `nedladdning*.png` and nothing newer); recorded as owed in `ERRANDS.md` E-13 and bound to their findings the day they land, as E-8's were.
+
+### Track A — party support, round two (the Budget never met the stance model)
+
+**P4-A1 — Measure first.** Prove which path the Budget bill's support takes. If it reduces to one
+fiscal sign before reaching Track A's scorer, that is the finding; record it with the call site. **→ ✅ MEASURED 2026-09-04, `COMPLETED.md` §284: the Budget reaches the scorer through `GetBudgetBillConcern`, but every line adds its signed size to the one axis `spendvtax`, so composition cancels before `StanceModel` sees it; two budgets of one net balance (Defence/Education swapped) load nothing, read 349 UNDECIDED and FAIL on the tie - printed by `StanceModelDiagnostic`.**
+
+**P4-A2 — A budget decomposes into its lines.** Each budget line loads the CHES axis it concerns
+(welfare and transfers → `lrecon` and the welfare-state dimension; taxation → redistribution;
+defence, environment, immigration-related lines → their own axes; sector lines → state
+intervention), with the mapping stated in code and sourced from the codebook's axis definitions. A
+party's stance on a budget is the seat-weighted sum over its lines' loads against the party's
+published positions — never the net sign. *Done when:* two budgets with the same net balance but
+different compositions produce different splits, asserted. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §285: `ParliamentSystem.BudgetLineAxes` - transfers and health on `lrecon` + `spendvtax`, taxation on `redistribution`, justice on `civlib_laworder`, homeland security on `immigrate_policy`, sector lines on `lrecon`, three pairings tagged [AUTHORED-DRAFT] (defence and foreign affairs on `nationalism`, interior on `environment`); five CHES columns read for the 31 units; the two budgets of §284 now split 176/0/173 against 165/24/160, asserted in `StanceModelDiagnostic`.**
+
+**P4-A3 — Bloc side and populism.** Bloc cohesion as an explicit term (government bloc supports
+its budget, opposition bloc's support depends on distance, both with loyalty-driven defection —
+Track A's machinery); populism from CHES's people-versus-elite item where published, `[AUTHORED-
+DRAFT]` where not, entering as a bias toward anti-establishment framing of a bill. *Done when:* a
+populist party's stance on the same bill measurably differs from a non-populist party at the same
+`lrecon` position. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §286: the bloc's line (`BlocPull`, the government's bloc outside the cabinet, distance-scaled) and a one-directional populism term from CHES `people_v_elite` (the USA's two an [AUTHORED-DRAFT] placement); a populist twin at L's positions reads −0.235 against the non-populist's −0.065, asserted through `StanceModel.StancesOver`.**
+
+**P4-A4 — The label and the breakdown.** "Contractionary (−30) · WOULD PASS" retires; the verdict
+is the count (P3's ruling), and the per-party breakdown in 6b's grammar shows each party's stance
+with its reason. The same panel serves laws. *Done when:* filmed on Budget and on a law. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §287: the line reads FOR n · AGAINST m [· UNDECIDED k] · WOULD PASS/FAIL from the seat map's own enumeration at every estimate site; the direction word and number are gone; the breakdown is §273's and prints the new terms; filmed on the Budget and the law pane at 1280 and 2560.**
+
+### Track B — range captions on every dial
+
+**P4-B1 — The caption catalog.** For every dial in the game (the 13 the label check reads): ten
+bands, each with a name and one dry line, **authored from the dial's measured effect at that
+range** — the writer reads the effect table first and no caption contradicts what the model does
+there. Tone: the desk's own civil-service deadpan. Tagged `[AUTHORED]` as game fiction;
+`MetaTextCheck` exempts the catalog by name so satire is not read as meta-text. *Done when:* every
+dial has ten bands and a harness asserts each band's direction agrees with the dial's effect sign. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §288: `RangeCaptions` - fourteen dials (DialLabelCheck's rows), ten bands each, 140 [AUTHORED] lines authored from `LaborCouplings.All` and the sector sensitivities; `RangeCaptionCheck` on the bar holds every band's sign to the model's own, re-derived; `MetaTextCheck` exempts the file by name.**
+
+**P4-B2 — The presentation.** The caption appears on drag beneath the slider, holds, and fades
+over a few seconds; moving again brings it back. Time-based alpha in IMGUI, deterministic under
+the film harness (staged at three moments: on-drag, held, faded). *Done when:* filmed at all three
+on two dials, guards silent, rect stable (the P4-1 invariant — the caption never reflows the row). **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §289: `RangeCaptionPresenter` (hold 1.5 s, fade 2.5 s, the harness's clock) and the caption drawn into the row's own reserved band; filmed at the three moments on the Minimum Wage and Manufacturing's Subsidy at 1280 and 2560, the ledger geometry asserted identical at rest and showing.**
+
+**P4-B3 — Sector dials gain cost and impact.** The effects-arrow grammar (5c) and a cost line on
+every Economic Sectors slider, the way Budget's have them. *Done when:* filmed, every arrow traces
+to the preview. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §290: `SectorCouplings` charges a sector's subsidy, tax credits and research grants to the Commerce line ([AUTHORED-DRAFT] per point, zero at the seed); `PolicyPreview.SectorDeltas` from a preview run with the sector draft applied; each sector draws the cost line and the 5c plate from those figures; filmed at 1280 and 2560.**
+
+### Track C — laws that reach every macro lever, and repeal
+
+**P4-C1 — The lever map, measured.** Enumerate every macro quantity the model holds (NAIRU,
+inflation regime, potential growth, participation, the coupling table's targets, the central bank's
+parameters, and the rest) and for each: which dials and laws reach it today. The unreached set is
+the coverage plan. *Done when:* the map is in the record, generated not transcribed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §291: `LeverMapDump` probes 127 dials and 100 laws through the real turn path and writes `docs/generated/LEVER_MAP.md` - 68 of 76 quantities reached, eight unreached (the NAIRU first among them) and thirty reached by no law; the coverage plan for P4-C3.**
+
+**P4-C2 — Repeal.** An enacted law can be put to the chamber for repeal through the same
+bill-and-vote path; its effect is the negative of enactment (the delta-composed recomputation
+already supports removal), its support scoring inverts, the law browser shows REPEALABLE on
+in-force rows. *Done when:* a law is enacted and repealed in a harness with the state returning to
+byte-identical, and filmed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §292: the path already stood end to end (bill, vote, delta-composed removal, inverted stances, the Repeal button); added the whole-country byte-identical assertion in `LawCompositionDiagnostic` (now on the simulation bar) and in the film's own staging, the approval excepted by name as the price paid; in-force rows read ENACTED · REPEALABLE; filmed at 1280 and 2560.**
+
+**P4-C3 — Catalog expansion, one category per session.** From P4-C1's unreached set, add law
+categories that reach them — labour-market institutions for NAIRU, monetary-regime laws for the
+inflation target and the bank's mandate, and so on — each law with a real-world citation
+(CONFIRMED / DIRECTIONAL / GENRE-IDIOM per the existing convention), effects through the coupling
+table, magnitude bands per the stepped rule. Sized as it goes; each category its own commit and
+film. *Done when:* every quantity in P4-C1's unreached set has at least one law reaching it, or a
+recorded reason it should stay unreachable. **→ ✅ FIRST CATEGORY BUILT 2026-09-04, `COMPLETED.md` §302: Labour-market institutions - ten cited laws moving the natural rate of unemployment through a thirteenth composed effect; the map regenerated with the NAIRU reached. The row stays open: seven unreached quantities, the four Taylor constants and the dials-only set remain, each its own category.** **→ ✅ SECOND CATEGORY BUILT the same evening, §304: the Fiscal Framework - ten cited laws reaching five parameters through one structural table (the thirteenth-entry special case retired); both cards on film. Left: two unreached quantities, the Taylor constants, the dials-only set.** **→ ✅ THIRD CATEGORY SIZED, NOT BUILT 2026-09-05 (P5 pass, item 4): the monetary regime (the four Taylor constants) needs two things before its ten laws - the constants to become per-CURRENCY-ZONE state (`TaylorRule.InflationTarget`, `NeutralRealRate`, `InflationGapWeight`, `UnemploymentGapWeight` are statics today; `EurozoneRateSystem` averages the members' suggested rates, so a zone parameter has one home) and ONE RULING that is Elias's: whether a euro member's parliament reaches the ECB's target and mandate at all (the honest answer is no - the recorded reason those three stay unreachable by national law - while Sweden, Poland and the USA reach their own bank's). Sheeted for the next pass with the ruling; the other two unreached quantities stand: `BenefitRatePerUnemployed` belongs to the labour-institutions category's next ten, the state's `DeathRate` to the health family (P5-C2) when its grammar lands.** **→ ✅ THIRD CATEGORY BUILT 2026-09-05 (evening), `COMPLETED.md` §330: the Monetary Regime - the four Taylor-rule constants made per-currency-zone state (`CurrencyZone.InflationTarget` … `UnemploymentGapWeight`, `TaylorRule` reads the zone) and ten cited laws reaching them through the structural table; ruling (a): a euro member's House does not reach the ECB's target or mandate (treaty competence - the recorded reason those stay unreachable for Germany, France and Italy) while Sweden, Poland and the USA reach their own bank's (`LawDefinition.RequiresOwnCurrency`, `World.OwnsCurrencyZone`, the card's line and the bill's gate agree); the card on film at 1280 and 2560; the map regenerated. Left: `BenefitRatePerUnemployed` (the labour institutions' next ten) and the state's `DeathRate` (the health family, when its grammar lands); the dials-only set.** **→ ✅ THE LABOUR INSTITUTIONS' SECOND REACH 2026-09-05 (evening), `COMPLETED.md` §332: `BenefitRatePerUnemployed` joins the structural table and the three benefit laws (Hartz, benefit duration, UI duration cut) carry a second delta on it beside their natural-rate one; the card re-filmed; the map regenerated - ONE unreached quantity left, the state's `DeathRate` (the health family's, when D15's grammar lands), and the dials-only set.** **→ ✅ THE LAST QUANTITY CLOSED 2026-09-06 (overnight), `COMPLETED.md` §343: the health feedback pass moves `DeathRate` with treatable mortality against its seed, so the health lines reach it; the map regenerated (`levermap10`) - PLACEHOLDER-343-MAPROW. Left: the dials-only set.** **→ ✅ CLOSED 2026-09-07, `COMPLETED.md` §378: the done-when is met (zero unreached since §343); the dials-only set - 31 quantities, 24 of them the eight sectors' metrics on their own dials - is reached by design, and whether laws should reach it is Elias's question, one row in his section.**
+
+### Track D — events
+
+**P4-D1 — Measure the event rate.** How often events fire per year, from the pool's size and
+probabilities, against what a player sees in a ten-year game. *Done when:* the number is in the
+record. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §293: one turn is one year, so 0.12 a turn was 1.2 events per ten-year game and 28 % of games with none; `EventRateDiagnostic` (the simulation bar) measures the realised rate on 60 worlds × 10 years.**
+
+**P4-D2 — More events.** Expand the pool with authored events, each tagged, each with effects
+through the model's own terms and a magnitude band, sourced analogues cited where an event mirrors
+history. Frequency tuned to the measurement, not to feel — a target stated and defended. *Done
+when:* the pool doubles at minimum and the per-year rate is measured after. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §294: 50 events, each tagged, banded by its GDP shock (derived) and cited with the catalog's classes; `EventChancePerTurn` 0.12 → 0.40, defended against Sweden's own record; `EventPoolCheck` on the cheap bar; measured after.**
+
+**P4-D3 — The event slot streamlined.** The empty state ("Year 1 is quiet…") becomes an
+instrument-class line, not a paragraph; a live event draws in the card's grammar. *Done when:*
+filmed empty and live. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §295: the empty slot is one caption in the card's mono - YEAR n · NO EVENT LIVE - inside the dashed reservation; the live card unchanged; filmed empty and live at 1280 and 2560.**
+
+### Track E — the cuts and small fixes
+
+**P4-E1 — Remove the grid** behind the world map on the Desk and on Statistics; the stylized map
+stays as delivered (6b's six chips at geographic centres) on plain paper. *Done when:* filmed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §296: the grid was baked into the one background texture both maps use; every pixel is paper now; filmed on the Desk and Statistics at 1280 and 2560.**
+
+**P4-E2 — The Riksbank page streamlined.** The (b)/(c) cut applied to its mono captions — the
+long explanatory lines under the graph and the rule are restatements of what the instruments show;
+keep the instruments, the five terms and the governor, cut the paragraphs. The stray "Interest
+Rate … 0%" label at the graph's head is measured and removed or corrected. *Done when:* filmed
+with dead-space measured before and after. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §297: four restating captions cut; the head label measured as `DrawTitleRow`'s window delta printed as a percent of a flat rate - corrected to points, or nothing when flat, with an empty title drawing nothing; dead space measured before and after; filmed at 1280 and 2560.**
+
+**P4-E3 — Docket decisions show impact.** Each option carries its cost and its effect arrows in
+the 5c grammar (D10 row 2's ask, structural now). *Done when:* filmed with two options visible. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §298: the cost line in the Budget's words and ink, the plate caption, the plate reserved, the option's own scope line - the 5c grammar on every Docket option; filmed with two options visible at 1280 and 2560.**
+
+**P4-E4 — The trade graph.** Verify against 6b's dotted zero rule; if the built graph is not on
+the board, close the gap; the ±100 % delta stays retired. *Done when:* filmed. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §299: verified on the film - the dotted rule sits at zero on the signed scale (P5-4's build of 6b row 3), the delta is the money delta from the zero base; nothing to build.**
+
+### Track F — the D14 ask
+
+**P4-F1 — Install D14**, reconciled against D12/D13: (1) People's pie and bar instruments
+redrawn to the game's grammar; (2) the trade graph's composition; (3) the Riksbank page after
+P4-E2's cut; (4) the range-caption presentation — placement, type, fade; (5) the map on plain
+paper, confirming the chip set; (6) the Docket option card with cost and arrows. Annexes: the five
+screenshots verbatim (on disk this time, under `PoliSim-captures\Elias Screenshots`), the films
+after Tracks B and E. Binaries uploaded, not described. Package regenerated, `ERRANDS.md` row. **→ ✅ CLOSED 2026-09-04, `COMPLETED.md` §300: D14 installed above D13 (six items, each against the films of Tracks B and E at 1280 and 2560, reconciled against D12/D13 row by row); the package regenerated; E-14 opened. The five screenshots landed the same day (E-13 done, §303) and are in the package by digest.**
+
+### Yours
+
+The five screenshots into `PoliSim-captures\Elias Screenshots`. The E-12 paste if not yet sent;
+D14's when installed. Play again after Track A — the Budget's parliament changes.
+
+---
+## PLAYTEST 5 (2026-09-05): rows for `POLISIM_FEATURE_LIST.md` — Elias's sheet, verbatim; the screenshot, the findings and the metric list are NOT in the paste and NOT on disk at this writing (ERRANDS E-16) and are recorded the day they land
+
+**The sheet's own preamble, verbatim:** *"Append as the next section; record the screenshot and the findings verbatim first (Elias's metric list included as reference material, marked as a foreign game's wiki, not a spec). Work down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and self-taken, one report at end of budget. Two BASELINE families never land in one pass."*
+
+**→ ✅ E-16 LANDED 2026-09-05 (`COMPLETED.md` §318):** the findings (§1) and the metric list (§2) are in `COMPLETED.md` §369a (the retired `PLAYTEST5_ANNEX_E16.md`) at the repo root, verbatim, with the mapping rules P5-C1 starts from (§3); the screenshot is `Elias Screenshots/PIECHART.png` (423×331, sha256 `9c5e91e3ae304205…`, placed 2026-09-04 19:37), selected by time, verified by content and bound to P5-A1 - the nine leaders converging on one column, two crossing. Both are in the D15 package by digest. The paragraph beneath is kept as it stood.
+
+⚠ **What did not arrive:** the sheet names one screenshot (the pie with its leaders, P5-A1's reason), a findings list, and Elias's metric list ("a foreign game's wiki, not a spec", P5-C1's input). The paste carried the rows only; no file newer than the sixteen screenshots is in `PoliSim-captures\Elias Screenshots`, and no findings or metric-list file is in the repo or the captures folder. They are recorded verbatim the day they land (E-16), as E-8's eleven and E-13's five were. P5-A1 proceeds on this side's own film of the pie (§309, `p6d_1280_04a_demographics_pie`: leaders converging on the label column, two crossing); P5-C1 waits for the list.
+
+### Track A — the pie (small, first)
+
+**P5-A1 — Leaders retire.** The list beside the pie is the legend: wedge inks keyed to its rows,
+large wedges labelled inside where the label fits, the rest carried by the list alone; no leader
+lines. Stated to Design as a deviation from 8a with the screenshot as the reason. *Done when:*
+filmed at 1280 with nine wedges and nothing crossing. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §313: the legend beside the disc keyed by swatch, the large wedges labelled inside, no leaders; the ladder's pie carries nine series; filmed at 1280 with nothing crossing; stated to Design as D15 item 1.** **→ ✅ READ BACK BY DESIGN AND CLOSED 2026-09-05 (late), `COMPLETED.md` §334 (board 9a, D15 item 1): 8a stands with its leader rule struck; the inside label's threshold is 45° (Design's measurement), and the label prints only where the wedge's ink clears 4.5:1 against the paper, never on the hatched OTHER; filmed at 1280 and 2560.**
+
+### Track B — the budget as nominal lines that persist and index (BASELINE; the sheet's core)
+
+**P5-B1 — Measure the premise.** For every spending line and every tax line: what the dial sets
+today (a percentage delta? of what base?), what happens to it at the fiscal-year boundary
+("normalises after a year" — prove it), and what drives the line's value between player changes.
+Then the liveness audit at magnitude: for every slider, the model's response to a large step at
+one and five years (C-C10's leave-one-out machinery) — **live**, **live-but-negligible** (a stated
+threshold), or **dead**. *Done when:* the table is generated and in the record; nothing built yet. **→ ✅ CLOSED 2026-09-05, `COMPLETED.md` §312: `docs/generated/BUDGET_PREMISE.md` generated - a dial sets a percentage of the current nominal amount and the amount PERSISTS (a +30 % step reads 1.30× for five years; the dial resets, not the line); every line grows at potential exactly and indexes to nothing else; revenue's elasticity to nominal GDP is exactly 1; 91 live, 2 negligible, 9 dead sliders at full range, the dead ones records not sliders.**
+
+**P5-B2 — Nominal lines.** Each spending line holds a nominal amount in the country's unit,
+player-set, **persisting across years**. Between player changes it indexes to its drivers:
+inflation on every line; the demographic or cyclical driver where one exists — pensions to the
+65+ cohort, unemployment benefits to the unemployment rate, education to the 0–19 cohort, health
+to the age structure (all from F2's substrate). The player may pin a line (override the index) or
+set it. The share-of-GDP view becomes a derived readout beside the figure. **Single-book rider:**
+the stored kronor figure is the presented one. *Done when:* a line left untouched for five years
+follows its drivers exactly (asserted per driver), a pinned line does not, and the family is
+explained per country. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §314: `SpendingDrivers` + `SimulationManager.IndexSpendingLines` - the driver's ratio on every line that has one, pins and nominal targets on the decision and the bill; the AI's budget rule stated; asserted per driver on all six by `SpendingIndexationDiagnostic`; the trajectory family dumped before and after and explained per country. NO PRICE TERM, by measurement: the book is in constant prices - the first build's prices on the lines took every country to the inflation cap inside sixty years (the table is in §314), so prices wait for P5-B6, sheeted below. The screen is B5's.**
+
+**P5-B3 — Revenue that grows with its base.** Revenue per tax line = rate × base, where the base
+moves with nominal GDP, employment and — where F4's income dimension exists — the distribution.
+Prove that a tax rate held constant yields rising revenue in a growing economy and falling revenue
+in a recession, with the elasticity stated. *Done when:* asserted per country, same family as B2
+or its own — sheet it. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §319: `TaxBases` - every base is its sourced share of the seed's GDP carried by its own driver (the wage bill for income and payroll, consumption for VAT, housing for property, output for the rest), one accessor for every revenue site; elasticity 1 to the driver, asserted on all six by `RevenueBaseDiagnostic` with a recession probe that shows the employment channel; its own BASELINE family, the trajectory suite before and after explained per country. The distribution channel waits on F4, as the row said.**
+
+**P5-B4 — Every slider moves something.** From B1's audit: each dead or negligible slider either
+gains a sourced transmission (basis attached) or is retired by name with the reason (a dial that
+does nothing is not kept as decoration). *Done when:* the liveness audit re-runs with no dead
+slider and every negligible one either lifted or retired. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §315: the audit re-runs with 93 live, 0 negligible, 0 dead, 33 not armable - the two negligibles lifted by B2's drivers, the fund's domestic-allocation dial retired from the fund page by name (C-N6: the field stays, the surface goes), and the other eight dead sliders reclassified NOT ARMABLE with the reason printed in the row (`LeverProbes.Lever.NotArmable`): a tax not implemented, a governor who sets the rate, a customs union that sets the tariff.**
+
+**P5-B5 — The Budget screen on the new lines.** The row shows the nominal figure, its drivers as
+small instruments, the delta against last year, and the projected next year; the slider sets the
+figure directly with the range captions (P4-B) rewritten for nominal ranges. The fiscal header's
+projected balance reads from the indexed lines. *Done when:* filmed rest and mid-drag, rects
+stable, every figure derived. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §316: the slider carries the figure (the track this year's allowed change around the standing amount), the bill carries it as a nominal target and the parliament weighs it as the percentage it implies; the driver's ratio and the projection (`SpendingLine.ProjectNextYear`) in the band's left and right ends, the delta against last year beside it; two caption catalogs for the nominal ranges; filmed rest and mid-drag at 1280 and 2560, rects stable. The fiscal header already read the indexed lines through the preview.** **→ ✅ DESIGN'S BOARD 9b BUILT 2026-09-05 (late), `COMPLETED.md` §335 (D15 item 2): the year-open ghost tick in TextMuted (the driver's move against the player, drawn when it moves the tick ≥ 2 px), Δ under the figure in the figure cell and measured from the ghost (Δ $0 never a dash), NEXT alone in the band's right end, PINNED a word (the pin does not lock the knob - the word owed, answered); 6a's geometry untouched; filmed at 1280 and 2560. The caption line's HEALTH · EFF ×r is 9d's.**
+
+**P5-B6 — The book in current prices.** *(Sheeted by P5-B2, §314, from a measurement.)* The model
+keeps every $B figure in constant prices: `EconomyState.PotentialGDP` grows at the real potential rate alone, GDP
+is solved against it, revenue is rates × that GDP, debt and interest sit on it, and the `EconomyState.Inflation`
+stat is a side book the central bank, the real wage and approval read. B2's first build put prices
+on the spending lines and the trajectory family blew up in sixty years (§314: every country's lines
+to three times GDP, unemployment to zero, inflation to its cap). This row moves the book to current
+prices: potential and GDP carry the price level, revenue follows nominal GDP, the debt is a nominal
+stock with a real rate underneath, the seeds restated, and THEN the lines take prices (the hook is
+`SimulationManager.IndexSpendingLines`, one factor). Its own BASELINE family, on its own pass — the
+tax base (P5-B3) and this row are the two families Track B still owes, one per session. *Done
+when:* the trajectory suite before and after, explained per country; a held real spending share
+is a held share; the Budget screen's figures grow with prices on film. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §327: the book in current prices - `EconomyState.PriceLevel` compounds at the printed inflation; nominal GDP, nominal bases, the lines carrying prices again, GDP-share flows and the tariff take nominal, the debt accruing nominal balances with the erosion term retired; the macro block real and the constant-price view the derived readout; the WDI deflator (one vintage, six countries) the yardstick; `PriceLevelDiagnostic` asserts the level, the bases and that no country nears the cap in a century; the family explained per country against B7.**
+
+**P5-B7 — Potential output carries the labour force.** *(Sheeted by P5-B3, §319, from a
+measurement.)* `EconomyState.PotentialGDP` grows at `Country.PotentialGrowthRate` whatever the
+working-age cohort does, so once the tax bases follow the wage bill (B3) a shrinking country keeps
+its output and loses its revenue: Poland's debt at t100 ×2.95 against the tree before, Italy's
+×1.92, while Sweden's and the USA's fall. The two should move together: potential output as the
+labour input (the 20–64 cohort × participation, from F2's substrate) times productivity growth, the
+seeds restated so year 1 is unchanged, and the growth rate the derived quantity it should be. Its own
+BASELINE family, on its own pass, after B6 or before it — the three families Track B owes are B6,
+B7 and nothing else. *Done when:* the trajectory suite before and after, explained per country; a
+country whose workforce shrinks sees its output and its revenue shrink together; the Okun and
+Phillips blocks read the same potential. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §322: `PotentialOutput` - potential is the labour input (the 20–64 cohort × participation × (1 − NAIRU), from F2) times a productivity index compounding at the SOURCED trend (Eurostat nama_10_lp_ulc and BLS PRS85006092, 2010–2025 means: USA 1.613, Sweden 1.019, Germany 0.938, France 0.513, Italy 0.119, Poland 3.019); `Country.PotentialGrowthRate` derived once a turn; asserted on all six by `PotentialOutputDiagnostic`; the premise measured before (`docs/generated/POTENTIAL_PREMISE.md`) and after; the year-100 debt table before and after is the headline. The pass's one BASELINE family.**
+
+### Fiscal transmission — the fix track (ruling-first; measured, proposed, nothing applied)
+
+Three items on one mechanism - how the fiscal book reaches output - filed together so they are ruled in a fixed order and never landed in one pass (each is a BASELINE family). The first two are C-C11's (`COMPLETED.md` §107, R-C11a–e, 2026-08-31); the third is P5-B3's finding (§319, 2026-09-05). **The Ramey constraint stands over all three:** the spending multiplier reads 0.603 on impact, 0.85 at +1 and 0.96 at +4 - inside Ramey's 0.6–1.0 at every horizon (C-C11 finding 3) - and any change here re-runs `ResponsivenessAuditHarness` and leaves that column where it is.
+
+| # | item | what is measured today | where it would enter the identity | basis (sourced) | status |
+|---|---|---|---|---|---|
+| FT-1 | **The tax multiplier** (R-C11a/b) | exactly 0.000 for three taxes, three step sizes, both directions, three horizons - a rate change moves the balance and nothing else (C-C11); C-N4 (§126) then built the disposable-income term, so a RATE change now reaches consumption through `MacroSystem.DisposableIncomeConsumptionDelta` (−MPC × Δ household burden share × GDP) | the level term of the national-accounts fixed point (the C-N4 seat, beside G and NX) | Romer & Romer 2010 for the direction; the magnitude BILLED, not proposed (R-C11b: a Swedish source is needed and could not be read) | built for the rate (C-N4); its magnitude still billed. **→ §345 (2026-09-07, overnight): the Swedish anchor REACHED - Konjunkturinstitutet's SELMA multipliers (KI-kommentar 2025-12-02): labour-income tax 0.17, consumption tax 0.21 over two years; the harness re-measured on the current-prices book (income tax 0.397 / 0.542 / 0.642, VAT 0.397 / 0.540 / 0.630) sits above the Swedish estimate and far below Romer & Romer; proposal refreshed, nothing applied. ⚠ The same run found the spending impact multiplier at 0.499 below its 0.507 ratchet - at HEAD before the night's edits, so B6/B7's; reported, the ratchet not lowered.** **→ RULED 2026-09-07 (§361, 3): the MPC HELD at 0.67; the gap to SELMA's 0.17 / 0.21 recorded as SELMA's labour-supply channel plus the model's Riksbank offset (§355); FT-5 opened for the channel.** **→ §396 (2026-09-08): with FT-5 landed behind the jobs lag, the residual of the tax multiplier against SELMA - 0.55 at two years against 0.17 - is THIS row's: the consumption channel at the held MPC of 0.67, which SELMA's Ricardian households do not carry; attributed here, held as ruled.** |
+| FT-2 | **The Okun specification** (R-C11c) | the implied coefficient −0.007 against Ball, Leigh & Loungani's −0.23 to −0.54 (C-C11 finding 2); C-N5 re-measured the landing-year Okun at −0.49 (`MacroSystem.OkunCoefficient` doc) | `MacroSystem.ApplyOkunsLaw` - the growth gap's coefficient and its reversion | Ball, Leigh & Loungani 2013 | measured twice, ruled open; interacts with FT-1, so ordered after it. **→ §345: the harness's Okun column re-read −0.018 / −0.016 at L+4 on the current-prices book (was −0.005 / −0.007); SELMA's unemployment multipliers noted as a second Swedish reading, not adopted.** **→ ✅ CLOSED BY REASON 2026-09-07, `COMPLETED.md` §376: the fix is P-N5b (Okun on the output gap) and P-N5b is behind T-3, the government-consumption block, which is Elias's (its figures sourced in §376); the constant stays 0.5 inside the sourced range, the harness's column stays a reading of the specification.** **→ P-N5b MEASURED AND STOPPED 2026-09-15, `COMPLETED.md` §508, after T-3 landed (§507):** the premise - a level gap that means something - failed on the landed tree: in 5 of six countries the gap is never within 2 points of zero in 900 years, and it co-moves with the unemployment gap with the wrong sign (+0.08 to +0.21 in levels and +0.37 to +0.54 in first differences; potential's labour input is employment). Okun on it at the sourced range put unemployment 1.6 to 11.8 points above the growth form's at year 100 outside Sweden and inflation at its floor. Nothing applied; the growth form stays; the form of the gap Okun reads is Elias's (OWNER ELIAS, P-N5b). **→ RULED (d) HOLD 2026-09-15 (§513): the circularity is the reason; FT-7's formula stands; (a), the identity anchored to potential, is the next pass's question.** |
+| FT-3 | **Revenue reaches output through the balance only** (P5-B3, §319) | with the tax bases on their drivers, the trajectory family moved `Budget`, `GovernmentDebt` and `Country.EffectiveDebtRate` and NOTHING else - 39 of 42 fields byte-identical on all six pairs over 1000 turns. A revenue change from the BASE (jobs lost, consumption down) leaves output untouched: C-N4's burden term reads `TaxBases.Base` over GDP at the current AND the baseline rates, so the base cancels and only the rate survives - the mirror of C-N4, built for the rate and not the base | the same C-N4 seat: the household burden term should read revenue COLLECTED from households as a share of GDP against the seed's share (base and rate), so a recession's automatic fall in income and payroll revenue is a rise in disposable income that the identity's C term learns of - the automatic stabiliser; the balance's own channel (debt → `Country.EffectiveDebtRate`) stays what it is, interest on the book | Dolls, Fuest & Peichl 2012 (*Automatic stabilizers and economic crisis: US vs. Europe*, Journal of Public Economics 96): income stabilisation coefficients of 38 % (EU) and 32 % (US) - the share of a shock the tax-and-transfer system absorbs, which is the quantity this term would produce and the number to measure it against; the MPC is C-N4's, already sourced | **→ MEASURED AND STOPPED 2026-09-07, `COMPLETED.md` §377:** the recorded form fails the turn-vs-daily equivalence bar (the base is live inside a period: consumption 10 % apart at the 8 % shock) and reads the bases' secular trend as a permanent tax (consumption's share of GDP 0.56 → 0.46 at year 500); not applied. Landed: a tax absent at the seed anchors at zero (a C-N4 defect found in the seat), `HouseholdBurdenAnchorDiagnostic` in the bar. Proposed for the ruling: a cyclical anchor (the bases' share against its own trend) read at the period open. CLOSED as stopped, NEEDS ELIAS for the form. |
+| FT-4 | **The spending impact multiplier below its ratchet** (§345, 2026-09-07) | `ResponsivenessAuditHarness`: the cumulative spending multiplier at IMPACT reads **0.499 / 0.500 / 0.497** on the three spending dials against the floor of **0.507** (measured 2026-09-01), and L+1 0.569 against Ramey's 0.6; at HEAD `1e14a91` before the overnight edits (`resp_head.log`), so the slip belongs to the two passes that moved the book the harness measures in - P5-B7 (§322, potential as labour × productivity) and P5-B6 (§327, current prices) | the harness's own columns; whichever of the two families moved dGDP(impact) ÷ dG | C-C11's Ramey band and D-13 (b)'s ratchet rule; the two passes' own records (§322, §327) | **ATTRIBUTED 2026-09-07, `COMPLETED.md` §358 - ruling-first, nothing applied:** B7 did not move it (0.529 → 0.527); B6 did (0.527 → 0.499), and the path is the harness itself - since B6 it divides REAL GDP by a NOMINAL impulse, a ratio across the two books. The fix proposed is to the INSTRUMENT (deflate the impulse by the landing year's price level; the nominal-numerator variant was probed and reads 0.558 but carries the price response). The ratchet stays 0.507. **→ RULED 2026-09-07 (§361, 2): fix the instrument - deflate the impulse, read real against real, re-read FT-4; the ratchet stays 0.507 throughout (§363).** **→ FIXED AND RE-READ 2026-09-07, `COMPLETED.md` §363: the harness deflates its balance and purchases by the run's own price level; on the corrected instrument the cumulative spending multiplier reads **0.520 / 0.604 / 0.692** - above the floor, inside Ramey's band at L+1 and L+4, the pre-B6 reading recovered to a hundredth; the ratchet 0.507 untouched.** |
+| FT-5 | **The labour-supply channel of a tax change** (opened 2026-09-07, §361 (3)) | SELMA's labour-income-tax multiplier is 0.17 over two years with unemployment RISING +0.48 (labour supply outruns jobs); the model's tax channel reads 0.47 on the same basis with no labour-supply response at all (§355) - participation does not read the labour tax rate | `MacroSystem.ApplyLaborForceParticipationRate`'s target - a term in participation's response to the labour tax rate against its seed, beside the health and education terms | to be READ AT THE SOURCE before typing: a Swedish or OECD elasticity of participation to the labour tax wedge (Konjunkturinstitutet's SELMA documentation is the first place; the OECD Taxing Wages series carries the wedge) | **→ APPLIED 2026-09-07 on the recorded recommendation as strikeable, `COMPLETED.md` §372:** the elasticity read at the source (SELMA Technical Documentation 2024, Table 14: Frisch η posterior mean 8.61, so 1 ÷ 8.61 = 0.116), `MacroSystem.LaborTaxParticipationTerm` in participation's target, zero at the seed, both directions, ±5 guard, `LaborTaxParticipationDiagnostic` in the bar; its own BASELINE family. CLOSED. **→ REVERTED 2026-09-07 evening as ruled, `COMPLETED.md` §383:** the term leaves the target (the harness had read the income-tax multiplier doubling at four years, away from SELMA); it stays in the code whole and inert, guarded by the same diagnostic; **SHEETED behind FT-7** (the jobs lag). **→ RE-MEASURED behind the jobs lag 2026-09-07 night, `COMPLETED.md` §392:** the sourced term wired for the probe's runs only - a 5-point cut reads unemployment +0.30 at two years (SELMA +0.48, the sign closed by the jobs lag) and an output multiplier of 0.59 (SELMA 0.17, the size the second seat's to close); nothing landed in the target. **→ RE-MEASURED behind both seats 2026-09-08, `COMPLETED.md` §395:** behind both seats a 5-point cut reads an output multiplier of 0.55 at two years and 0.79 at four (from 1.33 before any seat) with unemployment +0.29 at two years (SELMA 0.17 and +0.48); what stays apart is the demand channel's MPC (FT-1's held magnitude), not the supply side. Nothing landed; the landing is a ruling on these figures. **→ LANDED 2026-09-08 as ruled, `COMPLETED.md` §396:** the term in the target for good behind the jobs lag's two seats, the probe switch gone, `LaborTaxParticipationDiagnostic` rewritten for the landing (both directions on participation, unemployment and potential); the residual against SELMA attributed to FT-1's consumption channel. **CLOSED.** |
+
+**How a ruling lands here.** Measure first (the harness and the trajectory suite before), apply the one line the row names, re-run C-C11's harness for the three multipliers and the Ramey column, dump the trajectory suite after, explain per country. Never two of these in one pass.
+
+### Readouts — the fix track (ruling-first; measured, fixed as a readout, the feedback only after)
+
+| # | item | what is measured today | the fix, in kind | status |
+|---|---|---|---|---|
+| RF-1 | **The road-quality readout drifts to its cap** (§350, 2026-09-07) | at baseline the WEF score climbs to 100 for Germany, Poland, Sweden and the USA within a century (§339's rebuild - decay × (real spending per head ÷ the seed's)^0.7 - outrunning decay at the lines' own real growth); France 95.7 → 97.9, Italy 60.6 → 58.3 | measure WHY (the per-head ratio's path over a century at seed policy, per country), then fix the readout so the seed's spending holds the seed's score over a century, byte-identical on every pre-existing field; then and only then re-run §350's feedback measurement, and land it as its own family only if the readout holds | **MEASURED AND FIXED 2026-09-07, `COMPLETED.md` §354:** the drift was the lines' own real growth per head, not the seed's spending (the probe table is in §354); the readout now saturates toward the ceiling (`SaturationFactor`), the seed's spending holds the seed's score to the digit, byte-identical on every pre-existing field. The feedback re-measured next, per the ruling. |
+| RF-2 | **The AI's infrastructure-line scaling** (opened 2026-09-07, §361 (1)) | §354's probe: five countries' real infrastructure spending per head tracks real GDP per head (the USA ×4.2 against ×4.0 in a century, Poland ×13.7 against ×12.4, Germany ×1.97 against ×1.92), Sweden's follows prices alone (nominal ÷ seed = the price level) while its population grows 27 % - the AI's budget rule scales the lines with output, and that scaling is what drifted the readout | the AI's budget rule (`AiBudgetPlanner` or wherever the lines are grown) and `SpendingLine`'s indexation: state what each line class is indexed to - its driver, prices, or output - per country | the lines' own drivers (P5-B2) and the national accounts | **MEASURED AND PROPOSED 2026-09-07, `COMPLETED.md` §367 - apply on ruling:** the rule is ONE factor on EVERY line of a governed country - prices × B2's driver × (1 + real potential growth) - so over a century the USA's lines carry ×4.55 real after their drivers (its GDP ×4.29), Poland's ×10.6, Germany's ×1.91, France's ×1.28, Italy's ×0.68 (negative potential compounded down); the player's carry ×1.00. the AI's lines' share of GDP drifts up 3–6 points a century under the rule; under drivers and prices alone the USA's and Poland's budgets fall to 5–6 % of GDP and their debt to a sovereign fund (measured, `DebtPathProbe`). Proposed: caseload lines follow prices × their B2 driver only, driverless lines follow prices × potential growth; the player unchanged. **→ APPLIED 2026-09-07, `COMPLETED.md` §370, as ruled: `LineIndexationDiagnostic`; its own BASELINE against §364's dump, explained per country in §370. CLOSED.** **→ RE-FORMED 2026-09-07 evening as ruled, `COMPLETED.md` §384:** the driver-only form reverted (it froze a caseload's real cost per head at the seed and made five AI states net creditors, §370); a caseload line now follows prices × its driver × the country's real wage - the law's rule (Socialförsäkringsbalken 58 kap. 10-12 §§, 62 kap. 42-43 §§), a driverless line potential growth as before, the player unchanged; its own BASELINE family against the tree it replaces and the pre-RF-2 dump. CLOSED. |
+| FT-6 | **The long-horizon inflation drift, and the book's float range** (opened 2026-09-07, §370) | in every trajectory dump since the current-prices book (§327, `p5b6b`) inflation climbs instead of returning to target - 3.2–5.3 % at year 100, 8 % at 300, 10–11 % at 500, 12–15 % at 700 (seed 777, all six) - so the price level compounds to 1e24–1e27 and `GovernmentDebt` (9.3e37, Poland, year 764) leaves float32's range: `-Infinity` for one turn, NaN through the whole book the next; every 1000-turn dump since §327 is NaN from turn 749–767 (771–792 under RF-2), and the 1000-turn diffs have read only to that turn | the Taylor rule's hold on inflation over centuries (`TaylorRule`, the inflation step in `MacroSystem`) first; the book's precision second | the zones' inflation targets (2 %) are the anchor; nothing else is needed to measure it | **→ MEASURED AND PROPOSED 2026-09-07, `COMPLETED.md` §379 - OWNER ELIAS, nothing applied:** a persistent fifth of a point of unemployment below NAIRU ratchets through the Phillips curve into adaptive expectations (+0.05–0.07 a year for six); the rate follows to its 15 % cap at year ~500; three forms proposed (anchored expectations toward the zone's target; the rate into Okun; closing the gap's source), the book's precision moot if inflation holds. Excluded from the residue by name. **→ THE EXPECTATIONS HALF APPLIED 2026-09-07 evening as ruled, `COMPLETED.md` §385:** the decaying-expectations form - forgotten toward the zone's target at 0.25 a year, derived from Gürkaynak, Levin & Swanson's anchored Sweden (`ExpectationsAnchoringDiagnostic` in the bar; its own BASELINE family; the overflow re-measured in §385). **The NAIRU half stays MEASURED behind FT-7** (the jobs lag); the row stays Elias's for that half. **→ RE-READ behind the jobs lag's first seat 2026-09-07 night, `COMPLETED.md` §393:** with the first seat alone the gap is wider (−0.16 to −0.27 for six, below NAIRU seven or eight years in ten) and no longer moves the level of inflation (1.8-2.6 % at year 300 under the decaying expectations); a shrinking labour force reads as less slack until the second seat makes it less output. MEASURED, with the second seat, Elias's. **→ RE-READ behind both seats 2026-09-08, `COMPLETED.md` §395:** unchanged by the second seat (−0.16 to −0.27 for six; inflation at the targets); the gap is the participation drift against a fixed natural rate, and its closing is a natural rate that reads the labour force - a ruling. MEASURED, Elias's. **→ RULED 2026-09-08 (§397): the natural rate reads the labour force - FT-8, sheeted as the next pass's one family; this row's two halves are answered (§385 applied, FT-8 sheeted). CLOSED into FT-8.** |
+| FT-7 | **The jobs lag** (opened 2026-09-07 evening, §383) | labour supply arriving before employment: a participation rise is potential the same year and output follows within the year, so a labour-tax cut reads as a large output multiplier (§372: 1.33 at four years against SELMA's 0.17 with unemployment RISING +0.48) and unemployment never reads the supply side - the same absence §379 measured as the persistent gap below NAIRU that ratchets inflation | `ApplyOkunsLaw` (unemployment reads the change in participation) and `PotentialOutput.LabourInput` (potential reads employment, not participation) | SELMA's labour-market block (the participation condition A.14a and the matching function), read before typing | **→ MEASURED AND PROPOSED 2026-09-07 night, `COMPLETED.md` §389 - OWNER ELIAS, nothing applied:** SELMA's unemployment is the labour force in excess of employment with Calvo wages at 0.88 a quarter (Table 14), so a supply shock is absorbed at about 0.40 a year; proposed - unemployment reads the change in participation on impact and absorbs it at that rate, and potential's labour input reads employment (1 − U) rather than (1 − NAIRU); the second seat re-solves the seed potentials, which is why it is ruled not typed. FT-5 and FT-6's NAIRU half wait behind it. **→ THE FIRST SEAT LANDED 2026-09-07 night as ruled, `COMPLETED.md` §391:** `ApplySupplyShockToUnemployment` at the boundary - the year's change in participation enters unemployment on impact by its labour-force share and the excess is absorbed at 0.40 a year (1 − 0.88⁴, SELMA Table 14); the reversion reads the core; `JobsLagDiagnostic` in the bar; its own BASELINE family. **The second seat (potential reads employment) stays SHEETED, Elias's, at its named cost: six seed potentials re-solved, B7's family reopened.** FT-5 re-measured behind it in §392, the NAIRU half re-read in §393. **→ THE SECOND SEAT LANDED 2026-09-08 as ruled, `COMPLETED.md` §394:** `PotentialOutput.LabourInput` reads employment (1 − U), the six seed potentials re-solved from the seed's factors (GDP × (1 − NAIRU) ÷ (1 − U)), B7's family reopened and re-explained (`potential03`); the year-100 headline: the USA's typed 14.7 % seed gap is gone and the identity finds its own level (year 1 −7.3 % of GDP, unemployment 8.4 %, recovered by year 9; −11.7 % at year 100 - T-3's question made plain), Sweden +4 %, the other four within a per cent, the suite in budget (ratchet 0.509 against 0.507). `PotentialEmploymentDiagnostic` in the bar. Both seats landed. **CLOSED.** |
+| FT-8 | **The natural rate reads the labour force** (opened by ruling 2026-09-08, §397; the NAIRU half of FT-6) | six states sit a fifth to a quarter of a point below their natural rate in seven or eight years of ten (§379, §393, §395) because an ageing labour force's participation drift enters unemployment through the jobs lag's first seat as a supply excess against a natural rate that is the seed's fixed figure. **RULED 2026-09-08: NAIRU reads the labour force** - the demographic (trend) part of the supply excess moves `Country.NaturalUnemploymentRate`, the cyclical part stays in unemployment - **re-anchoring Okun's reversion, the Phillips curve's gap and the Taylor rule's gap term for six.** A BASELINE family on six natural rates with the labour-institution laws' deltas stacking on the moving rate; the source to read first is the demographic adjustment of the natural rate (Shimer 1998; the CBO's adjusted series). **Its headline: the year-300 inflation table and the mean gap for six, before and after. SHEETED as the NEXT pass's one family by ruling - not this pass's; nothing built.** **→ RULED THIS PASS'S and LANDED 2026-09-08, `COMPLETED.md` §398:** the sources read first (Shimer 1998; Aaronson et al. 2015; Bok & Petrosky-Nadeau 2022; the CBO's own pages blocked, billed) and they corrected the sheet's form - the composition effect is shares × sourced rates by age, basis points a year, not the seat's arithmetic; the demographic trend leaves the supply excess, the natural rate reads the labour force's composition (`UnemploymentRateByAgeTable`, Eurostat une_rt_a 2024 and the BLS CPS 2024), Okun's reversion, the Phillips curve and the Taylor rule read the effective figure, the four diagnostics with them, `NaturalRateCompositionDiagnostic` in the bar; the preview clone's missing boundary reference (§391's escape) found and fixed. Baseline `p5nairu`; the gap closed by half - the demographic half - and the remaining tenth is measured and owed as the next reading. **The scope departure - every gap reader on one natural rate - RATIFIED as standing 2026-09-08 (§399).** **CLOSED.** |
+| FT-9 | **Okun's daily form reads the boundary's jump as growth** (opened on the reading 2026-09-08, §400; the remaining half of FT-8's gap) | measured through the `OkunLedger` seam and `OkunAsymmetryProbe` (seed 777, no player, years 6–300): the GDP moves at every boundary by −0.08 to −0.20 % on average (USA −0.198, Sweden −0.194, Germany −0.176, France −0.113, Italy −0.077, Poland −0.176; down in 24–34 % of years, the down years large), so the growth the days integrate exceeds the growth the year prints by that much, and Okun's daily form reads a growth gap of +0.05 to +0.20 where the year printed −0.01 to −0.04 - a growth term of −0.02 to −0.10 points of unemployment a year that the reversion offsets only by holding the core BELOW the natural rate by the same over the reversion speed: the whole remaining gap, to the hundredth, for six. **MEASURED, ruling-first (Elias's):** the next reading is the boundary jump decomposed by step (the trade effects, the spending resolution, the identity's turn form, the ministry's cuts) - then the form: an Okun response to the jump at the boundary, or a jump that should not be there. The probe's 25-year rows already say what the jump is: exactly 0.000 in most sampled years and −2.0, −1.5, −0.6, +0.3, +0.4 % in the others - round percentages at the boundary, the shape of the event shocks - so the reading to make is whether the boundary's shocks reach Okun's law at all (the drop never raises unemployment; the days' recovery lowers it). Nothing typed. **→ RULED and LANDED 2026-09-08, `COMPLETED.md` §403–§404:** the jump decomposed by step through a boundary ledger proved inert by the dump (§403) - the events alone carry it; then the ruled form: an event ARMS its GDP shock at the boundary and `MacroSystem.ApplyEventShockDaily` lands it over the period's days inside the increment Okun reads, so the fall raises unemployment, the recovery lowers it, the year nets to its print and the boundary no longer moves GDP; `EventShockPathDiagnostic` in the bar. Baseline `p5evd`. **CLOSED.** **→ §406 (2026-09-09): the harness's impact ratchet re-based on the events-off reading, §363's with-events basis recorded as history, the switch kept as the idiom.** **→ §407: the one-year event duration kept as the stated convention, TAGGED until the catalogue carries durations.** |
+
+### Track C — the society stats expansion (one family per session; each BASELINE on its own)
+
+**P5-C1 — The catalog, self-ruled.** One document mapping Elias's list to this game: for each
+metric — **keep** (with the sourced series per country named: OECD, Eurostat, PISA, WEF/EDGAR, the
+national offices), **map** (the US-specific term rewritten to its general form: Medicare/Medicaid →
+public vs private coverage and quality; illegal immigrant count → irregular migration where a
+sourced estimate exists, else absent), or **N/A** (counties, partisan military approval, anything
+the six-country frame cannot hold). Each kept metric gets its coupling (which dial or law reaches
+it, sourced or `[AUTHORED-DRAFT]` with its line), its display home, and its trajectory-family
+note. Order the families by gameplay impact. *Done when:* the catalog is in the record with every
+row sourced or N/A-with-reason; no metric built from this row. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §320: `docs/data/SOCIETY_STATS.md` at the root - every row of the annex list kept (series named per family), mapped (Medicare/Medicaid → coverage and quality; illegal immigrants → irregular migration under two stated definitions; poverty effect → the poverty gap) or ruled N/A with the reason; couplings proposed as [AUTHORED-DRAFT] lines, display homes and family notes on every kept row; six families in §3's order plus the N/A table. No metric built.**
+
+**P5-C2 — Health.** Coverage (public/private), quality, **wait times** (OECD), retiree coverage
+as the 65+ share of the cohort substrate; health spending reaches them through the coupling table.
+*Done when:* seeded for six, coupled, displayed as instruments, family explained. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §321 (the build waits on D15 item 3, E-17): `docs/data/SOCIETY_STATS.md` - coverage for six (OECD DF_HEALTH_PROT), quality for six on treatable mortality (DF_AM; the HCQI rows for five, France absent and stated), waiting times for three (DF_WAITING; Germany, France and the USA publish none), retiree coverage derived; the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.** **→ ✅ BUILT 2026-09-05 (late evening), `COMPLETED.md` §333, on Design's grammar (D15 item 3, board 9c - E-17 landed): the health family seeded for six from the spine (`HealthFamily`, `Country.Health`, four figures on `EconomyState`), coupled as readouts to the real health line per head and per age-cost unit and the minister's efficiency (every constant [AUTHORED-DRAFT], stated; no feedback into the model - the suite byte-identical on every pre-existing field), drawn as the 9c plate on the People page (`GameController.Health.cs`: name·unit·source · figure · band · reached by · history · honesty; bounded / open / absent / derived forms; 5c's arrow while a draft is live), absent-and-stated for the three without waiting times and for France's supporting readouts; `HealthFamilyDiagnostic`; filmed at 1280 and 2560. The feedbacks (quality → life expectancy, coverage → approval) wait for their own pass.** **→ ✅ FEEDBACK PASS 2026-09-06 (overnight), `COMPLETED.md` §343: the family moves the model - treatable mortality against its seed into life expectancy (+1.0 year per log unit), participation (+0.5 points per log unit) and the crude death rate (seed + Δ treatable ÷ 100, derived); `HealthFeedbackDiagnostic` (zero at the seed, both directions, inside the guards); its own BASELINE, explained per country in §343. Coverage → approval still waits, stated.** **→ ✅ THE TREND FAMILY 2026-09-07 (ruling 2 of the overnight review), `COMPLETED.md` §353: the quality anchor carries the OECD's observed rate of improvement since 2000, per country, one vintage (spine §9) - improvement continues rather than saturating, the elasticity untouched, the identity and the pyramid carrying it; `HealthTrendDiagnostic` reports the year the floor binds per country; its own BASELINE against the environment pass's dump.** **→ THE DEVIATION FORM 2026-09-07 (ruled, §361 (4); built §364): the terms and the pyramid read the deviation from the trended anchor - the trend is what the projection already carries; its own BASELINE against the revert's dump.** **→ The anchor floor KEPT by ruling 2026-09-07 as the S-37 class (§366, 1): a guard on the metric needs its twin on the anchor.**
+
+**P5-C3 — Education.** Academic score (PISA), graduation rate, attainment; education spending and
+the 0–19 cohort reach them. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §326 (the build waits on D15 item 3): `docs/data/SOCIETY_STATS.md` - attainment for six (OECD EAG, Eurostat cross-check), students per teacher for six, early leavers for five (the USA absent and stated), PISA and graduation as named fetches with no figure written; the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.** **→ ✅ BUILT 2026-09-06, `COMPLETED.md` §338, on 9c's grammar inherited by shape: the education family seeded for six from the spine (`EducationFamily`, `Country.Education`, six figures on `EconomyState`), coupled as readouts to real education spending per pupil and youth unemployment (every constant [AUTHORED-DRAFT]; no feedback - the suite byte-identical on every pre-existing field), the DISTRIBUTION form drawn first (attainment by level as 2a's stacked bar), PISA and the graduation rate as fetches with no score, the USA's early leavers absent and stated, students per teacher the Education card's key; `EducationFamilyDiagnostic`; filmed at 1280 and 2560. The plate's core is shared (`DrawPlateRows`) - C4–C6 are lists of rows.**  **→ Fetch 2026-09-06 (§342): PISA and the graduation rate did NOT pass the cross-check gate - the OECD tables sit behind the www bot check, Eurostat's graduate counts give a gross ratio that is not the first-time rate; the transcriptions reached are in the spine §7, the series billed.** **→ ✅ CLOSED AS BILLED 2026-09-07, `COMPLETED.md` §373: one more attempt each (the OECD's SDMX catalogue enumerated - no PISA, no graduation-rate flow); the rows print BILLED with the exact series and the reason.** **→ ✅ FEEDBACK PASS 2026-09-07 (overnight), `COMPLETED.md` §348: the family moves the model - the attainment stock against its seed into participation (× the country's own activity gap by attainment, Eurostat/BLS) and the productivity trend (the attainment-weighted relative-earnings index, OECD EAG; France Eurostat SES), both DERIVED, none authored; `EducationFeedbackDiagnostic`; its own BASELINE against the health pass's dump, explained per country in §348. The USA's stock holds (leavers absent), its terms zero, stated.**
+
+**P5-C4 — Infrastructure.** Road condition and congestion (WEF/OECD), energy mix by source;
+infrastructure spending and the sector dials reach them. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §328 (the build waits on D15 item 3): `docs/data/SOCIETY_STATS.md` - the WEF GCI 2019 dataset fetched and verified by content, road quality and road connectivity for six (dated 2019), railroad density in the file, road length absent (IRF, paid), congestion to fetch (TomTom); the coupling proposed as [AUTHORED-DRAFT] lines; nothing built.** **→ ✅ BUILT 2026-09-06, `COMPLETED.md` §339, on 9c's grammar inherited by shape: the infrastructure family seeded for six from the WEF GCI 2019 dataset (`InfrastructureFamily`, `Country.Infrastructure`; road quality DATED 2019 and saying so, road connectivity), coupled as readouts to real infrastructure spending per head and the population against their seeds (every constant [AUTHORED-DRAFT]; no feedback - the suite byte-identical on every pre-existing field), road length absent and stated, congestion a fetch row; `InfrastructureFamilyDiagnostic` (the seed's spending holds the seed's score, a cut lowers both keys); filmed at 1280 and 2560.**  **→ Fetch 2026-09-06 (§342): congestion did NOT pass the gate - TomTom's city-centre figures were read from its page (Warsaw 51.3 … Paris 40.0), INRIX refused; single-source, billed (spine §6).** **→ ✅ CLOSED AS BILLED 2026-09-07, `COMPLETED.md` §373: INRIX's scorecard page is a rendered chart with no data reachable; the row prints BILLED with both series named.** **→ ⏹ FEEDBACK BUILT, MEASURED AND STOPPED 2026-09-07 (overnight), `COMPLETED.md` §350 - nothing committed: the quality term at the channel's own sensitivity would add half a point of trend growth a year to the four countries whose road-quality READOUT drifts to its cap at baseline (potential +19 % to +45 % at a century); the readout's drift (§339) is the thing to fix first, and the coupling stays a readout.** **→ ✅ FEEDBACK LANDED 2026-09-07 (morning), `COMPLETED.md` §359, on RF-1's saturating readout (§354): potential +26.8 % (Poland) to −5.5 % (Italy) at a century, GDP ×8 for Poland at five - landed as ruled, the magnitude flagged RECONSIDER (a permanent growth term at the drag's 0.02 per point; the literature's effect is a level). the feedback diagnostic (removed in §362); its own BASELINE against RF-1's dump.** **→ ⏹ REVERTED 2026-09-07 (midday), `COMPLETED.md` §362, as ruled: the growth term is out, the readout stays, the trajectory byte-identical to RF-1's dump; the LEVEL form sheeted in §362 (quality shifts potential's level, never its trend; the elasticity to be read at Calderón & Servén 2004), RF-2 opened below.** **→ READ 2026-09-07 (§366, 2): Calderón & Servén's quality index is a principal component of telephone waiting time, power losses and the PAVED-ROAD SHARE, and their coefficient is a growth-rate effect (0.68 points per standard deviation); no honest mapping from the WEF survey score exists and a growth coefficient cannot be typed as a level - the form STAYS SHEETED with that reason; unblocked by a level source or a road-length stock series (§339's absent row).** **→ ✅ CLOSED AS SHEETED-WITH-REASON 2026-09-07, `COMPLETED.md` §374: the one level source found (IMF WP/22/95, ln GDP per capita on the WEF road-quality score) is unreachable from a session (403 on both hosts); λ BILLED to that paper's table; the form returns only on a ruling with the coefficient in hand.**
+
+**P5-C5 — Environment.** CO₂ per capita split electricity/transport (Eurostat/EDGAR); the energy
+mix and the sector dials reach it. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §329 (the build waits on D15 item 3): `docs/data/SOCIETY_STATS.md` - the EDGAR 2024 booklet fetched and verified by content, emissions per capita and power and transport CO₂ per capita for six (World Bank population), the electricity mix still to be fetched (Ember refused, Eurostat and EIA named); the coupling proposed, the carbon tax's base to move here; nothing built.** **→ ✅ BUILT 2026-09-06, `COMPLETED.md` §340, on 9c's grammar inherited by shape: the environment family seeded for six from EDGAR 2024 (`EnvironmentFamily`, `Country.Environment`; greenhouse gases per person the derived headline, power and transport CO₂ per person the keys), coupled as readouts to the carbon tax's rate and the energy and infrastructure lines against their seeds (every constant [AUTHORED-DRAFT]; no feedback - the suite byte-identical on every pre-existing field), the split drawn as the distribution of the key, the electricity mix a fetch row; `EnvironmentFamilyDiagnostic`; filmed at 1280 and 2560. **SHEETED, not built: the carbon tax's BASE moves from output to these metrics on its own pass (a revenue change is BASELINE) - P5-B3 left it on output for this reason.**  **→ Fetch 2026-09-06 (§342): the electricity mix PASSED the gate (Ember against Eurostat nrg_bal_peh and the EIA, every pair within a point) and is the plate's distribution row for six (spine §8).** **→ ✅ The remainder closed 2026-09-07 (§373): the spine's display row had not been updated after the mix landed and still called it a fetch; it says landed now, and an unseeded country would print "billed".** **→ ✅ THE BASE MOVED 2026-09-07 (overnight), `COMPLETED.md` §349: the carbon tax's base follows the taxed CO₂ (`TaxBaseDriver.Emissions`, power + transport per head × population) instead of output - the Pigouvian base that erodes as the tax works; `EnvironmentFeedbackDiagnostic`; its own BASELINE against the education pass's dump, explained per country in §349.**
+
+**P5-C6 — Immigration and poverty depth.** Migration counts from the cohort substrate's own
+inflow term (already sourced); homelessness only where a comparable series exists (state the gap
+otherwise); poverty effect and per-capita income as derived readouts. *Done when:* as C2. **→ ◐ SPINE LANDED 2026-09-05, `COMPLETED.md` §331 (the build waits on D15 item 3): `docs/data/SOCIETY_STATS.md` - Eurostat migr_eipre / ilc_li11 / lfsi_sup_a decoded by index, the OECD HC3.1 homelessness workbook and IDD poverty gap, the DHS OHSS 2022 estimate read out of its PDF, BLS for US underemployment; six of six on every row, two definitions where the sources have two (flow vs stock; Eurostat vs OECD gap), homelessness with its definition and year; the coupling proposed; nothing built.** **→ ✅ BUILT 2026-09-06, `COMPLETED.md` §341, on 9c's grammar inherited by shape: the immigration-and-poverty-depth family seeded for six from the spine with its two definitions carried as state (`MigrationPovertyFamily`, `Country.MigrationPoverty`; the five's flow and the USA's stock never on one axis, Eurostat's gap and the OECD's both printed where they disagree, homelessness with each country's own definition and year), coupled as readouts to the immigration and enforcement dials, welfare generosity and the minimum wage, the unemployment gap, the housing lines and overburden (every constant [AUTHORED-DRAFT]; no feedback - the suite byte-identical on every pre-existing field); `ImmigrationPovertyFamilyDiagnostic` (the two definitions move as their definitions say); filmed at 1280 and 2560.** **→ ⏹ FEEDBACK STOPPED 2026-09-07 (overnight), `COMPLETED.md` §351: "flow → the cohort inflow term" has no sourced bridge - Eurostat's found-illegally-present is an apprehension count, and returns exceed it for Sweden (a naive retained share of −3.6); no figure typed, the readouts stand, the series billed.** **→ ✅ CLOSED AS BILLED 2026-09-07, `COMPLETED.md` §375: the one attempt (Pew Research's 2014/2017 stock ranges, four of five countries, ending 2017, a one-time study) is not an arrivals-and-stays series; billed - a yearly per-country series of irregular arrivals and stays, which nobody publishes.**
+
+**P5-C7 — Department effectiveness (the mechanic).** Each ministry submits a budget request
+derived from its drivers (B2's indexation is the request); effectiveness = allocated ÷ requested,
+scaled by the minister's **efficiency** attribute (P2-5), and effectiveness is what the coupling
+table reads for that portfolio's outcomes. The Cabinet and Budget screens show it. *Done when:*
+underfunding a ministry measurably degrades its outcomes through the minister, asserted, filmed. **→ ✅ BUILT 2026-09-05 (late), `COMPLETED.md` §336, on Design's board 9d (D15 item 4): per portfolio allocated ÷ requested × the minister's efficiency, recorded as the turn resolves (`Effectiveness`, `Country.Effectiveness`; the request is B2's indexed line, the allocation the player's figure); the ratio on the minister's card with 5c's arrow from unity and its decomposition, the state line in words, the Health card quoting the family's three keys; the Budget row's caption PORTFOLIO · EFF ×r (Bad below unity) or the class word where no ministry reads the line; the health family's waits and quality read it (the stand-in retired); `EffectivenessDiagnostic` asserts that underfunding the Health ministry degrades its outcomes through the minister; filmed at 1280 and 2560.** **→ ✅ RULED AND BUILT 2026-09-06, `COMPLETED.md` §337: the flow ratio kept, the LEVEL beside it on the card (spending per unit against its own seed anchor - `PortfolioEffectiveness.LevelRatio`, `Effectiveness.LevelOf`), so the card reads both "met this year's ask" and "the ask has shrunk"; the distinction recorded and asserted (a standing cut: flow met in year 2, level low); filmed at 1280 and 2560.**
+
+### Track D — the D15 ask
+
+**P5-D1 — Install D15**, reconciled: (1) the pie without leaders, stated as a deviation; (2) the
+Budget line row for nominal figures with drivers, delta and projection; (3) one instrument grammar
+for the society stats as they land, family by family; (4) the Cabinet's effectiveness readout.
+Annex: the screenshot, B5's films, C1's catalog. Binaries uploaded. Package regenerated, `ERRANDS`. **→ ✅ BUILT 2026-09-05, `COMPLETED.md` §317: D15 installed at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md` - four rows written against Design's own sighting note of 2026-09-04 (the pie read-back, the Budget row for a figure, the society-stat grammar on health, the effectiveness readout); `docs/outbound/SEND_PACKAGE.md` regenerated with the Track A and B films by digest; E-15 read as landed, E-17 opened for the paste. C1's catalog is not in the annex: it waits on E-16.**
+
+### Yours
+
+The D14 return (E-15) if not yet sent; D15's paste when installed. Play after Track B — the budget
+you set will still be there next year, and it will have grown.
+
+---
+## P6 — DESIGN'S ANSWER TO D14, DRAWN 2026-09-04 (boards 8a–8f on `PoliSim v2 Screens.dc.html`): built the D11 way — against the boards, verified not assumed, deviations stated
+
+The boards were read from the decoded file (`get_file`, capped at 256 KiB; the six sit inside the cap). Design drew every one WITHOUT the films (the paste carries markdown only) and says so on each board; where a board's "IF THE BUILT … " clause names the thing to check, the row checks it first. Each row closes with a film and a bar. Nothing here is asked of Design again.
+
+**P6-1 — 8a, the People page's pie and bar as instruments.** ① The head row: title in the caption mono at left, the provenance stamp at right as 5c's bordered chip - the same face and place on every instrument. ② The wedge: solid ink, no outline, adjacent wedges parted by a 1.5 px hairline in the plate's paper; wedges from 12 o'clock, largest first, clockwise; the label OUTSIDE on a 1 px leader in the hairline ink - name bold, figure beneath in TextMuted, both caption mono; series beyond the eighth ink fold into OTHER, hatched neutral, drawn last; never more wedges than `UiPalette.MaxCategoricalSeries`. ③ The bar's face: one ink where the bar is a distribution; a 1 px paper break between neighbours; a baseline hairline; the scale two numbers, max and zero, no gridlines; the working-age and old-age rules dotted with the number above. ④ The foot is one caption line: total at right, scope at left. *Done when:* the pie renderer and the bars are filmed on the built page at 1280 and 2560, the check clause answered (the built pie's labels were a legend beneath; the board moves them out). **→ ✅ BUILT 2026-09-04, `COMPLETED.md` §309: the pie renderer rewritten - largest first from 12 o'clock, paper hairlines between wedges, labels outside on leaders, the ninth series folding into a hatched OTHER; the band bars gain the baseline and the two-number scale; filmed at 1280 and 2560.**
+
+**P6-2 — 8b, the trade graph composed as one instrument.** The head row one line, three cells: title left (WHAT · UNIT · SCOPE, caption mono); the window's last value as the hero numeral with the Δ beside it in 5c's grammar, direction-aware ink; the pager at the far right of the same line, ◀ ▶ as 6b row 2 ruled, the disabled arrow in the hairline ink. A 46 px gutter (@1280, ×s) at the plot's left carries the y-labels right-aligned with a 4 px tick each; the plot narrows, never shortens; the plot's left edge a hairline; nothing over the plot but the dotted zero rule and the projection band. The foot one caption line: the window and pager legend at left, the delta's definition at right. Composed ONCE for every graph on the sheet. *Done when:* filmed on the trade graph and on a dashboard graph at 1280 and 2560; the height clause answered (the renderer's head row height wins). **→ ✅ BUILT 2026-09-04, `COMPLETED.md` §310: one head row (title · hero numeral with the Δ · pager), a 46 px gutter for the y-labels, one foot line - composed once in `GraphRenderer` for every graph; the year labels not built (the renderer has no calendar), stated; the trade graph's title no longer carries the figure the hero numeral carries; filmed at 1280 and 2560.**
+
+**P6-3 — 8c, the Riksbank page after the cut: the space goes to the path.** The instruments do not move up; the projected path's height clamp goes UP by what the cut captions held (3 × 22 ≈ 66 px at 1280, ×s) and the fourth caption's row closes the gap above the governor; the rule and the lanes keep their heights and widths; the head's empty cell draws nothing (never "0 pt"); the 720 fold under D12 row 6's ruling. *Done when:* filmed with the dead paper measured (the board's proportion: ≈ 88 → 22). **→ ✅ BUILT 2026-09-04, `COMPLETED.md` §305: the rate path's height clamp gains the 66 px (@1280, ×s) the four cut captions held, measured on the §297 films; the instruments beneath do not move up; filmed at both widths.**
+
+**P6-4 — 8d, the range caption: placement, face, fade.** Centred under the track inside the band the row already holds, between the end-names with ≥ 12 px clear each side or the name drops and the line stands; face caption mono 9.5 @1280 (×s) in TextPrimary, NAME bold uppercase · line in regular case on ONE line; the fade α = (1 − u)², u = (t − 1.5) / 2.5, hold 1.5 s and fade 2.5 s kept, a new drag resets and swaps in the same frame, no crossfade. *Done when:* the three moments filmed at 1280 and 2560 with the row's rect identical (P4-1). **→ ✅ BUILT 2026-09-04, `COMPLETED.md` §306: NAME bold · line regular on one line, 9.5 @1280 in TextPrimary, centred between the end-names with 12 px clear or the name drops; the fade squared; the three moments filmed at both widths, the rows' rects identical.**
+
+**P6-5 — 8e, the map on plain paper: confirmed, the paper carries nothing.** No rule, no border, no texture; the chips and links are the whole drawing; the plate caption stays; the empty relations state reads against bare paper. The one thing to check before calling it confirmed: the chip's 1.5 px border. *Done when:* the border is measured on the built chip and the ruling recorded. **→ ✅ RULED 2026-09-04, `COMPLETED.md` §307: the chip's 1.5 px border is drawn (in the country's own outline ink per 7a, the one deviation stated); confirmed as delivered, the paper carries nothing.**
+
+**P6-6 — 8f, the Docket option card: button, cost, plate as ONE ROW.** Columns 150 · fill · 340 @1149 (×s): the brass button at left, one width for every option, CHOOSE + the letter; the body in the middle - the title in Pagella 14, the cost line in the Budget's words and ink (*Cost of this option +$X* Bad, *Saving from this option −$X* Good), the option's own scope line; the plate at right, 5c's renderer at the card's scale, its height reserved for the most lanes any option in the decision draws so the rows are equal; below the knowledge floor the cost line still draws, the scope line becomes the one sentence, the plate cell is empty paper, the row keeps its height. *Done when:* filmed with three options at 1280 and 2560; the button clause answered (the built button carried the option's name; the title moves off it). **→ ✅ BUILT 2026-09-04, `COMPLETED.md` §308: one row of three cells - CHOOSE A/B/C at 150, the body with the cost line in the Budget's words and the option's scope line, the plate at 340 at the reserved height; below the floor the one sentence and empty paper; filmed at 1280 and 2560.**
+
+---
+## P5 — DESIGN'S ANSWER TO D13 AND D12, DRAWN 2026-09-03 (boards 6a and 6b on `PoliSim v2 Screens.dc.html`): built the D11 way — against the boards, verified not assumed, deviations stated
+
+The boards were read from the decoded file on disk (`COMPLETED.md` §266). Each row is one board element; each closes with a film and a bar. Nothing here is asked of Design again.
+
+**P5-1 — 6a, the slider row as a family (D13).** *No new sprite; the pair already exists* (`ui_slider_track` 256×28 @2×, 9-slice 10/10/4/12, drawn at 14 px @1×; `ui_slider_tick` 4×28 white-on-alpha, tinted rule for scale ticks and inkText for the standing tick; `ui_hatch_draft` as an 8 px band centred on the track; `ui_slider_knob` 30×46 brass at 15×23 @1×, uniform scale, hit rect = sprite rect; `ui_slider_knob_disabled` for PENDING; `icon_pencil_draft` 12 px @1× at the draft end and in the rate cell before the figure, the slot reserved at rest). Scale ticks: five at 0/25/50/75/100 on every 0–100 dial; on the two rate sliders one per quarter-point while the pitch stays ≥ 12 px @1×, else per whole point. The trailing end-names UNDER the track ends in caption mono 7.5. The badge: its own cell, the word only, an em dash in TextMuted where there is no bill to judge. The button: one width sized to PENDING (NNd); IMPLEMENT = `ui_btn_brass`, REMOVE = `ui_btn_paper`, PENDING = `ui_btn_disabled`. ONE GRAMMAR, SIXTEEN SITES: the thirteen `DrawDialRow` rows, the two rate sliders and the fund drawdown draw this row. Columns: P4-1's measured columns win where the board's proposal (190 · ≈561 · 92 · 120 · 118) differs. *Done when:* every one of the sixteen sites draws the sprites through `LedgerRow`, the geometry guard still holds, filmed at 1280 and 2560. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §267: the pair was already wired (the census erred); built - the 14 px track, sparse ticks, the 15×23 knob with its disabled face for PENDING, the pencil slot in the rate cell, end-names under the track, the measure under the rate (no trailing column), the pending face, the three raw sliders as rows; the absent verdict/action cells taken back on a measured reach (1.37 → 0.70 units per pixel); 2560 in the close matrix.**
+
+**P5-2 — 6b row 1, the stylized map: form ruled, geometry pending.** Six plates on a plain paper field; each country a 26×20 chip in its own outline at its centroid, snapped to a 24-grid so the Desk and the pair page place them identically; links the map's own `TradePartner` pairs in the Trade ink, dashed until a volume exists, weight ∝ the larger flow. *Owed by our side first:* the centroid table (one row per country) and the adjacency as a file in the project. *Done when:* the table is delivered, then the map drawn to the rule on the Desk and the pair page. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §274: `docs/data/COUNTRY_CENTROIDS.md` delivered (six geographic centres, AUTHORED-REFERENCE) and `MapRenderer` draws the chips at them on the 24-grid, the links dashed without a volume and weighted by the larger flow.** **→ board 7a (Design, 2026-09-04) placed the chips from the delivered table and found DE and PL in adjacent cells; its west-push rule BUILT 2026-09-04, `COMPLETED.md` §283 - the pitch restored to the board's 24 (the first build had halved it silently), the western chip of an adjacent pair moved one cell west, the links following.**
+
+**P5-3 — 6b row 2, Prev/Next and the graph pagers.** Both pagers → `ui_btn_paper` through `UiPalette.BuildButtonStyle`; the graph's ◀ ▶ at the axis face height (24 @1×) with the glyphs in Pagella, never Courier. The slider → 6a. The two text fields stay re-inked skin fields. *Done when:* no `GUI.skin.button` face remains on the sweep (the census re-run says zero). **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §268: both pagers in the paper face; the graph's ◀ ▶ as glyph buttons at the axis face height; the text fields stay.**
+
+**P5-4 — 6b row 3, the trade graph's Δ from zero.** A dotted inkText baseline at 0 (the Year-0 sparkline's idiom), history 3 px solid from it, projection 2 px dashed, 1l's weights untouched; the Δ at the projection's head, right-anchored above the preview band: the glyph Δ, then the signed absolute figure in direction-aware ink, unit always; never a percentage. *Done when:* filmed on the International deep page. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §270: a dotted inkText rule at 0 wherever the scale spans it; the Δ stays absolute in the title row - the board's placement at a projection's head applies to a graph with a projection, and the balance has none (deviation stated).**
+
+**P5-5 — 6b row 4, the party inks confirmed.** The rule, the tolerance (0.06) and the cap (0.10) confirmed; hue Valmyndigheten's, lightness the only mover. Struck from 5e: V +0.12 and L +0.16 (derived, not measured) — already gone with §256's nudge. The published hexes the board quotes (S #E8112D, V #DA291C, M #52BDEC, KD #000077, L #006AB3, C #009933, MP #83CF39, SD #DDDD00) against the seating's own table — a check that the seating derives from THESE. *Done when:* `PartyInkHarness` prints the published hex beside the seated one for the eight and the two agree by derivation, and the harness print goes to Design as a file (row 4 closes only when it lands). **→ ✅ RECORDED 2026-09-03, `COMPLETED.md` §272: the rule, tolerance and cap confirmed; the two "published" tables disagree on every party (Design's quoted hexes against the project's Valmyndigheten fargkod read from the counts' own backend) - to the next ask with the source path beside each hex; nothing changed in the game.** **→ ✅ RULED by Elias 2026-09-03 and BUILT 2026-09-04, `COMPLETED.md` §279: Valmyndigheten's table is the base and the identity; Design's quoted set is the alternative, recorded with its source and consulted only where ours produces a measured collision (KD alone takes it at the seed; every inked party now fully separated); the ruling and its reason stated in the E-12 return.**
+
+**P5-6 — 6b row 5, the vote breakdown's grammar.** A row per seated party in the seat map's own order (bloc, then mandates): the mark 14 px in its own ink, the mandates in caption mono, the name in body serif, the SIDE right-aligned in the verdict ink (Good / Bad / Muted for abstain), the reason beneath verbatim in caption mono 7.5 — the short form as §247 prints it. On a support preview under the seat map; on a result screen beside it. *Done when:* the breakdown draws this row on the Budget's support panel, the pending cards, the law pane and the signing plate, filmed. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §273: a row per seated party in the seat map's own order (`HemicycleRenderer.SeatOrder`), the mark in its own ink through the hemicycle's own call, the mandates, the name, the side in the verdict ink, the reason beneath; UNDECIDED kept as the model's word in the board's muted ink.**
+
+**P5-7 — 6b row 6, the Riksbank 720 fold, Design's call: no variant.** At 720 the page draws the idiom's vertical paper scrollbar ALWAYS (never on hover), and lane 3's header is pinned to peek 14 px above the sheet's lower edge with the paper fading under it. Nothing re-composed at 1280+. *Done when:* filmed at 720 with the peek and the scrollbar. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §271: the vertical paper scrollbar always at the floor; the first caption below the fold peeks 14 px on a strip of paper with the paper fading above it.**
+
+**P5-8 — 6b row 7, stacked tags within a point.** Both tags lift above the lane and stack at the pair's midpoint — own side (inkText) nearest the rule, partner (Neutral) above it — each joined to its own marker by a 1 px leader in its ink at 50 %; the markers do not move; threshold 1.0 point on the axis's scale. *Done when:* filmed on the pair page's stance plate at the seed (SE and US within a point). **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §269: two tag rows reserved always; within 1.0 point the tags stack at the midpoint, own side nearest the rule, each on a 1 px leader at 50 %; the markers stay.**
+
+**Owed to Design after this block (files, not prose):** the centroid table and adjacency (P5-2), `p3c6_partyink.log` (P5-5), and the films — the board says every cell was drawn from the rows' text because no annex was in-project.
+
+---
+## P4 — THE THREE ITEMS OF 2026-09-03 (Elias's rows, verbatim)
+
+*"Three items, in this order, continuous; one commit each on a green bar; R-SP1 push; one report."*
+
+**P4-1 — The Budget slider readout (a load-bearing regression).** The track shrinks when a draft value appears beside the standing rate — that breaks stable control layout, one of the eight invariants. Fix structurally: one readout, fixed-width column reserved at rest, showing the standing rate; when a draft differs, the same cell shows the draft value in the amber draft cue (the other invariant this touches) — no second number, no reflow. Sweep every slider row for the same class. *Done when:* a film pair at rest and mid-drag shows identical track geometry, and a guard asserts the row's control rects are equal in both states. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §260: one readout cell (the standing at rest, the draft in the draft cue), a single-figure column need, the tax row's button column sized for its widest label; every ledger row's rects asserted identical at rest and mid-drag on film (`p4a_1280_05a_budget_tax` / `_dragged`).**
+
+**P4-2 — The sound-effects pack, tested in game.** Elias placed a pack at `G:\UNITY\Projects\PoliSim\AssetPackArchive\Sound_Effect_Package`. This is a new pipeline; run the asset discipline before anything plays: origin verification (Zone.Identifier), magic-byte check per file, the pack's licence read and recorded, an inventory by name, format and duration — nothing imported that fails a check. Then the smallest honest audio layer: a cue catalog (AudioCue → file, coverage checked both directions the way sprites are), one AudioSource path, a master volume and mute in the existing settings idiom, and a first cue set wired to real events — button press, slider step, bill passes, bill fails, interrupt raised, a constituency declares on election night. Audio is display, never simulation: trajectories byte-identical. Add a harness-only trigger so each cue can be fired by name for Elias's test. *Done when:* the inventory is in the record, every wired cue resolves to a verified file, the game runs silent with mute, and Elias can fire any cue from the harness. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §261: seven files inventoried on the pack (origin stream, magic bytes, digest), five admitted, the two M4A exports refused by format (E-10); `AudioDirector` with the cue catalog, one AudioSource, volume and mute on the Saves screen; six events wired (every button, the slider step, bill passes / fails, the hold rising, the rail's folders, election night once); `AudioCueCoverageCheck` and `AudioInventoryCheck` on the bar; the cue board (PoliSim ▸ Audio ▸ Cue Board) and `-cuesweep`.**
+
+**P4-3 — The D13 asset ask.** Write it reconciled against D12 (whose row 2 already censused every default-styled slider track and thumb): the slider row as a family — track, thumb, tick marks, the fixed-width rate cell in its rest and draft-amber states, the WOULD PASS badge, the Remove button — one grammar for every dial in the game, drawn against the films from item 1. Annex: the two screenshots verbatim, the item-1 film pair, the census from D12. Binaries uploaded, not described. Regenerate the package; record it in `ERRANDS.md`. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §262: D13 installed as the live ask above D12 (six elements as one family, the reconciliation at its head), the item-1 film pair in the package by digest, E-10 (the pack's gaps) and E-11 (the paste) recorded; the two screenshots join when they land.**
+
+---
+## P3 — PLAYTEST 3 (2026-09-03): Elias's rows, verbatim
+
+> **Recorded 2026-09-03, first and verbatim, as the sitting's rows.** Elias's kickoff, in his words:
+> *"Append as the next section; record the nine screenshots and the findings verbatim first. Work
+> down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and
+> self-taken, one report at end of budget. Screens film at 1280/2560; the matrix at the close."*
+>
+> The rows below are the sheet as sent. Execution lands in `COMPLETED.md` records, one per item, and
+> each row here gains a pointer to its record as it closes — the row's text is never edited forward.
+>
+> ⚠ **The nine screenshots.** The sheet names them (image 1 — International's node-graph map and its
+> raw grey Prev/Next; images 7 and 8 — the Policy Web at rest and pinned, board 2b; image 9 — the
+> Riksbank page, board 5f) and the rows bind to them. **They were not attached to the message that
+> carried the sheet and are not on disk** (Desktop, Downloads, Documents and the captures folder searched at the
+> kickoff; the file the second message names, `PLAYTEST3_ROWS.md`, is not on disk either - the pasted sheet is the record); nothing is transcribed in their place. Where a row needs the image, the nearest frame on
+> film is named in its record and the deviation from the image is left to the image's arrival; the
+> nine go into D12's annex the day they land (ERRANDS).
+
+---
+
+### Track A — the stance model (the gameplay finding; the largest item)
+
+**P3-A1 — The design page, one page, self-ruled.** Parliament votes on a single fiscal axis while
+parties carry nine CHES dimensions (F5). Replace the scorer:
+
+- **Each bill category loads the dimension(s) it actually concerns** — a `LawCategory`/dial → CHES
+  axis map, stated in code and sourced from the CHES codebook's own axis definitions (welfare and
+  taxation on `lrecon`/spending axes; crime and justice on `galtan`; immigration and trade on their
+  own; sectors on the state-intervention axis). A party's stance on a bill is its distance from the
+  bill's direction on that axis, from its published position — never one number for everything.
+- **Coalition cohesion:** parties in the formed government (W-D3's formation) support the
+  government's bills with a cohesion term; defection is driven by the bill's distance from the
+  party's own position and by loyalty (P2-5's attribute now exists), so a coalition partner can
+  refuse a bill far from its position. Opposition parties oppose government bills unless the bill
+  is nearer their position than the government's — and say so.
+- **Public opinion enters:** each party weighs the issue's salience (EB105/SOM data) and the
+  voter groups over the cohorts (F3) that the party depends on — a right-wing party does not cut
+  spending its own voters depend on without cost, and the score says why.
+- **Output stays honest:** stance sign + real seats, undecided as a real state (not a zero-sign
+  artefact), and the per-seat map shows the result. The lean bar's decided quantity survives.
+- **Determinism and sourcing:** every position from CHES; every weight `[AUTHORED-DRAFT]` with
+  its line; no invented party.
+
+*Done when:* the page names every term's source and the calibration debt; take the recommendation
+and log it. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §246: the dial → axis map from the codebook's definitions, four terms (the axis, cohesion and the opposition's line, opinion over an ecological voter profile, undecided as a state), six debts named, seven decisions logged.**
+
+**P3-A2 — Build it.** BASELINE for the parliament-stress matrix (the no-policy baseline does not
+move — no bills pass without a player). Re-run the matrix and explain every cell that changed.
+*Done when:* the same draft produces different for/against/undecided counts across bill
+categories, coalition partners visibly split on a far bill, and no two categories produce identical
+splits by construction. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §247: StanceModel built per §246, nine concern builders, the nine vote sites and the records on the concern; five drafts of one magnitude give five different splits, the support partner splits on two, the matrix's four cells unchanged and explained. **Follow-up §257 (2026-09-03): the verdict is the COUNT of sides, the alignment the tie-break - found on the Track C film; the matrix re-run, every cell identical.** **
+
+**P3-A3 — The vote breakdown on screen.** Every support preview and every result screen shows
+the per-party stance with its reason (position distance, coalition line, public-opinion cost) —
+new UI content, drawn structurally now, Design's grammar via D12. *Done when:* filmed, and each
+reason traces to a term in P3-A2. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §248: the breakdown under every support preview and the pending cards, the law pane's rows on the model, the signing plate's THE STANCES panel with the recorded reasons.**
+
+### Track B — board reconciliations (verify, then close the gap; never rebuild on assumption)
+
+**P3-B1 — The Policy Web against board 2b.** Compare the built screen to the board (levers grouped
+by area on the left, the books on the right with history counts, the causal band, the pinned-node
+pane with one line per edge). List every deviation; build the missing composition; state any
+deviation that stays with its reason (R-W2's fence). *Done when:* the pinned state matches image 8's
+layout on film and the rest state matches image 7's. **→ ⚠ VERIFIED, OPEN 2026-09-03, `COMPLETED.md` §249: four gaps, all composition; nothing rebuilt on assumption - the build waits for images 7 and 8 (E-8) or the board read whole.** **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §263: images 7 and 8 landed (E-8) and the board is built - `PolicyWebBoard` (levers by area, the books with counts, the causal band, the pinned pane one line per edge); the ring retired; filmed `p4c_1280_06j_policylaws_policyweb_rest` / `06k_..._node_policy` / `06l_..._node_stat`.**
+
+**P3-B2 — The Riksbank page against board 5f.** Same method: the one graph with the two-step
+path, the rule's five terms, the three input instruments, the governor and the appointment lever.
+Report whether the gap is composition, reachability (the RIKSBANK sub-tab), or the 720 fold.
+*Done when:* filmed at 1280 matching image 9's layout, and the sub-tab is reachable from the rail. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §250: reachable, the composition in the board's order; two defects of this build closed (the projection's span, the notes' width); the 720 fold to Design (D12 row 6).**
+
+### Track C — defects and small fixes
+
+**P3-C1 — Live arrows.** The Budget effects panel recomputes on slider drag (the preview is
+deterministic and its cost is measured — debounce to the measured budget). *Done when:* a film
+pair mid-drag shows the arrows moved. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §251: the arrows are with-minus-without the draft in fact (`PreviewTurnWithBudgetDraft`), recomputed on a changed draft behind a debounce of four times the measured cost; the film pair `p3c_1280_05b_budget_spending` / `_dragged`.**
+
+**P3-C2 — Balance from year one.** The fiscal header shows the current year's projected balance
+(the preview's own figure) beside last year's actual; at year one, last year is the seed and says
+so. *Done when:* filmed at turn 0 with both figures present. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §252: BALANCE · THIS YEAR · PROJECTED beside last year's, the seed named at turn 0; `p3c_1280_05_budget`.**
+
+**P3-C3 — The slider label.** "Deregulation / Nationalization" on the left against "0 nationalized
+– 100 private" on the right: one axis, one wording, both ends. Sweep every dial for the same
+class. *Done when:* a harness asserts each dial's left label, right label and range agree. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §253: NATIONALIZATION / DEREGULATION with `0 nationalized - 100 deregulated`; `DialLabelCheck` over all 13 dials in the cheap group.**
+
+**P3-C4 — The trade graph.** The Domestic/International trade balance graph reads as a broken
+line with a −100.0% delta. Measure the cause (a zero baseline in the delta is the likeliest); draw
+it through the graph renderer at 1l's weights with an honest delta or none. *Done when:* the delta
+is either correct or absent with its reason. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §254: the cause was the zero base (±100 % substituted); from a zero base the delta is the absolute change, marked Δ; `p3c_1280_02b_statistics_international_deep`.**
+
+**P3-C5 — The hemicycle in sectors.** Parties as angular sectors left→right in bloc order (left
+bloc at the left), not rings; every mandate a dot in its party's ink. *Done when:* filmed, and the
+sector counts equal seats. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §255: positions sorted by angle, inks dealt in bloc order - contiguous wedges, one dot per seat by construction; `p3c_1280_07a_politics_parliament`.**
+
+**P3-C6 — Party colours, ruled.** Published party hues are the base and the identity. 5e's ladder
+over-reached: it may apply only the **smallest perceptual nudge** (oklch, within a stated
+tolerance) that separates a measured collision, and it never re-orders or replaces a hue family.
+Re-print `PartyInkHarness`; the S/V collision and the four-blues-at-dot-size finding go to Design
+as a per-party confirmation, not a re-derivation. *Done when:* the hemicycle reads as Sweden's
+parties. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §256: the ladder retired for the lightness-only nudge (tolerance 0.06 oklab, cap 0.10 L); the harness print in §256 and `p3c6_partyink.log`; S/V and the four blues to Design as D12 row 4.**
+
+### Track D — the D12 asset ask (Code writes it; sending stays Elias's)
+
+**P3-D1 — Install D12**, one ask, reconciled against D10/D11:
+
+1. **The stylized map** (International, the Desk): a drawn map of the six countries, stylized not
+   projected, Design's — our side supplies real centroid coordinates and the trade adjacency, no
+   invented geography. Annex: image 1, the current node-graph film.
+2. **Prev/Next and every default button**: the raw grey buttons on International (image 1) are not
+   the chrome; ask for the button faces in the existing sprite idiom and sweep every screen for
+   default-styled controls (annex: the census).
+3. **The trade graph**: the graph idiom applied to trade balance, with the delta convention.
+4. **Party colours**: per-party confirmation of the published hues and the two collisions, per
+   P3-C6's ruling — Design confirms, never re-derives.
+5. **The vote breakdown grammar** (P3-A3): how a per-party stance with a reason is drawn on a
+   support preview and on a result screen.
+6. **The Riksbank 720 fold**: the political half below the fold at the floor size — a 720 variant
+   or a visible scroll affordance, Design's call.
+7. **The stance-plate marker overlap** (D11 finding 1): stacked tags when both sides read within
+   a point.
+
+Annexes: the nine screenshots verbatim, the films after Tracks B–C, `PartyInkHarness`'s print.
+**Binary artifacts are uploaded, not described.** Regenerate the package, record it in
+`ERRANDS.md`. **→ ✅ CLOSED 2026-09-03, `COMPLETED.md` §259: D12 installed as the live ask above D11 (seven rows, the reconciliation at its head, the census inline as Annex 3), the package regenerated on the close films, E-9 recorded; the nine screenshots join when they land (E-8).**
+
+---
+
+### Yours
+
+Play again after Track A lands — it changes what the parliament is. The D12 paste. The two PNGs and
+the ITANES registration, still open.
+
+---
+
+---
+## PLAYTEST 6 (2026-09-17): rows for `POLISIM_FEATURE_LIST.md` — Elias's sheet, verbatim
+
+> **Recorded 2026-09-17, first and verbatim, as the sitting's rows.** `COMPLETED.md` §526 holds this
+> sheet byte for byte and the kickoff that came with it. Elias's kickoff, in his words:
+>
+> *"Append PLAYTEST6_ROWS.md to POLISIM_FEATURE_LIST.md; record the ten findings and their screenshots
+> verbatim first (Elias saves them to Elias Screenshots\). DS-4b is overruled — Energy gets its own rail
+> cell, with icon_area_energy as a real asset gap and the coverage check's failure recorded as a named
+> gap, never suppressed. Finding 6 is D16's † rule applied globally — census every at-rest caption,
+> classify qualifier vs provenance, move the provenance; nothing is deleted. Then Track A → H in order;
+> measure before fixing on A1, C1 and G1. One commit per item, one green bar, R-SP1 push, one report."*
+>
+> ⚠ **The ten findings' own text is not in the record, and it is not paraphrased as his.** The sheet
+> below names each finding and what it showed, and that is what this pass was given; the findings'
+> verbatim text and the screenshots are owed (`ERRANDS.md` E-40). What the sheet attributes to each
+> finding is listed in `COMPLETED.md` §526 as the sheet's attribution, not as the findings' words.
+>
+> ⚠ **One departure from verbatim, and it is the claim convention's.** The sheet writes the energy area's
+> member reference in backticks; here it stands without them, because a live document may not name a
+> member before it exists and `DocumentClaimCheck` binds this file against today's code. P6-F1 declares
+> it, and the byte-verbatim line is in the record.
+
+**Append as the next section; record the ten findings and their screenshots verbatim first.** Work
+down continuously; one commit per item, one green bar per commit, R-SP1 push, decisions sheeted and
+self-taken, one report at end of budget. Two BASELINE families never in one pass.
+
+---
+
+### Track A — the frame's legibility (findings 1, 2, 4)
+
+**P6-A1 — Blurry text on the Canvas screens (finding 1).** Measure the premise before fixing it:
+what renders the country selector and the party picker, at what scale, through what path. The
+likely causes are a `CanvasScaler` reference resolution that doesn't match the window, a font
+rendered at a non-native size, or a blit through a render texture. Report the cause, then fix at
+the seam. *Done when:* filmed at 1280 and 2560 with the glyph edges measured before and after.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §527 (`c19ebc8`): the cause is the scaler's fractional factor with
+nothing snapping the quad and nothing flooring the product - the card's labels were asked for at under six
+device pixels. The host snaps to the pixel grid and no Canvas line renders below the desk's own caption
+floor; measured on the films at both widths, before and after. A render-texture blit and a GUI-matrix scale
+were both eliminated by measurement. ⚠ A dry film cannot represent a Canvas screen: its canvas-text assert
+is now the film's.**
+
+**P6-A2 — Controls that look like controls (finding 2).** The scenario lines on the selector and
+`BACK TO THE COUNTRIES` on the party picker are text, not buttons. Census every player-reachable
+control that draws as prose; give each the chrome's own button face (D20/6b answered the button
+faces — inherit them, invent nothing). *Done when:* the census is in the record and no control on
+a filmed surface draws as a bare sentence.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §528 (`5672166`): the census covers both families. The three Canvas
+controls that drew as bare sentences wear the delivered faces now - brass for the scenario lines and the
+party rows, paper for the way back - through `CanvasChrome.FacedButton`, one definition that the signing
+and election-night screens (which had copied it inline) also use. On the IMGUI side no bare sentence
+remains: every prose control carries a form Design drew, and faces are NOT put under those forms - that
+would overrule the boards, and it is a D21 row if Design wants it.**
+
+**P6-A3 — The budget-process banner's overspill (finding 4).** The interrupt panel runs over the
+tab strip above it and the `HOLDS TIME` stamp sits outside the panel. Fix the containment; this is
+the label-clipping class one level up — a *panel* outside its rect. *Done when:* filmed in the
+interrupt state at both widths, containment assert clean.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §529 (`22e6972`): two escapes, both arithmetic between constants -
+the urgency stamp was the first control in a dossier card and was reserved inside the baked tab shoulder,
+and its rotation painted outside the rect it reserved. Both fixed at their sites; the interrupt state is
+staged in the sweep for the first time (`03b`/`03c`/`03d`) and filmed at both widths; the rotated bounds
+are now asserted against the reserve through the containment guard, proven to fire when the fix is taken
+out.**
+
+### Track B — the provenance rule, applied everywhere (finding 6)
+
+**P6-B1 — The `†` rule is already ruled; apply it globally.** D16's board 10a ruled it and the
+People page carries it: source lines, seed footnotes and SOURCED/DERIVED sit behind the desk-global
+`†`; **BILLED, ABSENT, DATED and two-definitions stay at rest**, because they qualify something the
+player cannot otherwise see. The captions finding 6 names — the long mono provenance sentences
+under bands, plates and instruments — are at-rest text that should be behind `†`. Census every
+at-rest caption on every surface, classify each as **qualifier** (stays) or **provenance** (moves),
+and move the provenance. **Nothing is deleted**: the apparatus is the spine, and this is where it
+lives, not whether it exists. *Done when:* the census table is in the record with counts per
+surface, every moved line is readable under `†`, and the films show both states.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §530 (`826d709`): the census is read off the films' own label
+table and classified by what each line says; four provenance lines were at rest (the shared plate foot's
+two `SEEDS:` lines, the turnout caption's source, the Policy Web's `DERIVED / DECLARED` count) and moved
+behind the `†`, the turnout line split along the rule's own test rather than shortened, nothing deleted.
+The three pre-existing Policy Web overflows closed with it - a qualifier drawn through the shrink-to-fit
+path now wraps - and both states are in the sweep (`04g`, `06l`).**
+
+### Track C — the People page, re-composed (findings 7, 8)
+
+**P6-C1 — Measure the density first.** Six families, ~30 rows, each with figure, band, own tick,
+five peer dots, reach chips, sparkline, honesty tags and a source line. After Track B moves the
+provenance, re-measure what remains per row and per family. *Done when:* the measurement is in the
+record — rows per viewport at 1280, ink per row, and what a player reads first.
+**→ ✅ MEASURED 2026-09-17, `COMPLETED.md` §531: read off the films' label tables and pixels - 25 rows and one
+extra row across five plates at a 36 px pitch; 17 row names under 4 family headers in one viewport at 1280
+after Track B (16 under 3 before), 18 under 4 at 2560; a data row at rest is 3 to 4 text draws and about 5 %
+ink, the band column under 1 %; the figure is what a player reads first (the largest type and the darkest
+ink, in one column). The sheet's row description is the PROVENANCE row, and that state persists across
+sessions by §9.1.**
+
+**P6-C2 — The structural simplification.** From the measurement: collapse what repeats, promote
+the family's key figure, and let a row's detail open rather than sit open. The plate grammar
+(9c/10a) is Design's and is not re-litigated — this is applying it at the density the measurement
+shows. **Anything the measurement says needs a new form goes to Design as a D21 row, not invented
+here.** *Done when:* filmed at both widths, rows-per-viewport measured before and after.
+**→ ⚠ HELD AGAINST THE MEASUREMENT 2026-09-17, `COMPLETED.md` §532: nothing built, by the row's own rule.
+At rest a row already repeats only the grammar's parts, and its detail already opens rather than sits open
+- with the desk-global `†`. The three moves that remain are new forms and go to Design as D21 rows (the
+family's key figure in its header, a per-row disclosure, the extra row's form). Rows per viewport measured
+before and after at both widths (§532). One finding is Elias's: the tab's state persists across sessions.** ⏹ **CLOSED AS HELD 2026-09-22 (§576): nothing is built here by the row's own rule, and the three moves that remain are new FORMS - a TRIGGER row, T-10 in the deferral register, fired by Design's answer to the D21 rows that carry them.** The measurement stands in §532 for whoever reads it next.
+
+### Track D — the trade matrix (finding 3)
+
+**P6-D1 — Every pair carries a real link, or says why not.** The map holds no `TradePartner` link
+between Sweden and Italy, and the page says so honestly — but fifteen pairs with gaps is a world
+that doesn't trade. **Source the bilateral matrix**: IMF DOTS, Eurostat Comext or UN Comtrade, one
+vintage, goods and services stated separately if the source separates them; the USA's rows from the
+same source, not a second one. Every one of the fifteen pairs gets a sourced volume or an explicit
+absence with its reason. **No figure is authored.** *Done when:* the matrix is seeded for all
+fifteen pairs, the diagnostic asserts symmetry and the national totals against the source, and the
+pair page draws a link wherever one exists.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §533: one Eurostat vintage - Comext for goods, `bop_its6_det` for
+services, stated separately, each direction as the exporter reports it, the USA's rows the five's own books
+read from the other side; `TradeMatrixTable` seeds all fifteen pairs in the book's dollars at the rate the
+book already carries; `TradeMatrixDiagnostic` holds the world to it (fifteen, symmetric, the table reproduced,
+each reporter's five inside its own totals, the USA's total an explicit absence). BASELINE, all six: the
+family dumped as `traj_p6d1` and the sentinel re-based in the same commit.**
+
+### Track E — jobbskatteavdrag (finding 9)
+
+**P6-E1 — The earned income tax credit, sourced.** Sweden's *jobbskatteavdrag* (Inkomstskattelagen
+67 kap. 5–9 §§) is the largest labour-tax policy of the last twenty years and the reason the
+effective average rate on earned income differs materially from the statutory one — exactly the
+gap the row now prints as `AER 32.4` against the statute's 32.38. Build it as a **credit layer on
+the schedule**, not a rate adjustment: the credit's own formula on the *prisbasbelopp* and the
+municipal rate, phased as the statute phases it, with the 66+ enhancement stated. It is a player
+lever (its size is the political instrument). *Done when:* the AER the row prints reproduces
+Skatteverket's own published table for a set of incomes, the credit's formula is verbatim from the
+statute, and its family is explained — Sweden alone moves.
+**→ ⚠ BUILT AND HELD 2026-09-17, `COMPLETED.md` §534: `EarnedIncomeCredit` carries the statute's arithmetic
+verbatim from Skatteverket's SKV 433 (income year 2025 - the intervals in prisbasbelopp, the grundavdrag it
+subtracts, the 66-plus schedule, the municipal cap) and `EarnedIncomeCreditDiagnostic` reproduces the
+document's three worked examples to the krona; Sweden's income row prints the rate with the credit beside
+the rate without. The yield does NOT read it yet: P6-D1 is this pass's BASELINE family and the sheet's
+rule is two never in one pass, so `EarnedIncomeCredit.Live` holds it until its family is dumped and ruled
+- that flip, with the lever's own sub-row, is the follow-up item.**
+**→ ✅ LANDED 2026-09-18, `COMPLETED.md` §538 (`8aacfdb`): the credit is in the yield as this pass's family
+(`traj_p6e1`, the sentinel re-based). It reaches the budget through the lever's level - F4-5's rule now derives
+Sweden's as it does the four's, the credited average rate on taxed income (29.16, not the municipal layer's 32.38)
+- with the anchored revenue unchanged and a point of the lever raising what the ministry prices; every ranked row
+of the diff is Sweden's. The lever's own sub-row (the credit's size as the instrument) is still the follow-up.**
+
+
+**P6-E2 — The equivalents, billed.** Every country has some earned-income relief (the USA's EITC,
+Germany's *Arbeitnehmer-Pauschbetrag*, France's *abattement*, Poland's *koszty uzyskania*). Bill
+each with its exact source; build none until E1 is ruled on film.
+**→ ✅ BILLED 2026-09-17, `COMPLETED.md` §534: IRC § 32 with the year's Rev. Proc. parameters (the USA);
+§ 9a Satz 1 Nr. 1 Buchst. a EStG (Germany); CGI art. 83, 3° (France); ustawa o PIT art. 22 ust. 2 (Poland)
+- each named with what it is and why it is not Sweden's shape; none built, per the row.**
+
+### Track F — the Energy tab (finding 10) — **DS-4b is overruled**
+
+**P6-F1 — Energy gets its own rail cell.** I ruled DS-4b the other way on Design's board 15a
+(`Rail cell: NO`, the page under Sectors). Elias has played it and wants a tab; the player's reading
+wins. **Consequences, all of them real:** SystemArea.Energy is declared, `icon_area_energy`
+becomes a genuine asset gap and a D21 row (it was explicitly not one under the old ruling), the
+rail's legibility re-opens at the new cell count, and `AreaIconCoverageCheck` fails until the icon
+lands — which is correct, and the fallback is the honest hairline until it does. *Done when:* the
+cell is reachable, the page moves whole, films at both widths, and the coverage check's failure is
+recorded as a named gap rather than suppressed.
+
+**→ ✅ CLOSED 2026-09-18, `COMPLETED.md` §536 (`1073637`): SystemArea.Energy and the tab declared, the
+ninth rail cell ENERGY, the page moved whole to `DrawEnergyTab`, filmed at 1280 and 2560 with the
+containment guard silent at the rail. `AreaIconCoverageCheck` reports `icon_area_energy` MISSING on every
+bar - the NAMED GAP, standing until Design's icon lands (D21 row 1, which asks for the ink too; Energy
+borrowed the Sectors ink meanwhile; **CLOSED 2026-09-21, `COMPLETED.md` §556: board 16a's icon and ink installed, the cheap bar at 44 of 44**). The rail's fallback is the caption's initial, not a hairline, and its
+first film measured two defects, both closed: the initial drawn through the tab style's fixed height, and
+`LedgerRow.CellStyle`'s cache keyed on the font size alone, through which the Desk's verdict cell
+inherited the E's clone at 2560.**
+
+**P6-F2 — The tab's structure: clear, simple, and the choices are the point.** The layer holds
+everything the current plates draw; what it lacks is **anything a player does.** The `ABSENT` row
+says it plainly: *nothing builds or closes a plant; the fleet and the load are static until
+dispatch.* So the tab's spine is the decisions:
+- **Build and retire** — capacity by technology as a thing the player changes, with CAPEX, lead
+  time and a connection queue (the energy spec-let's stage list already names this; IRENA's 2024
+  costs are still billed and are the blocker — bill them precisely).
+- **The four policy instruments** (market liberalisation, retail intervention, investment planning,
+  state ownership) as the dials S9 named, each with its range captions.
+- **The law category** EN-7b built, reachable from the tab.
+- **The ministry** on the AI finance ministry's pattern, with its mandate weights.
+Each is its own item; **none is invented** — every one is a stage the spec-let already ruled.
+*Done when:* a player can open Energy from the rail, see the system, and make a decision that
+changes it.
+
+**→ ✅ BEGUN 2026-09-18, `COMPLETED.md` §539 (`c544620`): the first decision is on the tab - build and retire,
+capacity by technology as a thing the player changes, with the EIA's lead times (AEO2023 Table 1: coal 4 y, gas 3,
+nuclear 6, wind 3, solar 2) and a connection queue; an order lands at its year and moves the fleet every reader sees
+(`EnergyLayer.CapacityMw`, the must-run levels scaled). **The first cut prices nothing and says so:** IRENA's 2024
+costs stay billed and the cost row reads BILLED. Hydro and "other" are not orderable; the notice is a stated
+stand-in. Filmed at rest and with one order placed. The four instruments, the law category's reach and the ministry
+follow as their own items, on the ruling.**
+**→ 2026-09-21, the follow-ons, each its own item:**
+**· ✅ The four instruments as dials with range captions - `COMPLETED.md` §542 (`9e33b3a`):** the Energy sector's own dials on
+the tab under S9's names, one draft with the Sectors page and one bill; forty captions held to the model
+(the levy on the bill falls, industry's price against households' rises, the two the layer does not read say so);
+both dial checks now read every partial of the controller.
+**· ✅ The law category reachable from the tab - §543 (`dc55ff0`):** one faced control that opens LAWS on the
+electricity-tax filter, with what it will find; disabled with its reason for the USA.
+**· ⚠ The ministry BUILT AND HELD - §544 (`e44f41a`):** five mandates read from the countries' own statutes on the day
+(Germany's EEG / WindSeeG / KVBG paths, Italy's PNIEC capacities, France's 40 %, Sweden's fossil-free 2040; Poland BILLED,
+the USA nothing to answer), orders through the player's own queue with a sentence each, `AiEnergyMinistry.Live` false.
+Its failure modes measured before the flip: a statute's GW path floods a load that does not grow (Germany: every block
+curtailing from 2030), the queue has no capacity (a first order of 65 GW), and curtailment does not reach the price
+(the fossil floor's convention). **The flip is its own BASELINE family, after FT-10 is ruled.**
+**· ⚠ BUILD AND RETIRE RE-FOUNDED - §544, the same commit:** the item's money-path review found that §539's landed orders
+sat in one static table shared by every world the game holds, and the shadow baseline zeroed the player's fleet after
+every turn - the decision did not work in play. The fleet is the country's own now, orders land by turn at the top of
+the boundary, the preview lands its clone's, a retired fossil fleet stops running, and the queue refuses what would not
+move or would scale a fleet that is not there (France's and Italy's coal, Germany's nuclear, Sweden's coal and gas).
+**· The price row stays BILLED until IRENA's costs land.**
+**→ 2026-09-21, the second ruling: the ministry STAYS HELD, and the connection cap is its first prerequisite and its own item.**
+**· ✅ F2e - the connection queue's capacity. BUILT 2026-09-21, `COMPLETED.md` §551 (`6d7ec53`).** Each operator's OWN published connection queue, line by line as it publishes it (`EnergyConnectionQueue`): Svenska kraftnät's, RTE's Panorama, Terna's Econnextion, PSE's register, Berkeley Lab's *Queued Up* for the USA; ENTSO-E publishes no connection figure, found and said. A queue refuses an order past its figure and says why, on the player's line and the ministry's alike (`EnergyFleet.Place`); a technology whose operator publishes no line is refused with that sentence; a step larger than the room left is offered as the room. **⚠ GERMANY IS BILLED - no operator there publishes a queue - so the held ministry's opening flood, the reason this item was ruled first, stands unchanged: the prerequisite is built and does not yet bind where it was needed.** What Germany does publish (the EEG's and WindSeeG's statutory tender volumes, the Bundesnetzagentur's awards) is outside the two source kinds the ruling named - **a ruling is needed before it may stand as a capacity.** Two readings of mine are strikeable in the record: *the published queue IS the capacity*, and Poland's wind line as PSE prints it, preliminary conditions included. The flip stays its own BASELINE family, after this.
+
+
+### Track G — the pie (finding 5)
+
+**P6-G1 — A pie below a size reads as a bar.** Board 8a ruled the pie's form (largest first from
+12 o'clock, inside labels where the wedge clears 40°, hatched OTHER past eight) and the form is
+right — at size. The instance finding 5 names is too small for any pie to read. Measure the
+threshold at which 8a's own rule stops working, then **below it the distribution draws as the
+stacked bar the grammar already has**. *Done when:* the threshold is measured, both forms are
+filmed, and no pie renders below it.
+**→ ✅ CLOSED 2026-09-17, `COMPLETED.md` §535 (`8611134`): the threshold measured off the films' own label
+tables - the inside share label against the 45° chord at 0.62 r of the disc - and found over its chord at
+every filmed width, because the disc is a constant and the caption scales; `PieChartRenderer` now measures
+the widest share against its own chord and, where it does not fit, draws the plate grammar's stacked bar.
+Both forms filmed at 1280 and 2560. The disc's size and the OTHER hatch on a bar are D21 row 3.**
+
+### Track H — the D21 ask
+
+**P6-H1 — Install D21**, reconciled against D20: the energy tab's composition (the decisions as the
+page's spine, not the readouts), `icon_area_energy` and the rail at its new cell count, the pie's
+size threshold if the measurement says the bar needs a form, and whatever P6-C2's measurement
+says needs a new form. **Nothing already answered is re-asked.** The package is **one zip**,
+verified both ways — the route that worked for E-37 and E-38. Sending stays Elias's.
+
+**→ ✅ INSTALLED 2026-09-17/18, `COMPLETED.md` §536: the D21 head (seven rows, reconciled against D20)
+is at the top of `CLAUDE_DESIGN_ASSET_REQUEST.md`; the send is E-41. The archive is cut on §511's route: `AssetPackArchive/D21_ask.zip`, twenty-two artefacts (the four documents and eighteen frames, one to four per row) with `docs/outbound/SEND_PACKAGE.md` at its root and `MANIFEST.sha256` beside it, verified on the way in and out - §537.**
+
+---
+
+### Yours
+
+Play again after Track F's first decision lands — it is the first time the energy system will
+answer you. The D21 paste when installed. `docs/play/PLAY_SHEET.md` still open: twenty constants unjudged.
+- **PF-4 — *Retail intervention*'s range captions promised a levy floor the dial cannot reach in two countries, and reached it early in the other two.** ✅ CLOSED 2026-09-21, `COMPLETED.md` §554 (`c7916bb`): the ten lines promise a direction and never a floor, a line above neutral admits the levy may already be gone from the band where any country's is, the Sectors page's sentence reads the carried cost's sign, and `RangeCaptionCheck` holds the lines to the dial's reach on EVERY levied country's book (proved failing first on §542's two lines). Bands per country, read live off the book, are the richer fix and wait with §553's held work, which carries the function they need.
+- **PF-5 — four bill call-to-action buttons still wear the retired pack's face.** ✅ CLOSED 2026-09-22, `COMPLETED.md` §564 and §568 (the sitting pass): the Labor Market, Trade and Emergency Drawdown bills took board 6a's one-width button beside their sentence in Track 1 (`DrawSentenceAction`, the primitive every call to action now shares); the Budget bill's - the fourth - took the family's brass at `CtaWidth()` in Track 4b, where Design's drift row D7 widened the item to the whole class: brass where a click commits, paper where it navigates, both untinted. Found 2026-09-21 (§550) while fixing Design's sighting on the Energy tab's.
+- **PF-7 — a dial's knob stands on its own range caption where the two meet.** ✅ CLOSED 2026-09-22, `COMPLETED.md` §565 (the sitting pass's Track 2, where Design's part B item 8 named the same defect on Trade): IMGUI hangs a thumb from its rect's top, so the 15×23 knob overhung its 14-unit track by nine units into a band that began one unit under it. The knob is painted CENTRED on the track through the style's overflow (the control's rect, travel and grab unchanged) and the caption band begins below its foot - the lane is the knob's clearance plus the caption's own band. Sighted 2026-09-21 (§554) on the Energy tab's dial-drag frame at 1280 and the same on the films before §550: the caption is centred under the track in the end-names' band, and where the knob stands over it the knob's foot touches the caption's cap line. Geometry, not text - a question for the composition ask (the knob's foot, the band's top, or the caption stepping aside), not a guard's.
+- **PF-8 — a range caption stood across a long end-name.** ✅ CLOSED 2026-09-21, `COMPLETED.md` §559 (`6594e4f`): §550 taught the caption guard the end-names' measured ink and left the PLACEMENT on the fifth of the band an end-name is assumed to fit; the first film to reach the state pins since found two Labor dials' captions across their right end-name at 1280. The caption now fits and centres in what is clear of the end-names as drawn.
+- **PF-13 – the signing screen's stance captions clip on a real film, and the saves menu then carries its surface.** ✅ **TWO FINDINGS, BOTH CLOSED 2026-09-22 (§578).** (1) THE CLIP: the stance reasons asked 30.4 px and were given 22.0, drawing their second line over the row beneath - a vertical layout group compresses toward its children's FLOOR when they ask for more than the panel has, and `PlateCaption`'s floor is one line. A reason now carries a TWO-LINE floor of its own (`PlateReason`), and 89d/89e read **0 violations** where they read 4. ⚠ The plate's height was tried first and rejected: 200 -> 240 px moved the rect 23.6 -> 28.6 and still left it short, and a number tuned until Germany's nine parties fit is §432's own finding breaking on Italy's fourteen. (2) THE COVERAGE HOLE, which is why it sat unseen since 2026-08-28: a dry film cannot claim Canvas text, and every film since was dry or stopped before shot 89 - `bar_tier.ps1` now names the Canvas surface a commit touched and the shots that reach it, `CLAUDE.md`'s head carries the rule, and a track's close films every Canvas surface real at 1280 and 2560. Found, measured and closed the same day. Opened 2026-09-22 (§577) by flag (ii)'s film, which ran past where every film since 2026-09-18 had stopped: **39 of 88 captures failed**. Four canvas-text clips at `CanvasHost/SigningScreen/Document/Content/DivisionPlate/Stances/Caption` (preferredHeight **29.4** against a **22.0** rect, on the stance reason lines - `spendvtax 6.3 -> -0.25 § cohesion +0.2...`), on both 89d_signing_entrance and 89e_signing_settled; then `92_saves_menu` fails the capture-identity token, claiming 'signing' while the written frame carries 'imgui'. **NOT this pass's**: the last real film to ASSERT canvas text there was 2026-08-28 (5 texts, 0 violations) and the plate grew its stances after it; every film since has been dry - and a dry film cannot claim canvas text, because the backbuffer is 640x480 with no window - or stopped before shot 89. **What it costs to find**: only a full real film reaches it, which is why it sat unseen. *Done when:* the caption's rect carries its own wrapped height (or the reason is cut to the lane), a full film at 1280 passes, and 92's identity holds.
+- **CL-5 — THE LIVE GAME DOES NOT RUN THE CALENDAR THE PLAY PROTOCOL NAMES.** ✅ **RULED AND CLOSED 2026-09-22 (§579): THE GAME IS RIGHT AND THE PROTOCOL WAS WRONG.** The protocol's 18 January and 13 September 2026 were the REAL Swedish election's dates; the played game runs the election turn's boundary (D-23 (a) as ruled). `PlayProtocolStaging` now cuts the save on the GAME's calendar - run-up **7 May 2029**, campaign **5 November 2029**, polling day **31 December 2029** - asserts that the restored turn points at that same election, and PRINTS the three dates every run; the protocol takes its dates from there and its blocked header is gone. E-39 is unblocked; DS-7 (b) fires after the first play, as sequenced. Found 2026-09-21 (§558). The protocol, its staging and its check read the static Swedish calendar; the live day path reads the next election turn's boundary, so on the protocol's own save the run-up begins more than three years after the day the protocol says it opens on. Either the live game runs a country's own dates (and then what the four-turn cycle means for the other five), or the protocol opens where the game's run-up does. E-39 is blocked on it; the staging prints both calendars as a warning on every run.
+- **PF-1 — France's Budget tab evaluates a vote for every tax line on every IMGUI event.** OPEN, found
+  2026-09-17 by the dry film's pass timer (`COMPLETED.md` §524, item 2): `DrawTaxProgramBillVerdict` calls
+  `ParliamentSystem.GetTaxProgramBillDirection` and `ParliamentSystem.WouldBillPass` for each line's
+  hypothetical bill each time the tab is laid out or painted, so France's Budget tab draws far below a frame
+  a second in play, and every France film and dry film pays it; Italy's passes are slow on the same order and
+  unattributed. The fix named: cache each line's verdict until the day, the draft or the chamber changes.
+  UI and SIMULATION paths (the verdict reads the chamber); no money moves, so no review unless the fix books one.
+  **→ ✅ FIXED 2026-09-17 by ruling, `COMPLETED.md` §525 (`f02efeb`): the screens ask `ChamberVerdicts`, which
+  answers once per chamber (the country, the player's party, the seat table) and question (the concern's
+  direction, moves and cuts) and drops everything when the chamber changes, not when the day does - the films'
+  verification runs while the days advance and found no answer that moved with them. Italy's slowness was the same coalition search over its parties. Every film and dry film re-verifies
+  every cached answer against the model (`ChamberVerdicts.VerifyHits`, a drift logged and counted), and
+  `ChamberVerdictCacheCheck` holds Italy and Sweden through a draft, a seat and a party change.**
+- **The streamlining review's named fixes** (`COMPLETED.md` §524, item 5): `DeadStateCheck`'s scan tokenised
+  once · the no-policy centuries the infrastructure and health diagnostics both run, memoised once · one
+  per-process source cache behind `SourceText` · a generated session brief and a reading order for a
+  session's start · the memory index at one line an entry. Each is a proposal with its measured cost awaiting
+  a ruling; none outranks F2–F6.
+  **→ ✅ RULED AND TAKEN 2026-09-17, `COMPLETED.md` §525: the first four BUILT, each proven equivalent and
+  proven to fail when broken - the source cache (`d78105e`), the single-pass tally (`73ed866`), the shared
+  century `NoPolicyCentury` with a bit-exact cross-check against an independent run (`af9e155`), the brief
+  `Tools/session_brief.ps1` and the reading order at the head of `CLAUDE.md` (`2734841`). The memory index
+  NOT built, by the same ruling: a fourth thing to keep true.**
+- **`D-16` — the sourced tax-base table for five countries**, `CollectionEfficiency` re-solved and
+  re-documented as a coverage bridge, the >1 values named as coverage rather than efficiency. **BASELINE**;
+  ruled and TAKEN, execution logged STOPPED with its five-step order in `COMPLETED.md` §197 §D. Rides F4.
+  **→ ✅ EXECUTED 2026-09-04, `COMPLETED.md` §282: the table (`TaxBaseTable`, the five; the USA excluded at the call site by F-B) read by every revenue site; CE re-solved on the sourced bases (SE 1.0026 · DE 1.1483 · FR 1.1800 · IT 1.2363 · PL 1.3086) and documented as the coverage bridge, the Clamp01 that would have cut it lifted; the five back on their T1 primaries to 0.01 pp; the transmission response now per country (asserted); the trajectory suite explained - only Budget, GovernmentDebt and EffectiveDebtRate move for the five, by the two constants' four-decimal rounding.**
+
+**EN-3 — The energy track's stage 3, the market layer.** ✅ **LANDED 2026-09-11, `COMPLETED.md` §458–§460, in one session where two to three were sized:** one clearing per block per zone (`EnergyMarket`) - a merit order over fuel ÷ efficiency + O&M + (the ETS + the carbon tax's points above the seed) × the emission factor, each fleet in 200 tranches (a fleet is not one plant), the trough decile's output inflexible, a scarcity term to ACER's 4 000 ceiling, no clamp (a negative offer prices a block negative - proved by probe); the seed calibrated per country by adders so the dispatch reproduces 2023's coal / gas / oil shares to the thousandth; Germany's reactors at zero; Sweden's four zones on coincident hours against the dated NTCs with the exogenous exchange by neighbour - **snitt 4's §457 flow was EXPORT, not congestion: 3 356 / 3 162 / 3 487 MW of 5 600 by block, SE4's own deficit plus the transit to the continent, no snitt binding on a block average**; the S4 deviation CLOSED - the power figure's writer is the dispatch, the family's power elasticity retired, its own BASELINE family (`traj_en3_*` against `traj_p5evd2_*`, explained per country in §460). The row as it stood: `docs/specs/ENERGY_SPEC.md` §7 row 3 (S5, S6) … opened 2026-09-10 by stage 2's landing.
+
+**EN-3b — The reservoir dispatch.** ✅ **LANDED 2026-09-11, `COMPLETED.md` §466:** the measure taken - the exchange's 2023 day-ahead prices for SE1–SE4 on the model's own load blocks (SE1/SE2 19.9 / 37.0 / 83.4, SE3 20.0 / 47.6 / 116.3, SE4 36.6 / 61.2 / 122.5 €/MWh; load-weighted 43.9 / 43.9 / 57.7 / 70.0) against the proxy's 87.3 that EN-3 cleared every zone at; each zone's uncongested price is now its own seed price carried by the price level plus its DERIVED share of the continental move (β SE1/SE2 0.30, SE3 0.60, SE4 0.82 - the OLS slope on 2023's hours), the chain's binding rule above it; the reservoirs carried with Energiföretagen's capacities (33.7 TWh; 14 804 / 15 677 / 2 846 / 220 GWh) and a balance against the seed's cycle whose deficit raises the water value at an authored slope armed by probe; the shiftable hydro of Italy (0.68) and Germany (0.24, Eurostat's run-of-river and pumped rows; France, Poland and the USA BILLED) moving between the base and the peak block to restore the seed's spread when a policy moves it; the fiscal layer's Swedish margins turned positive, and EN-4's congestion-rent rule refined to credit only the rent above the seed's (the seed's tariff already carries 2023's capacity fees). `ReservoirDispatchDiagnostic` (the simulation group, 47) and `EnergyLayerCheck` gate 10. BASELINE `traj_en3b_*` against `traj_en5_*`: Sweden's alone at first order - the coupling's damping of the continental price level Sweden's wholesale used to carry whole (industry price −10 %, household −5.8 % at a century; the standing rent 10.2 bn nominal at t100 against a seed 0.99, handed back above the seed's), its inflation moving by hundredths through a smaller pass-through; the five second-order; 7 of 75 fields byte-identical; a book without exchange rates named for the ruling. Still without a source: the reservoirs' seed fill and the water value's answer to a deficit (the slope authored), Italy's storage capacity (Terna, not reached).
+
+**EN-4 — The energy track's stage 4, the fiscal layer.** ✅ **LANDED 2026-09-11, `COMPLETED.md` §463 (with §461 and §462 before it), in one session where two were sized:** the retail stack per class (`EnergyLedger`), in the book's dollars (the game keeps every country's book in US dollars; the ECB 2023 rates bridge the sources' euro and the tax lines' national currency) - the wholesale from this year's dispatch, a FITTED supply margin (two per country, named and counted), Eurostat's network, policy levies and environmental tax carried by the price level, VAT at the rate the seed's components imply, non-households before recoverable VAT - reproducing Eurostat's components at the seed and written to the state each year, presented as written (the Environment plate's two price rows and its foot); the two ledgers - system cost (the fossil dispatch at the dispatched tranches' own costs, the ETS, the carbon tax, the adders; the wholesale outlay above it; the network; the support) and incidence (households, non-households, taxpayers → generators, suppliers, networks, the scheme, the state's taxes) - closing to the unit in every year; the book's energy line as the budget-financed support with the levy moving the other way one for one (P5-B2 indexation, P5-B3 revenue on the base; Germany's book carries no energy line - the KTF is outside it); a binding snitt's congestion rent credited to next year's network component (Regulation (EU) 2019/943 Art. 19(2)–(3)), armed by probe since no snitt binds at the dated NTCs; the energy line's BusinessConfidence proxy RETIRED for the industrial bill's change as a share of GDP; `EnergyLedgerDiagnostic` (the simulation group, 44) and `EnergyLayerCheck` gate 8. Its own BASELINE family `traj_en4_*` against `traj_en3_*`: the one mechanism is the proxy's replacement - BusinessConfidence +0.44 % at a century and +0.51 % at most over a millennium, Poland's peak on both seeds (the largest industrial bill against GDP, 3.31 % at the seed), Investment +0.5–0.6 %, GDP +0.08 %, the rest downstream or the zero-crossing artefact class; six of 67 fields byte-identical, the power figure untouched. **Deviations from the row as it stood, stated in §463:** support schemes ride the existing line (no source splits them into appended members with drivers); the Energy sector's row is not derived from the system cost (the sector table's seeds and the P4-B3 dials read it); the ETS proceeds and the carbon tax's two readings are not booked - EN-4c. The row as it stood: `docs/specs/ENERGY_SPEC.md` §7 row 4 (S7); S8 is EN-5.
+
+**EN-4c — The carbon tax's unit.** ✅ **RULED AND BUILT 2026-09-11, `COMPLETED.md` §464:** one reading, the statutory one - the rate is the COUNTRY'S CURRENCY PER TONNE OF CO₂ (`TaxLine`'s class doc), revenue = rate × the taxed tonnes in the book's dollars (`TaxBases.RevenueAtRate`), the share-of-GDP stand-in retired; every country re-seeded to its sourced 2023 figure - Sweden 1 330 SEK (the Government Offices' page; Elias's figure as ruled), Germany 30 EUR (BEHG § 10, fetched), France 44.6 EUR (the composante carbone; the LF 2018 text billed), Italy, Poland and the USA 0 unimplemented (no carbon tax distinct from the ETS, said so); the dial 300 US dollars per tonne in each currency (`RateCeiling`); the approval and stance terms read the line through `TaxLine.PointsOf`; the transport elasticity per book dollar per tonne with its chain stated; the coverage bridge re-solved to hold D-16's anchors (SE 1.0692, DE 1.1413, FR 1.1731); save format 7. `CarbonTaxUnitDiagnostic` (the simulation group, 45). BASELINE `traj_en4c_*` against `traj_en4_*`: the one mechanism is fiscal - a nominal statutory rate on an eroding base where a share of GDP stood, so France, Sweden and Germany lose up to their seed carbon share of GDP a year against the old reading (0.22 / 0.39 / 0.22 %) and the AI ministry's consolidations land in different years (France's t70 cluster on seed 777; Sweden's debt +2.3 % at a century on 424242); the dispatch untouched; 7 of 73 fields byte-identical; Sweden's CPI indexation of its rate named as the next piece.
+
+**EN-4d — Which tonnes the carbon tax covers.** ✅ **RULED 2026-09-11, BUILT 2026-09-12, `COMPLETED.md` §467:** the national carbon tax covers transport and non-ETS combustion; the power fleet's carbon cost is the ETS price alone - Sweden's 6 a kap. 1 § (100 per cent relief for fuel in an installation surrendering allowances and for taxable electricity's fuel), Germany's BEHG § 7 Abs. 5 (the double burden avoided), France's composante carbone (quota installations at the 2013 taxes), one reason in each: the two prices do not stack. THE DEVIATION, STATED in the code and the record: no installation register exists, so the exemption is applied at SECTOR level - the whole power sector exempt, the whole transport sector taxed. `TaxBaseDriver.Emissions` is transport's tonnes; the merit order carries the ETS and no tax (`EnergyMarket.Clear(country)`, `CostParts` without a tax term); the ledger books no carbon payment on power; the plate's 5c arrow moved to the transport row; the bridge re-solved to hold the anchors (SE 1.0725, DE 1.1452, FR 1.1742); save format 8; the diagnostics that stepped the tax to read the fleet step the ETS by a probe (`ProbeEtsRisePerT`, one fleet at a time), gate 7's reference re-read (Poland: coal −0.019, gas +0.019, peak +12.6 €/MWh for 20 EUR/t). Germany's BEHG seed unchanged, as ruled. BASELINE `traj_en4d_*` against `traj_en3b_*`: fiscal and second-order - the power figure byte-identical for six (the AI lines never left the seed), the three implemented lines smaller (SE 0.393 → 0.272, DE 0.220 → 0.097, FR 0.223 → 0.186 % of GDP) with year 1's total held by the bridge, so a nominal-fixed line that erodes less leaves Germany's GDP +0.18 % and Sweden's +0.2 % from t500 through the AI ministries' lighter consolidations; debt paths within a third of a per cent, mixed in sign; Italy, Poland and the USA at noise; 8 of 76 fields byte-identical.
+
+**EN-4e — Sweden's statutory indexation of the carbon tax rate.** ✅ **RULED AND BUILT 2026-09-12, `COMPLETED.md` §471:** carry the statute - one rule per country, each with its paragraph, checked rather than assumed (`CarbonRateStatute`): Sweden's rate recalculated at every boundary by the year's price ratio rounded to four decimals (lag (1994:1776) 2 kap. 1 b §); Germany's on the BEHG's legislated schedule (§ 10 Abs. 2: 45 EUR for 2024, 55 for 2025, the 2026 corridor at its floor 55) and then carried by the price level as the exogenous ETS price is; France's composante carbone held nominal as its tariffs are written (44.6 EUR since the loi de finances pour 2018, the 2019 step not enacted; the code article BILLED); Italy, Poland and the USA with no rate to move. The step runs before any decision's override, so a passed bill's figure wins and a left dial gets the law's. The B6 half: the three sites that compared a nominal rate to a nominal reference read the REAL rate now - the transport coupling (a frozen rate's erosion raises the intensity, shown), the household burden's baseline, the political scale through a ceiling that carries the level for all six. The probes raise once and let the statute carry; `CarbonTaxUnitDiagnostic` (7) reads the three statutes at no policy. BASELINE `traj_en4e_*` against `traj_en4d_*`: the three statutes, each its own shape - Germany's schedule a lasting real rise (transport −0.97 % from t100 on both seeds, the nominal take near doubled), France's freeze shown as erosion (transport +1.8 % at t100, +2.0 % from t500 - the intensity a nominal-fixed rate should show and did not), Sweden's indexation no real change (transport ±0.02 %, the revenue's share held instead of eroding); the power figure byte-identical for six; Italy, Poland and the USA at noise; the fiscal paths by hundredths but for one AI consolidation moved a year in France's first century; 8 of 76 fields byte-identical.
+
+**EN-5 — Stage 4's second pass, the HICP pass-through (S8).** ✅ **LANDED 2026-09-11, `COMPLETED.md` §465:** the household retail price the ledger writes enters `Inflation` through electricity's sourced weight in the consumer price index - Eurostat `prc_hicp_inw` CP0451 2023 for the five (DE 29.63 · FR 28.21 · IT 33.15 · PL 23.87 · SE 70.50 per mille) and the BLS CPI-U relative importance of December 2023 for the USA (24.28, reached through the archive) - as the weight times the price's change RELATIVE to the general price level (`EnergyPassThrough`; the nominal stack already rides the level), a price-level term on the Phillips map beside the tariff term that expectations look through, planned at the boundary from the year the ledger just wrote, read by the preview in the same form; zero at the seed and to the noise at no policy. `EnergyPassThroughDiagnostic` (the simulation group, 46) and `EnergyLayerCheck` gate 9. BASELINE `traj_en5_*` against `traj_en4c_*`: two mechanisms - the adders now carry the price level (the B6 correction the pass found; `PowerCo2PerCapita` +8.8 % relative at a century for Germany, +0.24 t for the USA, where their real erosion had drifted the fossil shares) and the pass-through's own hundredths of a point a year (the AI ministry's levy moves, Sweden's import-price channel) compounding into Poland's price level 68 % apart at a millennium and a Swedish electricity year of +0.54 pp at t544; 7 of 73 fields byte-identical.
+
+**F4-1 — The income dimension, a readout (F2-I; P-I2's next step).** ✅ **LANDED 2026-09-12 (§479)**: `CohortIncomeCatalogGenerator` → `Generated/CohortIncomeSeeds.cs` (one log-normal per cohort per country, σ² = 2 ln(mean ÷ median), the median the scale; 0 below 15), applied to every pyramid by `WorldFactory`; the substrate diagnostic's income section prints the mixture against the anchor mean and the seeded Gini, the deciles, SCB's and the CPS's class tables - findings, never fitted; `GeneratedCatalogCheck` holds the catalog to its file; save format 10; `traj_f2i` byte-identical against `traj_en4e`. D-3's trigger FIRED. Opened 2026-09-12 (`COMPLETED.md` §474; `COMPLETED.md §580` S2): a per-band income distribution on `PopulationCohorts`, seeded from Eurostat `ilc_di03`'s mean and median per age band (a log-normal's σ pinned by mean ÷ median - DERIVED), the US from CPS ASEC PINC-01 / HINC-02, Sweden's SCB class table as the shape's validation (printed, not fitted), the national deciles printed as a cross-check, never fitted (DS-2); `Gini` a calibrated gate with its writer unchanged (DS-2b); a cohort-income diagnostic; nothing on `EconomyState`. **Lands byte-identical or it is not a readout** (`traj_f2i` against `traj_en4e`). S1's sourcing LANDED §475 (`ElectionsData/income/`: `ilc_di03` mean and median per age class for the five, PINC-01 for the USA, the deciles, the CPS class table; the README's digests). Fires D-3's trigger.
+
+**F4-2 — The pluggable schedules (S2(b), S1, S5).** ✅ **LANDED 2026-09-13 (§488)**: `TaxSchedule` - Sweden's two layers, § 32a's formula, the barème per part, Poland's and the USA's tables (Table 3 whole, the single deduction the exempt band), Italy flat and billed; the incomes converted into the statute's currency (SEK 11.479, PLN 4.542 per euro - the unconverted share above Sweden's skiktgräns is 0.000 %), the uniform shift on every taxed band and no exempt one (Sweden's ratio at +5 1.155, not 4.28×), the response a ratio against the seed's yield (one at the seed exactly; revenue the anchored figure to the fourth decimal); the terms read the effective rate as the seed's figure moved by the statute's points; the drag a family (`traj_f4s2` vs `traj_f2i`: Poland's yield +73 % in ten years on nominal thresholds, the four indexed +0.3 to +5.3 %); save format 11. Opened 2026-09-12 (§474; the plan's S3a): a schedule on `TaxLine` - flat (the default), a bracket table (PL, US, SE statlig), §32a's formula (DE), the barème per part (FR), three layers (IT - flat + BILLED until E-6); revenue integrated over F4-1's bands, still one figure per `TaxType` (S5); the bridge re-solved so revenue at seed is today's to the cent; the one dial a uniform shift (DS-2c); the household burden the average effective rate. **BASELINE** (`traj_f4s2`). F4-1 landed §479 - the dimension is on every pyramid; S7 struck (DS-1). **Next in the tax chain.**
+
+**F4-3 — Sweden's blended 52 retired: one line, two layers.** ✅ **LANDED 2026-09-15 (§514)**: the income line seeded at the municipal layer's 32.38 (read off `TaxSchedule`), the state layer's 20 % its second layer, `TaxBaseTable`'s row re-derived from the re-fetched OECD T_1110 (10.389453 % of GDP → 0.3209), the bridge re-solved (CE 1.0724, 42.039 against 42.04), save format 16; `TaxScheduleDiagnostic` section 8 - the lever's point - asserts the three verdicts (Sweden raised over priced 1.004, was 1.613). The family (`traj_f4s6`): Germany, France, Italy byte-identical; the USA and Poland by trade from turn 3; Sweden's century through FT-5's participation term reading the after-tax wage at 67.62 not 48 (+0.51 points of participation, +0.74 % GDP at year 100), not through the ministry. Opened 2026-09-12 (§474; the plan's S4): kommunal + statlig as one `IncomeTax` line carrying a two-layer schedule, two rates on the row (DS-2d); Sweden's bridge re-solved. **BASELINE** (`traj_f4s6`; five countries byte-identical, Sweden explained). Depends on F4-2.
+
+**F4-5 — The income-tax lever's level in the other four schedule countries.** ✅ **LANDED 2026-09-16 (§517)**: the level is THE SCHEDULE'S OWN AVERAGE RATE ON THE INCOME IT TAXES - the yield over the taxed share, which is what the engine's own arithmetic requires for one point of the lever to raise one point of the base (Germany 26.92, France 17.39, Poland 12.36, the USA 17.10; the point prices at 1.000 where it read 1.67 to 2.59). Read off the statute against each country's cohorts (`TaxSchedule.AverageRateOnTaxedIncome`, `WorldFactory.SeedIncomeLeverLevel`), never typed; Sweden keeps its statute's own 32.38 (the derivation returns 32.24 for it, four tenths of a per cent apart) and Italy is billed and flat. Every base re-derived as that country's realised revenue over the rate it is read against, from sources re-fetched on the day, and **the USA's income row is sourced federally** - partly lifting D-16 (a)'s USA exclusion for that row alone, on the perimeter the exclusion protects. Germany, France and Poland's bridges do not move; the USA's re-solves 0.6119 → 0.7531. Save format 17; baseline `traj_f4s7`. The bridge instrument was fixed first (a per-tonne carbon rate was entering a sum of percentage rates). As opened 2026-09-15 (§514, from F4-3's section 8): Germany, France, Poland and the USA are seeded at their statutes' top rates (45, 45, 32, 37) against yields of 6 to 17 %, so the AI finance ministry prices an income-tax point 1.67 to 2.59 times too low and FT-5's participation term divides bracket creep by the top rate's after-tax share. What the lever's level should be for a bracketed statute (the median earner's marginal rate, or the yield) is the design question, measured first. **BASELINE** (four countries). Depends on F4-3.
+
+**F4-4 — The schedule row.** ✅ **LANDED 2026-09-13 (§490, board 15b built)**: the curve strip under the income tax row (the marginal rate over income, 0–50 %, the thresholds ticked), one sub-row per band with a dial on the rate alone (`TaxSchedule.SubRows`, `TaxLine.BracketRates`, the drafts on the budget bill), Germany's ramps with derived end rates and the coefficients' citation, Poland's derived tax-free band and its levy row, the USA's deduction as the exempt band, France's parts axis and CSG line, Italy's BILLED row; the AER at the mean income under the lever's figure; save format 12. Opened 2026-09-12 (§474; the plan's S3b); **its board - 15b (2026-09-13, D20 batch 2): a D13 row whose track is the marginal-rate curve sampled from the schedule class, one dial shifting every rate, sub-rows named by threshold with a dial on the rate alone, honesty per shape (Sweden's statlig brackets unsourced in the paste, Italy's layers billed to E-6); read clean the D11 way (§486), built with F4-2's class**: per-bracket rates as rows of the D13 slider family; the formula, the barème and the three layers drawn beside a bracket table on D20's grammar (structurally if D20 is unanswered). Films only. Depends on F4-2 (F4-3 for Sweden); D20's batch 2. **§490 moved the no-policy trajectory (Germany's revenue on the ramps, no dump); § 32a restored on the statute's path and proven byte-identical to `traj_pn1`, with `TrajectorySentinelCheck` added (§496).**
+
+**PN-2 — The pension payment, a readout.** ✅ **LANDED 2026-09-16 (§518)**: `PensionPayment` - the line over the cohorts at or above the statutory age is the average benefit, and that over the mean income the schedules read is the replacement rate; ONE accessor, read by the row and by the gate. The row sits under the statutory mark on the same line, in the family's read-only form: the rate as its bar, the benefit as its figure, and the bar's ends named as end-names (`0 none - 100 the mean income`). The seed gate is on EXPENDITURE, where both sides mean the same thing, and its band is the source's own two definitions: **Germany, France and Italy WITHIN, Poland ×1.209 above and Sweden ×0.724 below, the USA unsourced** (ESSPROS is an EU collection). The replacement rate is printed as a reading, not gated - `ilc_pnp3` is a median over a median and this is a mean over a mean. `traj_pens2` is BYTE-IDENTICAL to `traj_f4s7` at both seeds and all three horizons. The two divergent seeds are **PN-4**, opened rather than tuned. As opened 2026-09-12 (§474; the plan's S6): average benefit = the Pensions line ÷ pensioner headcount (no lever - the line is headcount × benefit, RF-2-indexed); the replacement rate = benefit ÷ the wage index's level; a seed gate against the sourced replacement ratio (`ilc_pnp3`) and the ESSPROS average pension per beneficiary (`ElectionsData/pensions/`, §475; the USA on OECD's net replacement rate) - within tolerance or DIVERGENT; a plate row on 9c in the Pensions group's projection caption. Byte-identical (`traj_pens2`). Depends on PN-1.
+
+**PN-4 — The two pension lines the source does not recognise.** ✅ **MEASURED AND LANDED 2026-09-16 (§519)**: the cause per country, established before anything was proposed - **Poland's ×1.209 was THE YEAR** (the model's GDP in euro over 2022's, 1.174, times the share's own 2022→2024 indexation, 1.182; in the same year's band, share against share, Poland is WITHIN and is not re-seeded); **Sweden's ×0.724 was THE PERIMETER** (COFOG counts general government, ESSPROS every scheme - Sweden's occupational pensions are 2.9 % of GDP outside the state, in every year on disk; read, not gated) **times a slip in the seed's own arithmetic** (a top-up constant derived for a budget sum of 1,314 bn SEK the code never made: 6.850 % of GDP against the 7.0 its comment cites - landed on the source, the residual giving the 0.15 back). Neither was the driver, which divides the line and never enters it (a factor on the benefit: Poland 0.922, Sweden 0.791 against 2024's old-age beneficiaries). The gate re-cut to the same year: the PROVENANCE guard (a hundredth of a point), the all-types BOUND, the perimeter read beside the verdict, §518's figures decomposed and held; on the simulation bar. `traj_pn4off` byte-identical to `traj_f4s7` (the attribution); `traj_pn4` moves Sweden alone; sentinel re-based. As opened 2026-09-16 (§518, from PN-2's gate): Poland's pension line reads ×1.209 above the upper edge of ESSPROS's own band (80.8 bn EUR against 53.9 .. 66.8) and Sweden's ×0.724 below its lower one (39.3 against 54.3 .. 58.8), while Germany, France and Italy fall inside it. The gate is the source's disagreement with itself, so these two are the model's seeds, not the readout's arithmetic - and re-seeding a spending line moves every trajectory that country is in. **BASELINE**, its own pass, with both figures on record and `PensionPaymentDiagnostic`'s assertions holding them until it is taken.
+
+**PN-3 — Potential's labour input re-formed to the bands.** ✅ **MEASURED AND LANDED 2026-09-16 (§522)**: the 20–64 cohort × a 15-and-over participation rate counted the pyramid's ageing twice - after 25 years of the model's own ageing the window sat -11.44 % below the labour force the sourced rates by age imply in Italy and -9.99 % in Poland, 2 to 7 % elsewhere; the labour force is now the 15+ population × the state's rate (`PotentialOutput.LabourForce`), which is Σ(band × sourced rate) exactly while no lever has moved participation and the same scaled by the levers' deviation otherwise; `LabourInputWindowDiagnostic` on the simulation bar; `traj_pn3off` byte-identical to `traj_pn1d` (the attribution), `traj_pn3` moves all six; save format 19; DS-3c's seam closed. **The wage bill's base reads the same window - PN-3b, opened below.** As opened 2026-09-12 (DS-3c, §474): labour input = Σ(band × participation rate) in place of the 20–64 window, six seed potentials re-solved (§394's precedent) - **its own family, after PN-1, never inside a pension pass.**
+
+**EN-6 — The energy page, structural.** ✅ **LANDED 2026-09-12 (§481)**: `GameController.Energy.cs` under the Economic Sectors page (DS-4b) - four plates in the v3 grammar: the two retail stacks, the industry bill's share, the wholesale price against the other five and THE RULE ON THE PRICE (each block's clearing as a waterfall of the marginal unit's fuel and O&M, ETS, adder, scarcity - the market's own parts); the fleet's capacity beside this year's dispatch and the zones as a small multiple (Sweden's four with the six links, BINDS where a block fills one; every other country its one zone, Italy's seven and the USA's three stated); the water value, the reservoir balance and the congestion rent for Sweden, absent with the reason elsewhere; the two ledgers as BRIDGES on the election-night painter over a geometry generalised beneath it (`AttributionBridge.BuildFrom`); the instruments (the ETS price with no path, the levy scale, the carbon tax that reaches transport, the sector dials descriptive) and the ABSENT rows (investment and retirement, load growth). Five histories added for the sparklines; filmed at 1280 and 2560 in all six countries. The board is D20's (S-D20 next); the stat nodes are declared there with the inventory's regeneration. Opened 2026-09-12 (DS-4, §474; the plan's S-E1, §4): one page per country on the Sectors page (DS-4b), instruments first (§452) - the price with its decomposition, the rule on the price, the fleet as a distribution, SE1–SE4 as a small multiple, the water value and the reservoirs, the two ledgers as bridges (a generic bridge beneath the election-night one), the instruments with their honesty tags, the ABSENT rows; new stat nodes under a ratchet ceiling; films at 1280 and 2560 × six. Then Design's board (D20 batch 1) read the D11 way against it. Depends on nothing but S1's turn.
+
+**EN-8 — The carbon row's slider step under the per-tonne unit.** ✅ **LANDED 2026-09-13 (§484)**: `TaxLine.DialGrain` - the ceiling's hundredth rounded to ten, never under ten (Sweden 30 kr/t, the euro countries and the USA 10) - and `LedgerRow.Draw`'s `grain`/`grainUnit`: the reach recorded and the step built in the row's own grain, the step printed under the name ("BY 30 SEK/t"); the driver's verdict in grains. The films: Sweden **0,735** grains per pixel at 1280 (was 22 054 units), **0,250** at 2560 (was 7 494); no film trips the guard; the interrupt film at 2560 exits 0. Opened 2026-09-12 (§478, found by CL-1's film): the interrupt film's Budget frame (`05t_budget_turn0`) trips the slider-reach guard on the Carbon Tax row - **21 028 units per pixel at 1280, 7 145 at 2560, against the whole-unit bound** (`cl1c_int1280`, `cl1c_int2560`; the same frame read 0.635 on 2026-09-10, `d19_played_1280`, before EN-4c). The cause is the unit: the rate is kr per tonne since §466 with a level-carried real ceiling (§471), so one track spans thousands of kronor and a whole unit is unreachable by construction - the STEP, not the readout (§260). A coarser step or a log scale, each with its caption, on the Budget row's own family (`DialLabelCheck`, `RangeCaptionCheck`); the reach guard's verdict on the interrupt film is the gate. Not a CL-1 defect - the pass touched no ledger row.
+
+**BR-1 — The USA's Defense row's slider reach under the dollar-billions unit.** ✅ **CLOSED 2026-09-14 (§493)**, in the next pass on the spending tab (§491, the pass before, touched it and did not - stated in §493): the spending rows take a grain, EN-8's device - the track's range's hundredth on a 1-2-5 step, never under a billion - and the step coarser than a billion is stated at the caption band's left end ("BY $5B" on Defense); every film of the pass under the bound, Defense no longer the worst row. Opened 2026-09-13 (§486, found by 15a's film once EN-8 lifted the carbon row): the Budget's spending frame (`05b_budget_spending`) trips the slider-reach guard on the USA's Defense row - **1,518 grains per pixel at 1280, 0,661 at 2560, against the whole-grain bound of 1** (`b15a_usa_1280`, `b15a_usa_2560`); `en6e_usa_1280` carried the same 1,518 on 2026-09-12 under the carbon row's 2 001, so the USA's exit at §481 was this row's as much as the carbon row's. The cause is the unit: a spending row's track spans this year's allowed change around the standing amount in dollars billions (Defense at ±15 % is a range of some 240 bn over a 157 px track), so a whole billion is not a resting value the track can reach. A grain on the spending rows (EN-8's device - the range's hundredth, printed on the row) or a longer track, on the D13 family (`LedgerRow`); the reach guard's verdict on the USA's 1280 sweep is the gate. Not a 15a defect - the pass touched no ledger row.
+
+**CL-1 — The pre-campaign made reachable.** ✅ **LANDED 2026-09-12 (§477)**: `PreCampaignRun` steps the run-up for the player's party alone on the campaign's own staging (the AI parties' run-up IS their staging, asserted identical on the campaign's digest - `CampaignClockHarness` 7a); OFFICE, HIRE, POLL and TV BUY priced from the constants that exist, FUNDRAISE, POLICY, TRAIN and STRATEGY refused on the HQ with their reason; the rail cell and the HQ through the run-up; save format 9 with the run-up on the record and replayed first. Opened 2026-09-12 (§474; the plan's S-C1): the campaign window opens at the pre-campaign start (`SimulationManager.AdvanceCampaign` returns before it today, so the 26 weeks and the eight verbs never run); the run steps pre-campaign days; the eight verbs priced from the constants that exist; the AI parties' pre-campaign reproduces their day-0 staging - asserted digest-identical at the campaign start, so every harness digest holds; the record's start date; save replay over the longer window. No family (no player in the dump). **Proceeds now.** Makes entries 5, 14 and 15 of the play-calibration list judgeable.
+
+**CL-2 — The loop's closures.** ✅ **LANDED 2026-09-14 (§492)**: stories break in the live campaign at an `[AUTHORED-DRAFT]` rate of 1 in 80 per party-day on every day but the last (`Scandals.LiveRatePerPartyDay`, every party equal), the player's party's story held with the clock for its answer from the HQ's seven chips (RESIGN refused: no second candidate is cast; SACRIFICE STAFF takes the most recently hired off the roster) and resolved the next morning, the answers on the record and replayed (save format 13); the campaign map the region picker (the pick keyed to its campaign, the heavy frame where the next local act goes, the offices framed); the next debate announced on the HQ strip from the calendar; the party picker at country selection and for a scenario (the largest-party stand-in kept for the harness only); `CampaignClockHarness` 8a-8h, the round trip's answer assertion, both new guards proven broken. Opened 2026-09-12 (§474; the plan's S-C2): a region picker for local acts (a cartogram tile sets the next act's region); the debate announced on the HQ from the calendar; live scandals at an `[AUTHORED-DRAFT]` rate, every party equal, the seven responses as HQ chips (DS-10); the party picker at country selection (DS-6, R-CL1 - the largest-party stand-in retired). Depends on CL-1.
+
+**PN-3b — The wage bill's base reads the 20–64 window.** ✅ **MEASURED AND LANDED 2026-09-22 (§577)**: the base is `PotentialOutput.LabourInput` × the real wage - ONE expression with potential's input, so they cannot drift again; the diagnostic's section 4 turned from PN-3b's PREMISE into its GUARD (it fails on any drift) and prints what the window it left would read. Measured first, at year 25, the base's labour part sat **-12.68 % (Italy), -12.34 (Poland), -7.37 (France), -7.11 (Germany), -3.45 (the USA), -3.14 (Sweden)** under potential's input. Family `traj_pn3b` (**372 of 462 field-readings moved**): five states take more revenue and run smaller deficits at year 100 (France +33.5 % on the budget, Italy +20.2, Poland +10.7, Sweden +4.1, Germany +2.6; debt -19.8 to -2.3 %), while **the USA's fiscal rule spends the room instead** - its government consumption stops being cut (2 056 at t60 on the old path against 4 191 on this one) and its deficit runs 2.4 % wider. Save format **22** (a save from before carries the window's level as the driver's seed). Sentinel re-based to `pn3b`; the four FT-10 cells all improved and France's household ceiling fell 21.0 -> 20.0 by the slack rule. Review: `Reviews/2026-09-22_s577_pn3b_wage_bill.md`. Opened 2026-09-16 (§522, from PN-3's measurement): `TaxBases` (WageBill) is the same three factors × the real wage, so it carries the double count PN-3 retired from potential - at year 25 its labour part sits where the window sat (the figures in §522's section 4); re-forming it to `PotentialOutput.LabourInput × the real wage` moves every revenue path (P5-B3's family) and is its own BASELINE pass after PN-3 - the one-family rule.
+
+**CL-3 — The play protocol.** ✅ **BUILT 2026-09-16 (§523)** - `docs/play/PLAY_PROTOCOL.md`; the staged save at the run-up's first day (`PlayProtocolStaging`, 18 January 2026, seed 777, Sweden) held by `PlayProtocolCheck` on the cheap bar; `docs/play/PLAY_SHEET.md` GENERATED from §346 with every constant read off the code (`PlaySheetGenerator`, `PlaySheetCheck`); the save as the record of the play (`PlayRecordDump`); the three felt-verdict saves re-cut on format 19; the seed stated - the 2022 prior until K-1, whose final count was 27 % in on the 16th. **The play is Elias's (E-39); CL-4 follows it as ruled.** As opened 2026-09-12 (§474; the plan's S-C3): a staged save at the pre-campaign's first day; a play sheet - §346's "one thing to look for" beside each of the twenty constants; the persisted queue as the record of the play; the two felt-verdict saves re-cut; the seed stated (K-1 refreshes the 2022 prior). Then Elias plays - E-2..E-24 are his. Depends on CL-1, CL-2 and K-1.
+
+- **RS-1 — who replaces a candidate who resigns?** ⏹ **CLOSED BY RULING 2026-09-15 (`COMPLETED.md` §503): RESIGN stays refused with its reason - a TRIGGER row, T-9 in the deferral register.** *"RESIGN stays refused with its reason — a named deputy is a person the record does not hold and a flat profile is one character standing for every party; close the question with the trigger that reopens it (the model casts more than one candidate per party)."* **The trigger:** the model casts more than one candidate per party - a second candidate the record holds, with a profile of its own the campaign reads (W-F6's casting carried past one leader per party). **The defence clause:** a name is not a cast candidate - a deputy written into a string, one flat profile standing for every party's replacement, or a second name drawn with no profile the model reads does not open the row; only a second cast candidate the campaign can be handed to does. The question as opened: Opened 2026-09-14 (§492) as a question, not a build: §17 lists RESIGN among the seven responses and `Scandals.cs` says the caller replaces the candidate, but no second candidate is cast (W-F6 casts one leader per party, the name sourced to the party, the character game fiction), so a replacement's profile would be a figure the record does not hold. The HQ draws the chip and refuses it with that reason; no AI instinct chooses it. **Yours: a replacement rule (a named deputy per party, a flat profile stated as `[AUTHORED-DRAFT]`, or RESIGN kept refused).**
+- ~~A 21st play-calibration entry, from D-20~~ — **closed by D-20 (a), ruled and built 2026-09-02 (§208):** coverage is a fraction of an act's own reach by construction; the exploit is gone.
+- ~~**`ERRANDS.md` E-1** — register at `itanes.it`, download the 2013 and 2018 waves.~~ ✅ **DONE 2026-09-10** (§442–§445): the waves landed, per-group loyalty is built for Italy, and the FdI ceiling test re-ran - NOT REACHED (10.95 % against 29.27), the ceiling now the spatial layer's persuaded share.
+- **SC-1 — where the sector dials' support cost lands (2026-09-14, §498, measured).** **RULED 2026-09-15 (§503) and ✅ BUILT (§504): the cost on Business-and-industry (the USA's Commerce), every dial cost outside its line's seed band, a line held at zero; the no-policy dump unmoved, the policy path explained per country.** The ruling: *"the support cost lands on each statute budget's Business-and-industry line, and the clamp's rule changes for a dial cost — the seed-relative clamp bounds the line's own path, not a cost the player deliberately set; the applied dial cost sits outside it and the composed total is the clamped line plus the applied cost. Its own BASELINE family, explained per country."* The question as opened: Only the USA's book carries Commerce and none PublicServices, so in the other five the support cost has been booked on no line since P4-B3 - the Sectors page now says so where the cost is printed. The natural home is each statute budget's Business-and-industry line, but the seed-relative clamp would hold most of a dial at its ceiling out: **which line, and whether the clamp's rule changes for a dial cost - a ruling.**
+- ~~**Laws for the dials-only set (2026-09-07, §378)**~~ **ANSWERED by §474 (2026-09-12): stage 5's category is built as its own item; the wider set follows P4-C3's one-category-per-session pattern.** — 31 quantities are reached by dials and by no law (the eight sectors' output share, employment share and metric; the two productivity parameters; the transport line's adjustment; consumer confidence; the poverty gap; the two waits). The four law categories built each had a literature to cite; this set has none. **Yes or no, and which - a design call, not a measurement.**
+- **D20 — the next ask, one paste** ✅ **ANSWERED 2026-09-13 - boards 15a, 15b, 15c on `PoliSim v2 Screens.dc.html`, one per batch; 15a BUILT (`COMPLETED.md` §486), 15b BUILT (§490), 15c BUILT (§491); the paste E-35 SENT 2026-09-13 (the project's `uploads/D20_paste/`).** **The return E-36 (§494) SENT and ANSWERED 2026-09-15 as board 15c-r2 - BUILT §509; the paste reached the project as its manifest. E-37's archive landed whole and was answered as board 15c-r3 - READ and BUILT 2026-09-16 (§515).** As assembled 2026-09-12 (§483; the paste E-35): three batches over real parts (the energy page as built and filmed, the sourced tariff shapes, the six statutes), boards 12a–12f read the D11 way board by board and each stopped on the instruction it rests on, batch 4 dissolved by the checks' own reading (0 stat-icon gaps, and the page's rows draw no icon - nothing declared, nothing asked), the rail cell asked as a question. The row as opened (2026-09-12, DS-5 half taken, §474): the energy page's board on the built page (EN-6, batch 1), the schedule row's grammar on the sourced shapes (F4-4, batch 2), the pension family's statutory mark (PN-1, batch 3), the generated asset rows after EN-6 declares its nodes (batch 4); the reconciliation head says D12 row 1 is built (the prototype's condition satisfied or misnamed), that boards 12a–12f are Design's answer to D19 read the D11 way (a board asserting an instruction the record does not hold stops that board, not the set - no instruction is recorded as Elias's), that D19 item 1 stands on DS-8 (B8 kept, a text chip now); assembled at the plan's S-D20 after EN-6; the paste carries E-32's unpasted content beneath; sending Elias's.

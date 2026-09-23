@@ -2,7 +2,7 @@
 
 > **RULED 2026-09-22 (§579, CL-5 closed): THE GAME IS RIGHT AND THE PROTOCOL WAS WRONG.** The run-up opening on 7 May 2029 and polling day at the election turn's boundary is D-23 (a) as ruled; the 18 January and 13 September 2026 this protocol used to name were the REAL Swedish election's dates, not the played game's. The protocol now reads the game's own calendar, and `PlayProtocolStaging` cuts the save on it - the dates below are **read from the save, never typed**. `CampaignCalendar.Sweden2026` remains the real election's calendar and is no longer what the play is cut on. E-39 is UNBLOCKED; DS-7 (b) - polling day on the calendar's date - fires after the first play, as sequenced.
 
-One play of Sweden's first election in the played game - the election turn's boundary, 31 December 2029 - from the run-up's first day to election night, on a stated seed, with the twenty-line sheet beside it and the save as the record. This is the protocol S-C3 ruled (`COMPLETED.md \x{a7}580`, §474); the play itself is Elias's.
+One play of Sweden's first election in the played game - the election turn's boundary, 31 December 2029 - from the run-up's first day to election night, on a stated seed, with the twenty-line sheet beside it and the save as the record. This is the protocol S-C3 ruled (`COMPLETED.md §580`, §474); the play itself is Elias's.
 
 ## 1. The seed, stated
 
