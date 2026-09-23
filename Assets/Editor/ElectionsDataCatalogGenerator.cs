@@ -56,8 +56,25 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class ElectionsDataCatalogGenerator
     {
-        private const string SourceRelative = "ElectionsData/sweden/valkrets_votes_2022.csv";
-        private const string OutputRelative = "Assets/Scripts/Elections/Generated/SwedishValkretsReturns2022.cs";
+        /// <summary>K-1 (2026-09-23): ONE generator, TWO vintages. 2022 stays the backtests' reference; 2026 is the chamber the
+        /// live game seats (Valmyndigheten's final result, fixed 2026-09-19). Both are emitted by the same code, so the 2022
+        /// file regenerates byte for byte and the 2026 file cannot differ from it in shape.</summary>
+        internal readonly struct Vintage
+        {
+            public readonly int Year;
+            public readonly string SourceRelative;
+            public readonly string OutputRelative;
+            public readonly string ClassName;
+            public Vintage(int year)
+            {
+                Year = year;
+                SourceRelative = year == 2022 ? "ElectionsData/sweden/valkrets_votes_2022.csv" : "ElectionsData/sweden/" + year + "/valkrets_votes_" + year + ".csv";
+                OutputRelative = "Assets/Scripts/Elections/Generated/SwedishValkretsReturns" + year + ".cs";
+                ClassName = "SwedishValkretsReturns" + year;
+            }
+        }
+
+        internal static readonly Vintage[] Vintages = { new Vintage(2022), new Vintage(2026) };
 
         /// <summary>The party columns, in the CSV's own order — read from its header rather than assumed,
         /// and asserted below so a re-ordered file cannot silently re-label every column.</summary>
@@ -70,15 +87,22 @@ namespace PoliSim.EditorTools
         public static void Run()
         {
             CheckExit.ArmLogFold();
+            int failed = 0;
+            foreach (Vintage v in Vintages) { failed += Generate(v); }
+            AssetDatabase.Refresh();
+            CheckExit.Finish(failed == 0 ? 0 : 1);
+        }
 
+        private static int Generate(Vintage v)
+        {
+            string sourceRelative = v.SourceRelative, outputRelative = v.OutputRelative;
             string root = Directory.GetCurrentDirectory();
-            string source = Path.Combine(root, SourceRelative.Replace('/', Path.DirectorySeparatorChar));
+            string source = Path.Combine(root, sourceRelative.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(source))
             {
-                Debug.LogError("CATALOG: " + SourceRelative + " is not on disk. Nothing was generated, and an empty "
+                Debug.LogError("CATALOG: " + sourceRelative + " is not on disk. Nothing was generated, and an empty "
                                + "catalog would have compiled and said nothing.");
-                CheckExit.Finish(1);
-                return;
+                return 1;
             }
 
             string[] lines = File.ReadAllLines(source);
@@ -105,8 +129,7 @@ namespace PoliSim.EditorTools
                     Debug.LogError($"CATALOG: row '{cells[0]}' has {cells.Length} cells, not {ExpectedHeader.Length}. "
                                    + "The file's shape changed and generating from it would produce a catalog whose "
                                    + "columns mean something else.");
-                    CheckExit.Finish(1);
-                    return;
+                    return 1;
                 }
 
                 names.Add(cells[0]);
@@ -124,8 +147,7 @@ namespace PoliSim.EditorTools
             if (header == null || header.Length != ExpectedHeader.Length)
             {
                 Debug.LogError("CATALOG: no header row was found, so the columns cannot be identified.");
-                CheckExit.Finish(1);
-                return;
+                return 1;
             }
 
             for (int i = 0; i < ExpectedHeader.Length; i++)
@@ -134,8 +156,7 @@ namespace PoliSim.EditorTools
                 {
                     Debug.LogError($"CATALOG: column {i} is '{header[i].Trim()}', expected '{ExpectedHeader[i]}'. "
                                    + "The source's column order changed; generating would relabel every figure.");
-                    CheckExit.Finish(1);
-                    return;
+                    return 1;
                 }
             }
 
@@ -144,8 +165,7 @@ namespace PoliSim.EditorTools
             {
                 Debug.LogError($"CATALOG: read {rows.Count} valkretsar, not 29. Either the file is a different "
                                + "country's or it is truncated - and a catalog generated from it would be neither.");
-                CheckExit.Finish(1);
-                return;
+                return 1;
             }
 
             // ⚠ RECONCILED AT GENERATION, so a bad row cannot reach the catalog — and the FIRST version of
@@ -178,8 +198,7 @@ namespace PoliSim.EditorTools
             {
                 Debug.LogError("CATALOG: " + broken.Count + " row(s) break an identity that holds by definition - "
                                + string.Join("; ", broken.ToArray()) + ". Nothing generated.");
-                CheckExit.Finish(1);
-                return;
+                return 1;
             }
 
             Debug.Log($"CATALOG: all 29 rows satisfy parties <= valid <= cast <= eligible. The eight itemised parties "
@@ -187,22 +206,21 @@ namespace PoliSim.EditorTools
                       + $"remaining {100.0 * remainderTotal / validTotal:F2} % is the småpartier the source does not "
                       + "itemise, and it is NOT distributed anywhere.");
 
-            string output = Path.Combine(root, OutputRelative.Replace('/', Path.DirectorySeparatorChar));
+            string output = Path.Combine(root, outputRelative.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(output));
-            File.WriteAllText(output, Emit(names, rows, digest), new UTF8Encoding(false));
+            File.WriteAllText(output, Emit(v, names, rows, digest), new UTF8Encoding(false));
 
-            Debug.Log($"CATALOG: {rows.Count} valkretsar generated into {OutputRelative}; source digest {digest}. "
+            Debug.Log($"CATALOG: {rows.Count} valkretsar generated into {outputRelative}; source digest {digest}. "
                       + "All 29 rows satisfy parties <= valid <= cast <= eligible.");
-            AssetDatabase.Refresh();
-            CheckExit.Finish(0);
+            return 0;
         }
 
-        private static string Emit(List<string> names, List<long[]> rows, string digest)
+        private static string Emit(Vintage v, List<string> names, List<long[]> rows, string digest)
         {
             var sb = new StringBuilder();
             sb.Append("// GENERATED by PoliSim.EditorTools.ElectionsDataCatalogGenerator. DO NOT EDIT BY HAND.\n");
             sb.Append("//\n");
-            sb.Append("// Source : ").Append(SourceRelative).Append('\n');
+            sb.Append("// Source : ").Append(v.SourceRelative).Append('\n');
             sb.Append("// SHA-256: ").Append(digest).Append('\n');
             sb.Append("//\n");
             sb.Append("// ⚠ The digest above is what `GeneratedCatalogCheck` re-derives from the source every run.\n");
@@ -218,9 +236,9 @@ namespace PoliSim.EditorTools
             sb.Append("// header did it on 2026-09-01. UnwiredSubsystemCheck strips comments now, so the mention would be\n");
             sb.Append("// harmless; the names stay out anyway, because a guard should not have to be right twice.\n");
             sb.Append("\nnamespace PoliSim.Elections.Generated\n{\n");
-            sb.Append("    /// <summary>Sweden's 2022 Riksdag election, per valkrets, SOURCED from Valmyndigheten's own\n");
+            sb.Append("    /// <summary>Sweden's " + v.Year + " Riksdag election, per valkrets, SOURCED from Valmyndigheten's own\n");
             sb.Append("    /// machine-readable results. Absolute counts. Generated, never hand-edited.</summary>\n");
-            sb.Append("    public static class SwedishValkretsReturns2022\n    {\n");
+            sb.Append("    public static class ").Append(v.ClassName).Append("\n    {\n");
             sb.Append("        /// <summary>The source file's SHA-256 at generation time.</summary>\n");
             sb.Append("        public const string SourceDigest = \"").Append(digest).Append("\";\n\n");
             sb.Append("        /// <summary>The party columns, in the order every row below uses.</summary>\n");

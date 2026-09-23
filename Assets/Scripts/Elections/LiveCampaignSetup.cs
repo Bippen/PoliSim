@@ -18,9 +18,10 @@ namespace PoliSim.Elections
     /// taken from the runtime table that already holds it:
     ///
     /// - the parties and their order: `PartySystems.TryHistory(Sweden)`'s order (S, SD, M, V, C, KD, MP, L);
-    /// - the prior: the 2022 national shares, and loyalty from 2022 against 2018 (`LoyaltyModel`, W-A1);
-    /// - the regions: the 29 valkretsar and their VALID votes, `SwedishValkretsReturns2022` (W-F1);
-    /// - compatibility: DERIVED at the fixed point where an idle campaign reproduces 2022 exactly;
+    /// - the prior: the seated election's national shares, and loyalty from the one before (`LoyaltyModel`, W-A1) - 2026
+    ///   against 2022 in the game since K-1 (2026-09-23), 2022 against 2018 where a harness pins <see cref="ElectionVintage.Sweden2022"/>;
+    /// - the regions: the 29 valkretsar and their VALID votes, the same vintage's returns catalog (W-F1);
+    /// - compatibility: DERIVED at the fixed point where an idle campaign reproduces the prior exactly;
     /// - salience: SOURCED, Eurobarometer 105 (Spring 2026), Sweden, the four top-five issues §6 has a slot for.
     ///
     /// ⚠ **What is still [AUTHORED-DRAFT] is labelled field by field and is the same draft the harness
@@ -59,7 +60,8 @@ namespace PoliSim.Elections
             AiPersonality.Chaotic, AiPersonality.Establishment, AiPersonality.Grassroots, AiPersonality.Professional,
         };
 
-        /// <summary>The party keys in the order the staging uses - `PartySystems.TryHistory(Sweden)`'s, which is `SwedishValkretsReturns2022.Parties`' order too.</summary>
+        /// <summary>The party keys in the order the staging uses - `PartySystems.TryHistory(Sweden)`'s. ⚠ NOT the returns catalogs' column order
+        /// (S, M, SD, C, V, KD, L, MP): every read of a catalog maps by key, never by position. (This doc said the two orders were one until K-1.)</summary>
         public static readonly string[] SwedenParties = { "S", "SD", "M", "V", "C", "KD", "MP", "L" };
 
         /// <summary>
@@ -100,20 +102,23 @@ namespace PoliSim.Elections
             return false;
         }
 
-        /// <summary>Sweden 2026 on the 2022 returns - the staging `CampaignAiHarness` has run since W-C1, from the runtime tables.</summary>
+        /// <summary>Sweden's campaign staging from the runtime tables - on the seated election (2026's) in the game; on 2022's where a harness
+        /// pins <see cref="ElectionVintage.Sweden2022"/>, the staging `CampaignAiHarness` has run since W-C1, kept byte for byte by K-1.</summary>
         public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
             double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
-            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0)
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, ElectionVintage vintage = ElectionVintage.Seated)
         {
-            if (!PartySystems.TryHistory(CountryId.Sweden, out double[] shares2022, out double[] shares2018))
+            if (!PartySystems.TryHistory(CountryId.Sweden, out double[] latestShares, out double[] previousShares, vintage))
             {
-                throw new InvalidOperationException("PartySystems carries no 2022/2018 history for Sweden");
+                throw new InvalidOperationException("PartySystems carries no two-election history for Sweden");
             }
+            bool pinned2022 = vintage == ElectionVintage.Sweden2022;
+            string latestYear = pinned2022 ? "2022" : "2026", previousYear = pinned2022 ? "2018" : "2022";
             var sb = new StringBuilder();
-            double[] prior = Normalised(shares2022);
-            double[] loyalty = LoyaltyModel.PartyLoyalties(shares2022, shares2018);
+            double[] prior = Normalised(latestShares);
+            double[] loyalty = LoyaltyModel.PartyLoyalties(latestShares, previousShares);
             // DERIVED: compatibility at the fixed point where PersuadedShares == prior, so an idle
-            // campaign reproduces the 2022 result exactly. c_i = ceiling * (prior_i / max prior)^(1/Sharpness).
+            // campaign reproduces the prior's result exactly. c_i = ceiling * (prior_i / max prior)^(1/Sharpness).
             double maxPrior = 0.0;
             foreach (double p in prior) { if (p > maxPrior) { maxPrior = p; } }
             var compatibility = new double[prior.Length];
@@ -131,8 +136,8 @@ namespace PoliSim.Elections
             salience[(int)IssueId.Crime] = 0.18;
             salience[(int)IssueId.Defense] = 0.17;
             salience[(int)IssueId.Education] = 0.16;
-            // SOURCED regions: the 29 valkretsar's valid votes, 2022 (W-F1) - the runtime catalog.
-            RegionAudience[] regions = SwedenRegions(out double national);
+            // SOURCED regions: the 29 valkretsar's valid votes, the same vintage as the prior (W-F1) - the runtime catalog.
+            RegionAudience[] regions = SwedenRegions(out double national, vintage);
             var parties = new CampaignRun.PartySetup[SwedenParties.Length];
             for (int p = 0; p < parties.Length; p++)
             {
@@ -154,13 +159,13 @@ namespace PoliSim.Elections
             }
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[SwedenParties.Length]);
             var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[SwedenParties.Length], isInternal: true);
-            sb.Append("\n  staging: 8 parties on Sweden 2022 (SOURCED prior), loyalty derived from 2018->2022 (W-A1):\n    ");
+            sb.Append("\n  staging: 8 parties on Sweden " + latestYear + " (SOURCED prior), loyalty derived from " + previousYear + "->" + latestYear + " (W-A1):\n    ");
             for (int p = 0; p < parties.Length; p++)
             {
                 sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} L{1:F0}/C{2:F1}  ", SwedenParties[p], loyalty[p], compatibility[p]));
             }
             sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "\n    {0} valkretsar (SOURCED 2022 valid votes, W-F1), national audience {1:N0}; salience EB105 SE: climate .26 crime .18 defence .17 education .16\n" +
+                "\n    {0} valkretsar (SOURCED " + latestYear + " valid votes, W-F1), national audience {1:N0}; salience EB105 SE: climate .26 crime .18 defence .17 education .16\n" +
                 "    [AUTHORED-DRAFT] issue-match {2:F2} flat, credibility {3:F2} flat, war chest {4:N0} kr each - EQUAL, and W-F5 measured why " +
                 "(a seat-proportional split starves the small parties before it separates the personalities; see WarChestFor); houses from W-E4's ladder\n",
                 regions.Length, national, FlatIssueMatch, FlatCredibility, WarChest));
@@ -176,14 +181,19 @@ namespace PoliSim.Elections
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals, liveScandalRate);
         }
 
-        /// <summary>The 29 valkretsar as campaign regions: name and VALID votes (the audience a local action can address), from the runtime catalog.</summary>
-        public static RegionAudience[] SwedenRegions(out double national)
+        /// <summary>The 29 valkretsar as campaign regions: name and VALID votes (the audience a local action can address), from the runtime catalog
+        /// of <paramref name="vintage"/> - the seated election's (2026's) unless a harness pins 2022's.</summary>
+        public static RegionAudience[] SwedenRegions(out double national, ElectionVintage vintage = ElectionVintage.Seated)
         {
+            bool pinned2022 = vintage == ElectionVintage.Sweden2022;
+            string[] names = pinned2022 ? SwedishValkretsReturns2022.Names : SwedishValkretsReturns2026.Names;
+            long[] validVotes = pinned2022 ? SwedishValkretsReturns2022.Valid : SwedishValkretsReturns2026.Valid;
+            long[] roll = pinned2022 ? SwedishValkretsReturns2022.Eligible : SwedishValkretsReturns2026.Eligible;
             var regions = new RegionAudience[SwedishRegions.Count];
             national = 0.0;
             for (int r = 0; r < regions.Length; r++)
             {
-                double valid = SwedishValkretsReturns2022.Valid[r];
+                double valid = validVotes[r];
                 // F3 (2026-09-02): the region's ELIGIBLE electorate for the ground game - who can be mobilised -
                 // is Valmyndigheten's own roll for the valkrets (the returns catalog's Eligible), not its valid
                 // votes: the doors an office can knock are the electorate's, not the turnout's. ⚠ It is NOT the
@@ -191,8 +201,8 @@ namespace PoliSim.Elections
                 // built on: that is residents, and 11-15 % of the metropolitan valkretsar's adult residents are
                 // not Swedish citizens (VoterGroupViewDiagnostic prints the ratio). A Riksdag electorate is
                 // citizens on the roll, and the roll is the sourced figure.
-                double eligible = SwedishValkretsReturns2022.Eligible[r];
-                regions[r] = new RegionAudience(SwedishValkretsReturns2022.Names[r], valid, eligible: eligible);
+                double eligible = roll[r];
+                regions[r] = new RegionAudience(names[r], valid, eligible: eligible);
                 national += valid;
             }
             return regions;

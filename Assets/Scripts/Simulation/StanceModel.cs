@@ -394,7 +394,7 @@ namespace PoliSim.Simulation
                     {
                         reasons.Add(string.Format(CultureInfo.InvariantCulture, "opinion cost of cutting {0}: {1:+0.000;-0.000} at the authored weight - below a hundredth", string.Join(", ", quiet), -quietCost));
                     }
-                    if (voters != null && ecological && concern.Cuts.Count > 0) { reasons.Add("voter profile: ecological, from 2022 valkrets returns over 2024 pyramids"); }
+                    if (voters != null && ecological && concern.Cuts.Count > 0) { reasons.Add("voter profile: ecological, from 2026 valkrets returns over 2024 pyramids"); }
                 }
 
                 alignment = Mathf.Clamp(alignment, -1f, 1f);
@@ -503,7 +503,7 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// A party's voters' age profile - the share of its voters' communities in each five-year band, 0–20 -
-        /// the ecological estimate §246 names: the party's 2022 votes per valkrets (`SwedishValkretsReturns2022`,
+        /// the ecological estimate §246 names: the party's votes per valkrets at the seated election (`SwedishValkretsReturns2026` since K-1, the nearer vintage to the pyramid;
         /// Valmyndigheten) weighting each valkrets's 2024 pyramid (`SwedishValkretsPopulation2024`, SCB), over
         /// the bands of voting age (18+, the 15–19 band pro rata). Null where no table exists (every chamber but
         /// Sweden), and the reason line says so.
@@ -513,13 +513,13 @@ namespace PoliSim.Simulation
             ecological = true;
             if (!VoterProfileAvailable(country)) { return null; }
             if (ProfileCache.TryGetValue(abbrev, out float[] cached)) { return cached; }
-            int partyIndex = Array.IndexOf(SwedishValkretsReturns2022.Parties, abbrev);
+            int partyIndex = Array.IndexOf(SwedishValkretsReturns2026.Parties, abbrev);
             if (partyIndex < 0) { return null; }
             var profile = new float[PopulationCohorts.CohortCount];
             double total = 0.0;
-            for (int v = 0; v < SwedishValkretsReturns2022.Votes.Length && v < SwedishValkretsPopulation2024.Bands.Length; v++)
+            for (int v = 0; v < SwedishValkretsReturns2026.Votes.Length && v < SwedishValkretsPopulation2024.Bands.Length; v++)
             {
-                long votes = SwedishValkretsReturns2022.Votes[v][partyIndex];
+                long votes = SwedishValkretsReturns2026.Votes[v][partyIndex];
                 long[] bands = SwedishValkretsPopulation2024.Bands[v];
                 long population = 0;
                 for (int b = 0; b < bands.Length; b++) { population += bands[b]; }

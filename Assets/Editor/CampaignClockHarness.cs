@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using PoliSim.Data;
 using PoliSim.Elections;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -143,11 +144,11 @@ namespace PoliSim.EditorTools
                 // The same staging call twice - the AI harness's own (its staged scandal included) - once plain and once
                 // handed the idle run-up's outcome for party 0; the digest must not move.
                 var stagedScandals = new[] { (30, 0, new Scandal(ScandalKind.Corruption, ScandalSeverity.Major, 0.5)) };
-                CampaignRun.Setup staging = LiveCampaignSetup.Sweden(stagedScandals, out _);
+                CampaignRun.Setup staging = LiveCampaignSetup.Sweden(stagedScandals, out _, vintage: ElectionVintage.Sweden2022);
                 PreCampaignRun.State idle = PreCampaignRun.Begin(staging, 0, new System.Random(7));
                 while (!idle.Finished) { PreCampaignRun.StepDay(idle, null); }
                 PreCampaignRun.Outcome idleOutcome = PreCampaignRun.Finish(idle);
-                CampaignRun.Setup withIdle = LiveCampaignSetup.Sweden(stagedScandals, out _, playerParty: 0, playerOutcome: idleOutcome);
+                CampaignRun.Setup withIdle = LiveCampaignSetup.Sweden(stagedScandals, out _, vintage: ElectionVintage.Sweden2022, playerParty: 0, playerOutcome: idleOutcome);
                 CampaignRun.Result control = CampaignAiHarness.RunSeeded(staging, 777);
                 CampaignRun.Result idleRun = CampaignAiHarness.RunSeeded(withIdle, 777);
                 failures += Assert(sb, "7a. an idle run-up leaves the campaign's decision digest byte-identical (seed 777)",
@@ -207,7 +208,7 @@ namespace PoliSim.EditorTools
             //    have moved; 8a says the live rate breaks stories at about its expectation.
             {
                 var none = new (int Day, int Party, Scandal Scandal)[0];
-                CampaignRun.Setup live = LiveCampaignSetup.Sweden(none, out _, liveScandalRate: Scandals.LiveRatePerPartyDay);
+                CampaignRun.Setup live = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, liveScandalRate: Scandals.LiveRatePerPartyDay);
                 CampaignRun.Result liveRun = CampaignAiHarness.RunSeeded(live, 777);
                 var perParty = new int[live.Parties.Length];
                 foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in liveRun.Scandals) { perParty[xParty]++; }
@@ -220,15 +221,15 @@ namespace PoliSim.EditorTools
                     $"{total} stories against {expectedStories:F1} expected ({live.Parties.Length} parties x {live.Calendar.TotalCampaignDays - 1} days before the last x 1/{1.0 / Scandals.LiveRatePerPartyDay:F0}); per party {string.Join("/", perParty)}");
                 failures += Assert(sb, "8b. the same seed replays the live run to the same digest",
                     CampaignAiHarness.RunSeeded(live, 777).Digest == liveRun.Digest, $"digest {liveRun.Digest}, {total} stories");
-                CampaignRun.Result plain = CampaignAiHarness.RunSeeded(LiveCampaignSetup.Sweden(none, out _), 777);
-                CampaignRun.Result zero = CampaignAiHarness.RunSeeded(LiveCampaignSetup.Sweden(none, out _, liveScandalRate: 0.0), 777);
+                CampaignRun.Result plain = CampaignAiHarness.RunSeeded(LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022), 777);
+                CampaignRun.Result zero = CampaignAiHarness.RunSeeded(LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, liveScandalRate: 0.0), 777);
                 failures += Assert(sb, "8c. at a rate of 0 the staging's digest is the staging's own and no story breaks (no stream drawn)",
                     plain.Digest == zero.Digest && zero.Scandals.Count == 0 && plain.Digest != liveRun.Digest,
                     $"digest {plain.Digest} with and without the figure; live {liveRun.Digest}");
 
                 // A scripted party (0, the professional) whose answer is always to apologise: every story of its own resolves the
                 // morning after it broke on that answer, and a day's pending list holds only that day's stories.
-                CampaignRun.Setup answered = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                CampaignRun.Setup answered = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, playerParty: 0, playerScript: d => new AiDecision[0],
                     playerScandalScript: d => ScandalResponse.Apologize, liveScandalRate: 0.2);
                 CampaignRun.State st = CampaignRun.Begin(answered, new System.Random(777), new System.Random(778), new System.Random(779));
                 bool pendingOnlyToday = true;
@@ -248,7 +249,7 @@ namespace PoliSim.EditorTools
 
                 // The same party with a script that answers nothing: the run answers as its personality would (the professional explains,
                 // or denies when the evidence looks weak) - a run no player watches never blocks.
-                CampaignRun.Setup unanswered = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                CampaignRun.Setup unanswered = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, playerParty: 0, playerScript: d => new AiDecision[0],
                     playerScandalScript: d => null, liveScandalRate: 0.2);
                 CampaignRun.Result instinct = CampaignAiHarness.RunSeeded(unanswered, 777);
                 int mine2 = 0, byInstinct = 0;
@@ -258,10 +259,10 @@ namespace PoliSim.EditorTools
 
                 // The picker's seam: a queued act carrying a region lands in that region - the ledger's own log names it.
                 int regionPick = 3;
-                CampaignRun.Setup baseSetup = LiveCampaignSetup.Sweden(none, out _);
+                CampaignRun.Setup baseSetup = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022);
                 CampaignActions.ActionSpec townHall = CampaignActions.Spec(CampaignActionKind.TownHall);
                 AiDecision pickedAct = new QueuedDecisionRecord { Day = 0, Kind = CampaignActionKind.TownHall, RegionIndex = regionPick, Spend = townHall.MoneyCost }.ToDecision(baseSetup);
-                CampaignRun.Setup pickedSetup = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => d == 0 ? new[] { pickedAct } : new AiDecision[0]);
+                CampaignRun.Setup pickedSetup = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, playerParty: 0, playerScript: d => d == 0 ? new[] { pickedAct } : new AiDecision[0]);
                 CampaignRun.Result pickedRun = CampaignAiHarness.RunSeeded(pickedSetup, 777);
                 bool landed = false;
                 foreach (CampaignRun.DecisionRecord d in pickedRun.Parties[0].Log)
@@ -275,7 +276,7 @@ namespace PoliSim.EditorTools
                 // answered on, and a story held then would hold the game's clock with no answer the run could still take. At a rate of
                 // 1 every other day breaks one for every party, so the day before's story is certain and is apologised on the last day,
                 // no AI party's story is resolved on the last day, and nothing waits at the close.
-                CampaignRun.Setup everyDay = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                CampaignRun.Setup everyDay = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, playerParty: 0, playerScript: d => new AiDecision[0],
                     playerScandalScript: d => ScandalResponse.Apologize, liveScandalRate: 1.0);
                 CampaignRun.State close = CampaignRun.Begin(everyDay, new System.Random(777), new System.Random(778), new System.Random(779));
                 while (!close.Finished) { CampaignRun.StepDay(close); }
@@ -291,7 +292,7 @@ namespace PoliSim.EditorTools
 
                 // SACRIFICE STAFF carried out: each sacrifice takes the most recently hired member off the roster, so a party that
                 // sacrifices for every story ends with its roster shorter by its sacrifices (never below empty).
-                CampaignRun.Setup sacrificing = LiveCampaignSetup.Sweden(none, out _, playerParty: 0, playerScript: d => new AiDecision[0],
+                CampaignRun.Setup sacrificing = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, playerParty: 0, playerScript: d => new AiDecision[0],
                     playerScandalScript: d => ScandalResponse.SacrificeStaffMember, liveScandalRate: 0.2);
                 CampaignRun.State sac = CampaignRun.Begin(sacrificing, new System.Random(777), new System.Random(778), new System.Random(779));
                 int rosterAtStart = sac.Staff[0].Count;

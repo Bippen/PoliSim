@@ -91,8 +91,14 @@ namespace PoliSim.EditorTools
             }
 
             // --- Sweden 2022: the answer is a matter of public record, not of the model's opinion. ---
+            // K-1 (2026-09-23): the world seats 2026's chamber now, so the 2022 record is tested on 2022's chamber, set for the
+            // three formations and restored - the backtest keeps asserting the government that actually formed from it.
             Country sweden = world.GetCountry(CountryId.Sweden);
             string swedenSaved = sweden.PlayerPartyAbbrev;
+            var seatedChamber = new Dictionary<string, int>(sweden.ParliamentSeats);
+            IReadOnlyList<PoliticalParty> swedenParties = PartySystems.For(CountryId.Sweden);
+            sweden.ParliamentSeats.Clear();
+            for (int p = 0; p < swedenParties.Count; p++) { sweden.ParliamentSeats[swedenParties[p].Abbrev] = CampaignAiHarness.Seats2022[p]; }
 
             sweden.PlayerPartyAbbrev = "M";
             GovernmentFormation.Formed asM = GovernmentFormation.Form(sweden);
@@ -101,6 +107,8 @@ namespace PoliSim.EditorTools
             sweden.PlayerPartyAbbrev = "S";
             GovernmentFormation.Formed asS = GovernmentFormation.Form(sweden);
             sweden.PlayerPartyAbbrev = swedenSaved;
+            sweden.ParliamentSeats.Clear();
+            foreach (KeyValuePair<string, int> seat in seatedChamber) { sweden.ParliamentSeats[seat.Key] = seat.Value; }
 
             sb.Append("\n    --- SWEDEN 2022, against the government that actually formed ---\n");
             sb.Append(string.Format(CultureInfo.InvariantCulture,

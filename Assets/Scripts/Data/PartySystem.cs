@@ -266,6 +266,15 @@ namespace PoliSim.Data
 
 namespace PoliSim.Data
 {
+    /// <summary>K-1 (2026-09-23): the election a table is read AS OF. The live game reads <see cref="Seated"/>, the chamber it seats
+    /// (Sweden: the Riksdag elected 2026-09-13, Valmyndigheten's result fixed 2026-09-19). The backtests that assert a 2022 result pin
+    /// <see cref="Sweden2022"/>, so the 2022 evidence stays reproducible after the seed moved. A country with one vintage ignores it.</summary>
+    public enum ElectionVintage
+    {
+        Seated = 0,
+        Sweden2022 = 1,
+    }
+
     /// <summary>
     /// W-G1: the six countries' real party systems and real chamber sizes, replacing
     /// `PartyArchetypeData`'s four shared fictional archetypes and `ParliamentConstants.TotalSeats`
@@ -324,26 +333,28 @@ namespace PoliSim.Data
         /// </summary>
         private static PartyLeader[] One(string name, string office) => new[] { new PartyLeader(name, office) };
 
-        // ---- Sweden: Riksdag 2022. Units are PARTIES; every one has a CHES position. Sums to 349.
+        // ---- Sweden: Riksdag 2026 (K-1: Valmyndigheten's decision of 2026-09-19, Dnr VAL-735-2026; 2026/returns_2026.md).
+        // Units are PARTIES; every one has a CHES position. Sums to 349. The ORDER is the key order every positional table uses
+        // (TryHistory, the campaign cast, CoalitionFilm) - 2022's seat order, kept when the seats moved; seat-ordered views sort themselves.
         private static readonly PoliticalParty[] SwedenParties =
         {
-            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f, 107, "mark_party_se_s", euPosition: 5.74f, lrGen: 3.74f, environment: 3.70f, regions: 5.29f, spendVsTax: 2.50f, immigratePolicy: 6.95f, deregulation: 3.67f, redistribution: 3.00f, peopleVsElite: 0.92f, antiEliteSalience: 2.67f, civLibLawOrder: 6.40f, nationalism: 4.50f,
+            new PoliticalParty("S",  "Arbetarepartiet-Socialdemokraterna", 3.68f, 4.74f,  99, "mark_party_se_s", euPosition: 5.74f, lrGen: 3.74f, environment: 3.70f, regions: 5.29f, spendVsTax: 2.50f, immigratePolicy: 6.95f, deregulation: 3.67f, redistribution: 3.00f, peopleVsElite: 0.92f, antiEliteSalience: 2.67f, civLibLawOrder: 6.40f, nationalism: 4.50f,
                 leaders: One("Magdalena Andersson", "partiordförande")),
-            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  73, "mark_party_se_sd", euPosition: 2.68f, lrGen: 8.53f, environment: 9.00f, regions: 5.29f, spendVsTax: 5.50f, immigratePolicy: 9.95f, deregulation: 4.57f, redistribution: 5.37f, peopleVsElite: 5.33f, antiEliteSalience: 8.00f, civLibLawOrder: 9.30f, nationalism: 9.50f,
+            new PoliticalParty("SD", "Sverigedemokraterna",                6.32f, 9.00f,  62, "mark_party_se_sd", euPosition: 2.68f, lrGen: 8.53f, environment: 9.00f, regions: 5.29f, spendVsTax: 5.50f, immigratePolicy: 9.95f, deregulation: 4.57f, redistribution: 5.37f, peopleVsElite: 5.33f, antiEliteSalience: 8.00f, civLibLawOrder: 9.30f, nationalism: 9.50f,
                 leaders: One("Jimmie Åkesson", "partiledare")),
-            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  68, "mark_party_se_m", euPosition: 5.74f, lrGen: 7.58f, environment: 7.60f, regions: 5.71f, spendVsTax: 8.00f, immigratePolicy: 8.47f, deregulation: 8.27f, redistribution: 7.32f, peopleVsElite: 0.92f, antiEliteSalience: 2.33f, civLibLawOrder: 8.70f, nationalism: 7.10f,
+            new PoliticalParty("M",  "Moderaterna",                        7.89f, 6.47f,  70, "mark_party_se_m", euPosition: 5.74f, lrGen: 7.58f, environment: 7.60f, regions: 5.71f, spendVsTax: 8.00f, immigratePolicy: 8.47f, deregulation: 8.27f, redistribution: 7.32f, peopleVsElite: 0.92f, antiEliteSalience: 2.33f, civLibLawOrder: 8.70f, nationalism: 7.10f,
                 leaders: One("Ulf Kristersson", "partiledare")),
-            new PoliticalParty("V",  "Vänsterpartiet",                     1.89f, 2.42f,  24, "mark_party_se_v", euPosition: 3.32f, lrGen: 1.58f, environment: 1.40f, regions: 5.00f, spendVsTax: 0.50f, immigratePolicy: 3.05f, deregulation: 0.87f, redistribution: 1.37f, peopleVsElite: 3.92f, antiEliteSalience: 5.50f, civLibLawOrder: 2.10f, nationalism: 2.10f,
+            new PoliticalParty("V",  "Vänsterpartiet",                     1.89f, 2.42f,  30, "mark_party_se_v", euPosition: 3.32f, lrGen: 1.58f, environment: 1.40f, regions: 5.00f, spendVsTax: 0.50f, immigratePolicy: 3.05f, deregulation: 0.87f, redistribution: 1.37f, peopleVsElite: 3.92f, antiEliteSalience: 5.50f, civLibLawOrder: 2.10f, nationalism: 2.10f,
                 leaders: One("Nooshi Dadgostar", "partiledare")),
-            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  24, "mark_party_se_c", euPosition: 6.11f, lrGen: 5.95f, environment: 2.50f, regions: 4.29f, spendVsTax: 7.50f, immigratePolicy: 3.42f, deregulation: 8.53f, redistribution: 6.58f, peopleVsElite: 2.55f, antiEliteSalience: 2.17f, civLibLawOrder: 3.10f, nationalism: 2.90f,
+            new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  25, "mark_party_se_c", euPosition: 6.11f, lrGen: 5.95f, environment: 2.50f, regions: 4.29f, spendVsTax: 7.50f, immigratePolicy: 3.42f, deregulation: 8.53f, redistribution: 6.58f, peopleVsElite: 2.55f, antiEliteSalience: 2.17f, civLibLawOrder: 3.10f, nationalism: 2.90f,
                 leaders: One("Annie Lööf", "partiledare")),
-            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  19, "mark_party_se_kd", euPosition: 5.35f, lrGen: 8.00f, environment: 7.40f, regions: 5.86f, spendVsTax: 6.50f, immigratePolicy: 8.26f, deregulation: 6.80f, redistribution: 6.58f, peopleVsElite: 2.27f, antiEliteSalience: 3.83f, civLibLawOrder: 7.90f, nationalism: 7.20f,
+            new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  22, "mark_party_se_kd", euPosition: 5.35f, lrGen: 8.00f, environment: 7.40f, regions: 5.86f, spendVsTax: 6.50f, immigratePolicy: 8.26f, deregulation: 6.80f, redistribution: 6.58f, peopleVsElite: 2.27f, antiEliteSalience: 3.83f, civLibLawOrder: 7.90f, nationalism: 7.20f,
                 leaders: One("Ebba Busch", "partiledare")),
             // ⚠ TWO leaders, carried as two. Taking "the first" would drop Per Bolund, a real named
             // person, which the ruling forbids outright.
-            new PoliticalParty("MP", "Miljöpartiet de gröna",              3.16f, 1.95f,  18, "mark_party_se_mp", euPosition: 5.32f, lrGen: 2.74f, environment: 0.10f, regions: 4.43f, spendVsTax: 2.75f, immigratePolicy: 2.16f, deregulation: 3.47f, redistribution: 2.89f, peopleVsElite: 5.67f, antiEliteSalience: 2.67f, civLibLawOrder: 1.60f, nationalism: 1.70f,
+            new PoliticalParty("MP", "Miljöpartiet de gröna",              3.16f, 1.95f,  22, "mark_party_se_mp", euPosition: 5.32f, lrGen: 2.74f, environment: 0.10f, regions: 4.43f, spendVsTax: 2.75f, immigratePolicy: 2.16f, deregulation: 3.47f, redistribution: 2.89f, peopleVsElite: 5.67f, antiEliteSalience: 2.67f, civLibLawOrder: 1.60f, nationalism: 1.70f,
                 leaders: new[] { new PartyLeader("Märta Stenevi", "språkrör"), new PartyLeader("Per Bolund", "språkrör") }),
-            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  16, "mark_party_se_l", euPosition: 6.84f, lrGen: 6.74f, environment: 6.20f, regions: 4.71f, spendVsTax: 6.75f, immigratePolicy: 6.79f, deregulation: 7.33f, redistribution: 6.26f, peopleVsElite: 1.36f, antiEliteSalience: 2.17f, civLibLawOrder: 5.70f, nationalism: 3.90f,
+            new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  19, "mark_party_se_l", euPosition: 6.84f, lrGen: 6.74f, environment: 6.20f, regions: 4.71f, spendVsTax: 6.75f, immigratePolicy: 6.79f, deregulation: 7.33f, redistribution: 6.26f, peopleVsElite: 1.36f, antiEliteSalience: 2.17f, civLibLawOrder: 5.70f, nationalism: 3.90f,
                 leaders: One("Johan Pehrson", "partiledare")),
         };
 
@@ -461,16 +472,27 @@ namespace PoliSim.Data
         /// path — and the join has to be clean party-for-party across both elections, which is a
         /// real constraint: BSW did not exist in 2021, so it enters at a true zero rather than a
         /// missing value.
+        ///
+        /// <para>K-1 (2026-09-23): <b>Sweden carries two vintages.</b> The live game reads <see cref="ElectionVintage.Seated"/> -
+        /// 2026 as the prior and 2022→2026 as the loyalty; the backtests that assert a 2022 result pin
+        /// <see cref="ElectionVintage.Sweden2022"/> - 2022 and 2018, the pair every figure above was measured on. Germany has
+        /// one vintage and reads it whatever is asked.</para>
         /// </summary>
-        public static bool TryHistory(CountryId id, out double[] latest, out double[] previous)
+        public static bool TryHistory(CountryId id, out double[] latest, out double[] previous, ElectionVintage vintage = ElectionVintage.Seated)
         {
             switch (id)
             {
-                case CountryId.Sweden:
+                case CountryId.Sweden when vintage == ElectionVintage.Sweden2022:
                     // 2022 and 2018 final shares, Valmyndigheten (returns_2022.md, priors/previous_elections.md),
                     // in For(Sweden) order: S, SD, M, V, C, KD, MP, L.
                     latest   = new[] { 30.33, 20.54, 19.10, 6.75, 6.71, 5.34, 5.08, 4.61 };
                     previous = new[] { 28.26, 17.53, 19.84, 8.00, 8.61, 6.32, 4.41, 5.49 };
+                    return true;
+                case CountryId.Sweden:
+                    // 2026 final shares as RD_S.json prints them (Valmyndigheten's decision of 2026-09-19, Dnr VAL-735-2026;
+                    // 2026/returns_2026.md) and 2022's, in For(Sweden) order: S, SD, M, V, C, KD, MP, L.
+                    latest   = new[] { 28.02, 17.48, 19.85, 8.40, 7.03, 6.17, 6.12, 5.34 };
+                    previous = new[] { 30.33, 20.54, 19.10, 6.75, 6.71, 5.34, 5.08, 4.61 };
                     return true;
                 case CountryId.Germany:
                     // 2025 Zweitstimmen shares (returns_2025.md) and 2021 shares derived from the
@@ -519,7 +541,8 @@ namespace PoliSim.Data
                     electorate = default; economicWeight = 0.0; return false;
             }
         }
-        /// <summary>The country's seat-holding units, in seat order at its most recent election.</summary>
+        /// <summary>The country's seat-holding units, in its key order - seat order at the election the order was set on (Sweden's is 2022's,
+        /// kept by K-1 because every positional table is indexed by it); a view that needs seat order sorts by <see cref="PoliticalParty.SeedSeats"/>.</summary>
         public static IReadOnlyList<PoliticalParty> For(CountryId id)
         {
             switch (id)

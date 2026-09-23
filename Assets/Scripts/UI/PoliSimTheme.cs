@@ -384,7 +384,22 @@ namespace PoliSim.UI
             return NudgeLog.TryGetValue(country, out List<string> log) ? log : new List<string>();
         }
 
-        /// <summary>The chamber's inked parties by seeded mandates, descending; each smaller party is measured against every larger one and nudged away from the nearest collision until it clears the tolerance.</summary>
+        /// <summary>K-1 (2026-09-23): the mandates the ink ladder is ORDERED by - the chamber the inks were ruled on (§279's fork, D16, D17's
+        /// fence: Sweden's 2022 seats), not the seated one. The 2026 chamber reverses the pair the ladder turns on (M 70 over SD 62, where §279's
+        /// nudge moved M because M 68 was under SD 73) and ties KD and MP at 22; letting the seat refresh repaint parties would re-rule Design's
+        /// inks by arithmetic. Whether the ladder takes the 2026 order is Design's (K-1d). Every other country reads its seed seats.</summary>
+        private static readonly Dictionary<string, int> InkLadderSeatsSweden2022 = new Dictionary<string, int>
+        {
+            { "S", 107 }, { "SD", 73 }, { "M", 68 }, { "V", 24 }, { "C", 24 }, { "KD", 19 }, { "MP", 18 }, { "L", 16 },
+        };
+
+        private static int InkLadderSeats(PoliSim.Data.CountryId country, PoliSim.Data.PoliticalParty party)
+        {
+            if (country == PoliSim.Data.CountryId.Sweden && InkLadderSeatsSweden2022.TryGetValue(party.Abbrev, out int ruled)) { return ruled; }
+            return party.SeedSeats;
+        }
+
+        /// <summary>The chamber's inked parties by the ladder's mandates (<see cref="InkLadderSeats"/>), descending; each smaller party is measured against every larger one and nudged away from the nearest collision until it clears the tolerance.</summary>
         private static Dictionary<string, Color> NudgedTable(PoliSim.Data.CountryId country)
         {
             if (NudgedCache.TryGetValue(country, out Dictionary<string, Color> cached)) { return cached; }
@@ -392,7 +407,7 @@ namespace PoliSim.UI
             var log = new List<string>();
             var parties = new List<PoliSim.Data.PoliticalParty>();
             foreach (PoliSim.Data.PoliticalParty p in PoliSim.Data.PartySystems.For(country)) { if (HasPartyInk(country, p.Abbrev)) { parties.Add(p); } }
-            parties.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
+            parties.Sort((a, b) => InkLadderSeats(country, b).CompareTo(InkLadderSeats(country, a)));
             var taken = new HashSet<string>();
             for (int i = 0; i < parties.Count; i++)
             {

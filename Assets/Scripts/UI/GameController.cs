@@ -6095,9 +6095,9 @@ namespace PoliSim.UI
                     if (divisions[d].Passed && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
                 }
                 // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
-                // against the seed - Sweden 2022, which the model reproduces seat for seat - per valkrets, so the swing is like for
-                // like at every instant. A later one compares against the previous held election, whose record keeps national
-                // shares and seats only.
+                // against the seed - the seated election, Sweden 2026 since K-1, which the allocator reproduces seat for seat (§601's
+                // control) - per valkrets, so the swing is like for like at every instant. A later one compares against the previous
+                // held election, whose record keeps national shares and seats only.
                 ElectionRecord earlier = null;
                 for (int i = _playerCountry.ElectionHistory.Count - 2; i >= 0; i--)
                 {
@@ -6109,12 +6109,12 @@ namespace PoliSim.UI
                 string previousLabel;
                 if (earlier == null)
                 {
-                    previousByConstituency = SwedishRegions.Votes2022(keys);
+                    previousByConstituency = SwedishRegions.PreviousVotes(keys);
                     for (int k = 0; k < keys.Count; k++)
                     {
                         foreach (PoliticalParty party in parties) { if (party.Abbrev == keys[k]) { previousSeats[k] = party.SeedSeats; break; } }
                     }
-                    previousLabel = "SWEDEN 2022";
+                    previousLabel = "SWEDEN 2026";
                 }
                 else
                 {

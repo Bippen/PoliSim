@@ -30,7 +30,11 @@ namespace PoliSim.UI
     public partial class GameController
     {
         /// <summary>The fixed mandates per valkrets the cartogram's areas are - our own column, derived by the statute's
-        /// allocator over the catalog's eligible electorate, as `ValkretsCartogramCheck` holds it against board 4a's.</summary>
+        /// allocator over the catalog's eligible electorate, as `ValkretsCartogramCheck` holds it against board 4a's.
+        /// ⚠ K-1 (2026-09-23): it STAYS on the 2022 roll while the rest of the live game reads 2026, because the column is
+        /// the one board 4a's geometry was drawn and consumed on. Valmyndigheten's 2026 decision (Bilaga 3) moved four
+        /// valkretsar by a seat - Stockholms län 40→41, Kalmar län 8→7, Göteborgs kommun 17→18, Västernorrlands län 8→7 -
+        /// and whether the cartogram takes that column is Design's to rule (K-1c).</summary>
         private static int[] CampaignMapMandates()
         {
             long[] eligible = PoliSim.Elections.Generated.SwedishValkretsReturns2022.Eligible;

@@ -55,7 +55,7 @@ namespace PoliSim.EditorTools
         // Sweden 2022 and 2018 Riksdag shares, Valmyndigheten final counts, in the driver's party
         // order (S, SD, M, V, C, KD, MP, L). 2018 re-ordered from LoyaltyHarness's series.
         private static readonly string[] Parties = { "S", "SD", "M", "V", "C", "KD", "MP", "L" };
-        private static double[] Shares2022 => PartySystems.TryHistory(CountryId.Sweden, out double[] latest, out _) ? latest : null;   // C-R4b step 2: the runtime table, not a copy
+        private static double[] Shares2022 => PartySystems.TryHistory(CountryId.Sweden, out double[] latest, out _, ElectionVintage.Sweden2022) ? latest : null;   // C-R4b step 2: the runtime table, not a copy
         private static AiPersonality[] Assignment => LiveCampaignSetup.SwedenPersonalities;   // C-R4b step 2: the runtime cast, not a copy
         private const double FlatCredibility = LiveCampaignSetup.FlatCredibility;   // C-R4b step 2: the runtime figure
         /// <summary>
@@ -603,7 +603,7 @@ namespace PoliSim.EditorTools
         internal static CampaignRun.Setup BuildSetup(out string note)
         {
             var scandals = new[] { (30, 0, new Scandal(ScandalKind.Corruption, ScandalSeverity.Major, 0.5)) };
-            return LiveCampaignSetup.Sweden(scandals, out note);
+            return LiveCampaignSetup.Sweden(scandals, out note, vintage: ElectionVintage.Sweden2022);   // K-1: the harness pins the 2022 staging it has always run
         }
 
         // ---------- helpers ----------

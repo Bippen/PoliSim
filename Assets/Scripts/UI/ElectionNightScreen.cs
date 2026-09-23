@@ -28,7 +28,7 @@ namespace PoliSim.UI
     ///
     /// And the CALL is drawn only when the model says it is safe — safe meaning it holds across
     /// the whole feasible range of what is outstanding, on the same `SeatAllocation` that
-    /// reproduces 2022 seat-for-seat. The screen has no call rule of its own to disagree with.
+    /// reproduces 2022 and 2026 seat-for-seat (§601). The screen has no call rule of its own to disagree with.
     ///
     /// **Declared deviations (V-N series), per the boards-deviation practice:**
     /// - V-N1: the paper is a flat fill and the drop shadow a single dark plate — the CSS gradient
@@ -45,7 +45,7 @@ namespace PoliSim.UI
     ///   misleading thing this screen could show, on the night it matters most. ✅ **The RUNNING swing
     ///   landed 2026-09-10**: given the previous election's PER-CONSTITUENCY count, the comparison is
     ///   restricted to what has declared and is shown at every instant. A first-term night always had
-    ///   it - the 2022 seed IS the previous election - so V-N3 never needed a second one. Only a later
+    ///   it - the seed (2026 since K-1) IS the previous election - so V-N3 never needed a second one. Only a later
     ///   term, whose record keeps national figures, still waits for the complete count.
     /// </summary>
     public class ElectionNightScreen
@@ -660,7 +660,7 @@ namespace PoliSim.UI
             // With the previous election's count PER CONSTITUENCY the comparison is restricted to what has actually declared -
             // the declared valkretsar now against the SAME valkretsar last time - so the swing is shown at every instant of the
             // night, early returns included, and cannot be an artefact of which places declared first. That per-constituency
-            // count was V-N3's whole blocker, and a first-term night always had it: the 2022 seed IS the previous election, and
+            // count was V-N3's whole blocker, and a first-term night always had it: the seed (2026 since K-1) IS the previous election, and
             // the model reproduces it seat for seat. ⚠ Both sides are shares of the votes cast for the parties LISTED, so a
             // small party the count does not carry cannot move every swing by its own absence.
             //

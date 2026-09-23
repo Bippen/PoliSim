@@ -33313,3 +33313,46 @@ The regenerated budget premise reads what it should: §1's residuals 0.985 (driv
 **Not represented, and said so in the record:** the parties outside the eight; anything between 2022 and 2026 (the economy, approval, leaders, polls); turnout; differential regional swing; campaign effects and tactical voting.
 
 **Evidence.** Tier SIMULATION: the staged set holds the 2026 data under `ElectionsData/`, which `bar_tier.ps1 -Staged` counts as simulation input. The diagnostic itself is tooling. The cheap bar is **47 of 47** (`k1_601_cheap`) and the simulation bar **56 of 56** (`k1_601_sim`). Nothing that runs moved: no seed, no table, no code path a game reads. No review row is owed, because the sentinel did not move and nothing books money.
+
+## 602. K-1 PART (1) - THE 2026 CHAMBER: THE SEATS, THE PRIOR AND THE PER-VALKRETS RETURNS FROM VALMYNDIGHETEN'S DECISION; 2022 STAYS THE BACKTESTS' REFERENCE (2026-09-23)
+
+**The order:** *"The 2026 chamber: per-party votes, seats and per-valkrets returns from Valmyndigheten's decision and its appendices on val.se — fetched, never recalled; 2022 stays as the backtest's reference."* The figures are the ones §601 fetched and verified (`ElectionsData/sweden/2026/`, Dnr VAL-735-2026, fixed 2026-09-19). None was typed from memory: the seats are the decision's Bilaga 1 as `returns_2026.md` carries them, and the per-valkrets counts are generated from `valkrets_votes_2026.csv`.
+
+**The one mechanism: a vintage.** Three tables were shared by the live game and the 2022 backtests with no key: the national history, the declarations and the bloc table. K-1 adds `ElectionVintage` (`PartySystem.cs`): the live game reads `Seated`, and a backtest that asserts a 2022 result pins `Sweden2022`. So the 2022 evidence stays reproducible after the seed moved. This part keys the history; part (2) keys the declarations. The bloc table is unchanged (below).
+
+**Moved to 2026, the live game:**
+- **The seated chamber:** `SwedenParties`' seed seats are S 99, SD 62, M 70, V 30, C 25, KD 22, MP 22, L 19 (349; the decision's Bilaga 1). They were 107, 73, 68, 24, 24, 19, 18, 16. The table's ORDER is kept (S, SD, M, V, C, KD, MP, L): it is the key order every positional table is indexed by (the history, the campaign cast, `CoalitionFilm`). `For`'s doc said "seat order at its most recent election" and now says what it is. The views that need seat order sort for themselves (the picker, the ink ladder).
+- **The prior:** `PartySystems.TryHistory(Sweden)` reads 2026 as the prior and 2022→2026 as the loyalty. The shares are as RD_S.json prints them: 28.02, 17.48, 19.85, 8.40, 7.03, 6.17, 6.12, 5.34. The 2022/2018 pair stays addressable as `Sweden2022`. `TryElectorate` keeps its 2022 fit on purpose: it is the model §601 tested out of sample, and a refit is its own item.
+- **The per-valkrets returns:** `SwedishValkretsReturns2026` is generated beside the 2022 catalog by the same generator. It now runs over a two-row vintage table, and the 2022 file regenerated **byte for byte**. `GeneratedCatalogCheck` holds the new catalog's digest (72aff653…, the one §601's record printed), its 29-row lengths, and the join the live readers depend on: the 2022 catalog's row order and party columns. `SwedishRegions` (the regional prior and weights, the eligible counts election night declares against, and the previous election's counts) reads it. `Votes2022` is renamed `PreviousVotes`.
+- **Election night's first-term comparison** compares against "SWEDEN 2026": the per-valkrets counts the allocator reproduces seat for seat (§601's control). The film fixture that stages the model's night is dated the game's first election boundary (`TurnBoundary(ElectionCycle)`, the date the live campaign runs to under CL-5), where it was dated 2026-09-13.
+- **The campaign staging** (`LiveCampaignSetup.Sweden`, `SwedenRegions`) takes the vintage. The game stages on 2026's prior, loyalty and regions. Its doc claimed the staging's party order was the catalog's column order, which is false (the catalog is S, M, SD, C, V, KD, L, MP; everything maps by key); it is corrected.
+- **The stance model's voter profile** is now the 2026 returns over the 2024 pyramids, the nearer vintage (its reason line says so).
+- **The save format** goes from 22 to 23: a v22 save embeds the 2022 chamber and its capital baselines, which the loader would keep (`ParliamentSystem` only fills an empty chamber).
+
+**Pinned to 2022, the backtests:**
+- `CampaignAiHarness` (its prior, and so its staging and decision digest) and `CampaignClockHarness` (all eleven stagings) are pinned to `Sweden2022`.
+- `OfficeTestDiagnostic` tests Sweden 2022's record on 2022's chamber: it sets the chamber for its three formations and restores it. It still forms M+KD+L with SD supporting from outside.
+- `OutOfSample2026Diagnostic` now refuses to run, as built (§601).
+- `SeatAllocationBacktest`, `SeatConversionHarness`, `ElectionNightHarness` and `CompositionHarness` carry their own 2022 copies and are untouched.
+- `VoterGroupViewDiagnostic` prints the 2024 pyramid beside the 2022 roll. It is a printed reading, not a live reader, and is left as it was.
+
+**Held for Design, deliberately not moved (two rows filed):**
+- **The cartogram's mandate column (K-1c).** Board 4a's geometry was drawn and consumed on the 2022 roll's column. The 2026 decision moved four valkretsar by a seat: Stockholms län 40→41, Kalmar län 8→7, Göteborgs kommun 17→18, Västernorrlands län 8→7. The campaign map keeps board 4a's column, with the reason in its doc, and `ValkretsCartogramCheck` stays green against it.
+- **The ink ladder's order (K-1d).** The ladder (§279's fork, D17's bloc fence) is ordered by seats. The 2026 chamber reverses the pair it turns on (M 70 over SD 62; §279 moved M because M 68 was under SD 73) and ties KD and MP at 22. Letting the refresh re-order it would repaint Design's ruled inks by arithmetic. The ladder is pinned to 2022's order (`InkLadderSeatsSweden2022`). No ink moved: `D16AcceptanceCheck` and `PartyInkCautionAudit` are in the simulation bar's 56.
+
+**Not refreshed, stated:**
+- **The leaders** are still 2022's (C-D3's vintage; its doc says a current set is its own item). Row K-1e is filed. What is sourced so far disagrees with that doc on V: Dadgostar is named V's leader in September 2026.
+- **The bloc table** (`SwedenBlocs2022`) stays, with C on the left. C named Andersson its most likely prime-ministerial candidate (DN 2026-06-09, [C-I2] in the declarations file: *"Magdalena Andersson är vår mest sannolika statsministerkandidat"*), so the placement still reads true.
+
+**Measured.**
+- **The no-policy trajectory is BYTE-IDENTICAL to `pp4` on both seeds** (`traj_k1ch_s{777,424242}_t100.csv` against `traj_pp4_…`, `cmp`). The chamber reaches none of the dump's 70 economy fields. It reaches the player's path: divisions, stance, formation, the campaign and election night, which the harnesses and films read. The sentinel did not move, the family stays `pp4`, and no review row is owed.
+- **The formation on the 2026 chamber under 2022's declarations** (the interim state this part alone leaves, until part (2)) is **S+M+C+KD+L**, 235 seats. That is the arithmetic bloc the defection rule was written against, and it survives here (the office test's live row).
+
+**Two tooling slips, both caught before any build.**
+- An in-place perl with a print in its `END` block wrote `PartySystem.cs` to stdout and left the file empty. It was restored from HEAD and the edits were redone with the Edit tool.
+- A `perl -CSD` one-liner double-encoded a `§` in `ElectionNightScreen.cs`. It was repaired by a script file, and no mojibake remains in the diff.
+
+**Evidence.** Tier SIMULATION + UI (`bar_tier.ps1 -Staged`).
+- The trajectory dump `k1ch` (above). The cheap bar **47 of 47** (`k1_602_cheap`) and the simulation bar **56 of 56** (`k1_602_sim`). After this record and the rows were written, the document checks were re-run on the final tree: `MojibakeCheck`, `DryFilmScopeCheck` and `ReviewLedgerCheck`, **3 of 3** (`k1_602_named`).
+- The dry film `dry602` (Sweden at 1280 with the state pins; scope declared): **167 measured, 0 failed, 0 overflows, 0 escapes, 0 errors, exit 0**.
+- The real film `film602_1280` (Sweden, the whole pinned sweep, reaching election night's Canvas): **167 captured, 0 failed, 0 text overflows, 0 canvas-text violations across 6 asserts** (the picker frames `01g`/`01h` and the night `88n` among them). It exits 1 on the edge guard's 11 NOT FLUSH frames, the same 11 as `film600_1280` (84, 85a-85e, 85g, 87, 87b, 93, 94b): a standing state this change did not move. §600's film logged 12 errors; this one logs 11. **PF-16's clipped who-governs block did not recur, and that is not a fix.** The night's content changed with the chamber: the pinned sweep's night now reads a cabinet of 117 seats where §600's read 110, and swings against SWEDEN 2026. So this film says nothing about whether the defect is gone, and PF-16 stays open. Read on the frame: the count's seat changes run from 2026's seats (S 94, −5), the swing column says *"against SWEDEN 2026"*, and the cartogram's caption still says 310 fixed seats (board 4a's column, K-1c).

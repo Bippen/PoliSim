@@ -114,6 +114,7 @@ namespace PoliSim.EditorTools
             // existing check rather than a new one — R-N5 governs new checks, and the drift question here
             // is identical to the one above: a generated table whose source has moved underneath it.
             // A second check would have been a second thing to keep true for no added coverage.
+            failures += CheckReturns2026(sb);
             failures += CheckProjections(sb);
             failures += CheckValkretsPopulation(sb);
             failures += CheckItanes(sb);
@@ -129,6 +130,68 @@ namespace PoliSim.EditorTools
 
             Debug.Log(sb.ToString());
             CheckExit.Finish(0);
+        }
+
+        /// <summary>
+        /// K-1 (2026-09-23): the 2026 returns catalog, the live game's since K-1 - the same digest and length questions as the
+        /// 2022 one above, plus the join the live readers depend on: the 29 names in the 2022 catalog's ORDER, because the
+        /// cartogram's bands, the 2024 population catalog and every harness index the valkretsar by position.
+        /// </summary>
+        private static int CheckReturns2026(StringBuilder sb)
+        {
+            const string sourceRelative = "ElectionsData/sweden/2026/valkrets_votes_2026.csv";
+            string source = Path.Combine(Directory.GetCurrentDirectory(), sourceRelative.Replace('/', Path.DirectorySeparatorChar));
+            sb.Append("\n=== The 2026 returns catalog against its source ===\n");
+            if (!File.Exists(source))
+            {
+                Debug.LogError("CATALOGCHECK: " + sourceRelative + " is not on disk, so the 2026 catalog's digest cannot be compared against anything.");
+                return 1;
+            }
+
+            int failures = 0;
+            string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(source));
+            if (!string.Equals(onDisk, SwedishValkretsReturns2026.SourceDigest, StringComparison.OrdinalIgnoreCase))
+            {
+                failures++;
+                Debug.LogError("CATALOGCHECK: the 2026 source has changed since its catalog was generated. On disk " + onDisk
+                               + ", recorded " + SwedishValkretsReturns2026.SourceDigest + ". Re-run the generator after reading the diff.");
+            }
+
+            int rows = 0;
+            foreach (string raw in File.ReadAllLines(source))
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal) || line.StartsWith("valkrets;", StringComparison.Ordinal)) { continue; }
+                rows++;
+            }
+            int[] lengths =
+            {
+                SwedishValkretsReturns2026.Names.Length, SwedishValkretsReturns2026.Votes.Length, SwedishValkretsReturns2026.Valid.Length,
+                SwedishValkretsReturns2026.Eligible.Length, SwedishValkretsReturns2026.Cast.Length,
+            };
+            foreach (int length in lengths)
+            {
+                if (length == rows && rows == 29) { continue; }
+                failures++;
+                Debug.LogError($"CATALOGCHECK: the 2026 source holds {rows} data row(s) and one of its catalog's arrays holds {length}; both must be 29.");
+                break;
+            }
+
+            var order = new List<string>();
+            for (int r = 0; r < SwedishValkretsReturns2026.Names.Length; r++)
+            {
+                if (r >= SwedishValkretsReturns2022.Names.Length || SwedishValkretsReturns2026.Names[r] != SwedishValkretsReturns2022.Names[r]) { order.Add($"row {r + 1} '{SwedishValkretsReturns2026.Names[r]}'"); }
+            }
+            bool partiesJoin = string.Join(",", SwedishValkretsReturns2026.Parties) == string.Join(",", SwedishValkretsReturns2022.Parties);
+            if (order.Count > 0 || !partiesJoin)
+            {
+                failures++;
+                Debug.LogError("CATALOGCHECK: the 2026 catalog does not keep the 2022 catalog's order - " + (partiesJoin ? "" : "the party columns differ; ")
+                               + string.Join(", ", order.ToArray()) + ". Every reader that indexes a valkrets by position would read the wrong one.");
+            }
+            sb.Append(F("    source {0}: digest {1}, {2} rows, names and party columns in the 2022 order: {3} - {4}\n",
+                sourceRelative, onDisk.Substring(0, 12), rows, order.Count == 0 && partiesJoin ? "yes" : "NO", failures == 0 ? "ok" : "FAIL"));
+            return failures;
         }
 
         /// <summary>

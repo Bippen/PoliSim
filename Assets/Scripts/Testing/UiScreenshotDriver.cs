@@ -3790,9 +3790,10 @@ namespace PoliSim.Testing
                 yield break;
             }
 
-            // Election night items 1-3 (2026-09-10): the same inputs the played game gives the board - the 2022 count per
-            // valkrets as the previous election, 2022's seats, and the formation run on this count's chamber. No player's
-            // party: the harness predicts the country, it does not play a party in it.
+            // Election night items 1-3 (2026-09-10): the same inputs the played game gives the board - the seated election's
+            // count per valkrets as the previous election (2026's since K-1), its seats, and the formation run on this count's
+            // chamber; dated the game's first election, the boundary the live campaign runs to (CL-5). No player's party: the
+            // harness predicts the country, it does not play a party in it.
             var seeded = PartySystems.For(CountryId.Sweden);
             var previousSeats = new int[keys.Count];
             for (int k = 0; k < keys.Count; k++)
@@ -3803,8 +3804,8 @@ namespace PoliSim.Testing
 
             PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
             ElectionNightScreen modelScreen = ElectionNightScreen.Build(
-                modelState, keys.ToArray(), "SWEDEN", new DateTime(2026, 9, 13, 20, 0, 0), 349, previousLabel: "SWEDEN 2022",
-                previousByConstituency: SwedishRegions.Votes2022(keys), previousSeats: previousSeats,
+                modelState, keys.ToArray(), "SWEDEN", SimulationManager.TurnBoundary(ElectionSystem.ElectionCycle).AddHours(20), 349, previousLabel: "SWEDEN 2026",
+                previousByConstituency: SwedishRegions.PreviousVotes(keys), previousSeats: previousSeats,
                 government: modelGovernment, inkCountry: CountryId.Sweden);
             if (modelScreen == null)
             {

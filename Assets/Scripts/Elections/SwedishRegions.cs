@@ -13,13 +13,14 @@ namespace PoliSim.Elections
     /// generated catalog moved into the runtime assembly on the day this consumer arrived, which is the
     /// condition the generator wrote for itself.</para>
     ///
-    /// <para>⚠ <b>THE 2022 RESULT IS A PRIOR, NOT A STAND-IN, and the distinction is the whole honesty of
-    /// this layer.</b> F1's rule is that no 2022 count may stand in for a simulated election. What is taken
-    /// from 2022 here is <b>structure and starting position</b>: how many valid votes each valkrets casts
+    /// <para>⚠ <b>THE SEATED ELECTION'S RESULT IS A PRIOR, NOT A STAND-IN, and the distinction is the whole honesty of
+    /// this layer.</b> F1's rule is that no real count may stand in for a simulated election. What is taken
+    /// from the seated election here - 2026's since K-1 (2026-09-23; 2022's before it, which the backtests read from
+    /// their own catalog) - is <b>structure and starting position</b>: how many valid votes each valkrets casts
     /// (its weight), which parties stood there, and where each valkrets sat last time. **The model then
     /// moves it.** `RegionalVoteModel.NationalSharesWithLoyalty` applies the simulated national movement to
     /// each region's own prior, with the loyalty term deciding how far a region travels — which is how a
-    /// region ends up somewhere the 2022 file never said.</para>
+    /// region ends up somewhere the seated election's file never said.</para>
     ///
     /// <para>⚠ <b>Without the prior this layer would be arithmetic wearing a result's clothes.</b> Every
     /// one of Sweden's eight parties stands in every valkrets, so with uniform availability and no
@@ -30,7 +31,7 @@ namespace PoliSim.Elections
     /// non-circular source of regional preference variation, the honest regional prediction IS the national
     /// one. **The prior is that source, and it is a measurement rather than a fit.**</para>
     ///
-    /// <para><b>What is NOT claimed.</b> The prior is 2022's, so a valkrets that has realigned since is
+    /// <para><b>What is NOT claimed.</b> The prior is the seated election's (2026's), so a valkrets that has realigned since is
     /// modelled as it was — this layer has no source for a region moving differently from the nation
     /// beyond its starting point and its loyalty. That is a stated limit, not a defect to be tuned away,
     /// and the honest fix is regional demographics from the model's own cohorts (F2/F3), never a
@@ -39,10 +40,10 @@ namespace PoliSim.Elections
     public static class SwedishRegions
     {
         /// <summary>The party order the catalog stores votes in.</summary>
-        public static IReadOnlyList<string> Parties => SwedishValkretsReturns2022.Parties;
+        public static IReadOnlyList<string> Parties => SwedishValkretsReturns2026.Parties;
 
         /// <summary>How many valkrets the catalog carries. 29 is the Riksdag's real count.</summary>
-        public static int Count => SwedishValkretsReturns2022.Names.Length;
+        public static int Count => SwedishValkretsReturns2026.Names.Length;
 
         /// <summary>
         /// The regions in the party order <paramref name="partyKeys"/> gives, so a caller that has dropped
@@ -69,12 +70,12 @@ namespace PoliSim.Elections
                     // A party the catalog does not carry is treated as standing: absence from an
                     // eight-party file is not evidence that a ninth party did not stand, and assuming
                     // otherwise would silently remove it from every region.
-                    available[p] = column[p] < 0 || SwedishValkretsReturns2022.Votes[r][column[p]] > 0L;
+                    available[p] = column[p] < 0 || SwedishValkretsReturns2026.Votes[r][column[p]] > 0L;
                 }
 
                 regions[r] = new RegionalVoteModel.RegionInput(
-                    SwedishValkretsReturns2022.Names[r],
-                    SwedishValkretsReturns2022.Valid[r],
+                    SwedishValkretsReturns2026.Names[r],
+                    SwedishValkretsReturns2026.Valid[r],
                     available);
             }
 
@@ -82,7 +83,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// Each valkrets' 2022 shares, in <paramref name="partyKeys"/>' order — the PRIOR the model moves.
+        /// Each valkrets' shares at the seated election (2026 since K-1), in <paramref name="partyKeys"/>' order — the PRIOR the model moves.
         /// ⚠ A party the catalog does not carry gets 0 here, which is correct for a prior: it means *this
         /// region has no record of that party*, and the loyalty term is what decides how much a region's
         /// record binds it.
@@ -96,14 +97,14 @@ namespace PoliSim.Elections
 
             for (int r = 0; r < Count; r++)
             {
-                double valid = SwedishValkretsReturns2022.Valid[r];
+                double valid = SwedishValkretsReturns2026.Valid[r];
                 prior[r] = new double[partyKeys.Count];
                 if (valid <= 0.0) { continue; }
 
                 for (int p = 0; p < partyKeys.Count; p++)
                 {
                     if (column[p] < 0) { continue; }
-                    prior[r][p] = SwedishValkretsReturns2022.Votes[r][column[p]] / valid;
+                    prior[r][p] = SwedishValkretsReturns2026.Votes[r][column[p]] / valid;
                 }
             }
 
@@ -111,12 +112,13 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// Election night item 3 (2026-09-10, V-N3): each valkrets' 2022 COUNT, in <paramref name="partyKeys"/>' order -
-        /// the previous election a first-term night compares against. ⚠ The same catalog the prior is read from, so the
-        /// comparison is against the result the model reproduces seat for seat and not against a second copy of it.
-        /// A party the catalog does not carry reads 0 (it has no 2022 count, which is what a swing must see).
+        /// Election night item 3 (2026-09-10, V-N3): each valkrets' COUNT at the seated election (2026 since K-1), in
+        /// <paramref name="partyKeys"/>' order - the previous election a first-term night compares against. ⚠ The same catalog
+        /// the prior is read from, so the comparison is against the result the allocator reproduces seat for seat (§601's control)
+        /// and not against a second copy of it. A party the catalog does not carry reads 0 (it has no count, which is what a swing
+        /// must see). Named <c>Votes2022</c> until K-1 moved the seat.
         /// </summary>
-        public static long[][] Votes2022(IReadOnlyList<string> partyKeys)
+        public static long[][] PreviousVotes(IReadOnlyList<string> partyKeys)
         {
             if (partyKeys == null || partyKeys.Count == 0) { throw new ArgumentException("no party keys"); }
 
@@ -127,7 +129,7 @@ namespace PoliSim.Elections
                 votes[r] = new long[partyKeys.Count];
                 for (int p = 0; p < partyKeys.Count; p++)
                 {
-                    if (column[p] >= 0) { votes[r][p] = SwedishValkretsReturns2022.Votes[r][column[p]]; }
+                    if (column[p] >= 0) { votes[r][p] = SwedishValkretsReturns2026.Votes[r][column[p]]; }
                 }
             }
 
@@ -138,7 +140,7 @@ namespace PoliSim.Elections
         /// election night's outstanding-votes figure is measured against. ⚠ Distinct from the weight, which
         /// is what was actually cast: the difference is turnout, and conflating them would make a night
         /// report every constituency as fully counted the moment it declared.</summary>
-        public static long EligibleAt(int region) => SwedishValkretsReturns2022.Eligible[region];
+        public static long EligibleAt(int region) => SwedishValkretsReturns2026.Eligible[region];
 
         /// <summary>Where each requested party sits in the catalog's column order, or -1.</summary>
         private static int[] MapColumns(IReadOnlyList<string> partyKeys)
@@ -147,9 +149,9 @@ namespace PoliSim.Elections
             for (int p = 0; p < partyKeys.Count; p++)
             {
                 column[p] = -1;
-                for (int c = 0; c < SwedishValkretsReturns2022.Parties.Length; c++)
+                for (int c = 0; c < SwedishValkretsReturns2026.Parties.Length; c++)
                 {
-                    if (string.Equals(SwedishValkretsReturns2022.Parties[c], partyKeys[p], StringComparison.Ordinal))
+                    if (string.Equals(SwedishValkretsReturns2026.Parties[c], partyKeys[p], StringComparison.Ordinal))
                     {
                         column[p] = c;
                         break;
