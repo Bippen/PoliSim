@@ -9383,10 +9383,17 @@ namespace PoliSim.UI
             // unopposed bill maps every seat UNDECIDED, because SeatSides treats a zero direction as no side.
             Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(UiScreen.Width * 0.5f, _labelStyle), GUILayout.ExpandWidth(true));
             SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle, _chamberVerdicts);
-            if (contested) { DrawStanceBreakdown(concern, Mathf.Max(10f, seatMapRect.width)); }
+            // PF-10 (§594): the breakdown's width is the card's as the last Repaint laid it out. It read `seatMapRect.width` directly, and GetRect hands the
+            // Layout event a 1×1 dummy (the layout facts' quirk), so the rows were laid out at the 10 px floor and the party names drawn in a ten-pixel cell.
+            if (Event.current.type == EventType.Repaint && seatMapRect.width > 10f) { _pendingCardWidths[label] = seatMapRect.width; }
+            float breakdownWidth = _pendingCardWidths.TryGetValue(label, out float laidOut) ? laidOut : PoliSimWidgets.InnerWidth(UiScreen.Width * 0.5f, _boxStyle);
+            if (contested) { DrawStanceBreakdown(concern, Mathf.Max(10f, breakdownWidth)); }
 
             EndAreaCard(area);
         }
+
+        /// <summary>PF-10 (§594): each pending card's width at its last Repaint, keyed by the card's label - the Layout event's GetRect is a dummy.</summary>
+        private readonly Dictionary<string, float> _pendingCardWidths = new Dictionary<string, float>();
 
         private void DrawCabinetPortfolioPanel(CabinetPortfolio portfolio)
         {
