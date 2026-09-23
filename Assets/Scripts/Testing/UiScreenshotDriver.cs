@@ -514,7 +514,7 @@ namespace PoliSim.Testing
                     ScrollBy(controller, Mathf.Max(0f, energyY - UiScreen.Height * 0.06f));
                     yield return Settle();
                     yield return Settle();
-                    yield return Capture(energyStem);
+                    yield return Capture(energyStem + "_plate");   // PF-12 (§598): was the tab's own name, which overwrote the whole-tab frame at scroll zero (495)
                     ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 0.50f));
                     yield return Settle();
                     yield return Capture(energyStem + "_mid");
@@ -859,7 +859,7 @@ namespace PoliSim.Testing
                             // on Sweden's row at 1280). The 05b precedent (P5-B5): scrolled, filmed, the scroll put back.
                             ScrollBy(controller, 2000f);
                             yield return Settle();
-                            yield return Capture(stem + "_rows");
+                            yield return Capture(stem + "_rows_carbon");   // PF-12 (§598): was "_rows", which the sweep's own 900 px frame overwrote (1000) - the Carbon Tax row never survived
                             ScrollBy(controller, 0f);
                             yield return Settle();
                         }
@@ -3200,9 +3200,12 @@ namespace PoliSim.Testing
                     yield return Settle();
                     yield return Capture("94_scenario_entry");
 
-                    // An objective in progress: advance a few real turns so the evaluator has run at
-                    // real boundaries and the ledger/history behind the epilogue is populated.
-                    for (int t = 0; t < 3; t++)
+                    // An objective in progress, filmed AT ENTRY. PF-12 (§598): the pin used to advance three real turns so the evaluator had run at
+                    // real boundaries; on the harness's state (the pins start the scenario mid-film) approval breaks "never below 30" at the FIRST boundary
+                    // (measured: three turns, then one - lost at turn 5 of 12 either way), the verdict screen stood exclusive over the page, and the trace
+                    // panel this pin opens could not draw - the assert-own-name error every dry film printed. At entry the verdict is undecided (asserted
+                    // below) and the panel opens; the verdict capture after it still runs to the scenario's end.
+                    for (int t = 0; t < 0; t++)
                     {
                         for (int d = 0; d < SimulationManager.DaysPerTurn; d++)
                         {
@@ -3212,11 +3215,16 @@ namespace PoliSim.Testing
                         InvokeNoArg(controller, "CheckScenarioObjectives");
                     }
 
+                    SetPrivateField(controller, "_onDesk", false);   // PF-12 (§598): StartScenario seats the country and returns the game to the desk - the page this pin opens needs the desk left, as the sweep leaves it
                     SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
                     SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
                     ResetScrolls(controller);
                     StatTracePanel.RequestSelection(StatNodeId.Approval);
                     yield return Settle();
+                    if (controller.GetType().GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is bool sliceVerdictUp && sliceVerdictUp)
+                    {
+                        Debug.LogError($"SHOT: 94b_scenario_in_progress - the scenario verdict is already pending at turn {sim.CurrentTurn} (EndTurn {slice.EndTurn}) after one boundary; this capture shows the verdict, not the scenario in progress.");
+                    }
                     if (StatTracePanel.SelectedStat != StatNodeId.Approval)
                     {
                         Debug.LogError("SHOT: 94b_scenario_in_progress - the trace panel is NOT open on Approval; this capture would be misnamed.");
@@ -3306,8 +3314,12 @@ namespace PoliSim.Testing
                     // open under an exclusive screen). Stopping two turns short of EndTurn wherever
                     // the clock stands keeps the in-progress state genuinely in progress without
                     // reordering any block. The verdict capture below still runs to EndTurn itself.
-                    int italyInProgressTurns = Mathf.Max(0, italySlice.EndTurn - sim.CurrentTurn - 2);
-                    if (italyInProgressTurns == 0)
+                    // PF-12 (§598): NO boundary now, for the same reason as 94b - on the harness's dense state Italy's approval breaks
+                    // "never below 30" within the turns this used to run (the scenario failed at turn 28 of 30, the verdict screen stood over both
+                    // in-progress pins, and three of the four errors every dry film printed were this block's). The Sustained streak this comment's
+                    // first form waited for never started on that state (approval under 40 throughout), so the entry turn shows as much of it.
+                    int italyInProgressTurns = 0;   // PF-12 (§598): filmed at entry - one boundary was already too many (lost at turn 13 of 30 after one)
+                    if (sim.CurrentTurn >= italySlice.EndTurn - 2)
                     {
                         Debug.LogWarning($"SHOT: the session clock (turn {sim.CurrentTurn}) is already within two turns of Italy's EndTurn ({italySlice.EndTurn}) - the in-progress state is unreachable from here; 95b/95d will not show it.");
                     }
@@ -3325,6 +3337,7 @@ namespace PoliSim.Testing
                         InvokeNoArg(controller, "CheckScenarioObjectives");
                     }
 
+                    SetPrivateField(controller, "_onDesk", false);   // PF-12 (§598): StartScenario seats the country and returns the game to the desk - the page this pin opens needs the desk left, as the sweep leaves it
                     SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
                     SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
                     ResetScrolls(controller);
@@ -3353,6 +3366,7 @@ namespace PoliSim.Testing
                     // tab's chip row, where Debt-to-GDP ranks first. Assert-own-name on the panel
                     // AND on the ledger: a closed period with 365 observed days, or the capture is
                     // not showing what its name says.
+                    SetPrivateField(controller, "_onDesk", false);   // PF-12 (§598): StartScenario seats the country and returns the game to the desk - the page this pin opens needs the desk left, as the sweep leaves it
                     SetEnumField(controller, "_consolidatedTab", "Budget");
                     SetEnumField(controller, "_budgetProcessCategory", "Tax");
                     ResetScrolls(controller);
@@ -3464,6 +3478,23 @@ namespace PoliSim.Testing
             // frame by writing approval) is retired with the rule. The election is election night's count
             // and the office verdict on its foot; a country without a live vote model shows no screen, and
             // this says so rather than filming the desk under the night's name (S-20).
+            // PF-12 (§598): THE FILM'S OWN COUNTRY, BACK. The Italy scenario above seats Italy (StartScenario → SelectPlayerCountry), and Italy has no regional
+            // count, so this pin looked for Sweden's night in Italy's game and logged "Sweden showed no election night" - the name was the film's, the country
+            // was not. The pin now puts the film's country back the way the scenario took it away, and clears the finished scenarios so no verdict screen
+            // stands over the takeover.
+            var seatedField = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (seatedField?.GetValue(controller) is Country seated && seated.Id != _countryId)
+            {
+                Debug.Log($"SHOT: PF-12 - the scenarios left {seated.Id} seated; the election pin seats {_countryId} again, the scenario's own way.");
+                InvokeOneArg(controller, "SelectPlayerCountry", _countryId);
+            }
+            // SetPrivateField type-checks the VALUE, so it refuses a null; the three fields are written directly
+            foreach ((string name, object value) in new (string, object)[] { ("_scenario", null), ("_scenarioProgress", null), ("_scenarioVerdictPending", false) })
+            {
+                FieldInfo scenarioField = controller.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (scenarioField != null) { scenarioField.SetValue(controller, value); }
+                else { Debug.LogError($"SHOT: PF-12 - the controller has no {name}; the finished scenarios are NOT cleared before the election pin."); }
+            }
             if (AdvanceToElectionTurn(sim, noDecisions))
             {
                 InvokeNoArg(controller, "CheckElection");
