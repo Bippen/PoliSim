@@ -55,8 +55,9 @@ namespace PoliSim.EditorTools
             @"^\s*(?:public|private|protected|internal)?\s*(?:const|static\s+readonly)\s+(float|double|int)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=");
 
         /// <summary>⚠ Every mark this check accepts, enumerated so the bar is visible rather than implied.
-        /// Case-insensitive; one of these anywhere in the constant's own comment block is enough.</summary>
-        private static readonly string[] ProvenanceMarks =
+        /// Case-insensitive; one of these anywhere in the constant's own comment block is enough. Internal (§584): `ReviewLedgerCheck` refuses its
+        /// comment-only exemption where a line carrying one of these changes - a constant's claimed provenance lives in its comment.</summary>
+        internal static readonly string[] ProvenanceMarks =
         {
             "sourced", "source:", "[verified]", "[provisional]", "[estimated]", "http", "oecd", "eurostat",
             "imf", "scb", "riksbank", "bea", "aer ", "journal", "20 06", "et al",

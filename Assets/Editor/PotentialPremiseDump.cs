@@ -29,9 +29,8 @@ namespace PoliSim.EditorTools
             CheckExit.ArmLogFold();
             var sb = new StringBuilder();
             sb.Append("# The premise of potential output - measured, no player, 100 turns (P5-B7; re-measured after FT-7's second seat, §394 - the labour input is employment, the seed potentials re-solved; re-measured after PN-3, §522 - the labour force is the pyramid's, the 15+ population at the state's rate, not the 20–64 window)\n\n");
-            // §579: the harness says which world it measured, because the last column is a debt ratio and FT-13 opened on it.
-            sb.Append("\n> ⚠ **THE WORLD THIS DUMP MEASURES: no player, and THE AI FINANCE MINISTRY IS LIVE** (`SimulationManager.AiFinanceMinistryEnabled` defaults true and no `PlayerCountryId` is set, so every country is AI-governed). "
-                    + "The last column is debt over GDP. **FT-13 (`COMPLETED.md` §579) is open on it**: these figures and §388's table - *every AI state inside the 60 % reference by year 100* - disagree by an order of magnitude, and the dump's own harness (one `PolicyDecision.None()` handed to `AdvanceTurn` for a century, which the ministry writes into) is the first thing to check.\n");
+            // FT-13 (ruled 2026-09-23, §584): the last column is the model's own ratio - it divided the nominal debt by REAL output for a week and read as a runaway.
+            sb.Append("No player is set, so every country is AI-governed and the AI finance ministry is live. The last column is `EconomyState.DebtToGdpRatio`: the nominal debt over nominal GDP.\n\n");
             sb.Append("**What set potential growth before P5-B7 (`MacroSystem.ApplySectorGrowthEffect`, measured 2026-09-05 as `potential01`):** `Country.PotentialGrowthRate` = clamp(`Country.BasePotentialGrowthRate` + the infrastructure adjustment + the sector adjustment, 0, 8) - a seeded trend (USA 2.0, Sweden 1.5, Germany 0.8, France 0.8, Italy 0.8, Poland 3.5 % a year) plus two ceilinged policy adjustments, read as trend labour productivity (Q3) and assigned to potential 1:1; `MacroSystem.ApplyPotentialGdpGrowthDaily` compounded `EconomyState.PotentialGDP` at that rate every day. **What it ignored:** the labour input - the 20–64 cohort, participation and the natural rate entered potential nowhere, so a country whose working-age population halved kept its potential output and, since P5-B3, lost its tax base against it. **After P5-B7 (`PotentialOutput`):** potential is its factors - the seed's potential × the labour input's ratio to the seed × a productivity index compounding at the ledger's trend, the trend re-seeded from the sourced series (Eurostat nama_10_lp_ulc, BLS PRS85006092; USA 1.613, Sweden 1.019, Germany 0.938, France 0.513, Italy 0.119, Poland 3.019) - and `Country.PotentialGrowthRate` is derived from them once a turn. The table below is whichever tree ran it; the two runs are kept in `COMPLETED.md` §322 side by side.\n\n");
             sb.Append("**Labour input** = the labour force × (1 − `EconomyState.Unemployment` / 100) (`PotentialOutput.LabourInput`, employment since §394), where the labour force is the population aged 15 and over × `EconomyState.LaborForceParticipationRate` / 100 (`PotentialOutput.LabourForce`, since PN-3 §522 - the labour force the pyramid implies at the sourced rates by age, scaled by the levers' deviation; before §522 it was the 20–64 cohort × the same 15+ rate, a count on one base and a rate on another). **Labour × productivity** = that input times `EconomyState.Productivity` (the stat, which compounds at the ledger's trend plus the hoarding cycle), both against their seeds - what potential would read if it were built from its factors.\n\n");
 
@@ -41,11 +40,10 @@ namespace PoliSim.EditorTools
             var seedGdp = new Dictionary<CountryId, float>();
             var seedLab = new Dictionary<CountryId, float>();
             var seedProd = new Dictionary<CountryId, float>();
-            var seedDebt = new Dictionary<CountryId, float>();
             var seedCohort = new Dictionary<CountryId, float>();
             foreach (Country c in world.Countries)
             {
-                seedPot[c.Id] = c.State.PotentialGDP; seedGdp[c.Id] = c.State.GDP; seedLab[c.Id] = Labour(c); seedProd[c.Id] = c.State.Productivity; seedDebt[c.Id] = c.State.GovernmentDebt; seedCohort[c.Id] = SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, c);
+                seedPot[c.Id] = c.State.PotentialGDP; seedGdp[c.Id] = c.State.GDP; seedLab[c.Id] = Labour(c); seedProd[c.Id] = c.State.Productivity; seedCohort[c.Id] = SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, c);
             }
             var lines = new Dictionary<CountryId, List<string>>();
             foreach (Country c in world.Countries) { lines[c.Id] = new List<string>(); }
@@ -65,7 +63,7 @@ namespace PoliSim.EditorTools
                     {
                         float lab = Labour(c) / seedLab[c.Id];
                         float prod = c.State.Productivity / seedProd[c.Id];
-                        lines[c.Id].Add($"| {turn} | {Inv(c.PotentialGrowthRate)} | {Inv(c.State.PotentialGDP / seedPot[c.Id])} | {Inv(c.State.GDP / seedGdp[c.Id])} | {Inv(SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, c) / seedCohort[c.Id])} | {Inv(c.State.LaborForceParticipationRate)} | {Inv(lab)} | {Inv(prod)} | {Inv(lab * prod)} | {Inv(c.State.GovernmentDebt / Mathf.Max(1f, c.State.GDP) * 100f)} |");
+                        lines[c.Id].Add($"| {turn} | {Inv(c.PotentialGrowthRate)} | {Inv(c.State.PotentialGDP / seedPot[c.Id])} | {Inv(c.State.GDP / seedGdp[c.Id])} | {Inv(SpendingDrivers.Level(SpendingDriver.WorkingAge20To64, c) / seedCohort[c.Id])} | {Inv(c.State.LaborForceParticipationRate)} | {Inv(lab)} | {Inv(prod)} | {Inv(lab * prod)} | {Inv(c.State.DebtToGdpRatio)} |");
                     }
                 }
             }
@@ -78,7 +76,7 @@ namespace PoliSim.EditorTools
                 foreach (string l in lines[c.Id]) { sb.Append(l).Append('\n'); }
                 sb.Append('\n');
             }
-            sb.Append("**Reading it:** where `potential ÷ seed` runs ahead of `labour × productivity ÷ seed`, potential is carrying output that no worker produces; the debt column is the fiscal book paying for the difference since P5-B3 put the tax bases on the wage bill.\n");
+            sb.Append("**Reading it:** where `potential ÷ seed` runs ahead of `labour × productivity ÷ seed`, potential is carrying output that no worker produces; since P5-B3 put the tax bases on the wage bill, that gap is revenue the book does not collect, and the debt column is where it would show - read as the ratio the game itself reports, never as a stock over real output (FT-13, §584).\n");
 
             string outPath = Path.Combine(Application.dataPath, "..", "docs", "generated", "POTENTIAL_PREMISE.md");
             File.WriteAllText(outPath, sb.ToString());

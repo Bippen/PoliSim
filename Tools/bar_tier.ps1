@@ -137,7 +137,7 @@ try {
         $hasher = [Security.Cryptography.SHA256]::Create(); try { $state = -join ($hasher.ComputeHash($lf) | ForEach-Object { $_.ToString('x2') }) } finally { $hasher.Dispose() }
         $row = $ledgerRows | Where-Object { $_.Length -ge 8 -and $_[0] -eq 'file' -and $_[1] -eq $m -and $_[2] -eq $state } | Select-Object -First 1
         if ($row) { "    ledger   : $m at $($state.Substring(0, 8)) - $($row[3]), $($row[5]), $($row[6])" }
-        else { "    ledger   : $m at $($state.Substring(0, 8)) - NO ROW FOR THIS STATE. ReviewLedgerCheck fails the cheap bar until the review has run, its report is under Reviews/ and Tools/review_row.ps1 has added the row" }
+        else { "    ledger   : $m at $($state.Substring(0, 8)) - NO ROW FOR THIS STATE. If the change is to COMMENTS ONLY, ReviewLedgerCheck accepts it on the reviewed state before it (s584: the comment-stripped code byte-identical, walked back through git) and prints 'comment-only'; otherwise it fails the cheap bar until the review has run, its report is under Reviews/ and Tools/review_row.ps1 has added the row" }
       }
     }
     else { '  review   : REQUIRED if the sentinel moves (a BASELINE family) or the change books money; otherwise skipped - the record says which' }

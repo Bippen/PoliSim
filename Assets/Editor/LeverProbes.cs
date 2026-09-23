@@ -59,7 +59,9 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The general form: a fresh world, the lever armed on the first turn, <paramref name="onTurn"/> called after every AdvanceTurn with the turn number (1-based).</summary>
-        public static void RunWorld(Lever lever, int horizon, Action<SimulationManager, World, Country, int> onTurn, out bool armed)
+        /// <param name="financeMinistry">§584: false runs the world with the AI finance ministry off, for a premise that measures the lines' own rules - the
+        /// ministry writes one uniform percentage onto every line of an AI-governed book, which a rule's residual cannot tell from a defect. Default on, as the game runs.</param>
+        public static void RunWorld(Lever lever, int horizon, Action<SimulationManager, World, Country, int> onTurn, out bool armed, bool financeMinistry = true)
         {
             armed = true;
             SimulationRandom.Seed(Seed);
@@ -68,6 +70,7 @@ namespace PoliSim.EditorTools
             try
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.AiFinanceMinistryEnabled = financeMinistry;
                 sim.SetWorld(world);
                 Country country = world.GetCountry(Probed);
                 var decisions = new Dictionary<CountryId, PolicyDecision>();

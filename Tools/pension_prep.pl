@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 # pension_prep.pl <sources-dir> <out-dir>
 #
-# S1 of the backlog plan (COMPLETED.md \x{a7}580, ruled COMPLETED.md §474): the pension-age and pension-payment data files for PN-1 and PN-2 -
+# S1 of the backlog plan (COMPLETED.md §580, ruled COMPLETED.md §474): the pension-age and pension-payment data files for PN-1 and PN-2 -
 # DERIVED from the sources on disk, never typed. Every input is a file the README lists by digest under PoliSim-captures/sources/pensions/.
 # Nothing in the runtime reads these files until PN-1's statute class does.
 #

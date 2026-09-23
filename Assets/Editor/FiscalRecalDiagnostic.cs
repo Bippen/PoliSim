@@ -109,7 +109,7 @@ namespace PoliSim.EditorTools
                     FiscalTurnReport r = sim.GetLastFiscalReport(c.Id);
                     if (r == null) { Debug.LogError($"TURN {turn} {c.Name}: NO FISCAL REPORT"); continue; }
 
-                    float gdp = c.State.GDP;
+                    float gdp = c.State.NominalGdp;   // R-T3 (§584): every flow below is the book's, NOMINAL - over nominal GDP, never across
                     float primary = r.BudgetBalance + r.InterestOnDebt;
                     float theo = TheoreticalRevenue(c);
                     // Pass 5: the tariff flow sits inside the multiplier's bracket too - without it the
@@ -119,7 +119,7 @@ namespace PoliSim.EditorTools
                     Debug.Log(string.Join(" ", new[]
                     {
                         $"T{turn} {c.Name,-14}",
-                        $"gdp={gdp.ToString("F0", Inv)}",
+                        $"ngdp={gdp.ToString("F0", Inv)}",
                         $"rev%={(r.Revenue / gdp * 100f).ToString("F2", Inv)}",
                         $"spend%={(r.TotalSpending / gdp * 100f).ToString("F2", Inv)}",
                         $"bal%={(r.BudgetBalance / gdp * 100f).ToString("F2", Inv)}",

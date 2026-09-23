@@ -121,8 +121,8 @@ namespace PoliSim.EditorTools
                             ok &= same;
                             float primary = r.BudgetBalance + r.InterestOnDebt;
                             Debug.Log($"TARIFF[{c.Id}] t1 report.TariffRevenue {r.TariffRevenue:F3} vs pure {pure:F3} -> {(same ? "SAME" : "DIFFERENT")} | " +
-                                      $"report.Revenue {r.Revenue:F1} | primary balance {primary:F1} = {primary / c.State.GDP * 100f:F2}% GDP; with the take routed and NOT neutralized it would read {(primary + r.TariffRevenue) / c.State.GDP * 100f:F2}% GDP | " +
-                                      $"take/GDP {r.TariffRevenue / c.State.GDP * 100f:F4}%");
+                                      $"report.Revenue {r.Revenue:F1} | primary balance {primary:F1} = {primary / c.State.NominalGdp * 100f:F2}% GDP; with the take routed and NOT neutralized it would read {(primary + r.TariffRevenue) / c.State.NominalGdp * 100f:F2}% GDP | " +
+                                      $"take/GDP {r.TariffRevenue / c.State.NominalGdp * 100f:F4}%");   // R-T3 (§584): the report's flows are the book's, nominal - over nominal GDP
                         }
                     }
                 }
@@ -131,7 +131,7 @@ namespace PoliSim.EditorTools
                 foreach (Country c in world.Countries)
                 {
                     FiscalTurnReport r = sim.GetLastFiscalReport(c.Id);
-                    Debug.Log($"TARIFF[{c.Id}] t{Turns} take {r.TariffRevenue:F3} = {r.TariffRevenue / c.State.GDP * 100f:F4}% GDP (seed share {seedTake[c.Id] / seedGdp[c.Id] * 100f:F4}%) | GDP x{c.State.GDP / seedGdp[c.Id]:F2}");
+                    Debug.Log($"TARIFF[{c.Id}] t{Turns} take {r.TariffRevenue:F3} = {r.TariffRevenue / c.State.NominalGdp * 100f:F4}% GDP (seed share {seedTake[c.Id] / seedGdp[c.Id] * 100f:F4}%) | GDP x{c.State.GDP / seedGdp[c.Id]:F2}");
                 }
 
                 Debug.Log(ok ? "TARIFF: PASS - the real path and the pure sum agree for all six." : "TARIFF: FAIL - the real path and the pure sum DISAGREE somewhere above.");

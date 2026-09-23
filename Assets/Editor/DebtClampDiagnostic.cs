@@ -93,7 +93,7 @@ namespace PoliSim.EditorTools
                     FiscalTurnReport r = sim.GetLastFiscalReport(c.Id);
                     float bb = r != null ? r.BudgetBalance : 0f;
                     float unclamped = prevDebt[c.Id] - bb;
-                    float maxDebt = MaxDebtToGdpPercent / 100f * c.State.GDP;
+                    float maxDebt = MaxDebtToGdpPercent / 100f * c.State.NominalGdp;   // R-T3 (§584): the runtime's ceiling is on NOMINAL GDP since P5-B6 (ApplyOneTimeBudgetImpact and the daily write) - against the nominal stock, never across
 
                     // "NEGATIVE" no longer means clamped - the floor is gone, so this is simply a turn on
                     // which the country's debt stock went below zero and was ALLOWED to.

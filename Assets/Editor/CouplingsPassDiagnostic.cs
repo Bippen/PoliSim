@@ -100,7 +100,7 @@ namespace PoliSim.EditorTools
                     if (turn <= 5 || turn % 5 == 0)
                     {
                         FiscalTurnReport r = sim.GetLastFiscalReport(usa.Id);
-                        float gdp = usa.State.GDP;
+                        float gdp = usa.State.NominalGdp;   // R-T3 (§584): the report's flows are nominal - over nominal GDP, never across
                         // The prison TARGET recomputed from the table's own constants - the
                         // decomposition row a reader checks the stock's approach against.
                         float prisonTarget = usa.BaselinePrisonPopulationRate

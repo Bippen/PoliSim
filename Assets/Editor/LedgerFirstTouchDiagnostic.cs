@@ -129,8 +129,8 @@ namespace PoliSim.EditorTools
                     float primary = report.BudgetBalance + report.InterestOnDebt;
                     Debug.Log($"FISCALREAD Sweden period: revenue {report.Revenue:F1}, totalSpending {report.TotalSpending:F1} " +
                               $"(interest {report.InterestOnDebt:F1}), budgetBalance {report.BudgetBalance:F1} " +
-                              $"({report.BudgetBalance / sweden.State.GDP * 100f:F2}% of GDP), primary {primary:F1} " +
-                              $"({primary / sweden.State.GDP * 100f:F2}% of GDP), debt open {debtPeriod?.DebtAtPeriodOpen:F1} " +
+                              $"({report.BudgetBalance / sweden.State.NominalGdp * 100f:F2}% of GDP), primary {primary:F1} " +   // R-T3 (§584): nominal flows over nominal GDP
+                              $"({primary / sweden.State.NominalGdp * 100f:F2}% of GDP), debt open {debtPeriod?.DebtAtPeriodOpen:F1} " +
                               $"-> close {debtPeriod?.DebtAtClose:F1}.");
                 }
 

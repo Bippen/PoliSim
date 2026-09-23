@@ -67,6 +67,7 @@ namespace PoliSim.EditorTools
 
             // ---- 1. what G excludes ----
             sb.Append("\n    1. WHAT THE IDENTITY'S G ACTUALLY IS, per country\n");
+            sb.Append("    (GDP below is REAL; the two line shares are over NOMINAL GDP - the lines are the book's - and C+I, real, over real: never across, §584)\n");
             sb.Append("    country      GDP   G (discretionary)   G/GDP    mandatory   mandatory/GDP   C+I share\n");
             sb.Append("    -------------------------------------------------------------------------------------\n");
 
@@ -81,8 +82,10 @@ namespace PoliSim.EditorTools
                     if (line.IsMandatory) { mandatory += line.Amount; } else { discretionary += line.Amount; }
                 }
 
-                gShare[c.Id] = gdp > 0 ? discretionary / gdp : 0f;
-                mandatoryShare[c.Id] = gdp > 0 ? mandatory / gdp : 0f;
+                // R-T3 (§584): the lines are the book's, NOMINAL - their shares are over nominal GDP; C and I are real and stay over real GDP. Never across.
+                float nominalGdp = c.State.NominalGdp;
+                gShare[c.Id] = nominalGdp > 0 ? discretionary / nominalGdp : 0f;
+                mandatoryShare[c.Id] = nominalGdp > 0 ? mandatory / nominalGdp : 0f;
                 float ci = gdp > 0 ? (c.State.Consumption + c.State.Investment) / gdp : 0f;
 
                 sb.Append(F("    {0,-9} {1,8:F0} {2,17:F1} {3,9:P1} {4,12:F1} {5,15:P1} {6,11:P1}\n",

@@ -110,8 +110,8 @@ namespace PoliSim.EditorTools
                 {
                     if (!line.IsImplemented) { continue; }
                     if (line.Type == TaxType.CorporateTax || line.Type == TaxType.Tariffs) { continue; }
-                    burden += line.Rate / 100f * TaxBases.Base(c, line.Type) / Mathf.Max(1f, c.State.GDP);   // P5-B3: as MacroSystem.HouseholdTaxBurdenShare reads it
-                    if (line.Type == TaxType.IncomeTax) { incomeRate = line.Rate; incomeShare = TaxBases.Base(c, line.Type) / Mathf.Max(1f, c.State.GDP); }
+                    burden += line.Rate / 100f * TaxBases.Base(c, line.Type) / Mathf.Max(1f, c.State.NominalGdp);   // P5-B3: the nominal base over NOMINAL GDP since P5-B6 (R-T3, §584), as MacroSystem.HouseholdTaxBurdenShare's denominator is - its numerator is RevenueAtRate (the income schedule, carbon per tonne), which this rate x base does not reproduce
+                    if (line.Type == TaxType.IncomeTax) { incomeRate = line.Rate; incomeShare = TaxBases.Base(c, line.Type) / Mathf.Max(1f, c.State.NominalGdp); }
                 }
 
                 float dBurden = 0.10f * incomeShare;

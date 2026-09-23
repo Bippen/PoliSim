@@ -2,10 +2,10 @@
 
 > ## START HERE — the reading order for a session's start (ruled 2026-09-17, `COMPLETED.md` §524 (c), built §525; re-cut §579)
 >
-> 1. **Run the session brief:** `powershell -NoProfile -File Tools/session_brief.ps1`. It prints, read at the moment it runs: the branch against origin and anything uncommitted, whether Unity holds the project, the last commits, the last bars, the newest record sections with their line numbers, the residue the last bar printed, the open errands, the sentinel's baseline and the newest memory file. It stores nothing and decides nothing, so it cannot go stale; a source it cannot read, it names.
+> 1. **Run the session brief:** `powershell -NoProfile -ExecutionPolicy Bypass -File Tools/session_brief.ps1` - the machine's policy refuses an unsigned script, so the bypass rides EACH invocation and the policy itself is never changed (§584). It prints, read at the moment it runs: the branch against origin and anything uncommitted, whether Unity holds the project, the last commits, the last bars, the newest record sections with their line numbers, the residue the last bar printed, the open errands, the sentinel's baseline and the newest memory file. It stores nothing and decides nothing, so it cannot go stale; a source it cannot read, it names.
 > 2. **Read this file.** All of it — it is ~26 KB and it is only rules. Every rule is one to three lines with a `§` pointer into `COMPLETED.md`, which is where its story is.
 > 3. **Read the newest memory file, then the record sections the brief names** — each by its line number. `COMPLETED.md` is never read whole.
-> 4. **Before every commit, `powershell -NoProfile -File Tools/bar_tier.ps1 -Staged`**, and run what it says the commit owes.
+> 4. **Before every commit, `powershell -NoProfile -ExecutionPolicy Bypass -File Tools/bar_tier.ps1 -Staged`**, and run what it says the commit owes.
 >
 > ⚠ **Until 2026-09-22 this file was 1.39 MB and auto-loaded** — its own instruction not to read it through arrived after it was already in context, which is the efficiency review's unattributed 846–1,220 KB of session-start reading (§573, §579). The rules stayed; the explanations and the dated findings moved to `docs/` and are searched by name.
 

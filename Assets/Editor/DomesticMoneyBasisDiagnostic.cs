@@ -78,7 +78,7 @@ namespace PoliSim.EditorTools
                 foreach (Country country in world.Countries)
                 {
                     EconomyState s = country.State;
-                    float ratio = s.GovernmentDebt / s.GDP * 100f;
+                    float ratio = s.GovernmentDebt / s.NominalGdp * 100f;   // R-T3 (§584): the identity is nominal over nominal - at the seed the price level is 1 and the two read alike, which is how the crossing hid
                     float perCapita = s.Population > 0f ? s.GDP / s.Population : float.NaN;
                     sb.Append(F("  {0,-8} GDP {1,9:0.0}  debt {2,9:0.0}  debt/GDP {3,6:0.0}% (identity {4,6:0.0}%)  per capita {5,6:0.0}k  population {6,6:0.0}M\n",
                         country.Id, s.GDP, s.GovernmentDebt, s.DebtToGdpRatio, ratio, perCapita, s.Population));
@@ -94,8 +94,8 @@ namespace PoliSim.EditorTools
                         if (line.Amount > largest) { largest = line.Amount; largestCategory = line.Category; }
                     }
 
-                    float sumShare = sum / s.GDP * 100f;
-                    float largestShare = largest / s.GDP * 100f;
+                    float sumShare = sum / s.NominalGdp * 100f;
+                    float largestShare = largest / s.NominalGdp * 100f;
                     sb.Append(F("           {0} spending lines sum {1,8:0.0} = {2,5:0.0}% of GDP; largest {3} {4,7:0.0} = {5,5:0.0}% of GDP\n",
                         country.SpendingLines.Count, sum, sumShare, largestCategory, largest, largestShare));
                     failures += Assert(sb, $"{country.Id}: no seeded line above {MaxSeededLineShareOfGdp}% of GDP",

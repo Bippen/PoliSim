@@ -105,8 +105,10 @@ namespace PoliSim.EditorTools
                             if (d == TaxBaseDriver.WageBill) { wage += TaxBases.Revenue(c, line); hasWageLine = true; }
                             else if (d == TaxBaseDriver.Output) { output += TaxBases.Revenue(c, line); hasOutputLine = true; }
                         }
-                        if (shocked) { shockedWage = wage; shockedOutput = output; shockedGdp = c.State.GDP; }
-                        else { untouchedWage = wage; untouchedOutput = output; untouchedGdp = c.State.GDP; }
+                        // R-T3 (§584): an output line's base is the seed's share × real GDP's ratio × the price level - NOMINAL GDP's ratio - so it is held against
+                        // nominal GDP; against real GDP it passed only while the two runs' price levels had not parted
+                        if (shocked) { shockedWage = wage; shockedOutput = output; shockedGdp = c.State.NominalGdp; }
+                        else { untouchedWage = wage; untouchedOutput = output; untouchedGdp = c.State.NominalGdp; }
                     }
                     finally { UnityEngine.Object.DestroyImmediate(g); }
                 }

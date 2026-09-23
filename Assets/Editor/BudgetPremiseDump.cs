@@ -56,15 +56,22 @@ namespace PoliSim.EditorTools
             var baseLines = new Dictionary<SpendingCategory, List<float>>();
             var baseGdp = new List<float>();
             var baseInflation = new List<float>();
+            // R-T3 (2026-09-23, §584): the lines and the revenues are NOMINAL and every driver, GDP included, is REAL - the price level and the real wage are
+            // read turn by turn so each ratio below is set against its own kind (nominal with nominal, real with real, never across).
+            var basePrice = new List<float>();
+            var baseRealWage = new List<float>();
             var seedDriver = new Dictionary<SpendingCategory, float>();
             var endDriver = new Dictionary<SpendingCategory, float>();
             var baseRevenue = new Dictionary<TaxType, List<float>>();
             var baseDriverLevel = new Dictionary<TaxType, List<float>>();   // P5-B3: each line's driver level, turn by turn
             var baseRates = new Dictionary<TaxType, float>();
             float potentialGrowth = 0f;
+            var growthRates = new List<float>();   // §584: each turn's potential rate as the callback reads it, for the per-turn product of the driverless line's real factor
+            // §584: the finance ministry OFF - it writes one uniform percentage onto every AI line, and the residual below measures the lines' own rule.
             LeverProbes.RunWorld(null, Horizon, (sim, world, country, turn) =>
             {
                 potentialGrowth = country.PotentialGrowthRate;
+                growthRates.Add(country.PotentialGrowthRate);
                 foreach (SpendingLine l in country.SpendingLines) { endDriver[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), country); }
                 foreach (SpendingLine l in country.SpendingLines)
                 {
@@ -73,6 +80,8 @@ namespace PoliSim.EditorTools
                 }
                 baseGdp.Add(country.State.GDP);
                 baseInflation.Add(country.State.Inflation);
+                basePrice.Add(country.State.PriceLevel);
+                baseRealWage.Add(country.State.RealWageIndex);
                 foreach (TaxLine t in country.TaxLines)
                 {
                     if (!t.IsImplemented || t.Type == TaxType.Tariffs) { continue; }
@@ -81,34 +90,46 @@ namespace PoliSim.EditorTools
                     if (!baseDriverLevel.TryGetValue(t.Type, out List<float> lv)) { baseDriverLevel[t.Type] = lv = new List<float>(); }
                     lv.Add(TaxBases.Level(TaxBases.Of(t.Type), country));
                 }
-            }, out _);
-            float seedGdp = 0f;
+            }, out _, financeMinistry: false);
+            float seedGdp = 0f, seedPrice = 1f, seedRealWage = 100f, seedGrowthRate = 0f;
             var seedLines = new Dictionary<SpendingCategory, (float Amount, bool Mandatory)>();
             {
                 SimulationRandom.Seed(LeverProbes.Seed);
                 World w = WorldFactory.CreateDefault();
                 Country c = w.GetCountry(LeverProbes.Probed);
                 seedGdp = c.State.GDP;
+                seedPrice = c.State.PriceLevel;
+                seedRealWage = c.State.RealWageIndex;
+                seedGrowthRate = c.PotentialGrowthRate;
                 foreach (SpendingLine l in c.SpendingLines) { seedLines[l.Category] = (l.Amount, l.IsMandatory); }
                 foreach (SpendingLine l in c.SpendingLines) { seedDriver[l.Category] = SpendingDrivers.Level(SpendingDrivers.Of(l.Category), c); }
             }
 
             sb.Append("## 1. The spending lines - what the dial sets, what the year boundary does, what moves the line between changes\n\n");
             sb.Append("**What the dial sets (from the code, `ApplySpendingLineChanges`):** a PERCENTAGE change of the line's CURRENT nominal amount, applied once on the turn the decision carries it - clamped to ±30 % for a Discretionary line and ±15 % for a Mandatory one, and then the amount is clamped to [0.2×, 3×] of the line's seed anchor (`ClampToSeedRange`); since P5-B2 a line can also be SET to a nominal amount (`PolicyDecision.SpendingNominalTargets`) and PINNED (`PolicyDecision.SpendingPinChanges`). The amount is nominal (the same $B-scale unit as GDP) and PERSISTS - nothing resets it at the fiscal-year boundary (`IsFiscalYearStart` only opens the budget process). **The \"normalises after a year\" a player sees is the DIAL, not the line:** `PolicyDecision.SpendingLineChanges` is a per-turn delta, consumed on application, so next year's dial reads 0 % while the amount it set stays. Proved below.\n\n");
-            sb.Append("**What moves a line between player changes (from the code, P5-B2's `IndexSpendingLines`):** a line with a DRIVER (`SpendingDrivers`: pensions to the 65+ cohort, unemployment benefits to the unemployment rate, education to the 0–19 cohort, health to the age-cost index, …) indexes to its level as the ratio now/then - there is NO price term, the book being in constant prices (`SimulationManager.IndexSpendingLines` says why, with the measurement); a line with no driver holds its figure; a pinned line takes none of it; a country the player does not govern also grows its lines at its real potential rate (the AI's budget rule). The Justice (else PublicServices) and HomelandSecurity (else PublicServices) lines take the crime dials' enforcement cost; the Commerce (else PublicServices) line the sector dials' support cost (P4-B3). Before P5-B2 every line grew at the seed's potential rate and nothing else (§312). Proved below - the run below has NO player, so every country is under the AI rule.\n\n");
+            sb.Append("**What moves a line between player changes (from the code, P5-B2's `IndexSpendingLines`):** a line with a DRIVER (`SpendingDrivers`: pensions to the 65+ cohort, unemployment benefits to the unemployment rate, education to the 0–19 cohort, health to the age-cost index, …) indexes to its level as the ratio now/then, and every line carries the year's prices as the price level's ratio now/then, the book being in current prices since P5-B6 (`SimulationManager.IndexSpendingLines` holds the rule); a pinned line takes none of it; a country the player does not govern also carries its real factor (the AI's budget rule, RF-2 as re-formed at §384): a caseload line - one with a driver - the real wage's growth, a line with no driver the economy's real growth. The Justice (else PublicServices) and HomelandSecurity (else PublicServices) lines take the crime dials' enforcement cost; the Commerce (else PublicServices) line the sector dials' support cost (P4-B3). Before P5-B2 every line grew at the seed's potential rate and nothing else (§312). Proved below - the run below has NO player, so every country is under the AI rule.\n\n");
 
-            sb.Append($"| line | driver | mandatory | seed ($B) | dial range | amount after {Horizon} turns | ratio | price index | driver ratio | real growth (AI) | residual |\n|---|---|---|---|---|---|---|---|---|---|---|\n");
-            float growthCompound = Mathf.Pow(1f + potentialGrowth / 100f, Horizon);
-            float gdpRatio = baseGdp[Horizon - 1] / seedGdp;
+            sb.Append($"| line | driver | mandatory | seed ($B) | dial range | amount after {Horizon} turns | ratio | price index | driver ratio | real factor (AI) | residual |\n|---|---|---|---|---|---|---|---|---|---|---|\n");
+            // §584: the driverless line's real factor as the index applies it - one year's potential rate per boundary, multiplied. Both alignments are
+            // logged; measured 2026-09-23 (`s584_proofA2`), the rate as each boundary OPENED reproduces the index to a residual of 1.000 on every line.
+            float productOpen = 1f, productAfter = 1f;
+            for (int t = 0; t < Horizon; t++) { productOpen *= 1f + (t == 0 ? seedGrowthRate : growthRates[t - 1]) / 100f; productAfter *= 1f + growthRates[t] / 100f; }
+            Debug.Log($"BUDGETPREMISE: driverless real factor - rate at the boundary's open {productOpen:F6}, rate after the turn {productAfter:F6}, end rate compounded {Mathf.Pow(1f + potentialGrowth / 100f, Horizon):F6}");
+            float growthCompound = productOpen;
+            float priceRatio = basePrice[Horizon - 1] / Mathf.Max(0.0001f, seedPrice);
+            float wageRatio = baseRealWage[Horizon - 1] / Mathf.Max(0.0001f, seedRealWage);
+            float realGdpRatio = baseGdp[Horizon - 1] / seedGdp;
+            float gdpRatio = realGdpRatio * priceRatio;   // R-T3: NOMINAL GDP's ratio, which is what the sentence below has always said it prints
             foreach (KeyValuePair<SpendingCategory, List<float>> kv in baseLines.OrderBy(k => k.Key.ToString(), StringComparer.Ordinal))
             {
                 (float seed, bool mandatory) = seedLines[kv.Key];
                 float ratio = kv.Value[Horizon - 1] / seed;
                 float driverRatio = seedDriver.TryGetValue(kv.Key, out float d0) && d0 > 0f && endDriver.TryGetValue(kv.Key, out float d5) ? d5 / d0 : 1f;
-                float residual = ratio / (driverRatio * growthCompound);
-                sb.Append($"| {kv.Key} | {SpendingDrivers.Name(SpendingDrivers.Of(kv.Key))} | {(mandatory ? "yes" : "no")} | {Inv(seed)} | ±{(mandatory ? 15 : 30)} % | {Inv(kv.Value[Horizon - 1])} | {Inv(ratio)} | {Inv(driverRatio)} | {Inv(growthCompound)} | {Inv(residual)} |\n");
+                float realFactor = SpendingDrivers.Of(kv.Key) == SpendingDriver.None ? growthCompound : wageRatio;
+                float residual = ratio / (priceRatio * driverRatio * realFactor);   // R-T3: a nominal line's ratio against prices × its real factors - the price index was a header with no cell
+                sb.Append($"| {kv.Key} | {SpendingDrivers.Name(SpendingDrivers.Of(kv.Key))} | {(mandatory ? "yes" : "no")} | {Inv(seed)} | ±{(mandatory ? 15 : 30)} % | {Inv(kv.Value[Horizon - 1])} | {Inv(ratio)} | {Inv(priceRatio)} | {Inv(driverRatio)} | {Inv(realFactor)} | {Inv(residual)} |\n");
             }
-            sb.Append($"\nNominal GDP over the same {Horizon} turns grew by {Inv(gdpRatio)}×. A residual of 1.000 means the line is exactly its seed times its driver (times real growth under the AI rule) - the enforcement and support costs move a line only when their dials do, and nothing here moved them.\n\n");
+            sb.Append($"\nNominal GDP over the same {Horizon} turns grew by {Inv(gdpRatio)}× (real GDP {Inv(realGdpRatio)}×, the price level {Inv(priceRatio)}×). A residual of 1.000 means the line is exactly its seed times the price index, its driver and its real factor under the AI rule - the enforcement and support costs move a line only when their dials do, and nothing here moved them. **This run holds the AI finance ministry OFF** (§584): it writes one uniform percentage onto every line of an AI-governed book, which the residual could not tell from a defect of the rule. The real factor of a line with no driver is the year-by-year product of the potential rate each boundary applied.\n\n");
 
             // the persistence probe: +full range on the first Discretionary line, then untouched
             SpendingCategory probeCat = baseLines.Keys.FirstOrDefault(k => !seedLines[k].Mandatory);
@@ -119,7 +140,7 @@ namespace PoliSim.EditorTools
                 LeverProbes.RunWorld(step, Horizon, (sim, world, country, turn) =>
                 {
                     stepped.Add(country.SpendingLines.Find(l => l.Category == probeCat).Amount);
-                }, out _);
+                }, out _, financeMinistry: false);   // §584: against the same ministry-off baseline
                 sb.Append($"**The persistence probe** ({probeCat}, a Discretionary line, stepped +30 % - the dial's full range - on turn 1, then untouched): ");
                 var parts = new List<string>();
                 for (int t = 0; t < Horizon; t++) { parts.Add($"year {t + 1} {Inv(stepped[t] / baseLines[probeCat][t])}×"); }
@@ -128,21 +149,24 @@ namespace PoliSim.EditorTools
 
             // ---- §2 the tax lines ------------------------------------------------------------------------
             sb.Append("## 2. The tax lines - revenue = rate × the base, and the base follows its driver\n\n");
-            sb.Append("From the code (`TaxBases.Revenue`, P5-B3; the share table `TaxBaseTable.BaseShareOfGdp`, D-16, beneath it): a tax line's revenue is the rate times its BASE, and the base is the sourced share of the seed's GDP carried forward by its own DRIVER - the wage bill (the 20–64 cohort × participation × (1 − unemployment) × the real wage) for income and payroll taxes, consumption for VAT, sales and excise, the housing stock at its price for property tax, output for the rest. Before P5-B3 every base was a fixed share of GDP: §312 measured the elasticity to GDP at exactly 1 and named the missing employment channel. The distribution channel (F4's income dimension) is still not there - the substrate carries no income. The book is in constant prices, so \"nominal\" GDP is GDP. Proved below - the run has NO player.\n\n");
-            sb.Append($"| tax line | driver | rate held (%) | revenue year 1 ($B) | revenue year {Horizon} ($B) | ratio | driver ratio | GDP ratio | elasticity to its driver | elasticity to GDP |\n|---|---|---|---|---|---|---|---|---|---|\n");
+            sb.Append("From the code (`TaxBases.Revenue`, P5-B3; the share table `TaxBaseTable.BaseShareOfGdp`, D-16, beneath it): a tax line's revenue is the rate times its BASE, and the base is the sourced share of the seed's GDP carried forward by its own DRIVER (named per line in the table; `TaxBases.Level` holds each one) and carried to the year's prices by the price level - the base, and so the revenue, is NOMINAL since P5-B6 while every driver is REAL. The income line is scaled by its statute's schedule where the country's statute responds (`TaxSchedule`, F4-2). Before P5-B3 every base was a fixed share of GDP: §312 measured the elasticity to GDP at exactly 1 and named the missing employment channel. **Every ratio below is REAL** - the revenue deflated by the price level of its own year (R-T3, §584: until 2026-09-23 this section set nominal revenue against real drivers, which reads inflation as elasticity). Proved below - the run has NO player, and it is §1's run: **the AI finance ministry OFF**, so no rate here was moved by the ministry.\n\n");
+            sb.Append($"| tax line | driver | rate held (%) | revenue year 1 ($B) | revenue year {Horizon} ($B) | real ratio | driver ratio | GDP ratio (real) | elasticity to its driver | elasticity to GDP |\n|---|---|---|---|---|---|---|---|---|---|\n");
             foreach (KeyValuePair<TaxType, List<float>> kv in baseRevenue.OrderBy(k => k.Key.ToString(), StringComparer.Ordinal))
             {
                 float r1 = kv.Value[0], r5 = kv.Value[Horizon - 1];
+                // R-T3: the revenue's ratio at the seed's prices - each year's nominal take over that year's price level - so it meets the real drivers on their own kind
+                float realRatio = (r5 / Mathf.Max(0.0001f, basePrice[Horizon - 1])) / (r1 / Mathf.Max(0.0001f, basePrice[0]));
                 float gdp1 = baseGdp[0], gdp5 = baseGdp[Horizon - 1];
-                float elasticity = Mathf.Abs(Mathf.Log(gdp5 / gdp1)) > 1e-6f ? Mathf.Log(r5 / r1) / Mathf.Log(gdp5 / gdp1) : float.NaN;
+                float elasticity = Mathf.Abs(Mathf.Log(gdp5 / gdp1)) > 1e-6f ? Mathf.Log(realRatio) / Mathf.Log(gdp5 / gdp1) : float.NaN;
                 float d1 = baseDriverLevel[kv.Key][0], d5 = baseDriverLevel[kv.Key][Horizon - 1];
-                float driverElasticity = d1 > 0f && Mathf.Abs(Mathf.Log(d5 / d1)) > 1e-6f ? Mathf.Log(r5 / r1) / Mathf.Log(d5 / d1) : float.NaN;
-                sb.Append($"| {kv.Key} | {TaxBases.Name(TaxBases.Of(kv.Key))} | {Inv(baseRates[kv.Key])} | {Inv(r1)} | {Inv(r5)} | {Inv(r5 / r1)} | {Inv(d1 > 0f ? d5 / d1 : 1f)} | {Inv(gdp5 / gdp1)} | {Inv(driverElasticity)} | {Inv(elasticity)} |\n");
+                float driverElasticity = d1 > 0f && Mathf.Abs(Mathf.Log(d5 / d1)) > 1e-6f ? Mathf.Log(realRatio) / Mathf.Log(d5 / d1) : float.NaN;
+                sb.Append($"| {kv.Key} | {TaxBases.Name(TaxBases.Of(kv.Key))} | {Inv(baseRates[kv.Key])} | {Inv(r1)} | {Inv(r5)} | {Inv(realRatio)} | {Inv(d1 > 0f ? d5 / d1 : 1f)} | {Inv(gdp5 / gdp1)} | {Inv(driverElasticity)} | {Inv(elasticity)} |\n");
             }
-            sb.Append("\nA rate held constant yields rising revenue in a growing economy and falling revenue in a recession - through its base's driver: elasticity 1 to the wage bill on the income and payroll lines (jobs lost cut them beyond what output lost), 1 to consumption on VAT, 1 to output on the rest (a driver elasticity of exactly 1 is the construction; the GDP column shows how far each driver ran from output over the horizon). The year-1 revenue of a consumption line reads its reference from the first day (the seed has no consumption yet). What is still NOT there: the distribution channel (a rising Gini does not move income-tax revenue) - it waits on F4's income dimension. `RevenueBaseDiagnostic` states the elasticities on the simulation bar.\n\n");
+            sb.Append("\nA rate held constant yields rising revenue in a growing economy and falling revenue in a recession - through its base's driver: elasticity 1 to the wage bill on the income and payroll lines (jobs lost cut them beyond what output lost), 1 to consumption on VAT, 1 to output on the rest (a driver elasticity of exactly 1 is the construction - except the income line where its statute's schedule responds, whose excess over 1 is the schedule's progression (`TaxSchedule`, F4-2); the GDP column shows how far each driver ran from output over the horizon). The year-1 revenue of a consumption line reads its reference from the first day (the seed has no consumption yet). What is still NOT there: the distribution channel (a rising Gini does not move income-tax revenue) - it waits on F4's income dimension. `RevenueBaseDiagnostic` states the elasticities on the simulation bar.\n\n");
 
             // ---- §3 the liveness audit at magnitude ----------------------------------------------------
             sb.Append("## 3. The liveness audit at magnitude - every slider stepped by its full range, read at one and five years\n\n");
+            sb.Append("This section runs the world as the game does - **the AI finance ministry ON** (§1 and §2 held it off to read the rules alone).\n\n");
             sb.Append($"A slider is **LIVE** when its step moves a headline quantity ({string.Join(", ", Headline)}) of the probed country by at least {NegligibleRelative:P2} of itself (or {NegligibleAbsolute} of a point where the quantity sits under 1) at one year or at five; **LIVE-BUT-NEGLIGIBLE** when something moves but no headline quantity by that much at five years; **DEAD** when no public EconomyState float of the probed country moves at all at five years. **NOT ARMABLE** when the lever is not the probed country's to pull, and the row says why (P5-B4): a tax it has not implemented (the row is drawn disabled), the policy rate where a governor sits, the base tariff of a customs-union member, a partner it does not trade with, a fund or programme it does not have. The thresholds are stated, not derived: half a tenth of a percent after five years is the size of a rounding difference on the sheet.\n\n");
             List<LeverProbes.Quantity> quantities = LeverProbes.BuildQuantities();
             var headlineIndex = new List<int>();
