@@ -189,6 +189,7 @@ namespace PoliSim.Simulation
                 case ClosingStat.RealWageIndex: return state.RealWageIndex;
                 case ClosingStat.HousingOverburden: return state.HousingOverburden;
                 case ClosingStat.Homeownership: return state.Homeownership;
+                case ClosingStat.RealGdp: return state.GDP;   // FT-15 (§586): real output, for the rating review's growth
                 default: return 0f;
             }
         }

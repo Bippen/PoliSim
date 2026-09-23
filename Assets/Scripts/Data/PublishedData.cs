@@ -113,7 +113,16 @@ namespace PoliSim.Data
         // closing record either - nothing consumes a settled HPI, unlike DebtToGdpRatio's rating
         // review).
         HousingOverburden,
-        Homeownership
+        Homeownership,
+
+        /// <summary>
+        /// FT-15 (ruled 2026-09-23, §586): REAL GDP, recorded and never published, on GDP's own quarterly boundaries - the rating
+        /// review's growth. `Gdp` records NOMINAL output (P5-B6), which the review's deficit arithmetic needs, and read as growth it
+        /// let inflation improve a rating; the live path already read real growth, so the two paths disagreed on one country.
+        /// Appended per the save format's standing rule: a save from before carries no closing of it, and the first review after
+        /// its load omits the growth term for want of a year-ago figure, as `EvaluateFrom` does for any missing year.
+        /// </summary>
+        RealGdp
     }
 
     public static class ClosingStatExtensions

@@ -163,6 +163,7 @@ namespace PoliSim.Simulation
             {
                 case ClosingStat.Gdp:
                 case ClosingStat.DebtToGdpRatio:
+                case ClosingStat.RealGdp:   // FT-15 (§586): the review's growth closes on the same boundaries as its deficit
                     int quarterFirstMonth = ((date.Month - 1) / 3) * 3 + 1;
                     return new System.DateTime(date.Year, quarterFirstMonth, 1);
 

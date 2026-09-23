@@ -206,12 +206,21 @@ namespace PoliSim.Simulation
 
             deficitPercent = null;
             growthPercent = null;
+
+            // FT-15 (ruled 2026-09-23, §586): ONE reading of growth on both paths, and it is REAL - the settled path read it off the nominal
+            // closings, so inflation read as growth and improved a rating, while the live path (Evaluate) read real growth. The deficit below
+            // stays on the nominal closings, where the identity needs them.
+            float? realNow = country.Published.ClosingValue(ClosingStat.RealGdp, settled);
+            float? realPrior = country.Published.ClosingValue(ClosingStat.RealGdp, prior);
+            if (realNow.HasValue && realPrior.HasValue && realPrior.Value > 0f)
+            {
+                growthPercent = (realNow.Value - realPrior.Value) / realPrior.Value * 100f;
+            }
+
             if (!gdpNow.HasValue || !gdpPrior.HasValue || gdpPrior.Value <= 0f)
             {
                 return;
             }
-
-            growthPercent = (gdpNow.Value - gdpPrior.Value) / gdpPrior.Value * 100f;
 
             if (debtNow.HasValue && debtPrior.HasValue && gdpNow.Value > 0f)
             {
