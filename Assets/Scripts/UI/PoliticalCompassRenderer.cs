@@ -200,6 +200,16 @@ namespace PoliSim.UI
             float plotWidthAvailable = withLegend ? rect.width - legendWidth - LegendGap : rect.width;
             float bandHeight = CaptionBandHeight(captions, captionStyle, Mathf.Max(1f, plotWidthAvailable));
             float plotSide = Mathf.Max(1f, Mathf.Min(plotWidthAvailable, rect.height - bandHeight));
+            // PF-3 (§595): beside a legend the captions wrap at the PLOT'S side, not the width available to it - so where the height, not the width, sets the side,
+            // the band measured at the wider figure was a line short, and the USA's y-axis caption (the longest) stood 15.1 px below the container at 1280. The band
+            // is re-measured at the width it will wrap at and the side re-taken from it until the two agree (a narrower side can only add lines; four passes settle it).
+            for (int pass = 0; withLegend && pass < 4; pass++)
+            {
+                float wrappedBand = CaptionBandHeight(captions, captionStyle, plotSide);
+                if (wrappedBand <= bandHeight + 0.01f) { break; }
+                bandHeight = wrappedBand;
+                plotSide = Mathf.Max(1f, Mathf.Min(plotWidthAvailable, rect.height - bandHeight));
+            }
             var plotSquare = new Rect(rect.x, rect.y, plotSide, plotSide);
 
             // The margin holds the end words (full mode) or a little air (compact).
