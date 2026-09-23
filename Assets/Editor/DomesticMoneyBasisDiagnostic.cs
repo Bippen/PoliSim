@@ -153,7 +153,7 @@ namespace PoliSim.EditorTools
                     foreach ((string source, string option, float authored) in options)
                     {
                         float applied = AuthoredImpactScale.ToCountryBillions(authored, country);
-                        float share = Mathf.Abs(applied) / country.State.GDP * 100f;
+                        float share = Mathf.Abs(applied) / country.State.NominalGdp * 100f;   // FT-14 (§587): sized on nominal GDP, read against it
                         if (share > worstShare)
                         {
                             worstShare = share;
@@ -164,9 +164,20 @@ namespace PoliSim.EditorTools
                     }
 
                     sb.Append(F("  {0,-8} largest as applied {1,7:+0.0;-0.0} = {2,5:0.00}% of GDP (unscaled it was {3,7:+0.0;-0.0} = {4,6:0.00}% of GDP)  <- {5}\n",
-                        country.Id, worstApplied, worstShare, worstUnscaled, Mathf.Abs(worstUnscaled) / country.State.GDP * 100f, worst));
+                        country.Id, worstApplied, worstShare, worstUnscaled, Mathf.Abs(worstUnscaled) / country.State.NominalGdp * 100f, worst));
                     failures += Assert(sb, $"{country.Id}: no pooled settlement lands above {MaxOneTimeImpactShareOfGdp}% of its GDP",
                         worstShare <= MaxOneTimeImpactShareOfGdp, F("{0:0.00}% ({1})", worstShare, worst));
+
+                    // FT-14 (§587): an authored figure is sized on NOMINAL GDP - the check the share above cannot make, because a share read
+                    // against the same GDP the figure was sized on is authored / scale under either rule (the s587 review's F1). At a price level
+                    // other than 1 the applied figure must be authored × GDP × the price level ÷ the scale; on real GDP it misses by the level.
+                    float heldLevel = country.State.PriceLevel;
+                    country.State.PriceLevel = heldLevel * 2.5f;
+                    float probeApplied = AuthoredImpactScale.ToCountryBillions(100f, country);
+                    float probeExpected = 100f * country.State.GDP * country.State.PriceLevel / AuthoredImpactScale.AuthoredScaleGdp;
+                    country.State.PriceLevel = heldLevel;
+                    failures += Assert(sb, $"{country.Id}: an authored figure is sized on nominal GDP (the price level raised 2.5-fold, the figure with it)",
+                        Mathf.Abs(probeApplied - probeExpected) <= 1e-3f * Mathf.Abs(probeExpected), F("{0:0.000} applied against {1:0.000} expected", probeApplied, probeExpected));
                 }
 
                 // The identity claim is about the SEED (the scale is the USA seed's GDP), so it is read off a

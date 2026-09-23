@@ -23,14 +23,17 @@ namespace PoliSim.Simulation
         public const float AuthoredScaleGdp = WorldFactory.UsaSeedGdp;
 
         /// <summary>An authored settlement in the deciding country's billions: the same share of its
-        /// GDP that the authored figure is of the authored scale.</summary>
+        /// NOMINAL GDP that the authored figure is of the authored scale - booked nominal, sized nominal
+        /// (FT-14, ruled 2026-09-23, §587).</summary>
         public static float ToCountryBillions(float authoredBillions, Country country)
         {
             // The seam, closed 2026-09-02: the same share of the deciding country's GDP that the authored
             // figure is of the authored scale. At the USA seed the factor is exactly 1, so the USA applies
             // as written; every other country scales. Current GDP, not seed GDP: a one-time settlement is
-            // a share of the economy that pays it.
-            return authoredBillions * (country.State.GDP / AuthoredScaleGdp);
+            // a share of the economy that pays it. FT-14 (§587): NOMINAL GDP - the figure is booked into the
+            // nominal budget, and sized on real output its weight fell as 1 / the price level. The authored
+            // scale is the USA seed's, where the price level is 1, so nominal and real agree there.
+            return authoredBillions * (country.State.NominalGdp / AuthoredScaleGdp);
         }
     }
 }

@@ -27,7 +27,7 @@ namespace PoliSim.Data
         public string Label;
         public float CrimeIndexShock;
         public float PovertyRateShock;
-        /// <summary>P2-0.1 (2026-09-02): authored in billions on the USA seed's scale (WorldFactory.UsaSeedGdp) and applied as the same share of the deciding country's GDP - see AuthoredImpactScale.</summary>
+        /// <summary>P2-0.1 (2026-09-02): authored in billions on the USA seed's scale (WorldFactory.UsaSeedGdp) and applied as the same share of the deciding country's NOMINAL GDP (FT-14, §587) - see AuthoredImpactScale.</summary>
         public float BudgetImpact;
         public float ApprovalEffect;
 
