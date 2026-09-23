@@ -21,7 +21,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             EnvironmentSeeds e = country.Environment;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            PlateFamily("Environment", "2023–24", "SOURCED · EDGAR · WORLD BANK");
+            PlateFamily("Environment", "2023–24", "SOURCED · EDGAR · WORLD BANK", keyRow: "Emissions per person");   // 16b (§589): the family's key, DECLARED
             if (e == null || !e.Seeded)
             {
                 GUILayout.Label("This country carries no environment family - the spine covers six, and this is not one of them.", _labelStyle);

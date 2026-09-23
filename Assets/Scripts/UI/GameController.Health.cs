@@ -60,13 +60,20 @@ namespace PoliSim.UI
             }
         }
 
-        private string _plateFamilyName, _plateFamilyVintage, _plateFamilyPublisher;
+        private string _plateFamilyName, _plateFamilyVintage, _plateFamilyPublisher, _plateFamilyKey;
 
-        /// <summary>D16 §3.4: the family whose plate is drawn next - its name, its vintage (the years alone at rest) and its publisher (behind the tab).</summary>
-        private void PlateFamily(string name, string vintage, string publisher)
+        /// <summary>D16 §3.4: the family whose plate is drawn next - its name, its vintage (the years alone at rest) and its publisher (behind the tab).
+        /// Board 16b (§589): <paramref name="keyRow"/> names the row the family's header lifts - a DECLARATION, the family's own word, never a rule the
+        /// renderer guesses; null keeps the header a family has.</summary>
+        private void PlateFamily(string name, string vintage, string publisher, string keyRow = null)
         {
-            _plateFamilyName = name; _plateFamilyVintage = vintage; _plateFamilyPublisher = publisher;
+            _plateFamilyName = name; _plateFamilyVintage = vintage; _plateFamilyPublisher = publisher; _plateFamilyKey = keyRow;
         }
+
+        /// <summary>Board 16c (§589): the rows opened in place by a click on their names, keyed plate · row - the SITTING's state, cleared on load
+        /// (RestoreFromSave); the desk-global † is the persisted one. And the name cells the last repaint laid out, which the next MouseDown is read against.</summary>
+        private readonly HashSet<string> _plateRowsOpen = new HashSet<string>(System.StringComparer.Ordinal);
+        private readonly Dictionary<string, Rect> _plateNameRects = new Dictionary<string, Rect>(System.StringComparer.Ordinal);
 
         /// <summary>Where the plate was laid out last frame - the film driver scrolls to it (UiScreenshotDriver, 04b_people_health_plate).</summary>
         private Rect _healthPlateLastArea;
@@ -144,7 +151,7 @@ namespace PoliSim.UI
             };
 
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
-            PlateFamily("Health", h.CoverageYear > 0 ? h.CoverageYear + "–25" : "2022–25", "SOURCED · OECD");
+            PlateFamily("Health", h.CoverageYear > 0 ? h.CoverageYear + "–25" : "2022–25", "SOURCED · OECD", keyRow: "Coverage");   // 16b: the family's key, DECLARED
             string footText = "SEEDS: OECD SDMX, LATEST OBSERVATION PER COUNTRY, SEX TOTAL · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS ARE THE OTHER FIVE AT SEED · A BAND'S ENDS ARE THE FAMILY'S STATED RANGE, NOT THE DATA'S · COUPLINGS: THE HEALTH SPINE'S TABLES, DRAFT UNTIL MEASURED";
             _healthPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
             {
@@ -152,32 +159,54 @@ namespace PoliSim.UI
                 float with = HealthFamily.ProjectTreatableMortality(country, draftHealthSpending);
                 float without = HealthFamily.ProjectTreatableMortality(country, standingHealthSpending);
                 return (with - without, true, "PER 100 000");
-            }, extraRowHeightFor: (nameH, capH, srcH, smallH) => Mathf.Max(capH + smallH + srcH + StatsUnit(8f), nameH + capH + srcH + StatsUnit(8f)),
+            }, extraRowHeightFor: (nameH, capH, srcH, smallH) => Mathf.Max(capH + Mathf.Ceil(DeskCaptionHeight(DeskCaption(7f, PoliSimTheme.TextPrimary, true))) + srcH + StatsUnit(8f), nameH + capH + srcH + StatsUnit(8f)),
             drawExtraRow: (x, y, pad, styles) =>
             {
-                // Supporting readouts: one row of small figures, borderless between them - moved by the quality key, never coupled.
-                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f), x[1] - x[0] - pad, styles.NameH), "Supporting readouts", h.HasSupporting ? styles.Name : styles.NameAbsent);
-                if (DeskProvenance.On)
+                // Supporting readouts: moved by the quality key, never coupled. Board 16d (§589): at rest ONE line in the caption register - five names in
+                // TextMuted and five figures in TextPrimary across the figure and band columns - so supporting figures never out-ink the figures they support;
+                // the built five-column form, with its units and the quality-key line, is the OPEN form (a click on the name, or the † tab).
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + (styles.Open ? StatsUnit(2f) : StatsUnit(6f)), x[1] - x[0] - pad, styles.NameH), "Supporting readouts", h.HasSupporting ? styles.Name : styles.NameAbsent);
+                if (styles.Open)
                 {
                     PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH), "MOVED BY THE QUALITY KEY · NEVER COUPLED", styles.Caption);
                     PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH), "OECD HCQO · DF_PC · DF_AC" + (h.SupportingYear > 0 ? " · " + h.SupportingYear : ""), styles.Source);
                 }
-                if (h.HasSupporting)
+                if (h.HasSupporting && !styles.Open)
                 {
+                    GUIStyle restName = DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleLeft);
+                    GUIStyle restFigure = DeskCaption(7f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleLeft);
+                    float lineH = Mathf.Ceil(DeskCaptionHeight(restFigure));
+                    float lx = x[1] + pad, lineY = y + StatsUnit(6f) + Mathf.Max(0f, (styles.NameH - lineH) * 0.5f), lineEnd = x[3] - pad;
+                    for (int i = 0; i < 5 && lx < lineEnd; i++)
+                    {
+                        string part = (i > 0 ? " · " : "") + HealthFamily.SupportingNames[i] + " ";
+                        string fig = PlateFigure(HealthFamily.SupportingNow(country, i), 1);
+                        float pw = restName.CalcSize(new GUIContent(part)).x, fw = restFigure.CalcSize(new GUIContent(fig)).x;
+                        PoliSimWidgets.MeasuredLabel(new Rect(lx, lineY, Mathf.Min(pw, lineEnd - lx), lineH), part, restName);
+                        lx += pw;
+                        PoliSimWidgets.MeasuredLabel(new Rect(lx, lineY, Mathf.Max(1f, Mathf.Min(fw, lineEnd - lx)), lineH), fig, restFigure);
+                        lx += fw;
+                    }
+                }
+                else if (h.HasSupporting)
+                {
+                    // the open form: the built five columns, the figures dropped from the data figure's register to the caption's bold (16d)
+                    GUIStyle openFigure = DeskCaption(7f, PoliSimTheme.TextPrimary, true, TextAnchor.UpperLeft);
+                    float openFigH = Mathf.Ceil(DeskCaptionHeight(openFigure));
                     float cellW = (x[x.Length - 2] - x[1]) / 5f;
                     for (int i = 0; i < 5; i++)
                     {
                         float sx = x[1] + i * cellW + pad;
                         PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f), cellW - pad, styles.CapH), HealthFamily.SupportingNames[i], styles.Caption);
-                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH, cellW - pad, styles.SmallH), PlateFigure(HealthFamily.SupportingNow(country, i), 1), styles.Small);
-                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH + styles.SmallH, cellW - pad, styles.SrcH), HealthFamily.SupportingUnits[i], styles.Source);
+                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH, cellW - pad, openFigH), PlateFigure(HealthFamily.SupportingNow(country, i), 1), openFigure);
+                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH + openFigH, cellW - pad, styles.SrcH), HealthFamily.SupportingUnits[i], styles.Source);
                     }
                 }
                 else
                 {
                     PoliSimWidgets.MeasuredLabel(new Rect(x[1] + pad, y + StatsUnit(8f), x[x.Length - 2] - x[1] - pad, Mathf.Max(StatsUnit(12f), Mathf.Ceil(DeskCaptionHeight(styles.AbsentWord)))), "absent · THE HCQO FLOWS HOLD NO ROWS FOR THIS COUNTRY", styles.AbsentWord);
                 }
-            });
+            }, extraRowName: "Supporting readouts");   // 16d: the extra row opens in place like any row (16c)
         }
 
         /// <summary>The plate's styles and measured heights, handed to a family's extra row.</summary>
@@ -185,10 +214,13 @@ namespace PoliSim.UI
         {
             public readonly GUIStyle Name, NameAbsent, Caption, Source, Small, Chip, AbsentWord;
             public readonly float NameH, CapH, SrcH, SmallH, ExtraH;
-            public PlateStyles(GUIStyle name, GUIStyle nameAbsent, GUIStyle caption, GUIStyle source, GUIStyle small, GUIStyle chip, GUIStyle absentWord, float nameH, float capH, float srcH, float smallH, float extraH)
+            /// <summary>Board 16d (§589): whether the extra row draws its OPEN form (opened in place, or the desk-global †) - an extra row that names
+            /// itself to <see cref="DrawPlateRows"/> draws one line at rest; one that does not is always open, as every extra row was before.</summary>
+            public readonly bool Open;
+            public PlateStyles(GUIStyle name, GUIStyle nameAbsent, GUIStyle caption, GUIStyle source, GUIStyle small, GUIStyle chip, GUIStyle absentWord, float nameH, float capH, float srcH, float smallH, float extraH, bool open = true)
             {
                 Name = name; NameAbsent = nameAbsent; Caption = caption; Source = source; Small = small; Chip = chip; AbsentWord = absentWord;
-                NameH = nameH; CapH = capH; SrcH = srcH; SmallH = smallH; ExtraH = extraH;
+                NameH = nameH; CapH = capH; SrcH = srcH; SmallH = smallH; ExtraH = extraH; Open = open;
             }
         }
 
@@ -226,16 +258,48 @@ namespace PoliSim.UI
         /// an optional extra row, the foot. Returns the area laid out (the film driver scrolls to it). <paramref name="arrowFor"/> returns,
         /// for a row whose key a live draft moves, the delta, whether lower is better and the unit - 5c's arrow paints in the band cell in
         /// place of everything else, which is where its subject is.
+        ///
+        /// <para><b>D21 rows 2-4, boards 16b / 16c / 16d (built 2026-09-23, §589).</b> 16b: a family that declares a KEY row
+        /// (<see cref="PlateFamily"/>'s last argument - the seed's word, not a rule the renderer guesses) lifts that row whole into the header
+        /// lane - its figure in the rows' own figure column at their own size, its band, pips and sparkline, the family name taking the row's
+        /// name as a qualifier - and the row leaves the list; a gap key lifts the gap. 16c: a row OPENS IN PLACE on a click of its name, drawing
+        /// exactly what the desk-global † draws for it (the PROVENANCE grid and heights, one renderer path); a dagger shows in the row's left
+        /// margin on hover (TextMuted) and while open (TextPrimary); the state is the sitting's - it clears on load - and the global tab makes it
+        /// moot. 16d: an extra row that names itself (<paramref name="extraRowName"/>) takes the rows' pitch at rest and its full form when open,
+        /// told by <see cref="PlateStyles.Open"/>.</para>
         /// </summary>
         private Rect DrawPlateRows(List<PlateRow> rows, Color areaInk, string footText, bool draftLive, System.Func<PlateRow, (float Delta, bool LowerIsBetter, string Unit)?> arrowFor,
-            System.Func<float, float, float, float, float> extraRowHeightFor = null, System.Action<float[], float, float, PlateStyles> drawExtraRow = null)
+            System.Func<float, float, float, float, float> extraRowHeightFor = null, System.Action<float[], float, float, PlateStyles> drawExtraRow = null, string extraRowName = null)
         {
             bool prov = DeskProvenance.On;
-            string familyName = _plateFamilyName, familyVintage = _plateFamilyVintage, familyPublisher = _plateFamilyPublisher;
-            _plateFamilyName = _plateFamilyVintage = _plateFamilyPublisher = null;   // one header per plate: a family that did not set one draws none
+            string familyName = _plateFamilyName, familyVintage = _plateFamilyVintage, familyPublisher = _plateFamilyPublisher, familyKey = _plateFamilyKey;
+            _plateFamilyName = _plateFamilyVintage = _plateFamilyPublisher = _plateFamilyKey = null;   // one header per plate: a family that did not set one draws none
+            string plateId = (familyName ?? footText ?? "") + "|";
+
+            // 16b: the declared key row leaves the list and takes the header lane - the caller's list is not touched
+            PlateRow keyRow = default;
+            bool hasKey = false;
+            if (!string.IsNullOrEmpty(familyName) && !string.IsNullOrEmpty(familyKey))
+            {
+                int ki = rows.FindIndex(r => r.Name == familyKey);
+                if (ki >= 0) { keyRow = rows[ki]; hasKey = true; rows = new List<PlateRow>(rows); rows.RemoveAt(ki); }
+            }
+
+            // 16c: a click on a row's name opens it in place - taken on the MouseDown against the name cells the last repaint laid out; the tab makes it moot
+            if (!prov && Event.current.type == EventType.MouseDown && Event.current.button == 0)
+            {
+                foreach (KeyValuePair<string, Rect> cell in _plateNameRects)
+                {
+                    if (!cell.Key.StartsWith(plateId, System.StringComparison.Ordinal) || !cell.Value.Contains(Event.current.mousePosition)) { continue; }
+                    if (!_plateRowsOpen.Remove(cell.Key)) { _plateRowsOpen.Add(cell.Key); }
+                    Event.current.Use();
+                    break;
+                }
+            }
+            bool Open(string rowName) => prov || _plateRowsOpen.Contains(plateId + rowName);
+
             // D16 §3.2: the board's three grids live in PlateGrid, which is also what §8.4's acceptance bar reads - one set of numbers,
-            // drawn and asserted from the same place. The band (track 3) is the only track that flexes.
-            float[] tracks = PlateGrid.For(prov);
+            // drawn and asserted from the same place. The band (track 3) is the only track that flexes. An OPEN row draws by the PROVENANCE grid.
             float[] gapTracks = PlateGrid.GapRow;
 
             GUIStyle name = DeskBody(12.5f, PoliSimTheme.TextPrimary);
@@ -266,15 +330,21 @@ namespace PoliSim.UI
 
             GUIStyle segment = DeskCaption(6.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
             float segH = Mathf.Ceil(DeskCaptionHeight(segment));
-            bool anyDistribution = false;
+            bool anyDistribution = hasKey && keyRow.Band == PlateBand.Distribution;
             foreach (PlateRow r in rows) { if (r.Band == PlateBand.Distribution) { anyDistribution = true; break; } }
-            float nameBlock = prov ? nameH + capH + srcH : nameH;
-            float bandBlock = lane + (anyDistribution ? segH : 0f) + (prov ? chipH + StatsUnit(3f) : 0f);
-            float pipsBlock = pipsLane + (prov ? rankH : 0f);
-            float rowHeight = Mathf.Max(Mathf.Max(nameBlock, figH), Mathf.Max(bandBlock, pipsBlock)) + StatsUnit(12f);
-            float extraHeight = extraRowHeightFor != null ? extraRowHeightFor(nameH, capH, srcH, smallH) : 0f;
+            float RowHeight(bool p)
+            {
+                float nameBlock = p ? nameH + capH + srcH : nameH;
+                float bandBlock = lane + (anyDistribution ? segH : 0f) + (p ? chipH + StatsUnit(3f) : 0f);
+                float pipsBlock = pipsLane + (p ? rankH : 0f);
+                return Mathf.Max(Mathf.Max(nameBlock, figH), Mathf.Max(bandBlock, pipsBlock)) + StatsUnit(12f);
+            }
+            float rowHeightRest = RowHeight(false), rowHeightOpen = RowHeight(true);
             float pad = StatsUnit(4f);
-            float headerHeight = string.IsNullOrEmpty(familyName) ? 0f : Mathf.Ceil(DeskCaptionHeight(DeskBody(15f, PoliSimTheme.TextPrimary))) + StatsUnit(8f);
+            bool extraOpenable = !string.IsNullOrEmpty(extraRowName);
+            bool extraOpen = !extraOpenable || Open(extraRowName);
+            float extraHeight = extraRowHeightFor == null ? 0f : (extraOpen ? extraRowHeightFor(nameH, capH, srcH, smallH) : rowHeightRest);   // 16d: the rows' pitch at rest
+            float headerNameH = Mathf.Ceil(DeskCaptionHeight(DeskBody(15f, PoliSimTheme.TextPrimary)));
             // ⚠ P6-B1 (2026-09-17): THE SEED LINE IS PROVENANCE, SO IT LIVES BEHIND THE TAB. It says where a
             // family's figures came from, which is exactly what D16 §2 sends behind the `†`: it says nothing
             // about a figure the player can already see. Playtest 6's finding 6 is that these long mono
@@ -286,28 +356,54 @@ namespace PoliSim.UI
                 : 0f;
 
             // A gap row's reason is the only prose on the page and it earns its reading size, so the row grows to hold it.
-            float gapReasonWidth = 0f, gapRowHeight = rowHeight;
+            float gapReasonWidth = Mathf.Max(10f, (gapTracks[2] / PlateGrid.Content) * Mathf.Max(10f, UiScreen.Width * 0.8f));
+            float gapRowHeight = rowHeightRest;
+            foreach (PlateRow r in rows)
             {
-                gapReasonWidth = Mathf.Max(10f, (gapTracks[2] / PlateGrid.Content) * Mathf.Max(10f, UiScreen.Width * 0.8f));
-                foreach (PlateRow r in rows)
-                {
-                    if (r.Band != PlateBand.Absent || string.IsNullOrEmpty(r.AbsentReason)) { continue; }
-                    gapRowHeight = Mathf.Max(gapRowHeight, Mathf.Ceil(reason.CalcHeight(new GUIContent(r.AbsentReason), gapReasonWidth)) + StatsUnit(16f));
-                }
+                if (r.Band != PlateBand.Absent || string.IsNullOrEmpty(r.AbsentReason)) { continue; }
+                gapRowHeight = Mathf.Max(gapRowHeight, Mathf.Ceil(reason.CalcHeight(new GUIContent(r.AbsentReason), gapReasonWidth)) + StatsUnit(16f));
             }
-            int gapRows = 0;
-            foreach (PlateRow r in rows) { if (r.Band == PlateBand.Absent) { gapRows++; } }
-            float total = headerHeight + (rows.Count - gapRows) * rowHeight + gapRows * gapRowHeight + extraHeight + footHeight;
+            float keyGapHeight = 0f;
+            if (hasKey && keyRow.Band == PlateBand.Absent)
+            {
+                keyGapHeight = Mathf.Max(rowHeightRest, Mathf.Ceil(reason.CalcHeight(new GUIContent(keyRow.AbsentReason ?? ""), gapReasonWidth)) + StatsUnit(16f));
+            }
+            float headerHeight = string.IsNullOrEmpty(familyName) ? 0f
+                : !hasKey ? headerNameH + StatsUnit(8f)
+                : keyRow.Band == PlateBand.Absent ? keyGapHeight
+                : prov ? Mathf.Max(rowHeightOpen, headerNameH + capH + srcH * 2f + StatsUnit(10f))   // behind the tab the name cell carries unit, source and publisher · vintage
+                : Mathf.Max(headerNameH + StatsUnit(8f), rowHeightRest);
+            float total = headerHeight + extraHeight + footHeight;
+            foreach (PlateRow r in rows) { total += r.Band == PlateBand.Absent ? gapRowHeight : (Open(r.Name) ? rowHeightOpen : rowHeightRest); }
             Rect area = GUILayoutUtility.GetRect(10f, total, GUILayout.ExpandWidth(true));
             if (Event.current.type != EventType.Repaint) { return area; }
 
-            float[] x = PlateGrid.Tracks(area, tracks);
+            float[] xRest = PlateGrid.Tracks(area, PlateGrid.For(false));
+            float[] xOpen = PlateGrid.Tracks(area, PlateGrid.For(true));
             float[] gx = PlateGrid.Tracks(area, gapTracks);
+            GUIStyle daggerMuted = DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight);
+            GUIStyle daggerOpen = DeskCaption(7f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight);
+            // 16c: the dagger's cell - the row's left margin up to the name, which starts one pad in (the data rows have no 12 px strip of their own)
+            void Dagger(Rect nameCell, string key)
+            {
+                if (prov) { return; }
+                _plateNameRects[key] = nameCell;
+                bool open = _plateRowsOpen.Contains(key);
+                bool hover = nameCell.Contains(Event.current.mousePosition);
+                if (!open && !hover) { return; }
+                PoliSimWidgets.MeasuredLabel(new Rect(nameCell.x - pad - StatsUnit(3f), nameCell.y, pad + StatsUnit(2f), nameCell.height), "†", open ? daggerOpen : daggerMuted);
+            }
 
             float y = area.y;
             if (headerHeight > 0f)
             {
-                DrawPlateFamilyHeader(new Rect(area.x, y, area.width, headerHeight), familyName, familyVintage, familyPublisher);
+                float[] hx = prov ? xOpen : xRest;
+                void Header(Rect h)
+                {
+                    if (hasKey) { DrawPlateKeyHeader(h, hx, gx, familyName, familyVintage, familyPublisher, keyRow, areaInk, prov, arrowFor, name, nameAbsent, flagStyle, caption, source, figure, figureUnit, figureAbsent, chip, draftChip, rankStyle, reason, nameH, capH, srcH, figH, rankH, lane, pipsLane, chipH, pad, anyDistribution ? segH : 0f); }
+                    else { DrawPlateFamilyHeader(h, familyName, familyVintage, familyPublisher); }
+                }
+                Header(new Rect(area.x, y, area.width, headerHeight));
                 // §3.4 sticky: while the family is under the eye and its header has scrolled off, the header repeats at the top of the
                 // scroll on its own piece of paper - the same device the 1920 wedge used (a sheet piece drawn above the window).
                 float visibleTop = _demographicsScrollPosition.y;
@@ -315,7 +411,7 @@ namespace PoliSim.UI
                 {
                     var stuck = new Rect(area.x, visibleTop, area.width, headerHeight);
                     PoliSimTheme.Rule(stuck, PoliSimTheme.Card);
-                    DrawPlateFamilyHeader(stuck, familyName, familyVintage, familyPublisher);
+                    Header(stuck);
                 }
                 y += headerHeight;
             }
@@ -324,17 +420,25 @@ namespace PoliSim.UI
             {
                 PlateRow row = rows[r];
                 bool gap = row.Band == PlateBand.Absent;
-                float h = gap ? gapRowHeight : rowHeight;
+                bool open = !gap && Open(row.Name);
+                float[] x = open ? xOpen : xRest;
+                float h = gap ? gapRowHeight : (open ? rowHeightOpen : rowHeightRest);
                 PoliSimTheme.Rule(new Rect(area.x, y, area.width, 1f), PoliSimTheme.RuleRow);
                 if (gap) { DrawPlateGapRow(new Rect(area.x, y, area.width, h), gx, row, reason, pad); }
-                else { DrawPlateRow(new Rect(area.x, y, area.width, h), x, row, areaInk, prov, arrowFor, name, nameAbsent, flagStyle, caption, source, figure, figureUnit, figureAbsent, chip, draftChip, rankStyle, nameH, capH, srcH, figH, rankH, lane, pipsLane, chipH, pad, anyDistribution ? segH : 0f); }
+                else
+                {
+                    DrawPlateRow(new Rect(area.x, y, area.width, h), x, row, areaInk, open, arrowFor, name, nameAbsent, flagStyle, caption, source, figure, figureUnit, figureAbsent, chip, draftChip, rankStyle, nameH, capH, srcH, figH, rankH, lane, pipsLane, chipH, pad, anyDistribution ? segH : 0f);
+                    Dagger(new Rect(x[0] + pad, y + StatsUnit(6f), Mathf.Min(x[1] - x[0] - pad * 2f, name.CalcSize(new GUIContent(row.Name)).x + StatsUnit(2f)), nameH), plateId + row.Name);
+                }
                 y += h;
             }
 
             if (drawExtraRow != null && extraHeight > 0f)
             {
+                float[] x = extraOpen && extraOpenable ? xOpen : xRest;
                 PoliSimTheme.Rule(new Rect(area.x, y, area.width, 1f), PoliSimTheme.RuleRow);
-                drawExtraRow(x, y, pad, new PlateStyles(name, nameAbsent, caption, source, small, chip, absentWord, nameH, capH, srcH, smallH, extraHeight));
+                drawExtraRow(x, y, pad, new PlateStyles(name, nameAbsent, caption, source, small, chip, absentWord, nameH, capH, srcH, smallH, extraHeight, extraOpen));
+                if (extraOpenable) { Dagger(new Rect(x[0] + pad, y + StatsUnit(2f), Mathf.Min(x[1] - x[0] - pad * 2f, name.CalcSize(new GUIContent(extraRowName)).x + StatsUnit(2f)), nameH), plateId + extraRowName); }
                 y += extraHeight;
             }
             PoliSimTheme.Rule(new Rect(area.x, y - 1f, area.width, 1f), PoliSimTheme.Hairline);
@@ -345,23 +449,84 @@ namespace PoliSim.UI
             return area;
         }
 
+        /// <summary>
+        /// Board 16b: the header lane with the family's KEY row lifted into it. The family name keeps its serif at header size and takes the row's
+        /// name as a qualifier in the caption mono, TextMuted, after a middle dot; the row's figure, band, pips and sparkline draw in their own
+        /// columns at their own size (size is not the device, position is); the vintage moves under the sparkline. Behind the tab the row's unit
+        /// and source lines stand under the name as they would under the row's, its reach chips under the band, and the header's publisher joins
+        /// the vintage; `KEY · DECLARED` says the key is the seed's word. A gap key lifts the gap - the word in the figure column at the gap's
+        /// reduced presence, the reason in the band - so a family whose headline is owed says so at a glance.
+        /// </summary>
+        private void DrawPlateKeyHeader(Rect lane, float[] x, float[] gx, string familyName, string vintage, string publisher, PlateRow key, Color areaInk, bool prov,
+            System.Func<PlateRow, (float Delta, bool LowerIsBetter, string Unit)?> arrowFor,
+            GUIStyle name, GUIStyle nameAbsent, GUIStyle flagStyle, GUIStyle caption, GUIStyle source, GUIStyle figure, GUIStyle figureUnit, GUIStyle figureAbsent,
+            GUIStyle chip, GUIStyle draftChip, GUIStyle rankStyle, GUIStyle reason,
+            float nameH, float capH, float srcH, float figH, float rankH, float laneH, float pipsLane, float chipH, float pad, float distributionExtra)
+        {
+            PoliSimTheme.Rule(new Rect(lane.x, lane.y, lane.width, 1f), PoliSimTheme.Hairline);
+            GUIStyle familyStyle = DeskBody(15f, PoliSimTheme.TextPrimary);
+            GUIStyle qualifier = DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.LowerLeft);
+            float familyH = Mathf.Ceil(DeskCaptionHeight(familyStyle));
+            float top = lane.y + StatsUnit(6f);
+            float familyW = familyStyle.CalcSize(new GUIContent(familyName)).x;
+            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, top - StatsUnit(2f), familyW, familyH), familyName, familyStyle);
+            string qual = "· " + key.Name.ToUpperInvariant();
+            float qx = x[0] + pad + familyW + StatsUnit(4f);
+            PoliSimWidgets.MeasuredLabel(new Rect(qx, top - StatsUnit(2f), Mathf.Max(8f, x[1] - pad - qx), familyH), qual, qualifier);
+            float nameW = x[1] - x[0] - pad * 2f;
+            if (prov)
+            {
+                float py = top - StatsUnit(2f) + familyH;
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, py, nameW, capH), key.Unit + " · KEY · DECLARED", caption);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, py + capH, nameW, srcH), key.Source, source);
+            }
+
+            GUIStyle vintageStyle = DeskCaption(6.5f, PoliSimTheme.TextMuted, false, TextAnchor.UpperRight);
+            string right = prov && !string.IsNullOrEmpty(publisher) ? publisher + " · " + vintage : vintage;
+            if (key.Band == PlateBand.Absent)
+            {
+                GUIStyle word = DeskCaption(11f, PoliSimTheme.TextMuted, true, TextAnchor.MiddleRight);
+                PoliSimWidgets.MeasuredLabel(new Rect(gx[1] + pad, lane.y + StatsUnit(8f), gx[2] - gx[1] - pad * 2f, Mathf.Ceil(DeskCaptionHeight(word))), key.Figure == "billed" ? "BILLED" : "ABSENT", word);
+                GUI.Label(new Rect(gx[2] + pad, lane.y + StatsUnit(6f), gx[3] - gx[2] - pad * 2f, lane.height - StatsUnit(12f)), key.AbsentReason ?? "", reason);
+                if (!string.IsNullOrEmpty(right)) { PoliSimWidgets.MeasuredLabel(new Rect(gx[2], lane.yMax - srcH - StatsUnit(3f), gx[3] - gx[2] - pad, srcH), right, vintageStyle); }
+                return;
+            }
+            // the row's own cells, name cell left to the header above: the same renderer path as a row, so nothing about the figure is re-drawn by hand
+            DrawPlateRow(lane, x, key, areaInk, prov, arrowFor, name, nameAbsent, flagStyle, caption, source, figure, figureUnit, figureAbsent, chip, draftChip, rankStyle,
+                nameH, capH, srcH, figH, rankH, laneH, pipsLane, chipH, pad, distributionExtra, headerLane: true);
+            if (string.IsNullOrEmpty(right)) { return; }
+            if (prov)
+            {
+                // behind the tab: publisher · vintage as the name cell's third line - the band's chips and the pips' numeral own the lane's lower half
+                GUIStyle provVintage = DeskCaption(6.5f, PoliSimTheme.TextMuted, false, TextAnchor.UpperLeft);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, top - StatsUnit(2f) + familyH + capH + srcH, nameW, srcH), right, provVintage);
+            }
+            else
+            {
+                // at rest: the vintage under the sparkline, right-aligned in its column (the board's AFTER)
+                float sparkBottom = top + Mathf.Max(0f, (laneH - StatsUnit(10f)) * 0.5f) + StatsUnit(10f) + StatsUnit(2f);
+                PoliSimWidgets.MeasuredLabel(new Rect(x[4], sparkBottom, x[5] - x[4] - pad, srcH), right, vintageStyle);
+            }
+        }
+
         /// <summary>One row of the glance layer: the name, and then four graphics - figure · band · pips · sparkline (D16 §3.3).</summary>
         private void DrawPlateRow(Rect row, float[] x, PlateRow data, Color areaInk, bool prov,
             System.Func<PlateRow, (float Delta, bool LowerIsBetter, string Unit)?> arrowFor,
             GUIStyle name, GUIStyle nameAbsent, GUIStyle flagStyle, GUIStyle caption, GUIStyle source, GUIStyle figure, GUIStyle figureUnit, GUIStyle figureAbsent,
             GUIStyle chip, GUIStyle draftChip, GUIStyle rankStyle,
-            float nameH, float capH, float srcH, float figH, float rankH, float lane, float pipsLane, float chipH, float pad, float distributionExtra)
+            float nameH, float capH, float srcH, float figH, float rankH, float lane, float pipsLane, float chipH, float pad, float distributionExtra, bool headerLane = false)
         {
             float top = row.y + StatsUnit(6f);
-            // 1 · Name, with its qualification glyph. The unit and the source line are lines the tab adds beneath it.
+            // 1 · Name, with its qualification glyph. The unit and the source line are lines the tab adds beneath it. In the header lane (16b)
+            // the family's header draws the name cell itself - the family name, the row's name as its qualifier.
             float nameW = x[1] - x[0] - pad * 2f;
-            PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, top, nameW, nameH), data.Name, name);
-            if (!string.IsNullOrEmpty(data.Flag))
+            if (!headerLane) { PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, top, nameW, nameH), data.Name, name); }
+            if (!headerLane && !string.IsNullOrEmpty(data.Flag))
             {
                 float w = name.CalcSize(new GUIContent(data.Name)).x;
                 PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad + w + StatsUnit(3f), top, StatsUnit(12f), nameH), data.Flag, flagStyle);
             }
-            if (prov)
+            if (prov && !headerLane)
             {
                 PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, top + nameH, nameW, capH), data.Unit, caption);
                 PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, top + nameH + capH, nameW, srcH), data.Source, source);
@@ -380,7 +545,12 @@ namespace PoliSim.UI
             if (arrow.HasValue)
             {
                 DrawPlateArrow(new Rect(bandCell.x, bandCell.y, bandCell.width, row.height - StatsUnit(12f)), arrow.Value.Delta, arrow.Value.LowerIsBetter, arrow.Value.Unit, caption, srcH, data);
-                if (DeskProvenance.ShowsCouplingDraft(data.CouplingDraft, true)) { DrawPlateChips(new Rect(bandCell.x, bandCell.yMax + StatsUnit(1f), bandCell.width, chipH), new[] { "COUPLING DRAFT" }, draftChip, PoliSimTheme.Caution, bordered: true); }
+                // Behind the tab the arrow carries its source line under the figure, so the chip stands below THAT line - it drew over it (seen on
+                // `film589_1280_04g`, §589); at rest it stays under the lane as before.
+                float draftChipY = DeskProvenance.On
+                    ? Mathf.Max(bandCell.yMax + StatsUnit(1f), bandCell.y + Mathf.Ceil(DeskCaptionHeight(DeskCaption(10.5f, PoliSimTheme.TextPrimary, true))) + srcH + StatsUnit(1f))
+                    : bandCell.yMax + StatsUnit(1f);
+                if (DeskProvenance.ShowsCouplingDraft(data.CouplingDraft, true)) { DrawPlateChips(new Rect(bandCell.x, draftChipY, bandCell.width, chipH), new[] { "COUPLING DRAFT" }, draftChip, PoliSimTheme.Caution, bordered: true); }
             }
             else
             {

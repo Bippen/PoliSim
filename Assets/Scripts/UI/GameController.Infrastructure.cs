@@ -19,7 +19,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             InfrastructureSeeds f = country.Infrastructure;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            PlateFamily("Infrastructure", "2019–24", "SOURCED · WEF GCR · OECD");
+            PlateFamily("Infrastructure", "2019–24", "SOURCED · WEF GCR · OECD", keyRow: "Road quality");   // 16b (§589): the family's key, DECLARED
             if (f == null || !f.Seeded)
             {
                 GUILayout.Label("This country carries no infrastructure family - the spine covers six, and this is not one of them.", _labelStyle);

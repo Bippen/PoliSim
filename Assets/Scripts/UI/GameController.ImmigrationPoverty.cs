@@ -20,7 +20,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             MigrationPovertySeeds m = country.MigrationPoverty;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            PlateFamily("Immigration · poverty depth", "2022–24", "SOURCED · EUROSTAT · OECD · DHS · BLS");
+            PlateFamily("Immigration · poverty depth", "2022–24", "SOURCED · EUROSTAT · OECD · DHS · BLS", keyRow: "Poverty gap");   // 16b (§589): the family's key, DECLARED
             if (m == null || !m.Seeded)
             {
                 GUILayout.Label("This country carries no immigration and poverty family - the spine covers six, and this is not one of them.", _labelStyle);

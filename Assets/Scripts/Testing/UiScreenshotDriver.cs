@@ -690,6 +690,20 @@ namespace PoliSim.Testing
                     ScrollBy(controller, Mathf.Max(0f, plateY - UiScreen.Height * 0.08f));
                     yield return Settle();
                     yield return Capture("04b_people_health_plate");
+                    // Board 16c (§589): a row OPENED IN PLACE - the film cannot click, so it opens two rows the way a click on their names
+                    // would (the waiting row and 16d's supporting readouts), films them, and closes them again; the neighbours stay at rest.
+                    var openRows = controller.GetType().GetField("_plateRowsOpen", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as HashSet<string>;
+                    if (openRows != null)
+                    {
+                        openRows.Add("Health|Waiting · cataract");
+                        openRows.Add("Health|Supporting readouts");
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture("04b2_people_health_rows_open");
+                        openRows.Clear();
+                        yield return Settle();
+                    }
+                    else { Debug.LogError("SHOT: 16c - the controller carries no _plateRowsOpen set; 04b2_people_health_rows_open NOT written."); }
                     ResetScrolls(controller);
                     yield return Settle();
                     // P5-C3 (2026-09-06): the education plate sits under the health plate.

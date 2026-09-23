@@ -21,7 +21,7 @@ namespace PoliSim.UI
             Country country = _playerCountry;
             EducationSeeds e = country.Education;
             string countryName = DisplayName.Of(country.Id.ToString()).ToUpperInvariant();
-            PlateFamily("Education", "2023–25", "SOURCED · OECD EAG · EUROSTAT");
+            PlateFamily("Education", "2023–25", "SOURCED · OECD EAG · EUROSTAT", keyRow: "Attainment by level · 25–64");   // 16b (§589): the family's key, DECLARED
             if (e == null || !e.Seeded)
             {
                 GUILayout.Label("This country carries no education family - the spine covers six, and this is not one of them.", _labelStyle);

@@ -882,6 +882,7 @@ namespace PoliSim.UI
         /// </summary>
         private void RestoreFromSave(SaveGame save)
         {
+            _plateRowsOpen.Clear();   // board 16c (§589): a row opened in place is a glance, the sitting's - it closes on load; the † tab's state persists
             SaveGameService.RestoreInto(_simulationManager, save);
             _world = save.World;
             _selectedPlayerCountryId = save.PlayerCountryId;
