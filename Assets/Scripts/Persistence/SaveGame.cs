@@ -138,6 +138,8 @@ namespace PoliSim.Persistence
         public float? DrugPolicyInput;
         public float? JudicialFundingInput;
         public float? BorderEnforcementInput;
+        /// <summary>§597 (2026-09-23): PN-1's dial - the drafted pension age in years, null where none is drafted. A save from before this field loads with none.</summary>
+        public float? PensionAgeDraft;
         public float? FamilyPolicyInput;
         public float? ImmigrationPolicyInput;
 

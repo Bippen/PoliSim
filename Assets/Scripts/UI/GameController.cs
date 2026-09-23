@@ -945,6 +945,7 @@ namespace PoliSim.UI
                 DrugPolicyInput = _drugPolicyInput,
                 JudicialFundingInput = _judicialFundingInput,
                 BorderEnforcementInput = _borderEnforcementInput,
+                PensionAgeDraft = _pensionAgeInput,   // §597: the pension draft saves with a game
                 FamilyPolicyInput = _familyPolicyInput,
                 ImmigrationPolicyInput = _immigrationPolicyInput,
                 IsGameOver = _isGameOver,
@@ -982,7 +983,6 @@ namespace PoliSim.UI
             _sectorDeregulationInputs.Clear();
             _spendingLineInputs.Clear();
             _partnerTariffInputs.Clear();
-            _pensionAgeInput = null;   // §590: the pension-age draft is not carried in a save's UI layer - a load resumes on the age standing
 
             if (ui != null)
             {
@@ -1016,6 +1016,7 @@ namespace PoliSim.UI
             _drugPolicyInput = ui?.DrugPolicyInput;
             _judicialFundingInput = ui?.JudicialFundingInput;
             _borderEnforcementInput = ui?.BorderEnforcementInput;
+            _pensionAgeInput = ui?.PensionAgeDraft;   // §597: the drafted age survives a save and load (§590 cleared it on every load)
             _familyPolicyInput = ui?.FamilyPolicyInput;
             _immigrationPolicyInput = ui?.ImmigrationPolicyInput;
             _isGameOver = ui?.IsGameOver ?? false;

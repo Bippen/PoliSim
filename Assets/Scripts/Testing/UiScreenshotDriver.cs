@@ -940,6 +940,30 @@ namespace PoliSim.Testing
                                 pensionInput.SetValue(controller, (float?)Mathf.Min(BudgetBill.PensionAgeMax, Mathf.Round(lawAge) + 2f));
                                 yield return Settle();
                                 yield return Capture(stem + "_pension_dial_drafted");
+                                // §597: THE DRAFT SAVES WITH A GAME - through the controller's own capture, the real serializer and its own restore: the drafted age
+                                // is captured, the save written to JSON and read back, the draft cleared, and the UI layer restored from the save; the age must return.
+                                // Then a save of the old shape (the field removed from the JSON) must restore no draft at all.
+                                var restoreDrafts = controller.GetType().GetMethod("RestoreUiDrafts", BindingFlags.Instance | BindingFlags.NonPublic);
+                                var roundSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                                var roundWorld = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as World;
+                                float? drafted = (float?)pensionInput.GetValue(controller);
+                                if (restoreDrafts != null && roundSim != null && roundWorld != null && drafted.HasValue)
+                                {
+                                    string json = PoliSim.Persistence.SaveGameService.Serialize(PoliSim.Persistence.SaveGameService.CreateSaveGame(roundSim, roundWorld, _countryId, controller.CaptureUiDrafts()));
+                                    pensionInput.SetValue(controller, null);
+                                    restoreDrafts.Invoke(controller, new object[] { PoliSim.Persistence.SaveGameService.Deserialize(json).Ui });
+                                    float? back = (float?)pensionInput.GetValue(controller);
+                                    if (back.HasValue && Mathf.Abs(back.Value - drafted.Value) < 1e-5f) { Debug.Log($"SHOT: §597 - the drafted pension age {drafted.Value:0.###} survived the save and load ({back.Value:0.###})."); }
+                                    else { Debug.LogError($"SHOT: §597 - the drafted pension age {drafted.Value:0.###} did NOT survive the save and load (read back {(back.HasValue ? back.Value.ToString("0.###") : "none")})."); _failed++; }
+                                    yield return Settle();
+                                    yield return Capture(stem + "_pension_dial_reloaded");
+                                    string oldShape = System.Text.RegularExpressions.Regex.Replace(json, "\"PensionAgeDraft\"\\s*:\\s*[^,}]+,?", string.Empty);
+                                    restoreDrafts.Invoke(controller, new object[] { PoliSim.Persistence.SaveGameService.Deserialize(oldShape).Ui });
+                                    float? none = (float?)pensionInput.GetValue(controller);
+                                    if (!none.HasValue && !oldShape.Contains("PensionAgeDraft")) { Debug.Log("SHOT: §597 - a save without the field restores no pension draft."); }
+                                    else { Debug.LogError($"SHOT: §597 - a save without the field restored a pension draft ({(none.HasValue ? none.Value.ToString("0.###") : "none")}), or the field was not removed."); _failed++; }
+                                }
+                                else { Debug.LogError("SHOT: §597 - RestoreUiDrafts, the simulation, the world or the draft was not found; the save round trip is NOT proved."); _failed++; }
                                 pensionInput.SetValue(controller, null);
                                 RangeCaptionPresenter.ClockOverride = null;
                                 RangeCaptionPresenter.Reset();
