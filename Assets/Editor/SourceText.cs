@@ -40,9 +40,7 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class SourceText
     {
-        /// <summary>The block-comment rule <see cref="WithoutComments"/> applies. Internal so `ReviewLedgerCheck`'s comment-only test can refuse the shapes this
-        /// regex mis-strips - a block it would open inside a string literal or a line comment - with the stripper's own pattern, not a copy of it.</summary>
-        internal static readonly Regex BlockComment = new Regex(@"/\*.*?\*/", RegexOptions.Singleline);
+        private static readonly Regex BlockComment = new Regex(@"/\*.*?\*/", RegexOptions.Singleline);
 
         /// <summary>
         /// P6-F2b (2026-09-21, §542): EVERY PARTIAL OF THE CONTROLLER, concatenated - `GameController.cs` and its `GameController.*.cs` siblings in the same

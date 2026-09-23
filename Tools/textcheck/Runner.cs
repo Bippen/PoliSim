@@ -21,6 +21,7 @@ public static class Runner
 {
     public static int Main(string[] args)
     {
+        if (args.Length > 0 && args[0] == "commentonly") { return CommentOnlyMode(args); }
         string root = args.Length > 0 ? args[0] : Directory.GetCurrentDirectory();
         Application.dataPath = Path.Combine(root, "Assets");
         if (!Directory.Exists(Application.dataPath))
@@ -63,5 +64,34 @@ public static class Runner
             ? $"CHECKS: {table.Length} of {table.Length} clean in {all.Elapsed.TotalSeconds:F2} s (out of the engine)."
             : $"CHECKS: {failed.Count} of {table.Length} FAILED - {string.Join(", ", failed)} ({all.Elapsed.TotalSeconds:F2} s).");
         return worst;
+    }
+
+    /// <summary>RL-1 (s588): `textcheck commentonly &lt;dir&gt;` - for every `&lt;name&gt;.before.txt` beside a `&lt;name&gt;.after.txt` in the directory, one line
+    /// `VERDICT	&lt;name&gt;	ACCEPT` (comments and whitespace only) or `VERDICT	&lt;name&gt;	OWED	&lt;reason&gt;`, then `COMMENTONLY: N pair(s)`. The texts are read
+    /// as STRICT UTF-8 with no BOM detection, so a byte-order mark stays a character and a text that is not valid UTF-8 is OWED (the RL-1 review's F2: a
+    /// lossy decode turned two different invalid bytes into one replacement character, and Unity's compiler reads those bytes in the system code page).
+    /// A CR before an LF is dropped on both sides (F3: the working tree is CRLF and the commits LF; the state's digest already ignores carriage returns),
+    /// so a multi-line string's value is read the same from either. `ReviewLedgerCheck` writes the pairs, as the files' own bytes, and reads the lines.</summary>
+    private static int CommentOnlyMode(string[] args)
+    {
+        if (args.Length < 2 || !Directory.Exists(args[1])) { Console.Error.WriteLine("COMMENTONLY: give the directory of pairs as the second argument."); return 2; }
+        var utf8 = new System.Text.UTF8Encoding(false, true);
+        int pairs = 0;
+        string[] befores = Directory.GetFiles(args[1], "*.before.txt");
+        Array.Sort(befores, StringComparer.Ordinal);
+        foreach (string before in befores)
+        {
+            string name = Path.GetFileName(before).Substring(0, Path.GetFileName(before).Length - ".before.txt".Length);
+            string after = Path.Combine(args[1], name + ".after.txt");
+            if (!File.Exists(after)) { Console.WriteLine($"VERDICT\t{name}\tOWED\tno later text beside the earlier one"); continue; }
+            string refusal;
+            try { refusal = CommentOnly.Refusal(utf8.GetString(File.ReadAllBytes(before)).Replace("\r\n", "\n"), utf8.GetString(File.ReadAllBytes(after)).Replace("\r\n", "\n")); }
+            catch (System.Text.DecoderFallbackException) { refusal = "a text is not valid UTF-8 - the compiler would read its bytes in another code page, so no verdict"; }
+            catch (Exception e) { refusal = "the parser threw - " + e.GetBaseException().Message; }
+            pairs++;
+            Console.WriteLine(refusal == null ? $"VERDICT\t{name}\tACCEPT" : $"VERDICT\t{name}\tOWED\t{refusal.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\t", " ")}");
+        }
+        Console.WriteLine($"COMMENTONLY: {pairs} pair(s).");
+        return 0;
     }
 }

@@ -44,18 +44,14 @@ namespace PoliSim.EditorTools
     /// <para><b>A COMMENT-ONLY CHANGE INHERITS THE REVIEW OF THE STATE IT CHANGED</b> (ruled by Elias 2026-09-23, §584: §579 left two money
     /// paths citing moved documents because a comment edit owed a full review). A state with no row of its own is accepted when its code is the
     /// code of the state before it - walked back through git, one comment-only step at a time, to a state with a `reviewed` row (never a grandfathered
-    /// one: a grandfathered file's first change of any kind owes its review). "Its code" is
-    /// <see cref="SourceText.WithoutComments"/>'s output - the stripper <see cref="CommentImmunityCheck"/> proves - with each line's trailing
-    /// whitespace and every blank line dropped, so a comment line added or removed is not a code change; any other byte is; and no line carrying
-    /// a provenance mark may change or move, because a constant's claimed provenance lives in its comment. ⚠ THE STRIPPER IS AN APPROXIMATION and the
-    /// exemption refuses every shape it is known to mis-strip (<see cref="CommentOnlyRefusal"/>): a line break it does not split on (a lone CR, NEL,
-    /// LS, PS); a block opener inside a string literal, beside an escaped quote or a quote character, inside a line comment, or on a directive line;
-    /// a raw string; a verbatim string across lines; any interpolated verbatim string; any conditional compilation branch, whatever whitespace or BOM
-    /// precedes its `#` - there the review stays owed. The shapes were found by two adversarial reads that broke the first cut and then the rework
-    /// (`Reviews/2026-09-23_s584_rt3_ledger.md`); a shape nobody has found yet is the residue a real C# lexer would close, and that lexer is the
-    /// durable fix (filed, §584).
-    /// <see cref="ProbeCommentOnly"/> proves both directions on every run: a comment edit is accepted, and a literal, a commented-out statement, a
-    /// provenance relabel or a change hidden in any known mis-strip is owed.</para>
+    /// one: a grandfathered file's first change of any kind owes its review). **"Its code" is the COMPILER'S reading (RL-1, ruled 2026-09-23, §588):**
+    /// the text runner (`Tools/textcheck`) parses both versions with Microsoft.CodeAnalysis.CSharp, drops comment and whitespace trivia, and compares the
+    /// rest token for token - a preprocessor directive and a disabled `#if` branch are kept as code, since a branch disabled here is live under another
+    /// define. It replaced a regex stripper and a list of the shapes it mis-stripped, which two adversarial reads broke twice (§584,
+    /// `Reviews/2026-09-23_s584_rt3_ledger.md`). No line carrying a provenance mark may change or move either, because a constant's claimed provenance
+    /// lives in its comment. A verdict the runner cannot give (dotnet absent, the build failing) is never an acceptance.
+    /// <see cref="ProbeCommentOnly"/> proves both directions on every run: comment and whitespace edits accepted, and a literal, a commented-out
+    /// statement, a provenance relabel, an edited disabled branch and every shape the regex once mis-stripped owed.</para>
     /// </summary>
     public static class ReviewLedgerCheck
     {
@@ -84,6 +80,11 @@ namespace PoliSim.EditorTools
         /// <summary>CONVENTION: how many comment-only steps a state may be walked back through git to reach one with a row - a bound on the walk, not a policy.</summary>
         public const int MaxCommentOnlySteps = 40;
 
+        /// <summary>CONVENTION (RL-1, §588): the text runner's project, which carries the Roslyn reference, and the assembly its build writes - OUTSIDE the
+        /// repository, as `Tools/textcheck/Directory.Build.props` places every build output of that project.</summary>
+        private const string RunnerProject = "Tools/textcheck/TextCheck.csproj";
+        private const string RunnerDll = "../PoliSim-captures/textcheck/bin/Release/net8.0/textcheck.dll";
+
         private struct Row { public string Kind, Key, Sha, Status, Date, Record, Evidence, Note; public int Line; }
 
         public static void Run()
@@ -91,6 +92,7 @@ namespace PoliSim.EditorTools
             var sb = new StringBuilder();
             sb.Append("=== REVIEW LEDGER: a money path's state, a commit's blob and a baseline's digest each need the review that ran ===\n");
             bool ok = true;
+            _callerInfo = null; _runnerBuilt = false; _verdictCache.Clear();   // RL-1: the runner's build, the caller-info scan and the verdict cache are per run
 
             // ---- the comment-only exemption, proved both ways before it is used (§584)
             if (!ProbeCommentOnly(sb)) { ok = false; }
@@ -242,7 +244,7 @@ namespace PoliSim.EditorTools
                 string previousSha = Sha256NoCr(previous);
                 if (previousSha != Sha256NoCr(current))
                 {
-                    if (CommentOnlyRefusal(Encoding.UTF8.GetString(previous), Encoding.UTF8.GetString(current)) != null) { return null; }
+                    if (CommentOnlyRefusal(previous, current) != null) { return null; }
                     steps++;
                     current = previous;
                 }
@@ -252,57 +254,135 @@ namespace PoliSim.EditorTools
             return null;
         }
 
-        /// <summary>§584: null when <paramref name="after"/> differs from <paramref name="before"/> in comments only - the stripper's output, each line's trailing
-        /// whitespace and the blank lines aside, byte-identical - else the reason it is not, or cannot be decided safely.</summary>
-        public static string CommentOnlyRefusal(string before, string after)
+        /// <summary>§584, re-cut by RL-1 (§588): null when <paramref name="after"/> differs from <paramref name="before"/> in comments and whitespace only - the
+        /// compiler's own parser decides it (<see cref="RoslynVerdicts"/>), on the files' own BYTES - and no provenance claim moved; else the reason it is not,
+        /// or why it could not be decided. Refused outright while the project declares a caller-info parameter (<see cref="CallerInfoDeclared"/>).</summary>
+        public static string CommentOnlyRefusal(byte[] before, byte[] after)
         {
-            string unsafeShape = MisStripShape(before) ?? MisStripShape(after);
-            if (unsafeShape != null) { return unsafeShape; }
-            if (Code(before) != Code(after)) { return "the code differs"; }
-            // The s584 review's P1-3: a constant's provenance is claimed in its COMMENT (`ConstantProvenanceCheck` reads it there), so a comment edit
-            // that rewrites a line carrying a mark - [AUTHORED-DRAFT] relabelled SOURCED - is a change a review must read.
-            return ProvenanceLines(before) == ProvenanceLines(after) ? null : "a line carrying a provenance mark changed or moved - what a constant claims to be is reviewed";
+            string callerInfo = CallerInfoDeclared();
+            if (callerInfo != null) { return callerInfo; }
+            Dictionary<string, string> verdicts = RoslynVerdicts(new List<(string, byte[], byte[])> { ("step", before, after) }, out string failure);
+            if (verdicts == null) { return failure; }
+            if (verdicts["step"] != null) { return verdicts["step"]; }
+            // The s584 review's P1-3 and the RL-1 review's F1: a constant's provenance is claimed in its COMMENT (`ConstantProvenanceCheck` reads it there),
+            // so a comment edit that rewrites, moves or re-attaches a mark - [AUTHORED-DRAFT] relabelled SOURCED - is a change a review must read.
+            return ProvenanceBlocks(Encoding.UTF8.GetString(before)) == ProvenanceBlocks(Encoding.UTF8.GetString(after)) ? null : "a provenance claim changed, moved or re-attached - what a constant claims to be is reviewed";
         }
 
-        /// <summary>Every line carrying one of `ConstantProvenanceCheck`'s marks, trimmed, IN ORDER and each paired with the code line after it - so a mark
-        /// may not change, and two constants' marks may not swap (the second read's P1-3b: a sorted set let SOURCED and [AUTHORED-DRAFT] trade places).</summary>
-        private static string ProvenanceLines(string text)
+        /// <summary>Every line carrying one of `ConstantProvenanceCheck`'s marks, IN ORDER, each with EVERY line after it down to and including the first code
+        /// line - blank and comment lines between kept, not skipped (the RL-1 review's F1: skipping them let a blank line removed between a mark and a
+        /// declaration re-attach the mark to it, which the check reads as that declaration's provenance). The parser has already ruled the code identical.</summary>
+        private static string ProvenanceBlocks(string text)
         {
             string[] raw = text.Replace("\r\n", "\n").Split('\n');
-            string[] code = Code(text, keepBlank: true).Split('\n');
             var sb = new StringBuilder();
             for (int i = 0; i < raw.Length; i++)
             {
                 bool marked = false;
                 foreach (string mark in ConstantProvenanceCheck.ProvenanceMarks) { if (raw[i].IndexOf(mark, StringComparison.OrdinalIgnoreCase) >= 0) { marked = true; break; } }
                 if (!marked) { continue; }
-                string next = "";
-                for (int j = i + 1; j < code.Length; j++) { if (code[j].Trim().Length > 0) { next = code[j].Trim(); break; } }
-                sb.Append(raw[i].Trim()).Append(" => ").Append(next).Append('\n');
+                sb.Append(raw[i].Trim());
+                for (int j = i + 1; j < raw.Length; j++)
+                {
+                    string t = raw[j].Trim();
+                    sb.Append(" | ").Append(t);
+                    // A line opening with '/' then '*' is a block comment's; tested by characters, because the two-character string would open a
+                    // "comment" to the source-reading checks' regex stripper and hide the code after it from them (found by DeadStateCheck, §588).
+                    bool opensBlock = t.Length >= 2 && t[0] == '/' && t[1] == '*';
+                    if (t.Length > 0 && !t.StartsWith("//", StringComparison.Ordinal) && !opensBlock && !t.StartsWith("*", StringComparison.Ordinal)) { break; }
+                }
+                sb.Append('\n');
             }
             return sb.ToString();
         }
 
-        /// <summary>The code a text carries: <see cref="SourceText.WithoutComments"/>, then each line's trailing whitespace and every blank line dropped - a
-        /// comment line added or removed leaves a blank line and a trailing comment leaves a trailing space, and neither is code. Nothing else is normalised.
-        /// Only a CR before an LF is dropped; any other line break is refused before this runs (<see cref="MisStripShape"/>).</summary>
-        private static string Code(string text, bool keepBlank = false)
+        /// <summary>The RL-1 review's F4, the parser's known residue: a caller-info parameter compiles a call site's LINE or its argument's TEXT into the program,
+        /// so a comment line added above such a call, or spacing inside its argument, changes the build. Nothing under Assets/ declares one; while anything does,
+        /// no change is comment-only. Read with comments stripped, so a mention in a comment is not a declaration. Null when none; else the reason.</summary>
+        private static string CallerInfoDeclared()
         {
-            var sb = new StringBuilder();
-            string[] lines = SourceText.WithoutComments(text.Replace("\r\n", "\n")).Split('\n');
-            if (keepBlank) { return string.Join("\n", lines); }   // line for line with the raw text, for the provenance pairing
-            foreach (string line in lines)
+            if (_callerInfo != null) { return _callerInfo.Length == 0 ? null : _callerInfo; }
+            _callerInfo = "";
+            foreach (string path in Directory.GetFiles("Assets", "*.cs", SearchOption.AllDirectories))
             {
-                string kept = line.TrimEnd();
-                if (kept.Length > 0) { sb.Append(kept).Append('\n'); }
+                Match m = CallerInfoAttribute.Match(SourceText.ReadWithoutComments(path));
+                if (m.Success) { _callerInfo = path.Replace('\\', '/') + " declares a " + m.Groups[1].Value + " parameter - a comment or spacing edit can change what compiles, so no change is comment-only while it does"; return _callerInfo; }
             }
-            return sb.ToString();
+            return null;
         }
 
-        /// <summary>A multi-line verbatim string: its lines are not code lines, and a `//` on one of them would be stripped as a comment.</summary>
-        private static readonly Regex VerbatimAcrossLines = new Regex(@"(?:@\$?|\$@)""(?:[^""]|"""")*\n");
+        /// <summary>Per run (reset in <see cref="Run"/>): the caller-info scan's answer ("" = none), whether the runner was built, and the verdicts already given,
+        /// keyed by the two texts' digests - so a walk that revisits a pair, or two passes that meet the same step, run the parser once (the RL-1 review's F5).</summary>
+        private static string _callerInfo;
 
-        /// <summary>A line break C# honours that the stripper does not split on - a lone CR, NEL, LS, PS (the second read's P1-5).</summary>
+        /// <summary>A caller-info attribute AS AN ATTRIBUTE - after '[', ',' or a namespace's '.', with or without its Attribute suffix - so the names in this
+        /// file's own string literals and messages do not read as declarations.</summary>
+        private static readonly Regex CallerInfoAttribute = new Regex(@"[\[,.]\s*(CallerLineNumber|CallerArgumentExpression|CallerFilePath|CallerMemberName)(?:Attribute)?\b");
+        private static bool _runnerBuilt;
+        private static readonly Dictionary<string, string> _verdictCache = new Dictionary<string, string>(StringComparer.Ordinal);
+
+        /// <summary>RL-1 (ruled 2026-09-23, §588): THE VERDICT IS THE COMPILER'S. The pairs' own BYTES are written to a directory the text runner reads
+        /// (`Tools/textcheck`, `textcheck commentonly &lt;dir&gt;`), which decodes them as strict UTF-8, parses both with Microsoft.CodeAnalysis.CSharp, drops
+        /// comment and whitespace trivia, and compares the rest token for token - directives and disabled `#if` text kept as code. The runner is built ONCE a run
+        /// (`dotnet build`, incremental) and refused if its assembly is older than its sources; null with <paramref name="failure"/> set when any step fails, and
+        /// the caller then treats the change as OWED - a verdict that could not be reached is never an acceptance. Values: null = comment-only, else the reason.</summary>
+        private static Dictionary<string, string> RoslynVerdicts(List<(string Name, byte[] Before, byte[] After)> pairs, out string failure)
+        {
+            failure = null;
+            var verdicts = new Dictionary<string, string>(StringComparer.Ordinal);
+            var asked = new List<(string Name, byte[] Before, byte[] After, string Key)>();
+            foreach (var p in pairs)
+            {
+                string key = Sha256NoCr(p.Before) + ":" + Sha256NoCr(p.After) + ":" + p.Before.Length + ":" + p.After.Length;
+                if (_verdictCache.TryGetValue(key, out string cached)) { verdicts[p.Name] = cached; } else { asked.Add((p.Name, p.Before, p.After, key)); }
+            }
+            if (asked.Count == 0) { return verdicts; }
+
+            string root = Directory.GetCurrentDirectory();
+            string project = Path.Combine(root, RunnerProject);
+            if (!File.Exists(project)) { failure = "the comment-only runner's project (" + RunnerProject + ") is not on disk - no verdict"; return null; }
+            string dll = Path.GetFullPath(Path.Combine(root, RunnerDll));
+            if (!_runnerBuilt)
+            {
+                if (!TryProcess("dotnet", "build \"" + project + "\" -c Release -nologo -v q", root, 300000, out string buildOut))
+                { failure = "the comment-only runner did not build (dotnet build " + RunnerProject + ") - no verdict: " + Trim(buildOut, 200); return null; }
+                // The RL-1 review's F7: an assembly older than the runner's own sources is a stale build from somewhere else - refused, never run.
+                DateTime newestSource = DateTime.MinValue;
+                foreach (string source in Directory.GetFiles(Path.GetDirectoryName(project), "*.cs")) { DateTime t = File.GetLastWriteTimeUtc(source); if (t > newestSource) { newestSource = t; } }
+                if (!File.Exists(dll) || File.GetLastWriteTimeUtc(dll) < newestSource) { failure = "the comment-only runner's assembly is missing or older than its sources at " + RunnerDll + " - no verdict"; return null; }
+                _runnerBuilt = true;
+            }
+            string dir = Path.Combine(Path.GetTempPath(), "polisim_commentonly_" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                Directory.CreateDirectory(dir);
+                for (int i = 0; i < asked.Count; i++)
+                {
+                    File.WriteAllBytes(Path.Combine(dir, i.ToString("D3", CultureInfo.InvariantCulture) + ".before.txt"), asked[i].Before);
+                    File.WriteAllBytes(Path.Combine(dir, i.ToString("D3", CultureInfo.InvariantCulture) + ".after.txt"), asked[i].After);
+                }
+                if (!TryProcess("dotnet", "\"" + dll + "\" commentonly \"" + dir + "\"", root, 120000, out string output))
+                { failure = "the comment-only runner failed - no verdict: " + Trim(output, 200); return null; }
+                var byIndex = new Dictionary<int, string>();
+                foreach (string rawLine in output.Split('\n'))
+                {
+                    string[] c = rawLine.TrimEnd('\r').Split('\t');
+                    if (c.Length < 3 || c[0] != "VERDICT" || !int.TryParse(c[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int index)) { continue; }
+                    byIndex[index] = c[2] == "ACCEPT" ? null : (c.Length > 3 ? c[3] : "owed, no reason given");
+                }
+                for (int i = 0; i < asked.Count; i++)
+                {
+                    if (!byIndex.ContainsKey(i)) { failure = "the comment-only runner gave no verdict for pair " + i + " - no verdict"; return null; }
+                    verdicts[asked[i].Name] = byIndex[i];
+                    _verdictCache[asked[i].Key] = byIndex[i];
+                }
+                return verdicts;
+            }
+            finally { try { Directory.Delete(dir, true); } catch (Exception) { } }
+        }
+
+        /// <summary>A line break C# honours that the digest does not name: a lone CR (the state's digest drops EVERY carriage return), NEL, LS, PS. The
+        /// state and history passes fail on one (the s584 review's P1-5).</summary>
         public static bool HasForeignLineBreak(string text)
         {
             for (int i = 0; i < text.Length; i++)
@@ -314,109 +394,115 @@ namespace PoliSim.EditorTools
             return false;
         }
 
-        /// <summary>A preprocessor directive's name if the line is one, else null - the compiler allows any whitespace (and a file's leading BOM) before the `#`
-        /// and between it and the name, so this skips every char.IsWhiteSpace and U+FEFF rather than a regex's space and tab (the second read's P1-7).</summary>
-        private static string DirectiveName(string line)
-        {
-            int i = 0;
-            while (i < line.Length && (char.IsWhiteSpace(line[i]) || line[i] == '\ufeff')) { i++; }
-            if (i >= line.Length || line[i] != '#') { return null; }
-            i++;
-            while (i < line.Length && char.IsWhiteSpace(line[i])) { i++; }
-            int start = i;
-            while (i < line.Length && char.IsLetter(line[i])) { i++; }
-            return line.Substring(start, i - start);
-        }
+        private static byte[] U(string s) => new UTF8Encoding(false).GetBytes(s);
 
-        /// <summary>The shapes the regex stripper mis-strips, where a comment-only verdict cannot be trusted - the review stays owed there.</summary>
-        private static string MisStripShape(string text)
-        {
-            if (HasForeignLineBreak(text)) { return "a line break the stripper does not split on (a lone CR, NEL, LS or PS) - C# ends a comment there"; }
-            text = text.Replace("\r\n", "\n");
-            string[] lines = text.Split('\n');
-            var directiveLine = new bool[lines.Length];
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string name = DirectiveName(lines[i]);
-                if (name == null) { continue; }
-                directiveLine[i] = true;
-                // a skipped #if section is not lexed by the compiler, so a block opener inside one would swallow the live code after its #endif
-                if (name == "if" || name == "elif" || name == "else") { return "a conditional compilation section - a block opener inside a skipped branch is not a comment to the compiler"; }
-            }
-            if (text.Contains("\"\"\"")) { return "a raw string literal - the stripper does not know its bounds"; }
-            if (VerbatimAcrossLines.IsMatch(text)) { return "a verbatim string across lines - a `//` inside it would be stripped as a comment"; }
-            // The s584 review's P1-1: an interpolated verbatim string's hole can hold a quote the regex stops at, so its lines are never trusted
-            if (text.Contains("$@\"") || text.Contains("@$\"")) { return "an interpolated verbatim string - the stripper cannot find its end past a hole"; }
-            foreach (Match m in SourceText.BlockComment.Matches(text))
-            {
-                if (m.Value.IndexOf('"') >= 0) { return "a block the stripper would open or close inside a string literal"; }
-                int lineStart = m.Index == 0 ? 0 : text.LastIndexOf('\n', m.Index - 1) + 1;
-                int lineNumber = 0; for (int k = 0; k < lineStart; k++) { if (text[k] == '\n') { lineNumber++; } }
-                // a directive's text (#region's name, #warning's message) is not lexed for comments, so a block opener there is not one (the second read's P1-6)
-                if (directiveLine[lineNumber]) { return "a block opener on a directive line - the compiler does not read comments there"; }
-                int lineEnd = text.IndexOf('\n', m.Index); if (lineEnd < 0) { lineEnd = text.Length; }
-                string line = text.Substring(lineStart, lineEnd - lineStart);
-                // an escaped quote or a quote character literal throws the quote count below off, so the opener's line is not trusted with either
-                if (line.Contains("\\\"") || line.Contains("'\"'")) { return "a block opener on a line with an escaped quote or a quote character - the stripper cannot tell string from comment there"; }
-                string before = text.Substring(lineStart, m.Index - lineStart);
-                if (before.Contains("//")) { return "a block opener inside a line comment - the stripper would take the code after it"; }
-                int quotes = 0; foreach (char ch in before) { if (ch == '"') { quotes++; } }
-                if (quotes % 2 == 1) { return "a block opener inside a string literal"; }
-            }
-            return null;
-        }
-
-        /// <summary>§584: the exemption proved both directions on every run - each case's right answer is known, as `CommentImmunityCheck` proves the stripper.</summary>
+        /// <summary>§584, kept by RL-1 (§588) as the proof it now stands on: the exemption proved both directions on every run - each case's right answer is
+        /// known. The thirty-five cases §584 wrote (one re-answered: spacing inside a code line is whitespace trivia, which the parser drops by the ruling),
+        /// three shapes only a parser can see, and the RL-1 review's: a provenance mark re-attached three ways, and two texts that differ only in bytes that
+        /// are not UTF-8. ONE runner call answers them all.</summary>
         private static bool ProbeCommentOnly(StringBuilder sb)
         {
-            var cases = new (string Name, string Before, string After, bool Accept)[]
+            var cases = new (string Name, byte[] Before, byte[] After, bool Accept)[]
             {
-                ("a comment's words edited", "int a = 1; // old words\n", "int a = 1; // new words\n", true),
-                ("a doc comment line added", "class A {\n    int x;\n}\n", "class A {\n    /// <summary>x</summary>\n    int x;\n}\n", true),
-                ("a block comment edited inside a statement", "int a = /* one */ 1;\n", "int a = /* two */ 1;\n", true),
-                ("a comment line removed", "// history\nint a = 1;\n", "int a = 1;\n", true),
-                ("a section sign repaired in a comment (the s579 artefact)", "// COMPLETED.md " + (char)92 + "x{a7}580\nint a;\n", "// COMPLETED.md §580\nint a;\n", true),
-                ("a numeric literal changed", "float r = 0.5f;\n", "float r = 0.6f;\n", false),
-                ("a string literal changed", "string s = \"a\";\n", "string s = \"b\";\n", false),
-                ("a statement commented out", "Pay(x);\nint a;\n", "// Pay(x);\nint a;\n", false),
-                ("a commented statement restored", "// Pay(x);\nint a;\n", "Pay(x);\nint a;\n", false),
-                ("spacing inside a code line (strict: owed)", "int a=1;\n", "int a = 1;\n", false),
-                ("code hidden between a block opener and closer in strings", "string g = \"Assets/*.cs\"; int a = 1; string e = \"*/\";\n", "string g = \"Assets/*.cs\"; int a = 2; string e = \"*/\";\n", false),
-                ("code hidden after a block opener in a line comment", "// Assets/*\nint a = 1;\n// end */\n", "// Assets/*\nint a = 2;\n// end */\n", false),
-                ("a verbatim string's line that looks like a comment", "string s = @\"one\n// two\nend\";\n", "string s = @\"one\n// three\nend\";\n", false),
-                // the s584 review's ten, each accepted by the first cut and each a change to compiled text
-                ("a block inside a string with an escaped quote", "string s = \"a\\\"b /* one */ c\";\n", "string s = \"a\\\"b /* two */ c\";\n", false),
-                ("a block in a string after a quote character", "char q = '\"'; string s = \"x /* one */ y\";\n", "char q = '\"'; string s = \"x /* two */ y\";\n", false),
-                ("a block in a string after an escaped quote character", "char q = '\\\"'; string s = \"x /* one */ y\";\n", "char q = '\\\"'; string s = \"x /* two */ y\";\n", false),
-                ("a block in a string after an escaped-quote string", "string s = \"\\\"\" + \"a /* one */ b\";\n", "string s = \"\\\"\" + \"a /* two */ b\";\n", false),
-                ("a block in an interpolated string after a quote character", "string s = $\"{'\"'} /* one */\";\n", "string s = $\"{'\"'} /* two */\";\n", false),
-                ("an interpolated verbatim string's line that looks like a comment", "var q = $@\"{Col(\"rate\")}\n// rate = 0.25\n\";\n", "var q = $@\"{Col(\"rate\")}\n// rate = 0.35\n\";\n", false),
-                ("the other interpolated verbatim order", "string s = @$\"{'\"'}\n// one\n\";\n", "string s = @$\"{'\"'}\n// two\n\";\n", false),
-                ("a block across an interpolated verbatim string", "string s = $@\"{F(\"a\")}\nx /* one */ y\n\";\n", "string s = $@\"{F(\"a\")}\nx /* two */ y\n\";\n", false),
-                ("a blank line inside an interpolated verbatim string", "string s = $@\"{F(\"a\")}\nx\n\";\n", "string s = $@\"{F(\"a\")}\n\nx\n\";\n", false),
-                ("live code after a block opened in a skipped #if branch", "#if false\n/* disabled\n#endif\npaid = 1;\n// */\n", "#if false\n/* disabled\n#endif\npaid = 2;\n// */\n", false),
-                ("a constant's provenance relabelled in its comment (P1-3)", "// [AUTHORED-DRAFT] a game figure\nconst float K = 0.5f;\n", "// SOURCED: a paper\nconst float K = 0.5f;\n", false),
-                // the second read's ten, each accepted by the rework and each a change to compiled text
-                ("live code after a lone CR ends a comment", "int paid = 0; // note\rpaid = 1;\n", "int paid = 0; // note\rpaid = 2;\n", false),
-                ("live code after a NEL ends a comment", "int paid = 0; // note\u0085paid = 1;\n", "int paid = 0; // note\u0085paid = 2;\n", false),
-                ("live code after a LINE SEPARATOR ends a comment", "int paid = 0; // note\u2028paid = 1;\n", "int paid = 0; // note\u2028paid = 2;\n", false),
-                ("live code after a PARAGRAPH SEPARATOR ends a comment", "int paid = 0; // note\u2029paid = 1;\n", "int paid = 0; // note\u2029paid = 2;\n", false),
-                ("live code after a block opened in a #region name", "#region Rates /* note\npaid = 1;\n// */\n#endregion\n", "#region Rates /* note\npaid = 2;\n// */\n#endregion\n", false),
-                ("live code after a block opened in a #warning message", "#warning check /* x\npaid = 1;\n// */\n", "#warning check /* x\npaid = 2;\n// */\n", false),
-                ("a skipped #if after a no-break space", "\u00a0#if false\n/* d\n#endif\npaid = 1;\n// */\n", "\u00a0#if false\n/* d\n#endif\npaid = 2;\n// */\n", false),
-                ("a skipped #if after a vertical tab", "\u000b#if false\n/* d\n#endif\npaid = 1;\n// */\n", "\u000b#if false\n/* d\n#endif\npaid = 2;\n// */\n", false),
-                ("a skipped #if after a byte-order mark", "\ufeff#if false\n/* d\n#endif\npaid = 1;\n// */\n", "\ufeff#if false\n/* d\n#endif\npaid = 2;\n// */\n", false),
-                ("two constants' provenance marks swapped", "// SOURCED: OECD\nconst float A = 1f;\n// [AUTHORED-DRAFT] a game figure\nconst float B = 2f;\n", "// [AUTHORED-DRAFT] a game figure\nconst float A = 1f;\n// SOURCED: OECD\nconst float B = 2f;\n", false),
-                ("a comment edited beside a #region (a directive alone refuses nothing)", "#region Rates\nint a = 1; // old words\n#endregion\n", "#region Rates\nint a = 1; // new words\n#endregion\n", true),
+                ("a comment's words edited", U("int a = 1; // old words\n"), U("int a = 1; // new words\n"), true),
+                ("a doc comment line added", U("class A {\n    int x;\n}\n"), U("class A {\n    /// <summary>x</summary>\n    int x;\n}\n"), true),
+                ("a block comment edited inside a statement", U("int a = /* one */ 1;\n"), U("int a = /* two */ 1;\n"), true),
+                ("a comment line removed", U("// history\nint a = 1;\n"), U("int a = 1;\n"), true),
+                ("a section sign repaired in a comment (the s579 artefact)", U("// COMPLETED.md " + (char)92 + "x{a7}580\nint a;\n"), U("// COMPLETED.md §580\nint a;\n"), true),
+                ("a numeric literal changed", U("float r = 0.5f;\n"), U("float r = 0.6f;\n"), false),
+                ("a string literal changed", U("string s = \"a\";\n"), U("string s = \"b\";\n"), false),
+                ("a statement commented out", U("Pay(x);\nint a;\n"), U("// Pay(x);\nint a;\n"), false),
+                ("a commented statement restored", U("// Pay(x);\nint a;\n"), U("Pay(x);\nint a;\n"), false),
+                ("spacing inside a code line (whitespace trivia: accepted since RL-1)", U("int a=1;\n"), U("int a = 1;\n"), true),
+                ("code hidden between a block opener and closer in strings", U("string g = \"Assets/*.cs\"; int a = 1; string e = \"*/\";\n"), U("string g = \"Assets/*.cs\"; int a = 2; string e = \"*/\";\n"), false),
+                ("code hidden after a block opener in a line comment", U("// Assets/*\nint a = 1;\n// end */\n"), U("// Assets/*\nint a = 2;\n// end */\n"), false),
+                ("a verbatim string's line that looks like a comment", U("string s = @\"one\n// two\nend\";\n"), U("string s = @\"one\n// three\nend\";\n"), false),
+                ("a block inside a string with an escaped quote", U("string s = \"a\\\"b /* one */ c\";\n"), U("string s = \"a\\\"b /* two */ c\";\n"), false),
+                ("a block in a string after a quote character", U("char q = '\"'; string s = \"x /* one */ y\";\n"), U("char q = '\"'; string s = \"x /* two */ y\";\n"), false),
+                ("a block in a string after an escaped quote character", U("char q = '\\\"'; string s = \"x /* one */ y\";\n"), U("char q = '\\\"'; string s = \"x /* two */ y\";\n"), false),
+                ("a block in a string after an escaped-quote string", U("string s = \"\\\"\" + \"a /* one */ b\";\n"), U("string s = \"\\\"\" + \"a /* two */ b\";\n"), false),
+                ("a block in an interpolated string after a quote character", U("string s = $\"{'\"'} /* one */\";\n"), U("string s = $\"{'\"'} /* two */\";\n"), false),
+                ("an interpolated verbatim string's line that looks like a comment", U("var q = $@\"{Col(\"rate\")}\n// rate = 0.25\n\";\n"), U("var q = $@\"{Col(\"rate\")}\n// rate = 0.35\n\";\n"), false),
+                ("the other interpolated verbatim order", U("string s = @$\"{'\"'}\n// one\n\";\n"), U("string s = @$\"{'\"'}\n// two\n\";\n"), false),
+                ("a block across an interpolated verbatim string", U("string s = $@\"{F(\"a\")}\nx /* one */ y\n\";\n"), U("string s = $@\"{F(\"a\")}\nx /* two */ y\n\";\n"), false),
+                ("a blank line inside an interpolated verbatim string", U("string s = $@\"{F(\"a\")}\nx\n\";\n"), U("string s = $@\"{F(\"a\")}\n\nx\n\";\n"), false),
+                ("live code after a block opened in a skipped #if branch", U("#if false\n/* disabled\n#endif\npaid = 1;\n// */\n"), U("#if false\n/* disabled\n#endif\npaid = 2;\n// */\n"), false),
+                ("a constant's provenance relabelled in its comment (P1-3)", U("// [AUTHORED-DRAFT] a game figure\nconst float K = 0.5f;\n"), U("// SOURCED: a paper\nconst float K = 0.5f;\n"), false),
+                ("live code after a lone CR ends a comment", U("int paid = 0; // note\rpaid = 1;\n"), U("int paid = 0; // note\rpaid = 2;\n"), false),
+                ("live code after a NEL ends a comment", U("int paid = 0; // note\u0085paid = 1;\n"), U("int paid = 0; // note\u0085paid = 2;\n"), false),
+                ("live code after a LINE SEPARATOR ends a comment", U("int paid = 0; // note\u2028paid = 1;\n"), U("int paid = 0; // note\u2028paid = 2;\n"), false),
+                ("live code after a PARAGRAPH SEPARATOR ends a comment", U("int paid = 0; // note\u2029paid = 1;\n"), U("int paid = 0; // note\u2029paid = 2;\n"), false),
+                ("live code after a block opened in a #region name", U("#region Rates /* note\npaid = 1;\n// */\n#endregion\n"), U("#region Rates /* note\npaid = 2;\n// */\n#endregion\n"), false),
+                ("live code after a block opened in a #warning message", U("#warning check /* x\npaid = 1;\n// */\n"), U("#warning check /* x\npaid = 2;\n// */\n"), false),
+                ("a skipped #if after a no-break space", U("\u00a0#if false\n/* d\n#endif\npaid = 1;\n// */\n"), U("\u00a0#if false\n/* d\n#endif\npaid = 2;\n// */\n"), false),
+                ("a skipped #if after a vertical tab", U("\u000b#if false\n/* d\n#endif\npaid = 1;\n// */\n"), U("\u000b#if false\n/* d\n#endif\npaid = 2;\n// */\n"), false),
+                ("a skipped #if after a byte-order mark", U("\ufeff#if false\n/* d\n#endif\npaid = 1;\n// */\n"), U("\ufeff#if false\n/* d\n#endif\npaid = 2;\n// */\n"), false),
+                ("two constants' provenance marks swapped", U("// SOURCED: OECD\nconst float A = 1f;\n// [AUTHORED-DRAFT] a game figure\nconst float B = 2f;\n"), U("// [AUTHORED-DRAFT] a game figure\nconst float A = 1f;\n// SOURCED: OECD\nconst float B = 2f;\n"), false),
+                ("a comment edited beside a #region (a directive alone refuses nothing)", U("#region Rates\nint a = 1; // old words\n#endregion\n"), U("#region Rates\nint a = 1; // new words\n#endregion\n"), true),
+                // RL-1: three shapes only a parser can see
+                ("an edited branch under a define (disabled here, live under UNITY_EDITOR)", U("#if UNITY_EDITOR\nint a = 1;\n#endif\n"), U("#if UNITY_EDITOR\nint a = 2;\n#endif\n"), false),
+                ("a raw string literal's content", U("string s = \"\"\"\n/* one */\n\"\"\";\n"), U("string s = \"\"\"\n/* two */\n\"\"\";\n"), false),
+                ("a comment after a directive (a directive's line is kept whole)", U("#if X\n#endif // old\nint a;\n"), U("#if X\n#endif // new\nint a;\n"), false),
+                // the RL-1 review's: a mark re-attached, and bytes that are not UTF-8
+                ("a mark re-attached by a blank line removed (F1)", U("// SOURCED: OECD\n\nconst float B = 2f;\n"), U("// SOURCED: OECD\nconst float B = 2f;\n"), false),
+                ("a mark re-attached by a block-comment line removed (F1)", U("// SOURCED: OECD\n/* see note */\nconst float B = 2f;\n"), U("// SOURCED: OECD\nconst float B = 2f;\n"), false),
+                ("a mark moved from one declaration to the next (F1)", U("// SOURCED: OECD\n/* a */ const float A = 1f;\nconst float B = 2f;\n"), U("/* a */ const float A = 1f;\n// SOURCED: OECD\nconst float B = 2f;\n"), false),
+                ("two texts that differ only in bytes that are not UTF-8 (F2)", new byte[] { 0x73, 0x3D, 0x22, 0xE9, 0x22, 0x3B, 0x0A }, new byte[] { 0x73, 0x3D, 0x22, 0xE8, 0x22, 0x3B, 0x0A }, false),
+                ("a CRLF text against its LF commit (F3: the same code)", U("string s = @\"one\r\ntwo\";\r\n"), U("string s = @\"one\ntwo\";\n"), true),
             };
+            var pairs = new List<(string, byte[], byte[])>();
+            foreach (var c in cases) { pairs.Add((c.Name, c.Before, c.After)); }
+            Dictionary<string, string> verdicts = RoslynVerdicts(pairs, out string failure);
+            if (verdicts == null)
+            {
+                sb.Append($"    ⚠ (0) the comment-only exemption: NO VERDICT - {failure}. The probe verified nothing, so the check fails rather than trust an exemption it cannot prove.\n");
+                return false;
+            }
             int wrong = 0;
             foreach (var c in cases)
             {
-                bool accepted = CommentOnlyRefusal(c.Before, c.After) == null;
-                if (accepted != c.Accept) { wrong++; sb.Append($"    ⚠ COMMENT-ONLY PROBE WRONG: {c.Name} - {(accepted ? "accepted and must owe its review" : "owed and must be accepted")}.\n"); }
+                string refusal = verdicts[c.Name];
+                if (refusal == null && ProvenanceBlocks(Encoding.UTF8.GetString(c.Before)) != ProvenanceBlocks(Encoding.UTF8.GetString(c.After))) { refusal = "a provenance claim changed, moved or re-attached"; }
+                bool accepted = refusal == null;
+                if (accepted != c.Accept) { wrong++; sb.Append($"    ⚠ COMMENT-ONLY PROBE WRONG: {c.Name} - {(accepted ? "accepted and must owe its review" : "owed (" + refusal + ") and must be accepted")}.\n"); }
             }
-            sb.Append($"    (0) the comment-only exemption: {cases.Length} probe case(s), {cases.Length - wrong} right - a comment edit accepted, a code change and every mis-strip shape owed.\n");
+            string callerInfo = CallerInfoDeclared();
+            sb.Append($"    (0) the comment-only exemption (Roslyn, RL-1): {cases.Length} probe case(s), {cases.Length - wrong} right - comment and whitespace edits accepted, every code change owed{(callerInfo == null ? "" : "; ⚠ AND NO CHANGE IS COMMENT-ONLY WHILE " + callerInfo)}.\n");
             return wrong == 0 && cases.Length > 0;
+        }
+
+        /// <summary>A process's standard output and error together, and whether it exited 0 within <paramref name="timeoutMs"/> - both streams read asynchronously,
+        /// so the timeout can fire (the RL-1 review's F8). False when it cannot start.</summary>
+        private static bool TryProcess(string file, string arguments, string workingDirectory, int timeoutMs, out string output)
+        {
+            output = "";
+            try
+            {
+                var info = new ProcessStartInfo(file, arguments)
+                {
+                    WorkingDirectory = workingDirectory,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    StandardOutputEncoding = Encoding.UTF8,
+                };
+                using (Process process = Process.Start(info))
+                {
+                    if (process == null) { output = "could not start " + file; return false; }
+                    var outText = new StringBuilder();
+                    var errText = new StringBuilder();
+                    process.OutputDataReceived += (s, e) => { if (e.Data != null) { lock (outText) { outText.Append(e.Data).Append('\n'); } } };
+                    process.ErrorDataReceived += (s, e) => { if (e.Data != null) { lock (errText) { errText.Append(e.Data).Append('\n'); } } };
+                    process.BeginOutputReadLine();
+                    process.BeginErrorReadLine();
+                    if (!process.WaitForExit(timeoutMs)) { try { process.Kill(); } catch (Exception) { } output = outText + errText.ToString() + " (timed out)"; return false; }
+                    process.WaitForExit();   // drains the asynchronous readers
+                    output = outText.ToString() + errText;
+                    return process.ExitCode == 0;
+                }
+            }
+            catch (Exception e) { output = file + ": " + e.Message; return false; }
         }
 
         private static bool IsMoneyPath(string path, Regex moneyRoot, Regex moneyName)

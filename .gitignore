@@ -37,6 +37,9 @@
 ExportedObj/
 .consulo/
 *.csproj
+# RL-1 (s588): the text runner's project is hand-written, not Unity's generated one - it carries the Roslyn reference the review ledger
+# stands on, and until s588 this rule kept it out of the repository, so the runner could not be built from a clone.
+!Tools/textcheck/TextCheck.csproj
 *.unityproj
 *.sln
 *.suo
