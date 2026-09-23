@@ -3584,6 +3584,7 @@ namespace PoliSim.Simulation
                 RealWageIndexAtLastIndex = country.RealWageIndexAtLastIndex,
                 CalendarYear = country.CalendarYear,   // PN-1's driver (§520): the year the pension line's driver reads - the clone audit names it the day it is dropped
                 PensionAgeOverride = country.PensionAgeOverride,   // PN-1's dial (§590): a passed bill's pension age - the preview's line reads it as the turn's does
+                PensionParticipationApplied = country.PensionParticipationApplied,   // §596 review D1: the response the state's rate already carries
                 DebtRatioSeed = country.DebtRatioSeed,
                 DebtRatioLastReport = country.DebtRatioLastReport,
                 DebtRatioReportBefore = country.DebtRatioReportBefore,

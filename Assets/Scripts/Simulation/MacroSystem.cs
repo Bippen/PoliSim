@@ -418,8 +418,9 @@ namespace PoliSim.Simulation
         public static void ApplySupplyShockToUnemployment(Country country)
         {
             EconomyState state = country.State;
+            SyncPensionParticipation(country);   // §596's verification: a pension-age bill passed since the day's step reaches the split already shifted
             float p = Mathf.Clamp(state.LaborForceParticipationRate, 1f, 100f);
-            float structural = country.Cohorts != null ? ParticipationRateTable.StructuralRate(country.Id, country.Cohorts.Counts) : float.NaN;
+            float structural = ParticipationRateTable.StructuralRate(country);   // §596: the pyramid's, plus the bands the pension age has crossed since the seed
             if (country.ParticipationAtLastBoundary <= 0f)
             {
                 country.ParticipationAtLastBoundary = p;
@@ -855,9 +856,28 @@ namespace PoliSim.Simulation
             return Mathf.Clamp(ParticipationElasticityToAfterTaxWage * 100f * Mathf.Log(afterTaxNow / afterTaxSeed), -5f, 5f);
         }
 
+        /// <summary>
+        /// §596 review D1: the pension age's response moves the state's rate as a LEVEL SHIFT the day it moves, not only the anchor - see
+        /// Country.PensionParticipationApplied. Moving the anchor alone let the rate trail it at the reversion's pace, and the FT-8 split read the gap as a
+        /// negative supply shock: France's 2028 step lowered unemployment by 0.14 pts, and that - not the added labour - was what relaxed the AI ministry.
+        /// Idempotent, and called at the top of BOTH readers of the gap - the daily reversion and the boundary's split - because a pension-age bill is applied
+        /// after the day's participation step and before the turn (the verification pass's edge: a bill passing on a boundary day, and the preview, which runs
+        /// the split before the clone's participation step).
+        /// </summary>
+        public static void SyncPensionParticipation(Country country)
+        {
+            float pensionPoints = ParticipationRateTable.PensionResponsePoints(country);
+            if (pensionPoints != country.PensionParticipationApplied)
+            {
+                country.State.LaborForceParticipationRate = Mathf.Clamp(country.State.LaborForceParticipationRate + (pensionPoints - country.PensionParticipationApplied), 0f, 100f);
+                country.PensionParticipationApplied = pensionPoints;
+            }
+        }
+
         public static void ApplyLaborForceParticipationRate(Country country, float reversionSpeed = LaborForceParticipationReversionSpeed)
         {
             EconomyState state = country.State;
+            SyncPensionParticipation(country);   // §596 review D1
             float unemploymentGap = state.Unemployment - country.EffectiveNaturalUnemploymentRate;
             float paidLeaveGap = country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks;
             float retrainingGap = country.RetrainingProgramLevel - NeutralPolicyDialLevel;
@@ -875,7 +895,7 @@ namespace PoliSim.Simulation
             // The anchor: the participation the country's pyramid implies at its sourced rates by age
             // (ParticipationRateTable). A country without a table or a pyramid keeps its current rate
             // as its own anchor rather than being handed a typed one.
-            float structural = country.Cohorts != null ? ParticipationRateTable.StructuralRate(country.Id, country.Cohorts.Counts) : float.NaN;
+            float structural = ParticipationRateTable.StructuralRate(country);   // §596: the pyramid's, plus the bands the pension age has crossed since the seed
             float anchor = float.IsNaN(structural) ? state.LaborForceParticipationRate : structural;
             float target = anchor
                 - DiscouragedWorkerSensitivity * unemploymentGap

@@ -71,6 +71,33 @@ namespace PoliSim.Data
             return base15Plus > 0f ? 100f * active / base15Plus : float.NaN;
         }
 
+        /// <summary>
+        /// PN-1's other half (§596): the structural rate of a COUNTRY - the pyramid's at the sourced rates, plus the participation the pension age keeps
+        /// in (or puts out of) the bands it has moved across since the seed (`PensionParticipationResponse.ExtraActive`), over the same 15+ base. Every
+        /// model reader of the anchor reads this one; the id-and-counts form stays the pyramid's alone, for the diagnostics that measure it as such.
+        /// Identical to it while the age in force is the seed's.
+        /// </summary>
+        public static float StructuralRate(Country country)
+        {
+            if (country?.Cohorts == null) { return float.NaN; }
+            float pyramid = StructuralRate(country.Id, country.Cohorts.Counts);
+            if (float.IsNaN(pyramid)) { return pyramid; }
+            float points = PensionResponsePoints(country);
+            return points == 0f ? pyramid : pyramid + points;
+        }
+
+        /// <summary>§596: the pension age's response in points of the 15+ rate - the extra active people over the 15+ base; zero while the age is the seed's.</summary>
+        public static float PensionResponsePoints(Country country)
+        {
+            if (country?.Cohorts == null) { return 0f; }
+            float[] counts = country.Cohorts.Counts;
+            float extra = PensionParticipationResponse.ExtraActive(country, counts);
+            if (extra == 0f) { return 0f; }
+            float base15Plus = 0f;
+            for (int k = 3; k < PopulationCohorts.CohortCount && k < counts.Length; k++) { base15Plus += counts[k]; }
+            return base15Plus > 0f ? 100f * extra / base15Plus : 0f;
+        }
+
         /// <summary>Twelve published percentages for 15–19 … 70–74 and one for everything from 75 up, laid onto the 21 bands as fractions (0–14 = 0).</summary>
         private static float[] Bands(float b15, float b20, float b25, float b30, float b35, float b40, float b45, float b50,
             float b55, float b60, float b65, float b70, float b75Plus)

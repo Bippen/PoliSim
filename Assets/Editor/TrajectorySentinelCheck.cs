@@ -64,16 +64,26 @@ namespace PoliSim.EditorTools
         /// prices, Eurostat's HFMCE basis - where it weighted by REAL GDP. Germany's weight at year 100 is 0.626 against 0.619, France 0.271 against 0.276, Italy 0.103
         /// against 0.105; the zone's rate moves +0.0007 pp at t100, and the three euro states and, through trade and currency, the other three move in late digits.
         /// A control dump of the tree without the change was byte-identical to 'pn3b', so the whole diff is this change. Before it 'pn3b' - PN-3b (§577).</summary>
-        public const string BaselineLabel = "ft16";
+        /// <summary>PN-1's participation response (2026-09-23, §596): the structural participation gains the bands a pension age has crossed since the seed, at the
+        /// country's sourced rate for the year before the lower age × the hazard at it (Atav, Jongen &amp; Rabaté 2021, Table B.1). Zero at the seed; the no-policy run
+        /// moves where a statute steps after 2026, and the state's rate carries each step as a level shift the day it moves (the review's D1: moved on the anchor
+        /// alone, the lag read as a negative supply shock and lowered unemployment); the rate before an age is read by single year between band midpoints (D2).
+        /// The shift is synced at the top of both readers of the gap, the daily reversion and the boundary's split (the verification pass: a boundary on the day a year
+        /// commits, or a bill passing, reached the split before the day's step). At year 100 on both seeds: France (62 y 9 m → 64 by 2033) +0.93 % labour force,
+        /// +0.93 to +0.96 % potential, +0.95 to +0.99 % GDP; Germany +0.14 %, Italy +0.08 to +0.10 %, the USA +0.06 %; Sweden and Poland by spillover alone. France's
+        /// debt ratio 24.20 → 24.19 on seed 777 and 33.21 → 33.63 on 424242 - the AI ministry's threshold rule, whose net-expenditure cap reads the labour step as
+        /// potential growth and cuts less (`PensionParticipationProbe`), and whose binding years move under a small perturbation. Before it 'ft16' - FT-16 (§585);
+        /// 'ft14' and 'pn1d2' were byte-identical to it.</summary>
+        public const string BaselineLabel = "pp3";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_ft16_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_pp3_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "d11ce4c293c099ab9ca90ce4cb66442cb407d475f4599106585cc6832b76447c"),
-            (424242, "193241569609eb4e01ec7e2cbddc9f20d023e5244dd49fb3f4cb7ad1c6609be1"),
+            (777, "45ef1055382d9ef31c9b779e932f4cabbdab46f33cea68d1d9402252732a49ca"),
+            (424242, "f9e2af13e4fa24985798baf7102c7e5d259b3c57a425e0c7ada76d196af28b42"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------

@@ -167,6 +167,13 @@ namespace PoliSim.Data
         /// persists until a bill sets another or returns the statute's. Additive to the save: a save from before reads the statute's, as it always did.
         /// The preview's clone carries it (the R4-1 hand-list, audited by field, §506).</summary>
         public float PensionAgeOverride = -1f;
+
+        /// <summary>§596 review D1 (2026-09-23): the pension age's participation response, in points of the 15+ rate, that the STATE's rate already carries. When the
+        /// response moves (a statute step, a bill's age) the difference is added to the state's rate as a level shift - the people the age keeps in work are in the
+        /// labour force the day it moves, and the FT-8 split sees the same step in the actual rate as in the anchor, so it lands on no one's unemployment. Zero at
+        /// the seed. Additive to the save: a save from before reads 0 and takes the whole standing response as one level shift on its first day. The preview's clone
+        /// carries it (the R4-1 hand-list).</summary>
+        public float PensionParticipationApplied;
         /// <summary>The AI finance ministry (§388): the debt ratio at the seed, and at the top of the last two turns - the US rule's trigger reads the ratio above
         /// its seed and rising two years running (the debt-limit logic). 0 = not yet observed; a save from before the ministry seeds itself on first sight.</summary>
         public float DebtRatioSeed;
@@ -237,7 +244,7 @@ namespace PoliSim.Data
             DebtRatioSeed = State.DebtToGdpRatio;   // the AI finance ministry (§388)
             ParticipationAtLastBoundary = State.LaborForceParticipationRate;   // FT-7 (§391)
             // FT-8 (§398): the two references the natural rate reads the labour force through - the structural participation and the composition rate on the seed's pyramid
-            float structuralAtSeed = Cohorts != null ? ParticipationRateTable.StructuralRate(Id, Cohorts.Counts) : float.NaN;
+            float structuralAtSeed = ParticipationRateTable.StructuralRate(this);   // §596
             StructuralParticipationAtLastBoundary = float.IsNaN(structuralAtSeed) ? 0f : structuralAtSeed;
             float compositionAtSeed = Cohorts != null ? UnemploymentRateByAgeTable.CompositionRate(Id, Cohorts.Counts) : float.NaN;
             CompositionNaturalRateAtSeed = float.IsNaN(compositionAtSeed) ? 0f : compositionAtSeed;
