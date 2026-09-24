@@ -22,7 +22,7 @@ namespace PoliSim.Elections
     /// 2022 Assembly by nuance - E-47) is reported as such: the country seats its latest sourced table and its view says so.</para>
     ///
     /// <para><b>Every election on a country's calendar inside a run is simulated once that country's model exists</b>; until then its chamber
-    /// and head of state hold as of record, and its view says so. (The calendars themselves are stage 2's data.)</para>
+    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it; the five others offer no polling day yet.</para>
     /// </summary>
     public static class WorldClock
     {
@@ -256,6 +256,121 @@ namespace PoliSim.Elections
         {
             foreach (ChamberOfRecord c in Chambers(id)) { if (c.Vintage == vintage) { return c.ElectionDay; } }
             return DateTime.MinValue;
+        }
+
+        // -----------------------------------------------------------------------------------------------------------------------------
+        // PS-2 / CL-4 (2026-09-25, §619): THE ELECTION CALENDAR INSIDE A RUN. A country whose model exists holds its elections on its own
+        // real calendar (the spec's §3 and ruling 4 of §618); until then its chamber holds as of record and no polling day is offered.
+        // Sweden's is the statute's: "Ordinarie val till riksdagen hålls vart fjärde år" (regeringsformen 3 kap. 3 §, lag 2010:1408
+        // [RF-3-3]) on "den andra söndagen i september" (vallagen 2005:837 1 kap. 3 § [VL-1-3]) - the cycle anchored on the latest
+        // election of record (13 September 2026), so 2026, 2030, 2034 … Nothing here holds an extra election (RF 3 kap. 11 §): a
+        // dissolution is stage 3's (§5.4 of the spec). The record's own date is the day the six records were closed (§617).
+        // -----------------------------------------------------------------------------------------------------------------------------
+
+        /// <summary>The day the records of §617 were closed - what "as of the record" means on a screen.</summary>
+        public static readonly DateTime RecordDate = D(2026, 9, 24);
+
+        /// <summary>The statute a country's ordinary polling day follows, with its citations, or null where no calendar is modelled.</summary>
+        public static string PollingDayBasis(CountryId id) =>
+            id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)" : null;
+
+        /// <summary>
+        /// The country's next ordinary polling day on or after <paramref name="onOrAfter"/>, false where the country's election calendar
+        /// is not modelled (the five others until their stages: their chambers hold as of record).
+        /// </summary>
+        public static bool TryNextPollingDay(CountryId id, DateTime onOrAfter, out DateTime pollingDay)
+        {
+            pollingDay = DateTime.MinValue;
+            if (id != CountryId.Sweden) { return false; }
+            DateTime anchor = LatestElectionDay(id);
+            // The election years are the anchor's every fourth year, in both directions (a date before the anchor reads the same cycle).
+            int year = anchor.Year;
+            while (SecondSundayOfSeptember(year) < onOrAfter.Date) { year += 4; }
+            while (year - 4 >= 1 && SecondSundayOfSeptember(year - 4) >= onOrAfter.Date) { year -= 4; }
+            pollingDay = SecondSundayOfSeptember(year);
+            return true;
+        }
+
+        /// <summary>The second Sunday of September in a year - vallagen 1 kap. 3 §.</summary>
+        public static DateTime SecondSundayOfSeptember(int year)
+        {
+            var first = new DateTime(year, 9, 1);
+            int toSunday = ((int)DayOfWeek.Sunday - (int)first.DayOfWeek + 7) % 7;
+            return first.AddDays(toSunday + 7);
+        }
+
+        /// <summary>
+        /// The vintage an election held on <paramref name="pollingDay"/> reads its declarations from: the election of record on that very day
+        /// where one exists (a game's 13 September 2026 reads 2026's declarations, K-1f's dated facts), else the latest election of record
+        /// before it - the latest dated declarations stand until newer ones are sourced.
+        /// </summary>
+        public static ElectionVintage VintageOfElection(CountryId id, DateTime pollingDay)
+        {
+            IReadOnlyList<ChamberOfRecord> chambers = Chambers(id);
+            ElectionVintage latest = ElectionVintage.Seated;
+            DateTime latestDay = DateTime.MinValue;
+            foreach (ChamberOfRecord c in chambers)
+            {
+                if (c.ElectionDay == DateTime.MinValue) { continue; }
+                if (c.ElectionDay == pollingDay.Date) { return c.Vintage; }
+                if (c.ElectionDay < pollingDay.Date && c.ElectionDay > latestDay) { latest = c.Vintage; latestDay = c.ElectionDay; }
+            }
+            return latest;
+        }
+
+        /// <summary>
+        /// §7 of the spec - HISTORY AS THE REFERENCE: what actually happened at the election the game just held, where the record holds it.
+        /// The real result's seats per party (the sourced table of the election of record on that polling day) and the government the
+        /// record shows after it. False where the polling day is not an election of record (a game's 2030) - then there is no history yet.
+        /// </summary>
+        public sealed class Reference
+        {
+            public ElectionVintage Vintage;
+            public string Label;
+            public Dictionary<string, int> Seats;
+            public string GovernmentLine;
+            public string Basis;
+        }
+
+        public static bool TryReference(CountryId id, DateTime pollingDay, out Reference reference)
+        {
+            reference = null;
+            foreach (ChamberOfRecord c in Chambers(id))
+            {
+                if (c.ElectionDay != pollingDay.Date || !PartySystems.SeatsSourced(c.Vintage)) { continue; }
+                var r = new Reference
+                {
+                    Vintage = c.Vintage,
+                    Label = id.ToString().ToUpperInvariant() + " " + c.ElectionDay.Year.ToString(System.Globalization.CultureInfo.InvariantCulture) + ", AS IT HAPPENED",
+                    Seats = PartySystems.InitialSeats(id, c.Vintage),
+                    Basis = c.Basis,
+                };
+                // The government the record shows after the election: the first government of record from a day after polling day, if any.
+                GovernmentOfRecord? after = null;
+                foreach (GovernmentOfRecord g in Governments(id)) { if (g.From > pollingDay.Date && (!after.HasValue || g.From < after.Value.From)) { after = g; } }
+                if (!after.HasValue)
+                {
+                    r.GovernmentLine = "THE RECORD SHOWS NO CHANGE OF GOVERNMENT AFTER THIS ELECTION (AS OF " + RecordDate.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + ")";
+                }
+                else if (after.Value.CabinetSourced)
+                {
+                    r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + after.Value.Head.ToUpperInvariant()
+                        + " · IN CABINET " + string.Join("+", after.Value.Cabinet) + (after.Value.Support != null && after.Value.Support.Length > 0 ? " · SUPPORT " + string.Join("+", after.Value.Support) : string.Empty);
+                }
+                else
+                {
+                    // The review (§619): the sentence is generic - a caretaker head means the chamber had not chosen by the record's date; any other unsourced
+                    // cabinet (Poland's Morawiecki, Italy's Draghi) means the record names the head but not the cabinet's parties.
+                    bool caretaker = after.Value.Head != null && after.Value.Head.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0;
+                    r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + after.Value.Head.ToUpperInvariant()
+                        + (caretaker
+                            ? " · THE CHAMBER HAD NOT CHOSEN A HEAD OF GOVERNMENT BY THE RECORD'S DATE, " + RecordDate.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant()
+                            : " · ITS CABINET NOT NAMED BY THE RECORD");
+                }
+                reference = r;
+                return true;
+            }
+            return false;
         }
 
         /// <summary>

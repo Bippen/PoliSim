@@ -64,6 +64,15 @@ namespace PoliSim.UI
             public int[] Seats;
         }
 
+        /// <summary>PS-2 (§619), the spec's §7: HISTORY AS THE REFERENCE - what actually happened at this election, where the record holds it.
+        /// The real seats per party in the night's party order and the government the record shows after the election, in one line.</summary>
+        public sealed class Reference
+        {
+            public string Label;
+            public int[] Seats;
+            public string GovernmentLine;
+        }
+
         /// <summary>P2-0.2 (2026-09-02): set by the board's own CONTINUE - the takeover's exit. The seam
         /// covers out on it and the controller applies the office verdict after the cover; a takeover
         /// with no exit is the trap DeadStateCheck reported the first time this board was wired.</summary>
@@ -116,7 +125,7 @@ namespace PoliSim.UI
             string verdict = null, VoteAttribution.Ledger ledger = null, string ledgerParty = null,
             IReadOnlyList<DivisionEffect> standingBudget = null, string standingBudgetCitation = null,
             long[][] previousByConstituency = null, double[] previousShares = null, int[] previousSeats = null,
-            GovernmentFormation.View government = null, CountryId inkCountry = CountryId.Sweden)
+            GovernmentFormation.View government = null, CountryId inkCountry = CountryId.Sweden, Reference reference = null)
         {
             if (previousShares == null && previousVotes != null && partyNames != null && previousVotes.Length == partyNames.Length)
             {
@@ -194,7 +203,7 @@ namespace PoliSim.UI
 
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
             ValkretsCartogramView map = BuildBody(content.transform, state, partyNames, totalSeats, previous, ledger, ledgerParty,
-                standingBudget, standingBudgetCitation, government, inkCountry);
+                standingBudget, standingBudgetCitation, government, inkCountry, reference);
             BuildFooter(content.transform, verdict, screen);
 
             // The map lays itself in the rect the page gives it; resolve the page now so the first frame already has it,
@@ -281,7 +290,7 @@ namespace PoliSim.UI
         private static ValkretsCartogramView BuildBody(Transform parent, NightState state, string[] partyNames, int totalSeats,
             Previous previous, VoteAttribution.Ledger ledger, string ledgerParty,
             IReadOnlyList<DivisionEffect> standingBudget, string standingBudgetCitation,
-            GovernmentFormation.View government, CountryId inkCountry)
+            GovernmentFormation.View government, CountryId inkCountry, Reference reference)
         {
             var body = new GameObject("Body");
             body.transform.SetParent(parent, false);
@@ -302,6 +311,7 @@ namespace PoliSim.UI
             Transform count = Column(body.transform, "Count", 1.0f);
             BuildTally(count, state, partyNames, totalSeats, previous);
             BuildCalls(count, state, partyNames);
+            BuildReference(count, state, partyNames, reference);   // PS-2 (§619): history beside the count, under it
 
             Transform centre = Column(body.transform, "MapColumn", 1.8f);
             ValkretsCartogramView map = BuildMap(centre, state, partyNames, previous, inkCountry);
@@ -846,6 +856,29 @@ namespace PoliSim.UI
         /// each was called at, the parties shut out likewise, and the largest party and any bloc call on their own lines - so
         /// nine identical "will hold seats" rows at 29 of 29 become one statement that says when each was known.
         /// </summary>
+        /// <summary>
+        /// PS-2 (§619), the spec's §7 - "after the player's first election night, the game shows what actually happened beside the
+        /// player's": the real result's seats per party with the played count beside each, and the government the record shows after
+        /// it. Absent when the record holds no election on this polling day (a later term), and absent until the count is complete -
+        /// history is compared against a final count, never a projection.
+        /// </summary>
+        private static void BuildReference(Transform parent, NightState state, string[] partyNames, Reference reference)
+        {
+            if (reference == null || state == null || !state.Complete || reference.Seats == null || reference.Seats.Length != partyNames.Length) { return; }
+            Heading(parent, reference.Label ?? "AS IT HAPPENED");
+            var order = new List<int>();
+            for (int p = 0; p < partyNames.Length; p++) { order.Add(p); }
+            order.Sort((a, b) => reference.Seats[b].CompareTo(reference.Seats[a]));
+            var parts = new List<string>();
+            foreach (int p in order)
+            {
+                int diff = state.SeatsOnCounted[p] - reference.Seats[p];
+                parts.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} (played {2:+0;-0;±0})", partyNames[p], reference.Seats[p], diff));
+            }
+            Wrapped(parent, "THE REAL RESULT'S SEATS, THE PLAYED COUNT'S DIFFERENCE BESIDE EACH: " + string.Join(" · ", parts), 11, PoliSimTheme.TextPrimary);
+            if (!string.IsNullOrEmpty(reference.GovernmentLine)) { Wrapped(parent, reference.GovernmentLine, 11, PoliSimTheme.TextSecondary); }
+        }
+
         private static void BuildCalls(Transform parent, NightState state, string[] partyNames)
         {
             Heading(parent, state.Complete ? "THE CALLS, AS THEY LANDED" : "CALLS — SAFE WHATEVER IS STILL OUT");

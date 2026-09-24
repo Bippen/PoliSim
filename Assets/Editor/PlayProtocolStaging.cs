@@ -15,7 +15,8 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// CL-3 (2026-09-16, §523; the plan's S-C3): **THE STAGED SAVE AT THE PRE-CAMPAIGN'S FIRST DAY.** The play protocol opens on a save cut
     /// here: the seed world with Sweden as the player, advanced day by day from the epoch to the first day of the 26-week run-up
-    /// (the game's own run-up, `new CampaignCalendar(TurnBoundary(NextElectionTurnAfter(0))).PreCampaignStart` - 4 February 2030 since §604's epoch; it was CampaignCalendar.Sweden2026's 2026-01-18 until CL-5), and written with the save service the game itself uses.
+    /// (the game's own run-up - since PS-2 / CL-4 (§619) the run-up to Sweden's REAL polling day, `WorldClock.TryNextPollingDay` from the epoch, so the
+    /// save's day is the epoch itself, 18 January 2026, and the turn is 0; between CL-5 (§579) and §619 it was the run-up to turn 4's boundary), and written with the save service the game itself uses.
     /// The seed is stated on the save (`MasterSeed`, 777 - the harness's own, so a played run and a filmed one open on one world) and the
     /// protocol document names it. Nothing is drafted into it: a playtester opens a clean book. **The player is seated as the largest party of Sweden's seeded chamber**
     /// (§558 - the fresh game's own fallback and the film harness's seat; until 2026-09-21 the staging seated none, and a player with no party has no run-up).
@@ -43,7 +44,9 @@ namespace PoliSim.EditorTools
             // path uses, and the protocol takes its dates FROM THIS SAVE rather than from the calendar a person typed.
             using System.IDisposable epoch = SimulationManager.EpochScope();   // PS-1 (§618): the save opens on Sweden's own start, as the game does at selection; the epoch is put back after
             PoliSim.Elections.WorldClock.ApplyStart(CountryId.Sweden);
-            var calendar = new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(0)));
+            // PS-2 / CL-4 (§619): the game's election is the country's own polling day; the save is cut at that election's run-up, which for Sweden is its start.
+            if (!PoliSim.Elections.WorldClock.TryNextPollingDay(CountryId.Sweden, SimulationManager.EpochDate, out DateTime pollingDay)) { return "Sweden has no polling day on its calendar - nothing to stage a run-up for"; }
+            var calendar = new CampaignCalendar(pollingDay);
             DateTime target = calendar.PreCampaignStart;
             var goA = new GameObject("PlayProtocolStaging.A");
             var goB = new GameObject("PlayProtocolStaging.B");
@@ -98,15 +101,17 @@ namespace PoliSim.EditorTools
                 // party has no run-up and is refused every campaign verb (`AdvancePreCampaign`: no party index, no run) - and until this day the staging seated none, so the
                 // save the protocol opens on could not be played as the protocol says.
                 if (simB.PlayerPartyIndexForCampaign() < 0) { return "restored, the player has NO PARTY in the campaign - no run-up begins and every campaign verb is refused; the protocol's first step cannot be taken"; }
-                // CL-5, CLOSED (2026-09-22, §579). The save is cut on the GAME's calendar now, so this is a record rather than a warning: the live day path reads the
-                // next election turn's boundary, and the day this save opens on is that election's run-up. ⚠ The guard is that the two agree AFTER the restore - if the
-                // boundary the restored turn points at were a different election, the save would open on a run-up the game is not about to run.
-                var live = new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(simB.CurrentTurn)));
+                // CL-5, CLOSED (2026-09-22, §579), and PS-2 / CL-4 (§619): the save is cut on the GAME's calendar, which since §619 IS the real one - the live day path
+                // reads the player's country's next polling day. ⚠ The guard is that the two agree AFTER the restore - if the restored manager pointed at a different
+                // election, the save would open on a run-up the game is not about to run.
+                if (!simB.TryPlayerPollingDay(out DateTime livePollingDay)) { return "restored, the manager offers no polling day for Sweden"; }
+                var live = new CampaignCalendar(livePollingDay);
                 if (live.ElectionDate != calendar.ElectionDate)
                 {
-                    return F("the save was cut for the election of {0:yyyy-MM-dd} and the restored turn points at {1:yyyy-MM-dd} - the save opens on a run-up the game is not about to run", calendar.ElectionDate, live.ElectionDate);
+                    return F("the save was cut for the election of {0:yyyy-MM-dd} and the restored manager points at {1:yyyy-MM-dd} - the save opens on a run-up the game is not about to run", calendar.ElectionDate, live.ElectionDate);
                 }
-                Debug.Log(F("PLAY PROTOCOL: the game's own calendar, which this save opens in - run-up {0:yyyy-MM-dd}, campaign {1:yyyy-MM-dd}, polling day {2:yyyy-MM-dd}; the run-up has {3} on the save's day. THE PROTOCOL TAKES ITS DATES FROM HERE (§579, CL-5): CampaignCalendar.Sweden2026 is the REAL election's calendar and is no longer what the play is cut on.",
+                if (live.ElectionDate != CampaignCalendar.Sweden2026.ElectionDate) { return F("the game's polling day is {0:yyyy-MM-dd}, not the real election's {1:yyyy-MM-dd}", live.ElectionDate, CampaignCalendar.Sweden2026.ElectionDate); }
+                Debug.Log(F("PLAY PROTOCOL: the game's own calendar, which this save opens in - run-up {0:yyyy-MM-dd}, campaign {1:yyyy-MM-dd}, polling day {2:yyyy-MM-dd}; the run-up has {3} on the save's day. THE PROTOCOL TAKES ITS DATES FROM HERE (§579, CL-5; §619: they are the real election's since CL-4 landed).",
                     calendar.PreCampaignStart, calendar.CampaignStart, calendar.ElectionDate, simB.PlayerPreCampaign != null ? "BEGUN" : "not begun"));
                 return null;
             }
@@ -131,7 +136,7 @@ namespace PoliSim.EditorTools
             string failure = CutAndVerify(path, out SaveGame loaded);
             if (failure != null) { Debug.LogError("PLAY PROTOCOL: the pre-campaign save was NOT staged clean - " + failure); CheckExit.Finish(1); return; }
             Debug.Log(F("PLAY PROTOCOL: staged {0} ({1} bytes, sha256 {2}…) - format {3}, seed {4}, turn {9}, Sweden, {5:yyyy-MM-dd} = the run-up's first day ({6} weeks before the campaign, {7} before polling day {8:yyyy-MM-dd}).",
-                path, new FileInfo(path).Length, Digest(path), loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, CampaignCalendar.DefaultPreCampaignWeeks, CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks, new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(0))).ElectionDate, loaded.CurrentTurn));
+                path, new FileInfo(path).Length, Digest(path), loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, CampaignCalendar.DefaultPreCampaignWeeks, CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks, loaded.CurrentDate.AddDays(7 * (CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks)), loaded.CurrentTurn));
             CheckExit.Finish(0);
         }
     }

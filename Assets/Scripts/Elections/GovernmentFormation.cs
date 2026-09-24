@@ -176,10 +176,11 @@ namespace PoliSim.Elections
             public bool PlayerSupports;
         }
 
-        /// <summary>The formation on the country's CURRENT chamber - the chamber of record after an election.</summary>
-        public static View ViewOf(Country country)
+        /// <summary>The formation on the country's CURRENT chamber - the chamber of record after an election. PS-2 (§619): <paramref name="vintage"/> picks the
+        /// declarations - an election held on a polling day reads that election's (`WorldClock.VintageOfElection`), the seated chamber the seated election's.</summary>
+        public static View ViewOf(Country country, ElectionVintage vintage = ElectionVintage.Seated)
         {
-            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] seats, out CoalitionResult result, out bool sourced, out string reason))
+            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] seats, out CoalitionResult result, out bool sourced, out string reason, vintage))
             {
                 return new View { HasGovernment = false, Reason = reason };
             }

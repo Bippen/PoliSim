@@ -436,6 +436,11 @@ namespace PoliSim.Testing
             ReportClockBeforeWarmup(controller);
             bool opensOnTheSave = !string.IsNullOrEmpty(LoadSave) && (Interrupts || CampaignHq || ElectionNightBoard);
             if (opensOnTheSave) { Debug.Log($"SHOT: -shotload - no warm-up in this mode: it opens on the save's own day, {_loadedDate:yyyy-MM-dd}."); }
+            // PS-2 / CL-4 (§619): the interrupts film plays ONE country's game from its own start - the run-up, the campaign and the election on the
+            // country's real polling day (Sweden's 13 September 2026, 238 days in). A warm-up would walk past that polling day with no election held
+            // (the warm-up drives the manager, not the controller) and film the NEXT cycle's night against a chamber play never voted in - the
+            // 2030 night the first film of §619 showed, with no history beside it. So no warm-up here: the film opens on day 0.
+            else if (Interrupts) { Debug.Log("SHOT: -shotinterrupts - no warm-up: the film plays the country's game from its start to its first polling day (PS-2, §619)."); }
             else { AdvanceDays(controller, _countryId); }
             SetPrivateField(controller, "_daySpeedTimer", 0f);   // §510: the hold released
 
@@ -2530,6 +2535,20 @@ namespace PoliSim.Testing
 
                 days++;
 
+                // PS-2 / CL-4 (§619): A WARM-UP HOLDS THE ELECTION PLAY WOULD HOLD. Play votes on the player's country's polling day (the
+                // controller's Update); this loop drives the manager alone, so walking past that day would leave a game past an election never
+                // held - a state play cannot produce, on a chamber the game never voted in (the first film of §619 showed a 2030 night with no
+                // history beside it). The controller holds it here without the night's board, and the warm-up goes on; a first try that
+                // stopped on the eve instead starved every history-dependent capture at turn 0 (the dry film `drycal`: 4 failed).
+                if (sim.PollingDayToday)
+                {
+                    InvokeNoArg(controller, "HoldElectionWithoutTheNight");
+                    FieldInfo overField = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic);
+                    bool over = overField?.GetValue(controller) is bool b && b;
+                    Debug.Log($"SHOT: warm-up held {playerCountry}'s election on {sim.CurrentDate:yyyy-MM-dd} (day {days} / turn {turns}) as play would, without the night{(over ? " - and the run ENDED on its verdict; the warm-up stops here" : string.Empty)}.");
+                    if (over) { return; }
+                }
+
                 // ⚠ STOP ON A PRELIMINARY RELEASE, not on a day count.
                 //
                 // Behaviour 6's whole point is the state where a figure is published but not yet
@@ -2703,6 +2722,8 @@ namespace PoliSim.Testing
 
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
             int guard = 0;
+            // PS-2 (§619): this eve is the FED CHAIR's - its term still ends on the turn cadence `ElectionSystem.IsElectionTurn` names (stated in §619;
+            // the USA's own calendar is stage 6's), so the HELD state is reached on that cadence, not on a polling day.
             while (!ElectionSystem.IsElectionTurn(sim.CurrentTurn + 1) && guard < MaxHeldSearchDays)
             {
                 if (sim.AdvanceDay())
@@ -2745,7 +2766,7 @@ namespace PoliSim.Testing
         }
 
         /// <summary>Bound on each state search (budget pause, decision/meeting rolls). Generous — four sim years — but a bound, per this harness's standing rule that an unbounded wait is a hang with no log line.</summary>
-        private const int MaxStateSearchDays = 365 * 4;
+        private const int MaxStateSearchDays = 365 * 4 + 7;   // PS-2 (§619, the review): consecutive second Sundays of September can be 1 462 days apart (a leap year between), one more than four years
 
         /// <summary>
         /// The state-pinning pass (2026-08-12, Elias: pin the reachable axes the way the interrupt
@@ -3569,18 +3590,17 @@ namespace PoliSim.Testing
         /// </summary>
         private bool AdvanceToElectionTurn(SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
         {
+            // PS-2 / CL-4 (§619): the election is the player's country's own POLLING DAY, flagged by the manager's AdvanceDay, no longer a turn
+            // multiple - the day is ticked as play ticks it, then the controller's CheckElection is the caller's to invoke, as Update does.
             for (int days = 0; days < MaxStateSearchDays; days++)
             {
                 if (sim.AdvanceDay())
                 {
                     sim.AdvanceTurn(noDecisions);
-                    if (ElectionSystem.IsElectionTurn(sim.CurrentTurn))
-                    {
-                        return true;
-                    }
                 }
 
                 sim.AdvanceCountryDayTick(_countryId);
+                if (sim.PollingDayToday) { return true; }
             }
 
             return false;
@@ -3841,7 +3861,7 @@ namespace PoliSim.Testing
 
             PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
             ElectionNightScreen modelScreen = ElectionNightScreen.Build(
-                modelState, keys.ToArray(), "SWEDEN", SimulationManager.TurnBoundary(ElectionSystem.ElectionCycle).AddHours(20), 349, previousLabel: "SWEDEN 2026",
+                modelState, keys.ToArray(), "SWEDEN", PoliSim.Elections.WorldClock.LatestElectionDay(CountryId.Sweden).AddHours(20), 349, previousLabel: "SWEDEN 2026",   // PS-2 (§619): the fixture's night is dated the real polling day
                 previousByConstituency: SwedishRegions.PreviousVotes(keys), previousSeats: previousSeats,
                 government: modelGovernment, inkCountry: CountryId.Sweden);
             if (modelScreen == null)
@@ -4138,8 +4158,8 @@ namespace PoliSim.Testing
             SetPrivateField(controller, "_onDesk", true);
             yield return Settle();
 
-            // 1. To the first election turn, through the controller-shaped day path (the campaign runs inside
-            //    the sim's own day; the boundary is where the controller would call CheckElection).
+            // 1. To the first POLLING DAY (PS-2 / CL-4, §619: the country's own calendar - Sweden's 13 September 2026 from its 18 January start),
+            //    through the controller-shaped day path (the campaign runs inside the sim's own day; the polling day is where Update calls CheckElection).
             int days = 0;
             while (days < MaxStateSearchDays)
             {
@@ -4149,13 +4169,13 @@ namespace PoliSim.Testing
                 if (boundary)
                 {
                     sim.AdvanceTurn(noDecisions);
-                    if (ElectionSystem.IsElectionTurn(sim.CurrentTurn)) { break; }
                 }
+                if (sim.PollingDayToday) { break; }
             }
 
-            if (!ElectionSystem.IsElectionTurn(sim.CurrentTurn))
+            if (!sim.PollingDayToday)
             {
-                Debug.LogError($"SHOT: -shotinterrupts found no election turn within {MaxStateSearchDays} days for {_countryId} - the night is NOT filmed.");
+                Debug.LogError($"SHOT: -shotinterrupts found no polling day within {MaxStateSearchDays} days for {_countryId} - the night is NOT filmed (a country whose election calendar is not modelled has none).");
                 _failed++;
                 yield break;
             }

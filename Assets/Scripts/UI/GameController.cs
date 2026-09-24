@@ -299,7 +299,7 @@ namespace PoliSim.UI
         /// ResolveElectionVerdict / ApplyElectionVerdict). Persisted; a load with one pending lands it at once.</summary>
         private string _pendingElectionVerdict;
         private bool _pendingElectionVerdictEndsGame;
-        private int _pendingElectionTurn;
+        private System.DateTime _pendingElectionDate;   // PS-2 (§619): the polling day the verdict was read on - an election is a date since CL-4
         private string _gameOverReason;
 
         /// <summary>
@@ -797,6 +797,13 @@ namespace PoliSim.UI
                     AdvanceTurn();
                 }
 
+                // PS-2 / CL-4 (§619): the player's country votes on its own real polling day, inside whatever turn the day falls in -
+                // the manager raised the flag in this day's AdvanceDay; the election is held once the day's ticks and any boundary have run.
+                if (_simulationManager.PollingDayToday)
+                {
+                    CheckElection();
+                }
+
                 AutosaveIfDue();   // MM-2: counted in days played, by the setting's cadence
 
                 // A newly-fired election reveal/Fed-Chair selection/Cabinet decision/foreign policy
@@ -964,7 +971,7 @@ namespace PoliSim.UI
                 GameOverReason = _gameOverReason,
                 PendingElectionVerdict = _pendingElectionVerdict,
                 PendingElectionVerdictEndsGame = _pendingElectionVerdictEndsGame,
-                PendingElectionTurn = _pendingElectionTurn,
+                PendingElectionDate = _pendingElectionDate == default ? null : _pendingElectionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 CampaignOpeningAcknowledgedElection = _campaignOpeningAcknowledgedElection,
                 Scenario = _scenarioProgress,
                 ScenarioVerdictPending = _scenarioVerdictPending,
@@ -1035,7 +1042,7 @@ namespace PoliSim.UI
             _gameOverReason = ui?.GameOverReason;
             _pendingElectionVerdict = ui?.PendingElectionVerdict;
             _pendingElectionVerdictEndsGame = ui?.PendingElectionVerdictEndsGame ?? false;
-            _pendingElectionTurn = ui?.PendingElectionTurn ?? 0;
+            _pendingElectionDate = ui?.PendingElectionDate != null && System.DateTime.TryParseExact(ui.PendingElectionDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out System.DateTime pendingDate) ? pendingDate : default;
             _campaignOpeningAcknowledgedElection = ui?.CampaignOpeningAcknowledgedElection;
             // P2-0.3: a load that lands inside an unacknowledged opening opens HQ, as the day did.
             if ((HasPendingCampaignOpening() || HasPendingScandalAnswer()) && !_liveCampaignOpen) { OpenLiveCampaign(); }
@@ -1898,7 +1905,7 @@ namespace PoliSim.UI
 
         /// <summary>
         /// STEP 3's EVALUATION HOOK (R-S3c): boundary-resident, called from the same post-turn site
-        /// `CheckElection` occupies. A resolved verdict raises the verdict screen; the run does not
+        /// `CheckElection` occupied until PS-2 (§619) moved the election to polling day. A resolved verdict raises the verdict screen; the run does not
         /// end until the player dismisses it, exactly as an election loss does not end until the
         /// reveal is dismissed.
         /// </summary>
@@ -3362,15 +3369,13 @@ namespace PoliSim.UI
             AddBill(_simulationManager.GetPendingTradeBill(PlayerCountryId)?.DaysRemaining, "Trade");
             AddBill(_simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId)?.DaysRemaining, "SWF drawdown");
 
-            // Next election: exactly computable (turn number -> real date via the epoch formula, the
-            // same one every turn-derived date in this method reuses), never a probabilistic roll.
-            // Past elections are deliberately NOT marked - only the most recently resolved one is ever
-            // held (transiently, cleared on dismissal), with no persisted log to draw a history from;
-            // see CLAUDE.md's data contract and its own cross-reference to the still-open ElectionRecord gap.
-            int nextElectionTurn = _simulationManager.CurrentTurn
-                - (_simulationManager.CurrentTurn % ElectionSystem.ElectionCycle) + ElectionSystem.ElectionCycle;
-            System.DateTime electionDate = SimulationManager.EpochDate.AddDays(nextElectionTurn * (double)SimulationManager.DaysPerTurn);
-            Add(electionDate, $"Year {nextElectionTurn} election", UiPalette.SystemArea.Political);
+            // Next election: the player's country's own polling day (PS-2 / CL-4, §619: the statute's calendar, `WorldClock.TryNextPollingDay`),
+            // never a probabilistic roll; a country whose calendar is not modelled marks none. Past elections are deliberately NOT marked -
+            // only the most recently resolved one is ever held (transiently, cleared on dismissal).
+            if (_simulationManager.TryPlayerPollingDay(out System.DateTime pollingDay))
+            {
+                Add(pollingDay, "Polling day", UiPalette.SystemArea.Political);
+            }
 
             // Resolved divisions (every bill type, up to the 24 most recent) - real, stored dates,
             // history rather than schedule.
@@ -3974,7 +3979,7 @@ namespace PoliSim.UI
             int termEnds = _simulationManager.CurrentTurn + 1;
             while (!ElectionSystem.IsElectionTurn(termEnds) && termEnds < _simulationManager.CurrentTurn + 64) { termEnds++; }
             bool pending = _fedChairCandidates != null && _fedChairCandidates.Count > 0;
-            GUILayout.Label($"TERM ENDS WITH THE ELECTION CYCLE · TURN {termEnds} · {FederalReserveSystem.PoolSize} IN THE POOL", DeskCaption(8f, PoliSimTheme.TextMuted));
+            GUILayout.Label($"TERM ENDS ON THE CHAIR'S OWN CYCLE · TURN {termEnds} · {FederalReserveSystem.PoolSize} IN THE POOL", DeskCaption(8f, PoliSimTheme.TextMuted));
             GUI.enabled = pending;
             if (PoliSimWidgets.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
             {
@@ -6180,10 +6185,9 @@ namespace PoliSim.UI
 
             RecordMapEventMarkers();
             ResetPolicyInputs();
-            CheckElection();
-            // STEP 3: the scenario evaluator shares this post-turn site by ruling - one boundary, one
-            // place run-ending conditions are judged. After CheckElection, so an election loss on the
-            // same boundary keeps its existing precedence.
+            // PS-2 / CL-4 (§619): the election left the boundary - it is held on the player's country's polling day from Update, the same
+            // day the manager flags it. The scenario evaluator keeps this post-turn site (STEP 3's ruling: one boundary, one place
+            // run-ending conditions are judged); an election's own verdict lands on its polling day and keeps its precedence there.
             CheckScenarioObjectives();
         }
 
@@ -6379,14 +6383,31 @@ namespace PoliSim.UI
         /// exit. A country whose vote model returns NotImplemented holds no election and reaches no
         /// verdict - the record says why - and shows nothing rather than something false.</para>
         /// </summary>
+        /// <summary>
+        /// PS-2 (§619), THE HARNESS'S WARM-UP ONLY: the election held as play holds it - the count, the chamber, the verdict landed - without
+        /// the night's board, which is a display the warm-up is not filming. A warm-up that drives the manager past a polling day would leave
+        /// a game past an election never held; this keeps the warmed-up world one play could have produced. Invoked by reflection from
+        /// <c>UiScreenshotDriver.AdvanceDays</c>; nothing in play calls it.
+        /// </summary>
+        private void HoldElectionWithoutTheNight()
+        {
+            if (!_simulationManager.PollingDayToday) { return; }
+            _pendingElectionDate = _simulationManager.CurrentDate;
+            RunNationalElection();
+            ResolveElectionVerdict();
+            Debug.Log($"ELECTION: held without the night on {_simulationManager.CurrentDate:yyyy-MM-dd} (the warm-up's election) - verdict: {_pendingElectionVerdict ?? "(none)"}");
+            ApplyElectionVerdict();
+        }
+
         private void CheckElection()
         {
-            if (!ElectionSystem.IsElectionTurn(_simulationManager.CurrentTurn))
+            // PS-2 / CL-4 (§619): the gate is the calendar's day, not the turn - the manager flags the player's country's own polling day.
+            if (!_simulationManager.PollingDayToday)
             {
                 return;
             }
 
-            _pendingElectionTurn = _simulationManager.CurrentTurn;
+            _pendingElectionDate = _simulationManager.CurrentDate;
             RunNationalElection();
             ResolveElectionVerdict();
             ShowElectionNight();
@@ -6415,13 +6436,16 @@ namespace PoliSim.UI
             ElectionRecord latest = _playerCountry.ElectionHistory.Count > 0
                 ? _playerCountry.ElectionHistory[_playerCountry.ElectionHistory.Count - 1]
                 : null;
-            if (latest == null || latest.Turn != _simulationManager.CurrentTurn || latest.Method == ElectionMethod.NotImplemented)
+            if (latest == null || latest.Date != _simulationManager.CurrentDate || latest.Method == ElectionMethod.NotImplemented)
             {
-                // No election was held (the record carries the reason); there is no chamber to test.
+                // No election was held today (the record carries the reason); there is no chamber to test.
                 return;
             }
 
-            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry);
+            // PS-2 (§619): the formation reads the declarations of the election just held - 13 September 2026 reads 2026's dated
+            // declarations (K-1f's facts), not the seated 2022 chamber's - through the one resolver the night's board reads too.
+            ElectionVintage electionVintage = PoliSim.Elections.WorldClock.VintageOfElection(PlayerCountryId, latest.Date);
+            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry, electionVintage);
             if (!government.HasGovernment)
             {
                 _pendingElectionVerdict = $"No government could be formed from this chamber - {government.Reason}. You stay in office until one can.";
@@ -6437,12 +6461,25 @@ namespace PoliSim.UI
                 return;
             }
 
+            // PS-2 (§619; the political-system spec's §7 and its decision 4, which resolves OP-1 and replaces D-5 (a)): LOSING OFFICE NEVER ENDS A RUN
+            // in a parliamentary country - the party goes into opposition or supports from outside, and the run goes on. What ends a run is falling
+            // out of parliament. ⚠ Stated deviation until PS-3: the role's gating of the levers (an opposition party does not hold the budget) and the
+            // AI governing the player's own country are stage 3's; until then the desk stays as it was and the sentence says so.
+            string playerAbbrev = _playerCountry.PlayerPartyAbbrev;
+            if (latest.Seats != null && (!latest.Seats.TryGetValue(playerAbbrev, out int playerSeats) || playerSeats <= 0))
+            {
+                _pendingElectionVerdict = $"Out of parliament after the election of {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}: "
+                    + $"{PartySystems.ShortName(_playerCountry.Id, playerAbbrev)} won no seat, and a run ends when its party leaves the chamber.{sourcedNote}";
+                _pendingElectionVerdictEndsGame = true;
+                return;
+            }
             string standing = government.PlayerSupports
                 ? "supporting it from outside"      // Tidö's own distinction: support is not office.
                 : "in opposition";
-            _pendingElectionVerdict = $"Out of office at year {_pendingElectionTurn}: the chamber formed a "
-                + $"{government.CabinetDescription} government with {PartySystems.ShortName(_playerCountry.Id, _playerCountry.PlayerPartyAbbrev)} {standing}.{sourcedNote}";
-            _pendingElectionVerdictEndsGame = true;
+            _pendingElectionVerdict = $"Out of office after the election of {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}: the chamber formed a "
+                + $"{government.CabinetDescription} government with {PartySystems.ShortName(_playerCountry.Id, playerAbbrev)} {standing}. The run continues - "
+                + "losing office never ends it; until the roles are built (PS-3) the government's levers stay on your desk, stated.";
+            _pendingElectionVerdictEndsGame = false;
         }
 
 
@@ -6541,20 +6578,37 @@ namespace PoliSim.UI
                     previousLabel = "THE PREVIOUS ELECTION";
                 }
 
-                // Item 3: who governs - the formation on the chamber the election just set, the same one the verdict was read from.
-                GovernmentFormation.View government = GovernmentFormation.ViewOf(_playerCountry);
+                // Item 3: who governs - the formation on the chamber the election just set, the same one the verdict was read from,
+                // on the election's own declarations (PS-2, §619).
+                System.DateTime pollingDay = _simulationManager.CurrentDate;
+                GovernmentFormation.View government = GovernmentFormation.ViewOf(_playerCountry, PoliSim.Elections.WorldClock.VintageOfElection(PlayerCountryId, pollingDay));
+
+                // §7 of the political-system spec (PS-2, §619): HISTORY AS THE REFERENCE - what actually happened at this election, where the
+                // record holds it (the first election of a Sweden game is 13 September 2026, K-1's sourced result); a later one has no history.
+                ElectionNightScreen.Reference reference = null;
+                if (PoliSim.Elections.WorldClock.TryReference(PlayerCountryId, pollingDay, out PoliSim.Elections.WorldClock.Reference history))
+                {
+                    var realSeats = new int[keys.Count];
+                    for (int k = 0; k < keys.Count; k++) { history.Seats.TryGetValue(keys[k], out realSeats[k]); }
+                    reference = new ElectionNightScreen.Reference { Label = history.Label, Seats = realSeats, GovernmentLine = history.GovernmentLine };
+                    Debug.Log($"ELECTION: the reference for {pollingDay:yyyy-MM-dd} is {history.Vintage} - {history.Label}; {history.GovernmentLine}");
+                }
+                else
+                {
+                    Debug.Log($"ELECTION: no reference for {pollingDay:yyyy-MM-dd} - the record holds no election of {PlayerCountryId} on that day, so the night shows no history beside the count.");
+                }
 
                 PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
                 AudioDirector.Fire(AudioCue.ConstituencyDeclares);   // P4-2: the count is in - the night is built at its final minute, so this fires once
                 _electionNight = ElectionNightScreen.Build(
                     state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
-                    System.DateTime.Now, 349, previousLabel: previousLabel, verdict: _pendingElectionVerdict,
+                    pollingDay.AddHours(20), 349, previousLabel: previousLabel, verdict: _pendingElectionVerdict,   // PS-2: the game's polling day at the polls' close, not the wall clock
                     ledger: _simulationManager.PlayerCampaignLedger, ledgerParty: _simulationManager.PlayerCampaignLedgerParty,   // P2-4.3
                     standingBudget: standingBudget?.Effects,
                     standingBudgetCitation: standingBudget == null ? null
                         : $"DIVISION No. {standingBudget.Number} · {standingBudget.Date:yyyy-MM-dd} · {standingBudget.Title}",
                     previousByConstituency: previousByConstituency, previousShares: previousShares, previousSeats: previousSeats,
-                    government: government, inkCountry: PlayerCountryId);
+                    government: government, inkCountry: PlayerCountryId, reference: reference);
             }
             catch (System.Exception e)
             {
@@ -6573,7 +6627,7 @@ namespace PoliSim.UI
             Dictionary<string, double> shareByParty = null;
             CampaignRun.Result campaign = _simulationManager.PlayerCampaignResult;
             if (campaign != null && _simulationManager.CampaignRecord != null
-                && _simulationManager.CampaignRecord.ElectionDate == SimulationManager.TurnBoundary(_simulationManager.CurrentTurn)
+                && _simulationManager.CampaignRecord.ElectionDate == _simulationManager.CurrentDate   // PS-2 (§619): the campaign that ran up to TODAY, the polling day
                 && _simulationManager.PlayerCampaign != null)
             {
                 var keys = new string[_simulationManager.PlayerCampaign.Setup.Parties.Length];
@@ -6601,6 +6655,7 @@ namespace PoliSim.UI
                 _playerCountry.ElectionHistory.Add(new ElectionRecord
                 {
                     Turn = _simulationManager.CurrentTurn,
+                    Date = _simulationManager.CurrentDate,
                     CountryId = PlayerCountryId.ToString(),
                     Method = ElectionMethod.NotImplemented,
                     NotHeldReason = NationalElection.NotHeldReason(PlayerCountryId),
@@ -6609,9 +6664,9 @@ namespace PoliSim.UI
                 return;
             }
 
-            ElectionRecord record = NationalElection.Run(PlayerCountryId, _simulationManager.CurrentTurn, shareByParty);
+            ElectionRecord record = NationalElection.Run(PlayerCountryId, _simulationManager.CurrentTurn, shareByParty, _simulationManager.CurrentDate);
             _playerCountry.ElectionHistory.Add(record);
-            Debug.Log($"ELECTION: held for {PlayerCountryId} at turn {_simulationManager.CurrentTurn} by {record.Method}" + (_simulationManager.PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)"));
+            Debug.Log($"ELECTION: held for {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} (turn {_simulationManager.CurrentTurn}) by {record.Method}" + (_simulationManager.PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)"));
             if (record.Method != ElectionMethod.NotImplemented)
             {
                 ParliamentSystem.SetSeatsFromElection(_playerCountry, record.Seats);

@@ -22,6 +22,9 @@ namespace PoliSim.Elections
     public class ElectionRecord
     {
         public int Turn;
+        /// <summary>PS-2 (§619): the polling day the election was held on - the game's own calendar date, which the verdict and the night are keyed to
+        /// (the turn is the year it fell in). MinValue on the Editor's turn-labelled runs (a v25 save is refused by the loader, so no undated record is ever loaded).</summary>
+        public System.DateTime Date;
         public string CountryId;
         public ElectionMethod Method;
         /// <summary>Seats won, keyed by the abbreviation `PartySystems` uses. Empty when `Method` is `NotImplemented`.</summary>
@@ -294,9 +297,9 @@ namespace PoliSim.Elections
             return scaled;
         }
         /// <summary>Runs the country's own procedure on a set of national vote shares, or reports that the model does not implement it.</summary>
-        public static ElectionRecord Run(CountryId country, int turn, IReadOnlyDictionary<string, double> shares)
+        public static ElectionRecord Run(CountryId country, int turn, IReadOnlyDictionary<string, double> shares, System.DateTime date = default)
         {
-            var record = new ElectionRecord { Turn = turn, CountryId = country.ToString() };
+            var record = new ElectionRecord { Turn = turn, Date = date, CountryId = country.ToString() };
 
             switch (country)
             {

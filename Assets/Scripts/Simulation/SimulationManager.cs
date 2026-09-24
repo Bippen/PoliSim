@@ -472,6 +472,8 @@ namespace PoliSim.Simulation
 
             // C-R4b step 3: the player's campaign steps after every country's day, on the same date.
             AdvanceCampaign();
+            // PS-2 / CL-4: the day the player's country votes, on its own calendar - the controller holds the election on it.
+            PollingDayToday = TryPlayerPollingDay(out System.DateTime pollingDay) && pollingDay == CurrentDate;
 
             int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
             return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
@@ -2183,12 +2185,10 @@ namespace PoliSim.Simulation
         // ---------------------------------------------------------------------------------------------
         // C-R4b step 3 (2026-09-02): THE PLAYER'S CAMPAIGN, IN THE DAY LOOP.
         //
-        // The campaign spec's §3 calendar runs eight weeks before polling day. The game's election is
-        // the turn boundary `ElectionSystem.IsElectionTurn` names (turns 4, 8, … - the first day of
-        // that turn), so the campaign runs the eight weeks before that boundary: `CampaignCalendar`
-        // built on the boundary date. ⚠ Sweden's real September date is the calendar's ask and the
-        // boundary is the game's; the deviation is stated here and resolved when election night moves
-        // off the boundary (C-R4b's last step), not hidden in a calendar that says September.
+        // The campaign spec's §3 calendar runs eight weeks before polling day. Until PS-2 (§619) the game's election was
+        // the turn boundary `ElectionSystem.IsElectionTurn` named (turns 4, 8, …) and the campaign ran the eight weeks before it,
+        // Sweden's real September date being the calendar's ask and the boundary the game's - a deviation stated here until
+        // election night moved off the boundary. IT HAS (CL-4, §619): the calendar is built on the country's real polling day.
         //
         // The player's party is AI-PLAYED by its cast personality until the HQ screen's queue exists
         // (C-R4b step 4) - `LiveCampaignSetup` scripts nothing - so a campaign runs, is measured, and
@@ -2233,9 +2233,29 @@ namespace PoliSim.Simulation
             SimulationRandom.Stream.CampaignAi, SimulationRandom.Stream.Debate, SimulationRandom.Stream.Scandal,
         };
 
-        /// <summary>The campaign window and calendar for the current day: the eight weeks before the next election boundary.</summary>
-        private Elections.CampaignCalendar CurrentCampaignCalendar() =>
-            new Elections.CampaignCalendar(TurnBoundary(NextElectionTurnAfter(CurrentTurn)));
+        // ---------------------------------------------------------------------------------------------
+        // PS-2 / CL-4 (2026-09-25, §619): POLLING DAY ON THE CALENDAR'S DATE. The player's country votes on its
+        // own real polling day (`WorldClock.TryNextPollingDay` - Sweden's statute: every fourth year, the second
+        // Sunday of September), inside whatever turn that day falls in; the campaign calendar is built on it,
+        // and `AdvanceDay` raises `PollingDayToday` on that day for the controller's election call. The AI
+        // countries hold no election in a run until their models exist (§618's ruling 4): their chambers hold
+        // as of record. `ElectionSystem.IsElectionTurn` keeps the turn cadence for what still reads it (the
+        // Fed chair's term) and no longer times an election.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>True on the day the player's country votes - set by <see cref="AdvanceDay"/> after the date has advanced, read by the controller the same day.</summary>
+        public bool PollingDayToday { get; private set; }
+
+        /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
+        public bool TryPlayerPollingDay(out System.DateTime pollingDay)
+        {
+            pollingDay = System.DateTime.MinValue;
+            return PlayerCountryId.HasValue && Elections.WorldClock.TryNextPollingDay(PlayerCountryId.Value, CurrentDate, out pollingDay);
+        }
+
+        /// <summary>The campaign window and calendar for the current day: the run-up and the eight weeks before the player's country's next polling day, or null where none is modelled.</summary>
+        private Elections.CampaignCalendar? CurrentCampaignCalendar() =>
+            TryPlayerPollingDay(out System.DateTime pollingDay) ? new Elections.CampaignCalendar(pollingDay) : (Elections.CampaignCalendar?)null;
 
         /// <summary>
         /// Called once per day after the date has advanced: begins the player's campaign on its first
@@ -2247,13 +2267,15 @@ namespace PoliSim.Simulation
         private void AdvanceCampaign()
         {
             if (!PlayerCountryId.HasValue) { return; }
-            Elections.CampaignCalendar calendar = CurrentCampaignCalendar();
+            Elections.CampaignCalendar? next = CurrentCampaignCalendar();
+            if (!next.HasValue) { return; }   // no election calendar for this country yet - no run-up and no campaign, as there is no election
+            Elections.CampaignCalendar calendar = next.Value;
             if (CurrentDate < calendar.PreCampaignStart || CurrentDate >= calendar.ElectionDate)
             {
                 // Outside the window - which opens at the PRE-campaign's first day since CL-1. A finished
                 // campaign's result stays readable until the next window opens; the running state is dropped
-                // once its election has passed. Strictly AFTER the boundary day: the election is counted on the
-                // boundary day's own AdvanceTurn (the controller's CheckElection reads PlayerCampaign and the Result then).
+                // once its election has passed. Strictly AFTER polling day: the election is counted on polling day's own
+                // Update (the controller's CheckElection reads PlayerCampaign and the Result then - PS-2, §619).
                 if (PlayerCampaign != null && CurrentDate > PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; PlayerPreCampaign = null; }
                 return;
             }

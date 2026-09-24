@@ -7,7 +7,7 @@ namespace PoliSim.Simulation
     /// authored scenario has been won, lost, or is still running.
     ///
     /// <para><b>BOUNDARY-RESIDENT, deliberately.</b> Called once per turn boundary from the same
-    /// post-turn hook `CheckElection` already occupies - after `AdvanceTurn`, where the period's
+    /// post-turn hook after `AdvanceTurn` (which `CheckElection` shared until PS-2 moved the election to polling day, §619), where the period's
     /// numbers have settled. A day-resident evaluator was rejected in scoping: a threshold that can
     /// trip mid-period would claim a precision the compounding (Class D) quantities do not have, and
     /// the sustained form counts in TURNS because that is the unit the model's own political layer

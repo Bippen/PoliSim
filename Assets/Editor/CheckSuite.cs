@@ -177,6 +177,7 @@ namespace PoliSim.EditorTools
             ("PartyLeadershipDiagnostic", PartyLeadershipDiagnostic.Run),   // K-1e (§608): the sourced roster, name and office - it had run in no bar, so its ASCII-folded names failed unheard
             ("SettingsCheck", SettingsCheck.Run),   // MM-2 (§615): every preference pinned by the film harness, every setting proved live
             ("WorldClockDiagnostic", WorldClockDiagnostic.Run),   // PS-1 (§618): each country's start, its chamber and government of record, asserted against the sourced tables
+            ("PollingDayDiagnostic", PollingDayDiagnostic.Run),   // PS-2 / CL-4 (§619): the election on the calendar's date - the statute's rule, the next polling day, the flag raised once on 2026-09-13
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),

@@ -94,7 +94,7 @@ namespace PoliSim.EditorTools
         /// roster's own seats in every chamber) measures the second channel, recorded in §618. At turn 100 the largest movers are France's real household
         /// energy price change (−3.6 %), budget (−1.1 %) and population growth (−1.0 %) on seed 777; Germany's population growth rate moves ±10–14 % on a
         /// figure of 0.002; Sweden, Poland and the USA move in late digits. Before it 'k1ep' - K-1 part (3) (§604).</summary>
-        public const string BaselineLabel = "ps1wc";
+        public const string BaselineLabel = "ps2cal";   // PS-2 / CL-4 (§619): the family `ps2cal` is BYTE-IDENTICAL to `ps1wc` on both seeds - the dump holds no election (it drives the manager, not the controller) and the campaign draws on its own streams - so the digests stand
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
