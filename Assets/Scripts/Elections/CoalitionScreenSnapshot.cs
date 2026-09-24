@@ -52,12 +52,27 @@ namespace PoliSim.Elections
             return parts.Count == 0 ? "—" : string.Join("+", parts.ToArray());
         }
 
-        /// <summary>Declared lines only - the ones a party said out loud and a citation records.</summary>
+        /// <summary>Declared lines only - the ones a party said out loud and a citation records. K-1f: not the candidacy pair's lines -
+        /// the parties declared the candidacies, and the refusal between them is the ruling's rule (<see cref="CandidacyPairs"/>).</summary>
         public List<RedLine> Declared()
         {
             var declared = new List<RedLine>();
-            foreach (RedLine line in RedLines) { if (line.Kind == RedLineKind.Declared) { declared.Add(line); } }
+            foreach (RedLine line in RedLines) { if (line.Kind == RedLineKind.Declared && !DeclaredRedLines.IsCandidacy(line)) { declared.Add(line); } }
             return declared;
+        }
+
+        /// <summary>K-1f: the parties that declared rival candidacies for prime minister, one entry per pair (the two one-way lines between
+        /// them are one fact on a screen).</summary>
+        public List<(int A, int B)> CandidacyPairs()
+        {
+            var pairs = new List<(int A, int B)>();
+            foreach (RedLine line in RedLines)
+            {
+                if (!DeclaredRedLines.IsCandidacy(line)) { continue; }
+                (int a, int b) = line.A < line.B ? (line.A, line.B) : (line.B, line.A);
+                if (!pairs.Contains((a, b))) { pairs.Add((a, b)); }
+            }
+            return pairs;
         }
     }
 }

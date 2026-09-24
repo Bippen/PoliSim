@@ -33620,3 +33620,124 @@ So `RedLine.OneWay` (`CoalitionFormation.cs`):
 **The row, retired verbatim from `POLISIM_FEATURE_LIST.md`:**
 
 - **K-1** — the seed refresh from Sweden's real result, **13 September**. **IN PROGRESS 2026-09-23 (ordered in six parts): part (0), the out-of-sample test, DONE and kept - `COMPLETED.md` §601; part (1), the 2026 chamber, LANDED - §602 (the seats, the prior and the per-valkrets returns; 2022 pinned for the backtests; the cartogram column and the ink ladder held for Design as K-1c/K-1d; the no-policy dump byte-identical to `pp4`); part (2), the 2026 declarations, LANDED - §603 (C's line on V as a new one-way shape; on the seated chamber the formation gives S+C+MP carried by V; the S-M gap filed as K-1f for Elias); part (3), the start on 1 October 2026, LANDED - §604 (the family `k1ep`, measured first: the move reaches the economy through the calendar year alone; statutes arrive nine months earlier - France's debt ratio lower, Germany's higher, on both seeds); part (4), who governs on day one, LANDED - §605 (the formation's S+C+MP carried by V stands in, marked PROVISIONAL; `SeatedGovernment` takes the Riksdag's vote as data, K-1b).** **→ ✅ CLOSED 2026-09-24 - `COMPLETED.md` §601-§606: part (5), the play save re-staged on the new seed (§606). Its follow-ons stay open as their own rows: K-1b (the Riksdag's vote, data only), K-1c and K-1d (Design's), K-1e (the leaders), K-1f (Elias's: the S-M gap).**
+
+## 607. K-1f - DECLARED PRIME-MINISTERIAL CANDIDACIES AND V'S IN-OR-AGAINST RULE, ENFORCED; THE DAY-ONE GOVERNMENT IS NONE, AND TWO READINGS DECIDE THAT; K-1d RULED; DECLARATIONS ARE DATED, STANDING (2026-09-24)
+
+**The ruling** (Elias, 2026-09-24): *"K-1f ruled: a declared prime-ministerial candidacy becomes a constraint the model enforces — a party that declared its own leader as its candidate refuses any cabinet led by another party's candidate; sourced from the declarations, dated. RedLine.OneWay stands, and V's declared rule gets its mirror shape: V refuses to support a cabinet it is not in, sourced and dated. The day-one government is whatever the formation produces with both held — a tolerated minority under negative parliamentarism included — still PROVISIONAL until the Riksdag votes; nothing tuned toward an outcome. The ink ladder keeps its ruled 2022 order. [...] Record as standing: declarations are dated, and every election reads its own date's."*
+
+**Sourced, not recalled.** Independent readers verified each file in rounds until it came back clean (four rounds each).
+- `coalition_declarations_2026.md`, new K-1f section: 13 pages added, 65 in all, every sha256 verifying.
+- `coalition_declarations_2022.md`, new section: 15 pages under `raw/declarations_2022/`.
+
+**Who declared its own leader:**
+- **2026:**
+  - **S** (Magdalena Andersson), on its own pages of 2026-05-01, 2026-08-03 and 2026-08-09. The 2026-08-03 page: *"I valet i september kommer jag att söka svenska folkets mandat för att bli Sveriges statsminister"*.
+  - **M** (Ulf Kristersson), on its page of 2026-04-01: *"Den enda som kan leda den är Ulf Kristersson."*
+  - SD, KD, L and C named another party's leader. V and MP named none.
+- **2022:**
+  - **S** (Andersson), on its own page of 2022-08-04, as leader and sitting prime minister. The candidacy wording is the press's.
+  - **M** (Kristersson), on its page of 2022-03-26: *"Som statsminister kommer Ulf Kristersson ..."*.
+  - C, KD, L and MP named another party's leader. SD and V are gaps.
+- The constraint therefore binds S and M in both vintages, and no other party.
+
+**V's rule:**
+- The source is its election platform as its congress decided it on 2026-04-18 ([V-P1], dated 2026-04-19): *"Om våra röster behövs för att bilda regering så ska vi också ingå i den. Det betyder att vi inte kommer att stödja eller släppa fram en regering som vi inte ingår i."*
+- On 2026-08-25 it was restated as the party's unchanged line ([C-I9]).
+- It held after the election, on 2026-09-14 ([V-I4]: *"Då röstar vi nej"*).
+- No V rule was found for 2022, so 2022 carries none.
+
+**Built:**
+- **The candidacy pair: two `RedLine.OneWay` lines, S → M and M → S**, generated from `DeclaredRedLines.Candidacies` for the vintage an election reads. Each basis names both parties' dated citations.
+  - The model carries no prime minister, so the rule is encoded under one premise, which is the builder's and not the ruling's words: a declared party sits only in a cabinet its own candidate leads. On that premise a cabinet holding the rival is the rival's.
+  - The case the premise cannot represent is S or M under a prime minister who is no party's candidate. The model has no such cabinet.
+  - The doc says both of these.
+- **V's rule: a new party-level shape, `InOrAgainst`** (`CoalitionFormation.cs`). V is never a supporter of a cabinet it is not in, and votes against every such cabinet. It never refuses a cabinet it sits in.
+  - `DeclaredRedLines.InOrAgainstFor` carries it for 2026's vintage only. `GovernmentFormation` passes it with the lines.
+  - The source's condition (*"if our votes are needed"*) is not carried, because the ruling's words are unconditional. The doc states the difference. On one investiture vote the two forms agree. In the formation as a whole they can differ only in who is listed as carrying the cabinet: on the reviews' replica, over 20,000 perturbed 2026 chambers, they chose the same cabinet and outcome kind every time, and in 111 the conditional form listed V as a supporter. On the seated chamber and the year-32 count they agree.
+- **The coalition screen does not put the refusal in the parties' mouths.**
+  - `CoalitionScreenSnapshot.Declared()` leaves the pair out of *"A PARTY SAID THIS"*.
+  - Under its own caption, *"CANDIDACIES — THE PARTIES SAID THIS; THE REFUSAL IS THE MODEL'S RULE"*, a row states what the parties said, *"S and M each name their own prime minister"*, tagged with the wired reading, *"votes the other down"*.
+  - The refused list says *"rival candidates"*.
+  - Keyed by `DeclaredRedLines.IsCandidacy`.
+
+**MEASURED** (`Formation2026Diagnostic`, log `k1_607b_formation`; seated chamber S 99, SD 62, M 70, V 30, C 25, KD 22, MP 22, L 19; majority 175):
+
+| the rules | the formation |
+|---|---|
+| **K-1f as wired: C ↔ SD, C → V, the S-M pair, V's rule** | **NewElection: no viable government** |
+| the same without V's rule | S alone (99), MP supporting (to 121), opposed 173 |
+| the same without the pair | S+M+C+KD+L (235), opposed 114 |
+| the pair at **cabinet-blocking** strength | SD+M+KD minority (154), opposed 96 |
+| as wired, a party holding out **only for a cabinet that passes on the lines and rules** (MEASURED, NOT WIRED) | S alone (99), MP supporting, opposed 100 |
+| as wired, plus MP's and SD's in-or-against rules (NOT WIRED) | NewElection |
+| §603's wiring | S+C+MP carried by V (176), opposed 173 |
+| 2022's declarations on the 2026 chamber | S alone, MP supporting, opposed 70 |
+| K-1f as wired, on the pinned film's year-32 count (S 94, SD 63, M 70, V 27, C 24, KD 27, MP 24, L 20) | SD+M+KD+L, a majority coalition (180) |
+| 2022's declarations, **2022's chamber** | **M+KD+L carried by SD (103; 176): the backtest's record holds**, with the pair or without it |
+| the same plus MP's 2022 in-or-against rule (NOT WIRED) | S alone (107), opposed 86 |
+
+**The day-one government is NONE, still PROVISIONAL, and two readings decide it.** A prior adversarial review found both. Neither comes from a source, so both are filed for Elias as **K-1h**:
+- **(i) The hold-out**, pre-existing (§29's pass 1). A party votes against a cabinet whenever it could sit in a better-scoring admissible cabinet of its own, even one that cannot pass its own investiture.
+  - On the seated chamber every party except S holds out for such a cabinet: SD, M, KD and L for the Tidö four (176 against it on the lines and rules alone), C for S+C+KD+L, V and MP for S+V+MP.
+  - So an S minority is opposed by M (the pair), by V (its rule), and by SD, KD and L (holding out): 203 against.
+  - Read only over cabinets that pass on the lines and rules, the chamber forms S alone with MP's support at 100 against.
+  - `Form(..., holdOutOnlyForPassable: true)` measures that reading. No game path sets it.
+  - The hold-out's margins rest on the [AUTHORED-DRAFT] score weights.
+- **(ii) The strength of "refuses".** It is wired as the one-way line's support-blocking strength: a candidacy party votes against its rival's cabinet. No S or M page says whether its refusal covers sitting in, supporting or letting through. At cabinet-blocking strength the chamber forms an SD+M+KD minority.
+- Nothing was tuned. The ruling names the formation's result, and it is none. The picker says *"PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE MODEL FORMS NO GOVERNMENT FROM THESE SEATS"* (Canvas, and now the IMGUI pickers too, through one `CountrySelectorScreen.ProvisionalLine`). The subtitle's key to the cabinet mark appears only when a cabinet is marked. The compass legend reads *"no government is formed from this chamber"*.
+- **What the player meets:**
+  - The levers are unchanged.
+  - The play's party (S, the largest) no longer sits in a day-one cabinet, as it did under §605.
+  - No bill is a government bill until the game's first election forms a government, so the stance model's government terms (cohesion, the bloc's line, the opposition's line, populism against the establishment's bill) are silent until then.
+  - In the real world the Kristersson caretaker governs until the Riksdag chooses (§605).
+
+**The stance model's done-when: one pair held for Elias (K-1h (iii)).** `StanceModelDiagnostic` failed the simulation bar on this change.
+- **It needed the seeded chamber to form a government.** It now prints the seeded chamber's result without asserting it, and exercises the government terms on the year-32 count, which forms SD+M+KD+L.
+- **Two of its five drafts now split alike.** The spending cut and deregulation give 204 / 0 / 145 on the year-32 count, and 136 / 62 / 151 on the seeded chamber, which forms no government. On both chambers every party takes the same side. The parties' positions on `spendvtax` and `deregulation` order them alike at this magnitude. On §247's 2022 chamber, where M+KD+L was carried by SD, the government terms had parted them (176/24/149 against 127/73/149).
+- **The rule stands**: no two drafts may split alike. This one pair is held for the ruling (**K-1h (iii)**) and must still read apart: its parties' alignments must differ by more than 0.05. The opinion cost, the only term that separates two drafts reading one axis, is below a hundredth, so a scorer that read deregulation as the spending axis still fails. Measured (`k1_607c_named`): the pair reads apart by up to 0.209 on the year-32 count, with every party on the same side; the review's replica put a collapse of deregulation onto the spending axis at 0.0034, which the floor fails.
+- A first cut that passed any pair whose alignments were not identical was withdrawn in review. It was weaker than §247's reading, and its stated cause (a right-bloc majority) is contradicted by the seeded chamber, which has no majority.
+
+**Guarded** (`OfficeTestDiagnostic`, in the simulation bar):
+- the shapes on their own;
+- the wiring: C → V one way; the S-M pair in both vintages; V's rule in 2026's only, and V's alone;
+- **the vote-against half on a chamber built so that half alone decides:** A 150 and B 169 refuse each other's support, and X 30 may sit with neither. Without X's rule, 2 viable cabinets lack X. With it, 0.
+- **the game's own path reads the rules:** the formation behind every game reader (`TryFormSeats`, read through `ViewOf(CountryId, ...)`, so an installed seated government cannot silence the check once K-1b lands) equals the formation given the rules, on the seated chamber ('none', against 'S | MP' without the rules) and on the year-32 count. The country's own path (`TryGovernment`, the stance model's and the picker's) is compared too while no record is installed. The rules must tell the two apart on at least one chamber.
+- over the year-32 count's 4 viable governments: no S with M, no candidacy party behind its rival, no V behind a cabinet it is not in. The C-with-V count is blind there (the right bloc holds 180) and is kept as a print.
+- The seated chamber's outcome is printed, not asserted.
+
+**Standing, recorded in `CLAUDE.md`:** *declarations are dated, and every election reads its own date's.*
+- The 2022 backtests read 2022's (now with 2022's own candidacies), and the seated chamber reads 2026's.
+- The formation wires only what a ruling named. Declarations on record that no ruling named stay dated facts in the files: MP's and SD's in-or-against, and KD's refusal of Andersson (**K-1g**, filed).
+- A later in-game election reads 2026's set until a newer one is sourced. That is the implementation's default, and the rule says so.
+- A lifted declaration is removed, not carried.
+
+**K-1d ruled** (the same ruling): the ink ladder keeps its ruled 2022 order. `PoliSimTheme`'s doc says so, and the row closes.
+
+**The sourced pages are stored byte for byte.** The review found that `core.autocrlf` (system config, no `.gitattributes`) had stored 24 of the raw pages with rewritten line endings. 13 of them were already pushed with K-1. A checkout could not give back the hashed bytes. `ElectionsData/.gitattributes` now marks `**/raw/**` as `-text`, and the pages were renormalised from the working tree, whose 181 files all verify against their SHA256SUMS. **All 148 index blobs under the four SHA256SUMS files now match their sums** (the check reads `git show :path`, not the working tree).
+
+**Records brought up to the build:**
+- `coalition_declarations_2026.md`:
+  - The FORMATION block's table gains the pair and V's rule, and its §603 measurement is marked superseded.
+  - The *cannot hold* list marks V's rule as held; MP's, SD's and KD's items are marked not wired.
+  - A new *AS WIRED, K-1f* subsection carries the table above.
+- `coalition_declarations_2022.md`: the measured table gains the pair's row. The pair changes nothing on 2022's chamber, but it moves CoalitionHarness 4c's counterfactual to SD+M+KD+L. The section's "nothing above was changed" sentences now say what the wiring changed.
+- `coalition_declarations_2026.md`'s §(3) now cites `CoalitionFormation` by name, not by line numbers the build had moved.
+- `docs/play/PLAY_PROTOCOL.md`: the day-one line now says none, and why.
+- `POLISIM_FEATURE_LIST.md`: K-1f and K-1d closed, K-1g and K-1h filed. PF-16 is noted as recurring on this film.
+
+**Evidence.** Tiers SIMULATION, UI, TOOLING and DOCUMENTS.
+- **Bars:**
+  - The cheap bar: **47 of 47** (`k1_607d_cheap`, on the tree committed).
+  - The simulation bar: **56 of 56** (`k1_607c_sim`). `TrajectorySentinelCheck` is on `k1ep`, unmoved: the family dump `k1f` is byte-identical to `k1ep` on both seeds (`k1_607_dump`).
+  - The named subset on the final tree: 5 of 5 (`k1_607c_named`: OfficeTest, StanceModel, MetaText, PreWiringPremise, PlayProtocol).
+- **Films:**
+  - The dry film `dry607` (Sweden@1280x720): 167 captured, 0 failed.
+  - The real sweep `film607_1280` / `film607_2560`: 167 captured each. The picker frames `01`, `01g` and `01h` have 0 canvas-text violations.
+    - At 1280 the night `88n` logs **19 CANVAS TEXT CLIP lines in its who-governs block: PF-16, recurring** now that the night forms SD+M+KD+L. The 2560 film is clean. PF-16 is fixed at §609.
+  - `film607b_1280` / `film607b_2560`, stopped at `01h` after the subtitle change: `01` and `01g` asserted 0 violations. `01h` was written but its assert was cut by the stop, so the frame was read by eye.
+  - The coalition board `camp607c_1280` / `camp607c_2560` (`-shotcampaign`): 27 captures each, 0 clipped. The `e8` frames were read.
+- **Formation measurements:** `k1_607b_formation`.
+- **Reviews:** two adversarial reviews.
+  - The first (two lenses) found the hold-out, the strength reading, the stale records and the broken stance check.
+  - The second (three lenses, each finding verified by a skeptic) confirmed 13 of 18 findings and refuted 5. All 13 are acted on above, including the byte-exact storage of the raw pages.
+- **Raw pages:** 148 of 148 index blobs match their SHA256SUMS.

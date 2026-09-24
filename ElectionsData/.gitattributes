@@ -1,0 +1,3 @@
+# Sourced pages are evidence: each is stored byte for byte, as fetched, and its SHA-256 is in the SHA256SUMS file beside it.
+# Without this, core.autocrlf rewrote their line endings in the index, so a checkout could not give back the hashed bytes (§607).
+**/raw/** -text

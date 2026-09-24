@@ -1,0 +1,705 @@
+
+<!doctype html>
+<html lang="sv-SE">
+<head><meta charset="UTF-8"><script>if(navigator.userAgent.match(/MSIE|Internet Explorer/i)||navigator.userAgent.match(/Trident\/7\..*?rv:11/i)){var href=document.location.href;if(!href.match(/[?&]nowprocket/)){if(href.indexOf("?")==-1){if(href.indexOf("#")==-1){document.location.href=href+"?nowprocket=1"}else{document.location.href=href.replace("#","?nowprocket=1#")}}else{if(href.indexOf("#")==-1){document.location.href=href+"&nowprocket=1"}else{document.location.href=href.replace("#","&nowprocket=1#")}}}}</script><script>class RocketLazyLoadScripts{constructor(e){this.triggerEvents=e,this.eventOptions={passive:!0},this.userEventListener=this.triggerListener.bind(this),this.delayedScripts={normal:[],async:[],defer:[]},this.allJQueries=[]}_addUserInteractionListener(e){this.triggerEvents.forEach((t=>window.addEventListener(t,e.userEventListener,e.eventOptions)))}_removeUserInteractionListener(e){this.triggerEvents.forEach((t=>window.removeEventListener(t,e.userEventListener,e.eventOptions)))}triggerListener(){this._removeUserInteractionListener(this),"loading"===document.readyState?document.addEventListener("DOMContentLoaded",this._loadEverythingNow.bind(this)):this._loadEverythingNow()}async _loadEverythingNow(){this._delayEventListeners(),this._delayJQueryReady(this),this._handleDocumentWrite(),this._registerAllDelayedScripts(),this._preloadAllScripts(),await this._loadScriptsFromList(this.delayedScripts.normal),await this._loadScriptsFromList(this.delayedScripts.defer),await this._loadScriptsFromList(this.delayedScripts.async),await this._triggerDOMContentLoaded(),await this._triggerWindowLoad(),window.dispatchEvent(new Event("rocket-allScriptsLoaded"))}_registerAllDelayedScripts(){document.querySelectorAll("script[type=rocketlazyloadscript]").forEach((e=>{e.hasAttribute("src")?e.hasAttribute("async")&&!1!==e.async?this.delayedScripts.async.push(e):e.hasAttribute("defer")&&!1!==e.defer||"module"===e.getAttribute("data-rocket-type")?this.delayedScripts.defer.push(e):this.delayedScripts.normal.push(e):this.delayedScripts.normal.push(e)}))}async _transformScript(e){return await this._requestAnimFrame(),new Promise((t=>{const n=document.createElement("script");let r;[...e.attributes].forEach((e=>{let t=e.nodeName;"type"!==t&&("data-rocket-type"===t&&(t="type",r=e.nodeValue),n.setAttribute(t,e.nodeValue))})),e.hasAttribute("src")?(n.addEventListener("load",t),n.addEventListener("error",t)):(n.text=e.text,t()),e.parentNode.replaceChild(n,e)}))}async _loadScriptsFromList(e){const t=e.shift();return t?(await this._transformScript(t),this._loadScriptsFromList(e)):Promise.resolve()}_preloadAllScripts(){var e=document.createDocumentFragment();[...this.delayedScripts.normal,...this.delayedScripts.defer,...this.delayedScripts.async].forEach((t=>{const n=t.getAttribute("src");if(n){const t=document.createElement("link");t.href=n,t.rel="preload",t.as="script",e.appendChild(t)}})),document.head.appendChild(e)}_delayEventListeners(){let e={};function t(t,n){!function(t){function n(n){return e[t].eventsToRewrite.indexOf(n)>=0?"rocket-"+n:n}e[t]||(e[t]={originalFunctions:{add:t.addEventListener,remove:t.removeEventListener},eventsToRewrite:[]},t.addEventListener=function(){arguments[0]=n(arguments[0]),e[t].originalFunctions.add.apply(t,arguments)},t.removeEventListener=function(){arguments[0]=n(arguments[0]),e[t].originalFunctions.remove.apply(t,arguments)})}(t),e[t].eventsToRewrite.push(n)}function n(e,t){let n=e[t];Object.defineProperty(e,t,{get:()=>n||function(){},set(r){e["rocket"+t]=n=r}})}t(document,"DOMContentLoaded"),t(window,"DOMContentLoaded"),t(window,"load"),t(window,"pageshow"),t(document,"readystatechange"),n(document,"onreadystatechange"),n(window,"onload"),n(window,"onpageshow")}_delayJQueryReady(e){let t=window.jQuery;Object.defineProperty(window,"jQuery",{get:()=>t,set(n){if(n&&n.fn&&!e.allJQueries.includes(n)){n.fn.ready=n.fn.init.prototype.ready=function(t){e.domReadyFired?t.bind(document)(n):document.addEventListener("rocket-DOMContentLoaded",(()=>t.bind(document)(n)))};const t=n.fn.on;n.fn.on=n.fn.init.prototype.on=function(){if(this[0]===window){function e(e){return e.split(" ").map((e=>"load"===e||0===e.indexOf("load.")?"rocket-jquery-load":e)).join(" ")}"string"==typeof arguments[0]||arguments[0]instanceof String?arguments[0]=e(arguments[0]):"object"==typeof arguments[0]&&Object.keys(arguments[0]).forEach((t=>{delete Object.assign(arguments[0],{[e(t)]:arguments[0][t]})[t]}))}return t.apply(this,arguments),this},e.allJQueries.push(n)}t=n}})}async _triggerDOMContentLoaded(){this.domReadyFired=!0,await this._requestAnimFrame(),document.dispatchEvent(new Event("rocket-DOMContentLoaded")),await this._requestAnimFrame(),window.dispatchEvent(new Event("rocket-DOMContentLoaded")),await this._requestAnimFrame(),document.dispatchEvent(new Event("rocket-readystatechange")),await this._requestAnimFrame(),document.rocketonreadystatechange&&document.rocketonreadystatechange()}async _triggerWindowLoad(){await this._requestAnimFrame(),window.dispatchEvent(new Event("rocket-load")),await this._requestAnimFrame(),window.rocketonload&&window.rocketonload(),await this._requestAnimFrame(),this.allJQueries.forEach((e=>e(window).trigger("rocket-jquery-load"))),window.dispatchEvent(new Event("rocket-pageshow")),await this._requestAnimFrame(),window.rocketonpageshow&&window.rocketonpageshow()}_handleDocumentWrite(){const e=new Map;document.write=document.writeln=function(t){const n=document.currentScript,r=document.createRange(),i=n.parentElement;let o=e.get(n);void 0===o&&(o=n.nextSibling,e.set(n,o));const a=document.createDocumentFragment();r.setStart(a,0),a.appendChild(r.createContextualFragment(t)),i.insertBefore(a,o)}}async _requestAnimFrame(){return new Promise((e=>requestAnimationFrame(e)))}static run(){const e=new RocketLazyLoadScripts(["keydown","mousemove","touchmove","touchstart","touchend","wheel"]);e._addUserInteractionListener(e)}}RocketLazyLoadScripts.run();</script>
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="profile" href="https://gmpg.org/xfn/11">
+	<script type="rocketlazyloadscript">
+		var googleAnalytics = {
+			id: 'UA-1541760-47',			ga4Id: 'G-DMGPVWCZ1Y',		};
+		var postType = 'post';
+		var title = 'Ulf Kristersson presenterade fem vallöften för att få ordning på Sverige'
+		window.dataLayer = window.dataLayer || [];
+		window.dataLayer.push({
+			event: 'page_view',
+			page_type: postType,
+			page_title: title
+		});
+		if(googleAnalytics.ga4id) {
+			window.dataLayer.push({
+				config: googleAnalytics.ga4Id
+			});
+		}
+	</script>
+	<script type="rocketlazyloadscript" data-cookieconsent="ignore">
+	(function(w,d,l){w[l]=w[l]||[];function gtag(){w[l].push(arguments)}
+	gtag("consent","default",{ad_storage:d,analytics_storage:d,wait_for_update:500,});
+	gtag("set", "ads_data_redaction", true);})(window,"denied","dataLayer");
+</script>
+<script type="rocketlazyloadscript">
+		(function (w, d, s, l, i) {
+		w[l] = w[l] || []; w[l].push({'gtm.start':new Date().getTime(), event: 'gtm.js'});
+		var f = d.getElementsByTagName(s)[0],  j = d.createElement(s), dl = l !== 'dataLayer' ? '&l=' + l : '';
+		j.async = true; j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+		f.parentNode.insertBefore(j, f);})(
+		window,
+		document,
+		'script',
+		'dataLayer',
+		'GTM-W9ZJGN4'
+	);
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript"
+		id="Cookiebot"
+		src="https://consent.cookiebot.com/uc.js"
+		data-cbid="9db1a073-f9a0-433e-95b0-4942c3a57c1a"
+								data-layer-name="dataLayer"
+						data-culture="SV"
+					></script>
+<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+
+	<!-- This site is optimized with the Yoast SEO Premium plugin v17.9 (Yoast SEO v17.9) - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>Ulf Kristersson presenterade fem vallöften för att få ordning på Sverige | Moderaterna</title>
+	<meta name="description" content="Ulf Kristersson presenterade fem av Moderaternas vallöften för att få ordning på Sverige, i sitt tal på Moderaternas Sverigemöte." />
+	<link rel="canonical" href="https://moderaterna.se/nyhet/valloften/" />
+	<meta property="og:locale" content="sv_SE" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="Ulf Kristersson presenterade fem vallöften för att få ordning på Sverige" />
+	<meta property="og:description" content="Ulf Kristersson presenterade fem av Moderaternas vallöften för att få ordning på Sverige, i sitt tal på Moderaternas Sverigemöte." />
+	<meta property="og:url" content="https://moderaterna.se/nyhet/valloften/" />
+	<meta property="og:site_name" content="Moderaterna" />
+	<meta property="article:publisher" content="https://www.facebook.com/moderaterna" />
+	<meta property="article:published_time" content="2022-03-26T10:37:52+00:00" />
+	<meta property="article:modified_time" content="2022-03-26T11:07:09+00:00" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:creator" content="@moderaterna" />
+	<meta name="twitter:site" content="@moderaterna" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://moderaterna.se/#organization","name":"Moderaterna","url":"https://moderaterna.se/","sameAs":["https://www.facebook.com/moderaterna","https://www.instagram.com/moderaterna/","https://youtube.com/moderaterna","https://sv.wikipedia.org/wiki/Moderaterna","https://twitter.com/moderaterna"],"logo":{"@type":"ImageObject","@id":"https://moderaterna.se/#logo","inLanguage":"sv-SE","url":"https://moderaterna.se/app/uploads/2021/10/logo-general@2x.png","contentUrl":"https://moderaterna.se/app/uploads/2021/10/logo-general@2x.png","width":122,"height":122,"caption":"Moderaterna"},"image":{"@id":"https://moderaterna.se/#logo"}},{"@type":"WebSite","@id":"https://moderaterna.se/#website","url":"https://moderaterna.se/","name":"Moderaterna","description":"Nu f\u00e5r vi ordning p\u00e5 Sverige","publisher":{"@id":"https://moderaterna.se/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://moderaterna.se/?s={search_term_string}"},"query-input":"required name=search_term_string"}],"inLanguage":"sv-SE"},{"@type":"WebPage","@id":"https://moderaterna.se/nyhet/valloften/#webpage","url":"https://moderaterna.se/nyhet/valloften/","name":"Ulf Kristersson presenterade fem vall\u00f6ften f\u00f6r att f\u00e5 ordning p\u00e5 Sverige | Moderaterna","isPartOf":{"@id":"https://moderaterna.se/#website"},"datePublished":"2022-03-26T10:37:52+00:00","dateModified":"2022-03-26T11:07:09+00:00","description":"Ulf Kristersson presenterade fem av Moderaternas vall\u00f6ften f\u00f6r att f\u00e5 ordning p\u00e5 Sverige, i sitt tal p\u00e5 Moderaternas Sverigem\u00f6te.","breadcrumb":{"@id":"https://moderaterna.se/nyhet/valloften/#breadcrumb"},"inLanguage":"sv-SE","potentialAction":[{"@type":"ReadAction","target":["https://moderaterna.se/nyhet/valloften/"]}]},{"@type":"BreadcrumbList","@id":"https://moderaterna.se/nyhet/valloften/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://moderaterna.se/"},{"@type":"ListItem","position":2,"name":"Ulf Kristersson presenterade fem vall\u00f6ften f\u00f6r att f\u00e5 ordning p\u00e5 Sverige"}]},{"@type":"Article","@id":"https://moderaterna.se/nyhet/valloften/#article","isPartOf":{"@id":"https://moderaterna.se/nyhet/valloften/#webpage"},"author":{"@id":"https://moderaterna.se/#/schema/person/0fb68560a1af3494a210b4d338a64d4c"},"headline":"Ulf Kristersson presenterade fem vall\u00f6ften f\u00f6r att f\u00e5 ordning p\u00e5 Sverige","datePublished":"2022-03-26T10:37:52+00:00","dateModified":"2022-03-26T11:07:09+00:00","mainEntityOfPage":{"@id":"https://moderaterna.se/nyhet/valloften/#webpage"},"wordCount":722,"publisher":{"@id":"https://moderaterna.se/#organization"},"articleSection":["Nyhet"],"inLanguage":"sv-SE"},{"@type":"Person","@id":"https://moderaterna.se/#/schema/person/0fb68560a1af3494a210b4d338a64d4c","name":"Moderaterna","image":{"@type":"ImageObject","@id":"https://moderaterna.se/#personlogo","inLanguage":"sv-SE","url":"https://secure.gravatar.com/avatar/483e62e71ba78e273dc60dc269dc60a0?s=96&d=mm&r=g","contentUrl":"https://secure.gravatar.com/avatar/483e62e71ba78e273dc60dc269dc60a0?s=96&d=mm&r=g","caption":"Moderaterna"},"url":"https://moderaterna.se/author/eblom/"}]}</script>
+	<!-- / Yoast SEO Premium plugin. -->
+
+
+
+<link rel="alternate" type="application/rss+xml" title="Moderaterna &raquo; flöde" href="https://moderaterna.se/feed/" />
+<style>
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel='stylesheet' id='wp-block-library-css'  href='https://moderaterna.se/wp/wp-includes/css/dist/block-library/style.min.css?ver=5.8.2' media='all' />
+<link data-minify="1" rel='stylesheet' id='dashicons-css'  href='https://moderaterna.se/app/cache/min/1/wp/wp-includes/css/dashicons.min.css?ver=1661757426' media='all' />
+<link data-minify="1" rel='stylesheet' id='post-views-counter-frontend-css'  href='https://moderaterna.se/app/cache/min/1/app/plugins/post-views-counter/css/frontend.css?ver=1661757426' media='all' />
+<link rel='stylesheet' id='moderaterna-style-css'  href='https://moderaterna.se/app/themes/moderaterna/style.css?ver=1.0.0' media='all' />
+<link data-minify="1" rel='stylesheet' id='main-styles-css'  href='https://moderaterna.se/app/cache/min/1/app/themes/moderaterna/dist/main.css?ver=1661757426' media='all' />
+<link data-minify="1" rel='stylesheet' id='sib-front-css-css'  href='https://moderaterna.se/app/cache/min/1/app/plugins/mailin/css/mailin-front.css?ver=1661757426' media='all' />
+<script type="rocketlazyloadscript" data-minify="1" src='https://moderaterna.se/app/cache/min/1/app/themes/moderaterna/dist/google-analytics.js?ver=1661757426' id='google-analytics-js' defer></script>
+<script type="rocketlazyloadscript" src='https://moderaterna.se/wp/wp-includes/js/jquery/jquery.min.js?ver=3.6.0' id='jquery-core-js' defer></script>
+<script type="rocketlazyloadscript" src='https://moderaterna.se/wp/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.3.2' id='jquery-migrate-js' defer></script>
+<script id='sib-front-js-js-extra'>
+var sibErrMsg = {"invalidMail":"Please fill out valid email address","requiredField":"Please fill out required fields","invalidDateFormat":"Please fill out valid date format","invalidSMSFormat":"Please fill out valid phone number"};
+var ajax_sib_front_object = {"ajax_url":"https:\/\/moderaterna.se\/wp\/wp-admin\/admin-ajax.php","ajax_nonce":"222d9876b3","flag_url":"https:\/\/moderaterna.se\/app\/plugins\/mailin\/img\/flags\/"};
+</script>
+<script type="rocketlazyloadscript" data-minify="1" src='https://moderaterna.se/app/cache/min/1/app/plugins/mailin/js/mailin-front.js?ver=1661757426' id='sib-front-js-js' defer></script>
+<link rel="https://api.w.org/" href="https://moderaterna.se/wp-json/" /><link rel="alternate" type="application/json" href="https://moderaterna.se/wp-json/wp/v2/posts/3824" /><link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://moderaterna.se/wp/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://moderaterna.se/wp/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 5.8.2" />
+<link rel='shortlink' href='https://moderaterna.se/?p=3824' />
+<link rel="alternate" type="application/json+oembed" href="https://moderaterna.se/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fmoderaterna.se%2Fnyhet%2Fvalloften%2F" />
+<link rel="alternate" type="text/xml+oembed" href="https://moderaterna.se/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fmoderaterna.se%2Fnyhet%2Fvalloften%2F&#038;format=xml" />
+
+		<style>
+			#wp-admin-bar-pvc-post-views .pvc-graph-container { padding-top: 6px; padding-bottom: 6px; position: relative; display: block; height: 100%; box-sizing: border-box; }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph {
+				display: inline-block;
+				width: 1px;
+				margin-right: 1px;
+				background-color: #ccc;
+				vertical-align: baseline;
+			}
+			#wp-admin-bar-pvc-post-views .pvc-line-graph:hover { background-color: #eee; }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-0 { height: 1% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-1 { height: 5% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-2 { height: 10% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-3 { height: 15% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-4 { height: 20% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-5 { height: 25% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-6 { height: 30% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-7 { height: 35% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-8 { height: 40% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-9 { height: 45% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-10 { height: 50% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-11 { height: 55% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-12 { height: 60% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-13 { height: 65% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-14 { height: 70% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-15 { height: 75% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-16 { height: 80% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-17 { height: 85% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-18 { height: 90% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-19 { height: 95% }
+			#wp-admin-bar-pvc-post-views .pvc-line-graph-20 { height: 100% }
+		</style><link rel="icon" href="https://moderaterna.se/app/uploads/2021/12/cropped-512x512px_Logga_www-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://moderaterna.se/app/uploads/2021/12/cropped-512x512px_Logga_www-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://moderaterna.se/app/uploads/2021/12/cropped-512x512px_Logga_www-180x180.png" />
+<meta name="msapplication-TileImage" content="https://moderaterna.se/app/uploads/2021/12/cropped-512x512px_Logga_www-270x270.png" />
+<noscript><style id="rocket-lazyload-nojs-css">.rll-youtube-player, [data-lazy-src]{display:none !important;}</style></noscript>	</head>
+
+<body class="post-template-default single single-post postid-3824 single-format-standard no-sidebar">
+<div id="page" class="site">
+	<a class="skip-link screen-reader-text" href="#primary">Gå direkt till innehåll</a>
+
+	<header id="masthead" class="site-header ">
+		<div class="site-header__logo">
+							<a href="https://moderaterna.se">
+				<picture class="custom-logo withHover">
+<source type="image/webp" data-lazy-srcset="https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-150x150.png.webp 150w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-300x300.png.webp 300w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-1024x1024.png.webp 1024w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-768x767.png.webp 768w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021.png.webp 1295w" srcset="data:image/svg+xml,%3Csvg%20xmlns=&#039;http://www.w3.org/2000/svg&#039;%20viewBox=&#039;0%200%20150%20150&#039;%3E%3C/svg%3E" data-lazy-sizes="(max-width: 150px) 100vw, 150px"/>
+<img width="150" height="150" src="data:image/svg+xml,%3Csvg%20xmlns=&#039;http://www.w3.org/2000/svg&#039;%20viewBox=&#039;0%200%20150%20150&#039;%3E%3C/svg%3E" alt="" data-lazy-srcset="https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-150x150.png 150w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-300x300.png 300w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-1024x1024.png 1024w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-768x767.png 768w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021.png 1295w" data-lazy-sizes="(max-width: 150px) 100vw, 150px" data-lazy-src="https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-150x150.png"/>
+</picture>
+<noscript><picture class="custom-logo withHover">
+<source type="image/webp" srcset="https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-150x150.png.webp 150w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-300x300.png.webp 300w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-1024x1024.png.webp 1024w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-768x767.png.webp 768w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021.png.webp 1295w" sizes="(max-width: 150px) 100vw, 150px"/>
+<img width="150" height="150" src="https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-150x150.png" alt="" srcset="https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-150x150.png 150w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-300x300.png 300w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-1024x1024.png 1024w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021-768x767.png 768w, https://moderaterna.se/app/uploads/2021/12/M_logo_blå_2021.png 1295w" sizes="(max-width: 150px) 100vw, 150px"/>
+</picture>
+</noscript><picture class="custom-logo custom-logo__hover">
+<source type="image/webp" data-lazy-srcset="https://moderaterna.se/app/uploads/2021/10/logo-lightblue@2x.png.webp" srcset="data:image/svg+xml,%3Csvg%20xmlns=&#039;http://www.w3.org/2000/svg&#039;%20viewBox=&#039;0%200%20122%20122&#039;%3E%3C/svg%3E"/>
+<img width="122" height="122" src="data:image/svg+xml,%3Csvg%20xmlns=&#039;http://www.w3.org/2000/svg&#039;%20viewBox=&#039;0%200%20122%20122&#039;%3E%3C/svg%3E" alt="" data-lazy-src="https://moderaterna.se/app/uploads/2021/10/logo-lightblue@2x.png"/>
+</picture>
+<noscript><picture class="custom-logo custom-logo__hover">
+<source type="image/webp" srcset="https://moderaterna.se/app/uploads/2021/10/logo-lightblue@2x.png.webp"/>
+<img width="122" height="122" src="https://moderaterna.se/app/uploads/2021/10/logo-lightblue@2x.png" alt=""/>
+</picture>
+</noscript>				<span class="show-for-sr">Till startsidan</span>
+				</a>
+		</div><!-- .site-branding -->
+		<nav id="site-quick-menu" class="site-header__dt-menu" aria-label="Snabbmeny">
+    <ul id="desktop-menu" class="site-header__dt-menu--list"><li id="menu-item-17" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-17"><a href="https://moderaterna.se/engagera-dig/">Engagera dig</a></li>
+<li id="menu-item-1540" class="menu-item menu-item-type-post_type menu-item-object-politiker menu-item-1540"><a href="https://moderaterna.se/politiker/ulf-kristersson/">Ulf Kristersson</a></li>
+<li id="menu-item-41" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-41"><a href="https://moderaterna.se/var-politik/">Vår politik</a></li>
+<li id="menu-item-1637" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1637"><a href="https://moderaterna.se/om-moderaterna/vara-politiker/">Våra politiker</a></li>
+<li id="menu-item-23" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-23"><a href="https://moderaterna.se/nyheter/">Nyheter</a></li>
+<li id="menu-item-4715" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-4715"><a href="https://moderaterna.se/lattlast/">Lättläst</a></li>
+</ul></nav>		<div class="site-header__search-menu-wrapper">
+			<button class="site-header__button" data-search="button">
+    <span class="show-for-sr mobile">Sök</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="30.621" height="30.621" viewBox="0 0 30.621 30.621" aria-hidden="true"><g data-name="Icon feather-search" fill="none" stroke="#213a8f" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"><path data-name="Path 13" d="M25.5 13.5a12 12 0 1 1-12-12 12 12 0 0 1 12 12z"/><path data-name="Path 14" d="M28.5 28.5l-6.525-6.525"/></g></svg>    <span class="site-header__button--label">Sök</span>
+</button>
+<div class="site-header__search" data-search="container">
+    <form role="search" method="get" action="https://moderaterna.se" class="site-header__search--form">
+        <label class="show-for-sr" for="header-search">Vad söker du?</label>
+        <input type="text" name="s" placeholder="Vad söker du?" id="header-search">
+        <button type="submit">
+            <span class="show-for-sr">Sök</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="30.621" height="30.621" viewBox="0 0 30.621 30.621" aria-hidden="true"><g data-name="Icon feather-search" fill="none" stroke="#213a8f" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"><path data-name="Path 13" d="M25.5 13.5a12 12 0 1 1-12-12 12 12 0 0 1 12 12z"/><path data-name="Path 14" d="M28.5 28.5l-6.525-6.525"/></g></svg>        </button>
+    </form>
+</div>
+    <button class="site-header__button talking-web" onclick="toggleBar();">
+        <span class="show-for-sr mobile">Läs upp</span>
+        <svg xmlns="http://www.w3.org/2000/svg" width="31.086" height="30.578" viewBox="0 0 31.086 30.578" aria-hidden="true"><g data-name="Group 350" fill="#213a8f"><path data-name="Path 77" d="M29.983 14.186h-3.937a1.103 1.103 0 1 0 0 2.206h3.937a1.103 1.103 0 1 0 0-2.206z"/><path data-name="Path 78" d="M26.046 11.243a1.118 1.118 0 0 0 .436-.088l3.937-1.693a1.104 1.104 0 1 0-.871-2.029l-3.937 1.693a1.1 1.1 0 0 0 .436 2.118z"/><path data-name="Path 79" d="M30.418 21.125l-3.933-1.693a1.104 1.104 0 1 0-.871 2.029l3.937 1.693a1.118 1.118 0 0 0 .436.088 1.1 1.1 0 0 0 .436-2.118z"/><path data-name="Path 80" d="M21.924.163a.978.978 0 0 0-1.045-.024L7.651 8.124h-6.6A1.12 1.12 0 0 0 0 9.293v12a1.12 1.12 0 0 0 1.055 1.17h6.6l13.224 7.976a.993.993 0 0 0 .507.14.959.959 0 0 0 .538-.164 1.194 1.194 0 0 0 .517-1.006V1.169a1.207 1.207 0 0 0-.517-1.006zM20.33 27.439l-11.9-7.183a.965.965 0 0 0-.507-.14H2.111v-9.653H7.92a.993.993 0 0 0 .507-.14L20.33 3.139z"/></g></svg>        <span class="site-header__button--label">Läs upp</span>
+    </button>
+    <a href="https://moderaterna.membersite.se/Membership/BuyMembership" class="site-header__gift donation-link">
+        Bli medlem
+    </a>
+<button class="site-header__button" data-menu="button">
+    <span id="nav-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+    </span>
+    <span>Meny</span>
+</button>
+<div class="site-header__menu" data-menu="container">
+    <button class="site-header__menu--close" data-menu="close">
+        Stäng
+        <svg xmlns="http://www.w3.org/2000/svg" width="41.366" height="41.366" viewBox="0 0 41.366 41.366" aria-hidden="true"><path data-name="Icon ionic-ios-close-circle" d="M31.024 10.341a14.625 14.625 0 1 0 0 20.683 14.623 14.623 0 0 0 0-20.683zM19.56 27.047v-5.24h-5.24a1.124 1.124 0 1 1 0-2.248h5.24v-5.24a1.124 1.124 0 0 1 2.248 0v5.24h5.24a1.129 1.129 0 0 1 1.123 1.124l-.284.743-.84.38h-5.24v5.24a1.129 1.129 0 0 1-1.123 1.124 1.116 1.116 0 0 1-1.124-1.123z" fill="#213a8f"/></svg>    </button>
+                <nav class="site-header__menu--nav" aria-label="Huvudmeny">
+            <ul class="site-header__menu--nav__list">
+                
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/engagera-dig/">
+                        Engagera dig                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/politiker/ulf-kristersson/">
+                        Ulf Kristersson                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/var-politik/">
+                        Vår politik                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/om-moderaterna/vara-politiker/">
+                        Våra politiker                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/nyheter/">
+                        Nyheter                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/press/">
+                        Press                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/om-moderaterna/">
+                        Om Moderaterna                    </a>
+                
+                    
+                
+            
+                    
+                                                <button class="site-header__menu--nav__item--expand" data-toggle="menu_page_id_32" aria-expanded="false">
+                            <span class="show-for-sr">Visa undersidor</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="41.366" height="41.366" viewBox="0 0 41.366 41.366" aria-hidden="true"><path data-name="Icon ionic-ios-close-circle" d="M31.024 10.341a14.625 14.625 0 1 0 0 20.683 14.623 14.623 0 0 0 0-20.683zM19.56 27.047v-5.24h-5.24a1.124 1.124 0 1 1 0-2.248h5.24v-5.24a1.124 1.124 0 0 1 2.248 0v5.24h5.24a1.129 1.129 0 0 1 1.123 1.124l-.284.743-.84.38h-5.24v5.24a1.129 1.129 0 0 1-1.123 1.124 1.116 1.116 0 0 1-1.124-1.123z" fill="#213a8f"/></svg>                        </button>
+                        <ul id="menu_page_id_32" class="site-header__menu--nav__sub-menu">
+                        
+                            <li class="site-header__menu--nav__sub-menu--item menu-item">
+                                <a href="https://moderaterna.se/forbund/">Våra förbund och nätverk</a>
+                            </li>
+
+                        
+                    
+                
+            
+                    
+                        
+                            <li class="site-header__menu--nav__sub-menu--item menu-item">
+                                <a href="https://moderaterna.se/om-moderaterna/moderaterna-ar-medlem-i-epp/">Medlemskap i EPP</a>
+                            </li>
+
+                        
+                    
+                
+            
+                    
+                        
+                            <li class="site-header__menu--nav__sub-menu--item menu-item">
+                                <a href="https://moderaterna.se/om-moderaterna/jobba-hos-moderaterna/">Jobba hos Moderaterna</a>
+                            </li>
+
+                                                </ul>
+                        
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.membersite.se/home/myprofile">
+                        Mina sidor                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/lattlast/">
+                        Lättläst                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/other-languages/">
+                        Other languages                    </a>
+                
+                    
+                                </li>                           
+                
+            
+                <li class="site-header__menu--nav__item menu-item">
+                    <a href="https://moderaterna.se/kontakta-oss/">
+                        Kontakta oss                    </a>
+                
+                    
+                
+            
+            </ul>
+        </nav>
+                    <a href="https://moderaterna.membersite.se/Membership/BuyMembership" class="link-button link-button__dark-blue link-button__dark-blue--pink donation-link">
+                <svg xmlns="http://www.w3.org/2000/svg" data-name="Icon ionic-ios-arrow-round-forward" width="17.168" height="11.45" viewBox="0 0 17.168 11.45" aria-hidden="true"><path data-name="Icon ionic-ios-arrow-round-forward" d="M10.948.219a.779.779 0 0 0-.006 1.1l3.626 3.629H.769a.775.775 0 0 0 0 1.55h13.793l-3.626 3.632a.785.785 0 0 0 .006 1.1.772.772 0 0 0 1.091-.006l4.914-4.949a.871.871 0 0 0 .161-.244.74.74 0 0 0 .06-.3.777.777 0 0 0-.221-.543L12.033.239a.76.76 0 0 0-1.085-.02z" fill="#213a8f"/></svg>                Bli medlem
+            </a>
+            </div>
+		</div>
+	</header><!-- #masthead -->
+
+	<main id="primary" class="site-main">
+		<article id="post-3824" class="post-3824 post type-post status-publish format-standard hentry category-nyhet">
+			
+<div class="site-main__hero post">
+    <picture class="attachment-full size-full" loading="eager">
+<source type="image/webp" srcset="https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna.jpg.webp 1900w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-300x202.jpg.webp 300w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-1024x690.jpg.webp 1024w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-768x518.jpg.webp 768w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-1536x1036.jpg.webp 1536w" sizes="(max-width: 1900px) 100vw, 1900px"/>
+<img width="1900" height="1281" src="https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna.jpg" alt="" loading="eager" srcset="https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna.jpg 1900w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-300x202.jpg 300w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-1024x690.jpg 1024w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-768x518.jpg 768w, https://moderaterna.se/app/uploads/2022/03/ulfkristerssonmoderaterna-1536x1036.jpg 1536w" sizes="(max-width: 1900px) 100vw, 1900px"/>
+</picture>
+    <div class="site-main__hero--background theme__background--dark-blue"></div>
+        <div class="site-main__hero--info theme__color--blue post">
+                                    <p>
+                    26 mars, 2022                                    </p>
+                                                    <h1>Ulf Kristersson presenterade fem vallöften för att få ordning på Sverige</h1>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="52.893" height="51.65" viewBox="0 0 52.893 51.65" aria-hidden="true"><g data-name="Icon feather-arrow-down" fill="none" stroke="#93d5f6" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"><path data-name="Path 63" d="M26.446 1.5v48.65"/><path data-name="Path 64" d="M50.771 25.825L26.446 50.15 2.121 25.825"/></g></svg>            </div>
+</div><div class="site-main__article site-main__entry-content post">
+    
+<p><strong>I dag talade Ulf Kristersson på Moderaternas Sverigemöte i Örebro. Kristersson presenterade fem vallöften för att få ordning på Sverige. De handlar om att stärka den inre och yttre säkerheten, återupprätta arbetslinjen och skapa ett helt fossilfritt energisystem genom mer kärnkraft.</strong></p>
+
+
+
+<h2 id="h-1-moderaterna-vill-ansoka-om-medlemskap-i-nato">1. Moderaterna vill ansöka om medlemskap i NATO</h2>
+
+
+
+<p>Äkta självständighet har man inte i ängslig isolation, det har man i frivillig gemenskap med andra. En moderatledd regering är beredd att efter valet lämna in en Natoansökan, om det finns majoritet för det i riksdagen.</p>
+
+
+
+<p>Moderaternas löfte:</p>
+
+
+
+<ul><li>Som statsminister kommer Ulf Kristersson att leda Sverige in i Nato under nästa mandatperiod.</li></ul>
+
+
+
+<h2 id="h-2-moderaterna-vill-rusta-upp-det-svenska-forsvaret-militart-och-civilt">2.&nbsp;Moderaterna vill rusta upp det svenska försvaret – militärt och civilt</h2>
+
+
+
+<p>Utan en fungerande försvarsmakt, har vi ingen självständighet. Rysslands krig mot Ukraina innebär ett helt nytt och sämre säkerhetsläge. För att möta detta är Moderaternas löfte:</p>
+
+
+
+<ul><li>Ökade försvarsanslag så att de motsvarar två procent av BNP 2025 för mer kompetent personal, modern utrustning och en ökad övningsverksamhet.</li><li>Stärkt försörjningsberedskap. Mer resurser ska satsas på att säkra tillgången till saker som läkemedel, livsmedel och drivmedel.</li></ul>
+
+
+
+<h2 id="h-3-moderaterna-vill-ateruppratta-lag-och-ordning">3. Moderaterna vill återupprätta lag och ordning</h2>
+
+
+
+<p>Frihet förutsätter trygghet. Ingen kvinna ska vara otrygg på vägen hem från bussen. Barn ska inte rånas på sina jackor och vägspärrar ska inte kunna sättas upp av gängkriminella för att begränsa friheten för andra. Skjutningarna ska inte slå rekord år efter år. Moderaternas löften:</p>
+
+
+
+<ul><li>På sikt 32&nbsp;000 poliser – genom höjda polislöner och betald utbildning.</li><li>Avskaffa dagens straffrabatter och skärp straffen – inte minst när det gäller vålds- och sexualbrott.</li><li>Gör det kriminellt att vara med i ett gäng, inför dubbla straff för gängkriminella och ett system med visitationszoner. Och tillåt anonyma vittnen.</li><li>Utvisa fler personer som begår brott.</li></ul>
+
+
+
+<blockquote class="wp-block-quote"><p>När vi vinner valet i höst är vi redo att kliva fram och sätta stopp för otryggheten och våldet. Vi har förslagen redo. Och vi kan prioritera.</p><cite>Ulf Kristersson</cite></blockquote>
+
+
+
+<h2 id="h-4-moderaterna-vill-se-ett-helt-fossilfritt-energisystem-genom-mer-karnkraft">4.&nbsp;Moderaterna vill se ett helt fossilfritt energisystem – genom mer kärnkraft</h2>
+
+
+
+<p>Sverige behöver en stabil elförsörjning. Vi ska inte behöva elda 140&nbsp;000 liter olja i timmen för att klara elförsörjningen när det är kallt och vindstilla. Privatpersoner ska inte heller behöva ta lån för att kunna betala elräkningen.</p>
+
+
+
+<blockquote class="wp-block-quote"><p>Kärnkraft är naturligtvis inte svaret på alla energifrågor. Men det är faktiskt svaret på rätt många. Och ska Sverige få ny kärnkraft så måste vi börja nu.</p><cite>Ulf Kristersson</cite></blockquote>
+
+
+
+<p>Moderaternas löften:</p>
+
+
+
+<ul><li>Att fortsatt driva våra befintliga kärnkraftsreaktorer och satsa på nästa generations kärnkraft genom ökad forskning och att det byggs en forskningsreaktor.</li><li>Ta bort förbudet mot att ha fler än tio kärnkraftsreaktorer i drift och tillåt att kärnkraftsreaktorer byggs på fler platser än de befintliga.</li><li>Ge planerbara kraftslag som kärn- och vattenkraft betalt för sin tillgänglighet. Bygg ut elnäten för att klara elektrifieringen av samhället och klimatomställningen.&nbsp;</li></ul>
+
+
+
+<h2 id="h-5-moderaterna-vill-aterinfora-arbetslinjen-i-svensk-politik">5.&nbsp;Moderaterna vill återinföra arbetslinjen i svensk politik</h2>
+
+
+
+<p>Moderaterna vill återupprätta arbetslinjen i svensk politik. Om det ska finnas pengar till ökad säkerhet, trygghet och bättre välfärd så behöver fler gå från bidrag till arbete.&nbsp; Den som ställer klockan och går till jobbet ska få behålla mer av sin lön. Fusket i välfärdssystemen måste också stoppas. Kriminella ska inte kunna lura till sig 20 miljarder kronor per år som är avsedda för välfärden.<br><br>Moderaternas löfte:</p>
+
+
+
+<ul><li>Att införa ett bidragstak så att det alltid lönar sig bättre att jobba än att stapla bidrag.</li><li>Sänkt skatt på arbete så att det lönar sig bättre att anstränga sig.</li><li>Krafttag mot bidragsfusk – genom bland annat en folkräkning.</li></ul>
+
+
+
+<div class="wp-block-buttons">
+<div class="wp-block-button"><a class="wp-block-button__link" href="https://www.youtube.com/watch?v=AvD82ESxm04" target="_blank" rel="noreferrer noopener">Se talet här</a></div>
+</div>
+
+
+
+<div class="wp-block-buttons">
+<div class="wp-block-button"><a class="wp-block-button__link" href="https://moderaterna.se/app/uploads/2022/03/220326FemVallöften.pdf">Läs talet i sin helhet här</a></div>
+</div>
+
+
+
+<div class="wp-block-buttons"></div>
+</div><!-- .article --><div class="site-main__read-more">
+    <button class="link-button" id="article-read-more">Läs mer</button>
+</div>
+<div class="site-main__vote-share site-main__entry-content">
+    <p>Ta ställning och dela artikeln</p>
+    <div class="site-main__vote-share--action">
+                    <button data-vote="article">
+                <span class="show-for-sr"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="29.25" height="28.125" viewBox="0 0 29.25 28.125" aria-hidden="true"><path data-name="Icon ionic-ios-heart-empty" d="M21.375 0h-.07a8 8 0 0 0-6.68 3.656A8 8 0 0 0 7.945 0h-.07A7.949 7.949 0 0 0 0 7.945a17.115 17.115 0 0 0 3.361 9.33c4.233 5.787 11.264 10.85 11.264 10.85s7.031-5.063 11.264-10.85a17.115 17.115 0 0 0 3.361-9.33A7.949 7.949 0 0 0 21.375 0zM24.3 16.116a53.929 53.929 0 0 1-9.675 9.533 54.01 54.01 0 0 1-9.675-9.541 15.169 15.169 0 0 1-2.981-8.163 5.966 5.966 0 0 1 5.92-5.97h.063a5.9 5.9 0 0 1 2.89.759 6.144 6.144 0 0 1 2.137 2 1.975 1.975 0 0 0 3.3 0 6.205 6.205 0 0 1 2.138-2 5.9 5.9 0 0 1 2.89-.759h.063a5.966 5.966 0 0 1 5.92 5.97 15.361 15.361 0 0 1-2.99 8.17z" fill="#213a8f"/></svg>                <svg xmlns="http://www.w3.org/2000/svg" data-name="Icon ionic-ios-heart" width="29.25" height="28.125" viewBox="0 0 29.25 28.125" aria-hidden="true" class="hidden-heart"><path data-name="Icon ionic-ios-heart" d="M21.375 0h-.07a8 8 0 0 0-6.68 3.656A8 8 0 0 0 7.945 0h-.07A7.949 7.949 0 0 0 0 7.945a17.115 17.115 0 0 0 3.361 9.33c4.233 5.787 11.264 10.85 11.264 10.85s7.031-5.063 11.264-10.85a17.115 17.115 0 0 0 3.361-9.33A7.949 7.949 0 0 0 21.375 0z" fill="#213a8f"/></svg>                <span class="vote-count hidden-count">2</span>
+            </button>
+                <div class="site-main__vote-share--action__share">
+                				<a data-share="facebook" href="https://www.facebook.com/sharer.php?u=https://moderaterna.se/nyhet/valloften/" target="_blank">
+                    <span class="show-for-sr">Dela via Facebook</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-facebook-f" d="M27.891 24.987l.493-3.213h-3.087v-2.085a1.607 1.607 0 0 1 1.811-1.736h1.4v-2.736A17.093 17.093 0 0 0 26.022 15c-2.539 0-4.2 1.539-4.2 4.325v2.449H19v3.213h2.823v7.768h3.474v-7.768z" fill="#93d5f6"/></svg>                </a>
+                				<a data-share="twitter" href="https://twitter.com/intent/tweet?url=https://moderaterna.se/nyhet/valloften/" target="_blank">
+                    <span class="show-for-sr">Dela via Twitter</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-twitter" d="M31.432 20.189c.012.166.012.332.012.5a10.835 10.835 0 0 1-10.91 10.91 10.836 10.836 0 0 1-5.889-1.723 7.933 7.933 0 0 0 .926.047 7.68 7.68 0 0 0 4.761-1.638 3.841 3.841 0 0 1-3.587-2.659 4.836 4.836 0 0 0 .724.059 4.056 4.056 0 0 0 1.009-.131 3.835 3.835 0 0 1-3.073-3.762v-.048a3.862 3.862 0 0 0 1.733.487 3.84 3.84 0 0 1-1.187-5.129 10.9 10.9 0 0 0 7.906 4.013 4.329 4.329 0 0 1-.095-.878 3.838 3.838 0 0 1 6.636-2.624 7.55 7.55 0 0 0 2.434-.926 3.824 3.824 0 0 1-1.687 2.113 7.687 7.687 0 0 0 2.208-.594 8.243 8.243 0 0 1-1.923 1.983z" fill="#93d5f6"/></svg>                </a>
+                				<a data-share="linkedin" href="https://www.linkedin.com/shareArticle?mini=true&url=https://moderaterna.se/nyhet/valloften/" target="_blank">
+                    <span class="show-for-sr">Dela via Linkedin</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-linkedin-in" d="M19.273 31.557h-3.548V20.13h3.548zm-1.776-12.986a2.065 2.065 0 1 1 2.055-2.074 2.072 2.072 0 0 1-2.055 2.074zm15.056 12.986h-3.54v-5.563c0-1.326-.027-3.026-1.845-3.026-1.845 0-2.128 1.44-2.128 2.93v5.658h-3.544V20.13h3.4v1.559h.05a3.728 3.728 0 0 1 3.36-1.848c3.591 0 4.251 2.365 4.251 5.436v6.277z" fill="#93d5f6"/></svg>                </a>
+                				<a data-share="mail" href="/cdn-cgi/l/email-protection#d1eea2a4b3bbb4b2a5ec84bdb7f19aa3b8a2a5b4a3a2a2bebff1a1a3b4a2b4bfa5b4a3b0b5b4f1b7b4bcf1a7b0bdbd1267b7a5b4bff1b71267a3f1b0a5a5f1b71274f1bea3b5bfb8bfb6f1a11274f182a7b4a3b8b6b4f7b3beb5a8ecb9a5a5a1a2ebfefebcbeb5b4a3b0a5b4a3bfb0ffa2b4febfa8b9b4a5fea7b0bdbdbeb7a5b4bffe">
+                    <span class="show-for-sr">Dela via Mail</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon ionic-md-mail" d="M31.388 16.829H16.612a1.743 1.743 0 0 0-1.738 1.738v10.865a1.743 1.743 0 0 0 1.738 1.738h14.776a1.743 1.743 0 0 0 1.736-1.738V18.567a1.743 1.743 0 0 0-1.736-1.738zm-.217 3.694L24 25.304l-7.17-4.781v-1.738l7.171 4.781 7.171-4.781z" fill="#93d5f6"/></svg>                </a>
+                    </div>
+    </div>
+</div>
+
+		</article><!-- #post-3824 -->
+	</main><!-- #main -->
+
+
+	<footer id="colophon" class="site-footer">
+		<div class="site-footer__main theme__background--blue">
+					<div class="site-footer__main--social-media top">
+								<p>Du hittar oss här på sociala medier</p>
+				<div class="site-footer__main--social-media__links">
+											<a data-target="facebook" href="https://facebook.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Facebook</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-facebook-f" d="M27.891 24.987l.493-3.213h-3.087v-2.085a1.607 1.607 0 0 1 1.811-1.736h1.4v-2.736A17.093 17.093 0 0 0 26.022 15c-2.539 0-4.2 1.539-4.2 4.325v2.449H19v3.213h2.823v7.768h3.474v-7.768z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="twitter" href="https://twitter.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Twitter</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-twitter" d="M31.432 20.189c.012.166.012.332.012.5a10.835 10.835 0 0 1-10.91 10.91 10.836 10.836 0 0 1-5.889-1.723 7.933 7.933 0 0 0 .926.047 7.68 7.68 0 0 0 4.761-1.638 3.841 3.841 0 0 1-3.587-2.659 4.836 4.836 0 0 0 .724.059 4.056 4.056 0 0 0 1.009-.131 3.835 3.835 0 0 1-3.073-3.762v-.048a3.862 3.862 0 0 0 1.733.487 3.84 3.84 0 0 1-1.187-5.129 10.9 10.9 0 0 0 7.906 4.013 4.329 4.329 0 0 1-.095-.878 3.838 3.838 0 0 1 6.636-2.624 7.55 7.55 0 0 0 2.434-.926 3.824 3.824 0 0 1-1.687 2.113 7.687 7.687 0 0 0 2.208-.594 8.243 8.243 0 0 1-1.923 1.983z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="instagram" href="https://www.instagram.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Instagram</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-instagram" d="M24.002 18.694a5.307 5.307 0 1 0 5.307 5.307 5.3 5.3 0 0 0-5.307-5.307zm0 8.757a3.45 3.45 0 1 1 3.45-3.45 3.456 3.456 0 0 1-3.45 3.45zm6.761-8.974a1.238 1.238 0 1 1-1.238-1.238 1.235 1.235 0 0 1 1.238 1.238zm3.515 1.256a6.125 6.125 0 0 0-1.672-4.337 6.166 6.166 0 0 0-4.336-1.672c-1.709-.1-6.831-.1-8.539 0a6.157 6.157 0 0 0-4.338 1.668 6.145 6.145 0 0 0-1.672 4.336c-.1 1.709-.1 6.831 0 8.539a6.125 6.125 0 0 0 1.672 4.337 6.173 6.173 0 0 0 4.337 1.672c1.709.1 6.831.1 8.539 0a6.125 6.125 0 0 0 4.337-1.672 6.166 6.166 0 0 0 1.672-4.337c.1-1.709.1-6.826 0-8.535zM32.07 30.101a3.493 3.493 0 0 1-1.967 1.967c-1.362.54-4.6.416-6.1.416s-4.743.12-6.1-.416a3.493 3.493 0 0 1-1.969-1.967c-.54-1.362-.416-4.6-.416-6.1s-.12-4.743.416-6.1a3.493 3.493 0 0 1 1.967-1.969c1.362-.54 4.6-.416 6.1-.416s4.743-.12 6.1.416a3.493 3.493 0 0 1 1.967 1.967c.54 1.362.416 4.6.416 6.1s.127 4.745-.414 6.102z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="linkedin" href="https://linkedin.com/company/moderaterna" target="_blank">
+							<span class="show-for-sr">Linkedin</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-linkedin-in" d="M19.273 31.557h-3.548V20.13h3.548zm-1.776-12.986a2.065 2.065 0 1 1 2.055-2.074 2.072 2.072 0 0 1-2.055 2.074zm15.056 12.986h-3.54v-5.563c0-1.326-.027-3.026-1.845-3.026-1.845 0-2.128 1.44-2.128 2.93v5.658h-3.544V20.13h3.4v1.559h.05a3.728 3.728 0 0 1 3.36-1.848c3.591 0 4.251 2.365 4.251 5.436v6.277z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="youtube" href="https://youtube.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Youtube</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-youtube" d="M33.582 19.2a2.513 2.513 0 0 0-1.768-1.78C30.25 17 24 17 24 17s-6.254 0-7.814.421a2.513 2.513 0 0 0-1.768 1.779A26.362 26.362 0 0 0 14 24.045a26.362 26.362 0 0 0 .418 4.845 2.476 2.476 0 0 0 1.768 1.751c1.56.421 7.814.421 7.814.421s6.254 0 7.814-.421a2.476 2.476 0 0 0 1.768-1.751A26.362 26.362 0 0 0 34 24.045a26.362 26.362 0 0 0-.418-4.845zM21.95 27.019v-5.947l5.227 2.974-5.227 2.973z" fill="#93d5f6"/></svg>						</a>
+										</div>
+							</div>
+					<div class="site-footer__main--links">
+											<div class="site-footer__main--links__menu site-footer__main--links__small">
+																	<h1 class="h6--dark-grey">Meny</h1>
+									<ul id="meny">
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/engagera-dig/">Engagera dig</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/politiker/ulf-kristersson/">Ulf Kristersson</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/var-politik/">Vår politik</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/om-moderaterna/vara-politiker/">Våra politiker</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/nyheter/">Nyheter</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/lattlast/">Lättläst</a>
+											</li>
+																			</ul>
+																</div>
+													<div class="site-footer__main--links__menu site-footer__main--links__small">
+																	<h1 class="h6--dark-grey">Genvägar</h1>
+									<ul id="genvagar">
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/integritetspolicy/">Integritetspolicy</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.se/integritetspolicy/om-cookies/">Om cookies</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.membersite.se/home/myprofile">Mina sidor</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderaterna.info">Intranätet</a>
+											</li>
+																			</ul>
+																</div>
+													<div class="site-footer__main--links__menu site-footer__main--links__small">
+																	<h1 class="h6--dark-grey">Nätverk</h1>
+									<ul id="natverk">
+																					<li>
+												<a class="p--dark-grey" href="https://muf.se">Moderata Ungdomsförbundet</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/moderatkvinnorna">Moderatkvinnorna</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://moderataseniorer.se/">Moderata Seniorer</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://oppnamoderater.se/">Öppna moderater</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://hjalmarsonstiftelsen.se/">Jarl Hjalmarson Stiftelsen</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/foretagarradet">Företagarrådet</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/utlandet">Moderater i utlandet</a>
+											</li>
+																			</ul>
+																</div>
+													<div class="site-footer__main--links__menu site-footer__main--links__large">
+																	<h1 class="h6--dark-grey">Förbund</h1>
+									<ul id="forbund">
+																					<li>
+												<a class="p--dark-grey" href="/blekinge">Blekinge län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/dalarna">Dalarna</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/gotland">Gotland</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/gavleborg">Gävleborg</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://www.moderaternaihalland.se/">Halland</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/jamtland">Jämtlands län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/jonkoping">Jönköpings län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="http://moderaternaikalmarlan.se/">Kalmar län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/kronoberg">Kronobergs län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/norrbotten">Norrbotten</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/skane">Skåne län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/stockholm">Stockholms stad och län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/sodermanland">Södermanlands län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/uppsala">Uppsala län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/varmland">Värmlands län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/vasterbotten">Västerbotten</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/vastragotaland">Västra Götaland</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/vasternorrland">Västernorrland</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="https://mvastmanland.se/">Västmanland</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/orebro">Örebro län</a>
+											</li>
+																					<li>
+												<a class="p--dark-grey" href="/ostergotland">Östergötland</a>
+											</li>
+																			</ul>
+																			<button class="site-footer__main--links__menu--expand p--purple" id="expand-forbund">Visa fler ...</button>
+																</div>
+									</div>
+			<div class="site-footer__main--social-media bottom">
+								<p>Du hittar oss här på sociala medier</p>
+				<div class="site-footer__main--social-media__links">
+											<a data-target="facebook" href="https://facebook.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Facebook</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-facebook-f" d="M27.891 24.987l.493-3.213h-3.087v-2.085a1.607 1.607 0 0 1 1.811-1.736h1.4v-2.736A17.093 17.093 0 0 0 26.022 15c-2.539 0-4.2 1.539-4.2 4.325v2.449H19v3.213h2.823v7.768h3.474v-7.768z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="twitter" href="https://twitter.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Twitter</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-twitter" d="M31.432 20.189c.012.166.012.332.012.5a10.835 10.835 0 0 1-10.91 10.91 10.836 10.836 0 0 1-5.889-1.723 7.933 7.933 0 0 0 .926.047 7.68 7.68 0 0 0 4.761-1.638 3.841 3.841 0 0 1-3.587-2.659 4.836 4.836 0 0 0 .724.059 4.056 4.056 0 0 0 1.009-.131 3.835 3.835 0 0 1-3.073-3.762v-.048a3.862 3.862 0 0 0 1.733.487 3.84 3.84 0 0 1-1.187-5.129 10.9 10.9 0 0 0 7.906 4.013 4.329 4.329 0 0 1-.095-.878 3.838 3.838 0 0 1 6.636-2.624 7.55 7.55 0 0 0 2.434-.926 3.824 3.824 0 0 1-1.687 2.113 7.687 7.687 0 0 0 2.208-.594 8.243 8.243 0 0 1-1.923 1.983z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="instagram" href="https://www.instagram.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Instagram</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-instagram" d="M24.002 18.694a5.307 5.307 0 1 0 5.307 5.307 5.3 5.3 0 0 0-5.307-5.307zm0 8.757a3.45 3.45 0 1 1 3.45-3.45 3.456 3.456 0 0 1-3.45 3.45zm6.761-8.974a1.238 1.238 0 1 1-1.238-1.238 1.235 1.235 0 0 1 1.238 1.238zm3.515 1.256a6.125 6.125 0 0 0-1.672-4.337 6.166 6.166 0 0 0-4.336-1.672c-1.709-.1-6.831-.1-8.539 0a6.157 6.157 0 0 0-4.338 1.668 6.145 6.145 0 0 0-1.672 4.336c-.1 1.709-.1 6.831 0 8.539a6.125 6.125 0 0 0 1.672 4.337 6.173 6.173 0 0 0 4.337 1.672c1.709.1 6.831.1 8.539 0a6.125 6.125 0 0 0 4.337-1.672 6.166 6.166 0 0 0 1.672-4.337c.1-1.709.1-6.826 0-8.535zM32.07 30.101a3.493 3.493 0 0 1-1.967 1.967c-1.362.54-4.6.416-6.1.416s-4.743.12-6.1-.416a3.493 3.493 0 0 1-1.969-1.967c-.54-1.362-.416-4.6-.416-6.1s-.12-4.743.416-6.1a3.493 3.493 0 0 1 1.967-1.969c1.362-.54 4.6-.416 6.1-.416s4.743-.12 6.1.416a3.493 3.493 0 0 1 1.967 1.967c.54 1.362.416 4.6.416 6.1s.127 4.745-.414 6.102z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="linkedin" href="https://linkedin.com/company/moderaterna" target="_blank">
+							<span class="show-for-sr">Linkedin</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-linkedin-in" d="M19.273 31.557h-3.548V20.13h3.548zm-1.776-12.986a2.065 2.065 0 1 1 2.055-2.074 2.072 2.072 0 0 1-2.055 2.074zm15.056 12.986h-3.54v-5.563c0-1.326-.027-3.026-1.845-3.026-1.845 0-2.128 1.44-2.128 2.93v5.658h-3.544V20.13h3.4v1.559h.05a3.728 3.728 0 0 1 3.36-1.848c3.591 0 4.251 2.365 4.251 5.436v6.277z" fill="#93d5f6"/></svg>						</a>
+												<a data-target="youtube" href="https://youtube.com/moderaterna" target="_blank">
+							<span class="show-for-sr">Youtube</span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><rect data-name="Area [SIZE:MEDIUM][STATE:DEFAULT][STYLE:STYLE3]" width="48" height="48" rx="24" fill="#213a8f"/><path data-name="Icon awesome-youtube" d="M33.582 19.2a2.513 2.513 0 0 0-1.768-1.78C30.25 17 24 17 24 17s-6.254 0-7.814.421a2.513 2.513 0 0 0-1.768 1.779A26.362 26.362 0 0 0 14 24.045a26.362 26.362 0 0 0 .418 4.845 2.476 2.476 0 0 0 1.768 1.751c1.56.421 7.814.421 7.814.421s6.254 0 7.814-.421a2.476 2.476 0 0 0 1.768-1.751A26.362 26.362 0 0 0 34 24.045a26.362 26.362 0 0 0-.418-4.845zM21.95 27.019v-5.947l5.227 2.974-5.227 2.973z" fill="#93d5f6"/></svg>						</a>
+										</div>
+							</div>
+		</div>
+		<div class="site-footer__logo theme__background--dark-blue">
+			<svg xmlns="http://www.w3.org/2000/svg" width="60.626" height="60.627" viewBox="0 0 60.626 60.627" aria-hidden="true"><path d="M60.626 30.314a30.313 30.313 0 0 1-30.313 30.313A30.313 30.313 0 0 1 0 30.314 30.314 30.314 0 0 1 30.313 0a30.314 30.314 0 0 1 30.313 30.314" fill="#93d5f6"/><path d="M45.389 33.416l-4.473-10.264a4.974 4.974 0 0 0 1.776-3.812 4.983 4.983 0 0 0-4.983-4.982 4.983 4.983 0 0 0-4.982 4.983 4.967 4.967 0 0 0 1.751 3.789l-4.219 10.286h-.01l-4.475-10.264a4.969 4.969 0 0 0 1.777-3.812 4.983 4.983 0 0 0-4.982-4.982 4.982 4.982 0 0 0-4.983 4.983 4.971 4.971 0 0 0 1.764 3.8l-4.213 10.275c-.068 0-.135-.009-.2-.009a4.982 4.982 0 0 0-4.988 4.983 4.983 4.983 0 0 0 4.982 4.984 4.983 4.983 0 0 0 4.984-4.984 4.968 4.968 0 0 0-1.612-3.664l4.255-10.368 4.414 10.125a4.964 4.964 0 0 0-1.9 3.908 4.983 4.983 0 0 0 4.983 4.984 4.984 4.984 0 0 0 4.984-4.984 4.969 4.969 0 0 0-1.614-3.664l4.263-10.39 4.423 10.146a4.966 4.966 0 0 0-1.9 3.908 4.983 4.983 0 0 0 4.983 4.984 4.984 4.984 0 0 0 4.985-4.984 4.979 4.979 0 0 0-4.792-4.974" fill="#213a8f"/></svg>		</div>
+					<div class="site-footer__logo">
+				<a href="/om-moderaterna/moderaterna-ar-medlem-i-epp/">
+					<picture class="attachment-full size-full">
+<source type="image/webp" data-lazy-srcset="https://moderaterna.se/app/uploads/2022/02/epp-logotyp.png.webp 600w, https://moderaterna.se/app/uploads/2022/02/epp-logotyp-300x140.png.webp 300w" srcset="data:image/svg+xml,%3Csvg%20xmlns=&#039;http://www.w3.org/2000/svg&#039;%20viewBox=&#039;0%200%20600%20279&#039;%3E%3C/svg%3E" data-lazy-sizes="(max-width: 600px) 100vw, 600px"/>
+<img width="600" height="279" src="data:image/svg+xml,%3Csvg%20xmlns=&#039;http://www.w3.org/2000/svg&#039;%20viewBox=&#039;0%200%20600%20279&#039;%3E%3C/svg%3E" alt="EPP logo" data-lazy-srcset="https://moderaterna.se/app/uploads/2022/02/epp-logotyp.png 600w, https://moderaterna.se/app/uploads/2022/02/epp-logotyp-300x140.png 300w" data-lazy-sizes="(max-width: 600px) 100vw, 600px" data-lazy-src="https://moderaterna.se/app/uploads/2022/02/epp-logotyp.png"/>
+</picture>
+<noscript><picture class="attachment-full size-full">
+<source type="image/webp" srcset="https://moderaterna.se/app/uploads/2022/02/epp-logotyp.png.webp 600w, https://moderaterna.se/app/uploads/2022/02/epp-logotyp-300x140.png.webp 300w" sizes="(max-width: 600px) 100vw, 600px"/>
+<img width="600" height="279" src="https://moderaterna.se/app/uploads/2022/02/epp-logotyp.png" alt="EPP logo" srcset="https://moderaterna.se/app/uploads/2022/02/epp-logotyp.png 600w, https://moderaterna.se/app/uploads/2022/02/epp-logotyp-300x140.png 300w" sizes="(max-width: 600px) 100vw, 600px"/>
+</picture>
+</noscript>				</a>
+			</div>
+			</footer><!-- #colophon -->
+</div><!-- #page -->
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="rocketlazyloadscript" id='rocket-browser-checker-js-after'>
+"use strict";var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,"value"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}();function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError("Cannot call a class as a function")}var RocketBrowserCompatibilityChecker=function(){function RocketBrowserCompatibilityChecker(options){_classCallCheck(this,RocketBrowserCompatibilityChecker),this.passiveSupported=!1,this._checkPassiveOption(this),this.options=!!this.passiveSupported&&options}return _createClass(RocketBrowserCompatibilityChecker,[{key:"_checkPassiveOption",value:function(self){try{var options={get passive(){return!(self.passiveSupported=!0)}};window.addEventListener("test",null,options),window.removeEventListener("test",null,options)}catch(err){self.passiveSupported=!1}}},{key:"initRequestIdleCallback",value:function(){!1 in window&&(window.requestIdleCallback=function(cb){var start=Date.now();return setTimeout(function(){cb({didTimeout:!1,timeRemaining:function(){return Math.max(0,50-(Date.now()-start))}})},1)}),!1 in window&&(window.cancelIdleCallback=function(id){return clearTimeout(id)})}},{key:"isDataSaverModeOn",value:function(){return"connection"in navigator&&!0===navigator.connection.saveData}},{key:"supportsLinkPrefetch",value:function(){var elem=document.createElement("link");return elem.relList&&elem.relList.supports&&elem.relList.supports("prefetch")&&window.IntersectionObserver&&"isIntersecting"in IntersectionObserverEntry.prototype}},{key:"isSlowConnection",value:function(){return"connection"in navigator&&"effectiveType"in navigator.connection&&("2g"===navigator.connection.effectiveType||"slow-2g"===navigator.connection.effectiveType)}}]),RocketBrowserCompatibilityChecker}();
+</script>
+<script id='rocket-preload-links-js-extra'>
+var RocketPreloadLinksConfig = {"excludeUris":"\/personligfilm\/jag-vill-ha-en-film\/|\/personligfilm\/tipsa-en-van\/|\/valfilm\/jag-vill-ha-en-film\/|\/valfilm\/tipsa-en-van\/|\/(.+\/)?feed\/?.+\/?|\/(?:.+\/)?embed\/|(\/[^\/]+)?\/(index\\.php\/)?wp\\-json(\/.*|$)|\/wp-admin\/|\/logout\/|\/wp-login.php","usesTrailingSlash":"1","imageExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif","fileExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif|php|pdf|html|htm","siteUrl":"https:\/\/moderaterna.se","onHoverDelay":"100","rateThrottle":"3"};
+</script>
+<script type="rocketlazyloadscript" id='rocket-preload-links-js-after'>
+(function() {
+"use strict";var r="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},e=function(){function i(e,t){for(var n=0;n<t.length;n++){var i=t[n];i.enumerable=i.enumerable||!1,i.configurable=!0,"value"in i&&(i.writable=!0),Object.defineProperty(e,i.key,i)}}return function(e,t,n){return t&&i(e.prototype,t),n&&i(e,n),e}}();function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}var t=function(){function n(e,t){i(this,n),this.browser=e,this.config=t,this.options=this.browser.options,this.prefetched=new Set,this.eventTime=null,this.threshold=1111,this.numOnHover=0}return e(n,[{key:"init",value:function(){!this.browser.supportsLinkPrefetch()||this.browser.isDataSaverModeOn()||this.browser.isSlowConnection()||(this.regex={excludeUris:RegExp(this.config.excludeUris,"i"),images:RegExp(".("+this.config.imageExt+")$","i"),fileExt:RegExp(".("+this.config.fileExt+")$","i")},this._initListeners(this))}},{key:"_initListeners",value:function(e){-1<this.config.onHoverDelay&&document.addEventListener("mouseover",e.listener.bind(e),e.listenerOptions),document.addEventListener("mousedown",e.listener.bind(e),e.listenerOptions),document.addEventListener("touchstart",e.listener.bind(e),e.listenerOptions)}},{key:"listener",value:function(e){var t=e.target.closest("a"),n=this._prepareUrl(t);if(null!==n)switch(e.type){case"mousedown":case"touchstart":this._addPrefetchLink(n);break;case"mouseover":this._earlyPrefetch(t,n,"mouseout")}}},{key:"_earlyPrefetch",value:function(t,e,n){var i=this,r=setTimeout(function(){if(r=null,0===i.numOnHover)setTimeout(function(){return i.numOnHover=0},1e3);else if(i.numOnHover>i.config.rateThrottle)return;i.numOnHover++,i._addPrefetchLink(e)},this.config.onHoverDelay);t.addEventListener(n,function e(){t.removeEventListener(n,e,{passive:!0}),null!==r&&(clearTimeout(r),r=null)},{passive:!0})}},{key:"_addPrefetchLink",value:function(i){return this.prefetched.add(i.href),new Promise(function(e,t){var n=document.createElement("link");n.rel="prefetch",n.href=i.href,n.onload=e,n.onerror=t,document.head.appendChild(n)}).catch(function(){})}},{key:"_prepareUrl",value:function(e){if(null===e||"object"!==(void 0===e?"undefined":r(e))||!1 in e||-1===["http:","https:"].indexOf(e.protocol))return null;var t=e.href.substring(0,this.config.siteUrl.length),n=this._getPathname(e.href,t),i={original:e.href,protocol:e.protocol,origin:t,pathname:n,href:t+n};return this._isLinkOk(i)?i:null}},{key:"_getPathname",value:function(e,t){var n=t?e.substring(this.config.siteUrl.length):e;return n.startsWith("/")||(n="/"+n),this._shouldAddTrailingSlash(n)?n+"/":n}},{key:"_shouldAddTrailingSlash",value:function(e){return this.config.usesTrailingSlash&&!e.endsWith("/")&&!this.regex.fileExt.test(e)}},{key:"_isLinkOk",value:function(e){return null!==e&&"object"===(void 0===e?"undefined":r(e))&&(!this.prefetched.has(e.href)&&e.origin===this.config.siteUrl&&-1===e.href.indexOf("?")&&-1===e.href.indexOf("#")&&!this.regex.excludeUris.test(e.href)&&!this.regex.images.test(e.href))}}],[{key:"run",value:function(){"undefined"!=typeof RocketPreloadLinksConfig&&new n(new RocketBrowserCompatibilityChecker({capture:!0,passive:!0}),RocketPreloadLinksConfig).init()}}]),n}();t.run();
+}());
+</script>
+<script id='hiq-scripts-js-extra'>
+var restObject = {"restURL":"https:\/\/moderaterna.se\/wp-json\/","restNonce":"2150fbdc3a"};
+var content = {"name":"Ulf Kristersson presenterade fem vall\u00f6ften f\u00f6r att f\u00e5 ordning p\u00e5 Sverige","type":"post"};
+</script>
+<script type="rocketlazyloadscript" data-minify="1" src='https://moderaterna.se/app/cache/min/1/app/themes/moderaterna/dist/main.js?ver=1661757426' id='hiq-scripts-js' defer></script>
+<script src='https://moderaterna.se/wp/wp-includes/js/wp-embed.min.js?ver=5.8.2' id='wp-embed-js' defer></script>
+<script>window.lazyLoadOptions={elements_selector:"img[data-lazy-src],.rocket-lazyload,iframe[data-lazy-src]",data_src:"lazy-src",data_srcset:"lazy-srcset",data_sizes:"lazy-sizes",class_loading:"lazyloading",class_loaded:"lazyloaded",threshold:300,callback_loaded:function(element){if(element.tagName==="IFRAME"&&element.dataset.rocketLazyload=="fitvidscompatible"){if(element.classList.contains("lazyloaded")){if(typeof window.jQuery!="undefined"){if(jQuery.fn.fitVids){jQuery(element).parent().fitVids()}}}}}};window.addEventListener('LazyLoad::Initialized',function(e){var lazyLoadInstance=e.detail.instance;if(window.MutationObserver){var observer=new MutationObserver(function(mutations){var image_count=0;var iframe_count=0;var rocketlazy_count=0;mutations.forEach(function(mutation){for(var i=0;i<mutation.addedNodes.length;i++){if(typeof mutation.addedNodes[i].getElementsByTagName!=='function'){continue}
+if(typeof mutation.addedNodes[i].getElementsByClassName!=='function'){continue}
+images=mutation.addedNodes[i].getElementsByTagName('img');is_image=mutation.addedNodes[i].tagName=="IMG";iframes=mutation.addedNodes[i].getElementsByTagName('iframe');is_iframe=mutation.addedNodes[i].tagName=="IFRAME";rocket_lazy=mutation.addedNodes[i].getElementsByClassName('rocket-lazyload');image_count+=images.length;iframe_count+=iframes.length;rocketlazy_count+=rocket_lazy.length;if(is_image){image_count+=1}
+if(is_iframe){iframe_count+=1}}});if(image_count>0||iframe_count>0||rocketlazy_count>0){lazyLoadInstance.update()}});var b=document.getElementsByTagName("body")[0];var config={childList:!0,subtree:!0};observer.observe(b,config)}},!1)</script><script data-no-minify="1" async src="https://moderaterna.se/app/plugins/wp-rocket/assets/js/lazyload/17.5/lazyload.min.js"></script>
+</body>
+</html>

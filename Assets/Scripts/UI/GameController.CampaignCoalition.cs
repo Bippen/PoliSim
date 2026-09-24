@@ -194,7 +194,7 @@ namespace PoliSim.UI
                 y += rowHeight;
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, rowHeight),
                     "by " + s.PartyNames[line.A] + " / " + s.PartyNames[line.B]
-                    + (line.Kind == RedLineKind.Declared ? ", declared" : ", on distance"),
+                    + (DeclaredRedLines.IsCandidacy(line) ? ", rival candidates" : line.Kind == RedLineKind.Declared ? ", declared" : ", on distance"),
                     DeskCaption(9f, PoliSimTheme.TextMuted));
                 y += rowHeight;
                 shown++;
@@ -232,7 +232,8 @@ namespace PoliSim.UI
             y += rowHeight;
 
             var declared = s.Declared();
-            if (declared.Count == 0)
+            var candidacies = s.CandidacyPairs();
+            if (declared.Count == 0 && candidacies.Count == 0)
             {
                 DrawCampaignEmptyRow(new Rect(r.x, y, r.width, rowHeight), "NONE ON RECORD", name);
                 y += rowHeight;
@@ -244,6 +245,24 @@ namespace PoliSim.UI
                     DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight),
                         s.PartyNames[line.A] + " will not " + (line.OneWay ? "sit in or back a cabinet with " : line.BlocksSupport ? "depend on " : "sit with ") + s.PartyNames[line.B],
                         line.OneWay ? "one way" : line.BlocksSupport ? "nor support" : "would support", name,
+                        DeskCaption(10f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight));
+                    y += rowHeight;
+                }
+
+                // K-1f (§607): what the parties SAID is the candidacy - each named its own leader for prime minister. The refusal between them
+                // is the ruling's rule, as the model keeps it: each votes down a cabinet the other sits in (neither sits in, supports or lets it
+                // through). So the rows sit under their own caption that says whose the refusal is, and the tag names the wired reading.
+                if (candidacies.Count > 0)
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, rowHeight),
+                        "CANDIDACIES — THE PARTIES SAID THIS; THE REFUSAL IS THE MODEL'S RULE", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
+                    y += rowHeight;
+                }
+                foreach ((int a, int b) in candidacies)
+                {
+                    DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight),
+                        s.PartyNames[a] + " and " + s.PartyNames[b] + " each name their own prime minister",
+                        "votes the other down", name,
                         DeskCaption(10f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight));
                     y += rowHeight;
                 }

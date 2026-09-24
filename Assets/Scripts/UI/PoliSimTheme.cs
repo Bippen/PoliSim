@@ -387,7 +387,7 @@ namespace PoliSim.UI
         /// <summary>K-1 (2026-09-23): the mandates the ink ladder is ORDERED by - the chamber the inks were ruled on (§279's fork, D16, D17's
         /// fence: Sweden's 2022 seats), not the seated one. The 2026 chamber reverses the pair the ladder turns on (M 70 over SD 62, where §279's
         /// nudge moved M because M 68 was under SD 73) and ties KD and MP at 22; letting the seat refresh repaint parties would re-rule Design's
-        /// inks by arithmetic. Whether the ladder takes the 2026 order is Design's (K-1d). Every other country reads its seed seats.</summary>
+        /// inks by arithmetic. RULED 2026-09-24 (Elias, K-1d): the ladder keeps its ruled 2022 order. Every other country reads its seed seats.</summary>
         private static readonly Dictionary<string, int> InkLadderSeatsSweden2022 = new Dictionary<string, int>
         {
             { "S", 107 }, { "SD", 73 }, { "M", 68 }, { "V", 24 }, { "C", 24 }, { "KD", 19 }, { "MP", 18 }, { "L", 16 },

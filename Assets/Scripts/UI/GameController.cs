@@ -1795,6 +1795,8 @@ namespace PoliSim.UI
                 {
                     System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(_world.GetCountry(definition.Country));
                     bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(_world.GetCountry(definition.Country));
+                    // K-1f (§607): with no cabinet no row carries the PROVISIONAL mark, so the picker says the standing itself.
+                    if (provisional && cabinet.Count == 0) { GUILayout.Label(CountrySelectorScreen.ProvisionalLine(cabinet), _labelStyle); }
                     foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(definition.Country))
                     {
                         if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
@@ -1847,6 +1849,8 @@ namespace PoliSim.UI
                     // CL-2: the chamber as elected, largest first, the cabinet the chamber forms marked - the same lines the Canvas panel prints.
                     System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(country);
                     bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(country);
+                    // K-1f (§607): with no cabinet no row carries the PROVISIONAL mark, so the picker says the standing itself.
+                    if (provisional && cabinet.Count == 0) { GUILayout.Label(CountrySelectorScreen.ProvisionalLine(cabinet), _labelStyle); }
                     foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(country.Id))
                     {
                         if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))

@@ -291,7 +291,7 @@ namespace PoliSim.Elections
             List<RedLine> lines = DeclaredRedLines.For(country, parties, vintage);
             declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
-                negativeRule: ChamberRules.UsesNegativeParliamentarism(country));
+                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: DeclaredRedLines.InOrAgainstFor(country, parties, vintage));   // K-1f: a party's in-or-against rule, beside the pairs
             return true;
         }
 

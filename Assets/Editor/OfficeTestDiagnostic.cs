@@ -138,49 +138,164 @@ namespace PoliSim.EditorTools
                                + "keeps the largest party in government regardless of the arithmetic is not an office test.");
             }
 
-            // --- K-1 (2026-09-23): THE ONE-WAY SHAPE. C refuses any cabinet that contains V; nothing refuses V's support of a cabinet C
-            // sits in. The shape first on its own, then as the seated chamber's formation reads it: over EVERY viable government, C is
-            // never in or behind a cabinet with V, and at least one has V carrying a cabinet C sits in (the permission is live). ---
+            // --- K-1 (2026-09-23) and K-1f (2026-09-24): THE DECLARED SHAPES, as the formation reads them. The shapes on their own (a one-way
+            // line refuses A->B only); the wiring (C->V one way; the S-M candidacy pair, one way in each direction, in BOTH vintages - every
+            // election reads its own date's; V's in-or-against rule in 2026's only, and V the only party carrying one); the rule's vote-against
+            // half on a chamber built so that half alone decides; the GAME'S path reading the rule (GovernmentFormation against the formation
+            // given the rule); and the rules' effect over EVERY viable government of a chamber that forms some - the pinned film's own year-32
+            // count (film603b and film607 count the same shares). The seated chamber forms none with every rule held and the model's hold-out
+            // as built - a party votes against a cabinet while holding out for any admissible one of its own (§607): its outcome is printed,
+            // not asserted, because nothing is tuned toward an outcome. ⚠ The C-with-V count is blind on the year-32 count (the right bloc
+            // holds 180, so no cabinet with V is viable there); it is kept as a print and the one-way shape is asserted on its own. ---
             var oneWay = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: true, basis: "probe", oneWay: true);
             var symmetric = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: true, basis: "probe");
             var cabinetOnly = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: false, basis: "probe");
             bool shapeHolds = oneWay.RefusesSupport(0, 1) && !oneWay.RefusesSupport(1, 0)
                 && symmetric.RefusesSupport(0, 1) && symmetric.RefusesSupport(1, 0)
                 && !cabinetOnly.RefusesSupport(0, 1) && !cabinetOnly.RefusesSupport(1, 0);
-            int cIndex = -1, vIndex = -1;
+            int cIndex = -1, vIndex = -1, sIndex = -1, mIndex = -1;
             var seatedSeats = new int[swedenParties.Count];
             for (int p = 0; p < swedenParties.Count; p++)
             {
                 seatedSeats[p] = swedenParties[p].SeedSeats;
                 if (swedenParties[p].Abbrev == "C") { cIndex = p; }
                 if (swedenParties[p].Abbrev == "V") { vIndex = p; }
+                if (swedenParties[p].Abbrev == "S") { sIndex = p; }
+                if (swedenParties[p].Abbrev == "M") { mIndex = p; }
             }
-            CoalitionResult seatedFormation = CoalitionFormation.Form(seatedSeats, GovernmentFormation.Compatibility(swedenParties),
-                DeclaredRedLines.For(CountryId.Sweden, swedenParties), negativeRule: true);
-            bool wiredOneWay = false;
-            foreach (RedLine line in DeclaredRedLines.For(CountryId.Sweden, swedenParties))
+            List<RedLine> seatedLines = DeclaredRedLines.For(CountryId.Sweden, swedenParties);
+            List<InOrAgainst> seatedRules = DeclaredRedLines.InOrAgainstFor(CountryId.Sweden, swedenParties);
+            bool CandidacyPair(List<RedLine> lines)
             {
-                if (line.Kind == RedLineKind.Declared && line.A == cIndex && line.B == vIndex && line.OneWay) { wiredOneWay = true; }
+                bool sm = false, ms = false;
+                foreach (RedLine line in lines)
+                {
+                    if (!DeclaredRedLines.IsCandidacy(line) || !line.OneWay) { continue; }
+                    if (line.A == sIndex && line.B == mIndex) { sm = true; }
+                    if (line.A == mIndex && line.B == sIndex) { ms = true; }
+                }
+                return sm && ms;
             }
-            int cBit = 1 << cIndex, vBit = 1 << vIndex, breaches = 0, vCarriesC = 0;
-            foreach (GovernmentOption g in seatedFormation.Viable)
+            bool wiredOneWay = seatedLines.Exists(line => line.Kind == RedLineKind.Declared && line.A == cIndex && line.B == vIndex && line.OneWay);
+            bool candidacyWired = CandidacyPair(seatedLines) && CandidacyPair(DeclaredRedLines.For(CountryId.Sweden, swedenParties, ElectionVintage.Sweden2022));
+            bool vRuleWired = seatedRules.Count == 1 && seatedRules[0].Party == vIndex
+                && DeclaredRedLines.InOrAgainstFor(CountryId.Sweden, swedenParties, ElectionVintage.Sweden2022).Count == 0;
+
+            // The vote-against half, where it alone decides: A 150 and B 169 refuse each other's support; X 30 may sit with neither (its only
+            // admissible cabinet is itself, which scores below both, so it holds out against neither). Without a rule X abstains or supports,
+            // and A or B governs (at most 169 against). With X's in-or-against rule X is never a supporter and votes against both: 199 and 180.
+            int[] probeSeats = { 150, 169, 30 };
+            var probeCompat = new double[3, 3];
+            for (int a = 0; a < 3; a++) { for (int b = 0; b < 3; b++) { probeCompat[a, b] = a == b ? 100.0 : 50.0; } }
+            var probeLines = new List<RedLine>
             {
-                bool vInCabinet = (g.Cabinet & vBit) != 0;
-                if (vInCabinet && ((g.Cabinet & cBit) != 0 || (g.Support & cBit) != 0)) { breaches++; }
-                if ((g.Cabinet & cBit) != 0 && (g.Support & vBit) != 0) { vCarriesC++; }
+                new RedLine(0, 1, RedLineKind.Declared, blocksSupport: true, basis: "probe: A and B refuse each other's support"),
+                new RedLine(2, 0, RedLineKind.Declared, blocksSupport: false, basis: "probe: X sits with neither"),
+                new RedLine(2, 1, RedLineKind.Declared, blocksSupport: false, basis: "probe: X sits with neither"),
+            };
+            CoalitionResult probeWithout = CoalitionFormation.Form(probeSeats, probeCompat, probeLines, negativeRule: true);
+            CoalitionResult probeWith = CoalitionFormation.Form(probeSeats, probeCompat, probeLines, negativeRule: true,
+                inOrAgainst: new List<InOrAgainst> { new InOrAgainst(2, "probe: X supports no cabinet it is not in") });
+            int governsWithoutX = probeWithout.Viable.FindAll(g => (g.Cabinet & 4) == 0).Count;
+            int governsWithoutXUnderRule = probeWith.Viable.FindAll(g => (g.Cabinet & 4) == 0).Count;
+            int xSupportsUnderRule = probeWith.Viable.FindAll(g => (g.Support & 4) != 0).Count;
+            bool voteAgainstDecides = governsWithoutX > 0 && governsWithoutXUnderRule == 0 && xSupportsUnderRule == 0;
+
+            double[,] swedenCompat = GovernmentFormation.Compatibility(swedenParties);
+            CoalitionResult seatedFormation = CoalitionFormation.Form(seatedSeats, swedenCompat, seatedLines, negativeRule: true, inOrAgainst: seatedRules);
+            CoalitionResult seatedWithoutRules = CoalitionFormation.Form(seatedSeats, swedenCompat, seatedLines, negativeRule: true);
+            var yearThirtyTwo = new int[swedenParties.Count];
+            foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) })
+            {
+                for (int p = 0; p < swedenParties.Count; p++) { if (swedenParties[p].Abbrev == abbrev) { yearThirtyTwo[p] = held; } }
+            }
+            CoalitionResult played = CoalitionFormation.Form(yearThirtyTwo, swedenCompat, seatedLines, negativeRule: true, inOrAgainst: seatedRules);
+            CoalitionResult playedWithoutRules = CoalitionFormation.Form(yearThirtyTwo, swedenCompat, seatedLines, negativeRule: true);
+
+            // The game's own path: GovernmentFormation's formation (TryFormSeats, where the rules are passed), on both chambers, against the
+            // formation given the rules - and the rules must tell the two apart on at least one of them, or this comparison could not see the
+            // game dropping them. Read through ViewOf(CountryId, ...), which goes to TryFormSeats directly, so an INSTALLED seated government
+            // (K-1b: once the Riksdag's vote is on record, the country's seated path returns the record, not the formation) cannot silence it;
+            // the country's own path (TryGovernment, the stance model's and the picker's) is compared too while no record is installed.
+            string Government(CoalitionResult r)
+            {
+                if (r.Outcome == CoalitionOutcomeKind.NewElection || r.Outcome == CoalitionOutcomeKind.Collapse) { return "none"; }
+                var cab = new List<string>();
+                var sup = new List<string>();
+                for (int p = 0; p < swedenParties.Count; p++)
+                {
+                    if ((r.Government.Cabinet & (1 << p)) != 0) { cab.Add(swedenParties[p].Abbrev); }
+                    else if ((r.Government.Support & (1 << p)) != 0) { sup.Add(swedenParties[p].Abbrev); }
+                }
+                return string.Join("+", cab) + (sup.Count > 0 ? " | " + string.Join("+", sup) : string.Empty);
+            }
+            string FormationPath(int[] chamber)
+            {
+                var abbrevs = new List<string>();
+                var held = new List<int>();
+                for (int p = 0; p < swedenParties.Count; p++) { abbrevs.Add(swedenParties[p].Abbrev); held.Add(chamber[p]); }
+                GovernmentFormation.View view = GovernmentFormation.ViewOf(CountryId.Sweden, abbrevs, held, null);
+                if (!view.HasGovernment) { return "none"; }
+                var cab = new List<string>();
+                var sup = new List<string>();
+                foreach (PoliticalParty party in swedenParties)
+                {
+                    if (view.Cabinet.Exists(c => c.Abbrev == party.Abbrev)) { cab.Add(party.Abbrev); }
+                    else if (view.Support.Exists(c => c.Abbrev == party.Abbrev)) { sup.Add(party.Abbrev); }
+                }
+                return string.Join("+", cab) + (sup.Count > 0 ? " | " + string.Join("+", sup) : string.Empty);
+            }
+            string CountryPath()
+            {
+                if (!GovernmentFormation.TryGovernment(sweden, out IReadOnlyList<string> cab, out IReadOnlyList<string> sup)) { return "none"; }
+                return string.Join("+", cab) + (sup.Count > 0 ? " | " + string.Join("+", sup) : string.Empty);
+            }
+            bool installed = SeatedGovernment.TryInstalled(sweden, out SeatedGovernment.Record _);
+            string gameSeated = FormationPath(seatedSeats);
+            string gamePlayed = FormationPath(yearThirtyTwo);
+            string countrySeated = installed ? "(installed record)" : CountryPath();
+            sweden.ParliamentSeats.Clear();
+            for (int p = 0; p < swedenParties.Count; p++) { sweden.ParliamentSeats[swedenParties[p].Abbrev] = yearThirtyTwo[p]; }
+            string countryPlayed = installed ? "(installed record)" : CountryPath();
+            sweden.ParliamentSeats.Clear();
+            foreach (KeyValuePair<string, int> seat in seatedChamber) { sweden.ParliamentSeats[seat.Key] = seat.Value; }
+            bool gameReadsRules = gameSeated == Government(seatedFormation) && gamePlayed == Government(played)
+                && (installed || (countrySeated == gameSeated && countryPlayed == gamePlayed));
+            bool rulesVisible = Government(seatedFormation) != Government(seatedWithoutRules) || Government(played) != Government(playedWithoutRules);
+
+            int cBit = 1 << cIndex, vBit = 1 << vIndex, sBit = 1 << sIndex, mBit = 1 << mIndex;
+            int cWithV = 0, sWithM = 0, rivalSupport = 0, vSupports = 0;
+            foreach (GovernmentOption g in played.Viable)
+            {
+                if ((g.Cabinet & vBit) != 0 && ((g.Cabinet & cBit) != 0 || (g.Support & cBit) != 0)) { cWithV++; }
+                if ((g.Cabinet & sBit) != 0 && (g.Cabinet & mBit) != 0) { sWithM++; }
+                if (((g.Cabinet & mBit) != 0 && (g.Support & sBit) != 0) || ((g.Cabinet & sBit) != 0 && (g.Support & mBit) != 0)) { rivalSupport++; }
+                if ((g.Support & vBit) != 0) { vSupports++; }
             }
             sb.Append(string.Format(CultureInfo.InvariantCulture,
-                "\n    --- K-1: the one-way line (C refuses any cabinet containing V; V's support is not refused) ---\n"
-                + "    the shape: one-way refuses A->B only {0}; symmetric both ways {1}; cabinet-blocking neither way {2}; the seated C->V line is wired one way: {6}\n"
-                + "    the seated chamber: {3} viable government(s); C in or behind a cabinet with V: {4}; V carrying a cabinet C sits in: {5}\n",
+                "\n    --- K-1 / K-1f: the declared shapes as the formation reads them ---\n"
+                + "    the shape: one-way refuses A->B only {0}; symmetric both ways {1}; cabinet-blocking neither way {2}\n"
+                + "    the wiring: C->V one way {3}; the S-M candidacy pair in both vintages {4}; V's in-or-against rule, V's alone, in 2026's only {5}\n"
+                + "    the vote-against half (A 150, B 169, X 30): without X's rule {6} viable cabinet(s) without X; with it {7}, X behind {8} - decides {9}\n"
+                + "    the game's path: seated '{10}' (the formation given the rules '{11}', without them '{12}'); year-32 '{13}' ('{14}', '{15}') - reads the rules {16}, visible {17}; the country's own path: seated '{25}', year-32 '{26}'\n"
+                + "    the seated chamber, every rule held: {18} ({19} viable) - printed, not asserted\n"
+                + "    the year-32 count: {20} viable; C in or behind a cabinet with V {21} (blind here); S and M in one cabinet {22}; a candidacy party behind its rival's cabinet {23}; V behind a cabinet it is not in {24}\n",
                 oneWay.RefusesSupport(0, 1) && !oneWay.RefusesSupport(1, 0), symmetric.RefusesSupport(0, 1) && symmetric.RefusesSupport(1, 0),
-                !cabinetOnly.RefusesSupport(0, 1) && !cabinetOnly.RefusesSupport(1, 0), seatedFormation.Viable.Count, breaches, vCarriesC, wiredOneWay));
-            if (!shapeHolds || !wiredOneWay || cIndex < 0 || vIndex < 0 || breaches > 0 || vCarriesC == 0)
+                !cabinetOnly.RefusesSupport(0, 1) && !cabinetOnly.RefusesSupport(1, 0), wiredOneWay, candidacyWired, vRuleWired,
+                governsWithoutX, governsWithoutXUnderRule, xSupportsUnderRule, voteAgainstDecides,
+                gameSeated, Government(seatedFormation), Government(seatedWithoutRules), gamePlayed, Government(played), Government(playedWithoutRules), gameReadsRules, rulesVisible,
+                seatedFormation.Outcome, seatedFormation.Viable.Count, played.Viable.Count, cWithV, sWithM, rivalSupport, vSupports, countrySeated, countryPlayed));
+            if (!shapeHolds || !wiredOneWay || !candidacyWired || !vRuleWired || !voteAgainstDecides || !gameReadsRules || !rulesVisible
+                || cIndex < 0 || vIndex < 0 || sIndex < 0 || mIndex < 0
+                || played.Viable.Count == 0 || cWithV > 0 || sWithM > 0 || rivalSupport > 0 || vSupports > 0)
             {
-                failures.Add("K-1: the one-way line");
-                Debug.LogError($"OFFICE: the one-way line does not hold - the shape {(shapeHolds ? "ok" : "WRONG")}, the wired C->V line {(wiredOneWay ? "one way" : "NOT one way")}, {breaches} viable government(s) put C in or behind "
-                               + $"a cabinet with V, {vCarriesC} let V carry a cabinet C sits in. ⚠ C's declaration (coalition_declarations_2026.md) refuses the first "
-                               + "and no fetched source that names a mechanism refuses the second; either failing means the formation no longer reads what C said.");
+                failures.Add("K-1 / K-1f: the declared shapes");
+                Debug.LogError($"OFFICE: the declared shapes do not hold - the shape {(shapeHolds ? "ok" : "WRONG")}, C->V one way {wiredOneWay}, the candidacy pair {candidacyWired}, "
+                               + $"V's rule (V's alone) {vRuleWired}; the vote-against half decides {voteAgainstDecides}; the game's path reads the rules {gameReadsRules} "
+                               + $"(seated '{gameSeated}' vs '{Government(seatedFormation)}', year-32 '{gamePlayed}' vs '{Government(played)}'), the rules visible {rulesVisible}; "
+                               + $"over the year-32 count's {played.Viable.Count} viable government(s): C with V {cWithV}, S with M {sWithM}, a candidacy "
+                               + $"party behind its rival {rivalSupport}, V behind a cabinet it is not in {vSupports}. ⚠ Each is a sourced declaration "
+                               + "(coalition_declarations_2026.md, _2022.md); a count above zero means the formation no longer reads what a party said.");
             }
 
             // --- K-1 part (4): WHO GOVERNS ON DAY ONE. Sweden's seeded government is the formation's PROVISIONAL stand-in (the real one is

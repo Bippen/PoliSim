@@ -177,6 +177,13 @@ namespace PoliSim.UI
             return list;
         }
 
+        /// <summary>K-1 part (4) and K-1f: the day-one government's standing, in one wording. The Canvas panel prints it whenever the government
+        /// is provisional; the IMGUI pickers print it only when no cabinet forms, because with a cabinet their rows carry the (PROVISIONAL) mark
+        /// (§607: the seated Swedish chamber forms none).</summary>
+        public static string ProvisionalLine(IReadOnlyList<string> cabinet) => cabinet != null && cabinet.Count > 0
+            ? "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE CABINET MARKED IS THE MODEL'S FORMATION ON THESE SEATS"
+            : "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE MODEL FORMS NO GOVERNMENT FROM THESE SEATS";
+
         /// <summary>One party's line on the picker: its abbreviation, its name as published, its seats at the last real election, and IN THE CABINET when the chamber's own formation seats it (`GovernmentFormation.Cabinet`).
         /// K-1 part (4): (PROVISIONAL) beside it while that cabinet is the formation's stand-in for a government not yet on record - on the IMGUI pickers, which
         /// have no line to say it; the Canvas panel says it once, under its subtitle, and keeps its rows short (the mark was hiding the longest row's first letter).</summary>
@@ -231,14 +238,16 @@ namespace PoliSim.UI
 
             CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR PARTY — {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 30,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
+            // K-1f (§607): the key to the cabinet mark is said only when a cabinet is marked - over a chamber that forms none it explained nothing.
             CanvasChrome.MakeText(column.transform, "Subtitle",
-                $"THE CHAMBER AS ELECTED · {seats} SEATS · LARGEST FIRST · IN THE CABINET = THE CABINET THE CHAMBER FORMS FROM THESE SEATS",
+                $"THE CHAMBER AS ELECTED · {seats} SEATS · LARGEST FIRST" + (cabinet.Count > 0 ? " · IN THE CABINET = THE CABINET THE CHAMBER FORMS FROM THESE SEATS" : string.Empty),
                 PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
             // K-1 part (4): the day-one government is the model's stand-in until the Riksdag's vote is on record - said where the cabinet is first named.
             if (provisional)
             {
-                CanvasChrome.MakeText(column.transform, "Provisional",
-                    "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE CABINET MARKED IS THE MODEL'S FORMATION ON THESE SEATS",
+                // K-1f: the formation may form NO government from the seated chamber - it forms none with the declared rules held and the
+                // model's hold-out as built (a party votes against while holding out for any admissible cabinet of its own, §607) - the line says which.
+                CanvasChrome.MakeText(column.transform, "Provisional", ProvisionalLine(cabinet),
                     PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
             }
 

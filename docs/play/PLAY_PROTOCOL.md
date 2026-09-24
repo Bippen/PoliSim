@@ -11,7 +11,7 @@ One play of Sweden's first election in the played game - the election turn's bou
   - The seated chamber is S 99, M 70, SD 62, V 30, C 25, KD 22, MP 22, L 19. The polls' prior is the 2026 shares, with loyalty from 2022 to 2026.
   - The coalition declarations are the 2026 election's, and C's line on V is a new one-way shape.
   - The game starts on 1 October 2026.
-  - The day-one government is the formation model's stand-in, S+C+MP carried by V, marked PROVISIONAL until the Riksdag's vote is on record (K-1b).
+  - The day-one government is **none**: with the S-M candidacy pair and V's in-or-against rule held (K-1f, §607), the formation forms no government from the seated chamber. The picker says so, PROVISIONAL until the Riksdag's vote is on record (K-1b). The levers are unchanged, but the play's party (S, the largest) no longer sits in a day-one cabinet as it did under §605: no bill is a government bill until the game's first election forms one, so the stance model's government terms (cohesion, the bloc's line, the opposition's line, populism against the establishment's bill) are silent until then. Two readings decide "none", and both are open to Elias's ruling (§607): the hold-out, and the strength of "refuses".
   - The electorate the vote model moves is still the 2022 fit, the model §601 tested out of sample. The party leaders are still 2022's (K-1e).
   - A play made before K-1 was a play on the 2022 prior; one made on this save is a play on the 2026 seed, and the sheet says which on its first line.
 

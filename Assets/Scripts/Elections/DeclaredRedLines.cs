@@ -55,6 +55,7 @@ namespace PoliSim.Elections
 
             if (vintage == ElectionVintage.Sweden2022)
             {
+                AddCandidacyLines(lines, parties, vintage);
                 if (s < 0) { return lines; }
                 if (c >= 0)
                 {
@@ -90,8 +91,8 @@ namespace PoliSim.Elections
             // floated a pure S minority V would have to let through ([C-I8], secondary). Neither of the model's two symmetric
             // strengths says that - cabinet-blocking would let C prop up a cabinet with V in it, support-blocking would stop V
             // tolerating a cabinet C sits in - so the line runs from C to V only. V's own in-or-against demand ([V-P1]: it will
-            // not support or let through a government it is not in) is a different shape again and is NOT held here: the
-            // pairwise model cannot say it, and the declarations file lists it among what the model cannot hold.
+            // not support or let through a government it is not in) is a party's rule, not a pair's: since K-1f it is held by its
+            // own shape (InOrAgainstFor below), which the formation reads beside these lines.
             if (c >= 0 && v >= 0)
             {
                 lines.Add(new RedLine(c, v, RedLineKind.Declared, blocksSupport: true, oneWay: true,
@@ -101,7 +102,113 @@ namespace PoliSim.Elections
                            + SwedenSource));
             }
 
+            AddCandidacyLines(lines, parties, vintage);
             return lines;
+        }
+
+        /// <summary>The basis prefix every candidacy line carries (K-1f). The parties said the candidacies; the refusal between two of them is the
+        /// ruling's rule, so a surface that quotes what a party said reads this to tell the two apart (<see cref="IsCandidacy"/>).</summary>
+        public const string CandidacyPrefix = "DECLARED CANDIDACY: ";
+
+        /// <summary>Whether <paramref name="line"/> is one of the candidacy pair's lines: declared candidacies, a ruled refusal.</summary>
+        public static bool IsCandidacy(RedLine line) =>
+            line.Kind == RedLineKind.Declared && line.Basis != null && line.Basis.StartsWith(CandidacyPrefix, System.StringComparison.Ordinal);
+
+        /// <summary>
+        /// K-1f (ruled 2026-09-24): A DECLARED PRIME-MINISTERIAL CANDIDACY IS A CONSTRAINT - a party that declared ITS OWN LEADER as its candidate
+        /// refuses any cabinet led by another party's candidate. The model carries no prime minister, so it is encoded under ONE premise, the
+        /// builder's and not the ruling's words: a declared party sits only in a cabinet its own candidate leads, so a cabinet holding a rival
+        /// declared party is that rival's. On that premise the rule is a pair of ONE-WAY lines between every two declared parties - neither sits
+        /// in, supports or lets through a cabinet containing the other, and both may tolerate a third party's. The case the premise cannot
+        /// represent is a cabinet holding S (or M) under a prime minister who is no party's declared candidate; the model has no such cabinet.
+        /// <para>⚠ <b>The strength is load-bearing, and it is a reading.</b> "Refuses" is read as the one-way line's support-blocking strength:
+        /// the party votes AGAINST a cabinet its rival leads. No fetched S or M page says whether its refusal covers sitting in, supporting or
+        /// letting through (`coalition_declarations_2026.md`, K-1f). At cabinet-blocking strength - the two never sit together but may tolerate -
+        /// the seated chamber forms an SD+M+KD minority instead of none (`Formation2026Diagnostic`, measured, §607).</para>
+        /// <para>Sourced and dated per vintage - declarations are dated, and every election reads its own date's (standing, K-1f). A party that
+        /// named another party's leader, or named none, carries no candidacy: the ruling's case is a party's own leader. 2026: SD, KD, L and C
+        /// named Kristersson or Andersson, V and MP named none. 2022: C, KD, L and MP named Kristersson or Andersson, SD and V are gaps (none
+        /// found). Only S and M declared their own in either vintage. 2026: `coalition_declarations_2026.md`'s K-1f section; 2022:
+        /// `coalition_declarations_2022.md`'s.</para>
+        /// </summary>
+        public static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> Candidacies(CountryId country, ElectionVintage vintage = ElectionVintage.Seated)
+        {
+            if (country != CountryId.Sweden) { return System.Array.Empty<(string, string, string)>(); }
+            if (vintage == ElectionVintage.Sweden2022)
+            {
+                return new[]
+                {
+                    ("S", "Magdalena Andersson", "S's own page of 2022-08-04 [S-P1] (capture 2022-08-13 [S-P1a]) - its leader and sitting prime minister, framed as leadership for Sweden; the candidacy wording is the press's. " + SwedenSource2022),
+                    ("M", "Ulf Kristersson", "M's own page [M-P1] of 2022-03-26 (capture 2022-09-10 [M-P1a]): \"Som statsminister kommer Ulf Kristersson ...\". " + SwedenSource2022),
+                };
+            }
+            return new[]
+            {
+                ("S", "Magdalena Andersson", "S's own pages: 2026-05-01 [S-P2], 2026-08-03 [S-P1] (\"I valet i september kommer jag att söka svenska folkets mandat för att bli Sveriges statsminister\"), 2026-08-09 [S-P3]. " + SwedenSource),
+                ("M", "Ulf Kristersson", "M's own page of 2026-04-01 [MSD-P1] (\"Den enda som kan leda den är Ulf Kristersson.\"). " + SwedenSource),
+            };
+        }
+
+        /// <summary>The parties with a declared own-leader candidacy, as indices into <paramref name="parties"/> - what a guard reads.</summary>
+        public static List<int> CandidacyParties(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
+        {
+            var found = new List<int>();
+            foreach ((string abbrev, string _, string _) in Candidacies(country, vintage))
+            {
+                int p = IndexOf(parties, abbrev);
+                if (p >= 0) { found.Add(p); }
+            }
+            return found;
+        }
+
+        private static void AddCandidacyLines(List<RedLine> lines, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage)
+        {
+            IReadOnlyList<(string Abbrev, string Candidate, string Basis)> declared = Candidacies(CountryId.Sweden, vintage);
+            for (int i = 0; i < declared.Count; i++)
+            {
+                int a = IndexOf(parties, declared[i].Abbrev);
+                if (a < 0) { continue; }
+                for (int j = 0; j < declared.Count; j++)
+                {
+                    int b = IndexOf(parties, declared[j].Abbrev);
+                    if (j == i || b < 0) { continue; }
+                    lines.Add(new RedLine(a, b, RedLineKind.Declared, blocksSupport: true, oneWay: true,
+                        basis: CandidacyPrefix + declared[i].Abbrev + "'s own leader " + declared[i].Candidate + " is its prime-ministerial candidate ("
+                               + declared[i].Basis + "); it refuses any cabinet led by another party's candidate - " + declared[j].Abbrev + "'s is "
+                               + declared[j].Candidate + " (" + declared[j].Basis + ")."));
+                }
+            }
+        }
+
+        /// <summary>
+        /// K-1f (ruled 2026-09-24): the parties with a declared IN-OR-AGAINST rule - they support no cabinet they are not in, and vote against
+        /// every such cabinet (<see cref="InOrAgainst"/>). Sweden 2026: V, by its election platform as its congress decided it on 2026-04-18
+        /// ([V-P1], the PDF of 2026-04-19: "Om våra röster behövs för att bilda regering så ska vi också ingå i den. Det betyder att vi inte
+        /// kommer att stödja eller släppa fram en regering som vi inte ingår i."), restated 2026-08-25 as the party's unchanged line when SVT asked
+        /// after Dadgostar had told TV4 that V would not topple Andersson ([C-I9], secondary), and held after the election on 2026-09-14 ([V-I4]).
+        /// <para>⚠ The source's condition - "if our votes are needed to form a government" - is not carried. On ONE investiture vote the two forms
+        /// agree: under the negative rule a party voting against a cabinet it is not in changes that vote only where its votes are needed. In the
+        /// formation as a whole they can differ only in who is listed as carrying the cabinet: on the K-1f reviews' replica, over 20,000 perturbed
+        /// 2026 chambers, the two chose the same cabinet and outcome kind every time, and in 111 the conditional form listed V as a supporter
+        /// where the unconditional one did not (none on the seated or year-32 chambers). The ruling's words are unconditional ("V refuses to
+        /// support a cabinet it is not in"), and that is what is wired.</para>
+        /// <para>Not wired, the ruling named V's alone (K-1g, Elias's): MP's in-or-against rule, secondary in both vintages (2022 [MP-I1], SVT's
+        /// report of Stenevi's words; 2026 [MP-I1], [MP-I2], [MP-I4]), and SD's "either a government party or an opposition party" of its 2026
+        /// platform ([SD-P2], primary). MP's 2022 rule, wired, would form an S minority on the 2022 chamber ahead of M+KD+L (the replica), so the
+        /// 2022 backtest's record rests on it staying unwired. 2022 carries no V rule (none was found).</para>
+        /// </summary>
+        public static List<InOrAgainst> InOrAgainstFor(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
+        {
+            var rules = new List<InOrAgainst>();
+            if (country != CountryId.Sweden || vintage != ElectionVintage.Seated) { return rules; }
+            int v = IndexOf(parties, "V");
+            if (v >= 0)
+            {
+                rules.Add(new InOrAgainst(v, "DECLARED: Vänsterpartiet will not support or let through a government it is not in, where its votes are needed - "
+                    + "its election platform as decided by the congress 2026-04-18 ([V-P1], dated 2026-04-19; [V-I1]), restated as unchanged 2026-08-25 ([C-I9]), "
+                    + "held after the election 2026-09-14 ([V-I4]). " + SwedenSource));
+            }
+            return rules;
         }
 
         private static int IndexOf(IReadOnlyList<PoliticalParty> parties, string abbrev)
