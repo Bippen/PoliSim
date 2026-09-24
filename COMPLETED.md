@@ -33572,3 +33572,51 @@ So `RedLine.OneWay` (`CoalitionFormation.cs`):
   - `film605b_1280`: **167 captured, 0 failed, 0 canvas-text violations**; the same 12 NOT FLUSH frames as `film604` (the standing banner-wrap class).
   - `film605b_2560`: **167 captured, 0 failed, 0 canvas-text violations, 0 edges clipped, exit 0**.
   - The picker frame `01g_party_picker` read at both widths: the provisional line under the subtitle, S, C and MP marked in the cabinet, every row clear of its mark.
+
+## 606. K-1 PART (5) - THE PLAY SAVE RE-STAGED ON THE NEW SEED; THE STAGING NOW RUNS ITS TURNS. K-1 CLOSED (2026-09-24)
+
+**The order:** *"Re-stage the play save on the new seed."*
+
+**MEASURED FIRST: the staging never ran a turn.**
+- `PlayProtocolStaging.CutAndVerify` advanced the manager day by day to the run-up's first day with `AdvanceDay` alone. The game crosses a boundary by calling `AdvanceTurn` when `AdvanceDay` reports one (`GameController.Update`), and the no-policy dump does the same.
+- Cut with the unfixed staging on K-1's seed (`k1_606_stage_unfixed`), the save was **format 24, 4 February 2030, turn 0**: three boundaries crossed and not one turn run.
+- By the code's reading (derived, not played), its next boundary would have made turn 1, and elections fire only on turns divisible by four (`ElectionSystem`). So polling day, 30 September 2030, would have passed with no election held, and election night's check (`GameController`'s campaign date against `TurnBoundary(CurrentTurn)`) would have dropped the campaign.
+- `PlayProtocolCheck` passed it all along. Its guard asked whether the restored turn pointed at the same election, and turn 0 does.
+- The save on disk before this was format 21, dated 18 January 2026, and refused by the build. E-39's "ready" had been false since the format moved; its backup is in the scratchpad, not the repo.
+
+**The fix** (`PlayProtocolStaging`):
+- Each boundary runs the simulation's turn with every country's decision `None`, as the no-policy dump does. The player's clean book is no change, and the AI ministries decide their own.
+- The staging asserts the turn count: the boundaries crossed up to the target (three) must equal the manager's turn, and the save's turn must equal the restored manager's.
+- Its log prints the turn and the game's own polling day. It printed the real 2026 calendar's until §604's review.
+- The player's DAY tick (budget windows, foreign-policy rolls, bill countdowns) is not played, and that is stated in the code: it opens pauses only a player answers, and the staged book is clean.
+
+**Re-staged** (`PlayProtocolStaging.Run`, `k1_606_stage`):
+- `playtest_4_precampaign_day1.json` is **format 24, seed 777, turn 3, 4 February 2030**: 3,697,870 bytes, sha256 `9dcb0701cf30282e…`.
+- Read back from the file: Sweden's chamber is **S 99, M 70, SD 62, V 30, C 25, KD 22, MP 22, L 19**, the player is seated as **S** (the largest party), and no election is held in its history. So the day-one government is still the PROVISIONAL stand-in (§605).
+- `PlayRecordDump` reads it: player Sweden, turn 3, the campaign's election 2030-09-30, a 182-day run-up begun on the save's day, no queued decisions, no story answers - a clean book.
+- The next boundary makes turn 4, the election turn.
+
+**The protocol and the errand:**
+- `docs/play/PLAY_PROTOCOL.md` names K-1's seed where it named the 2022 prior "until K-1 refreshes it". It gives the save's format and turn, and says that the three felt-verdict saves are format 19, refused by this build and not re-cut by K-1 (the order named the play save).
+- E-39 in `ERRANDS.md` reads RE-STAGED, ready to play as written. Its stale half (a calendar awaiting a ruling that CL-5 gave on 22 September) is replaced by the four things that were wrong, all fixed.
+
+**Evidence.** Tier TOOLING. The cheap bar **47 of 47** (`k1_606_cheap`): `PlayProtocolCheck` re-cuts and loads the save through the controller with the turns running. Plus the staging's and the record dump's own logs above.
+
+**K-1 CLOSED.** In six parts, in order:
+- (0) the out-of-sample test, kept (§601);
+- (1) the 2026 chamber (§602);
+- (2) the 2026 declarations, with a one-way red line for C on V (§603);
+- (3) the start on 1 October 2026, family `k1ep` (§604);
+- (4) the day-one government, provisional (§605);
+- (5) the play save (§606).
+
+**Open behind it, each its own row:**
+- K-1b, the Riksdag's vote: data only, when it is on record.
+- K-1c and K-1d, Design's: the cartogram's column and the ink ladder's order.
+- K-1e, the 2026 leaders.
+- K-1f, Elias's: with the SD lines lifted nothing declared keeps S and M apart, and the formation reaches for S+M grand coalitions in play.
+- PF-16, the night's who-governs clip, still open.
+
+**The row, retired verbatim from `POLISIM_FEATURE_LIST.md`:**
+
+- **K-1** — the seed refresh from Sweden's real result, **13 September**. **IN PROGRESS 2026-09-23 (ordered in six parts): part (0), the out-of-sample test, DONE and kept - `COMPLETED.md` §601; part (1), the 2026 chamber, LANDED - §602 (the seats, the prior and the per-valkrets returns; 2022 pinned for the backtests; the cartogram column and the ink ladder held for Design as K-1c/K-1d; the no-policy dump byte-identical to `pp4`); part (2), the 2026 declarations, LANDED - §603 (C's line on V as a new one-way shape; on the seated chamber the formation gives S+C+MP carried by V; the S-M gap filed as K-1f for Elias); part (3), the start on 1 October 2026, LANDED - §604 (the family `k1ep`, measured first: the move reaches the economy through the calendar year alone; statutes arrive nine months earlier - France's debt ratio lower, Germany's higher, on both seeds); part (4), who governs on day one, LANDED - §605 (the formation's S+C+MP carried by V stands in, marked PROVISIONAL; `SeatedGovernment` takes the Riksdag's vote as data, K-1b).** **→ ✅ CLOSED 2026-09-24 - `COMPLETED.md` §601-§606: part (5), the play save re-staged on the new seed (§606). Its follow-ons stay open as their own rows: K-1b (the Riksdag's vote, data only), K-1c and K-1d (Design's), K-1e (the leaders), K-1f (Elias's: the S-M gap).**

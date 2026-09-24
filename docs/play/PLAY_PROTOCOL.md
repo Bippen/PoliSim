@@ -7,15 +7,21 @@ One play of Sweden's first election in the played game - the election turn's bou
 ## 1. The seed, stated
 
 - **The world:** the seed world of this build (`WorldFactory.CreateDefault`), Sweden as the player, master seed **777** - the film harness's own, so a played run and a filmed one open on one world. The save carries the seed (`MasterSeed`) and the streams' draw counts, so a load resumes the same run.
-- **The prior the polls read:** Valmyndigheten's final 2022 count (`ElectionsData/sweden/returns_2022.md`) - the 2022 prior, until **K-1** refreshes it. K-1 is the seed refresh from Sweden's real 2026 result; on 16 September 2026 at 18:03 Valmyndigheten's feed (`resultat.val.se/data/resultat/val2026/RD_S.json`) reported the FINAL count 27 % in - 1 815 of 6 626 districts, 1 842 259 of 8 051 355 entitled - so the refresh lands when the count completes, and this protocol states the 2022 prior until it does. A play made before K-1 is a play on the 2022 prior, and the sheet says so on its first line.
+- **The seed the play opens on: K-1, landed 2026-09-24** (`COMPLETED.md` §601-§606), from Valmyndigheten's final result fixed on 19 September 2026 (`ElectionsData/sweden/2026/returns_2026.md`):
+  - The seated chamber is S 99, M 70, SD 62, V 30, C 25, KD 22, MP 22, L 19. The polls' prior is the 2026 shares, with loyalty from 2022 to 2026.
+  - The coalition declarations are the 2026 election's, and C's line on V is a new one-way shape.
+  - The game starts on 1 October 2026.
+  - The day-one government is the formation model's stand-in, S+C+MP carried by V, marked PROVISIONAL until the Riksdag's vote is on record (K-1b).
+  - The electorate the vote model moves is still the 2022 fit, the model §601 tested out of sample. The party leaders are still 2022's (K-1e).
+  - A play made before K-1 was a play on the 2022 prior; one made on this save is a play on the 2026 seed, and the sheet says which on its first line.
 
 ## 2. The saves
 
-Four saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\DefaultCompany\PoliSim\saves`), every one cut on the current save format by the tools that cut them - never by hand:
+Four saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\DefaultCompany\PoliSim\saves`), each cut by the tool that cuts it - never by hand. ⚠ Only the play's opening is on the current format (24, re-staged by K-1's §606). The three felt-verdict saves were cut on format 19 and are refused by this build until the film harness re-cuts them (`-shotsaves`); K-1 did not re-cut them.
 
 | save | cut by | what it opens on |
 |---|---|---|
-| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: 4 February 2030 (since §604), the first day of the 26-week run-up of the game's own election (the next election turn's boundary; `PlayProtocolStaging` computes it as the live day path does, and the staging PRINTS the three dates every run), Sweden, the player seated as the largest party of the seeded chamber (§558), a clean book - nothing drafted |
+| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: format 24, seed 777, **turn 3**, 4 February 2030 (since §604), the first day of the 26-week run-up of the game's own election (the next election turn's boundary; `PlayProtocolStaging` computes it as the live day path does, and the staging PRINTS the three dates every run), Sweden, the player seated as the largest party of the seeded chamber (§558), a clean book - nothing drafted |
 | `playtest_2_riksbank_rate_decision.json` | the film harness, `-shotsaves`, Sweden | felt verdict 2 ("still not independent"): a rate decision drafted on the Riksbank tab |
 | `playtest_1_trade_bill_costs.json` | the film harness, `-shotsaves`, the USA | felt verdict 1: the Trade bill open with its costs on screen |
 | `playtest_3_dense_midgame.json` | the film harness, `-shotsaves`, the USA | the dense mid-game: the budget-process pause, pending cabinet decisions, a foreign-policy meeting, one bill of every type |

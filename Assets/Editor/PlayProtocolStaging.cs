@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
@@ -62,9 +63,20 @@ namespace PoliSim.EditorTools
                 player.PlayerPartyAbbrev = largest.Abbrev;
                 player.PartyApprovalRating = player.State.ApprovalRating;
                 int days = 0;
+                // K-1 part (5) (2026-09-24, §606): THE TURNS RUN. The game crosses a boundary by calling AdvanceTurn when AdvanceDay reports one
+                // (GameController.Update); this staging advanced days alone, so the save opened years in at TURN 0 with no turn ever run - its next
+                // boundary would have been turn 1, not the election turn, and polling day would have passed with no election held. Each boundary now
+                // runs the simulation's turn with every country's decision None, as the no-policy dump does: the player's clean book is no change,
+                // and the AI ministries decide their own. The player's DAY tick (budget windows, foreign-policy rolls, bill countdowns) is not
+                // played: it opens pauses only a player answers, and the staged book is clean.
+                var none = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country country in world.Countries) { none[country.Id] = PolicyDecision.None(); }
                 // §579: the game's run-up is four turns out, not seventeen days - the cap is the boundary's own distance plus a year's slack, and a day that does not move is the guard.
-                while (sim.CurrentDate < target && days < 2000) { sim.AdvanceDay(); days++; }
+                while (sim.CurrentDate < target && days < 2000) { if (sim.AdvanceDay()) { sim.AdvanceTurn(none); } days++; }
                 if (sim.CurrentDate != target) { return F("the manager advanced {0} days and stands at {1:yyyy-MM-dd}, not the run-up's first day {2:yyyy-MM-dd}", days, sim.CurrentDate, target); }
+                int boundaries = 0;
+                for (int k = 1; SimulationManager.TurnBoundary(k) <= target; k++) { boundaries++; }
+                if (sim.CurrentTurn != boundaries) { return F("the manager stands at turn {0} on {1:yyyy-MM-dd}, where {2} boundaries were crossed - the turns did not run", sim.CurrentTurn, sim.CurrentDate, boundaries); }
                 SaveGame save = SaveGameService.CreateSaveGame(sim, world, CountryId.Sweden, null);
                 SaveGameService.SaveToFile(path, save);
 
@@ -76,6 +88,7 @@ namespace PoliSim.EditorTools
                 SimulationManager simB = goB.AddComponent<SimulationManager>();
                 SaveGameService.RestoreInto(simB, loaded);
                 if (simB.CurrentDate != target) { return F("restored, the manager reads {0:yyyy-MM-dd}", simB.CurrentDate); }
+                if (loaded.CurrentTurn != sim.CurrentTurn || simB.CurrentTurn != sim.CurrentTurn) { return F("the save carries turn {0} and restores at turn {1}, where the staging stood at {2}", loaded.CurrentTurn, simB.CurrentTurn, sim.CurrentTurn); }
                 if (calendar.PhaseOn(simB.CurrentDate) != CampaignPhase.PreCampaign) { return F("the GAME's calendar reads {0} on the restored date, not PreCampaign", calendar.PhaseOn(simB.CurrentDate)); }
                 if (simB.PlayerCountryId != CountryId.Sweden) { return "restored, the player is not Sweden"; }
                 // §558 (2026-09-21): THE PROTOCOL'S FIRST STEP, HELD. *"Load it. The Desk opens on 18 January 2026; the rail's CAMPAIGN cell reads the run-up."* A player with no
@@ -114,8 +127,8 @@ namespace PoliSim.EditorTools
             string path = Path.Combine(dir, PreCampaignSaveName + ".json");
             string failure = CutAndVerify(path, out SaveGame loaded);
             if (failure != null) { Debug.LogError("PLAY PROTOCOL: the pre-campaign save was NOT staged clean - " + failure); CheckExit.Finish(1); return; }
-            Debug.Log(F("PLAY PROTOCOL: staged {0} ({1} bytes, sha256 {2}…) - format {3}, seed {4}, Sweden, {5:yyyy-MM-dd} = the run-up's first day ({6} weeks before the campaign, {7} before polling day {8:yyyy-MM-dd}).",
-                path, new FileInfo(path).Length, Digest(path), loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, CampaignCalendar.DefaultPreCampaignWeeks, CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks, new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(0))).ElectionDate));
+            Debug.Log(F("PLAY PROTOCOL: staged {0} ({1} bytes, sha256 {2}…) - format {3}, seed {4}, turn {9}, Sweden, {5:yyyy-MM-dd} = the run-up's first day ({6} weeks before the campaign, {7} before polling day {8:yyyy-MM-dd}).",
+                path, new FileInfo(path).Length, Digest(path), loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, CampaignCalendar.DefaultPreCampaignWeeks, CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks, new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(0))).ElectionDate, loaded.CurrentTurn));
             CheckExit.Finish(0);
         }
     }
