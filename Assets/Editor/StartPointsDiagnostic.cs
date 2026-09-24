@@ -13,7 +13,7 @@ namespace PoliSim.EditorTools
     /// SP-1 (§622): THE START POINTS, ASSERTED. Every country offers at least one; exactly one is playable today and it is the ruled start
     /// of §618 (its polling day the country's latest election of record, its opening `WorldClock.StartDate`, its line the selector's);
     /// every locked card carries a reason; Poland and France offer two contests, the presidential one locked; the cards are in date order;
-    /// a date the record does not hold is billed on the card, never typed.
+    /// a date the record does not hold is the year alone on the card with ROUND DATES NOT IN THE RECORD beneath it, never typed; no register number on any card (18b).
     /// </summary>
     public static class StartPointsDiagnostic
     {
@@ -39,13 +39,20 @@ namespace PoliSim.EditorTools
                         StartPoints.StartPoint p = points[i];
                         Check(!string.IsNullOrEmpty(p.Line) && !string.IsNullOrEmpty(p.Basis) && !string.IsNullOrEmpty(p.Kind), F("{0} #{1} {2}: a line, a basis and a kind", id, i, p.Kind));
                         Check(p.Playable || p.Line.StartsWith("LOCKED", StringComparison.Ordinal), F("{0} #{1} {2}: a locked card says LOCKED and why - {3}", id, i, p.Kind, p.Line));
-                        Check(p.PollingDay != DateTime.MinValue || (p.DateNote != null && p.DateNote.Contains("BILLED")), F("{0} #{1} {2}: the date is the record's or billed on the card ({3})", id, i, p.Kind, StartPoints.DateLine(p)));
+                        Check(p.PollingDay != DateTime.MinValue || (p.DateNote == StartPoints.RoundDatesNote && p.Year > 0 && StartPoints.DateLine(p) == p.Year.ToString(CultureInfo.InvariantCulture)), F("{0} #{1} {2}: the date is the record's, or the year alone with ROUND DATES NOT IN THE RECORD as the card's second line ({3})", id, i, p.Kind, StartPoints.DateLine(p)));
+                        Check(!HasRegister(p.Line) && !HasRegister(p.DateNote), F("{0} #{1} {2}: no register number on the card (18b) - line \"{3}\", note \"{4}\"", id, i, p.Kind, p.Line, p.DateNote));
+                        Check(p.Playable == (StartPoints.ModeLine(p) != null) && p.Playable == (StartPoints.Reason(p) == null), F("{0} #{1} {2}: a playable card has a mode line ({3}), a locked one a reason ({4})", id, i, p.Kind, StartPoints.ModeLine(p), StartPoints.Reason(p)));
                         if (i > 0) { Check(StartPoints.DateLine(points[i - 1]) != StartPoints.DateLine(p) || points[i - 1].Kind != p.Kind, F("{0}: #{1} and #{2} are distinct", id, i - 1, i)); }
                     }
                     Check((id == CountryId.Poland || id == CountryId.France) == (points.Count == 2), F("{0}: two contests offered only where a president is popularly elected beside the chamber (the USA's House is a later option, the spec's §1.1)", id));
                 }
                 Check(StartPoints.For(CountryId.Poland)[1].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.Poland)[1].PollingDay == new DateTime(2025, 5, 18), "Poland's presidential card: 18 May 2025 (the record's first round), after the Sejm's");
-                Check(StartPoints.For(CountryId.France)[0].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.France)[0].DateNote.Contains("E-49"), "France's presidential card: 2022, its rounds billed (E-49), before the legislative");
+                Check(StartPoints.For(CountryId.France)[0].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.France)[0].DateNote == StartPoints.RoundDatesNote && StartPoints.DateLine(StartPoints.For(CountryId.France)[0]) == "2022" && !StartPoints.For(CountryId.France)[0].Playable, "France's presidential card: stamp 2022, ROUND DATES NOT IN THE RECORD (E-49), locked, before the legislative");
+                Check(StartPoints.For(CountryId.Poland)[1].Line == "LOCKED · THE TWO-ROUND SYSTEM IS NOT YET MODELLED" && StartPoints.For(CountryId.France)[0].Line == StartPoints.For(CountryId.Poland)[1].Line, "the two locked presidential cards carry the one reason in the player's words (18b)");
+                StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint fr);
+                Check(StartPoints.DateLine(fr) == "7 JUL 2024" && StartPoints.ModeLine(fr) == "GOVERNING · OPENS 18 JUL 2024", "France's playable card: stamp 7 JUL 2024 · GOVERNING · OPENS 18 JUL 2024");
+                StartPoints.TryPlayable(CountryId.Sweden, out StartPoints.StartPoint se);
+                Check(StartPoints.DateLine(se) == "13 SEP 2026" && StartPoints.ModeLine(se) == "RUN-UP · OPENS 18 JAN 2026" && StartPoints.Name(se) == "Riksdag election", "Sweden's card: stamp 13 SEP 2026 · RUN-UP · OPENS 18 JAN 2026 · Riksdag election");
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             if (failures > 0) { Debug.LogError($"START POINTS: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }
@@ -54,5 +61,8 @@ namespace PoliSim.EditorTools
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
+
+        /// <summary>18b: a register id (E-49, S7, S8, R-EL10 …) is not a word the player reads on a card.</summary>
+        private static bool HasRegister(string s) => s != null && System.Text.RegularExpressions.Regex.IsMatch(s, "(^|[^A-Z])[A-Z]{1,2}-?[0-9]{1,3}([^0-9]|$)");
     }
 }

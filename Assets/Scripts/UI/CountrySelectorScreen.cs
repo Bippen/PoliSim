@@ -33,6 +33,12 @@ namespace PoliSim.UI
         /// <summary>CL-2: the party panel over the folders - the country's seeded chamber, largest first; null when no country is open.</summary>
         private GameObject _partyPanel;
 
+        /// <summary>18a: the open folder's SHEET - the start screen, full-bleed paper over the selector; null when no folder is open.</summary>
+        private GameObject _sheet;
+
+        /// <summary>The 3×2 folder grid, hidden while a folder is open and restored when it closes.</summary>
+        private GameObject _folderGrid;
+
         /// <summary>
         /// Build the screen under the shared host. Returns null when the folder sprite is missing — the caller keeps the IMGUI selector
         /// as the degradation path, so a broken import costs the new look, never the ability to start a game. CL-2 (2026-09-13; DS-6,
@@ -128,6 +134,7 @@ namespace PoliSim.UI
 
             // The 3×2 folder grid, §A.14's own measures at the 1920 reference the scaler establishes.
             var grid = new GameObject("Folders");
+            screen._folderGrid = grid;
             grid.transform.SetParent(root.transform, false);
             var gridRect = grid.AddComponent<RectTransform>();
             gridRect.anchorMin = new Vector2(0.5f, 0.5f);
@@ -211,7 +218,7 @@ namespace PoliSim.UI
         /// </summary>
         public void ShowPartyPanel(Country country, Action<CountryId, string> onSelect)
         {
-            HidePartyPanel();
+            ClosePartyPanel();   // 18a: the party panel opens OVER the sheet; the sheet closes with it through HidePartyPanel
             if (Root == null || country == null) { return; }
 
             var panel = new GameObject("PartyPanel");
@@ -271,7 +278,7 @@ namespace PoliSim.UI
                 int seatedNow = start.Seats.TryGetValue(party.Abbrev, out int held) ? held : 0;
                 Button button = CanvasChrome.FacedButton(column.transform, $"Party_{party.Abbrev}",
                     PartyLine(party, seatedNow, cabinet), PoliSimTheme.Display, 20,   // K-1: the panel's own line carries PROVISIONAL (above); the row stays short
-                    PoliSimTheme.Hex(0xF0E7D8), new Vector2(PartyRowWidth, PartyRowHeight));
+                    PoliSimTheme.TextPrimary, new Vector2(PartyRowWidth, PartyRowHeight));
                 // §566 (2026-09-22, Design's sitting part A item 6): THE PARTY'S OWN MARK at the row's left, the delivered `mark_party_*` art the campaign's support
                 // plate already draws - the picker is where the player first meets these parties and it showed them as brass strips of text. A party with no mark on
                 // disk draws none (PartySystem.MarkName is null where the file does not exist, and inventing one is what PartyMarkCoverageCheck calls an error).
@@ -306,11 +313,22 @@ namespace PoliSim.UI
             backLayout.preferredWidth = BackButtonWidth;
             backLayout.preferredHeight = PartyRowHeight;
             backLayout.minHeight = PartyRowHeight;
-            backButton.onClick.AddListener(HidePartyPanel);
+            backButton.onClick.AddListener(() => { if (_sheet != null) { ClosePartyPanel(); } else { HidePartyPanel(); } });   // §626 (the review): BACK returns to the step it came from - the start sheet where one is open, else the countries
         }
 
-        /// <summary>CL-2: closes the party panel; the folders take the click again.</summary>
+        /// <summary>CL-2: closes the party panel; 18a: closes the sheet too and restores the folders, so BACK from either step returns to the countries (the harness's pair: ShowStartPanel, then HidePartyPanel).</summary>
         public void HidePartyPanel()
+        {
+            ClosePartyPanel();
+            if (_sheet != null)
+            {
+                UnityEngine.Object.Destroy(_sheet);
+                _sheet = null;
+            }
+            if (_folderGrid != null) { _folderGrid.SetActive(true); }
+        }
+
+        private void ClosePartyPanel()
         {
             if (_partyPanel != null)
             {
@@ -320,87 +338,467 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// SP-1 (§622, the start-points spec §1.2): THE START PANEL - the selector's step between the folder and the party: one card per start
-        /// point in date order (the date, the election's kind, the card's state - playable, or LOCKED with its reason in one line), on the
-        /// same dim ground as the party panel. A playable card opens the party panel for that country (the world opens on that start's own
-        /// date - the one start the ruled clock offers per country today); a locked card takes no click; BACK returns to the folders. The
-        /// brief beneath a selected card is SP-2's. Public so the capture driver can film it; <paramref name="onSelect"/> null draws it only.
+        /// Board 18a (Design, 2026-09-24; built the D11 way): THE START SCREEN IS A SHEET, NOT AN OVERLAY. Choosing a folder OPENS it - the
+        /// folder's paper becomes a full-bleed opaque sheet over the selector (no folder type shows through), its tab keeps the flag and the
+        /// country's name at the top left under the country's own hue rule, and the other five folders are hidden. On the sheet: the head
+        /// (CHOOSE YOUR START · IN DATE ORDER) and a count line; a CARD ROW, one paper card per start point in date order, each with a DATE
+        /// STAMP in the stamp register, the mode and opening in caption mono, the election's kind as its name, and THE CHAMBER AS A SEAT BAR
+        /// (a presidency draws none; 18b); the BRIEF as a LEDGER of its slots beneath the cards; BACK TO THE COUNTRIES (paper) and ONE brass
+        /// SELECT that commits. A card SELECTS - a 3-unit brass spine and a TextPrimary border - and never commits; with one playable card it
+        /// opens selected. 18b: a locked card sits in date order at reduced presence (faint border, reduced ink, no hover, no spine, not
+        /// selectable) with a LOCKED stamp in the Caution ink where a playable card shows its mode and its reason as one caption line.
+        /// Public so the capture driver can film it; <paramref name="onSelect"/> null draws the sheet and seats nobody.
         /// </summary>
         public void ShowStartPanel(Country country, Action<CountryId, string> onSelect)
         {
             HidePartyPanel();
             if (Root == null || country == null) { return; }
+            IReadOnlyList<StartPoints.StartPoint> points = StartPoints.For(country.Id);
+            int selected = -1;
+            for (int i = 0; i < points.Count; i++) { if (points[i].Playable) { selected = i; break; } }
+            BuildSheet(country, onSelect, points, selected);
+        }
 
-            var panel = new GameObject("StartPanel");
-            _partyPanel = panel;   // one overlay at a time: the party panel replaces it through the same field
-            panel.transform.SetParent(Root.transform, false);
-            Stretch(panel.AddComponent<RectTransform>());
-            Image dim = panel.AddComponent<Image>();
-            dim.color = new Color(PoliSimTheme.Desk.r, PoliSimTheme.Desk.g, PoliSimTheme.Desk.b, 0.94f);
-            dim.raycastTarget = true;
+        /// <summary>The sheet, rebuilt whole on every selection (a card row of at most two cards and a six-row ledger - cheaper than keeping the spine, the border and the ledger in step by hand).</summary>
+        private void BuildSheet(Country country, Action<CountryId, string> onSelect, IReadOnlyList<StartPoints.StartPoint> points, int selected)
+        {
+            if (_sheet != null) { UnityEngine.Object.Destroy(_sheet); _sheet = null; }
+            if (_folderGrid != null) { _folderGrid.SetActive(false); }   // 18a: the other five folders are hidden while one is open
 
+            Color ink = UiPalette.GetCountryColor(country.Id);
+
+            var sheet = new GameObject("StartSheet");
+            _sheet = sheet;
+            sheet.transform.SetParent(Root.transform, false);
+            Stretch(sheet.AddComponent<RectTransform>());
+            Image paper = sheet.AddComponent<Image>();
+            paper.color = PoliSimTheme.Card;   // the folder's paper, full-bleed and opaque
+            paper.raycastTarget = true;
+
+            // THE TAB: the country's hue rule across the top, the flag and the name at the top left beneath it.
+            var rule = new GameObject("HueRule");
+            rule.transform.SetParent(sheet.transform, false);
+            var ruleRect = rule.AddComponent<RectTransform>();
+            ruleRect.anchorMin = new Vector2(0f, 1f);
+            ruleRect.anchorMax = new Vector2(1f, 1f);
+            ruleRect.pivot = new Vector2(0.5f, 1f);
+            ruleRect.offsetMin = new Vector2(0f, -SheetRuleHeight);
+            ruleRect.offsetMax = new Vector2(0f, 0f);
+            Image ruleImage = rule.AddComponent<Image>();
+            ruleImage.color = ink;
+            ruleImage.raycastTarget = false;
+
+            var tab = new GameObject("Tab");
+            tab.transform.SetParent(sheet.transform, false);
+            var tabRect = tab.AddComponent<RectTransform>();
+            tabRect.anchorMin = new Vector2(0f, 1f);
+            tabRect.anchorMax = new Vector2(0f, 1f);
+            tabRect.pivot = new Vector2(0f, 1f);
+            tabRect.anchoredPosition = new Vector2(SheetInset, -(SheetRuleHeight + 18f));
+            tabRect.sizeDelta = new Vector2(SheetColumnWidth, SheetTabHeight);
+            HorizontalLayoutGroup tabLayout = tab.AddComponent<HorizontalLayoutGroup>();
+            tabLayout.childAlignment = TextAnchor.MiddleLeft;
+            tabLayout.spacing = 18f;
+            tabLayout.childControlWidth = true;
+            tabLayout.childControlHeight = true;
+            tabLayout.childForceExpandWidth = false;
+            tabLayout.childForceExpandHeight = false;
+            Texture2D flagTexture = IconLibrary.GetFlag(country.Id);
+            if (flagTexture != null)
+            {
+                Image flagImage = CanvasChrome.AsAuthoredImage(tab.transform, "Flag", CanvasChrome.Whole(flagTexture, $"flag_{country.Id}"));
+                flagImage.preserveAspect = true;
+                LayoutElement flagElement = flagImage.gameObject.AddComponent<LayoutElement>();
+                flagElement.preferredWidth = 86f;
+                flagElement.preferredHeight = 56f;
+            }
+            Text name = CanvasChrome.MakeText(tab.transform, "Name", country.Name, PoliSimTheme.Display, 28, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
+            name.gameObject.AddComponent<LayoutElement>().minHeight = 36f;
+
+            // THE COLUMN: head, count line, the card row, the ledger, the two controls - left-aligned under the tab.
             var column = new GameObject("Column");
-            column.transform.SetParent(panel.transform, false);
+            column.transform.SetParent(sheet.transform, false);
             var columnRect = column.AddComponent<RectTransform>();
-            columnRect.anchorMin = new Vector2(0.5f, 0.5f);
-            columnRect.anchorMax = new Vector2(0.5f, 0.5f);
-            columnRect.pivot = new Vector2(0.5f, 0.5f);
-            columnRect.anchoredPosition = Vector2.zero;
-            columnRect.sizeDelta = new Vector2(1200f, 800f);
+            columnRect.anchorMin = new Vector2(0f, 1f);
+            columnRect.anchorMax = new Vector2(0f, 1f);
+            columnRect.pivot = new Vector2(0f, 1f);
+            columnRect.anchoredPosition = new Vector2(SheetInset, -(SheetRuleHeight + 18f + SheetTabHeight + 24f));
+            columnRect.sizeDelta = new Vector2(SheetColumnWidth, CanvasChrome.ReferenceHeight - (SheetRuleHeight + SheetTabHeight + 80f));
             VerticalLayoutGroup layout = column.AddComponent<VerticalLayoutGroup>();
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.spacing = 10f;
+            layout.childAlignment = TextAnchor.UpperLeft;
+            layout.spacing = 12f;
             layout.childControlHeight = true;
             layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
             layout.childForceExpandWidth = false;
 
-            CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR START — {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 30,
-                PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
-            CanvasChrome.MakeText(column.transform, "Subtitle", "THE ELECTION YOU BEGIN BEFORE · ONE CARD PER POPULARLY DECIDED NATIONAL ELECTION, THE LATEST OF EACH KIND · IN DATE ORDER",
-                PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+            Text head = CanvasChrome.MakeText(column.transform, "Head", "CHOOSE YOUR START · IN DATE ORDER", PoliSimTheme.Display, 24, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
+            head.gameObject.AddComponent<LayoutElement>().minHeight = 32f;
+            int locked = 0;
+            foreach (StartPoints.StartPoint p in points) { if (!p.Playable) { locked++; } }
+            string count = points.Count == 1 ? "1 START" : points.Count + " STARTS";
+            if (locked > 0) { count += " · " + locked + " LOCKED"; }
+            Text countLine = CanvasChrome.MakeText(column.transform, "Count", count, PoliSimTheme.Document, 13, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
+            countLine.gameObject.AddComponent<LayoutElement>().minHeight = 18f;
 
-            foreach (StartPoints.StartPoint point in StartPoints.For(country.Id))
+            // THE CARD ROW: the empty right half of the row is where a second card goes.
+            var row = new GameObject("Cards");
+            row.transform.SetParent(column.transform, false);
+            row.AddComponent<RectTransform>();
+            HorizontalLayoutGroup rowLayout = row.AddComponent<HorizontalLayoutGroup>();
+            rowLayout.childAlignment = TextAnchor.UpperLeft;
+            rowLayout.spacing = SheetCardGap;
+            rowLayout.childControlWidth = true;
+            rowLayout.childControlHeight = true;
+            rowLayout.childForceExpandWidth = false;
+            rowLayout.childForceExpandHeight = false;
+            LayoutElement rowElement = row.AddComponent<LayoutElement>();
+            rowElement.preferredWidth = SheetColumnWidth;
+            rowElement.minHeight = SheetCardHeight;
+            for (int i = 0; i < points.Count; i++)
             {
-                // The card: the date and the kind on the face; the state beneath it in one line. A playable card is brass (the desk's control
-                // face); a locked one paper, and it takes no click - its reason is the line.
-                string face = StartPoints.DateLine(point) + " · " + point.Kind;
-                Button button = CanvasChrome.FacedButton(column.transform, $"Start_{point.Kind.Replace(' ', '_')}", face, PoliSimTheme.Display, 20,
-                    point.Playable ? PoliSimTheme.Hex(0xF0E7D8) : PoliSimTheme.Hex(0x4A3A22), new Vector2(PartyRowWidth, StartCardHeight),
-                    point.Playable ? CanvasChrome.Face.Brass : CanvasChrome.Face.Paper);
-                LayoutElement cardLayout = button.gameObject.AddComponent<LayoutElement>();
-                cardLayout.preferredWidth = PartyRowWidth;
-                cardLayout.preferredHeight = StartCardHeight;
-                cardLayout.minHeight = StartCardHeight;
-                button.interactable = point.Playable;
-                if (point.Playable)
+                int index = i;
+                BuildStartCard(row.transform, country, points[i], i == selected, points[i].Playable ? () => BuildSheet(country, onSelect, points, index) : (Action)null);
+            }
+
+            // THE BRIEF AS A LEDGER of its slots, beneath the cards, for the selected card.
+            if (selected >= 0)
+            {
+                BuildBriefLedger(column.transform, points[selected]);
+            }
+
+            // BACK (paper) and ONE brass SELECT that commits. D6's rule on every brass face: the label ink is TextPrimary, never the light paper ink.
+            var controls = new GameObject("Controls");
+            controls.transform.SetParent(column.transform, false);
+            controls.AddComponent<RectTransform>();
+            HorizontalLayoutGroup controlsLayout = controls.AddComponent<HorizontalLayoutGroup>();
+            controlsLayout.childAlignment = TextAnchor.MiddleLeft;
+            controlsLayout.spacing = 18f;
+            controlsLayout.childControlWidth = true;
+            controlsLayout.childControlHeight = true;
+            controlsLayout.childForceExpandWidth = false;
+            controlsLayout.childForceExpandHeight = false;
+            controls.AddComponent<LayoutElement>().minHeight = ControlHeight;
+
+            Button backButton = CanvasChrome.FacedButton(controls.transform, "Back", "BACK TO THE COUNTRIES",
+                PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, ControlHeight), CanvasChrome.Face.Paper);
+            SizeControl(backButton, BackButtonWidth, ControlHeight);
+            backButton.onClick.AddListener(HidePartyPanel);
+
+            Button selectButton = CanvasChrome.FacedButton(controls.transform, "Select", "SELECT",
+                PoliSimTheme.Display, 14, PoliSimTheme.TextPrimary, new Vector2(SelectButtonWidth, ControlHeight), CanvasChrome.Face.Brass);
+            SizeControl(selectButton, SelectButtonWidth, ControlHeight);
+            selectButton.interactable = selected >= 0;
+            Country chosen = country;
+            selectButton.onClick.AddListener(() => { if (selected >= 0) { ShowPartyPanel(chosen, onSelect); } });
+        }
+
+        private static void SizeControl(Button button, float width, float height)
+        {
+            LayoutElement element = button.gameObject.AddComponent<LayoutElement>();
+            element.preferredWidth = width;
+            element.preferredHeight = height;
+            element.minHeight = height;
+            element.minWidth = width;
+        }
+
+        /// <summary>One start card (18a/18b): paper, a border (TextPrimary when selected, faint when locked), a brass spine when selected; the stamp
+        /// head, the name, the seat bar or the locked reason. A playable card selects through <paramref name="onPick"/>; a locked one takes no click.</summary>
+        private static void BuildStartCard(Transform parent, Country country, StartPoints.StartPoint point, bool selected, Action onPick)
+        {
+            bool playable = point.Playable;
+            var card = new GameObject($"Start_{point.Kind.Replace(' ', '_')}");
+            card.transform.SetParent(parent, false);
+            card.AddComponent<RectTransform>();
+            Image border = card.AddComponent<Image>();
+            border.color = selected ? PoliSimTheme.TextPrimary : (playable ? PoliSimTheme.BorderPaper : PoliSimTheme.EdgeDashed);
+            border.raycastTarget = playable;
+            LayoutElement cardElement = card.AddComponent<LayoutElement>();
+            cardElement.preferredWidth = SheetCardWidth;
+            cardElement.minWidth = SheetCardWidth;
+            cardElement.minHeight = SheetCardHeight;
+            cardElement.preferredHeight = SheetCardHeight;
+            if (playable)
+            {
+                Button button = card.AddComponent<Button>();
+                button.transition = Selectable.Transition.None;
+                button.targetGraphic = border;
+                if (onPick != null) { button.onClick.AddListener(() => onPick()); }
+            }
+
+            // The paper inside the border (one unit), and the brass spine at the left when selected.
+            var face = new GameObject("Paper");
+            face.transform.SetParent(card.transform, false);
+            var faceRect = face.AddComponent<RectTransform>();
+            faceRect.anchorMin = Vector2.zero;
+            faceRect.anchorMax = Vector2.one;
+            faceRect.offsetMin = new Vector2(1f, 1f);
+            faceRect.offsetMax = new Vector2(-1f, -1f);
+            Image faceImage = face.AddComponent<Image>();
+            faceImage.color = playable ? PoliSimTheme.Card : PoliSimTheme.Tile;
+            faceImage.raycastTarget = false;
+            if (selected)
+            {
+                var spine = new GameObject("Spine");
+                spine.transform.SetParent(card.transform, false);
+                var spineRect = spine.AddComponent<RectTransform>();
+                spineRect.anchorMin = Vector2.zero;
+                spineRect.anchorMax = new Vector2(0f, 1f);
+                spineRect.pivot = new Vector2(0f, 0.5f);
+                spineRect.offsetMin = Vector2.zero;
+                spineRect.offsetMax = new Vector2(SpineWidth, 0f);
+                Image spineImage = spine.AddComponent<Image>();
+                spineImage.color = PoliSimTheme.Brass;
+                spineImage.raycastTarget = false;
+            }
+
+            var content = new GameObject("Content");
+            content.transform.SetParent(card.transform, false);
+            var contentRect = content.AddComponent<RectTransform>();
+            contentRect.anchorMin = Vector2.zero;
+            contentRect.anchorMax = Vector2.one;
+            contentRect.offsetMin = new Vector2(CardPadding + SpineWidth, CardPadding);
+            contentRect.offsetMax = new Vector2(-CardPadding, -CardPadding);
+            VerticalLayoutGroup layout = content.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.UpperLeft;
+            layout.spacing = 8f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            Color primary = playable ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
+            Color caption = playable ? PoliSimTheme.TextSecondary : PoliSimTheme.MutedInk;
+
+            // The head: the date stamp, then the mode line (playable) or the LOCKED stamp (18b).
+            var headRow = new GameObject("Head");
+            headRow.transform.SetParent(content.transform, false);
+            headRow.AddComponent<RectTransform>();
+            HorizontalLayoutGroup headLayout = headRow.AddComponent<HorizontalLayoutGroup>();
+            headLayout.childAlignment = TextAnchor.MiddleLeft;
+            headLayout.spacing = 12f;
+            headLayout.childControlWidth = true;
+            headLayout.childControlHeight = true;
+            headLayout.childForceExpandWidth = false;
+            headLayout.childForceExpandHeight = false;
+            headRow.AddComponent<LayoutElement>().minHeight = StampHeight;
+            BuildStamp(headRow.transform, "DateStamp", StartPoints.DateLine(point), primary);
+            if (playable)
+            {
+                Text mode = CanvasChrome.MakeText(headRow.transform, "Mode", StartPoints.ModeLine(point), PoliSimTheme.Document, 12, caption, TextAnchor.MiddleLeft);
+                mode.gameObject.AddComponent<LayoutElement>().minHeight = StampHeight;
+            }
+            else
+            {
+                BuildStamp(headRow.transform, "LockedStamp", "LOCKED", PoliSimTheme.Caution);
+            }
+            if (point.DateNote != null)
+            {
+                // 18b: a date the record does not hold - the provenance as the card's second line.
+                Text note = CanvasChrome.MakeText(content.transform, "DateNote", point.DateNote, PoliSimTheme.Document, 12, caption, TextAnchor.MiddleLeft);
+                note.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
+            }
+
+            Text nameText = CanvasChrome.MakeText(content.transform, "Name", StartPoints.Name(point), PoliSimTheme.Display, 22, primary, TextAnchor.MiddleLeft, FontStyle.Bold);
+            nameText.gameObject.AddComponent<LayoutElement>().minHeight = 30f;
+
+            if (playable && !point.Presidential)
+            {
+                BuildSeatBar(content.transform, country.Id);
+            }
+            else if (!playable)
+            {
+                Text reason = CanvasChrome.MakeText(content.transform, "Reason", StartPoints.Reason(point), PoliSimTheme.Document, 12, caption, TextAnchor.MiddleLeft);
+                reason.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
+            }
+        }
+
+        /// <summary>A stamp in the stamp register: a bordered box (≈68 × 20 at 1280) with its text in caption mono.</summary>
+        private static void BuildStamp(Transform parent, string name, string text, Color ink)
+        {
+            var box = new GameObject(name);
+            box.transform.SetParent(parent, false);
+            box.AddComponent<RectTransform>();
+            Image edge = box.AddComponent<Image>();
+            edge.color = ink;
+            edge.raycastTarget = false;
+            LayoutElement boxElement = box.AddComponent<LayoutElement>();
+            boxElement.minWidth = StampWidth;
+            boxElement.preferredWidth = StampWidth;
+            boxElement.minHeight = StampHeight;
+            boxElement.preferredHeight = StampHeight;
+
+            var inner = new GameObject("Inner");
+            inner.transform.SetParent(box.transform, false);
+            var innerRect = inner.AddComponent<RectTransform>();
+            innerRect.anchorMin = Vector2.zero;
+            innerRect.anchorMax = Vector2.one;
+            innerRect.offsetMin = new Vector2(1f, 1f);
+            innerRect.offsetMax = new Vector2(-1f, -1f);
+            Image innerImage = inner.AddComponent<Image>();
+            innerImage.color = PoliSimTheme.Card;
+            innerImage.raycastTarget = false;
+
+            Text label = CanvasChrome.MakeText(box.transform, "Label", text, PoliSimTheme.Document, 12, ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var labelRect = (RectTransform)label.transform;
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.offsetMin = Vector2.zero;
+            labelRect.offsetMax = Vector2.zero;
+        }
+
+        /// <summary>18a: THE CHAMBER AS A SEAT BAR - one axis segmented by party in the parties' inks (PoliSimTheme's party accessor, keyed
+        /// country/abbreviation; the neutral register where a party has none), largest first, widths proportional to seats, the abbreviations
+        /// under the segments that clear 18 device pixels; then the caption THE RIKSDAG OF 11 SEP 2022 · 349.</summary>
+        private static void BuildSeatBar(Transform parent, CountryId id)
+        {
+            WorldClock.PickerView start = WorldClock.PickerViewOf(id);
+            List<PoliticalParty> parties = PartiesBySeats(id, start.Seats);
+            int total = start.TotalSeats;
+            if (total <= 0) { return; }
+
+            float minLabelUnits = 18f / Mathf.Max(0.01f, CanvasChrome.ScaleFactor());
+            float barWidth = SheetCardWidth - 2f * CardPadding - SpineWidth;
+
+            var bar = new GameObject("SeatBar");
+            bar.transform.SetParent(parent, false);
+            bar.AddComponent<RectTransform>();
+            HorizontalLayoutGroup barLayout = bar.AddComponent<HorizontalLayoutGroup>();
+            barLayout.spacing = 1f;
+            barLayout.childControlWidth = true;
+            barLayout.childControlHeight = true;
+            barLayout.childForceExpandWidth = true;
+            barLayout.childForceExpandHeight = true;
+            LayoutElement barElement = bar.AddComponent<LayoutElement>();
+            barElement.minHeight = SeatBarHeight;
+            barElement.preferredHeight = SeatBarHeight;
+
+            var labels = new GameObject("SeatLabels");
+            labels.transform.SetParent(parent, false);
+            labels.AddComponent<RectTransform>();
+            HorizontalLayoutGroup labelLayout = labels.AddComponent<HorizontalLayoutGroup>();
+            labelLayout.spacing = 1f;
+            labelLayout.childControlWidth = true;
+            labelLayout.childControlHeight = true;
+            labelLayout.childForceExpandWidth = true;
+            labelLayout.childForceExpandHeight = true;
+            LayoutElement labelsElement = labels.AddComponent<LayoutElement>();
+            labelsElement.minHeight = 16f;
+            labelsElement.preferredHeight = 16f;
+
+            foreach (PoliticalParty party in parties)
+            {
+                int seats = Seats(start.Seats, party);
+                if (seats <= 0) { continue; }
+                float width = barWidth * seats / total;
+
+                var segment = new GameObject($"Seg_{party.Abbrev}");
+                segment.transform.SetParent(bar.transform, false);
+                segment.AddComponent<RectTransform>();
+                Image segmentImage = segment.AddComponent<Image>();
+                segmentImage.color = PoliSimTheme.PartyLaddered(id, party.Abbrev);
+                segmentImage.raycastTarget = false;
+                LayoutElement segmentElement = segment.AddComponent<LayoutElement>();
+                segmentElement.flexibleWidth = seats;
+                segmentElement.preferredWidth = 0f;
+
+                var cell = new GameObject($"Lbl_{party.Abbrev}");
+                cell.transform.SetParent(labels.transform, false);
+                cell.AddComponent<RectTransform>();
+                LayoutElement cellElement = cell.AddComponent<LayoutElement>();
+                cellElement.flexibleWidth = seats;
+                cellElement.preferredWidth = 0f;
+                if (width >= minLabelUnits)
                 {
-                    Country chosen = country;
-                    button.onClick.AddListener(() => ShowPartyPanel(chosen, onSelect));
-                }
-                CanvasChrome.MakeText(column.transform, "State", point.Line, PoliSimTheme.Body, 13,
-                    point.Playable ? PoliSimTheme.Hex(0xB7A98C) : PoliSimTheme.Hex(0x8C7E63), TextAnchor.MiddleCenter);
-                if (point.Playable)
-                {
-                    // SP-2 (§623): the brief beneath a playable card - derived from the records of the start's date, never written (StartBrief).
-                    Text brief = CanvasChrome.MakeText(column.transform, "Brief", StartBrief.Text(point), PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter);
-                    brief.horizontalOverflow = HorizontalWrapMode.Wrap;
-                    LayoutElement briefLayout = brief.gameObject.AddComponent<LayoutElement>();
-                    briefLayout.preferredWidth = PartyRowWidth;
+                    Text label = CanvasChrome.MakeText(cell.transform, "Label", party.ShortName, PoliSimTheme.Document, 10, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
+                    label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    var labelRect = (RectTransform)label.transform;
+                    labelRect.anchorMin = Vector2.zero;
+                    labelRect.anchorMax = Vector2.one;
+                    labelRect.offsetMin = Vector2.zero;
+                    labelRect.offsetMax = Vector2.zero;
                 }
             }
 
-            Button backButton = CanvasChrome.FacedButton(column.transform, "Back", "BACK TO THE COUNTRIES",
-                PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight),
-                CanvasChrome.Face.Paper);
-            LayoutElement backLayout = backButton.gameObject.AddComponent<LayoutElement>();
-            backLayout.preferredWidth = BackButtonWidth;
-            backLayout.preferredHeight = PartyRowHeight;
-            backLayout.minHeight = PartyRowHeight;
-            backButton.onClick.AddListener(HidePartyPanel);
+            WorldClock.ChamberOfRecord chamber = WorldClock.ChamberAt(id, WorldClock.StartDate(id));
+            DateTime electionDay = WorldClock.ElectionDayOf(id, start.Vintage);
+            string when = electionDay != DateTime.MinValue
+                ? electionDay.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant()
+                : chamber.Convened.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+            Text captionText = CanvasChrome.MakeText(parent, "ChamberCaption", $"THE {StartBrief.ChamberOf(id).ToUpperInvariant()} OF {when} · {total}",
+                PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
+            captionText.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
         }
 
-        private const float StartCardHeight = 44f;
+        /// <summary>18a: the brief as a ledger - the head, then one row per slot: the name lane in serif 13, the figure lane bold.</summary>
+        private static void BuildBriefLedger(Transform parent, StartPoints.StartPoint point)
+        {
+            var ledger = new GameObject("Brief");
+            ledger.transform.SetParent(parent, false);
+            ledger.AddComponent<RectTransform>();
+            VerticalLayoutGroup layout = ledger.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.UpperLeft;
+            layout.spacing = 4f;
+            layout.childControlWidth = true;
+            layout.childControlHeight = true;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+            ledger.AddComponent<LayoutElement>().preferredWidth = SheetColumnWidth;
+
+            Text head = CanvasChrome.MakeText(ledger.transform, "Head", StartBrief.Head(point), PoliSimTheme.Display, 16, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
+            head.gameObject.AddComponent<LayoutElement>().minHeight = 24f;
+
+            foreach (StartBrief.Row row in StartBrief.Rows(point))
+            {
+                var line = new GameObject("Row_" + row.Name.Replace(' ', '_'));
+                line.transform.SetParent(ledger.transform, false);
+                line.AddComponent<RectTransform>();
+                HorizontalLayoutGroup lineLayout = line.AddComponent<HorizontalLayoutGroup>();
+                lineLayout.childAlignment = TextAnchor.MiddleLeft;
+                lineLayout.spacing = 12f;
+                lineLayout.childControlWidth = true;
+                lineLayout.childControlHeight = true;
+                lineLayout.childForceExpandWidth = false;
+                lineLayout.childForceExpandHeight = false;
+                line.AddComponent<LayoutElement>().minHeight = LedgerRowHeight;
+
+                Text nameText = CanvasChrome.MakeText(line.transform, "Name", row.Name, PoliSimTheme.Body, 13, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
+                LayoutElement nameElement = nameText.gameObject.AddComponent<LayoutElement>();
+                nameElement.preferredWidth = LedgerNameWidth;
+                nameElement.minWidth = LedgerNameWidth;
+                nameElement.minHeight = LedgerRowHeight;
+                Text figureText = CanvasChrome.MakeText(line.transform, "Figure", row.Figure, PoliSimTheme.Display, 14, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
+                LayoutElement figureElement = figureText.gameObject.AddComponent<LayoutElement>();
+                figureElement.preferredWidth = SheetColumnWidth - LedgerNameWidth - 12f;
+                figureElement.minHeight = LedgerRowHeight;
+            }
+
+            string tagline = StartBrief.Tagline(point);
+            if (!string.IsNullOrEmpty(tagline))
+            {
+                Text tag = CanvasChrome.MakeText(ledger.transform, "Tagline", tagline, PoliSimTheme.Body, 13, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft, FontStyle.Italic);
+                tag.gameObject.AddComponent<LayoutElement>().minHeight = LedgerRowHeight;
+            }
+        }
+
+        // 18a's measures, in canvas units at the 1920 board basis (a 1280 film scales them by two thirds).
+        private const float SheetRuleHeight = 6f;
+        private const float SheetInset = 96f;
+        private const float SheetTabHeight = 60f;
+        private const float SheetColumnWidth = 1260f;
+        private const float SheetCardWidth = 618f;
+        private const float SheetCardGap = 24f;
+        private const float SheetCardHeight = 196f;
+        private const float CardPadding = 16f;
+        private const float SpineWidth = 3f;
+        /// <summary>The stamp register: ≈68 × 20 at 1280, which is 102 × 30 at the board basis.</summary>
+        private const float StampWidth = 102f;
+        private const float StampHeight = 30f;
+        private const float SeatBarHeight = 18f;
+        private const float LedgerRowHeight = 22f;
+        private const float LedgerNameWidth = 190f;
+        private const float ControlHeight = 34f;
+        private const float SelectButtonWidth = 200f;
 
         /// <summary>What a line of the wordmark's type needs, in canvas units - its own size plus the
         /// face's ascent and descent. See the minimums note at the call site.</summary>
@@ -447,7 +845,7 @@ namespace PoliSim.UI
         {
             Button button = CanvasChrome.FacedButton(parent, $"Scenario_{definition.Id}",
                 $"Scenario:  {definition.Name}", PoliSimTheme.Display, 18,
-                PoliSimTheme.Hex(0xF0E7D8), new Vector2(ScenarioButtonWidth, ScenarioButtonHeight));
+                PoliSimTheme.TextPrimary, new Vector2(ScenarioButtonWidth, ScenarioButtonHeight));
             LayoutElement layout = button.gameObject.AddComponent<LayoutElement>();
             layout.preferredWidth = ScenarioButtonWidth;
             layout.preferredHeight = ScenarioButtonHeight;

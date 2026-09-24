@@ -72,6 +72,11 @@ namespace PoliSim.EditorTools
              + "party identity as the whole subject, the chamber's own argument. The ink is the chamber's accessor, so the map, the "
              + "arc and the bar cannot disagree about a colour; the file draws NO area accent (clause 2 by construction). The map's "
              + "tiles are painted by ValkretsCartogramView, which is handed the colours and names no accessor itself."),
+            ("CountrySelectorScreen.cs",
+             "Design's board 18a (2026-09-24, §626): the start sheet's card draws the chamber of record as a one-axis seat bar in the "
+             + "parties' laddered inks - the chamber IS the card's subject (16e's rule: the bar is the form below a disc's size). The "
+             + "file draws NO area accent beside it: the country's hue rule is the folder's own ink through UiPalette's country accessor, "
+             + "not a system area's, and the party panel's rows carry marks, not inks."),
         };
 
         public static void Run()

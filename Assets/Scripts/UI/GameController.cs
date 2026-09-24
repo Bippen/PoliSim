@@ -1128,24 +1128,6 @@ namespace PoliSim.UI
         /// itself only changes through this menu's own actions; no background system writes the
         /// saves directory, so the list cannot mutate under a drag.
         /// </summary>
-        /// <summary>
-        /// P4-2 (2026-09-03): the master volume and mute, on the one settings screen the game has, in its own idiom - a
-        /// ledger row for the volume (the standing is the saved value, the draft is the slider) and a MUTE button that
-        /// re-labels rather than vanishes. Persisted through AudioDirector (PlayerPrefs).
-        /// </summary>
-        private void DrawSoundSettings()
-        {
-            GUILayout.Label("SOUND", _headerStyle);
-            GUILayout.BeginHorizontal();
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-            float saved = AudioDirector.Volume * 100f;
-            float draft = LedgerRow.Draw(rowRect, "Master volume", saved, saved, 0f, 100f, saved.ToString("F0", CultureInfo.InvariantCulture) + "%", null, "0 silent - 100 full", true, _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle);
-            if (!Mathf.Approximately(draft, saved)) { AudioDirector.Volume = draft / 100f; }
-            if (PoliSimWidgets.Button(AudioDirector.Mute ? "UNMUTE" : "MUTE", _neutralActionButtonStyle, GUILayout.Width(_labelStyle.fontSize * 7f))) { AudioDirector.Mute = !AudioDirector.Mute; }
-            GUILayout.EndHorizontal();
-            GUILayout.Space(8f);
-        }
-
         private void DrawSavesMenuScreen()
         {
             DrawMenuBackground();
@@ -1394,9 +1376,14 @@ namespace PoliSim.UI
             if (!_selectedPlayerCountryId.HasValue) { _mainMenuPassed = false; }   // the menu enters again
         }
 
+        /// <summary>Board 17b rule 6 (2026-09-24): how the screen was opened, so the foot names the way back - BACK TO THE DESK from the masthead
+        /// chip, BACK TO THE MENU from the menu. Stamped at the opening from the controller's own state (a seated player means the desk).</summary>
+        private bool _settingsOpenedFromDesk;
+
         private void OpenSettings()
         {
             _settingsOpen = true;
+            _settingsOpenedFromDesk = _selectedPlayerCountryId.HasValue;
         }
 
         /// <summary>The desk's running speed a new game starts at - the setting's index onto the desk's own three chips.</summary>
@@ -1426,120 +1413,285 @@ namespace PoliSim.UI
             _daysSinceAutosave = 0;
         }
 
+        // ── Board 17b (2026-09-24): THE SETTINGS SCREEN AS A SHEET OF PLATES, built the D11 way ─────────────────────────────
+        //
+        // Rule 1: the groups are PLATES (a caption-mono head on a hairline, rows under it), the sheet at the desk's margins in TWO
+        // COLUMNS - SOUND over DISPLAY at the left, GAME at the right - so it fits at 1280 with no scroll view. Rule 2: a CHOICE is the
+        // masthead's chip strip (DrawDeskChipButton, the joined strip, the current cell brass with TextPrimary ink - D6, no dot on a
+        // filled cell). Rule 3: a TOGGLE keeps its dot. Rule 4: the unset display state is a READING of the real window. Rule 5: the
+        // three sentences became an instrument and two captions. Rule 6: the foot names the way back. Rule 7: every cell is exactly
+        // as wide as its label in caption mono (CalcSize), one line, wordWrap false; the name lane is measured from the widest name.
+        // Rule 8: the volume row stays the dial row at a reduced pitch (the desk's 11-px body face names it, LedgerRow draws it).
+        // Every preference key and its behaviour is the MM-2 build's; only the drawing changed.
+        //
+        // Stated deviations (what the IMGUI idiom cannot do one for one):
+        //  - "joined": the masthead draws its chips as separate bordered plates 4 px apart. The strip here abuts them and overlaps each
+        //    border by one pixel, so the divider between two cells is one hairline, not two - the nearest the plate control comes to a
+        //    single joined plate without a new drawing call.
+        //  - "reduced presence": DrawDeskChipButton's disabled face (the muted plate and TextMuted ink, the click swallowed) is the
+        //    reduced ink; a FILLED cell at reduced presence (the ELECTION NIGHT instrument, the current slot while autosave is OFF)
+        //    keeps its brass fill under the muted ink, the control's own composition.
+        //  - the dial's name cell is LedgerRow's (it wraps at spaces before it shrinks); the row is given the whole column so the cell
+        //    holds "Master volume" on one line at every filmed geometry - the lane rule is applied by width, not by a new cell.
         private void DrawSettingsScreen()
         {
             DrawMenuBackground();
 
-            float width = Mathf.Min(UiScreen.Width * 0.66f, 1100f);
-            float height = UiScreen.Height * 0.94f;
-            var area = new Rect((UiScreen.Width - width) * 0.5f, (UiScreen.Height - height) * 0.5f, width, height);
+            float marginX = UiScreen.Width * ScreenMarginFraction;
+            float marginY = UiScreen.Height * ScreenMarginFraction;
+            var area = new Rect(marginX, marginY, UiScreen.Width - marginX * 2f, UiScreen.Height - marginY * 2f);
             GUILayout.BeginArea(area);
-            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.BeginVertical(_boxStyle, GUILayout.ExpandHeight(true));
             GUILayout.Label("SETTINGS", _headerStyle);
-            _settingsScrollPosition = GUILayout.BeginScrollView(_settingsScrollPosition);
+            SettingsCaptionLine("THE DESK'S PREFERENCES", PoliSimTheme.TextSecondary);
+            GUILayout.Space(StatsUnit(10f));
 
-            DrawSoundSettings();
-
-            GUILayout.Label("DISPLAY", _headerStyle);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Window", _labelStyle, GUILayout.Width(width * 0.22f));
-            string[] modeLabels = { "Windowed", "Borderless", "Fullscreen" };
-            for (int i = 0; i < modeLabels.Length; i++)
-            {
-                bool current = DisplaySettings.IsSet && (int)DisplaySettings.Mode == i;
-                if (PoliSimWidgets.Button(current ? "● " + modeLabels[i] : modeLabels[i], current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.16f)))
-                {
-                    int w = DisplaySettings.IsSet ? DisplaySettings.Width : Screen.width;
-                    int h = DisplaySettings.IsSet ? DisplaySettings.Height : Screen.height;
-                    if (!DisplaySettings.Set((WindowMode)i, w, h)) { DisplaySettings.Set((WindowMode)i, DisplaySettings.Geometries[0].Width, DisplaySettings.Geometries[0].Height); }
-                }
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Resolution", _labelStyle, GUILayout.Width(width * 0.22f));
-            foreach ((int Width, int Height) g in DisplaySettings.Geometries)
-            {
-                bool current = DisplaySettings.IsSet && DisplaySettings.Width == g.Width && DisplaySettings.Height == g.Height;
-                string label = $"{g.Width} × {g.Height}";
-                if (PoliSimWidgets.Button(current ? "● " + label : label, current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.16f)))
-                {
-                    DisplaySettings.Set(DisplaySettings.IsSet ? DisplaySettings.Mode : WindowMode.Windowed, g.Width, g.Height);
-                }
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.Label(DisplaySettings.IsSet
-                ? "The window follows the setting the moment it is chosen."
-                : "As launched - the window keeps its size until a geometry is chosen.", _labelStyle);
-            GUILayout.Space(6f);
-
-            GUILayout.Label("GAME", _headerStyle);
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Speed at the start", _labelStyle, GUILayout.Width(width * 0.22f));
-            for (int i = 0; i < GameSettings.SpeedLabels.Length; i++)
-            {
-                bool current = GameSettings.DefaultSpeed == i;
-                if (PoliSimWidgets.Button(current ? "● " + GameSettings.SpeedLabels[i] : GameSettings.SpeedLabels[i], current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.1f)))
-                {
-                    GameSettings.DefaultSpeed = i;
-                }
-            }
-            GUILayout.EndHorizontal();
+            float innerWidth = PoliSimWidgets.InnerWidth(area.width, _boxStyle);
+            float gutter = StatsUnit(28f);
+            float columnWidth = Mathf.Floor((innerWidth - gutter) * 0.5f);
+            GUIStyle nameStyle = SettingsNameStyle();
+            GUIStyle chipCaption = SettingsChipCaption();
+            float rowHeight = SettingsChipHeight(chipCaption) + StatsUnit(8f);
+            // rule 7: the name lane is the widest name on the sheet, in its own face, one line - measured, not a fraction of the width.
+            float nameLane = 0f;
+            foreach (string n in SettingsRowNames) { nameLane = Mathf.Max(nameLane, nameStyle.CalcSize(new GUIContent(n)).x); }
+            nameLane = Mathf.Ceil(nameLane) + StatsUnit(14f);
 
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Time holds for", _labelStyle, GUILayout.Width(width * 0.22f));
-            if (PoliSimWidgets.Button((GameSettings.HoldOnCampaignOpening ? "● " : "○ ") + "the campaign's opening", GameSettings.HoldOnCampaignOpening ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.3f)))
-            {
-                GameSettings.HoldOnCampaignOpening = !GameSettings.HoldOnCampaignOpening;
-            }
-            if (PoliSimWidgets.Button((GameSettings.HoldOnBudgetWindow ? "● " : "○ ") + "the budget window", GameSettings.HoldOnBudgetWindow ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.3f)))
-            {
-                GameSettings.HoldOnBudgetWindow = !GameSettings.HoldOnBudgetWindow;
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.Label("Election night always holds. A released interrupt still opens; the days pass behind it.", _labelStyle);
+            GUILayout.BeginVertical(GUILayout.Width(columnWidth));
 
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Provenance " + DeskProvenance.Glyph, _labelStyle, GUILayout.Width(width * 0.22f));
-            if (PoliSimWidgets.Button(DeskProvenance.On ? "● Open at rest" : "○ Open at rest", DeskProvenance.On ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.3f)))
-            {
-                DeskProvenance.On = !DeskProvenance.On;
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("Autosave every", _labelStyle, GUILayout.Width(width * 0.22f));
-            foreach (int days in GameSettings.AutosaveDayChoices)
-            {
-                bool current = GameSettings.AutosaveDays == days;
-                string label = days == 0 ? "Off" : $"{days} days";
-                if (PoliSimWidgets.Button(current ? "● " + label : label, current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.09f)))
-                {
-                    GameSettings.AutosaveDays = days;
-                }
-            }
-            GUILayout.Label("slots", _labelStyle, GUILayout.Width(width * 0.05f));
-            for (int slots = GameSettings.MinSlots; slots <= GameSettings.MaxSlots; slots++)
-            {
-                bool current = GameSettings.AutosaveSlots == slots;
-                if (PoliSimWidgets.Button(current ? "● " + slots.ToString(CultureInfo.InvariantCulture) : slots.ToString(CultureInfo.InvariantCulture), current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.045f)))
-                {
-                    GameSettings.AutosaveSlots = slots;
-                }
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.Label($"Autosaves rotate through {GameSettings.AutosaveName(1)} to {GameSettings.AutosaveName(GameSettings.AutosaveSlots)} on the saves screen, counted in days played.", _labelStyle);
+            // ── SOUND ──
+            SettingsPlateHead("SOUND");
+            // rule 8: the dial row, at the desk's body pitch rather than the ledger's (the reduced pitch); the standing is the saved value, the draft the knob.
+            GUIStyle dialName = DeskBody(11f, PoliSimTheme.TextPrimary);
+            GUIStyle dialFigure = DeskBody(11f, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
+            Rect dialRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(dialName), GUILayout.ExpandWidth(true));
+            float saved = AudioDirector.Volume * 100f;
+            float draft = LedgerRow.Draw(dialRect, "Master volume", saved, saved, 0f, 100f, saved.ToString("F0", CultureInfo.InvariantCulture) + "%", null, "0 silent - 100 full", true, dialName, dialFigure, _sliderStyle, _sliderThumbStyle);
+            if (!Mathf.Approximately(draft, saved)) { AudioDirector.Volume = draft / 100f; }
 
-            GUILayout.EndScrollView();
-            GUILayout.Label("Settings are the desk's, not the game's: a save never carries them.", _labelStyle);
-            if (PoliSimWidgets.Button(_selectedPlayerCountryId.HasValue ? "Close" : "Back to the menu", _neutralActionButtonStyle))
+            Rect lane = SettingsRow("Mute", nameLane, rowHeight, nameStyle);
+            DrawSettingsToggleChip(lane.x, lane, "MUTE", AudioDirector.Mute, false, out bool muteClicked);
+            if (muteClicked) { AudioDirector.Mute = !AudioDirector.Mute; }
+
+            GUILayout.Space(StatsUnit(16f));
+
+            // ── DISPLAY ──
+            SettingsPlateHead("DISPLAY");
+            string[] modeLabels = { "WINDOWED", "BORDERLESS", "FULLSCREEN" };
+            lane = SettingsRow("Window", nameLane, rowHeight, nameStyle);
+            float right = DrawSettingsChoiceStrip(lane, modeLabels, DisplaySettings.IsSet ? (int)DisplaySettings.Mode : -1, false, out int modeClicked);
+            if (modeClicked >= 0)
+            {
+                int w = DisplaySettings.IsSet ? DisplaySettings.Width : Screen.width;
+                int h = DisplaySettings.IsSet ? DisplaySettings.Height : Screen.height;
+                if (!DisplaySettings.Set((WindowMode)modeClicked, w, h)) { DisplaySettings.Set((WindowMode)modeClicked, DisplaySettings.Geometries[0].Width, DisplaySettings.Geometries[0].Height); }
+            }
+            // rule 4: the reading of the real window - what it IS, as a figure; AS LAUNCHED only while nothing has been chosen.
+            SettingsReadout(lane, right, "NOW " + ActualWindowModeName() + (DisplaySettings.IsSet ? "" : " · AS LAUNCHED"));
+
+            string[] geometryLabels = new string[DisplaySettings.Geometries.Length];
+            int currentGeometry = -1;
+            for (int i = 0; i < DisplaySettings.Geometries.Length; i++)
+            {
+                (int Width, int Height) g = DisplaySettings.Geometries[i];
+                geometryLabels[i] = $"{g.Width} × {g.Height}";
+                if (DisplaySettings.IsSet && DisplaySettings.Width == g.Width && DisplaySettings.Height == g.Height) { currentGeometry = i; }
+            }
+            lane = SettingsRow("Resolution", nameLane, rowHeight, nameStyle);
+            right = DrawSettingsChoiceStrip(lane, geometryLabels, currentGeometry, false, out int geometryClicked);
+            if (geometryClicked >= 0)
+            {
+                (int Width, int Height) g = DisplaySettings.Geometries[geometryClicked];
+                DisplaySettings.Set(DisplaySettings.IsSet ? DisplaySettings.Mode : WindowMode.Windowed, g.Width, g.Height);
+            }
+            SettingsReadout(lane, right, $"NOW {Screen.width} × {Screen.height}" + (DisplaySettings.IsSet ? "" : " · AS LAUNCHED"));
+
+            GUILayout.EndVertical();
+            GUILayout.Space(gutter);
+            GUILayout.BeginVertical(GUILayout.Width(columnWidth));
+
+            // ── GAME ──
+            SettingsPlateHead("GAME");
+            lane = SettingsRow("Speed at the start", nameLane, rowHeight, nameStyle);
+            DrawSettingsChoiceStrip(lane, GameSettings.SpeedLabels, GameSettings.DefaultSpeed, false, out int speedClicked);
+            if (speedClicked >= 0) { GameSettings.DefaultSpeed = speedClicked; }
+
+            lane = SettingsRow("Time holds for", nameLane, rowHeight, nameStyle);
+            float x = DrawSettingsToggleChip(lane.x, lane, "THE CAMPAIGN'S OPENING", GameSettings.HoldOnCampaignOpening, false, out bool campaignClicked);
+            if (campaignClicked) { GameSettings.HoldOnCampaignOpening = !GameSettings.HoldOnCampaignOpening; }
+            x = DrawSettingsToggleChip(x, lane, "THE BUDGET WINDOW", GameSettings.HoldOnBudgetWindow, false, out bool budgetClicked);
+            if (budgetClicked) { GameSettings.HoldOnBudgetWindow = !GameSettings.HoldOnBudgetWindow; }
+            // rule 3: the third chip is an INSTRUMENT, not a setting - election night always holds; filled, reduced, no click.
+            DrawSettingsToggleChip(x, lane, "ELECTION NIGHT", true, true, out _);
+            SettingsCaptionLine("A RELEASED HOLD STILL OPENS · THE DAYS RUN BEHIND IT.", PoliSimTheme.TextSecondary);
+
+            lane = SettingsRow("Provenance " + DeskProvenance.Glyph, nameLane, rowHeight, nameStyle);
+            DrawSettingsToggleChip(lane.x, lane, "OPEN AT REST", DeskProvenance.On, false, out bool provenanceClicked);
+            if (provenanceClicked) { DeskProvenance.On = !DeskProvenance.On; }
+
+            string[] cadenceLabels = new string[GameSettings.AutosaveDayChoices.Length];
+            int currentCadence = -1;
+            for (int i = 0; i < GameSettings.AutosaveDayChoices.Length; i++)
+            {
+                int days = GameSettings.AutosaveDayChoices[i];
+                cadenceLabels[i] = days == 0 ? "OFF" : $"{days} DAYS";
+                if (GameSettings.AutosaveDays == days) { currentCadence = i; }
+            }
+            lane = SettingsRow("Autosave every", nameLane, rowHeight, nameStyle);
+            DrawSettingsChoiceStrip(lane, cadenceLabels, currentCadence, false, out int cadenceClicked);
+            if (cadenceClicked >= 0) { GameSettings.AutosaveDays = GameSettings.AutosaveDayChoices[cadenceClicked]; }
+
+            // rule 2: the slots on their own row, so no label sits inside a control lane; reduced and clickless while autosave is OFF.
+            string[] slotLabels = new string[GameSettings.MaxSlots - GameSettings.MinSlots + 1];
+            for (int i = 0; i < slotLabels.Length; i++) { slotLabels[i] = (GameSettings.MinSlots + i).ToString(CultureInfo.InvariantCulture); }
+            bool autosaveOff = GameSettings.AutosaveDays == 0;
+            lane = SettingsRow("Autosave slots", nameLane, rowHeight, nameStyle);
+            DrawSettingsChoiceStrip(lane, slotLabels, GameSettings.AutosaveSlots - GameSettings.MinSlots, autosaveOff, out int slotClicked);
+            if (slotClicked >= 0 && !autosaveOff) { GameSettings.AutosaveSlots = GameSettings.MinSlots + slotClicked; }
+            // rule 5: the autosave note as one caption with the real slot file names verbatim (GameSettings.AutosaveName).
+            string slotNames = GameSettings.AutosaveSlots > 1
+                ? GameSettings.AutosaveName(1) + " – " + GameSettings.AutosaveName(GameSettings.AutosaveSlots)
+                : GameSettings.AutosaveName(1);
+            SettingsCaptionLine(slotNames + " ON THE SAVES SCREEN · COUNTED IN DAYS PLAYED", PoliSimTheme.TextSecondary);
+
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+
+            GUILayout.FlexibleSpace();
+
+            // rule 6: the foot - the way back, named for where the screen was opened from; rule 5: NOT SAVED WITH A GAME right of it.
+            string backLabel = _settingsOpenedFromDesk ? "BACK TO THE DESK" : "BACK TO THE MENU";
+            Vector2 backSize = _neutralActionButtonStyle.CalcSize(new GUIContent(backLabel));
+            float footHeight = Mathf.Max(backSize.y, _neutralActionButtonStyle.fixedHeight);
+            Rect foot = GUILayoutUtility.GetRect(10f, footHeight, GUILayout.ExpandWidth(true));
+            var backRect = new Rect(foot.x, foot.y, Mathf.Ceil(backSize.x) + StatsUnit(24f), footHeight);
+            if (PoliSimWidgets.Button(backRect, backLabel, _neutralActionButtonStyle))
             {
                 CloseSettings();
+            }
+            if (Event.current.type == EventType.Repaint)
+            {
+                GUIStyle footCaption = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
+                PoliSimWidgets.MeasuredLabel(new Rect(backRect.xMax + StatsUnit(14f), foot.y, Mathf.Max(1f, foot.xMax - backRect.xMax - StatsUnit(14f)), footHeight), "NOT SAVED WITH A GAME", footCaption);
             }
 
             GUILayout.EndVertical();
             GUILayout.EndArea();
         }
 
-        private Vector2 _settingsScrollPosition;
+        /// <summary>Every row name on the settings sheet - the name lane is measured from the widest of them (17b rule 7).</summary>
+        private static readonly string[] SettingsRowNames =
+        {
+            "Master volume", "Mute", "Window", "Resolution", "Speed at the start", "Time holds for", "Provenance " + DeskProvenance.Glyph, "Autosave every", "Autosave slots",
+        };
+
+        /// <summary>The row name's face: the ledger label, one line, TextPrimary in every state.</summary>
+        private GUIStyle SettingsNameStyle()
+        {
+            var style = new GUIStyle(_labelStyle) { wordWrap = false, alignment = TextAnchor.MiddleLeft };
+            return Inked(style, PoliSimTheme.TextPrimary);
+        }
+
+        /// <summary>The masthead's chip caption (1m-r2: mono 9, centred, TextPrimary) - the one face every cell on this sheet is set in.</summary>
+        private GUIStyle SettingsChipCaption() => DeskCaption(9f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
+
+        /// <summary>The masthead's chip height: the caption's own height plus the board's 6 (DrawDeskMasthead's figure at the 28 masthead).</summary>
+        private static float SettingsChipHeight(GUIStyle chipCaption) => Mathf.Ceil(DeskCaptionHeight(chipCaption)) + StatsUnit(6f);
+
+        /// <summary>A plate head: caption mono in TextSecondary, bold, on a hairline - the document sheets' plate grammar, not a 24-px display capital.</summary>
+        private void SettingsPlateHead(string text)
+        {
+            GUIStyle head = DeskCaption(8.5f, PoliSimTheme.TextSecondary, bold: true);
+            float textHeight = Mathf.Ceil(DeskCaptionHeight(head));
+            float h = textHeight + StatsUnit(8f);
+            Rect row = GUILayoutUtility.GetRect(10f, h, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, row.width, textHeight + StatsUnit(2f)), text, head);
+                PoliSimTheme.Rule(new Rect(row.x, row.yMax - StatsUnit(3f), row.width, 1f), PoliSimTheme.Hairline);
+            }
+        }
+
+        /// <summary>One caption line under a row (the holds' caption, the autosave note, the subtitle): mono 8.5, one line, measured.</summary>
+        private void SettingsCaptionLine(string text, Color ink)
+        {
+            GUIStyle caption = DeskCaption(8.5f, ink);
+            float h = Mathf.Ceil(DeskCaptionHeight(caption)) + StatsUnit(4f);
+            Rect row = GUILayoutUtility.GetRect(10f, h, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(row, text, caption); }
+        }
+
+        /// <summary>Reserves a row, draws its name in the lane, and returns the control lane to the right of it.</summary>
+        private Rect SettingsRow(string name, float nameLane, float height, GUIStyle nameStyle)
+        {
+            Rect row = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, nameLane - StatsUnit(14f), row.height), name, nameStyle);
+            }
+            return new Rect(row.x + nameLane, row.y, Mathf.Max(1f, row.width - nameLane), row.height);
+        }
+
+        /// <summary>The row's readout, right of its strip in the caption face (rule 4's reading of the real window).</summary>
+        private void SettingsReadout(Rect lane, float fromX, string text)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+            float x = fromX + StatsUnit(12f);
+            PoliSimWidgets.MeasuredLabel(new Rect(x, lane.y, Mathf.Max(1f, lane.xMax - x), lane.height), text, DeskCaption(8.5f, PoliSimTheme.TextSecondary));
+        }
+
+        /// <summary>
+        /// Rule 2: the CHOICE strip - the masthead's chips (DrawDeskChipButton), joined, each cell exactly as wide as its label in the chip
+        /// caption plus the masthead's pad, the current cell brass with TextPrimary ink, no dot. <paramref name="reduced"/> draws every cell
+        /// at the reduced presence and swallows the click. Returns the strip's right edge; <paramref name="clicked"/> the cell clicked or -1.
+        /// </summary>
+        private float DrawSettingsChoiceStrip(Rect lane, string[] labels, int current, bool reduced, out int clicked)
+        {
+            GUIStyle chipCaption = SettingsChipCaption();
+            float pad = StatsUnit(8f);
+            float h = SettingsChipHeight(chipCaption);
+            float y = lane.y + Mathf.Round((lane.height - h) * 0.5f);
+            float x = lane.x;
+            clicked = -1;
+            for (int i = 0; i < labels.Length; i++)
+            {
+                float w = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(labels[i])).x) + pad * 2f;
+                if (i > 0) { x -= 1f; }   // joined: one hairline between two cells, not two borders
+                if (DrawDeskChipButton(new Rect(x, y, w, h), labels[i], chipCaption, selected: i == current, disabled: reduced)) { clicked = i; }
+                x += w;
+            }
+            return x;
+        }
+
+        /// <summary>
+        /// Rule 3: a TOGGLE chip with its dot (● on / ○ off), the masthead's chip drawn standalone; <paramref name="instrument"/> draws it
+        /// filled at the reduced presence and swallows the click (ELECTION NIGHT, which always holds). Returns the x after the chip and its gap.
+        /// </summary>
+        private float DrawSettingsToggleChip(float x, Rect lane, string label, bool on, bool instrument, out bool clicked)
+        {
+            GUIStyle chipCaption = SettingsChipCaption();
+            float pad = StatsUnit(8f);
+            float h = SettingsChipHeight(chipCaption);
+            float y = lane.y + Mathf.Round((lane.height - h) * 0.5f);
+            string text = (on ? "● " : "○ ") + label;
+            float w = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(text)).x) + pad * 2f;
+            clicked = DrawDeskChipButton(new Rect(x, y, w, h), text, chipCaption, selected: on, disabled: instrument);
+            return x + w + StatsUnit(6f);
+        }
+
+        /// <summary>Rule 4: the window's real mode, read from the screen, in the strip's own words.</summary>
+        private static string ActualWindowModeName()
+        {
+            switch (Screen.fullScreenMode)
+            {
+                case FullScreenMode.ExclusiveFullScreen: return "FULLSCREEN";
+                case FullScreenMode.FullScreenWindow:
+                case FullScreenMode.MaximizedWindow: return "BORDERLESS";
+                default: return "WINDOWED";
+            }
+        }
+
         private SigningScreen _signingScreen;
 
         /// <summary>Divisions awaiting their signing ceremony, drained one takeover at a time. Filled ONLY from the controller's own day tick (see QueueNewlyResolvedDivisions) — harness sim-advances never fire ceremonies mid-pass; the driver pins the screen through TriggerSigningForNewestDivision, the same queue the day tick fills.</summary>
@@ -6479,7 +6631,7 @@ namespace PoliSim.UI
                 : "in opposition";
             _pendingElectionVerdict = $"Out of office after the election of {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}: the chamber formed a "
                 + $"{government.CabinetDescription} government with {PartySystems.ShortName(_playerCountry.Id, playerAbbrev)} {standing}. The run continues - "
-                + "losing office never ends it; until the roles are built (PS-3) the government's levers stay on your desk, stated.";
+                + "losing office never ends it; until the roles are built, the government's levers stay on your desk.";
             _pendingElectionVerdictEndsGame = false;
         }
 

@@ -75,7 +75,7 @@ namespace PoliSim.EditorTools
         /// The money-path states the guard FOUND when it landed (2026-09-21, §546) and did not review - the files' states as of that day, each a `grandfathered` row. LOWER IT AS THEY ARE
         /// EDITED AND REVIEWED, NEVER RAISE IT: a grandfathered row whose file has moved on is stale and fails the check until it is removed, so the count only falls.
         /// </summary>
-        public const int GrandfatheredCeiling = 22;   // 26 -> 22 (s590): BudgetBill, PensionAgeStatute, PensionPayment and SpendingDrivers reviewed with PN-1's dial
+        public const int GrandfatheredCeiling = 21;   // 22 -> 21 (s626): TaxSchedule.cs reviewed under s626. 26 -> 22 (s590): BudgetBill, PensionAgeStatute, PensionPayment and SpendingDrivers reviewed with PN-1's dial
 
         /// <summary>CONVENTION: how many comment-only steps a state may be walked back through git to reach one with a row - a bound on the walk, not a policy.</summary>
         public const int MaxCommentOnlySteps = 40;

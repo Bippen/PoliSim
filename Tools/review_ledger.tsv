@@ -30,7 +30,6 @@ file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxBaseTable.cs	4b19b2dfe322a91772e6396aeb81714605a3403b4b395ae01c512aefc8e64cfe	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxLine.cs	b4f96655f47666b49d1aa72429b89696d7c210ac1f9c7c274e3a087991e4aed4	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/TaxSchedule.cs	165c6b3ae8b2332246777d4476dd42231ad3446c90dc439d622d710f3939f6da	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxType.cs	a15b9d2fbd85f753c6d423f05257c357c75f768055a6e0b545c047c05ad4cfa3	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgram.cs	be37cfb4a401da95c9175c0b9f2ddc9811a9fa0accabff25699bad4da8619911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgramType.cs	88112313e1cebd35c116e0ad7a8d394b46a52e9c58f1d5f04d76592d8e18c2e8	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -106,3 +105,5 @@ file	Assets/Scripts/UI/GameController.cs	f04914707f596ec3c883dceb002c20e4271cdcd
 file	Assets/Scripts/Elections/DeclaredRedLines.cs	e3b8dacd6d5a87114f8e808683d34af118ae69a23f139702503d246c41aaf79d	reviewed	2026-09-24	s621	Reviews/2026-09-25_s621_declaration_dates.md	-
 file	Assets/Scripts/Elections/WorldClock.cs	2f71ffb1d0aa1a2aa73636e121991fc0b5fc4ec66700d17c7dcca55932e0e1fb	reviewed	2026-09-24	s621	Reviews/2026-09-25_s621_declaration_dates.md	-
 file	Assets/Scripts/UI/GameController.cs	7e08565ea0a517ad0e0cace2bfa0f153a837096f118613b76fa70568296a646c	reviewed	2026-09-24	s621	Reviews/2026-09-25_s621_declaration_dates.md	-
+file	Assets/Scripts/UI/GameController.cs	a41d0580996607c31b38d7e8f34e3b05d90609d9a242df4d65a462c37a51d80f	reviewed	2026-09-25	s626	Reviews/2026-09-25_s626_boards.md	-
+file	Assets/Scripts/Data/TaxSchedule.cs	8119d36095b8abe058c0d56ae9afe3742d670fdd87ca55197f3e5663de44ab28	reviewed	2026-09-25	s626	Reviews/2026-09-25_s626_boards.md	one citation string: BILLED (E-6) reworded without the register id (MetaTextCheck); no figure moved

@@ -87,6 +87,9 @@ namespace PoliSim.EditorTools
             // because a backtick was in none of the nineteen patterns above. Markdown on a game screen is
             // developer text wearing punctuation, and it is exactly the class P-A1 cut 131 strings of.
             ("backtick (a leaked identifier)", new Regex("`")),
+            // Design's board 18b (2026-09-24): "(E-49) on the card and (S8) in the reason - errand and stage identifiers belong in the
+            // log, not the card". The register ids the records use, each as a whole word, case-sensitive; "S 107", "SD 73" and a year never match.
+            ("register number (an errand, stage or ticket id: E-49, S8, D-SP, PF-16, R-EL10 …)", new Regex(@"\b(E-\d+|S\d+|D-[A-Z]{2,3}|D\d+[a-z]?|PF-\d+|PS-\d+|SP-\d+|MM-\d+|CL-\d+|EN-\d+|FT-\d+|PN-\d+|K-1[a-z]?|R-EL\d+|T-\d+)\b")),
         };
 
         /// <summary>§565: the five widened patterns - read with interpolation holes blanked, prose literals only where <c>ProseOnly</c>, never on a diagnostic line.</summary>

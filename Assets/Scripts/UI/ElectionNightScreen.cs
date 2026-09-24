@@ -982,7 +982,7 @@ namespace PoliSim.UI
         private static void BuildContinueButton(Transform parent, Action onContinue)
         {
             Button control = CanvasChrome.FacedButton(parent, "ContinueButton", "CONTINUE", PoliSimTheme.Display, 16,
-                PoliSimTheme.Hex(0xF0E7D8), new Vector2(200f, 48f));
+                PoliSimTheme.TextPrimary, new Vector2(200f, 48f));   // §626 (D6, board 17a): TextPrimary on the brass face
             LayoutElement size = control.gameObject.AddComponent<LayoutElement>();
             size.minWidth = 200f;
             size.preferredWidth = 200f;

@@ -149,7 +149,7 @@ namespace PoliSim.Data
                 Brackets = new[] { new Bracket(0, 0), new Bracket(11600, 11), new Bracket(29579, 30), new Bracket(84577, 41), new Bracket(181917, 45) }, Parts = 1.0, ThresholdsIndexed = true,
                 CitationLine = "CSG 9.20 + CRDS 0.50 ON 98.25 % OF GROSS TO 192 240 € · 2.40 OF IT DEDUCTIBLE — THE SPLIT IS THE INSTRUMENT · A SUPPORTING FLAT ROW, NOT A BRACKET · urssaf 2fd04556" } },
             // Italy: three layers billed (E-6) - the line stays flat and says so
-            { CountryId.Italy, new Statute { Country = CountryId.Italy, Kind = TaxScheduleKind.ThreeLayerBilled, Currency = "EUR", Source = "TUIR art. 11 · BILLED (E-6): no primary text with a text layer on disk", ThresholdsIndexed = true } },
+            { CountryId.Italy, new Statute { Country = CountryId.Italy, Kind = TaxScheduleKind.ThreeLayerBilled, Currency = "EUR", Source = "TUIR art. 11 · BILLED - no primary text with a text layer on disk", ThresholdsIndexed = true } },
             // Poland: art. 27 ust. 1 PIT (12 % minus 3 600 zł to 120 000; 32 % above) and art. 30h (4 % above 1 000 000) - podatki.gov.pl 6426b64c, the Sejm's consolidated act eca28a1b
             { CountryId.Poland, new Statute { Country = CountryId.Poland, Kind = TaxScheduleKind.BracketTable, Currency = "PLN", Source = "art. 27 ust. 1 PIT · podatki.gov.pl 6426b64c · Sejm ELI eca28a1b · art. 30h",
                 Brackets = new[] { new Bracket(0, 0), new Bracket(30000, 12), new Bracket(120000, 32) }, LevyThreshold = 1000000, LevyRate = 4, ThresholdsIndexed = false, ExemptNote = "TAX-FREE BY THE 3 600 zł CREDIT · DERIVED" } },

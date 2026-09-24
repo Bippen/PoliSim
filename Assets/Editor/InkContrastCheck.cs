@@ -86,6 +86,52 @@ namespace PoliSim.EditorTools
             yield return new Pair("TextOnDesk", PoliSimTheme.TextOnDesk, "Desk", PoliSimTheme.Desk, BodyFloor, "body (the hold banner, desk labels)");
             yield return new Pair("TextPrimary", PoliSimTheme.TextPrimary, "Brass", PoliSimTheme.Brass, CaptionFloor, "caption (the selected chip, D6's assignment flip)");
             yield return new Pair("InkOnStock", PoliSimTheme.InkOnStock, "StockOff", PoliSimTheme.StockOff, CaptionFloor, "caption (the unselected chip)");
+
+            // Design's board 17a (2026-09-24) flagged the D6 regression: light type on the BRASS FACE measured about 3.2:1 by D6, below the
+            // 4.5 body floor - and this census never enumerated a button face. The Canvas faced button (`CanvasChrome.FacedButton`) draws
+            // its label over the delivered brass / paper strips, whose fills are the face colours the method falls back to when a strip is
+            // missing (0x8A6B2F brass, 0xD9CBAC paper); the inks are the ones every caller passes - 0xF0E7D8 on brass (the main menu, the
+            // party rows, the start cards, the scenario lines, SIGN / FILE, CONTINUE) and 0x4A3A22 on paper (the menu's paper items, the
+            // Back buttons, the unplayable start cards). Listed at the body floor: a button's label is set in Display 14-22, not a caption.
+            // §626: THE FACE IS THE SPRITE'S, NOT THE FALLBACK LITERAL. The first cut of this pair measured the missing-strip fallback fill
+            // (0x8A6B2F) and read TextPrimary on it at 3.02 - a face no player sees, since the delivered strip is on disk. Design read the
+            // strip's face off the frame at ≈ #A88E55 (board 17a); here the face is the strip's own pixels, the mean of its centre patch,
+            // so the pair measures what is drawn. The light label and the fallback fill are REPORTED below the table, never asserted: both fail
+            // by construction (the review of §626), and what they say is why every brass label is TextPrimary now.
+            Color brassFace = SpriteFace("ui_btn_brass_canvas", PoliSimTheme.Hex(0x8A6B2F));
+            Color paperFace = SpriteFace("ui_btn_paper_canvas", PoliSimTheme.Hex(0xD9CBAC));
+            yield return new Pair("MenuTextOnPaper", PoliSimTheme.Hex(0x4A3A22), "PaperFace(strip)", paperFace, BodyFloor, "body (the Canvas faced button's label on paper - the menu's paper items, the Back buttons)");
+            yield return new Pair("TextPrimary", PoliSimTheme.TextPrimary, "BrassFace(strip)", brassFace, BodyFloor, "body (the faced button's label on brass since §626 - the main menu's default, the party rows, SELECT, SIGN, CONTINUE)");
+        }
+
+        /// <summary>The mean colour of a chrome strip's centre patch (the middle half of its width and height, opaque pixels), read from the PNG on disk
+        /// with its own decoder so the import settings do not matter; the fallback where the file is missing or unreadable.</summary>
+        private static Color SpriteFace(string chromeName, Color fallback)
+        {
+            string path = "Assets/Resources/Art/UI/Chrome/" + chromeName + ".png";
+            if (!System.IO.File.Exists(path)) { return fallback; }
+            var texture = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+            try
+            {
+                if (!ImageConversion.LoadImage(texture, System.IO.File.ReadAllBytes(path))) { return fallback; }
+                Color32[] pixels = texture.GetPixels32();
+                int w = texture.width, h = texture.height;
+                double r = 0, g = 0, b = 0; int n = 0;
+                for (int y = h / 4; y < h - h / 4; y++)
+                {
+                    for (int x = w / 4; x < w - w / 4; x++)
+                    {
+                        Color32 p = pixels[y * w + x];
+                        if (p.a < 250) { continue; }
+                        r += p.r; g += p.g; b += p.b; n++;
+                    }
+                }
+                return n == 0 ? fallback : new Color((float)(r / n / 255.0), (float)(g / n / 255.0), (float)(b / n / 255.0), 1f);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(texture);
+            }
         }
 
         public static void Run()
@@ -120,6 +166,14 @@ namespace PoliSim.EditorTools
                 sb.Append(F("      {0,-16}  {1,-8}  {2,5:0.00} {3,-20}  {4,5:0.00}                    {5,5:0.00}\n", area, Hex(ink), plain,
                     plain >= BodyFloor ? "clears 4.5" : "UNDER 4.5", Contrast(ink, RailActiveGround(area, GameController.RailActiveWashAlpha)), Contrast(ink, RailActiveGround(area, 0.12f))));
             }
+
+            // §626 (Design's board 17a, the review): two pairs REPORTED, never asserted - they fail by construction and say why the faced
+            // button's label is TextPrimary now: the light label it used to wear on the brass strip (D6's regression), and TextPrimary on
+            // the fill a MISSING strip would show, which no player sees while the strip is on disk.
+            Color brassStrip = SpriteFace("ui_btn_brass_canvas", PoliSimTheme.Hex(0x8A6B2F));
+            sb.Append("\n    REPORTED (§626, board 17a): the brass faced button - what its label used to be, and the fallback fill no player sees\n");
+            sb.Append(F("      light label #F0E7D8 on the strip {0}: {1:0.00} (D6's regression - every caller is TextPrimary since §626)\n", Hex(brassStrip), Contrast(PoliSimTheme.Hex(0xF0E7D8), brassStrip)));
+            sb.Append(F("      TextPrimary on the missing-strip fallback #8A6B2F: {0:0.00} (never drawn while the strip is on disk)\n", Contrast(PoliSimTheme.TextPrimary, PoliSimTheme.Hex(0x8A6B2F))));
 
             sb.Append(F("\n=== P2-1.2: {0} pair(s), {1} below floor ===\n", pairs, failures));
             if (failures == 0)

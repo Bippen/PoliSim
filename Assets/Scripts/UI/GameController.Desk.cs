@@ -253,7 +253,8 @@ namespace PoliSim.UI
         /// live here on Screen 0) with the LIVE caption before them (S4's second half, the one
         /// statement that these are desk readings). B5 holds: while time is held the non-Pause
         /// faces are disabled, rendered never omitted; Saves is enabled unconditionally, as on the
-        /// OPEN strip (a game-over player is the one who most needs Load).
+        /// OPEN strip (a game-over player is the one who most needs Load). Board 17c (2026-09-24) fixes
+        /// the right end's order: the joined 1× 2× 3× strip, a pitch with a hairline, SAVES, SETTINGS outermost.
         /// </summary>
         private void DrawDeskMasthead(Rect r, bool isTimePaused)
         {
@@ -290,29 +291,48 @@ namespace PoliSim.UI
             float chipY = r.y + Mathf.Round((r.height - chipHeight) * 0.5f);
             float x = r.xMax;
 
+            // BOARD 17c (Design, 2026-09-24): THE DESK'S WAY IN. Left to right: the clock's strip 1× 2× 3×
+            // JOINED (no gap between its cells - one control), then a gap of one chip pitch carrying a
+            // hairline in the plate rule ink (#B7A98C, PoliSimTheme.Hairline), then SAVES, then SETTINGS
+            // outermost - SAVES next to the game's clock, SETTINGS the desk's own, in the corner. SETTINGS
+            // stays its own chip, not folded under SAVES. Chip faces and sizes as built (no new chip, no
+            // new face); the ≈ 25 px the divider adds at 1280 is taken from the masthead's empty middle
+            // (the LIVE caption's right edge follows the strip). The settings sheet's foot reads BACK TO
+            // THE DESK when opened from here (17b's rule, in the settings screen's own file).
+            // ⚠ MM-2's order (SAVES outermost, SETTINGS inside it) is superseded by this board.
+            const string settingsLabel = "SETTINGS";
             float savesWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(savesLabel)).x) + chipPad * 2f;
-            x -= savesWidth;
+            float settingsWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(settingsLabel)).x) + chipPad * 2f;
+
+            x -= settingsWidth;
             bool ambient = GUI.enabled;
             GUI.enabled = true;
-            if (DrawDeskChipButton(new Rect(x, chipY, savesWidth, chipHeight), savesLabel, chipCaption, selected: false, disabled: false))
-            {
-                OpenSavesMenu();
-            }
-
-            // MM-2 (2026-09-24): the settings screen from the desk, beside SAVES - the same chip idiom.
-            const string settingsLabel = "SETTINGS";
-            float settingsWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(settingsLabel)).x) + chipPad * 2f;
-            x -= gap + settingsWidth;
             if (DrawDeskChipButton(new Rect(x, chipY, settingsWidth, chipHeight), settingsLabel, chipCaption, selected: false, disabled: false))
             {
                 OpenSettings();
             }
+
+            x -= gap + savesWidth;
+            if (DrawDeskChipButton(new Rect(x, chipY, savesWidth, chipHeight), savesLabel, chipCaption, selected: false, disabled: false))
+            {
+                OpenSavesMenu();
+            }
             GUI.enabled = ambient;
 
+            // The divider: one chip pitch (a SAVES-sized chip's own width, measured, so it scales with the
+            // caption) with the hairline standing at its centre, the chip's height tall.
+            float pitch = savesWidth;
+            x -= pitch;
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.Rule(new Rect(Mathf.Round(x + pitch * 0.5f), chipY, 1f, chipHeight), PoliSimTheme.Hairline);
+            }
+
+            // The joined strip: the cells share edges (no gap), laid out from the right, one control.
             for (int i = labels.Length - 1; i >= 0; i--)
             {
                 float width = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(labels[i])).x) + chipPad * 2f;
-                x -= gap + width;
+                x -= width;
                 bool selected = _gameSpeed == speeds[i];
                 bool disabled = isTimePaused || _isGameOver;
                 if (DrawDeskChipButton(new Rect(x, chipY, width, chipHeight), labels[i], chipCaption, selected, disabled))

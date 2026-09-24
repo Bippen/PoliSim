@@ -98,11 +98,12 @@ elsif ($mode eq 'join') {
   opendir my $d, $dir or die; my ($sheet) = grep { /\.parts\.sha256$/ } readdir $d; closedir $d;
   die "no .parts.sha256 sheet in $dir\n" unless $sheet;
   open my $s, '<:raw', "$dir/$sheet" or die; my @lines = <$s>; close $s;
-  my $head = shift @lines; my ($whole, $name, $bytes, $count) = $head =~ /^# WHOLE ([0-9a-f]{64})  (\S+)  (\d+) bytes  (\d+) parts/ or die "bad sheet head: $head";
+  # §626: the whole's name may carry spaces (Design's board file does) - the name is everything between the two double spaces.
+  my $head = shift @lines; my ($whole, $name, $bytes, $count) = $head =~ /^# WHOLE ([0-9a-f]{64})  (.+?)  (\d+) bytes  (\d+) parts/ or die "bad sheet head: $head";
   $out ||= "$dir/$name";
   my $bin = ''; my $ok = 0; my @bad;
   for my $l (@lines) {
-    next unless $l =~ /^([0-9a-f]{64})  (\S+)\s*$/; my ($sum, $pn) = ($1, $2);
+    next unless $l =~ /^([0-9a-f]{64})  (.+?)\s*$/; my ($sum, $pn) = ($1, $2);
     if (!-f "$dir/$pn") { push @bad, "MISSING $pn"; next; }
     my $part = slurp("$dir/$pn");
     if (sha256_hex($part) ne $sum) { push @bad, "DIFFERS $pn"; next; }

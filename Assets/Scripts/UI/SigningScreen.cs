@@ -492,7 +492,7 @@ namespace PoliSim.UI
             // method was the pattern the other Canvas screens copied, and a copied pattern is what let the
             // selector's controls end up with no face at all.
             Button control = CanvasChrome.FacedButton(parent, "SignButton", passed ? "SIGN" : "FILE",
-                PoliSimTheme.Display, 18, PoliSimTheme.Hex(0xF0E7D8), new Vector2(220f, 56f));
+                PoliSimTheme.Display, 18, PoliSimTheme.TextPrimary, new Vector2(220f, 56f));   // §626 (D6, board 17a): TextPrimary on the brass face
             control.onClick.AddListener(() => onSign());
 
             // Row 6's handle: the group starts invisible and non-interactable; DocumentEntrance brings
