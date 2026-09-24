@@ -334,6 +334,26 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            // SP-1 (§622): the start panel - the selector's step between the folder and the party - filmed for the country, then hidden; the
+            // party panel below is still opened directly, so no frame after this one moves.
+            if (controller.CanvasSelectorActive)
+            {
+                object startSelector = controller.GetType().GetField("_countrySelector", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+                object startWorld = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+                Country startCountry = (startWorld as World)?.GetCountry(_countryId);
+                if (startSelector is CountrySelectorScreen startScreen && startCountry != null)
+                {
+                    startScreen.ShowStartPanel(startCountry, null);
+                    yield return Settle();
+                    Claim("selector");
+                    yield return Capture("01f2_start_points");
+                    RecordCanvasTextAssert("01f2_start_points", controller);
+                    startScreen.HidePartyPanel();
+                    yield return Settle();
+                    Debug.Log($"SHOT: SP-1 - the start panel filmed for {_countryId}: {StartPoints.For(_countryId).Count} start point(s).");
+                }
+            }
+
             // CL-2 (2026-09-13, DS-6): the party picker over the selector - the country's seeded chamber, largest first, the cabinet the
             // chamber forms marked - filmed on the Canvas selector, then hidden; the run then seats the party the one-argument shape
             // seats (the largest), as every film before the picker did, so no frame after this one moves.

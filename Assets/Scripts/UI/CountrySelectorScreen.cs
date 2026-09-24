@@ -144,7 +144,7 @@ namespace PoliSim.UI
 
             foreach (Country country in world.Countries)
             {
-                BuildFolderCard(grid.transform, country, folder, opened => screen.ShowPartyPanel(opened, onSelect));
+                BuildFolderCard(grid.transform, country, folder, opened => screen.ShowStartPanel(opened, onSelect));   // SP-1 (§622): the start points first, then the party
             }
 
             // S-20: the capture-identity token, so a film of this board proves it is this board.
@@ -318,6 +318,81 @@ namespace PoliSim.UI
                 _partyPanel = null;
             }
         }
+
+        /// <summary>
+        /// SP-1 (§622, the start-points spec §1.2): THE START PANEL - the selector's step between the folder and the party: one card per start
+        /// point in date order (the date, the election's kind, the card's state - playable, or LOCKED with its reason in one line), on the
+        /// same dim ground as the party panel. A playable card opens the party panel for that country (the world opens on that start's own
+        /// date - the one start the ruled clock offers per country today); a locked card takes no click; BACK returns to the folders. The
+        /// brief beneath a selected card is SP-2's. Public so the capture driver can film it; <paramref name="onSelect"/> null draws it only.
+        /// </summary>
+        public void ShowStartPanel(Country country, Action<CountryId, string> onSelect)
+        {
+            HidePartyPanel();
+            if (Root == null || country == null) { return; }
+
+            var panel = new GameObject("StartPanel");
+            _partyPanel = panel;   // one overlay at a time: the party panel replaces it through the same field
+            panel.transform.SetParent(Root.transform, false);
+            Stretch(panel.AddComponent<RectTransform>());
+            Image dim = panel.AddComponent<Image>();
+            dim.color = new Color(PoliSimTheme.Desk.r, PoliSimTheme.Desk.g, PoliSimTheme.Desk.b, 0.94f);
+            dim.raycastTarget = true;
+
+            var column = new GameObject("Column");
+            column.transform.SetParent(panel.transform, false);
+            var columnRect = column.AddComponent<RectTransform>();
+            columnRect.anchorMin = new Vector2(0.5f, 0.5f);
+            columnRect.anchorMax = new Vector2(0.5f, 0.5f);
+            columnRect.pivot = new Vector2(0.5f, 0.5f);
+            columnRect.anchoredPosition = Vector2.zero;
+            columnRect.sizeDelta = new Vector2(1200f, 800f);
+            VerticalLayoutGroup layout = column.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.spacing = 10f;
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = false;
+
+            CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR START — {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 30,
+                PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
+            CanvasChrome.MakeText(column.transform, "Subtitle", "THE ELECTION YOU BEGIN BEFORE · ONE CARD PER POPULARLY DECIDED NATIONAL ELECTION, THE LATEST OF EACH KIND · IN DATE ORDER",
+                PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+
+            foreach (StartPoints.StartPoint point in StartPoints.For(country.Id))
+            {
+                // The card: the date and the kind on the face; the state beneath it in one line. A playable card is brass (the desk's control
+                // face); a locked one paper, and it takes no click - its reason is the line.
+                string face = StartPoints.DateLine(point) + " · " + point.Kind;
+                Button button = CanvasChrome.FacedButton(column.transform, $"Start_{point.Kind.Replace(' ', '_')}", face, PoliSimTheme.Display, 20,
+                    point.Playable ? PoliSimTheme.Hex(0xF0E7D8) : PoliSimTheme.Hex(0x4A3A22), new Vector2(PartyRowWidth, StartCardHeight),
+                    point.Playable ? CanvasChrome.Face.Brass : CanvasChrome.Face.Paper);
+                LayoutElement cardLayout = button.gameObject.AddComponent<LayoutElement>();
+                cardLayout.preferredWidth = PartyRowWidth;
+                cardLayout.preferredHeight = StartCardHeight;
+                cardLayout.minHeight = StartCardHeight;
+                button.interactable = point.Playable;
+                if (point.Playable)
+                {
+                    Country chosen = country;
+                    button.onClick.AddListener(() => ShowPartyPanel(chosen, onSelect));
+                }
+                CanvasChrome.MakeText(column.transform, "State", point.Line, PoliSimTheme.Body, 13,
+                    point.Playable ? PoliSimTheme.Hex(0xB7A98C) : PoliSimTheme.Hex(0x8C7E63), TextAnchor.MiddleCenter);
+            }
+
+            Button backButton = CanvasChrome.FacedButton(column.transform, "Back", "BACK TO THE COUNTRIES",
+                PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight),
+                CanvasChrome.Face.Paper);
+            LayoutElement backLayout = backButton.gameObject.AddComponent<LayoutElement>();
+            backLayout.preferredWidth = BackButtonWidth;
+            backLayout.preferredHeight = PartyRowHeight;
+            backLayout.minHeight = PartyRowHeight;
+            backButton.onClick.AddListener(HidePartyPanel);
+        }
+
+        private const float StartCardHeight = 44f;
 
         /// <summary>What a line of the wordmark's type needs, in canvas units - its own size plus the
         /// face's ascent and descent. See the minimums note at the call site.</summary>

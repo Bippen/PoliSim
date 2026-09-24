@@ -215,6 +215,136 @@ namespace PoliSim.Elections
             return rules;
         }
 
+        // -----------------------------------------------------------------------------------------------------------------------------
+        // §621 (ruled 2026-09-25): DECLARATIONS BY DATE. Three rules - a declaration is dated by the party's own record, never by press
+        // reporting; a document is dated by the decision it records, not its file date; a declaration stands until a later dated one
+        // replaces it. Applied to Sweden: the 2022 S/M candidacy pair carries into 2026 until the dated 2026 declarations replace it
+        // (M 2026-04-01 [MSD-P1], S 2026-05-01 [S-P2]); KD's no-SD-ministers line lifts on 2026-09-08 (KD's own words [KD-I2]); V's
+        // in-or-against rule takes effect 2026-04-18 (the congress decision [V-P1] records); C's one-way line to V starts 2026-01-30
+        // (C's own publication [C-P1]). The vintage API above stays for the backtests, pinned by name; `ForDate` is the timeline, and
+        // `DeclarationDatesDiagnostic` proves the timeline's 2022-09-11 equals `For(Sweden2022)` and its 2026-09-13 `For(Sweden2026)`.
+        // No runtime surface reads the timeline yet - the run-up's declarations are D-PS's (§620/§621); the election reads its own day's.
+        // -----------------------------------------------------------------------------------------------------------------------------
+
+        /// <summary>One dated declaration: a pair line, a candidacy or an in-or-against rule, standing from <see cref="From"/> until <see cref="Until"/> (exclusive; MaxValue while it stands).</summary>
+        public readonly struct DatedFact
+        {
+            public readonly string Party;
+            /// <summary>The other party of a pair line; null for a candidacy or an in-or-against rule.</summary>
+            public readonly string Other;
+            public readonly FactKind Kind;
+            public readonly bool BlocksSupport;
+            public readonly bool OneWay;
+            public readonly string Candidate;
+            public readonly System.DateTime From;
+            public readonly System.DateTime Until;
+            public readonly string Basis;
+
+            public DatedFact(string party, string other, FactKind kind, bool blocksSupport, bool oneWay, string candidate, System.DateTime from, System.DateTime until, string basis)
+            {
+                Party = party; Other = other; Kind = kind; BlocksSupport = blocksSupport; OneWay = oneWay; Candidate = candidate; From = from; Until = until; Basis = basis;
+            }
+
+            public bool StandsOn(System.DateTime date) => date.Date >= From && date.Date < Until;
+        }
+
+        public enum FactKind { PairLine, Candidacy, InOrAgainst }
+
+        private static readonly System.DateTime Open = System.DateTime.MaxValue;
+        private static System.DateTime D(int y, int m, int d) => new System.DateTime(y, m, d);
+
+        /// <summary>Sweden's declarations as dated facts - every date the party's own record's (the rules of §621), each fact standing until the dated one that replaced it.</summary>
+        public static IReadOnlyList<DatedFact> SwedenTimeline { get; } = new[]
+        {
+            // C ↔ SD, support-blocking: Lööf's statement, then Thand Ringqvist's installation speech restates it - the same shape, a new basis.
+            new DatedFact("C", "SD", FactKind.PairLine, true, false, null, D(2017, 5, 14), D(2025, 11, 13),
+                "DECLARED: Centerpartiet will not sit in or support a government dependent on SD - Loof, SVT Agenda 2017-05-14, verbatim; conduct 2022 (backed Andersson over Kristersson). " + SwedenSource2022),
+            new DatedFact("C", "SD", FactKind.PairLine, true, false, null, D(2025, 11, 13), Open,
+                "DECLARED: Centerpartiet will not sit in or support a government that depends on SD or gives it influence - Thand Ringqvist's installation speech 2025-11-13 [C-P5], restated 2026-01-30 [C-P1] (C's own publication; reported 2026-01-28), 2026-01-30 [C-I10], 2026-08-11 [C-P2], 2026-09-08 [C-I1] and after the election 2026-09-14 [C-I6]. " + SwedenSource),
+            // M / KD / L ↔ SD, cabinet-blocking: promised in the 2022 campaign (no own-record date on disk - held from the campaign's first day, the model's window), executed by Tidö 2022-10-14; lifted by each party's own dated record.
+            new DatedFact("M", "SD", FactKind.PairLine, false, false, null, new CampaignCalendar(D(2022, 9, 11)).CampaignStart, D(2026, 4, 1),
+                "DECLARED: promised in the 2022 campaign not to let SD sit in government, while accepting its support - Tidoavtalet 2022-10-14; lifted by the M-SD agreement of 2026-04-01 [MSD-P1]. " + SwedenSource2022),
+            new DatedFact("KD", "SD", FactKind.PairLine, false, false, null, new CampaignCalendar(D(2022, 9, 11)).CampaignStart, D(2026, 9, 8),
+                "DECLARED: promised in the 2022 campaign not to let SD sit in government, while accepting its support - Tidoavtalet 2022-10-14; lifted by KD's own words 2026-09-08 [KD-I2] (ruled §621: the party's own record, 8 September). " + SwedenSource2022),
+            new DatedFact("L", "SD", FactKind.PairLine, false, false, null, new CampaignCalendar(D(2022, 9, 11)).CampaignStart, D(2026, 3, 13),
+                "DECLARED: promised in the 2022 campaign not to let SD sit in government, while accepting its support - Tidoavtalet 2022-10-14; lifted by L's agreement of 2026-03-13 [L-P1]. " + SwedenSource2022),
+            // C → V, one way, support-blocking: from C's own publication (ruled §621: 30 January, not the article of the 28th).
+            new DatedFact("C", "V", FactKind.PairLine, true, true, null, D(2026, 1, 30), Open,
+                "DECLARED: Centerpartiet will not sit in, support or let through a cabinet that contains V - C's own publication 2026-01-30 [C-P1] (first reported 2026-01-28), restated 2026-04-21 [C-I3] and 2026-09-08 [C-I1], held after the election 2026-09-14 [C-I6] and 2026-09-18 [C-I8]; one way. " + SwedenSource),
+            // The candidacies: 2022's carry until 2026's replace them (ruled §621).
+            new DatedFact("S", null, FactKind.Candidacy, false, false, "Magdalena Andersson", D(2022, 8, 4), D(2026, 5, 1),
+                "S's own page of 2022-08-04 [S-P1] (capture 2022-08-13 [S-P1a]) - its leader and sitting prime minister; carried until the 2026 declaration. " + SwedenSource2022),
+            new DatedFact("S", null, FactKind.Candidacy, false, false, "Magdalena Andersson", D(2026, 5, 1), Open,
+                "S's own pages: 2026-05-01 [S-P2], 2026-08-03 [S-P1], 2026-08-09 [S-P3]. " + SwedenSource),
+            new DatedFact("M", null, FactKind.Candidacy, false, false, "Ulf Kristersson", D(2022, 3, 26), D(2026, 4, 1),
+                "M's own page [M-P1] of 2022-03-26 (capture 2022-09-10 [M-P1a]); carried until the 2026 declaration. " + SwedenSource2022),
+            new DatedFact("M", null, FactKind.Candidacy, false, false, "Ulf Kristersson", D(2026, 4, 1), Open,
+                "M's own page of 2026-04-01 [MSD-P1] (\"Den enda som kan leda den är Ulf Kristersson.\"). " + SwedenSource),
+            // V's in-or-against rule: the congress decision of 2026-04-18 (ruled §621: the decision the document records, not the PDF's date).
+            new DatedFact("V", null, FactKind.InOrAgainst, false, false, null, D(2026, 4, 18), Open,
+                "DECLARED: Vänsterpartiet will not support or let through a government it is not in, where its votes are needed - its election platform as decided by the congress 2026-04-18 ([V-P1], the PDF dated 2026-04-19; [V-I1]), restated as unchanged 2026-08-25 ([C-I9]), held after the election 2026-09-14 ([V-I4]). " + SwedenSource),
+        };
+
+        /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden only; the other countries return derived lines alone.</summary>
+        public static List<RedLine> ForDate(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
+        {
+            var lrGen = new double[parties.Count];
+            var galtan = new double[parties.Count];
+            for (int p = 0; p < parties.Count; p++) { lrGen[p] = parties[p].LrGen; galtan[p] = parties[p].Galtan; }
+            List<RedLine> lines = DerivedRedLines.From(lrGen, galtan);
+            if (country != CountryId.Sweden) { return lines; }
+            AddCandidacyLines(lines, parties, CandidaciesAt(country, asOf));
+            foreach (DatedFact f in SwedenTimeline)
+            {
+                if (f.Kind != FactKind.PairLine || !f.StandsOn(asOf)) { continue; }
+                int a = IndexOf(parties, f.Party), b = IndexOf(parties, f.Other);
+                if (a < 0 || b < 0) { continue; }
+                lines.Add(new RedLine(a, b, RedLineKind.Declared, blocksSupport: f.BlocksSupport, oneWay: f.OneWay, basis: f.Basis));
+            }
+            return lines;
+        }
+
+        /// <summary>The own-leader candidacies standing on <paramref name="asOf"/> (§621: 2022's carry until 2026's replace them).</summary>
+        public static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> CandidaciesAt(CountryId country, System.DateTime asOf)
+        {
+            var found = new List<(string, string, string)>();
+            if (country != CountryId.Sweden) { return found; }
+            foreach (DatedFact f in SwedenTimeline) { if (f.Kind == FactKind.Candidacy && f.StandsOn(asOf)) { found.Add((f.Party, f.Candidate, f.Basis)); } }
+            return found;
+        }
+
+        /// <summary>The in-or-against rules standing on <paramref name="asOf"/>.</summary>
+        public static List<InOrAgainst> InOrAgainstAt(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
+        {
+            var rules = new List<InOrAgainst>();
+            if (country != CountryId.Sweden) { return rules; }
+            foreach (DatedFact f in SwedenTimeline)
+            {
+                if (f.Kind != FactKind.InOrAgainst || !f.StandsOn(asOf)) { continue; }
+                int p = IndexOf(parties, f.Party);
+                if (p >= 0) { rules.Add(new InOrAgainst(p, f.Basis)); }
+            }
+            return rules;
+        }
+
+        private static void AddCandidacyLines(List<RedLine> lines, IReadOnlyList<PoliticalParty> parties, IReadOnlyList<(string Abbrev, string Candidate, string Basis)> declared)
+        {
+            for (int i = 0; i < declared.Count; i++)
+            {
+                int a = IndexOf(parties, declared[i].Abbrev);
+                if (a < 0) { continue; }
+                for (int j = 0; j < declared.Count; j++)
+                {
+                    int b = IndexOf(parties, declared[j].Abbrev);
+                    if (j == i || b < 0) { continue; }
+                    lines.Add(new RedLine(a, b, RedLineKind.Declared, blocksSupport: true, oneWay: true,
+                        basis: CandidacyPrefix + declared[i].Abbrev + "'s own leader " + declared[i].Candidate + " is its prime-ministerial candidate ("
+                               + declared[i].Basis + "); it refuses any cabinet led by another party's candidate - " + declared[j].Abbrev + "'s is "
+                               + declared[j].Candidate + " (" + declared[j].Basis + ")."));
+                }
+            }
+        }
+
         private static int IndexOf(IReadOnlyList<PoliticalParty> parties, string abbrev)
         {
             for (int p = 0; p < parties.Count; p++)

@@ -270,6 +270,18 @@ namespace PoliSim.Elections
         /// <summary>The day the records of §617 were closed - what "as of the record" means on a screen.</summary>
         public static readonly DateTime RecordDate = D(2026, 9, 24);
 
+        /// <summary>§621 (ruled): ONE SEED VINTAGE PER COUNTRY, THE SEED'S - the economies are seeded to real mid-2026 data (`WorldFactory`, its seed doc), never re-seeded per start and never mixed within a country (mixed vintages break every per-head figure); the offset to the calendar is stated, not hidden.</summary>
+        public static readonly DateTime SeedVintage = D(2026, 7, 1);
+
+        /// <summary>The seed's offset from a country's start, in words - the statement §621 requires beside every start that is not the seed's own season.</summary>
+        public static string SeedVintageLine(CountryId id)
+        {
+            DateTime start = StartDate(id);
+            int months = (SeedVintage.Year - start.Year) * 12 + SeedVintage.Month - start.Month;
+            if (months <= 0) { return "the economy is seeded to mid-2026 data, the start's own season"; }
+            return "the economy is seeded to mid-2026 data, " + (months >= 12 ? (months / 12) + " year(s) " + (months % 12 > 0 ? (months % 12) + " month(s) " : string.Empty) : months + " month(s) ") + "after this start - one seed vintage per country, the offset stated (§621)";
+        }
+
         /// <summary>The statute a country's ordinary polling day follows, with its citations, or null where no calendar is modelled.</summary>
         public static string PollingDayBasis(CountryId id) =>
             id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)" : null;

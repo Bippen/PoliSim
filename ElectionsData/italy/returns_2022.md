@@ -1,5 +1,6 @@
 # Italy — Camera 2022 returns + rules [SOURCED] [PROVISIONAL] — seat totals [UNCONFIRMED] [ALLOCATION PROVISIONAL]
 
+`[RULED 2026-09-25, COMPLETED.md §621]`: **Italy seats the list as filed** - the roster's per-list figures (FdI 119, FI 45, NM 7) stand as the seed; the group reading below is the record's stated deviation, not the seat.
 `[ALLOCATION PROVISIONAL]` (re-verification 2026-09-25, the last section): the proportional seats per list are
 confirmed by two primary sources, but no primary page assigns a uninominal seat to a LIST — the Camera's own record
 assigns each deputy to a GROUP, and by group FdI holds 118 not 119, FI 44 not 45, and the NM, IC and +E rows are

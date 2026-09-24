@@ -103,3 +103,6 @@ file	Assets/Scripts/Persistence/SaveGame.cs	e4f1a127ab6546d6227a29fb3ce2ff7960a9
 file	Assets/Scripts/Persistence/SaveGameService.cs	a772f74980139fadd9e158f2b9c48e7b38dd180e878eee0a9ee141abb0d832d1	reviewed	2026-09-24	s619	Reviews/2026-09-25_s619_polling_day.md	-
 file	Assets/Scripts/UI/GameController.cs	23f38098d72dd46555ee40aa8e60b89c0ac3cc6ef672d296274f40fbc1dcaafb	reviewed	2026-09-24	s619	Reviews/2026-09-25_s619_polling_day.md	-
 file	Assets/Scripts/UI/GameController.cs	f04914707f596ec3c883dceb002c20e4271cdcd65469b1de0d8a5e426c53f557	reviewed	2026-09-24	s619	Reviews/2026-09-25_s619_polling_day.md	log line reworded after MetaTextCheck
+file	Assets/Scripts/Elections/DeclaredRedLines.cs	e3b8dacd6d5a87114f8e808683d34af118ae69a23f139702503d246c41aaf79d	reviewed	2026-09-24	s621	Reviews/2026-09-25_s621_declaration_dates.md	-
+file	Assets/Scripts/Elections/WorldClock.cs	2f71ffb1d0aa1a2aa73636e121991fc0b5fc4ec66700d17c7dcca55932e0e1fb	reviewed	2026-09-24	s621	Reviews/2026-09-25_s621_declaration_dates.md	-
+file	Assets/Scripts/UI/GameController.cs	7e08565ea0a517ad0e0cace2bfa0f153a837096f118613b76fa70568296a646c	reviewed	2026-09-24	s621	Reviews/2026-09-25_s621_declaration_dates.md	-

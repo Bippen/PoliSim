@@ -2026,6 +2026,7 @@ namespace PoliSim.UI
             string deviation = PoliSim.Elections.WorldClock.SeatingDeviation(countryId, start);
             Debug.Log($"WORLD CLOCK: {countryId} opens {start:yyyy-MM-dd} - the chamber of record {PoliSim.Elections.WorldClock.ChamberAt(countryId, start).Vintage}"
                       + (deviation != null ? $"; DEVIATION: {deviation}" : string.Empty));
+            Debug.Log($"WORLD CLOCK: {countryId} - {PoliSim.Elections.WorldClock.SeedVintageLine(countryId)}");
         }
 
         private void SelectPlayerCountry(CountryId countryId)
