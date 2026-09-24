@@ -1,0 +1,83 @@
+url	file	fetched_utc	http_status
+https://www.gesetze-im-internet.de/gg/art_39.html	gg_art_39.html	2026-09-24T16:11:40Z	200
+https://www.gesetze-im-internet.de/gg/art_63.html	gg_art_63.html	2026-09-24T16:11:40Z	200
+https://www.gesetze-im-internet.de/gg/art_67.html	gg_art_67.html	2026-09-24T16:11:40Z	200
+https://www.gesetze-im-internet.de/gg/art_68.html	gg_art_68.html	2026-09-24T16:11:40Z	200
+https://www.gesetze-im-internet.de/gg/art_69.html	gg_art_69.html	2026-09-24T16:11:40Z	200
+https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/bund-99.html	bwl_2021_bund-99.html	2026-09-24T16:11:40Z	200
+normattiva_dpr_2022-07-21_96_scioglimento.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.del.presidente.della.repubblica:2022-07-21;96	2026-09-24T16:12:12Z	000
+normattiva_dpr_2022-07-21_97_comizi.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.del.presidente.della.repubblica:2022-07-21;97	2026-09-24T16:12:13Z	000
+storia_camera_leg_XVIII.html	https://storia.camera.it/legislature/leg-repubblica-XVIII	2026-09-24T16:12:13Z	000
+storia_camera_leg_XIX.html	https://storia.camera.it/legislature/leg-repubblica-XIX	2026-09-24T16:12:13Z	000
+senato_costituzione_titolo-ii_presidente.html	https://www.senato.it/istituzione/la-costituzione/parte-ii/titolo-ii	2026-09-24T16:12:13Z	000
+senato_costituzione_titolo-iii_sezione-i_governo.html	https://www.senato.it/istituzione/la-costituzione/parte-ii/titolo-iii/sezione-i	2026-09-24T16:12:14Z	000
+governo_governi_xix_legislatura.html	https://www.governo.it/it/i-governi-dal-1943-ad-oggi/xix-legislatura-dal-13-ottobre-2022	2026-09-24T16:12:14Z	000
+governo_governi_xviii_legislatura.html	https://www.governo.it/it/i-governi-dal-1943-ad-oggi/xviii-legislatura-dal-23-marzo-2018	2026-09-24T16:12:14Z	000
+https://www.bundestag.de/dokumente/textarchiv/2021/kw42-konstituierende-sitzung-865146	bt_2021-10-26_konstituierende-sitzung.html	2026-09-24T16:14:50Z	200
+https://www.bundestag.de/dokumente/textarchiv/2021/kw49-de-kanzlerwahl-870142	bt_2021-12-08_kanzlerwahl.html	2026-09-24T16:14:50Z	200
+https://www.bundestag.de/dokumente/textarchiv/2021/kw49-de-kanzlerwahl-bundesregierung-870146	bt_2021-12-08_bundesregierung.html	2026-09-24T16:14:51Z	200
+https://www.bundestag.de/dokumente/textarchiv/2024/kw09-pa-bundeswahlausschuss-ergebnis-990594	bt_2024-02_wahlwiederholung-berlin-verkleinerung.html	2026-09-24T16:14:52Z	200
+https://www.bundestag.de/dokumente/textarchiv/2024/kw45-minderheitsregierung-1028778	bt_2024-11_minderheitsregierung.html	2026-09-24T16:14:52Z	200
+https://www.bundestag.de/dokumente/textarchiv/2024/kw51-de-vertrauensfrage-1033624	bt_2024-12-16_vertrauensfrage.html	2026-09-24T16:14:54Z	200
+https://www.bundestag.de/dokumente/textarchiv/2025/kw13-de-konstituierung-bericht-1058004	bt_2025-03-25_konstituierung.html	2026-09-24T16:14:55Z	200
+https://www.bundestag.de/dokumente/textarchiv/2025/kw19-de-kanzlerwahl-1062470	bt_2025-05-06_kanzlerwahl.html	2026-09-24T16:14:56Z	200
+https://www.bundestag.de/dokumente/textarchiv/2025/kw19-de-kanzlerwahl-bundesregierung-1063886	bt_2025-05-06_bundesregierung.html	2026-09-24T16:14:57Z	200
+https://www.bundestag.de/parlament/plenum/sitzverteilung	bt_sitzverteilung_21wp.html	2026-09-24T16:14:58Z	200
+https://www.bundespraesident.de/SharedDocs/Reden/DE/Frank-Walter-Steinmeier/Reden/2024/11/241107-Entlassung-Ernennung-Minister.html	bp_2024-11-07_entlassung-ernennung-minister.html	2026-09-24T16:14:59Z	200
+https://www.bundespraesident.de/SharedDocs/Pressemitteilungen/DE/2024/11/241107-Statement-politische-Lage.html	bp_2024-11-07_statement-politische-lage.html	2026-09-24T16:15:00Z	200
+https://www.bundespraesident.de/SharedDocs/Reden/DE/Frank-Walter-Steinmeier/Reden/2024/12/241227-Entscheidung-Aufloesung-BT.html	bp_2024-12-27_entscheidung-aufloesung-bt.html	2026-09-24T16:15:01Z	200
+https://www.bundespraesident.de/SharedDocs/Pressemitteilungen/DE/2025/03/250325-Beauftragung-Bundeskanzler.html	bp_2025-03-25_beauftragung-bundeskanzler.html	2026-09-24T16:15:02Z	200
+https://www.bundespraesident.de/SharedDocs/Berichte/DE/Frank-Walter-Steinmeier/2025/05/250506-Ernennung-BK-BReg.html	bp_2025-05-06_ernennung-bk-breg.html	2026-09-24T16:15:03Z	200
+https://www.bundesregierung.de/breg-de/aktuelles/pressekonferenzen/bk-statement-zur-entlassung-des-finanzministers-2319062	breg_2024-11-06_statement-entlassung-finanzminister.html	2026-09-24T16:15:12Z	200
+https://www.bundesregierung.de/breg-de/aktuelles/pressemitteilungen/bundeskanzler-scholz-beantragt-die-vertrauensfrage-2324868	breg_2024-12-11_antrag-vertrauensfrage.html	2026-09-24T16:15:13Z	200
+https://www.bundesregierung.de/breg-de/bundesregierung/bundeskabinett	breg_bundeskabinett.html	2026-09-24T16:15:13Z	200
+https://www.bundeswahlleiterin.de/mitteilungen/bundestagswahlen/2025/20241227_verkuerzte-fristen.html	bwl_2024-12-27_wahltermin-verkuerzte-fristen.html	2026-09-24T16:15:14Z	200
+https://www.spd.de/service/pressemitteilungen/detail/news/saskia-esken-und-lars-klingbeil-als-spd-vorsitzende-gewaehlt/11/12/2021/	spd_2021-12-11_esken-klingbeil-gewaehlt.html	2026-09-24T16:15:15Z	200
+https://www.spd.de/service/pressemitteilungen/detail/news/baerbel-bas-und-lars-klingbeil-als-spd-vorsitzende-gewaehlt/27/06/2025	spd_2025-06-27_bas-klingbeil-gewaehlt.html	2026-09-24T16:15:15Z	200
+https://www.gruene.de/artikel/neue-parteispitze-bestaetigt	gruene_2022-02_neue-parteispitze.html	2026-09-24T16:15:16Z	404
+https://www.gruene.de/artikel/neustartklar-mit-neuem-bundesvorstand	gruene_2024-11_neuer-bundesvorstand.html	2026-09-24T16:15:17Z	200
+https://www.gruene.de/leute/unser-bundesvorstand	gruene_unser-bundesvorstand.html	2026-09-24T16:15:18Z	200
+https://www.die-linke.de/partei/parteidemokratie/parteitag/erfurter-parteitag-2022/live/wahl-des-parteivorstandes/	linke_2022-06_erfurt-wahl-parteivorstand.html	2026-09-24T16:15:20Z	200
+https://www.die-linke.de/partei/parteidemokratie/parteitag/hallescher-parteitag-2024/hallescher-parteitag/wahl-des-parteivorstands/	linke_2024-10_halle-wahl-parteivorstand.html	2026-09-24T16:15:21Z	200
+https://www.die-linke.de/partei/parteidemokratie/parteivorstand/parteivorstand-2024-2026/	linke_parteivorstand-2024-2026.html	2026-09-24T16:15:22Z	200
+https://www.fdp.de/pressemitteilung/fdp-bundesparteitag-wahlergebnisse-praesidium-2	fdp_2023-04-21_wahlergebnisse-praesidium.html	2026-09-24T16:15:22Z	200
+https://www.fdp.de/pressemitteilung/fdp-bundesparteitag-wahlergebnisse-praesidium-3	fdp_2025-05_wahlergebnisse-praesidium.html	2026-09-24T16:15:23Z	200
+https://www.cdu.de/artikel/merz-offiziell-neuer-cdu-vorsitzender	cdu_2022-01-31_merz-offiziell-vorsitzender.html	2026-09-24T16:15:47Z	302
+https://www.cdu.de/personen/friedrich-merz/	cdu_personen_friedrich-merz.html	2026-09-24T16:15:47Z	200
+https://www.csu.de/partei/vorstand/mitglieder-im-parteivorstand/dr-markus-soeder-mdl/	csu_vorstand_markus-soeder.html	2026-09-24T16:15:49Z	200
+https://www.afd.de/partei/bundesvorstand/	afd_bundesvorstand.html	2026-09-24T16:15:50Z	200
+https://www.afd.de/pressemitteilung-der-afd-bundesparteitag-waehlt-neuen-bundesvorstand/	afd_2026-07_bundesparteitag-neuer-bundesvorstand.html	2026-09-24T16:15:50Z	200
+https://www.ssw.de/themen/dirschauer-gibt-ssw-landesvorsitz-ab	ssw_2025-03-03_dirschauer-gibt-landesvorsitz-ab.html	2026-09-24T16:15:51Z	200
+https://www.ssw.de/die-partei/landesvorstand	ssw_landesvorstand.html	2026-09-24T16:15:52Z	200
+https://bsw-vg.de/amira-mohamed-ali-und-fabio-de-masi-zu-bsw-parteivorsitzenden-gewaehlt/	bsw_2025-12_mohamed-ali-de-masi-gewaehlt.html	2026-09-24T16:15:53Z	200
+https://bsw-vg.de/partei/parteivorstand/	bsw_parteivorstand.html	2026-09-24T16:15:53Z	200
+https://www.home.cdu.de/artikel/merz-offiziell-neuer-cdu-vorsitzender	cdu_2022-01-31_merz-offiziell-vorsitzender.html	2026-09-24T16:16:57Z	000
+https://www.gruene.de/artikel/bundesvorstand-legt-aemter-nieder	gruene_2024-09_bundesvorstand-legt-aemter-nieder.html	2026-09-24T16:17:26Z	200
+https://www.gruene.de/artikel/im-gespraech-mit-ricarda-und-omid	gruene_2022_im-gespraech-mit-ricarda-und-omid.html	2026-09-24T16:17:27Z	200
+https://www.afd.de/partei/bundesvorstand/	afd_bundesvorstand.html	2026-09-24T16:18:37Z	200	(refetched with --compressed; body served gzip)
+https://www.afd.de/pressemitteilung-der-afd-bundesparteitag-waehlt-neuen-bundesvorstand/	afd_2026-07_bundesparteitag-neuer-bundesvorstand.html	2026-09-24T16:18:38Z	200	(refetched with --compressed; body served gzip)
+https://www.cdu.de/index.php/artikel/friedrich-merz-ist-1000-tage-parteivorsitzender	cdu_2024-10_merz-1000-tage-parteivorsitzender.html	2026-09-24T16:19:24Z	302
+https://www.cdu.de/app/uploads/2026/02/38-PT-Wahlergebnisse-2026.pdf	cdu_2026-02-20_38-parteitag-wahlergebnisse.pdf	2026-09-24T16:19:25Z	200
+https://www.ssw.de/themen/ekstraordinaert-landsmoede-ausserordentlicher-parteitag-5-april-2025	ssw_2025-04-05_ausserordentlicher-parteitag.html	2026-09-24T16:21:01Z	200
+https://bsw-vg.de/partei/bundesparteitag/	bsw_2024-01-27_1-bundesparteitag.html	2026-09-24T16:21:02Z	200
+https://www.cdu.de/praesidium/	cdu_praesidium.html	2026-09-24T16:22:29Z	200
+https://www.ssw.de/presse/bilder-service/sybilla-nitsch	ssw_bilder-service_sybilla-nitsch.html	2026-09-24T16:22:31Z	200
+https://www.cdu.de/38-parteitag/	cdu_38-parteitag.html	2026-09-24T16:23:35Z	200
+https://www.bundestag.de/resource/blob/196146/3dd33ed319f1a85407e031ac9068c9b5/Kapitel_05_01_Bildung_von_Fraktionen_und_Gruppen.pdf	bt_dhb_kap-05-01_fraktionen-und-gruppen.pdf	2026-09-24T16:23:36Z	200
+https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/vglhauptwahl.html	bwl_2021_vglhauptwahl.html	2026-09-24T16:25:16Z	200
+https://www.bundestag.de/abgeordnete/biografien/M/merz_friedrich-1046080	bt_biografie_merz_friedrich.html	2026-09-24T16:25:17Z	200
+https://www.bundespraesident.de/SharedDocs/Berichte/DE/Frank-Walter-Steinmeier/2026/07/260729-Entlassungen-Ernennungen-BM.html	bp_2026-07-29_entlassungen-ernennungen-bm.html	2026-09-24T16:25:18Z	200
+https://www.bundestag.de/parlament/fraktionen	bt_fraktionen_21wp.html	2026-09-24T16:25:18Z	200
+https://www.bundeswahlleiterin.de/bundestagswahlen/2021/ergebnisse/vglhauptwahl/bund-99.html	bwl_2021_vglhauptwahl_bund-99.html	2026-09-24T16:26:30Z	404
+DISCARDED	bt_sitzverteilung_21wp.html	2026-09-24T16:26:30Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	bt_fraktionen_21wp.html	2026-09-24T16:26:31Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	cdu_praesidium.html	2026-09-24T16:26:31Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	cdu_38-parteitag.html	2026-09-24T16:26:31Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	cdu_personen_friedrich-merz.html	2026-09-24T16:26:31Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	ssw_bilder-service_sybilla-nitsch.html	2026-09-24T16:26:31Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	bsw_parteivorstand.html	2026-09-24T16:26:31Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	gruene_unser-bundesvorstand.html	2026-09-24T16:26:31Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	bwl_2021_vglhauptwahl.html	2026-09-24T16:26:32Z	fetched, read, not used (no quotable fact for this record); file deleted
+DISCARDED	bwl_2021_vglhauptwahl_bund-99.html	2026-09-24T16:26:43Z	HTTP 404; file deleted
+https://www.die-linke.de/partei/parteidemokratie/parteivorstand/parteivorstand-2022-2024/mitglieder-des-parteivorstandes/schirdewan-martin-parteivorsitzender/	linke_pv-2022-2024_schirdewan-martin.html	2026-09-24T16:27:35Z	200
+https://www.die-linke.de/partei/parteidemokratie/parteivorstand/parteivorstand-2024-2026/mitglieder-des-parteivorstandes/ines-schwerdtner/	linke_pv-2024-2026_schwerdtner-ines.html	2026-09-24T16:27:36Z	200

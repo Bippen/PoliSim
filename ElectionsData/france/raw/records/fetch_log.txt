@@ -1,0 +1,101 @@
+2026-09-24T16:11:34Z	200	cc_constitution_texte_integral.html	138061	https://www.conseil-constitutionnel.fr/le-bloc-de-constitutionnalite/texte-integral-de-la-constitution-du-4-octobre-1958-en-vigueur
+2026-09-24T16:11:34Z	403	legifrance_constitution_1958.html	5607	https://www.legifrance.gouv.fr/loda/id/LEGITEXT000006071194/
+2026-09-24T16:11:34Z	403	legifrance_code_electoral_L123-L126.html	5739	https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006070239/LEGISCTA000006148464/
+2026-09-24T16:11:35Z	403	legifrance_code_electoral_L162.html	5652	https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006353380
+2026-09-24T16:11:35Z	403	legifrance_loi_1962-1292_presidentielle.html	5607	https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000684037/
+2026-09-24T16:11:36Z	403	gouvernement_fr_home.html	5428	https://www.gouvernement.fr/
+2026-09-24T16:11:36Z	200	elysee_fr_home.html	230132	https://www.elysee.fr/
+2026-09-24T16:11:38Z	200	an_16_groupes.html	78180	https://www2.assemblee-nationale.fr/16/les-groupes-politiques
+2026-09-24T16:11:38Z	404	an_17_groupes.html	64657	https://www.assemblee-nationale.fr/dyn/vos-deputes/groupes-politiques
+# the 403/404 files above were deleted (Cloudflare challenge bodies / not-found); attempts kept in this log
+2026-09-24T16:12:15Z	403	legifrance_code_electoral_L162.html	5865	https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006353380
+2026-09-24T16:12:15Z	403	infogouv_composition.html	5743	https://www.info.gouv.fr/composition-du-gouvernement
+2026-09-24T16:12:16Z	200	viepublique_home.html	222	https://www.vie-publique.fr/
+2026-09-24T16:12:17Z	200	an_17_groupes.html	78338	https://www2.assemblee-nationale.fr/17/les-groupes-politiques
+2026-09-24T16:12:17Z	404	an_dyn_17_groupes.html	64656	https://www.assemblee-nationale.fr/dyn/17/organes/groupes-politiques
+2026-09-24T16:12:19Z	200	an_fiche_election_deputes.html	95321	https://www2.assemblee-nationale.fr/decouvrir-l-assemblee/role-et-pouvoirs-de-l-assemblee-nationale/le-depute/l-election-des-deputes
+2026-09-24T16:12:19Z	403	interieur_home.html	5625	https://www.interieur.gouv.fr/
+2026-09-24T16:12:20Z	200	rn_site.html	61318	https://rassemblementnational.fr/
+2026-09-24T16:12:21Z	200	ps_site.html	968197	https://www.parti-socialiste.fr/
+2026-09-24T16:16:10Z	200	elysee_20240609_adresse-aux-francais.html	202704	https://www.elysee.fr/emmanuel-macron/2024/06/09/adresse-aux-francais-4
+2026-09-24T16:16:11Z	200	elysee_20220516_nomination-borne.html	188521	https://www.elysee.fr/emmanuel-macron/2022/05/16/le-president-de-la-republique-a-nomme-mme-elisabeth-borne-premiere-ministre-et-la-chargee-de-former-un-gouvernement
+2026-09-24T16:16:12Z	200	elysee_20240905_nomination-barnier.html	189863	https://www.elysee.fr/emmanuel-macron/2024/09/05/le-president-de-la-republique-a-nomme-monsieur-michel-barnier-premier-ministre
+2026-09-24T16:16:12Z	200	elysee_20251010_nomination-lecornu.html	188545	https://www.elysee.fr/emmanuel-macron/2025/10/10/nomination-de-sebastien-lecornu-premier-ministre
+2026-09-24T16:16:13Z	200	elysee_20240111_nomination-gouvernement-attal.html	191236	https://www.elysee.fr/emmanuel-macron/2024/01/11/nomination-du-gouvernement-3
+2026-09-24T16:16:24Z	200	cc_2022-197PDR_proclamation.html	80725	https://www.conseil-constitutionnel.fr/decision/2022/2022197PDR.htm
+2026-09-24T16:16:24Z	200	an_seance_20220628.html	182695	https://www.assemblee-nationale.fr/dyn/16/comptes-rendus/seance/session-ordinaire-de-2021-2022/seance-du-mardi-28-juin-2022
+2026-09-24T16:16:25Z	200	an_constitution-des-groupes.html	70227	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/constitution-des-groupes-politiques-a-l-assemblee-nationale
+2026-09-24T16:16:26Z	200	an_calendrier-ouverture-xvie.html	76245	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/calendrier-d-ouverture-de-la-xvie-legislature
+2026-09-24T16:16:27Z	200	an_effectif-groupes-current.html	206300	https://www2.assemblee-nationale.fr/instances/liste/groupes_politiques/effectif
+2026-09-24T16:16:27Z	200	an_vote-de-confiance-20250908.html	77297	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/vote-de-confiance-l-assemblee-nationale-a-desapprouve-la-declaration-de-politique-generale-du-gouvernement
+2026-09-24T16:16:28Z	404	an_seance_20240718.html	64719	https://www.assemblee-nationale.fr/dyn/17/comptes-rendus/seance/session-extraordinaire-de-2023-2024/seance-du-jeudi-18-juillet-2024
+2026-09-24T16:16:58Z	200	an_motions-de-censure-17.html	74632	https://www.assemblee-nationale.fr/dyn/engagements_responsabilite-motions_censures/motions-de-censure
+2026-09-24T16:16:59Z	200	an_motions-de-censure-depuis-1958.html	92474	https://www.assemblee-nationale.fr/dyn/engagements_responsabilite-motions_censures/motions-de-censure-depuis-1958
+2026-09-24T16:17:00Z	200	an_adoption-censure-20241204.html	80360	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/adoption-d-une-motion-de-censure-le-plfss-2025-est-rejete-en-lecture-cmp-art.-49.3-et-le-premier-ministre-a-presente-la-demission-du-gouvernement-art.-50
+2026-09-24T16:17:00Z	200	an_rejet-censures-20251016.html	77382	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/rejet-de-deux-motions-de-censure-deposees-en-application-de-l-article-49-alinea-2-de-la-constitution2
+2026-09-24T16:17:01Z	200	elysee_20241213_nomination-bayrou.html	189278	https://www.elysee.fr/emmanuel-macron/2024/12/13/le-president-de-la-republique-a-nomme-m-francois-bayrou-premier-ministre-et-la-charge-de-former-un-gouvernement
+2026-09-24T16:17:02Z	200	elysee_20250909_nomination-lecornu.html	189614	https://www.elysee.fr/emmanuel-macron/2025/09/09/le-president-de-la-republique-a-nomme-sebastien-lecornu-premier-ministre
+2026-09-24T16:17:02Z	200	elysee_20240921_nomination-gouvernement-barnier.html	194291	https://www.elysee.fr/emmanuel-macron/2024/09/21/annonce-de-la-nomination-du-gouvernement
+2026-09-24T16:17:03Z	200	elysee_20241223_nomination-gouvernement-bayrou.html	193868	https://www.elysee.fr/emmanuel-macron/2024/12/23/annonce-de-la-nomination-du-nouveau-gouvernement
+2026-09-24T16:17:36Z	200	an_seance_20220629.html	143442	https://www.assemblee-nationale.fr/dyn/16/comptes-rendus/seance/session-ordinaire-de-2021-2022/seance-du-mercredi-29-juin-2022
+2026-09-24T16:17:40Z	200	an_ban_2022_2023.pdf	8072300	https://www2.assemblee-nationale.fr/static/16/statistiques/Ban_2022_2023.pdf
+2026-09-24T16:17:41Z	200	an_calendrier-ouverture-17e.html	74223	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/calendrier-d-ouverture-de-la-17e-legislature
+2026-09-24T16:17:41Z	200	an_braun-pivet-elue-2024.html	79104	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/yael-braun-pivet-elue-presidente-de-l-assemblee-nationale3
+2026-09-24T16:17:42Z	200	an_seance_20240718.html	207934	https://www.assemblee-nationale.fr/dyn/17/comptes-rendus/seance/session-de-droit-de-2024/seance-du-jeudi-18-juillet-2024
+2026-09-24T16:17:43Z	200	elysee_20241205_adresse-aux-francais.html	214952	https://www.elysee.fr/emmanuel-macron/2024/12/05/adresse-aux-francais-5
+2026-09-24T16:17:44Z	200	elysee_20251014_conseil-des-ministres.html	231268	https://www.elysee.fr/emmanuel-macron/2025/10/14/compte-rendu-du-conseil-des-ministres-du-14-octobre-2025
+2026-09-24T16:17:44Z	200	elysee_20220520_composition-gouvernement-borne.html	192825	https://www.elysee.fr/emmanuel-macron/2022/05/20/annonce-de-la-composition-du-gouvernement-1
+2026-09-24T16:17:45Z	200	lfi_site.html	534533	https://lafranceinsoumise.fr/
+2026-09-24T16:17:46Z	200	lesecologistes_site.html	106915	https://lesecologistes.fr/
+2026-09-24T16:17:47Z	200	pcf_site.html	98313	https://www.pcf.fr/
+2026-09-24T16:17:48Z	200	renaissance_site.html	229046	https://parti-renaissance.fr/
+2026-09-24T16:17:49Z	200	modem_site.html	102638	https://www.mouvementdemocrate.fr/
+2026-09-24T16:17:51Z	200	horizons_site.html	135378	https://horizonsleparti.fr/
+2026-09-24T16:17:52Z	200	lr_site.html	266665	https://republicains.fr/
+2026-09-24T16:17:54Z	200	udi_site.html	290887	https://www.parti-udi.fr/
+2026-09-24T16:17:55Z	000	udr_site.html		https://www.udr-parti.fr/
+2026-09-24T16:18:31Z	200	elysee_20240109_nomination-attal.html	190030	https://www.elysee.fr/emmanuel-macron/2024/01/09/le-president-de-la-republique-a-nomme-m-gabriel-attal-premier-ministre-et-la-charge-de-former-un-gouvernement
+2026-09-24T16:18:31Z	200	elysee_20240108_demission-borne.html	189392	https://www.elysee.fr/emmanuel-macron/2024/01/08/mme-elisabeth-borne-a-remis-ce-jour-la-demission-du-gouvernement-au-president-de-la-republique-qui-la-acceptee
+2026-09-24T16:18:32Z	200	elysee_20240716_demission-attal.html	189527	https://www.elysee.fr/emmanuel-macron/2024/07/16/le-president-de-la-republique-a-accepte-ce-jour-la-demission-du-gouvernement-de-m-gabriel-attal
+2026-09-24T16:18:33Z	200	elysee_20241205_demission-barnier.html	189408	https://www.elysee.fr/emmanuel-macron/2024/12/05/le-premier-ministre-a-remis-ce-jour-la-demission-de-son-gouvernement-au-president-de-la-republique-qui-en-a-pris-acte
+2026-09-24T16:18:33Z	200	elysee_20251006_demission-lecornu.html	189221	https://www.elysee.fr/emmanuel-macron/2025/10/06/le-premier-ministre-a-remis-la-demission-de-son-gouvernement-au-president-de-la-republique-qui-la-acceptee
+2026-09-24T16:18:34Z	200	elysee_20251005_nomination-gouvernement-lecornu1.html	191236	https://www.elysee.fr/emmanuel-macron/2025/10/05/annonce-de-la-nomination-du-gouvernement-le-5-octobre-2025
+2026-09-24T16:18:35Z	200	elysee_20251012_nomination-gouvernement-lecornu2.html	193484	https://www.elysee.fr/emmanuel-macron/2025/10/12/nomination-du-gouvernement-6
+2026-09-24T16:18:35Z	200	elysee_20260226_nomination-gouvernement.html	194628	https://www.elysee.fr/emmanuel-macron/2026/02/26/nomination-du-gouvernement-7
+# viepublique_home.html deleted: 222-byte JS redirect stub, not a page
+2026-09-24T16:20:49Z	200	elysee_20250909_demission-bayrou.html	189221	https://www.elysee.fr/emmanuel-macron/2025/09/09/le-premier-ministre-a-remis-la-demission-de-son-gouvernement-au-president-de-la-republique-qui-la-acceptee
+2026-09-24T16:20:50Z	000	udr_site.html		https://udr-parti.fr/
+2026-09-24T16:20:54Z	404	lfi_qui-sommes-nous.html	497004	https://lafranceinsoumise.fr/qui-sommes-nous/
+2026-09-24T16:20:55Z	404	rn_bardella.html	4892	https://rassemblementnational.fr/jordan-bardella
+2026-09-24T16:20:56Z	200	renaissance_le-parti.html	112101	https://parti-renaissance.fr/le-parti
+2026-09-24T16:21:44Z	200	elysee_toutes-les-actualites.html	536863	https://www.elysee.fr/toutes-les-actualites
+2026-09-24T16:21:45Z	404	lr_le-parti.html	97530	https://republicains.fr/le-parti/
+2026-09-24T16:21:47Z	404	udi_le-parti.html	98639	https://www.parti-udi.fr/le-parti/
+2026-09-24T16:21:51Z	200	lfi_le-mouvement.html	608168	https://lafranceinsoumise.fr/le-mouvement/
+2026-09-24T16:21:52Z	404	lesecologistes_le-parti.html	51040	https://lesecologistes.fr/le-parti
+2026-09-24T16:21:53Z	404	rn_le-mouvement.html	4892	https://rassemblementnational.fr/le-mouvement
+# elysee_20250909_demission-bayrou.html deleted: the guessed URL served the 2025-10-06 Lecornu resignation page (same bytes), not a Bayrou page
+2026-09-24T16:23:15Z	404	an_constitution-des-groupes-2024.html	64710	https://www.assemblee-nationale.fr/dyn/actualites-accueil-hub/constitution-des-groupes-politiques-a-l-assemblee-nationale2
+2026-09-24T16:23:16Z	404	an_seance_20240719.html	64711	https://www.assemblee-nationale.fr/dyn/17/comptes-rendus/seance/session-de-droit-de-2024/seance-du-vendredi-19-juillet-2024
+# rn_site.html (first fetch) deleted: body arrived compressed (binary); refetched with --compressed below
+2026-09-24T16:23:54Z	200	rn_site.html	274215	https://rassemblementnational.fr/
+2026-09-24T16:23:55Z	200	modem_fiche-bayrou.html	78018	https://www.mouvementdemocrate.fr/fiche/francois-bayrou-2366
+2026-09-24T16:23:56Z	200	lesecologistes_tondelier.html	165090	https://lesecologistes.fr/trombinoscope/RqKQhLKtZmERCT0kmqPoF/marine-tondelier
+2026-09-24T16:23:58Z	200	lr_qui-sommes-nous.html	1371616	https://republicains.fr/qui-sommes-nous/
+2026-09-24T16:23:59Z	404	horizons_le-parti.html	42091	https://horizonsleparti.fr/le-parti/
+2026-09-24T16:24:00Z	404	pcf_fabien-roussel.html	33864	https://www.pcf.fr/fabien_roussel
+2026-09-24T16:24:01Z	200	elysee_20260910_conseil-des-ministres.html	216408	https://www.elysee.fr/emmanuel-macron/2026/09/10/compte-rendu-du-conseil-des-ministres-du-10-septembre-2026
+2026-09-24T16:24:50Z	404	horizons_qui-sommes-nous.html	42091	https://horizonsleparti.fr/qui-sommes-nous/
+2026-09-24T16:24:51Z	200	pcf_le-pcf.html	36890	https://www.pcf.fr/le_pcf
+2026-09-24T16:24:52Z	200	lesecologistes_trombinoscope.html	667296	https://lesecologistes.fr/trombinoscope
+2026-09-24T16:24:56Z	404	lfi_organisation.html	496889	https://lafranceinsoumise.fr/organisation/
+2026-09-24T16:24:57Z	404	rn_organisation.html	4892	https://rassemblementnational.fr/organisation
+# deleted at the close, unused by records_by_date.md: an_16_groupes.html, an_17_groupes.html (navigation pages only), elysee_fr_home.html (no PM statement), an_ban_2022_2023.pdf (8 MB, not read), an_seance_20220629.html, elysee_20251014_conseil-des-ministres.html (not cited)
+# deleted at the close, superseded by a more specific page or unused: renaissance_site.html, lesecologistes_tondelier.html, modem_site.html, lr_site.html, pcf_le-pcf.html, lfi_le-mouvement.html, an_braun-pivet-elue-2024.html
+2026-09-24T16:27:13Z	200	an_scrutin_519_censure-20241204.html	226300	https://www.assemblee-nationale.fr/dyn/17/scrutins/519
+2026-09-24T16:27:15Z	200	an_engagements-responsabilite-49-3.html	114145	https://www2.assemblee-nationale.fr/dans-l-hemicycle/engagements-de-responsabilite-du-gouvernement-et-motions-de-censures
+2026-09-24T16:27:38Z		an_49-3-depuis-1958.html		
+# an_engagements-responsabilite-49-3.html deleted at the close: hub page only, used to find the 49.3 statistics link
+# the blank line above: a link grep on the hub page found nothing, so curl got an empty URL - no fetch happened
+2026-09-24T16:27:50Z	404	an_49-3-depuis-1958.html	64751	https://www.assemblee-nationale.fr/dyn/engagements_responsabilite-motions_censures/engagements-de-responsabilite-du-gouvernement-sur-le-vote-d-un-texte-depuis-1958
+2026-09-24T16:27:50Z	404	an_49-3-depuis-1958b.html	64712	https://www.assemblee-nationale.fr/dyn/engagements_responsabilite-motions_censures/engagements-de-responsabilite-depuis-1958

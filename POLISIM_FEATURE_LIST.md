@@ -46,7 +46,7 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 
 | # | owner | item | needs | done when |
 |---|---|---|---|---|
-| PS-1 | Code | Chambers, governments and leaders **of record by date** for all six, July 2022 to today; each country opens on its own date | X-2 | every seat and government asserted against the sourced table on its date |
+| PS-1 ◐ | Code | Chambers, governments and leaders **of record by date** for all six, July 2022 to today; each country opens on its own date | X-2 | **THE SOURCING HALF ON DISK 2026-09-24 (`COMPLETED.md` §617):** six `ElectionsData/<country>/records_by_date.md` with 252 raw pages, every quote verified against the saved bytes. **The code half waits on five rulings (§617): Germany's snap day, Italy's trigger day, Poland's seated Sejm (election table or today's clubs), France's start with no chamber until 2024-07-18, the presidential calendars the §4 rows omit.** Then: every seat and government asserted against the sourced table on its date |
 | PS-2 | Code | **Sweden end to end**: the run-up to 13 Sep 2026 with Kristersson in office; any of the eight parties; polling day on its date; election night; formation (leading or opposition); the reference view; the play save re-staged | PS-1 | a party can be picked, the campaign fought, the result governed or opposed, and history shown beside it |
 | SP-1 | Code | Start points as data, and the start screen structurally (cards, locked with reasons, Back, Select) | PS-1 | every country offers its start points |
 | SP-2 | Code | The **derived brief** — generated from the records, every clause traced; the optional tagline slot | SP-1 | a check resolves every clause |

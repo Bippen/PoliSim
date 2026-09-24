@@ -1,0 +1,52 @@
+2026-09-24T16:12:46Z	200	60621	normattiva_dpr_2022-07-21_96_scioglimento.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.del.presidente.della.repubblica:2022-07-21;96
+2026-09-24T16:12:47Z	200	62055	normattiva_dpr_2022-07-21_97_comizi.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:decreto.del.presidente.della.repubblica:2022-07-21;97
+2026-09-24T16:12:48Z	200	61325	storia_camera_leg_XVIII.html	https://storia.camera.it/legislature/leg-repubblica-XVIII
+2026-09-24T16:12:49Z	500	16529	storia_camera_leg_XIX.html	https://storia.camera.it/legislature/leg-repubblica-XIX	NOT KEPT: see records_by_date.md GAPS
+2026-09-24T16:14:00Z	500	16529	storia_camera_leg_XIX.html	https://storia.camera.it/legislature/leg-repubblica-XIX	NOT KEPT: see records_by_date.md GAPS
+2026-09-24T16:14:01Z	200	57274	governo_governo-draghi_16211.html	https://www.governo.it/it/i-governi-dal-1943-ad-oggi/xviii-legislatura-dal-23-marzo-2018/governo-draghi/16211
+2026-09-24T16:14:03Z	200	57355	governo_governo-meloni_20727.html	https://www.governo.it/it/i-governi-dal-1943-ad-oggi/governo-meloni/20727
+2026-09-24T16:14:04Z	200	58978	governo_governi-nelle-legislature_192.html	https://www.governo.it/it/i-governi-dal-1943-ad-oggi/i-governi-nelle-legislature/192
+2026-09-24T16:14:04Z	200	165727	normattiva_costituzione.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:costituzione:1947-12-27
+2026-09-24T16:14:05Z	200	47128	camera_leg18_842_elezioni-2018.html	https://www.camera.it/leg18/842
+2026-09-24T16:14:07Z	200	43773	camera_leg18_46_gruppi.html	https://www.camera.it/leg18/46
+2026-09-24T16:14:10Z	200	21544	comunicazione_camera_18-27036_fontana-eletto.html	https://comunicazione.camera.it/archivio-prima-pagina/18-27036
+2026-09-24T16:14:11Z	200	86298	camera_leg19_seduta0005_stenografico.html	https://www.camera.it/leg19/410?idSeduta=0005&tipo=stenografico
+2026-09-24T16:14:13Z	200	203923	camera_leg19_seduta0001_stenografico.html	https://www.camera.it/leg19/410?idSeduta=0001&tipo=stenografico
+2026-09-24T16:15:33Z	200	12655890	dait_dossier-elezioni-politiche-2022.pdf	https://dait.interno.gov.it/documenti/dossier-elezioni-politiche-2022.pdf	NOT KEPT: see records_by_date.md GAPS
+2026-09-24T16:15:33Z	200	582602	camera_leg19_seduta0004_stenografico_2022-10-25.html	https://www.camera.it/leg19/410?idSeduta=0004&tipo=stenografico
+2026-09-24T16:15:36Z	200	22969	comunicazione_camera_18-26711_draghi-dimissioni.html	https://comunicazione.camera.it/archivio-prima-pagina/18-26711
+2026-09-24T16:15:37Z	200	50518	eligendo_camera_2018_area-italia.html	https://elezionistorico.interno.gov.it/index.php?tpel=C&dtel=04/03/2018&tpa=I&tpe=A&lev0=0&levsut0=0&es0=S&ms=S
+2026-09-24T16:15:37Z	200	45692	eligendo_senato_2022_area-italia.html	https://elezionistorico.interno.gov.it/index.php?tpel=S&dtel=25/09/2022&tpa=I&tpe=A&lev0=0&levsut0=0&es0=S&ms=S
+2026-09-24T16:16:26Z	200	22159	comunicazione_camera_18-25122_giuramento-mattarella.html	https://comunicazione.camera.it/archivio-prima-pagina/18-25122
+2026-09-24T16:16:27Z	200	122186	comunicazione_camera_eventi_presidentedellarepubblica2022.html	https://comunicazione.camera.it/eventi/presidentedellarepubblica2022
+2026-09-24T16:17:38Z	200	61723	camera_leg18_seduta0729_stenografico_2022-07-21.html	https://www.camera.it/leg18/410?idSeduta=0729&tipo=stenografico
+2026-09-24T16:17:40Z	200	12799	gazzettaufficiale_anteprima_costituzione.html	https://www.gazzettaufficiale.it/anteprima/codici/costituzione	NOT KEPT: see records_by_date.md GAPS
+2026-09-24T16:19:02Z	200	49480	camera_leg18_seduta0726_stenografico_2022-07-18.html	https://www.camera.it/leg18/410?idSeduta=0726&tipo=stenografico
+2026-09-24T16:19:55Z	200	234245	ansa_2022-07-20_senato-fiducia-draghi-95.html	https://www.ansa.it/sito/notizie/politica/2022/07/20/la-crisi-di-governo-dal-senato-fiducia-a-draghi-con-95-si.-il-premier-annuncera-le-dimissioni-alla-camera_20b10df7-5fc0-45b2-a1a7-0ba87fe5153c.html
+2026-09-24T16:19:56Z	200	235562	ansa_2022-10-26_senato-fiducia-meloni-115.html	https://www.ansa.it/sito/notizie/politica/2022/10/26/il-senato-vota-la-fiducia-al-governo-meloni-115-si-79-no-e-5-astenuti_1f316e11-70d5-491d-801f-7e5cea2d1b71.html
+2026-09-24T16:19:57Z	403	5591	pd_relazione-segretaria-schlein_2023-03-12.html	https://partitodemocratico.it/relazione-della-segretaria-elly-schlein-assemblea-nazionale-12-marzo-2023/	NOT KEPT: see records_by_date.md GAPS
+2026-09-24T16:19:58Z	200	83064	forzaitalia_risultati-congresso-nazionale.html	https://forzaitalia.it/risultati-congresso-nazionale-forza-italia/
+2026-09-24T16:19:58Z	200	50810	svp_steger-folgt-auf-achammer.html	https://www.svp.eu/de/svp-obmannschaft-dieter-steger-folgt-auf-philipp-achammer--1-4533.html
+2026-09-24T16:19:59Z	200	89097	piueuropa_magi-eletto-segretario.html	https://www.piueuropa.eu/riccardo_magi_eletto_segretario
+2026-09-24T16:20:01Z	200	79627	verdisinistra_zabatta-bonelli-coportavoce.html	https://verdisinistra.it/assemblea-nazionale-di-europa-verde-fiorella-zabatta-e-angelo-bonelli-eletti-co-portavoce-del-partito/
+2026-09-24T16:21:08Z	200	153244	fdi_giorgia-meloni.html	https://www.fratelli-italia.it/giorgia-meloni/
+2026-09-24T16:21:10Z	200	115276	m5s_elezioni-presidente-risultati.html	https://www.movimento5stelle.eu/elezioni-del-presidente-del-movimento-5-stelle-risultati/
+2026-09-24T16:21:10Z	200	115158	m5s_conte-eletto-presidente.html	https://www.movimento5stelle.eu/giuseppe-conte-eletto-presidente-del-movimento-5-stelle/
+2026-09-24T16:21:11Z	403	5335	pd_dem_elly-schlein.html	https://partitodemocratico.it/dem/elly-schlein/	NOT KEPT: see records_by_date.md GAPS
+2026-09-24T16:25:48Z	200	4761	normattiva_costituzione_art88.html	https://www.normattiva.it/atto/caricaArticolo?art.versione=2&art.idGruppo=8&art.flagTipoArticolo=0&art.codiceRedazionale=047U0001&art.idSottoArticolo=1&art.idSottoArticolo1=10&art.dataPubblicazioneGazzetta=1947-12-27&art.progressivo=0&art.idArticolo=88
+2026-09-24T16:25:48Z	200	4140	normattiva_costituzione_art92.html	https://www.normattiva.it/atto/caricaArticolo?art.versione=1&art.idGruppo=9&art.flagTipoArticolo=0&art.codiceRedazionale=047U0001&art.idSottoArticolo=1&art.idSottoArticolo1=10&art.dataPubblicazioneGazzetta=1947-12-27&art.progressivo=0&art.idArticolo=92
+2026-09-24T16:25:49Z	200	4439	normattiva_costituzione_art94.html	https://www.normattiva.it/atto/caricaArticolo?art.versione=1&art.idGruppo=9&art.flagTipoArticolo=0&art.codiceRedazionale=047U0001&art.idSottoArticolo=1&art.idSottoArticolo1=10&art.dataPubblicazioneGazzetta=1947-12-27&art.progressivo=0&art.idArticolo=94
+2026-09-24T16:25:52Z	200	387650	lega_legaonline_home.html	https://www.legaonline.it/
+2026-09-24T16:27:04Z	500	16529	storia_camera_leg_XIX.html	https://storia.camera.it/legislature/leg-repubblica-XIX	NOT KEPT: see records_by_date.md GAPS
+2026-09-24T16:27:51Z	200	331277	lega_organigramma.html	https://legaonline.it/organigramma/
+2026-09-24T16:27:52Z	200	100505	azione_congresso-2024-2025.html	https://www.azione.it/congresso-2024-2025/
+2026-09-24T16:27:53Z	200	91179	italiaviva_organi.html	https://www.italiaviva.it/organi_di_italia_viva
+2026-09-24T16:27:55Z	200	164323	unionvaldotaine_mouvement.html	https://www.unionvaldotaine.org/mouvement/
+2026-09-24T16:29:06Z	200	163351	unionvaldotaine_president.html	https://www.unionvaldotaine.org/mouvement/president/
+2026-09-24T16:29:07Z	200	18185	sudchiamanord_home.html	http://www.sudchiamanord.it/
+2026-09-24T16:29:44Z	200	124947	noimoderati_il-partito.html	https://www.noimoderati.it/il-partito
+2026-09-24T16:37:13Z	202	0	NOT KEPT (AWS WAF challenge, empty body)	https://www.senato.it/3931 ; https://www.senato.it/leg18/3818?seduta_assemblea=25091 ; https://senato.it/show-doc?id=1357857&leg=18&part=doc_dc&tipodoc=Resaula ; https://www.senato.it/istituzione/la-costituzione/parte-ii/titolo-ii ; https://www.senato.it/istituzione/la-costituzione/parte-ii/titolo-iii/sezione-i ; https://www.senato.it/service/PDF/PDFServer/BGT/1358166.pdf
+2026-09-24T16:37:13Z	403/5xx	-	NOT KEPT (senato.it error page returned by the open-data SPARQL endpoint)	https://dati.senato.it/sparql
+2026-09-24T16:37:13Z	403	-	NOT KEPT (Cloudflare challenge page)	https://www.quirinale.it/page/20220714 ; https://www.quirinale.it/elementi/70472 ; https://www.quirinale.it/it/pagine/dimissioni-governo-draghi ; https://presidenti.quirinale.it/page/12/elezione_2022
+2026-09-24T16:37:13Z	403	-	NOT KEPT (403 with three header sets)	https://partitodemocratico.it/dem/elly-schlein/ ; https://partitodemocratico.it/relazione-della-segretaria-elly-schlein-assemblea-nazionale-12-marzo-2023/ ; https://www.partitodemocratico.it/
+2026-09-24T16:37:13Z	404	-	NOT KEPT	https://www.governo.it/it/i-governi-dal-1943-ad-oggi/xix-legislatura-dal-13-ottobre-2022 ; https://www.governo.it/it/i-governi-dal-1943-ad-oggi/xviii-legislatura-dal-23-marzo-2018

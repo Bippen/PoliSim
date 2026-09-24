@@ -1,0 +1,891 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	
+<!--<script type="text/javascript" id="cookiebanner"  src="/res/js/cookiebanner.js"> </script>-->
+<!--<script type="text/javascript" id="cookiebanner" src="http://www.camera.it/javascripts/cookiebanner.js"> </script>-->
+
+
+	<title>XVIII Legislatura della Repubblica italiana / Legislature /  Camera dei deputati - Portale storico</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta charset="utf-8">
+<meta name="language" content="IT"> 
+<meta name="description" content="Con questo portale la Camera dei deputati si è dotata di una piattaforma di pubblicazione unica, stabile e condivisa della documentazione e delle informazioni sulla sua attività, a partire dalla I Legislatura del Parlamento sabaudo del 1848 fino alla legislatura che precede quella in corso. In occasione del 150° anniversario dell'Unità d'Italia è stato avviato un intervento complessivo di organizzazione, sistemazione e standardizzazione dei materiali digitali della Camera; è stato realizzato, quindi, uno strumento di raccolta e pubblicazione sul Web, che consenta: di offrire la ricerca integrata di tutto il materiale documentario disponibile e l'accesso immediato alle relative risorse digitali, attraverso un'intuitiva navigazione a faccette; di recepire i documenti che si renderanno disponibili negli anni a venire, a seguito di nuove iniziative di digitalizzazione o in relazione allo svolgimento dell'attività degli organi parlamentari. L'infrastruttura tecnica del portale poggia su un unico repository dati in formato aperto RDF-XML, strutturato sulla base di una ontologia generale, che descrive il dominio Camera attraverso le diverse articolazioni dei suoi organi e i documenti prodotti nel corso della sua attività. L'approccio scelto garantisce la persistenza nel tempo e l'intelligibilità dei dati raccolti, indipendentemente dallo strumento tecnico utilizzato per generarli. L'uso degli standards del Semantic Web e l'adesione ai principi dei Linked Data (dati accessibili da una molteplicità di applicazioni, integrabili con dati provenienti da fonti diverse, facilmente aggiornabili e incrementabili) garantiscono che l'intero patrimonio o specifiche sezioni di esso possano essere riutilizzati in diversi contesti applicativi, anche da una pluralità di soggetti. Per questo motivo al Portale storico è stata affiancata la pubblicazione di un portale dati.camera.it, che consente l'accesso, lo scarico e il riuso di tutti i dati pubblicati, per un totale di oltre un milione di schede e documenti. Questo insieme di risorse è descritto da un unico data model, identificato da uno specifico namespace, OCD (Ontologia Camera dei Deputati), una ontologia OWL (Ontology Web Language) espressa in triple RDF: una tripla è un'asserzione (statement), l'unità informativa minima, articolata in soggetto (subject), relazione (predicate) e oggetto (object). Tutti i dati del portale sono, così, disponibili come Linked Open Data, un patrimonio informativo costituito da oltre 13,4 milioni di triple.">
+<meta name="abstract" content="Portale Storico della Camera de Deputati">
+<meta name="keywords" content="Legislature,Presidenti,Regolamenti,Montecitorio,Amministrazione,Norme fondamentali e leggi,Biblioteca digitale,Bibliografia del Parlamento italiano e delle leggi elettorali,Le inchieste,I palazzi,Deputati,Lavori parlamentari,Atti e documenti,Archivio audiovisivo,Archivio fotografico,La collezione dei busti,Linked Open Data,OCD (Ontologia Camera dei Deputati),I progetti di legge,Atti di indirizzo e controllo,Cronologia storica">
+<meta name="author" content="Camera dei deputati">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="google-site-verification" content="rU0W6OorBeKi1yVNTxgTDOi63nS66Ji_6JNP9PUlYZs" />
+
+<link href="/res/css/struttura.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/stile.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/colonna.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/ie.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/stileVideo.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/shadowbox.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="/res/js/jquery.js" ></script>
+<script type="text/javascript" src="/res/js/global.js" ></script>
+<script type="text/javascript" src="/res/js/jquery.cycle.all.min.js" ></script>
+<script type="text/javascript" src="/res/js/cycle.js" ></script>
+<script type="text/javascript" src="/res/js/shadowbox.js" ></script>
+<script type="text/javascript" src="/res/js/jwplayer.js" ></script>
+
+<link href="/res/css/cycle.css" rel="stylesheet" type="text/css" />
+
+
+<!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//webanalytics.camera.it/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '8']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+
+<script type="text/javascript"> 
+//<![CDATA[
+$(function(){
+    $('.grigliaOnOff').toggle(function(){ 
+    	$("body").append("<div class=\"grigliona\"></div>");
+    },function(){ 
+    	$("body").find(".grigliona").remove();
+    });
+	
+	$('.forHideByJavascript').hide();
+	
+	newPage($("body"));
+	addNavi($("body"));
+	addNaviga($("div#colonnaDx"));
+	addNaviNoClickClass($(document));
+	addTooltipHelp();
+	$('.descriptionsHidden').hide();
+	$('a').each(function(){
+		var href = $(this).attr("href");
+		if(href && href.indexOf("http:")==-1 && href.indexOf("#")==-1 && href.indexOf(".pdf")==-1 && href.indexOf("jpg")==-1 ){
+			$(this).attr("href",href+"#nav");
+		}
+	});
+	
+	$('.contBoxMultimediaShadow').css("position", "absolute");
+	
+var exTextCrono = "";
+	$('ul.cronologia li').hover(function(){
+		var text = $(this).find(" span ").html();
+		exTextCrono = $('div.txtCronologia').html();
+		$('div.txtCronologia').html(text);
+		return false;
+	}, function(){
+		$('div.txtCronologia').html(exTextCrono);
+		return false;
+	});
+	
+	
+
+	
+	$('.tooltipTime').hover(function(){
+		$(this).find(" a ").attr("title", "");
+		var value = $(this).find(" span.hideDiv ").html();
+		if(jQuery.browser.msie && jQuery.browser.version <= 7.0){
+		tooltip='\
+			<div class="tooltipBigTime">\
+        		<img id="arrow" src="/res/img/arrowNeroUp.gif" style="position:absolute; margin-top:-10px; margin-right:6px;">\
+        		<span>'+value+'</span>\
+        	</div>\
+        	'    
+		}else{
+			tooltip='\
+    			<div class="tooltipBigTime" style="position:absolute;left:'+($(this).position().left-82)+'px;top:'+($(this).position().top+20)+'px;">\
+            		<img id="arrow" src="/res/img/arrowNeroUp.gif" style="float:left; margin-top:-10px; margin-left:82px;"  >\
+            		<span>'+value+'</span>\
+            	</div>\
+           	'
+	 	}
+	$(' body ').append(tooltip)},
+	function(){$(' body ').find('.tooltipBigTime').remove()})
+ 	
+	addTooltip($('#colonnaDx'));
+	
+});
+//]]> 
+</script>
+<script type="text/javascript" src="/res/js/legislature.js" ></script>
+<script type="text/javascript">    
+$(function(){
+	$('.forClickEvent').each(function(){
+		$(this).removeClass('filtroOpenBold');
+		$(this).addClass('filtroChiuso');
+		$(this).next('div').hide();
+	});
+	$('.forClickEvent').click(function(){
+		if($(this).attr('id')=="open"){
+			$(this).attr('id', 'close');
+			$(this).removeClass('filtroOpenBold');
+			$(this).addClass('filtroChiuso');
+			$(this).next('div').hide();
+		}else{
+			$(this).attr('id', 'open');
+			$(this).removeClass('filtroChiuso');
+			$(this).addClass('filtroOpenBold');
+			$(this).next('div').show();
+		}
+	return false;
+	});
+	$('.righeTitoliClose').hover(function(){
+            		var toClass = $(this).attr("rel");
+            		if(!toClass) toClass='genericNavi';
+            		$(this).addClass(toClass);
+            	}, function(){
+            		var toClass = $(this).attr("rel");
+            		if(!toClass)toClass='genericNavi';
+            		$(this).removeClass(toClass);
+            	}) 
+	$('.righeTitoliClose').css("cursor","pointer");                      
+	$('.righeTitoliClose').click(function(){
+			var questo = $(this);
+			if($(this).attr("id")=="open"){                 
+				$(this).next().detach();
+				$(this).attr("id","close");
+				$(this).find('.btRigaOpen').attr('class','titoloRiga btRigaClose');
+				$(this).attr("class","righeTitoliClose navi");
+				$(this).hover(function(){
+            		var toClass = $(this).attr("rel");
+            		if(!toClass) toClass='genericNavi';
+            		$(this).addClass(toClass);
+            	}, function(){
+            		var toClass = $(this).attr("rel");
+            		if(!toClass)toClass='genericNavi';
+            		$(this).removeClass(toClass);
+            	}) 
+			}else{
+				$(this).unbind('mouseenter');
+				$(this).unbind('mouseleave');
+				$(this).find('.btRigaClose').attr('class','titoloRiga btRigaOpen');
+				$(this).attr("id","open");    
+				$.ajax({async:false,method:'GET',url:$(this).find('a').attr('rel'),
+					success:function(data){
+						var toAppend = $(data);
+						addNavi(toAppend);
+						$(questo).after(toAppend);
+						$(questo).attr("class","righeTitoliOpen");	
+					},error:function(){
+						alert('error!');
+					}
+				});     
+			}
+				return false;
+	});
+	
+}); 
+
+</script>
+
+</head>
+<body><div id="upperMenu">
+	<a class="logo_parlamento"  href="http://www.parlamento.it/" rel="newpage" title="Vai al sito parlamento.it"><img  alt="Vai al sito parlamento.it" src="/res/img/logo_parlamento.jpg" /></a>
+	<a class="logo_camera"  rel="newpage"  href="http://www.camera.it" title="Vai al sito camera.it"><img alt="Vai al sito camera.it" src="/res/img/logo_camera.gif" /></a>
+</div>
+<div id="wrapper">
+<div id="mainTestata"><h1>Portale storico della Camera dei deputati</h1>
+<ul class="menu">
+	<li><a href="			/
+	" title="home">Home</a></li>
+	<li><a href="			/legislature
+	" title="legislature">Legislature</a></li>
+	<li><a href="			/presidenti
+	" title="presidenti">Presidenti</a></li>
+	<li><a href="			/regolamenti
+	" title="regolamenti">Regolamenti</a></li>
+	<li><a href="			/montecitorio
+	" title="Montecitorio">Montecitorio</a></li>
+	<li><a href="			/amministrazione
+	" title="amministrazione">Amministrazione</a></li>
+	<li><a href="			/norme-fondamentali-e-leggi
+	" title="leggi">Norme fondamentali e leggi</a></li>
+<li><a href="			/digital
+	" title="Biblioteca digitale">Biblioteca digitale</a></li>
+	<li><a href="			/bpr
+	" title="bibliografia del Parlamento">Bibliografia del Parlamento</a></li>
+</ul>
+<div id="testata">
+    <div class="linkHomePage"><a href="			/
+	#nav" title="Torna all'Home page"><span>Home page del portale</span></a></div>
+	<div class="boxLinkTestata"><a href="http://dati.camera.it" title="dati.camera.it"><img src="/res/img/datiCamera.jpg" alt="dati.camera.it" /></a>
+		<div id="ricerca">
+			<form action="			/faccette/all
+	">
+    			<input type="text" value="cerca" onclick="this.value=''" class="ricercaInput" name="q" /> 
+    			<input type="submit" class="bottoneCerca" name="" value="" />
+			</form>
+		</div>
+	</div>
+</div></div>
+<a name="nav"></a>
+<div id="navBoxs"><div class="box1close">
+		<ul>   
+			<li class="titoloBox1"><a href="			/deputati
+	" class="linkFutura  deputati " title="  Accedi al canale dei  deputati">Deputati</a></li>
+		</ul>
+	</div>
+	<div class="box2close">
+		<ul>
+			<li class="titoloBox1"><a href="			/lavori
+	" class="linkFutura  lavori " title="  Accedi al canale dei  lavori parlamentari">Lavori parlamentari</a></li>
+		</ul>
+	</div>
+	<div class="box1close">
+		<ul>
+			<li class="titoloBox1"><a  href="			/documenti
+	" class="linkFutura  documenti " title="  Accedi al canale dei  documenti della Camera">Atti e documenti</a></li>
+		</ul>
+	</div>
+</div>
+<div id="breadcrumb">
+<div class="briciole"><strong>sei in: </strong><a href="/legislature/">Legislature</a> / <a href="/legislature/leg-repubblica-XVIII">XVIII Legislatura della Repubblica italiana</a></div>
+<div class="azioni">
+<ul>
+	<li>
+		<span class="stampa">&nbsp;</span>
+			</li>
+
+		<li><a href="			/condividi?title=
+	XVIII%20Legislatura%20della%20Repubblica%20italiana%20%2F%20Legislature%20%2F%20" title="condividi" class="condividi"><span class="ico"></span>condividi</a></li>
+	<li><a href="			/segnala?title=
+	XVIII%20Legislatura%20della%20Repubblica%20italiana%20%2F%20Legislature%20%2F%20" title="segnala" class="invia"><span class="ico"></span>segnala</a></li>
+	
+			<li><a rel="newpage" href="http://dati.camera.it/ocd/legislatura.rdf/repubblica_18" title="scarica rdf" class="scarica"><span class="ico"></span>scarica rdf</a></li>
+		
+</ul> </div>
+</div>
+<div id="colonnaSx"><a name="contenuto"></a>
+
+<div class="boxA">
+
+    <div class="contTitoloRegno">
+    	<h3>XVIII Legislatura della Repubblica italiana</h3>
+    	<span class="dataRegno">dal 23 marzo 2018 al 12 ottobre 2022</span>
+    </div>
+	
+	 			<div class="legislaturaDati">
+			<strong>Presidenti della Camera </strong>
+		 
+			<ul class="boxPresidentiRiga">
+									<li>
+    					    					
+    						<a title="Accedi alla scheda del presidente Roberto Fico"href="			/presidenti/fico-roberto
+	#nav" class="linkAr2">
+								        							<img src="/res/img/presidenti/thumb/roberto_fico.jpg" />
+     						</a>
+                            <span>
+                                <a title="Accedi alla scheda del presidente Roberto Fico"href="			/presidenti/fico-roberto
+	#nav" class="linkAr2">Roberto Fico</a></span>
+						
+                    </li>	
+				            </ul>
+		</div>
+		
+<div class="legislaturaDatiNoBlock">
+			<strong>Tipo di elezioni:</strong> <a href="			/legislature/sistema-
+	proporzionale-premio-maggioranza-2006-2016" title="accedi alla scheda del sistema Proporzionale con premio di maggioranza (2006-2016)" class="linkAr2">Proporzionale con premio di maggioranza (2006-2016)</a><br />
+	</div>
+
+<div class="legislaturaDatiNoBlock">
+	<strong>Lavori parlamentari</strong>
+		<ul class="timelineLegislatura">
+					<li class="anno1 navi" rel="annoNavi">
+									<a href="			/lavori/repubblica/leg-repubblica-XVIII/2018
+	" title="visualizza i lavori dell'anno 2018">
+				    			    				<ul>
+													<li >
+                            </li>
+													<li >
+                            </li>
+						                    </ul>
+								
+				</a>
+            </li>
+					<li class="anno2 navi" rel="annoNavi">
+									<a href="			/lavori/repubblica/leg-repubblica-XVIII/2019
+	" title="visualizza i lavori dell'anno 2019">
+				    							
+				</a>
+            </li>
+					<li class="anno3 navi" rel="annoNavi">
+									<a href="			/lavori/repubblica/leg-repubblica-XVIII/2020
+	" title="visualizza i lavori dell'anno 2020">
+				    							
+				</a>
+            </li>
+					<li class="anno4 navi" rel="annoNavi">
+									<a href="			/lavori/repubblica/leg-repubblica-XVIII/2021
+	" title="visualizza i lavori dell'anno 2021">
+				    							
+				</a>
+            </li>
+					<li class="anno5 navi" rel="annoNavi">
+									<a href="			/lavori/repubblica/leg-repubblica-XVIII/2022
+	" title="visualizza i lavori dell'anno 2022">
+				    			    				<ul class="timeRight">
+													<li >
+                            </li>
+													<li >
+                            </li>
+						                    </ul>
+								
+				</a>
+            </li>
+			</ul>
+		<ul class="dateLegislatura">
+					<li>2018</li>
+					<li>2019</li>
+					<li>2020</li>
+					<li>2021</li>
+					<li>2022</li>
+		    </ul>
+	<div class="contBacchettaTime">
+		<div class="bacchettaSx" style="margin-left:12px"><img src="/res//img/bacchettaSx.gif"/></div>
+		<div class="bacchettaCentro" style="width:334px"><img src="/res//img/bacchettaCentro.gif"/></div>
+		<div class="bacchettaDx"><img src="/res//img/bacchettaDx.gif"/></div>
+    </div>
+	
+</div>
+<div class="legislaturaDatiNoBlock">
+	<strong>Atti e documenti</strong>
+	
+	<div class="lavoriOpen">
+		<a class="linkArFreccia" href="			/documenti/progetti-legge/faccette/leg_repubblica:18
+	" title="visualizza gli atti">Progetti di legge (3756)</a>
+		<a class="linkArFreccia" href="			/documenti/doc/faccette/leg_repubblica:18
+	" title="visualizza i Documenti">Documenti parlamentari (2428)</a>
+	
+					<a class="linkArFreccia" href="			/documenti/indirizzo-e-controllo/faccette/leg_repubblica:18|categoria:
+	Atti%20di%20controllo" title="visualizza gli Atti di controllo">Atti di controllo (36925)</a>
+					<a class="linkArFreccia" href="			/documenti/indirizzo-e-controllo/faccette/leg_repubblica:18|categoria:
+	Atti%20di%20indirizzo" title="visualizza gli Atti di indirizzo">Atti di indirizzo (22948)</a>
+				
+    </div>
+	
+</div>
+	<div class="legislaturaDatiNoBlock">
+	<strong>Regolamento vigente</strong><br /><br />
+    	La Camera dei deputati applica il Regolamento del 18 febbraio 1971, già  modificato nelle legislature VII, VIII, IX, X, XI, XII e XIII . Nel corso della legislatura vengono apportate ulteriori modifiche.
+		<br /><br />
+					<a class="linkArFreccia" href="/regolamenti/vigente#nav" title="accedi al dettaglio delle modifiche introdotte">accedi al dettaglio delle modifiche introdotte</a>
+				
+		</div>
+	
+
+
+
+
+
+
+
+
+
+<br /><br />
+	</div><!-- chiudo boxA -->
+
+
+<!-- chiudo boxA -->
+<div class="boxA">
+<h2>Le legislature</h2>
+			<ul class="cronologia">
+									
+						<li class="cronoParlamento"> <a  href="			/legislature/leg-
+	sabaudo-I" title="I Legislatura del Regno di Sardegna"><span><strong>I Legislatura del Regno di Sardegna</strong> (dal 8 maggio 1848 al 30 dicembre 1848)</span></a></li>
+									
+						<li class="cronoParlamento"> <a  href="			/legislature/leg-
+	sabaudo-II" title="II Legislatura del Regno di Sardegna"><span><strong>II Legislatura del Regno di Sardegna</strong> (dal 1 febbraio 1849 al 30 marzo 1849)</span></a></li>
+									
+						<li class="cronoParlamento"> <a  href="			/legislature/leg-
+	sabaudo-III" title="III Legislatura del Regno di Sardegna"><span><strong>III Legislatura del Regno di Sardegna</strong> (dal 30 luglio 1849 al 20 novembre 1849)</span></a></li>
+									
+						<li class="cronoParlamento"> <a  href="			/legislature/leg-
+	sabaudo-IV" title="IV Legislatura del Regno di Sardegna"><span><strong>IV Legislatura del Regno di Sardegna</strong> (dal 20 dicembre 1849 al 20 novembre 1853)</span></a></li>
+									
+						<li class="cronoParlamento"> <a  href="			/legislature/leg-
+	sabaudo-V" title="V Legislatura del Regno di Sardegna"><span><strong>V Legislatura del Regno di Sardegna</strong> (dal 19 dicembre 1853 al 25 ottobre 1857)</span></a></li>
+									
+						<li class="cronoParlamento"> <a  href="			/legislature/leg-
+	sabaudo-VI" title="VI Legislatura del Regno di Sardegna"><span><strong>VI Legislatura del Regno di Sardegna</strong> (dal 14 dicembre 1857 al 21 gennaio 1860)</span></a></li>
+									
+						<li class="cronoParlamento"> <a  href="			/legislature/leg-
+	sabaudo-VII" title="VII Legislatura del Regno di Sardegna"><span><strong>VII Legislatura del Regno di Sardegna</strong> (dal 2 aprile 1860 al 17 dicembre 1860)</span></a></li>
+													
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-VIII" title="VIII Legislatura del Regno d'Italia"><span><strong>VIII Legislatura del Regno d'Italia</strong> (dal 18 febbraio 1861 al 7 settembre 1865)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-IX" title="IX Legislatura del Regno d'Italia"><span><strong>IX Legislatura del Regno d'Italia</strong> (dal 18 novembre 1865 al 13 febbraio 1867)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-X" title="X Legislatura del Regno d'Italia"><span><strong>X Legislatura del Regno d'Italia</strong> (dal 22 marzo 1867 al 2 novembre 1870)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XI" title="XI Legislatura del Regno d'Italia"><span><strong>XI Legislatura del Regno d'Italia</strong> (dal 5 dicembre 1870 al 20 settembre 1874)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XII" title="XII Legislatura del Regno d'Italia"><span><strong>XII Legislatura del Regno d'Italia</strong> (dal 23 novembre 1874 al 3 ottobre 1876)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XIII" title="XIII Legislatura del Regno d'Italia"><span><strong>XIII Legislatura del Regno d'Italia</strong> (dal 20 novembre 1876 al 2 maggio 1880)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XIV" title="XIV Legislatura del Regno d'Italia"><span><strong>XIV Legislatura del Regno d'Italia</strong> (dal 26 maggio 1880 al 2 ottobre 1882)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XV" title="XV Legislatura del Regno d'Italia"><span><strong>XV Legislatura del Regno d'Italia</strong> (dal 22 novembre 1882 al 27 aprile 1886)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XVI" title="XVI Legislatura del Regno d'Italia"><span><strong>XVI Legislatura del Regno d'Italia</strong> (dal 10 giugno 1886 al 22 ottobre 1890)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XVII" title="XVII Legislatura del Regno d'Italia"><span><strong>XVII Legislatura del Regno d'Italia</strong> (dal 10 dicembre 1890 al 27 settembre 1892)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XVIII" title="XVIII Legislatura del Regno d'Italia"><span><strong>XVIII Legislatura del Regno d'Italia</strong> (dal 23 novembre 1892 al 8 maggio 1895)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XIX" title="XIX Legislatura del Regno d'Italia"><span><strong>XIX Legislatura del Regno d'Italia</strong> (dal 10 giugno 1895 al 2 marzo 1897)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XX" title="XX Legislatura del Regno d'Italia"><span><strong>XX Legislatura del Regno d'Italia</strong> (dal 5 aprile 1897 al 17 maggio 1900)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXI" title="XXI Legislatura del Regno d'Italia"><span><strong>XXI Legislatura del Regno d'Italia</strong> (dal 16 giugno 1900 al 18 ottobre 1904)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXII" title="XXII Legislatura del Regno d'Italia"><span><strong>XXII Legislatura del Regno d'Italia</strong> (dal 30 novembre 1904 al 8 febbraio 1909)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXIII" title="XXIII Legislatura del Regno d'Italia"><span><strong>XXIII Legislatura del Regno d'Italia</strong> (dal 24 marzo 1909 al 29 settembre 1913)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXIV" title="XXIV Legislatura del Regno d'Italia"><span><strong>XXIV Legislatura del Regno d'Italia</strong> (dal 27 novembre 1913 al 29 settembre 1919)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXV" title="XXV Legislatura del Regno d'Italia"><span><strong>XXV Legislatura del Regno d'Italia</strong> (dal 1 dicembre 1919 al 7 aprile 1921)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXVI" title="XXVI Legislatura del Regno d'Italia"><span><strong>XXVI Legislatura del Regno d'Italia</strong> (dal 11 giugno 1921 al 25 gennaio 1924)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXVII" title="XXVII Legislatura del Regno d'Italia"><span><strong>XXVII Legislatura del Regno d'Italia</strong> (dal 24 maggio 1924 al 21 gennaio 1929)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXVIII" title="XXVIII Legislatura del Regno d'Italia"><span><strong>XXVIII Legislatura del Regno d'Italia</strong> (dal 20 aprile 1929 al 19 gennaio 1934)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXIX" title="XXIX Legislatura del Regno d'Italia"><span><strong>XXIX Legislatura del Regno d'Italia</strong> (dal 28 aprile 1934 al 2 marzo 1939)</span></a></li>
+									
+					<li class="cronoRegia"><a   href="			/legislature/leg-
+	regno-XXX" title="XXX Legislatura del Regno d'Italia. Camera dei fasci e delle corporazioni"><span><strong>XXX Legislatura del Regno d'Italia. Camera dei fasci e delle corporazioni</strong> (dal 23 marzo 1939 al 2 agosto 1943)</span></a></li>
+								<li class="cronoCostituzionale"><a    ><span><strong>Guerra e ricostituzione</strong> (dal 3 agosto 1943 al 24 settembre 1945)</span></a></li>
+				<li class="cronoCostituzionale"><a href="			/legislature/leg-
+	transizione-consulta_nazionale" title="Consulta nazionale "   ><span><strong>Consulta nazionale </strong> (dal 25 settembre 1945 al 24 giugno 1946)</span></a></li>
+				<li class="cronoCostituzionale"><a href="			/legislature/leg-
+	transizione-costituente" title="Assemblea Costituente "  ><span><strong>Assemblea Costituente </strong> (dal 25 giugno 1946 al 31 gennaio 1948)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-I" title="I Legislatura della Repubblica italiana"   ><span><strong>I Legislatura della Repubblica italiana</strong> (dal 8 maggio 1948 al 24 giugno 1953)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-II" title="II Legislatura della Repubblica italiana"   ><span><strong>II Legislatura della Repubblica italiana</strong> (dal 25 giugno 1953 al 11 giugno 1958)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-III" title="III Legislatura della Repubblica italiana"   ><span><strong>III Legislatura della Repubblica italiana</strong> (dal 12 giugno 1958 al 15 maggio 1963)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-IV" title="IV Legislatura della Repubblica italiana"   ><span><strong>IV Legislatura della Repubblica italiana</strong> (dal 16 maggio 1963 al 4 giugno 1968)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-V" title="V Legislatura della Repubblica italiana"   ><span><strong>V Legislatura della Repubblica italiana</strong> (dal 5 giugno 1968 al 24 maggio 1972)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-VI" title="VI Legislatura della Repubblica italiana"   ><span><strong>VI Legislatura della Repubblica italiana</strong> (dal 25 maggio 1972 al 4 luglio 1976)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-VII" title="VII Legislatura della Repubblica italiana"   ><span><strong>VII Legislatura della Repubblica italiana</strong> (dal 5 luglio 1976 al 19 giugno 1979)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-VIII" title="VIII Legislatura della Repubblica italiana"   ><span><strong>VIII Legislatura della Repubblica italiana</strong> (dal 20 giugno 1979 al 11 luglio 1983)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-IX" title="IX Legislatura della Repubblica italiana"   ><span><strong>IX Legislatura della Repubblica italiana</strong> (dal 12 luglio 1983 al 1 luglio 1987)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-X" title="X Legislatura della Repubblica italiana"   ><span><strong>X Legislatura della Repubblica italiana</strong> (dal 2 luglio 1987 al 22 aprile 1992)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XI" title="XI Legislatura della Repubblica italiana"   ><span><strong>XI Legislatura della Repubblica italiana</strong> (dal 23 aprile 1992 al 14 aprile 1994)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XII" title="XII Legislatura della Repubblica italiana"   ><span><strong>XII Legislatura della Repubblica italiana</strong> (dal 15 aprile 1994 al 8 maggio 1996)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XIII" title="XIII Legislatura della Repubblica italiana"   ><span><strong>XIII Legislatura della Repubblica italiana</strong> (dal 9 maggio 1996 al 29 maggio 2001)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XIV" title="XIV Legislatura della Repubblica italiana"   ><span><strong>XIV Legislatura della Repubblica italiana</strong> (dal 30 maggio 2001 al 27 aprile 2006)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XV" title="XV Legislatura della Repubblica italiana"   ><span><strong>XV Legislatura della Repubblica italiana</strong> (dal 28 aprile 2006 al 28 aprile 2008)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XVI" title="XVI Legislatura della Repubblica italiana"   ><span><strong>XVI Legislatura della Repubblica italiana</strong> (dal 29 aprile 2008 al 14 marzo 2013)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XVII" title="XVII Legislatura della Repubblica italiana"   ><span><strong>XVII Legislatura della Repubblica italiana</strong> (dal 15 marzo 2013 al 22 marzo 2018)</span></a></li>
+									<li class="cronoRepubblicano"><a href="			/legislature/leg-
+	repubblica-XVIII" title="XVIII Legislatura della Repubblica italiana" class="selezionata"  ><span><strong>XVIII Legislatura della Repubblica italiana</strong> (dal 23 marzo 2018 al 12 ottobre 2022)</span></a></li>
+							</ul>
+			<div class="txtCronologia"></div>
+		</div><!-- chiudo boxA -->
+<!-- chiudo boxA --></div>
+<!-- chiudo colonnaSx -->
+<div id="colonnaDx">
+		<div class="boxMultimedia">
+		<div class="topMultimedia">
+            <img src="/res/img/topMultimedia.jpg" alt="" />
+        </div>
+		<div class="contTitoloCanale">
+			<div class="frecciaViola">
+				<img alt="" src="/res/img/frecciaViola.gif"/>
+            </div>
+            <div class="linkFuturaViola">Deputati</div>
+		</div>
+		<div class="separatoreDot mt7 mb14"> &nbsp;</div>
+		        <div class="nuovoBoxFiltri"><strong>Gli eletti della Legislatura</strong>
+            <div class="separatoreVuoto mt14">&nbsp;</div>
+			
+    		<ul class="filtri3riga">
+    			        			        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:A" title="vedi i deputati della legislatura filtrati per lettera A"><span class="ico"></span>A <span>(21)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:A">A <span>(21)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:B" title="vedi i deputati della legislatura filtrati per lettera B"><span class="ico"></span>B <span>(66)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:B">B <span>(66)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:C" title="vedi i deputati della legislatura filtrati per lettera C"><span class="ico"></span>C <span>(80)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:C">C <span>(80)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:D" title="vedi i deputati della legislatura filtrati per lettera D"><span class="ico"></span>D <span>(59)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:D">D <span>(59)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:E" title="vedi i deputati della legislatura filtrati per lettera E"><span class="ico"></span>E <span>(5)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:E">E <span>(5)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:F" title="vedi i deputati della legislatura filtrati per lettera F"><span class="ico"></span>F <span>(45)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:F">F <span>(45)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:G" title="vedi i deputati della legislatura filtrati per lettera G"><span class="ico"></span>G <span>(48)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:G">G <span>(48)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:I" title="vedi i deputati della legislatura filtrati per lettera I"><span class="ico"></span>I <span>(7)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:I">I <span>(7)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:L" title="vedi i deputati della legislatura filtrati per lettera L"><span class="ico"></span>L <span>(33)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:L">L <span>(33)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:M" title="vedi i deputati della legislatura filtrati per lettera M"><span class="ico"></span>M <span>(64)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:M">M <span>(64)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:N" title="vedi i deputati della legislatura filtrati per lettera N"><span class="ico"></span>N <span>(12)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:N">N <span>(12)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:O" title="vedi i deputati della legislatura filtrati per lettera O"><span class="ico"></span>O <span>(8)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:O">O <span>(8)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:P" title="vedi i deputati della legislatura filtrati per lettera P"><span class="ico"></span>P <span>(54)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:P">P <span>(54)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:Q" title="vedi i deputati della legislatura filtrati per lettera Q"><span class="ico"></span>Q <span>(1)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:Q">Q <span>(1)</span></a></li>  -->
+        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:R" title="vedi i deputati della legislatura filtrati per lettera R"><span class="ico"></span>R <span>(36)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:R">R <span>(36)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:S" title="vedi i deputati della legislatura filtrati per lettera S"><span class="ico"></span>S <span>(57)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:S">S <span>(57)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:T" title="vedi i deputati della legislatura filtrati per lettera T"><span class="ico"></span>T <span>(32)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:T">T <span>(32)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:U" title="vedi i deputati della legislatura filtrati per lettera U"><span class="ico"></span>U <span>(1)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:U">U <span>(1)</span></a></li>  -->
+        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:V" title="vedi i deputati della legislatura filtrati per lettera V"><span class="ico"></span>V <span>(24)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:V">V <span>(24)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        									        				        					<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18|letter:Z" title="vedi i deputati della legislatura filtrati per lettera Z"><span class="ico"></span>Z <span>(14)</span></a></li> 
+        					
+        					<!-- <li class="c"><a href="			/deputati/faccette/
+	leg_repubblica:18|letter:Z">Z <span>(14)</span></a></li>  -->
+        									        									        									        									        									        									        									        									        									        									        									        									        									        									        														
+        			<li><a class="quadratoNero" href="			/deputati/faccette/
+	leg_repubblica:18" title="vedi tutti i deputati della legislatura"><span class="ico"></span>Tutti <span>(667)</span></a></li>
+        		            </ul>
+		</div>
+		    		<div class="separatoreRiga mt11 mb14">&nbsp;</div>
+    		<div class="nuovoBoxFiltri">
+    			<a class="frecciaNera" href="			/legislature/storicodeputati/leg-repubblica-XVIII
+	" title="Accedi alle variazioni nella composizione della Camera"><span class="ico"></span>Accedi alle variazioni nella composizione della Camera</a>
+            </div>
+		                <div class="separatoreDot mt7 mb14"> &nbsp;</div>
+        <div class="nuovoBoxFiltri">
+			<strong>Gli organi parlamentari</strong><div class="separatoreVuoto mt14">&nbsp;</div>
+			<ul class="filtri1riga">
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Ufficio di Presidenza" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Ufficio di Presidenza"><span class="ico"></span>Ufficio di Presidenza</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Collegio dei Questori" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Collegio dei Questori"><span class="ico"></span>Collegio dei Questori</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Commissioni permanenti" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni permanenti"><span class="ico"></span>Commissioni permanenti</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Commissioni speciali" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni speciali"><span class="ico"></span>Commissioni speciali</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Giunte" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Giunte"><span class="ico"></span>Giunte</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Comitato per la legislazione" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Comitato per la legislazione"><span class="ico"></span>Comitato per la legislazione</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Conferenza dei presidenti di gruppo" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Conferenza dei presidenti di gruppo"><span class="ico"></span>Conferenza dei presidenti di gruppo</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Commissioni bicamerali e d'inchiesta" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni bicamerali e d'inchiesta"><span class="ico"></span>Commissioni bicamerali e d'inchiesta</a>
+											<ul style="padding-left:14px;">
+															<li ><a href="			/organi/leg-repubblica-XVIII?macro_tipo2=
+	Commissioni bicamerali d'inchiesta" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni bicamerali d'inchiesta"><span class="ico"></span>Commissioni bicamerali d'inchiesta</a></li>
+															<li ><a href="			/organi/leg-repubblica-XVIII?macro_tipo2=
+	Commissioni bicamerali di rango Costituzionale" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni bicamerali di rango Costituzionale"><span class="ico"></span>Commissioni bicamerali di rango Costituzionale</a></li>
+															<li ><a href="			/organi/leg-repubblica-XVIII?macro_tipo2=
+	Commissioni bicamerali consultive" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni bicamerali consultive"><span class="ico"></span>Commissioni bicamerali consultive</a></li>
+															<li ><a href="			/organi/leg-repubblica-XVIII?macro_tipo2=
+	Commissioni bicamerali di indirizzo, vigilanza e controllo" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni bicamerali di indirizzo, vigilanza e controllo"><span class="ico"></span>Commissioni bicamerali di indirizzo, vigilanza e controllo</a></li>
+															<li ><a href="			/organi/leg-repubblica-XVIII?macro_tipo2=
+	Comitato per i procedimenti di accusa" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Comitato per i procedimenti di accusa"><span class="ico"></span>Comitato per i procedimenti di accusa</a></li>
+															<li ><a href="			/organi/leg-repubblica-XVIII?macro_tipo2=
+	Commissioni monocamerali d'inchiesta" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni monocamerali d'inchiesta"><span class="ico"></span>Commissioni monocamerali d'inchiesta</a></li>
+													</ul>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Commissioni miste" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Commissioni miste"><span class="ico"></span>Commissioni miste</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Delegazioni Parlamentari presso organismi europei o internazionali" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Delegazioni Parlamentari presso organismi europei o internazionali"><span class="ico"></span>Delegazioni Parlamentari presso organismi europei o internazionali</a>
+										</li>
+									<li><a href="			/organi/leg-repubblica-XVIII?macro_tipo1=
+	Comitati e altri organi interni" class="frecciaNera" title="visualizza gli organi parlamentari di tipo Comitati e altri organi interni"><span class="ico"></span>Comitati e altri organi interni</a>
+										</li>
+							</ul>
+		</div>
+				
+				
+		
+		        <div class="separatoreRiga mt11 mb14">&nbsp;</div>
+        <div class="nuovoBoxFiltri">
+		<strong>I governi</strong><div class="separatoreVuoto mt14">&nbsp;</div>
+					<ul class="filtri1riga">
+													<li>
+								<a href="			/governi/i-governo-conte
+	" title="accedi alla scheda del governo I Governo Conte" class="frecciaNera"><span class="ico"></span>
+									I Governo Conte
+								</a>
+							</li>
+													<li>
+								<a href="			/governi/ii-governo-conte
+	" title="accedi alla scheda del governo II Governo Conte" class="frecciaNera"><span class="ico"></span>
+									II Governo Conte
+								</a>
+							</li>
+													<li>
+								<a href="			/governi/i-governo-draghi
+	" title="accedi alla scheda del governo I Governo Draghi" class="frecciaNera"><span class="ico"></span>
+									I Governo Draghi
+								</a>
+							</li>
+											</ul>
+		</div>
+				
+		       <div class="separatoreRiga mt11 mb14">&nbsp;</div>
+        <div class="nuovoBoxFiltri">
+		<div class="forClickEvent filtroChiuso" id="close">
+
+		<strong>Gruppi parlamentari</strong></div>
+<div >
+
+		<div class="separatoreVuoto mt14">&nbsp;</div>
+
+							<ul class="filtri1riga">
+																	<li>
+										<a href="			/gruppi/coraggio-italia-ci-27-05-2021-23-06-2022
+	" title="accedi alla scheda del gruppo CORAGGIO ITALIA" class="frecciaNera"><span class="ico"></span>
+											CORAGGIO ITALIA
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/forza-italia-berlusconi-presidente-fi-27-03-2018
+	" title="accedi alla scheda del gruppo FORZA ITALIA - BERLUSCONI PRESIDENTE" class="frecciaNera"><span class="ico"></span>
+											FORZA ITALIA - BERLUSCONI PRESIDENTE
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/fratelli-d-italia-fdi-27-03-2018
+	" title="accedi alla scheda del gruppo FRATELLI D'ITALIA" class="frecciaNera"><span class="ico"></span>
+											FRATELLI D'ITALIA
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/insieme-futuro-impegno-civico-ipf-ic-21-06-2022
+	" title="accedi alla scheda del gruppo INSIEME PER IL FUTURO - IMPEGNO CIVICO" class="frecciaNera"><span class="ico"></span>
+											INSIEME PER IL FUTURO - IMPEGNO CIVICO
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/italia-viva-italia-c-e-iv-ic-e-19-09-2019
+	" title="accedi alla scheda del gruppo ITALIA VIVA-ITALIA C'E'" class="frecciaNera"><span class="ico"></span>
+											ITALIA VIVA-ITALIA C'E'
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/lega-salvini-premier-lega-27-03-2018
+	" title="accedi alla scheda del gruppo LEGA - SALVINI PREMIER" class="frecciaNera"><span class="ico"></span>
+											LEGA - SALVINI PREMIER
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/liberi-e-uguali-articolo-1-sinistra-italiana-leu-art-1-si-10-04-2018
+	" title="accedi alla scheda del gruppo LIBERI E UGUALI-ARTICOLO 1-SINISTRA ITALIANA" class="frecciaNera"><span class="ico"></span>
+											LIBERI E UGUALI-ARTICOLO 1-SINISTRA ITALIANA
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/misto-misto-23-03-2018
+	" title="accedi alla scheda del gruppo MISTO" class="frecciaNera"><span class="ico"></span>
+											MISTO
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/movimento-5-stelle-m5s-27-03-2018
+	" title="accedi alla scheda del gruppo MOVIMENTO 5 STELLE" class="frecciaNera"><span class="ico"></span>
+											MOVIMENTO 5 STELLE
+										</a>
+									</li>
+																	<li>
+										<a href="			/gruppi/partito-democratico-pd-27-03-2018
+	" title="accedi alla scheda del gruppo PARTITO DEMOCRATICO" class="frecciaNera"><span class="ico"></span>
+											PARTITO DEMOCRATICO
+										</a>
+									</li>
+															</ul>
+							</div>
+		</div>
+				
+		
+		
+</div>
+      
+	
+	
+<!-- chiudo colonnaDx --></div>  <div class="footer">
+		<div class="footerSx">
+			<ul>
+			<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">Parlamento.it</li>
+						<li><a class="frecciaNera" href="http://parlamento18.camera.it/13"><span class=""></span>Parlamento in seduta comune</a> </li>
+						<li><a class="frecciaNera" href="http://www.parlamento.it/1210?legislatura_numero=18"><span class=""></span>Organismi bicamerali</a></li>
+						<li><a class="frecciaNera" href="http://www.parlamento.it/798"><span class=""></span>Rapporti internazionali</a></li>
+						<li><a class="frecciaNera" href="http://www.parlamento.it/806"><span class=""></span>Polo bibliotecario parlamentare</a></li>
+						<li><a class="frecciaNera" href="http://www.normattiva.it"><span class=""></span>Normattiva: il portale della legge vigente</a></li>
+						
+					</ul>
+				</li>
+					<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">La Camera</li>
+						<li><a class="frecciaNera" href="https://webtv.camera.it/" title="WebTv"><span class=""></span>WebTv</a></li>
+						<li><a class="frecciaNera" href="http://www.youtube.com/cameradeideputati" title="YouTube"><span class=""></span>YouTube</a></li>
+						<li><a class="frecciaNera" href="https://webtv.camera.it/conferenze_stampa" title="Diretta conferenze stampa"><span class=""></span>Diretta conferenze stampa</a></li>
+						<li><a class="frecciaNera" href="http://camera.archivioluce.com/archivioluce/camera" title="Portale Luce - Camera"><span class=""></span>Portale Luce - Camera</a></li>
+						<li><a class="frecciaNera" href="http://legislature.camera.it/" title="Legislature precedenti"><span class=""></span>Legislature precedenti</a></li>
+					</ul>
+				</li>
+				<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">dati.camera</li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/dati/" title="Dati"><span class=""></span>Dati</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/apps/" title="Apps"><span class=""></span>Apps</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/linked-data/" title="Linked-Data"><span class=""></span>Linked-Data</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/risorse/" title="Risorse"><span class=""></span>Risorse</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/progetto.html" title="Progetto"><span class=""></span>Progetto</a></li>
+					</ul>
+				</li>
+				<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">Questo portale</li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale#nav" title="Portale storico"><span class=""></span>Portale storico</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=deputati#nav" title="Portale storico"><span class=""></span>Deputati</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=lavori#nav" title="Lavori"><span class=""></span>Lavori</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=atti_e_documenti#nav" title="Atti e documenti"><span class=""></span>Atti e documenti</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=percorsi#nav" title="Percorsi"><span class=""></span>Percorsi</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=strumenti#nav" title="Strumenti"><span class=""></span>Strumenti</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=multimedia#nav" title="Area multimediale"><span class=""></span>Area multimediale</a></li>
+						
+					
+					</ul>
+				</li>
+			</ul><!-- chiudo ul del footerDx -->
+		</div><!-- chiudo footerDx -->
+		<div class="footerDx">
+			<div>
+				<a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+				<img alt="Creative Commons License" style="float: left; margin-right:10px;" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a>
+				<ul class="listaFooter">
+				<li><span style="font-size: 11px;text-align: left; margin-top: 86px;"><a class="frecciaNera" href="http://www.camera.it/leg18/69?testostrumenti=2" target="_blank">privacy</a></span></li>
+				<li><span style="font-size: 11px;text-align: left; margin-top: 100px;"><a class="frecciaNera" href="https://www.camera.it/cookiepolicy" target="_blank">cookie policy</a></span></li>
+				<li><span style="font-size: 11px;text-align: left;">per segnalazioni e commenti: <br />assistenza-dati@camera.it</span></li>
+				</ul>
+				
+			</div>
+		</div>
+</div>  
+<!-- chiudo wrapper --></div>
+</body>
+</html>
