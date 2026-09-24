@@ -106,6 +106,10 @@ Migrated from `POLISIM_MASTER_ROADMAP.md` at its retirement (2026-09-01) and con
 - **A source is fetched, not remembered** — and where it cannot be reached, the row is BILLED with what is missing and why, never estimated.
 - **Nothing is deleted that has not first been migrated**, and a document that loses a line says where the line went.
 
+## The Design channel
+
+- **CODE SENDS TO DESIGN AND PULLS ITS ANSWERS; ELIAS NO LONGER UPLOADS** (X-1, §610; E2 amended). The channel is `DesignSync` (`/design-sync`) from the MAIN session against the project `get_project` names (a subagent has none): `list_files` → `finalize_plan` (writes and an empty `deletes`, the local folder named) → `write_files` by `localPath`, so no byte passes through a context; `get_file` to pull. Measured shape: a pull is whole under 192 KiB of content and TRUNCATED above it, saying so; **every PNG the store holds carries an injected 5 758-byte C2PA chunk after IHDR, so a loose PNG's digest never matches its manifest on the far side while its pixel stream does; a zip is stored byte-exact** (proved on a pull), so a row goes as ONE ZIP with `MANIFEST.sha256` inside plus its frames loose for Design's reading; `application/octet-stream` is refused. ⚠ A pulled result over ~50 KB lands on disk as a tool-result file and `Tools/design_channel.pl decode` reads it there; a smaller one comes back inline only, and §427 forbids retyping it - ask Design for small binaries inside a zip. Design's board file pulls whole while under the cap.
+
 ## Tooling lessons that cost a pass
 
 - **Tooling lessons, 2026-09-21:** the Design project's files are reachable from the MAIN session only (a subagent has no DesignSync - fetch first, hand it the file); a long Bash heredoc holding apostrophes, backticks or `\\n` inside quoted C# fails or silently rewrites the escape - write a long perl patch or record with the Write tool; never trust a session summary's *"the user said"* for a standing rule - go to the transcript (the commit attribution line, §555).

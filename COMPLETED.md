@@ -33818,3 +33818,49 @@ The margin is small. On the pinned night the column's texts fit with a few units
   - `pf16h_2560`, the same.
   - The staged board `-shotelectionnight`: `en609_1280` and `en609_2560`, 12 captured and 0 failed at each width. Its `e6_*` frames carry no canvas-text assert, so its final frame (the 2022 night, a government with a supporting party) was read by eye at 1280: it fits, with no overlap.
 - ⚠ **Found on the way:** `Tools/bar_tier.ps1` named ElectionNightScreen's frames as `90*_electionnight_*`, which is no capture's name. The only canvas-text assert on the screen is the sweep's `88n_election_night_takeover`, and the tier now names that.
+
+## 610. X-1 - THE DIRECT CODE↔DESIGN CHANNEL TESTED: IT PASSES, WITH THREE MEASURED LIMITS - A 192 KiB PULL CAP, A C2PA CHUNK THE STORE INJECTS INTO EVERY PNG, AND ZIPS STORED BYTE-EXACT; E2 AMENDED, THE SITTING'S PART C SENT BY CODE (2026-09-24)
+
+**The row** (X-1, the head track's first): *"push a real set - one board, one film PNG, one sprite - to the Design project and pull one board back; verify every file by digest both ways; time it against the zip route. Pass: the channel replaces zips and Elias's uploads, and E2 is amended (Code sends); fail: the zip route stays, with the measured reason."*
+
+**The channel.** `DesignSync` (`/design-sync`) from the main session against the project `get_project` names (`PoliSim v2 Design Progress`, Elias's, `canEdit`; its type is a plain project, which is why `list_projects` - filtered to design-system projects - lists nothing). `list_files` reads the whole tree (961 paths); `finalize_plan` names the paths and the local folder and asks a permission; `write_files` uploads by `localPath`, so no byte passes through a context; `get_file` pulls one file as base64 into the session.
+
+**Pushed, and read back by listing** - `uploads/X1_channel_test/`:
+
+| file | bytes on disk | sha256 on disk |
+|---|---|---|
+| `board_1i_law_browser.png` (Design's own 1i board, from `PoliSim-captures/design-boards/`) | 1 147 461 | `d4e49a30…` |
+| `film603b_1280_88n_election_night_takeover.png` (a real film frame) | 226 920 | `f99a1ed1…` |
+| `ui_btn_brass.png` (a delivered sprite) | 2 039 | `95f6337c…` |
+| `MANIFEST.sha256` | 286 | - |
+| `x1_set.zip` (the three and the manifest) | 1 336 559 | `0975da60…` |
+| `x1_small.zip` (the sprite, the manifest, a 64 KB pad) | 66 217 | `6b59e7a3…` |
+
+Then, as the first real send, **E-42's part C** - `uploads/SITTING_2026-09-21_C/SITTING_2026-09-21_C.zip`, 9 786 667 bytes, `a4ae56e0…` on disk - written in one call. `application/octet-stream` was refused (*unsupported content type*); `image/png`, `text/plain` and `application/zip` were taken.
+
+**Pulled back, and measured** (`Tools/design_channel.pl`, which decodes a pull off the persisted tool result, walks the chunks and digests):
+
+1. **The pull cap is 192 KiB of content** (262 144 base64 characters): the film (227 KB) and the board (1.1 MB) both came back as 196 608 bytes with `"truncated":true`; the sprite, the manifest, the small zip and Design's board file (`PoliSim v2 Screens.dc.html`, 180 783 bytes) came back whole and untruncated.
+2. **Every PNG the store holds carries a C2PA content-credentials chunk (`caBX`, 5 758 bytes) after IHDR that the pushed file did not.** So a loose PNG's digest can never match the manifest's line on either side. Its pixel stream is intact: with the chunk removed, the pulled film and board are byte-identical to their originals' first 190 838 bytes (the truncated pull's extent), and the sprite's base64 shows the same chunk at the same place. This is where board 16a's *"content-credentials chunk its ten siblings do not"* came from (§556).
+3. **A zip is stored byte-exact:** `x1_small.zip` pulled back at 66 217 bytes, `6b59e7a3…`, the digest it went with; `unzip -t` clean. The manifest text round-trips exactly.
+4. **Where a pull lands.** A result over about 50 KB is persisted to disk by the harness and is decoded there; a smaller one comes back inline only, and §427 forbids retyping it. So a small binary Design returns (a 256-px icon is ~10 KB) cannot be pulled byte-exact on its own - it comes inside a zip, which is what the D17 delivery already did.
+
+**The time.** The push of four files (1.4 MB) from plan to written was 78 s of wall including the permission prompt; the 9.8 MB archive went in one call. Against it, the zip route's cost was never the machine's: E-37 (cut, uploaded and answered the same night), E-41 (cut 2026-09-18, read 2026-09-21), E-42 (cut 2026-09-21/22, part C still owed on 2026-09-24 until this pass sent it). What the channel removes is the wait on an upload.
+
+**The verdict: PASS, with its shape.** A Design row travels as ONE ZIP with `MANIFEST.sha256` inside - the digest that survives - plus its frames loose beside it for Design's reading; a session pulls the board file and any archive under the cap, never a loose PNG's digest. **One thing this side cannot measure:** whether Design's Claude opens a zip that `write_files` stored (its earlier archives came through the upload page, which unpacked them into folders). The notice at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md` asks exactly that, and the first row's return answers it; until then the frames go loose beside the zip, so nothing waits on the answer.
+
+**Built and recorded.** `Tools/design_channel.pl` (manifest · decode · compare); the standing rule in `CLAUDE.md` (*The Design channel*); `ERRANDS.md` - E2 amended by Elias's ruling (Code sends and pulls; Elias's uploads end; everything else outward stays his), E-42 closed as sent; the notice to Design. The test folder stays in the project as the evidence and for the zip question.
+
+**Bars.** Tier TOOLING and DOCUMENTS by the staged paths; the evidence line is §611's.
+
+## 611. X-2 - THE UNIFIED WORK LIST INSTALLED AS THE HEAD TRACK; THE TWO SPECS IT DRAWS FROM ARE NOT ON DISK (E-45); E-43'S RELAY SENT BY CODE (2026-09-24)
+
+**The order** (Elias, 2026-09-24): *"Install UNIFIED_WORK_LIST.md as the head track of POLISIM_FEATURE_LIST.md, the three specs under docs/specs/, existing backlog below it. X-1 first … Then work down the list continuously - a row starts when what it needs has landed; Design rows only against built parts; one BASELINE family per pass; a close report with films at the end of each phase."*
+
+**Installed.** `UNIFIED_WORK_LIST.md` (8 418 bytes at the root, dated *ruled 2026-09-25*) is now the first section of `POLISIM_FEATURE_LIST.md` - the owners' table, Phases 0 to 6 and Elias's rows, whole - above the appendix, which is unchanged below its rule; the appendix's *"nothing here outranks F1–F6"* now names the head track. The root file is removed (the root holds five documents). X-1's row carries §610's verdict; X-2's row is ◐. E-45 joins Elias's rows.
+
+⚠ **The specs are not here.** The list names its sources as `POLITICAL_SYSTEM_SPEC.md` (PS), `START_POINTS_AND_PARTY_CREATION_SPEC.md` (SP) and SP's §9 (MM). Searched: every file under `G:\` and the user profile by those names, the Design project's 961 paths, the artifact list. None. `docs/specs/` holds the three specs it has held since §579 (elections, energy, tax) and nothing new. **So X-2's spec install and its S0 - the collision maps, the sourcing bills, the sizing - wait on E-45, and every row from Phase 1 on needs X-2.** Nothing further on the list is startable, by the list's own rule; STOPPING IS A RESULT.
+
+**E-43 sent.** The relay of the sitting pass - the four documents as they stand after this record - pushed to `uploads/RELAY_2026-09-24/` over the channel, each digest read off disk after the last edit and verified by listing; the row closed.
+
+**Bars.** Tier DOCUMENTS and TOOLING by the staged paths (`Tools/design_channel.pl` is the tooling): the document checks out of the engine (`Tools/textcheck`) and the cheap bar; the evidence line is in the commit.

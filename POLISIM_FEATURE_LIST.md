@@ -12,9 +12,103 @@ read at every session's start; this file is the open rows. The claim convention 
 
 ---
 
+# THE UNIFIED WORK LIST — the head track (Code and Design, one list; ruled by Elias 2026-09-25, installed 2026-09-24, `COMPLETED.md` §611)
+
+> **This is the head track.** It was handed over as `UNIFIED_WORK_LIST.md` at the root and installed here whole on 2026-09-24 (the root holds five documents; the file is this section now). Everything below the rule that closes it is the older backlog, unchanged. Each Design row's full text is installed into `CLAUDE_DESIGN_ASSET_REQUEST.md` when its row comes up. ⚠ **The three specs it draws from are named `POLITICAL_SYSTEM_SPEC.md` (PS), `START_POINTS_AND_PARTY_CREATION_SPEC.md` (SP) and SP's §9, the main menu and settings (MM) - and on 2026-09-24 neither file was on disk, in the Design project, or among the artifacts** (E-45). X-2's spec install and its S0 wait on them, and every row from Phase 1 on needs X-2.
+
+One list for both agents. Code builds, Design composes, Elias plays and rules.
+
+**How the list runs.** Work down it continuously: a row starts when what it needs has landed, and rows that don't depend on each other may run while a Design row is out. **The Design rule, unchanged: Design composes against built parts, never against a description** — so every Design row follows the Code row that builds its parts structurally, and a Code row builds Design's answer afterwards. Deviations stated, never silent. One BASELINE family per pass. Tiers as ruled.
+
+| owner | meaning |
+|---|---|
+| **Code** | builds, verifies, records, and — since X-1 passed — sends Design rows and pulls answers itself (`COMPLETED.md` §610; the channel's measured shape is a standing rule in `CLAUDE.md`) |
+| **Design** | composes against the built parts it is sent; answers on boards |
+| **Elias** | plays, rules, and strikes anything; the list names his rows explicitly |
+
+## Phase 0 — the channel and the records
+
+| # | owner | item | needs | done when |
+|---|---|---|---|---|
+| **X-1** ✅ | Code | **Test the direct Code↔Design channel** (`/design`, `/design-sync`): push a real set — one board, one film PNG, one sprite — to the Design project and pull one board back; **verify every file by digest both ways**; time it against the zip route | — | **PASSED 2026-09-24 (`COMPLETED.md` §610), with its shape measured:** the push lands (four files, then a zip, then the sitting's part C); the pull returns whole files under 192 KiB and truncates above it; every PNG the store holds carries an injected C2PA chunk, so a loose PNG's digest never matches on the far side while its pixel stream does, and a zip is stored byte-exact - so a row travels as ONE ZIP with `MANIFEST.sha256` inside, plus its frames loose for Design's reading. E2 amended: Code sends and pulls; Elias's uploads end. The one thing not measured from this side is whether Design's Claude opens a zip `write_files` stored (the UI's upload extracted them); the first row's return says. |
+| X-2 ◐ | Code | Install the three specs under `docs/specs/` and this list as the head track; S0 of PS and SP (collision maps, sourcing bills, sizing) | — | **The list is installed (this section, 2026-09-24). The specs are NOT on disk (E-45) and S0 waits on them.** maps and bills on record |
+
+## Phase 1 — the front door
+
+| # | owner | item | needs | done when |
+|---|---|---|---|---|
+| MM-1 | Code | The main menu (Continue, New game, Load, Settings, Quit), wired to the selector; real films | X-2 | reachable, filmed at both widths |
+| MM-2 | Code | Settings — audio moved in; display at filmed geometries only; game (speed, which interrupts hold, † default, autosave); every setting proved live; **the pinning check armed** | MM-1 | each setting changes what it names; a harness-unpinned preference fails the bar |
+| **D-MM** | Design | **The main menu and settings**, composed against the built screens; key art is Design's costed case, not assumed | MM-2 | boards answered |
+| MM-3 | Code | Build D-MM's boards, deviations stated | D-MM | filmed |
+
+## Phase 2 — the world clock and Sweden
+
+| # | owner | item | needs | done when |
+|---|---|---|---|---|
+| PS-1 | Code | Chambers, governments and leaders **of record by date** for all six, July 2022 to today; each country opens on its own date | X-2 | every seat and government asserted against the sourced table on its date |
+| PS-2 | Code | **Sweden end to end**: the run-up to 13 Sep 2026 with Kristersson in office; any of the eight parties; polling day on its date; election night; formation (leading or opposition); the reference view; the play save re-staged | PS-1 | a party can be picked, the campaign fought, the result governed or opposed, and history shown beside it |
+| SP-1 | Code | Start points as data, and the start screen structurally (cards, locked with reasons, Back, Select) | PS-1 | every country offers its start points |
+| SP-2 | Code | The **derived brief** — generated from the records, every clause traced; the optional tagline slot | SP-1 | a check resolves every clause |
+| **D-SP** | Design | **The start screen** (the HOI4 reference) against the built screen; card imagery is Design's call — derived imagery suggested | SP-2 | boards answered |
+| SP-2b | Code | Build D-SP's boards | D-SP | filmed |
+| **E-SW** | **Elias** | **Play Sweden** from the run-up | PS-2 | the play sheet's twenty questions answered |
+
+## Phase 3 — the roles
+
+| # | owner | item | needs | done when |
+|---|---|---|---|---|
+| PS-3 | Code | Junior partner and support party; the formation's offers; support agreements (items owed, delivered, broken); role-gated levers; the AI governing the player's own country; confidence and collapse by each country's rules | PS-2 | each of the four roles played for a full term in Sweden; a supporter's withdrawal can bring a government down |
+| **D-PS** | Design | **The role indicator, the formation screen with the player's offers, the support agreement as an instrument, the confidence-vote moment, the reference view** — against the built screens | PS-3 | boards answered |
+| PS-3b | Code | Build D-PS's boards | D-PS | filmed |
+
+## Phase 4 — your own party
+
+| # | owner | item | needs | done when |
+|---|---|---|---|---|
+| SP-3 | Code | `CreatedParty` in the model: six origins as data, stats setting real engine parameters (`[AUTHORED-DRAFT]`), no loyal base, the Splinter's prior, thresholds, funding and ballot access by each country's real rule | PS-3 | a created party fights Sweden end to end; every number traces to the engine |
+| SP-4 | Code | The creation flow structurally: five steps, origin cards and pips, the compass placement with the electorate and nearest parties, declarations, leader, review; mark picker over the unspent cells; ink picker with the live fence | SP-3 | a colliding ink is refused on screen with its distance |
+| **D-CP** | Design | **The creation flow** (the F1 reference), **the mark and ink pickers, a created party across the existing screens, and the locked states** — against the built flow | SP-4 | boards answered |
+| SP-4b | Code | Build D-CP's boards | D-CP | filmed |
+
+## Phase 5 — the countries (each unlocks its start points and created parties)
+
+| # | owner | item | needs | done when |
+|---|---|---|---|---|
+| PS-4 | Code | **Germany**: Länder catalog, casts derived from CHES, the snap start, the constructive vote of no confidence | PS-3 | a German game is playable from its start |
+| **D-DE** | Design | Germany's election-night map of the Länder | PS-4 | boards answered → built |
+| PS-5 | Code | **Poland**: 41 districts, parties and committees with their thresholds, the PiS government at the start, the presidential veto | PS-4 | playable |
+| **D-PL** | Design | Poland's district map | PS-5 | answered → built |
+| PS-6 + SP-6 | Code | **The USA**: the state-by-state campaign, the presidency, the Senate, midterms, term limits; your own nominee or a third-party run | PS-5 | playable as either party's nominee |
+| **D-US** | Design | The Electoral College map, the veto, a Congress view | PS-6 | answered → built |
+| PS-7 | Code | **Italy**: the Rosatellum's sub-national stages, the Senato, confidence in both chambers, the snap start | PS-6 | playable |
+| **D-IT** | Design | Italy's collegio map | PS-7 | answered → built |
+| SP-5 | Code | Created parties in each country as its row lands (thresholds, funding, ballot access, regions) | each country row | per country |
+
+## Phase 6 — the presidential starts
+
+| # | owner | item | needs | done when |
+|---|---|---|---|---|
+| SP-7 | Code | The two-round presidential model; **Poland's 2025 presidential start**; the president's veto and cohabitation | PS-5 | playable as a candidate |
+| SP-8 | Code | **France's 2022 presidential start**; the Assembly seated from the records; no dissolution until the legislative model exists, said on screen | SP-7 | playable as a candidate |
+| **D-PR** | Design | The runoff night and the president-in-cohabitation view | SP-7 | answered → built |
+
+## Elias's rows
+
+| # | item | unlocks |
+|---|---|---|
+| E-SW | Play Sweden after PS-2 | the campaign constants; the next design decisions |
+| E-44 | IRENA's *Renewable Power Generation Costs in 2025* full report into `PoliSim-captures/sources/energy/` | building a power plant stops being free |
+| E-45 | The two spec files the list draws from, `POLITICAL_SYSTEM_SPEC.md` and `START_POINTS_AND_PARTY_CREATION_SPEC.md`, into `docs/specs/` (`ERRANDS.md` E-45) | X-2's S0, and with it every row from MM-1 and PS-1 on |
+| — | **Strike anything, at any time.** Each phase's close report carries its films; nothing waits on a gate unless Elias adds one | — |
+
+**Size:** Phases 0–4, which make Sweden fully playable in every role with created parties and a front door, are roughly 20–30 sessions; Phases 5–6 grow with the countries.
+
+---
+
 # APPENDIX — the short tail
 
-⚠ **Nothing here outranks F1–F6.** One line each, with its owner.
+⚠ **Nothing here outranks the head track.** One line each, with its owner.
 
 ## CODE
 
