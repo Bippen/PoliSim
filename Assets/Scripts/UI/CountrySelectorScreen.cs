@@ -602,7 +602,9 @@ namespace PoliSim.UI
             Text nameText = CanvasChrome.MakeText(content.transform, "Name", StartPoints.Name(point), PoliSimTheme.Display, 22, primary, TextAnchor.MiddleLeft, FontStyle.Bold);
             nameText.gameObject.AddComponent<LayoutElement>().minHeight = 30f;
 
-            if (playable && !point.Presidential)
+            // §627 (ruled): EVERY playable start card draws the chamber seated at its start, labelled with its name - the USA's presidential card shows the
+            // House (divided government is the presidency's central constraint); Poland's and France's presidential cards follow the rule when they unlock.
+            if (playable)
             {
                 BuildSeatBar(content.transform, country.Id);
             }

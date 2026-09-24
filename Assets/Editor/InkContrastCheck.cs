@@ -96,13 +96,23 @@ namespace PoliSim.EditorTools
             // §626: THE FACE IS THE SPRITE'S, NOT THE FALLBACK LITERAL. The first cut of this pair measured the missing-strip fallback fill
             // (0x8A6B2F) and read TextPrimary on it at 3.02 - a face no player sees, since the delivered strip is on disk. Design read the
             // strip's face off the frame at ≈ #A88E55 (board 17a); here the face is the strip's own pixels, the mean of its centre patch,
-            // so the pair measures what is drawn. The light label and the fallback fill are REPORTED below the table, never asserted: both fail
-            // by construction (the review of §626), and what they say is why every brass label is TextPrimary now.
+            // so the pair measures what is drawn. The light label the button used to wear (2.64 on the strip) and the fallback fill are not uses
+            // any more and are not listed (§627); the inactive states are exempt BY NAME in the Exempt table below.
             Color brassFace = SpriteFace("ui_btn_brass_canvas", PoliSimTheme.Hex(0x8A6B2F));
             Color paperFace = SpriteFace("ui_btn_paper_canvas", PoliSimTheme.Hex(0xD9CBAC));
             yield return new Pair("MenuTextOnPaper", PoliSimTheme.Hex(0x4A3A22), "PaperFace(strip)", paperFace, BodyFloor, "body (the Canvas faced button's label on paper - the menu's paper items, the Back buttons)");
             yield return new Pair("TextPrimary", PoliSimTheme.TextPrimary, "BrassFace(strip)", brassFace, BodyFloor, "body (the faced button's label on brass since §626 - the main menu's default, the party rows, SELECT, SIGN, CONTINUE)");
         }
+
+        /// <summary>§627 (ruled): the INACTIVE states, exempt from the floors by name - a locked start card's reduced inks on the tile face
+        /// (`CountrySelectorScreen`, 18b: TextMuted for its name and stamp, MutedInk for its captions) and the settings sheet's disabled
+        /// election-night chip (`DrawDeskChipButton` selected + disabled: TextMuted on the brass fill). Printed with their ratios every run.</summary>
+        private static readonly (string Name, Color Ink, string Ground, Color GroundColor, string Why)[] Exempt =
+        {
+            ("LockedCard.TextMuted (name, stamp)", PoliSimTheme.TextMuted, "Tile", PoliSimTheme.Tile, "inactive - the locked start card cannot be selected (18b)"),
+            ("LockedCard.MutedInk (captions)", PoliSimTheme.MutedInk, "Tile", PoliSimTheme.Tile, "inactive - the locked start card's reason and note (18b)"),
+            ("DisabledChip.TextMuted (ELECTION NIGHT)", PoliSimTheme.TextMuted, "Brass", PoliSimTheme.Brass, "inactive - the settings sheet's election-night chip takes no click (17b)"),
+        };
 
         /// <summary>The mean colour of a chrome strip's centre patch (the middle half of its width and height, opaque pixels), read from the PNG on disk
         /// with its own decoder so the import settings do not matter; the fallback where the file is missing or unreadable.</summary>
@@ -167,13 +177,16 @@ namespace PoliSim.EditorTools
                     plain >= BodyFloor ? "clears 4.5" : "UNDER 4.5", Contrast(ink, RailActiveGround(area, GameController.RailActiveWashAlpha)), Contrast(ink, RailActiveGround(area, 0.12f))));
             }
 
-            // §626 (Design's board 17a, the review): two pairs REPORTED, never asserted - they fail by construction and say why the faced
-            // button's label is TextPrimary now: the light label it used to wear on the brass strip (D6's regression), and TextPrimary on
-            // the fill a MISSING strip would show, which no player sees while the strip is on disk.
-            Color brassStrip = SpriteFace("ui_btn_brass_canvas", PoliSimTheme.Hex(0x8A6B2F));
-            sb.Append("\n    REPORTED (§626, board 17a): the brass faced button - what its label used to be, and the fallback fill no player sees\n");
-            sb.Append(F("      light label #F0E7D8 on the strip {0}: {1:0.00} (D6's regression - every caller is TextPrimary since §626)\n", Hex(brassStrip), Contrast(PoliSimTheme.Hex(0xF0E7D8), brassStrip)));
-            sb.Append(F("      TextPrimary on the missing-strip fallback #8A6B2F: {0:0.00} (never drawn while the strip is on disk)\n", Contrast(PoliSimTheme.TextPrimary, PoliSimTheme.Hex(0x8A6B2F))));
+            // §627 (ruled): THE EXEMPTIONS ARE A NAMED LIST. Inactive controls are exempt from contrast minimums - the locked start card's
+            // reduced ink and the disabled election-night chip - and they are listed here BY NAME with their ratios, so what stands below
+            // the line is known; any other label below its floor fails the bar (proved both ways at §627: a probe pair failed the bar, the
+            // exempt pairs did not). §626's two documentary lines (the light label the faced button used to wear, the missing-strip fallback)
+            // are gone: neither is drawn, and a pair that is not drawn is not a use.
+            sb.Append("\n    EXEMPT BY NAME (§627): inactive states, below the line by design - never a control a player can press\n");
+            foreach ((string name, Color ink, string ground, Color g, string why) in Exempt)
+            {
+                sb.Append(F("      {0,-44} {1} on {2,-8} {3,5:0.00}  {4}\n", name, Hex(ink), ground, Contrast(ink, g), why));
+            }
 
             sb.Append(F("\n=== P2-1.2: {0} pair(s), {1} below floor ===\n", pairs, failures));
             if (failures == 0)

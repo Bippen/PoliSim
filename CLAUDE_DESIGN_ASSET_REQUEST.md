@@ -15,6 +15,8 @@
 
 **How to answer.** Boards on your board file as before; any file over 192 KiB as a split archive (the notice below, item 4). The return is pulled from the project directly.
 
+**ANSWERED 2026-09-24 by boards 18a and 18b, built 2026-09-25 (`COMPLETED.md` §626). Two things back for your next round, ruled by Elias (§627):** (1) every playable start card draws the chamber seated at its start, labelled with its name - the USA's presidential card shows the House (divided government is the presidency's central constraint); Poland's and France's presidential cards follow the rule when they unlock - so 18b's *no chamber bar for a presidency* is a locked card's absence only. (2) The contrast check's exemptions are a named list of inactive states (the locked card's reduced ink, the disabled election-night chip); every other label below its floor fails the bar.
+
 ## ⭐ D-MM — THE ASK (2026-09-24): THE MAIN MENU AND THE SETTINGS SCREEN, COMPOSED AGAINST THE BUILT SCREENS (`COMPLETED.md` §614, §615; sent over the channel as `uploads/D-MM_ask/`)
 
 **Read this the D19 way: against the frames, not against a description.** The head track's first two Code rows are built and filmed (`docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` §9 is the spec; the rows are MM-1 and MM-2 in `POLISIM_FEATURE_LIST.md`). Both screens exist, are reachable by the player, and are filmed at 1280 and 2560 in the archive beside this document (`D-MM_ask.zip`, the frames loose beside it). Nothing on either is assumed; every deviation from the spec is stated below.
