@@ -37,7 +37,7 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 
 | # | owner | item | needs | done when |
 |---|---|---|---|---|
-| MM-1 | Code | The main menu (Continue, New game, Load, Settings, Quit), wired to the selector; real films | X-2 | reachable, filmed at both widths |
+| MM-1 ✅ | Code | The main menu (Continue, New game, Load, Settings, Quit), wired to the selector; real films | X-2 | **BUILT 2026-09-24 (`COMPLETED.md` §614):** `MainMenuScreen`, the first takeover before the selector; CONTINUE absent without a save; SETTINGS opens the saves screen where the sound row lives until MM-2; filmed real at 1280 and 2560, 0 violations |
 | MM-2 | Code | Settings — audio moved in; display at filmed geometries only; game (speed, which interrupts hold, † default, autosave); every setting proved live; **the pinning check armed** | MM-1 | each setting changes what it names; a harness-unpinned preference fails the bar |
 | **D-MM** | Design | **The main menu and settings**, composed against the built screens; key art is Design's costed case, not assumed | MM-2 | boards answered |
 | MM-3 | Code | Build D-MM's boards, deviations stated | D-MM | filmed |

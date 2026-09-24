@@ -1137,11 +1137,16 @@ namespace PoliSim.UI
             GUILayout.BeginArea(area);
             GUILayout.BeginVertical(_boxStyle);
 
+            // MM-1: from the main menu there is no game to save, so the screen is the list and the settings;
+            // the save row and the unsaved-game confirmation belong to a running game only.
+            bool inGame = _selectedPlayerCountryId.HasValue;
             GUILayout.Label("SAVED GAMES", _headerStyle);
             DrawSoundSettings();
             // One label either way, per the stable-layout idiom the status line downstairs uses.
             GUILayout.Label(string.IsNullOrEmpty(_savesMenuStatus) ? " " : _savesMenuStatus, _labelStyle);
 
+            if (inGame)
+            {
             GUILayout.BeginHorizontal();
             // Paper-idiom field, not Unity's grey default - caught by eye on this screen's first
             // capture (savusa1600_92), the dark-chrome-on-paper cousin of the inversion class.
@@ -1159,6 +1164,7 @@ namespace PoliSim.UI
             }
             GUI.enabled = true;
             GUILayout.EndHorizontal();
+            }
 
             _savesScrollPosition = GUILayout.BeginScrollView(_savesScrollPosition);
             bool anySaves = _saveList.Count > 0;
@@ -1176,7 +1182,7 @@ namespace PoliSim.UI
                 GUILayout.Label(summary, _labelStyle, GUILayout.ExpandWidth(true));
 
                 bool confirmingLoad = header.Path == _confirmLoadPath;
-                bool dirty = _simulationManager.CurrentDate != _lastPersistenceDate;
+                bool dirty = inGame && _simulationManager.CurrentDate != _lastPersistenceDate;
                 GUI.enabled = header.Compatible;
                 if (PoliSimWidgets.Button(confirmingLoad ? "Replace unsaved game?" : "Load", _neutralActionButtonStyle, GUILayout.Width(width * 0.2f)))
                 {
@@ -1222,11 +1228,12 @@ namespace PoliSim.UI
             GUILayout.EndScrollView();
 
             GUILayout.Label("Loading replaces the running game and resumes PAUSED. Saving over a name keeps the previous file as .bak; Delete removes the save AND its .bak. F5 quicksaves to slot1, F9 loads it.", _labelStyle);
-            if (PoliSimWidgets.Button("Close", _neutralActionButtonStyle))
+            if (PoliSimWidgets.Button(inGame ? "Close" : "Back to the menu", _neutralActionButtonStyle))
             {
                 _savesMenuOpen = false;
                 _confirmDeletePath = null;
                 _confirmLoadPath = null;
+                if (!inGame) { _mainMenuPassed = false; }   // MM-1: the menu enters again
             }
 
             GUILayout.EndVertical();
@@ -1272,9 +1279,82 @@ namespace PoliSim.UI
         private enum CanvasPhase { None, CoverIn, Reveal, CoverOut, Restore }
 
         /// <summary>Which Canvas screen the takeover currently owns. One screen at a time by design — the seam is a single boundary, not a window manager.</summary>
-        private enum CanvasScreenKind { None, Selector, Signing, ElectionNight }
+        private enum CanvasScreenKind { None, Menu, Selector, Signing, ElectionNight }
 
         private CanvasScreenKind _canvasScreenKind = CanvasScreenKind.None;
+
+        // MM-1 (2026-09-24): THE MAIN MENU is the first takeover, before the selector. The menu reports a
+        // choice; the machine applies it under the cover (the CoverOut step), so nothing changes beneath a
+        // live Canvas. NEW GAME passes the menu and the selector enters; LOAD GAME and SETTINGS pass it and
+        // open the saves screen (the one settings surface the game has, until MM-2) in the no-country
+        // branch, whose Close un-passes the menu so it enters again; CONTINUE queues the newest compatible
+        // save on the one load path (_pendingLoadPath, Update's safe point); QUIT quits.
+        private MainMenuScreen _mainMenu;
+        private MainMenuChoice _mainMenuChoice = MainMenuChoice.None;
+        private bool _mainMenuPassed;
+        private bool _mainMenuFailed;
+
+        /// <summary>True while the main menu is the live Canvas surface - the capture driver films it, then chooses NEW GAME.</summary>
+        public bool MainMenuLive => _canvasLive && _canvasScreenKind == CanvasScreenKind.Menu;
+
+        /// <summary>The menu's callback, and the driver's reflection entry: a click records the choice; the seam applies it.</summary>
+        private void ChooseMainMenu(MainMenuChoice choice)
+        {
+            if (_canvasScreenKind == CanvasScreenKind.Menu && _mainMenuChoice == MainMenuChoice.None) { _mainMenuChoice = choice; }
+        }
+
+        /// <summary>The newest compatible save, or null - CONTINUE's target, and whether CONTINUE is drawn at all.</summary>
+        private static string NewestCompatibleSavePath()
+        {
+            foreach (SaveGameService.SaveHeader header in SaveGameService.ListSaves(SaveGameService.DefaultSaveDirectory))
+            {
+                if (header.Compatible) { return header.Path; }   // ListSaves sorts newest first
+            }
+
+            return null;
+        }
+
+        /// <summary>Applies the menu's choice once the cover is over it (CoverOut complete), then clears it.</summary>
+        private void ApplyMainMenuChoice()
+        {
+            MainMenuChoice choice = _mainMenuChoice;
+            _mainMenuChoice = MainMenuChoice.None;
+            switch (choice)
+            {
+                case MainMenuChoice.NewGame:
+                    _mainMenuPassed = true;
+                    break;
+                case MainMenuChoice.LoadGame:
+                case MainMenuChoice.Settings:
+                    _mainMenuPassed = true;
+                    OpenSavesMenuFromMainMenu();
+                    break;
+                case MainMenuChoice.Continue:
+                    _mainMenuPassed = true;
+                    _pendingLoadPath = NewestCompatibleSavePath();
+                    if (_pendingLoadPath == null) { _mainMenuPassed = false; }   // the save went between the build and the click: the menu comes back
+                    break;
+                case MainMenuChoice.Quit:
+                    Debug.Log("MENU: quit.");
+#if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+#else
+                    Application.Quit();
+#endif
+                    break;
+            }
+        }
+
+        /// <summary>The saves screen with no game behind it: the list and its Load rows, the sound settings, no save row (there is nothing to save).</summary>
+        private void OpenSavesMenuFromMainMenu()
+        {
+            _savesMenuOpen = true;
+            _savesMenuStatus = "";
+            _confirmDeletePath = null;
+            _confirmLoadPath = null;
+            _saveNameInput = "";
+            RefreshSaveList();
+        }
         private SigningScreen _signingScreen;
 
         /// <summary>Divisions awaiting their signing ceremony, drained one takeover at a time. Filled ONLY from the controller's own day tick (see QueueNewlyResolvedDivisions) — harness sim-advances never fire ceremonies mid-pass; the driver pins the screen through TriggerSigningForNewestDivision, the same queue the day tick fills.</summary>
@@ -1310,7 +1390,33 @@ namespace PoliSim.UI
             float elapsed = Time.unscaledTime - _canvasPhaseStart;
             switch (_canvasPhase)
             {
-                case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_canvasSelectorFailed:
+                // MM-1: THE MAIN MENU enters first, on the same class-8 discipline as the selector - any build
+                // failure, null or throw, fails INTO the selector exactly once.
+                case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_mainMenuPassed && !_mainMenuFailed && !_savesMenuOpen:
+                    try
+                    {
+                        _mainMenu = MainMenuScreen.Build(NewestCompatibleSavePath() != null, ChooseMainMenu);
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogError($"CANVAS: main menu build THREW ({e.GetType().Name}: {e.Message}) - the selector is the first screen.");
+                        _mainMenu?.Destroy();
+                        _mainMenu = null;
+                    }
+
+                    if (_mainMenu == null)
+                    {
+                        _mainMenuFailed = true;   // the selector is the first screen, as it was before MM-1
+                        return;
+                    }
+
+                    _canvasScreenKind = CanvasScreenKind.Menu;
+                    _mainMenu.SetVisible(false);
+                    BeginCanvasPhase(CanvasPhase.CoverIn);
+                    break;
+
+                case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_canvasSelectorFailed
+                    && (_mainMenuPassed || _mainMenuFailed) && !_savesMenuOpen:
                     // ⚠ SEAM DEFECT CLASS 8, found by the pilot's own FIRST run rather than named in
                     // advance: a THROWING screen builder is worse than a null one. The throw escaped
                     // this Layout-event call, aborted OnGUI mid-Layout (corrupting the Layout/Repaint
@@ -1381,6 +1487,7 @@ namespace PoliSim.UI
 
                 case CanvasPhase.CoverIn when elapsed >= CanvasCoverSeconds:
                     _canvasLive = true;
+                    _mainMenu?.SetVisible(true);
                     _countrySelector?.SetVisible(true);
                     _signingScreen?.SetVisible(true);
                     _electionNight?.SetVisible(true);
@@ -1393,6 +1500,13 @@ namespace PoliSim.UI
 
                 case CanvasPhase.None when _canvasLive && _canvasScreenKind == CanvasScreenKind.Selector
                     && _selectedPlayerCountryId.HasValue:
+                    BeginCanvasPhase(CanvasPhase.CoverOut);
+                    break;
+
+                // MM-1: the menu exits on a choice, or when something else seated the player under it (the
+                // harness's SelectPlayerCountry, a debug load) - the machine watches the RESULT, as for the selector.
+                case CanvasPhase.None when _canvasLive && _canvasScreenKind == CanvasScreenKind.Menu
+                    && (_mainMenuChoice != MainMenuChoice.None || _selectedPlayerCountryId.HasValue):
                     BeginCanvasPhase(CanvasPhase.CoverOut);
                     break;
 
@@ -1410,6 +1524,16 @@ namespace PoliSim.UI
                     break;
 
                 case CanvasPhase.CoverOut when elapsed >= CanvasCoverSeconds:
+                    if (_mainMenu != null)
+                    {
+                        // MM-1: the choice lands under the cover, never beneath a live Canvas.
+                        _mainMenu.Destroy();
+                        _mainMenu = null;
+                        PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+                        if (_selectedPlayerCountryId.HasValue) { _mainMenuPassed = true; _mainMenuChoice = MainMenuChoice.None; }
+                        else { ApplyMainMenuChoice(); }
+                    }
+
                     _countrySelector?.Destroy();
                     _countrySelector = null;
                     _signingScreen?.Destroy();
@@ -2016,7 +2140,15 @@ namespace PoliSim.UI
 
             if (!_selectedPlayerCountryId.HasValue)
             {
-                if (_canvasSelectorFailed)
+                // MM-1: LOAD GAME and SETTINGS from the main menu - the saves screen with no game behind it.
+                if (_savesMenuOpen)
+                {
+                    DrawSavesMenuScreen();
+                    DrawCanvasRestoreScrim();
+                    return;
+                }
+
+                if (_canvasSelectorFailed && (_mainMenuPassed || _mainMenuFailed))
                 {
                     // Degradation path only: the Canvas selector failed to build (missing sprite), so
                     // the IMGUI selector remains the live screen — a broken import costs the new

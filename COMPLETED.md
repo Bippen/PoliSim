@@ -33909,3 +33909,21 @@ Then, as the first real send, **E-42's part C** - `uploads/SITTING_2026-09-21_C/
 **The sizing** is the specs' own: PS §9 30–45 sessions across stages 1–7, stage 2 the smallest; SP §4 8–12 sessions for S0–S4 once PS stages 0–3 have landed; MM two stages (M1 the menu, M2 the settings). The head track's own figure, 20–30 sessions for Phases 0–4, stands beside them.
 
 **Bars.** Tier TOOLING and DOCUMENTS by the staged paths: `Tools/textcheck` and the cheap bar; the evidence line is in the commit.
+
+## 614. MM-1 - THE MAIN MENU IS THE GAME'S FIRST SCREEN: CONTINUE, NEW GAME, LOAD GAME, SETTINGS, QUIT, WIRED INTO THE SELECTOR THROUGH THE TAKEOVER SEAM; FILMED REAL AT 1280 AND 2560 (2026-09-24)
+
+**The row** (the head track's MM-1; `docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` §9.1 and §9.3's M1): *"The main menu (Continue, New game, Load, Settings, Quit), wired to the selector; real films. Done when: reachable, filmed at both widths."*
+
+**Built.**
+- **`MainMenuScreen`** (`Assets/Scripts/UI/MainMenuScreen.cs`): a Canvas surface on the selector's own ground - the desk colour under the menu tile - one centred column: the wordmark over its rule, then the items as the faced buttons every Canvas control wears (`CanvasChrome.FacedButton`), brass for the four that go somewhere and paper for QUIT. No text beyond the items and the title, as the spec says. CONTINUE is drawn only when a compatible save exists (*absent when there is none*, not disabled). The screen reports a click as a `MainMenuChoice`; it changes nothing itself. S-20: it stamps the capture-identity token `menu` (a seventh palette corner, white; the desk's palest paper is outside the ±40).
+- **The seam** (`GameController`): a fifth `CanvasScreenKind`, `Menu`, entering before the selector on the same class-8 discipline (a build that returns null or throws fails INTO the selector exactly once). The menu exits on a choice, or when something else seated the player under it (the harness's `SelectPlayerCountry`, a debug load) - the machine watches the result, as it does for the selector. **The choice is applied under the cover**, at the CoverOut step, so nothing changes beneath a live Canvas: NEW GAME passes the menu and the selector enters; LOAD GAME and SETTINGS pass it and open the saves screen in the no-country branch (the one settings surface the game has - the sound row lives there until MM-2), whose *Back to the menu* un-passes the menu so it enters again; CONTINUE queues the newest compatible save on the one load path (`_pendingLoadPath`, consumed at Update's safe point); QUIT quits (the Editor stops playing).
+- **The saves screen without a game**: no save row (nothing to save), no unsaved-game confirmation on Load, the sound settings and the list as before; the Close button reads *Back to the menu* there.
+- **The film driver** films the menu as the player meets it (`00_main_menu`, the first frame of every film now), chooses NEW GAME through the controller's own entry, waits through the menu's exit and the selector's entrance, and then films the selector's frame as before - so every frame after `00` is what it always was. `Tools/bar_tier.ps1` names `MainMenuScreen` a Canvas surface with `00_main_menu` as its frame.
+
+**Deviations stated.** (1) SETTINGS opens the saves screen, because that is where the game's only settings (the master volume and mute, P4-2) are; MM-2 builds the settings screen and moves them. (2) No key art: the ground is the selector's tile, and key art is Design's costed case (D-MM). (3) The IMGUI degradation path, when the Canvas selector cannot build, still starts at the selector: the menu's own failure path lands there too.
+
+**Evidence.** Tier UI (a Canvas surface, so real films at both widths).
+- The dry film `drymm1` (Sweden@1280x720, declared first): 132 captured, 0 failed, 36 s.
+- `mm1_1280` to `01c_desk`: 7 captured, 0 failed; `00_main_menu` 6 texts, 0 canvas-text violations; 4 asserts, 0 violations; 7 of 7 captures proved their surface token; 0 clipped at the edges.
+- `mm1_2560` to `01c_desk`: the same - 7 captured, 0 failed, 0 violations across 4 asserts, 7 of 7 tokens proved.
+- The cheap bar in the warm host: the line is in the commit.

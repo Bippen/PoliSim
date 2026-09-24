@@ -57,6 +57,7 @@ namespace PoliSim.Testing
             { "electionnight", new Color32(255, 0, 255, 255) },
             { "campaign", new Color32(0, 255, 255, 255) },
             { "results", new Color32(255, 255, 0, 255) },
+            { "menu", new Color32(255, 255, 255, 255) },   // MM-1: the seventh corner of the cube; the desk's palest paper is 232/221/196, outside the ±40
         };
 
         public static bool TryColorFor(string surface, out Color32 color) =>

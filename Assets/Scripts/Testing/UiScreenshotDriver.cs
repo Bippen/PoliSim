@@ -283,6 +283,26 @@ namespace PoliSim.Testing
             // the right capture.
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
+
+            // MM-1 (2026-09-24): THE MAIN MENU is the first screen now. Filmed as the player meets it, then NEW GAME chosen
+            // through the controller's own entry (the click's method), and the seam waited through the menu's exit and the
+            // selector's entrance before the selector's own frame - so every frame after this one is what it always was.
+            if (controller.MainMenuLive)
+            {
+                Claim("menu");
+                yield return Capture("00_main_menu");
+                RecordCanvasTextAssert("00_main_menu", controller);
+                Invoke(controller, "ChooseMainMenu", MainMenuChoice.NewGame);
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return WaitForCanvasSettle(controller, wantActive: true);
+                yield return Settle();
+                Debug.Log("SHOT: MM-1 - the main menu filmed, NEW GAME chosen, the selector entered.");
+            }
+            else
+            {
+                Debug.LogWarning("SHOT: MM-1 - the main menu was not the live surface at the first settle; 00_main_menu NOT captured.");
+            }
+
             Claim("selector");
             yield return Capture("01_country_selector");
             RecordCanvasTextAssert("01_country_selector", controller);
