@@ -60,6 +60,9 @@ namespace PoliSim.EditorTools
             "ReviewLedgerCheck",
             // §568 (2026-09-22): the locale check counts the ONE install site in the runtime - a commented-out call would be a second.
             "NumberLocaleCheck",
+            // §615 (2026-09-24): the settings check scans for `polisim.` key literals and the driver's Pin/Restore calls - a key or a call surviving in a comment
+            // is neither read nor made.
+            "SettingsCheck",
         };
 
         /// <summary>

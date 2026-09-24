@@ -203,6 +203,10 @@ namespace PoliSim.Testing
             // that silently knew fewer surfaces than it claims reads exactly like a clean run.
             CaptureIdentity.Armed = true;
             CaptureIdentity.Expected = "imgui";
+
+            // MM-2 (2026-09-24): EVERY PREFERENCE PINNED before the first frame and restored in Finish, so a film sees the game as a
+            // fresh player does and leaves the desk's preferences as it found them (SettingsCheck holds the list to the sources).
+            Debug.Log($"SHOT: preferences pinned - {PreferencePins.Pin()} key(s) snapshotted and cleared for the film; restored when it finishes.");
             Debug.Log("SHOT: capture-identity armed. Surfaces the token palette knows - "
                       + string.Join(", ", CaptureIdentity.Surfaces)
                       + ". Every capture claims one, and the written frame must carry its token.");
@@ -292,6 +296,18 @@ namespace PoliSim.Testing
                 Claim("menu");
                 yield return Capture("00_main_menu");
                 RecordCanvasTextAssert("00_main_menu", controller);
+
+                // MM-2: the settings screen as the menu opens it - no game behind it - then back to the menu through its own Close.
+                Invoke(controller, "ChooseMainMenu", MainMenuChoice.Settings);
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+                Claim("imgui");
+                yield return Capture("00a_settings");
+                Invoke(controller, "CloseSettings");
+                yield return WaitForCanvasSettle(controller, wantActive: true);
+                yield return Settle();
+                Debug.Log("SHOT: MM-2 - the settings screen filmed from the menu and closed back to it.");
+
                 Invoke(controller, "ChooseMainMenu", MainMenuChoice.NewGame);
                 yield return WaitForCanvasSettle(controller, wantActive: false);
                 yield return WaitForCanvasSettle(controller, wantActive: true);
@@ -2239,6 +2255,7 @@ namespace PoliSim.Testing
             _finishCalled = true;
             ReportIdentity();
             if (_provenanceToRestore.HasValue) { DeskProvenance.On = _provenanceToRestore.Value; _provenanceToRestore = null; }
+            Debug.Log($"SHOT: preferences restored - {PreferencePins.Restore()} key(s) written back as the film found them.");   // MM-2: after the frame-level provenance restore, so the snapshot wins
             // P2-1.3 (2026-09-02): every ledger row the film drew recorded the range a pixel of its track covers;
             // a whole point is reachable without overshoot only when that does not exceed the row's snap.
             // EN-8 (2026-09-12): the range is recorded in the row's GRAIN (a point; a per-tonne row's ceiling's hundredth,

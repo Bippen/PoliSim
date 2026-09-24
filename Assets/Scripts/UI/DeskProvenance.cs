@@ -21,7 +21,7 @@ namespace PoliSim.UI
     /// </summary>
     public static class DeskProvenance
     {
-        private const string ProvenancePref = "polisim.desk.provenance";
+        public const string ProvenancePref = "polisim.desk.provenance";
         private static bool _read;
         private static bool _on;
 
@@ -59,5 +59,8 @@ namespace PoliSim.UI
             _read = true;
             _on = PlayerPrefs.GetInt(ProvenancePref, 0) == 1;
         }
+
+        /// <summary>MM-2: forget what was read, so the next touch reads PlayerPrefs again (the harness's pin, a check's probe).</summary>
+        public static void Reload() { _read = false; }
     }
 }

@@ -92,6 +92,7 @@ Each is one to three lines with the `§` its story lives under. The long form of
 - **IMGUI hangs a slider's thumb from its rect's TOP** (§565): a knob taller than its track overhangs downward. `LedgerRow` centres the knob by painting the sprite through the thumb style's `overflow` while the thumb's RECT stays the track's height — paint moves, geometry does not.
 - **An end-named dial's caption band holds some sixty characters at 1280**, and a range caption fits in what is clear of the END-NAMES as drawn, hanging on their line (§550, §559).
 - ⚠ **A vertical layout group compresses toward its children's FLOOR** when they ask for more than the panel has (PF-13, §578): a wrapped Canvas caption needs a floor of its own, and the container's height is not the place to fix it — tuning one until a country's chamber fits is §432 repeating.
+- **A PREFERENCE is a `polisim.` PlayerPrefs key on `PreferenceKeys.All`, outside the save, pinned by the film harness and proved live** (MM-2, §615): `SettingsCheck` fails the cheap bar on a key the harness does not pin, on a pinned key nothing reads, and on a setting that changes nothing; a film sees a fresh player's defaults and restores the desk's preferences when it finishes.
 - **A Canvas `Text`'s `preferredHeight` is computed at the rect's CURRENT width** (§578), so the first layout pass measures against a width the horizontal pass has not settled: resolve the layout twice.
 
 # THE WORKING DISCIPLINE

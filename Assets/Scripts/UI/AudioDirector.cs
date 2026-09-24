@@ -154,6 +154,9 @@ namespace PoliSim.UI
             _mute = PlayerPrefs.GetInt(MutePref, 0) == 1;
         }
 
+        /// <summary>MM-2: forget what was read, so the next touch reads PlayerPrefs again (the harness's pin, a check's probe).</summary>
+        public static void Reload() { _prefsRead = false; Apply(); }
+
         private static void Apply()
         {
             if (_source != null) { _source.mute = _mute; }

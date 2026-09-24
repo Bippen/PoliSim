@@ -298,6 +298,15 @@ namespace PoliSim.UI
             {
                 OpenSavesMenu();
             }
+
+            // MM-2 (2026-09-24): the settings screen from the desk, beside SAVES - the same chip idiom.
+            const string settingsLabel = "SETTINGS";
+            float settingsWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(settingsLabel)).x) + chipPad * 2f;
+            x -= gap + settingsWidth;
+            if (DrawDeskChipButton(new Rect(x, chipY, settingsWidth, chipHeight), settingsLabel, chipCaption, selected: false, disabled: false))
+            {
+                OpenSettings();
+            }
             GUI.enabled = ambient;
 
             for (int i = labels.Length - 1; i >= 0; i--)

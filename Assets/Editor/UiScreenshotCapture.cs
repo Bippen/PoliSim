@@ -81,10 +81,7 @@ namespace PoliSim.EditorTools
         /// 1440 — **exactly 21 below, four times over**, written down weeks before the constant was
         /// measured for M-S2 and by somebody not looking for it. That is four corroborations of a number
         /// this file otherwise states on one measurement.</para></summary>
-        private static readonly (int Width, int Height)[] StandardGeometries =
-        {
-            (1280, 720), (1600, 950), (1920, 1080), (2560, 1440),
-        };
+        private static readonly (int Width, int Height)[] StandardGeometries = PoliSim.UI.DisplaySettings.Geometries;   // MM-2 (§615): ONE table - the settings screen offers exactly the geometries the harness films
 
         /// <summary>Opt out of the geometry guard, loudly. ⚠ It exists because refusing outright would
         /// make a legitimate experiment impossible, and a guard that blocks legitimate work gets deleted.

@@ -662,6 +662,9 @@ namespace PoliSim.UI
             UiCulture.Install();
             SetupCameraBackground();
 
+            // MM-2: a chosen window geometry is applied at the start; unset leaves the window as launched (and the film harness pins the keys away).
+            DisplaySettings.Apply();
+
             // World/SimulationManager are created immediately (the selector screen needs every
             // country's Name/Id to exist) - only _playerCountry/_prevGdp wait for SelectPlayerCountry,
             // since which country those refer to isn't known until the player picks.
@@ -726,8 +729,8 @@ namespace PoliSim.UI
             }
 
             // The saves screen holds time exactly like the interrupt modals below - browsing saves
-            // with days ticking underneath would be the background-mutation class in miniature.
-            if (_savesMenuOpen)
+            // with days ticking underneath would be the background-mutation class in miniature. MM-2: the settings screen too.
+            if (_savesMenuOpen || _settingsOpen)
             {
                 return;
             }
@@ -760,9 +763,10 @@ namespace PoliSim.UI
             // day loop would have opened. State-derived, so it is idempotent.
             if ((HasPendingCampaignOpening() || HasPendingScandalAnswer()) && !_liveCampaignOpen && !_isGameOver) { OpenLiveCampaign(); }   // CL-2: a story that waits for its answer opens the HQ the same way
 
-            if (UpdateFedChairSelectionState() || HasPendingCampaignOpening() || HasPendingScandalAnswer() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
+            // MM-2: the campaign's opening and the budget window hold the clock only while their settings say so.
+            if (UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                 || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
+                || BudgetWindowHolds())
             {
                 return;
             }
@@ -793,15 +797,17 @@ namespace PoliSim.UI
                     AdvanceTurn();
                 }
 
+                AutosaveIfDue();   // MM-2: counted in days played, by the setting's cadence
+
                 // A newly-fired election reveal/Fed-Chair selection/Cabinet decision/foreign policy
                 // meeting/budget process (or game over) must stop the clock immediately, not keep
                 // draining _daySpeedTimer toward days/turns that can't happen yet - re-check every gate
                 // before this same frame's loop continues.
                 if (_isGameOver || _electionNight != null || _signingQueue.Count > 0
-                    || UpdateFedChairSelectionState() || HasPendingCampaignOpening() || HasPendingScandalAnswer()
+                    || UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                    || _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
+                    || BudgetWindowHolds())
                 {
                     break;
                 }
@@ -1141,7 +1147,7 @@ namespace PoliSim.UI
             // the save row and the unsaved-game confirmation belong to a running game only.
             bool inGame = _selectedPlayerCountryId.HasValue;
             GUILayout.Label("SAVED GAMES", _headerStyle);
-            DrawSoundSettings();
+            // MM-2: the sound settings moved to the settings screen.
             // One label either way, per the stable-layout idiom the status line downstairs uses.
             GUILayout.Label(string.IsNullOrEmpty(_savesMenuStatus) ? " " : _savesMenuStatus, _labelStyle);
 
@@ -1325,9 +1331,12 @@ namespace PoliSim.UI
                     _mainMenuPassed = true;
                     break;
                 case MainMenuChoice.LoadGame:
-                case MainMenuChoice.Settings:
                     _mainMenuPassed = true;
                     OpenSavesMenuFromMainMenu();
+                    break;
+                case MainMenuChoice.Settings:
+                    _mainMenuPassed = true;
+                    OpenSettings();
                     break;
                 case MainMenuChoice.Continue:
                     _mainMenuPassed = true;
@@ -1345,7 +1354,7 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>The saves screen with no game behind it: the list and its Load rows, the sound settings, no save row (there is nothing to save).</summary>
+        /// <summary>The saves screen with no game behind it: the list and its Load rows, no save row (there is nothing to save).</summary>
         private void OpenSavesMenuFromMainMenu()
         {
             _savesMenuOpen = true;
@@ -1355,6 +1364,169 @@ namespace PoliSim.UI
             _saveNameInput = "";
             RefreshSaveList();
         }
+
+        // ── MM-2 (2026-09-24): THE SETTINGS SCREEN - only what is real (the spec's §9.2) ─────────────────────────────────
+        //
+        // Sound (the master volume and mute, moved here from the saves screen's head), Display (window mode and the four
+        // filmed geometries, nothing free), Game (the default speed, which of the two releasable interrupts hold the clock,
+        // the † default, autosave cadence and slots). Every setting is a PlayerPrefs key on PreferenceKeys.All, pinned by
+        // the film harness and proved live by SettingsCheck; a save never carries them. An IMGUI screen swap like the saves
+        // screen, reachable from the main menu (SETTINGS) without a game and from the desk's masthead chip in one.
+        private bool _settingsOpen;
+
+        /// <summary>The driver's reflection entry and the screen's own button: back to wherever the screen was opened from.</summary>
+        private void CloseSettings()
+        {
+            _settingsOpen = false;
+            if (!_selectedPlayerCountryId.HasValue) { _mainMenuPassed = false; }   // the menu enters again
+        }
+
+        private void OpenSettings()
+        {
+            _settingsOpen = true;
+        }
+
+        /// <summary>The desk's running speed a new game starts at - the setting's index onto the desk's own three chips.</summary>
+        private static GameSpeed SpeedFromSetting(int index) => index >= 2 ? GameSpeed.VeryFast : index == 1 ? GameSpeed.Fast : GameSpeed.Normal;
+
+        /// <summary>MM-2: the campaign's opening holds the clock only while the setting says so (the HQ still opens; the days keep passing behind it when released).</summary>
+        private bool CampaignOpeningHolds() => HasPendingCampaignOpening() && GameSettings.HoldOnCampaignOpening;
+
+        /// <summary>MM-2: the budget window holds the clock only while the setting says so.</summary>
+        private bool BudgetWindowHolds() => _simulationManager.GetPendingBudgetProcess(PlayerCountryId) && GameSettings.HoldOnBudgetWindow;
+
+        /// <summary>Days played since the last autosave, and how many autosaves this game has written (the slot rotates on it). Not saved: a loaded game starts its cadence afresh.</summary>
+        private int _daysSinceAutosave;
+        private int _autosaveCount;
+
+        /// <summary>MM-2: the day loop's autosave - due by the setting's cadence, into the next rotating slot, through the one save path.</summary>
+        private void AutosaveIfDue()
+        {
+            _daysSinceAutosave++;
+            if (!GameSettings.AutosaveDue(_daysSinceAutosave, GameSettings.AutosaveDays)) { return; }
+            int slot = GameSettings.AutosaveSlot(_autosaveCount, GameSettings.AutosaveSlots);
+            if (SaveToPath(System.IO.Path.Combine(SaveGameService.DefaultSaveDirectory, GameSettings.AutosaveName(slot) + ".json")))
+            {
+                _autosaveCount++;
+            }
+
+            _daysSinceAutosave = 0;
+        }
+
+        private void DrawSettingsScreen()
+        {
+            DrawMenuBackground();
+
+            float width = Mathf.Min(UiScreen.Width * 0.66f, 1100f);
+            float height = UiScreen.Height * 0.94f;
+            var area = new Rect((UiScreen.Width - width) * 0.5f, (UiScreen.Height - height) * 0.5f, width, height);
+            GUILayout.BeginArea(area);
+            GUILayout.BeginVertical(_boxStyle);
+            GUILayout.Label("SETTINGS", _headerStyle);
+            _settingsScrollPosition = GUILayout.BeginScrollView(_settingsScrollPosition);
+
+            DrawSoundSettings();
+
+            GUILayout.Label("DISPLAY", _headerStyle);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Window", _labelStyle, GUILayout.Width(width * 0.22f));
+            string[] modeLabels = { "Windowed", "Borderless", "Fullscreen" };
+            for (int i = 0; i < modeLabels.Length; i++)
+            {
+                bool current = DisplaySettings.IsSet && (int)DisplaySettings.Mode == i;
+                if (PoliSimWidgets.Button(current ? "● " + modeLabels[i] : modeLabels[i], current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.16f)))
+                {
+                    int w = DisplaySettings.IsSet ? DisplaySettings.Width : Screen.width;
+                    int h = DisplaySettings.IsSet ? DisplaySettings.Height : Screen.height;
+                    if (!DisplaySettings.Set((WindowMode)i, w, h)) { DisplaySettings.Set((WindowMode)i, DisplaySettings.Geometries[0].Width, DisplaySettings.Geometries[0].Height); }
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Resolution", _labelStyle, GUILayout.Width(width * 0.22f));
+            foreach ((int Width, int Height) g in DisplaySettings.Geometries)
+            {
+                bool current = DisplaySettings.IsSet && DisplaySettings.Width == g.Width && DisplaySettings.Height == g.Height;
+                string label = $"{g.Width} × {g.Height}";
+                if (PoliSimWidgets.Button(current ? "● " + label : label, current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.16f)))
+                {
+                    DisplaySettings.Set(DisplaySettings.IsSet ? DisplaySettings.Mode : WindowMode.Windowed, g.Width, g.Height);
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label(DisplaySettings.IsSet
+                ? "The window follows the setting the moment it is chosen."
+                : "As launched - the window keeps its size until a geometry is chosen.", _labelStyle);
+            GUILayout.Space(6f);
+
+            GUILayout.Label("GAME", _headerStyle);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Speed at the start", _labelStyle, GUILayout.Width(width * 0.22f));
+            for (int i = 0; i < GameSettings.SpeedLabels.Length; i++)
+            {
+                bool current = GameSettings.DefaultSpeed == i;
+                if (PoliSimWidgets.Button(current ? "● " + GameSettings.SpeedLabels[i] : GameSettings.SpeedLabels[i], current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.1f)))
+                {
+                    GameSettings.DefaultSpeed = i;
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Time holds for", _labelStyle, GUILayout.Width(width * 0.22f));
+            if (PoliSimWidgets.Button((GameSettings.HoldOnCampaignOpening ? "● " : "○ ") + "the campaign's opening", GameSettings.HoldOnCampaignOpening ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.3f)))
+            {
+                GameSettings.HoldOnCampaignOpening = !GameSettings.HoldOnCampaignOpening;
+            }
+            if (PoliSimWidgets.Button((GameSettings.HoldOnBudgetWindow ? "● " : "○ ") + "the budget window", GameSettings.HoldOnBudgetWindow ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.3f)))
+            {
+                GameSettings.HoldOnBudgetWindow = !GameSettings.HoldOnBudgetWindow;
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label("Election night always holds. A released interrupt still opens; the days pass behind it.", _labelStyle);
+
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Provenance " + DeskProvenance.Glyph, _labelStyle, GUILayout.Width(width * 0.22f));
+            if (PoliSimWidgets.Button(DeskProvenance.On ? "● Open at rest" : "○ Open at rest", DeskProvenance.On ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.3f)))
+            {
+                DeskProvenance.On = !DeskProvenance.On;
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Autosave every", _labelStyle, GUILayout.Width(width * 0.22f));
+            foreach (int days in GameSettings.AutosaveDayChoices)
+            {
+                bool current = GameSettings.AutosaveDays == days;
+                string label = days == 0 ? "Off" : $"{days} days";
+                if (PoliSimWidgets.Button(current ? "● " + label : label, current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.09f)))
+                {
+                    GameSettings.AutosaveDays = days;
+                }
+            }
+            GUILayout.Label("slots", _labelStyle, GUILayout.Width(width * 0.05f));
+            for (int slots = GameSettings.MinSlots; slots <= GameSettings.MaxSlots; slots++)
+            {
+                bool current = GameSettings.AutosaveSlots == slots;
+                if (PoliSimWidgets.Button(current ? "● " + slots.ToString(CultureInfo.InvariantCulture) : slots.ToString(CultureInfo.InvariantCulture), current ? _implementButtonStyle : _neutralActionButtonStyle, GUILayout.Width(width * 0.045f)))
+                {
+                    GameSettings.AutosaveSlots = slots;
+                }
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Label($"Autosaves rotate through {GameSettings.AutosaveName(1)} to {GameSettings.AutosaveName(GameSettings.AutosaveSlots)} on the saves screen, counted in days played.", _labelStyle);
+
+            GUILayout.EndScrollView();
+            GUILayout.Label("Settings are the desk's, not the game's: a save never carries them.", _labelStyle);
+            if (PoliSimWidgets.Button(_selectedPlayerCountryId.HasValue ? "Close" : "Back to the menu", _neutralActionButtonStyle))
+            {
+                CloseSettings();
+            }
+
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
+        }
+
+        private Vector2 _settingsScrollPosition;
         private SigningScreen _signingScreen;
 
         /// <summary>Divisions awaiting their signing ceremony, drained one takeover at a time. Filled ONLY from the controller's own day tick (see QueueNewlyResolvedDivisions) — harness sim-advances never fire ceremonies mid-pass; the driver pins the screen through TriggerSigningForNewestDivision, the same queue the day tick fills.</summary>
@@ -1392,7 +1564,7 @@ namespace PoliSim.UI
             {
                 // MM-1: THE MAIN MENU enters first, on the same class-8 discipline as the selector - any build
                 // failure, null or throw, fails INTO the selector exactly once.
-                case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_mainMenuPassed && !_mainMenuFailed && !_savesMenuOpen:
+                case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_mainMenuPassed && !_mainMenuFailed && !_savesMenuOpen && !_settingsOpen:
                     try
                     {
                         _mainMenu = MainMenuScreen.Build(NewestCompatibleSavePath() != null, ChooseMainMenu);
@@ -1416,7 +1588,7 @@ namespace PoliSim.UI
                     break;
 
                 case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_canvasSelectorFailed
-                    && (_mainMenuPassed || _mainMenuFailed) && !_savesMenuOpen:
+                    && (_mainMenuPassed || _mainMenuFailed) && !_savesMenuOpen && !_settingsOpen:
                     // ⚠ SEAM DEFECT CLASS 8, found by the pilot's own FIRST run rather than named in
                     // advance: a THROWING screen builder is worse than a null one. The throw escaped
                     // this Layout-event call, aborted OnGUI mid-Layout (corrupting the Layout/Repaint
@@ -1802,6 +1974,10 @@ namespace PoliSim.UI
 
             // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.
             _onDesk = true;
+            // MM-2: a new game starts at the speed the settings name (a loaded game resumes PAUSED, as it always has).
+            _gameSpeed = SpeedFromSetting(GameSettings.DefaultSpeed);
+            _daysSinceAutosave = 0;
+            _autosaveCount = 0;
 
             // Signing high-water mark starts at the current newest division, so pre-existing history
             // never fires a backlog of ceremonies on selection.
@@ -2140,7 +2316,14 @@ namespace PoliSim.UI
 
             if (!_selectedPlayerCountryId.HasValue)
             {
-                // MM-1: LOAD GAME and SETTINGS from the main menu - the saves screen with no game behind it.
+                // MM-1: LOAD GAME from the main menu - the saves screen with no game behind it; MM-2: SETTINGS likewise.
+                if (_settingsOpen)
+                {
+                    DrawSettingsScreen();
+                    DrawCanvasRestoreScrim();
+                    return;
+                }
+
                 if (_savesMenuOpen)
                 {
                     DrawSavesMenuScreen();
@@ -2185,6 +2368,13 @@ namespace PoliSim.UI
                 return;
             }
 
+            // MM-2: the settings screen is a screen swap for the same reason, and holds the clock the same way.
+            if (_settingsOpen)
+            {
+                DrawSettingsScreen();
+                return;
+            }
+
             // UI v3.0 Phase A, Phase 3 (harness only): the instrument ladder replaces the frame for
             // one capture at a time. No player path sets it; see DrawInstrumentLadder.
             if (_instrumentLadder != null)
@@ -2207,8 +2397,8 @@ namespace PoliSim.UI
             // Master Sequence step 5a: the fourth condition on this same gate/banner, per the revised
             // Part B design's explicit instruction to extend the existing pattern rather than build a
             // fourth separate ad-hoc pause-check system.
-            bool hasPendingBudgetProcess = _simulationManager.GetPendingBudgetProcess(PlayerCountryId);
-            bool hasPendingCampaignOpening = HasPendingCampaignOpening() || HasPendingScandalAnswer();   // P2-0.3; CL-2: a story's answer holds the clock the same way
+            bool hasPendingBudgetProcess = BudgetWindowHolds();   // MM-2: only while the setting holds the clock for it
+            bool hasPendingCampaignOpening = CampaignOpeningHolds() || HasPendingScandalAnswer();   // P2-0.3; CL-2: a story's answer holds the clock the same way
 
             float marginX = UiScreen.Width * ScreenMarginFraction;
             float marginY = UiScreen.Height * ScreenMarginFraction;
@@ -5781,7 +5971,7 @@ namespace PoliSim.UI
                 blocking.Add("election night - the count is in, and CONTINUE is on the board");
             }
 
-            if (HasPendingCampaignOpening())
+            if (CampaignOpeningHolds())
             {
                 blocking.Add("the opening of your election campaign (Campaign HQ)");
             }
@@ -5806,7 +5996,7 @@ namespace PoliSim.UI
                 blocking.Add("a Foreign Policy meeting (Foreign Policy tab)");
             }
 
-            if (includeBudgetProcess && _simulationManager.GetPendingBudgetProcess(PlayerCountryId))
+            if (includeBudgetProcess && BudgetWindowHolds())
             {
                 blocking.Add(_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)
                     ? "your incoming government's first budget (Budget tab)"
