@@ -41,6 +41,8 @@ namespace PoliSim.EditorTools
             // Swedish election's dates - while the live day path reads the NEXT ELECTION TURN'S BOUNDARY, so the save opened years before any run-up began and the
             // protocol's first step described a game that was not running (§558). The target is now the game's own run-up, computed from the same expression the day
             // path uses, and the protocol takes its dates FROM THIS SAVE rather than from the calendar a person typed.
+            using System.IDisposable epoch = SimulationManager.EpochScope();   // PS-1 (§618): the save opens on Sweden's own start, as the game does at selection; the epoch is put back after
+            PoliSim.Elections.WorldClock.ApplyStart(CountryId.Sweden);
             var calendar = new CampaignCalendar(SimulationManager.TurnBoundary(SimulationManager.NextElectionTurnAfter(0)));
             DateTime target = calendar.PreCampaignStart;
             var goA = new GameObject("PlayProtocolStaging.A");
@@ -58,7 +60,8 @@ namespace PoliSim.EditorTools
                 // world. Without it the run-up never begins (the day path asks for the player's party index and returns on none).
                 Country player = world.GetCountry(CountryId.Sweden);
                 PoliticalParty largest = default;
-                foreach (PoliticalParty party in PartySystems.For(CountryId.Sweden)) { if (largest.Abbrev == null || party.SeedSeats > largest.SeedSeats) { largest = party; } }
+                int largestSeats = -1;   // PS-1 (§618): the largest of the chamber the world SEATS, as SelectPlayerCountry picks it
+                foreach (PoliticalParty party in PartySystems.For(CountryId.Sweden)) { int held = player.ParliamentSeats.TryGetValue(party.Abbrev, out int n) ? n : 0; if (largest.Abbrev == null || held > largestSeats) { largest = party; largestSeats = held; } }
                 if (player == null || largest.Abbrev == null) { return "Sweden's seeded chamber could not be read - no party to seat"; }
                 player.PlayerPartyAbbrev = largest.Abbrev;
                 player.PartyApprovalRating = player.State.ApprovalRating;

@@ -87,16 +87,23 @@ namespace PoliSim.EditorTools
         /// 1-5 are identical across them - a SYSTEMATIC effect of the statutes arriving about nine months earlier in game time, not seed noise, and
         /// §599's ruling (a sign that flips) does not cover it; its size at turn 100 depends on the seed. Before it 'pp4'; K-1's
         /// parts (1) and (2) ('k1ch', 'k1dl2') were byte-identical to it.</summary>
-        public const string BaselineLabel = "k1ep";
+        /// <summary>§618 (2026-09-25, PS-1): THE WORLD CLOCK - the dump's world opens on Sweden's own start, 18 January 2026 (the standard run-up before 13 September),
+        /// instead of K-1's 1 October 2026, and every country is seated in its chamber of record on that date (Sweden's 2022 Riksdag; the others as before, their
+        /// latest elections). The move reaches the no-policy economy through the calendar year, as §604's did in the other direction - the statutes now arrive
+        /// eight and a half months LATER in game time - and, where a chamber changed, through the parliament's votes; the probe `ps1probe` (this tree with the
+        /// roster's own seats in every chamber) measures the second channel, recorded in §618. At turn 100 the largest movers are France's real household
+        /// energy price change (−3.6 %), budget (−1.1 %) and population growth (−1.0 %) on seed 777; Germany's population growth rate moves ±10–14 % on a
+        /// figure of 0.002; Sweden, Poland and the USA move in late digits. Before it 'k1ep' - K-1 part (3) (§604).</summary>
+        public const string BaselineLabel = "ps1wc";
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_k1ep_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_ps1wc_s{seed}_t100.csv`.</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "0234e49db8d4b35c2e7808f4f94592a792f802602556f885a2b5dd2de7d920a5"),
-            (424242, "54cd5886e0c9d1e82d3b0084339ae36db63a393eeff97f305f0e0c3769f6d1bf"),
+            (777, "438e1148d46691f5086116373a6ab3d5cb08d92087b807931f2c1a1d83569446"),
+            (424242, "fc163628c6dd184b47c6d472d6923343ba3345913ff511118ee372b5dc6ee905"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------

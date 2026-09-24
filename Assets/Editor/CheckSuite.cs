@@ -176,6 +176,7 @@ namespace PoliSim.EditorTools
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),
             ("PartyLeadershipDiagnostic", PartyLeadershipDiagnostic.Run),   // K-1e (§608): the sourced roster, name and office - it had run in no bar, so its ASCII-folded names failed unheard
             ("SettingsCheck", SettingsCheck.Run),   // MM-2 (§615): every preference pinned by the film harness, every setting proved live
+            ("WorldClockDiagnostic", WorldClockDiagnostic.Run),   // PS-1 (§618): each country's start, its chamber and government of record, asserted against the sourced tables
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),

@@ -39,6 +39,7 @@ namespace PoliSim.Elections
         /// backtest pins 2022's.</summary>
         public static List<RedLine> For(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
         {
+            vintage = WorldClock.Resolve(country, vintage);   // PS-1 (§618): the seated chamber's election - every election reads its own date's declarations
             var lrGen = new double[parties.Count];
             var galtan = new double[parties.Count];
             for (int p = 0; p < parties.Count; p++)
@@ -134,6 +135,8 @@ namespace PoliSim.Elections
         public static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> Candidacies(CountryId country, ElectionVintage vintage = ElectionVintage.Seated)
         {
             if (country != CountryId.Sweden) { return System.Array.Empty<(string, string, string)>(); }
+            vintage = WorldClock.Resolve(country, vintage);
+            if (vintage == ElectionVintage.Sweden2018) { return System.Array.Empty<(string, string, string)>(); }   // no 2018 declarations are sourced; no start seats that chamber
             if (vintage == ElectionVintage.Sweden2022)
             {
                 return new[]
@@ -200,7 +203,8 @@ namespace PoliSim.Elections
         public static List<InOrAgainst> InOrAgainstFor(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
         {
             var rules = new List<InOrAgainst>();
-            if (country != CountryId.Sweden || vintage != ElectionVintage.Seated) { return rules; }
+            vintage = WorldClock.Resolve(country, vintage);
+            if (country != CountryId.Sweden || vintage != ElectionVintage.Sweden2026) { return rules; }   // V's rule is 2026's declaration (K-1f); 2022's set carries none
             int v = IndexOf(parties, "V");
             if (v >= 0)
             {

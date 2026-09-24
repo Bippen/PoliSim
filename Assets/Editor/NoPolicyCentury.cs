@@ -57,6 +57,8 @@ namespace PoliSim.EditorTools
         private static Year[] Advance(CountryId player)
         {
             SimulationRandom.Seed(Seed);
+            using System.IDisposable epoch = SimulationManager.EpochScope();   // PS-1 (§618): the century opens on the player's own start, as the game does, and the epoch is put back after
+            PoliSim.Elections.WorldClock.ApplyStart(player);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject("NOPOLICYCENTURY");
             try

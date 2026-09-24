@@ -68,11 +68,13 @@ namespace PoliSim.EditorTools
                         continue;
                     }
 
-                    if (record.SeatsAtLastUpdate != party.SeedSeats)
+                    // PS-1 (§618): the mandate a party opens at is the SEATED chamber's - the chamber of record at the world's epoch - not the latest election's.
+                    int seated = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(party.Abbrev, out int n) ? n : 0;
+                    if (record.SeatsAtLastUpdate != seated)
                     {
                         missing++;
-                        Debug.LogError($"C-D4: {country.Id}/{party.Abbrev} opens at {record.SeatsAtLastUpdate} seats, its seeded "
-                                       + $"election gave it {party.SeedSeats}. The first carry-over would measure against the wrong "
+                        Debug.LogError($"C-D4: {country.Id}/{party.Abbrev} opens at {record.SeatsAtLastUpdate} seats, the seated chamber "
+                                       + $"gives it {seated}. The first carry-over would measure against the wrong "
                                        + "baseline.");
                     }
                 }

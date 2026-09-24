@@ -170,12 +170,18 @@ namespace PoliSim.UI
         }
 
         /// <summary>The country's seeded parties, largest first - the picker's order (shared with the IMGUI degradation path).</summary>
-        public static List<PoliticalParty> PartiesBySeats(CountryId id)
+        public static List<PoliticalParty> PartiesBySeats(CountryId id) => PartiesBySeats(id, WorldClock.PickerViewOf(id).Seats);
+
+        /// <summary>PS-1 (§618): the chamber at the country's START decides the order (a picker reads the start, not the selector's world); a party the
+        /// roster carries at zero there (a 2019 list at a 2023 start, a party that missed the threshold) sits at the foot, in the roster's order.</summary>
+        public static List<PoliticalParty> PartiesBySeats(CountryId id, Dictionary<string, int> seated)
         {
             var list = new List<PoliticalParty>(PartySystems.For(id));
-            list.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
+            list.Sort((a, b) => Seats(seated, b).CompareTo(Seats(seated, a)));
             return list;
         }
+
+        private static int Seats(Dictionary<string, int> seated, in PoliticalParty party) => seated != null && seated.TryGetValue(party.Abbrev, out int n) ? n : 0;
 
         /// <summary>K-1 part (4) and K-1f: the day-one government's standing, in one wording. The Canvas panel prints it whenever the government
         /// is provisional; the IMGUI pickers print it only when no cabinet forms, because with a cabinet their rows carry the (PROVISIONAL) mark
@@ -187,11 +193,14 @@ namespace PoliSim.UI
         /// <summary>One party's line on the picker: its abbreviation, its name as published, its seats at the last real election, and IN THE CABINET when the chamber's own formation seats it (`GovernmentFormation.Cabinet`).
         /// K-1 part (4): (PROVISIONAL) beside it while that cabinet is the formation's stand-in for a government not yet on record - on the IMGUI pickers, which
         /// have no line to say it; the Canvas panel says it once, under its subtitle, and keeps its rows short (the mark was hiding the longest row's first letter).</summary>
-        public static string PartyLine(PoliticalParty party, IReadOnlyList<string> cabinet, bool provisional = false)
+        public static string PartyLine(PoliticalParty party, IReadOnlyList<string> cabinet, bool provisional = false) => PartyLine(party, party.SeedSeats, cabinet, provisional);
+
+        /// <summary>PS-1 (§618): the line with the SEATED chamber's seats - the chamber of record at the start, which need not be the latest election's.</summary>
+        public static string PartyLine(PoliticalParty party, int seats, IReadOnlyList<string> cabinet, bool provisional = false)
         {
             bool inCabinet = false;
             if (cabinet != null) { foreach (string abbrev in cabinet) { if (abbrev == party.Abbrev) { inCabinet = true; break; } } }
-            return $"{party.ShortName} — {party.Name} · {party.SeedSeats} SEATS{(inCabinet ? (provisional ? " · IN THE CABINET (PROVISIONAL)" : " · IN THE CABINET") : "")}";
+            return $"{party.ShortName} — {party.Name} · {seats} SEATS{(inCabinet ? (provisional ? " · IN THE CABINET (PROVISIONAL)" : " · IN THE CABINET") : "")}";
         }
 
         /// <summary>
@@ -231,10 +240,12 @@ namespace PoliSim.UI
             layout.childForceExpandHeight = false;
             layout.childForceExpandWidth = false;
 
-            int seats = 0;
-            foreach (PoliticalParty party in PartySystems.For(country.Id)) { seats += party.SeedSeats; }
-            IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(country);
-            bool provisional = GovernmentFormation.IsProvisional(country);
+            // PS-1 (§618): the panel reads the chamber and the government AT THE COUNTRY'S START - the selector's world is built on the default epoch, so
+            // its own country would describe another chamber than the one the game opens on (the review's D4).
+            WorldClock.PickerView start = WorldClock.PickerViewOf(country.Id);
+            int seats = start.TotalSeats;
+            IReadOnlyList<string> cabinet = start.Cabinet;
+            bool provisional = start.Provisional;
 
             CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR PARTY — {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 30,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
@@ -254,10 +265,12 @@ namespace PoliSim.UI
             // P6-A2: every row is the control it is - the delivered brass face under the party's line,
             // not a sentence in interactive ink. The row height is the face's, and the column's spacing
             // is cut to match, so the longest chamber (France's fifteen) still stands inside the column.
-            foreach (PoliticalParty party in PartiesBySeats(country.Id))
+            foreach (PoliticalParty party in PartiesBySeats(country.Id, start.Seats))
             {
+                if (!PartySystems.IsPlayable(start.Seats, party)) { continue; }   // PS-1 (§618, ruled): seated, or seats at the latest election, or a contested election with a CHES position
+                int seatedNow = start.Seats.TryGetValue(party.Abbrev, out int held) ? held : 0;
                 Button button = CanvasChrome.FacedButton(column.transform, $"Party_{party.Abbrev}",
-                    PartyLine(party, cabinet), PoliSimTheme.Display, 20,   // K-1: the panel's own line carries PROVISIONAL (above); the row stays short
+                    PartyLine(party, seatedNow, cabinet), PoliSimTheme.Display, 20,   // K-1: the panel's own line carries PROVISIONAL (above); the row stays short
                     PoliSimTheme.Hex(0xF0E7D8), new Vector2(PartyRowWidth, PartyRowHeight));
                 // §566 (2026-09-22, Design's sitting part A item 6): THE PARTY'S OWN MARK at the row's left, the delivered `mark_party_*` art the campaign's support
                 // plate already draws - the picker is where the player first meets these parties and it showed them as brass strips of text. A party with no mark on
@@ -436,6 +449,12 @@ namespace PoliSim.UI
             Text zone = CanvasChrome.MakeText(content.transform, "Zone", country.CurrencyZone.Name.ToUpperInvariant(),
                 PoliSimTheme.Display, 12, ink, TextAnchor.MiddleLeft, FontStyle.Bold);
             zone.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
+
+            // PS-1 (§618): the card says when the world opens for this country and what it opens before - the run-up to its polling day, its
+            // snap election's trigger day, or France's governing mode with no election modelled (§8: the selector says so in plain words).
+            Text start = CanvasChrome.MakeText(content.transform, "Start", WorldClock.StartLine(country.Id),
+                PoliSimTheme.Display, 9, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft, FontStyle.Bold);
+            start.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 14f);
 
             BuildFigureStrip(content.transform, country);
         }

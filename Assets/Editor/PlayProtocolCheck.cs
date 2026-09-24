@@ -60,6 +60,10 @@ namespace PoliSim.EditorTools
         {
             CheckExit.ArmLogFold();
             string path = Path.Combine(Application.temporaryCachePath, "play_protocol_check_" + Guid.NewGuid().ToString("N") + ".json");
+            // PS-1 (§618): the controller's Load sets the epoch to the save's own start (SaveGameService.RestoreInto) and, in a game, that is right -
+            // the loaded world lives on its start. In the bar it was a leak: every check after this one read Sweden's 2026-01-18 as the default
+            // epoch (OfficeTestDiagnostic did, and its 2026 declarations vanished). The scope puts the process's epoch back whatever happens.
+            using System.IDisposable epoch = SimulationManager.EpochScope();
             try
             {
                 string failure = PlayProtocolStaging.CutAndVerify(path, out SaveGame loaded);

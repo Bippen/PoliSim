@@ -224,7 +224,44 @@ namespace PoliSim.Simulation
         /// lagged a year from turn 3), turn 4's boundary - the first election - is 30 September 2030, 22 days after the statute's second
         /// Sunday of September, and the inherited GDP quarter is exactly July-September 2026.</summary>
         /// <summary>Game start. Public since Step A: PublicationSystem must know it to suppress releases for reference periods that predate the simulation, which have no data behind them.</summary>
-        public static readonly System.DateTime EpochDate = new System.DateTime(2026, 10, 1);
+        /// <summary>PS-1 (2026-09-25, §618): the epoch a world opens on when no country has been chosen - K-1 part (3)'s 1 October 2026. A chosen country
+        /// moves it to its own start (`WorldClock.StartDate`) BEFORE its world is created; a save carries the epoch it was cut on.
+        /// ⚠ Declared BEFORE <see cref="EpochDate"/>: static initializers run in textual order, and the first dump of this pass logged
+        /// `EPOCH: 0001-01-01 -> 2026-01-18` because the property's initializer read this field before it was set.</summary>
+        public static readonly System.DateTime DefaultEpoch = new System.DateTime(2026, 10, 1);
+
+        public static System.DateTime EpochDate { get; private set; } = DefaultEpoch;
+
+        /// <summary>
+        /// PS-1 (§618): sets the world's epoch. ⚠ Called before a world is created and never while one lives - `TurnBoundary`, the day-of-turn
+        /// arithmetic and the cohort substrate's year all read it statically, so a manager built on one epoch and advanced under another would
+        /// count its turns wrong. The game calls it at the player's choice of country (a fresh world follows) and on a load (the save's own epoch).
+        /// </summary>
+        public static void SetEpoch(System.DateTime epoch)
+        {
+            if (epoch == EpochDate) { return; }
+            UnityEngine.Debug.Log($"EPOCH: {EpochDate:yyyy-MM-dd} -> {epoch:yyyy-MM-dd}");
+            EpochDate = epoch;
+        }
+
+        /// <summary>PS-1 (§618, the review's D3): a scope that puts the epoch back as it found it - for the Editor's tools and checks, which share one
+        /// process and each open worlds on a country's start (`WorldClock.ApplyStart`); without it the first tool's start leaked into every check after it.</summary>
+        public static System.IDisposable EpochScope() => new EpochRestore(EpochDate);
+
+        private sealed class EpochRestore : System.IDisposable
+        {
+            private readonly System.DateTime _before;
+            public EpochRestore(System.DateTime before) { _before = before; }
+            public void Dispose() { SetEpoch(_before); }
+        }
+
+        /// <summary>PS-1: a manager built before the epoch moved reads the new one - the clock back to day one of turn 0. Only for a manager that has not advanced.</summary>
+        public void ResetClockToEpoch()
+        {
+            if (CurrentTurn != 0) { throw new System.InvalidOperationException("the clock resets to the epoch only before any turn has run"); }
+            CurrentDate = EpochDate;
+            CommitCalendarYear();
+        }
 
         /// <summary>Advances one day at a time via AdvanceDay, driven by GameController's own real-time speed-controlled Update loop - never touched by PreviewTurn's own throwaway clone, so a live slider drag can never leak a phantom day into the real calendar.</summary>
         public System.DateTime CurrentDate { get; private set; } = EpochDate;

@@ -108,6 +108,7 @@ namespace PoliSim.Elections
             double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
             Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, ElectionVintage vintage = ElectionVintage.Seated)
         {
+            vintage = WorldClock.Resolve(CountryId.Sweden, vintage);   // PS-1 (§618): the seated chamber's election at the world's epoch
             if (!PartySystems.TryHistory(CountryId.Sweden, out double[] latestShares, out double[] previousShares, vintage))
             {
                 throw new InvalidOperationException("PartySystems carries no two-election history for Sweden");
@@ -185,7 +186,7 @@ namespace PoliSim.Elections
         /// of <paramref name="vintage"/> - the seated election's (2026's) unless a harness pins 2022's.</summary>
         public static RegionAudience[] SwedenRegions(out double national, ElectionVintage vintage = ElectionVintage.Seated)
         {
-            bool pinned2022 = vintage == ElectionVintage.Sweden2022;
+            bool pinned2022 = WorldClock.Resolve(CountryId.Sweden, vintage) == ElectionVintage.Sweden2022;
             string[] names = pinned2022 ? SwedishValkretsReturns2022.Names : SwedishValkretsReturns2026.Names;
             long[] validVotes = pinned2022 ? SwedishValkretsReturns2022.Valid : SwedishValkretsReturns2026.Valid;
             long[] roll = pinned2022 ? SwedishValkretsReturns2022.Eligible : SwedishValkretsReturns2026.Eligible;

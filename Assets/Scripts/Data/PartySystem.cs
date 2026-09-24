@@ -271,8 +271,23 @@ namespace PoliSim.Data
     /// <see cref="Sweden2022"/>, so the 2022 evidence stays reproducible after the seed moved. A country with one vintage ignores it.</summary>
     public enum ElectionVintage
     {
+        /// <summary>The chamber the world seats: resolved by `WorldClock.Resolve` to the election whose lists seat the chamber of record at the epoch (PS-1, §618).</summary>
         Seated = 0,
         Sweden2022 = 1,
+        // PS-1 (2026-09-25): every chamber of record the six `records_by_date.md` date, one member each, so a table can be asked for by its election.
+        Sweden2018 = 2,
+        Sweden2026 = 3,
+        Germany2021 = 4,
+        Germany2025 = 5,
+        Poland2019 = 6,
+        Poland2023 = 7,
+        Italy2018 = 8,
+        Italy2022 = 9,
+        Usa2020 = 10,
+        Usa2022 = 11,
+        Usa2024 = 12,
+        France2022 = 13,
+        France2024 = 14,
     }
 
     /// <summary>
@@ -391,6 +406,13 @@ namespace PoliSim.Data
             new PoliticalParty("TD",   "Trzecia Droga",            float.NaN, float.NaN, 65, "mark_party_pl_td"),
             new PoliticalParty("NL",   "Nowa Lewica",              2.32f, 1.75f,  26, "mark_party_pl_nl", euPosition: 6.90f, lrGen: 2.41f, environment: 1.86f, regions: 3.00f, spendVsTax: 1.92f, immigratePolicy: 3.15f, deregulation: 3.38f, redistribution: 2.37f, peopleVsElite: 5.00f, antiEliteSalience: 2.90f, civLibLawOrder: 2.07f, nationalism: 1.56f),
             new PoliticalParty("Konf", "Konfederacja",             8.96f, 8.41f,  18, "mark_party_pl_konf", euPosition: 1.52f, lrGen: 9.39f, environment: 8.86f, regions: 7.78f, spendVsTax: 9.38f, immigratePolicy: 9.81f, deregulation: 8.46f, redistribution: 8.67f, peopleVsElite: 8.00f, antiEliteSalience: 8.20f, civLibLawOrder: 7.88f, nationalism: 9.81f),
+            // PS-1 (2026-09-25, §618): the 2019 Sejm's lists that are not 2023's committees - seated as elected when the chamber of record is the 9th
+            // term (poland/records_by_date.md, the PKW notice Dz.U. 2019 poz. 1955 [PKW-2019]; the record's own advice: "its keys should be the 2019
+            // committees' own"). SLD's committee, PSL alone (inside TD in 2023) and MN's one seat. Zero seats at the 2023 election, no CHES position,
+            // no mark - carried so the 2019 chamber is the election's lists and not a mapping onto 2023's keys.
+            new PoliticalParty("SLD",  "Sojusz Lewicy Demokratycznej", float.NaN, float.NaN, 0),
+            new PoliticalParty("PSL",  "Polskie Stronnictwo Ludowe",   float.NaN, float.NaN, 0),
+            new PoliticalParty("MN",   "Mniejszość Niemiecka",         float.NaN, float.NaN, 0),
         };
 
         // ---- France: Assemblee nationale 2024. UNITS ARE THE INTERIOR MINISTRY'S NUANCES, not parties,
@@ -485,8 +507,13 @@ namespace PoliSim.Data
         /// </summary>
         public static bool TryHistory(CountryId id, out double[] latest, out double[] previous, ElectionVintage vintage = ElectionVintage.Seated)
         {
+            vintage = Elections.WorldClock.Resolve(id, vintage);   // PS-1 (§618): the seated chamber's election, at the world's epoch
             switch (id)
             {
+                case CountryId.Sweden when vintage == ElectionVintage.Sweden2018:
+                    latest = null; previous = null; return false;   // 2018 against 2014 is not on disk; no start seats the 2018 Riksdag
+                case CountryId.Germany when vintage == ElectionVintage.Germany2021:
+                    latest = null; previous = null; return false;   // 2021 against 2017 is not on disk
                 case CountryId.Sweden when vintage == ElectionVintage.Sweden2022:
                     // 2022 and 2018 final shares, Valmyndigheten (returns_2022.md, priors/previous_elections.md),
                     // in For(Sweden) order: S, SD, M, V, C, KD, MP, L.
@@ -567,11 +594,114 @@ namespace PoliSim.Data
         /// **This dictionary is the PERSISTED shape** that replaces `Dictionary&lt;PartyArchetype, int&gt;`,
         /// which is why W-G1 bumps `SaveVersion`.
         /// </summary>
-        public static Dictionary<string, int> InitialSeats(CountryId id)
+        public static Dictionary<string, int> InitialSeats(CountryId id) => InitialSeats(id, ElectionVintage.Seated);
+
+        /// <summary>PS-1 (§618): the composition of the chamber a vintage's lists elected, keyed by the roster's abbreviations; `Seated` resolves to the
+        /// chamber of record at the world's epoch (`WorldClock.SeatedVintage`). A roster party the election did not seat holds zero.</summary>
+        public static Dictionary<string, int> InitialSeats(CountryId id, ElectionVintage vintage)
         {
+            ElectionVintage concrete = Elections.WorldClock.Resolve(id, vintage);
             var seats = new Dictionary<string, int>();
-            foreach (PoliticalParty p in For(id)) { seats[p.Abbrev] = p.SeedSeats; }
+            foreach (PoliticalParty p in For(id)) { seats[p.Abbrev] = 0; }
+            IReadOnlyList<(string Abbrev, int Seats)> table = SeatsAt(concrete);
+            if (table == null)
+            {
+                foreach (PoliticalParty p in For(id)) { seats[p.Abbrev] = p.SeedSeats; }   // the latest election, the roster's own figures
+                return seats;
+            }
+
+            foreach ((string abbrev, int n) in table)
+            {
+                if (!seats.ContainsKey(abbrev)) { throw new System.InvalidOperationException($"{concrete}'s table seats '{abbrev}', which {id}'s roster does not hold"); }
+                seats[abbrev] = n;
+            }
+
             return seats;
+        }
+
+        /// <summary>True when a vintage's per-list seat table is on disk and in <see cref="SeatsAt"/>; false for the chambers billed as E-47 (Italy 2018, France 2022 by nuance).</summary>
+        public static bool SeatsSourced(ElectionVintage vintage)
+        {
+            switch (vintage)
+            {
+                case ElectionVintage.Italy2018:
+                case ElectionVintage.France2022:
+                    return false;
+                case ElectionVintage.Seated:
+                    return false;   // not a table: resolve it first
+                default:
+                    return true;
+            }
+        }
+
+        /// <summary>
+        /// PS-1 (§618): THE SEAT TABLES BY ELECTION, each a chamber as elected - its lists - from the country's returns file or its
+        /// `records_by_date.md` (the source ids in brackets are that record's register). The latest election's table is the roster's
+        /// own `SeedSeats` and is listed here too, so every vintage reads through one path. Null for a chamber whose per-list table
+        /// is not on disk (E-47): the caller seats the latest sourced one and says so.
+        /// </summary>
+        public static IReadOnlyList<(string Abbrev, int Seats)> SeatsAt(ElectionVintage vintage)
+        {
+            switch (vintage)
+            {
+                // Sweden - Valmyndigheten. 2018: [VAL-18] (sweden/records_by_date.md §1), 349. 2022: returns_2022.md. 2026: 2026/returns_2026.md.
+                case ElectionVintage.Sweden2018: return new[] { ("S", 100), ("M", 70), ("SD", 62), ("V", 28), ("C", 31), ("KD", 22), ("MP", 16), ("L", 20) };
+                case ElectionVintage.Sweden2022: return new[] { ("S", 107), ("SD", 73), ("M", 68), ("V", 24), ("C", 24), ("KD", 19), ("MP", 18), ("L", 16) };
+                case ElectionVintage.Sweden2026: return Roster(CountryId.Sweden);
+                // Germany - the Bundeswahlleiterin. 2021: the 26 Sep 2021 determination, 736 (germany/records_by_date.md §1.1; FDP 92 is DERIVED there: 91 + the seat
+                // [BT-WW24] says it lost at the 2024-03-01 re-determination). 2025: returns_2025.md, 630.
+                case ElectionVintage.Germany2021: return new[] { ("SPD", 206), ("CDU", 152), ("Grune", 118), ("FDP", 92), ("AfD", 83), ("CSU", 45), ("Linke", 39), ("SSW", 1), ("BSW", 0) };
+                case ElectionVintage.Germany2025: return Roster(CountryId.Germany);
+                // Poland - the PKW. 2019: Dz.U. 2019 poz. 1955 [PKW-2019] (poland/records_by_date.md §1): the 2019 committees' own keys - SLD, PSL, MN. 2023: returns_2023.md.
+                case ElectionVintage.Poland2019: return new[] { ("PiS", 235), ("KO", 134), ("SLD", 49), ("PSL", 30), ("Konf", 11), ("MN", 1), ("NL", 0), ("TD", 0) };
+                case ElectionVintage.Poland2023: return Roster(CountryId.Poland);
+                // Italy - 2022: returns_2022.md (its per-list totals carry the file's own flag). 2018: per-list seats NOT SOURCED (E-47).
+                case ElectionVintage.Italy2022: return Roster(CountryId.Italy);
+                case ElectionVintage.Italy2018: return null;
+                // USA - history.house.gov's party divisions, election-day figures ([HH-DIV]; usa/records_by_date.md §1 - not opening-day sworn counts).
+                // ⚠ The 117th's figures sum to 434 of 435: the source's own footnote 6 ([HH-DIV], in the saved page) says New York had not certified
+                // the 22nd district before the 117th opened, so the seat stays unassigned rather than given to a party (ChamberSizeAt says 434).
+                case ElectionVintage.Usa2020: return new[] { ("DEM", 222), ("REP", 212) };
+                case ElectionVintage.Usa2022: return new[] { ("REP", 222), ("DEM", 213) };
+                case ElectionVintage.Usa2024: return Roster(CountryId.USA);
+                // France - 2024: returns_2024.md (the Ministry's nuances). 2022: seats by nuance NOT SOURCED (E-47; the record holds the groups at opening, another unit).
+                case ElectionVintage.France2024: return Roster(CountryId.France);
+                case ElectionVintage.France2022: return null;
+                default: return null;
+            }
+        }
+
+        /// <summary>The seats a vintage's table accounts for - the chamber's size, except where the record's own figures leave seats unassigned
+        /// (the 117th House: 434 of 435 at election day) or the chamber was sized differently (the 20th Bundestag: 736 at its determination).</summary>
+        public static int ChamberSizeAt(CountryId id, ElectionVintage vintage)
+        {
+            switch (vintage)
+            {
+                case ElectionVintage.Germany2021: return 736;
+                case ElectionVintage.Usa2020: return 434;
+                default: return ChamberSeats(id);
+            }
+        }
+
+        private static IReadOnlyList<(string Abbrev, int Seats)> Roster(CountryId id)
+        {
+            var list = new List<(string, int)>();
+            foreach (PoliticalParty p in For(id)) { list.Add((p.Abbrev, p.SeedSeats)); }
+            return list;
+        }
+
+        /// <summary>
+        /// PS-1 (§618, ruled): WHO IS PLAYABLE - a party seated in the chamber of record at the start, a party that won seats at the latest election,
+        /// or any party that contested the latest election and holds a sourced CHES position (Germany's BSW at its 2024 start). Never narrower than the roster
+        /// was before: a seated unit without a position (Poland's TD, France's nuances) stays playable by its seats.
+        /// </summary>
+        public static bool IsPlayable(Country country, in PoliticalParty party) => IsPlayable(country?.ParliamentSeats, party);
+
+        /// <summary>The same rule against a seat table - the picker's, which reads the chamber at the country's START rather than the selector's world.</summary>
+        public static bool IsPlayable(Dictionary<string, int> seated, in PoliticalParty party)
+        {
+            if (seated != null && seated.TryGetValue(party.Abbrev, out int held) && held > 0) { return true; }
+            return party.SeedSeats > 0 || party.HasPosition;
         }
 
         /// <summary>

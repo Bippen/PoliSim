@@ -904,6 +904,12 @@ namespace PoliSim.UI
             EnergyMarket.BeginTurn(_world);
             _simulationManager.PlayerCountryId = save.PlayerCountryId;   // C-R4b step 3 (RestoreInto set it too, before the replay; this keeps the two paths one)
             RestoreUiDrafts(save.Ui);
+            // PS-1 (§618, the review's R5): the shadow baseline and the impact ledger are forked from the LOADED game (C-C10's fork), never left as the
+            // world just left - a load moves the epoch under them, and the old shadow's clock would count its turns against a foreign start.
+            _shadowBaseline?.Dispose();
+            _shadowBaseline = new ShadowBaseline(_simulationManager, _world, save.PlayerCountryId);
+            _impactLedger?.Dispose();
+            _impactLedger = new PolicyImpactLedger(_shadowBaseline);
 
             // The preview cache indexes into the OLD world's figures; the signing queue's entries
             // reference the OLD log's records. Both rebuild from live state on their own.
@@ -1559,6 +1565,18 @@ namespace PoliSim.UI
         /// <summary>Phase transitions, Layout-event only (seam defect class 1). Time-based rather than frame-based so the envelope reads the same at any frame rate.</summary>
         private void AdvanceCanvasSeam()
         {
+            // PS-1 (§618): A HITCH FRAME DOES NOT COUNT AGAINST THE ENVELOPE. The world is rebuilt at the player's choice (OpenWorldAt), a frame
+            // longer than the whole cover; the time-based envelope would then finish its CoverOut on the very next Layout and the swap would show
+            // (the harness's yielding frame filmed the desk with the selector's token claimed). A frame longer than the cover moves the phase's
+            // start by its own length, so the cover plays its full envelope after the hitch, as it does after any stutter.
+            // ⚠ Tied to the one known cause, not to frame timing: shifting on every slow frame made a slow Editor never finish a cover (the first film of
+            // this guard), and shifting on any first slow frame moved the yielding frame's scrim at 2560 (the second). OpenWorldAt raises the flag; the
+            // next phase to begin re-stamps its start once.
+            if (_canvasPhaseFresh)
+            {
+                _canvasPhaseFresh = false;
+                if (_seamHitchPending && _canvasPhase != CanvasPhase.None) { _canvasPhaseStart = Time.unscaledTime; _seamHitchPending = false; }
+            }
             float elapsed = Time.unscaledTime - _canvasPhaseStart;
             switch (_canvasPhase)
             {
@@ -1734,7 +1752,14 @@ namespace PoliSim.UI
         {
             _canvasPhase = phase;
             _canvasPhaseStart = Time.unscaledTime;
+            _canvasPhaseFresh = true;   // PS-1: the next Layout may re-stamp the start if the frame that began the phase was a hitch
         }
+
+        /// <summary>True from a phase's beginning to its first Layout - the one frame the hitch guard in <see cref="AdvanceCanvasSeam"/> may re-stamp.</summary>
+        private bool _canvasPhaseFresh;
+
+        /// <summary>Raised by <see cref="OpenWorldAt"/> when it rebuilt the world inside a frame: the seam's next phase starts its envelope after that frame, not inside it.</summary>
+        private bool _seamHitchPending;
 
         /// <summary>
         /// IMGUI is suppressed only while the Canvas surface is LIVE. ⚠ REFINED for the signing
@@ -1846,6 +1871,10 @@ namespace PoliSim.UI
                 return;
             }
 
+            // PS-1 (§618, the review's D1): THE COUNTRY IS SELECTED FIRST, so the world is built on its start before the scenario's deltas land on
+            // it - applied to the selector's world first, they were thrown away with it. A fresh game only; mid-run (the driver's scenario blocks) the
+            // running world stays and the deltas land on it as before.
+            SelectPlayerCountry(definition.Country);
             Country country = _world.GetCountry(definition.Country);
             // Step 2's third section (2026-08-25): a scenario's seed delta is the one debt writer
             // outside the daily path and the interrupt layer (Italy writes 165% of GDP straight
@@ -1865,8 +1894,6 @@ namespace PoliSim.UI
 
             Debug.Log($"SCENARIO: '{definition.Name}' started - {definition.Country}, {definition.Objectives.Count} objectives, " +
                       $"ends turn {definition.EndTurn}, FA cadence x{definition.ForeignPolicyCadenceMultiplier:0.##}.");
-
-            SelectPlayerCountry(definition.Country);
         }
 
         /// <summary>
@@ -1948,8 +1975,55 @@ namespace PoliSim.UI
         }
 
         /// <summary>Commits the player's country choice from DrawCountrySelector - together with <see cref="ResetPlayerCountrySelection"/>, the only two places _selectedPlayerCountryId is ever set.</summary>
+        /// <summary>
+        /// PS-1 (2026-09-25, §618): THE WORLD OPENS ON THE CHOSEN COUNTRY'S START. The world the selector showed was built on the default epoch
+        /// (K-1's 1 October 2026); the player's choice sets the epoch to the country's own start (`WorldClock.StartDate`) and builds the world
+        /// again on it - every country seated in its chamber of record and governed by its government of record on that date - with the shadow
+        /// baseline and the impact ledger rebuilt beside it. The party the picker seated on the old world's country is carried across. Nothing
+        /// advances before this, so the clock resets to the epoch cleanly. A load never comes here: the save carries its own epoch.
+        /// </summary>
+        private void OpenWorldAt(CountryId countryId)
+        {
+            // A RUNNING GAME NEVER RE-OPENS (the review's D2): the driver re-seats a country mid-film and starts scenarios mid-run through the same
+            // entry; the world that is playing stays, and the clock is never reset under it.
+            if (_selectedPlayerCountryId.HasValue || _simulationManager.CurrentTurn != 0)
+            {
+                Debug.Log($"WORLD CLOCK: {countryId} chosen in a running game (turn {_simulationManager.CurrentTurn}) - the world stays as it is.");
+                return;
+            }
+
+            System.DateTime start = PoliSim.Elections.WorldClock.StartDate(countryId);
+            Country before = _world?.GetCountry(countryId);
+            string seatedParty = before?.PlayerPartyAbbrev;
+            bool sameEpoch = start == SimulationManager.EpochDate && _simulationManager.CurrentDate == start;
+            if (sameEpoch) { return; }
+
+            SimulationManager.SetEpoch(start);
+            _world = WorldFactory.CreateDefault();
+            _simulationManager.SetWorld(_world);
+            _simulationManager.ResetClockToEpoch();
+            _shadowBaseline?.Dispose();
+            _shadowBaseline = new ShadowBaseline(SimulationRandom.MasterSeed);
+            _impactLedger?.Dispose();
+            _impactLedger = new PolicyImpactLedger(_shadowBaseline);
+            _energyResult = null;
+            _hasCachedPreview = false;
+            Country after = _world.GetCountry(countryId);
+            if (after != null && !string.IsNullOrEmpty(seatedParty))
+            {
+                after.PlayerPartyAbbrev = seatedParty;
+                after.PartyApprovalRating = after.State.ApprovalRating;
+            }
+
+            _seamHitchPending = true;   // the frame that rebuilt the world is longer than the seam's cover; its next phase starts after it
+            string deviation = PoliSim.Elections.WorldClock.SeatingDeviation(countryId, start);
+            Debug.Log($"WORLD CLOCK: {countryId} opens {start:yyyy-MM-dd} - the chamber of record {PoliSim.Elections.WorldClock.ChamberAt(countryId, start).Vintage}"
+                      + (deviation != null ? $"; DEVIATION: {deviation}" : string.Empty));
+        }
+
         private void SelectPlayerCountry(CountryId countryId)
         {
+            OpenWorldAt(countryId);   // PS-1 (§618): the world is built on this country's start before anything reads it
             _selectedPlayerCountryId = countryId;
             _playerCountry = _world.GetCountry(countryId);
             _simulationManager.PlayerCountryId = countryId;   // C-R4b step 3: the day loop runs the player's campaign for this country
@@ -1962,10 +2036,13 @@ namespace PoliSim.UI
             // played with, and the picker's choice arrives stored.
             if (string.IsNullOrEmpty(_playerCountry.PlayerPartyAbbrev))
             {
+                // PS-1 (§618): the largest party of the chamber the world SEATS - the chamber of record at the start - not the latest election's.
                 PoliticalParty largest = default;
+                int largestSeats = -1;
                 foreach (PoliticalParty party in PartySystems.For(countryId))
                 {
-                    if (largest.Abbrev == null || party.SeedSeats > largest.SeedSeats) { largest = party; }
+                    int held = _playerCountry.ParliamentSeats != null && _playerCountry.ParliamentSeats.TryGetValue(party.Abbrev, out int n) ? n : 0;
+                    if (largest.Abbrev == null || held > largestSeats) { largest = party; largestSeats = held; }
                 }
 
                 _playerCountry.PlayerPartyAbbrev = largest.Abbrev;
@@ -2097,9 +2174,13 @@ namespace PoliSim.UI
                     bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(_world.GetCountry(definition.Country));
                     // K-1f (§607): with no cabinet no row carries the PROVISIONAL mark, so the picker says the standing itself.
                     if (provisional && cabinet.Count == 0) { GUILayout.Label(CountrySelectorScreen.ProvisionalLine(cabinet), _labelStyle); }
-                    foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(definition.Country))
+                    PoliSim.Elections.WorldClock.PickerView scenarioStart = PoliSim.Elections.WorldClock.PickerViewOf(definition.Country);   // PS-1 (§618): the chamber at the start, not the selector's world
+                    cabinet = scenarioStart.Cabinet; provisional = scenarioStart.Provisional;
+                    foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(definition.Country, scenarioStart.Seats))
                     {
-                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                        if (!PartySystems.IsPlayable(scenarioStart.Seats, party)) { continue; }
+                        int seatedNow = scenarioStart.Seats.TryGetValue(party.Abbrev, out int held) ? held : 0;
+                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, seatedNow, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
                         {
                             StartScenarioAsParty(definition, party.Abbrev);
                         }
@@ -2151,9 +2232,13 @@ namespace PoliSim.UI
                     bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(country);
                     // K-1f (§607): with no cabinet no row carries the PROVISIONAL mark, so the picker says the standing itself.
                     if (provisional && cabinet.Count == 0) { GUILayout.Label(CountrySelectorScreen.ProvisionalLine(cabinet), _labelStyle); }
-                    foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(country.Id))
+                    PoliSim.Elections.WorldClock.PickerView pickStart = PoliSim.Elections.WorldClock.PickerViewOf(country.Id);   // PS-1 (§618): the chamber at the start, not the selector's world
+                    cabinet = pickStart.Cabinet; provisional = pickStart.Provisional;
+                    foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(country.Id, pickStart.Seats))
                     {
-                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                        if (!PartySystems.IsPlayable(pickStart.Seats, party)) { continue; }
+                        int seatedNow = pickStart.Seats.TryGetValue(party.Abbrev, out int held) ? held : 0;
+                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, seatedNow, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
                         {
                             SelectPlayerCountryAndParty(country.Id, party.Abbrev);
                         }
@@ -6438,12 +6523,12 @@ namespace PoliSim.UI
                 string previousLabel;
                 if (earlier == null)
                 {
+                    // PS-1 (§618, the review's R7): the previous count is the chamber the world SEATED - the election of record at its start - not the roster's latest.
+                    ElectionVintage seatedVintage = PoliSim.Elections.WorldClock.SeatedVintage(CountryId.Sweden, SimulationManager.EpochDate);
                     previousByConstituency = SwedishRegions.PreviousVotes(keys);
-                    for (int k = 0; k < keys.Count; k++)
-                    {
-                        foreach (PoliticalParty party in parties) { if (party.Abbrev == keys[k]) { previousSeats[k] = party.SeedSeats; break; } }
-                    }
-                    previousLabel = "SWEDEN 2026";
+                    System.Collections.Generic.Dictionary<string, int> seatedTable = PartySystems.InitialSeats(CountryId.Sweden, seatedVintage);
+                    for (int k = 0; k < keys.Count; k++) { seatedTable.TryGetValue(keys[k], out previousSeats[k]); }
+                    previousLabel = "SWEDEN " + PoliSim.Elections.WorldClock.ElectionDayOf(CountryId.Sweden, seatedVintage).Year.ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {

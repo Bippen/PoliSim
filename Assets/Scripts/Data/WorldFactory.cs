@@ -1028,7 +1028,8 @@ namespace PoliSim.Data
             // every country starts at ApprovalRating 50. The six now start as the six real chambers.
             foreach (Country country in world.Countries)
             {
-                country.ParliamentSeats = PartySystems.InitialSeats(country.Id);
+                // PS-1 (§618): the chamber of record at the world's epoch, seated as elected (WorldClock.SeatedVintage); the roster's own figures where that is the latest election.
+                country.ParliamentSeats = PartySystems.InitialSeats(country.Id, ElectionVintage.Seated);
 
                 // P-I2 stage 1: the sourced five-year age pyramid. A COPY per country, never a reference
                 // into the static table - the substrate becomes mutable the moment the aging step lands,
@@ -1071,7 +1072,7 @@ namespace PoliSim.Data
                         PartyAbbrev = party.Abbrev,
                         Reputation = 50.0,
                         OrganizationalStrength = 50.0,
-                        SeatsAtLastUpdate = party.SeedSeats,
+                        SeatsAtLastUpdate = country.ParliamentSeats.TryGetValue(party.Abbrev, out int seatedNow) ? seatedNow : 0,   // PS-1: the seated chamber's mandate, not the latest election's
                     });
                 }
             }

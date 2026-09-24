@@ -97,6 +97,8 @@ namespace PoliSim.EditorTools
         public static string Build(int seed, int horizon, FieldInfo[] stateFields)
         {
             SimulationRandom.Seed(seed);
+            using System.IDisposable epoch = SimulationManager.EpochScope();   // PS-1 (§618): the dump's world opens on the reference country's start - Sweden's, the play protocol's - and the epoch is put back after
+            PoliSim.Elections.WorldClock.ApplyStart(CountryId.Sweden);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject($"TRAJ_{seed}_{horizon}");
             try

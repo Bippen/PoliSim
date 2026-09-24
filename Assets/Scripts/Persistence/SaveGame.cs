@@ -39,6 +39,9 @@ namespace PoliSim.Persistence
         public int CurrentTurn;
         public DateTime CurrentDate;
 
+        /// <summary>PS-1 (2026-09-25, §618): the epoch this game opened on - the chosen country's start date - so a load counts its turns from the day it was cut on.</summary>
+        public DateTime EpochDate;
+
         /// <summary>Countries sharing one CurrencyZone instance at save time, one inner list per
         /// distinct instance (singletons included, so the statement is total). Hazard 1's recorded
         /// expectation: SaveGameService.AssertZoneIdentity verifies the restored graph reproduces

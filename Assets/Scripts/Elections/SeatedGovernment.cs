@@ -47,22 +47,31 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The seeded chamber's government standing, where one is on record.</summary>
-        public static bool TryFor(CountryId id, out Record record)
+        public static bool TryFor(CountryId id, out Record record) => TryAt(id, Simulation.SimulationManager.EpochDate, out record);
+
+        /// <summary>
+        /// PS-1 (2026-09-25, §618): the standing on a DATE, read off `WorldClock`'s governments of record. A government whose cabinet the record
+        /// names is INSTALLED on that date; one it cannot name (a caretaker whose party list is a GAP, or Sweden from 2026-09-17, when the
+        /// dismissed Kristersson government waits on the new Riksdag's vote - K-1 part (4)) is PROVISIONAL, and the formation's result stands in.
+        /// </summary>
+        public static bool TryAt(CountryId id, DateTime date, out Record record)
         {
-            switch (id)
+            if (!WorldClock.TryGovernmentAt(id, date, out WorldClock.GovernmentOfRecord g)) { record = default; return false; }
+            if (g.CabinetSourced && g.Cabinet != null && g.Cabinet.Length > 0)
             {
-                case CountryId.Sweden:
-                    record = new Record(Standing.Provisional, null, null,
-                        "PROVISIONAL as of 2026-09-23: the Riksdag elected 2026-09-13 has chosen no prime minister. Kristersson was dismissed at his own "
-                        + "request on 2026-09-17 and his ministers serve as a caretaker government (övergångsregering) until a new one takes office "
-                        + "([RG-ART], [RD-N17b]); the new Riksdag convenes 2026-09-28 (RF 3:10, [RD-N19]); the talman gave Andersson (S) a sounding "
-                        + "mandate on 2026-09-18 ([RD-N18]); a prime minister can be chosen at the earliest after the opening on 2026-09-29 ([RG-ART], "
-                        + "RF 6:4-6:5). Until then the formation model's result on the 2026 chamber stands in. See ElectionsData/sweden/2026/government_2026.md.", new DateTime(2026, 9, 23));
-                    return true;
-                default:
-                    record = default;
-                    return false;
+                record = new Record(Standing.Installed, g.Cabinet, g.Support, $"INSTALLED{(g.CabinetDerived ? " (cabinet DERIVED by the record)" : "")}: {g.Head} from {g.From:yyyy-MM-dd} - {g.Basis}", date);
+                return true;
             }
+
+            string basis = id == CountryId.Sweden
+                ? "PROVISIONAL as of 2026-09-23: the Riksdag elected 2026-09-13 has chosen no prime minister. Kristersson was dismissed at his own "
+                  + "request on 2026-09-17 and his ministers serve as a caretaker government (övergångsregering) until a new one takes office "
+                  + "([RG-ART], [RD-N17b]); the new Riksdag convenes 2026-09-28 (RF 3:10, [RD-N19]); the talman gave Andersson (S) a sounding "
+                  + "mandate on 2026-09-18 ([RD-N18]); a prime minister can be chosen at the earliest after the opening on 2026-09-29 ([RG-ART], "
+                  + "RF 6:4-6:5). Until then the formation model's result on the 2026 chamber stands in. See ElectionsData/sweden/2026/government_2026.md."
+                : $"PROVISIONAL: {g.Head} from {g.From:yyyy-MM-dd} - {g.Basis}";
+            record = new Record(Standing.Provisional, null, null, basis, date);
+            return true;
         }
 
         /// <summary>Whether the game has held an election of its own in this country - after which its chamber, and its government, are the game's.</summary>

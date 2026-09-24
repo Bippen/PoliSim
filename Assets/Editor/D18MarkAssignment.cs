@@ -145,6 +145,28 @@ namespace PoliSim.EditorTools
             return rows;
         }
 
+        /// <summary>
+        /// PS-1 (2026-09-25, §618): SEEDED UNITS THAT AWAIT A MARK, each with its reason - the ruling seats every chamber of record as elected, so the 2019
+        /// Sejm's lists that are not 2023's committees entered the roster (PSL alone, the German minority's one seat) after the batch landed. Their marks
+        /// are asked of Design in the D18 idiom (two cells of the fifty-cell sheet) with the next send; until they land the units draw without one, as
+        /// `PartyMarkCoverageCheck` tolerates by design. ⚠ Policed: the count is a ratchet that only falls, and a unit here that names a mark fails.
+        /// </summary>
+        private static readonly (CountryId Country, string Abbrev, string Reason)[] AwaitingArt =
+        {
+            (CountryId.Poland, "SLD", "the 2019 Sejm's Sojusz Lewicy Demokratycznej list (49 seats), seated as elected at a start before 2023-11-13; asked of Design with the next send"),
+            (CountryId.Poland, "PSL", "the 2019 Sejm's own PSL list (30 seats), seated as elected at a start before 2023-11-13; asked of Design with the next send"),
+            (CountryId.Poland, "MN", "the 2019 Sejm's Mniejszość Niemiecka list (1 seat), seated as elected at a start before 2023-11-13; asked of Design with the next send"),
+        };
+
+        /// <summary>Lower it as the three marks land; never raise it without a row above.</summary>
+        private const int AwaitingArtCeiling = 3;
+
+        private static string AwaitingArtReason(CountryId country, string abbrev)
+        {
+            foreach ((CountryId c, string a, string reason) in AwaitingArt) { if (c == country && string.Equals(a, abbrev, StringComparison.Ordinal)) { return reason; } }
+            return null;
+        }
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -152,6 +174,7 @@ namespace PoliSim.EditorTools
             List<Row> rows = Build(out List<string> faults);
             var sb = new StringBuilder();
             sb.Append("=== D18: the 43 party marks as a seed table over cells already cut ===\n");
+            if (AwaitingArt.Length > AwaitingArtCeiling) { faults.Add($"{AwaitingArt.Length} seeded units await art against a ceiling of {AwaitingArtCeiling} - lower the ceiling as marks land, never raise it without a row"); }
 
             if (rows.Count == 0)
             {
@@ -166,6 +189,7 @@ namespace PoliSim.EditorTools
             // files are named by a rule, the seeds are named by a rule, and if the two ever part, a mark
             // silently stops resolving. Checked in both directions - a seed that names nothing after the
             // batch landed is as wrong as one that names the wrong thing.
+            int awaiting = 0;
             foreach (Row row in rows)
             {
                 string seeded = null;
@@ -176,13 +200,28 @@ namespace PoliSim.EditorTools
 
                 if (string.IsNullOrEmpty(seeded))
                 {
+                    string reason = AwaitingArtReason(row.Country, row.Abbrev);
+                    if (reason != null)
+                    {
+                        awaiting++;
+                        sb.Append($"    AWAITING ART  {row.Country} {row.Abbrev}: names no mark yet - {reason}; the rule will name {row.Stem}\n");
+                        continue;
+                    }
+
                     faults.Add($"{row.Country} {row.Abbrev} names no mark and the batch has landed - it should name {row.Stem}");
                 }
                 else if (!string.Equals(seeded, row.Stem, StringComparison.Ordinal))
                 {
                     faults.Add($"{row.Country} {row.Abbrev} is seeded as '{seeded}' and the rules derive '{row.Stem}'");
                 }
+                else if (AwaitingArtReason(row.Country, row.Abbrev) != null)
+                {
+                    faults.Add($"{row.Country} {row.Abbrev} is listed as awaiting art but names '{seeded}' - take it off the list");
+                }
             }
+
+            if (awaiting > 0) { sb.Append($"    {awaiting} seeded unit(s) await art (ceiling {AwaitingArtCeiling}).\n"); }
+            RatchetLedger.Report("D18MarkAssignment.AWAITING_ART", awaiting, AwaitingArtCeiling);
 
             // ---- rule 2: the triple is unique inside its own chamber ------------------------------------
             var seen = new Dictionary<string, string>();
