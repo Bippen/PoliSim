@@ -71,4 +71,46 @@ elsif ($mode eq 'compare') {
   elsif ($L <= length($o) && substr($o, 0, $L) eq $s) { print "  PREFIX IDENTICAL for $L of ", length($o), " bytes (a truncated pull)\n"; }
   else { print "  DIFFERS\n"; exit 1; }
 }
-else { print STDERR "modes: manifest <folder> | decode <tool-result.txt> <out> | compare <pulled.png> <original.png>\n"; exit 2; }
+elsif ($mode eq 'split') {
+  # THE SPLIT ARCHIVE (§612): a pull cannot read by range, so a file over the cap goes as parts under it.
+  # Writes <outdir>/<name>.partNNN and <outdir>/<name>.parts.sha256 - the whole's digest and byte count on the
+  # first line, one line per part (sha256sum -c form) after it.
+  my ($file, $outdir, $partbytes) = @a; die "split <file> <outdir> [partbytes]\n" unless $file && $outdir;
+  $partbytes ||= 180 * 1024;   # under the measured 196 608-byte cap
+  die "part size must be under 196608 bytes\n" if $partbytes >= 196608;
+  mkdir $outdir unless -d $outdir;
+  my $bin = slurp($file); (my $name = $file) =~ s{.*[\\/]}{};
+  my $n = int((length($bin) + $partbytes - 1) / $partbytes);
+  open my $m, '>:raw', "$outdir/$name.parts.sha256" or die;
+  printf $m "# WHOLE %s  %s  %d bytes  %d parts of %d\n", sha256_hex($bin), $name, length $bin, $n, $partbytes;
+  for my $i (0 .. $n - 1) {
+    my $part = substr($bin, $i * $partbytes, $partbytes);
+    my $pn = sprintf('%s.part%03d', $name, $i + 1);
+    open my $o, '>:raw', "$outdir/$pn" or die; print $o $part; close $o;
+    printf $m "%s  %s\n", sha256_hex($part), $pn;
+  }
+  close $m; printf "%s: %d bytes -> %d parts of %d in %s (whole %s)\n", $name, length $bin, $n, $partbytes, $outdir, sha256_hex($bin);
+}
+elsif ($mode eq 'join') {
+  # Reassemble parts against their sheet: every part's digest checked as it is read, the whole's digest and byte
+  # count checked at the end; a single mismatch writes nothing.
+  my ($dir, $out) = @a; die "join <partsdir> [out]\n" unless $dir;
+  opendir my $d, $dir or die; my ($sheet) = grep { /\.parts\.sha256$/ } readdir $d; closedir $d;
+  die "no .parts.sha256 sheet in $dir\n" unless $sheet;
+  open my $s, '<:raw', "$dir/$sheet" or die; my @lines = <$s>; close $s;
+  my $head = shift @lines; my ($whole, $name, $bytes, $count) = $head =~ /^# WHOLE ([0-9a-f]{64})  (\S+)  (\d+) bytes  (\d+) parts/ or die "bad sheet head: $head";
+  $out ||= "$dir/$name";
+  my $bin = ''; my $ok = 0; my @bad;
+  for my $l (@lines) {
+    next unless $l =~ /^([0-9a-f]{64})  (\S+)\s*$/; my ($sum, $pn) = ($1, $2);
+    if (!-f "$dir/$pn") { push @bad, "MISSING $pn"; next; }
+    my $part = slurp("$dir/$pn");
+    if (sha256_hex($part) ne $sum) { push @bad, "DIFFERS $pn"; next; }
+    $bin .= $part; $ok++;
+  }
+  if (@bad || $ok != $count) { print "join FAILED: $ok of $count parts ok; @bad\n"; exit 1; }
+  if (length($bin) != $bytes || sha256_hex($bin) ne $whole) { printf "join FAILED: whole reads %d bytes %s against the sheet's %d %s\n", length $bin, sha256_hex($bin), $bytes, $whole; exit 1; }
+  open my $o, '>:raw', $out or die "$out: $!"; print $o $bin; close $o;
+  printf "%s: %d parts joined, %d bytes, sha256 %s - WHOLE MATCHES THE SHEET\n", $out, $ok, length $bin, $whole;
+}
+else { print STDERR "modes: manifest <folder> | decode <tool-result.txt> <out> | compare <pulled.png> <original.png> | split <file> <outdir> [partbytes] | join <partsdir> [out]\n"; exit 2; }

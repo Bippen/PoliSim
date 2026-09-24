@@ -33864,3 +33864,48 @@ Then, as the first real send, **E-42's part C** - `uploads/SITTING_2026-09-21_C/
 **E-43 sent.** The relay of the sitting pass - the four documents as they stand after this record - pushed to `uploads/RELAY_2026-09-24/` over the channel, each digest read off disk after the last edit and verified by listing; the row closed.
 
 **Bars.** Tier DOCUMENTS and TOOLING by the staged paths (`Tools/design_channel.pl` is the tooling): the document checks out of the engine (`Tools/textcheck`) and the cheap bar; the evidence line is in the commit.
+
+## 612. THE PULL LIMIT SETTLED: THE CHANNEL HAS NO RANGE READ, SO A FILE OVER 192 KiB COMES BACK AS A SPLIT ARCHIVE, VERIFIED PART BY PART AND WHOLE BY `Tools/design_channel.pl join`; PROVED ON ONE ROUND TRIP (2026-09-24)
+
+**The order** (Elias, 2026-09-24): *"establish whether design-sync reads by range; if it doesn't, the notice asks Design to return any file over 192 KiB as a split archive in parts under the limit, each part verified by digest and reassembled against the whole's digest, with Tools/design_channel.pl doing the reassembly check."*
+
+**Measured.** `get_file`'s schema takes the project and the path and nothing else; an extra parameter is refused before the call is made (*An unexpected parameter `after` was provided*). There is no range read, and §610's cap (196 608 bytes of content, `"truncated":true` past it) is the whole of what one pull can carry.
+
+**Built.** `Tools/design_channel.pl` gains two modes:
+- `split <file> <outdir> [partbytes]` - parts of 180 KiB (184 320 bytes; anything under the cap is accepted, the cap itself refused), named `<file>.partNNN`, beside `<file>.parts.sha256`: its first line `# WHOLE <sha256>  <file>  <bytes> bytes  <n> parts of <partbytes>`, then one `sha256sum -c` line per part.
+- `join <partsdir> [out]` - reads the sheet, checks every part against its line as it is read, joins, checks the whole's byte count and digest against the first line, and writes the output only then. One missing or differing part, or a whole that does not match, and nothing is written.
+
+**Proved, both ways.**
+- Locally: the film frame of §610 (226 920 bytes) split into two parts; `join` rebuilt it byte-identical (`cmp`), and with one byte of part 2 flipped `join` refused (*1 of 2 parts ok; DIFFERS …part002*) and wrote nothing.
+- Through the channel: the two parts and the sheet pushed to `uploads/X1_channel_test/split/` (the parts declared `application/zip` - `application/octet-stream` is refused, §610); each pulled back whole and untruncated (184 320 and 42 600 bytes, at the sheet's digests), decoded off the persisted results; the sheet pulled back identical; `join` rebuilt the frame at `f99a1ed1…`, byte-identical to the file that was split, 30 chunks clean under `Tools/pngcheck.pl`. ⚠ **No C2PA chunk was injected into a `.part` file** - the store rewrites only what it reads as a PNG, which is why a part must not carry a `.png` extension of its own.
+
+**Recorded.** The notice at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md` carries the rule as item 4 in Design's terms (`split -b 184320` and `sha256sum` make the same shape); `CLAUDE.md`'s *The Design channel* rule carries it for sessions.
+
+**Bars.** Tier TOOLING and DOCUMENTS; the evidence line is §613's commit.
+
+## 613. X-2 CLOSED - THE TWO SPECS INSTALLED UNDER `docs/specs/`, AND S0 OF BOTH: THE COLLISION MAPS' ANCHORS, THE SOURCING BILLS, THE SIZING (2026-09-24)
+
+**E-45 done** (Elias, 2026-09-24): the two specs arrived as one archive in `docs/specs/` (`menu.zip`, 15 676 bytes, now `AssetPackArchive/SPECS_menu_2026-09-24.zip`), unpacked to `docs/specs/POLITICAL_SYSTEM_SPEC.md` (18 212 bytes; the political system: start before the election, play any role; its §9 the stages, §10 the decisions, §11 the sourcing bill) and `docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` (20 363 bytes; start points and your own party; its §4 the Code plan S0–S8, §7 the decisions, §8 the sourcing bill, and **§9 the main menu and settings, the addendum of 2026-09-25**, which is the head track's MM). Both are REFERENCE, not work lists: the rows are the head track's.
+
+⚠ **One sentence in each spec reverses a standing ruling, and the head track's rows are where it takes effect:** PS §2 reverses K-1 (3) (the start moves back into the run-up to 13 September 2026 - PS-2), replaces D-5 (a) lose-only with the four roles (PS-3), resolves OP-1 as *continue*, and requires CL-4 / DS-7. Nothing of that is built by this record; it is why the anchors below matter.
+
+**S0 of the political-system spec - the collision map's anchors** (where the single-start, lose-only and after-the-election assumptions live; every one read from the tree on 2026-09-24, none typed):
+1. **The single start is one epoch constant** - `SimulationManager.EpochDate`, 1 October 2026 (K-1 (3), §604) - and every date the game shows is arithmetic from it: the desk's calendar and its election and event markers (`GameController`, `GameController.Desk`), the turn boundary (`SimulationManager.TurnBoundary`), the publication system's periods, the cohort substrate's year (`CohortDemographics.SubstrateYear`), the carbon statute's clock. **The live campaign calendar reads the next election turn's boundary** (`SimulationManager.CurrentCampaignCalendar`, CL-5 §579); the real calendar exists only as the named constant `CampaignCalendar.Sweden2026`, read by `LiveCampaignSetup` as a default and by the film driver.
+2. **Lose-only is one flag on the controller** - `GameController._isGameOver` with `_gameOverReason` - raised by the office test after election night (C-R4's rule, D-5 (a), `GameController.cs` near the office test) and by the scenario verdict; it gates every panel (`GUI.enabled = !_isGameOver` at each tab), the desk (`DrawDeskGameOver`), the campaign opening and the day loop; the election-night screen prints *support is not office*; the save carries it (`SaveGame.IsGameOver`, `GameOverReason`), so a loaded game stays over.
+3. **The after-the-election start lives in the provisional seated government** - `SeatedGovernment` (Provisional / Installed, §605) read through `GovernmentFormation.TryGovernment` / `ViewOf` by the selector (`CountrySelectorScreen`, the PROVISIONAL lines), the controller's pickers, the coalition and results snapshots (`CoalitionScreenSnapshot`, `ResultsScreenSnapshot`, `LiveCampaignSnapshot`), the stance model's government terms, the chamber verdicts, and the save service.
+4. **The dated declarations** (`DeclaredRedLines`, `ElectionVintage.Seated` / `Sweden2022`, §607) already read by date - the one part of the start that PS §2 says is kept.
+
+**S0 of the start-points spec - the fixed party list's anchors** (every place the code assumes the party list is fixed and real):
+1. **The roster** - `PartySystem.BuildParties` (53 real parties, K-1e's leaders and offices).
+2. **Inks and the ladder** - `PoliSimTheme`'s ink tables and `InkLadderSeatsSweden2022` (K-1d ruled: pinned to 2022's order), the bloc fence (`CountryInkFenceCheck`, D17).
+3. **Marks** - the `MarkName` wiring and `D18MarkAssignment` (43 stems), `PartyMarkCoverageCheck` (seed → file and file → seed, both directions, which a created party's mark from an unspent cell must satisfy).
+4. **Loyalty from history** - the vote model's loyalty derived from the two previous elections (§11912's rule: a party absent at T−2 scores 0), which is the spec's *no loyal base* for free.
+5. **Declarations** - the dated files and `DeclaredRedLines`' per-vintage sets; a created party's declarations join them dated at creation.
+6. **The party picker** - `CountrySelectorScreen`'s party line and the controller's IMGUI pickers, which draw from the roster.
+7. **The key** - `PoliticalParty.Abbrev`, ASCII, shared by the save service, the fixtures, the seat tables, the ink and mark tables and the asset stems (§566, §575); a created party needs a key that collides with none of them.
+
+**The sourcing bills** are the specs' own: PS §11 (per country, dated: the latest election's calendar and snap triggers, chambers and governments and leaders of record by date, declarations, the constitutional rules for investiture, confidence, dissolution and extra elections, Poland's thresholds and veto override, the US Senate's classes and cloture and reconciliation, the US veto override and term limit, the Senato's composition, Gamson's law) and SP §8 (each start point's date and trigger, new-party registration and ballot access, state party funding, Poland's and France's two-round rules and returns by round, the presidential vetoes and powers, the US nominee and third-party ballot rules by state). Each item is fetched, verified and dated, or billed, when its row comes up; nothing is typed from the specs.
+
+**The sizing** is the specs' own: PS §9 30–45 sessions across stages 1–7, stage 2 the smallest; SP §4 8–12 sessions for S0–S4 once PS stages 0–3 have landed; MM two stages (M1 the menu, M2 the settings). The head track's own figure, 20–30 sessions for Phases 0–4, stands beside them.
+
+**Bars.** Tier TOOLING and DOCUMENTS by the staged paths: `Tools/textcheck` and the cheap bar; the evidence line is in the commit.

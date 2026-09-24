@@ -14,7 +14,7 @@ read at every session's start; this file is the open rows. The claim convention 
 
 # THE UNIFIED WORK LIST — the head track (Code and Design, one list; ruled by Elias 2026-09-25, installed 2026-09-24, `COMPLETED.md` §611)
 
-> **This is the head track.** It was handed over as `UNIFIED_WORK_LIST.md` at the root and installed here whole on 2026-09-24 (the root holds five documents; the file is this section now). Everything below the rule that closes it is the older backlog, unchanged. Each Design row's full text is installed into `CLAUDE_DESIGN_ASSET_REQUEST.md` when its row comes up. ⚠ **The three specs it draws from are named `POLITICAL_SYSTEM_SPEC.md` (PS), `START_POINTS_AND_PARTY_CREATION_SPEC.md` (SP) and SP's §9, the main menu and settings (MM) - and on 2026-09-24 neither file was on disk, in the Design project, or among the artifacts** (E-45). X-2's spec install and its S0 wait on them, and every row from Phase 1 on needs X-2.
+> **This is the head track.** It was handed over as `UNIFIED_WORK_LIST.md` at the root and installed here whole on 2026-09-24 (the root holds five documents; the file is this section now). Everything below the rule that closes it is the older backlog, unchanged. Each Design row's full text is installed into `CLAUDE_DESIGN_ASSET_REQUEST.md` when its row comes up. The three specs it draws from are `docs/specs/POLITICAL_SYSTEM_SPEC.md` (PS), `docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` (SP) and SP's §9, the main menu and settings (MM) - installed 2026-09-24 (E-45, `COMPLETED.md` §613).
 
 One list for both agents. Code builds, Design composes, Elias plays and rules.
 
@@ -31,7 +31,7 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 | # | owner | item | needs | done when |
 |---|---|---|---|---|
 | **X-1** ✅ | Code | **Test the direct Code↔Design channel** (`/design`, `/design-sync`): push a real set — one board, one film PNG, one sprite — to the Design project and pull one board back; **verify every file by digest both ways**; time it against the zip route | — | **PASSED 2026-09-24 (`COMPLETED.md` §610), with its shape measured:** the push lands (four files, then a zip, then the sitting's part C); the pull returns whole files under 192 KiB and truncates above it; every PNG the store holds carries an injected C2PA chunk, so a loose PNG's digest never matches on the far side while its pixel stream does, and a zip is stored byte-exact - so a row travels as ONE ZIP with `MANIFEST.sha256` inside, plus its frames loose for Design's reading. E2 amended: Code sends and pulls; Elias's uploads end. The one thing not measured from this side is whether Design's Claude opens a zip `write_files` stored (the UI's upload extracted them); the first row's return says. |
-| X-2 ◐ | Code | Install the three specs under `docs/specs/` and this list as the head track; S0 of PS and SP (collision maps, sourcing bills, sizing) | — | **The list is installed (this section, 2026-09-24). The specs are NOT on disk (E-45) and S0 waits on them.** maps and bills on record |
+| X-2 ✅ | Code | Install the three specs under `docs/specs/` and this list as the head track; S0 of PS and SP (collision maps, sourcing bills, sizing) | — | **DONE 2026-09-24 (`COMPLETED.md` §611 the list, §613 the specs and S0):** `docs/specs/POLITICAL_SYSTEM_SPEC.md` and `docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` (its §9 the main menu and settings) installed from E-45's archive; the collision maps' anchors, the sourcing bills (the specs' own §11 and §8) and the sizing on record in §613 |
 
 ## Phase 1 — the front door
 
@@ -99,7 +99,6 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 |---|---|---|
 | E-SW | Play Sweden after PS-2 | the campaign constants; the next design decisions |
 | E-44 | IRENA's *Renewable Power Generation Costs in 2025* full report into `PoliSim-captures/sources/energy/` | building a power plant stops being free |
-| E-45 | The two spec files the list draws from, `POLITICAL_SYSTEM_SPEC.md` and `START_POINTS_AND_PARTY_CREATION_SPEC.md`, into `docs/specs/` (`ERRANDS.md` E-45) | X-2's S0, and with it every row from MM-1 and PS-1 on |
 | — | **Strike anything, at any time.** Each phase's close report carries its films; nothing waits on a gate unless Elias adds one | — |
 
 **Size:** Phases 0–4, which make Sweden fully playable in every role with created parties and a front door, are roughly 20–30 sessions; Phases 5–6 grow with the countries.
