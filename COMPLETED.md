@@ -33785,3 +33785,36 @@ Since 2022, C, L and MP changed leader. S, SD, M, V and KD did not. The C-D3 doc
 - The simulation bar: **56 of 56** (`k1_608b_sim`), with `TrajectorySentinelCheck` unmoved on `k1ep`. A leader's name enters no computation.
 - The leaders' blobs: 35 of 35 match their sums.
 - An adversarial review of the staged diff (two lenses, each finding verified by a skeptic) confirmed four findings: C's unread own page, the 2026 file's stale "code is out of scope" lines, the uncorrected 2022 sentence, and a page count that included the fetch log. All four are acted on above. Three findings were refuted.
+
+## 609. PF-16 - ELECTION NIGHT'S WHO-GOVERNS COLUMN NO LONGER CLIPS AT 1280: IT WAS SHORT OF HEIGHT, NOT READ AT A STALE WIDTH (2026-09-24)
+
+**The row** (filed §600): the night's who-governs block clips its Canvas text at 1280. §607's film had it recurring, with 19 CANVAS TEXT CLIP lines on `88n_election_night_takeover` now that the pinned night forms SD+M+KD+L. The 2560 film was clean.
+
+**Measured first.**
+- The canvas is the same size at both widths: `CanvasScaler` matching 1920x1080 at 0.5 gives 1948x1064 units at 1280x699 and 1934x1072 at 2560x1419.
+- So the 1280-only clip is the text's own metrics. Small-pixel text wraps sooner and leads taller.
+- The clipped rects were all compressed by the same fraction toward their minimum heights (for example, figures 43.1 of 60.9 against a minimum of 18, and the scope line 47.2 of 60.9 against a minimum of 28). That is the vertical layout group sharing out a column whose texts' preferred heights exceed the body. A stale-width read would not do that.
+- **PF-13's idiom, a second layout pass, was tried and measured.** The night's frame is byte-identical with and without it, with 0 violations either way. It is not added.
+
+**Built** (`ElectionNightScreen.cs`), each step filmed to the night at 1280:
+
+| the step | CANVAS TEXT CLIP on `88n` at 1280 |
+|---|---|
+| before (§607's film) | 19 |
+| the columns 2.1 : 0.9 become 1.8 : 1.2 (the Governs column takes width from the map, which had spare height under it); the bridge labels' strip 14 → 16 units (a label's line is 15.2) | 6 |
+| 1.6 : 1.4 | 4, and the narrower map tiles dropped their labels (rows 11, 21, 31 and 36): **rejected** |
+| back to 1.8 : 1.2; the effects plate's preferred height 110 → 96 (floor 70 unchanged); the Governs column's line gap 2 → 1 | 1 (the figures, 1.2 units short) |
+| the plate 88 | **0** |
+
+At 1.8 : 1.2 the map keeps every tile label that 2.1 showed, except the first tile of row 11.
+
+The margin is small. On the pinned night the column's texts fit with a few units to spare. A night with more lines, such as a supporting party, the derived-lines note or the support-is-not-office note, can exceed it, and the canvas-text guard will then say so.
+
+**Evidence.** Tier UI.
+- The cheap bar: **48 of 48** (`pf16_cheap`).
+- The dry film `dry609` (Sweden@1280x720, declared first): 167 captured, 0 failed.
+- Real films on the final code:
+  - `pf16g_1280`, to the night: 0 canvas-text violations across 6 asserts, `88n` among them.
+  - `pf16h_2560`, the same.
+  - The staged board `-shotelectionnight`: `en609_1280` and `en609_2560`, 12 captured and 0 failed at each width. Its `e6_*` frames carry no canvas-text assert, so its final frame (the 2022 night, a government with a supporting party) was read by eye at 1280: it fits, with no overlap.
+- ⚠ **Found on the way:** `Tools/bar_tier.ps1` named ElectionNightScreen's frames as `90*_electionnight_*`, which is no capture's name. The only canvas-text assert on the screen is the sweep's `88n_election_night_takeover`, and the tier now names that.

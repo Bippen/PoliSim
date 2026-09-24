@@ -293,16 +293,21 @@ namespace PoliSim.UI
             grid.childForceExpandHeight = true;
             body.AddComponent<LayoutElement>().flexibleHeight = 1f;
 
-            // The map is width-limited (board 4a's 1080 : 587.6), so the width is what makes it the page's centre: it takes
-            // half the body, and the two text columns hold what their longest line needs at 1280.
+            // The map is width-limited (board 4a's 1080 : 587.6), so the width is what makes it the page's centre, and the two text
+            // columns hold what their longest line needs at 1280. PF-16 (§609, measured): at 1280 the who-governs column's wrapped
+            // notes stood taller than the body (small-pixel text wraps sooner and leads taller than at 2560, on a canvas of the same
+            // units), so the layout compressed every text in it below its own height. The column takes width from the map, which had
+            // spare height under it (1.8 : 1.2 - at 1.6 : 1.4 the narrower tiles dropped their labels), and the effects plate and the
+            // column's line gap yield the rest (BuildEstimate, below): 19 clipped texts at 1280 to none.
             Transform count = Column(body.transform, "Count", 1.0f);
             BuildTally(count, state, partyNames, totalSeats, previous);
             BuildCalls(count, state, partyNames);
 
-            Transform centre = Column(body.transform, "MapColumn", 2.1f);
+            Transform centre = Column(body.transform, "MapColumn", 1.8f);
             ValkretsCartogramView map = BuildMap(centre, state, partyNames, previous, inkCountry);
 
-            Transform right = Column(body.transform, "Governs", 0.9f);
+            Transform right = Column(body.transform, "Governs", 1.2f);
+            right.GetComponent<VerticalLayoutGroup>().spacing = 1f;   // PF-16 (§609): the column holds ~35 lines; 1 unit between them, not 2, is the rest of what it was short
             BuildGovernment(right, state, government, inkCountry);
             BuildLedger(right, ledger, ledgerParty);   // P2-4.3
             BuildEstimate(right, standingBudget, standingBudgetCitation);   // board 5c
@@ -576,10 +581,10 @@ namespace PoliSim.UI
 
             var art = new GameObject("Arrows");
             art.transform.SetParent(parent, false);
-            art.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 110f);
+            art.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 88f);
             LayoutElement element = art.AddComponent<LayoutElement>();
             element.minHeight = 70f;
-            element.preferredHeight = 110f;
+            element.preferredHeight = 88f;   // PF-16 (§609): at 110 the column's texts were compressed at 1280; the plate yields first, its floor (70) unchanged
             Texture2D texture = CanvasPaint.Arrows(420, 120, arrows, PoliSimTheme.Hex(0xF2EADB));
             Image image = art.AddComponent<Image>();
             image.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
@@ -793,7 +798,7 @@ namespace PoliSim.UI
             var strip = new GameObject("BridgeLabels");
             strip.transform.SetParent(parent, false);
             strip.AddComponent<RectTransform>();
-            strip.AddComponent<LayoutElement>().minHeight = 14f;
+            strip.AddComponent<LayoutElement>().minHeight = 16f;   // PF-16: a label's line is 15.2 units at 1280 (14 clipped it)
             var cells = strip.AddComponent<HorizontalLayoutGroup>();
             cells.childControlWidth = true; cells.childForceExpandWidth = true; cells.childControlHeight = true; cells.childForceExpandHeight = true;
             Label(strip.transform, string.Format(CultureInfo.InvariantCulture, "{0:F1}", g.BaselinePoints), PoliSimTheme.TextSecondary, false);

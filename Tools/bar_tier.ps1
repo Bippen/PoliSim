@@ -43,7 +43,7 @@ try {
   # surfaces was dry or stopped before them, and the signing screen's stance captions clipped unseen for that whole time (PF-13). So a UI commit that
   # touches one of these owes a REAL film of that surface, and every Canvas surface is filmed real at a track's close.
   $canvas = 'SigningScreen|ElectionNightScreen|CountrySelectorScreen|CanvasChrome'
-  $canvasShots = @{ 'SigningScreen' = '89d_signing_entrance, 89e_signing_settled'; 'ElectionNightScreen' = '90*_electionnight_*'; 'CountrySelectorScreen' = '01_country_selector, 01g_party_picker, 01h_scenario_party_picker'; 'CanvasChrome' = 'every Canvas surface - it is the furniture all of them are built from' }
+  $canvasShots = @{ 'SigningScreen' = '89d_signing_entrance, 89e_signing_settled'; 'ElectionNightScreen' = '88n_election_night_takeover (the sweep; the -shotelectionnight board e6_* frames carry no canvas assert)'; 'CountrySelectorScreen' = '01_country_selector, 01g_party_picker, 01h_scenario_party_picker'; 'CanvasChrome' = 'every Canvas surface - it is the furniture all of them are built from' }
 
   $ignored = @(); $docs = @(); $ui = @(); $sim = @(); $tooling = @(); $moneyHits = @(); $canvasHits = @()
   foreach ($p in $paths) {
