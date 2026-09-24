@@ -34118,3 +34118,11 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Films** (real, `-shotstop=01c_desk`): `sp2_1280`, `sp2_2560` (Sweden) and `sp2fr_1280` (France) - 9 captured, 0 failed each; the panel's 64 and 66 Canvas texts clean; the brief wraps in two lines under the card at 1280. Dry `drysp2` (Sweden at 1280×720): 136 measured, 0 failed.
 
 **Bars.** Tier SIMULATION + UI: `Tools/textcheck` 5 of 5; the cheap bar 53 of 53 (`sp2_cheap`); the simulation bar 56 of 56 (`sp2_sim`), in the warm host. No family. **Next:** D-SP, the start screen against the built one (SP-1 and SP-2 stand), assembled as a Design ask over the channel; MM-3 waits on D-MM.
+
+---
+
+## 624. D-SP SENT OVER THE CHANNEL - THE START SCREEN ASKED OF DESIGN AGAINST THE BUILT PANEL; THE BOARD FILE READ AND UNCHANGED, SO D-MM AND D-SP BOTH WAIT (2026-09-25)
+
+**The ask** heads `CLAUDE_DESIGN_ASSET_REQUEST.md` above D-MM: two rows against the frames - the start screen's composition (the cards, the brief panel, Back and Select; card imagery Design's call, the derived imagery suggested, illustrations a costed case) and the locked states - with the deviations stated (the brief beneath the playable card rather than a panel filled on selection, since one start per country is playable today; the tagline slot empty; the party screen after Select CL-2's panel, not the creation flow). **Sent** on X-1's shape as `uploads/D-SP_ask/`: `D-SP_ask.zip` (1 343 512 bytes, `1eb3bf93…`) with `MANIFEST.sha256` at its root over seven artefacts - the request, the feature list, the start-points spec and four frames (`sp2_1280_01f2_start_points`, `sp2_2560_01f2_start_points`, `sp2fr_1280_01f2_start_points`, `sp2_1280_01_country_selector`) - plus the seven loose beside it; nine files written. **Elias ruled (2026-09-25) that D-MM and D-SP stay channel asks answered by Design in the project, not made as a Design artifact here** - a canvas the design quickstart had created was deleted unused.
+
+**The board file** (`PoliSim v2 Design Progress4/board/PoliSim v2 Screens.dc.html`, pulled whole at 180 783 bytes, `fe06718d…`) is byte-identical to the §610 pull: no board answers D-MM or D-SP yet. MM-3 and SP-2b wait on the returns; the next Code row is SP-3.
