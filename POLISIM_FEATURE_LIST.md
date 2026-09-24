@@ -66,7 +66,7 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 
 | # | owner | item | needs | done when |
 |---|---|---|---|---|
-| SP-3 | Code | `CreatedParty` in the model: six origins as data, stats setting real engine parameters (`[AUTHORED-DRAFT]`), no loyal base, the Splinter's prior, thresholds, funding and ballot access by each country's real rule | PS-3 | a created party fights Sweden end to end; every number traces to the engine |
+| SP-3 | Code | `CreatedParty` in the model: six origins as data, stats setting real engine parameters (`[AUTHORED-DRAFT]`), no loyal base, the Splinter's prior, thresholds, funding and ballot access by each country's real rule | PS-3 | **OPENED AND HELD 2026-09-25 (`COMPLETED.md` §625):** Sweden's rules sourced (`ElectionsData/sweden/party_rules.md`: 1 500 signatures [VL-2-3], the party-support act), the model mapped (the readers that break if the roster grows; the smallest design); held on the spec's §3 - a created party needs the roles (PS-3). Done when: a created party fights Sweden end to end; every number traces to the engine |
 | SP-4 | Code | The creation flow structurally: five steps, origin cards and pips, the compass placement with the electorate and nearest parties, declarations, leader, review; mark picker over the unspent cells; ink picker with the live fence | SP-3 | a colliding ink is refused on screen with its distance |
 | **D-CP** | Design | **The creation flow** (the F1 reference), **the mark and ink pickers, a created party across the existing screens, and the locked states** — against the built flow | SP-4 | boards answered |
 | SP-4b | Code | Build D-CP's boards | D-CP | filmed |
