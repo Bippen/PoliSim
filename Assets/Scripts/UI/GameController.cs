@@ -2168,6 +2168,12 @@ namespace PoliSim.UI
             _energyResult = null;
             _hasCachedPreview = false;
             Country after = _world.GetCountry(countryId);
+            if (after != null)
+            {
+                // PS-3a (§628): WHO GOVERNS at the start - the government of record where its cabinet is sourced, else the formation's stand-in, else none
+                // (France, the USA: no cabinet of record - the player governs). Written on EVERY path that opens a world, not only the picker's (the review).
+                after.Government = PoliSim.Elections.GovernmentRecord.AtStart(after, start);
+            }
             if (after != null && !string.IsNullOrEmpty(seatedParty))
             {
                 after.PlayerPartyAbbrev = seatedParty;
@@ -2208,6 +2214,9 @@ namespace PoliSim.UI
                 _playerCountry.PlayerPartyAbbrev = largest.Abbrev;
                 _playerCountry.PartyApprovalRating = _playerCountry.State.ApprovalRating;
             }
+            // PS-3a (§628): a world that was not rebuilt (the same epoch, turn 0) still gets its government of record - the role is read from it.
+            if (_playerCountry.Government == null) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.AtStart(_playerCountry, SimulationManager.EpochDate); }
+            Debug.Log(PoliSim.Elections.GovernmentRecord.Describe(countryId, SimulationManager.EpochDate, _playerCountry));
 
             // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.
             _onDesk = true;
@@ -6305,7 +6314,8 @@ namespace PoliSim.UI
             var decisions = new Dictionary<CountryId, PolicyDecision>();
             foreach (Country country in _world.Countries)
             {
-                decisions[country.Id] = country.Id == PlayerCountryId ? BuildPlayerDecision() : PolicyDecision.None();
+                // PS-3a (§628): the player's decision reaches the world only where the player's party LEADS the government; otherwise the AI governs the player's own country too.
+                decisions[country.Id] = country.Id == PlayerCountryId && _simulationManager.PlayerGoverns(country) ? BuildPlayerDecision() : PolicyDecision.None();
             }
 
             // C-C10 (P-G2): ⚠ BEFORE the real advance, and that ordering is load-bearing. A family the
@@ -6599,6 +6609,11 @@ namespace PoliSim.UI
             // declarations (K-1f's facts), not the seated 2022 chamber's - through the one resolver the night's board reads too.
             ElectionVintage electionVintage = PoliSim.Elections.WorldClock.VintageOfElection(PlayerCountryId, latest.Date);
             GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry, electionVintage);
+            // PS-3a (§628): the government the election formed is STORED - the player's role and whose levers move the book are read from it from now on.
+            GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionVintage);
+            // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
+            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date); }
+            Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
             {
                 _pendingElectionVerdict = $"No government could be formed from this chamber - {government.Reason}. You stay in office until one can.";

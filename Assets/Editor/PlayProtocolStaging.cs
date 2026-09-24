@@ -68,6 +68,7 @@ namespace PoliSim.EditorTools
                 if (player == null || largest.Abbrev == null) { return "Sweden's seeded chamber could not be read - no party to seat"; }
                 player.PlayerPartyAbbrev = largest.Abbrev;
                 player.PartyApprovalRating = player.State.ApprovalRating;
+                player.Government = PoliSim.Elections.GovernmentRecord.AtStart(player, PoliSim.Elections.WorldClock.StartDate(CountryId.Sweden));   // PS-3a (§628): the staged save is the game a player would start - S in opposition under M+KD+L
                 int days = 0;
                 // K-1 part (5) (2026-09-24, §606): THE TURNS RUN. The game crosses a boundary by calling AdvanceTurn when AdvanceDay reports one
                 // (GameController.Update); this staging advanced days alone, so the save opened years in at TURN 0 with no turn ever run - its next

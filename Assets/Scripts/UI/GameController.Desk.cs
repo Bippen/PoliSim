@@ -256,6 +256,19 @@ namespace PoliSim.UI
         /// OPEN strip (a game-over player is the one who most needs Load). Board 17c (2026-09-24) fixes
         /// the right end's order: the joined 1× 2× 3× strip, a pitch with a hairline, SAVES, SETTINGS outermost.
         /// </summary>
+        /// <summary>PS-3a (§628): the player's role beside the year where the party does not lead the government - " · IN OPPOSITION · THE GOVERNMENT IS THE AI'S", " · IN SUPPORT · …", " · JUNIOR PARTNER · …"; empty where it governs.</summary>
+        private string RoleTitleSuffix()
+        {
+            if (_playerCountry?.Government == null) { return string.Empty; }
+            switch (_playerCountry.Government.RoleOf(_playerCountry.PlayerPartyAbbrev))
+            {
+                case PoliSim.Elections.PlayerRole.Opposition: return " · IN OPPOSITION · THE GOVERNMENT IS THE AI'S";
+                case PoliSim.Elections.PlayerRole.Support: return " · IN SUPPORT · THE GOVERNMENT IS THE AI'S";
+                case PoliSim.Elections.PlayerRole.JuniorPartner: return " · JUNIOR PARTNER · THE GOVERNMENT IS THE AI'S";
+                default: return string.Empty;
+            }
+        }
+
         private void DrawDeskMasthead(Rect r, bool isTimePaused)
         {
             float ux = r.width / DeskBoardInnerWidth;
@@ -272,7 +285,7 @@ namespace PoliSim.UI
             }
 
             GUIStyle title = DeskCaption(10.5f, PoliSimTheme.TextPrimary, bold: true);
-            string titleText = $"{_playerCountry.Name.ToUpperInvariant()} · YEAR {_simulationManager.CurrentTurn}";
+            string titleText = $"{_playerCountry.Name.ToUpperInvariant()} · YEAR {_simulationManager.CurrentTurn}" + RoleTitleSuffix();   // PS-3a (§628): the player's role beside the year where the party does not govern
             float titleWidth = title.CalcSize(new GUIContent(titleText)).x + 4f;
 
             // The cluster (board 1m-r2: mono 9 on bordered chips, the active one brass with

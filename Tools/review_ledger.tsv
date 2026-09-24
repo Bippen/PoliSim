@@ -107,3 +107,8 @@ file	Assets/Scripts/Elections/WorldClock.cs	2f71ffb1d0aa1a2aa73636e121991fc0b5fc
 file	Assets/Scripts/UI/GameController.cs	7e08565ea0a517ad0e0cace2bfa0f153a837096f118613b76fa70568296a646c	reviewed	2026-09-24	s621	Reviews/2026-09-25_s621_declaration_dates.md	-
 file	Assets/Scripts/UI/GameController.cs	a41d0580996607c31b38d7e8f34e3b05d90609d9a242df4d65a462c37a51d80f	reviewed	2026-09-25	s626	Reviews/2026-09-25_s626_boards.md	-
 file	Assets/Scripts/Data/TaxSchedule.cs	8119d36095b8abe058c0d56ae9afe3742d670fdd87ca55197f3e5663de44ab28	reviewed	2026-09-25	s626	Reviews/2026-09-25_s626_boards.md	one citation string: BILLED (E-6) reworded without the register id (MetaTextCheck); no figure moved
+file	Assets/Scripts/Simulation/SimulationManager.cs	b11551a11491b0d16c31e89a4c3e9aa143262990d34be57445aebc5e1e713eac	reviewed	2026-09-25	s628	Reviews/2026-09-25_s628_who_governs.md	-
+file	Assets/Scripts/Data/Country.cs	d23df0b6b4ff7ba3ee2475c6fb5dfef3e269ca5b16e11a29f8e664ac12027acc	reviewed	2026-09-25	s628	Reviews/2026-09-25_s628_who_governs.md	-
+file	Assets/Scripts/Persistence/SaveGameService.cs	01cc52267af4febeeae4bfe4d26eec970e21490aebc4c4615e433eefbd4a478a	reviewed	2026-09-25	s628	Reviews/2026-09-25_s628_who_governs.md	-
+file	Assets/Scripts/UI/GameController.cs	217418221c3525390b4cc08c5c9c0f30bbebced87edc9e51d5fc6907d8f6e534	reviewed	2026-09-25	s628	Reviews/2026-09-25_s628_who_governs.md	-
+file	Assets/Scripts/Elections/GovernmentRecord.cs	f934b1cc93ded0f813127409b3bed4e85bf9e20fd0e3fbf6452e33cc84aff7b8	reviewed	2026-09-25	s628	Reviews/2026-09-25_s628_who_governs.md	-

@@ -921,6 +921,9 @@ namespace PoliSim.Data
         /// </summary>
         public string PlayerPartyAbbrev;
 
+        /// <summary>PS-3a (§628): WHO GOVERNS, stored - the government of record at the start, the formation's after the game's own election; the player's role is read from it. Null before a country's world seats one.</summary>
+        public PoliSim.Elections.GovernmentRecord Government;
+
         /// <summary>
         /// C-R3: **the player's PARTY approval, a NEW ADDITIVE STOCK.**
         ///

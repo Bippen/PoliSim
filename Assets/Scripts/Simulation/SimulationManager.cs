@@ -2064,6 +2064,9 @@ namespace PoliSim.Simulation
             {
                 return;
             }
+            // PS-3a (§628): the budget is the government's to lay - a player whose party does not lead it lays none (the AI ministry governs the book).
+            Country budgeting = _world?.GetCountry(countryId);
+            if (budgeting != null && !PlayerGoverns(budgeting)) { return; }
 
             // C-C2 (Playtest-1 finding 4): the INCOMING GOVERNMENT'S window. A government that has
             // just taken office lays a budget on arrival rather than waiting for the calendar - which
@@ -2245,6 +2248,23 @@ namespace PoliSim.Simulation
 
         /// <summary>True on the day the player's country votes - set by <see cref="AdvanceDay"/> after the date has advanced, read by the controller the same day.</summary>
         public bool PollingDayToday { get; private set; }
+
+        // ---------------------------------------------------------------------------------------------
+        // PS-3a (2026-09-25, §628): WHO GOVERNS IS THE PLAYER'S ROLE, NOT THE PLAYER'S COUNTRY. The AI finance ministry, the AI
+        // energy ministry, the AI's book indexation and the budget process used to ask "is this the player's country?"; they ask
+        // "does the player's party LEAD this country's government?" now (Country.Government, GovernmentRecord.RoleOf) - so a
+        // player in opposition or support watches the AI govern their own country, the spec's §5.2. A country with no stored
+        // government (a world before it seats one) reads as before: the player governs their own country. A junior partner
+        // does NOT govern here - the portfolio-gated levers are PS-3's next part, stated.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>True where the player's party leads this country's government - the one test that decides whose levers move its book (§628).</summary>
+        public bool PlayerGoverns(Country country)
+        {
+            if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id) { return false; }
+            if (country.Government == null) { return true; }
+            return country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.PrimeMinister;
+        }
 
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
         public bool TryPlayerPollingDay(out System.DateTime pollingDay)
@@ -2811,7 +2831,7 @@ namespace PoliSim.Simulation
                 // THE AI FINANCE MINISTRY (2026-09-07, §387 the page, §388 the build): a country the player does not govern answers last year's closed
                 // balance and its debt ratio with the player's own levers under its sourced rule (AiFinanceMinistry) - written into the decision it was
                 // handed where that decision carries nothing of its own for a line or a tax, then observed for the US trigger's two-year memory.
-                bool aiGovernment = AiFinanceMinistryEnabled && (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id);
+                bool aiGovernment = AiFinanceMinistryEnabled && !PlayerGoverns(country);   // PS-3a (§628): the test is the player's ROLE, not the country
                 AiFinanceMinistry.Written ministryWrote = null;
                 if (aiGovernment)
                 {
@@ -2820,7 +2840,7 @@ namespace PoliSim.Simulation
                 }
                 // THE AI ENERGY MINISTRY (P6-F2d, §544): HELD - AiEnergyMinistry.Live is false until its family is dumped and ruled; with it on, a country the player
                 // does not govern answers its own statute with orders in its connection queue, which land through EnergyFleet.Advance like the player's.
-                if (AiEnergyMinistry.Live && (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id)) { AiEnergyMinistry.Decide(country, PensionAgeStatute.SeedYear + CurrentTurn + 1, CurrentTurn + 1); }   // the year about to be played and its turn: an order placed at the boundary waits its lead time from the coming year
+                if (AiEnergyMinistry.Live && !PlayerGoverns(country)) { AiEnergyMinistry.Decide(country, PensionAgeStatute.SeedYear + CurrentTurn + 1, CurrentTurn + 1); }   // the year about to be played and its turn: an order placed at the boundary waits its lead time from the coming year
                 ApplyDomesticPolicy(country, decision, tariffRevenueByCountry[country.Id]);
                 // §388: what the ministry wrote leaves the decision again - a caller (the trajectory dump, a harness) may hand the same object in next turn,
                 // and the first builds re-applied year 2's cuts for a century because it did not.
@@ -4245,7 +4265,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private void IndexSpendingLines(Country country)
         {
-            bool aiBudget = !PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id;
+            bool aiBudget = !PlayerGoverns(country);   // PS-3a (§628): the AI's book wherever the player's party does not lead the government
             float realGrowth = aiBudget ? 1f + country.PotentialGrowthRate / 100f : 1f;
             // P5-B6 (2026-09-05): THE PRICE TERM RETURNS - the book is in current prices now, so a nominal line carries the
             // year's prices as the ratio of the price level now to the level at the last index (0 = a save from before: a
