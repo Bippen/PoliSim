@@ -183,6 +183,39 @@ namespace PoliSim.EditorTools
                                + "and no fetched source that names a mechanism refuses the second; either failing means the formation no longer reads what C said.");
             }
 
+            // --- K-1 part (4): WHO GOVERNS ON DAY ONE. Sweden's seeded government is the formation's PROVISIONAL stand-in (the real one is
+            // not on record); a country with no record is not provisional; a game-held election ends the standing; and the installed path the
+            // Riksdag's vote will fill (K-1b, data only) reads a record as the government - checked here on 2022's chamber with 2022's real
+            // cabinet, where the answer is public record, and refused when the record names a party the chamber does not seat. ---
+            Country germany = world.GetCountry(CountryId.Germany);
+            bool swedenProvisional = GovernmentFormation.IsProvisional(sweden);
+            bool germanyProvisional = GovernmentFormation.IsProvisional(germany);
+            sweden.ElectionHistory.Add(new ElectionRecord { Turn = 4, CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
+            bool provisionalAfterElection = GovernmentFormation.IsProvisional(sweden);
+            sweden.ElectionHistory.RemoveAt(sweden.ElectionHistory.Count - 1);
+            var tido = new SeatedGovernment.Record(SeatedGovernment.Standing.Installed, new[] { "M", "KD", "L" }, new[] { "SD" }, "probe: the 2022 Tidö record", new System.DateTime(2022, 10, 18));
+            bool installedReads = SeatedGovernment.TryAsResult(tido, swedenParties, CampaignAiHarness.Seats2022, out CoalitionResult installedResult, out string installedReason);
+            bool installedRight = installedReads && installedResult.Outcome == CoalitionOutcomeKind.ConfidenceAndSupply
+                && installedResult.Government.CabinetSeats == 103 && installedResult.Government.SupportedSeats == 176;
+            var stranger = new SeatedGovernment.Record(SeatedGovernment.Standing.Installed, new[] { "M", "XX" }, null, "probe: a party this chamber does not seat", new System.DateTime(2026, 10, 1));
+            bool strangerRefused = !SeatedGovernment.TryAsResult(stranger, swedenParties, seatedSeats, out CoalitionResult _, out string strangerReason) && strangerReason != null;
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "\n    --- K-1 part (4): who governs on day one ---\n"
+                + "    Sweden's seeded government provisional: {0}; Germany's (no record): {1}; Sweden's after a game-held election: {2}\n"
+                + "    an installed record read as the government (2022's chamber, M+KD+L carried by SD): {3} - {4}; a record naming an unseated party refused: {5} ({6})\n",
+                swedenProvisional, germanyProvisional, provisionalAfterElection,
+                installedReads ? installedResult.Outcome.ToString() : "not read: " + installedReason,
+                installedReads ? string.Format(CultureInfo.InvariantCulture, "cabinet {0}, supported {1}", installedResult.Government.CabinetSeats, installedResult.Government.SupportedSeats) : "-",
+                strangerRefused, strangerReason));
+            if (!swedenProvisional || germanyProvisional || provisionalAfterElection || !installedRight || !strangerRefused)
+            {
+                failures.Add("K-1 part (4): the seated government's standing");
+                Debug.LogError("OFFICE: the day-one government's standing does not hold - Sweden provisional " + swedenProvisional + " (want True), Germany "
+                               + germanyProvisional + " (want False), Sweden after a held election " + provisionalAfterElection + " (want False), the installed record "
+                               + (installedRight ? "right" : "WRONG") + ", the unseated party " + (strangerRefused ? "refused" : "NOT refused")
+                               + ". ⚠ The order: the formation's result stands in, marked provisional, replaced when the Riksdag votes.");
+            }
+
             // --- No player party: a reason, never a verdict. ---
             Country noParty = world.GetCountry(CountryId.France);
             string franceSaved = noParty.PlayerPartyAbbrev;

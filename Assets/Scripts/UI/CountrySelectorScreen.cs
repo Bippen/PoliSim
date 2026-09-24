@@ -177,12 +177,14 @@ namespace PoliSim.UI
             return list;
         }
 
-        /// <summary>One party's line on the picker: its abbreviation, its name as published, its seats at the last real election, and IN THE CABINET when the chamber's own formation seats it (`GovernmentFormation.Cabinet`).</summary>
-        public static string PartyLine(PoliticalParty party, IReadOnlyList<string> cabinet)
+        /// <summary>One party's line on the picker: its abbreviation, its name as published, its seats at the last real election, and IN THE CABINET when the chamber's own formation seats it (`GovernmentFormation.Cabinet`).
+        /// K-1 part (4): (PROVISIONAL) beside it while that cabinet is the formation's stand-in for a government not yet on record - on the IMGUI pickers, which
+        /// have no line to say it; the Canvas panel says it once, under its subtitle, and keeps its rows short (the mark was hiding the longest row's first letter).</summary>
+        public static string PartyLine(PoliticalParty party, IReadOnlyList<string> cabinet, bool provisional = false)
         {
             bool inCabinet = false;
             if (cabinet != null) { foreach (string abbrev in cabinet) { if (abbrev == party.Abbrev) { inCabinet = true; break; } } }
-            return $"{party.ShortName} — {party.Name} · {party.SeedSeats} SEATS{(inCabinet ? " · IN THE CABINET" : "")}";
+            return $"{party.ShortName} — {party.Name} · {party.SeedSeats} SEATS{(inCabinet ? (provisional ? " · IN THE CABINET (PROVISIONAL)" : " · IN THE CABINET") : "")}";
         }
 
         /// <summary>
@@ -225,12 +227,20 @@ namespace PoliSim.UI
             int seats = 0;
             foreach (PoliticalParty party in PartySystems.For(country.Id)) { seats += party.SeedSeats; }
             IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(country);
+            bool provisional = GovernmentFormation.IsProvisional(country);
 
             CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR PARTY — {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 30,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
             CanvasChrome.MakeText(column.transform, "Subtitle",
                 $"THE CHAMBER AS ELECTED · {seats} SEATS · LARGEST FIRST · IN THE CABINET = THE CABINET THE CHAMBER FORMS FROM THESE SEATS",
                 PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+            // K-1 part (4): the day-one government is the model's stand-in until the Riksdag's vote is on record - said where the cabinet is first named.
+            if (provisional)
+            {
+                CanvasChrome.MakeText(column.transform, "Provisional",
+                    "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE CABINET MARKED IS THE MODEL'S FORMATION ON THESE SEATS",
+                    PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+            }
 
             // P6-A2: every row is the control it is - the delivered brass face under the party's line,
             // not a sentence in interactive ink. The row height is the face's, and the column's spacing
@@ -238,7 +248,7 @@ namespace PoliSim.UI
             foreach (PoliticalParty party in PartiesBySeats(country.Id))
             {
                 Button button = CanvasChrome.FacedButton(column.transform, $"Party_{party.Abbrev}",
-                    PartyLine(party, cabinet), PoliSimTheme.Display, 20,
+                    PartyLine(party, cabinet), PoliSimTheme.Display, 20,   // K-1: the panel's own line carries PROVISIONAL (above); the row stays short
                     PoliSimTheme.Hex(0xF0E7D8), new Vector2(PartyRowWidth, PartyRowHeight));
                 // §566 (2026-09-22, Design's sitting part A item 6): THE PARTY'S OWN MARK at the row's left, the delivered `mark_party_*` art the campaign's support
                 // plate already draws - the picker is where the player first meets these parties and it showed them as brass strips of text. A party with no mark on

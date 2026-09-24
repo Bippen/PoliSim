@@ -265,8 +265,20 @@ namespace PoliSim.Elections
                 country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held);
                 seats[p] = held;
             }
+            // K-1 part (4): where the real government is ON RECORD for the seeded chamber and the game has not voted its own chamber in,
+            // it is the government - the formation is not asked. No country carries one yet (SeatedGovernment); Sweden's is provisional,
+            // so it falls through to the formation, which is exactly the stand-in the order names.
+            if (vintage == ElectionVintage.Seated && SeatedGovernment.TryInstalled(country, out SeatedGovernment.Record installed))
+            {
+                declarationsSourced = DeclaredRedLines.IsSourced(country.Id);
+                return SeatedGovernment.TryAsResult(installed, parties, seats, out result, out reason);
+            }
             return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason, vintage);
         }
+
+        /// <summary>K-1 part (4): whether the government the chamber forms is the PROVISIONAL stand-in - the seeded chamber's, with the real
+        /// government not yet on record (<see cref="SeatedGovernment"/>). Every surface that names the government says so.</summary>
+        public static bool IsProvisional(Country country) => SeatedGovernment.IsProvisional(country);
 
         private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
             out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated)

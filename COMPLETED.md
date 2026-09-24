@@ -33526,3 +33526,49 @@ So `RedLine.OneWay` (`CoalitionFormation.cs`):
 - **The cheap bar on the final tree: 47 of 47** (`k1_604_cheap2`). Its first run failed on one check (`k1_604_cheap`), `ReviewLedgerCheck`. `EnergyConnectionQueue.cs`'s comment edit sits inside a provenance block, which the ledger's rule reads as a change a review must see, even though the comment-only verdict accepts it (the author ran the runner on the pair: ACCEPT). The reviewer had read that file and prescribed that edit (D9), so its row cites the s604 review with that note, and the re-run is clean.
 - **The dry film `dry604`** (declared): **167 measured, 0 failed, 0 overflows, 0 escapes, 0 errors, exit 0**.
 - **The real film `film604_1280`:** **167 captured, 0 failed, 0 canvas-text violations across 6 asserts**. It exits 1 on the edge guard's 12 NOT FLUSH frames, the same 12 as `film603b_1280` (the banner-wrap class, §603).
+
+## 605. K-1 PART (4) - WHO GOVERNS ON DAY ONE: THE FORMATION'S RESULT ON THE 2026 CHAMBER STANDS IN, MARKED PROVISIONAL, REPLACED WHEN THE RIKSDAG VOTES (2026-09-24)
+
+**The order:** *"Who governs at the start: the Riksdag convenes 28 September; until the real government is installed, the formation model's result on the 2026 chamber stands in, marked provisional, replaced when the Riksdag votes."*
+
+**The facts, sourced** (`ElectionsData/sweden/2026/government_2026.md`, 28 pages, committed with §604). As of 2026-09-23:
+- **No prime minister has been chosen.** Kristersson was dismissed at his own request on 17 September, and his ministers serve as a caretaker government (övergångsregering) until a new one takes office ([RG-ART], [RD-N17b]).
+- The talman gave Magdalena Andersson (S) a mandate to sound out a government on 18 September ([RD-N18]). No fetched page after that reports on it.
+- The new Riksdag convenes on 28 September (RF 3:10) and its session opens on 29 September.
+- RF 6:3's vote on a sitting prime minister is not held when he has already been dismissed. The prime minister is chosen under RF 6:4-6:5, at the earliest after the opening ([RG-ART]: *"Riksdagen kan tidigast välja en ny statsminister efter riksmötets öppnande under vecka 40"*).
+- So on the game's day one, 1 October 2026, the real government is not on record, and the order's stand-in applies.
+
+**The stand-in is the formation's result, as the order says.** On the seated chamber, under the 2026 declarations (§603), it is **S+C+MP carried by V** (146 seats in cabinet, 176 with support, 173 opposed; the only viable government). It stands against the caretaker in the real world, and the order names the model's result, not the caretaker, as day one's government.
+
+**Built:** `SeatedGovernment` (`Assets/Scripts/Elections/SeatedGovernment.cs`) holds the STANDING of each seeded chamber's government, as a sourced, dated fact about the world outside the game.
+- **Provisional** (Sweden, as of 2026-09-23): the formation stands in, and every surface that names the government says so.
+- **Installed:** the real cabinet and support by key. `GovernmentFormation` reads it BEFORE the formation, as the government itself.
+- No country carries an installed record yet. **When the Riksdag votes, the replacement is data only** (K-1b, filed): write Sweden's record as installed, sourced, and the provisional marks go with it.
+- The standing belongs to the SEEDED chamber. Once the game holds its own election (`ElectionHistory` has a held record), neither mark applies.
+- Nothing new is stored and nothing is saved: the standing is data, and "has the game held an election" is already in the save.
+
+**Where it shows:**
+- **The party picker (Canvas):** a line under the subtitle, *"PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE CABINET MARKED IS THE MODEL'S FORMATION ON THESE SEATS"*. The rows keep *"IN THE CABINET"*.
+  - The first cut also marked each row "(PROVISIONAL)". On film it pushed the longest row (S's) under its party mark and hid its first letter, at both 1280 and 2560. The canvas guard passed it, because the text fits its own rect and the mark overlaps it.
+  - So the panel says it once, and its rows stay short.
+- **The IMGUI pickers** (the scenario picker and the degradation path) have no such line, so their rows read *"IN THE CABINET (PROVISIONAL)"*.
+- **The compass legend:** *"SWEDEN'S CABINET (PROVISIONAL) · SEAT-WEIGHTED MEAN"*.
+- The ink is the subtitle's own. No new ink was invented: a caution ink is Design's to choose, and the word carries it.
+- **`MetaTextCheck` bans PROVISIONAL on player surfaces**, as a data-class tag. Its allowlist now names these three literals, with the reason in the check's own doc: here the word is the standing of the WORLD's government, the same class as PRELIMINARY on a published figure. It is the word Elias's order uses.
+- Election night's who-governs block is the GAME's own formation after its own election, so it is not provisional and is unchanged.
+
+**Guarded:** `OfficeTestDiagnostic` (in the simulation bar) checks five things:
+- Sweden's seeded government reads provisional.
+- Germany's (no record) does not.
+- A game-held election ends the standing.
+- The installed path reads a record as the government, checked on 2022's chamber with 2022's real cabinet, where the answer is public record: M+KD+L carried by SD, ConfidenceAndSupply, 103 in cabinet and 176 with support.
+- A record naming a party the chamber does not seat is refused with its reason.
+
+**Evidence.** Tier SIMULATION + UI; a Canvas surface moved (`CountrySelectorScreen`), so the real films reach it. This is K-1's close for the Canvas rule, since part (5) touches no screen: **every Canvas surface Sweden's pinned sweep reaches (six asserts: the selector, the two party pickers, election night, the signing entrance and its settled frame) is filmed real at 1280 and 2560.**
+- **The first run** (`k1_605_*`): the cheap bar failed `MetaTextCheck` on the word (above); the 1280 film showed the row collision.
+- **Re-run on the final tree** (`k1_605b_*`):
+  - The cheap bar **47 of 47** and the simulation bar **56 of 56** (the office test's new block: Sweden provisional True, Germany False, after a held election False; the installed Tidö record ConfidenceAndSupply, cabinet 103, supported 176; the unseated party refused).
+  - The dry film `dry605` (declared): **167 measured, 0 failed, 0 overflows, 0 escapes, 0 errors, exit 0**. Its label table carries the legend *"SWEDEN'S CABINET (PROVISIONAL) · SEAT-WEIGHTED MEAN"*, needing 453.5 px of its 622.
+  - `film605b_1280`: **167 captured, 0 failed, 0 canvas-text violations**; the same 12 NOT FLUSH frames as `film604` (the standing banner-wrap class).
+  - `film605b_2560`: **167 captured, 0 failed, 0 canvas-text violations, 0 edges clipped, exit 0**.
+  - The picker frame `01g_party_picker` read at both widths: the provisional line under the subtitle, S, C and MP marked in the cabinet, every row clear of its mark.

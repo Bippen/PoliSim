@@ -1794,9 +1794,10 @@ namespace PoliSim.UI
                 if (_partyPickScenario == definition)
                 {
                     System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(_world.GetCountry(definition.Country));
+                    bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(_world.GetCountry(definition.Country));
                     foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(definition.Country))
                     {
-                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
                         {
                             StartScenarioAsParty(definition, party.Abbrev);
                         }
@@ -1845,9 +1846,10 @@ namespace PoliSim.UI
                 {
                     // CL-2: the chamber as elected, largest first, the cabinet the chamber forms marked - the same lines the Canvas panel prints.
                     System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(country);
+                    bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(country);
                     foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(country.Id))
                     {
-                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
                         {
                             SelectPlayerCountryAndParty(country.Id, party.Abbrev);
                         }

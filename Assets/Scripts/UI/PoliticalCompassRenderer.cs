@@ -96,7 +96,9 @@ namespace PoliSim.UI
 
             if (player != null)
             {
-                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S CABINET · SEAT-WEIGHTED MEAN", null, false, true));
+                // K-1 part (4): the cabinet is the formation's stand-in while the real government is not on record - the legend says so.
+                string standing = GovernmentFormation.IsProvisional(player) ? " (PROVISIONAL)" : string.Empty;
+                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S CABINET{standing} · SEAT-WEIGHTED MEAN", null, false, true));
                 IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(player);
                 CompassPositions.Point? cabinetMean = CompassPositions.CabinetMean(player, out int _);
                 if (cabinet.Count == 0)
