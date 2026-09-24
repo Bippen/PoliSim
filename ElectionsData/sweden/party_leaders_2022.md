@@ -68,3 +68,6 @@ party.
   file does not weaken it.
 - **Anything after 2022-09-11.** C, L, S, MP and V have all changed leader or spokesperson since.
   A "current leaders" file is a different item with a different vintage.
+  ⚠ **Corrected 2026-09-24 (K-1e, `COMPLETED.md` §608):** the sentence above is wrong for S and V. Read against the
+  parties' own pages at the 2026 election (`2026/party_leaders_2026.md`), C, L and MP changed; S (Andersson) and V
+  (Dadgostar, leader since 2020) did not. The sentence is kept as it stood, and the correction is dated beside it.

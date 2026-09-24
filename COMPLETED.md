@@ -33741,3 +33741,47 @@ So `RedLine.OneWay` (`CoalitionFormation.cs`):
   - The first (two lenses) found the hold-out, the strength reading, the stale records and the broken stance check.
   - The second (three lenses, each finding verified by a skeptic) confirmed 13 of 18 findings and refuted 5. All 13 are acted on above, including the byte-exact storage of the raw pages.
 - **Raw pages:** 148 of 148 index blobs match their SHA256SUMS.
+
+## 608. K-1e - THE 2026 PARTY LEADERS, SOURCED FROM THE PARTIES' OWN SITES; THE ROSTER'S GUARD ENROLLED; NO SCREEN NAMES THEM (2026-09-24)
+
+**The order** (Elias, 2026-09-24): *"K-1e: source the 2026 party leaders."*
+
+**Sourced, not recalled:** `ElectionsData/sweden/2026/party_leaders_2026.md`.
+- Every name and office comes from the party's own website, read twice. One reading is the Internet Archive's capture on election day, 13 September 2026, with every capture taken between 11:05 and 17:13 UTC. The other is the live page on 2026-09-24.
+- For all eight parties the two readings name the same person or persons with the same office text.
+- `raw/leaders/` holds 34 pages, the fetch log and `SHA256SUMS.txt`. All 35 summed files verify against it, both in the working tree and in the committed blobs (stored byte for byte by §607's `.gitattributes`).
+- Independent readers verified the file in rounds until it came back clean.
+- `party_leaders_2022.md` is not edited. It stays the record of 11 September 2022: a leader, like a declaration, is a dated fact.
+
+**The roster** (`PartySystem.SwedenParties`):
+- S: Magdalena Andersson, *partiordförande*.
+- SD: Jimmie Åkesson, *partiledare*.
+- M: Ulf Kristersson, *partiledare*.
+- V: Nooshi Dadgostar, *partiledare*.
+- C: Elisabeth Thand Ringqvist, *partiledare*.
+- KD: Ebba Busch, *partiledare*.
+- MP: Amanda Lind and Daniel Helldén, *språkrör* (two carried as two, as C-D3 ruled).
+- L: Simona Mohamsson, *partiledare*.
+
+Since 2022, C, L and MP changed leader. S, SD, M, V and KD did not. The C-D3 doc had said "C, L, S, MP and V", and S and V were wrong; it is corrected, as K-1e's own row had flagged for V. The same wrong sentence in `party_leaders_2022.md` keeps its words, with a dated correction beside it. The 2026 file had flagged that correction as owed.
+
+**The office word, by a stated rule.** S, SD, C, KD and L each use both *partiledare* and *partiordförande* on their own pages, and the sourced file records both without choosing. The model carries one word, chosen by the rule now in `PartySystem`'s doc: the word on the leader's OWN page, and where that page carries both, the word of its prose.
+- For C that is her own page, `centerpartiet.se/elisabeth-thand-ringqvist`, which the review found had never been fetched: the file cited only its CV subpage.
+- Fetched live and as its election-day capture ([PL-C4], [PL-C4a], 11:45:39 UTC), her own page carries one office word, *partiledare*, in its photographs' captions. The CV subpage alone says *Partiordförande*.
+- So C is *partiledare*. A mid-pass "fix" had set *partiordförande* from the subpage; the review's reading of the site's own navigation undid it.
+
+**The guard now runs.** `PartyLeadershipDiagnostic` had been enrolled in no bar. Its roster was folded to ASCII ("Jimmie Akesson", "Annie Loof", "Marta Stenevi"), while the model carries the published names, so it had failed for three parties and nobody heard.
+- It now duplicates the 2026 roster with diacritics, on purpose, and checks each leader by name AND office word.
+- It checks that MP's debate seat is absent by design with both *språkrör* named, and that Germany's parties report NOT SOURCED.
+- It runs in the cheap bar, which is now 48 checks.
+
+**No screen names the roster, which corrects the row's claim.** K-1e's row said the leaders are "player-visible in debates". Measured: `PartySystem.Leaders` and `ResolveDebateSeat` are read by the diagnostic alone.
+- The live campaign seats its debaters by party (`LiveCampaignSetup`'s `CandidateProfile(party, ...)`).
+- The one debate that names people is the W-E5 film's staged pair, Andersson and Kristersson, who led their parties in both 2022 and 2026.
+- So nothing a player sees changes, and no film is owed. `PLAY_PROTOCOL.md` says the leaders are 2026's and that no screen of the play names them.
+
+**Evidence.** Tier SIMULATION (the roster is simulation data; the guard is tooling).
+- The cheap bar: **48 of 48** (`k1_608b_cheap`), `PartyLeadershipDiagnostic` among them.
+- The simulation bar: **56 of 56** (`k1_608b_sim`), with `TrajectorySentinelCheck` unmoved on `k1ep`. A leader's name enters no computation.
+- The leaders' blobs: 35 of 35 match their sums.
+- An adversarial review of the staged diff (two lenses, each finding verified by a skeptic) confirmed four findings: C's unread own page, the 2026 file's stale "code is out of scope" lines, the uncorrected 2022 sentence, and a page count that included the fetch log. All four are acted on above. Three findings were refuted.

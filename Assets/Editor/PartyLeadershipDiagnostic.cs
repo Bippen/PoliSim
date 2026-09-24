@@ -35,20 +35,23 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class PartyLeadershipDiagnostic
     {
-        /// <summary>The sourced roster, from `ElectionsData/sweden/party_leaders_2022.md` (vintage
-        /// 2022-09-11). ⚠ Duplicated here ON PURPOSE: a diagnostic that read the same array it is checking
+        /// <summary>The sourced roster, from `ElectionsData/sweden/2026/party_leaders_2026.md` (K-1e: the seated chamber's
+        /// election, 2026-09-13). ⚠ Duplicated here ON PURPOSE: a diagnostic that read the same array it is checking
         /// would assert nothing. This is the file's content, and the assertion is that the model agrees
-        /// with it.</summary>
-        private static readonly (string Abbrev, string[] Leaders)[] Expected =
+        /// with it. The names are as the parties publish them, diacritics and all - the roster this replaced was folded to
+        /// ASCII ("Jimmie Akesson") while the model carries the published names, so it no longer matched three parties and,
+        /// enrolled in no bar, said so to nobody (found at K-1e; enrolled in the cheap bar since). Each name carries its office, in the
+        /// party's own word by `PartySystem`'s stated rule (the leader's own page; its prose where it carries both).</summary>
+        private static readonly (string Abbrev, (string Name, string Office)[] Leaders)[] Expected =
         {
-            ("S", new[] { "Magdalena Andersson" }),
-            ("SD", new[] { "Jimmie Akesson" }),
-            ("M", new[] { "Ulf Kristersson" }),
-            ("V", new[] { "Nooshi Dadgostar" }),
-            ("C", new[] { "Annie Loof" }),
-            ("KD", new[] { "Ebba Busch" }),
-            ("MP", new[] { "Marta Stenevi", "Per Bolund" }),
-            ("L", new[] { "Johan Pehrson" }),
+            ("S", new[] { ("Magdalena Andersson", "partiordförande") }),
+            ("SD", new[] { ("Jimmie Åkesson", "partiledare") }),
+            ("M", new[] { ("Ulf Kristersson", "partiledare") }),
+            ("V", new[] { ("Nooshi Dadgostar", "partiledare") }),
+            ("C", new[] { ("Elisabeth Thand Ringqvist", "partiledare") }),
+            ("KD", new[] { ("Ebba Busch", "partiledare") }),
+            ("MP", new[] { ("Amanda Lind", "språkrör"), ("Daniel Helldén", "språkrör") }),
+            ("L", new[] { ("Simona Mohamsson", "partiledare") }),
         };
 
         public static void Run()
@@ -62,7 +65,7 @@ namespace PoliSim.EditorTools
             System.Collections.Generic.IReadOnlyList<PoliticalParty> sweden = PartySystems.For(CountryId.Sweden);
 
             // ---- 1. nobody is dropped, checked BY NAME ----
-            foreach ((string abbrev, string[] expected) in Expected)
+            foreach ((string abbrev, (string Name, string Office)[] expected) in Expected)
             {
                 PoliticalParty party = Find(sweden, abbrev);
                 if (party.Abbrev == null)
@@ -72,14 +75,23 @@ namespace PoliSim.EditorTools
                     continue;
                 }
 
-                foreach (string name in expected)
+                foreach ((string name, string office) in expected)
                 {
                     bool found = false;
-                    foreach (PartyLeader l in party.Leaders) { found |= l.Name == name; }
+                    foreach (PartyLeader l in party.Leaders)
+                    {
+                        if (l.Name != name) { continue; }
+                        found = true;
+                        if (l.Office != office)
+                        {
+                            failures++;
+                            Debug.LogError($"C-D3: {name} ({abbrev}) carries the office '{l.Office}'; party_leaders_2026.md and the stated rule give '{office}'.");
+                        }
+                    }
                     if (found) { continue; }
 
                     failures++;
-                    Debug.LogError($"C-D3: {name} is named as {abbrev}'s leader in party_leaders_2022.md and is NOT in the "
+                    Debug.LogError($"C-D3: {name} is named as {abbrev}'s leader in party_leaders_2026.md and is NOT in the "
                                    + "model. A real named person has been dropped, which is the one thing this item's ruling "
                                    + "forbids outright.");
                 }
@@ -92,7 +104,7 @@ namespace PoliSim.EditorTools
             }
 
             sb.Append(failures == 0
-                ? "    1. nobody dropped   OK - every name in the sourced file is in the model, checked by NAME.\n"
+                ? "    1. nobody dropped   OK - every name in the sourced file is in the model, checked by NAME, with its office.\n"
                 : "    1. nobody dropped   ⚠ see the errors above.\n");
 
             // ---- 2 and 3. the debate seat, per party ----
@@ -124,7 +136,7 @@ namespace PoliSim.EditorTools
                 if (party.Abbrev == "MP")
                 {
                     bool right = seat == DebateSeat.AbsentByDesign
-                                 && reason != null && reason.Contains("Marta Stenevi") && reason.Contains("Per Bolund");
+                                 && reason != null && reason.Contains("Amanda Lind") && reason.Contains("Daniel Helldén");
                     if (!right)
                     {
                         failures++;

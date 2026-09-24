@@ -1,0 +1,244 @@
+# fetch_log.txt - K-1e party leaders 2026, fetched 2026-09-24 with curl (-L; Wayback captures with the id_ flag = archived bytes).
+# One block per saved file: source URL, HTTP status, the server's Date header (the live fetch time, UTC),
+# and for Internet Archive captures memento-datetime / x-archive-orig-date / x-archive-orig-last-modified / x-archive-src.
+# Two captures were served with content-encoding gzip; they were re-fetched with --compressed and are stored transfer-decoded (the archived HTML).
+
+file: s_socialdemokraterna_magdalena-andersson.html
+url: https://www.socialdemokraterna.se/vart-parti/vara-politiker/magdalena-andersson
+  HTTP/1.1 200 
+  Date: Thu, 24 Sep 2026 08:26:34 GMT
+
+file: wayback_20260913163730_s_socialdemokraterna_magdalena-andersson.html
+url: https://web.archive.org/web/20260913163730id_/https://www.socialdemokraterna.se/vart-parti/vara-politiker/magdalena-andersson
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:37 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 16:37:30 GMT
+  memento-datetime: Sun, 13 Sep 2026 16:37:30 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913175204_3e8647bc/www.socialdemokraterna.se-inf-20260913-163707-3gf0w-00000.warc.gz
+
+file: sd_jimmie.html
+url: https://www.sd.se/jimmie/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:39 GMT
+
+file: sd_partistyrelse.html
+url: https://www.sd.se/partistyrelse/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:39 GMT
+
+file: wayback_20260913110552_sd_jimmie.html
+url: https://web.archive.org/web/20260913110552id_/https://www.sd.se/jimmie/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:51 GMT
+  content-encoding: gzip
+  x-archive-orig-date: Sun, 13 Sep 2026 11:05:53 GMT
+  memento-datetime: Sun, 13 Sep 2026 11:05:52 GMT
+  x-archive-src: spn2-20260913133659/spn2-20260913085638-wwwb-spn13.us.archive.org-8004.warc.gz
+
+file: wayback_20260913171345_sd_partistyrelse.html
+url: https://web.archive.org/web/20260913171345id_/https://www.sd.se/partistyrelse/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:44 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 17:13:45 GMT
+  memento-datetime: Sun, 13 Sep 2026 17:13:45 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913184610_5e2b0a59/www.sd.se-inf-20260913-171315-7j95t-00000.warc.gz
+
+file: m_moderaterna_startsida.html
+url: https://moderaterna.se/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:45 GMT
+  last-modified: Thu, 24 Sep 2026 02:26:26 GMT
+
+file: m_moderaterna_ulf-kristersson.html
+url: https://moderaterna.se/politiker/ulf-kristersson/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:45 GMT
+  last-modified: Thu, 24 Sep 2026 03:34:01 GMT
+
+file: wayback_20260913170221_m_moderaterna_startsida.html
+url: https://web.archive.org/web/20260913170221id_/https://moderaterna.se/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:48 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 17:02:21 GMT
+  x-archive-orig-last-modified: Sun, 13 Sep 2026 14:26:29 GMT
+  memento-datetime: Sun, 13 Sep 2026 17:02:21 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913202859_56a0a2d0/moderaterna.se-inf-20260913-170220-5pcur-00000.warc.gz
+
+file: wayback_20260913170232_m_moderaterna_ulf-kristersson.html
+url: https://web.archive.org/web/20260913170232id_/https://moderaterna.se/politiker/ulf-kristersson/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:50 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 17:02:32 GMT
+  x-archive-orig-last-modified: Sun, 13 Sep 2026 15:26:38 GMT
+  memento-datetime: Sun, 13 Sep 2026 17:02:32 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913202859_56a0a2d0/moderaterna.se-inf-20260913-170220-5pcur-00000.warc.gz
+
+file: v_vansterpartiet_nooshi-dadgostar.html
+url: https://www.vansterpartiet.se/nooshi-dadgostar/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:52 GMT
+
+file: wayback_20260913140156_v_vansterpartiet_nooshi-dadgostar.html
+url: https://web.archive.org/web/20260913140156id_/https://www.vansterpartiet.se/nooshi-dadgostar/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:54 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 14:01:56 GMT
+  memento-datetime: Sun, 13 Sep 2026 14:01:56 GMT
+  x-archive-src: archiveteam_archivebot_go_20260916051439_f6673581/www.vansterpartiet.se-inf-20260913-140117-eiocd-00000.warc.gz
+
+file: c_centerpartiet_elisabeth-thand-ringqvist_cv.html
+url: https://www.centerpartiet.se/elisabeth-thand-ringqvist/cv
+  HTTP/1.1 200 
+  Date: Thu, 24 Sep 2026 08:26:54 GMT
+
+file: c_centerpartiet_om-centerpartiet.html
+url: https://www.centerpartiet.se/om-centerpartiet
+  HTTP/1.1 200 
+  Date: Thu, 24 Sep 2026 08:26:55 GMT
+
+file: c_centerpartiet_20260912_valspurtstal.html
+url: https://www.centerpartiet.se/nyheter/arkiv-2026/2026-09-12-elisabeth-thand-ringqvist-holl-valspurtstal-pa-medborgarplatsen
+  HTTP/1.1 200 
+  Date: Thu, 24 Sep 2026 08:26:55 GMT
+
+file: wayback_20260913114627_c_centerpartiet_elisabeth-thand-ringqvist_cv.html
+url: https://web.archive.org/web/20260913114627id_/https://www.centerpartiet.se/elisabeth-thand-ringqvist/cv
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:52 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 11:46:28 GMT
+  content-encoding: gzip
+  memento-datetime: Sun, 13 Sep 2026 11:46:27 GMT
+  x-archive-src: spn2-20260913164628/spn2-20260913102915-wwwb-spn17.us.archive.org-8006.warc.gz
+
+file: wayback_20260913164505_c_centerpartiet_om-centerpartiet.html
+url: https://web.archive.org/web/20260913164505id_/https://www.centerpartiet.se/om-centerpartiet
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:26:59 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 16:45:05 GMT
+  memento-datetime: Sun, 13 Sep 2026 16:45:05 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913175204_3e8647bc/www.centerpartiet.se-inf-20260913-164437-a6271-aborted-00000.warc.gz
+
+file: kd_kristdemokraterna_ebba.html
+url: https://kristdemokraterna.se/ebba
+  HTTP/1.1 200 
+  Date: Thu, 24 Sep 2026 08:27:00 GMT
+
+file: wayback_20260913170939_kd_kristdemokraterna_ebba.html
+url: https://web.archive.org/web/20260913170939id_/https://kristdemokraterna.se/ebba
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:02 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 17:09:39 GMT
+  memento-datetime: Sun, 13 Sep 2026 17:09:39 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913230606_69586775/kristdemokraterna.se-inf-20260913-170916-5k3mg-00000.warc.gz
+
+file: l_liberalerna_simona-mohamsson.html
+url: https://www.liberalerna.se/liberaler/simona-mohamsson
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:03 GMT
+
+file: wayback_20260913165717_l_liberalerna_simona-mohamsson.html
+url: https://web.archive.org/web/20260913165717id_/https://www.liberalerna.se/liberaler/simona-mohamsson
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:06 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 16:57:17 GMT
+  memento-datetime: Sun, 13 Sep 2026 16:57:17 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913205105_0174c44e/www.liberalerna.se-inf-20260913-165713-1tc09-00000.warc.gz
+
+file: mp_sprakror.html
+url: https://www.mp.se/om/sprakror/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:14 GMT
+
+file: mp_amanda-lind.html
+url: https://www.mp.se/om/amanda-lind/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:16 GMT
+
+file: mp_daniel-hellden.html
+url: https://www.mp.se/om/daniel-hellden/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:18 GMT
+
+file: mp_stadgar.html
+url: https://www.mp.se/om/stadgar/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:19 GMT
+
+file: wayback_20260913142450_mp_sprakror.html
+url: https://web.archive.org/web/20260913142450id_/https://www.mp.se/om/sprakror/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:21 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 14:24:50 GMT
+  x-archive-orig-last-modified: Sun, 13 Sep 2026 12:20:00 GMT
+  memento-datetime: Sun, 13 Sep 2026 14:24:50 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913175204_3e8647bc/www.mp.se-inf-20260913-142433-e3ha3-00000.warc.gz
+
+file: wayback_20260913145532_mp_amanda-lind.html
+url: https://web.archive.org/web/20260913145532id_/https://www.mp.se/om/amanda-lind/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:23 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 14:55:32 GMT
+  x-archive-orig-last-modified: Sun, 13 Sep 2026 14:55:22 GMT
+  memento-datetime: Sun, 13 Sep 2026 14:55:32 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913175204_3e8647bc/www.mp.se-inf-20260913-142433-e3ha3-00000.warc.gz
+
+file: wayback_20260913150328_mp_daniel-hellden.html
+url: https://web.archive.org/web/20260913150328id_/https://www.mp.se/om/daniel-hellden/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:27:26 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 15:03:28 GMT
+  memento-datetime: Sun, 13 Sep 2026 15:03:28 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913175204_3e8647bc/www.mp.se-inf-20260913-142433-e3ha3-00000.warc.gz
+
+file: v_vansterpartiet_startsida.html
+url: https://www.vansterpartiet.se/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:30:23 GMT
+  Content-Encoding: br
+
+file: wayback_20260913140119_v_vansterpartiet_startsida.html
+url: https://web.archive.org/web/20260913140119id_/https://www.vansterpartiet.se/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 08:30:25 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 14:01:19 GMT
+  memento-datetime: Sun, 13 Sep 2026 14:01:19 GMT
+  x-archive-src: archiveteam_archivebot_go_20260916051439_f6673581/www.vansterpartiet.se-inf-20260913-140117-eiocd-00000.warc.gz
+  Content-Encoding: gzip
+
+# Added later on 2026-09-24: the election-day captures of MP's statutes and C's news item of 2026-09-12 (both listed
+# status 200 in the Wayback CDX index for 13 Sep 2026); both served gzip, fetched with --compressed, stored transfer-decoded.
+
+file: wayback_20260913142500_mp_stadgar.html
+url: https://web.archive.org/web/20260913142500id_/https://www.mp.se/om/stadgar/
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 09:04:42 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 14:24:59 GMT
+  x-archive-orig-last-modified: Sun, 13 Sep 2026 12:37:10 GMT
+  memento-datetime: Sun, 13 Sep 2026 14:25:00 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913175204_3e8647bc/www.mp.se-inf-20260913-142433-e3ha3-00000.warc.gz
+  Content-Encoding: gzip
+
+file: wayback_20260913164449_c_centerpartiet_20260912_valspurtstal.html
+url: https://web.archive.org/web/20260913164449id_/https://www.centerpartiet.se/nyheter/arkiv-2026/2026-09-12-elisabeth-thand-ringqvist-holl-valspurtstal-pa-medborgarplatsen
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 09:04:43 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 16:44:49 GMT
+  memento-datetime: Sun, 13 Sep 2026 16:44:49 GMT
+  x-archive-src: archiveteam_archivebot_go_20260913175204_3e8647bc/www.centerpartiet.se-inf-20260913-164437-a6271-aborted-00000.warc.gz
+  Content-Encoding: gzip
+
+file: c_centerpartiet_elisabeth-thand-ringqvist.html
+url: https://www.centerpartiet.se/elisabeth-thand-ringqvist
+  HTTP/1.1 200 
+  Date: Thu, 24 Sep 2026 11:24:40 GMT
+  (added at K-1e's review, COMPLETED.md s608: her own page, the one the office-word rule names)
+
+file: wayback_20260913114539_c_centerpartiet_elisabeth-thand-ringqvist.html
+url: https://web.archive.org/web/20260913114539id_/https://www.centerpartiet.se/elisabeth-thand-ringqvist
+  HTTP/1.1 200 OK
+  Date: Thu, 24 Sep 2026 11:25:10 GMT
+  x-archive-orig-date: Sun, 13 Sep 2026 11:45:39 GMT
+  content-encoding: gzip
+  memento-datetime: Sun, 13 Sep 2026 11:45:39 GMT
+  x-archive-src: spn2-20260913132901/spn2-20260913102246-wwwb-spn36.us.archive.org-8003.warc.gz
+

@@ -117,7 +117,7 @@ namespace PoliSim.Data
         /// would silently drop a real named person, which the ruling forbids outright. So this is an array
         /// rather than a field, for one party's sake, and that is the right trade.</para>
         ///
-        /// <para><b>Name and office only.</b> `party_leaders_2022.md` states the rule this follows:
+        /// <para><b>Name and office only.</b> `party_leaders_2022.md` and `2026/party_leaders_2026.md` state the rule this follows:
         /// sourcing a real person's NAME does not license inventing their CHARACTER. No attributes, no
         /// biography, no relationships live here; `CandidateProfile`'s numbers stay `[AUTHORED-DRAFT]` and
         /// every screen that shows them says so.</para>
@@ -317,16 +317,21 @@ namespace PoliSim.Data
         }
 
         /// <summary>
-        /// C-D3: the leaders each party had **on 2022-09-11**, the election this prototype replays.
+        /// C-D3, re-sourced by K-1e (2026-09-24): the leaders each party has **at the seated chamber's election, 2026-09-13**
+        /// (unchanged at 2026-09-24).
         ///
-        /// <para><b>SOURCED</b> — every name and office is `ElectionsData/sweden/party_leaders_2022.md`,
-        /// which takes each from the party's OWN website as it stood within days of the election, through
-        /// the Internet Archive so the citation carries an exact capture timestamp. **A party is the
-        /// authority on who leads it.**</para>
+        /// <para><b>SOURCED</b> — every name and office is `ElectionsData/sweden/2026/party_leaders_2026.md`, which takes each
+        /// from the party's OWN website, as captured by the Internet Archive on election day and as live on 2026-09-24. **A
+        /// party is the authority on who leads it.** Where a party uses both words (<i>partiledare</i> and <i>partiordförande</i> -
+        /// S, SD, C, KD and L do), the office carried is the word on the leader's OWN page (the page about that person), and where
+        /// that page carries both, the word of its prose: S <i>partiordförande</i>, SD <i>partiledare</i> (its metadata says
+        /// partiordförande), C <i>partiledare</i> (her own page, `/elisabeth-thand-ringqvist`, the only word it carries - in its photographs'
+        /// captions; its CV subpage says Partiordförande), KD <i>partiledare</i> (her own prose; the page's list of posts says
+        /// Partiordförande), L <i>partiledare</i>.</para>
         ///
-        /// <para>⚠ <b>The vintage is 2022 and is deliberately not current.</b> C, L, S, MP and V have all
-        /// changed leader since. A "current leaders" set is a different item with a different vintage, and
-        /// mixing the two would be exactly the basis-mixing the cross-check gate forbids.</para>
+        /// <para><b>The vintage is the seated chamber's.</b> Since 2022, C (Elisabeth Thand Ringqvist), L (Simona Mohamsson) and
+        /// MP (Amanda Lind and Daniel Helldén) changed leader; S, SD, M, V and KD did not. (This doc said "C, L, S, MP and V" until
+        /// K-1e - S and V were wrong.) The 2022 roster stays the record in `ElectionsData/sweden/party_leaders_2022.md`.</para>
         ///
         /// <para>⚠ <b>MP carries TWO, and that is the whole point of the item.</b> Both are named; neither
         /// is seated in a debate. See <see cref="PoliticalParty.ResolveDebateSeat"/>.</para>
@@ -347,15 +352,15 @@ namespace PoliSim.Data
             new PoliticalParty("V",  "Vänsterpartiet",                     1.89f, 2.42f,  30, "mark_party_se_v", euPosition: 3.32f, lrGen: 1.58f, environment: 1.40f, regions: 5.00f, spendVsTax: 0.50f, immigratePolicy: 3.05f, deregulation: 0.87f, redistribution: 1.37f, peopleVsElite: 3.92f, antiEliteSalience: 5.50f, civLibLawOrder: 2.10f, nationalism: 2.10f,
                 leaders: One("Nooshi Dadgostar", "partiledare")),
             new PoliticalParty("C",  "Centerpartiet",                      7.84f, 2.95f,  25, "mark_party_se_c", euPosition: 6.11f, lrGen: 5.95f, environment: 2.50f, regions: 4.29f, spendVsTax: 7.50f, immigratePolicy: 3.42f, deregulation: 8.53f, redistribution: 6.58f, peopleVsElite: 2.55f, antiEliteSalience: 2.17f, civLibLawOrder: 3.10f, nationalism: 2.90f,
-                leaders: One("Annie Lööf", "partiledare")),
+                leaders: One("Elisabeth Thand Ringqvist", "partiledare")),
             new PoliticalParty("KD", "Kristdemokraterna",                  7.26f, 7.79f,  22, "mark_party_se_kd", euPosition: 5.35f, lrGen: 8.00f, environment: 7.40f, regions: 5.86f, spendVsTax: 6.50f, immigratePolicy: 8.26f, deregulation: 6.80f, redistribution: 6.58f, peopleVsElite: 2.27f, antiEliteSalience: 3.83f, civLibLawOrder: 7.90f, nationalism: 7.20f,
                 leaders: One("Ebba Busch", "partiledare")),
-            // ⚠ TWO leaders, carried as two. Taking "the first" would drop Per Bolund, a real named
-            // person, which the ruling forbids outright.
+            // ⚠ TWO leaders, carried as two. Taking "the first" would drop a real named person - Daniel
+            // Helldén since K-1e (Per Bolund in the 2022 record) - which the ruling forbids outright.
             new PoliticalParty("MP", "Miljöpartiet de gröna",              3.16f, 1.95f,  22, "mark_party_se_mp", euPosition: 5.32f, lrGen: 2.74f, environment: 0.10f, regions: 4.43f, spendVsTax: 2.75f, immigratePolicy: 2.16f, deregulation: 3.47f, redistribution: 2.89f, peopleVsElite: 5.67f, antiEliteSalience: 2.67f, civLibLawOrder: 1.60f, nationalism: 1.70f,
-                leaders: new[] { new PartyLeader("Märta Stenevi", "språkrör"), new PartyLeader("Per Bolund", "språkrör") }),
+                leaders: new[] { new PartyLeader("Amanda Lind", "språkrör"), new PartyLeader("Daniel Helldén", "språkrör") }),
             new PoliticalParty("L",  "Liberalerna",                        7.32f, 4.47f,  19, "mark_party_se_l", euPosition: 6.84f, lrGen: 6.74f, environment: 6.20f, regions: 4.71f, spendVsTax: 6.75f, immigratePolicy: 6.79f, deregulation: 7.33f, redistribution: 6.26f, peopleVsElite: 1.36f, antiEliteSalience: 2.17f, civLibLawOrder: 5.70f, nationalism: 3.90f,
-                leaders: One("Johan Pehrson", "partiledare")),
+                leaders: One("Simona Mohamsson", "partiledare")),
         };
 
         // ---- Germany: Bundestag 2025. Units are PARTIES; every one has a CHES position. Sums to 630.
