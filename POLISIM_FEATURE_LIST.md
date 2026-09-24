@@ -39,7 +39,7 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 |---|---|---|---|---|
 | MM-1 ✅ | Code | The main menu (Continue, New game, Load, Settings, Quit), wired to the selector; real films | X-2 | **BUILT 2026-09-24 (`COMPLETED.md` §614):** `MainMenuScreen`, the first takeover before the selector; CONTINUE absent without a save; SETTINGS opens the saves screen where the sound row lives until MM-2; filmed real at 1280 and 2560, 0 violations |
 | MM-2 ✅ | Code | Settings — audio moved in; display at filmed geometries only; game (speed, which interrupts hold, † default, autosave); every setting proved live; **the pinning check armed** | MM-1 | **BUILT 2026-09-24 (`COMPLETED.md` §615):** the settings screen from the menu and the desk; eleven `polisim.` keys on `PreferenceKeys.All`, `SettingsCheck` in the cheap bar proves each live and the harness's pin complete; films `mm2_1280` / `mm2_2560` |
-| **D-MM** | Design | **The main menu and settings**, composed against the built screens; key art is Design's costed case, not assumed | MM-2 | boards answered |
+| **D-MM** ⏳ | Design | **The main menu and settings**, composed against the built screens; key art is Design's costed case, not assumed | MM-2 | **SENT 2026-09-24 over the channel (`COMPLETED.md` §616; the ask at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`, the archive `uploads/D-MM_ask/`)** - boards answered |
 | MM-3 | Code | Build D-MM's boards, deviations stated | D-MM | filmed |
 
 ## Phase 2 — the world clock and Sweden

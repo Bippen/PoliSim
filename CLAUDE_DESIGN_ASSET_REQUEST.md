@@ -2,6 +2,20 @@
 
 > **This file holds the LIVE ask and what stands beside it** - the current status, D21, the notice to Design, the count rule, what is costed and not yet requestable (§4), the standing conventions (§5), and the generated asset inventory. **Every answered ask moved VERBATIM on 2026-09-23 to `docs/archive/DESIGN_REQUESTS.md`** (`COMPLETED.md` §582): the earlier STATUS heads this one stacked, the ninth to eleventh requests with their annexes, §0's hand-derived delivered set, §E5, and D9 to D20 with D18's prose. Their request rows went with them, and `DesignNotificationCheck` reads the rows from both files.
 
+## ⭐ D-MM — THE ASK (2026-09-24): THE MAIN MENU AND THE SETTINGS SCREEN, COMPOSED AGAINST THE BUILT SCREENS (`COMPLETED.md` §614, §615; sent over the channel as `uploads/D-MM_ask/`)
+
+**Read this the D19 way: against the frames, not against a description.** The head track's first two Code rows are built and filmed (`docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` §9 is the spec; the rows are MM-1 and MM-2 in `POLISIM_FEATURE_LIST.md`). Both screens exist, are reachable by the player, and are filmed at 1280 and 2560 in the archive beside this document (`D-MM_ask.zip`, the frames loose beside it). Nothing on either is assumed; every deviation from the spec is stated below.
+
+| # | the row | what is asked | the built part it is asked against |
+|---|---|---|---|
+| **1** | **The main menu** - the game's first screen | Its composition in the desk's idiom: the wordmark, the five items, the ground. **Key art is your costed case, not assumed:** the built ground is the selector's own tile on the desk colour, and if the first screen should carry an image or a mark, that is a row with its asset count stated. The item column's measures (460 × 64 canvas units at the 1920 basis, 14 apart) are the build's, not a ruling. | `mm1_1280_00_main_menu.png`, `mm1_2560_00_main_menu.png`: a Canvas surface; CONTINUE is present because a save exists and is absent otherwise (the spec's *absent when there is none*); QUIT wears the paper face, the four that go somewhere the brass. |
+| **2** | **The settings screen** - only what is real | Its composition: three groups (SOUND, DISPLAY, GAME) as the desk's ledger idiom draws them today - the volume row, choice buttons with a filled dot on the current choice, two toggles with a filled or empty dot. What is asked is the reading: whether the groups should be plates, whether a choice reads better as the desk's chip strip than as faced buttons, and what the unset display state (*as launched*) should look like. Nothing may be added that changes nothing (the spec's rule); language, colour-vision modes and key rebinding are named in the spec and not built, so they are not drawn. | `mm2d_1280_00a_settings.png`, `mm2d_2560_00a_settings.png`: the screen as the menu opens it, no game behind it; at 1280 the last line scrolls. |
+| **3** | **The desk's way in** | The masthead now carries SETTINGS beside SAVES in the same chip idiom. Asked: whether that is where it lives, or whether the two belong under one chip. | `mm2d_1280_01c_desk.png`, `mm2d_2560_01c_desk.png`: the masthead's right end. |
+
+**Deviations from the spec, stated.** The display's *Fullscreen* / *Borderless* / *Windowed* apply the moment they are chosen and the unset state leaves the launch window alone; the resolution list is exactly the four geometries this project films and nothing free. The two holds offered are the campaign's opening and the budget window; election night is a takeover and is not offered. The † default is the desk's one provenance state, exposed here rather than duplicated.
+
+**How to answer.** Boards on your board file as before; any file over 192 KiB as a split archive (the notice below, item 4). The return is pulled from the project directly - nothing waits on an upload.
+
 ## ⭐ NOTICE 2026-09-24 — THE CHANNEL: FROM NOW ON CODE SENDS DIRECTLY, AND THE SITTING'S PART C IS IN (`COMPLETED.md` §610)
 
 **What changed.** Elias ruled that Code sends Design rows and pulls answers itself, through the project's own file channel, so nothing waits on an upload. Three things for you:

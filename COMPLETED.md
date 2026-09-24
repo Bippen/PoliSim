@@ -33943,3 +33943,15 @@ Then, as the first real send, **E-42's part C** - `uploads/SITTING_2026-09-21_C/
 
 **Evidence.** Tier UI (the driver films `00a_settings` from the menu on every film now; no Canvas surface moved).
 - The dry films `drymm2` and `drymm2b` (Sweden@1280x720, declared first; the second row covers the two re-runs after the screen was trimmed to fit the floor geometry, `drymm2b` and `drymm2c`): 133 captured, 0 failed. The real films `mm2d_1280` and `mm2d_2560` to the desk: 8 captured, 0 failed, 0 canvas-text violations across 4 asserts, 8 of 8 surface tokens proved, 0 clipped - the settings screen from the menu (`00a_settings`) and the desk with its SETTINGS chip (`01c_desk`). The cheap bar in the warm host: 49 of 49, `SettingsCheck` reading 11 keys, 11 pinned, every setting live; its first run failed on `CommentImmunityCheck` (a source-reading check enrolled in neither list) and the check is on the must-strip list since.
+
+## 616. D-MM SENT - THE MAIN MENU AND THE SETTINGS SCREEN ASKED OF DESIGN AGAINST THE BUILT SCREENS, THE FIRST ROW CODE SENT ITSELF OVER THE CHANNEL (2026-09-24)
+
+**The row** (the head track's D-MM, after MM-1 and MM-2): *"The main menu and settings, composed against the built screens; key art is Design's costed case, not assumed. Needs MM-2. Done when boards answered."* The head track's rule: a Design row follows the Code row that builds its parts, and is asked the D19 way - against frames, never against a description.
+
+**The ask** stands at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`: three rows - the main menu's composition with key art as Design's costed case; the settings screen's reading (plates or not, faced buttons or the chip strip, the unset display state); the desk's way in (SETTINGS beside SAVES, or one chip) - each against its frames, with the deviations from the spec stated (the display applies at once and the resolutions are the four filmed geometries; the two holds offered; the † default is the desk's one state).
+
+**Sent, on X-1's shape** (§610, §612): `uploads/D-MM_ask/` - the archive `D-MM_ask.zip` (4 574 947 bytes, `e742612b…`) with `MANIFEST.sha256` at its root over ten artefacts - the four documents (the request, the errands, the feature list, the start-points spec whose §9 is the ask's source) and six frames (the menu and the settings screen at 1280 and 2560, the desk with its chip at both) - and the ten loose beside it for Design's reading, every digest read off disk after the last edit (`Tools/design_channel.pl manifest`). Nothing waits on an upload; the return is pulled from the board file.
+
+**What comes next on the list:** MM-3 builds D-MM's boards when they land. Meanwhile PS-1, the world clock, is the next Code row whose needs have landed (X-2).
+
+**Bars.** Tier DOCUMENTS (the request document, the feature list, this record): `Tools/textcheck`; the line is in the commit.
