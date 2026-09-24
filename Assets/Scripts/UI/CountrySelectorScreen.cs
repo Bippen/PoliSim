@@ -380,6 +380,14 @@ namespace PoliSim.UI
                 }
                 CanvasChrome.MakeText(column.transform, "State", point.Line, PoliSimTheme.Body, 13,
                     point.Playable ? PoliSimTheme.Hex(0xB7A98C) : PoliSimTheme.Hex(0x8C7E63), TextAnchor.MiddleCenter);
+                if (point.Playable)
+                {
+                    // SP-2 (§623): the brief beneath a playable card - derived from the records of the start's date, never written (StartBrief).
+                    Text brief = CanvasChrome.MakeText(column.transform, "Brief", StartBrief.Text(point), PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter);
+                    brief.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    LayoutElement briefLayout = brief.gameObject.AddComponent<LayoutElement>();
+                    briefLayout.preferredWidth = PartyRowWidth;
+                }
             }
 
             Button backButton = CanvasChrome.FacedButton(column.transform, "Back", "BACK TO THE COUNTRIES",

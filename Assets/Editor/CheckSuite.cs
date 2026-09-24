@@ -180,6 +180,7 @@ namespace PoliSim.EditorTools
             ("PollingDayDiagnostic", PollingDayDiagnostic.Run),   // PS-2 / CL-4 (§619): the election on the calendar's date - the statute's rule, the next polling day, the flag raised once on 2026-09-13
             ("DeclarationDatesDiagnostic", DeclarationDatesDiagnostic.Run),   // §621: Sweden's declarations by date - the timeline reads the pinned vintages at their elections and the ruled dates at each change point
             ("StartPointsDiagnostic", StartPointsDiagnostic.Run),   // SP-1 (§622): the start points as data - one per popularly decided election, the playable one the ruled start, locked cards with reasons
+            ("StartBriefDiagnostic", StartBriefDiagnostic.Run),   // SP-2 (§623): the derived brief - four clauses per playable start, each tracing to its record; Sweden's reads the record's figures
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),
