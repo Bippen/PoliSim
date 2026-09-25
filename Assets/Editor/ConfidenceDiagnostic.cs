@@ -118,6 +118,60 @@ namespace PoliSim.EditorTools
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go3); EnergyMarket.ResetTurnState(); }
 
+            // 4. PS-3i ruling (3) (2026-09-25): after an election that forms no government the appointment procedure restarts as RF 6 kap. 5 § requires -
+            //    resumed once per election, an extra election within three months, the loop turning until a government forms or an ordinary election
+            //    falls within the three months. An election that formed none is one that left the caretaker's record in place (the game installs any
+            //    government that forms), so the check records each election as held and leaves the record as it is.
+            var go4 = new GameObject("ConfidenceDiagnostic.4");
+            try
+            {
+                (SimulationManager sim, Country sweden) = Open(go4);
+                sweden.PlayerPartyAbbrev = "S";
+                GovernmentRecord care = sweden.Government;
+                care.Caretaker = true;
+                care.CaretakerSince = sim.CurrentDate;
+                void HoldFormingNone() => sweden.ElectionHistory.Add(new ElectionRecord { Date = sim.CurrentDate, CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
+                void Day() { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
+                // An election BEFORE the discharge is not one the procedure waits for.
+                sweden.ElectionHistory.Add(new ElectionRecord { Date = sim.CurrentDate.AddDays(-1), CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
+                Day();
+                Check(sim.ExtraElectionDate == DateTime.MinValue && care.ProcedureResumedAfter == DateTime.MinValue, "a caretaker with only an election before its discharge: nothing resumes");
+                var ordered = new List<DateTime>();
+                string ordinaryServes = null;
+                for (int round = 0; round < 6 && ordinaryServes == null; round++)
+                {
+                    DateTime heldOn = sim.CurrentDate;
+                    HoldFormingNone();
+                    Day();
+                    Check(care.ProcedureResumedAfter == heldOn, F("the election of {0:yyyy-MM-dd} resumed the procedure the day after", heldOn));
+                    if (sim.ExtraElectionDate == DateTime.MinValue)
+                    {
+                        ordinaryServes = care.Breaks.Find(b => b.Contains("the procedure resumed") && b.Contains("serves"));
+                        break;
+                    }
+                    DateTime next = sim.ExtraElectionDate;
+                    Check(next > heldOn && next <= heldOn.AddMonths(ConfidenceProcedure.ExtraElectionMonths).AddDays(1) && next.DayOfWeek == DayOfWeek.Sunday, F("  and ordered an extra election on {0:yyyy-MM-dd} - a Sunday within three months", next));
+                    ordered.Add(next);
+                    Day();
+                    Check(sim.ExtraElectionDate == next, "  resumed once per election - the next day orders nothing more");
+                    int guard = 0;
+                    while (sim.CurrentDate < next && guard++ < 120) { Day(); }
+                    Check(sim.CurrentDate == next, F("  walked to the extra election's polling day ({0:yyyy-MM-dd})", sim.CurrentDate));
+                }
+                Check(ordered.Count >= 2, F("the loop turned: {0} extra election(s) ordered in a row ({1})", ordered.Count, string.Join(", ", ordered.ConvertAll(d => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))));
+                Check(ordinaryServes != null, F("until the ordinary election fell within three months and served: {0}", ordinaryServes ?? "NEVER"));
+                // Once per election, where the field alone guards it: after the ordinary-serves break no extra election is pending, so only
+                // ProcedureResumedAfter keeps the next days from resuming the same election again.
+                int breaks = care.Breaks.Count;
+                Day(); Day();
+                Check(care.Breaks.Count == breaks && sim.ExtraElectionDate == DateTime.MinValue, "the same election resumes the procedure once - two more days add nothing (the field's own guard)");
+                Persistence.SaveGame save = Persistence.SaveGameService.CreateSaveGame(sim, sim.World, CountryId.Sweden, null);
+                Persistence.SaveGame back = Persistence.SaveGameService.Deserialize(Persistence.SaveGameService.Serialize(save));
+                Check(back.World.GetCountry(CountryId.Sweden).Government.ProcedureResumedAfter == care.ProcedureResumedAfter, "the last resumption rides the save, so a load resumes no election twice");
+            }
+            catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
+            finally { UnityEngine.Object.DestroyImmediate(go4); EnergyMarket.ResetTurnState(); }
+
             Check(ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Unsourced, "Germany's rules are not yet modelled - no motion is taken up there");
             Check(ConfidenceProcedure.ExtraElectionDay(new DateTime(2026, 3, 4)) == new DateTime(2026, 5, 31), "the extra election's day: the Sunday on or before three months (4 Mar -> 4 Jun is a Thursday -> 31 May)");
 

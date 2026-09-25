@@ -2583,6 +2583,11 @@ namespace PoliSim.Simulation
         {
             _extraElectionOrderedOn = CurrentDate;
             _extraElectionDate = Elections.ConfidenceProcedure.ExtraElectionDay(CurrentDate);
+            // §640 (the reader): a run-up begun for another polling day is dropped - the extra election comes first, and that run-up re-begins on its own
+            // calendar once the extra election is held; left standing it would be adopted by the wrong campaign. Stated: where the procedure resumes after
+            // an election, the day's campaign step has already run by the time the order lands, so that run-up drew its day before it was dropped.
+            if (PlayerPreCampaign != null && PlayerPreCampaign.Calendar.ElectionDate != _extraElectionDate) { PlayerPreCampaign = null; }
+            if (CampaignRecord != null && CampaignRecord.ElectionDate != _extraElectionDate && (PlayerCampaign == null || PlayerCampaign.Setup.Calendar.ElectionDate != CampaignRecord.ElectionDate)) { CampaignRecord = null; }
             country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: an extra election is ordered for {_extraElectionDate:yyyy-MM-dd} - {why}");
             Debug.Log($"CONFIDENCE: {country.Id} - an extra election on {_extraElectionDate:yyyy-MM-dd}: {why}");
         }
@@ -2599,9 +2604,40 @@ namespace PoliSim.Simulation
             }
             Country country = _world?.GetCountry(countryId);
             Elections.GovernmentRecord g = country?.Government;
-            if (g == null || g.Caretaker || g.NoConfidenceOn == System.DateTime.MinValue) { return; }
+            if (g != null && g.Caretaker) { ResumeAppointmentAfterElection(country); return; }
+            if (g == null || g.NoConfidenceOn == System.DateTime.MinValue) { return; }
             if (CurrentDate < g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
             DischargeAndRound(country);
+        }
+
+        /// <summary>
+        /// PS-3i RULING (3) (Elias, 2026-09-25): AFTER AN ELECTION THAT FORMS NO GOVERNMENT, THE APPOINTMENT PROCEDURE RESTARTS AS THE RIKSDAG'S RULES
+        /// REQUIRE, rather than leaving the caretaker in place. [RF-R:6:5]: four rejected proposals stop the procedure, which "återupptas först sedan
+        /// val till riksdagen har hållits" - it resumes only after an election has been held - and an extra election follows within three months unless an
+        /// ordinary one is due in them. So a caretaker still serving after an election held since its discharge is a resumed procedure that formed
+        /// nothing: the election's own formation is the Speaker's round (the model's four proposals are one formation's answer, §636), and it installs
+        /// any government that forms (<c>GameController.ResolveElectionVerdict</c>). Resumed once per election, the day after its polling day, where
+        /// the new Riksdag's first sitting and the Speaker's talks are not modelled (a premise, stated).
+        /// </summary>
+        private void ResumeAppointmentAfterElection(Country country)
+        {
+            Elections.GovernmentRecord g = country.Government;
+            if (Elections.ConfidenceProcedure.RulesOf(country.Id) != Elections.ConfidenceProcedure.Rules.Riksdag) { return; }
+            if (_extraElectionDate != System.DateTime.MinValue) { return; }   // an extra election already ordered: the procedure waits for it
+            System.DateTime held = System.DateTime.MinValue;
+            if (country.ElectionHistory != null)
+            {
+                foreach (Elections.ElectionRecord e in country.ElectionHistory) { if (e.Method != Elections.ElectionMethod.NotImplemented && e.Date < CurrentDate && e.Date > held) { held = e.Date; } }
+            }
+            if (held == System.DateTime.MinValue || held < g.CaretakerSince || held <= g.ProcedureResumedAfter) { return; }   // no election since the discharge, or this one already resumed it
+            g.ProcedureResumedAfter = held;
+            if (Elections.WorldClock.TryNextPollingDay(country.Id, CurrentDate, out System.DateTime ordinary) && ordinary <= CurrentDate.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths))
+            {
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the procedure resumed after the election of {held:yyyy-MM-dd} and the chamber accepted no proposal; the ordinary election of {ordinary:yyyy-MM-dd} falls within three months and serves (RF 6 kap. 5 §)");
+                Debug.Log($"CONFIDENCE: {country.Id} - the procedure resumed after {held:yyyy-MM-dd}, no government; the ordinary election of {ordinary:yyyy-MM-dd} serves");
+                return;
+            }
+            ScheduleExtraElection(country, $"the procedure resumed after the election of {held:yyyy-MM-dd} and the chamber accepted no proposal - four rejected proposals order an extra election within three months (RF 6 kap. 5 §)");
         }
 
         /// <summary>The Speaker discharges the prime minister [RF-R:6:7] and every minister with them [RF-R:6:9]; they serve on as a caretaker [RF-R:6:11]; the round runs on the sitting chamber [RF-R:6:4] - on the week's last day here, where 2021's round ran nine days (29 June to 7 July), stated.</summary>
@@ -2700,7 +2736,9 @@ namespace PoliSim.Simulation
                 // ran; otherwise (a load straight into the campaign, a record from before CL-1) a fresh one - and the
                 // record first either way: the player's script reads its queue, so the Setup closes over it.
                 Elections.PreCampaignRun.Outcome? brought = null;
-                if (PlayerPreCampaign != null && PlayerPreCampaign.Calendar.ElectionDate == calendar.ElectionDate && CampaignRecord != null)
+                // §640 (the reader): the run-up is adopted only with its own election's record - a record dated to another polling day (an extra
+                // election held in this election's run-up) is not the queue this run-up stepped, as the run-up's own guard already holds (§636).
+                if (PlayerPreCampaign != null && PlayerPreCampaign.Calendar.ElectionDate == calendar.ElectionDate && CampaignRecord != null && CampaignRecord.ElectionDate == calendar.ElectionDate)
                 {
                     while (!PlayerPreCampaign.Finished)
                     {

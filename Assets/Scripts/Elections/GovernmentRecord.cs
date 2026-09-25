@@ -62,9 +62,12 @@ namespace PoliSim.Elections
         /// <summary>PS-3i (§636): the day the chamber declared no confidence in this government's prime minister (MinValue for none), and the party that moved it.</summary>
         public DateTime NoConfidenceOn = DateTime.MinValue;
         public string NoConfidenceMover;
-        /// <summary>PS-3i (§636): discharged, serving on as a caretaker until the next government (RF 6 kap. 9 §) - no motion is taken up against it, it orders no extra election.</summary>
+        /// <summary>PS-3i (§636): discharged, serving on as a caretaker until the next government (RF 6 kap. 9 §) - no motion is taken up against it, and it cannot itself decide an extra election (RF 3 kap. 11 §); the Speaker's procedure resumed after an election can order one (6 kap. 5 §, §640).</summary>
         public bool Caretaker;
         public DateTime CaretakerSince = DateTime.MinValue;
+        /// <summary>PS-3i ruling (3) (2026-09-25): the polling day of the last election after which the Speaker's procedure resumed for this caretaker
+        /// (RF 6 kap. 5 §) - so each election resumes it once. MinValue: not yet resumed, which is what an older save's caretaker reads.</summary>
+        public DateTime ProcedureResumedAfter = DateTime.MinValue;
         /// <summary>The agreement a support party holds, or null.</summary>
         public SupportAgreement AgreementOf(string party) { foreach (SupportAgreement a in Agreements) { if (a.Supporter == party) { return a; } } return null; }
 
