@@ -196,7 +196,8 @@ namespace PoliSim.EditorTools
                 if (roster.Count > 1)
                 {
                     roster.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
-                    playerCountry.PlayerPartyAbbrev = roster[1].Abbrev;
+                    // PS-3c (§630): the bills this diagnostic introduces are the GOVERNMENT'S - seat the record's prime-minister party, else the role gate refuses them.
+                    playerCountry.PlayerPartyAbbrev = playerCountry.Government?.PmParty ?? roster[1].Abbrev;
                 }
 
                 playerCountry.PartyApprovalRating = 57.25f;

@@ -94,6 +94,7 @@ namespace PoliSim.EditorTools
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(WorldFactory.CreateDefault());
+                sim.PlayerCountryId = id;   // PS-3c (§630): since §628 the budget process is the PLAYER'S government's to open - this instrument names the country as the player with no party seated (the instrument's hand, §629), else no window ever opens
 
                 for (int d = 0; d < MaxDaysSearched; d++)
                 {
@@ -125,6 +126,7 @@ namespace PoliSim.EditorTools
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
                 sim.SetWorld(WorldFactory.CreateDefault());
+                sim.PlayerCountryId = id;   // PS-3c (§630): since §628 the budget process is the PLAYER'S government's to open - this instrument names the country as the player with no party seated (the instrument's hand, §629), else no window ever opens
 
                 bool spent = false;
                 for (int d = 0; d < MaxDaysSearched; d++)

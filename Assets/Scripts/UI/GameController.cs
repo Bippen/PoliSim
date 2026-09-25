@@ -3816,6 +3816,8 @@ namespace PoliSim.UI
         /// </summary>
         private bool UpdateFedChairSelectionState()
         {
+            // PS-3c (§630): the chair is the government's to appoint - where the AI governs the player's country the sitting chair stays and no term hold is raised (the appointment the hold waits on is locked; the hold would freeze the clock).
+            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _)) { _fedChairCandidates = null; return false; }
             if (_playerCountry.CurrentFedChair == null)
             {
                 return false;
@@ -3985,7 +3987,7 @@ namespace PoliSim.UI
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"the Fed/ECB rule: inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
                     // P5-1 (board 6a): the rate change as a ledger row of the family - in points, a tick per quarter-point while the pitch holds.
-                    _interestRateChangeInput = DrawDialRow("Policy rate change", 0f, _interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
+                    if (!DrawLeverLock()) _interestRateChangeInput = DrawDialRow("Policy rate change", 0f, _interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                 }
                 else
                 {
@@ -4010,7 +4012,7 @@ namespace PoliSim.UI
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
                     // P5-1 (board 6a): the rate push as a ledger row of the family.
-                    _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
+                    if (!DrawLeverLock()) _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                     DrawDerivedStatRow("Eurozone interest rate", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "shared by all three members", politicalInk);
                 }
             }
@@ -4227,7 +4229,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical();
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
-            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
+            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
             {
                 _playerCountry.CurrentFedChair = candidate;
                 _fedChairCandidates = null;
@@ -4702,7 +4704,7 @@ namespace PoliSim.UI
             string statusText = pendingBill != null
                 ? $"A Labor Market bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
                 : "No Labor Market bill before Parliament - the dials above are its draft.";
-            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
+            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
             {
                 _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts());
             }
@@ -6646,7 +6648,7 @@ namespace PoliSim.UI
                 : "in opposition";
             _pendingElectionVerdict = $"Out of office after the election of {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}: the chamber formed a "
                 + $"{government.CabinetDescription} government with {PartySystems.ShortName(_playerCountry.Id, playerAbbrev)} {standing}. The run continues - "
-                + "losing office never ends it; until the roles are built, the government's levers stay on your desk.";
+                + "losing office never ends it; the government's levers leave your desk, and your party votes on its bills.";
             _pendingElectionVerdictEndsGame = false;
         }
 
@@ -9150,7 +9152,7 @@ namespace PoliSim.UI
                 _lawActionButtonSource = _neutralActionButtonStyle;
             }
             float actionWidth = Mathf.Max(0f, contentWidth + _labelStyle.margin.horizontal - _lawActionButtonStyle.margin.horizontal);
-            if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
+            if (DrawLeverLock(null, actionWidth)) { } else if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
             {
                 _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
             }
@@ -10078,7 +10080,7 @@ namespace PoliSim.UI
                 //
                 // Contorting this into a fixed control set would also mean rendering N candidate buttons
                 // when there are no candidates, which is not a thing.
-                if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))   // §568: paper, and the class's one width
+                if (DrawLeverLock()) { } else if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))   // §568: paper, and the class's one width
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
                     float approvalBeforeReshuffle = _playerCountry.State.ApprovalRating;
@@ -10124,7 +10126,7 @@ namespace PoliSim.UI
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
             DrawMinisterAttributes(candidate);   // P2-5.2
-            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _implementButtonStyle))   // §568: brass, because appointing commits
+            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _implementButtonStyle))   // §568: brass, because appointing commits
             {
                 _playerCountry.CabinetMinisters[portfolio] = candidate;
                 _cabinetCandidatesByPortfolio.Remove(portfolio);
@@ -10562,7 +10564,7 @@ namespace PoliSim.UI
             string overrideSentence = hasOverride
                 ? $"An override stands on imports from {partner.Name} - its rate moves only through the Trade bill; Reset returns the draft below to the standing override."
                 : $"No override on imports from {partner.Name} - one starts at today's effective rate and changes nothing until a Trade bill moves it.";
-            if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
+            if (DrawLeverLock()) { } else if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
             {
                 if (hasOverride)
                 {
@@ -10608,7 +10610,7 @@ namespace PoliSim.UI
             string statusText = pendingBill != null
                 ? $"A Trade bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
                 : "No Trade bill before Parliament - the base rate and every override rate below are its draft.";
-            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
+            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
             {
                 _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
             }
@@ -10654,7 +10656,7 @@ namespace PoliSim.UI
                 : fundExists
                     ? "No drawdown bill before Parliament - one withdraws from the fund now, not at the fiscal year."
                     : "No fund stands to draw down - the annual budget creates one first.";
-            if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
+            if (DrawLeverLock()) { } else if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
             {
                 _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
                     new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
@@ -11037,7 +11039,7 @@ namespace PoliSim.UI
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
             // §568: the budget bill's call to action is the family's - brass, because it commits, at the class's one width (PF-5's fourth sibling, and its last).
-            if (PoliSimWidgets.Button("Introduce Budget Bill", _implementButtonStyle, GUILayout.Width(CtaWidth())))
+            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button("Introduce Budget Bill", _implementButtonStyle, GUILayout.Width(CtaWidth())))
             {
                 _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
             }
@@ -11068,7 +11070,8 @@ namespace PoliSim.UI
                        + "After this one, the annual process opens on your country's own fiscal-year date.";
             }
 
-            return _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
+            return !_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _) ? "The budget is the government's to lay - your party votes on its bill."   // PS-3c (§630)
+                : _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
                 ? "The annual budget process is open - introduce your current draft as a bill below to continue."
                 : "No budget bill currently before Parliament. The annual process opens on your country's own fiscal-year date.";
         }
@@ -11386,7 +11389,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
+            if (DrawLeverLock(actionRect)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceTaxProgramBill(PlayerCountryId, taxLine.Type, !taxLine.IsImplemented);
             }
@@ -11726,7 +11729,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
+            if (DrawLeverLock(actionRect)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceWelfareProgramBill(PlayerCountryId, welfareProgram.Type, !welfareProgram.IsImplemented);
             }
@@ -11903,7 +11906,7 @@ namespace PoliSim.UI
             string statusText = pendingBill != null
                 ? $"An Economic Sectors bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
                 : "No Economic Sectors bill currently before Parliament. Introduce your current draft (across every sector) as a bill.";
-            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))
+            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))
             {
                 _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts());
             }
@@ -11915,6 +11918,20 @@ namespace PoliSim.UI
         /// (<see cref="LedgerFamilyColumns"/>), brass *Introduce* when the draft can go to Parliament and the stamped-grey *Pending (NNd)* while one is before it - rendered, never
         /// omitted, as on every tax and welfare row. The sentence names the bill, so the button does not. One control, always, enabled or not.
         /// </summary>
+        /// <summary>
+        /// PS-3c (§630): THE LOCK ON A LEVER. Where the player's party does not lead the government, the call to action is not drawn - the family's caption says
+        /// the role and whose the bills are (SimulationManager.PlayerMayIntroduce, the one rule the simulation refuses by). A rect draws the short word in the action's column.
+        /// </summary>
+        private bool DrawLeverLock(Rect? rect = null, float width = 0f)
+        {
+            if (_playerCountry == null || _simulationManager.PlayerMayIntroduce(PlayerCountryId, out string lockedBecause)) { return false; }
+            bool ambient = GUI.enabled; GUI.enabled = true;   // the reason is read at full ink whatever the family's ambient state (the budget page disables its family while the process is closed)
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            if (rect.HasValue) { GUI.Label(rect.Value, "LOCKED", caption); } else if (width > 0f) { GUILayout.Label(lockedBecause, caption, GUILayout.Width(width)); } else { GUILayout.Label(lockedBecause, caption); }
+            GUI.enabled = ambient;
+            return true;
+        }
+
         private bool DrawBillCallToAction(string statusText, bool pending, int daysRemaining)
         {
             return DrawSentenceAction(statusText, pending ? $"Pending ({daysRemaining}d)" : "Introduce", !pending, pending ? _pendingButtonStyle : _implementButtonStyle) && !pending;

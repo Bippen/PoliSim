@@ -59,6 +59,13 @@ namespace PoliSim.EditorTools
                 Check(!sim.PlayerGoverns(sweden), "with S seated the player does not govern Sweden - the AI ministry's gate opens for it");
                 Country germany = world.GetCountry(CountryId.Germany);
                 Check(!sim.PlayerGoverns(germany), "another country is never the player's to govern");
+                // PS-3c (§630): THE ROLE GATE ON THE LEVERS - with S seated (opposition) every bill is refused with the reason; with M seated (the prime minister's party) it is introduced.
+                bool refused = !sim.PlayerMayIntroduce(CountryId.Sweden, out string lockedBecause) && !sim.IntroduceLawBill(CountryId.Sweden, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
+                Check(refused && lockedBecause == "IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM", F("S in opposition: a law bill is refused - {0}", lockedBecause ?? "(no reason)"));
+                Check(sim.PlayerMayIntroduce(CountryId.Germany, out _), "another country's bills are its own government's - never refused here");
+                sweden.PlayerPartyAbbrev = "M";
+                Check(sim.PlayerMayIntroduce(CountryId.Sweden, out _) && sim.IntroduceLawBill(CountryId.Sweden, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false }), "M as the prime minister's party: the same bill is introduced");
+                sweden.PlayerPartyAbbrev = "S";
 
                 // The record survives the save round trip (format 28).
                 SaveGame save = SaveGameService.CreateSaveGame(sim, world, CountryId.Sweden, null);

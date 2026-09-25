@@ -295,7 +295,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public void AdvanceCountryDayTick(CountryId countryId)
         {
-            TryRollForeignPolicyMeeting(countryId);
+            if (PlayerMayIntroduce(countryId, out _)) { TryRollForeignPolicyMeeting(countryId); }   // PS-3c (§630): a meeting is the government's - none rolls for a player country the AI governs
             AdvanceBudgetBillDay(countryId);
             AdvanceTaxProgramBillsDay(countryId);
             AdvanceWelfareProgramBillsDay(countryId);
@@ -1169,6 +1169,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool IntroduceBudgetBill(CountryId countryId, BudgetBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingBudgetBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1259,6 +1260,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new standalone TaxProgramBill - a no-op (returns false) if one is already pending for this SAME TaxType (different TaxTypes may all have their own bill pending at once - see _pendingTaxProgramBillsByCountry's own doc comment). No mandatory pause to close - unlike IntroduceBudgetBill, this tier never blocks time in the first place.</summary>
         public bool IntroduceTaxProgramBill(CountryId countryId, TaxType type, bool isAdd)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (!_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var pending))
             {
                 pending = new Dictionary<TaxType, TaxProgramBill>();
@@ -1317,6 +1319,7 @@ namespace PoliSim.Simulation
         /// <summary>WelfareProgramType equivalent of IntroduceTaxProgramBill - see that method's own doc comment, same pattern.</summary>
         public bool IntroduceWelfareProgramBill(CountryId countryId, WelfareProgramType type, bool isAdd)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (!_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var pending))
             {
                 pending = new Dictionary<WelfareProgramType, WelfareProgramBill>();
@@ -1375,6 +1378,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new standalone LaborPolicyBill - a no-op (returns false) if one is already pending, same single-slot pattern as IntroduceBudgetBill. No mandatory pause to close - this tier never blocks time.</summary>
         public bool IntroduceLaborBill(CountryId countryId, LaborPolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingLaborBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1463,6 +1467,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceCrimeJusticeBill(CountryId countryId, CrimeJusticePolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingCrimeJusticeBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1515,6 +1520,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new law bill (enact or repeal, per bill.IsRepeal) - a no-op (returns false) if one is already pending for this SAME LawId. Mirrors IntroduceTaxProgramBill's own pattern exactly.</summary>
         public bool IntroduceLawBill(CountryId countryId, LawBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             // P4-C3 third category, ruling (a) (2026-09-05): a law outside the parliament's competence (a monetary-regime law in a
             // country that shares its currency zone; EN-7b: an electricity-tax law where no statute is levied - the USA) is refused here as well as not offered - the browser's line and this gate agree.
             if (!LawCatalog.IsWithinCompetence(_world, _world?.GetCountry(countryId), LawCatalog.GetById(bill.LawId)))
@@ -1821,6 +1827,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceSectorBill(CountryId countryId, SectorPolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingSectorBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1884,6 +1891,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool IntroduceSwfDrawdownBill(CountryId countryId, SwfDrawdownBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingSwfDrawdownBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1972,6 +1980,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceTradeBill(CountryId countryId, TradePolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingTradeBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -2269,6 +2278,23 @@ namespace PoliSim.Simulation
             // has always had (the AI ministries keep off it). The game itself always seats a party (SelectPlayerCountry's fallback), so this is the tools' case, stated.
             if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return true; }
             return country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.PrimeMinister;
+        }
+
+        /// <summary>
+        /// PS-3c (§630): THE ROLE GATE ON THE LEVERS. A bill is the government's to introduce - the political-system spec's §5.2: the prime minister's
+        /// party has every lever; a junior partner its portfolios' (part 4, not yet built - none here); a support party and the opposition their votes
+        /// alone. So a player whose party does not lead the government introduces NO bill in their own country, and every Introduce*Bill refuses with
+        /// the reason. Another country's bills are its own AI government's (never refused here; the AI writes its book without a bill).
+        /// </summary>
+        public bool PlayerMayIntroduce(CountryId countryId, out string lockedBecause)
+        {
+            lockedBecause = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || PlayerGoverns(country)) { return true; }
+            Elections.PlayerRole role = country.Government.RoleOf(country.PlayerPartyAbbrev);
+            string roleWord = role == Elections.PlayerRole.Support ? "IN SUPPORT" : role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER" : "IN OPPOSITION";
+            lockedBecause = role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER · THE PRIME MINISTER'S PARTY INTRODUCES BILLS · YOUR PORTFOLIOS' LEVERS ARE NOT YET BUILT" : roleWord + " · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM";
+            return false;
         }
 
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
@@ -3112,7 +3138,7 @@ namespace PoliSim.Simulation
                 pendingDecisions = new List<(CabinetPortfolio, CabinetDecision)>();
                 _pendingCabinetDecisionsByCountry[country.Id] = pendingDecisions;
             }
-            pendingDecisions.AddRange(CabinetSystem.TryRollDecisions(country));
+            if (PlayerMayIntroduce(country.Id, out _)) { pendingDecisions.AddRange(CabinetSystem.TryRollDecisions(country)); }   // PS-3c (§630): a cabinet decision is the government's - none rolls for a player country the AI governs
             // P2-5.2: LOYALTY's term - under pressure, a disloyal minister may resign or leak; the record goes to the
             // country for the Docket, the approval move to the ledger like any cabinet event.
             foreach (CabinetEventRecord cabinetEvent in CabinetSystem.TryRollCabinetEvents(country, CurrentDate))
