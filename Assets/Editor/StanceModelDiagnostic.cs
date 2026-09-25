@@ -16,9 +16,9 @@ namespace PoliSim.EditorTools
     /// old voters depend on), a labour bill (lrecon toward the state), a crime bill (galtan toward the
     /// authoritarian end), a sector bill (deregulation toward deregulated), a tariff rise (openness toward
     /// closed) - scored on Sweden with the player seated in the formed cabinet's anchor party, so the
-    /// government terms are live (on the year-32 count when the seeded chamber forms none - K-1f, §607). Asserted: the same magnitude produces DIFFERENT for / undecided / against
-    /// counts across the five (no two identical; since K-1f one named pair - the spending cut and deregulation - is held for Elias,
-    /// K-1h, and must still read apart by its parties' alignments); at least one cabinet or support partner splits from the
+    /// government terms are live (on the year-32 count when the seeded chamber forms none or a government without a partner - K-1f, §607; K-1h, §639). Asserted: the same magnitude produces DIFFERENT for / undecided / against
+    /// counts across the five (no two identical; one named pair - the spending cut and deregulation - passes on differing
+    /// per-party scores even where the signs coincide, ruled 2026-09-25, K-1h (iii)); at least one cabinet or support partner splits from the
     /// anchor on at least one draft (a partner refusing a far bill); every party's side is the model's own
     /// alignment against the band; and the USA - no formation, no spendvtax - scores every draft on the axes
     /// it has, with the fallbacks printed. Deterministic, no stream drawn.
@@ -37,19 +37,19 @@ namespace PoliSim.EditorTools
             Country sweden = world.GetCountry(CountryId.Sweden);
             Country usa = world.GetCountry(CountryId.USA);
 
-            // K-1f (§607): with every declared rule held, the seeded chamber forms NO government, so no bill there is a government bill and
-            // the government terms are silent until the game's first election. Its outcome is printed, not asserted (nothing is tuned toward
-            // an outcome). When it forms none, the terms are exercised on a chamber that forms one: the pinned film's own year-32 count
-            // (film603b and film607 count the same shares), which forms SD+M+KD+L under the same rules.
+            // The seeded chamber's government is printed, not asserted (nothing is tuned toward an outcome; §607 and §639 record what it formed).
+            // The done-when's partner clause needs a
+            // government WITH a partner, so where the seeded chamber forms none or one without a partner, the terms are exercised on a chamber
+            // that forms one: the pinned film's own year-32 count (film603b and film607 count the same shares), which forms SD+M+KD+L.
             bool seatedFormed = GovernmentFormation.TryGovernment(sweden, out IReadOnlyList<string> seatedCabinet, out IReadOnlyList<string> seatedSupport);
             string exercised = "the seeded chamber";
-            if (!seatedFormed)
+            if (!seatedFormed || seatedCabinet.Count + seatedSupport.Count < 2)
             {
                 foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) })
                 {
                     sweden.ParliamentSeats[abbrev] = held;
                 }
-                exercised = "the year-32 count (the seeded chamber forms none)";
+                exercised = seatedFormed ? "the year-32 count (the seeded chamber's government has no partner)" : "the year-32 count (the seeded chamber forms none)";
                 // PS-3h (§635): who governs is the STORED record (TryGovernment reads it), so the hypothetical chamber gets the record the game would store
                 // after its own election on it - the formation's result - exactly as ResolveElectionVerdict writes one.
                 sweden.Government = PoliSim.Elections.GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden), PoliSim.Simulation.SimulationManager.EpochDate, world: world);
@@ -116,21 +116,21 @@ namespace PoliSim.EditorTools
             }
 
             // The row's done-when (§247): "no two categories produce identical splits by construction", checked as no two equal seat counts -
-            // and it still is, with ONE named pair held for Elias (K-1h, §607). Since K-1f the spending cut and deregulation split the chamber
-            // alike on BOTH of the game's chambers, every party on the same side: the seeded one, which forms no government (136/62/151), and
-            // the year-32 count's SD+M+KD+L majority (204/0/145). The parties' positions on spendvtax and deregulation order them alike at this
+            // and it still is, with ONE named pair ruled (K-1h (iii), 2026-09-25: it passes on differing per-party scores even where the signs
+            // coincide). Since K-1f the spending cut and deregulation have split the year-32 count alike, every party on the same side (§607 and
+            // §639 record the splits; the exercised chamber is printed above). The parties' positions on spendvtax and deregulation order them alike at this
             // magnitude; on §247's 2022 chamber, with M+KD+L carried by SD, the government terms had parted them (176/24/149 against
-            // 127/73/149). The held pair must still READ apart: its parties' alignments must differ by more than HeldPairFloor. The opinion
+            // 127/73/149). The ruled pair must still READ apart: its parties' alignments must differ by more than RuledPairFloor. The opinion
             // cost - the only term that separates two drafts reading one axis - is below a hundredth, so a scorer that read deregulation as
             // the spending axis still fails here.
-            const float HeldPairFloor = 0.05f;
+            const float RuledPairFloor = 0.05f;
             for (int a = 0; a < splits.Count; a++)
             {
                 for (int b = a + 1; b < splits.Count; b++)
                 {
                     if (splits[a].For != splits[b].For || splits[a].Undecided != splits[b].Undecided || splits[a].Against != splits[b].Against) { continue; }
-                    bool heldPair = splits[a].Name == drafts[0].Name && splits[b].Name == drafts[3].Name;
-                    if (!heldPair)
+                    bool ruledPair = splits[a].Name == drafts[0].Name && splits[b].Name == drafts[3].Name;
+                    if (!ruledPair)
                     {
                         failures.Add($"'{splits[a].Name}' and '{splits[b].Name}' produce the same split ({splits[a].For}/{splits[a].Undecided}/{splits[a].Against}) at one magnitude");
                         continue;
@@ -142,16 +142,16 @@ namespace PoliSim.EditorTools
                         if (splits[b].Alignments.TryGetValue(party.Key, out float other)) { widest = Mathf.Max(widest, Mathf.Abs(party.Value - other)); }
                         if (splits[b].Sides.TryGetValue(party.Key, out int otherSide) && otherSide != splits[a].Sides[party.Key]) { sameSides = false; }
                     }
-                    if (widest <= HeldPairFloor)
+                    if (widest <= RuledPairFloor)
                     {
                         failures.Add($"'{splits[a].Name}' and '{splits[b].Name}' produce the same split ({splits[a].For}/{splits[a].Undecided}/{splits[a].Against}) and read alike - "
-                                     + $"no party's alignment differs by more than {HeldPairFloor:0.00} (widest {widest:0.0000}): the scorer reads the two categories as one");
+                                     + $"no party's alignment differs by more than {RuledPairFloor:0.00} (widest {widest:0.0000}): the scorer reads the two categories as one");
                     }
                     else
                     {
-                        sb.Append(string.Format(CultureInfo.InvariantCulture, "\n    ⚠ HELD FOR ELIAS (K-1h): '{0}' and '{1}' produce the same split ({2}/{3}/{4}), every party on the same side {5}; "
+                        sb.Append(string.Format(CultureInfo.InvariantCulture, "\n    RULED (K-1h (iii)): '{0}' and '{1}' produce the same split ({2}/{3}/{4}), every party on the same side {5}; "
                             + "they read apart - the parties' alignments differ by up to {6:0.000} (floor {7:0.00})\n",
-                            splits[a].Name, splits[b].Name, splits[a].For, splits[a].Undecided, splits[a].Against, sameSides, widest, HeldPairFloor));
+                            splits[a].Name, splits[b].Name, splits[a].For, splits[a].Undecided, splits[a].Against, sameSides, widest, RuledPairFloor));
                     }
                 }
             }

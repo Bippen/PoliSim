@@ -104,8 +104,22 @@ namespace PoliSim.Elections
             }
 
             AddCandidacyLines(lines, parties, vintage);
+
+            // K-1g (ruled 2026-09-25): KD'S REFUSAL OF ANDERSSON - it will vote no to her as prime minister all the way to an extra election. On
+            // K-1f's premise (a cabinet holding S is its candidate's) that is a one-way line from KD to S at the strength K-1h (ii) ruled for a
+            // declared rival: KD votes against the cabinet, and never sits in it. Being support-blocking, the line also counts KD for a motion of
+            // no confidence in a cabinet holding S (GovernmentFormation.RedLinedFrom), as M's candidacy line does - KD's words are about the
+            // investiture; the motion's reading is the line's strength, stated (§639).
+            int sIndex = IndexOf(parties, "S");
+            if (kd >= 0 && sIndex >= 0) { lines.Add(new RedLine(kd, sIndex, RedLineKind.Declared, blocksSupport: true, oneWay: true, basis: KdRefusesAndersson)); }
             return lines;
         }
+
+        /// <summary>K-1g: KD's refusal of Andersson, its basis - Busch's own words as SVT quotes them, the first report of the line beside them.</summary>
+        private const string KdRefusesAndersson = "DECLARED: Kristdemokraterna will vote no to Magdalena Andersson as prime minister, all the way to an extra election - "
+            + "Busch's own words 2026-09-02 [KD-I1] (\"Vi kommer att vara beredda att rösta nej till Magdalena Andersson ända fram till ett nyval\"), "
+            + "first reported 2026-06-05 [KD-I3] (the newsroom's words, citing DI); the KD primary is a GAP. On K-1f's premise a cabinet holding S is "
+            + "Andersson's, so the line runs from KD to S. " + SwedenSource;
 
         /// <summary>The basis prefix every candidacy line carries (K-1f). The parties said the candidacies; the refusal between two of them is the
         /// ruling's rule, so a surface that quotes what a party said reads this to tell the two apart (<see cref="IsCandidacy"/>).</summary>
@@ -122,10 +136,9 @@ namespace PoliSim.Elections
         /// declared party is that rival's. On that premise the rule is a pair of ONE-WAY lines between every two declared parties - neither sits
         /// in, supports or lets through a cabinet containing the other, and both may tolerate a third party's. The case the premise cannot
         /// represent is a cabinet holding S (or M) under a prime minister who is no party's declared candidate; the model has no such cabinet.
-        /// <para>⚠ <b>The strength is load-bearing, and it is a reading.</b> "Refuses" is read as the one-way line's support-blocking strength:
-        /// the party votes AGAINST a cabinet its rival leads. No fetched S or M page says whether its refusal covers sitting in, supporting or
-        /// letting through (`coalition_declarations_2026.md`, K-1f). At cabinet-blocking strength - the two never sit together but may tolerate -
-        /// the seated chamber forms an SD+M+KD minority instead of none (`Formation2026Diagnostic`, measured, §607).</para>
+        /// <para><b>The strength is ruled</b> (K-1h (ii), 2026-09-25, §639): a declared rival candidacy means voting AGAINST the rival's cabinet -
+        /// the one-way line's support-blocking strength. No fetched S or M page says whether its refusal covers sitting in, supporting or letting
+        /// through (`coalition_declarations_2026.md`, K-1f); the cabinet-blocking reading's result is a row of `Formation2026Diagnostic`.</para>
         /// <para>Sourced and dated per vintage - declarations are dated, and every election reads its own date's (standing, K-1f). A party that
         /// named another party's leader, or named none, carries no candidacy: the ruling's case is a party's own leader. 2026: SD, KD, L and C
         /// named Kristersson or Andersson, V and MP named none. 2022: C, KD, L and MP named Kristersson or Andersson, SD and V are gaps (none
@@ -195,25 +208,49 @@ namespace PoliSim.Elections
         /// 2026 chambers, the two chose the same cabinet and outcome kind every time, and in 111 the conditional form listed V as a supporter
         /// where the unconditional one did not (none on the seated or year-32 chambers). The ruling's words are unconditional ("V refuses to
         /// support a cabinet it is not in"), and that is what is wired.</para>
-        /// <para>Not wired, the ruling named V's alone (K-1g, Elias's): MP's in-or-against rule, secondary in both vintages (2022 [MP-I1], SVT's
-        /// report of Stenevi's words; 2026 [MP-I1], [MP-I2], [MP-I4]), and SD's "either a government party or an opposition party" of its 2026
-        /// platform ([SD-P2], primary). MP's 2022 rule, wired, would form an S minority on the 2022 chamber ahead of M+KD+L (the replica), so the
-        /// 2022 backtest's record rests on it staying unwired. 2022 carries no V rule (none was found).</para>
+        /// <para>K-1g (ruled 2026-09-25): MP's and SD's 2026 rules are wired beside V's. MP's votes against, as V's does - its spokesperson's
+        /// condition that MP votes no to a prime minister unless it sits in the government (secondary only: [MP-I4], [MP-I1], [MP-I2]). SD's is
+        /// wired on the BUILDER'S READING, open for Elias (K-1i): its words refuse the support role - "either a government party or an opposition
+        /// party" ([SD-P2], primary), "no middle position like the one we have today" ([L-C2]) - and do not say, as V's and MP's do, that SD votes
+        /// every other cabinet down, so <see cref="InOrAgainst.VotesAgainst"/> is false; the same [L-C2] quotation says "full opposition", which
+        /// reads the other way. The alternative is a row of `Formation2026Diagnostic`.</para>
+        /// <para>MP's 2022 rule is NOT wired, measured first (K-1g): Stenevi's words are read right ([MP-I1] 2022: "Vi röstar nej till de
+        /// regeringar som vi inte ingår i"), and the model cannot hold them - wired, the 2022 chamber forms S alone ahead of M+KD+L carried by SD
+        /// (`Formation2026Diagnostic`'s last row), because a formation choosing between two cabinets that both pass ranks them by its one shared
+        /// score, on which a single party's cohesion is whole, and KD and L hold out for their own cabinet only where it outscores S alone. In
+        /// the Riksdag the Speaker put Kristersson first, carried by a majority for him. 2022 carries no V rule (none was found).</para>
         /// </summary>
         public static List<InOrAgainst> InOrAgainstFor(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
         {
             var rules = new List<InOrAgainst>();
             vintage = WorldClock.Resolve(country, vintage);
-            if (country != CountryId.Sweden || vintage != ElectionVintage.Sweden2026) { return rules; }   // V's rule is 2026's declaration (K-1f); 2022's set carries none
+            if (country != CountryId.Sweden || vintage != ElectionVintage.Sweden2026) { return rules; }   // 2026's declarations (K-1f, K-1g); 2022's set carries none
             int v = IndexOf(parties, "V");
-            if (v >= 0)
-            {
-                rules.Add(new InOrAgainst(v, "DECLARED: Vänsterpartiet will not support or let through a government it is not in, where its votes are needed - "
-                    + "its election platform as decided by the congress 2026-04-18 ([V-P1], dated 2026-04-19; [V-I1]), restated as unchanged 2026-08-25 ([C-I9]), "
-                    + "held after the election 2026-09-14 ([V-I4]). " + SwedenSource));
-            }
+            if (v >= 0) { rules.Add(new InOrAgainst(v, VInOrAgainst)); }
+            int mp = IndexOf(parties, "MP");
+            if (mp >= 0) { rules.Add(new InOrAgainst(mp, MpInOrAgainst)); }
+            int sd = IndexOf(parties, "SD");
+            if (sd >= 0) { rules.Add(new InOrAgainst(sd, SdNoSupportRole, votesAgainst: false)); }
             return rules;
         }
+
+        private const string VInOrAgainst = "DECLARED: Vänsterpartiet will not support or let through a government it is not in, where its votes are needed - "
+            + "its election platform as decided by the congress 2026-04-18 ([V-P1], dated 2026-04-19; [V-I1]), restated as unchanged 2026-08-25 ([C-I9]), "
+            + "held after the election 2026-09-14 ([V-I4]). " + SwedenSource;
+
+        /// <summary>K-1g: MP's rule. MP's own record is a GAP, so its date is a PRESS REPORT's - a stated deviation from §621's first rule, put to Elias
+        /// (§639): 2026-04-04, TT's report, the first and only source that carries the half that is wired (the vote against); Sveriges Radio's of
+        /// 2026-08-10 carries the demand to sit in government and not the vote.</summary>
+        private const string MpInOrAgainst = "DECLARED: Miljöpartiet will vote no to a prime minister unless it sits in the government - TT's report of Helldén's condition "
+            + "2026-04-04 ([MP-I4], the newsroom's paraphrase: \"röstar nej utan regeringsplats\"), restated 2026-08-10 to Sveriges Radio ([MP-I1]: \"Vi ska sitta i nästa regering\"; "
+            + "[MP-I2]: \"Partiet ställer samtidigt ett villkor om att sitta i regering\"); secondary only - MP's own wording is a GAP, and the date is a press report's (§639). " + SwedenSource;
+
+        /// <summary>K-1g: SD's rule - the support role refused, the vote against not declared.</summary>
+        private const string SdNoSupportRole = "DECLARED: Sverigedemokraterna will be either a government party or an opposition party, never a support party again - "
+            + "Åkesson's post 2025-10-10 as SvD quotes it ([L-C2]: \"antingen att sitta i regering eller i full opposition. Något mellanläge, motsvarande det vi har idag, "
+            + "kommer inte att vara aktuellt för oss\"), restated 2026-04-01 ([MSD-I4]) and in the 2026 platform ([SD-P2], primary: \"Efter nästa val är Sverigedemokraterna "
+            + "antingen ett regeringsparti eller ett oppositionsparti.\"). Scoped by its own words to the formation after the 2026 election (\"Efter nästa val\"). "
+            + "Read as refusing the support role without voting every other cabinet down - the builder's reading, open for Elias (K-1i); \"full opposition\" in the same quotation reads the other way. " + SwedenSource;
 
         // -----------------------------------------------------------------------------------------------------------------------------
         // §621 (ruled 2026-09-25): DECLARATIONS BY DATE. Three rules - a declaration is dated by the party's own record, never by press
@@ -222,15 +259,16 @@ namespace PoliSim.Elections
         // (M 2026-04-01 [MSD-P1], S 2026-05-01 [S-P2]); KD's no-SD-ministers line lifts on 2026-09-08 (KD's own words [KD-I2]); V's
         // in-or-against rule takes effect 2026-04-18 (the congress decision [V-P1] records); C's one-way line to V starts 2026-01-30
         // (C's own publication [C-P1]). The vintage API above stays for the backtests, pinned by name; `ForDate` is the timeline, and
-        // `DeclarationDatesDiagnostic` proves the timeline's 2022-09-11 equals `For(Sweden2022)` and its 2026-09-13 `For(Sweden2026)`.
+        // `DeclarationDatesDiagnostic` proves the timeline's 2022-09-11 equals `For(Sweden2022)` and its 2026-09-13 `For(Sweden2026)`. K-1g (§639)
+        // adds three: SD's refusal of the support role 2025-10-10, MP's in-or-against rule 2026-04-04 (a press report's date, stated), KD → S 2026-09-02.
         // No runtime surface reads the timeline yet - the run-up's declarations are D-PS's (§620/§621); the election reads its own day's.
         // -----------------------------------------------------------------------------------------------------------------------------
 
-        /// <summary>One dated declaration: a pair line, a candidacy or an in-or-against rule, standing from <see cref="From"/> until <see cref="Until"/> (exclusive; MaxValue while it stands).</summary>
+        /// <summary>One dated declaration: a pair line, a candidacy, an in-or-against rule or SD's refusal of the support role, standing from <see cref="From"/> until <see cref="Until"/> (exclusive; MaxValue while it stands).</summary>
         public readonly struct DatedFact
         {
             public readonly string Party;
-            /// <summary>The other party of a pair line; null for a candidacy or an in-or-against rule.</summary>
+            /// <summary>The other party of a pair line; null for a candidacy, an in-or-against rule or a refusal of the support role.</summary>
             public readonly string Other;
             public readonly FactKind Kind;
             public readonly bool BlocksSupport;
@@ -248,7 +286,8 @@ namespace PoliSim.Elections
             public bool StandsOn(System.DateTime date) => date.Date >= From && date.Date < Until;
         }
 
-        public enum FactKind { PairLine, Candidacy, InOrAgainst }
+        /// <summary>K-1g: <see cref="NoSupportRole"/> is SD's form of the in-or-against rule - the support role refused, the vote against not declared.</summary>
+        public enum FactKind { PairLine, Candidacy, InOrAgainst, NoSupportRole }
 
         private static readonly System.DateTime Open = System.DateTime.MaxValue;
         private static System.DateTime D(int y, int m, int d) => new System.DateTime(y, m, d);
@@ -283,6 +322,16 @@ namespace PoliSim.Elections
             // V's in-or-against rule: the congress decision of 2026-04-18 (ruled §621: the decision the document records, not the PDF's date).
             new DatedFact("V", null, FactKind.InOrAgainst, false, false, null, D(2026, 4, 18), Open,
                 "DECLARED: Vänsterpartiet will not support or let through a government it is not in, where its votes are needed - its election platform as decided by the congress 2026-04-18 ([V-P1], the PDF dated 2026-04-19; [V-I1]), restated as unchanged 2026-08-25 ([C-I9]), held after the election 2026-09-14 ([V-I4]). " + SwedenSource),
+            // K-1g (ruled 2026-09-25). SD's refusal of the support role, from Åkesson's own post as SvD quotes it - §621's precedent as ruled: a party
+            // leader's own post, quoted verbatim, dates the party's record (KD's line lifted on Busch's post on X as Bulletin quotes it). The rule is scoped
+            // to the formation after the 2026 election; no runtime path reads the timeline before it (the vintage carries it).
+            new DatedFact("SD", null, FactKind.NoSupportRole, false, false, null, D(2025, 10, 10), Open, SdNoSupportRole),
+            // MP's in-or-against: its own record is a GAP, so the date is a press report's - the first that carries the vote against (TT, 2026-04-04), a
+            // stated deviation from §621's first rule (§639).
+            new DatedFact("MP", null, FactKind.InOrAgainst, false, false, null, D(2026, 4, 4), Open, MpInOrAgainst),
+            // KD → S, one way: Busch's own words of 2 September as SVT's live report quotes them - spoken words, not a party publication, so an
+            // EXTENSION of §621's precedent (a post on X), stated and put to Elias (§639); the June report is the newsroom's.
+            new DatedFact("KD", "S", FactKind.PairLine, true, true, null, D(2026, 9, 2), Open, KdRefusesAndersson),
         };
 
         /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden only; the other countries return derived lines alone.</summary>
@@ -320,9 +369,9 @@ namespace PoliSim.Elections
             if (country != CountryId.Sweden) { return rules; }
             foreach (DatedFact f in SwedenTimeline)
             {
-                if (f.Kind != FactKind.InOrAgainst || !f.StandsOn(asOf)) { continue; }
+                if ((f.Kind != FactKind.InOrAgainst && f.Kind != FactKind.NoSupportRole) || !f.StandsOn(asOf)) { continue; }
                 int p = IndexOf(parties, f.Party);
-                if (p >= 0) { rules.Add(new InOrAgainst(p, f.Basis)); }
+                if (p >= 0) { rules.Add(new InOrAgainst(p, f.Basis, votesAgainst: f.Kind == FactKind.InOrAgainst)); }
             }
             return rules;
         }

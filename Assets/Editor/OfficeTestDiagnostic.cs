@@ -140,12 +140,12 @@ namespace PoliSim.EditorTools
 
             // --- K-1 (2026-09-23) and K-1f (2026-09-24): THE DECLARED SHAPES, as the formation reads them. The shapes on their own (a one-way
             // line refuses A->B only); the wiring (C->V one way; the S-M candidacy pair, one way in each direction, in BOTH vintages - every
-            // election reads its own date's; V's in-or-against rule in 2026's only, and V the only party carrying one); the rule's vote-against
+            // election reads its own date's; the party rules in 2026's only - V's and MP's voting against, SD's refusing the support role, K-1g); the rule's vote-against
             // half on a chamber built so that half alone decides; the GAME'S path reading the rule (GovernmentFormation against the formation
             // given the rule); and the rules' effect over EVERY viable government of a chamber that forms some - the pinned film's own year-32
-            // count (film603b and film607 count the same shares). The seated chamber forms none with every rule held and the model's hold-out
-            // as built - a party votes against a cabinet while holding out for any admissible one of its own (§607): its outcome is printed,
-            // not asserted, because nothing is tuned toward an outcome. ⚠ The C-with-V count is blind on the year-32 count (the right bloc
+            // count (film603b and film607 count the same shares). K-1h and K-1g (ruled 2026-09-25): a party holds out only for a cabinet of its
+            // own that could pass, and MP's, SD's and KD's 2026 declarations are wired beside V's; the seated chamber's outcome is printed, not
+            // asserted, because nothing is tuned toward an outcome - what is asserted is that K-1f's own set forms a government under K-1h (i). ⚠ The C-with-V count is blind on the year-32 count (the right bloc
             // holds 180, so no cabinet with V is viable there); it is kept as a print and the one-way shape is asserted on its own. ---
             var oneWay = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: true, basis: "probe", oneWay: true);
             var symmetric = new RedLine(0, 1, RedLineKind.Declared, blocksSupport: true, basis: "probe");
@@ -178,8 +178,14 @@ namespace PoliSim.EditorTools
             }
             bool wiredOneWay = seatedLines.Exists(line => line.Kind == RedLineKind.Declared && line.A == cIndex && line.B == vIndex && line.OneWay);
             bool candidacyWired = CandidacyPair(seatedLines) && CandidacyPair(DeclaredRedLines.For(CountryId.Sweden, swedenParties, ElectionVintage.Sweden2022));
-            bool vRuleWired = seatedRules.Count == 1 && seatedRules[0].Party == vIndex
+            // K-1g (2026-09-25): 2026's party rules are V's and MP's (they vote against) and SD's (it refuses the support role only); 2022's none.
+            int mpIndex = -1, sdIndex = -1, kdIndex = -1;
+            for (int p = 0; p < swedenParties.Count; p++) { if (swedenParties[p].Abbrev == "MP") { mpIndex = p; } if (swedenParties[p].Abbrev == "SD") { sdIndex = p; } if (swedenParties[p].Abbrev == "KD") { kdIndex = p; } }
+            bool RuleIs(int party, bool votesAgainst) => seatedRules.Exists(r => r.Party == party && r.VotesAgainst == votesAgainst);
+            bool partyRulesWired = seatedRules.Count == 3 && RuleIs(vIndex, true) && RuleIs(mpIndex, true) && RuleIs(sdIndex, false)
                 && DeclaredRedLines.InOrAgainstFor(CountryId.Sweden, swedenParties, ElectionVintage.Sweden2022).Count == 0;
+            bool KdToS(List<RedLine> lines) => lines.Exists(line => line.Kind == RedLineKind.Declared && line.OneWay && line.BlocksSupport && line.A == kdIndex && line.B == sIndex);
+            bool kdWired = KdToS(seatedLines) && !KdToS(DeclaredRedLines.For(CountryId.Sweden, swedenParties, ElectionVintage.Sweden2022));
 
             // The vote-against half, where it alone decides: A 150 and B 169 refuse each other's support; X 30 may sit with neither (its only
             // admissible cabinet is itself, which scores below both, so it holds out against neither). Without a rule X abstains or supports,
@@ -200,10 +206,23 @@ namespace PoliSim.EditorTools
             int governsWithoutXUnderRule = probeWith.Viable.FindAll(g => (g.Cabinet & 4) == 0).Count;
             int xSupportsUnderRule = probeWith.Viable.FindAll(g => (g.Support & 4) != 0).Count;
             bool voteAgainstDecides = governsWithoutX > 0 && governsWithoutXUnderRule == 0 && xSupportsUnderRule == 0;
+            // K-1g: SD's form - the support role refused and no vote against declared - on the same chamber: X is behind no cabinet, and A or B
+            // still governs, because X abstains.
+            CoalitionResult probeNoSupport = CoalitionFormation.Form(probeSeats, probeCompat, probeLines, negativeRule: true,
+                inOrAgainst: new List<InOrAgainst> { new InOrAgainst(2, "probe: X takes no support role", votesAgainst: false) });
+            bool noSupportRoleHolds = probeNoSupport.Viable.FindAll(g => (g.Cabinet & 4) == 0).Count > 0 && probeNoSupport.Viable.FindAll(g => (g.Support & 4) != 0).Count == 0;
 
             double[,] swedenCompat = GovernmentFormation.Compatibility(swedenParties);
             CoalitionResult seatedFormation = CoalitionFormation.Form(seatedSeats, swedenCompat, seatedLines, negativeRule: true, inOrAgainst: seatedRules);
             CoalitionResult seatedWithoutRules = CoalitionFormation.Form(seatedSeats, swedenCompat, seatedLines, negativeRule: true);
+            // K-1h (i), ruled 2026-09-25: a party holds out only for a cabinet of its own that could pass. Under K-1f's own set (V's rule, no KD line)
+            // the seated chamber formed none while a party held out for any admissible cabinet (§607); the ruling's reading forms a government
+            // there - the premise the formateur's first ruling rests on. Which one is printed, not asserted. ⚠ A weak guard: it reads the real
+            // chamber, so a change of seats or positions could flip it with the hold-out untouched; a discriminating probe needs the rule it
+            // replaced, which is removed (§639).
+            List<RedLine> k1fLines = seatedLines.FindAll(line => !(line.Kind == RedLineKind.Declared && line.OneWay && line.A == kdIndex && line.B == sIndex));
+            CoalitionResult k1fSeated = CoalitionFormation.Form(seatedSeats, swedenCompat, k1fLines, negativeRule: true, inOrAgainst: seatedRules.FindAll(r => r.Party == vIndex));
+            bool holdOutPassableOnly = k1fSeated.Outcome != CoalitionOutcomeKind.NewElection && k1fSeated.Outcome != CoalitionOutcomeKind.Collapse;
             var yearThirtyTwo = new int[swedenParties.Count];
             foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) })
             {
@@ -268,37 +287,46 @@ namespace PoliSim.EditorTools
             bool rulesVisible = Government(seatedFormation) != Government(seatedWithoutRules) || Government(played) != Government(playedWithoutRules);
 
             int cBit = 1 << cIndex, vBit = 1 << vIndex, sBit = 1 << sIndex, mBit = 1 << mIndex;
-            int cWithV = 0, sWithM = 0, rivalSupport = 0, vSupports = 0;
-            foreach (GovernmentOption g in played.Viable)
+            int cWithV = 0, sWithM = 0, rivalSupport = 0, vSupports = 0, ruleSupports = 0, kdWithS = 0;
+            int mpBit = 1 << mpIndex, sdBit = 1 << sdIndex, kdBit = 1 << kdIndex;
+            foreach (CoalitionResult formation in new[] { played, seatedFormation })
             {
-                if ((g.Cabinet & vBit) != 0 && ((g.Cabinet & cBit) != 0 || (g.Support & cBit) != 0)) { cWithV++; }
-                if ((g.Cabinet & sBit) != 0 && (g.Cabinet & mBit) != 0) { sWithM++; }
-                if (((g.Cabinet & mBit) != 0 && (g.Support & sBit) != 0) || ((g.Cabinet & sBit) != 0 && (g.Support & mBit) != 0)) { rivalSupport++; }
-                if ((g.Support & vBit) != 0) { vSupports++; }
+                foreach (GovernmentOption g in formation.Viable)
+                {
+                    if ((g.Cabinet & vBit) != 0 && ((g.Cabinet & cBit) != 0 || (g.Support & cBit) != 0)) { cWithV++; }
+                    if ((g.Cabinet & sBit) != 0 && (g.Cabinet & mBit) != 0) { sWithM++; }
+                    if (((g.Cabinet & mBit) != 0 && (g.Support & sBit) != 0) || ((g.Cabinet & sBit) != 0 && (g.Support & mBit) != 0)) { rivalSupport++; }
+                    if ((g.Support & vBit) != 0) { vSupports++; }
+                    if ((g.Support & (mpBit | sdBit)) != 0) { ruleSupports++; }   // K-1g: MP and SD behind a cabinet they are not in
+                    if ((g.Cabinet & sBit) != 0 && ((g.Cabinet & kdBit) != 0 || (g.Support & kdBit) != 0)) { kdWithS++; }   // K-1g: KD in or behind a cabinet holding S
+                }
             }
             sb.Append(string.Format(CultureInfo.InvariantCulture,
                 "\n    --- K-1 / K-1f: the declared shapes as the formation reads them ---\n"
                 + "    the shape: one-way refuses A->B only {0}; symmetric both ways {1}; cabinet-blocking neither way {2}\n"
-                + "    the wiring: C->V one way {3}; the S-M candidacy pair in both vintages {4}; V's in-or-against rule, V's alone, in 2026's only {5}\n"
+                + "    the wiring: C->V one way {3}; the S-M candidacy pair in both vintages {4}; the 2026 party rules (V, MP, SD), in 2026's only {5}\n"
                 + "    the vote-against half (A 150, B 169, X 30): without X's rule {6} viable cabinet(s) without X; with it {7}, X behind {8} - decides {9}\n"
                 + "    the game's path: seated '{10}' (the formation given the rules '{11}', without them '{12}'); year-32 '{13}' ('{14}', '{15}') - reads the rules {16}, visible {17}; the country's own path: seated '{25}', year-32 '{26}'\n"
                 + "    the seated chamber, every rule held: {18} ({19} viable) - printed, not asserted\n"
-                + "    the year-32 count: {20} viable; C in or behind a cabinet with V {21} (blind here); S and M in one cabinet {22}; a candidacy party behind its rival's cabinet {23}; V behind a cabinet it is not in {24}\n",
+                + "    the year-32 count and the seated chamber: {20} viable on the count; C in or behind a cabinet with V {21}; S and M in one cabinet {22}; a candidacy party behind its rival's cabinet {23}; V behind a cabinet it is not in {24}\n"
+                + "    K-1g: the rules MP, SD (no support role) {27}, KD>S in 2026's only {28}; SD's form on the probe chamber - X behind nothing, A or B still governs {29}; MP or SD behind a cabinet it is not in {30}; KD in or behind a cabinet holding S {31}\n"
+                + "    K-1h (i): K-1f's own set on the seated chamber forms {32} - a government, as the ruling reads it {33}\n",
                 oneWay.RefusesSupport(0, 1) && !oneWay.RefusesSupport(1, 0), symmetric.RefusesSupport(0, 1) && symmetric.RefusesSupport(1, 0),
-                !cabinetOnly.RefusesSupport(0, 1) && !cabinetOnly.RefusesSupport(1, 0), wiredOneWay, candidacyWired, vRuleWired,
+                !cabinetOnly.RefusesSupport(0, 1) && !cabinetOnly.RefusesSupport(1, 0), wiredOneWay, candidacyWired, partyRulesWired,
                 governsWithoutX, governsWithoutXUnderRule, xSupportsUnderRule, voteAgainstDecides,
                 gameSeated, Government(seatedFormation), Government(seatedWithoutRules), gamePlayed, Government(played), Government(playedWithoutRules), gameReadsRules, rulesVisible,
-                seatedFormation.Outcome, seatedFormation.Viable.Count, played.Viable.Count, cWithV, sWithM, rivalSupport, vSupports, countrySeated, countryPlayed));
-            if (!shapeHolds || !wiredOneWay || !candidacyWired || !vRuleWired || !voteAgainstDecides || !gameReadsRules || !rulesVisible
-                || cIndex < 0 || vIndex < 0 || sIndex < 0 || mIndex < 0
-                || played.Viable.Count == 0 || cWithV > 0 || sWithM > 0 || rivalSupport > 0 || vSupports > 0)
+                seatedFormation.Outcome, seatedFormation.Viable.Count, played.Viable.Count, cWithV, sWithM, rivalSupport, vSupports, countrySeated, countryPlayed,
+                partyRulesWired, kdWired, noSupportRoleHolds, ruleSupports, kdWithS, Government(k1fSeated), holdOutPassableOnly));
+            if (!shapeHolds || !wiredOneWay || !candidacyWired || !partyRulesWired || !kdWired || !voteAgainstDecides || !noSupportRoleHolds || !holdOutPassableOnly || !gameReadsRules || !rulesVisible
+                || cIndex < 0 || vIndex < 0 || sIndex < 0 || mIndex < 0 || mpIndex < 0 || sdIndex < 0 || kdIndex < 0
+                || played.Viable.Count == 0 || cWithV > 0 || sWithM > 0 || rivalSupport > 0 || vSupports > 0 || ruleSupports > 0 || kdWithS > 0)
             {
                 failures.Add("K-1 / K-1f: the declared shapes");
                 Debug.LogError($"OFFICE: the declared shapes do not hold - the shape {(shapeHolds ? "ok" : "WRONG")}, C->V one way {wiredOneWay}, the candidacy pair {candidacyWired}, "
-                               + $"V's rule (V's alone) {vRuleWired}; the vote-against half decides {voteAgainstDecides}; the game's path reads the rules {gameReadsRules} "
+                               + $"the party rules (V, MP; SD no support role) {partyRulesWired}, KD>S {kdWired}; the vote-against half decides {voteAgainstDecides}, SD's form holds {noSupportRoleHolds}, K-1h (i) forms a government {holdOutPassableOnly}; the game's path reads the rules {gameReadsRules} "
                                + $"(seated '{gameSeated}' vs '{Government(seatedFormation)}', year-32 '{gamePlayed}' vs '{Government(played)}'), the rules visible {rulesVisible}; "
-                               + $"over the year-32 count's {played.Viable.Count} viable government(s): C with V {cWithV}, S with M {sWithM}, a candidacy "
-                               + $"party behind its rival {rivalSupport}, V behind a cabinet it is not in {vSupports}. ⚠ Each is a sourced declaration "
+                               + $"over the year-32 count's {played.Viable.Count} and the seated chamber's {seatedFormation.Viable.Count} viable government(s): C with V {cWithV}, S with M {sWithM}, a candidacy "
+                               + $"party behind its rival {rivalSupport}, V behind a cabinet it is not in {vSupports}, MP or SD behind one {ruleSupports}, KD with S {kdWithS}. ⚠ Each is a sourced declaration "
                                + "(coalition_declarations_2026.md, _2022.md); a count above zero means the formation no longer reads what a party said.");
             }
 

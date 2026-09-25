@@ -172,7 +172,16 @@ date printed on the page. Wayback timestamps are UTC.)
   because it was found while checking MP's candidacy. It is **not wired**, and nothing here asks for it to be.
   (Measured since, at K-1f's wiring, §607: wired, it would form an S minority on 2022's chamber (107, opposed 86)
   ahead of M+KD+L, so the backtest's record rests on it staying unwired. The source is **secondary**: SVT's report
-  of Stenevi's words. Filed as K-1g for Elias.)
+  of Stenevi's words. Filed as K-1g for Elias.) **K-1g, ruled 2026-09-25 (§639): measured before wiring, and NOT wired -
+  read right, and the model cannot hold it.** The saved page carries Stenevi's own words on *30 minuter*: *"För att
+  Miljöpartiet ska släppa fram en regering överhuvudtaget, så är kravet att de ska sitta med i den"* (SVT's sentence) and
+  *"Vi röstar nej till de regeringar som vi inte ingår i"* (hers) - V's in-or-against shape exactly. Wired, the chamber
+  forms S alone (107) at 86 against: only M (its candidacy line) and MP vote against it, and the formation, choosing
+  between two cabinets that both pass, ranks them by its one shared score, on which a single party's cohesion is whole
+  (66.11 against M+KD+L's 59.51); KD and L do not hold out against S alone because their own cabinet scores below it,
+  and SD holds out only for a cabinet it sits in. In the Riksdag the Speaker put Kristersson first, carried by the right
+  bloc's majority for him (the formateur's Speaker rule, when it lands, is the order the model lacks). Measured with K-1h
+  (i)'s hold-out: the same (`k1h_639_formation`).
 - **V's mirror-shaped line, 2022 vintage: GAP.** The ruling's V rule ("refuses to support a cabinet it
   is not in") was **not found in a 2022 source saved this run**. V's 2022 statement [V-I1] is weaker: support
   in exchange for something, not support only from inside the cabinet. Two further V statements, both reported in SVT pages published **2022-08-15** and updated 2022-08-19 (the tweet's own date is not printed; both are before polling day either way) and both **secondary** (SVT quoting V's leader Nooshi Dadgostar), are in the saved pages.

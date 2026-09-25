@@ -70,17 +70,39 @@ namespace PoliSim.Elections
     /// not contain the declaring one. The party is never a supporter of a cabinet outside it and votes against every such cabinet at its
     /// investiture (it will not "let it through"). It is a party's rule, not a pair's, so it is not a <see cref="RedLine"/>; it never refuses
     /// a cabinet the party sits in. Sourced and dated like a declared line - the basis carries the citation.
+    /// <para>K-1g (ruled 2026-09-25): the rule's two halves are separable, because the declarations are. V's and MP's words refuse to support
+    /// AND to let through a cabinet they are not in - they vote against it (<see cref="VotesAgainst"/> true). SD's words refuse the support
+    /// role - "either a government party or an opposition party", no middle position - and do not say it votes every other cabinet down, so
+    /// on the builder's reading, open for Elias (K-1i), SD's rule is never a supporter, its vote left to the lines and the hold-out
+    /// (<see cref="VotesAgainst"/> false). The other reading is a row of `Formation2026Diagnostic`.</para>
     /// </summary>
     public readonly struct InOrAgainst
     {
         public readonly int Party;
         /// <summary>The citation and its date. Never empty.</summary>
         public readonly string Basis;
+        /// <summary>True: the party votes against every cabinet it is not in (it will not let one through). False: it only refuses to
+        /// support one from outside (K-1g, SD's declared form).</summary>
+        public readonly bool VotesAgainst;
 
-        public InOrAgainst(int party, string basis)
+        public InOrAgainst(int party, string basis, bool votesAgainst = true)
         {
             if (string.IsNullOrEmpty(basis)) { throw new ArgumentException("an in-or-against rule needs its basis"); }
-            Party = party; Basis = basis;
+            Party = party; Basis = basis; VotesAgainst = votesAgainst;
+        }
+
+        /// <summary>The parties in <paramref name="rules"/> within a chamber of <paramref name="n"/>, as a mask - every rule, or only those that
+        /// vote against (a party index past the chamber is ignored, as a line's is).</summary>
+        public static int Mask(IReadOnlyList<InOrAgainst> rules, int n, bool votingAgainstOnly)
+        {
+            int mask = 0;
+            if (rules == null) { return 0; }
+            foreach (InOrAgainst rule in rules)
+            {
+                if (rule.Party < 0 || rule.Party >= n || (votingAgainstOnly && !rule.VotesAgainst)) { continue; }
+                mask |= 1 << rule.Party;
+            }
+            return mask;
         }
     }
 
@@ -241,10 +263,11 @@ namespace PoliSim.Elections
     ///    any cabinet member — for a symmetric line support is refused in BOTH directions, because "I will not prop up
     ///    a government containing you" and "I will not be propped up by you" are both real; a one-way line (K-1) refuses
     ///    only from its A to its B, and never parts two supporters. A party with an in-or-against rule (K-1f) supports no cabinet
-    ///    it is not in, and votes against every such cabinet at its investiture.
+    ///    it is not in, and votes against every such cabinet at its investiture - SD's declared form (K-1g) only the first half.
     /// 4. The cabinet is viable if it wins its investiture: a majority for it, or under the
     ///    negative rule, fewer than an absolute majority against it. Parties that support it do
-    ///    not vote against it; every other party does.
+    ///    not vote against it; a party red-lined from it does, and so does one holding out for a cabinet of its own that could
+    ///    pass (K-1h (i)); every other party abstains.
     /// 5. Viable cabinets are ranked, and the outcome is named by what it actually is — a majority
     ///    in cabinet, a minority with declared support, or a bare minority.
     /// 6. **If nothing is viable, the outcome is a NEW ELECTION.** That is a consequence of the
@@ -258,18 +281,20 @@ namespace PoliSim.Elections
         public const double WeightSeatStrength = 0.3;
         public const double WeightPower = 0.2;
 
-        /// <param name="holdOutOnlyForPassable">MEASUREMENT ONLY (K-1f, §607) - no game path sets it. False, the model as built since §29: a party
-        /// holds out (votes against) for ANY admissible cabinet of its own that scores higher, even one that cannot pass its investiture on the
-        /// lines and rules alone. True: it holds out only for a cabinet that would pass on those alone. The seated chamber's day-one result
-        /// turns on this (none as built; S with MP's support when true), so `Formation2026Diagnostic` prints both for Elias's ruling.</param>
+        /// <summary>
+        /// K-1h (i), ruled 2026-09-25: A PARTY HOLDS OUT ONLY FOR A CABINET THAT COULD PASS ITS OWN INVESTITURE - one that wins on the lines
+        /// and the in-or-against rules alone, before anyone holds out. Until K-1h a party held out for any admissible cabinet of its own that
+        /// scored higher, even one that could not pass (§29's pass 1, as built), and on the seated 2026 chamber every party but S held out
+        /// that way, so the chamber formed nothing (§607).
+        /// </summary>
         public static CoalitionResult Form(int[] seats, double[,] compatibility, IReadOnlyList<RedLine> redLines, bool negativeRule = true,
-            IReadOnlyList<InOrAgainst> inOrAgainst = null, bool holdOutOnlyForPassable = false)
+            IReadOnlyList<InOrAgainst> inOrAgainst = null)
         {
-            // K-1f: the parties that support no cabinet they are not in, as a mask (a party index past the chamber is ignored, as a line's is).
-            int inOrAgainstMask = 0;
-            if (inOrAgainst != null) { foreach (InOrAgainst rule in inOrAgainst) { if (rule.Party >= 0 && rule.Party < (seats?.Length ?? 0)) { inOrAgainstMask |= 1 << rule.Party; } } }
             if (seats == null) { throw new ArgumentNullException(nameof(seats)); }
             int n = seats.Length;
+            // K-1f: the parties that support no cabinet they are not in; K-1g: of those, the ones that also vote against every such cabinet.
+            int noSupportMask = InOrAgainst.Mask(inOrAgainst, n, votingAgainstOnly: false);
+            int inOrAgainstMask = InOrAgainst.Mask(inOrAgainst, n, votingAgainstOnly: true);
             if (compatibility.GetLength(0) != n || compatibility.GetLength(1) != n) { throw new ArgumentException("compatibility must be party by party"); }
             var lines = redLines ?? new List<RedLine>();
             var result = new CoalitionResult
@@ -304,32 +329,28 @@ namespace PoliSim.Elections
                     + WeightPower * 100.0 * PowerOf(cabinet, n, result.NegotiatingPower);
             }
 
-            // MEASUREMENT ONLY (see holdOutOnlyForPassable): which admissible cabinets pass their investiture on the lines and rules alone,
-            // before any party holds out. Never computed on a game path.
-            bool[] passesOnLines = null;
-            if (holdOutOnlyForPassable)
+            // K-1h (i): which admissible cabinets pass their investiture on the lines and rules alone, before any party holds out - the only
+            // cabinets a party holds out for.
+            var passesOnLines = new bool[all + 1];
+            foreach (int cabinet in admissible)
             {
-                passesOnLines = new bool[all + 1];
-                foreach (int cabinet in admissible)
+                int support = SupportersOf(cabinet, n, lines, compatibility, result.NegotiatingPower, noSupportMask);
+                int opposeMask = 0;
+                for (int p = 0; p < n; p++)
                 {
-                    int support = SupportersOf(cabinet, n, lines, compatibility, result.NegotiatingPower, inOrAgainstMask);
-                    int opposeMask = 0;
-                    for (int p = 0; p < n; p++)
-                    {
-                        if ((cabinet & (1 << p)) != 0 || (support & (1 << p)) != 0) { continue; }
-                        if (SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0) { opposeMask |= 1 << p; }
-                    }
-                    int supported = CoalitionMath.Seats(seats, cabinet) + CoalitionMath.Seats(seats, support);
-                    passesOnLines[cabinet] = supported >= result.Majority || (negativeRule && CoalitionMath.Seats(seats, opposeMask) < result.Majority);
+                    if ((cabinet & (1 << p)) != 0 || (support & (1 << p)) != 0) { continue; }
+                    if (SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0) { opposeMask |= 1 << p; }
                 }
+                int supported = CoalitionMath.Seats(seats, cabinet) + CoalitionMath.Seats(seats, support);
+                passesOnLines[cabinet] = supported >= result.Majority || (negativeRule && CoalitionMath.Seats(seats, opposeMask) < result.Majority);
             }
 
-            // The best government each party could hope to sit in - what it is holding out for.
+            // The best government each party could hope to sit in - what it is holding out for: a cabinet of its own that could pass (K-1h (i)).
             var bestOwn = new double[n];
             for (int p = 0; p < n; p++) { bestOwn[p] = double.NegativeInfinity; }
             foreach (int cabinet in admissible)
             {
-                if (passesOnLines != null && !passesOnLines[cabinet]) { continue; }
+                if (!passesOnLines[cabinet]) { continue; }
                 for (int p = 0; p < n; p++)
                 {
                     if ((cabinet & (1 << p)) != 0 && baseScore[cabinet] > bestOwn[p]) { bestOwn[p] = baseScore[cabinet]; }
@@ -340,12 +361,12 @@ namespace PoliSim.Elections
             foreach (int cabinet in admissible)
             {
                 int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
-                int support = SupportersOf(cabinet, n, lines, compatibility, result.NegotiatingPower, inOrAgainstMask);
+                int support = SupportersOf(cabinet, n, lines, compatibility, result.NegotiatingPower, noSupportMask);
                 int supported = cabinetSeats + CoalitionMath.Seats(seats, support);
 
                 // Who actually votes AGAINST. A party red-lined from the cabinet does; so does one
-                // holding out for a government it prefers and could be part of - any ADMISSIBLE one, even one
-                // that cannot pass its own investiture (§607 found this decides the seated chamber). Everyone else
+                // holding out for a government it prefers and could be part of - one that could pass its own
+                // investiture on the lines and rules alone (K-1h (i)). Everyone else
                 // ABSTAINS - which is the whole point of negative parliamentarism, and without it
                 // the rule would be arithmetic in disguise (opposed < majority would just be
                 // supported >= majority restated).
@@ -356,7 +377,8 @@ namespace PoliSim.Elections
                     // A party that will not SUPPORT you votes against you. A party that merely
                     // will not SIT with you can still tolerate you from outside - which is the
                     // whole Tido arrangement, so conflating the two would erase it.
-                    // K-1f: an in-or-against party is never outside a cabinet it tolerates - outside one, it votes against.
+                    // K-1f: an in-or-against party is never outside a cabinet it tolerates - outside one, it votes against (K-1g: V's and MP's
+                    // form; SD's refuses support only, and its vote is the lines' and the hold-out's).
                     bool redLined = SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0;
                     if (redLined || bestOwn[p] > baseScore[cabinet]) { opposeMask |= 1 << p; }
                 }
@@ -479,14 +501,14 @@ namespace PoliSim.Elections
         ///    the actual outcome from the arithmetic rather than from a stored answer.
         /// </summary>
         private static int SupportersOf(int cabinet, int n, IReadOnlyList<RedLine> lines,
-            double[,] compatibility, double[] power, int inOrAgainstMask = 0)
+            double[,] compatibility, double[] power, int noSupportMask = 0)
         {
             int support = 0;
             for (int p = 0; p < n; p++)
             {
                 if ((cabinet & (1 << p)) != 0) { continue; }
                 if (SupportBlocked(p, cabinet, n, lines)) { continue; }
-                if ((inOrAgainstMask & (1 << p)) != 0) { continue; }   // K-1f: it supports no cabinet it is not in
+                if ((noSupportMask & (1 << p)) != 0) { continue; }   // K-1f/K-1g: it supports no cabinet it is not in
 
                 double toCabinet = MeanCompatibility(p, cabinet, n, compatibility);
                 double bestOutside = double.NegativeInfinity;
@@ -526,14 +548,13 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// PS-3i (§636): THE PARTIES RED-LINED FROM A SITTING CABINET - the same rule the investiture's opposition reads (a support-blocking line to any
-        /// cabinet member, or an in-or-against rule outside the cabinet), exposed for the confidence motion: a party that would vote against the cabinet
+        /// cabinet member, or an in-or-against rule that votes against, outside the cabinet - K-1g), exposed for the confidence motion: a party that would vote against the cabinet
         /// at its investiture votes for no confidence in it. The hold-out term is the investiture's alone (a party holding out for a cabinet it prefers
         /// has nothing to hold out for once one sits) - stated.
         /// </summary>
         public static int RedLinedMask(int cabinet, int n, IReadOnlyList<RedLine> lines, IReadOnlyList<InOrAgainst> inOrAgainst)
         {
-            int inOrAgainstMask = 0;
-            if (inOrAgainst != null) { foreach (InOrAgainst rule in inOrAgainst) { if (rule.Party >= 0 && rule.Party < n) { inOrAgainstMask |= 1 << rule.Party; } } }
+            int inOrAgainstMask = InOrAgainst.Mask(inOrAgainst, n, votingAgainstOnly: true);
             int mask = 0;
             for (int p = 0; p < n; p++)
             {

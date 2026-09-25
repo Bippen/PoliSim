@@ -20,8 +20,9 @@ glosses are marked *gloss:* and are mine, not the source's.
 
 The declared pairwise lines as wired in place of 2022's by K-1 part (2) (§603), in `RedLine(a, b, kind, blocksSupport,
 basis, oneWay)` form. Every other pair stays with the DERIVED rule (see *What is deliberately NOT here*). **K-1f (§607)
-added the last two rows** - the S-M candidacy pair and V's in-or-against rule - and with them the formation's result on
-the seated chamber moved: see *AS WIRED, K-1f* at the end of the K-1f section. The measured paragraph below is §603's,
+added two rows** - the S-M candidacy pair and V's in-or-against rule - and **K-1g (§639) the last three** - MP's and SD's
+rules and KD's line; with each the formation's result on the seated chamber moved: see *AS WIRED, K-1f* and *AS WIRED,
+K-1h and K-1g* at the end of the K-1f section. The measured paragraph below is §603's,
 kept as measured then.
 
 | pair | wire as | source ids |
@@ -33,6 +34,9 @@ kept as measured then.
 | **KD ↔ SD** | **none**: 2022's cabinet-blocking line lifted (on secondary transmission of KD's own words; KD primary a GAP) | [KD-I2], [MSD-I2], [MSD-I3] |
 | **S → M and M → S** | **the candidacy pair (K-1f, §607)**: one way in each direction (`RedLine.OneWay`), generated from the dated own-leader candidacies (`DeclaredRedLines.Candidacies`); neither sits in, supports or lets through a cabinet that contains the other. The parties declared the candidacies; the refusal is the ruling's rule | [S-P1], [S-P2], [S-P3], [MSD-P1] |
 | **V** (a party's rule, not a pair) | **in or against (K-1f, §607)**: `InOrAgainst` - V supports no cabinet it is not in, and votes against every such cabinet | [V-P1], [V-I1], [C-I9], [V-I4] |
+| **MP** (a party's rule) | **in or against (K-1g, §639)**: V's shape - MP supports no cabinet it is not in, and votes against every such cabinet; dated 2026-04-04 - TT's report [MP-I4], the first and only source carrying the vote against; MP's own record is a GAP, so the date is a PRESS REPORT's, a stated deviation from §621's first rule, for Elias | [MP-I4], [MP-I1], [MP-I2] |
+| **SD** (a party's rule) | **no support role (K-1g, §639)**: `InOrAgainst` with `VotesAgainst` false - SD supports no cabinet it is not in; its vote is the lines' and the hold-out's - **the builder's reading, open for Elias (K-1i)**: the words refuse the support role and, unlike V's and MP's, do not say SD votes every other cabinet down, while the same [L-C2] quotation's *"full opposition"* reads the other way; scoped to the formation after the 2026 election (*"Efter nästa val"*); dated 2025-10-10 (Åkesson's post as SvD quotes it - §621's precedent, a leader's own post quoted verbatim) | [L-C2], [MSD-I4], [SD-P2] |
+| **KD → S** | **one way (K-1g, §639)**: KD will vote no to Andersson all the way to an extra election; on K-1f's premise a cabinet holding S is hers, so KD neither sits in, supports nor lets through a cabinet that contains S, and - the line being support-blocking - KD counts for a motion of no confidence in such a cabinet, as M's candidacy line does (KD's words are about the investiture; stated); dated 2026-09-02 (Busch's own words in SVT's live report - spoken, not a party publication, so an EXTENSION of §621's precedent, for Elias) | [KD-I1], [KD-I3] |
 
 **C ↔ V, one way.** C refuses any cabinet that **contains** V: it will not sit in it, support it or let it through
 ([C-I1], [C-I3], [C-P1], [C-I10]). That is stronger than cabinet-blocking and weaker than support-blocking, because
@@ -64,7 +68,8 @@ cabinet V is not in, which V's own in-or-against demand [V-P1] refuses: a shape 
 (it stays in the list below). What rules out S with M in reality, the rival prime-ministerial candidacies ([MSD-P1]
 Kristersson; KD's refusal of Andersson [KD-I1], [KD-I3]), is likewise not held. **Both are held since K-1f (§607)** -
 V's rule by its own shape, the S and M candidacies by the candidacy pair (KD's refusal is not) - and with them the
-seated chamber forms no government: see *AS WIRED, K-1f*.
+seated chamber forms no government: see *AS WIRED, K-1f*. **Since K-1g (§639)** KD's refusal is held too, as a KD → S
+one-way line, and the hold-out is ruled (K-1h): see *AS WIRED, K-1h and K-1g*.
 
 What the pairwise model cannot hold. Each needs a new shape or has to be stated as out of scope; none should be
 squeezed into a pair that no party declared (C ↔ V was first on this list until K-1 part (2) built its shape, above):
@@ -72,13 +77,12 @@ squeezed into a pair that no party declared (C ↔ V was first on this list unti
 - **V's in-or-against demand** - **HELD since K-1f (§607)** by its own shape (`InOrAgainst`), so it is off this list:
   [V-P1] (primary), [V-I1], [V-I2], [C-I9]; first form [V-I3]. §603's wired result needed V to support a cabinet it is
   not in (MEASURED, above).
-- **MP's in-or-against demand**: [MP-I1], [MP-I2] (secondary only; the wording is a GAP). MP's nuclear-power
-  condition [MP-I3] has no pair either. Since K-1f the demand could ride V's shape; it is not wired, because the
-  ruling named V's (K-1g, Elias's).
-- **SD's in-or-against demand**: [L-C2], [MSD-I4] (SD primary a GAP; its manifesto [SD-P1] is silent). **A primary has
-  been found since:** [SD-P2], the K-1f section's side findings. It could ride V's shape; not wired (K-1g).
-- **KD's refusal of Magdalena Andersson as PM**: [KD-I1], [KD-I3]. On K-1f's premise (a cabinet that holds S is
-  Andersson's) it could be held as a KD → S one-way line; it is not wired, because no ruling named it.
+- **MP's in-or-against demand** - **HELD since K-1g (§639)** by V's shape, so it is off this list: [MP-I1], [MP-I2],
+  [MP-I4] (secondary only; the wording is a GAP). MP's nuclear-power condition [MP-I3] has no pair and stays here.
+- **SD's in-or-against demand** - **HELD since K-1g (§639)** in its declared form, the support role refused
+  (`InOrAgainst.VotesAgainst` false), so it is off this list: [L-C2], [MSD-I4], [SD-P2].
+- **KD's refusal of Magdalena Andersson as PM** - **HELD since K-1g (§639)** as a KD → S one-way line on K-1f's premise,
+  so it is off this list: [KD-I1], [KD-I3].
 - **L's per-minister consultation clause** (*avstämning*): [L-P1], [L-P1a].
 - **Ulf Kristersson as the Tidö side's PM, even if SD is larger**: [MSD-P1], [MSD-I2], [MSD-I4]. M's own candidacy is
   held since K-1f by the candidacy pair; SD's backing of it is not a candidacy and carries no line.
@@ -438,7 +442,7 @@ secondary reports only, which the basis column says.
 | party | declared position | vintage | basis |
 |---|---|---|---|
 | **M — PM candidate** | **Ulf Kristersson**, as the four Tidö parties' candidate | 2026-04-01 → 2026-09-02 | Moderaterna, [MSD-P1]: *"Därför är Ulf Kristersson den självklara regeringsbildaren efter valet 2026."* SVT, [MSD-I1]: *"Ulf Kristersson är samarbetets statsministerkandidat och ett stort inflytande ska ges till Sverigedemokraterna."* |
-| **SD** | **in government or in opposition** — will not again support a government from outside; accepts Kristersson as PM; expects ministerial posts in proportion to its size | 2025-10-10 → 2026-04-01 → 2026-09-02 | SvD Kompakt, [L-C2], 2025-10-10, quoting Åkesson's social-media post: *"Efter nästa val kommer vi antingen att sitta i regering eller i full opposition. Något mellanläge, motsvarande det vi har idag, kommer inte att vara aktuellt för oss"*. TV4, [MSD-I4], 2026-04-01, Åkesson: *"Vi har varit tydliga ända sedan Tidöavtalet slöts att efter nästa val så är Sverigedemokraterna antingen ett regeringsparti eller ett oppositionsparti."* SVT, [MSD-I6], 2026-09-02: *"I Aftonbladets partiledarutfrågning under onsdagen säger Jimmie Åkesson att hans utgångspunkt är att antalet ministerposter vid en Tidövinst ska fördelas proportionerligt baserat på partiernas storlek. Utifrån dagens opinionsläge skulle det innebära mellan 12 och 14 SD-ministrar."* ⚠ SD primary: **GAP** (its 2026 manifesto, [SD-P1], is silent on the question; the social-media original was not fetched). |
+| **SD** | **in government or in opposition** — will not again support a government from outside; accepts Kristersson as PM; expects ministerial posts in proportion to its size | 2025-10-10 → 2026-04-01 → 2026-09-02 | SvD Kompakt, [L-C2], 2025-10-10, quoting Åkesson's social-media post: *"Efter nästa val kommer vi antingen att sitta i regering eller i full opposition. Något mellanläge, motsvarande det vi har idag, kommer inte att vara aktuellt för oss"*. TV4, [MSD-I4], 2026-04-01, Åkesson: *"Vi har varit tydliga ända sedan Tidöavtalet slöts att efter nästa val så är Sverigedemokraterna antingen ett regeringsparti eller ett oppositionsparti."* SVT, [MSD-I6], 2026-09-02: *"I Aftonbladets partiledarutfrågning under onsdagen säger Jimmie Åkesson att hans utgångspunkt är att antalet ministerposter vid en Tidövinst ska fördelas proportionerligt baserat på partiernas storlek. Utifrån dagens opinionsläge skulle det innebära mellan 12 och 14 SD-ministrar."* ⚠ SD primary: **GAP** (its 2026 manifesto, [SD-P1], is silent on the question; the social-media original was not fetched). **Since found:** its 2026 platform [SD-P2] is a primary for the government-or-opposition line (the K-1f section's side findings), and K-1g's wiring rests on it (§639). |
 | **KD** | a "blue-yellow" government of **one to four parties**; SD ministers **not a given**; will vote **no to Magdalena Andersson** as PM all the way to an extra election | 2026-04-01 (reported), 2026-06-05, 2026-09-02, 2026-09-08 | SVT live, [KD-I1], 2026-09-02, Busch: *"Vi kommer att vara beredda att rösta nej till Magdalena Andersson ända fram till ett nyval, säger Busch."* and *"Vi kommer att göra det."* Bulletin, [KD-I2], 2026-09-08, quoting Busch on X: *"”Vi har tydligt sagt att vi vill se en blågul regering. En blågul regering kan i teorin bestå både av 4, 3, 2 eller 1 parti”, skriver Busch på X."* and *"”För mig är det till exempel inte givet att SD ska ha några ministerposter alls”, skriver Busch."* Kvartal (citing DI), [KD-I3], 2026-06-05: *"Om alternativet står mellan en socialdemokratisk regering och ett extraval föredrar KD att låta väljarna gå till valurnorna igen."* Earlier, as reported: SR, [MSD-I2]: *"Kristdemokraterna har tidigare sagt att alla fyra partier kan vara i en regering."* SvD, [MSD-I3]: *"KD har sagt att ett nytt Tidösamarbete kan bestå av fyra partier."* ⚠ KD primary: **GAP**. On these sources 2022's KD ↔ SD cabinet line is **LIFTED**: KD's own words (Busch on X, as quoted by [KD-I2]) admit a four-party blue-yellow cabinet, SD included, and no fetched 2026 source has KD refusing SD in cabinet. SD in cabinet is **acceptable but not guaranteed** (*"inte givet att SD ska ha några ministerposter alls"*). The basis is secondary transmission of KD's own words. |
 | **S** | goes to the election **as a single party**, aiming at an S-led government; willing to cooperate and negotiate with **every party except SD**; would not say with whom; a pure S minority government "a possibility" | 2026-04-09 → 2026-09-12 | Börsvärlden (citing DN), [S-I1], 2026-04-09: *"Jag går till val för att bilda en socialdemokratiskt ledd regering och vi går till val som ett enskilt parti, säger hon till Dagens Nyheter."* and *"Enligt Magdalena Andersson är Socialdemokraterna efter valet beredda att samarbeta och förhandla med alla partier utom Sverigedemokraterna."* SVT, [S-I2], 2026-08-27: *"Nu vill Magdalena Andersson bli Sveriges statsminister igen – men vägrar berätta med hjälp av vem."* Nyheter24 (citing SVT/TT), [S-I3], 2026-09-12: *"Det är en möjlighet, svarade Andersson, enligt SVT Nyheter."* Opinion column, [S-I4]: *"Socialdemokraterna kan tänka sig att efter valet samarbeta med alla partier utom Sverigedemokraterna, upprepar Magdalena Andersson."* ⚠ S primary: **GAP**. |
 | **V** | **in or against**: if V's votes are needed, V must sit in the government, and will neither support nor let through a government it is not part of; seeks S and MP first, C if needed for a majority | congress **17–19 April 2026** (decided Saturday 18 April); first form 2025-09-30 | Vänsterpartiet, [V-P1]: *"Sverige behöver en rödgrön regering där Vänsterpartiet ingår efter valet 2026."*; *"Om våra röster behövs för att bilda regering så ska vi också ingå i den. Det betyder att vi inte kommer att stödja eller släppa fram en regering som vi inte ingår i."*; *"Vi söker därför samarbete med, i första hand, Socialdemokraterna och Miljöpartiet men även med Centerpartiet om det skulle behövas för att säkra en majoritet i riksdagen."* Congress dates, [V-P2]: *"Vänsterpartiet håller kongress i Örebro 17-19 april."* Sveriges Radio, [V-I1], 2026-04-18: *"Vänsterpartiet står fast vid kravet att sitta i en eventuell rödgrön regering efter valet. Beslutet klubbades på partiets kongress i Örebro på lördagen."* SVT, [C-I9], 2026-08-25: *"Partiets linje är att rösta nej till varje regeringskonstellation där V inte själva ingår – även en rödgrön regering."* ⚠ [V-P1] is headed "Preliminär version kongress 2026". |
@@ -521,8 +525,8 @@ wiring left standing, stated rather than fixed:
 - **The declared mechanism is pairwise.** `RedLine(a, b, kind, blocksSupport, basis, oneWay)` in
   `DeclaredRedLines.cs` holds one pair, one strength and, since K-1 part (2), whether it runs both ways or one way (`oneWay`). The **in-or-against**
   demands of V (primary-sourced), MP and SD have no pair to sit on, and neither does KD's refusal of one named PM.
-  (Since K-1f, §607: V's is held by a party-level shape, `InOrAgainst`; MP's and SD's could ride it and are not wired,
-  K-1g; KD's refusal could be a one-way line on K-1f's premise and is not wired.)
+  (Since K-1f, §607: V's is held by a party-level shape, `InOrAgainst`. Since K-1g, §639: MP's rides it, SD's rides it
+  in its declared form - the support role refused, no vote against - and KD's refusal is a one-way line on K-1f's premise.)
   C ↔ V was a third shape beside them: no cabinet that contains V, which is more than cabinet-blocking and less
   than support-blocking. It is now wired one way (`RedLine.OneWay`, a shape built for it by K-1 part (2), §603;
   see §(3)). The rest either need a new shape or have to be stated as out of scope. They should not be squeezed
@@ -612,7 +616,8 @@ own-leader candidacy. (c) **gap**: no saved page shows the party declaring any c
 - **No constraint under this ruling:** SD, KD, L and C are case (b), and V and MP are case (c). Their backing of another
   party's leader (SD, L and implicitly KD for Kristersson; C for Andersson) is recorded above but is not an own-leader
   candidacy. KD's declared refusal of Andersson ([KD-I1], [KD-I3]) is a separate line that this ruling does not cover,
-  and it is not wired, because no ruling named it (on K-1f's premise it could be a KD → S one-way line).
+  and it is not wired, because no ruling named it (on K-1f's premise it could be a KD → S one-way line). **Wired since K-1g
+  (§639)** as that line.
 - **V's in-or-against, the mirror shape:** [V-P1], dated 2026-04-19 by the PDF (decided 18 April, [V-I1]): *"Om våra
   röster behövs för att bilda regering så ska vi också ingå i den. Det betyder att vi inte kommer att stödja eller släppa
   fram en regering som vi inte ingår i."* It is ruled as "V refuses to support a cabinet it is not in". The source adds
@@ -691,6 +696,63 @@ SAID THIS; THE REFUSAL IS THE MODEL'S RULE"*, it prints *"S and M each name thei
 M+KD+L carried by SD, with or without it (`coalition_declarations_2022.md`, K-1f section). MP's 2022 in-or-against rule,
 if it were wired, would form an S minority there (107, opposed 86). So the backtest's record rests on that rule
 staying unwired, which it does: the ruling named V's.
+
+### AS WIRED, K-1h and K-1g (§639)
+
+Ruled and built 2026-09-25 (`COMPLETED.md` §639). **K-1h:** (i) a party holds out only for a cabinet of its own that could
+pass its own investiture - one that wins on the lines and rules alone (`CoalitionFormation.Form`; the measurement-only
+switch of K-1f is gone, the reading is the model's); (ii) a declared rival candidacy means voting against the rival's
+cabinet - the support-blocking strength the candidacy pair was wired at, now ruled; (iii) the stance model's spending-cut
+and deregulation pair passes on differing per-party scores even where the signs coincide. **K-1g:** MP's rule rides V's
+shape; SD's on the builder's reading, open for Elias (K-1i) - the support role refused and no vote against
+(`InOrAgainst.VotesAgainst` false); KD's refusal of Andersson is a KD → S one-way line. Each is dated on
+`DeclaredRedLines.SwedenTimeline` (SD 2025-10-10, MP 2026-04-04, KD 2026-09-02) and read by the 2026 vintage. **Two dates
+stretch §621's rules, for Elias:** MP's own record is a GAP, so its date is a press report's (TT, the first source that
+carries the vote against); KD's is Busch's spoken words in SVT's live report, where §621's precedent was a party leader's
+own post.
+
+**The two rulings together change the outcome K-1h (i) named.** K-1h (i) named S with MP's support; with K-1g, MP votes
+against every cabinet it is not in, so the chamber forms S alone - K-1f's set with K-1h (i) is the row that forms S with MP.
+
+**MEASURED**, `Formation2026Diagnostic`, log `k1h_639_formation`. Every row holds out as K-1h (i) ruled.
+
+| on the seated chamber (S 99, SD 62, M 70, V 30, C 25, KD 22, MP 22, L 19; majority 175) | the formation |
+|---|---|
+| **as wired: K-1f's set, KD → S, MP's rule, SD's no support role** | **S alone (99), no support, opposed 144** |
+| the same without KD → S | S alone, opposed 122 |
+| the same without MP's rule | S alone, MP supporting (to 121), opposed 122 |
+| the same without SD's rule | S alone, opposed 144 |
+| **SD's rule read as V's shape** (it would vote against every cabinet it is not in) - the other reading, open for Elias (K-1i) | **SD alone (62), opposed 77** |
+| K-1f's set alone (K-1h (i)'s own measurement) | S alone, MP supporting (to 121), opposed 100 |
+| the candidacy pair at cabinet-blocking strength (the reading K-1h (ii) did not rule) | SD+M+KD (154), opposed 96 |
+
+| on another chamber | the formation |
+|---|---|
+| as wired, on the pinned film's year-32 count | SD+M+KD+L, a majority coalition (180), opposed 169 |
+| 2022's declarations on 2022's chamber (the backtest's record) | M+KD+L carried by SD (103; 176), opposed 173 |
+| the same plus MP's 2022 rule (NOT WIRED - the model cannot hold it) | S alone (107), opposed 86 |
+
+**SD's reading is load-bearing, and it is the builder's, open for Elias (K-1i).** SD's words refuse a place outside the cabinet, *"antingen ett
+regeringsparti eller ett oppositionsparti"* ([SD-P2]), *"Något mellanläge, motsvarande det vi har idag, kommer inte att vara
+aktuellt"* ([L-C2]) - the middle position being the support role it holds under Tidö. V's words and MP's say they vote a
+cabinet they are not in down (*"inte kommer att stödja eller släppa fram"*, [V-P1]; *"röstar nej utan regeringsplats"*,
+[MP-I4]); SD's do not. Read as V's shape, SD votes against every S cabinet, and with M's candidacy line and KD's refusal
+the votes against any cabinet holding S reach 179 or more - so no cabinet holding S or M passes, and the chamber forms SD
+alone at 77 against, with S, M, KD and L abstaining because none of them has a cabinet of its own that could pass. That
+reading is not wired; it is on the table above for Elias. **Against the reading wired:** the same [L-C2] quotation that
+dates SD's rule says *"full opposition"*, and an opposition party can mean one that votes against the government's prime
+minister, as the 2022 opposition did; the primary [SD-P2] says *"oppositionsparti"*. The quotation is used for both, and the
+choice between the readings is Elias's.
+
+**MP's 2022 rule: read right, and the model cannot hold it.** Stenevi on SVT's *30 minuter*, 2022-01-19 ([MP-I1] of the
+2022 file, the saved page re-read): *"Vi röstar nej till de regeringar som vi inte ingår i"* - V's shape exactly. Wired,
+2022's chamber forms S alone (107) at 86 against ahead of M+KD+L carried by SD: S alone passes because only M (its candidacy
+line) and MP vote against it, and the formation, choosing between two cabinets that both pass, ranks them by its one
+shared score, on which a single party's cohesion is whole (66.11 against 59.51). KD and L do not hold out against S alone,
+because their own cabinet scores below it; SD holds out only for a cabinet it sits in. In the Riksdag the Speaker put
+Kristersson to the vote first, carried by the right bloc's majority for him. Without MP's rule the backtest holds only
+because MP, as S's supporter, walks out to a cabinet it could sit in (the defection step). So the rule stays a dated fact
+in the 2022 file and is not wired.
 
 ### GAPs in this section
 
