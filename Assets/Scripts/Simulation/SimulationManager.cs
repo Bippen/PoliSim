@@ -1761,6 +1761,7 @@ namespace PoliSim.Simulation
                 country.EnactedLaws.Add(new EnactedLaw { LawId = bill.LawId, EnactedOn = CurrentDate });
                 country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f);
             }
+            TrackAgreements(country);   // PS-3h (§635): a law enacted or repealed is a delivery or a break the day it applies
 
             // Both categories' recomputes run unconditionally (pass 3): each is idempotent and a
             // law's foreign-category deltas are 0f defaults, so the wrong-category recompute is an
@@ -2464,6 +2465,38 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>PS-3h (§635): every agreement's items read against the country - a delivery or a break is a fact of the book, so this runs at the turn boundary and the day a law bill applies; a break is recorded on the government.</summary>
+        public void TrackAgreements(Country country)
+        {
+            if (country?.Government == null) { return; }
+            foreach (Elections.SupportAgreement agreement in country.Government.Agreements)
+            {
+                if (!country.Government.Support.Contains(agreement.Supporter)) { continue; }   // a withdrawn supporter's agreement stands as the record of it, no longer tracked
+                foreach (Elections.AgreementItem broken in agreement.Track(country, CurrentDate))
+                {
+                    country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government broke '{broken.Name}', owed to {agreement.Supporter} under its support agreement");
+                    Debug.Log($"AGREEMENT: {country.Id} - the government broke '{broken.Name}' owed to {agreement.Supporter}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// PS-3h (§635): the player's support party WITHDRAWS - the spec's "threaten or withdraw support". Recorded on the government as a break and the
+        /// party struck from its support; what follows - "the government faces a confidence vote", a new formation, an extra election by the country's
+        /// own procedure - is part 6's (confidence and collapse), STATED: today the government stands on without the supporter.
+        /// </summary>
+        public bool WithdrawSupport(CountryId countryId, out string refusedBecause)
+        {
+            refusedBecause = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.Support) { refusedBecause = "YOUR PARTY IS NOT A SUPPORT PARTY"; return false; }
+            country.Government.Support.Remove(country.PlayerPartyAbbrev);
+            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} withdrew its support - the government stands on without it until confidence and collapse arrive (part 6)");
+            Debug.Log($"AGREEMENT: {countryId} - {country.PlayerPartyAbbrev} withdrew its support");
+            return true;
+        }
+
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
         public bool TryPlayerPollingDay(out System.DateTime pollingDay)
         {
@@ -3053,6 +3086,7 @@ namespace PoliSim.Simulation
                 // comment), after ApplyDomesticPolicy so this turn's freshly-updated ApprovalRating is
                 // what the seat-share formula actually reads, not last turn's stale value.
                 ParliamentSystem.UpdateSeats(country);
+                TrackAgreements(country);   // PS-3h (§635)
 
                 // PHASE 4 FINDING (2026-08-16): History.Append lived HERE, once per turn, from Phase 0
                 // until this pass - which meant the multi-resolution buckets built FOR daily data had

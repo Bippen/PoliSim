@@ -57,6 +57,18 @@ namespace PoliSim.Elections
         /// takes follows its manifesto's emphasis in the literature [BDD11] - unsourced per party here, so the enum's order stands as the premise.
         /// </summary>
         public Dictionary<string, List<CabinetPortfolio>> Portfolios = new Dictionary<string, List<CabinetPortfolio>>();
+        /// <summary>PS-3h (§635): the support agreements - one per support party, its demands chosen from its own positions (<see cref="SupportAgreement.Demand"/>), each item owed, delivered or broken.</summary>
+        public List<SupportAgreement> Agreements = new List<SupportAgreement>();
+
+        /// <summary>The agreement a support party holds, or null.</summary>
+        public SupportAgreement AgreementOf(string party) { foreach (SupportAgreement a in Agreements) { if (a.Supporter == party) { return a; } } return null; }
+
+        /// <summary>Forms one agreement per support party from its own positions (the spec's §5.3).</summary>
+        public void FormAgreements(Country country, DateTime formedOn, World world = null)
+        {
+            Agreements.Clear();
+            foreach (string supporter in Support) { Agreements.Add(SupportAgreement.Demand(country, supporter, PmParty, formedOn, world)); }
+        }
 
         public bool HoldsPortfolio(string party, CabinetPortfolio portfolio) => !string.IsNullOrEmpty(party) && Portfolios.TryGetValue(party, out List<CabinetPortfolio> held) && held.Contains(portfolio);
 
@@ -122,7 +134,7 @@ namespace PoliSim.Elections
         /// a stand-in formed on a chamber whose record names no government would seat a cabinet the record never held, and a null would let the player's role
         /// default silently; the world does not open there.
         /// </summary>
-        public static GovernmentRecord AtStart(Country country, DateTime start)
+        public static GovernmentRecord AtStart(Country country, DateTime start, World world = null)
         {
             if (!WorldClock.TryGovernmentAt(country.Id, start, out WorldClock.GovernmentOfRecord ofRecord))
             {
@@ -135,10 +147,11 @@ namespace PoliSim.Elections
                 if (record.Support != null) { installed.Support.AddRange(record.Support); }
                 installed.PmParty = HeadParty(country.Id, start) ?? Largest(country, installed.Cabinet);
                 installed.AllocatePortfolios(country);
+                installed.FormAgreements(country, start, world);
                 return installed;
             }
             GovernmentFormation.View formed = GovernmentFormation.ViewOf(country);
-            GovernmentRecord standIn = FromView(country, formed, start, provisional: true, basis: "the formation's result on the seated chamber - the government of record names no cabinet on this date (§605)");
+            GovernmentRecord standIn = FromView(country, formed, start, provisional: true, basis: "the formation's result on the seated chamber - the government of record names no cabinet on this date (§605)", world: world);
             standIn.Kind = ofRecord.Kind; standIn.Executive = ofRecord.President;
             standIn.AllocatePortfolios(country);
             return standIn;
@@ -160,7 +173,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The government the formation formed after the game's own election (or none: a record with an empty cabinet and the reason).</summary>
-        public static GovernmentRecord FromView(Country country, GovernmentFormation.View view, DateTime formedOn, bool provisional = false, string basis = null)
+        public static GovernmentRecord FromView(Country country, GovernmentFormation.View view, DateTime formedOn, bool provisional = false, string basis = null, World world = null)
         {
             var record = new GovernmentRecord { FormedOn = formedOn, Provisional = provisional, Basis = basis ?? "the formation on the chamber the game elected" };
             if (view == null || !view.HasGovernment) { record.Outcome = "none"; record.Basis = view?.Reason ?? record.Basis; return record; }
@@ -174,6 +187,7 @@ namespace PoliSim.Elections
             }
             record.PmParty ??= Largest(country, record.Cabinet);
             record.AllocatePortfolios(country);
+            record.FormAgreements(country, formedOn, world);
             return record;
         }
 

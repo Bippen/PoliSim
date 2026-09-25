@@ -50,6 +50,9 @@ namespace PoliSim.EditorTools
                     sweden.ParliamentSeats[abbrev] = held;
                 }
                 exercised = "the year-32 count (the seeded chamber forms none)";
+                // PS-3h (§635): who governs is the STORED record (TryGovernment reads it), so the hypothetical chamber gets the record the game would store
+                // after its own election on it - the formation's result - exactly as ResolveElectionVerdict writes one.
+                sweden.Government = PoliSim.Elections.GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden), PoliSim.Simulation.SimulationManager.EpochDate, world: world);
             }
 
             // The player in the cabinet's anchor party, so cohesion and the opposition's line are live.

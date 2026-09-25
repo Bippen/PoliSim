@@ -263,7 +263,11 @@ namespace PoliSim.UI
             switch (_playerCountry.Government.RoleOf(_playerCountry.PlayerPartyAbbrev))
             {
                 case PoliSim.Elections.PlayerRole.Opposition: return " · IN OPPOSITION · THE GOVERNMENT IS THE AI'S";
-                case PoliSim.Elections.PlayerRole.Support: return " · IN SUPPORT · THE GOVERNMENT IS THE AI'S";
+                case PoliSim.Elections.PlayerRole.Support:
+                {
+                    PoliSim.Elections.SupportAgreement agreement = _playerCountry.Government.AgreementOf(_playerCountry.PlayerPartyAbbrev);   // PS-3h (§635): the agreement's tally beside the role
+                    return agreement != null ? " · IN SUPPORT · AGREEMENT: " + agreement.Tally() : " · IN SUPPORT · THE GOVERNMENT IS THE AI'S";
+                }
                 case PoliSim.Elections.PlayerRole.JuniorPartner: return " · JUNIOR PARTNER · YOUR PORTFOLIOS: " + _playerCountry.Government.PortfoliosOf(_playerCountry.PlayerPartyAbbrev);   // PS-3g (§634): the portfolios the party holds
                 default: return string.Empty;
             }

@@ -138,6 +138,22 @@ namespace PoliSim.Elections
             var supportList = new List<string>();
             cabinet = cabinetList;
             support = supportList;
+            // PS-3h (§635): WHO GOVERNS IS THE STORED RECORD (§628) - the chamber's every vote reads its cabinet and support from it, so a supporter's
+            // withdrawal (WithdrawSupport) reaches the votes the day it is made; the record is the installed one or the formation's own result, so a
+            // world with no withdrawal reads exactly what the formation below would form.
+            if (country?.Government != null)
+            {
+                // The record's own answer, whatever it is: a record that says NO government formed (an empty cabinet) is false here - the formation
+                // below is for a world with no record at all, never a second opinion on one that has (the reader, s635).
+                // In the party system's order, as the formation lists them - every caller (the stance model's bloc pick takes the first of equal seats)
+                // reads the order it always read (the reader, s635).
+                foreach (PoliticalParty party in PartySystems.For(country.Id))
+                {
+                    if (country.Government.Cabinet.Contains(party.Abbrev)) { cabinetList.Add(party.Abbrev); }
+                    else if (country.Government.Support.Contains(party.Abbrev)) { supportList.Add(party.Abbrev); }
+                }
+                return cabinetList.Count > 0;
+            }
             if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] _, out CoalitionResult result, out bool _, out string _))
             {
                 return false;

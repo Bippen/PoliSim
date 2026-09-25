@@ -6619,7 +6619,7 @@ namespace PoliSim.UI
             // PS-3a (§628): the government the election formed is STORED - the player's role and whose levers move the book are read from it from now on.
             GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionVintage);
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
-            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
+            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date, world: _world); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
             {
@@ -9806,6 +9806,9 @@ namespace PoliSim.UI
             DrawPendingLegislation();
 
             GUILayout.Space(10f);
+            DrawSupportAgreements();   // PS-3h (§635)
+
+            GUILayout.Space(10f);
             DrawRecentDivisions();
 
             GUILayout.EndScrollView();
@@ -11074,6 +11077,30 @@ namespace PoliSim.UI
                 if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
             }
             GUI.enabled = ambient;
+        }
+
+        /// <summary>
+        /// PS-3h (§635): THE SUPPORT AGREEMENTS on the Parliament tab - one block per support party: its tally (OWED · DELIVERED · BROKEN) and every
+        /// item with its state; where the player's party is the supporter, the call to action WITHDRAW SUPPORT (the spec's "threaten or withdraw"),
+        /// its consequence part 6's and said so. Structural until Design's board on the agreement as an instrument (the D22 ask).
+        /// </summary>
+        private void DrawSupportAgreements()
+        {
+            PoliSim.Elections.GovernmentRecord government = _playerCountry?.Government;
+            if (government == null || government.Agreements.Count == 0) { return; }
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            foreach (PoliSim.Elections.SupportAgreement agreement in government.Agreements)
+            {
+                GUILayout.Label("SUPPORT AGREEMENT · " + agreement.Supporter + " · " + agreement.Tally(), caption);
+                foreach (PoliSim.Elections.AgreementItem item in agreement.Items) { GUILayout.Label(item.Line(), _labelStyle); }
+                if (agreement.Supporter == _playerCountry.PlayerPartyAbbrev && government.Support.Contains(agreement.Supporter))
+                {
+                    if (DrawSentenceAction("Your party carries this government on these items. Withdrawing is recorded against the government; what follows arrives with confidence and collapse.", "Withdraw support", true, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.WithdrawSupport(PlayerCountryId, out string refused)) { Debug.Log($"AGREEMENT: the withdrawal was refused - {refused}"); }
+                    }
+                }
+            }
         }
 
         /// <summary>
