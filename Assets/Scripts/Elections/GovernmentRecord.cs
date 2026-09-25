@@ -44,6 +44,8 @@ namespace PoliSim.Elections
         public WorldClock.ExecutiveKind Kind;
         /// <summary>PS-3b (§629): the president of record where one is elected apart from the chamber (the USA's, France's), by the record's own line; null for the parliamentary four.</summary>
         public string Executive;
+        /// <summary>PS-3f (§633, ruled): the breaks recorded against this government - a support party voting its own alternative budget over the government's frames, dated; their consequence arrives with the support agreements (PS-3 part 5).</summary>
+        public List<string> Breaks = new List<string>();
 
         public PlayerRole RoleOf(string abbrev)
         {

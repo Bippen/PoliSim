@@ -68,6 +68,8 @@ namespace PoliSim.EditorTools
                     F("the frame decision's division: {0}", division?.Title ?? "NONE"));
                 int sided = 0, abstained = 0; if (division != null) { foreach (DivisionSide side in division.Sides) { if (side.Side != 0) { sided++; } else { abstained++; } } }
                 Check(sided > 0, F("the parties took sides: {0} for one proposal or the other, {1} abstaining", sided, abstained));
+                DivisionSide sSide = null; if (division != null) { foreach (DivisionSide sd in division.Sides) { if (sd.Abbrev == "S") { sSide = sd; } } }
+                Check(sSide != null && sSide.Side < 0, "S, the tabler, votes its own alternative (the reader, s633)");
                 sb.Append("    division  ").Append(division?.Title ?? "-").Append('\n');
                 if (division != null) { foreach (DivisionSide side in division.Sides) { sb.Append("      ").Append(side.Abbrev).Append(' ').Append(side.Seats).Append(' ').Append(side.Side > 0 ? "GOV" : side.Side < 0 ? "ALT" : "ABS").Append(" - ").Append(side.Reason).Append('\n'); } }
 
@@ -75,6 +77,20 @@ namespace PoliSim.EditorTools
                 government = null; int ticks = 0;
                 while (government == null && ticks < 400) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); government = sim.GetPendingBudgetBill(CountryId.Sweden); ticks++; }
                 Check(government != null && government.GovernmentBill && sim.CurrentDate.Month == 1 && sim.CurrentDate.Day <= 3, F("the next government budget is tabled on the fiscal-year date: {0:yyyy-MM-dd}", sim.CurrentDate));
+
+                // PS-3f (§633, ruled): a JUNIOR PARTNER tables no alternative - its budget voice is the coalition agreement; a SUPPORT party may, and votes its own - a break recorded on the government.
+                sweden.PlayerPartyAbbrev = "KD";
+                Check(!sim.TableShadowBudget(CountryId.Sweden, new BudgetBill(), out refused) && refused == "JUNIOR PARTNER · YOUR BUDGET VOICE IS THE COALITION AGREEMENT", F("KD, a junior partner, is refused: {0}", refused));
+                sweden.PlayerPartyAbbrev = "SD";
+                var sdAlternative = new BudgetBill(); sdAlternative.SpendingPercentChanges[SpendingCategory.SocialSecurity] = -3f;
+                Check(sim.TableShadowBudget(CountryId.Sweden, sdAlternative, out refused), "SD, a support party, tables its alternative");
+                int breaksBefore = sweden.Government.Breaks.Count; int divisionsBefore = sweden.Divisions.Entries.Count;
+                for (int i = 0; i < 25 && sim.GetPendingBudgetBill(CountryId.Sweden) != null; i++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
+                DivisionRecord sdDivision = sweden.Divisions.Entries.Count > divisionsBefore ? sweden.Divisions.Entries[sweden.Divisions.Entries.Count - 1] : null;
+                DivisionSide sdSide = null; if (sdDivision != null) { foreach (DivisionSide sd in sdDivision.Sides) { if (sd.Abbrev == "SD") { sdSide = sd; } } }
+                Check(sdSide != null && sdSide.Side < 0 && sdDivision.Contest != null && sdDivision.Contest.BreakBy == "SD" && sweden.Government.Breaks.Count == breaksBefore + 1, F("SD votes its own alternative, not the government's frames - a break recorded: {0}", sdSide?.Reason ?? "NONE"));
+                Check(sdDivision != null && sdDivision.Contest != null && sdDivision.Contest.VotesFor + sdDivision.Contest.VotesAgainst + sdDivision.Contest.Abstentions == 349 && sdDivision.Passed, F("the contest on the record: {0} {1}, {2} {3}, abstaining {4}", sdDivision?.Contest?.ProposalFor, sdDivision?.Contest?.VotesFor, sdDivision?.Contest?.ProposalAgainst, sdDivision?.Contest?.VotesAgainst, sdDivision?.Contest?.Abstentions));
+                sweden.PlayerPartyAbbrev = "S";
 
                 // 3. Germany: the procedure is unsourced - an alternative is refused with the reason; the government's bill is voted alone.
                 Check(WorldClock.BudgetProcedureOf(CountryId.Germany) == WorldClock.BudgetProcedure.Unsourced, "Germany's procedure is not yet sourced");

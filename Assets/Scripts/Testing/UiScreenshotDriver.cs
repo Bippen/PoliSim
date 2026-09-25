@@ -1371,6 +1371,45 @@ namespace PoliSim.Testing
             InvokeNoArg(controller, "SignPendingDivision");
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
+
+            // (d) PS-3f (§633, ruled): a BUDGET division is a contest of two proposals - the signing screen names each with its votes, the abstentions,
+            // and stamps the adopted one. Staged as the frame decision the model records (S's alternative against the government's frames, the
+            // government's own parties carrying them), and filmed real: the surface is Canvas.
+            if (player.Id != CountryId.Sweden) { Debug.Log("SHOT: 89f_signing_budget_contest is Sweden's (the staged sides name its parties) - skipped for this country, not missing."); yield break; }
+            StageBudgetContestDivision(player, sim);
+            InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: true);
+            yield return Settle();
+            Claim("signing");
+            yield return Capture("89f_signing_budget_contest");
+            RecordCanvasTextAssert("89f_signing_budget_contest", controller);
+            InvokeNoArg(controller, "SignPendingDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
+        }
+
+        /// <summary>PS-3f (§633): the frame decision as the model records it - the government's parties carrying its frames, the rest by alignment toward S's alternative or abstaining - with the contest on the record.</summary>
+        private static void StageBudgetContestDivision(Country player, SimulationManager sim)
+        {
+            var sides = new List<DivisionSide>();
+            int forG = 0, forA = 0, abst = 0;
+            string alternativeBy = "S";
+            foreach (PoliticalParty party in PartySystems.For(player.Id))
+            {
+                int seats = player.ParliamentSeats.TryGetValue(party.Abbrev, out int n) ? n : 0;
+                if (seats <= 0) { continue; }
+                PoliSim.Elections.PlayerRole role = player.Government != null ? player.Government.RoleOf(party.Abbrev) : PoliSim.Elections.PlayerRole.None;
+                bool governmentParty = role == PoliSim.Elections.PlayerRole.PrimeMinister || role == PoliSim.Elections.PlayerRole.JuniorPartner || role == PoliSim.Elections.PlayerRole.Support;
+                int side = governmentParty ? 1 : party.Abbrev == alternativeBy || party.Abbrev == "V" || party.Abbrev == "MP" ? -1 : 0;
+                if (side > 0) { forG += seats; } else if (side < 0) { forA += seats; } else { abst += seats; }
+                string why = governmentParty ? "the government's own party - carries its frames" : side < 0 ? alternativeBy + "'s frames (+0.40) over the government's (+0.00)" : "abstains - aligned with neither";
+                sides.Add(new DivisionSide { Abbrev = party.Abbrev, ShortName = party.ShortName, Seats = seats, Side = side, Alignment = side < 0 ? 0.4f : 0f, Reason = why });
+            }
+            bool governmentAdopted = forG >= forA;
+            string title = governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {alternativeBy}'s alternative" : $"Annual budget: {alternativeBy}'s alternative frames adopted, {forA} to {forG}, over the government's";
+            player.Divisions.Append(title, sim.CurrentDate, 0f, true, 0f, (int)BillAxis.Fiscal, sides);
+            player.Divisions.Entries[player.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternativeBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abst, AlternativeAdopted = !governmentAdopted };
+            Debug.Log($"SHOT: staged the budget contest division - {title}");
         }
 
         /// <summary>

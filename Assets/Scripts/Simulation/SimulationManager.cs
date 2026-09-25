@@ -1183,6 +1183,7 @@ namespace PoliSim.Simulation
             if (!_pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill pending) || !pending.GovernmentBill) { refusedBecause = "NO GOVERNMENT BUDGET IS BEFORE THE CHAMBER"; return false; }
             if (Elections.WorldClock.BudgetProcedureOf(countryId) == Elections.WorldClock.BudgetProcedure.Unsourced) { refusedBecause = "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE"; return false; }
             if (_pendingBudgetAlternativeByCountry.ContainsKey(countryId)) { refusedBecause = "YOUR ALTERNATIVE IS ALREADY TABLED"; return false; }
+            if (country.Government != null && country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.JuniorPartner) { refusedBecause = "JUNIOR PARTNER · YOUR BUDGET VOICE IS THE COALITION AGREEMENT"; return false; }   // PS-3f (§633, ruled)
             bill.TabledBy = country.PlayerPartyAbbrev;
             bill.GovernmentBill = false;
             bill.DaysRemaining = pending.DaysRemaining;
@@ -1216,7 +1217,7 @@ namespace PoliSim.Simulation
                 BillConcern concernA = ParliamentSystem.GetBudgetBillConcern(country, alternative);
                 var alignG = new Dictionary<string, PartyStance>(); foreach (PartyStance st in StanceModel.Stances(country, concernG)) { alignG[st.Party.Abbrev] = st; }
                 var alignA = new Dictionary<string, PartyStance>(); foreach (PartyStance st in StanceModel.Stances(country, concernA)) { alignA[st.Party.Abbrev] = st; }
-                int forG = 0, forA = 0;
+                int forG = 0, forA = 0, abstaining = 0;
                 var sides = new List<DivisionSide>();
                 foreach (KeyValuePair<string, PartyStance> kv in alignG)
                 {
@@ -1225,16 +1226,21 @@ namespace PoliSim.Simulation
                     // The government's own parties - the cabinet and its support - carry its frames (2021: the government's parties voted its budget, the M/SD/KD theirs, C and L abstained [FIU1-22]);
                     // every other party votes for the proposal it aligns with more, or abstains where it aligns with neither.
                     Elections.PlayerRole role = country.Government != null ? country.Government.RoleOf(kv.Key) : Elections.PlayerRole.None;
-                    bool governmentParty = role == Elections.PlayerRole.PrimeMinister || role == Elections.PlayerRole.JuniorPartner || role == Elections.PlayerRole.Support;
-                    int side = governmentParty ? 1 : g.Alignment >= a ? (g.Alignment > 0f ? 1 : 0) : (a > 0f ? -1 : 0);
-                    if (side > 0) { forG += g.Seats; } else if (side < 0) { forA += g.Seats; }
-                    string why = governmentParty ? "the government's own party - carries its frames" : side > 0 ? $"the government's frames ({g.Alignment:+0.00;-0.00}) over {alternative.TabledBy}'s ({a:+0.00;-0.00})" : side < 0 ? $"{alternative.TabledBy}'s frames ({a:+0.00;-0.00}) over the government's ({g.Alignment:+0.00;-0.00})" : "abstains - aligned with neither";
+                    // PS-3f (§633, ruled): a SUPPORT party that tabled the alternative votes for its own frames, not the government's - a break with the government, recorded on it.
+                    bool ownAlternative = kv.Key == alternative.TabledBy;   // whoever tabled it votes its own (the reader, s633): the opposition's motion is its own vote; a support party's is also a break
+                    bool governmentParty = role == Elections.PlayerRole.PrimeMinister || role == Elections.PlayerRole.JuniorPartner || (role == Elections.PlayerRole.Support && !ownAlternative);
+                    int side = governmentParty ? 1 : ownAlternative ? -1 : g.Alignment >= a ? (g.Alignment > 0f ? 1 : 0) : (a > 0f ? -1 : 0);
+                    if (side > 0) { forG += g.Seats; } else if (side < 0) { forA += g.Seats; } else { abstaining += g.Seats; }
+                    string why = governmentParty ? "the government's own party - carries its frames" : ownAlternative ? (role == Elections.PlayerRole.Support ? "its own alternative over the frames of the government it supports - a break with the government" : "its own alternative") : side > 0 ? $"the government's frames ({g.Alignment:+0.00;-0.00}) over {alternative.TabledBy}'s ({a:+0.00;-0.00})" : side < 0 ? $"{alternative.TabledBy}'s frames ({a:+0.00;-0.00}) over the government's ({g.Alignment:+0.00;-0.00})" : "abstains - aligned with neither";
                     sides.Add(new DivisionSide { Abbrev = g.Party.Abbrev, ShortName = g.Party.ShortName, Seats = g.Seats, Side = side, Alignment = side > 0 ? g.Alignment : side < 0 ? a : 0f, Reason = why });
                 }
                 bool governmentAdopted = forG >= forA;   // a tie keeps the government's frames - the tie rule of the statute is sourced in the record and applied there when it lands
                 BudgetBill adopted = governmentAdopted ? government : alternative;
                 country.Divisions.Append(governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {alternative.TabledBy}'s alternative" : $"Annual budget: {alternative.TabledBy}'s alternative frames adopted, {forA} to {forG}, over the government's",
                     CurrentDate, ParliamentSystem.GetSeatWeightedAlignment(country, concernG), true, concernG.Direction, (int)BillAxis.Fiscal, sides);   // PASSED either way: the chamber adopted a budget - the title says whose
+                string breakBy = alternative.TabledBy != null && country.Government != null && country.Government.RoleOf(alternative.TabledBy) == Elections.PlayerRole.Support ? alternative.TabledBy : null;
+                country.Divisions.Entries[country.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternative.TabledBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abstaining, AlternativeAdopted = !governmentAdopted, BreakBy = breakBy };   // PS-3f (§633): the two proposals on the record
+                if (breakBy != null) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {breakBy} voted its own alternative budget against the government's frames"); Debug.Log($"BUDGET: {country.Id} - {breakBy}, a support party, broke with the government on its budget"); }
                 ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf);
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{alternative.TabledBy}'s alternative budget adopted", country.State.ApprovalRating - approvalBefore);
                 Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");

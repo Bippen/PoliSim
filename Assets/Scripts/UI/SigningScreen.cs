@@ -333,7 +333,18 @@ namespace PoliSim.UI
             }
             Transform votePanel = PlatePanel(plate.transform, "Vote", 1.2f);
             PlateCaption(votePanel, "THE DIVISION · EVERY MANDATE");
-            if (record.Sides.Count > 0)
+            if (record.Contest != null)
+            {
+                // PS-3f (§633, ruled): a BUDGET division is two proposals - never FOR/AGAINST beside CARRIED. Each named with its votes, the abstentions, the adopted one stamped.
+                DivisionContest contest = record.Contest;
+                // The seat map's inks are the good for the ADOPTED proposal, the bad for the other, the muted for the abstaining - whichever proposal carried (the reader, s633).
+                int adoptedSeats = contest.AlternativeAdopted ? contest.VotesAgainst : contest.VotesFor, otherSeats = contest.AlternativeAdopted ? contest.VotesFor : contest.VotesAgainst;
+                PlateImage(votePanel, "SeatMap", CanvasPaint.SeatMap(360, 190, adoptedSeats, contest.Abstentions, otherSeats, PoliSimTheme.Hex(0xF4ECDC)), 360f / 190f);
+                PlateBody(votePanel, string.Format(CultureInfo.InvariantCulture, "{0} · {1}{2}", contest.ProposalFor, contest.VotesFor, contest.AlternativeAdopted ? string.Empty : " · ADOPTED"), contest.AlternativeAdopted ? PoliSimTheme.TextSecondary : PoliSimTheme.Good);
+                PlateBody(votePanel, string.Format(CultureInfo.InvariantCulture, "{0} · {1}{2}", contest.ProposalAgainst, contest.VotesAgainst, contest.AlternativeAdopted ? " · ADOPTED" : string.Empty), contest.AlternativeAdopted ? PoliSimTheme.Good : PoliSimTheme.TextSecondary);
+                PlateCaption(votePanel, string.Format(CultureInfo.InvariantCulture, "ABSTAINING {0} · THE MAP: ADOPTED, ABSTAINING, OTHER", contest.Abstentions));
+            }
+            else if (record.Sides.Count > 0)
             {
                 PlateImage(votePanel, "SeatMap", CanvasPaint.SeatMap(360, 190, forSeats, undecided, against, PoliSimTheme.Hex(0xF4ECDC)), 360f / 190f);
                 PlateCaption(votePanel, string.Format(CultureInfo.InvariantCulture, "FOR {0} · UNDECIDED {1} · AGAINST {2}", forSeats, undecided, against));
@@ -348,8 +359,15 @@ namespace PoliSim.UI
             PlateCaption(cite, "THE CITATION");
             PlateBody(cite, $"Division No. {record.Number}");
             PlateBody(cite, record.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
-            PlateBody(cite, string.Format(CultureInfo.InvariantCulture, "alignment {0:+0.00;-0.00} · {1}", record.Alignment, record.Passed ? "CARRIED" : "LOST"),
-                record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad);
+            if (record.Contest != null)
+            {
+                PlateBody(cite, string.Format(CultureInfo.InvariantCulture, "ADOPTED · {0}", record.Contest.AlternativeAdopted ? record.Contest.ProposalAgainst : record.Contest.ProposalFor), PoliSimTheme.Good);   // PS-3f (§633)
+            }
+            else
+            {
+                PlateBody(cite, string.Format(CultureInfo.InvariantCulture, "alignment {0:+0.00;-0.00} · {1}", record.Alignment, record.Passed ? "CARRIED" : "LOST"),
+                    record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad);
+            }
             PlateBody(cite, record.Axis == (int)BillAxis.Trade ? "on the openness axis" : "on the fiscal axis");
 
             // 2b. The stances - P3-A3 (2026-09-03): every party's side with the reason the model gave it, as the vote
@@ -379,8 +397,11 @@ namespace PoliSim.UI
             foreach (List<DivisionSide> group in groups)
             {
                 DivisionSide side = group[0];
-                string verdict = side.Side > 0 ? "FOR" : side.Side < 0 ? "AGAINST" : "UNDECIDED";
-                Color ink = side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
+                string verdict = record.Contest != null
+                    ? (side.Side > 0 ? "FOR " + record.Contest.ProposalFor : side.Side < 0 ? "FOR " + record.Contest.ProposalAgainst : "ABSTAINS")   // PS-3f (§633): a contest's side names the proposal
+                    : (side.Side > 0 ? "FOR" : side.Side < 0 ? "AGAINST" : "UNDECIDED");
+                Color ink = record.Contest != null ? (side.Side == 0 ? PoliSimTheme.TextSecondary : ((side.Side < 0) == record.Contest.AlternativeAdopted ? PoliSimTheme.Good : PoliSimTheme.TextPrimary))
+                    : side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary;
                 string who;
                 if (group.Count == 1) { who = string.Format(CultureInfo.InvariantCulture, "{0} · {1}", Shown(side), side.Seats); }
                 else

@@ -2,6 +2,10 @@
 
 > **This file holds the LIVE ask and what stands beside it** - the current status, D21, the notice to Design, the count rule, what is costed and not yet requestable (§4), the standing conventions (§5), and the generated asset inventory. **Every answered ask moved VERBATIM on 2026-09-23 to `docs/archive/DESIGN_REQUESTS.md`** (`COMPLETED.md` §582): the earlier STATUS heads this one stacked, the ninth to eleventh requests with their annexes, §0's hand-derived delivered set, §E5, and D9 to D20 with D18's prose. Their request rows went with them, and `DesignNotificationCheck` reads the rows from both files.
 
+## ⭐ NOTE FOR THE NEXT ROUND (2026-09-25, §633, ruled): THE SIGNING SCREEN'S BUDGET DIVISION IS A CONTEST OF TWO PROPOSALS
+
+A budget division now records two proposals - the government's frames and a party's alternative - each named with its votes, the abstentions, and the adopted one stamped ADOPTED; never FOR/AGAINST beside CARRIED. Built structurally on the signing plate (`SigningScreen.cs`, the vote panel, the citation, the stances) and filmed real as `89f_signing_budget_contest` at 1280. This is a NOTE, not an ask: the plate's composition for two proposals is Design's at its next round on the signing screen (D12's surface).
+
 ## ⭐ D-SP — THE ASK (2026-09-25): THE START SCREEN, COMPOSED AGAINST THE BUILT START PANEL (`COMPLETED.md` §622, §623; sent over the channel as `uploads/D-SP_ask/`)
 
 **Read this the D19 way: against the frames.** SP-1 and SP-2 are built and filmed (`docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` §1 is the spec, §5 row 1 and row 5 the Design rows; the rows are SP-1 and SP-2 in `POLISIM_FEATURE_LIST.md`). The start panel is the selector's step between a country's folder and its party panel: one card per popularly decided national election, the latest of each kind, in date order; a playable card is brass and opens the party panel, a locked one paper and inert with its reason in one line beneath; the brief beneath the playable card is derived from the records of the start's date and never written; BACK returns to the countries.
