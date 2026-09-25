@@ -306,6 +306,7 @@ namespace PoliSim.Simulation
             AdvanceSwfDrawdownBillDay(countryId);
             AdvanceLawBillsDay(countryId);
             TryOpenBudgetProcess(countryId, CurrentDate);
+            AdvanceConfidenceDay(countryId);   // PS-3i (§636): a carried motion's week, the discharge and the Speaker's round
         }
 
         public bool AdvanceDay()
@@ -1241,6 +1242,7 @@ namespace PoliSim.Simulation
                 string breakBy = alternative.TabledBy != null && country.Government != null && country.Government.RoleOf(alternative.TabledBy) == Elections.PlayerRole.Support ? alternative.TabledBy : null;
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternative.TabledBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abstaining, AlternativeAdopted = !governmentAdopted, BreakBy = breakBy };   // PS-3f (§633): the two proposals on the record
                 if (breakBy != null) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {breakBy} voted its own alternative budget against the government's frames"); Debug.Log($"BUDGET: {country.Id} - {breakBy}, a support party, broke with the government on its budget"); }
+                if (!governmentAdopted) { country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government lost its budget - {alternative.TabledBy}'s frames adopted; it governs on the adopted frames (sweden/budget_procedure.md [BA-3]); the constitution requires no resignation, and the AI government offers none (a premise, PS-3i §636)"); }
                 ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf);
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{alternative.TabledBy}'s alternative budget adopted", country.State.ApprovalRating - approvalBefore);
                 Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");
@@ -2279,6 +2281,7 @@ namespace PoliSim.Simulation
                 IncomingBudgetWindowUsed = new List<CountryId>(_incomingBudgetWindowUsed),
                 PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
                 PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>(_pendingBudgetAlternativeByCountry),   // PS-3e (§632)
+                ExtraElectionDate = _extraElectionDate, ExtraElectionOrderedOn = _extraElectionOrderedOn,   // PS-3i (§636)
                 PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>(_pendingLaborBillByCountry),
                 PendingCrimeJusticeBills = new Dictionary<CountryId, CrimeJusticePolicyBill>(_pendingCrimeJusticeBillByCountry),
                 PendingSectorBills = new Dictionary<CountryId, SectorPolicyBill>(_pendingSectorBillByCountry),
@@ -2497,16 +2500,166 @@ namespace PoliSim.Simulation
             return true;
         }
 
+        // ---------------------------------------------------------------------------------------------
+        // PS-3i (2026-09-25, §636): CONFIDENCE AND COLLAPSE (the spec's §5.4; Sweden's rules in ConfidenceProcedure, sourced from Regeringsformen).
+        // The motion is the player's verb - AI parties move none (an AI motion needs an authored trigger: stated, owed to play). A carried motion opens
+        // the government's week (RF 6 kap. 7 §): the player's government may order an extra election in it; an AI government does not (the 2021
+        // precedent: the government resigned rather than dissolve - a premise); at the week's end the Speaker discharges the prime minister and with
+        // them the government (6 kap. 9 §), which serves on as a caretaker, and the Speaker's round runs on the sitting chamber: a government that
+        // forms is the new record, and none forming stands for four rejected proposals - an extra election within three months (6 kap. 5 §).
+        // ---------------------------------------------------------------------------------------------
+        private System.DateTime _extraElectionDate = System.DateTime.MinValue;
+        private System.DateTime _extraElectionOrderedOn = System.DateTime.MinValue;
+
+        /// <summary>The ordered extra election's polling day, or MinValue.</summary>
+        public System.DateTime ExtraElectionDate => _extraElectionDate;
+
+        /// <summary>The player's party moves no confidence in the prime minister. False, with the reason, where no motion is taken up; otherwise the vote, recorded as a division.</summary>
+        public bool MoveNoConfidence(CountryId countryId, out string refusedBecause, out Elections.ConfidenceProcedure.MotionVote vote)
+        {
+            vote = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            Elections.GovernmentRecord g = country.Government;
+            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Unsourced) { refusedBecause = "THIS COUNTRY'S CONFIDENCE RULES ARE NOT YET MODELLED"; return false; }
+            switch (g.RoleOf(country.PlayerPartyAbbrev))
+            {
+                case Elections.PlayerRole.PrimeMinister: refusedBecause = "THE GOVERNMENT MOVES NO MOTION AGAINST ITSELF"; return false;
+                case Elections.PlayerRole.JuniorPartner: refusedBecause = "LEAVE THE GOVERNMENT FIRST"; return false;
+                case Elections.PlayerRole.Support: refusedBecause = "WITHDRAW YOUR SUPPORT FIRST"; return false;
+            }
+            if (g.Caretaker) { refusedBecause = "NO MOTION IS TAKEN UP AGAINST A CARETAKER GOVERNMENT"; return false; }
+            if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate) { refusedBecause = "NO MOTION IS TAKEN UP BETWEEN AN EXTRA ELECTION'S DECISION AND THE NEW RIKSDAG"; return false; }
+            if (g.NoConfidenceOn != System.DateTime.MinValue) { refusedBecause = "THE CHAMBER HAS ALREADY DECLARED NO CONFIDENCE - THE GOVERNMENT'S WEEK RUNS"; return false; }
+            if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, country.PlayerPartyAbbrev, out int moverSeats, out int tenth)) { refusedBecause = $"A MOTION NEEDS A TENTH OF THE MEMBERS - {tenth} - YOUR PARTY HOLDS {moverSeats}"; return false; }
+            refusedBecause = null;
+            vote = Elections.ConfidenceProcedure.Vote(country, country.PlayerPartyAbbrev);
+            country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
+            country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;   // a motion, not a bill (the reader, s636)
+            if (vote.Carried)
+            {
+                g.NoConfidenceOn = CurrentDate;
+                g.NoConfidenceMover = country.PlayerPartyAbbrev;
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag declared no confidence in the prime minister ({g.PmParty}), {vote.For} of {vote.Members} members, moved by {country.PlayerPartyAbbrev} (RF 13 kap. 4 §)");
+            }
+            Debug.Log($"CONFIDENCE: {countryId} - {vote.Title()}");
+            return true;
+        }
+
+        /// <summary>The player's junior partner leaves the government - struck from the cabinet, the portfolios re-apportioned among those who stay; it may then move no confidence as the opposition.</summary>
+        public bool LeaveGovernment(CountryId countryId, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { refusedBecause = "YOUR PARTY IS NOT A JUNIOR PARTNER"; return false; }
+            refusedBecause = null;
+            country.Government.Cabinet.Remove(country.PlayerPartyAbbrev);
+            country.Government.AllocatePortfolios(country);
+            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} left the government");
+            Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev} left the government");
+            return true;
+        }
+
+        /// <summary>RF 6 kap. 7 §: the player's government answers a carried motion by ordering an extra election within the week - then no discharge follows.</summary>
+        public bool OrderExtraElection(CountryId countryId, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            Elections.GovernmentRecord g = country?.Government;
+            if (g == null || !PlayerGoverns(country)) { refusedBecause = "ONLY THE GOVERNMENT ORDERS AN EXTRA ELECTION"; return false; }
+            if (g.Caretaker) { refusedBecause = "A CARETAKER GOVERNMENT ORDERS NO EXTRA ELECTION"; return false; }
+            // [RF-R:3:11]: not within three months of a new Riksdag's first sitting - the chamber of record's first sitting, or the game's own last polling day where
+            // the game has held one (its first sitting is not modelled; the polling day is the earlier bound, stated).
+            System.DateTime sat = Elections.WorldClock.ChamberAt(countryId, CurrentDate).Convened;
+            if (country.ElectionHistory != null) { foreach (Elections.ElectionRecord held in country.ElectionHistory) { if (held.Method != Elections.ElectionMethod.NotImplemented && held.Date > sat) { sat = held.Date; } } }
+            if (CurrentDate < sat.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths)) { refusedBecause = "NO EXTRA ELECTION WITHIN THREE MONTHS OF THE NEW RIKSDAG'S FIRST SITTING"; return false; }
+            if (g.NoConfidenceOn == System.DateTime.MinValue || CurrentDate >= g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { refusedBecause = "NO DECLARATION OF NO CONFIDENCE IS WITHIN ITS WEEK"; return false; }
+            refusedBecause = null;
+            ScheduleExtraElection(country, "the government ordered it within the week of the declaration (RF 6 kap. 7 §)");
+            g.NoConfidenceOn = System.DateTime.MinValue;
+            return true;
+        }
+
+        private void ScheduleExtraElection(Country country, string why)
+        {
+            _extraElectionOrderedOn = CurrentDate;
+            _extraElectionDate = Elections.ConfidenceProcedure.ExtraElectionDay(CurrentDate);
+            country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: an extra election is ordered for {_extraElectionDate:yyyy-MM-dd} - {why}");
+            Debug.Log($"CONFIDENCE: {country.Id} - an extra election on {_extraElectionDate:yyyy-MM-dd}: {why}");
+        }
+
+        private void AdvanceConfidenceDay(CountryId countryId)
+        {
+            if (_extraElectionDate != System.DateTime.MinValue && CurrentDate > _extraElectionDate)
+            {
+                // The extra election is held: the campaign state dated to it ends with it, so the ordinary election's run-up and campaign begin on their own
+                // calendar rather than inheriting a record dated to the extra election (the reader, s636).
+                if (CampaignRecord != null && CampaignRecord.ElectionDate == _extraElectionDate) { CampaignRecord = null; PlayerCampaign = null; PlayerCampaignResult = null; }
+                if (PlayerPreCampaign != null && PlayerPreCampaign.Calendar.ElectionDate == _extraElectionDate) { PlayerPreCampaign = null; }
+                _extraElectionDate = System.DateTime.MinValue; _extraElectionOrderedOn = System.DateTime.MinValue;
+            }
+            Country country = _world?.GetCountry(countryId);
+            Elections.GovernmentRecord g = country?.Government;
+            if (g == null || g.Caretaker || g.NoConfidenceOn == System.DateTime.MinValue) { return; }
+            if (CurrentDate < g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
+            DischargeAndRound(country);
+        }
+
+        /// <summary>The Speaker discharges the prime minister [RF-R:6:7] and every minister with them [RF-R:6:9]; they serve on as a caretaker [RF-R:6:11]; the round runs on the sitting chamber [RF-R:6:4] - on the week's last day here, where 2021's round ran nine days (29 June to 7 July), stated.</summary>
+        private void DischargeAndRound(Country country)
+        {
+            Elections.GovernmentRecord fallen = country.Government;
+            fallen.Caretaker = true;
+            fallen.CaretakerSince = CurrentDate;
+            fallen.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Speaker discharged the prime minister ({fallen.PmParty}) and the government (RF 6 kap. 7 §, 9 §); the ministers serve on as a caretaker (6 kap. 11 §)");
+            // The player's party moved the motion: it will not carry the prime minister it brought down in the round - its own choice, made by moving it.
+            // An AI party's refusal is not added (the 2021 precedent: a party that brought the prime minister down tolerated his re-election).
+            var lines = new List<Elections.RedLine>();
+            int mover = Elections.GovernmentFormation.IndexOf(country.Id, fallen.NoConfidenceMover), pm = Elections.GovernmentFormation.IndexOf(country.Id, fallen.PmParty);
+            if (mover >= 0 && pm >= 0 && fallen.NoConfidenceMover == country.PlayerPartyAbbrev)
+            {
+                lines.Add(new Elections.RedLine(mover, pm, Elections.RedLineKind.Declared, blocksSupport: true, basis: "moved the motion that brought this prime minister down", oneWay: true));
+            }
+            Elections.GovernmentFormation.View view = Elections.GovernmentFormation.ViewOfSitting(country, lines);
+            if (view.HasGovernment)
+            {
+                Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromView(country, view, CurrentDate, basis: "the Speaker's round on the sitting chamber after the declaration of no confidence", world: _world);
+                country.Government = formed;
+                ResetArrivalBudgetWindow(country.Id);
+                Debug.Log($"CONFIDENCE: {country.Id} - the Speaker's round: {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
+            }
+            else if (Elections.WorldClock.TryNextPollingDay(country.Id, CurrentDate, out System.DateTime ordinary) && ordinary <= CurrentDate.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths))
+            {
+                // [RF-R:6:5]: no extra election where an ordinary one is due within the three months - the caretaker serves to it.
+                fallen.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: no proposal the chamber accepts; the ordinary election of {ordinary:yyyy-MM-dd} falls within three months and serves (RF 6 kap. 5 §)");
+            }
+            else
+            {
+                ScheduleExtraElection(country, "no proposal the chamber accepts - four rejected proposals order an extra election within three months (RF 6 kap. 5 §)");
+            }
+        }
+
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
         public bool TryPlayerPollingDay(out System.DateTime pollingDay)
         {
             pollingDay = System.DateTime.MinValue;
-            return PlayerCountryId.HasValue && Elections.WorldClock.TryNextPollingDay(PlayerCountryId.Value, CurrentDate, out pollingDay);
+            bool ordinary = PlayerCountryId.HasValue && Elections.WorldClock.TryNextPollingDay(PlayerCountryId.Value, CurrentDate, out pollingDay);
+            // PS-3i (§636): an ordered EXTRA election is the next polling day where it falls first; the four-year cycle carries on beside it.
+            if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate && (!ordinary || _extraElectionDate < pollingDay)) { pollingDay = _extraElectionDate; return true; }
+            return ordinary;
         }
 
         /// <summary>The campaign window and calendar for the current day: the run-up and the eight weeks before the player's country's next polling day, or null where none is modelled.</summary>
-        private Elections.CampaignCalendar? CurrentCampaignCalendar() =>
-            TryPlayerPollingDay(out System.DateTime pollingDay) ? new Elections.CampaignCalendar(pollingDay) : (Elections.CampaignCalendar?)null;
+        private Elections.CampaignCalendar? CurrentCampaignCalendar()
+        {
+            if (!TryPlayerPollingDay(out System.DateTime pollingDay)) { return null; }
+            // PS-3i (§636): an extra election's campaign runs from its decision to its polling day - no run-up, the campaign proper at most eight weeks (a premise).
+            if (pollingDay == _extraElectionDate)
+            {
+                int weeks = System.Math.Max(0, System.Math.Min(Elections.CampaignCalendar.DefaultCampaignWeeks, (int)((_extraElectionDate - _extraElectionOrderedOn).TotalDays / 7)));
+                return new Elections.CampaignCalendar(pollingDay, weeks, 0);
+            }
+            return new Elections.CampaignCalendar(pollingDay);
+        }
 
         /// <summary>
         /// Called once per day after the date has advanced: begins the player's campaign on its first
@@ -2588,7 +2741,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private void AdvancePreCampaign(Elections.CampaignCalendar calendar)
         {
-            if (PlayerPreCampaign == null || PlayerPreCampaign.Calendar.ElectionDate != calendar.ElectionDate)
+            if (PlayerPreCampaign == null || PlayerPreCampaign.Calendar.ElectionDate != calendar.ElectionDate || CampaignRecord == null || CampaignRecord.ElectionDate != calendar.ElectionDate)   // PS-3i (§636, the reader): a run-up whose record is not this calendar's re-begins
             {
                 int me = PlayerPartyIndexForCampaign();
                 if (me < 0) { return; }
@@ -2923,6 +3076,7 @@ namespace PoliSim.Simulation
 
             CopyInto(state.PendingBudgetBills, _pendingBudgetBillByCountry);
             _pendingBudgetAlternativeByCountry.Clear(); CopyInto(state.PendingBudgetAlternatives, _pendingBudgetAlternativeByCountry);   // PS-3e (§632): cleared first - a v29 save carries its own, an older none
+            _extraElectionDate = state.ExtraElectionDate; _extraElectionOrderedOn = state.ExtraElectionOrderedOn;   // PS-3i (§636)
             CopyInto(state.PendingLaborBills, _pendingLaborBillByCountry);
             CopyInto(state.PendingCrimeJusticeBills, _pendingCrimeJusticeBillByCountry);
             CopyInto(state.PendingSectorBills, _pendingSectorBillByCountry);

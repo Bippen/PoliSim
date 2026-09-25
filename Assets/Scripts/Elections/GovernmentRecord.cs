@@ -59,7 +59,12 @@ namespace PoliSim.Elections
         public Dictionary<string, List<CabinetPortfolio>> Portfolios = new Dictionary<string, List<CabinetPortfolio>>();
         /// <summary>PS-3h (§635): the support agreements - one per support party, its demands chosen from its own positions (<see cref="SupportAgreement.Demand"/>), each item owed, delivered or broken.</summary>
         public List<SupportAgreement> Agreements = new List<SupportAgreement>();
-
+        /// <summary>PS-3i (§636): the day the chamber declared no confidence in this government's prime minister (MinValue for none), and the party that moved it.</summary>
+        public DateTime NoConfidenceOn = DateTime.MinValue;
+        public string NoConfidenceMover;
+        /// <summary>PS-3i (§636): discharged, serving on as a caretaker until the next government (RF 6 kap. 9 §) - no motion is taken up against it, it orders no extra election.</summary>
+        public bool Caretaker;
+        public DateTime CaretakerSince = DateTime.MinValue;
         /// <summary>The agreement a support party holds, or null.</summary>
         public SupportAgreement AgreementOf(string party) { foreach (SupportAgreement a in Agreements) { if (a.Supporter == party) { return a; } } return null; }
 

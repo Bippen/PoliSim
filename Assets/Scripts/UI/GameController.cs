@@ -2269,6 +2269,7 @@ namespace PoliSim.UI
         {
             foreach (DivisionRecord record in _playerCountry.Divisions.Entries)
             {
+                if (record.Motion) { _seenDivisionNumber = System.Math.Max(_seenDivisionNumber, record.Number); continue; }   // PS-3i (§636): a motion is no bill to sign
                 if (record.Number > _seenDivisionNumber)
                 {
                     // P2-4.3: the estimate the turn's decision carried (the preview's arrows, snapshotted at the turn's
@@ -6718,7 +6719,7 @@ namespace PoliSim.UI
                 List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
                 for (int d = divisions.Count - 1; d >= 0; d--)
                 {
-                    if (divisions[d].Passed && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
+                    if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
                 }
                 // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
                 // against the seed - the seated election, Sweden 2026 since K-1, which the allocator reproduces seat for seat (§601's
@@ -9807,6 +9808,7 @@ namespace PoliSim.UI
 
             GUILayout.Space(10f);
             DrawSupportAgreements();   // PS-3h (§635)
+            DrawConfidence();   // PS-3i (§636)
 
             GUILayout.Space(10f);
             DrawRecentDivisions();
@@ -11077,6 +11079,53 @@ namespace PoliSim.UI
                 if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
             }
             GUI.enabled = ambient;
+        }
+
+        /// <summary>
+        /// PS-3i (§636): CONFIDENCE on the Parliament tab - the government's standing (a declaration of no confidence and its week, a caretaker, an extra
+        /// election ordered) and the player's verbs by role: the opposition moves no confidence (the sentence names the motion's arithmetic before it is
+        /// moved); a junior partner leaves the government; the player's government, within the week of a declaration, orders an extra election. Structural
+        /// until Design's board on the confidence-vote moment (the D22 ask).
+        /// </summary>
+        private void DrawConfidence()
+        {
+            PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
+            if (g == null || PoliSim.Elections.ConfidenceProcedure.RulesOf(PlayerCountryId) == PoliSim.Elections.ConfidenceProcedure.Rules.Unsourced) { return; }
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            System.DateTime extra = _simulationManager.ExtraElectionDate;
+            if (extra != System.DateTime.MinValue) { GUILayout.Label("AN EXTRA ELECTION ON " + extra.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(), caption); }
+            if (g.Caretaker) { GUILayout.Label("A CARETAKER GOVERNMENT SINCE " + g.CaretakerSince.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(), caption); }
+            else if (g.NoConfidenceOn != System.DateTime.MinValue)
+            {
+                System.DateTime discharge = g.NoConfidenceOn.AddDays(PoliSim.Elections.ConfidenceProcedure.ExtraElectionWindowDays);
+                GUILayout.Label("NO CONFIDENCE DECLARED " + g.NoConfidenceOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " · THE SPEAKER DISCHARGES THE GOVERNMENT ON " + discharge.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(), caption);
+                if (_simulationManager.PlayerGoverns(_playerCountry)
+                    && DrawSentenceAction("The chamber has no confidence in your government. Within the week you may order an extra election instead of being discharged.", "Order an extra election", true, _implementButtonStyle))
+                {
+                    if (!_simulationManager.OrderExtraElection(PlayerCountryId, out string refused)) { Debug.Log($"CONFIDENCE: refused - {refused}"); }
+                }
+            }
+            switch (g.RoleOf(_playerCountry.PlayerPartyAbbrev))
+            {
+                case PoliSim.Elections.PlayerRole.Opposition:
+                    if (g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || extra != System.DateTime.MinValue) { break; }
+                    PoliSim.Elections.ConfidenceProcedure.MotionVote projected = PoliSim.Elections.ConfidenceProcedure.Vote(_playerCountry, _playerCountry.PlayerPartyAbbrev);
+                    bool takenUp = PoliSim.Elections.ConfidenceProcedure.CanBeTakenUp(_playerCountry, _playerCountry.PlayerPartyAbbrev, out int moverSeats, out int tenth);
+                    string sentence = takenUp
+                        ? string.Format(CultureInfo.InvariantCulture, "A motion of no confidence in the prime minister would have {0} of {1} members for it; it needs {2}.", projected.For, projected.Members, projected.Needed)
+                        : string.Format(CultureInfo.InvariantCulture, "A motion needs a tenth of the members, {0}, to be taken up; your party holds {1}.", tenth, moverSeats);
+                    if (DrawSentenceAction(sentence, "Move no confidence", takenUp, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.MoveNoConfidence(PlayerCountryId, out string refused, out _)) { Debug.Log($"CONFIDENCE: the motion was refused - {refused}"); }
+                    }
+                    break;
+                case PoliSim.Elections.PlayerRole.JuniorPartner:
+                    if (DrawSentenceAction("Leaving takes your ministers out of the cabinet; the government stands until the chamber declares otherwise.", "Leave the government", true, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.LeaveGovernment(PlayerCountryId, out string refused)) { Debug.Log($"CONFIDENCE: refused - {refused}"); }
+                    }
+                    break;
+            }
         }
 
         /// <summary>

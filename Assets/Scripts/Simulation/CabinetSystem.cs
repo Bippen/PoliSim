@@ -473,7 +473,7 @@ namespace PoliSim.Simulation
         {
             if (country.State.ApprovalRating < PressureApprovalFloor) { return true; }
             var entries = country.Divisions.Entries;
-            return entries.Count > 0 && !entries[entries.Count - 1].Passed && entries[entries.Count - 1].Date == today;
+            return entries.Count > 0 && !entries[entries.Count - 1].Passed && !entries[entries.Count - 1].Motion && entries[entries.Count - 1].Date == today;   // PS-3i (§636): a failed motion is not the government losing a bill
         }
 
         /// <summary>

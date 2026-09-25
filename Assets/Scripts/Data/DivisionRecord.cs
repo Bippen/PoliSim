@@ -35,6 +35,8 @@ namespace PoliSim.Data
         /// <summary>P2-4.3 (2026-09-02): the bill's direction and axis at the division, and every party's side with its
         /// seats - what the ceremony's per-seat vote map draws. Empty on divisions recorded before this pass.</summary>
         public float Direction;
+        /// <summary>PS-3i (§636): a MOTION (no confidence), not a bill - no signing ceremony, never the standing budget act.</summary>
+        public bool Motion;
         public int Axis;
         public List<DivisionSide> Sides = new List<DivisionSide>();
         /// <summary>P2-4.3: the estimated impact of the turn's decision this division belonged to (the preview's arrows,

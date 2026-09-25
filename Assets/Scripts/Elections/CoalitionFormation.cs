@@ -524,6 +524,25 @@ namespace PoliSim.Elections
             return support;
         }
 
+        /// <summary>
+        /// PS-3i (§636): THE PARTIES RED-LINED FROM A SITTING CABINET - the same rule the investiture's opposition reads (a support-blocking line to any
+        /// cabinet member, or an in-or-against rule outside the cabinet), exposed for the confidence motion: a party that would vote against the cabinet
+        /// at its investiture votes for no confidence in it. The hold-out term is the investiture's alone (a party holding out for a cabinet it prefers
+        /// has nothing to hold out for once one sits) - stated.
+        /// </summary>
+        public static int RedLinedMask(int cabinet, int n, IReadOnlyList<RedLine> lines, IReadOnlyList<InOrAgainst> inOrAgainst)
+        {
+            int inOrAgainstMask = 0;
+            if (inOrAgainst != null) { foreach (InOrAgainst rule in inOrAgainst) { if (rule.Party >= 0 && rule.Party < n) { inOrAgainstMask |= 1 << rule.Party; } } }
+            int mask = 0;
+            for (int p = 0; p < n; p++)
+            {
+                if ((cabinet & (1 << p)) != 0) { continue; }
+                if (SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0) { mask |= 1 << p; }
+            }
+            return mask;
+        }
+
         /// <summary>Whether a support-blocking red line separates a party from any cabinet member - a one-way line only in its own direction (K-1).</summary>
         private static bool SupportBlocked(int p, int cabinet, int n, IReadOnlyList<RedLine> lines)
         {

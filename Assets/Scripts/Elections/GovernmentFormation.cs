@@ -293,12 +293,63 @@ namespace PoliSim.Elections
             return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason, vintage);
         }
 
+        /// <summary>PS-3i (§636, the reader): the declarations of the election that seated the SITTING chamber - the start's until the game holds one, then that election's (the resolver election night uses).</summary>
+        public static ElectionVintage SittingVintage(Country country)
+        {
+            DateTime latest = DateTime.MinValue;
+            if (country?.ElectionHistory != null) { foreach (ElectionRecord held in country.ElectionHistory) { if (held.Method != ElectionMethod.NotImplemented && held.Date > latest) { latest = held.Date; } } }
+            return latest == DateTime.MinValue ? ElectionVintage.Seated : WorldClock.VintageOfElection(country.Id, latest);
+        }
+
+        /// <summary>PS-3i (§636): the parties red-lined from a sitting cabinet (keys), by the chamber's own declarations - the confidence motion's yes-voters.</summary>
+        public static HashSet<string> RedLinedFrom(Country country, IReadOnlyList<string> cabinet)
+        {
+            var result = new HashSet<string>();
+            IReadOnlyList<PoliticalParty> parties = PartySystems.For(country.Id);
+            if (parties == null || cabinet == null) { return result; }
+            int mask = 0;
+            var inCabinet = new HashSet<string>(cabinet);
+            for (int p = 0; p < parties.Count; p++) { if (inCabinet.Contains(parties[p].Abbrev)) { mask |= 1 << p; } }
+            ElectionVintage vintage = SittingVintage(country);
+            List<RedLine> lines = DeclaredRedLines.For(country.Id, parties, vintage);
+            // SUPPORT-BLOCKING LINES ONLY: an in-or-against rule is about investiture - V votes against every cabinet it is not in - and not about toppling one: V's leader said V would not bring Andersson down [C-I9] (the reader, s636).
+            int against = CoalitionFormation.RedLinedMask(mask, parties.Count, lines, null);
+            for (int p = 0; p < parties.Count; p++) { if ((against & (1 << p)) != 0) { result.Add(parties[p].Abbrev); } }
+            return result;
+        }
+
+        /// <summary>
+        /// PS-3i (§636): THE SPEAKER'S ROUND on the SITTING chamber - the formation on today's seats and declarations, never the installed record (which
+        /// would hand back the government just discharged); <paramref name="extraLines"/> carries the refusal a party made by moving the motion.
+        /// </summary>
+        public static View ViewOfSitting(Country country, IReadOnlyList<RedLine> extraLines = null)
+        {
+            IReadOnlyList<PoliticalParty> parties = PartySystems.For(country.Id);
+            if (parties == null || parties.Count == 0) { return new View { HasGovernment = false, Reason = "no party system is seeded for this country" }; }
+            var seats = new int[parties.Count];
+            for (int p = 0; p < parties.Count; p++) { seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; }
+            if (!TryFormSeats(country.Id, parties, seats, out CoalitionResult result, out bool sourced, out string reason, SittingVintage(country), extraLines))
+            {
+                return new View { HasGovernment = false, Reason = reason };
+            }
+            return Describe(country.Id, parties, seats, result, sourced, country.PlayerPartyAbbrev);
+        }
+
+        /// <summary>The index of a party key in the country's party system, or -1.</summary>
+        public static int IndexOf(CountryId country, string abbrev)
+        {
+            IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
+            if (parties == null) { return -1; }
+            for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == abbrev) { return p; } }
+            return -1;
+        }
+
         /// <summary>K-1 part (4): whether the government the chamber forms is the PROVISIONAL stand-in - the seeded chamber's, with the real
         /// government not yet on record (<see cref="SeatedGovernment"/>). Every surface that names the government says so.</summary>
         public static bool IsProvisional(Country country) => SeatedGovernment.IsProvisional(country);
 
         private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
-            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated)
+            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<RedLine> extraLines = null)
         {
             result = null; declarationsSourced = false; reason = null;
             int totalSeats = 0;
@@ -306,6 +357,7 @@ namespace PoliSim.Elections
             if (totalSeats <= 0) { reason = "the chamber holds no seats"; return false; }
             double[,] compatibility = Compatibility(parties);
             List<RedLine> lines = DeclaredRedLines.For(country, parties, vintage);
+            if (extraLines != null) { lines.AddRange(extraLines); }   // PS-3i (§636): a refusal made by moving a motion, for the Speaker's round
             declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
                 negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: DeclaredRedLines.InOrAgainstFor(country, parties, vintage));   // K-1f: a party's in-or-against rule, beside the pairs
