@@ -86,19 +86,6 @@ namespace PoliSim.EditorTools
                 }
                 sb.Append("    tally     ").Append(sd?.Tally() ?? "-").Append('\n');
 
-                // PS-3j (§637): the support party's share of the government's record - the cabinet carries the incumbent's whole swing, SD half, the rest none.
-                IReadOnlyList<PoliticalParty> parties = PartySystems.For(CountryId.Sweden);
-                double[] weights = PerceivedPerformance.IncumbencyWeights(sweden, parties);
-                int iM = -1, iSD = -1, iS = -1;
-                for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == "M") { iM = p; } if (parties[p].Abbrev == "SD") { iSD = p; } if (parties[p].Abbrev == "S") { iS = p; } }
-                Check(weights[iM] == 1.0 && weights[iSD] == PerceivedPerformance.SupportShareOfRecord && weights[iS] == 0.0, F("the record's shares: M {0}, SD {1}, S {2}", weights[iM], weights[iSD], weights[iS]));
-                var flat = new double[parties.Count]; for (int p = 0; p < flat.Length; p++) { flat[p] = 1.0 / flat.Length; }
-                double[] best = PerceivedPerformance.ApplyIncumbency(flat, weights, 100.0);
-                double mOverS = best[iM] / best[iS], sdOverS = best[iSD] / best[iS];
-                Check(Math.Abs(mOverS - 1.15) < 1e-9 && Math.Abs(sdOverS - 1.075) < 1e-9, F("at a perfect perceived economy the cabinet gains the whole swing (x{0:0.000}), SD half of it (x{1:0.000}), against the opposition", mOverS, sdOverS));
-                double[] neutral = PerceivedPerformance.ApplyIncumbency(flat, weights, 50.0);
-                Check(Math.Abs(neutral[iSD] - flat[iSD]) < 1e-12, "a neutral economy moves no one");
-
                 // The withdrawal: SD may, S and KD may not.
                 sweden.PlayerPartyAbbrev = "S";
                 Check(!sim.WithdrawSupport(CountryId.Sweden, out string refused) && refused == "YOUR PARTY IS NOT A SUPPORT PARTY", F("S in opposition cannot withdraw support: {0}", refused));
@@ -107,7 +94,7 @@ namespace PoliSim.EditorTools
                 sweden.PlayerPartyAbbrev = "SD";
                 int before = g.Breaks.Count;
                 Check(sim.WithdrawSupport(CountryId.Sweden, out refused) && !g.Support.Contains("SD") && g.Breaks.Count == before + 1, "SD withdraws: struck from the support, recorded on the government - the procedure is part 6's");
-                Check(PerceivedPerformance.IncumbencyWeights(sweden, PartySystems.For(CountryId.Sweden))[iSD] == 0.0, "withdrawn, SD shares none of the government's record");
+                Check(!EconomicVote.Magnitudes(sweden).ContainsKey("SD"), "withdrawn, SD shares none of the government's record (§638)");
                 Check(GovernmentFormation.TryGovernment(sweden, out IReadOnlyList<string> cabinetNow, out IReadOnlyList<string> supportNow) && !supportNow.Contains("SD") && cabinetNow.Contains("M"), "the withdrawal reaches the chamber's votes: the formation reads the stored record without SD (the reader, s635)");
 
                 // The record rides the save.

@@ -6,7 +6,8 @@ namespace PoliSim.Elections
 {
     /// <summary>
     /// W-A5 / SPEC §19 — **the vote model reads PERCEIVED government performance, not actual.**
-    /// PURE FUNCTIONS, WIRED TO NOTHING (R-N2).
+    /// PURE FUNCTIONS (R-N2). Since PS-3k (§638) <see cref="Perceived"/> IS read: the government's record in the player's election
+    /// (EconomicVote) takes its index; the incumbency multiplier below stays wired to nothing.
     ///
     /// The spec asks for a difference between "Actual Economy" and "Perceived Economy". The gap
     /// table found that half of this already exists and is the game's most under-used asset:
@@ -183,52 +184,8 @@ namespace PoliSim.Elections
             return adjusted;
         }
 
-        /// <summary>
-        /// PS-3j (2026-09-25, §637; the political-system spec's §5.5): THE SUPPORT PARTY'S SHARE OF THE GOVERNMENT'S RECORD. "A support party shares part of
-        /// the government's record in the voters' eyes - the fraction is [AUTHORED-DRAFT] with its line and goes on the play-calibration list, since only
-        /// play can judge it." [AUTHORED-DRAFT] half: a support party carries half of the incumbent's swing - enough that carrying a government is not free,
-        /// short of being in it; the play-calibration list's twenty-second entry. STATED: like the incumbency term it scales, it is WIRED TO NOTHING - no
-        /// vote in play reads the government's record yet (the electorate does not move with the simulation, PartySystems' standing gap); wiring the
-        /// record into the live vote is a ruling owed, not taken here.
-        /// </summary>
-        public const double SupportShareOfRecord = 0.5;
-
-        /// <summary>PS-3j (§637): each party's share of the government's record, from the STORED government - the cabinet 1, a support party <see cref="SupportShareOfRecord"/>, everyone else 0.</summary>
-        public static double[] IncumbencyWeights(Country country, IReadOnlyList<PoliticalParty> parties)
-        {
-            var weights = new double[parties?.Count ?? 0];
-            GovernmentRecord g = country?.Government;
-            if (g == null || parties == null) { return weights; }
-            for (int i = 0; i < parties.Count; i++)
-            {
-                if (g.Cabinet.Contains(parties[i].Abbrev)) { weights[i] = 1.0; }
-                else if (g.Support.Contains(parties[i].Abbrev)) { weights[i] = SupportShareOfRecord; }
-            }
-            return weights;
-        }
-
-        /// <summary>
-        /// PS-3j (§637): the incumbency effect by SHARE rather than flag - a party with weight w moves by 1 + w·(m − 1), where m is the incumbent's
-        /// multiplier; everyone renormalised. With weights of 1 and 0 it is the flag form above (which stays as it was).
-        /// </summary>
-        public static double[] ApplyIncumbency(double[] preference, double[] weights, double perceivedIndex)
-        {
-            if (preference == null || weights == null || preference.Length != weights.Length)
-            {
-                throw new ArgumentException("preference and incumbency weights must line up");
-            }
-            double multiplier = IncumbentMultiplier(perceivedIndex);
-            var adjusted = new double[preference.Length];
-            double total = 0.0;
-            for (int i = 0; i < preference.Length; i++)
-            {
-                adjusted[i] = preference[i] * (1.0 + weights[i] * (multiplier - 1.0));
-                total += adjusted[i];
-            }
-            if (total <= 0.0) { return preference; }
-            for (int i = 0; i < adjusted.Length; i++) { adjusted[i] /= total; }
-            return adjusted;
-        }
+        // PS-3k (§638, ruled): §637's placeholder share - SupportShareOfRecord, IncumbencyWeights and the weight form of ApplyIncumbency - is REPLACED by
+        // EconomicVote, whose magnitudes and support-party share come from the economic-voting literature (docs/reference/ECONOMIC_VOTE.md).
 
         /// <summary>The attribution line §31 will print: how far perception sits from truth, and which way.</summary>
         public static double Divergence(Reading perceived, Reading actual) => perceived.Index - actual.Index;

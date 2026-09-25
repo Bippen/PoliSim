@@ -3890,9 +3890,15 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: NIGHT {stem} - {state.DeclaredCount} of {state.TotalConstituencies} declared; calls {calls}; {map}; {governs}");
         }
 
-        private IEnumerator CaptureElectionNightFromModel()
+        private IEnumerator CaptureElectionNightFromModel(GameController controller)
         {
-            if (!NationalElection.TryPredictShares(CountryId.Sweden, out _))
+            // PS-3k (§638): the model's night reads the government's record as play's polling day does with no campaign - the loaded or warmed game's
+            // Sweden, its perceived economy today; a harness with no game in hand predicts without it, and says so.
+            var modelSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+            Country modelCountry = modelSim?.World?.GetCountry(CountryId.Sweden);
+            Dictionary<string, double> modelRecord = modelCountry != null ? EconomicVote.RecordShiftOf(modelCountry, PerceivedPerformance.Perceived(modelCountry, null).Index) : null;
+            Debug.Log(modelRecord == null ? "SHOT: F1 - no game in hand, the model's night is predicted WITHOUT the government's record." : "SHOT: F1 - the model's night reads the government's record: " + string.Join(", ", System.Linq.Enumerable.Select(modelRecord, kv => kv.Key + " " + (kv.Value * 100.0).ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " pp")));
+            if (!NationalElection.TryPredictShares(CountryId.Sweden, out _, modelRecord))
             {
                 Debug.LogError("SHOT: F1 - Sweden could not be predicted, so the model frame is NOT filmed. A missing frame is reported; a fixture standing in for it would not be.");
                 _failed++;
@@ -3980,7 +3986,7 @@ namespace PoliSim.Testing
             // and every election-night film ever taken was of a fixture. This one predicts Sweden's
             // election through the live path and films what the model actually produced, so "board 1h
             // filmed" stops being a claim about furniture.
-            yield return CaptureElectionNightFromModel();
+            yield return CaptureElectionNightFromModel(controller);
 
             int[] wanted = { 4, 16, 28, 29 };
             var stems = new[] { "early", "partial", "called", "final" };

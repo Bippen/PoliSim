@@ -31,6 +31,8 @@ namespace PoliSim.Elections
         /// </summary>
         public int PreCampaignDays;
         public int PreCampaignDaysStepped;
+        /// <summary>PS-3k (§638): the government's record as each party's vote-share shift, judged once at the campaign's opening and replayed from here - a load rebuilds the same campaign (save format 34).</summary>
+        public Dictionary<string, double> RecordShift;
         /// <summary>The three campaign streams' draw counts the moment the campaign began - the replay's rewind point.</summary>
         public Dictionary<SimulationRandom.Stream, int> DrawCountsAtStart = new Dictionary<SimulationRandom.Stream, int>();
 

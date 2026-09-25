@@ -2638,6 +2638,15 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>PS-3k (§638): a record's shift by party key as one per the setup's parties, or null where none is stored (an older campaign replays as it ran).</summary>
+        private static double[] RecordShiftFor(Elections.CampaignRun.Setup setup, System.Collections.Generic.Dictionary<string, double> byParty)
+        {
+            if (byParty == null || byParty.Count == 0) { return null; }
+            var shift = new double[setup.Parties.Length];
+            for (int i = 0; i < shift.Length; i++) { shift[i] = byParty.TryGetValue(setup.Parties[i].Name, out double by) ? by : double.NaN; }   // NaN: not named, absorbs (a 0 would name it and leave no one to absorb - the §638 film's finding)
+            return shift;
+        }
+
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
         public bool TryPlayerPollingDay(out System.DateTime pollingDay)
         {
@@ -2710,6 +2719,17 @@ namespace PoliSim.Simulation
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
                 CampaignRecord = record;
+                // PS-3k (§638, ruled): the government's record judged once at the campaign's opening, stored on the record so a replay is the same campaign.
+                Country recordCountry = _world.GetCountry(PlayerCountryId.Value);
+                if (record.RecordShift == null && recordCountry != null)
+                {
+                    double perceivedIndex = Elections.PerceivedPerformance.Perceived(recordCountry, null).Index;
+                    record.RecordShift = Elections.EconomicVote.RecordShiftOf(recordCountry, perceivedIndex);
+                    var parts = new System.Collections.Generic.List<string>();
+                    foreach (System.Collections.Generic.KeyValuePair<string, double> kv in record.RecordShift) { parts.Add(kv.Key + " " + (kv.Value * 100.0).ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture) + " pp"); }
+                    UnityEngine.Debug.Log($"RECORD: the government's record judged at the campaign's opening for {PlayerCountryId.Value} - perceived index {perceivedIndex.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)}: " + (parts.Count == 0 ? "no party carries it" : string.Join(", ", parts)));
+                }
+                setup = setup.WithRecordShift(RecordShiftFor(setup, record.RecordShift));
                 System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> atStart = SimulationRandom.CaptureDrawCounts();   // a stream that has never drawn is absent, and absent means 0
                 foreach (SimulationRandom.Stream stream in CampaignStreams) { CampaignRecord.DrawCountsAtStart[stream] = atStart.TryGetValue(stream, out int n) ? n : 0; }
                 PlayerCampaignResult = null;
@@ -2977,6 +2997,7 @@ namespace PoliSim.Simulation
             {
                 return;
             }
+            setup = setup.WithRecordShift(RecordShiftFor(setup, record.RecordShift));   // PS-3k (§638): the record the campaign opened on, replayed
             var rewound = new System.Collections.Generic.Dictionary<SimulationRandom.Stream, int>(savedCounts);
             foreach (SimulationRandom.Stream stream in CampaignStreams)
             {

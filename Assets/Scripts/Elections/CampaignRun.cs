@@ -101,13 +101,20 @@ namespace PoliSim.Elections
             public readonly (int Day, int Party, Scandal Scandal)[] Scandals;
             /// <summary>CL-2 (DS-10): the probability per party per day that a story breaks in this run, every party equal (`Scandals.LiveRatePerPartyDay` in the game; 0 in every harness, so no staged digest moves).</summary>
             public readonly double LiveScandalRatePerPartyDay;
+            /// <summary>PS-3k (§638): each party's vote-share shift from the government's record (EconomicVote), one per party - NaN for a party the record does not name (it absorbs the governing parties' moves), null for no record - applied to every day's preference.</summary>
+            public readonly double[] RecordShift;
+
+            /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
+            public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift);
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
                 MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
-                double liveScandalRatePerPartyDay = 0.0)
+                double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null)
             {
+                RecordShift = recordShift;   // PS-3k (§638): the government's record, per party, judged at the campaign's opening
                 ElectorateLoyalty = electorateLoyalty;
                 LiveScandalRatePerPartyDay = liveScandalRatePerPartyDay;
                 Scandals = scandals ?? new (int, int, Scandal)[0];
@@ -1106,7 +1113,10 @@ namespace PoliSim.Elections
             double[] bonus = pressure.ToCompatibilityBonus();
             var compatibility = new double[setup.Compatibility.Length];
             for (int i = 0; i < compatibility.Length; i++) { compatibility[i] = setup.Compatibility[i] + bonus[i]; }
-            return PreferenceModel.Preference(compatibility, prior, setup.LoyaltyPerParty);
+            double[] preference = PreferenceModel.Preference(compatibility, prior, setup.LoyaltyPerParty);
+            if (setup.RecordShift == null) { return preference; }
+            // PS-3k (§638): the government's record moves the electorate's preference - each governing party by exactly its shift, the rest absorbing it.
+            return EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift);
         }
 
         /// <summary>The TRUE salience and match behind a message: one issue's, or the mean over the contested issues for a general message.</summary>

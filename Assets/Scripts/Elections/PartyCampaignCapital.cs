@@ -81,9 +81,9 @@ namespace PoliSim.Elections
         /// seat baseline is left where it was, so the party's next result is measured against the last
         /// mandate it actually held.</para>
         ///
-        /// <para>⚠ <b>WHAT THIS IS WORTH IN PLAY TODAY: NOTHING, AND THE RECORD SAYS SO.</b> The
-        /// electorate does not move with the simulation, so two elections in one game return the same
-        /// chamber — every ratio is exactly 1.0 and the carry-over is provably inert. It is built and
+        /// <para>⚠ <b>WHAT THIS IS WORTH IN PLAY:</b> until PS-3k (§638) NOTHING - the electorate did not move with
+        /// the simulation, so two elections in one game returned the same chamber. Since §638 the government's
+        /// record moves the vote (EconomicVote), so the ratio is live. It is built and
         /// proven against a forced seat change so that the day the electorate does move, the capital
         /// is already there and already persisted. Building it after that day would mean shipping a
         /// save-format change on top of a live mechanic instead of before it.</para>

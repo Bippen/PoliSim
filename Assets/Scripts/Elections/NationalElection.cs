@@ -143,11 +143,12 @@ namespace PoliSim.Elections
             return true;
         }
 
-        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares)
+        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares, IReadOnlyDictionary<string, double> recordShift = null)
         {
             shares = null;
             if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)) { return false; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, loyalty);
+            preference = EconomicVote.ApplyRecordShift(keys, preference, recordShift);   // PS-3k (§638): the government's record, before the regions are derived; none given, none applied
 
             shares = new Dictionary<string, double>();
             for (int i = 0; i < keys.Length; i++) { shares[keys[i]] = preference[i]; }

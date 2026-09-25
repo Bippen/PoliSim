@@ -6826,7 +6826,8 @@ namespace PoliSim.UI
                         + string.Join(" ", System.Array.ConvertAll(tactical.Preference, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
                 }
             }
-            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty))
+            // PS-3k (§638, ruled): with no campaign the prediction reads the government's record on polling day; a campaign's shares already carry it.
+            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty, EconomicVote.RecordShiftOf(_playerCountry, PerceivedPerformance.Perceived(_playerCountry, null).Index)))
             {
                 _playerCountry.ElectionHistory.Add(new ElectionRecord
                 {
@@ -6849,11 +6850,9 @@ namespace PoliSim.UI
 
                 // C-D4 (§38): the result carries into each party's long-term capital. ⚠ Its rule holds no
                 // invented constant - organisational strength moves by the ratio of the party's new seat
-                // count to its own previous one, which is the election's own number. ⚠ And it is worth
-                // NOTHING in play today: the electorate does not move with the simulation, so two
-                // elections in one game return the same chamber and every ratio is exactly 1.0. It is
-                // built and proven now so the capital is already persisted the day that changes, rather
-                // than a save-format change landing on top of a live mechanic.
+                // count to its own previous one, which is the election's own number. Since PS-3k (§638) the
+                // electorate moves with the government's record (EconomicVote), so two elections in one game
+                // can return different chambers and the ratio is live.
                 PartyCapital.CarryOver(_playerCountry.PartyCapital, record.Seats);
             }
         }
